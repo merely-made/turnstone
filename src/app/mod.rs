@@ -782,6 +782,7 @@ impl App {
         let graph = self.graph_for_pane(pane)?;
         let result = {
             let canvas = self.graph_runtimes.canvas_mut(graph)?;
+            self.graph_views.bind_graph(pane,graph);
             self.graph_views.install(pane, canvas);
             let result = operation(canvas);
             self.graph_views.stash(pane, canvas);
@@ -1159,7 +1160,10 @@ impl App {
             | Action::OmnibarShowAllCommands | Action::OmnibarCommit) {
             return vec![Effect::Redraw];
         }
+        let records_visit=matches!(&action,Action::OpenAddress(_));
+        if records_visit || matches!(&action,Action::WorkbenchActivate(_)) {self.capture_scope_origin();}
         let mut effects = self.dispatch(action);
+        if records_visit {self.record_scope_current();effects.push(Effect::SaveReadingPreferences);}
         if !self.session_load_refused() { effects.extend(crate::behaviors::drain(self)); }
         effects.extend(self.invalidate_saved_readers());
         effects
@@ -1211,6 +1215,8 @@ impl App {
             Action::ToggleAuthenticationMemory => self.toggle_authentication_memory(),
             Action::SubmitAuthentication { request } => self.submit_authentication(request),
             Action::CancelAuthentication { request } => self.cancel_authentication(request),
+            Action::Scope(command) => self.scope_command(command),
+            Action::SelectScopeMere(id) => self.select_scope_mere(id),
             Action::NavBack => self.nav_back(),
             Action::NavForward => self.nav_forward(),
             Action::Reload => self.reload_focused(),
@@ -1335,6 +1341,7 @@ impl App {
             // state here, ports there, ordering correct.
             Action::NewSession => {
                 let id = Self::mint_session(&self.data_root, &mut self.sessions);
+                self.enter_scope_session(id);
                 vec![Effect::SwitchSession { id }]
             }
             Action::SwitchSession(id) => {
@@ -1342,6 +1349,7 @@ impl App {
                     || (id != self.session_id && self.sessions.get(id).is_none()) {
                     return vec![Effect::Redraw];
                 }
+                self.enter_scope_session(id);
                 vec![Effect::SwitchSession { id }]
             }
             // ---- Participant residency (participant gate B1) ----
@@ -1427,6 +1435,7 @@ impl App {
             Action::SetWorkspaceMap(map) => self.set_workspace_map(map),
             Action::ReadGraphMember(member) => self.read_graph_member(member),
             Action::NavigateRelationship(target) => self.navigate_relationship(target),
+            Action::RevealRelationship(target) => self.reveal_relationship(target),
             Action::SetPaneBinding(intent) => self.apply_pane_binding(intent),
             Action::RevealGraphMember(member) => self.reveal_graph_member(member),
             Action::ToggleToolPane(kind) => self.toggle_tool_pane(kind),
@@ -1479,8 +1488,12 @@ impl App {
                 if activated {
                     if let Some(owner) = owner {
                         self.publish_member_context(owner, Some(member));
+                        self.record_scope_reading(owner, member);
+                        if let Some(graph)=self.graph_for_pane(owner) {
+                            self.reading.trails.entry(owner).or_default().visit(crate::reading_view::ReadVisit {graph,member});
+                        }
                     }
-                    vec![Effect::SaveSession, Effect::Redraw]
+                    vec![Effect::SaveSession, Effect::SaveReadingPreferences, Effect::Redraw]
                 } else {
                     vec![Effect::Redraw]
                 }

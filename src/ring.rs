@@ -139,7 +139,7 @@ pub fn ring_of(action: &Action) -> Ring {
         | OpenInWorkbench
         | SetWorkspaceMap(_)
         | ReadGraphMember(_)
-        | NavigateRelationship(_)
+        | NavigateRelationship(_) | RevealRelationship(_)
         | SetPaneBinding(_)
         | RevealGraphMember(_)
         | ToggleToolPane(_)
@@ -187,6 +187,8 @@ pub fn ring_of(action: &Action) -> Ring {
         | ToggleSizeByRecency
         | ToggleNodeContent
         | SearchCapturedPages
+        | Scope(_)
+        | SelectScopeMere(_)
         | Reading(_)
         | OpenDocumentFind
         | CloseDocumentFind

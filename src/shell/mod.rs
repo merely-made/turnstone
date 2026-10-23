@@ -2110,12 +2110,14 @@ impl Shell {
 
     fn sync_content_placements(&mut self) {
         use content_pool::HostPlacement;
+        self.retain_reading_positions();
         let focus = self.app.focus;
         // Surface plans and native pointer positions are physical pixels.
         // A factor of one prevents applying native DPI a second time.
         let placement = |surface: crate::surface::Surface, window, active, native_scale| {
             let mut host = HostPlacement::for_focus(surface, window, active, focus, native_scale);
             host.reading_preferences = self.app.reading.for_surface(surface, window);
+            host.reading_anchor = self.app.reading.anchors.iter().find_map(|(target,anchor)|(target.appearance(window)==surface.id).then(||anchor.clone()));
             host
         };
         let mut placements: Vec<_> = self
@@ -2321,7 +2323,7 @@ impl Shell {
                             ) => out.push(Action::OpenAddress(url)),
                             crate::swatch_pane::SwatchIntent::Activate(
                                 crate::swatch_pane::SwatchActivate::Switch(id),
-                            ) => out.push(Action::SwitchSession(id)),
+                            ) => out.push(Action::SelectScopeMere(id)),
                             // A composed Removed row: recover by ORIGINAL id.
                             crate::swatch_pane::SwatchIntent::Activate(
                                 crate::swatch_pane::SwatchActivate::Recover(id),
@@ -3666,13 +3668,7 @@ fn primary_content_plan_with_rects(
             .map(|(_, rect)| *rect)?;
         app.graph_pane_focused_member(pane)
             .filter(|id| contents.contains_key(id))
-            .filter(|id| {
-                contents.session(id).is_some_and(|session| {
-                    session
-                        .as_any_ref()
-                        .is::<mere_document_lanes::ReaderDocumentSession>()
-                }) || (!tiles.iter().any(|(t, _)| t == id) && !tiled_in_lens(id) && !tile_paned(id))
-            })
+            .filter(|id| !tiles.iter().any(|(member,_)|member==id) && !tiled_in_lens(id) && !tile_paned(id))
             .map(|node| (node, crate::surface::content_rect(cr)))
     });
     // The application title row remains visible when browser chrome is hidden.

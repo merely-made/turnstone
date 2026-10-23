@@ -54,6 +54,7 @@ pub enum ChromeIntent {
     CommitRow(usize),
     /// Keep or drop the command on this suggestion row.
     ToggleKeep(usize),
+    Scope(cambium::scope_navigation::ScopeCommand),
     NavBack,
     NavForward,
     Reload,
@@ -64,6 +65,7 @@ pub enum ChromeIntent {
     Tool(&'static str),
     ReadMember(uuid::Uuid),
     NavigateRelationship(crate::relationship_navigation::RelationshipTarget),
+    RevealRelationship(crate::relationship_navigation::RelationshipTarget),
     RevealMember(uuid::Uuid),
     Layout(crate::chrome_layout::ChromeLayout),
     AllPanes,
@@ -181,6 +183,8 @@ struct ChromeState {
     menu_selected: usize,
     documents_start: usize,
     relationships_start: usize,
+    relationship_preview: Option<crate::relationship_navigation::RelationshipTarget>,
+    preview_excerpt: Option<String>,
     layout: crate::chrome_layout::ChromeLayout,
     map_active: bool,
     territory: bool,
@@ -199,6 +203,8 @@ struct ChromeState {
     shellbar_placement: ChromePlacement,
     shellbar_visible: bool,
     zoom: f32,
+    scope_controls: cambium::scope_navigation::ScopeControls,
+    scope_crumbs: Vec<cambium::scope_navigation::ScopeCrumb>,
     can_back: bool,
     can_forward: bool,
     focused_node: Option<uuid::Uuid>,
@@ -225,6 +231,10 @@ type ChromeView = Box<dyn AnyView<ChromeState, ChromeIntent, GenetCtx, GenetElem
 /// One window's chrome view: the caption chip, plus the omnibar card on the
 /// primary while open. Positioned by transform-translate (the property the
 /// canvas gnode pool proves the retained engine honors on absolutes).
+fn scope_chrome_intent(state:&mut ChromeState,command:cambium::scope_navigation::ScopeCommand)->ChromeIntent {
+    if let cambium::scope_navigation::ScopeCommand::Hint(hint)=command {state.scope_controls.hint=hint;ChromeIntent::MenuChanged} else {ChromeIntent::Scope(command)}
+}
+
 fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
     let Some(win) = state.windows.get(slot).cloned() else {
         return Box::new(el::<_, ChromeState, ChromeIntent>("div", ()));
@@ -264,19 +274,9 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
             navigation_height
         };
         let mut controls: Vec<ChromeView> = Vec::new();
-        if !tiny {
-            controls.push(browser_control(
-                "‹",
-                "Back",
-                state.can_back.then_some(ChromeIntent::NavBack),
-            ));
-        }
+        controls.push(cambium::scope_navigation::scope_controls(state.scope_controls.clone(),
+            scope_chrome_intent));
         if !compact {
-            controls.push(browser_control(
-                "›",
-                "Forward",
-                state.can_forward.then_some(ChromeIntent::NavForward),
-            ));
             controls.push(browser_control(
                 if state.fetching { "Stop" } else { "Reload" },
                 if state.fetching { "Stop" } else { "Reload" },
@@ -325,10 +325,6 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
                     .filter(|_| !state.focused_kept)
                     .map(ChromeIntent::KeepNode),
             ));
-        }
-        if !state.layout.activity_rail && (!tiny || available >= 230.0 * zoom) {
-            controls.push(cambium::shell_projection_switch(state.map_active, tiny,
-                |_: &mut ChromeState, map| ChromeIntent::WorkspaceMap(map)));
         }
         if !compact {
             controls.push(menu_button(
@@ -494,18 +490,25 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
                         "Reveal this document in Map",
                         state.focused_node.map(ChromeIntent::RevealMember),
                     ));
-                    if state.relationships_start > 0 {
+                    if state.relationship_preview.is_none() && state.relationships_start > 0 {
                         rows.push(Box::new(on_click(
                             el::<_, ChromeState, ChromeIntent>("button", "Previous relationships").attr("class", "shell-control").attr("aria-label", "Previous relationships"),
                             |state: &mut ChromeState, _: PointerClick| { state.relationships_start = state.relationships_start.saturating_sub(6); state.menu_selected = 0; ChromeIntent::MenuChanged },
                         )));
                     }
-                    for row in state.connections.iter().skip(state.relationships_start).take(6) {
+                    if let Some(row)=state.relationship_preview.and_then(|target|state.connections.iter().find(|row|row.target==target)) {
+                        let target=row.target;
+                        rows.push(cambium::relationship_preview(row.title.clone(),row.relationship.clone(),row.address.clone(),state.preview_excerpt.clone(),move |state: &mut ChromeState,command| {
+                            use cambium::RelationshipPreviewCommand as C;
+                            match command {C::Read=>ChromeIntent::NavigateRelationship(target), C::ShowGraph=>ChromeIntent::RevealRelationship(target), C::Close=> {state.relationship_preview=None; ChromeIntent::MenuChanged}}
+                        }));
+                    }
+                    for row in state.connections.iter().skip(state.relationships_start).take(6).filter(|_|state.relationship_preview.is_none()) {
                         let target = row.target;
                         rows.push(cambium::shell_navigation_item(row.title.clone(), format!("{} · {}", row.relationship, row.address), Default::default(),
-                            move |_: &mut ChromeState, _| ChromeIntent::NavigateRelationship(target)));
+                            move |state: &mut ChromeState, _| {state.relationship_preview=Some(target); ChromeIntent::MenuChanged}));
                     }
-                    if state.relationships_start + 6 < state.connections.len() {
+                    if state.relationship_preview.is_none() && state.relationships_start + 6 < state.connections.len() {
                         rows.push(Box::new(on_click(
                             el::<_, ChromeState, ChromeIntent>("button", "More relationships").attr("class", "shell-control").attr("aria-label", "More relationships"),
                             |state: &mut ChromeState, _: PointerClick| { state.relationships_start += 6; state.menu_selected = 0; ChromeIntent::MenuChanged },
@@ -571,7 +574,9 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
             } else {
                 rows.len()
             };
-            let menu_height = if menu == ChromeMenu::Connections {
+            let menu_height = if menu==ChromeMenu::Connections && state.relationship_preview.is_some() {
+                360.0 * scale
+            } else if menu == ChromeMenu::Connections {
                 row_count as f32 * (38.0 * scale + 6.0 * zoom) + 16.0 * scale
             } else { row_count as f32 * (22.0 * scale + 6.0 * zoom) + 16.0 * scale };
             let menu_height = menu_height.min((win.h - title_height - navigation_height - 12.0).max(0.0));
@@ -704,7 +709,7 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
             _ => "left",
         };
         children.push(Box::new(
-            el::<_, ChromeState, ChromeIntent>("div", win.caption.clone().unwrap_or_default())
+            el::<_, ChromeState, ChromeIntent>("div", cambium::scope_navigation::scope_trail(state.scope_crumbs.clone(), scope_chrome_intent))
                 .attr("class", "whereami")
                 .attr("role", "status")
                 .attr("style", format!("transform: translate(0px, {top}px); width: {}px; height: {status_height}px; text-align: {align};", win.w)),
@@ -1246,6 +1251,8 @@ impl ChromeSurfaces {
             menu_selected: 0,
             documents_start: 0,
             relationships_start: 0,
+            relationship_preview: None,
+            preview_excerpt: None,
             layout: Default::default(),
             map_active: false,
             territory: false,
@@ -1265,6 +1272,8 @@ impl ChromeSurfaces {
             shellbar_placement: ChromePlacement::Docked(ChromeEdge::Right),
             shellbar_visible: true,
             zoom: 1.0,
+            scope_controls: Default::default(),
+            scope_crumbs: Vec::new(),
             can_back: false,
             can_forward: false,
             focused_node: None,
@@ -1564,8 +1573,10 @@ impl ChromeSurfaces {
             state.tools = tools.clone();
             if state.focused_node != focused || state.connections != connections {
                 state.relationships_start = 0;
+                state.relationship_preview = None;
                 if state.menu == Some(ChromeMenu::Connections) { state.menu_selected = 0; }
             }
+            state.preview_excerpt=state.relationship_preview.and_then(|target| app.reading.excerpts.get(&target.member).map(|text|format!("Retained document excerpt: {text}")).or_else(||app.reading.anchors.iter().find(|(key,_)|key.member==target.member).map(|(_,anchor)|format!("Last reading position: {}",anchor.exact))));
             state.connections = connections.clone();
             state.documents = documents.clone();
             state.reading_stacks = reading_stacks.clone();
@@ -1598,6 +1609,10 @@ impl ChromeSurfaces {
             state.shellbar_placement = chrome.shellbar.placement.clone();
             state.shellbar_visible = chrome.projects_shellbar();
             state.zoom = chrome.appearance.zoom();
+            let mut scope_controls=app.scope_controls();
+            if scope_controls.back==state.scope_controls.back && scope_controls.forward==state.scope_controls.forward && scope_controls.up==state.scope_controls.up && scope_controls.down==state.scope_controls.down {scope_controls.hint=state.scope_controls.hint;}
+            state.scope_controls = scope_controls;
+            state.scope_crumbs = app.scope_crumbs();
             state.can_back = can_back;
             state.can_forward = can_forward;
             state.focused_node = focused;
@@ -1690,6 +1705,10 @@ impl ChromeSurfaces {
             .any(|intent| !matches!(intent, ChromeIntent::MenuChanged))
         {
             self.runner.update(|state| state.menu = None);
+            // Focus may emit a view-only hint before the actual click. The
+            // pointer host consumes one intent, so keep the admitted action
+            // ahead of ephemeral chrome updates.
+            intents.retain(|intent| !matches!(intent, ChromeIntent::MenuChanged));
         }
         if had_menu && intents.is_empty() {
             self.dismiss_menu();
@@ -1767,7 +1786,7 @@ pub(crate) mod tests {
                 dom.outer_html(*node).starts_with("<button")
                     && dom
                         .outer_html(*node)
-                        .contains(&format!("aria-label=\"{name}\""))
+                        .contains(&if name.ends_with(':') {format!("aria-label=\"{name}")} else {format!("aria-label=\"{name}\"")})
             })
             .expect("named toolbar control");
         let (x, y, w, h) = crate::ui::subtree_node_rect(
@@ -1808,7 +1827,7 @@ pub(crate) mod tests {
         assert!(!app.shell_chrome_config().layout.activity_rail);
         assert_eq!(workspace_area(app.shell_chrome_config(), true, 1024, 600).x, 0.0);
         assert!(chrome.dom.borrow().all_with_class(chrome.dom.borrow().document(), "turnstone-activity-rail").is_empty());
-        let (_, y) = toolbar_point(&chrome, "Read", 1024, 600);
+        let (_, y) = toolbar_point(&chrome, "Down:", 1024, 600);
         assert!(y < workspace_area(app.shell_chrome_config(), true, 1024, 600).y);
         let (x,y) = toolbar_point(&chrome, "Panes", 1024, 600);
         chrome.click(0,x,y,1024,600);
@@ -1980,6 +1999,10 @@ pub(crate) mod tests {
         assert_eq!(chrome.runner.state().relationships_start,12);
         let row = chrome.runner.state().connections.last().unwrap().clone();
         let (x,y) = toolbar_point(&chrome,&format!("{} · {}: {}",row.relationship,row.address,row.title),1024,700);
+        assert_eq!(chrome.click(0,x,y,1024,700),vec![ChromeIntent::MenuChanged]);
+        assert_eq!(chrome.runner.state().relationship_preview,Some(row.target));
+        assert_eq!(app.graph_pane_focused_member(pane),Some(source),"peek leaves the source selected");
+        let (x,y)=toolbar_point(&chrome,"Read previewed document",1024,700);
         assert_eq!(chrome.click(0,x,y,1024,700),vec![ChromeIntent::NavigateRelationship(row.target)]);
         assert_eq!(row.target.member,*members.last().unwrap());
         assert_eq!(row.relationship,"Cites");
@@ -2430,7 +2453,7 @@ pub(crate) mod tests {
                         "Deny",
                     ]
                     .iter()
-                    .any(|name| html.contains(&format!("aria-label=\"{name}\"")))
+                    .any(|name| html.contains(&format!("aria-label=\"{name}")))
                 })
                 .map(|button| {
                     crate::ui::subtree_node_rect(&dom, root, button, &sheet, 1024, 600)
@@ -2441,6 +2464,7 @@ pub(crate) mod tests {
         rects
             .into_iter()
             .flat_map(|(x, y, w, h)| chrome.click(0, x + w / 2.0, y + h / 2.0, 1024, 600))
+
             .collect()
     }
 
@@ -2453,8 +2477,8 @@ pub(crate) mod tests {
         assert_eq!(
             browser_button_intents(&mut chrome),
             vec![
-                ChromeIntent::NavBack,
-                ChromeIntent::NavForward,
+                ChromeIntent::Scope(cambium::scope_navigation::ScopeCommand::Navigate(cambium::scope_navigation::ScopeDirection::Back)),
+                ChromeIntent::Scope(cambium::scope_navigation::ScopeCommand::Navigate(cambium::scope_navigation::ScopeDirection::Forward)),
                 ChromeIntent::Reload,
                 ChromeIntent::KeepNode(app.graph_runtimes.focused_member().expect("focused node")),
             ]
@@ -2478,8 +2502,8 @@ pub(crate) mod tests {
         assert_eq!(
             browser_button_intents(&mut chrome),
             vec![
-                ChromeIntent::NavBack,
-                ChromeIntent::NavForward,
+                ChromeIntent::Scope(cambium::scope_navigation::ScopeCommand::Navigate(cambium::scope_navigation::ScopeDirection::Back)),
+                ChromeIntent::Scope(cambium::scope_navigation::ScopeCommand::Navigate(cambium::scope_navigation::ScopeDirection::Forward)),
                 ChromeIntent::Stop,
                 ChromeIntent::KeepNode(app.graph_runtimes.focused_member().expect("focused node")),
             ]

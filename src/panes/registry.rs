@@ -249,7 +249,7 @@ macro_rules! pane {
 pub static BUILTIN_PANES: &[PaneDefinition] = &[
     pane!(
         kind::GRAPH,
-        "Orrery",
+        "Map",
         PaneSourceShape::fixed(&[FixedSourceKind::Forme]),
         PaneMultiplicity::Many,
         capabilities(false, true, GRAPH),
@@ -261,7 +261,7 @@ pub static BUILTIN_PANES: &[PaneDefinition] = &[
     ),
     pane!(
         kind::WORKBENCH,
-        "Workbench",
+        "Read",
         PaneSourceShape::fixed(&[FixedSourceKind::Forme]),
         PaneMultiplicity::Many,
         capabilities(false, true, GRAPH),
@@ -320,7 +320,7 @@ pub static BUILTIN_PANES: &[PaneDefinition] = &[
     ),
     pane!(
         kind::INSPECTOR,
-        "Inspector",
+        "Inspect",
         PaneSourceShape::contextual(&[FixedSourceKind::Member], MEMBER_CONTEXT),
         PaneMultiplicity::PerSpaceAndContext,
         capabilities(false, false, MEMBER),

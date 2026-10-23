@@ -914,12 +914,12 @@ pub(crate) const CHROME_SHEET: &str = "\
                       padding: 5px 8px; white-space: nowrap; } \
     .whereami { position: absolute; color: rgb(170, 178, 195); \
                 background-color: rgb(20, 25, 38); font-size: 12px; \
-                box-sizing: border-box; padding: 7px 12px; border-radius: 0; overflow: hidden; \
+                box-sizing: border-box; padding: 2px 12px; border-radius: 0; overflow: hidden; \
                 border: 0; white-space: nowrap; } \
     .browser-strip { position: absolute; display: flex; align-items: center; \
                       gap: 5px; box-sizing: border-box; color: rgb(216, 222, 234); \
                       background-color: rgb(20, 25, 38); border: 1px solid rgb(52, 62, 86); \
-                      border-radius: 0; padding: 5px 12px; overflow: hidden; } \
+                      border-radius: 0; padding: 3px 12px; overflow: visible; } \
     .browser-loading { border-bottom: 2px solid rgb(206, 84, 47); } \
     .browser-button, .browser-button-disabled { flex-shrink: 0; font-size: 12px; padding: 4px 8px; \
                       border-radius: 6px; white-space: nowrap; } \
@@ -1107,6 +1107,7 @@ pub(crate) fn chrome_sheet(appearance: &crate::shell_services::AppearanceConfig)
     );
     let controls = format!(
         ".turnstone-stone-hidden {{ display:none; }}
+        .browser-strip, .whereami {{ --shell-background:{shell_background}; --shell-foreground:{shell_foreground}; --shell-rule:{shell_rule}; }}
         .browser-strip {{ background-color:transparent; border:0; border-radius:0; gap:2px; padding:0; }}
         .shell-control, .browser-status {{ color:inherit; font-size:{:.2}px; }}
         .shell-control[aria-pressed=true] {{ background-color:{}; color:{}; }}
@@ -1124,6 +1125,7 @@ pub(crate) fn chrome_sheet(appearance: &crate::shell_services::AppearanceConfig)
         role_color(appearance,"surface-2",palette.field),role_color(appearance,"text-header",palette.text),
         role_color(appearance,"text-dim",palette.border),role_color(appearance,"bg",palette.surface),role_color(appearance,"text",palette.body_text),
         role_color(appearance,"surface",palette.raised),role_color(appearance,"text",palette.body_text),role_color(appearance,"text-dim",palette.border),22.0+6.0*zoom,38.0+6.0*zoom,
+        shell_background=role_color(appearance,"surface",palette.raised),shell_foreground=role_color(appearance,"text",palette.body_text),shell_rule=role_color(appearance,"border",palette.border),
     );
     cambium::stylesheet_at_display_scale(&themed_sheet(appearance, format!("{sheet}\n{}\n{controls}", cambium::SHELL_CSS)), appearance.display_scale)
 }
