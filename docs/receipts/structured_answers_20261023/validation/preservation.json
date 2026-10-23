@@ -1,0 +1,100 @@
+{
+  "/Users/markik/Code/worktrees/esp-cross-source-answers-20261022": {
+    "before": {
+      "head": "b9f050b2947822aa0e5908a9aaedfc47a4f23930",
+      "status": "",
+      "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "after_before_receipt_commit": {
+      "head": "aaae5d19365adcfa0b0292137eddd71edcb39337",
+      "status": "",
+      "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "primary_checkout": false,
+    "unchanged": null
+  },
+  "/Users/markik/Code/worktrees/knot-cross-source-answers-20261022": {
+    "before": {
+      "head": "23b8f55ea2dc7c3262baebb62b2db68a08837f1c",
+      "status": "",
+      "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "after_before_receipt_commit": {
+      "head": "a23664ae1915d0daf723aaa80618f2933102018d",
+      "status": "",
+      "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "primary_checkout": false,
+    "unchanged": null
+  },
+  "/Users/markik/Code/worktrees/mere-cross-source-answers-20261022": {
+    "before": {
+      "head": "5262ae5775344741a76545ba895a8dbf33256409",
+      "status": "",
+      "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "after_before_receipt_commit": {
+      "head": "7b01f4685a7b916d6be0d86bfa7d9ec5dd0797ee",
+      "status": "",
+      "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "primary_checkout": false,
+    "unchanged": null
+  },
+  "/Users/markik/Code/worktrees/turnstone-cross-source-answers-20261022": {
+    "before": {
+      "head": "40d7762c226aeb5d0a14dc20ad8ecd3f0b2bc884",
+      "status": "",
+      "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "after_before_receipt_commit": {
+      "head": "b9964c1a624be50fadd4278945bb10df033c4820",
+      "status": "?? docs/receipts/structured_answers_20261023/README.md\n?? docs/receipts/structured_answers_20261023/answer_contract.rs\n?? docs/receipts/structured_answers_20261023/case-freeze.json\n?? docs/receipts/structured_answers_20261023/cases.json\n?? docs/receipts/structured_answers_20261023/cold.scn\n?? docs/receipts/structured_answers_20261023/diagnostics/v3/binary-policy-controls.json\n?? docs/receipts/structured_answers_20261023/diagnostics/v3/conflict.json\n?? docs/receipts/structured_answers_20261023/diagnostics/v3/conflict.partial.json\n?? docs/receipts/structured_answers_20261023/diagnostics/v3/contract-input-review.json\n?? docs/receipts/structured_answers_20261023/diagnostics/v3/contract-verification.log\n?? docs/receipts/structured_answers_20261023/diagnostics/v3/cross.json\n?? docs/receipts/structured_answers_20261023/diagnostics/v3/cross.partial.json\n?? docs/receipts/structured_answers_20261023/diagnostics/v3/frozen/answer_contract.rs\n?? docs/receipts/structured_answers_20261023/diagnostics/v3/frozen/case-freeze.json\n?? docs/receipts/structured_answers_20261023/diagnostics/v3/frozen/cases.json\n?? docs/receipts/structured_answers_20261023/diagnostics/v3/frozen/measurement-contract.json\n?? docs/receipts/structured_answers_20261023/diagnostics/v3/frozen/optimized-runtime.toml\n?? docs/receipts/structured_answers_20261023/diagnostics/v3/frozen/run_probe.py\n?? docs/receipts/structured_answers_20261023/diagnostics/v3/frozen/verify_contract_inputs.py\n?? docs/receipts/structured_answers_20261023/diagnostics/v3/frozen/verify_native.py\n?? docs/receipts/structured_answers_20261023/diagnostics/v3/frozen/verify_probe.py\n?? docs/receipts/structured_answers_20261023/diagnostics/v3/frozen/verify_structured_output.py\n?? docs/receipts/structured_answers_20261023/diagnostics/v3/frozen/verify_wire_defaults.py\n?? docs/receipts/structured_answers_20261023/diagnostics/v3/gate.json\n?? docs/receipts/structured_answers_20261023/diagnostics/v3/inputs.json\n?? docs/receipts/structured_answers_20261023/diagnostics/v3/manifest-description-correction.json\n?? docs/receipts/structured_answers_20261023/diagnostics/v3/missing.json\n?? docs/receipts/structured_answers_20261023/diagnostics/v3/missing.partial.json\n?? docs/receipts/structured_answers_20261023/diagnostics/v3/process-exit.json\n?? docs/receipts/structured_answers_20261023/diagnostics/v3/process.json\n?? docs/receipts/structured_answers_20261023/diagnostics/v3/progress.jsonl\n?? docs/receipts/structured_answers_20261023/diagnostics/v3/reduced.json\n?? docs/receipts/structured_answers_20261023/diagnostics/v3/reduced.partial.json\n?? docs/receipts/structured_answers_20261023/diagnostics/v3/run.log\n?? docs/receipts/structured_answers_20261023/diagnostics/v3/structured-output-review.json\n?? docs/receipts/structured_answers_20261023/diagnostics/v3/structured-verification.log\n?? docs/receipts/structured_answers_20261023/diagnostics/v3/verification.log\n?? docs/receipts/structured_answers_20261023/diagnostics/v3/wire-default-review.json\n?? docs/receipts/structured_answers_20261023/diagnostics/v3/wire-default-verification.log\n?? docs/receipts/structured_answers_20261023/esp-tested.Cargo.lock\n?? docs/receipts/structured_answers_20261023/evidence-sha256.json\n?? docs/receipts/structured_answers_20261023/fixture_server.py\n?? docs/receipts/structured_answers_20261023/knot.mereclip\n?? docs/receipts/structured_answers_20261023/measurement-contract.json\n?? docs/receipts/structured_answers_20261023/native/not-run.json\n?? docs/receipts/structured_answers_20261023/optimized-runtime.toml\n?? docs/receipts/structured_answers_20261023/probe/conflict.json\n?? docs/receipts/structured_answers_20261023/probe/conflict.partial.json\n?? docs/receipts/structured_answers_20261023/probe/contract-input-review.json\n?? docs/receipts/structured_answers_20261023/probe/contract-verification.log\n?? docs/receipts/structured_answers_20261023/probe/cross.json\n?? docs/receipts/structured_answers_20261023/probe/cross.partial.json\n?? docs/receipts/structured_answers_20261023/probe/frozen/answer_contract.rs\n?? docs/receipts/structured_answers_20261023/probe/frozen/case-freeze.json\n?? docs/receipts/structured_answers_20261023/probe/frozen/cases.json\n?? docs/receipts/structured_answers_20261023/probe/frozen/measurement-contract.json\n?? docs/receipts/structured_answers_20261023/probe/frozen/optimized-runtime.toml\n?? docs/receipts/structured_answers_20261023/probe/frozen/run_probe.py\n?? docs/receipts/structured_answers_20261023/probe/frozen/verify_contract_inputs.py\n?? docs/receipts/structured_answers_20261023/probe/frozen/verify_native.py\n?? docs/receipts/structured_answers_20261023/probe/frozen/verify_probe.py\n?? docs/receipts/structured_answers_20261023/probe/frozen/verify_structured_output.py\n?? docs/receipts/structured_answers_20261023/probe/frozen/verify_wire_defaults.py\n?? docs/receipts/structured_answers_20261023/probe/gate.json\n?? docs/receipts/structured_answers_20261023/probe/inputs.json\n?? docs/receipts/structured_answers_20261023/probe/missing.json\n?? docs/receipts/structured_answers_20261023/probe/missing.partial.json\n?? docs/receipts/structured_answers_20261023/probe/process-exit.json\n?? docs/receipts/structured_answers_20261023/probe/process.json\n?? docs/receipts/structured_answers_20261023/probe/progress.jsonl\n?? docs/receipts/structured_answers_20261023/probe/reduced.json\n?? docs/receipts/structured_answers_20261023/probe/reduced.partial.json\n?? docs/receipts/structured_answers_20261023/probe/run.log\n?? docs/receipts/structured_answers_20261023/probe/structured-output-review.json\n?? docs/receipts/structured_answers_20261023/probe/structured-verification.log\n?? docs/receipts/structured_answers_20261023/probe/verification.log\n?? docs/receipts/structured_answers_20261023/probe/wire-default-review.json\n?? docs/receipts/structured_answers_20261023/probe/wire-default-verification.log\n?? docs/receipts/structured_answers_20261023/public-log-provenance.json\n?? docs/receipts/structured_answers_20261023/redshank.mereclip\n?? docs/receipts/structured_answers_20261023/result.json\n?? docs/receipts/structured_answers_20261023/run_macos_scenario.py\n?? docs/receipts/structured_answers_20261023/run_native.py\n?? docs/receipts/structured_answers_20261023/run_probe.py\n?? docs/receipts/structured_answers_20261023/semantic-review.json\n?? docs/receipts/structured_answers_20261023/supplier-pins.json\n?? docs/receipts/structured_answers_20261023/test_esp.py\n?? docs/receipts/structured_answers_20261023/validation/esp-verified-tests.log\n?? docs/receipts/structured_answers_20261023/validation/mere-canonical-tests.log\n?? docs/receipts/structured_answers_20261023/validation/mere-cross-source-answers-20261022-source-graph.json\n?? docs/receipts/structured_answers_20261023/validation/mere-v4-tests.log\n?? docs/receipts/structured_answers_20261023/validation/public-recheck.json\n?? docs/receipts/structured_answers_20261023/validation/resident-v4-build.log\n?? docs/receipts/structured_answers_20261023/validation/route-v4-tests.log\n?? docs/receipts/structured_answers_20261023/validation/turnstone-cross-source-answers-20261022-source-graph.json\n?? docs/receipts/structured_answers_20261023/validation/turnstone-v4-tests.log\n?? docs/receipts/structured_answers_20261023/verify_contract_inputs.py\n?? docs/receipts/structured_answers_20261023/verify_native.py\n?? docs/receipts/structured_answers_20261023/verify_native_defaults.py\n?? docs/receipts/structured_answers_20261023/verify_probe.py\n?? docs/receipts/structured_answers_20261023/verify_structured_output.py\n?? docs/receipts/structured_answers_20261023/verify_wire_defaults.py\n?? docs/receipts/structured_answers_20261023/warm.scn\n",
+      "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "primary_checkout": false,
+    "unchanged": null
+  },
+  "/Users/markik/Code/worktrees/eidetic-cross-source-answers-20261022": {
+    "before": {
+      "head": "44f0664748238d7a96603925a0268caf60e091aa",
+      "status": "",
+      "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "after_before_receipt_commit": {
+      "head": "44f0664748238d7a96603925a0268caf60e091aa",
+      "status": "",
+      "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "primary_checkout": false,
+    "unchanged": null
+  },
+  "/Users/markik/Code/repos/mere": {
+    "before": {
+      "head": "d918f670c8328ac6544242b0b753992b5124df09",
+      "status": "",
+      "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "after_before_receipt_commit": {
+      "head": "d918f670c8328ac6544242b0b753992b5124df09",
+      "status": "",
+      "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "primary_checkout": true,
+    "unchanged": true
+  },
+  "/Users/markik/Code/repos/turnstone": {
+    "before": {
+      "head": "e5f2e97964a9d353def509e9197ab7c9dbf29014",
+      "status": "",
+      "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "after_before_receipt_commit": {
+      "head": "e5f2e97964a9d353def509e9197ab7c9dbf29014",
+      "status": "",
+      "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "primary_checkout": true,
+    "unchanged": true
+  }
+}

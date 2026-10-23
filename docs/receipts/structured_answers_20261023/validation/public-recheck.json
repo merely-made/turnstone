@@ -1,0 +1,38 @@
+{
+  "result": "pass",
+  "checks": [
+    {
+      "script": "verify_probe.py",
+      "exit_code": 1,
+      "expected": 1
+    },
+    {
+      "script": "verify_wire_defaults.py",
+      "exit_code": 1,
+      "expected": 1
+    },
+    {
+      "script": "verify_contract_inputs.py",
+      "exit_code": 0,
+      "expected": 0
+    },
+    {
+      "script": "verify_structured_output.py",
+      "exit_code": 0,
+      "expected": 0
+    }
+  ],
+  "raw_run_sha256_before": {
+    "reduced.json": "36ee3c5b7d0a14d5b0367e3c9fe6489ba88997835b1e71aa7dee3ad04de79d37",
+    "missing.json": "bf708658969731e2900318ef357360bb79212f15d208b5efb64a92d10c8115d0",
+    "conflict.json": "fa831d3573d10a797f02278e67a3e116d0a79abcaea5da0f05f7d3f36800a133",
+    "cross.json": "9ae906877ab6e3ce8ac4ecfdae59223bdfc3bc903f41c3e4b80aade198722366"
+  },
+  "raw_run_sha256_after": {
+    "reduced.json": "36ee3c5b7d0a14d5b0367e3c9fe6489ba88997835b1e71aa7dee3ad04de79d37",
+    "missing.json": "bf708658969731e2900318ef357360bb79212f15d208b5efb64a92d10c8115d0",
+    "conflict.json": "fa831d3573d10a797f02278e67a3e116d0a79abcaea5da0f05f7d3f36800a133",
+    "cross.json": "9ae906877ab6e3ce8ac4ecfdae59223bdfc3bc903f41c3e4b80aade198722366"
+  },
+  "raw_files_unchanged": true
+}

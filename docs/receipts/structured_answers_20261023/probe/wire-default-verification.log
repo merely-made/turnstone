@@ -1,0 +1,61 @@
+{
+  "result": "gate_not_passed",
+  "cases": {
+    "cross": {
+      "result": "fail",
+      "error": "AssertionError()"
+    },
+    "missing": {
+      "result": "pass",
+      "protocol_defaults_applied": [
+        "recall.citations=[]"
+      ],
+      "claims": 1,
+      "status": [
+        "insufficient"
+      ],
+      "checked_quotes": 0,
+      "sources": [],
+      "semantic_review": "unreviewed",
+      "raw_output": "blake3:b3f6138ed83d3b524f14d9063b1cbafc9d48001ca25a5db613025c9e82f49d12"
+    },
+    "conflict": {
+      "result": "pass",
+      "protocol_defaults_applied": [],
+      "claims": 1,
+      "status": [
+        "conflicting"
+      ],
+      "checked_quotes": 2,
+      "sources": [
+        "capture",
+        "control"
+      ],
+      "semantic_review": "unreviewed",
+      "raw_output": "blake3:3fc392f9e7b2f59bb2a0094b13dfe2f3f8d116b381b660cab4c217ab1add8432"
+    },
+    "reduced": {
+      "result": "pass",
+      "protocol_defaults_applied": [
+        "recall.citations=[]"
+      ],
+      "claims": 1,
+      "status": [
+        "insufficient"
+      ],
+      "checked_quotes": 0,
+      "sources": [],
+      "semantic_review": "unreviewed",
+      "raw_output": "blake3:ec6da0ee457f72717c4f983f18d137b1b4966e81359666eb8dfc1d3599195abb"
+    }
+  },
+  "negative_controls": {
+    "missing_nonempty_citation": "rejected",
+    "missing_null_citations": "rejected",
+    "reduced_nonempty_citation": "rejected",
+    "reduced_null_citations": "rejected"
+  },
+  "unchanged_checker_sha256": "f3a0e939cef9ac3bf85f80cb9d1e984ee40d94a0757cf6d4c6c6d55e23b88594",
+  "cases_sha256": "b91de4627aee873389066f4a8ed814fe4faff85cf1c8a3ae1d8e74f988d27ea2",
+  "boundary": "Same frozen rubric; decode omitted citations as [] per RecallEvidence serde(default,skip_serializing_if=Vec::is_empty). Raw files, model output and support remain unchanged. Any incomplete case still blocks headed checks."
+}

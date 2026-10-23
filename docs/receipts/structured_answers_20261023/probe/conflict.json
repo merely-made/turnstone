@@ -1,0 +1,183 @@
+{
+  "run": "conflict",
+  "question": "What is the Juniper archive recovery phrase? Report disagreement if the retained sources give different phrases.",
+  "state": "finished",
+  "text": "{\"claims\":[{\"status\":\"conflicting\",\"text\":\"Sources disagree: The Juniper archive recovery phrase is either violet lantern or amber harbor.\",\"evidence\":[{\"handle\":1,\"quote\":\"The Juniper archive's recovery phrase is violet lantern.\"},{\"handle\":2,\"quote\":\"The Juniper archive's recovery phrase is amber harbor.\"}]}]}",
+  "error": null,
+  "session": {
+    "session_id": "blake3:0960d64d68cf80b35a5781e3daeddfcf453f30579861e02af8d93a535db58d3d",
+    "prompt_template_hash": "blake3:9c222535ed31aadd676fc2f1beb16d0dd0402c76a9ee1398bc0c200c825103da"
+  },
+  "tokens": 68,
+  "continuations": [
+    {
+      "device": "device:c616018470a6a2d6e9b936a21c6ace02",
+      "at_token": 0,
+      "reason": "ask",
+      "first_differing_token": null,
+      "compared_token_ids_hash": null
+    }
+  ],
+  "recall": {
+    "answer_format": "claim_support_v1",
+    "answer_contract": {
+      "method": "distillery.requested-facts/v4",
+      "question": "blake3:1e79a88e5e9410ed82671698f2e4aa3c73f5a762e1774bff95808297e75f6fc6",
+      "prompt": "blake3:40636e5715a97a80798f63489013b30ad187f593c38b473c0b9c71cf070390a4",
+      "context": "blake3:bcba4148f9b134917791a74dc4832d33ce74d70efb28757e7f9fdda91137cae5",
+      "max_claims": 8,
+      "output_grammar": "blake3:3d08a3cbbbd21131e526a78cc921a546c5afcd50b5576d687263c35113b632c1"
+    },
+    "support": {
+      "method": "eidetic.claim-support/v1",
+      "raw_output": "blake3:3fc392f9e7b2f59bb2a0094b13dfe2f3f8d116b381b660cab4c217ab1add8432",
+      "semantic_review": "unreviewed",
+      "claims": [
+        {
+          "status": "conflicting",
+          "text": "Sources disagree: The Juniper archive recovery phrase is either violet lantern or amber harbor.",
+          "evidence": [
+            {
+              "handle": 1,
+              "quote": "The Juniper archive's recovery phrase is violet lantern.",
+              "passage": "blake3:7f7fd88311cca2599edf78ec82187c001c59c89640919c3739ba76b295488782",
+              "selector": {
+                "start": 0,
+                "end": 56
+              },
+              "error": null
+            },
+            {
+              "handle": 2,
+              "quote": "The Juniper archive's recovery phrase is amber harbor.",
+              "passage": "blake3:97b551729da99c75e1bd51cb544e6fecf71e9785e62cf119af0a5c3550eb90c9",
+              "selector": {
+                "start": 0,
+                "end": 54
+              },
+              "error": null
+            }
+          ],
+          "issues": []
+        }
+      ],
+      "error": null
+    },
+    "scope": [
+      {
+        "kind": "page_text",
+        "source": "https://probe.test/capture"
+      },
+      {
+        "kind": "page_text",
+        "source": "https://probe.test/control"
+      },
+      {
+        "kind": "page_text",
+        "source": "https://probe.test/knot"
+      },
+      {
+        "kind": "page_text",
+        "source": "https://probe.test/note"
+      }
+    ],
+    "config": {
+      "chunk_chars": 512,
+      "max_passages": 4,
+      "min_quote_chars": 32,
+      "max_context_chars": 12000,
+      "max_corpus_chars": 1000000
+    },
+    "passages": [
+      {
+        "handle": 1,
+        "passage": {
+          "source": {
+            "kind": "page_text",
+            "source": "https://probe.test/capture"
+          },
+          "version": "blake3:7d51f2ed929706e8a8d24f17da016384ac94f3ab88c95054fb8658e6a1fa5399",
+          "text_hash": "blake3:7d51f2ed929706e8a8d24f17da016384ac94f3ab88c95054fb8658e6a1fa5399",
+          "selector": {
+            "start": 0,
+            "end": 56
+          },
+          "chunker": "mere.unicode-chunks/v1/512",
+          "text": "The Juniper archive's recovery phrase is violet lantern."
+        }
+      },
+      {
+        "handle": 2,
+        "passage": {
+          "source": {
+            "kind": "page_text",
+            "source": "https://probe.test/control"
+          },
+          "version": "blake3:7d8cba73561ab3cba03b463cdf751abd8a7a27baf15167f578fa966a2e63ad1f",
+          "text_hash": "blake3:7d8cba73561ab3cba03b463cdf751abd8a7a27baf15167f578fa966a2e63ad1f",
+          "selector": {
+            "start": 0,
+            "end": 54
+          },
+          "chunker": "mere.unicode-chunks/v1/512",
+          "text": "The Juniper archive's recovery phrase is amber harbor."
+        }
+      },
+      {
+        "handle": 3,
+        "passage": {
+          "source": {
+            "kind": "page_text",
+            "source": "https://probe.test/knot"
+          },
+          "version": "blake3:110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+          "text_hash": "blake3:110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+          "selector": {
+            "start": 0,
+            "end": 46
+          },
+          "chunker": "mere.unicode-chunks/v1/512",
+          "text": "The Pelican observatory's access word is café."
+        }
+      },
+      {
+        "handle": 4,
+        "passage": {
+          "source": {
+            "kind": "page_text",
+            "source": "https://probe.test/note"
+          },
+          "version": "blake3:34a68a8f92ee65534850537f585c9daef4de2101765295a242ec022af7acfb96",
+          "text_hash": "blake3:34a68a8f92ee65534850537f585c9daef4de2101765295a242ec022af7acfb96",
+          "selector": {
+            "start": 0,
+            "end": 70
+          },
+          "chunker": "mere.unicode-chunks/v1/512",
+          "text": "Saved from the embedded listener: café → harbor.\nKeep this timed note."
+        }
+      }
+    ],
+    "stale": [],
+    "citations": [
+      {
+        "handle": 1,
+        "passage": "blake3:7f7fd88311cca2599edf78ec82187c001c59c89640919c3739ba76b295488782",
+        "basis": "claim_quotation",
+        "answer_selector": {
+          "start": 172,
+          "end": 230
+        }
+      },
+      {
+        "handle": 2,
+        "passage": "blake3:97b551729da99c75e1bd51cb544e6fecf71e9785e62cf119af0a5c3550eb90c9",
+        "basis": "claim_quotation",
+        "answer_selector": {
+          "start": 252,
+          "end": 308
+        }
+      }
+    ]
+  }
+}

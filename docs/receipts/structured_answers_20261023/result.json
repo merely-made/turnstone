@@ -1,0 +1,71 @@
+{
+  "result": "gate_not_passed",
+  "policy": "distillery.requested-facts/v4",
+  "all_cases_finished": true,
+  "elapsed_seconds": 356.1517614268232,
+  "model_session_mismatch": false,
+  "structured_output": "4/4 pass",
+  "exact_input_binding": "4/4 pass",
+  "semantic_cases": {
+    "cross": {
+      "state": "finished",
+      "tokens": 42,
+      "semantic_result": "fail",
+      "statuses": [
+        "supported"
+      ],
+      "checked_quotes": 1,
+      "raw_output": "blake3:02e9cfa015243f6321ffe0afe4048cc8bfe69fd5444833f8a53329bb78982629",
+      "raw_text": "{\"claims\":[{\"status\":\"supported\",\"text\":\"The Juniper archive recovery phrase is violet lantern.\",\"evidence\":[{\"handle\":2,\"quote\":\"The Juniper archive's recovery phrase is violet lantern.\"}]}]}",
+      "support_error": null
+    },
+    "missing": {
+      "state": "finished",
+      "tokens": 31,
+      "semantic_result": "pass",
+      "statuses": [
+        "insufficient"
+      ],
+      "checked_quotes": 0,
+      "raw_output": "blake3:b3f6138ed83d3b524f14d9063b1cbafc9d48001ca25a5db613025c9e82f49d12",
+      "raw_text": "{\"claims\":[{\"status\":\"insufficient\",\"text\":\"The supplied evidence does not contain information about the Juniper archive's annual budget.\",\"evidence\":[]}]}",
+      "support_error": null
+    },
+    "conflict": {
+      "state": "finished",
+      "tokens": 68,
+      "semantic_result": "pass",
+      "statuses": [
+        "conflicting"
+      ],
+      "checked_quotes": 2,
+      "raw_output": "blake3:3fc392f9e7b2f59bb2a0094b13dfe2f3f8d116b381b660cab4c217ab1add8432",
+      "raw_text": "{\"claims\":[{\"status\":\"conflicting\",\"text\":\"Sources disagree: The Juniper archive recovery phrase is either violet lantern or amber harbor.\",\"evidence\":[{\"handle\":1,\"quote\":\"The Juniper archive's recovery phrase is violet lantern.\"},{\"handle\":2,\"quote\":\"The Juniper archive's recovery phrase is amber harbor.\"}]}]}",
+      "support_error": null
+    },
+    "reduced": {
+      "state": "finished",
+      "tokens": 28,
+      "semantic_result": "pass",
+      "statuses": [
+        "insufficient"
+      ],
+      "checked_quotes": 0,
+      "raw_output": "blake3:ec6da0ee457f72717c4f983f18d137b1b4966e81359666eb8dfc1d3599195abb",
+      "raw_text": "{\"claims\":[{\"status\":\"insufficient\",\"text\":\"The supplied evidence does not contain information about the saved listener reminder.\",\"evidence\":[]}]}",
+      "support_error": null
+    }
+  },
+  "semantic_passes": 3,
+  "software_checks": {
+    "esp_inference": 103,
+    "esp_prompt_template": 6,
+    "distillery_inference": 41,
+    "djinn_inference": 8,
+    "resident_route": 4,
+    "turnstone_inference": 9
+  },
+  "headed_answer": "not_run_gate_not_passed",
+  "cold_reopen": "not_run_gate_not_passed",
+  "boundary": "Whole raw JSON validity and checked quotation identity are distinct from correctness and completeness. Typed semantic_review remains unreviewed."
+}

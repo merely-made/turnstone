@@ -1,0 +1,22 @@
+{
+  "review": "assistant review against the unchanged synthetic frozen rubric; typed semantic_review remains unreviewed",
+  "cases": {
+    "cross": {
+      "result": "fail",
+      "reason": "Three supplied sources and three requested facts, but only the Juniper recovery phrase claim returned. Pelican access word and saved listener reminder omitted.",
+      "input_binding": "All three passages were supplied; this is completion failure."
+    },
+    "missing": {
+      "result": "pass",
+      "reason": "No budget in supplied sources; one insufficient claim, no invented dollar value and no evidence."
+    },
+    "conflict": {
+      "result": "pass",
+      "reason": "One conflicting claim describes violet lantern versus amber harbor, with exact quotations from capture/control; no winner."
+    },
+    "reduced": {
+      "result": "pass",
+      "reason": "Listener note excluded; one insufficient claim with no evidence/citations and no inferred café/harbor reminder from unrelated access data."
+    }
+  }
+}
