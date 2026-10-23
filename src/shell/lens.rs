@@ -368,6 +368,19 @@ impl Shell {
                 // the primary would frame, at this cell's size (already pumped
                 // above).
                 crate::surface::SurfaceKind::Content(node) => {
+                    if self.content_sessions.appearance(node, surface.id).is_some_and(|content| content.cue_surface().is_some()) {
+                        match self.cue_content_layer(surface, scale) {
+                            Ok((layer, pending)) => {
+                                if let Some(layer) = layer { scenes.push(PlannedLayer::Imported(layer)); }
+                                animating |= pending;
+                            },
+                            Err(error) => {
+                                tracing::error!(%node, %error, "shared content presentation refused");
+                                self.main_receipt.errors.push(format!("shared content {node}: {error}"));
+                            },
+                        }
+                        continue;
+                    }
                     match super::render::lens_content_frame(
                         &mut self.content_sessions.pool,
                         &surface.id,

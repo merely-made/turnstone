@@ -217,3 +217,123 @@ fn unchanged_feed_repairs_missing_binding_as_a_new_read_view() {
         Control::Unread
     ));
 }
+
+fn browser_history_fixture() -> (App, Uuid) {
+    let mut app = App::test_stub();
+    app.update(Action::OpenAddress("https://fixture.test/a".into()));
+    let node = app.graph_runtimes.focused_member().unwrap();
+    app.content.note_live(
+        node,
+        Some(crate::content::ContentFacts {
+            engine: inker::routing::ENGINE_GRAFT_SERVO.into(),
+            lane: crate::content::ContentLane::Surface,
+            structure: None,
+            lineage: None,
+            capabilities: Default::default(),
+        }),
+    );
+    app.update(Action::ContentNavigationCommitted {
+        member: node,
+        url: "https://fixture.test/b".into(),
+    });
+    (app, node)
+}
+#[test]
+fn browser_traversal_commits_move_the_existing_cursor_and_preserve_forward() {
+    let (mut app, node) = browser_history_fixture();
+    let effects = app.update(Action::NavBack);
+    assert!(effects.contains(&Effect::ControlContent {
+        node,
+        control: crate::action::ContentControl::Back
+    }));
+    assert!(!app.member_can_back(node));
+    assert!(app.content.surface_traversal_pending(node));
+    // Existing callbacks may repeat the old address before native dispatch.
+    app.update(Action::ContentNavigationCommitted {
+        member: node,
+        url: "https://fixture.test/b".into(),
+    });
+    assert!(app.content.surface_traversal_pending(node));
+    app.update(Action::ContentNavigationCommitted {
+        member: node,
+        url: "https://fixture.test/a".into(),
+    });
+    assert!(!app.content.surface_traversal_pending(node));
+    assert!(app.member_can_forward(node));
+    let effects = app.update(Action::NavForward);
+    assert!(effects.contains(&Effect::ControlContent {
+        node,
+        control: crate::action::ContentControl::Forward
+    }));
+    app.update(Action::ContentNavigationCommitted {
+        member: node,
+        url: "https://fixture.test/b".into(),
+    });
+    let (key, _) = app.graph_runtimes.graph().get_node_by_id(node).unwrap();
+    let history = app.graph_runtimes.graph().node_history_projection(key);
+    assert_eq!(
+        history.entries,
+        vec!["https://fixture.test/a", "https://fixture.test/b"]
+    );
+    assert_eq!(history.current_index, 1);
+    assert!(app.member_can_back(node));
+}
+#[test]
+fn a_link_to_an_old_url_is_a_new_visit_without_a_traversal_intent() {
+    let (mut app, node) = browser_history_fixture();
+    app.update(Action::ContentNavigationCommitted {
+        member: node,
+        url: "https://fixture.test/a".into(),
+    });
+    let (key, _) = app.graph_runtimes.graph().get_node_by_id(node).unwrap();
+    assert_eq!(
+        app.graph_runtimes
+            .graph()
+            .node_history_projection(key)
+            .entries,
+        vec![
+            "https://fixture.test/a",
+            "https://fixture.test/b",
+            "https://fixture.test/a"
+        ]
+    );
+}
+#[test]
+fn traversal_refusal_is_correlated_and_never_moves_the_graph_cursor() {
+    use inker::webcue::{RequestId, RequestKey, Scope};
+    let (mut app, node) = browser_history_fixture();
+    app.update(Action::NavBack);
+    let request = RequestKey {
+        scope: Scope {
+            owner: 7,
+            generation: 2,
+        },
+        id: RequestId(1),
+    };
+    app.content.bind_surface_traversal_request(node, request);
+    let stale = RequestKey {
+        scope: Scope {
+            owner: 7,
+            generation: 1,
+        },
+        ..request
+    };
+    assert!(!app.content.refuse_surface_traversal_request(node, stale));
+    assert!(app.content.surface_traversal_pending(node));
+    assert!(app.content.refuse_surface_traversal_request(node, request));
+    assert!(!app.content.surface_traversal_pending(node));
+    assert!(app.member_can_back(node));
+    assert!(!app.member_can_forward(node));
+    assert_eq!(
+        app.graph_runtimes
+            .graph()
+            .get_node_by_id(node)
+            .unwrap()
+            .1
+            .url(),
+        "https://fixture.test/b"
+    );
+    app.update(Action::NavBack);
+    app.content.note_closed(node);
+    assert!(!app.content.surface_traversal_pending(node));
+}

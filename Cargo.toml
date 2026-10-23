@@ -310,7 +310,7 @@ redshank-playback = { git = "https://github.com/merely-made/woodshed.git", branc
 redshank-storage = { git = "https://github.com/merely-made/woodshed.git", branch = "main" }
 
 # Shared browser controls and both presentation directions use the published core.
-wgpu-cue = { version = "=0.1.1", optional = true }
+wgpu-cue = { version = "=0.1.1" }
 
 # The offscreen Servo host is reusable on macOS, Linux and Windows.
 graft-engine = { git = "https://github.com/merely-made/mere.git", branch = "main", optional = true }
@@ -349,7 +349,7 @@ weld = ["dep:weld-engine", "dep:welding", "dep:grafting", "dep:windows"]
 scry = ["dep:scrying-engine", "dep:windows", "dep:webview2-com"]
 # Upstream Servo views share one named process profile and import through Graft
 # on the existing host device. The shared receiving host also runs on Metal.
-servo = ["dep:wgpu-cue", "dep:graft-engine", "dep:servo", "dep:servo-wgpu-interop-adapter", "dep:grafting", "dep:windows", "dep:rustls", "accesskit/serde"]
+servo = [ "dep:graft-engine", "dep:servo", "dep:servo-wgpu-interop-adapter", "dep:grafting", "dep:windows", "dep:rustls", "accesskit/serde"]
 
 [target.'cfg(windows)'.dependencies]
 # ANGLE EGL DLL selection is Windows-only; macOS uses Surfman CGL.

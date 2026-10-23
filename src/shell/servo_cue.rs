@@ -139,7 +139,7 @@ impl NativeImporter for ServoCueImporter {
 
 /// Preserve the concrete producer's import custody; never reinterpret a raw
 /// borrowed descriptor as a transferred native allocation.
-fn frame_reader(device: wgpu::Device, queue: wgpu::Queue) -> FrameReader {
+pub(crate) fn frame_reader(device: wgpu::Device, queue: wgpu::Queue) -> FrameReader {
     Box::new(move |producer, mut stamp| {
         let Some(frame) = producer.acquire_frame().map_err(backend)? else {
             return Ok(None);
@@ -221,7 +221,7 @@ fn frame_reader(device: wgpu::Device, queue: wgpu::Queue) -> FrameReader {
 
 /// Effective shared operations of this installed adapter, including exact
 /// refusals that the older navigation vocabulary groups together.
-fn capabilities() -> Result<CapabilityReport> {
+pub(crate) fn capabilities() -> Result<CapabilityReport> {
     CapabilityReport::new(
         BackendIdentity { engine: "graft.servo".into(), version: Some("Servo 0.7.0 / aac43a3f".into()), platform: "macos".into(), build_features: vec!["wgpu-30".into(), "metal".into(), "pre-present-graft".into()] },
         PresentationMode::NativeFrame, Evidence::Constructed, SemanticProtocol::Unavailable,

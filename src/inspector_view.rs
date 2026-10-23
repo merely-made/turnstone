@@ -298,41 +298,54 @@ fn content_rows(app: &App, node: Option<uuid::Uuid>) -> Vec<(String, String)> {
             None => "none".to_string(),
         },
     ));
+    let shared = node.and_then(|n| app.content.cue_report(n)).is_some();
+    if shared {
+        rows.extend(
+            crate::inspector_controls::capabilities(app, node)
+                .into_iter()
+                .filter_map(|row| {
+                    row.split_once(": ")
+                        .map(|(key, value)| (key.to_owned(), value.to_owned()))
+                }),
+        );
+    }
     let Some(facts) = node.and_then(|n| app.content.facts(n)) else {
         return rows;
     };
-    rows.push(("Engine".to_string(), facts.engine.clone()));
-    rows.extend([
-        (
-            "Find in page".to_string(),
-            facts.capabilities.find_in_page.describe(),
-        ),
-        (
-            "Page zoom".to_string(),
-            facts.capabilities.page_zoom.describe(),
-        ),
-        // The REQUESTED scale, which is what the sidecar holds. A retained
-        // session answers with the level it actually settled on, and that
-        // rides beside the request; a hosted surface has no read-back, so the
-        // row stays request-only rather than echoing the ask as the applied.
-        (
-            "Requested page zoom".to_string(),
-            crate::app::page_zoom_display(
-                node.and_then(|n| app.browser.get(n))
-                    .and_then(|state| state.page_scale),
-                node.and_then(|n| app.content.page_zoom(n))
-                    .map(|zoom| zoom.applied),
+    if !shared {
+        rows.push(("Engine".to_string(), facts.engine.clone()));
+        rows.extend([
+            (
+                "Find in page".to_string(),
+                facts.capabilities.find_in_page.describe(),
             ),
-        ),
-        (
-            "Page capture".to_string(),
-            facts.capabilities.page_capture.describe(),
-        ),
-        (
-            "Navigation controls".to_string(),
-            facts.capabilities.navigation.describe(),
-        ),
-    ]);
+            (
+                "Page zoom".to_string(),
+                facts.capabilities.page_zoom.describe(),
+            ),
+            // The REQUESTED scale, which is what the sidecar holds. A retained
+            // session answers with the level it actually settled on, and that
+            // rides beside the request; a hosted surface has no read-back, so the
+            // row stays request-only rather than echoing the ask as the applied.
+            (
+                "Requested page zoom".to_string(),
+                crate::app::page_zoom_display(
+                    node.and_then(|n| app.browser.get(n))
+                        .and_then(|state| state.page_scale),
+                    node.and_then(|n| app.content.page_zoom(n))
+                        .map(|zoom| zoom.applied),
+                ),
+            ),
+            (
+                "Page capture".to_string(),
+                facts.capabilities.page_capture.describe(),
+            ),
+            (
+                "Navigation controls".to_string(),
+                facts.capabilities.navigation.describe(),
+            ),
+        ]);
+    }
     if let Some(lineage) = &facts.lineage {
         rows.push((
             "Extraction lineage".to_string(),
@@ -360,7 +373,7 @@ fn content_rows(app: &App, node: Option<uuid::Uuid>) -> Vec<(String, String)> {
                 format!("headings={} outline={}", s.headings, s.outline.len()),
             ));
             rows.push(("Outgoing links".to_string(), s.links.to_string()));
-        },
+        }
         // The lane has no structural read: said, not synthesized.
         None => rows.push((
             "Structural read".to_string(),

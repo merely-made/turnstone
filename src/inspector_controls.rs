@@ -89,6 +89,28 @@ pub fn capabilities(app: &App, member: Option<uuid::Uuid>) -> Vec<String> {
             .and_then(|member| app.content.page_zoom(member))
             .map(|zoom| zoom.applied),
     );
+    if let Some(report) = member.and_then(|member| app.content.cue_report(member)) {
+        use inker::webcue::Support;
+        let mut rows = vec![
+            format!("Engine: {}", report.identity.engine),
+            format!("Platform: {}", report.identity.platform),
+            format!("Presentation: {:?}", report.presentation),
+            format!("Evidence: {:?}", report.evidence),
+            format!("Semantics: {:?}", report.semantics),
+            format!("Requested page zoom: {requested_zoom}"),
+        ];
+        rows.extend(report.features().map(|(feature, support)| {
+            format!(
+                "{feature:?}: {}",
+                match support {
+                    Support::Supported => "supported".to_owned(),
+                    Support::Partial(detail) => format!("partial: {detail}"),
+                    Support::Unsupported(reason) => format!("unavailable: {reason}"),
+                }
+            )
+        }));
+        return rows;
+    }
     let capabilities = member
         .and_then(|member| app.content.facts(member))
         .map(|facts| {

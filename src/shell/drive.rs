@@ -771,6 +771,7 @@ impl taproot::Automatable for Shell {
                 "host-surface-producers",
                 self.content_sessions.surface_count().to_string(),
             )
+            .with_field("host-cue-frames", self.cue_frames.ready_count().to_string())
             .with_field("node-count", snap.node_count.to_string())
             .with_field("network-offline", self.network_offline.to_string())
             .with_field("peer-services", (usize::from(self.publish_service.is_some()) + usize::from(self.shared_knot_service.is_some())).to_string())
@@ -902,7 +903,7 @@ impl taproot::Automatable for Shell {
                 )
                 .with_field("host-scry-imported-pages", ready.to_string());
         }
-        #[cfg(all(feature = "servo", windows))]
+        #[cfg(all(feature = "servo", any(windows, target_os = "macos")))]
         {
             out = out
                 .with_field("host-servo-views", super::servo::active_views().to_string())
@@ -1650,6 +1651,8 @@ impl Shell {
             },
             Step::RecordIdle(name) => {
                 let public_fixture = public_fixture_a11y_receipt()?;
+                std::fs::write(self.shared_out_dir.join(format!("{name}.cue-frames.json")),
+                    serde_json::to_vec_pretty(&self.cue_frames.diagnostic()).map_err(|e|e.to_string())?).map_err(|e|e.to_string())?;
                 let diagnosis = self.idle_diagnosis();
                 let path = self.shared_out_dir.join(format!("{name}.txt"));
                 std::fs::write(&path, format!("RESULT ok\n{}\n", diagnosis.describe())).map_err(
@@ -1665,7 +1668,7 @@ impl Shell {
                     .shared_out_dir
                     .join(format!("{name}.foreign-a11y.json"));
                 let mut diagnostic = self.surface_a11y.publication_diagnostic(public_fixture);
-                #[cfg(all(feature = "servo", windows))]
+                #[cfg(all(feature = "servo", any(windows, target_os = "macos")))]
                 if let Some(factory) = &self.servo_factory {
                     diagnostic["servo_focus_policy"] =
                         serde_json::json!(factory.a11y_focus_policy());
