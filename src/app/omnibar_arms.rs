@@ -62,7 +62,7 @@ impl App {
         let row_limit = crate::ui::visible_row_limit(
             chrome.omnibar.row_limit,
             &chrome.omnibar.placement,
-            self.viewport.1,
+            self.viewport.1 / chrome.layout_scale(0),
             chrome.appearance.ui_zoom,
         );
         if matches!(self.omnibar.mode, OmnibarMode::SavedSources) {
@@ -138,7 +138,7 @@ impl App {
         let fitted_limit = crate::ui::visible_row_limit_with_extra_height(
             chrome.omnibar.row_limit,
             &chrome.omnibar.placement,
-            self.viewport.1,
+            self.viewport.1 / chrome.layout_scale(0),
             chrome.appearance.ui_zoom,
             review_extra,
         );

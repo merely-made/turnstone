@@ -813,7 +813,7 @@ mod bridge_integrity {
         let mut surface = crate::swatch_pane::SwatchPane::new(crate::swatch_pane::GLOSS_MINIMAP);
         surface.set_sections(vec![crate::sections::DIAGNOSTICS_SECTION]);
         surface.sync(&app, 480.0, 400.0);
-        surface.scene(480, 400);
+        surface.scene(480, 400, 1.0);
         let contribution = surface
             .diagnostic_tree(pane, crate::surface::Rect::new(100.0, 40.0, 480.0, 400.0))
             .unwrap();
@@ -846,7 +846,7 @@ mod bridge_integrity {
         );
         surface.set_sections(Vec::new());
         surface.sync(&app, 480.0, 400.0);
-        surface.scene(480, 400);
+        surface.scene(480, 400, 1.0);
         assert!(
             surface
                 .diagnostic_tree(pane, crate::surface::Rect::new(100.0, 40.0, 480.0, 400.0))

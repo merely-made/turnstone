@@ -185,7 +185,7 @@ pub fn place_workbench_at(
 /// One geometry path for painted controls, document holes and input planning.
 pub(crate) fn place_reading_workbench(app: &crate::app::App, pane: crate::panes::PaneId, geom: Option<&TreeGeometry>, area: Rect) -> WorkbenchTiling {
     let mut tiling = place_workbench_at(geom, area, app.shell_chrome_config().layout.document_tabs);
-    let scale = app.shell_chrome_config().pane_scale(app, pane);
+    let scale = app.pane_layout_scale(pane);
     for cell in &mut tiling.cells {
         cell.chrome_scale = scale;
         let open = cell.active_member().is_some_and(|member| app.reading.find.get(&crate::reading_view::ReadTarget { pane, member }).is_some_and(|ui|ui.open));

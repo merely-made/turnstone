@@ -73,10 +73,15 @@ pub(super) fn frame_body_geometry(
     }
     let layout = app.space(space)?;
     let mut frame = crate::outer_frame::OuterFrame::default();
-    frame.set_main_view_switch(space==SpaceRef::Primary);
+    let slot = match space {
+        SpaceRef::Primary => 0,
+        SpaceRef::Lens(ordinal) => ordinal + 1,
+    };
+    frame.set_main_view_switch(space == SpaceRef::Primary);
+    frame.set_layout_scale(app.shell_chrome_config().layout_scale(slot));
     frame.set_workspace_area(crate::chrome_view::workspace_area_for_window(
         app.shell_chrome_config(),
-        match space { SpaceRef::Primary => 0, SpaceRef::Lens(ordinal) => ordinal + 1 },
+        slot,
         size.0,
         size.1,
     ));
@@ -90,7 +95,7 @@ pub(super) fn frame_body_geometry(
                 None
             },
             size,
-            &app.shell_chrome_config().appearance_for_window(match space { SpaceRef::Primary => 0, SpaceRef::Lens(i) => i+1 }),
+            &app.shell_chrome_config().appearance,
             app.session_id.as_uuid().as_u128(),
         )
         .unwrap_or_default();
@@ -165,7 +170,7 @@ mod tests {
         let pane = PaneId(7);
         let mut roster = crate::cambium_pane::RosterGrid::new();
         roster.sync(&crate::app::App::test_stub(), pane, 512.0, 600.0);
-        roster.scene(512, 600);
+        roster.scene(512, 600, 1.0);
         assert!(roster.inline_mount().is_none(), "fixture is not mounted inline");
         let mut renderers = super::super::renderers::PaneRenderers::default();
         renderers.roster.insert(pane, roster);
@@ -394,7 +399,8 @@ impl Shell {
         let frame = frames
             .entry(slot)
             .or_insert_with(|| crate::outer_frame::OuterFrame::new(self.renderers.dom.clone()));
-        frame.set_main_view_switch(slot==0);
+        frame.set_main_view_switch(slot == 0);
+        frame.set_layout_scale(self.app.shell_chrome_config().layout_scale(slot));
         frame.set_workspace_area(crate::chrome_view::workspace_area_for_window(
             self.app.shell_chrome_config(),
             slot,
@@ -407,7 +413,7 @@ impl Shell {
                 self.app.active_pane,
                 maximize,
                 size,
-                &self.app.shell_chrome_config().appearance_for_window(slot),
+                &self.app.shell_chrome_config().appearance,
                 self.app.session_id.as_uuid().as_u128(),
             )
             .unwrap_or_default()
@@ -529,6 +535,7 @@ impl Shell {
                 pane,
                 surface.rect.w.round().max(1.0) as u32,
                 surface.rect.h.round().max(1.0) as u32,
+                self.app.pane_layout_scale(pane),
             );
         }
         self.prepare_outer(slot, size);

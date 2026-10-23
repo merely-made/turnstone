@@ -46,7 +46,7 @@ fn clip_button_bubbles_a_typed_inspector_intent() {
         state.viewport_w = 400.0;
         state.viewport_h = 600.0;
     });
-    let _ = pane.scene(400, 600);
+    let _ = pane.scene(400, 600, 1.0);
     let (x, y) = pane
         .selector_point(
             &taproot::Selector::role("button")
@@ -79,7 +79,7 @@ fn probe_resolved_clip_button_reaches_the_pane_at_receipt_size() {
         state.viewport_w = 509.0;
         state.viewport_h = 576.0;
     });
-    let _ = pane.scene(509, 576);
+    let _ = pane.scene(509, 576, 1.0);
     let (x, y) = pane
         .selector_point(
             &taproot::Selector::role("button")
@@ -347,7 +347,7 @@ fn viewer_controls_write_the_followed_member_instead_of_the_runtime_cursor() {
     let mut pane = InspectorPane::new();
     pane.sync(&app, id, 400.0, 600.0, None, None, "unconfigured");
     assert_eq!(pane.runner.state().member, Some(followed));
-    let _ = pane.scene(400, 600);
+    let _ = pane.scene(400, 600, 1.0);
     let (x, y) = pane
         .selector_point(
             &taproot::Selector::class("radio")
@@ -462,7 +462,7 @@ fn engine_inventory_saved_unknown_is_selected_disabled_and_refuses_click() {
     );
     let selected = pane.runner.state().radio.selected;
     assert_ne!(selected, 0);
-    let _ = pane.scene(400, 2000);
+    let _ = pane.scene(400, 2000, 1.0);
     // Match identity and both accessibility states against the same painted
     // row. Estimated probe geometry can land on a different engine option.
     let points: Vec<_> = [
@@ -519,7 +519,7 @@ fn engine_inventory_human_label_keeps_engine_id_scenario_target() {
         None,
         "unconfigured",
     );
-    let _ = pane.scene(400, 2000);
+    let _ = pane.scene(400, 2000, 1.0);
     let (x, y) = pane
         .selector_point(
             &taproot::Selector::class("radio")
@@ -537,7 +537,7 @@ fn engine_inventory_human_label_keeps_engine_id_scenario_target() {
     );
     // The first click mutated the retained DOM. Repaint before targeting the
     // unavailable row so the test follows the current presented geometry.
-    let _ = pane.scene(400, 2000);
+    let _ = pane.scene(400, 2000, 1.0);
     let (x, y) = pane
         .selector_point(
             &taproot::Selector::class("radio").with_attr("data-engine-id", "scrying.web"),
@@ -575,7 +575,7 @@ fn narrow_inspector_probe_selects_registered_scry_for_followed_b_after_a() {
             };
             app.browser.entry(a).viewer_override = Some("scrying.web".into());
             pane.sync(&app, inspector, 256.0, 570.0, None, None, "unconfigured");
-            let _ = pane.scene(256, 570);
+            let _ = pane.scene(256, 570, 1.0);
         }
         app.update(Action::OpenAddress(
             "http://127.0.0.1:43123/page-b.html".into(),
@@ -600,7 +600,7 @@ fn narrow_inspector_probe_selects_registered_scry_for_followed_b_after_a() {
         );
         pane.sync(&app, inspector, 251.0, 570.0, None, None, "unconfigured");
         assert_eq!(pane.runner.state().member, Some(b));
-        let _ = pane.scene(251, 570);
+        let _ = pane.scene(251, 570, 1.0);
         let selector = taproot::Selector::class("radio")
             .with_attr("data-engine-id", "scrying.web")
             .on_surface("inspector");
@@ -631,7 +631,7 @@ fn narrow_inspector_probe_selects_registered_scry_for_followed_b_after_a() {
             (row_x + row_w - 251.0).max(0.0),
             (row_y + row_h - 570.0).max(0.0),
         );
-        let _ = pane.scene(251, 570);
+        let _ = pane.scene(251, 570, 1.0);
         let (x, y) = pane
             .selector_point(&selector)
             .unwrap()
@@ -668,12 +668,12 @@ fn narrow_inspector_probe_selects_registered_scry_for_followed_b_after_a() {
         let (scroll_x, scroll_y) = pane.scroll.offset();
         pane.scroll_by(-scroll_x, -scroll_y);
         pane.sync(&app, inspector, 251.0, 100.0, None, None, "unconfigured");
-        let _ = pane.scene(251, 100);
+        let _ = pane.scene(251, 100, 1.0);
         assert_eq!(pane.selector_point(&selector), Ok(None));
         for _ in 0..16 {
             if pane.selector_point(&selector).unwrap().is_some() { break; }
             pane.scroll_by(0.0, 80.0);
-            let _ = pane.scene(251, 100);
+            let _ = pane.scene(251, 100, 1.0);
         }
         let (scrolled_x, scrolled_y) = pane
             .selector_point(&selector)
@@ -784,11 +784,11 @@ fn source_binding_disclosure_is_hit_testable_at_narrow_width_and_emits_exact_pin
     let owner = app.frisket.iter_leaves().find(|(_,content,_)| matches!(content, crate::panes::PaneContent::Inspector)).unwrap().0;
     let mut pane = InspectorPane::new();
     pane.sync(&app, owner, 251.0, 600.0, None, None, "unconfigured");
-    let _ = pane.scene(251,600);
+    let _ = pane.scene(251,600, 1.0);
     let (x,y) = pane.selector_point(&taproot::Selector::role("button").containing("Pane source:")).unwrap().unwrap();
     assert!(x >= 0.0 && x < 251.0 && y >= 0.0 && y < 100.0);
     assert!(pane.click(x,y,251,600).is_empty());
-    let _ = pane.scene(251,600);
+    let _ = pane.scene(251,600, 1.0);
     let (x,y) = pane.selector_point(&taproot::Selector::role("button").containing("Pin this document")).unwrap().unwrap();
     let intents = pane.click(x,y,251,600);
     let [InspectorIntent::Binding(intent)] = intents.as_slice() else { panic!("exactly the source choice must dispatch"); };

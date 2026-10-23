@@ -773,7 +773,7 @@ fn summoned_arrange_pane_binds_its_graph_and_routes_actual_seed_buttons_and_phys
     let mut renderer = ArrangePane::new();
     for (label, saved) in [("Set seed", true), ("Restore recipe seed", false)] {
         renderer.sync_for_pane(&app, arrange, 600.0, 800.0);
-        renderer.scene(600, 800);
+        renderer.scene(600, 800, 1.0);
         let selector = taproot::Selector::role("button").containing(label);
         let (x, y) = renderer
             .inline_selector(&selector)
@@ -903,7 +903,7 @@ fn arrange_buttons_follow_the_unique_torn_out_graph_without_using_the_active_cur
     let mut renderer = ArrangePane::new();
     for (label, saved) in [("Set seed", true), ("Restore recipe seed", false)] {
         renderer.sync_for_pane(&app, arrange, 600.0, 800.0);
-        renderer.scene(600, 800);
+        renderer.scene(600, 800, 1.0);
         let selector = taproot::Selector::role("button").containing(label);
         let (x, y) = renderer.inline_selector(&selector).unwrap().unwrap();
         let intents = renderer.click(x, y, 600, 800);

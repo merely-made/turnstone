@@ -768,13 +768,28 @@ impl App {
         Some(result)
     }
 
-    /// The scale one pane is composed at: its window's device scale. A graph
-    /// pane's scene is built at `physical / scale` and rasterized at `scale`,
+    /// The window slot whose workspace holds `pane`: the primary's 0, or a
+    /// lens's ordinal plus one.
+    pub fn pane_window_slot(&self, pane: PaneId) -> usize {
+        if self.frisket.iter_leaves().any(|(id, _, _)| id == pane) {
+            return 0;
+        }
+        self.lenses
+            .iter()
+            .position(|layout| {
+                layout
+                    .as_ref()
+                    .is_some_and(|layout| layout.iter_leaves().any(|(id, _, _)| id == pane))
+            })
+            .map_or(0, |ordinal| ordinal + 1)
+    }
+
+    /// The scale one pane is composed at: its window's device scale. Every
+    /// surface is laid out at `physical / scale` and rasterized at `scale`,
     /// and its pointers arrive through `/ scale`, the convention Graphshell's
     /// rootstock host keeps for the same canvas.
     pub fn pane_layout_scale(&self, pane: PaneId) -> f32 {
-        let scale = self.shell_chrome_config().pane_scale(self, pane);
-        if scale.is_finite() { scale.clamp(0.5, 4.0) } else { 1.0 }
+        self.shell_chrome_config().layout_scale(self.pane_window_slot(pane))
     }
 
     fn logical(&self, pane: PaneId, x: f32, y: f32) -> (f32, f32) {

@@ -2179,9 +2179,10 @@ impl Shell {
                         Self::describe_reader_appearances(&appearances)
                     ));
                 };
+                // The reader is laid out in layout pixels, as pelt sizes it.
                 let expected = (
-                    appearance.rect.w.round().max(1.0) as u32,
-                    appearance.rect.h.round().max(1.0) as u32,
+                    (appearance.rect.w / appearance.layout_scale).max(1.0).ceil() as u32,
+                    (appearance.rect.h / appearance.layout_scale).max(1.0).ceil() as u32,
                 );
                 if appearance.viewport != expected {
                     return Err(format!(

@@ -641,6 +641,8 @@ struct CompositeLayer {
     view: wgpu::TextureView,
     /// Actual owned scene raster; imports retain their texture at the importer.
     raster: Option<wgpu::Texture>,
+    /// The scale the layer's scene was rasterized at.
+    raster_scale: f32,
     placement: ExternalTexturePlacement,
 }
 
@@ -2130,10 +2132,10 @@ impl Shell {
     fn sync_content_placements(&mut self) {
         use content_pool::HostPlacement;
         let focus = self.app.focus;
-        // Surface plans and native pointer positions are physical pixels.
-        // A factor of one prevents applying native DPI a second time.
-        let placement = |surface: crate::surface::Surface, window, active, native_scale| {
-            let mut host = HostPlacement::for_focus(surface, window, active, focus, native_scale);
+        // Surface plans and native pointer positions are physical pixels; the
+        // pool places content in layout pixels at its window's scale.
+        let placement = |surface: crate::surface::Surface, window, active, scale| {
+            let mut host = HostPlacement::for_focus(surface, window, active, focus, scale);
             host.reading_preferences = self.app.reading.for_surface(surface, window);
             host
         };
@@ -2145,9 +2147,7 @@ impl Shell {
                     surface,
                     0,
                     self.primary_focused,
-                    self.window
-                        .as_ref()
-                        .map_or(1.0, |window| window.scale_factor()),
+                    self.app.shell_chrome_config().layout_scale(0) as f64,
                 )
             })
             .collect();
@@ -2162,7 +2162,7 @@ impl Shell {
                             surface,
                             lens.ordinal as u64 + 1,
                             lens.focused,
-                            lens.window.scale_factor(),
+                            self.app.shell_chrome_config().layout_scale(lens.ordinal + 1) as f64,
                         )
                     }),
             );

@@ -37,6 +37,7 @@ impl TouchInput {
         self.contacts
             .retain(|_, contact| pool.captured_placement(contact.pointer_id).is_some());
         let key = (window, host_id);
+        let mut hit_id = None;
         let contact = if phase == PointerPhase::Down {
             let Some(hit) = crate::surface::hit_test(plan, focus, position.x, position.y) else {
                 return false;
@@ -51,6 +52,7 @@ impl TouchInput {
             {
                 return false;
             }
+            hit_id = Some(hit.id);
             if let Some(previous) = self.contacts.remove(&key) {
                 if let Some(placement) = pool.captured_placement(previous.pointer_id).copied() {
                     let mut event = touch_event(
@@ -62,7 +64,11 @@ impl TouchInput {
                         modifiers,
                     );
                     event.buttons = PointerButtons::NONE;
-                    pool.input(&placement, PeltInput::Pointer(event));
+                    let mut input = PeltInput::Pointer(event);
+                    if let Some(scale) = pool.placement(&placement).map(|p| p.scale_factor) {
+                        input.to_layout(scale);
+                    }
+                    pool.input(&placement, input);
                 }
             }
             let pointer_id = loop {
@@ -92,17 +98,22 @@ impl TouchInput {
             }
             contact
         };
-        let effect = pool.input_at(
-            window,
-            PeltInput::Pointer(touch_event(
-                contact,
-                phase,
-                position,
-                pressure,
-                altitude_angle,
-                modifiers,
-            )),
-        );
+        // Placements are in layout pixels; the contact is physical.
+        let scale = pool
+            .captured_placement(contact.pointer_id)
+            .or(hit_id.as_ref())
+            .and_then(|id| pool.placement(id))
+            .map_or(1.0, |placement| placement.scale_factor);
+        let mut input = PeltInput::Pointer(touch_event(
+            contact,
+            phase,
+            position,
+            pressure,
+            altitude_angle,
+            modifiers,
+        ));
+        input.to_layout(scale);
+        let effect = pool.input_at(window, input);
         if matches!(phase, PointerPhase::Up | PointerPhase::Cancel)
             || pool.captured_placement(contact.pointer_id).is_none()
         {
@@ -202,7 +213,10 @@ pub(super) fn captured_content_hit(
     Some(crate::surface::HitResult {
         id,
         kind: SurfaceKind::Content(node),
-        local: (position.x - placement.rect.x, position.y - placement.rect.y),
+        local: (
+            position.x - placement.rect.x * placement.scale_factor,
+            position.y - placement.rect.y * placement.scale_factor,
+        ),
     })
 }
 
@@ -282,7 +296,10 @@ pub(super) fn content_mouse_input(
     let event = super::input::mouse_pointer_event(
         position.x, position.y, phase, button, buttons, modifiers,
     );
-    let effect = pool.input_at(window, PeltInput::Pointer(event));
+    // The pool's placements are in layout pixels; the position is physical.
+    let mut input = PeltInput::Pointer(event);
+    input.to_layout(placement.scale_factor);
+    let effect = pool.input_at(window, input);
     Some((placement.content, effect))
 }
 

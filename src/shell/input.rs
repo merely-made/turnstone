@@ -350,8 +350,10 @@ pub(super) fn dispatch_primary_content_move(
     let target = {
         let (_, pool, _) = host.pointer_state();
         super::window_input::captured_mouse(pool).and_then(|id| {
-            pool.placement(&id)
-                .map(|placement| (id, (x - placement.rect.x, y - placement.rect.y)))
+            pool.placement(&id).map(|placement| {
+                let scale = placement.scale_factor;
+                (id, (x - placement.rect.x * scale, y - placement.rect.y * scale))
+            })
         })
     };
     if let Some((id, local)) = target {
@@ -1432,8 +1434,8 @@ impl Shell {
             window,
             Some(appearance),
             inker::PhysicalPosition {
-                x: local.0 + placement.rect.x,
-                y: local.1 + placement.rect.y,
+                x: local.0 + placement.rect.x * placement.scale_factor,
+                y: local.1 + placement.rect.y * placement.scale_factor,
             },
             phase,
             button,

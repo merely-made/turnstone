@@ -190,7 +190,6 @@ pub struct WorkbenchPane {
     /// The last synced walk, pane-local — the shell's input routing asks it
     /// for cells and divider bands (the same walk the frame drew).
     tiling: WorkbenchTiling,
-    sheet: String,
     // Drop the runner and its widget resources before final mount custody.
     mount: Option<cambium::RetainedMount>,
 }
@@ -228,7 +227,6 @@ impl WorkbenchPane {
                 mount.as_ref().map(cambium::RetainedMount::node),
             ),
             tiling: WorkbenchTiling::default(),
-            sheet: workbench_sheet().into(),
         }
     }
 
@@ -298,7 +296,10 @@ impl WorkbenchPane {
             .workbench_for_pane(pane_id)
             .map(|workbench| workbench.to_arrangement().1)
             .unwrap_or(None);
-        self.sheet = cambium::stylesheet_at_display_scale(workbench_sheet(), app.shell_chrome_config().pane_scale(app,pane_id));
+        // The tiling is the plan's geometry, in physical pixels, and input
+        // routing reads it as such; the pane's DOM is in layout pixels.
+        let scale = app.pane_layout_scale(pane_id);
+        let logical = |rect: Rect| Rect::new(rect.x / scale, rect.y / scale, rect.w / scale, rect.h / scale);
         self.tiling = crate::workbench_tiling::place_reading_workbench(app, pane_id, geom.as_ref(), Rect::new(0.0, 0.0, pane_w, pane_h));
         let graph = app
             .graph_for_pane(pane_id)
@@ -340,14 +341,14 @@ impl WorkbenchPane {
                     None => String::new(),
                 };
                 CellView {
-                    toolbar: c.toolbar_rect(),
+                    toolbar: logical(c.toolbar_rect()),
                     target: c.active_member().map(|member| crate::reading_view::ReadTarget { pane:pane_id, member }),
                     find_enabled: c.active_member().is_some_and(|member|app.content.facts(member).is_some_and(|facts|facts.capabilities.find_in_page.is_available())),
                     text_controls: c.active_member().is_some_and(|member|app.has_reading_controls(crate::reading_view::ReadTarget{pane:pane_id,member})),
                     preferences: c.active_member().map(|member|app.reading.preferences(crate::reading_view::ReadTarget{pane:pane_id,member})).unwrap_or_default(),
                     find: c.active_member().and_then(|member|app.reading.find.get(&crate::reading_view::ReadTarget{pane:pane_id,member})).cloned().unwrap_or_default(),
-                    tabs: c.tab_rect(),
-                    body: c.body(),
+                    tabs: logical(c.tab_rect()),
+                    body: logical(c.body()),
                     vertical: matches!(
                         c.tab_edge,
                         crate::chrome_layout::TabEdge::Left | crate::chrome_layout::TabEdge::Right
@@ -356,7 +357,7 @@ impl WorkbenchPane {
                         crate::surface::appearance::workbench_appearance_role(pane_id, node)
                     }),
                     members: c.members.clone(),
-                    rect: c.rect,
+                    rect: logical(c.rect),
                     labels,
                     strip: TabStrip::new(c.active).with_label("Reading documents"),
                     synced_active: c.active,
@@ -366,8 +367,8 @@ impl WorkbenchPane {
             .collect();
         self.runner.update(|state| {
             state.cells = cells;
-            state.viewport_w = pane_w;
-            state.viewport_h = pane_h;
+            state.viewport_w = pane_w / scale;
+            state.viewport_h = pane_h / scale;
         });
     }
 
@@ -382,10 +383,11 @@ impl WorkbenchPane {
     }
 
     /// The pane's scene at its size, under the host's cambium sheet.
-    pub fn scene(&mut self, w: u32, h: u32) -> netrender::Scene {
+    pub fn scene(&mut self, w: u32, h: u32, scale: f32) -> netrender::Scene {
+        self.layout.set_scale(scale);
         self.layout.scene_scrolled(
             &mut self.dom.borrow_mut(),
-            &self.sheet,
+            workbench_sheet(),
             w,
             h,
             &mut self.scroll,
@@ -470,7 +472,7 @@ impl WorkbenchPane {
     pub fn click(&mut self, x: f32, y: f32, w: u32, h: u32) -> Vec<WbActivate> {
         let hit = self.layout.hit_test_scrolled(
             &mut self.dom.borrow_mut(),
-            &self.sheet,
+            workbench_sheet(),
             w,
             h,
             x,
@@ -513,7 +515,7 @@ mod tests {
     fn pane_over(app: &App, w: f32, h: f32) -> WorkbenchPane {
         let mut pane = WorkbenchPane::new();
         pane.sync(app, app.default_graph_pane(), w, h);
-        pane.scene(w as u32, h as u32);
+        pane.scene(w as u32, h as u32, 1.0);
         pane
     }
 
@@ -536,8 +538,8 @@ mod tests {
         let member=app.graph_runtimes.focused_member().unwrap();
         app.apply_update(crate::action::Update::ContentSpawned{node:member,facts:Some(crate::content::ContentFacts{engine:"genet.reader".into(),lane:crate::content::ContentLane::Document,structure:None,lineage:None,capabilities:Default::default()})});
         let pane_id=app.frisket.iter_leaves().find(|(_,content,_)|matches!(content,crate::panes::PaneContent::Workbench)).unwrap().0;
-        let mut chrome=app.shell_chrome_config().clone(); chrome.native_scales.insert(0,2.0); app.set_shell_chrome_config(chrome);
-        let mut pane=WorkbenchPane::new(); pane.sync(&app,pane_id,1200.,800.);pane.scene(1200,800);
+        let mut chrome=app.shell_chrome_config().clone(); chrome.layout_scales.insert(0,2.0); app.set_shell_chrome_config(chrome);
+        let mut pane=WorkbenchPane::new(); pane.sync(&app,pane_id,1200.,800.);pane.scene(1200,800,2.0);
         let selector=taproot::Selector::role("button").on_surface("workbench").containing("Larger reading text");
         let point=pane.selector_point(&selector).unwrap().unwrap();
         let cell=&pane.tiling().cells[0];
@@ -661,7 +663,7 @@ mod tests {
             None,
             "no painted snapshot yet"
         );
-        pane.scene(800, 600);
+        pane.scene(800, 600, 1.0);
         assert!(pane.resolve(&selector, rect).is_some());
 
         let tab = {
@@ -674,7 +676,7 @@ mod tests {
             "changed",
         );
         assert_eq!(pane.resolve(&selector, rect), None, "old geometry is stale");
-        pane.scene(800, 600);
+        pane.scene(800, 600, 1.0);
         assert!(pane.resolve(&selector, rect).is_some());
     }
 

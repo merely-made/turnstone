@@ -322,7 +322,8 @@ impl RosterGrid {
     }
 
     /// The grid's scene at the pane's size, under the host's cambium sheet.
-    pub fn scene(&mut self, w: u32, h: u32) -> netrender::Scene {
+    pub fn scene(&mut self, w: u32, h: u32, scale: f32) -> netrender::Scene {
+        self.layout.set_scale(scale);
         self.layout.scene_scrolled(
             &mut self.dom.borrow_mut(),
             crate::ui::cambium_shell_sheet(),
@@ -466,7 +467,7 @@ mod tests {
 
         grid.unbind_inline();
         assert!(
-            !grid.scene(512, 400).ops.is_empty(),
+            !grid.scene(512, 400, 1.0).ops.is_empty(),
             "the same scoped owner can render a legacy station"
         );
         assert_eq!(grid.runner.root(), root);
@@ -516,7 +517,7 @@ mod tests {
             state.viewport_w = 512.0;
             state.viewport_h = 600.0;
         });
-        let _ = g.scene(512, 600);
+        let _ = g.scene(512, 600, 1.0);
         g
     }
 
@@ -602,7 +603,7 @@ mod tests {
             state.viewport_w = PANE_W;
             state.viewport_h = PANE_H;
         });
-        g.scene(PANE_W as u32, PANE_H as u32);
+        g.scene(PANE_W as u32, PANE_H as u32, 1.0);
 
         let point = g
             .resolve(

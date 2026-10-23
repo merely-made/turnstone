@@ -8,7 +8,7 @@
 use std::sync::Arc;
 
 use cambium_genet_winit_host::{ClickCadence, HostWindow, WinitWindow};
-use cambium_rootstock::{AppRegion, TitlebarInsets};
+use cambium_rootstock::AppRegion;
 use winit::event::{ElementState, MouseButton, WindowEvent};
 use winit::window::{Window, WindowAttributes, WindowId};
 
@@ -29,27 +29,18 @@ pub(super) fn window_attributes() -> WindowAttributes {
     attributes
 }
 
-fn physical_insets(insets: TitlebarInsets, scale: f32) -> TitlebarInsets {
-    TitlebarInsets {
-        left: insets.left * scale,
-        right: insets.right * scale,
-        height: insets.height * scale,
-    }
-}
-
 impl Shell {
     pub(super) fn publish_titlebar_insets(&mut self, slot: usize, window: &Arc<Window>) {
-        let insets = physical_insets(
-            WinitWindow(window.clone()).titlebar_insets(),
-            window.scale_factor() as f32,
-        );
+        // The native caption reservation is in layout pixels, as the chrome
+        // that clears it is laid out.
+        let insets = WinitWindow(window.clone()).titlebar_insets();
         let mut chrome = self.app.shell_chrome_config().clone();
-        let scale = (window.scale_factor() as f32).clamp(0.5, 4.0);
-        if chrome.titlebar_insets.get(&slot) == Some(&insets) && chrome.native_scales.get(&slot) == Some(&scale) {
+        let scale = crate::ui::clean_scale(window.scale_factor() as f32);
+        if chrome.titlebar_insets.get(&slot) == Some(&insets) && chrome.layout_scales.get(&slot) == Some(&scale) {
             return;
         }
         chrome.titlebar_insets.insert(slot, insets);
-        chrome.native_scales.insert(slot, scale);
+        chrome.layout_scales.insert(slot, scale);
         self.app.set_shell_chrome_config(chrome);
         window.request_redraw();
     }
@@ -88,7 +79,7 @@ impl Shell {
         if slot != 0 && matches!(event, WindowEvent::CloseRequested) {
             let mut chrome = self.app.shell_chrome_config().clone();
             chrome.titlebar_insets.remove(&slot);
-            chrome.native_scales.remove(&slot);
+            chrome.layout_scales.remove(&slot);
             self.app.set_shell_chrome_config(chrome);
         }
         let WindowEvent::MouseInput {
@@ -153,25 +144,5 @@ impl Shell {
             }
         }
         true
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn native_caption_reservation_uses_the_shells_physical_coordinates() {
-        let insets = physical_insets(
-            TitlebarInsets {
-                left: 78.0,
-                right: 0.0,
-                height: 28.0,
-            },
-            2.0,
-        );
-        assert_eq!(insets.left, 156.0);
-        assert_eq!(insets.height, 56.0);
-        assert_eq!(insets.titlebar_area(1024.0), (156.0, 0.0, 868.0, 56.0));
     }
 }

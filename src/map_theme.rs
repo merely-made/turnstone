@@ -78,7 +78,7 @@ mod tests {
         app.update(Action::OpenAddress("https://example.test/a".into()));
         let pane = app.default_graph_pane();
         let mut chrome = app.shell_chrome_config().clone();
-        chrome.native_scales.insert(0, 2.0);
+        chrome.layout_scales.insert(0, 2.0);
         chrome.appearance.theme_mode = ThemeMode::Light;
         chrome.appearance.theme_presentation = Some(light_presentation());
         app.set_shell_chrome_config(chrome);
@@ -103,7 +103,7 @@ mod tests {
         let pane = app.default_graph_pane();
         let member = app.graph_runtimes.focused_member().unwrap();
         let mut chrome = app.shell_chrome_config().clone();
-        chrome.native_scales.insert(0, 2.0);
+        chrome.layout_scales.insert(0, 2.0);
         app.set_shell_chrome_config(chrome);
         app.graph_pane_frame(pane, 1200, 800).unwrap();
         app.graph_pane_select_member(pane, member);

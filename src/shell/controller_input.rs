@@ -79,6 +79,12 @@ impl Shell {
         } else {
             self.content_sessions.pool.placement(&appearance)?.content
         };
+        // Content-local positions arrive in physical pixels; placements are
+        // in layout pixels.
+        let mut input = input;
+        if let Some(placement) = self.content_sessions.pool.placement(&appearance) {
+            input.to_layout(placement.scale_factor);
+        }
         let node = match content {
             super::content_pool::ContentKey::Node(node)
             | super::content_pool::ContentKey::Reader { node, .. } => node,

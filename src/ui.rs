@@ -960,217 +960,94 @@ pub(crate) const CHROME_SHEET: &str = "\
     .pane-label { position: absolute; color: rgb(190, 198, 214); \
                   font-size: 14px; padding: 10px 14px; white-space: nowrap; }";
 
-#[derive(Clone, Copy)]
-struct PresentationPalette {
-    surface: (u8, u8, u8),
-    raised: (u8, u8, u8),
-    field: (u8, u8, u8),
-    border: (u8, u8, u8),
-    text: (u8, u8, u8),
-    body_text: (u8, u8, u8),
-    muted: (u8, u8, u8),
-    accent: (u8, u8, u8),
-    accent_text: (u8, u8, u8),
-    preedit: (u8, u8, u8),
+/// `roles` (host rules bound to `var(--tabard-color-*)`) under tabard's one
+/// presentation stylesheet: the palette's custom properties, then the roles,
+/// then the exact authored rules. Without a stored presentation the mode's
+/// built-in theme supplies the palette, so no host keeps a colour table.
+fn themed_sheet(appearance: &crate::shell_services::AppearanceConfig, roles: String) -> String {
+    let builtin = tabard::ThemePresentation::AuthoredStylesheet(Vec::new());
+    tabard::presentation_stylesheet(
+        appearance.theme_presentation.as_ref().unwrap_or(&builtin),
+        &appearance.theme_mode.tabard(),
+        tabard::theme::registry::THEME_ID_DEFAULT,
+        &roles,
+    )
 }
 
-fn presentation_palette(
-    appearance: &crate::shell_services::AppearanceConfig,
-) -> PresentationPalette {
-    use crate::shell_services::ThemeMode;
-
-    match &appearance.theme_mode {
-        ThemeMode::Light | ThemeMode::HcLight => PresentationPalette {
-            surface: (248, 249, 252),
-            raised: (255, 255, 255),
-            field: (238, 241, 247),
-            border: (142, 153, 174),
-            text: (28, 35, 48),
-            body_text: (45, 55, 72),
-            muted: (91, 104, 127),
-            accent: (47, 111, 191),
-            accent_text: (255, 255, 255),
-            preedit: (67, 98, 178),
-        },
-        ThemeMode::System | ThemeMode::Dark | ThemeMode::HcDark | ThemeMode::Custom(_) => {
-            PresentationPalette {
-                surface: (22, 27, 40),
-                raised: (28, 34, 50),
-                field: (15, 19, 30),
-                border: (70, 82, 110),
-                text: (238, 242, 250),
-                body_text: (216, 222, 234),
-                muted: (140, 148, 165),
-                accent: (232, 150, 40),
-                accent_text: (28, 22, 10),
-                preedit: (180, 200, 255),
-            }
-        },
-    }
-}
-
-fn rgb((red, green, blue): (u8, u8, u8)) -> String {
-    format!("rgb({red}, {green}, {blue})")
-}
-
-fn role_color(
-    appearance: &crate::shell_services::AppearanceConfig,
-    role: &str,
-    fallback: (u8, u8, u8),
-) -> String {
-    if appearance.theme_presentation.is_some() {
-        format!("var(--tabard-color-{role}, {})", rgb(fallback))
-    } else {
-        rgb(fallback)
-    }
-}
-
-fn themed_sheet(appearance: &crate::shell_services::AppearanceConfig, sheet: String) -> String {
-    match &appearance.theme_presentation {
-        Some(presentation) => tabard::presentation_stylesheet(
-            presentation,
-            &appearance.theme_mode.tabard(),
-            tabard::theme::registry::THEME_ID_DEFAULT,
-            &sheet,
-        ),
-        None => sheet,
-    }
-}
-
-/// The chrome's live sheet. It is regenerated from the shell-owned value
-/// snapshot so theme and zoom change the retained host surface on the next
-/// redraw, without a provider or pane reaching into a renderer.
+/// The chrome's live sheet, in layout pixels. It is regenerated from the
+/// shell-owned value snapshot so theme and zoom change the retained host
+/// surface on the next redraw, without a provider or pane reaching into a
+/// renderer; the window's layout scale is the layout's, not the sheet's.
 pub(crate) fn chrome_sheet(appearance: &crate::shell_services::AppearanceConfig) -> String {
-    let palette = presentation_palette(appearance);
     let zoom = appearance.zoom();
+    let (z11, z12, z13, z14, z16) = (11.0 * zoom, 12.0 * zoom, 13.0 * zoom, 14.0 * zoom, 16.0 * zoom);
+    let interface = cambium::ShellMetrics::INTERFACE_FONT_SIZE * zoom;
+    let (menu_row, relation_row) = (22.0 + 6.0 * zoom, 38.0 + 6.0 * zoom);
+    let title_bar = cambium::TITLE_BAR_CSS;
     let sheet = format!(
-        "{} {CHROME_SHEET} \
-        .turnstone-title-frame {{ color: {}; background-color: {}; font-size: {:.2}px; }} \
+        "{title_bar} {CHROME_SHEET} \
+        .turnstone-title-frame {{ color: var(--tabard-color-text-header); background-color: var(--tabard-color-surface); font-size: {z13:.2}px; }} \
         .cambium-title-bar {{ height:100%; overflow:hidden; }} \
         .turnstone-title-identity {{ display:flex; align-items:center; gap:10px; min-width:0; overflow:hidden; white-space:nowrap; }} \
         .turnstone-title-name {{ font-weight:600; }} \
-        .turnstone-title-context {{ color:{}; font-size:{:.2}px; }} \
-        .turnstone-stone {{ display:block; position:relative; box-sizing:border-box; width:22px; height:18px; border:2px solid {}; border-radius:7px 5px 8px 4px; transform:rotate(-16deg); }} \
-        .turnstone-stone-vein {{ display:block; position:absolute; left:3px; top:6px; width:12px; height:2px; background-color:{}; }} \
-        .omni {{ background-color: {}; border-color: {}; }} \
-        .omni-input {{ color: {}; background-color: {}; font-size: {:.2}px; }} \
-        .omni-input .field-preedit {{ color: {}; }} \
-        .omni-row {{ color: {}; font-size: {:.2}px; }} \
-        .omni-row-sel {{ color: {}; background-color: {}; font-size: {:.2}px; }} \
-        .omni-row-muted {{ color: {}; font-size: {:.2}px; }} \
-        .whereami {{ color: {}; background-color: {}; border-color: {}; font-size: {:.2}px; }} \
-        .browser-strip, .link-preview, .document-find, .decision-card {{ color: {}; background-color: {}; border-color: {}; }} \
-        .browser-loading {{ border-bottom-color: {}; }} \
-        .browser-button {{ color: {}; background-color: {}; border-color: {}; font-size: {:.2}px; }} \
-        .browser-button-disabled, .browser-status, .link-preview, .document-find .read-result, .decision-status, .decision-error {{ font-size: {:.2}px; }} \
-        .document-find .read-query, .decision-input {{ color: {}; background-color: {}; font-size: {:.2}px; }} \
-        .decision-prompt {{ color: {}; font-size: {:.2}px; }} \
-        .decision-input-active {{ border-color: {}; }}",
-        cambium::TITLE_BAR_CSS,
-        role_color(appearance, "text-header", palette.text),
-        role_color(appearance, "surface", palette.raised),
-        13.0 * zoom,
-        role_color(appearance, "text-dim", palette.muted),
-        11.0 * zoom,
-        role_color(appearance, "primary", palette.accent),
-        role_color(appearance, "text-dim", palette.muted),
-        role_color(appearance, "bg", palette.surface),
-        role_color(appearance, "text-dim", palette.border),
-        role_color(appearance, "text-header", palette.text),
-        role_color(appearance, "surface-2", palette.field),
-        16.0 * zoom,
-        role_color(appearance, "secondary", palette.preedit),
-        role_color(appearance, "text", palette.body_text),
-        14.0 * zoom,
-        role_color(appearance, "on-primary", palette.accent_text),
-        role_color(appearance, "primary", palette.accent),
-        14.0 * zoom,
-        role_color(appearance, "text-dim", palette.muted),
-        14.0 * zoom,
-        role_color(appearance, "text-dim", palette.muted),
-        role_color(appearance, "surface", palette.raised),
-        role_color(appearance, "text-dim", palette.border),
-        12.0 * zoom,
-        role_color(appearance, "text", palette.body_text),
-        role_color(appearance, "surface", palette.raised),
-        role_color(appearance, "text-dim", palette.border),
-        role_color(appearance, "primary", palette.accent),
-        role_color(appearance, "text-header", palette.text),
-        role_color(appearance, "surface-2", palette.field),
-        role_color(appearance, "text-dim", palette.border),
-        12.0 * zoom,
-        12.0 * zoom,
-        role_color(appearance, "text-header", palette.text),
-        role_color(appearance, "surface-2", palette.field),
-        13.0 * zoom,
-        role_color(appearance, "text-header", palette.text),
-        14.0 * zoom,
-        role_color(appearance, "primary", palette.accent),
+        .turnstone-title-context {{ color: var(--tabard-color-text-dim); font-size:{z11:.2}px; }} \
+        .turnstone-stone {{ display:block; position:relative; box-sizing:border-box; width:22px; height:18px; border:2px solid var(--tabard-color-primary); border-radius:7px 5px 8px 4px; transform:rotate(-16deg); }} \
+        .turnstone-stone-vein {{ display:block; position:absolute; left:3px; top:6px; width:12px; height:2px; background-color:var(--tabard-color-text-dim); }} \
+        .omni {{ background-color: var(--tabard-color-bg); border-color: var(--tabard-color-text-dim); }} \
+        .omni-input {{ color: var(--tabard-color-text-header); background-color: var(--tabard-color-surface-2); font-size: {z16:.2}px; }} \
+        .omni-input .field-preedit {{ color: var(--tabard-color-secondary); }} \
+        .omni-row {{ color: var(--tabard-color-text); font-size: {z14:.2}px; }} \
+        .omni-row-sel {{ color: var(--tabard-color-on-primary); background-color: var(--tabard-color-primary); font-size: {z14:.2}px; }} \
+        .omni-row-muted {{ color: var(--tabard-color-text-dim); font-size: {z14:.2}px; }} \
+        .whereami {{ color: var(--tabard-color-text-dim); background-color: var(--tabard-color-surface); border-color: var(--tabard-color-text-dim); font-size: {z12:.2}px; }} \
+        .browser-strip, .link-preview, .document-find, .decision-card {{ color: var(--tabard-color-text); background-color: var(--tabard-color-surface); border-color: var(--tabard-color-text-dim); }} \
+        .browser-loading {{ border-bottom-color: var(--tabard-color-primary); }} \
+        .browser-button {{ color: var(--tabard-color-text-header); background-color: var(--tabard-color-surface-2); border-color: var(--tabard-color-text-dim); font-size: {z12:.2}px; }} \
+        .browser-button-disabled, .browser-status, .link-preview, .document-find .read-result, .decision-status, .decision-error {{ font-size: {z12:.2}px; }} \
+        .document-find .read-query, .decision-input {{ color: var(--tabard-color-text-header); background-color: var(--tabard-color-surface-2); font-size: {z13:.2}px; }} \
+        .decision-prompt {{ color: var(--tabard-color-text-header); font-size: {z14:.2}px; }} \
+        .decision-input-active {{ border-color: var(--tabard-color-primary); }}"
     );
     let controls = format!(
         ".turnstone-stone-hidden {{ display:none; }}
         .browser-strip {{ background-color:transparent; border:0; border-radius:0; gap:2px; padding:0; }}
-        .shell-control, .browser-status {{ color:inherit; font-size:{:.2}px; }}
-        .shell-control[aria-pressed=true] {{ background-color:{}; color:{}; }}
-        .browser-status {{ --app-region:no-drag; text-align:left; flex:1 1 0; min-width:0; border:1px solid {}; border-radius:5px; background-color:{}; color:{}; padding:4px 7px; overflow:hidden; white-space:nowrap; }}
+        .shell-control, .browser-status {{ color:inherit; font-size:{interface:.2}px; }}
+        .shell-control[aria-pressed=true] {{ background-color:var(--tabard-color-surface-2); color:var(--tabard-color-text-header); }}
+        .browser-status {{ --app-region:no-drag; text-align:left; flex:1 1 0; min-width:0; border:1px solid var(--tabard-color-text-dim); border-radius:5px; background-color:var(--tabard-color-bg); color:var(--tabard-color-text); padding:4px 7px; overflow:hidden; white-space:nowrap; }}
         .chrome-menu-dismiss {{ --app-region:no-drag; background:transparent; }}
-        .chrome-menu {{ --app-region:no-drag; display:flex; flex-direction:column; box-sizing:border-box; padding:8px; gap:0; background-color:{}; color:{}; border:1px solid {}; border-radius:6px; }}
+        .chrome-menu {{ --app-region:no-drag; display:flex; flex-direction:column; box-sizing:border-box; padding:8px; gap:0; background-color:var(--tabard-color-surface); color:var(--tabard-color-text); border:1px solid var(--tabard-color-text-dim); border-radius:6px; }}
         .chrome-menu-entry {{ width:100%; }}
         .chrome-menu-entry[data-menu-focus=true] {{ outline:1px solid currentColor; outline-offset:-1px; }}
-        .chrome-menu .shell-control, .chrome-menu .shell-paged-range {{ text-align:left; width:100%; height:{:.2}px; overflow:hidden; white-space:nowrap; flex-shrink:0; }}
-        .chrome-relations-menu .shell-navigation-item {{ height:auto; min-height:{:.2}px; }}
+        .chrome-menu .shell-control, .chrome-menu .shell-paged-range {{ text-align:left; width:100%; height:{menu_row:.2}px; overflow:hidden; white-space:nowrap; flex-shrink:0; }}
+        .chrome-relations-menu .shell-navigation-item {{ height:auto; min-height:{relation_row:.2}px; }}
         .chrome-menu .shell-popup {{ padding:0; border:0; background:transparent; max-height:none; }}
         .chrome-panes-menu .shell-popup {{ flex-direction:row; flex-wrap:wrap; }}
-        .chrome-panes-menu .chrome-menu-entry {{ width:50%; flex-basis:50%; }}",
-        cambium::ShellMetrics::INTERFACE_FONT_SIZE*zoom,
-        role_color(appearance,"surface-2",palette.field),role_color(appearance,"text-header",palette.text),
-        role_color(appearance,"text-dim",palette.border),role_color(appearance,"bg",palette.surface),role_color(appearance,"text",palette.body_text),
-        role_color(appearance,"surface",palette.raised),role_color(appearance,"text",palette.body_text),role_color(appearance,"text-dim",palette.border),22.0+6.0*zoom,38.0+6.0*zoom,
+        .chrome-panes-menu .chrome-menu-entry {{ width:50%; flex-basis:50%; }}"
     );
-    cambium::stylesheet_at_display_scale(&themed_sheet(appearance, format!("{sheet}\n{}\n{controls}", cambium::SHELL_CSS)), appearance.display_scale)
+    themed_sheet(appearance, format!("{sheet}\n{}\n{controls}", cambium::SHELL_CSS))
 }
 
-/// The Settings pane's live Cambium sheet. Other pane kinds retain their
-/// established host styling until they take the same typed appearance value
-/// as an explicit consumer; this pane is the first proof that changing the
-/// settings changes the currently-running UI.
+/// The Settings pane's live Cambium sheet, in layout pixels. Other pane kinds
+/// retain their established host styling until they take the same typed
+/// appearance value as an explicit consumer; this pane is the first proof that
+/// changing the settings changes the currently-running UI.
 pub(crate) fn cambium_sheet(appearance: &crate::shell_services::AppearanceConfig) -> String {
-    let palette = presentation_palette(appearance);
     let zoom = appearance.zoom();
+    let (z12, z13) = (12.0 * zoom, 13.0 * zoom);
     let sheet = format!(
         "{CAMBIUM_SHEET} \
-        .pane, .grid {{ background-color: {}; color: {}; font-size: {:.2}px; }} \
-        .list-section-title, .setting-label {{ color: {}; font-size: {:.2}px; }} \
-        .list-row, .setting-row {{ color: {}; font-size: {:.2}px; }} \
-        .list-row.muted, .setting-unsupported {{ color: {}; }} \
-        .setting-apply {{ color: {}; background-color: {}; border: 1px solid {}; font-size: {:.2}px; }} \
-        .radio {{ color: {}; font-size: {:.2}px; }} \
-        .toggle {{ color: {}; font-size: {:.2}px; }} \
-        .radio.selected {{ color: {}; }} \
-        .slider-track {{ background-color: {}; }} \
-        .slider-thumb {{ background-color: {}; border-color: {}; }}",
-        role_color(appearance, "bg", palette.surface),
-        role_color(appearance, "text", palette.body_text),
-        13.0 * zoom,
-        role_color(appearance, "text-dim", palette.muted),
-        12.0 * zoom,
-        role_color(appearance, "text", palette.body_text),
-        13.0 * zoom,
-        role_color(appearance, "text-dim", palette.muted),
-        role_color(appearance, "text-header", palette.text),
-        role_color(appearance, "surface", palette.raised),
-        role_color(appearance, "text-dim", palette.border),
-        13.0 * zoom,
-        role_color(appearance, "text", palette.body_text),
-        13.0 * zoom,
-        role_color(appearance, "text", palette.body_text),
-        13.0 * zoom,
-        role_color(appearance, "primary", palette.accent),
-        role_color(appearance, "text-dim", palette.border),
-        role_color(appearance, "primary", palette.accent),
-        role_color(appearance, "text-dim", palette.border),
+        .pane, .grid {{ background-color: var(--tabard-color-bg); color: var(--tabard-color-text); font-size: {z13:.2}px; }} \
+        .list-section-title, .setting-label {{ color: var(--tabard-color-text-dim); font-size: {z12:.2}px; }} \
+        .list-row, .setting-row {{ color: var(--tabard-color-text); font-size: {z13:.2}px; }} \
+        .list-row.muted, .setting-unsupported {{ color: var(--tabard-color-text-dim); }} \
+        .setting-apply {{ color: var(--tabard-color-text-header); background-color: var(--tabard-color-surface); border: 1px solid var(--tabard-color-text-dim); font-size: {z13:.2}px; }} \
+        .radio {{ color: var(--tabard-color-text); font-size: {z13:.2}px; }} \
+        .toggle {{ color: var(--tabard-color-text); font-size: {z13:.2}px; }} \
+        .radio.selected {{ color: var(--tabard-color-primary); }} \
+        .slider-track {{ background-color: var(--tabard-color-text-dim); }} \
+        .slider-thumb {{ background-color: var(--tabard-color-primary); border-color: var(--tabard-color-text-dim); }}"
     );
-    cambium::stylesheet_at_display_scale(&themed_sheet(appearance, format!("{sheet}\n{}", cambium::SHELL_CSS)), appearance.display_scale)
+    themed_sheet(appearance, format!("{sheet}\n{}", cambium::SHELL_CSS))
 }
 
 /// Where the omnibar caret roughly sits on screen, as `(position, size)` in
@@ -1667,6 +1544,24 @@ fn append_scrollbars(
     }
 }
 
+/// A window's layout scale as Turnstone composes at it: finite and within the
+/// range the native hosts report.
+pub(crate) fn clean_scale(scale: f32) -> f32 {
+    if scale.is_finite() {
+        scale.clamp(0.5, 4.0)
+    } else {
+        1.0
+    }
+}
+
+/// A physical surface size in layout pixels at `scale`.
+pub(crate) fn logical_size((w, h): (u32, u32), scale: f32) -> (u32, u32) {
+    (
+        (w as f32 / scale).round() as u32,
+        (h as f32 / scale).round() as u32,
+    )
+}
+
 /// One pane's Livery/Buckram layout state, retained across frames.
 ///
 /// The DOM remains host-owned, so a mutation refreshes the public Livery
@@ -1683,9 +1578,16 @@ pub struct RetainedLayout {
     mutation_cursor: u64,
     inline: Option<(std::rc::Weak<std::cell::RefCell<RetainedLayout>>, DomNodeId)>,
     snapshot: Option<LiverySnapshot<DomNodeId>>,
+    /// The surface's size in physical pixels: the layout is laid out at
+    /// `size / scale`, and every coordinate crossing this type's boundary is
+    /// physical. See [`RetainedLayout::set_scale`].
     size: (u32, u32),
+    scale: f32,
+    /// The scale `snapshot` was laid out at.
+    laid_at: f32,
     sheet: String,
     rebuilds: u32,
+    /// Scroll offsets inside the layout, in layout (logical) pixels.
     viewport_scroll: (f32, f32),
     element_scroll: HashMap<DomNodeId, (f32, f32)>,
 }
@@ -1708,6 +1610,8 @@ impl RetainedLayout {
             inline: None,
             snapshot: None,
             size: (0, 0),
+            scale: 1.0,
+            laid_at: 1.0,
             sheet: String::new(),
             rebuilds: 0,
             viewport_scroll: (0.0, 0.0),
@@ -1719,6 +1623,25 @@ impl RetainedLayout {
             root,
             ..Self::new()
         }
+    }
+    /// Compose this layout at `scale` physical pixels per layout pixel, the
+    /// convention Graphshell's rootstock host keeps: the sheet and DOM are
+    /// authored and laid out at `size / scale`, the resulting scene is
+    /// rasterized at `scale`, and every point, size and rect this type takes
+    /// or returns stays in physical pixels, so no caller divides pointers.
+    pub(crate) fn set_scale(&mut self, scale: f32) {
+        self.scale = clean_scale(scale);
+    }
+    pub(crate) fn scale(&self) -> f32 {
+        self.scale
+    }
+    /// The laid-out viewport, in layout pixels.
+    fn logical(&self) -> (u32, u32) {
+        logical_size(self.size, self.scale)
+    }
+    fn physical(&self, (x, y, w, h): NodeRect) -> NodeRect {
+        let scale = self.scale;
+        (x * scale, y * scale, w * scale, h * scale)
     }
     pub(crate) fn bind_inline(
         &mut self,
@@ -1773,13 +1696,16 @@ impl RetainedLayout {
     ) -> Option<PaintCmd> {
         let fragment = self.snapshot.as_ref()?.fragments.get(owner)?;
         let (painted_x, painted_y, _, _) = self.painted_rect(dom, owner)?;
-        let x = fragment.x + source.x - painted_x;
-        let y = fragment.y + source.y - painted_y;
+        // The source is a physical window rect; the scene it joins is in
+        // layout pixels.
+        let scale = self.scale;
+        let x = fragment.x + (source.x - painted_x) / scale;
+        let y = fragment.y + (source.y - painted_y) / scale;
         Some(PaintCmd::DrawExternalTexture(
             paint_list_api::ExternalTextureItem {
                 placement: paint_list_api::CommonPlacement::new(paint_list_api::LayoutRect::new(
                     paint_list_api::LayoutPoint::new(x, y),
-                    paint_list_api::LayoutPoint::new(x + source.w, y + source.h),
+                    paint_list_api::LayoutPoint::new(x + source.w / scale, y + source.h / scale),
                 )),
                 texture_key: key,
                 opacity: 1.0,
@@ -2045,6 +1971,7 @@ impl RetainedLayout {
             &self.element_scroll,
             self.viewport_scroll,
         )
+        .map(|rect| self.physical(rect))
     }
 
     pub fn visible_rect(&self, dom: &ScriptedDom, node: DomNodeId) -> Option<NodeRect> {
@@ -2065,8 +1992,9 @@ impl RetainedLayout {
             node,
             &self.element_scroll,
             self.viewport_scroll,
-            self.size,
+            self.logical(),
         )
+        .map(|rect| self.physical(rect))
     }
 
     /// Resolve a painted text point to a byte in this control's descendants.
@@ -2088,6 +2016,7 @@ impl RetainedLayout {
         // moves in one native event batch. Resolve against their current shape.
         let sheet = self.sheet.clone();
         self.ensure(dom, &sheet, self.size.0, self.size.1);
+        let (x, y) = (x / self.scale, y / self.scale);
         let snapshot = self.snapshot.as_ref()?;
         let translated = accumulated_translation(dom, snapshot, node);
         let scroll = ancestor_scroll(dom, node, &self.element_scroll);
@@ -2165,7 +2094,7 @@ impl RetainedLayout {
             .iter()
             .any(|m| !matches!(m, layout_dom_api::DomMutation::AttributeChanged { .. }))
             || missed;
-        let resized = self.size != (w, h);
+        let resized = self.size != (w, h) || self.laid_at != self.scale;
         let resheeted = self.sheet != sheet;
         if self.snapshot.is_some() && mutations.is_empty() && !missed && !resized && !resheeted {
             return;
@@ -2188,16 +2117,18 @@ impl RetainedLayout {
             .map_or_else(TextSystem::new, |snapshot| snapshot.text);
         let scoped =
             cambium_rootstock::WindowDom::new(dom, self.root.unwrap_or_else(|| dom.document()));
-        self.snapshot = Some(build_livery_snapshot(&scoped, sheet, w, h, text));
+        let (lw, lh) = logical_size((w, h), self.scale);
+        self.snapshot = Some(build_livery_snapshot(&scoped, sheet, lw, lh, text));
         self.mutation_cursor = end;
         self.size = (w, h);
+        self.laid_at = self.scale;
         self.sheet = sheet.to_string();
         let extent = self
             .snapshot
             .as_ref()
             .expect("a refreshed snapshot is live")
             .content_extent;
-        self.viewport_scroll = clamp_scroll(self.viewport_scroll, extent, self.size);
+        self.viewport_scroll = clamp_scroll(self.viewport_scroll, extent, (lw, lh));
         if self.root.is_none() {
             let mut observed = Vec::new();
             dom.drain_mutations(&mut observed);
@@ -2214,7 +2145,10 @@ impl RetainedLayout {
     ) -> netrender::Scene {
         match self.scene_resources(dom, sheet, w, h) {
             Ok(translated) => translated.scene,
-            Err(error) => pane_scene(&format!("Surface cannot render: {error}"), w, h),
+            Err(error) => {
+                let (lw, lh) = logical_size((w, h), self.scale);
+                pane_scene(&format!("Surface cannot render: {error}"), lw, lh)
+            },
         }
     }
 
@@ -2237,11 +2171,12 @@ impl RetainedLayout {
             }
         });
         self.inline_leaves.retain(|key, _| live_keys.contains(key));
+        let (lw, lh) = self.logical();
         let mut plist = paint_snapshot(
             &scoped,
             self.snapshot.as_mut().expect("ensure leaves a snapshot"),
-            w,
-            h,
+            lw,
+            lh,
             &self.element_scroll,
             self.viewport_scroll,
         );
@@ -2251,7 +2186,7 @@ impl RetainedLayout {
                 .then(|| self.native_sources.get(&node).cloned())
                 .flatten()
         });
-        composite_resources(DeviceIntSize::new(w as i32, h as i32), &plist)
+        composite_resources(DeviceIntSize::new(lw as i32, lh as i32), &plist)
     }
 
     /// [`scene_from_dom_scrolled`] against the retained layout.
@@ -2265,7 +2200,11 @@ impl RetainedLayout {
     ) -> netrender::Scene {
         if let Some((layout, owner)) = self.inline_target() {
             let mut layout = layout.borrow_mut();
+            let scale = layout.scale;
             let root = self.inline_scroll_root.unwrap_or(owner);
+            // The pane's scroll is physical; the frame's fragments are in
+            // layout pixels.
+            let mut offset = (scroll.offset.0 / scale, scroll.offset.1 / scale);
             if let Some(snapshot) = &layout.snapshot {
                 if let Some(fragment) = snapshot.fragments.get(owner) {
                     let scoped = cambium_rootstock::WindowDom::new(dom, owner);
@@ -2275,48 +2214,49 @@ impl RetainedLayout {
                         fragment.height.round().max(1.0) as u32,
                     );
                     let extent = (extent.0 - fragment.x, extent.1 - fragment.y);
-                    scroll.offset = clamp_scroll(scroll.offset, extent, viewport);
+                    offset = clamp_scroll(offset, extent, viewport);
+                    scroll.offset = (offset.0 * scale, offset.1 * scale);
                     if let Some(bar) = self.inline_bar {
                         let mut commands = LiveryPaintList::new(
                             DeviceIntSize::new(viewport.0 as i32, viewport.1 as i32),
                             0,
                         );
-                        append_scrollbars(
-                            &mut commands,
-                            extent,
-                            viewport,
-                            scroll.offset,
-                            scroll.alpha(),
-                        );
+                        append_scrollbars(&mut commands, extent, viewport, offset, scroll.alpha());
                         layout
                             .inline_leaves
                             .insert(dom.opaque_id(bar), commands.commands().to_vec());
                     }
                 }
             }
-            layout.element_scroll.insert(root, scroll.offset);
+            layout.element_scroll.insert(root, offset);
             return netrender::Scene::default();
         }
 
         self.ensure(dom, sheet, w, h);
+        let (lw, lh) = self.logical();
+        let scale = self.scale;
         let scoped =
             cambium_rootstock::WindowDom::new(dom, self.root.unwrap_or_else(|| dom.document()));
         let snapshot = self.snapshot.as_mut().expect("ensure leaves a snapshot");
-        self.viewport_scroll = clamp_scroll(scroll.offset, snapshot.content_extent, (w, h));
-        scroll.offset = self.viewport_scroll;
-        let viewport = DeviceIntSize::new(w as i32, h as i32);
+        self.viewport_scroll = clamp_scroll(
+            (scroll.offset.0 / scale, scroll.offset.1 / scale),
+            snapshot.content_extent,
+            (lw, lh),
+        );
+        scroll.offset = (self.viewport_scroll.0 * scale, self.viewport_scroll.1 * scale);
+        let viewport = DeviceIntSize::new(lw as i32, lh as i32);
         let mut plist = paint_snapshot(
             &scoped,
             snapshot,
-            w,
-            h,
+            lw,
+            lh,
             &self.element_scroll,
             self.viewport_scroll,
         );
         append_scrollbars(
             &mut plist,
             snapshot.content_extent,
-            (w, h),
+            (lw, lh),
             self.viewport_scroll,
             scroll.alpha(),
         );
@@ -2384,12 +2324,13 @@ impl RetainedLayout {
             },
             cache,
         );
-        let viewport = DeviceIntSize::new(w as i32, h as i32);
+        let (lw, lh) = logical_size(self.size, self.scale);
+        let viewport = DeviceIntSize::new(lw as i32, lh as i32);
         let mut plist = paint_snapshot(
             &scoped,
             snapshot,
-            w,
-            h,
+            lw,
+            lh,
             &self.element_scroll,
             self.viewport_scroll,
         );
@@ -2437,11 +2378,11 @@ impl RetainedLayout {
         snapshot_hit_test(
             &scoped,
             self.snapshot.as_ref().expect("ensure leaves a snapshot"),
-            x,
-            y,
+            x / self.scale,
+            y / self.scale,
             &self.element_scroll,
             self.viewport_scroll,
-            (w, h),
+            self.logical(),
         )
     }
 
@@ -2470,15 +2411,20 @@ impl RetainedLayout {
         let scoped =
             cambium_rootstock::WindowDom::new(dom, self.root.unwrap_or_else(|| dom.document()));
         let snapshot = self.snapshot.as_ref().expect("ensure leaves a snapshot");
-        self.viewport_scroll = clamp_scroll(scroll.offset, snapshot.content_extent, (w, h));
+        let scale = self.scale;
+        self.viewport_scroll = clamp_scroll(
+            (scroll.offset.0 / scale, scroll.offset.1 / scale),
+            snapshot.content_extent,
+            self.logical(),
+        );
         snapshot_hit_test(
             &scoped,
             snapshot,
-            x,
-            y,
+            x / scale,
+            y / scale,
             &self.element_scroll,
             self.viewport_scroll,
-            (w, h),
+            self.logical(),
         )
     }
 }
@@ -2690,7 +2636,11 @@ impl<D: LayoutDom> LayoutDom for SubtreeView<'_, D> {
 /// separately.
 pub struct RetainedSubtreeLayout {
     snapshot: Option<LiverySnapshot<DomNodeId>>,
+    /// Physical size and scale, as [`RetainedLayout`] keeps them: the layout
+    /// runs at `size / scale` and every coordinate at the boundary is physical.
     size: (u32, u32),
+    scale: f32,
+    laid_at: f32,
     sheet: String,
     dirty: bool,
     rebuilds: u32,
@@ -2719,10 +2669,10 @@ impl RetainedSubtreeLayout {
         let view=SubtreeView::new(dom,root);
         let mut point=None;
         for node in nodes.into_iter().filter(|node| scoped.contains(*node)) {
-            let Some((x,y,w,h))=snapshot_visible_rect(&view,snapshot,node,&HashMap::new(),(0.0,0.0),self.size) else {continue};
+            let Some((x,y,w,h))=snapshot_visible_rect(&view,snapshot,node,&HashMap::new(),(0.0,0.0),logical_size(self.size,self.scale)) else {continue};
             if w<=0.0 || h<=0.0 {continue;}
             if point.is_some() {return None;}
-            point=Some((x+w/2.0,y+h/2.0));
+            point=Some(((x+w/2.0)*self.scale,(y+h/2.0)*self.scale));
         }
         point
     }
@@ -2730,11 +2680,18 @@ impl RetainedSubtreeLayout {
         Self {
             snapshot: None,
             size: (0, 0),
+            scale: 1.0,
+            laid_at: 1.0,
             sheet: String::new(),
             dirty: true,
             rebuilds: 0,
             mutation_cursor: 0,
         }
+    }
+
+    /// Compose this root at `scale`, as [`RetainedLayout::set_scale`].
+    pub(crate) fn set_scale(&mut self, scale: f32) {
+        self.scale = clean_scale(scale);
     }
 
     /// How many full cascades this root has paid for.
@@ -2755,7 +2712,7 @@ impl RetainedSubtreeLayout {
     fn ensure(&mut self, dom: &ScriptedDom, root: DomNodeId, sheet: &str, w: u32, h: u32) {
         let (base, pending) = dom.pending_mutations();
         let revision = base + pending.len() as u64;
-        let resized = self.size != (w, h);
+        let resized = self.size != (w, h) || self.laid_at != self.scale;
         let resheeted = self.sheet != sheet;
         if self.snapshot.is_some() && !self.dirty && !resized && !resheeted
             && self.mutation_cursor == revision {
@@ -2776,8 +2733,10 @@ impl RetainedSubtreeLayout {
             .take()
             .map_or_else(TextSystem::new, |snapshot| snapshot.text);
         let view = SubtreeView::new(dom, root);
-        self.snapshot = Some(build_livery_snapshot(&view, sheet, w, h, text));
+        let (lw, lh) = logical_size((w, h), self.scale);
+        self.snapshot = Some(build_livery_snapshot(&view, sheet, lw, lh, text));
         self.size = (w, h);
+        self.laid_at = self.scale;
         self.sheet = sheet.to_string();
         self.dirty = false;
         self.mutation_cursor = revision;
@@ -2793,16 +2752,17 @@ impl RetainedSubtreeLayout {
         h: u32,
     ) -> netrender::Scene {
         self.ensure(dom, root, sheet, w, h);
+        let (lw, lh) = logical_size(self.size, self.scale);
         let view = SubtreeView::new(dom, root);
         let plist = paint_snapshot(
             &view,
             self.snapshot.as_mut().expect("ensure leaves a snapshot"),
-            w,
-            h,
+            lw,
+            lh,
             &HashMap::new(),
             (0.0, 0.0),
         );
-        composite(DeviceIntSize::new(w as i32, h as i32), &plist)
+        composite(DeviceIntSize::new(lw as i32, lh as i32), &plist)
     }
 
     /// Hit-test this root against the same retained layout the frame painted.
@@ -2825,11 +2785,11 @@ impl RetainedSubtreeLayout {
         snapshot_hit_test(
             &view,
             self.snapshot.as_ref().expect("ensure leaves a snapshot"),
-            x,
-            y,
+            x / self.scale,
+            y / self.scale,
             &HashMap::new(),
             (0.0, 0.0),
-            (w, h),
+            logical_size(self.size, self.scale),
         )
     }
     pub(crate) fn app_region_at(
@@ -3040,7 +3000,11 @@ mod tests {
         let tabard::ThemePresentation::Derived(palette) = &resolved.presentation else { unreachable!() };
         assert!(chrome.contains(&palette.css_custom_properties()));
         assert!(chrome.contains("24.00px"), "16px chrome input at 1.5x");
-        assert!(cambium.contains("rgb(248, 249, 252)"));
+        assert!(cambium.contains("var(--tabard-color-bg)"));
+        assert!(
+            !cambium.contains("--tabard-color-bg,") && !chrome.contains("--tabard-color-text,"),
+            "role rules read tabard's properties with no second fallback palette"
+        );
         assert!(cambium.contains("19.50px"), "13px settings text at 1.5x");
         assert!(
             CAMBIUM_SHEET.contains(".radio { color: rgb(220, 226, 238)"),
@@ -3071,11 +3035,10 @@ mod tests {
             let tabard::ThemePresentation::Derived(palette) = &resolved.presentation else {
                 panic!("canonical palette")
             };
-            let expected = rgb((
-                palette.palette.bg.r,
-                palette.palette.bg.g,
-                palette.palette.bg.b,
-            ));
+            let expected = format!(
+                "rgb({}, {}, {})",
+                palette.palette.bg.r, palette.palette.bg.g, palette.palette.bg.b
+            );
             let appearance = crate::shell_services::AppearanceConfig {
                 theme_presentation: Some(resolved.presentation),
                 ..Default::default()

@@ -50,7 +50,8 @@ pub(super) struct ReaderAppearanceObservation {
     pub(super) rect: Rect,
     pub(super) viewport: (u32, u32),
     pub(super) scroll_y: f32,
-    pub(super) display_scale: f32,
+    /// The window's layout scale: the reader's viewport is `rect / layout_scale`.
+    pub(super) layout_scale: f32,
     pub(super) reading_preferences: tabard::ReadingPreferences,
     /// A deterministic group number for source-document identity within this
     /// one observation. It is assigned after sorting by surface id, so receipts
@@ -61,6 +62,7 @@ pub(super) struct ReaderAppearanceObservation {
 impl Shell {
     pub(super) fn reader_appearance_observations(&self) -> Vec<ReaderAppearanceObservation> {
         let plan = self.surface_plan();
+        let layout_scale = self.app.shell_chrome_config().layout_scale(0);
         let mut raw = plan
             .iter()
             .filter_map(|surface| {
@@ -77,7 +79,7 @@ impl Shell {
                         surface.rect,
                         reader.viewport(),
                         reader.scroll_y(),
-                        reader.display_scale(),
+                        layout_scale,
                         reader.reading_preferences(),
                         reader.source_document(),
                     )
@@ -88,7 +90,7 @@ impl Shell {
 
         let mut sources = Vec::new();
         raw.into_iter()
-            .map(|(id, role, rect, viewport, scroll_y, display_scale, reading_preferences, source)| {
+            .map(|(id, role, rect, viewport, scroll_y, layout_scale, reading_preferences, source)| {
                 let source_group = sources
                     .iter()
                     .position(|known| Arc::ptr_eq(known, &source))
@@ -102,7 +104,7 @@ impl Shell {
                     rect,
                     viewport,
                     scroll_y,
-                    display_scale,
+                    layout_scale,
                     reading_preferences,
                     source_group,
                 }
@@ -178,7 +180,7 @@ impl Shell {
             .iter()
             .map(|appearance| {
                 format!(
-                    "id={:#018x} role={} source={} rect={:.0},{:.0} {:.0}x{:.0} viewport={}x{} scroll={} display_scale={} text_size={} column_em={}",
+                    "id={:#018x} role={} source={} rect={:.0},{:.0} {:.0}x{:.0} viewport={}x{} scroll={} layout_scale={} text_size={} column_em={}",
                     appearance.id.0,
                     appearance.role.label(),
                     appearance.source_group,
@@ -189,7 +191,7 @@ impl Shell {
                     appearance.viewport.0,
                     appearance.viewport.1,
                     appearance.scroll_y,
-                    appearance.display_scale,
+                    appearance.layout_scale,
                     appearance.reading_preferences.text_size,
                     appearance.reading_preferences.column_em,
                 )

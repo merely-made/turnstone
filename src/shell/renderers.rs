@@ -79,8 +79,8 @@ pub(crate) struct PaneRenderers {
 impl PaneRenderers {
     /// Refresh host leaf paint and scroll from the measured shared fragments.
     /// State/data sync already ran before mounting, so this does not rebuild owners.
-    pub(crate) fn refresh_inline_paint(&mut self, pane: PaneId, width: u32, height: u32) {
-        macro_rules! find { ($($map:ident),+) => { $(if let Some(view)=self.$map.get_mut(&pane) { view.scene(width, height); return; })+ }; }
+    pub(crate) fn refresh_inline_paint(&mut self, pane: PaneId, width: u32, height: u32, scale: f32) {
+        macro_rules! find { ($($map:ident),+) => { $(if let Some(view)=self.$map.get_mut(&pane) { view.scene(width, height, scale); return; })+ }; }
         find!(
             roster,
             gloss,
@@ -524,7 +524,7 @@ mod tests {
     /// itself uses, so a receipt that passes here cannot be passing through a
     /// door the shell does not have.
     fn click_tab(grid: &mut RosterGrid, label: &str) {
-        let _ = grid.scene(W, H);
+        let _ = grid.scene(W, H, 1.0);
         let (x, y) = grid
             .resolve(&taproot::Selector::class("tab").containing(label), RECT)
             .unwrap_or_else(|| panic!("the strip must draw a {label} tab"));

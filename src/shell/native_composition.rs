@@ -285,7 +285,7 @@ pub(super) fn compose(
                     "surface_id":layer.id, "image_key":external_image_key(key),
                     "producer_key":key, "content_generation":epoch,
                     "device_generation":core.generation(), "dimensions":layer.dimensions,
-                    "native_window_scale":*window_scale, "raster_scale":1.0,
+                    "native_window_scale":*window_scale, "raster_scale":layer.raster_scale,
                     "adapter":{
                         "name":adapter.name, "backend":format!("{:?}", adapter.backend),
                         "vendor":adapter.vendor, "device":adapter.device,
@@ -371,6 +371,8 @@ pub(super) fn compose(
         std::fs::write(path.with_extension("scene.json"), scene.snapshot_json())
             .map_err(|error| Failure::Aperture(id, format!("native scene diagnostic: {error}")))?;
     }
+    // The frame is laid out in layout pixels and rasterized at the window's
+    // layout scale, onto a texture of the window's physical size.
     let (texture, view) = core
         .try_rasterize_scaled_for(
             id,
@@ -378,7 +380,7 @@ pub(super) fn compose(
             size.0,
             size.1,
             ColorLoad::Clear(wgpu::Color::TRANSPARENT),
-            1.0,
+            frame.layout.borrow().scale(),
         )
         .map_err(|failure| Failure::Raster(id, failure))?;
     if let Some((path, pending, _)) = diagnostic {
@@ -401,6 +403,7 @@ pub(super) fn compose(
         kind: SurfaceKind::Frame,
         view,
         raster: Some(raster),
+        raster_scale: frame.layout.borrow().scale(),
         placement: ExternalTexturePlacement::new([0.0, 0.0, size.0 as f32, size.1 as f32]),
     }];
     output.extend(overlays);

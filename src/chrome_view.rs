@@ -163,7 +163,9 @@ impl std::fmt::Debug for DecisionCard {
     }
 }
 
-/// One window's chrome inputs: its size and its caption.
+/// One window's chrome inputs: its size and its caption. The chrome is laid
+/// out in layout pixels: `w` and `h` are the window's physical size over
+/// `scale`, the layout scale its retained layout rasterizes at.
 #[derive(Clone, Debug, Default, PartialEq)]
 struct WindowChrome {
     w: f32,
@@ -172,7 +174,7 @@ struct WindowChrome {
     /// Only the primary window carries the omnibar; lenses show the chip.
     primary: bool,
     titlebar_insets: cambium_rootstock::TitlebarInsets,
-    display_scale: f32,
+    scale: f32,
 }
 
 /// The one chrome state every projection renders (the one-state contract).
@@ -229,11 +231,10 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
     let Some(win) = state.windows.get(slot).cloned() else {
         return Box::new(el::<_, ChromeState, ChromeIntent>("div", ()));
     };
-    let scale = if win.display_scale > 0.0 { win.display_scale } else { 1.0 };
-    let zoom = state.zoom * scale;
+    let zoom = state.zoom;
     let mut children: Vec<ChromeView> = Vec::new();
-    let navigation_height = navigation_height(state.zoom) * scale;
-    let status_height = status_height(state.zoom) * scale;
+    let navigation_height = navigation_height(state.zoom);
+    let status_height = status_height(state.zoom);
     let caption_at_top = matches!(
         state.shellbar_placement,
         ChromePlacement::Docked(ChromeEdge::Top)
@@ -545,9 +546,9 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
             let width = (win.w - 16.0).clamp(
                 0.0,
                 if menu == ChromeMenu::Panes {
-                    420.0 * scale
+                    420.0
                 } else {
-                    360.0 * scale
+                    360.0
                 },
             );
             let row_count = if menu == ChromeMenu::Panes {
@@ -556,8 +557,8 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
                 rows.len()
             };
             let menu_height = if menu == ChromeMenu::Connections {
-                row_count as f32 * (38.0 * scale + 6.0 * zoom) + 16.0 * scale
-            } else { row_count as f32 * (22.0 * scale + 6.0 * zoom) + 16.0 * scale };
+                row_count as f32 * (38.0 + 6.0 * zoom) + 16.0
+            } else { row_count as f32 * (22.0 + 6.0 * zoom) + 16.0 };
             let menu_height = menu_height.min((win.h - title_height - navigation_height - 12.0).max(0.0));
             let top = if state.layout.toolbar_bottom {
                 (navigation_top - menu_height - 4.0).max(title_height)
@@ -950,8 +951,7 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
 }
 
 fn window_title_bar(state: &ChromeState, win: &WindowChrome, slot: usize) -> ChromeView {
-    let scale = if win.display_scale > 0.0 { win.display_scale } else { 1.0 };
-    let height = (navigation_height(state.zoom) * scale).max(win.titlebar_insets.height);
+    let height = navigation_height(state.zoom).max(win.titlebar_insets.height);
     let merged = win.primary && state.shellbar_visible && !state.layout.toolbar_bottom;
     let title: cambium::TitleBarSlot<ChromeState> = Box::new(
         el(
@@ -1097,9 +1097,11 @@ pub(crate) fn workspace_area_for_window(
     height: u32,
 ) -> crate::surface::Rect {
     let primary = slot == 0;
-    let scale = chrome.display_scale(slot);
-    let title = (navigation_height(chrome.appearance.zoom()) * scale)
-        .max(chrome.titlebar_insets.get(&slot).copied().unwrap_or_default().height);
+    // The chrome is laid out in layout pixels; the plan is in physical ones.
+    let scale = chrome.layout_scale(slot);
+    let title = navigation_height(chrome.appearance.zoom())
+        .max(chrome.titlebar_insets.get(&slot).copied().unwrap_or_default().height)
+        * scale;
     let visible = chrome.projects_shellbar();
     let status = if visible {
         status_height(chrome.appearance.zoom()) * scale
@@ -1554,9 +1556,9 @@ impl ChromeSurfaces {
                     state.windows.push(WindowChrome::default());
                 }
                 let win = &mut state.windows[slot];
-                win.display_scale = chrome.display_scale(slot);
-                win.w = w;
-                win.h = h;
+                win.scale = chrome.layout_scale(slot);
+                win.w = w / win.scale;
+                win.h = h / win.scale;
                 win.caption = caption.clone();
                 win.primary = slot == 0;
                 win.titlebar_insets = chrome
@@ -1593,6 +1595,15 @@ impl ChromeSurfaces {
         self.absorb_dom_mutations();
     }
 
+    /// The layout scale `slot`'s chrome was last synced at.
+    fn window_scale(&self, slot: usize) -> f32 {
+        self.runner
+            .state()
+            .windows
+            .get(slot)
+            .map_or(1.0, |win| if win.scale > 0.0 { win.scale } else { 1.0 })
+    }
+
     /// One window's chrome scene: ITS window-root laid out at its own size
     /// through a per-root Livery/Buckram subtree cascade — the true forest-dom F2
     /// path. (This replaced the `display: none` visibility flip the chrome
@@ -1606,11 +1617,13 @@ impl ChromeSurfaces {
         let Some(root) = self.runner.window_root(id) else {
             return netrender::Scene::new(w, h);
         };
-        let sheet = crate::ui::chrome_sheet(&{ let mut a = self.appearance.clone(); a.display_scale = self.runner.state().windows.get(slot).map_or(1.0, |w|w.display_scale.max(0.5)); a });
+        let sheet = crate::ui::chrome_sheet(&self.appearance);
+        let scale = self.window_scale(slot);
         let dom = self.dom.borrow();
         let Some(layout) = self.layouts.get_mut(slot) else {
             return netrender::Scene::new(w, h);
         };
+        layout.set_scale(scale);
         layout.scene(&dom, root, &sheet, w, h)
     }
 
@@ -1629,11 +1642,13 @@ impl ChromeSurfaces {
         let Some(root) = self.runner.window_root(id) else {
             return Default::default();
         };
-        let sheet = crate::ui::chrome_sheet(&{ let mut a = self.appearance.clone(); a.display_scale = self.runner.state().windows.get(slot).map_or(1.0, |w|w.display_scale.max(0.5)); a });
+        let sheet = crate::ui::chrome_sheet(&self.appearance);
+        let scale = self.window_scale(slot);
         let dom = self.dom.borrow();
         let Some(layout) = self.layouts.get_mut(slot) else {
             return Default::default();
         };
+        layout.set_scale(scale);
         layout.app_region_at(&dom, root, &sheet, w, h, x, y)
     }
 
@@ -1649,11 +1664,13 @@ impl ChromeSurfaces {
             let Some(root) = self.runner.window_root(id) else {
                 return Vec::new();
             };
-            let sheet = crate::ui::chrome_sheet(&{ let mut a = self.appearance.clone(); a.display_scale = self.runner.state().windows.get(slot).map_or(1.0, |w|w.display_scale.max(0.5)); a });
+            let sheet = crate::ui::chrome_sheet(&self.appearance);
+            let scale = self.window_scale(slot);
             let dom = self.dom.borrow();
             let Some(layout) = self.layouts.get_mut(slot) else {
                 return Vec::new();
             };
+            layout.set_scale(scale);
             layout.hit_test(&dom, root, &sheet, w, h, x, y)
         };
         let had_menu = slot == 0 && self.runner.state().menu.is_some();
@@ -1761,20 +1778,42 @@ pub(crate) mod tests {
     }
 
     #[test]
-    fn native_density_is_per_window_and_keeps_workspace_reservations_in_step() {
-        let mut app=App::test_stub();
-        let mut config=app.shell_chrome_config().clone();
-        config.native_scales.insert(0,2.0); config.native_scales.insert(1,1.0);
+    fn chrome_is_laid_out_in_layout_pixels_per_window_and_hit_in_physical_ones() {
+        let mut app = App::test_stub();
+        let mut config = app.shell_chrome_config().clone();
+        config.layout_scales.insert(0, 2.0);
+        config.layout_scales.insert(1, 1.0);
         app.set_shell_chrome_config(config.clone());
-        let mut chrome=ChromeSurfaces::new(); chrome.sync(&app,&[(0,1600.,1200.),(1,800.,600.)]);
-        let primary=workspace_area_for_window(&config,0,1600,1200);
-        let lens=workspace_area_for_window(&config,1,800,600);
-        assert!((primary.y-2.0*lens.y).abs()<0.01);
-        assert_eq!(chrome.runner.state().windows[0].display_scale,2.0);
-        assert_eq!(chrome.runner.state().windows[1].display_scale,1.0);
-        assert_eq!(config.appearance.ui_zoom,1.1);
-        assert_eq!(config.appearance_for_window(0).ui_zoom,1.1);
-        assert_ne!(crate::ui::chrome_sheet(&config.appearance_for_window(0)),crate::ui::chrome_sheet(&config.appearance_for_window(1)));
+        let mut chrome = ChromeSurfaces::new();
+        chrome.sync(&app, &[(0, 1600., 1200.), (1, 800., 600.)]);
+        let primary = workspace_area_for_window(&config, 0, 1600, 1200);
+        let lens = workspace_area_for_window(&config, 1, 800, 600);
+        assert!((primary.y - 2.0 * lens.y).abs() < 0.01, "the plan reserves the same chrome in physical pixels");
+        let windows = &chrome.runner.state().windows;
+        assert_eq!((windows[0].scale, windows[0].w, windows[0].h), (2.0, 800.0, 600.0));
+        assert_eq!((windows[1].scale, windows[1].w, windows[1].h), (1.0, 800.0, 600.0));
+        assert_eq!(config.appearance.ui_zoom, 1.1, "native density is not a persisted zoom edit");
+
+        // The scene is in layout pixels (rasterized at 2x); the address field's
+        // physical centre, found through the retained layout, activates it.
+        let scene = chrome.scene(0, 1600, 1200);
+        assert_eq!((scene.viewport_width, scene.viewport_height), (800, 600));
+        let id = chrome.projections[0];
+        let root = chrome.runner.window_root(id).unwrap();
+        let (x, y) = chrome.layouts[0]
+            .selector_point(&chrome.dom.borrow(), root, &taproot::Selector::class("browser-status"))
+            .expect("the address field is on screen");
+        assert!(y < primary.y, "the control sits in the chrome strip above the physical workspace");
+        let intents = chrome.click(0, x, y, 1600, 1200);
+        assert!(intents.iter().any(|intent| matches!(intent, ChromeIntent::Address)));
+        let (x, y) = (x / 2.0, y / 2.0);
+        assert!(
+            !chrome
+                .click(0, x, y, 1600, 1200)
+                .iter()
+                .any(|intent| matches!(intent, ChromeIntent::Address)),
+            "the same point read as physical misses the field"
+        );
     }
 
     #[test]

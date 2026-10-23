@@ -37,7 +37,12 @@ pub struct OuterFrame {
     pub(crate) layout: crate::ui::InlineLayoutHandle,
     workspace: Workspace,
     current: Option<TileId>,
+    /// Physical window size and the layout scale the frame is laid out at:
+    /// its DOM is in layout pixels, `size / scale`.
     size: (u32, u32),
+    scale: f32,
+    /// The scale `prepare` last composed at.
+    laid_scale: f32,
     sheet: String,
     appearance: crate::shell_services::AppearanceConfig,
 }
@@ -88,6 +93,8 @@ impl OuterFrame {
             workspace,
             current: None,
             size: (1, 1),
+            scale: 1.0,
+            laid_scale: 1.0,
             sheet,
             appearance,
             layout: std::rc::Rc::new(std::cell::RefCell::new(crate::ui::RetainedLayout::new_at(
@@ -102,6 +109,11 @@ impl OuterFrame {
             self.main_view_switch = visible;
             self.controls.invalidate();
         }
+    }
+    /// The window's layout scale: the frame's DOM and sheet are in layout
+    /// pixels, `physical / scale`, and its scene is rasterized at `scale`.
+    pub(crate) fn set_layout_scale(&mut self, scale: f32) {
+        self.scale = crate::ui::clean_scale(scale);
     }
     pub(crate) fn set_workspace_area(&mut self, area: Rect) {
         if self.workspace_area != Some(area) {
@@ -118,7 +130,8 @@ impl OuterFrame {
         appearance: &crate::shell_services::AppearanceConfig,
         session: u128,
     ) -> Result<Vec<(PaneId, Rect)>, String> {
-        if self.size != size {
+        let scale = self.scale;
+        if self.size != size || self.laid_scale != scale {
             // WindowDom presents the scope as a synthetic document. Its real
             // styled child owns the viewport box and authored backdrop even
             // when every station is floating.
@@ -128,16 +141,23 @@ impl OuterFrame {
                 cambium::attr_qual("style"),
                 &format!(
                     "position:relative;width:{}px;height:{}px;box-sizing:border-box;",
-                    size.0, size.1
+                    size.0 as f32 / scale,
+                    size.1 as f32 / scale
                 ),
             );
         }
+        self.layout.borrow_mut().set_scale(scale);
         {
             use layout_dom_api::LayoutDomMut;
+            // The plan's area is physical; the frame is laid out in layout
+            // pixels.
             let area = self.workspace_area.unwrap_or(Rect::full(size.0, size.1));
             let style = format!(
                 "position:absolute;left:{}px;top:{}px;width:{}px;height:{}px;",
-                area.x, area.y, area.w, area.h
+                area.x / scale,
+                area.y / scale,
+                area.w / scale,
+                area.h / scale
             );
             let changed = attr(&self.controls.dom.borrow(), self.workspace_root, "style")
                 .as_deref()
@@ -150,7 +170,7 @@ impl OuterFrame {
                 );
             }
         }
-        if &self.appearance != appearance || self.size != size {
+        if &self.appearance != appearance || self.size != size || self.laid_scale != scale {
             self.controls.invalidate();
             self.sheet = crate::frame_style::stylesheet(
                 appearance.theme_presentation.as_ref(),
@@ -159,8 +179,11 @@ impl OuterFrame {
                 &appearance.interface_font_properties,
                 appearance.zoom(),
             );
-            self.sheet = format!("{}\n{}\n.frisket-divider{{flex-basis:1px;}}", crate::ui::cambium_sheet(appearance),
-                cambium::stylesheet_at_display_scale(&self.sheet, appearance.display_scale));
+            self.sheet = format!(
+                "{}\n{}\n.frisket-divider{{flex-basis:1px;}}",
+                crate::ui::cambium_sheet(appearance),
+                self.sheet
+            );
             self.appearance = appearance.clone();
         }
         let frame = layout.outer_workspace()?;
@@ -223,6 +246,7 @@ impl OuterFrame {
         self.workspace = workspace;
         self.current = current;
         self.size = size;
+        self.laid_scale = scale;
         self.scene();
         let scrolls = self.layout.borrow().scroll_stamp();
         if self.scrolls != scrolls {
@@ -275,11 +299,10 @@ impl OuterFrame {
     pub fn scene(&mut self) -> netrender::Scene {
         match self.scene_resources() {
             Ok(translated) => translated.scene,
-            Err(error) => crate::ui::pane_scene(
-                &format!("Frame cannot render: {error}"),
-                self.size.0,
-                self.size.1,
-            ),
+            Err(error) => {
+                let (w, h) = crate::ui::logical_size(self.size, self.scale);
+                crate::ui::pane_scene(&format!("Frame cannot render: {error}"), w, h)
+            },
         }
     }
     /// Resolve only frame-owned furniture. Mounted pane descendants share the

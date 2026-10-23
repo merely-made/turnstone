@@ -59,7 +59,8 @@ impl InlinePane {
             s.height = height;
         });
     }
-    pub(crate) fn scene(&mut self, width: u32, height: u32) -> netrender::Scene {
+    pub(crate) fn scene(&mut self, width: u32, height: u32, scale: f32) -> netrender::Scene {
+        self.layout.set_scale(scale);
         self.layout.scene_scrolled(
             &mut self.mount.dom().borrow_mut(),
             crate::ui::CAMBIUM_SHEET,

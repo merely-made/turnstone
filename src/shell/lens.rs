@@ -333,13 +333,13 @@ impl Shell {
         let mut surface_failures = Vec::new();
         // Pass 1 keeps scene construction and imported frames in plan order.
         let mut scenes: Vec<PlannedLayer> = Vec::with_capacity(surfaces.len());
+        let scale = self.app.shell_chrome_config().layout_scale(ordinal + 1);
         for surface in &surfaces {
             let rect = surface.rect;
             let (rw, rh) = (
                 rect.w.round().max(1.0) as u32,
                 rect.h.round().max(1.0) as u32,
             );
-            let mut scale = 1.0_f32;
             let (scene, clear) = match surface.kind {
                 crate::surface::SurfaceKind::Graph(pane) => {
                     let (scene, anim) = self
@@ -349,7 +349,6 @@ impl Shell {
                     self.save_ready_graph_scene(pane);
                     animating |= anim;
                     animating |= self.app.resolve_pending_images() > 0;
-                    scale = self.app.pane_layout_scale(pane);
                     (scene, crate::map_theme::clear_color(self.app.map_theme()))
                 },
                 crate::surface::SurfaceKind::Pane(pid) => {
@@ -451,7 +450,7 @@ impl Shell {
                 kind: crate::surface::SurfaceKind::Chrome,
                 placement: ExternalTexturePlacement::new([0.0, 0.0, lw as f32, lh as f32]),
                 dims: (lw, lh),
-                scale: 1.0,
+                scale,
                 scene,
                 clear: wgpu::Color::TRANSPARENT,
             }));
@@ -500,6 +499,7 @@ impl Shell {
                             kind: scene.kind,
                             view,
                             raster: Some(raster),
+                            raster_scale: scene.scale,
                             placement: scene.placement,
                         })
                     },
@@ -934,7 +934,8 @@ impl Shell {
                     && let Some(placement) = self.content_sessions.pool.placement(&appearance)
                     && placement.window == ordinal as u64 + 1
                 {
-                    let local = (x - placement.rect.x, y - placement.rect.y);
+                    let scale = placement.scale_factor;
+                    let local = (x - placement.rect.x * scale, y - placement.rect.y * scale);
                     self.content_mouse(appearance, local, inker::PointerPhase::Move, None);
                     return;
                 }
