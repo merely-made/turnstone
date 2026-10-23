@@ -66,26 +66,17 @@ fn live_choice(field: Field, intent: fn(String) -> ArrangeIntent) -> ArrangeView
     ))
 }
 
-/// A field whose edit lands in the form instead of applying.
+/// A field whose edit lands in the form instead of applying. Shares and
+/// frames are typed text, as the model keeps them; it validates on apply.
 fn draft_field(field: Field) -> ArrangeView {
     let id = field.id;
-    let mut integer = false;
+    let typed = matches!(field.control, Control::Number { .. });
     let (control, value) = match field.control {
         Control::Choice { options, current } => (
             choice_control(options_of(&options)),
             SettingValue::Text(current.to_string()),
         ),
-        Control::Number { text, min, integer: whole } => {
-            integer = whole;
-            (
-                SettingControl::Number {
-                    min: Some(min),
-                    max: None,
-                    step: None,
-                },
-                SettingValue::Number(text.trim().parse().unwrap_or(min)),
-            )
-        },
+        Control::Number { text, .. } => (SettingControl::Text, SettingValue::Text(text)),
         Control::Toggle(on) => (SettingControl::Toggle, SettingValue::Boolean(on)),
     };
     let spec = spec(&id.key(), &field.label, control, value);
@@ -94,12 +85,11 @@ fn draft_field(field: Field) -> ArrangeView {
         &field.label,
         move |state: &mut ArrangeState, value: SettingValue| {
             match value {
+                SettingValue::Text(text) if typed => {
+                    state.form.enter(id, &text);
+                },
                 SettingValue::Text(option) => {
                     state.form.choose(id, &option);
-                },
-                SettingValue::Number(number) if number.is_finite() => {
-                    let number = if integer { number.round() } else { number };
-                    state.form.enter(id, &number.to_string());
                 },
                 SettingValue::Boolean(on) => {
                     state.form.tick(id, on);
