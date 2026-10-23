@@ -79,19 +79,17 @@ impl App {
         effects
     }
 
-    pub(super) fn insert_document_find(&mut self, text: String) -> Vec<Effect> {
-        if !self.document_find.open || text.is_empty() {
+    pub(super) fn edit_document_find(&mut self, input: cambium::TextInput) -> Vec<Effect> {
+        if !self.document_find.open {
             return Vec::new();
         }
-        self.document_find.query.push_str(&text);
-        self.replace_document_find()
-    }
-
-    pub(super) fn backspace_document_find(&mut self) -> Vec<Effect> {
-        if !self.document_find.open || self.document_find.query.pop().is_none() {
-            return Vec::new();
+        let changed = self.document_find.query() != input.text();
+        self.document_find.input = input;
+        if changed {
+            self.replace_document_find()
+        } else {
+            vec![Effect::Redraw]
         }
-        self.replace_document_find()
     }
 
     fn replace_document_find(&mut self) -> Vec<Effect> {
@@ -99,17 +97,17 @@ impl App {
             return vec![Effect::Redraw];
         };
         self.document_find.request = self.document_find.request.wrapping_add(1).max(1);
-        self.document_find.pending = !self.document_find.query.is_empty();
+        self.document_find.pending = !self.document_find.query().is_empty();
         self.document_find.model = DocumentFindModel::default();
         self.document_find.error = None;
-        if self.document_find.query.is_empty() {
+        if self.document_find.query().is_empty() {
             return vec![Effect::ClearContentFind { node }, Effect::Redraw];
         }
         vec![
             Effect::FindContent {
                 node,
                 request: self.document_find.request,
-                query: self.document_find.query.clone(),
+                query: self.document_find.query().to_owned(),
                 direction: DocumentFindDirection::Next,
                 find_next: false,
             },
@@ -121,7 +119,7 @@ impl App {
         let Some(node) = self.document_find.target else {
             return Vec::new();
         };
-        if !self.document_find.open || self.document_find.query.is_empty() {
+        if !self.document_find.open || self.document_find.query().is_empty() {
             return Vec::new();
         }
         self.document_find.request = self.document_find.request.wrapping_add(1).max(1);
@@ -130,7 +128,7 @@ impl App {
         vec![Effect::FindContent {
             node,
             request: self.document_find.request,
-            query: self.document_find.query.clone(),
+            query: self.document_find.query().to_owned(),
             direction,
             find_next: true,
         }]
@@ -146,7 +144,7 @@ impl App {
         if !self.document_find.open
             || self.document_find.target != Some(node)
             || self.document_find.request != request
-            || self.document_find.query != query
+            || self.document_find.query() != query
         {
             return Vec::new();
         }
@@ -230,7 +228,7 @@ mod tests {
         );
         app.update(Action::OpenDocumentFind);
         assert_eq!(app.document_find.target, Some(a));
-        let effects = app.update(Action::InsertDocumentFind("needle".into()));
+        let effects = app.update(Action::EditDocumentFind(cambium::TextInput::new("needle")));
         assert!(
             effects
                 .iter()
@@ -299,7 +297,7 @@ mod tests {
         note_findable(&mut app, node);
 
         app.update(Action::OpenDocumentFind);
-        let effects = app.update(Action::InsertDocumentFind("needle".into()));
+        let effects = app.update(Action::EditDocumentFind(cambium::TextInput::new("needle")));
         let (request, query) = effects
             .iter()
             .find_map(|effect| match effect {
@@ -307,7 +305,7 @@ mod tests {
                 _ => None,
             })
             .expect("typed find effect");
-        app.update(Action::InsertDocumentFind("s".into()));
+        app.update(Action::EditDocumentFind(cambium::TextInput::new("needles")));
 
         let effects = app.apply_update(Update::DocumentFindChanged {
             node,
@@ -338,7 +336,7 @@ mod tests {
         let node = app.graph_runtimes.focused_member().expect("focused member");
         note_findable(&mut app, node);
         app.update(Action::OpenDocumentFind);
-        let effects = app.update(Action::InsertDocumentFind("needle".into()));
+        let effects = app.update(Action::EditDocumentFind(cambium::TextInput::new("needle")));
         let request = effects
             .iter()
             .find_map(|effect| match effect {
@@ -396,7 +394,7 @@ mod tests {
         let node = app.graph_runtimes.focused_member().expect("focused member");
         note_findable(&mut app, node);
         app.update(Action::OpenDocumentFind);
-        let effects = app.update(Action::InsertDocumentFind("needle".into()));
+        let effects = app.update(Action::EditDocumentFind(cambium::TextInput::new("needle")));
         let request = effects
             .iter()
             .find_map(|effect| match effect {

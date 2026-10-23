@@ -77,6 +77,37 @@ fn content_scroll_key(key: &WinitKey, shift: bool) -> Option<SessionScrollKey> {
 }
 
 impl Shell {
+    /// The key as a Cambium event with the shell's tracked modifiers.
+    pub(super) fn cambium_key(&self, key: &WinitKey) -> Option<cambium::KeyEvent> {
+        cambium_winit::key_event_from_winit(
+            key,
+            cambium::Modifiers {
+                shift: self.shift,
+                ctrl: self.ctrl,
+                alt: self.alt,
+                meta: self.meta,
+            },
+        )
+    }
+
+    /// Deliver a key or IME event to the open find field. The field's shared
+    /// key map answers; the shell only lowers what it reports.
+    pub(super) fn deliver_find_key(&mut self, event: cambium::KeyEvent) {
+        let mut sizes = vec![(0, self.width as f32, self.height as f32)];
+        sizes.extend(
+            self.lens_windows
+                .values()
+                .map(|lens| (lens.ordinal + 1, lens.width as f32, lens.height as f32)),
+        );
+        self.chrome.sync(&self.app, &sizes);
+        for reported in self.chrome.find_key(event) {
+            if let Some(action) = crate::document_find::find_action(reported) {
+                self.act(action);
+            }
+        }
+        self.request_redraw();
+    }
+
     /// Self-drive committed text exercises producer dispatch without claiming
     /// a platform IME composition or physical-keyboard acceptance receipt.
     pub(super) fn type_surface_text(&mut self, text: &str) -> bool {
@@ -440,8 +471,7 @@ impl Shell {
             self.act(Action::Reading(crate::reading_view::ReadAction::Command(target, cambium::ReadCommand::CloseFind)));
             return;
         }
-        if matches!(key, WinitKey::Character(value) if (self.ctrl || self.meta) && value.eq_ignore_ascii_case("f"))
-        {
+        if self.cambium_key(key).as_ref().is_some_and(cambium::is_find_shortcut) {
             if let Some(target) = self.app.focused_read_target() {
                 self.act(Action::Reading(crate::reading_view::ReadAction::Command(target, cambium::ReadCommand::Find)));
             } else { self.act(Action::OpenDocumentFind); }
@@ -462,26 +492,8 @@ impl Shell {
             return;
         }
         if self.app.document_find.open {
-            let action = match key {
-                WinitKey::Named(WinitNamedKey::Escape) => Some(Action::CloseDocumentFind),
-                WinitKey::Named(WinitNamedKey::Enter) => {
-                    Some(Action::StepDocumentFind(if self.shift {
-                        crate::action::DocumentFindDirection::Previous
-                    } else {
-                        crate::action::DocumentFindDirection::Next
-                    }))
-                },
-                WinitKey::Named(WinitNamedKey::Backspace) => Some(Action::BackspaceDocumentFind),
-                WinitKey::Named(WinitNamedKey::Space) => {
-                    Some(Action::InsertDocumentFind(" ".into()))
-                },
-                WinitKey::Character(text) if !self.ctrl && !self.alt => {
-                    Some(Action::InsertDocumentFind(text.to_string()))
-                },
-                _ => None,
-            };
-            if let Some(action) = action {
-                self.act(action);
+            if let Some(event) = self.cambium_key(key) {
+                self.deliver_find_key(event);
             }
             return;
         }

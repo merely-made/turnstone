@@ -332,7 +332,7 @@ impl Shell {
         // runners, for keys as well as pointers. The former direct
         // EditKey->omnibar-Action map only ever reached the omnibar.
         let (winit_key, ctrl) = match key {
-            EditKey::Enter => (WinitKey::Named(WinitNamedKey::Enter), false),
+            EditKey::Enter | EditKey::ShiftEnter => (WinitKey::Named(WinitNamedKey::Enter), false),
             EditKey::Escape => (WinitKey::Named(WinitNamedKey::Escape), false),
             EditKey::Tab | EditKey::BackTab => (WinitKey::Named(WinitNamedKey::Tab), false),
             EditKey::FrameFocus => (WinitKey::Named(WinitNamedKey::F6), true),
@@ -341,7 +341,7 @@ impl Shell {
             EditKey::Delete => (WinitKey::Named(WinitNamedKey::Delete), false),
             EditKey::Up => (WinitKey::Named(WinitNamedKey::ArrowUp), false),
             EditKey::Down => (WinitKey::Named(WinitNamedKey::ArrowDown), false),
-            EditKey::Left => (WinitKey::Named(WinitNamedKey::ArrowLeft), false),
+            EditKey::Left | EditKey::ShiftLeft => (WinitKey::Named(WinitNamedKey::ArrowLeft), false),
             EditKey::Right | EditKey::ShiftRight => {
                 (WinitKey::Named(WinitNamedKey::ArrowRight), false)
             },
@@ -357,7 +357,10 @@ impl Shell {
         };
         let previous_ctrl = self.ctrl;
         let previous_shift = self.shift;
-        self.shift |= matches!(key, EditKey::BackTab | EditKey::ShiftRight);
+        self.shift |= matches!(
+            key,
+            EditKey::BackTab | EditKey::ShiftRight | EditKey::ShiftLeft | EditKey::ShiftEnter
+        );
         self.ctrl |= ctrl;
         // Match the text accompanying a native winit key press. In
         // Chromium, Enter's carriage-return char event activates the
@@ -927,6 +930,8 @@ impl taproot::Automatable for Shell {
         if let Some(find) = snap.document_find {
             out = out
                 .with_field("document-find-query", find.query)
+                .with_field("document-find-caret", find.caret.to_string())
+                .with_field("document-find-selection", find.selection)
                 .with_field("document-find-count", find.count.to_string())
                 .with_field(
                     "document-find-current",
@@ -1541,7 +1546,12 @@ impl Shell {
                         return Err("type: the active decision has no text field".into());
                     }
                 } else if self.app.document_find.open {
-                    self.act(Action::InsertDocumentFind(text.clone()));
+                    for character in text.chars() {
+                        let key = winit::keyboard::Key::Character(character.to_string().into());
+                        if let Some(event) = self.cambium_key(&key) {
+                            self.deliver_find_key(event);
+                        }
+                    }
                 } else if !self.app.omnibar.open && self.type_surface_text(text) {
                     // Commit through the same producer key stream as winit.
                 } else {
@@ -1558,7 +1568,9 @@ impl Shell {
                         return Err("insert: the active decision has no text field".into());
                     }
                 } else if self.app.document_find.open {
-                    self.act(Action::InsertDocumentFind(text.clone()));
+                    self.deliver_find_key(cambium_winit::ime_event_from_winit(
+                        &winit::event::Ime::Commit(text.clone()),
+                    ));
                 } else if self.app.omnibar.open {
                     self.act(Action::OmnibarInsert(text.clone()));
                 } else if self.deliver_contributed_ime(&winit::event::Ime::Commit(text.clone())) {
