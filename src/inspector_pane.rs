@@ -481,7 +481,8 @@ impl InspectorPane {
     }
 
     /// The pane's scene at its size, under the host's cambium sheet.
-    pub fn scene(&mut self, w: u32, h: u32) -> netrender::Scene {
+    pub fn scene(&mut self, w: u32, h: u32, scale: f32) -> netrender::Scene {
+        self.layout.set_scale(scale);
         self.layout.scene_scrolled(
             &mut self.dom.borrow_mut(),
             crate::ui::cambium_shell_sheet(),

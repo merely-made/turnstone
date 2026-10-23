@@ -20,12 +20,15 @@ pub(super) enum ContentKey {
 }
 
 pub(super) struct HostPlacement {
+    /// The surface in the window's physical plan.
     pub surface: Surface,
     pub window: u64,
     pub focused: bool,
+    /// The window's layout scale. The pool keeps `rect` in layout pixels
+    /// (`surface.rect / scale_factor`): documents are laid out and rasterized
+    /// at that size and scale, and surface producers convert to physical
+    /// pixels at their own boundary.
     pub scale_factor: f32,
-    /// Reading type is authored in logical pixels, while this plan is physical.
-    pub reading_scale: f32,
     pub reading_preferences: tabard::ReadingPreferences,
 }
 
@@ -35,37 +38,25 @@ impl HostPlacement {
         window: u64,
         active: bool,
         focus: crate::surface::FocusTarget,
-        native_scale: f64,
+        scale: f64,
     ) -> Self {
-        Self::physical(
+        Self::at(
             surface,
             window,
             active
                 && matches!(focus, crate::surface::FocusTarget::Content { node, appearance }
                 if surface.kind == crate::surface::SurfaceKind::Content(node) && surface.id == appearance),
-            native_scale,
+            scale,
         )
     }
 
-    /// Surface plans already use physical pixels. Native display scale is
-    /// intentionally observed here without applying it again to content.
-    pub(super) fn physical(
-        surface: Surface,
-        window: u64,
-        focused: bool,
-        native_scale: f64,
-    ) -> Self {
+    pub(super) fn at(surface: Surface, window: u64, focused: bool, scale: f64) -> Self {
         Self {
             surface,
             window,
             focused,
-            scale_factor: 1.0,
+            scale_factor: crate::ui::clean_scale(scale as f32),
             reading_preferences: Default::default(),
-            reading_scale: if native_scale.is_finite() {
-                (native_scale as f32).clamp(0.5, 4.0)
-            } else {
-                1.0
-            },
         }
     }
 }
@@ -205,22 +196,25 @@ impl NodeDocuments {
                 if let Some(reader) = session.as_any()
                     .downcast_mut::<mere_document_lanes::ReaderDocumentSession>()
                 {
-                    reader.set_display_scale(host.reading_scale);
                     let _ = reader.set_reading_preferences(host.reading_preferences);
                 } else if let Some(document) = session.as_any()
                     .downcast_mut::<mere_document_lanes::SmolwebDocumentSession>()
                 {
-                    document.document_mut().set_display_scale(host.reading_scale);
                     let _ = document.document_mut().set_reading_preferences(host.reading_preferences);
                 }
             }
-            let r = host.surface.rect;
+            let (r, scale) = (host.surface.rect, host.scale_factor);
             arranged.push((
                 host.surface.id,
                 pelt_core::PeltPlacement {
                     content: key,
                     window: host.window,
-                    rect: pelt_core::WorkspaceRect::new(r.x, r.y, r.w, r.h),
+                    rect: pelt_core::WorkspaceRect::new(
+                        r.x / scale,
+                        r.y / scale,
+                        r.w / scale,
+                        r.h / scale,
+                    ),
                     visible: true,
                     focused: host.focused,
                     scale_factor: host.scale_factor,
@@ -504,18 +498,18 @@ mod tests {
     }
 
     #[test]
-    fn physical_placements_do_not_apply_native_dpi_twice() {
+    fn placements_carry_the_windows_layout_scale_over_the_physical_plan() {
         let surface = Surface {
             id: SurfaceId(3),
             kind: SurfaceKind::Content(uuid::Uuid::from_u128(3)),
             rect: Rect::new(20.0, 30.0, 640.0, 480.0),
         };
         for scale in [2.0, 0.75] {
-            let placement = HostPlacement::physical(surface, 1, false, scale);
-            assert_eq!(placement.surface.rect, surface.rect);
-            assert_eq!(placement.scale_factor, 1.0);
-            assert_eq!(placement.reading_scale, scale as f32);
+            let placement = HostPlacement::at(surface, 1, false, scale);
+            assert_eq!(placement.surface.rect, surface.rect, "the plan stays physical");
+            assert_eq!(placement.scale_factor, scale as f32);
         }
+        assert_eq!(HostPlacement::at(surface, 1, false, f64::NAN).scale_factor, 1.0);
     }
 
     #[test]
@@ -913,8 +907,7 @@ mod tests {
                     },
                     window: 0,
                     focused: true,
-                    scale_factor: 1.,
-                    reading_scale: 2.,
+                    scale_factor: 2.,
                     reading_preferences: Default::default(),
                 },
                 HostPlacement {
@@ -926,7 +919,6 @@ mod tests {
                     window: 1,
                     focused: false,
                     scale_factor: 1.,
-                    reading_scale: 1.,
                     reading_preferences: tabard::ReadingPreferences {text_size:20,column_em:32},
                 },
             ]
@@ -957,9 +949,11 @@ mod tests {
             "the same-scheme link adornment has a supplied symbol face");
         assert!(scene.fonts.iter().any(|font| font.data.as_ref() == READING_SYMBOL_FONT));
         assert!(contents.pool.frame(&SurfaceId(12)).is_some());
-        assert_eq!(reader(&contents, &first).viewport(), (640, 400));
-        assert_eq!(reader(&contents, &first).display_scale(), 2.0);
-        assert_eq!(reader(&contents, &second).display_scale(), 1.0);
+        assert_eq!(
+            reader(&contents, &first).viewport(),
+            (320, 200),
+            "a 2x window lays its physical 640x400 plan rect out in layout pixels"
+        );
         assert_eq!(reader(&contents, &first).reading_preferences(),Default::default());
         assert_eq!(reader(&contents, &second).reading_preferences(),tabard::ReadingPreferences{text_size:20,column_em:32});
         assert_eq!(reader(&contents, &second).viewport(), (640, 300));

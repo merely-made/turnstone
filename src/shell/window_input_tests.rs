@@ -1245,8 +1245,7 @@ fn review_overlap_native_reader_appearances_wheel_mutates_only_top_view() {
                 window: 0,
                 focused: false,
                 scale_factor: 1.,
-                reading_scale: 1.,
-                    reading_preferences: Default::default(),
+                reading_preferences: Default::default(),
             })
             .collect(),
         engines,
@@ -1328,6 +1327,8 @@ struct CallerCaptureFixture {
     pointers: [Arc<Mutex<Vec<inker::PointerEvent>>>; 2],
     inputs: [Arc<Mutex<Vec<inker::SessionInput>>>; 2],
     buttons: HashMap<u64, PointerButtons>,
+    /// The window's layout scale the placements are registered at.
+    scale: f64,
 }
 impl CallerCaptureFixture {
     fn new(window: u64, document: Option<bool>) -> Self {
@@ -1424,6 +1425,7 @@ impl CallerCaptureFixture {
             pointers,
             inputs,
             buttons: HashMap::new(),
+            scale: 1.,
         };
         fixture.sync(true);
         fixture
@@ -1445,7 +1447,7 @@ impl CallerCaptureFixture {
                     self.window,
                     active,
                     self.app.focus,
-                    2.,
+                    self.scale,
                 )
             })
             .collect();
@@ -1498,15 +1500,19 @@ impl CallerCaptureFixture {
             );
         }
         self.sync(true);
-        let rect = self.contents.pool.placement(&target.id).unwrap().rect;
+        let placement = self.contents.pool.placement(&target.id).unwrap();
+        let (x, y) = (
+            placement.rect.x * placement.scale_factor,
+            placement.rect.y * placement.scale_factor,
+        );
         content_mouse_input(
             &mut self.contents.pool,
             &self.buttons,
             self.window,
             Some(target.id),
             PhysicalPosition {
-                x: target.local.0 + rect.x,
-                y: target.local.1 + rect.y,
+                x: target.local.0 + x,
+                y: target.local.1 + y,
             },
             PointerPhase::Down,
             Some(button),
@@ -1640,6 +1646,27 @@ fn caller_capture_gesture(window: u64) {
     );
     assert_eq!(f.pointers[0].lock().unwrap().len(), 5);
     assert!(f.pointers[1].lock().unwrap().is_empty());
+}
+#[test]
+fn a_scaled_window_delivers_producer_pointers_in_physical_local_pixels() {
+    // The pool places content in layout pixels and the host divides physical
+    // pointers once; the surface producer, which owns physical pixels,
+    // receives the same local point it did before windows composed at a scale.
+    let mut f = CallerCaptureFixture::new(0, None);
+    f.scale = 2.;
+    f.sync(true);
+    let rect = f.surfaces[0].rect;
+    let placement = f.contents.pool.placement(&f.surfaces[0].id).unwrap().clone();
+    assert_eq!(placement.scale_factor, 2.);
+    assert_eq!(
+        (placement.rect.x, placement.rect.width),
+        (rect.x / 2., rect.w / 2.),
+        "the pool's rect is the physical plan over the layout scale"
+    );
+    assert!(f.press(0, inker::MouseButton::Left).1.handled);
+    let delivered = f.pointers[0].lock().unwrap().last().unwrap().position;
+    assert!((delivered.x - rect.w / 2.).abs() < 0.01, "{delivered:?}");
+    assert!((delivered.y - rect.h / 2.).abs() < 0.01, "{delivered:?}");
 }
 fn caller_capture_effect(window: u64, submit: bool) {
     let mut f = CallerCaptureFixture::new(window, Some(submit));

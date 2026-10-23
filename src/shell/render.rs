@@ -73,6 +73,7 @@ impl Shell {
                 kind: surface.kind,
                 view: frame.view(),
                 raster: None,
+                raster_scale: 1.0,
                 // The importer sources carry explicit premultiplied output
                 // conventions; legacy direct composition must preserve them
                 // just as the shared staging lane does.
@@ -547,15 +548,20 @@ impl Shell {
         rw: u32,
         rh: u32,
     ) -> Scene {
+        // The pane's rect is physical; it is laid out at `physical / scale`
+        // and its scene rasterized at `scale`.
+        let scale = self.app.pane_layout_scale(pane_id);
+        let (pw, ph) = (rw as f32 / scale, rh as f32 / scale);
+        let (lw, lh) = ((pw.round() as u32).max(1), (ph.round() as u32).max(1));
         if let Some(spec) = self.contributed_pane_spec(pane_id, content) {
             return match self
                 .renderers
                 .contributed
                 .resolve(&spec, &self.surface_providers)
             {
-                Ok(pane) => pane.scene(rw, rh, 1.0),
+                Ok(pane) => pane.scene(rw, rh, scale),
                 Err(error) => {
-                    crate::ui::pane_scene(&format!("Surface admission failed: {error}"), rw, rh)
+                    crate::ui::pane_scene(&format!("Surface admission failed: {error}"), lw, lh)
                 },
             };
         }
@@ -570,8 +576,8 @@ impl Shell {
                     .trail
                     .entry(pane_id)
                     .or_insert_with(|| crate::trail_pane::TrailPane::new_in(mount()));
-                pane.sync(&self.app, rw as f32, rh as f32);
-                pane.scene(rw, rh)
+                pane.sync(&self.app, pw, ph);
+                pane.scene(rw, rh, scale)
             },
             Some(PaneContent::Roster) => {
                 // The retained cambium grid: refresh it from graph truth at
@@ -581,8 +587,8 @@ impl Shell {
                     .roster
                     .entry(pane_id)
                     .or_insert_with(|| crate::cambium_pane::RosterGrid::new_in(mount()));
-                grid.sync(&self.app, pane_id, rw as f32, rh as f32);
-                grid.scene(rw, rh)
+                grid.sync(&self.app, pane_id, pw, ph);
+                grid.scene(rw, rh, scale)
             },
             Some(PaneContent::Gloss(cfg)) => {
                 // The minimap: the swatch's custom-paint leaf renders through
@@ -598,8 +604,8 @@ impl Shell {
                     )
                 });
                 pane.set_sections(providers);
-                pane.sync(&self.app, rw as f32, rh as f32);
-                pane.scene(rw, rh)
+                pane.sync(&self.app, pw, ph);
+                pane.scene(rw, rh, scale)
             },
             Some(PaneContent::Inspector) => {
                 let admission = self.renderers.inspector.entry(pane_id)
@@ -609,13 +615,13 @@ impl Shell {
                 pane.sync(
                     &self.app,
                     pane_id,
-                    rw as f32,
-                    rh as f32,
+                    pw,
+                    ph,
                     clip_target.as_deref(),
                     clip_offer,
                     &clip_status,
                 );
-                pane.scene(rw, rh)
+                pane.scene(rw, rh, scale)
             },
             Some(PaneContent::Workbench) => {
                 // The tiling's furniture: tab strips + cell bodies. Tile
@@ -628,7 +634,7 @@ impl Shell {
                     .entry(pane_id)
                     .or_insert_with(|| crate::workbench_pane::WorkbenchPane::new_in(mount()));
                 pane.sync(&self.app, pane_id, rw as f32, rh as f32);
-                pane.scene(rw, rh)
+                pane.scene(rw, rh, scale)
             },
             Some(PaneContent::Registered(kind))
                 if kind.as_str() == crate::panes::kind::TRANSCRIPT =>
@@ -640,8 +646,8 @@ impl Shell {
                     .transcript
                     .entry(pane_id)
                     .or_insert_with(|| crate::transcript_pane::TranscriptPane::new_in(mount()));
-                pane.sync(self.app.shell_transcript(), rw as f32, rh as f32);
-                pane.scene(rw, rh)
+                pane.sync(self.app.shell_transcript(), pw, ph);
+                pane.scene(rw, rh, scale)
             },
             Some(PaneContent::Registered(kind)) if kind.as_str() == crate::panes::kind::ARRANGE => {
                 let pane = self
@@ -649,8 +655,8 @@ impl Shell {
                     .arrange
                     .entry(pane_id)
                     .or_insert_with(|| crate::arrange_pane::ArrangePane::new_in(mount()));
-                pane.sync_for_pane(&self.app, pane_id, rw as f32, rh as f32);
-                pane.scene(rw, rh)
+                pane.sync_for_pane(&self.app, pane_id, pw, ph);
+                pane.scene(rw, rh, scale)
             },
             Some(PaneContent::Registered(kind))
                 if kind.as_str() == crate::panes::kind::SETTINGS =>
@@ -663,8 +669,8 @@ impl Shell {
                         Some(live_settings),
                     )
                 });
-                pane.sync(rw as f32, rh as f32);
-                pane.scene(rw, rh)
+                pane.sync(pw, ph);
+                pane.scene(rw, rh, scale)
             },
             Some(PaneContent::Registered(kind))
                 if kind.as_str() == crate::panes::kind::PUBLISHING =>
@@ -674,8 +680,8 @@ impl Shell {
                     self.renderers.publish.entry(pane_id).or_insert_with(|| {
                         crate::publish_pane::PublishPane::new_in(mount(), service)
                     });
-                pane.sync(rw as f32, rh as f32);
-                pane.scene(rw, rh)
+                pane.sync(pw, ph);
+                pane.scene(rw, rh, scale)
             },
             Some(PaneContent::Registered(kind))
                 if kind.as_str() == crate::panes::kind::SHARED_KNOT =>
@@ -688,8 +694,8 @@ impl Shell {
                     .or_insert_with(|| {
                         crate::share_reader_pane::SharedKnotPane::new_in(mount(), service)
                     });
-                pane.sync(rw as f32, rh as f32);
-                pane.scene(rw, rh)
+                pane.sync(pw, ph);
+                pane.scene(rw, rh, scale)
             },
             Some(PaneContent::Registered(kind))
                 if kind.as_str() == crate::panes::kind::DEVICE_RECEIPTS =>
@@ -702,8 +708,8 @@ impl Shell {
                     .or_insert_with(|| {
                         crate::device_receipts_pane::DeviceReceiptsPane::new_in(mount(), service)
                     });
-                pane.sync(rw as f32, rh as f32);
-                pane.scene(rw, rh)
+                pane.sync(pw, ph);
+                pane.scene(rw, rh, scale)
             },
             Some(PaneContent::Registered(kind))
                 if kind.as_str() == crate::panes::kind::FROZEN_PROJECTION =>
@@ -715,8 +721,8 @@ impl Shell {
                     .or_insert_with(|| {
                         crate::frozen_projection_pane::FrozenProjectionPane::new_in(mount())
                     });
-                pane.sync(&self.app, rw as f32, rh as f32);
-                pane.scene(rw, rh)
+                pane.sync(&self.app, pw, ph);
+                pane.scene(rw, rh, scale)
             },
             Some(PaneContent::Overmap(cfg)) => {
                 // The switcher as a graph view (overmap O1): sessions as
@@ -732,8 +738,8 @@ impl Shell {
                     )
                 });
                 pane.set_sections(providers);
-                pane.sync(&self.app, rw as f32, rh as f32);
-                pane.scene(rw, rh)
+                pane.sync(&self.app, pw, ph);
+                pane.scene(rw, rh, scale)
             },
             other => {
                 let label = other.map(|c| pane_display_label(c)).unwrap_or_default();
@@ -742,8 +748,8 @@ impl Shell {
                     .placeholder
                     .entry(pane_id)
                     .or_insert_with(|| crate::inline_pane::InlinePane::new(dom.clone()));
-                pane.sync(label, rw, rh);
-                pane.scene(rw, rh)
+                pane.sync(label, lw, lh);
+                pane.scene(rw, rh, scale)
             },
         }
     }
@@ -837,17 +843,19 @@ impl Shell {
         if self.app.omnibar.open
             && self.app.shell_chrome_config().projects_omnibar()
             && let Some(window) = self.window.as_ref()
+            && let scale = self.app.shell_chrome_config().layout_scale(0)
             && let Some((left, top)) = crate::chrome_view::chrome_position(
                 &self.app.shell_chrome_config().omnibar.placement,
-                w as f32,
-                h as f32,
+                w as f32 / scale,
+                h as f32 / scale,
                 crate::ui::CARD_W,
             )
         {
+            // The omnibar card is laid out in layout pixels.
             let (pos, size) = crate::ui::ime_cursor_area_at(&self.app.omnibar, left, top);
             window.set_ime_cursor_area(
-                PhysicalPosition::new(pos.0, pos.1),
-                PhysicalSize::new(size.0, size.1),
+                PhysicalPosition::new(pos.0 * scale, pos.1 * scale),
+                PhysicalSize::new(size.0 * scale, size.1 * scale),
             );
         }
         // The surface plan (rung 5 slice A): the ordered list of composited
@@ -886,6 +894,9 @@ impl Shell {
         let mut scenes: Vec<PlannedLayer> = Vec::with_capacity(surfaces.len());
         #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
         let mut surface_failures = Vec::new();
+        // Every scene of the window is laid out at `physical / scale` and
+        // rasterized at the window's layout scale.
+        let scale = self.app.shell_chrome_config().layout_scale(0);
         for surface in &surfaces {
             let rect = surface.rect;
             let (rw, rh) = (
@@ -897,7 +908,6 @@ impl Shell {
             // lands in `pane_scenes`, so a chrome regression cannot hide
             // behind pane cost or the reverse.
             let scene_started = std::time::Instant::now();
-            let mut scale = 1.0_f32;
             let (scene, clear) = match surface.kind {
                 crate::surface::SurfaceKind::Graph(pane) => {
                     // A graph surface is addressed by its pane. The app swaps
@@ -915,7 +925,6 @@ impl Shell {
                     self.save_ready_graph_scene(pane);
                     needs_redraw |= animating;
                     needs_redraw |= self.app.resolve_pending_images() > 0;
-                    scale = self.app.pane_layout_scale(pane);
                     (scene, crate::map_theme::clear_color(self.app.map_theme()))
                 },
                 crate::surface::SurfaceKind::Content(node) => {
@@ -1097,6 +1106,7 @@ impl Shell {
                             kind: scene.kind,
                             view,
                             raster: Some(raster),
+                            raster_scale: scene.scale,
                             placement: scene.placement,
                         })
                     },

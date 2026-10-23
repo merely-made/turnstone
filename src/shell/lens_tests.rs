@@ -148,7 +148,7 @@ fn fixture(paint: Paint) -> (crate::app::App, NodeDocuments, uuid::Uuid, Events)
 fn sync(contents: &mut NodeDocuments, plan: &[crate::surface::Surface], window: u64) {
     contents.sync_placements(
         plan.iter()
-            .map(|surface| HostPlacement::physical(*surface, window, true, 2.0))
+            .map(|surface| HostPlacement::at(*surface, window, true, 2.0))
             .collect(),
         Arc::new(super::super::standard_content_engines()),
         Arc::new(inker::SurfaceEngineRegistry::new()),
@@ -198,11 +198,18 @@ fn check_transfer(app: &mut crate::app::App, contents: &mut NodeDocuments, node:
     assert!(!contents.pool.admits(&original.id, generation));
     let placed = contents.pool.placement(&moved.id).unwrap();
     assert_eq!(placed.window, 1);
+    // The test syncs at a 2x window: the pool holds the physical plan in
+    // layout pixels.
     assert_eq!(
         placed.rect,
-        pelt_core::WorkspaceRect::new(moved.rect.x, moved.rect.y, moved.rect.w, moved.rect.h)
+        pelt_core::WorkspaceRect::new(
+            moved.rect.x / 2.,
+            moved.rect.y / 2.,
+            moved.rect.w / 2.,
+            moved.rect.h / 2.,
+        )
     );
-    assert_eq!(placed.scale_factor, 1.0);
+    assert_eq!(placed.scale_factor, 2.0);
     assert_eq!(contents.get(&node).unwrap().session_identity(), identity);
 }
 #[test]

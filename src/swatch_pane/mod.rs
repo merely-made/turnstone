@@ -457,7 +457,8 @@ impl SwatchPane {
     }
 
     /// The pane's scene at its size (the shared cambium leaf pipeline).
-    pub fn scene(&mut self, w: u32, h: u32) -> netrender::Scene {
+    pub fn scene(&mut self, w: u32, h: u32, scale: f32) -> netrender::Scene {
+        self.layout.set_scale(scale);
         self.layout.scene_with_leaves(
             &mut self.dom.borrow_mut(),
             crate::ui::CAMBIUM_SHEET,
@@ -644,7 +645,7 @@ mod tests {
         *app.graph_runtimes.active_canvas_mut() = mere::canvas::Canvas::with_sample_graph();
         let mut pane = SwatchPane::new(GLOSS_MINIMAP);
         pane.sync(&app, 480.0, 400.0);
-        let _ = pane.scene(480, 400);
+        let _ = pane.scene(480, 400, 1.0);
         (pane, app)
     }
 
@@ -667,7 +668,7 @@ mod tests {
         app.session_id = fork;
         let mut pane = SwatchPane::new(OVERMAP_LINEAGE);
         pane.sync(&app, 480.0, 400.0);
-        let _ = pane.scene(480, 400);
+        let _ = pane.scene(480, 400, 1.0);
         (pane, app, donor)
     }
 
@@ -685,7 +686,7 @@ mod tests {
             !pane.runner.state().swatch.show_labels,
             "minimap stays bare"
         );
-        let _scene = pane.scene(480, 400);
+        let _scene = pane.scene(480, 400, 1.0);
         assert!(
             pane.rendered
                 .get(GLOSS_MINIMAP.leaf_key)
@@ -729,7 +730,7 @@ mod tests {
         let mut pane = SwatchPane::new(GLOSS_MINIMAP);
         pane.set_sections(vec![crate::sections::DIAGNOSTICS_SECTION]);
         pane.sync(&app, 480.0, 400.0);
-        pane.scene(480, 400);
+        pane.scene(480, 400, 1.0);
         (pane, app)
     }
 
@@ -800,7 +801,7 @@ mod tests {
             },
         );
         pane.sync(&app, 480.0, 400.0);
-        pane.scene(480, 400);
+        pane.scene(480, 400, 1.0);
         let updated = pane
             .diagnostic_tree(crate::panes::PaneId(7), placement)
             .unwrap();
@@ -857,7 +858,7 @@ mod tests {
                 root_bounds.height() - 5.0
             ),
         );
-        pane.scene(480, 400);
+        pane.scene(480, 400, 1.0);
         let partial = pane
             .diagnostic_tree(crate::panes::PaneId(7), placement)
             .unwrap();
@@ -878,7 +879,7 @@ mod tests {
             QualName::new(None, "".into(), "aria-hidden".into()),
             "true",
         );
-        pane.scene(480, 400);
+        pane.scene(480, 400, 1.0);
         assert!(
             !pane
                 .diagnostic_tree(crate::panes::PaneId(7), placement)
@@ -890,7 +891,7 @@ mod tests {
         pane.set_sections(Vec::new());
         let app = App::test_stub();
         pane.sync(&app, 480.0, 400.0);
-        pane.scene(480, 400);
+        pane.scene(480, 400, 1.0);
         assert!(
             pane.diagnostic_tree(crate::panes::PaneId(7), placement)
                 .is_none(),
@@ -950,7 +951,7 @@ mod tests {
             Some(uuid::Uuid::from_u128(0xf0)),
             "the current session's container is selected"
         );
-        let _scene = pane.scene(480, 400);
+        let _scene = pane.scene(480, 400, 1.0);
         assert!(
             pane.rendered
                 .get(OVERMAP_LINEAGE.leaf_key)

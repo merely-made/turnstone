@@ -474,11 +474,17 @@ impl ContributedSurfacePane {
     }
 
     /// Render using the same retained layout that subsequent hit testing uses.
+    /// `width` and `height` are the pane's physical size: the provider's DOM is
+    /// laid out at `size / scale_factor`, the scene is rasterized at
+    /// `scale_factor`, and the pointer coordinates the provider receives are in
+    /// the same layout pixels.
     pub fn scene(&mut self, width: u32, height: u32, scale_factor: f32) -> netrender::Scene {
+        let scale_factor = crate::ui::clean_scale(scale_factor);
         self.viewport = (width, height, scale_factor);
+        self.layout.set_scale(scale_factor);
         let effects = self.session.sync_viewport(SurfaceViewport {
-            width: width as f32,
-            height: height as f32,
+            width: width as f32 / scale_factor,
+            height: height as f32 / scale_factor,
             scale_factor,
         });
         self.apply(effects);
@@ -486,6 +492,15 @@ impl ContributedSurfacePane {
         let mut dom = dom.borrow_mut();
         self.layout
             .scene_scrolled(&mut dom, &self.stylesheet, width, height, &mut self.scroll)
+    }
+
+    /// A point and the viewport size, in the layout pixels providers see.
+    fn logical(&self, x: f32, y: f32) -> ((f32, f32), (f32, f32)) {
+        let (width, height, scale) = self.viewport;
+        (
+            (x / scale, y / scale),
+            (width as f32 / scale, height as f32 / scale),
+        )
     }
 
     pub fn hit_test(&mut self, x: f32, y: f32) -> Option<NodeId> {
@@ -513,7 +528,7 @@ impl ContributedSurfacePane {
             // `pointer_target` is deliberately narrower: it resolves only an
             // `on_pointer` drag target and must not gate ordinary buttons.
             target: hit,
-            event: PointerClick::at((x, y)),
+            event: PointerClick::at(self.logical(x, y).0),
         })
     }
 
@@ -573,8 +588,8 @@ impl ContributedSurfacePane {
         y: f32,
         resolve_target: bool,
     ) -> SurfaceRequest {
-        let (width, height, _) = self.viewport;
-        let event = PointerEvent::new(phase, (x, y), (width as f32, height as f32));
+        let (local, size) = self.logical(x, y);
+        let event = PointerEvent::new(phase, local, size);
         if resolve_target {
             let Some(hit) = self.hit_test(x, y) else {
                 return SurfaceRequest::None;
@@ -596,7 +611,7 @@ impl ContributedSurfacePane {
     }
 
     pub fn hover(&mut self, phase: HoverPhase, x: f32, y: f32) -> SurfaceRequest {
-        let (width, height, _) = self.viewport;
+        let (local, size) = self.logical(x, y);
         let leaving = matches!(phase, HoverPhase::Leave);
         let target = match phase {
             HoverPhase::Leave => self.hover.take(),
@@ -612,21 +627,22 @@ impl ContributedSurfacePane {
         }
         self.dispatch(ResolvedSurfaceEvent::Hover {
             target,
-            event: HoverEvent::new(phase, (x, y), (width as f32, height as f32)),
+            event: HoverEvent::new(phase, local, size),
         })
     }
 
     /// Wheel policy is product-first: a product wheel target receives the
     /// event, and only an unhandled hit moves Turnstone's viewport scroll.
     pub fn wheel(&mut self, dx: f32, dy: f32, x: f32, y: f32) -> SurfaceRequest {
-        let (width, height, _) = self.viewport;
+        let (local, size) = self.logical(x, y);
+        let scale = self.viewport.2;
         let target = self
             .hit_test(x, y)
             .and_then(|hit| self.session.wheel_target(hit));
         if let Some(target) = target {
             return self.dispatch(ResolvedSurfaceEvent::Wheel {
                 target,
-                event: WheelEvent::new((dx, dy), (x, y), (width as f32, height as f32)),
+                event: WheelEvent::new((dx / scale, dy / scale), local, size),
             });
         }
         self.scroll.nudge(dx, dy);

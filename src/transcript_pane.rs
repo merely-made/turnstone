@@ -271,7 +271,8 @@ impl TranscriptPane {
         });
     }
 
-    pub fn scene(&mut self, w: u32, h: u32) -> netrender::Scene {
+    pub fn scene(&mut self, w: u32, h: u32, scale: f32) -> netrender::Scene {
+        self.layout.set_scale(scale);
         self.layout.scene_scrolled(
             &mut self.dom.borrow_mut(),
             crate::ui::CAMBIUM_SHEET,
@@ -359,7 +360,7 @@ mod tests {
     fn synced(transcript: &ShellTranscript) -> TranscriptPane {
         let mut pane = TranscriptPane::new();
         pane.sync(transcript, 512.0, 600.0);
-        let _ = pane.scene(512, 600);
+        let _ = pane.scene(512, 600, 1.0);
         pane
     }
 

@@ -443,7 +443,8 @@ impl SettingsPane {
         });
     }
 
-    pub fn scene(&mut self, w: u32, h: u32) -> netrender::Scene {
+    pub fn scene(&mut self, w: u32, h: u32, scale: f32) -> netrender::Scene {
+        self.layout.set_scale(scale);
         let snapshot = self.runner.state().live_settings.snapshot();
         let mut chrome = ShellChromeConfig::default();
         snapshot.apply_to(&mut chrome);
@@ -854,7 +855,7 @@ mod tests {
                 .with_theme_library(root.path().join("themes.json"));
             });
             pane.sync(width as f32, height as f32);
-            let _ = pane.scene(width, height);
+            let _ = pane.scene(width, height, 1.0);
             let edit = taproot::Selector::class("setting-apply")
                 .with_attr("data-action", "edit-themes")
                 .on_surface("settings");
@@ -920,7 +921,7 @@ mod tests {
                 width: u32,
                 height: u32,
             ) {
-                let _ = pane.scene(width, height);
+                let _ = pane.scene(width, height, 1.0);
                 let point = pane
                     .selector_point(&selector.on_surface("settings"))
                     .unwrap()

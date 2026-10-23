@@ -813,11 +813,22 @@ impl super::Shell {
                     "turnstone/doc/{key}/placement/{}",
                     placement.id.0
                 ));
-                let graft = uxtree::graft::graft_node(
+                // The projection's bounds are in the document's layout pixels;
+                // the plan rect and the accessibility tree are physical.
+                let scale = self
+                    .content_sessions
+                    .pool
+                    .placement(&placement.id)
+                    .map_or(1.0, |pool| f64::from(pool.scale_factor));
+                let origin = (placement.rect.x as f64, placement.rect.y as f64);
+                let mut graft = uxtree::graft::graft_node(
                     Role::Group,
                     tree_id,
-                    (placement.rect.x as f64, placement.rect.y as f64),
-                    (placement.rect.w as f64, placement.rect.h as f64),
+                    origin,
+                    (placement.rect.w as f64 / scale, placement.rect.h as f64 / scale),
+                );
+                graft.set_transform(
+                    accesskit::Affine::translate(origin) * accesskit::Affine::scale(scale),
                 );
                 for semantic in projection.nodes().iter().filter(|n| !n.actions.is_empty()) {
                     frame.admissions.insert(
