@@ -40,10 +40,8 @@ use cambium::{
 use genet_scripted_dom::ScriptedDom;
 use layout_dom_api::LayoutDom;
 use mere::canvas::controls::CanvasCommand;
-use mere::canvas::physics_controls::{
-    SPEED_PRESETS, TwoLawGrouping, TwoLawMix, TwoStageSchedule, read_two_law_grouping,
-    read_two_law_mix, read_two_stage_schedule, speed_preset,
-};
+use mere::canvas::physics_controls::{SPEED_PRESETS, TwoLawGrouping, TwoLawMix, TwoStageSchedule};
+use mere::canvas::physics_form::{PhysicsForm, Readback};
 use mere::canvas::{
     CANVAS_LAYOUT_STRATEGIES, CANVAS_PHYSICS_DEPTH_SOURCES, CANVAS_PHYSICS_KIND_SOURCES,
     CANVAS_PHYSICS_LAWS, CANVAS_PHYSICS_MASS_SOURCES, CANVAS_PHYSICS_OVERLAYS,
@@ -148,14 +146,6 @@ impl ArrangeIntent {
     }
 }
 
-/// What the canvas authored for the composing forms, as the readers answer.
-#[derive(Clone, Debug, PartialEq)]
-struct Authored {
-    mix: Result<Option<TwoLawMix>, String>,
-    grouping: Result<Option<TwoLawGrouping>, String>,
-    schedule: Result<Option<TwoStageSchedule>, String>,
-}
-
 /// The mirrored canvas choice, refreshed by [`ArrangePane::sync`].
 #[derive(Clone, Debug, PartialEq)]
 struct Choice {
@@ -166,10 +156,9 @@ struct Choice {
     mass: String,
     depth: String,
     profile: String,
-    role: String,
-    role_groups: String,
-    speed: String,
-    authored: Authored,
+    /// What the canvas authored for the composing fields: the roles, the
+    /// speed and the mix, grouping and schedule.
+    readback: Readback,
     status: Option<String>,
     refusal: Option<String>,
     saved_seed: bool,
@@ -208,14 +197,7 @@ impl Choice {
                 .profile_id()
                 .unwrap_or(CUSTOM_PROFILE_ID)
                 .to_string(),
-            role: canvas.arrangement_roles().default.id().to_string(),
-            role_groups: canvas.role_group_source().id().to_string(),
-            speed: SPEED_PRESETS[speed_preset(canvas)].0.to_string(),
-            authored: Authored {
-                mix: read_two_law_mix(canvas),
-                grouping: read_two_law_grouping(canvas),
-                schedule: read_two_stage_schedule(canvas),
-            },
+            readback: Readback::of(canvas),
             status: graph
                 .and_then(|graph| app.graph_runtimes.get(graph))
                 .and_then(|runtime| runtime.physics_status.clone()),
@@ -276,11 +258,11 @@ pub fn arrange_rows(app: &App) -> Vec<String> {
             label(CANVAS_PHYSICS_DEPTH_SOURCES, &choice.depth)
         ),
         format!("Profile: {profile}"),
-        format!("Role: {}", label_of_role(&choice.role)),
-        format!("Role groups: {}", label(CANVAS_PHYSICS_KIND_SOURCES, &choice.role_groups)),
-        format!("Speed: {}", SPEED_PRESETS.iter().find(|(id, _)| *id == choice.speed).map_or("1x", |(_, label)| label)),
+        format!("Role: {}", choice.readback.role.label()),
+        format!("Role groups: {}", choice.readback.role_groups.label()),
+        format!("Speed: {}", SPEED_PRESETS[choice.readback.speed].1),
     ];
-    rows.extend(compose::authored_rows(&choice.authored));
+    rows.extend(compose::authored_rows(&choice.readback));
     if let Some(status) = choice.status {
         rows.push(format!("Physics status: {status}"));
     }
@@ -290,13 +272,13 @@ pub fn arrange_rows(app: &App) -> Vec<String> {
     rows
 }
 
-fn label_of_role(id: &str) -> &'static str {
-    Role::parse(id).map_or("Seeded", Role::label)
-}
-
 struct ArrangeState {
     choice: Choice,
-    drafts: compose::Drafts,
+    /// The composing fields: the model, with the values the pane holds
+    /// between presses.
+    form: PhysicsForm,
+    /// Why the last press made no request, until the next one does.
+    form_note: String,
     viewport_w: f32,
     viewport_h: f32,
 }
@@ -385,17 +367,17 @@ fn section(title: &str) -> ArrangeView {
 }
 
 fn scene_button(verb: CanvasCommand) -> ArrangeView {
-    apply_button(verb.label(), move |_| ArrangeIntent::Verb(verb))
+    apply_button(verb.label(), move |_| Some(ArrangeIntent::Verb(verb)))
 }
 
 /// A button whose press turns the pane's state into an intent.
 fn apply_button(
     label: &'static str,
-    intent: impl Fn(&ArrangeState) -> ArrangeIntent + 'static,
+    intent: impl Fn(&mut ArrangeState) -> Option<ArrangeIntent> + 'static,
 ) -> ArrangeView {
     Box::new(
         button(label, move |state: &mut ArrangeState, _: PointerClick| {
-            Some(intent(state))
+            intent(state)
         })
         .attr("class", "setting-apply"),
     )
@@ -576,20 +558,14 @@ impl ArrangePane {
                 mass: PhysicsMassSource::Degree.id().to_string(),
                 depth: PhysicsDepthSource::Roots.id().to_string(),
                 profile: CUSTOM_PROFILE_ID.to_string(),
-                role: Role::Seeded.id().to_string(),
-                role_groups: PhysicsKindSource::Site.id().to_string(),
-                speed: SPEED_PRESETS[mere::canvas::physics_controls::DEFAULT_SPEED_PRESET].0.to_string(),
-                authored: Authored {
-                    mix: Ok(None),
-                    grouping: Ok(None),
-                    schedule: Ok(None),
-                },
+                readback: Readback::default(),
                 status: None,
                 refusal: None,
                 saved_seed: false,
                 regions: 0,
             },
-            drafts: compose::Drafts::default(),
+            form: PhysicsForm::default(),
+            form_note: String::new(),
             viewport_w: 0.0,
             viewport_h: 0.0,
         };
@@ -678,9 +654,11 @@ impl ArrangePane {
 
     fn sync_choice(&mut self, choice: Choice, pane_w: f32, pane_h: f32) {
         self.runner.update(|state| {
-            if state.choice.authored != choice.authored {
-                state.drafts.follow(&choice.authored);
+            if !state.choice.readback.same_composition(&choice.readback) {
+                state.form.follow_composition(&choice.readback);
             }
+            state.form.follow_roles(&choice.readback);
+            state.form.follow_speed(&choice.readback);
             state.choice = choice;
             state.viewport_w = pane_w;
             state.viewport_h = pane_h;
@@ -735,6 +713,7 @@ impl ArrangePane {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use mere::canvas::physics_controls::{read_two_law_mix, speed_preset};
 
     #[test]
     fn refused_overlays_are_visible_and_keep_the_applied_law() {
