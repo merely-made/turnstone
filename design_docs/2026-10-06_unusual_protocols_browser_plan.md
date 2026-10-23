@@ -2054,6 +2054,67 @@ continue serially in the existing shared target cache.
 
 ### 2026-10-22, native receiving continuation
 
+The client-limit slice is implemented and its focused receiving gates pass under
+`smolweb/design_docs/implementation_strategy/2026-10-22_client_limits_plan.md`
+and `retinue/design_docs/2026-10-22_resource_client_limits_plan.md`.
+It moves Micron limits before Resource allocation/decompression/body copying
+and passes host limits through shared smolweb receiving, including bodyless
+documents and explicit Submit responses. Encoded Resource, decoded envelope
+and exact page bytes are separate budgets. Existing page defaults remain
+4 MiB/30 seconds; the common Mere fetch deadline intentionally becomes one
+30-second budget across the complete redirect chain. Existing five-attempt
+smolweb behavior is represented accurately as four followed redirects.
+Snapshot V1, Submit authority, native MIME and graceful shutdown inside the
+outer Micron deadline remain required compatibility gates. Compact source/lock
+and native test receipts share a 100 MB retained-byte cap across this slice;
+headed UI, actor cancellation, independent readers and radio remain distinct.
+
+Client launch settings are supplied before creating the fetch actor and engine
+registry. New settings reject invalid values visibly. Bodyless remote loads
+retain their existing refusal of smolweb redirects, and now share the same
+concurrency pool across HTTP and smolweb; queue time counts toward the deadline.
+
+| Setting | Default and meaning |
+| --- | --- |
+| `TURNSTONE_FETCH_MAX_PAGE_BYTES` | 67108864 response bytes |
+| `TURNSTONE_FETCH_MAX_SUBRESOURCE_BYTES` | 33554432 response bytes, including favicon loads |
+| `TURNSTONE_FETCH_MAX_SUBMISSION_BYTES` | 67108864 explicitly submitted body bytes |
+| `TURNSTONE_FETCH_MAX_SUBMISSION_RESPONSE_BYTES` | 67108864 reply bytes |
+| `TURNSTONE_FETCH_MAX_REQUEST_HEADER_BYTES` | 4096 smolweb request-line/header bytes, excluding the submitted body |
+| `TURNSTONE_FETCH_MAX_RESPONSE_HEADER_LINE_BYTES` | 4096 bytes per smolweb response line, with protocol ceilings retained |
+| `TURNSTONE_FETCH_TIMEOUT_MS` | 30000 for one complete operation, including redirects |
+| `TURNSTONE_FETCH_MAX_HTTP_REDIRECTS` | 20 followed redirects, preserving the HTTP default |
+| `TURNSTONE_FETCH_MAX_SMOLWEB_REDIRECTS` | 4 followed redirects, preserving five total attempts |
+| `TURNSTONE_RESOURCE_MAX_RESPONSE_BYTES` | 8388608 bodyless remote-document bytes |
+| `TURNSTONE_RESOURCE_TIMEOUT_MS` | 15000, including queue time |
+| `TURNSTONE_RESOURCE_MAX_REDIRECTS` | 20 for HTTP; smolweb redirects remain unfollowed |
+| `TURNSTONE_RESOURCE_MAX_CONCURRENT_FETCHES` | 6 shared HTTP/smolweb operations; zero disables remote I/O |
+| `TURNSTONE_NOMADNET_MAX_ENCODED_BYTES` | 67108864 sealed response packet or total Resource segment-token bytes |
+| `TURNSTONE_NOMADNET_MAX_PACKED_BYTES` | 67108864 decoded response-envelope bytes, including metadata |
+
+The existing native settings remain `TURNSTONE_NOMADNET_MAX_PAGE_BYTES`
+(4194304, clamped to 1..67108864) and `TURNSTONE_NOMADNET_TIMEOUT_SECS`
+(30, clamped to 1..120). Native requests resolve these settings per operation.
+New wire budgets are positive explicit limits; the exact application-body cap
+remains separate. Mere's explicit role caps now reach Errand directly, so routes
+previously inheriting a native 16 MiB convenience cap can accept the configured
+64 MiB page/32 MiB subresource limits. Those native conveniences retain 16 MiB.
+This slice bounds individual responses and operations; aggregate browser
+memory/traffic, general fetch-actor task admission, HTTP wire-header limits and
+separate download/blob/custody policy remain separate owner work.
+
+The final receiving build uses Mere `faa6f1fb3`, Errand `1155897e` and Murm
+`36bad79bcc0` on Turnstone's current `636e7bd7` baseline. It compiles without
+source repair or registry-version changes. The native test executable passes
+78 focused checks, including eight 4096-byte Resource Read/Submit scenarios:
+exact fit, encoded overflow, packed-envelope overflow and exact-body overflow
+for each operation. Exact-fit reads require both complete bytes and the
+sender's Resource proof; every overflow fails rather than returning a prefix.
+Invalid native policy refuses before TCP contact. Launch settings, existing
+receiving/controller, reading, command and owner regressions pass. The two
+existing governed-host/R3 prerequisite tests remain ignored; this continuation
+does not claim a new external-host, window, installed-binary or radio receipt.
+
 This slice connects the existing browser receiving paths to the newly governed
 Djinn host. Native Micron fetching already exists in Turnstone; local `.mu`
 source tests and the September stock-node receipt remain separate evidence.

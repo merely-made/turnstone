@@ -201,8 +201,23 @@ impl pelt_core::PeltClock for ShellClock {
 /// build. Keeping their construction together makes route availability an
 /// inspectable fact instead of an assumption split across shell setup.
 pub(crate) fn standard_content_engines() -> SessionRegistry<Scene> {
+    content_engines_with_remote(RemoteFetcher::shared())
+}
+
+fn content_engines_with_client_limits(
+    limits: crate::client_limits::BrowserClientLimits,
+) -> SessionRegistry<Scene> {
+    content_engines_with_remote(
+        RemoteFetcher::new(limits.resources).with_smolweb_request_limits(
+            limits.fetch.max_request_header_bytes,
+            limits.fetch.max_response_header_line_bytes,
+        ),
+    )
+}
+
+fn content_engines_with_remote(remote: RemoteFetcher) -> SessionRegistry<Scene> {
     let mut engines = pelt_core::native::sessions_with_fetcher(
-        LocalFetcher.with_fallback(RemoteFetcher::shared()),
+        LocalFetcher.with_fallback(remote.clone()),
     );
     engines.register(Box::new(crate::nomadnet::MicronSessionEngine::new()));
     engines.register(Box::new(saved_sources::SavedSourceSessionEngine));
@@ -210,7 +225,7 @@ pub(crate) fn standard_content_engines() -> SessionRegistry<Scene> {
         engines.register(Box::new(
             SmolwebSessionEngine::new(
                 *engine_id,
-                LocalFetcher.with_fallback(RemoteFetcher::shared()),
+                LocalFetcher.with_fallback(remote.clone()),
                 SmolwebTheme::default(),
             )
             .with_inline_media(smolweb_inline_media_policy()),
@@ -1429,6 +1444,8 @@ pub struct Shell {
 
 impl Shell {
     pub fn new(proxy: EventLoopProxy<()>, address: Option<String>) -> Self {
+        let client_limits = crate::client_limits::BrowserClientLimits::from_environment()
+            .expect("Turnstone client limit configuration is invalid");
         let (mut app, boot_effects) = App::boot(address.as_deref());
         match crate::chrome_layout::ChromeLayout::load(&app.data_root) {
             Ok(layout) => {
@@ -1495,7 +1512,7 @@ impl Shell {
         let (fetch_handle, fetch_rx) = if network_offline {
             crate::offline::spawn(fetch_wake, offline_attempts.clone())
         } else {
-            fetch::spawn_fetcher_with(fetch_wake, stores.clone())
+            fetch::spawn_fetcher_with_policy(fetch_wake, stores.clone(), client_limits.fetch)
         };
         let blocking_fetch: Arc<dyn fetch::Fetch> = if network_offline {
             Arc::new(crate::offline::NoNetwork(offline_attempts.clone()))
@@ -1568,7 +1585,7 @@ impl Shell {
         // The content port's ordinary lanes: both Genet static renderers plus
         // the engine-native smolweb family. Route policy selects one by
         // address/media type without app dispatch.
-        let mut content_engines = standard_content_engines();
+        let mut content_engines = content_engines_with_client_limits(client_limits);
         let knot_proxy = proxy.clone();
         let knot_wake: Arc<dyn Fn() + Send + Sync> = Arc::new(move || {
             let _ = knot_proxy.send_event(());

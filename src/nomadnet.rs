@@ -18,7 +18,7 @@ use inker::session_engine::{DocumentSession, SessionEngine, SessionError, Sessio
 use inker::{Block, DocumentDiagnostic, Engine, EngineDocument, EngineInput, InlineSpan};
 use mere_document_lanes::{ResourceFetcher, SmolwebDocument, SmolwebDocumentSession, SmolwebTheme};
 use netrender::Scene;
-use retinue::endpoint::Endpoint;
+use retinue::endpoint::{Endpoint, ResourceReceiveLimits};
 use retinue::hash::AddressHash;
 use retinue::identity::{IDENTITY_LEN, PrivateIdentity};
 use retinue::request::{Response, StringMapLimits, StringMapRequest};
@@ -31,6 +31,82 @@ pub const ENGINE_ID: &str = nematic::ENGINE_MICRON;
 pub struct NomadNetAddress {
     destination: [u8; 16],
     path: String,
+}
+
+/// Independent native wire/envelope budgets and the exact application body cap.
+/// The timeout covers discovery, transfer, decoding and graceful shutdown.
+#[derive(Clone, Copy, Debug)]
+pub struct MicronFetchPolicy {
+    pub timeout: Duration,
+    pub max_body_bytes: usize,
+    pub receive: ResourceReceiveLimits,
+}
+
+impl Default for MicronFetchPolicy {
+    fn default() -> Self {
+        Self {
+            timeout: Duration::from_secs(30),
+            max_body_bytes: 4 * 1024 * 1024,
+            receive: ResourceReceiveLimits::default(),
+        }
+    }
+}
+
+impl MicronFetchPolicy {
+    /// Resolve product launch settings for each new request. Existing body and
+    /// timeout knobs retain their defaults/ranges; new wire budgets are explicit.
+    pub fn from_environment() -> Result<Self, String> {
+        let defaults = Self::default();
+        Ok(Self {
+            timeout: Duration::from_secs(
+                std::env::var("TURNSTONE_NOMADNET_TIMEOUT_SECS")
+                    .ok()
+                    .and_then(|value| value.parse::<u64>().ok())
+                    .unwrap_or(30)
+                    .clamp(1, 120),
+            ),
+            max_body_bytes: std::env::var("TURNSTONE_NOMADNET_MAX_PAGE_BYTES")
+                .ok()
+                .and_then(|value| value.parse::<usize>().ok())
+                .unwrap_or(defaults.max_body_bytes)
+                .clamp(1, 64 * 1024 * 1024),
+            receive: ResourceReceiveLimits {
+                max_encoded_bytes: positive_budget_from_environment(
+                    "TURNSTONE_NOMADNET_MAX_ENCODED_BYTES",
+                    defaults.receive.max_encoded_bytes,
+                )?,
+                max_decoded_bytes: positive_budget_from_environment(
+                    "TURNSTONE_NOMADNET_MAX_PACKED_BYTES",
+                    defaults.receive.max_decoded_bytes,
+                )?,
+            },
+        })
+    }
+
+    fn validate(&self) -> Result<(), String> {
+        if self.timeout.is_zero()
+            || self.max_body_bytes == 0
+            || self.receive.max_encoded_bytes == 0
+            || self.receive.max_decoded_bytes == 0
+        {
+            return Err("Micron request limits must be positive".into());
+        }
+        Ok(())
+    }
+}
+
+fn positive_budget_from_environment(name: &str, fallback: usize) -> Result<usize, String> {
+    match std::env::var(name) {
+        Ok(value) => value
+            .parse::<usize>()
+            .ok()
+            .filter(|value| *value > 0)
+            .ok_or_else(|| format!("{name} must be a positive byte count")),
+        Err(std::env::VarError::NotPresent) => Ok(fallback),
+        Err(std::env::VarError::NotUnicode(_)) => {
+            Err(format!("{name} must be a positive byte count"))
+        },
+    }
 }
 
 impl NomadNetAddress {
@@ -241,28 +317,37 @@ pub async fn fetch_page(address: &str) -> Result<crate::action::FetchedPage, Str
         .map_err(|_| "NomadNet is not configured: set TURNSTONE_NOMADNET_TCP".to_string())?
         .parse::<SocketAddr>()
         .map_err(|error| format!("invalid TURNSTONE_NOMADNET_TCP: {error}"))?;
-    let timeout = std::env::var("TURNSTONE_NOMADNET_TIMEOUT_SECS")
-        .ok()
-        .and_then(|value| value.parse::<u64>().ok())
-        .unwrap_or(30)
-        .clamp(1, 120);
-    let max_page_bytes = std::env::var("TURNSTONE_NOMADNET_MAX_PAGE_BYTES")
-        .ok()
-        .and_then(|value| value.parse::<usize>().ok())
-        .unwrap_or(4 * 1024 * 1024)
-        .clamp(1, 64 * 1024 * 1024);
-
-    fetch_page_on_interface(address, tcp, Duration::from_secs(timeout), max_page_bytes).await
+    fetch_page_on_interface_with_policy(address, tcp, MicronFetchPolicy::from_environment()?).await
 }
 
 /// The ordinary page operation with caller-supplied interface settings. The
 /// environment entry point above retains its existing validation and policy.
+#[cfg(test)]
 pub(crate) async fn fetch_page_on_interface(
     address: NomadNetAddress,
     tcp: SocketAddr,
     timeout: Duration,
     max_page_bytes: usize,
 ) -> Result<crate::action::FetchedPage, String> {
+    fetch_page_on_interface_with_policy(
+        address,
+        tcp,
+        MicronFetchPolicy {
+            timeout,
+            max_body_bytes: max_page_bytes,
+            ..MicronFetchPolicy::default()
+        },
+    )
+    .await
+}
+
+pub async fn fetch_page_on_interface_with_policy(
+    address: NomadNetAddress,
+    tcp: SocketAddr,
+    policy: MicronFetchPolicy,
+) -> Result<crate::action::FetchedPage, String> {
+    policy.validate()?;
+    let timeout = policy.timeout;
     let destination = address.destination();
     let result = tokio::time::timeout(timeout, async {
         // Endpoint owns its interface and its Drop closes it. Keeping the full
@@ -288,18 +373,19 @@ pub(crate) async fn fetch_page_on_interface(
                 .map_err(|error| error.to_string())?;
         };
         let config = retinue::nomadnet::FetchPageConfig {
-            max_page_bytes,
+            max_page_bytes: policy.max_body_bytes,
             transfer: retinue::endpoint::ResourceTransferConfig {
                 timeout,
                 ..retinue::endpoint::ResourceTransferConfig::default()
             },
         };
-        let result = retinue::nomadnet::fetch_page_with_config(
+        let result = retinue::nomadnet::fetch_page_with_limits(
             &endpoint,
             destination,
             peer,
             address.path().as_bytes(),
             config,
+            policy.receive,
         )
         .await;
         // The completed request drops its session, queuing its Resource proof
@@ -309,7 +395,12 @@ pub(crate) async fn fetch_page_on_interface(
         result.map_err(|error| format!("NomadNet page request failed: {error}"))
     })
     .await
-    .map_err(|_| format!("NomadNet page request timed out after {}s", timeout.as_secs()))?;
+    .map_err(|_| {
+        format!(
+            "NomadNet page request timed out after {}s",
+            timeout.as_secs()
+        )
+    })?;
     let bytes = result?;
     Ok(crate::action::FetchedPage {
         content_type: None,
@@ -330,26 +421,16 @@ pub async fn submit_form(
         .map_err(|_| "NomadNet is not configured: set TURNSTONE_NOMADNET_TCP".to_string())?
         .parse::<SocketAddr>()
         .map_err(|error| format!("invalid TURNSTONE_NOMADNET_TCP: {error}"))?;
-    let timeout = std::env::var("TURNSTONE_NOMADNET_TIMEOUT_SECS")
-        .ok()
-        .and_then(|value| value.parse::<u64>().ok())
-        .unwrap_or(30)
-        .clamp(1, 120);
-    let max_response_bytes = std::env::var("TURNSTONE_NOMADNET_MAX_PAGE_BYTES")
-        .ok()
-        .and_then(|value| value.parse::<usize>().ok())
-        .unwrap_or(4 * 1024 * 1024)
-        .clamp(1, 64 * 1024 * 1024);
-    submit_form_on_interface(
+    submit_form_on_interface_with_policy(
         address,
         values,
         tcp,
-        Duration::from_secs(timeout),
-        max_response_bytes,
+        MicronFetchPolicy::from_environment()?,
     )
     .await
 }
 
+#[cfg(test)]
 async fn submit_form_on_interface(
     address: &str,
     values: BTreeMap<String, String>,
@@ -357,11 +438,30 @@ async fn submit_form_on_interface(
     timeout: Duration,
     max_response_bytes: usize,
 ) -> Result<crate::action::FetchedPage, String> {
+    submit_form_on_interface_with_policy(
+        address,
+        values,
+        tcp,
+        MicronFetchPolicy {
+            timeout,
+            max_body_bytes: max_response_bytes,
+            ..MicronFetchPolicy::default()
+        },
+    )
+    .await
+}
+
+pub async fn submit_form_on_interface_with_policy(
+    address: &str,
+    values: BTreeMap<String, String>,
+    tcp: SocketAddr,
+    policy: MicronFetchPolicy,
+) -> Result<crate::action::FetchedPage, String> {
     let address = parse_address(address)
         .ok_or_else(|| "Micron form target must be destinationhex:/absolute/path".to_string())?;
-    if timeout.is_zero() || max_response_bytes == 0 {
-        return Err("Micron request limits must be positive".into());
-    }
+    policy.validate()?;
+    let timeout = policy.timeout;
+    let max_response_bytes = policy.max_body_bytes;
     let time = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .map_err(|error| format!("system clock is before the Unix epoch: {error}"))?
@@ -390,21 +490,32 @@ async fn submit_form_on_interface(
                 .await
                 .map_err(|error| error.to_string())?;
         };
-        let response = endpoint
-            .request_raw(destination, peer, &packed)
+        let mut session = endpoint
+            .open_resource(destination, peer)
             .await
-            .map_err(|error| format!("Micron form request failed: {error}"))?;
-        // request_raw releases its session before returning. Let its queued
+            .map_err(|error| format!("Micron form link failed: {error}"))?;
+        session.set_config(retinue::endpoint::ResourceTransferConfig {
+            timeout,
+            ..Default::default()
+        });
+        let response = session
+            .request_raw_with_limits(&packed, policy.receive)
+            .await;
+        drop(session);
+        // The session queues its close before shutdown. Let the queued
         // Resource proof and link close reach the peer before Endpoint::Drop
         // aborts the interface writer. The outer request deadline still applies.
         endpoint.shutdown(timeout).await;
-        // Resource reassembly has already happened. Bound the additional
-        // envelope decode allocation; this is not a wire allocation ceiling.
-        if response.packed.len() > max_response_bytes.saturating_add(64) {
-            return Err("Micron form response exceeds TURNSTONE_NOMADNET_MAX_PAGE_BYTES".into());
-        }
-        let response = Response::unpack(&response.packed)
-            .map_err(|_| "Micron form response was invalid".to_string())?;
+        let response = response.map_err(|error| format!("Micron form response failed: {error}"))?;
+        let response =
+            Response::unpack_with_limit(&response.packed, max_response_bytes).map_err(|error| {
+                match error {
+                    retinue::Error::CapacityExceeded => {
+                        "Micron form response exceeds TURNSTONE_NOMADNET_MAX_PAGE_BYTES".to_string()
+                    },
+                    _ => "Micron form response envelope was invalid".to_string(),
+                }
+            })?;
         Ok::<_, String>(response.data)
     })
     .await
@@ -613,3 +724,7 @@ mod tests {
         assert!(is_micron_address("file:///tmp/turnstone.mu"));
     }
 }
+
+#[cfg(test)]
+#[path = "nomadnet_client_limits_tests.rs"]
+mod client_limits_tests;
