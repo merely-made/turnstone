@@ -66,6 +66,7 @@ impl HostPlacement {
 #[derive(Default)]
 pub(crate) struct NodeDocuments {
     admissions: std::collections::HashMap<uuid::Uuid, uuid::Uuid>,
+    pub(super) cue_cursors: std::collections::HashMap<uuid::Uuid, inker::CursorShape>,
     pub(super) pool: PeltControllerPool<ContentKey, SurfaceId, Scene>,
 }
 
@@ -98,19 +99,27 @@ impl NodeDocuments {
         content: PeltContent<Scene>,
     ) -> Option<PeltContent<Scene>> {
         self.clear_appearances(node);
+        self.cue_cursors.remove(&node);
         self.admissions.insert(node, uuid::Uuid::new_v4());
-        self.pool.insert(ContentKey::Node(node), content)
+        let mut old = self.pool.insert(ContentKey::Node(node), content);
+        if let Some(surface) = old.as_mut().and_then(PeltContent::cue_surface_mut) { let _ = surface.retire(); }
+        old
     }
     pub fn remove(&mut self, node: &uuid::Uuid) -> Option<PeltContent<Scene>> {
         self.clear_appearances(*node);
         self.admissions.remove(node);
-        self.pool.remove_content(&ContentKey::Node(*node))
+        self.cue_cursors.remove(node);
+        let mut old = self.pool.remove_content(&ContentKey::Node(*node));
+        if let Some(surface) = old.as_mut().and_then(PeltContent::cue_surface_mut) { let _ = surface.retire(); }
+        old
     }
     pub fn clear(&mut self) {
         self.admissions.clear();
+        self.cue_cursors.clear();
         let keys: Vec<_> = self.pool.keys().copied().collect();
         for key in keys {
-            self.pool.remove_content(&key);
+            if let Some(mut content) = self.pool.remove_content(&key)
+                && let Some(surface) = content.cue_surface_mut() { let _ = surface.retire(); }
         }
     }
     pub fn retain(&mut self, mut keep: impl FnMut(&uuid::Uuid, &PeltContent<Scene>) -> bool) {
@@ -135,7 +144,8 @@ impl NodeDocuments {
             })
             .collect();
         for key in removed {
-            self.pool.remove_content(&key);
+            if let Some(mut content) = self.pool.remove_content(&key)
+                && let Some(surface) = content.cue_surface_mut() { let _ = surface.retire(); }
         }
     }
     pub(super) fn clear_appearances(&mut self, node: uuid::Uuid) {
@@ -196,16 +206,19 @@ impl NodeDocuments {
                     }
                 }
             }
-            if let Some(controller) = self.pool.content_mut(&key).and_then(PeltContent::document_mut) {
-                let session = controller.session_mut();
-                if let Some(reader) = session.as_any()
-                    .downcast_mut::<mere_document_lanes::ReaderDocumentSession>()
-                {
-                    let _ = reader.set_reading_preferences(host.reading_preferences);
-                } else if let Some(document) = session.as_any()
-                    .downcast_mut::<mere_document_lanes::SmolwebDocumentSession>()
-                {
-                    let _ = document.document_mut().set_reading_preferences(host.reading_preferences);
+            let preferences_changed = self.pool.content(&key).and_then(PeltContent::document).is_some_and(|controller| {
+                let session = controller.session().as_any_ref();
+                session.downcast_ref::<mere_document_lanes::ReaderDocumentSession>().is_some_and(|reader| reader.reading_preferences() != host.reading_preferences)
+                    || session.downcast_ref::<mere_document_lanes::SmolwebDocumentSession>().is_some_and(|document| document.document().reading_preferences() != host.reading_preferences)
+            });
+            if preferences_changed {
+                if let Some(controller) = self.pool.content_mut(&key).and_then(PeltContent::document_mut) {
+                    let session = controller.session_mut();
+                    if let Some(reader) = session.as_any().downcast_mut::<mere_document_lanes::ReaderDocumentSession>() {
+                        let _ = reader.set_reading_preferences(host.reading_preferences);
+                    } else if let Some(document) = session.as_any().downcast_mut::<mere_document_lanes::SmolwebDocumentSession>() {
+                        let _ = document.document_mut().set_reading_preferences(host.reading_preferences);
+                    }
                 }
             }
             let (r, scale) = (host.surface.rect, host.scale_factor);
@@ -1059,7 +1072,9 @@ mod tests {
         )
         .unwrap();
         let route = canonical.route().clone();
-        contents.insert(node, PeltContent::from_controller(controller, route));
+        let mut retired = contents.insert(node, PeltContent::from_controller(controller, route)).unwrap();
+        assert!(matches!(retired.cue_surface_mut().unwrap().input(inker::webcue::Input::Document(
+            inker::SessionInput::Text("late".into()))), Err(inker::webcue::Error::Retired)));
         contents.sync_placements(placements(), engines, surfaces, epoch);
         assert!(
             !Arc::ptr_eq(&old_source, &reader(&contents, &first).source_document()),

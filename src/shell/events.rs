@@ -34,7 +34,7 @@ impl ApplicationHandler for Shell {
         let started = std::time::Instant::now();
         self.poll_render_recovery();
         self.observe_physics_display_rate(false);
-        #[cfg(all(feature = "servo", windows))]
+        #[cfg(all(feature = "servo", any(windows, target_os = "macos")))]
         if let Err(error) = super::servo::pump() {
             tracing::warn!(%error, "Servo process event pump failed");
         }
@@ -42,6 +42,7 @@ impl ApplicationHandler for Shell {
         // input delivery. A deadline wake requests paint outside WM_PAINT so
         // captured browser mailboxes and self-drive cannot lose their clock.
         // Replace this fallback when the engines expose a host wake callback.
+        self.drain_surface_web_events();
         let now = std::time::Instant::now();
         let document_due = self.document_clock.poll_due(now);
         if document_due {
@@ -99,7 +100,7 @@ impl ApplicationHandler for Shell {
         self.run_effects(effects);
         self.pump_redshank();
         self.pump_research();
-        #[cfg(all(feature = "servo", windows))]
+        #[cfg(all(feature = "servo", any(windows, target_os = "macos")))]
         if let Err(error) = super::servo::pump() {
             tracing::warn!(%error, "Servo process event pump failed");
         }
@@ -134,7 +135,7 @@ impl ApplicationHandler for Shell {
             self.retire_render_receivers(window);
         }
         self.retire_render_receivers(0);
-        #[cfg(all(feature = "servo", windows))]
+        #[cfg(all(feature = "servo", any(windows, target_os = "macos")))]
         {
             self.clear_surface_content();
             if let Err(error) = super::servo::shutdown() {

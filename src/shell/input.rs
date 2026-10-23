@@ -1505,8 +1505,13 @@ impl Shell {
     pub(super) fn apply_pending_surface_cursor(&mut self) {
         let shape = self
             .hovered_surface
-            .and_then(|node| self.content_sessions.surface_mut(&node))
-            .and_then(|producer| producer.poll_cursor_shape());
+            .and_then(|node| {
+                if self.content_sessions.get(&node).is_some_and(|content| content.cue_surface().is_some()) {
+                    self.content_sessions.cue_cursors.remove(&node)
+                } else {
+                    self.content_sessions.surface_mut(&node).and_then(|producer| producer.poll_cursor_shape())
+                }
+            });
         if let (Some(shape), Some(window)) = (shape, self.window.as_ref()) {
             let icon = surface_cursor_icon(shape);
             window.set_cursor_visible(icon.is_some());

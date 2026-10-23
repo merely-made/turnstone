@@ -134,21 +134,124 @@ impl Shell {
     pub(super) fn drain_surface_web_events(&mut self) {
         const MAX_EVENTS_PER_SURFACE: usize = 256;
         let mut pending = Vec::new();
-        for (node, producer) in self.content_sessions.surfaces_mut() {
-            let Some(web) = producer.as_web_surface() else {
-                continue;
-            };
+        let shared = self
+            .content_sessions
+            .pool
+            .iter()
+            .filter_map(|(key, content)| {
+                let super::content_pool::ContentKey::Node(node) = *key else {
+                    return None;
+                };
+                Some((node, *key, content.cue_surface()?.capabilities().clone()))
+            })
+            .collect::<Vec<_>>();
+        for (node, key, report) in shared {
+            self.app.content.note_cue_report(node, report);
+            if let Err(error) = self
+                .content_sessions
+                .pool
+                .advance_cue_browser(&key, self.epoch.elapsed())
+            {
+                tracing::warn!(%node, %error, "shared browser advance refused");
+            }
             for _ in 0..MAX_EVENTS_PER_SURFACE {
-                let Some(event) = web.poll_web_event() else {
+                let Some(envelope) = self.content_sessions.pool.poll_cue_event(&key) else {
                     break;
                 };
-                pending.push((node, event));
+                use inker::webcue::Event;
+                let event = match envelope.event {
+                    Event::NavigationStarted { address } => {
+                        Some(inker::WebSurfaceEvent::Navigation(
+                            inker::NavigationEvent::Started { url: address },
+                        ))
+                    }
+                    Event::AddressChanged(url) => {
+                        Some(inker::WebSurfaceEvent::AddressChanged { url })
+                    }
+                    Event::TitleChanged(title) => {
+                        Some(inker::WebSurfaceEvent::TitleChanged { title })
+                    }
+                    Event::NavigationFinished {
+                        address,
+                        success: true,
+                    } => Some(inker::WebSurfaceEvent::Navigation(
+                        inker::NavigationEvent::Finished {
+                            url: address,
+                            title: None,
+                        },
+                    )),
+                    Event::NavigationFinished {
+                        address,
+                        success: false,
+                    } => Some(inker::WebSurfaceEvent::Navigation(
+                        inker::NavigationEvent::Failed {
+                            url: address,
+                            reason: "shared browser reported navigation failure".into(),
+                        },
+                    )),
+                    Event::CursorChanged(cursor) => {
+                        if let Some(shape) = super::cue_content::cursor_shape(&cursor) {
+                            self.content_sessions.cue_cursors.insert(node, shape);
+                        }
+                        None
+                    }
+                    Event::Message(message) => {
+                        serde_json::from_str::<inker::WebSurfaceEvent>(&message)
+                            .ok()
+                            .or_else(|| {
+                                serde_json::from_str::<inker::WebMessage>(&message)
+                                    .ok()
+                                    .map(inker::WebSurfaceEvent::WebMessage)
+                            })
+                    }
+                    Event::Completed {
+                        result: Ok(inker::webcue::Reply::Zoom(zoom)),
+                        ..
+                    } => {
+                        self.app
+                            .content
+                            .note_page_zoom(node, super::effects::app_page_zoom_facts(zoom));
+                        None
+                    }
+                    Event::Completed {
+                        request,
+                        result: Err(error),
+                    } => {
+                        self.app.content.refuse_surface_traversal_request(node, request);
+                        tracing::warn!(%node, ?request, %error, "shared browser command refused");
+                        None
+                    }
+                    _ => None,
+                };
+                if let Some(event) = event {
+                    pending.push((node, event));
+                }
+            }
+        }
+        for (key, content) in self.content_sessions.pool.surfaces_mut() {
+            let super::content_pool::ContentKey::Node(node) = *key else {
+                continue;
+            };
+            if content.cue_surface().is_some() {
+                continue;
+            }
+            if let Some(web) = content
+                .surface_producer_mut()
+                .and_then(|p| p.as_web_surface())
+            {
+                for _ in 0..MAX_EVENTS_PER_SURFACE {
+                    let Some(event) = web.poll_web_event() else {
+                        break;
+                    };
+                    pending.push((node, event));
+                }
             }
         }
         for (node, event) in pending {
             self.consume_surface_web_event(node, event);
         }
         self.expire_user_agent_requests();
+        self.apply_pending_surface_cursor();
     }
 
     fn consume_surface_web_event(&mut self, node: uuid::Uuid, event: inker::WebSurfaceEvent) {
@@ -928,6 +1031,19 @@ impl Shell {
                     (scene, crate::map_theme::clear_color(self.app.map_theme()))
                 },
                 crate::surface::SurfaceKind::Content(node) => {
+                    if self.content_sessions.appearance(node, surface.id).is_some_and(|content| content.cue_surface().is_some()) {
+                        match self.cue_content_layer(surface, scale) {
+                            Ok((layer, pending)) => {
+                                if let Some(layer) = layer { scenes.push(PlannedLayer::Imported(layer)); }
+                                needs_redraw |= pending;
+                            },
+                            Err(error) => {
+                                tracing::error!(%node, %error, "shared content presentation refused");
+                                self.main_receipt.errors.push(format!("shared content {node}: {error}"));
+                            },
+                        }
+                        continue;
+                    }
                     let mut surface_frame = None;
                     let document_frame = match self.content_sessions.pool.frame(&surface.id) {
                         Some(pelt_core::PeltLayer::Document(scene)) => Some(scene),

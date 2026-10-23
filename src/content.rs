@@ -257,10 +257,20 @@ pub struct OutlineFact {
 
 /// The app-truth side of the content lane: node id -> lifecycle, plus the
 /// spawn-time facts for live nodes.
+#[derive(Debug)]
+pub(crate) struct SurfaceTraversal {
+    pub from: String,
+    pub target: String,
+    pub back: bool,
+    pub request: Option<inker::webcue::RequestKey>,
+}
+
 #[derive(Debug, Default)]
 pub struct ContentStates {
     states: HashMap<Uuid, NodeContent>,
     facts: HashMap<Uuid, ContentFacts>,
+    cue_reports: HashMap<Uuid, inker::webcue::CapabilityReport>,
+    surface_traversals: HashMap<Uuid, SurfaceTraversal>,
     /// The effective page zoom a live engine reported back, per node. Purely
     /// transient: it dies with the session, and the save path never sees it.
     page_zoom: HashMap<Uuid, PageZoomFacts>,
@@ -279,6 +289,85 @@ impl ContentStates {
     /// The mirrored facts for a live node (absent for requested/failed/none).
     pub fn facts(&self, node: Uuid) -> Option<&ContentFacts> {
         self.facts.get(&node)
+    }
+
+    pub(crate) fn surface_traversal_pending(&self, node: Uuid) -> bool {
+        self.surface_traversals.contains_key(&node)
+    }
+    pub(crate) fn begin_surface_traversal(
+        &mut self,
+        node: Uuid,
+        from: String,
+        target: String,
+        back: bool,
+    ) {
+        self.surface_traversals.insert(
+            node,
+            SurfaceTraversal {
+                from,
+                target,
+                back,
+                request: None,
+            },
+        );
+    }
+    pub(crate) fn take_surface_traversal(&mut self, node: Uuid) -> Option<SurfaceTraversal> {
+        self.surface_traversals.remove(&node)
+    }
+    pub(crate) fn bind_surface_traversal_request(
+        &mut self,
+        node: Uuid,
+        request: inker::webcue::RequestKey,
+    ) {
+        if let Some(traversal) = self.surface_traversals.get_mut(&node) {
+            traversal.request = Some(request);
+        }
+    }
+    pub(crate) fn refuse_surface_traversal_request(
+        &mut self,
+        node: Uuid,
+        request: inker::webcue::RequestKey,
+    ) -> bool {
+        if self
+            .surface_traversals
+            .get(&node)
+            .is_some_and(|traversal| traversal.request == Some(request))
+        {
+            self.note_surface_stopped(node);
+            true
+        } else {
+            false
+        }
+    }
+
+    /// Effective shared controls take precedence over the legacy vocabulary.
+    /// Host loading/history remain separate from engine-owned navigation.
+    pub fn offers(&self, node: Uuid, feature: inker::webcue::Feature) -> bool {
+        if let Some(report) = self.cue_report(node) {
+            return report.feature(feature).permits();
+        }
+        let Some(facts) = self.facts(node) else {
+            return false;
+        };
+        use inker::webcue::Feature;
+        match feature {
+            Feature::Find => facts.capabilities.find_in_page.is_available(),
+            Feature::Zoom => facts.capabilities.page_zoom.is_available(),
+            Feature::Capture => facts.capabilities.page_capture.is_available(),
+            Feature::Navigation | Feature::Reload | Feature::Stop | Feature::History => {
+                facts.capabilities.navigation.is_available()
+            },
+            _ => false,
+        }
+    }
+
+    pub fn cue_report(&self, node: Uuid) -> Option<&inker::webcue::CapabilityReport> {
+        self.cue_reports.get(&node)
+    }
+    pub fn note_cue_report(&mut self, node: Uuid, report: inker::webcue::CapabilityReport) {
+        if matches!(self.states.get(&node), Some(NodeContent::Live)) {
+            self.cue_reports.insert(node, report);
+        }
     }
 
     /// What the node's live engine last reported it is presenting at. `None`
@@ -312,6 +401,8 @@ impl ContentStates {
     pub fn note_requested(&mut self, node: Uuid) {
         self.states.insert(node, NodeContent::Requested);
         self.facts.remove(&node);
+        self.cue_reports.remove(&node);
+        self.surface_traversals.remove(&node);
         self.page_zoom.remove(&node);
     }
 
@@ -363,15 +454,19 @@ impl ContentStates {
     }
 
     pub fn note_surface_settled(&mut self, node: Uuid) {
+        self.surface_traversals.remove(&node);
         self.loads.entry(node).or_default().surface_settled();
     }
 
     pub fn note_surface_stopped(&mut self, node: Uuid) {
+        self.surface_traversals.remove(&node);
         self.loads.entry(node).or_default().surface_stopped();
     }
 
     pub fn note_live(&mut self, node: Uuid, facts: Option<ContentFacts>) {
         self.states.insert(node, NodeContent::Live);
+        self.cue_reports.remove(&node);
+        self.surface_traversals.remove(&node);
         match facts {
             Some(facts) => {
                 self.facts.insert(node, facts);
@@ -385,18 +480,24 @@ impl ContentStates {
     pub fn note_awaiting_input(&mut self, node: Uuid) {
         self.states.insert(node, NodeContent::AwaitingInput);
         self.facts.remove(&node);
+        self.cue_reports.remove(&node);
+        self.surface_traversals.remove(&node);
         self.page_zoom.remove(&node);
     }
 
     pub fn note_awaiting_identity(&mut self, node: Uuid) {
         self.states.insert(node, NodeContent::AwaitingIdentity);
         self.facts.remove(&node);
+        self.cue_reports.remove(&node);
+        self.surface_traversals.remove(&node);
         self.page_zoom.remove(&node);
     }
 
     pub fn note_awaiting_trust(&mut self, node: Uuid) {
         self.states.insert(node, NodeContent::AwaitingTrust);
         self.facts.remove(&node);
+        self.cue_reports.remove(&node);
+        self.surface_traversals.remove(&node);
         self.page_zoom.remove(&node);
     }
 
@@ -511,6 +612,8 @@ impl ContentStates {
     pub fn note_failed(&mut self, node: Uuid, error: String) {
         self.states.insert(node, NodeContent::Failed(error));
         self.facts.remove(&node);
+        self.cue_reports.remove(&node);
+        self.surface_traversals.remove(&node);
         self.page_zoom.remove(&node);
         if let Some(load) = self.loads.get_mut(&node) {
             load.fail();
@@ -521,6 +624,8 @@ impl ContentStates {
     pub fn note_closed(&mut self, node: Uuid) {
         self.states.remove(&node);
         self.facts.remove(&node);
+        self.cue_reports.remove(&node);
+        self.surface_traversals.remove(&node);
         self.page_zoom.remove(&node);
     }
 
