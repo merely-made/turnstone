@@ -120,14 +120,16 @@ struct Draft {
     history: History<LayoutState, String>,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum SaveKind {
     Apply,
     Undo,
     Redo,
     InspectorSource(crate::pane_source::InspectorSource),
     Visibility,
+    Scope(cambium::scope_navigation::ScopeNavigation<Uuid,Uuid,tabard::ReadingAnchor>),
     Reading(Uuid, tabard::ReadingPreferences),
+    ReadingProgress(std::collections::BTreeMap<Uuid,tabard::ReadingAnchor>, tabard::ReadingTrail<Uuid>),
 }
 /// Prepared writes never change committed state until the store acknowledges
 /// them. The session is frozen while its proposal is in flight.
@@ -400,7 +402,7 @@ impl FormeSession {
     pub fn prepare_save(&mut self, kind: SaveKind, now_ms: u64) -> Result<PreparedSave, String> {
         self.idle()?;
         let mut next = self.saved.clone();
-        match kind {
+        match kind.clone() {
             SaveKind::Apply => {
                 let draft = self.draft.as_ref().ok_or("No Forme draft is open")?;
                 if self.dirty() {
@@ -426,16 +428,18 @@ impl FormeSession {
                 to.push(current);
                 state.restore(&mut next.workspace);
             },
+            SaveKind::Scope(nav) => { nav.validate(|a|a.validate().is_ok())?; next.workspace.scope_navigation=nav; },
             SaveKind::Reading(access, value) => {
                 value.validate()?;
                 if next.workspace.tile_for_member(access).is_none() { return Err("Reading projection is no longer present".into()); }
                 next.workspace.reading_preferences.set(access, value);
             },
+            SaveKind::ReadingProgress(anchors,trail) => { next.workspace.reading_anchors=anchors; next.workspace.reading_trail=trail; },
             SaveKind::Visibility => next.workspace.visible = !next.workspace.visible,
             SaveKind::InspectorSource(source) => next.workspace.inspector_source = source,
         }
         next.workspace.locked = true;
-        if !matches!(kind, SaveKind::InspectorSource(_)) {
+        if !matches!(kind, SaveKind::InspectorSource(_) | SaveKind::Scope(_)) {
             if next.workspace.document.created_at_ms == 0 {
                 next.workspace.document.created_at_ms = now_ms;
             }
@@ -461,9 +465,11 @@ impl FormeSession {
         self.busy = false;
         result?;
         match proposal.kind {
+            SaveKind::Scope(nav) => { if let Some(draft)=&mut self.draft {draft.workspace.scope_navigation=nav;} },
             SaveKind::Reading(access, value) => {
                 if let Some(draft) = &mut self.draft { draft.workspace.reading_preferences.set(access, value); }
             },
+            SaveKind::ReadingProgress(anchors,trail) => {if let Some(draft)=&mut self.draft {draft.workspace.reading_anchors=anchors;draft.workspace.reading_trail=trail;}},
             SaveKind::Visibility => {
                 if let Some(draft) = &mut self.draft {
                     draft.workspace.visible = proposal.next.workspace.visible;
@@ -704,6 +710,31 @@ mod tests {
     }
 
     #[test]
+    fn anchored_visits_reopen_and_failed_progress_save_keeps_acknowledged_state() {
+        pollster::block_on(async {
+            let (graph,mut session,[a,b,c])=fixture();
+            let owner=session.view().document.graph_id;
+            let backend=MemoryBackend::default();
+            let anchor=tabard::ReadingAnchor {source:"https://example.test/a".into(),revision:42,text:7,offset:0,exact:"A retained passage".into(),prefix:String::new(),suffix:String::new(),line_offset:0.0,fallback_y:600.0};
+            let mut trail=tabard::ReadingTrail::default();trail.visit(a);trail.anchor_current(anchor.clone());trail.visit(b);
+            let mut anchors=std::collections::BTreeMap::new();anchors.insert(a,anchor.clone());
+            session.unlock().unwrap();session.edit(None,1,|workspace|workspace.open(c,&graph)).unwrap();
+            let layout=LayoutState::capture(session.view());
+            save(&mut session,backend.clone(),SaveKind::ReadingProgress(anchors.clone(),trail.clone())).await;
+            assert_eq!(LayoutState::capture(session.view()),layout);assert!(session.editing());
+            assert!(session.saved.layout_undo.is_empty(),"reading progress is not a saved layout gesture");
+            session.discard().unwrap();
+            let mut cold=FormeSession::load(backend,owner,&graph).await.unwrap();
+            assert_eq!(cold.view().reading_anchors.get(&a),Some(&anchor));
+            let mut reopened=cold.view().reading_trail.clone();assert_eq!(reopened.step(false),Some(a));assert_eq!(reopened.current_anchor(),Some(&anchor));
+            let old=serde_json::to_value(cold.committed()).unwrap();
+            let proposal=cold.prepare_save(SaveKind::ReadingProgress(Default::default(),Default::default()),2).unwrap();
+            assert!(cold.finish_save(proposal,Err("offline".into())).is_err());
+            assert_eq!(serde_json::to_value(cold.committed()).unwrap(),old);
+        });
+    }
+
+    #[test]
     fn failed_source_binding_write_keeps_the_acknowledged_rule() {
         use crate::pane_source::InspectorSource;
         let (_, mut session, [a, _, _]) = fixture();
@@ -715,6 +746,35 @@ mod tests {
         let proposal = session.prepare_save(kind, 1000).unwrap();
         let result = proposal.save(backend).await;
         session.finish_save(proposal, result).unwrap();
+    }
+    #[test]
+    fn scope_route_saves_independently_of_layout_drafts_and_reopens_with_its_anchor() {
+        pollster::block_on(async {
+            use cambium::scope_navigation::*;
+            let (graph,mut session,[a,_,c])=fixture();let backend=MemoryBackend::new();let owner=session.committed().document.graph_id;
+            let document=serde_json::to_value(&session.committed().document).unwrap();
+            session.committed().save(backend.clone()).await.unwrap();session.unlock().unwrap();session.edit(None,1,|w|w.open(c,&graph)).unwrap();
+            let anchor=tabard::ReadingAnchor{source:"mere://reading/a".into(),revision:42,text:3,offset:0,exact:"A retained passage".into(),prefix:String::new(),suffix:String::new(),line_offset:0.0,fallback_y:600.0};
+            let mut nav=ScopeNavigation::default();let place=ScopePlace{level:ScopeLevel::Document,graph:owner,root:Some(a),focus:Some(a)};
+            nav.visit(ScopeVisit{place:place.clone(),camera:None,anchor:Some(anchor.clone())});
+            nav.visit(ScopeVisit{place:place.up().unwrap(),camera:Some(ScopeCamera{x:100.0,y:80.0,zoom:2.0}),anchor:None});
+            save(&mut session,backend.clone(),SaveKind::Scope(nav.clone())).await;
+            assert!(session.editing());assert!(session.view().members().contains(&c));assert!(!session.committed().members().contains(&c));
+            assert_eq!(serde_json::to_value(&session.committed().document).unwrap(),document);
+            assert_eq!(session.view().scope_navigation,nav);session.discard().unwrap();
+            let cold=FormeSession::load(backend,owner,&graph).await.unwrap();assert_eq!(cold.view().scope_navigation,nav);
+            assert_eq!(cold.view().scope_navigation.destination(false).unwrap().anchor,Some(anchor));
+        });
+    }
+    #[test]
+    fn scope_write_failure_keeps_acknowledged_route_and_foreign_graph_is_refused() {
+        use cambium::scope_navigation::*;
+        let (_,mut session,[a,_,_])=fixture();let owner=session.committed().document.graph_id;
+        let mut nav=ScopeNavigation::default();nav.visit(ScopeVisit{place:ScopePlace{level:ScopeLevel::Graph,graph:owner,root:Some(a),focus:Some(a)},camera:None,anchor:None});
+        let proposal=session.prepare_save(SaveKind::Scope(nav.clone()),1).unwrap();assert!(session.finish_save(proposal,Err("offline".into())).is_err());
+        assert!(session.committed().scope_navigation.current().is_none());
+        let mut foreign=nav.current().unwrap().clone();foreign.place.graph=Uuid::nil();nav.visit(foreign);
+        assert!(session.prepare_save(SaveKind::Scope(nav),2).is_err());
     }
     fn member_ids(workspace: &FormeWorkspace) -> Vec<(Uuid, Uuid)> {
         use mere::forme::ArrangementNodeKind;

@@ -22,9 +22,13 @@ pub(super) struct State {
     pub document_rail: bool,
     pub binding_open: bool,
     pub navigation: super::navigation::State,
+    pub scope: super::scope_navigation::State,
 }
 
 pub(super) const SHEET: &str = r#"
+.tree-instrument .workspace-app-identity { flex-wrap:wrap; }
+.tree-instrument .scope-overmap { padding:24px; background:var(--workspace-surface); height:100%; }
+.tree-instrument .scope-overmap h2 { font-size:16px; font-weight:500; margin:0 0 16px; }
 .tree-instrument { --workspace-font-interface:IBM Plex Sans,sans-serif; --workspace-font-reading:Newsreader,serif; }
 .tree-instrument .cambium-title-bar h1 { margin:0; font-size:14px; font-weight:500; }
 .tree-instrument .cambium-title-bar { --titlebar-min-height:36px; --titlebar-gap:6px; padding-top:0; padding-bottom:0; border-bottom:1px solid var(--workspace-rule); flex-wrap:nowrap; position:relative; }
@@ -91,13 +95,13 @@ pub(super) fn app_header(page: &TreePage) -> Option<Child> {
     }
     let toolbar = shell_toolbar(
         "Map navigation",
-        Vec::new(),
+        if navigation_active {vec![super::scope_navigation::controls(page)]} else {Vec::new()},
         Box::new(
             el(
                 "div",
                 (
                     el("h1", "Graphshell"),
-                    (!narrow).then(|| el("span", format!(" · {} documents", page.nodes))),
+                    super::scope_navigation::trail(page),
                 ),
             )
             .attr("class", "workspace-app-identity")

@@ -39,6 +39,12 @@ pub struct FormeWorkspace {
     /// Per-access projection intent. Never serialized into the graph source.
     #[serde(default)]
     pub reading_preferences: tabard::ReadingProjections<Uuid>,
+    #[serde(default)]
+    pub reading_anchors: BTreeMap<Uuid, tabard::ReadingAnchor>,
+    #[serde(default)]
+    pub reading_trail: tabard::ReadingTrail<Uuid>,
+    #[serde(default)]
+    pub scope_navigation: cambium::scope_navigation::ScopeNavigation<Uuid,Uuid,tabard::ReadingAnchor>,
     tile_ids: BTreeMap<Uuid, u64>,
 }
 
@@ -55,6 +61,9 @@ impl FormeWorkspace {
             focused_reading: None,
             tile_ids: BTreeMap::new(),
             reading_preferences: Default::default(),
+            reading_anchors: BTreeMap::new(),
+            reading_trail: Default::default(),
+            scope_navigation: Default::default(),
         }
     }
     pub fn layout(&self) -> TileLayout {
@@ -96,6 +105,17 @@ impl FormeWorkspace {
         }
         self.keep_layout(&layout);
         self.focused_reading = Some(member);
+        self.reading_trail.visit(member);
+        Ok(())
+    }
+    /// Follow within the current reading stack; existing arranged cells retain their place.
+    pub fn read(&mut self,member:Uuid,graph:&Graph)->Result<(),String> {
+        let already_open=self.members().contains(&member);
+        let origin=self.focused_reading.filter(|origin|self.members().contains(origin));
+        self.open(member,graph)?;
+        if !already_open && let Some(origin)=origin {
+            let mut layout=self.layout();layout.move_to_stack_index_of(member,origin,usize::MAX);self.keep_layout(&layout);
+        }
         Ok(())
     }
     pub fn tile_tree(&self, graph: &Graph) -> Option<TileTree> {
@@ -240,6 +260,7 @@ impl FormeWorkspace {
         }
         let mut candidate = self.clone();
         candidate.focused_reading = focused;
+        if let Some(member)=focused {candidate.reading_trail.visit(member);}
         candidate.keep_layout(&layout);
         candidate.validate(self.document.graph_id)?;
         *self = candidate;
@@ -259,6 +280,11 @@ impl FormeWorkspace {
         }
     }
     pub fn validate(&self, graph_id: Uuid) -> Result<(), String> {
+        self.reading_trail.validate()?;
+        self.scope_navigation.validate(|a|a.validate().is_ok())?;
+        if self.scope_navigation.visits().any(|v|v.place.graph!=graph_id) {return Err("Scope route belongs to another graph".into());}
+        if self.reading_anchors.len()>1024 {return Err("Too many reading anchors".into());}
+        for (access,anchor) in &self.reading_anchors { if !self.tile_ids.contains_key(access) {return Err("Reading anchor has no projection".into());} anchor.validate()?; }
         self.reading_preferences.validate()?;
         if self.reading_preferences.keys().any(|access| !self.tile_ids.contains_key(access)) {
             return Err("Reading preferences have no projection".into());

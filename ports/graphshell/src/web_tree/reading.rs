@@ -13,6 +13,7 @@ use uuid::Uuid;
 use workbench::{ContentSource, TileTree};
 
 struct Binding {
+    restored: bool,
     key: u64,
     slot: Rc<RefCell<ContentSlot>>,
     producer: Rc<RefCell<ContentProducer>>,
@@ -76,6 +77,7 @@ pub(super) struct Reading {
     media_answers: BTreeMap<Uuid, (u64, Rc<RefCell<Option<String>>>)>,
     requests: Vec<(Uuid, String)>,
     dictionaries: Dictionaries,
+    pending_progress: Option<(BTreeMap<Uuid,tabard::ReadingAnchor>,f64)>,
 }
 
 /// Segmenter dictionaries fetched beside the page when reading text needs
@@ -190,6 +192,7 @@ impl Default for Reading {
             media_answers: Default::default(),
             requests: Default::default(),
             dictionaries: Default::default(),
+            pending_progress: None,
         }
     }
 }
@@ -283,7 +286,11 @@ pub(super) fn prepare(page: &TreePage) {
     }
     reading.prepare(tree.as_ref(), &retained);
     if let Some(pane) = &page.forme {
-        for (member, binding) in &reading.bindings {
+        for (member, binding) in &mut reading.bindings {
+            if !binding.restored {
+                if let Some(anchor) = pane.model().reading_anchors.get(member) { binding.slot.borrow_mut().restore_reading_anchor(anchor.clone()); }
+                binding.restored = true;
+            }
             let preferences = pane.model().reading_preferences.get(member);
             let _ = binding.slot.borrow_mut().reading_preferences(preferences);
         }
@@ -382,6 +389,7 @@ impl Reading {
         self.bindings.insert(
             member,
             Binding {
+                restored: false,
                 key,
                 slot: slot.clone(),
                 producer,
@@ -903,8 +911,28 @@ fn find(page: &mut TreePage, member: Uuid, step: Option<graphshell::retained_con
 pub(super) fn read_command(page: &mut TreePage, member: Uuid, command: cambium::ReadCommand) {
     use cambium::ReadCommand as C;
     let Some(pane) = &mut page.forme else { return; };
+    if pane.saving && matches!(command,C::Back|C::Forward|C::Smaller|C::Larger|C::Narrower|C::Wider|C::Reset) {
+        if pane.pending_read_commands.len()<32 {pane.pending_read_commands.push_back((member,command));}
+        page.shared.dirty.set(true);return;
+    }
     let mut value = pane.model().reading_preferences.get(&member);
     match command {
+        C::Appearance => {let ui=pane.reading_ui.entry(member).or_default();ui.appearance_open=!ui.appearance_open;page.shared.dirty.set(true);return;},
+        C::ShowGraph => {show_graph(page,member);return;},
+        C::Back | C::Forward => {
+            if pane.saving {return;}
+            let (mut anchors,mut trail)=capture_progress(page);
+            let Some(destination)=trail.step(command==C::Forward) else {return;};
+            if page.shared.canvas.borrow().graph().get_node_by_id(destination).is_none() {return;}
+            if let Some(anchor)=trail.current_anchor().cloned() {
+                anchors.insert(destination,anchor.clone());
+                if let Some(binding)=page.shared.reading.borrow().bindings.get(&destination) {binding.slot.borrow_mut().restore_reading_anchor(anchor);}
+            }
+            super::forme::edit(page,None,true,move |workspace,graph| {
+                workspace.reading_anchors=anchors; workspace.reading_trail=trail;workspace.read(destination,graph)
+            });
+            return;
+        },
         C::Smaller => value.step_text(false), C::Larger => value.step_text(true),
         C::Narrower => value.step_column(false), C::Wider => value.step_column(true),
         C::Reset => value = Default::default(),
@@ -927,7 +955,7 @@ pub(super) fn read_command(page: &mut TreePage, member: Uuid, command: cambium::
     page.shared.dirty.set(true);
 }
 pub(super) fn toolbar(member: Uuid, snapshot: ToolbarSnapshot) -> Child {
-    let field = snapshot.find_enabled.then_some(&snapshot.ui);
+    let field = Some(&snapshot.ui);
     cambium::read_toolbar(snapshot.preferences.text_size, snapshot.preferences.column_em, snapshot.text_controls, field,
         move |page: &mut TreePage, event| match event {
             cambium::ReadEvent::Command(command) => read_command(page, member, command),
@@ -940,4 +968,62 @@ pub(super) fn toolbar(member: Uuid, snapshot: ToolbarSnapshot) -> Child {
                 page.shared.dirty.set(true);
             },
         })
+}
+
+fn progress(page:&TreePage)->BTreeMap<Uuid,tabard::ReadingAnchor> {
+    let mut anchors=page.forme.as_ref().map(|p|p.model().reading_anchors.clone()).unwrap_or_default();
+    for (member,binding) in &page.shared.reading.borrow().bindings {
+        if let Some(anchor)=binding.slot.borrow().reading_anchor() {anchors.insert(*member,anchor);}
+    }
+    anchors
+}
+pub(super) fn needs_progress_save(page:&TreePage)->bool {
+    let Some(pane)=page.forme.as_ref().filter(|p|!p.saving && p.retry.is_none() && !p.session.editing()) else {return false;};
+    let anchors=progress(page);
+    let mut reading=page.shared.reading.borrow_mut();
+    if anchors==pane.model().reading_anchors {reading.pending_progress=None;return false;}
+    let now=js_sys::Date::now();
+    if let Some((held,since))=&reading.pending_progress {if held==&anchors {return now-since>=600.0;}}
+    reading.pending_progress=Some((anchors,now));false
+}
+pub(super) fn persist_progress(page:&mut TreePage) {
+    let anchors=progress(page);
+    super::scope_navigation::retain_anchor(page,&anchors);
+    if let Some(pane)=&mut page.forme {if !pane.saving {
+        let mut trail=pane.model().reading_trail.clone();
+        if let Some(anchor)=trail.current().and_then(|member|anchors.get(member)).cloned() {trail.anchor_current(anchor);}
+        pane.save(graphshell::forme_session::SaveKind::ReadingProgress(anchors,trail));}}
+}
+pub(super) fn show_graph(page:&mut TreePage,member:Uuid) {
+    page.shared.canvas.borrow_mut().select_member(member);
+    page.shared.canvas.borrow_mut().center_on_selected();
+    if let Some(pane)=&mut page.forme {pane.workbench=false;}
+    super::forme::selection_changed(page);page.shared.dirty.set(true);
+}
+
+pub(super) fn preview_excerpt(page:&TreePage,member:Uuid)->Option<String> {
+    let excerpt=page.shared.reading.borrow().bindings.get(&member).and_then(|binding|binding.slot.borrow().reading_excerpt());
+    let excerpt=excerpt.or_else(|| {
+        let canvas=page.shared.canvas.borrow();let (_,node)=canvas.graph().get_node_by_id(member)?;
+        let body=node.body.as_ref().filter(|body|body.len()<=256*1024)?;
+        if node.media_type.as_deref()==Some("application/vnd.mere.document+json") {
+            graphshell::retained_content::retained_packet_excerpt(body)
+        } else {None}
+    });
+    excerpt.map(|text|format!("Retained document excerpt: {text}"))
+        .or_else(||page.forme.as_ref().and_then(|pane|pane.model().reading_anchors.get(&member)).map(|anchor|format!("Last reading position: {}",anchor.exact)))
+}
+pub(super) fn capture_progress(page:&TreePage)->(BTreeMap<Uuid,tabard::ReadingAnchor>,tabard::ReadingTrail<Uuid>) {
+    let anchors=progress(page);
+    let mut trail=page.forme.as_ref().map(|pane|pane.model().reading_trail.clone()).unwrap_or_default();
+    if let Some(anchor)=trail.current().and_then(|member|anchors.get(member)).cloned() {trail.anchor_current(anchor);}
+    (anchors,trail)
+}
+
+pub(super) fn restore_anchor(page:&TreePage,member:Uuid,anchor:tabard::ReadingAnchor) {
+    if let Some(binding)=page.shared.reading.borrow().bindings.get(&member) {binding.slot.borrow_mut().restore_reading_anchor(anchor);}
+}
+pub(super) fn anchor_field(page:&TreePage)->String {
+    page.forme.as_ref().and_then(|pane|pane.model().focused_reading).and_then(|member|page.shared.reading.borrow().bindings.get(&member).and_then(|binding|binding.slot.borrow().reading_anchor()))
+        .map(|anchor|format!("{}:{}:{}",anchor.text,anchor.offset,anchor.exact)).unwrap_or_default()
 }

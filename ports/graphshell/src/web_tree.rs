@@ -186,7 +186,7 @@ fn tree_stylesheet(appearance: &str) -> String {
         instrument::SHEET
     );
     #[cfg(not(feature = "product"))]
-    let workspace_sheet = "";
+    let workspace_sheet = cambium::SHELL_CSS;
     #[cfg(feature = "applets")]
     let applet_sheet = applet::SHEET;
     #[cfg(not(feature = "applets"))]
@@ -527,6 +527,7 @@ pub(crate) struct TreePage {
     remote_link_seen: bool,
     /// Whether the collapsed Graph tools region is open over the canvas.
     tools_open: bool,
+    viewer_controls_open: bool,
     #[cfg(feature = "product")]
     instrument: instrument::State,
     /// The tree's logical size, followed from the host each frame. Genet sizes
@@ -660,8 +661,7 @@ impl TreePage {
         }
         let selected = self.shared.canvas.borrow().selected_members().len();
         format!(
-            "{} · {} nodes · selected: {} · primary: {}",
-            self.source,
+            "{} documents · {} selected · {}",
             self.shared.canvas.borrow().graph().node_count(),
             selected,
             self.product
@@ -802,7 +802,7 @@ fn view(page: &TreePage) -> Child {
                                 .to_owned(),
                         ))
                     }),
-                    (!document_active).then(|| {
+                    (!document_active && page.product.is_none()).then(|| {
                         Box::new(
                             status_note("tree-status", page.status()),
                         ) as Child
@@ -816,14 +816,26 @@ fn view(page: &TreePage) -> Child {
                         .then(|| page.presenter.is_none().then(|| grouping::controls(page)))
                         .flatten()
                         .flatten(),
-                    (!document_active && graph_controls).then(|| {
+                    (!document_active && page.product.is_none()).then(|| {
+                        let mut controls:Vec<Child>=Vec::new();
+                        if !page.viewer_controls_open {
+                            controls.push(cambium::shell_control("Commands","Graph commands",Default::default(),|page:&mut TreePage,_|commands::open_keyboard(page)));
+                            controls.push(cambium::shell_control("Inspect","Graph tools",cambium::ShellControl{pressed:Some(page.tools_open),..Default::default()},|page:&mut TreePage,_|{page.tools_open=!page.tools_open;page.shared.dirty.set(true);}));
+                            controls.push(cambium::shell_control("Fit","Fit graph",Default::default(),|page:&mut TreePage,_|{
+                                CanvasCommand::FitVisible.apply(&mut *page.shared.canvas.borrow_mut(),page.size);page.shared.dirty.set(true);
+                            }));
+                        }
+                        controls.push(cambium::shell_control("View controls","View controls",cambium::ShellControl{expanded:Some(page.viewer_controls_open),..Default::default()},|page:&mut TreePage,_|{page.viewer_controls_open=!page.viewer_controls_open;page.shared.dirty.set(true);}));
+                        Box::new(el("div",controls).attr("class","viewer-toolbar")) as Child
+                    }),
+                    (!document_active && graph_controls && (page.product.is_some() || page.viewer_controls_open)).then(|| {
                         if page.presenter.is_some() {
                             presenter::toolbar(page)
                         } else {
                             controls::toolbar(page)
                         }
                     }),
-                    (!document_active && document_controls).then(|| forme_toolbar(page)),
+                    (!document_active && document_controls && (page.product.is_some() || page.viewer_controls_open)).then(|| forme_toolbar(page)),
                     (!document_active && inline_product_controls && document_controls)
                         .then(|| product::controls(page)),
                     el(
@@ -839,7 +851,7 @@ fn view(page: &TreePage) -> Child {
                                 "div",
                                 (
                                     scene_header,
-                                    backdrop_workspace
+                                    { #[cfg(feature="product")] {scope_navigation::overmap(page).or(backdrop_workspace)} #[cfg(not(feature="product"))] {backdrop_workspace} }
                                         .or(workbench)
                                         .unwrap_or_else(|| Box::new(graph)),
                                     drop_feedback,
@@ -942,10 +954,7 @@ fn blocks_active(page: &TreePage) -> bool {
 
 /// Whether the Graph tools region docks beside the canvas at this width.
 fn tools_docked(page: &TreePage) -> bool {
-    #[cfg(feature = "product")]
-    if instrument::enabled(page) && !page.tools_open {
-        return false;
-    }
+    if !page.tools_open {return false;}
     page.presenter.is_none() && page.size.0 >= TOOLS_DOCK_MIN_WIDTH
 }
 
@@ -1642,6 +1651,7 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
                 history: hosted_history,
                 physics,
                 tools_open: false,
+                viewer_controls_open: false,
                 #[cfg(feature = "product")]
                 instrument: instrument::State::default(),
                 session: remote::Session::Local,
@@ -1967,6 +1977,9 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
             }
             #[cfg(feature = "product")]
             {
+                if scope_navigation::needs_poll(ctx.runner.state()) {ctx.runner.update(scope_navigation::poll);}
+                if reading::needs_progress_save(ctx.runner.state()) {ctx.runner.update(reading::persist_progress);}
+                scope_navigation::refresh(ctx.runner.state());
                 reading::prepare(ctx.runner.state());
                 backdrop::register(ctx);
                 blocks::register(ctx);
@@ -2320,6 +2333,8 @@ mod promoted_links;
 mod query_view;
 #[cfg(feature = "product")]
 mod reading;
+#[cfg(feature = "product")]
+mod scope_navigation;
 #[cfg(feature = "remote")]
 mod remote;
 #[cfg(not(feature = "remote"))]

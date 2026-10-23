@@ -23,8 +23,9 @@ pub(super) struct Pane {
     backend: IndexedDbBackend,
     completed: Rc<RefCell<Option<Result<(), String>>>>,
     pending: Option<PreparedSave>,
-    retry: Option<SaveKind>,
+    pub(super) retry: Option<SaveKind>,
     pub(super) saving: bool,
+    pub(super) pending_read_commands: std::collections::VecDeque<(Uuid,cambium::ReadCommand)>,
     pub(super) status: String,
     pub(super) workbench: bool,
     moving: Option<Uuid>,
@@ -48,6 +49,7 @@ impl Pane {
             pending: None,
             retry: None,
             saving: false,
+            pending_read_commands: Default::default(),
             status: String::new(),
             workbench: false,
             moving: None,
@@ -78,7 +80,7 @@ impl Pane {
         if self.saving {
             return;
         }
-        let proposal = match self.session.prepare_save(kind, now()) {
+        let proposal = match self.session.prepare_save(kind.clone(), now()) {
             Ok(proposal) => proposal,
             Err(error) => {
                 self.status = error;
@@ -333,6 +335,8 @@ pub(super) fn poll(page: &mut TreePage) {
     if let Some(pane) = &mut page.forme {
         pane.poll();
     }
+    let command=page.forme.as_mut().filter(|pane|!pane.saving).and_then(|pane|pane.pending_read_commands.pop_front());
+    if let Some((member,command))=command {super::reading::read_command(page,member,command);}
     changed(page);
 }
 fn changed(page: &mut TreePage) {
@@ -388,6 +392,7 @@ pub(super) fn edit(
     changed(page);
 }
 pub(super) fn open_selected(page: &mut TreePage) {
+    super::scope_navigation::capture_origin(page);
     let selected = page.shared.canvas.borrow().selected_members();
     if selected.is_empty() {
         if let Some(pane) = &mut page.forme {
@@ -404,30 +409,41 @@ pub(super) fn open_selected(page: &mut TreePage) {
     if let Some(pane) = &mut page.forme {
         pane.workbench = true;
     }
+    if let Some(member)=page.forme.as_ref().and_then(|p|p.current().focused_reading) {super::scope_navigation::record_reading(page,member);}
 }
 /// Switch projections of the same graph and saved Forme arrangement. Only a
 /// first Read with an empty arrangement admits the already-selected members.
 pub(super) fn show_projection(page: &mut TreePage, map: bool) {
-    if !map
-        && !page.shared.canvas.borrow().selected_members().is_empty()
-        && page
-            .forme
-            .as_ref()
-            .is_some_and(|pane| pane.model().members().is_empty())
-    {
-        open_selected(page);
-    } else if let Some(pane) = &mut page.forme {
-        pane.workbench = !map;
+    if map {
+        super::scope_navigation::command(page,cambium::scope_navigation::ScopeCommand::To(cambium::scope_navigation::ScopeLevel::Graph));
+    } else {
+        let member=page.shared.canvas.borrow().focused_member().or_else(||page.forme.as_ref().and_then(|p|p.current().focused_reading));
+        if let Some(member)=member {read_related(page,member);} else {open_selected(page);}
     }
     page.shared.dirty.set(true);
 }
 pub(super) fn open_retained(page: &mut TreePage, member: Uuid) {
-    edit(page, None, true, |workspace, graph| {
+    super::scope_navigation::capture_origin(page);
+    let (anchors,trail)=super::reading::capture_progress(page);
+    edit(page, None, true, move |workspace, graph| {
+        workspace.reading_anchors=anchors; workspace.reading_trail=trail;
         workspace.open(member, graph)
     });
     if let Some(pane) = &mut page.forme {
         pane.workbench = true;
     }
+    super::scope_navigation::record_reading(page,member);
+}
+
+pub(super) fn read_related(page:&mut TreePage,member:Uuid) {
+    super::scope_navigation::capture_origin(page);
+    let (anchors,trail)=super::reading::capture_progress(page);
+    edit(page,None,true,move |workspace,graph| {
+        workspace.reading_anchors=anchors;workspace.reading_trail=trail;workspace.read(member,graph)
+    });
+    if let Some(pane)=&mut page.forme {pane.workbench=true;}
+    super::scope_navigation::record_reading(page,member);
+    page.shared.dirty.set(true);
 }
 
 pub(super) fn bind_inspector(page: &mut TreePage, source: graphshell::pane_source::InspectorSource) {
@@ -485,7 +501,7 @@ fn translate(page: &mut TreePage, dx: f32, dy: f32, scale: f32) {
         Ok(())
     });
 }
-fn selection_changed(page: &mut TreePage) {
+pub(super) fn selection_changed(page: &mut TreePage) {
     let canvas = page.shared.canvas.borrow();
     page.picked = canvas.focused_url().map(str::to_owned);
     if let Some(product) = &mut page.product {
@@ -1055,7 +1071,7 @@ pub(super) fn section(page: &TreePage) -> Child {
             "Retry workbench save",
             |p: &mut TreePage, _| {
                 if let Some(f) = &mut p.forme {
-                    if let Some(kind) = f.retry {
+                    if let Some(kind) = f.retry.clone() {
                         f.save(kind);
                     }
                 }
@@ -1209,19 +1225,7 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
                 };
                 let member = node.id;
                 let title = node.title.clone();
-                let address = node.url().to_string();
-                let mut controls: Vec<Child> = vec![Box::new(
-                    button("Show on Map", move |p: &mut TreePage, _| {
-                        p.shared.canvas.borrow_mut().select_member(member);
-                        if let Some(f) = &mut p.forme {
-                            f.workbench = false;
-                        }
-                        selection_changed(p);
-                        p.shared.dirty.set(true);
-                    })
-                    .attr("aria-description", address.clone())
-                    .attr("class", "shell-control reading-map-control"),
-                )];
+                let mut controls: Vec<Child> = Vec::new();
                 let mut tags: Vec<_> = graph
                     .node_content_tags(key)
                     .unwrap_or_default()
@@ -1311,10 +1315,12 @@ pub(super) const SHEET: &str = " .forme-workbench { width:100%;height:100%;min-h
 
 /// Activate an already arranged member without changing its tile or split.
 pub(super) fn activate_from_rail(page: &mut TreePage, member: Uuid) {
+    super::scope_navigation::capture_origin(page);
     if !page.forme.as_ref().is_some_and(|pane| pane.current().layout().has_tile(member)) { return; }
     edit(page, None, true, |workspace, graph| workspace.open(member, graph));
     if let Some(pane) = &mut page.forme { pane.workbench = true; }
     page.shared.canvas.borrow_mut().select_member(member);
     selection_changed(page);
+    super::scope_navigation::record_reading(page,member);
     page.shared.dirty.set(true);
 }

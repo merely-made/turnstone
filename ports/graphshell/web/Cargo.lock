@@ -905,6 +905,7 @@ dependencies = [
  "sceno",
  "scenograph",
  "scenomise",
+ "serde",
  "sprigging",
  "workbench",
 ]

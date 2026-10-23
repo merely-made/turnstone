@@ -1,0 +1,68 @@
+# Real retained packets and graph relationships, no page fetch or graph edit while navigating.
+assert snap source == saved graph
+remember initial
+click role:button Fit graph
+settle 20
+click role:button Inspector
+reveal role:button Find and filter
+click role:button Find and filter
+reveal role:textbox Search
+click role:textbox Search
+input-text mere://reading/field-notes
+click role:button Apply filter
+click role:button Inspector
+click role:button Fit graph
+settle 20
+click-node mere://reading/field-notes
+assert snap detail-address == mere://reading/field-notes
+click role:button Inspector
+reveal role:button Clear filter
+click role:button Clear filter
+click role:button Find and filter
+click role:button Inspector
+click role:button Panes
+click role:button Read selected
+wait 120
+assert snap forme-accesses == 1
+click role:button Find in reading
+settle 10
+click role:textbox Find text in reading
+input-text Field observation 4
+settle 10
+assert snap reading-find == 1 of 1
+key Escape
+wait 90
+remember origin
+capture graphshell_anchored_reading
+click role:button Document connections
+settle 10
+click role:button Cites · mere://reading/related-note:
+settle 10
+assert snap forme-accesses == 1
+same origin reading-anchor
+capture graphshell_relationship_preview
+click role:button Close relationship preview
+settle 5
+same origin reading-anchor
+click role:button Cites · mere://reading/related-note:
+settle 5
+click role:button Read previewed document
+wait 120
+assert snap forme-accesses == 2
+assert snap reading-history-back == true
+click role:button Previous reading visit
+wait 120
+same origin reading-anchor
+assert snap reading-history-forward == true
+click role:button Reading appearance
+settle 5
+click role:button Larger reading text
+wait 90
+assert snap reading-text-size == 20
+click role:button Narrower reading column
+wait 90
+assert snap reading-column-em == 32
+click role:button Reading appearance
+wait 30
+capture graphshell_quiet_read_header
+same initial node-count
