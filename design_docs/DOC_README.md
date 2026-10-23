@@ -200,6 +200,9 @@ set.
   and its clean-source compile gate are landed. Source-document capture and
   authorized collection search have app consumers; hosted Weld capture,
   offline replay, and the remaining custody work are still open.
+- Shared-contract Servo receiving (2026-10-23): the browser surfaces plan
+  records the concrete Metal/Cue binding and same-host Genet/Servo receiver;
+  Linux/Vulkan and physical platform qualification remain separate.
 - [Browser surfaces implementation plan](2026-08-25_browser_surface_implementation_plan.md): the [current tested family](../docs/receipts/browser_family_20261007/README.md) publishes runtime adoption `abb349cf` and test-only portability follow-up `8d1f907f`, adopting Servo 0.7 and CEF154 after Mere/Genet, Knot and Redshank. S0 passes 681 Windows combined-browser and 650 Linux default-feature library tests, plus locked all-targets, Cargo verification and single-source sibling trees. Linux uses a measured child-only descriptor budget. Seven current-binary native controls exit cleanly. Default Servo stale resized pixels, foreign-tree accessibility and physical three-platform AT remain release gates; diagnostic positive pixels do not close them.
 - Native Orrery selection folds (2026-10-16): qualified on current published
   suppliers with 958 workspace tests, native build, 379 presented create/reopen

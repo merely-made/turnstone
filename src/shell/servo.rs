@@ -8,6 +8,10 @@
 //! scoped. Each view has its own rendering context and one ordered delegate
 //! queue. The shell must release producers and cached frames before shutdown.
 
+#[cfg(target_os = "macos")]
+#[path = "servo_cue.rs"]
+pub mod cue;
+
 use graft_engine::{GraftFrame, GraftProducerFactory, GraftSurface};
 use grafting::{DiagnosticGpuSync, ImportedTexture, TextureOrigin};
 use inker::{
@@ -20,9 +24,9 @@ use inker::{
 };
 use servo::{
     DevicePoint, EventLoopWaker, InputEvent, Key, KeyState, LoadStatus, Location, Modifiers,
-    MouseButtonAction, MouseButtonEvent, MouseMoveEvent, NamedKey, Opts,
-    PermissionRequest, Preferences, Servo, ServoBuilder, WebView, WebViewBuilder, WebViewDelegate,
-    WebViewPoint, WheelDelta, WheelEvent, WheelMode,
+    MouseButtonAction, MouseButtonEvent, MouseMoveEvent, NamedKey, Opts, PermissionRequest,
+    Preferences, Servo, ServoBuilder, WebView, WebViewBuilder, WebViewDelegate, WebViewPoint,
+    WheelDelta, WheelEvent, WheelMode,
 };
 use servo_wgpu_interop_adapter::ServoWgpuInteropAdapter;
 use std::{
@@ -36,7 +40,7 @@ use std::{
 use url::Url;
 use winit::dpi::PhysicalSize;
 
-pub(super) const FRAME_KIND: &str = "turnstone.servo.imported-frame";
+pub(crate) const FRAME_KIND: &str = "turnstone.servo.imported-frame";
 
 /// Servo pins AccessKit 0.24 while Mere's surface contract is 0.25. 0.25 only
 /// adds node properties and renames `Tree` to `TreeInfo`, so the serde form of
@@ -48,7 +52,7 @@ fn surface_update_from_servo(
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub(super) struct ServoHostOptions {
+pub(crate) struct ServoHostOptions {
     pub profile_name: String,
     pub profile_dir: PathBuf,
 }
@@ -124,7 +128,7 @@ impl EventLoopWaker for Waker {
     }
 }
 
-pub(super) struct TurnstoneServoFactory {
+pub(crate) struct TurnstoneServoFactory {
     owner: ThreadId,
     options: ServoHostOptions,
     device: wgpu::Device,
@@ -133,18 +137,18 @@ pub(super) struct TurnstoneServoFactory {
 }
 
 impl TurnstoneServoFactory {
-    pub(super) fn profile_name(&self) -> &str {
+    pub(crate) fn profile_name(&self) -> &str {
         &self.options.profile_name
     }
-    pub(super) fn profile_dir(&self) -> &std::path::Path {
+    pub(crate) fn profile_dir(&self) -> &std::path::Path {
         &self.options.profile_dir
     }
-    pub(super) fn a11y_focus_policy(&self) -> &'static str {
+    pub(crate) fn a11y_focus_policy(&self) -> &'static str {
         self.a11y_focus_policy.name()
     }
     /// Construct exactly once on the UI thread. The configurable named profile
     /// is shared by this process's Servo views, independently of node profiles.
-    pub(super) fn new(
+    pub(crate) fn new(
         options: ServoHostOptions,
         device: wgpu::Device,
         queue: wgpu::Queue,
@@ -219,7 +223,7 @@ impl TurnstoneServoFactory {
     }
 }
 
-pub(super) fn pump() -> Result<(), SurfaceError> {
+pub(crate) fn pump() -> Result<(), SurfaceError> {
     if let Some(owner) = PROCESS_OWNER.get() {
         require_owner(*owner)?;
     }
@@ -230,13 +234,13 @@ pub(super) fn pump() -> Result<(), SurfaceError> {
     Ok(())
 }
 
-pub(super) fn active_views() -> usize {
+pub(crate) fn active_views() -> usize {
     ROOT.with(|slot| slot.borrow().as_ref().map_or(0, |root| root.views.get()))
 }
 
 /// Release the process root after all producers and imported caches are gone.
 /// Reinitialization is refused for the remainder of this process.
-pub(super) fn shutdown() -> Result<(), SurfaceError> {
+pub(crate) fn shutdown() -> Result<(), SurfaceError> {
     if let Some(owner) = PROCESS_OWNER.get() {
         require_owner(*owner)?;
     }
@@ -291,6 +295,7 @@ impl GraftProducerFactory for TurnstoneServoFactory {
         .map_err(|error| spawn_error(error.to_string()))?;
         let delegate = Rc::new(Delegate {
             events: RefCell::new(VecDeque::new()),
+            cursors: RefCell::new(VecDeque::new()),
             accessibility_updates: RefCell::new(VecDeque::new()),
             accessibility_active: Cell::new(false),
             accessibility_focus_provenance: Cell::new(0),
@@ -318,7 +323,7 @@ impl GraftProducerFactory for TurnstoneServoFactory {
 }
 
 #[derive(Debug)]
-pub(super) struct ServoImportedFrame {
+pub(crate) struct ServoImportedFrame {
     pub imported: ImportedTexture,
     pub device: wgpu::Device,
     pub queue: wgpu::Queue,
@@ -335,6 +340,7 @@ impl OwnedSurfaceFrame for ServoImportedFrame {
 
 struct Delegate {
     events: RefCell<VecDeque<WebSurfaceEvent>>,
+    cursors: RefCell<VecDeque<CursorShape>>,
     accessibility_updates: RefCell<VecDeque<SurfaceAccessibilityUpdate>>,
     accessibility_active: Cell<bool>,
     accessibility_focus_provenance: Cell<u32>,
@@ -392,6 +398,26 @@ impl Delegate {
     }
 }
 impl WebViewDelegate for Delegate {
+    fn notify_cursor_changed(&self, _: WebView, cursor: servo::Cursor) {
+        use servo::Cursor as C;
+        let cursor = match cursor {
+            C::Pointer => CursorShape::Pointer,
+            C::Text | C::VerticalText => CursorShape::Text,
+            C::Grab => CursorShape::Grab,
+            C::Grabbing => CursorShape::Grabbing,
+            C::Crosshair => CursorShape::Crosshair,
+            C::Move | C::AllScroll => CursorShape::Move,
+            C::NResize | C::SResize | C::NsResize => CursorShape::ResizeNs,
+            C::EResize | C::WResize | C::EwResize => CursorShape::ResizeEw,
+            C::NeResize | C::SwResize | C::NeswResize => CursorShape::ResizeNesw,
+            C::NwResize | C::SeResize | C::NwseResize => CursorShape::ResizeNwse,
+            C::NotAllowed | C::NoDrop => CursorShape::NotAllowed,
+            C::None => CursorShape::Hidden,
+            _ => CursorShape::Default,
+        };
+        self.cursors.borrow_mut().push_back(cursor);
+        (self.wake)();
+    }
     fn notify_accessibility_tree_update(&self, _: WebView, update: servo::accesskit::TreeUpdate) {
         match surface_update_from_servo(&update) {
             Ok(update) => self.push_accessibility_update(update),
@@ -729,7 +755,7 @@ impl GraftSurface for TurnstoneServoSurface {
         None
     }
     fn poll_cursor_shape(&mut self) -> Option<CursorShape> {
-        None
+        self.delegate.cursors.borrow_mut().pop_front()
     }
     fn poll_web_message(&mut self) -> Option<WebMessage> {
         None
@@ -756,6 +782,18 @@ impl GraftSurface for TurnstoneServoSurface {
         };
         caps.degradation_reasons.push("first Servo slice: physical key codes, rich pointer fields, scripts, cookies, permissions and browser tools remain unavailable".into());
         caps
+    }
+    fn set_page_zoom(&mut self, factor: f32) -> Result<inker::DocumentZoomState, SurfaceError> {
+        if !factor.is_finite() || factor <= 0. {
+            return Err(unsupported("non-finite or nonpositive page zoom"));
+        }
+        self.view().set_page_zoom(factor);
+        Ok(inker::DocumentZoomState {
+            requested: factor,
+            applied: self.view().page_zoom(),
+            min: 0.1,
+            max: 10.,
+        })
     }
     fn apply_settings(&mut self, settings: &SurfaceSettings) -> Result<(), SurfaceError> {
         if settings.dev_tools {
@@ -881,6 +919,7 @@ mod tests {
     fn accessibility_delegate() -> Delegate {
         Delegate {
             events: RefCell::new(VecDeque::new()),
+            cursors: RefCell::new(VecDeque::new()),
             accessibility_updates: RefCell::new(VecDeque::new()),
             accessibility_active: Cell::new(false),
             accessibility_focus_provenance: Cell::new(0),

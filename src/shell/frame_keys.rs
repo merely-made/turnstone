@@ -410,6 +410,9 @@ mod tests {
     fn header_accessibility_focus_precedes_body_but_keeps_host_editor_priority() {
         let app = crate::app::App::test_stub();
         let mut frame = crate::outer_frame::OuterFrame::default();
+        // This fixture exercises a visible retained tab header, rather than
+        // the default shell-owned Map/Read switch.
+        frame.set_main_view_switch(false);
         frame
             .prepare(
                 &app.frisket,
@@ -446,6 +449,9 @@ mod tests {
     fn actual_frame_prepare_uses_session_identity_and_refuses_retired_route() {
         let app = crate::app::App::test_stub();
         let mut frame = crate::outer_frame::OuterFrame::default();
+        // This fixture exercises a visible retained tab header, rather than
+        // the default shell-owned Map/Read switch.
+        frame.set_main_view_switch(false);
         let scope = app.session_id.as_uuid().as_u128();
         let bodies = frame
             .prepare(

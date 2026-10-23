@@ -844,3 +844,45 @@ Done-conditions:
   the recycle bin into one walk and ruled L1-L7. S0's persistence boundary
   now has a written history rule and a capture-admits-Keep rule to build
   against. No code written here.
+
+
+## Shared-contract Servo receiving — 2026-10-23
+
+**Status (2026-10-23): in progress.** The reusable Servo host is compiled on
+macOS for a concrete Cue receiver. The existing Windows product path keeps
+using the same host implementation. This receiving slice does not qualify
+Linux/Vulkan, physical IME, foreign accessibility or the older Windows gates.
+
+### Native custody and shared controls
+
+Expose the existing process-owned Servo factory beside a concrete Cue binding.
+The pre-present Graft import remains the owner of GL ordering and normalization.
+On Metal, retain the normalized native texture into `grafting-frame` custody;
+no borrowed handle escapes and no second device or CPU snapshot is introduced.
+Only the exact producing device and queue may import this no-fence frame.
+Done when resize, scope replacement, stale/foreign host refusal and teardown
+are exercised, while the richer platform extensions retain their owner.
+
+### Same-host receiving and capability taxonomy
+
+A runnable receiving host selects Pelt/Genet or Graft/Servo through the same
+Webcue controls and WgpuCue presenter. The inspector records every live report
+field and partial/unsupported reason, alongside the selected frame direction.
+Done when real Metal pixels, pointer-driven changes, ordered command results,
+resize and producer replacement pass on the same host device. Retain failures
+and exact source/binary identity; compile coverage is separate from runtime.
+
+### Findings
+
+- 2026-10-23: `src/shell/servo.rs` already owns the process root, ordered
+  delegate queue and pre-present import. Its shell module was Windows-gated;
+  the implementation can be reused without constructing a second Servo host.
+- 2026-10-23: Graft returns a fresh normalized, top-left RGBA texture on the
+  supplied host queue. A retained Metal resource can cross the native frame
+  contract with that queue-ordering precondition. Cross-queue import must
+  explicitly refuse it rather than assume completion.
+
+### Progress
+
+- 2026-10-23: current supplier and host source inspected; clean primary
+  checkouts preserved and an isolated receiving worktree opened.
