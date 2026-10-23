@@ -409,9 +409,7 @@ impl ApplicationHandler for Shell {
                     return;
                 }
                 if self.app.document_find.open {
-                    if let Ime::Commit(s) = ime {
-                        self.act(Action::InsertDocumentFind(s));
-                    }
+                    self.deliver_find_key(cambium_winit::ime_event_from_winit(&ime));
                     return;
                 }
                 if !self.app.omnibar.open && self.deliver_window_ime(0, &ime) {
