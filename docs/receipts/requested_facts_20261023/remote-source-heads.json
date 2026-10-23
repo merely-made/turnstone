@@ -1,0 +1,38 @@
+{
+  "stage": "source publication before receipt commit",
+  "method": "git ls-remote --heads origin codex/cross-source-answers-20261022",
+  "heads": {
+    "eidetic": {
+      "commit": "dceb5fcd07bfaeffc57142b06f07259eed0e89ef",
+      "ref": "refs/heads/codex/cross-source-answers-20261022"
+    },
+    "esp": {
+      "commit": "7021d4c52f96f5c55468fe521a21536d4e7290c1",
+      "ref": "refs/heads/codex/cross-source-answers-20261022"
+    },
+    "knot": {
+      "commit": "505c0b76ee7281846b1d56b03c7b55e4815a39d0",
+      "ref": "refs/heads/codex/cross-source-answers-20261022"
+    },
+    "cleromancy": {
+      "commit": "a7e3cac60620364e7b049caf5aed6d3cd59d8758",
+      "ref": "refs/heads/codex/cross-source-answers-20261022"
+    },
+    "gemot": {
+      "commit": "391c95b1d39ed660043c121928ef59a241bc9ced",
+      "ref": "refs/heads/codex/cross-source-answers-20261022"
+    },
+    "murm": {
+      "commit": "b266e38b91d35121040fac84944c6418a7a02bdf",
+      "ref": "refs/heads/codex/cross-source-answers-20261022"
+    },
+    "mere": {
+      "commit": "487b6648211800a613db39891bd7691b157b0d7a",
+      "ref": "refs/heads/codex/cross-source-answers-20261022"
+    },
+    "turnstone": {
+      "commit": "66ac331ebe2a543432258139fe8ddb13b9a85ac6",
+      "ref": "refs/heads/codex/cross-source-answers-20261022"
+    }
+  }
+}

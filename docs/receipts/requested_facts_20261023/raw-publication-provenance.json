@@ -1,0 +1,21 @@
+{
+  "transform": "none; published JSON/JSONL byte-identical to private cohort",
+  "sha256": {
+    "wire-default-review.json": "03c2631ba196ce515ebe14087899851c2d539b855b187e3f245a2a74253cc0d9",
+    "conflict.partial.json": "66926780dce781f8288088f8e4f102a936475eb0a0dba1d47efd73aa3035daa1",
+    "progress.jsonl": "441ac39fc0efb4435123c3fe7c49c710f4a39fe313c130dcb505ee3e68bb97c9",
+    "process-exit.json": "4c6f1e9d1911f57dd636ddf2744a6d99d2d36d38f64b9ca7eb9939af4c9ce6ee",
+    "gate.json": "635785d515098395ae6723ad1f51e130ac2daecba0ae986e50e43e93404deb19",
+    "contract-input-review.json": "02de30da8817b7396a1883423d267cbf417a2e045f90e8724e1557976e95c112",
+    "reduced.json": "ff8f3e83da51708524aa5bea1f683bd18ae6edbd98a7e3f903971936b723ae10",
+    "structured-output-review.json": "8973c9febd9610ad8f0ed733af149d492fefe4afcf9b687b8aa8ef019fded27b",
+    "missing.json": "ea0aa9eeacc492f775efd9b0eda6a8214729befb29a7c99e8b53997321d633ae",
+    "inputs.json": "f02719541c2591897d5c82fe1d36f725ec9ecfe25c671f695532c56ca915f38a",
+    "conflict.json": "66926780dce781f8288088f8e4f102a936475eb0a0dba1d47efd73aa3035daa1",
+    "cross.json": "d25aca4eb7cd01ed69604cd0b8a6340696886afa975bd53fdb85531452ad4733",
+    "process.json": "f39f6b24d62306b88d7ce27f793d74232a7c3d3964fc25896eb8ab605898e4b3",
+    "cross.partial.json": "d25aca4eb7cd01ed69604cd0b8a6340696886afa975bd53fdb85531452ad4733",
+    "reduced.partial.json": "ff8f3e83da51708524aa5bea1f683bd18ae6edbd98a7e3f903971936b723ae10",
+    "missing.partial.json": "ea0aa9eeacc492f775efd9b0eda6a8214729befb29a7c99e8b53997321d633ae"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "result": "gate_not_passed",
+  "cases": {
+    "cross": {
+      "result": "incomplete"
+    },
+    "missing": {
+      "result": "incomplete"
+    },
+    "conflict": {
+      "result": "incomplete"
+    },
+    "reduced": {
+      "result": "pass",
+      "claims": 1,
+      "whole_raw_json": true,
+      "exact_candidate_links": 0
+    }
+  },
+  "negative_controls": {
+    "reduced_fence": "rejected",
+    "reduced_suffix": "rejected",
+    "reduced_extra_field": "rejected"
+  },
+  "boundary": "Raw whole-document syntax and bounded quotation shape; semantic correctness remains the separate frozen rubric."
+}

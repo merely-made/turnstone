@@ -1,0 +1,27 @@
+{
+  "result": "valid_grammar_continuations",
+  "prefix": "candidate-01/cross.json:text",
+  "mask_result": "Ok(()) with finite synthetic zero scores",
+  "eligible_ids": [
+    16,
+    17,
+    18
+  ],
+  "eligible_pieces": [
+    "1",
+    "2",
+    "3"
+  ],
+  "forced_span": [],
+  "source_sha256": "f56127592a403e12682743c8dec78acc56642a3821cd2d8079b340a26708f031",
+  "grammar_sha256": "d3ab0e6e95476bccb973eee174f52003a7c822345564b85961eb4df103b6542a",
+  "prefix_sha256": "65d3ac65912eefc36b1fe9aed7e7dca289ccc4a84e87bd40efb94a39f13c9ffe",
+  "production_grammar": "Same ESP7021d4c52f96f5c55468fe521a21536d4e7290c1 Constraint source, linked with cached model tokenizer and Rust types",
+  "build_provenance": {
+    "previous_probe_rustc_fingerprint": 10115240269577903198,
+    "new_probe_rustc_fingerprint": 10115240269577903198,
+    "previous_profile_fingerprint": 14317819268458157334,
+    "new_profile_fingerprint": 14317819268458157334
+  },
+  "boundary": "Byte-state replay of the exact raw failed prefix, re-tokenized without repair. Does not recover live logits, identify why scores were non-finite, establish a complete model answer, or qualify native behavior."
+}
