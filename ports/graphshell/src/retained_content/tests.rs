@@ -874,3 +874,75 @@ fn reading_controls_keep_held_accesses_and_search_independent() {
     first.borrow_mut().clear_find();
     assert_eq!(first.borrow_mut().find("",Some(ReadFindDirection::Next)).unwrap().count,0);
 }
+
+#[test]
+fn cue_controls_reach_the_same_retained_genet_receiver_and_close_cancels_work() {
+    use inker::webcue::{Command, Error, Event, Input, Reply, RequestId, Surface};
+    let mut host = ContentHost::default();
+    let access = Uuid::new_v4();
+    let slot = host
+        .open(
+            access,
+            HeldContent {
+                address: "https://held.example/cue".into(),
+                title: "Cue".into(),
+                media_type: "text/html".into(),
+                bytes: b"<input value='held'><p>Shared receiver</p>".to_vec(),
+                engine: None,
+                media: None,
+            },
+        )
+        .unwrap();
+    host.show_only(&[access]);
+    slot.borrow_mut().frame(320., 160., 0.).unwrap();
+    let identity = slot.borrow().session_identity().unwrap();
+    let mut producer = ContentProducer::new(slot.clone(), ContentProducer::allocate_key());
+    assert_eq!(producer.scope().owner, u128::from(identity.instance_id));
+    Surface::input(&mut producer, Input::Document(SessionInput::Focus(true))).unwrap();
+    assert!(matches!(
+        producer.poll_event().unwrap().event,
+        Event::DocumentInput(_)
+    ));
+    let request = producer.request(RequestId(1), Command::Zoom(1.2)).unwrap();
+    producer.advance(std::time::Duration::ZERO).unwrap();
+    assert!(
+        matches!(producer.poll_event().unwrap().event,Event::Completed{request:key,result:Ok(Reply::Zoom(_))} if key==request)
+    );
+    let pending = producer.request(RequestId(2), Command::Reload).unwrap();
+    host.close(access);
+    assert!(
+        matches!(producer.poll_event().unwrap().event,Event::Completed{request:key,result:Err(Error::Retired)} if key==pending)
+    );
+    assert!(matches!(
+        producer.request(RequestId(3), Command::Reload),
+        Err(Error::Retired)
+    ));
+}
+
+#[test]
+#[ignore = "requires a real wgpu adapter; run explicitly"]
+fn cue_graphshell_genet_produces_pixels_on_the_borrowed_host_device() {
+    use inker::webcue::{Surface,Viewport,Error};
+    use wgpu_cue::{GpuHost,TextureSource,Rendered};
+    let core=genet_render_host::RenderCore::boot(netrender::NetrenderOptions{enable_vello:true,tile_cache_size:Some(256),..Default::default()}).unwrap();
+    let gpu=GpuHost::new(core.device().clone(),core.queue().clone()).unwrap();
+    let mut host=ContentHost::default();
+    let access=Uuid::new_v4();
+    let slot=host.open(access,HeldContent{address:"https://held.example/pixels".into(),title:"Pixels".into(),media_type:"text/html".into(),bytes:b"<html><body style='margin:0;background:#00ff00'><p>Genet</p></body></html>".to_vec(),engine:None,media:None}).unwrap();
+    host.show_only(&[access]);
+    let mut producer=ContentProducer::with_core(slot,&core).unwrap();
+    producer.advance(std::time::Duration::from_millis(5)).unwrap();
+    let cx=gpu.context(Viewport{width:160,height:100,scale:1.}).unwrap();
+    assert!(matches!(TextureSource::render(&mut producer,&cx,true).unwrap(),Rendered::Pending));
+    let deadline=std::time::Instant::now()+std::time::Duration::from_secs(20);
+    let frame=loop {
+        if let Rendered::Changed(frame)=TextureSource::render(&mut producer,&cx,true).unwrap(){break frame;}
+        assert!(std::time::Instant::now()<deadline,"Graphshell shared frame timed out");
+        std::thread::sleep(std::time::Duration::from_millis(1));
+    };
+    assert_eq!(frame.stamp.scope,producer.scope());
+    let pixels=core.read_rgba8_texture(&frame.texture,160,100).unwrap();
+    assert_eq!(&pixels.rgba[(80*160+8)*4..(80*160+8)*4+4],&[0,255,0,255]);
+    host.close(access);
+    assert!(matches!(TextureSource::render(&mut producer,&cx,true),Err(Error::Retired)));
+}

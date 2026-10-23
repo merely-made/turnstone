@@ -240,6 +240,16 @@ pub struct ContentSlot {
     semantic_child_tokens: BTreeMap<u64, cambium_rootstock::ProducerChildToken>,
 }
 impl ContentSlot {
+    /// The installed shared surface; direct callers own draining its ordered
+    /// events. The same retained session backs native input and portable scenes.
+    pub fn cue_surface_mut(
+        &mut self,
+    ) -> inker::webcue::Result<&mut inker::cue::SessionSurface<Scene>> {
+        self.content
+            .document_mut()
+            .map(|controller| controller.cue_surface_mut())
+            .ok_or_else(|| inker::webcue::Error::Unsupported("retained document required".into()))
+    }
     pub fn has_document_find(&self) -> bool {
         self.content.document().is_some_and(|controller| matches!(controller.session().document_capabilities().find_in_page,
             inker::DocumentCapabilityStatus::Supported | inker::DocumentCapabilityStatus::Partial{..}))
@@ -545,6 +555,7 @@ impl ContentHost {
         }));
         if let Some(old) = self.slots.insert(access, slot.clone()) {
             let mut old = old.borrow_mut();
+            let _ = old.cue_surface_mut().map(|surface| inker::webcue::Surface::retire(surface));
             old.visible = false;
             old.content.set_hidden(true);
             old.semantic_keys.clear();
@@ -566,6 +577,7 @@ impl ContentHost {
     pub fn close(&mut self, access: Uuid) {
         if let Some(slot) = self.slots.remove(&access) {
             let mut slot = slot.borrow_mut();
+            let _ = slot.cue_surface_mut().map(|surface| inker::webcue::Surface::retire(surface));
             slot.visible = false;
             slot.content.set_hidden(true);
             slot.semantic_keys.clear();
