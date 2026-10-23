@@ -49,7 +49,7 @@ use crate::ui::{CARD_TOP, CARD_W, OmnibarState, Suggestion};
 
 /// What a chrome interaction produces: commit the suggestion row at this
 /// original index (the shell lowers `Action::OmnibarCommitRow`).
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum ChromeIntent {
     CommitRow(usize),
     /// Keep or drop the command on this suggestion row.
@@ -70,9 +70,8 @@ pub enum ChromeIntent {
     Territory,
     FitGraph,
     MenuChanged,
-    FindPrevious,
-    FindNext,
-    FindClose,
+    /// What the mounted find field reported: a step, a close, or an edit.
+    Find(cambium::ReadEvent),
     Permission {
         request: crate::user_agent_decision::UserAgentRequestKey,
         choice: crate::user_agent_decision::PermissionChoice,
@@ -207,9 +206,7 @@ struct ChromeState {
     fetch_status: Option<String>,
     focused_url: Option<String>,
     link_preview: Option<String>,
-    find_open: bool,
-    find_input: TextInput,
-    find_status: String,
+    find: cambium::ReadFind,
     decision: Option<DecisionCard>,
 }
 
@@ -636,18 +633,23 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
         }
     }
 
-    if win.primary && state.find_open {
-        // Keys reach the field through the shell's find routing, so the
-        // chrome mounts the shared field without its own key handler.
+    if win.primary && state.find.open {
+        // The shared find field with its shared key map; the shell dispatches
+        // the window's key events into it (`ChromeSurfaces::find_key`).
         let find_children = vec![cambium::find_row(
-            cambium::find_field_display::<ChromeState, ChromeIntent>(
-                &state.find_input,
-                &state.find_status,
+            cambium::find_field::<ChromeState, ChromeIntent, _>(
+                &state.find,
+                std::rc::Rc::new(|state: &mut ChromeState, event: cambium::ReadEvent| {
+                    // Keys that arrive before the next sync edit the input
+                    // this one produced.
+                    if let cambium::ReadEvent::Query(input) = &event {
+                        state.find.input = input.clone();
+                    }
+                    Some(ChromeIntent::Find(event))
+                }),
             ),
-            std::rc::Rc::new(|_: &mut ChromeState, command| match command {
-                cambium::ReadCommand::Previous => Some(ChromeIntent::FindPrevious),
-                cambium::ReadCommand::Next => Some(ChromeIntent::FindNext),
-                _ => Some(ChromeIntent::FindClose),
+            std::rc::Rc::new(|_: &mut ChromeState, command| {
+                Some(ChromeIntent::Find(cambium::ReadEvent::Command(command)))
             }),
         )];
         let left = ((win.w - 620.0) / 2.0).max(8.0);
@@ -1030,7 +1032,7 @@ fn browser_control(
             disabled: intent.is_none(),
             ..Default::default()
         },
-        move |_: &mut ChromeState, _: PointerClick| intent,
+        move |_: &mut ChromeState, _: PointerClick| intent.clone(),
     )
 }
 
@@ -1043,7 +1045,7 @@ fn selected_button(label: impl Into<String>, intent: ChromeIntent, selected: boo
             pressed: Some(selected),
             ..Default::default()
         },
-        move |_: &mut ChromeState, _: PointerClick| intent,
+        move |_: &mut ChromeState, _: PointerClick| intent.clone(),
     )
 }
 
@@ -1070,7 +1072,7 @@ fn menu_button(state: &ChromeState, label: String, name: &str, menu: ChromeMenu)
 
 fn activity_button(mark: &str, label: &str, name: &str, intent: ChromeIntent, pressed: Option<bool>) -> ChromeView {
     cambium::shell_activity_control(mark, label, name, cambium::ShellControl { pressed, ..Default::default() },
-        move |_: &mut ChromeState, _: PointerClick| intent)
+        move |_: &mut ChromeState, _: PointerClick| intent.clone())
 }
 
 /// Shared reserved rows for the retained workspace and the chrome overlay.
@@ -1251,9 +1253,7 @@ impl ChromeSurfaces {
             fetch_status: None,
             focused_url: None,
             link_preview: None,
-            find_open: false,
-            find_input: TextInput::default(),
-            find_status: String::new(),
+            find: cambium::ReadFind::default(),
             decision: None,
         };
         let mut runner = GenetMultiRunner::new(state);
@@ -1473,10 +1473,11 @@ impl ChromeSurfaces {
         });
         let focused_url = browser_target.map(|(_, url)| url);
         let link_preview = app.link_preview.clone();
-        let mut find_input = TextInput::new(app.document_find.query.clone());
-        find_input.set_caret_byte(app.document_find.query.len(), false);
-        let find_open = app.document_find.open;
-        let find_status = app.document_find.status();
+        let find = cambium::ReadFind {
+            open: app.document_find.open,
+            input: app.document_find.input.clone(),
+            status: app.document_find.status(),
+        };
         let decision = app.user_agent_decision.active().map(|decision| {
             let request = decision.request();
             let prompt = decision.prompt();
@@ -1584,9 +1585,7 @@ impl ChromeSurfaces {
             state.fetch_status = fetch_status.clone();
             state.focused_url = focused_url.clone();
             state.link_preview = link_preview.clone();
-            state.find_open = find_open;
-            state.find_input = find_input.clone();
-            state.find_status = find_status.clone();
+            state.find = find.clone();
             state.decision = decision.clone();
         });
         self.appearance = chrome.appearance.clone();
@@ -1685,6 +1684,30 @@ impl ChromeSurfaces {
     }
     pub(crate) fn has_menu(&self) -> bool {
         self.runner.state().menu.is_some()
+    }
+
+    /// Deliver a key to the open find field and return what the field's
+    /// shared key map reported. Focus returns to the field first, so a click
+    /// on a neighbouring control does not strand the typing.
+    pub(crate) fn find_key(&mut self, event: cambium::KeyEvent) -> Vec<cambium::ReadEvent> {
+        let id = self.projections[0];
+        let field = {
+            let dom = self.dom.borrow();
+            self.runner
+                .window_root(id)
+                .and_then(|root| dom.all_with_class(root, "read-query").into_iter().next())
+        };
+        if let Some(field) = field.filter(|field| self.runner.focus(id) != Some(*field)) {
+            self.runner.set_focus(id, Some(field));
+        }
+        self.runner
+            .dispatch_key(id, event)
+            .into_iter()
+            .filter_map(|intent| match intent {
+                ChromeIntent::Find(event) => Some(event),
+                _ => None,
+            })
+            .collect()
     }
 
     /// Menu keys use the same retained buttons and click dispatch as a pointer.
@@ -2464,8 +2487,7 @@ pub(crate) mod tests {
         );
     }
 
-    #[test]
-    fn document_find_projects_controlled_input_status_and_controls() {
+    fn findable_app() -> App {
         let mut app = App::test_stub();
         app.update(Action::OpenAddress("gemini://capsule.test/find".into()));
         let node = app.graph_runtimes.focused_member().expect("focused node");
@@ -2483,7 +2505,35 @@ pub(crate) mod tests {
             }),
         );
         app.update(Action::OpenDocumentFind);
-        app.document_find.query = "needle".into();
+        app
+    }
+
+    /// One key through the chrome's find field, lowered and applied the way
+    /// the shell does.
+    fn find_press(
+        chrome: &mut ChromeSurfaces,
+        app: &mut App,
+        key: cambium::Key,
+        shift: bool,
+    ) -> Vec<Action> {
+        chrome.sync(app, &[(0, 1024.0, 600.0)]);
+        let mut event = cambium::KeyEvent::new(key);
+        event.mods.shift = shift;
+        let actions: Vec<Action> = chrome
+            .find_key(event)
+            .into_iter()
+            .filter_map(crate::document_find::find_action)
+            .collect();
+        for action in &actions {
+            app.update(action.clone());
+        }
+        actions
+    }
+
+    #[test]
+    fn document_find_projects_controlled_input_status_and_controls() {
+        let mut app = findable_app();
+        app.document_find.input = TextInput::new("needle");
         app.document_find.model = crate::action::DocumentFindModel {
             count: 1,
             matches: vec![crate::action::DocumentFindMatch {
@@ -2512,6 +2562,73 @@ pub(crate) mod tests {
         let enabled = dom.all_with_class(find, "shell-control").len();
         let disabled = dom.all_with_class(find, "browser-button-disabled").len();
         assert_eq!(enabled + disabled, 3, "find owns previous, next, and close");
+    }
+
+    #[test]
+    fn find_field_edits_at_the_caret_through_the_shared_key_map() {
+        use cambium::{Key, NamedKey};
+        let mut app = findable_app();
+        let mut chrome = ChromeSurfaces::new();
+        for text in ["a", "b", "d"] {
+            find_press(&mut chrome, &mut app, Key::Character(text.into()), false);
+        }
+        find_press(&mut chrome, &mut app, Key::Named(NamedKey::ArrowLeft), false);
+        find_press(&mut chrome, &mut app, Key::Character("c".into()), false);
+        assert_eq!(app.document_find.query(), "abcd", "mid-string insert");
+        assert_eq!(app.document_find.input.caret(), 3);
+        find_press(&mut chrome, &mut app, Key::Named(NamedKey::Home), false);
+        assert_eq!(app.document_find.input.caret(), 0);
+        find_press(&mut chrome, &mut app, Key::Named(NamedKey::ArrowRight), true);
+        find_press(&mut chrome, &mut app, Key::Named(NamedKey::ArrowRight), true);
+        assert_eq!(app.document_find.input.selected_text(), "ab");
+        find_press(&mut chrome, &mut app, Key::Named(NamedKey::Backspace), false);
+        assert_eq!(app.document_find.query(), "cd", "selection deletes as one edit");
+        find_press(&mut chrome, &mut app, Key::Named(NamedKey::End), false);
+        find_press(&mut chrome, &mut app, Key::Named(NamedKey::Backspace), false);
+        assert_eq!(app.document_find.query(), "c");
+        // The projected field carries the app's caret, not the end of the text.
+        find_press(&mut chrome, &mut app, Key::Named(NamedKey::Home), false);
+        chrome.sync(&app, &[(0, 1024.0, 600.0)]);
+        assert_eq!(chrome.runner.state().find.input.caret(), 0);
+    }
+
+    #[test]
+    fn find_field_keys_step_and_close_without_a_shell_key_map() {
+        use cambium::{Key, NamedKey};
+        use crate::action::DocumentFindDirection::{Next, Previous};
+        let mut app = findable_app();
+        let mut chrome = ChromeSurfaces::new();
+        find_press(&mut chrome, &mut app, Key::Character("x".into()), false);
+        assert_eq!(
+            find_press(&mut chrome, &mut app, Key::Named(NamedKey::Enter), false),
+            [Action::StepDocumentFind(Next)]
+        );
+        assert_eq!(
+            find_press(&mut chrome, &mut app, Key::Named(NamedKey::Enter), true),
+            [Action::StepDocumentFind(Previous)]
+        );
+        assert_eq!(
+            find_press(&mut chrome, &mut app, Key::Named(NamedKey::Escape), false),
+            [Action::CloseDocumentFind]
+        );
+        assert!(!app.document_find.open);
+    }
+
+    #[test]
+    fn find_field_keeps_keys_after_a_neighbouring_control_takes_focus() {
+        use cambium::Key;
+        let mut app = findable_app();
+        let mut chrome = ChromeSurfaces::new();
+        chrome.sync(&app, &[(0, 1024.0, 600.0)]);
+        let id = chrome.projections[0];
+        let button = {
+            let dom = chrome.dom.borrow();
+            let find = dom.all_with_class(dom.document(), "document-find")[0];
+            dom.all_with_class(find, "shell-control")[0]
+        };
+        chrome.runner.set_focus(id, Some(button));
+        find_press(&mut chrome, &mut app, Key::Character("z".into()), false);
+        assert_eq!(app.document_find.query(), "z");
     }
 
     #[test]

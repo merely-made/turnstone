@@ -87,8 +87,7 @@ pub(crate) fn command_metadata(action: &Action) -> (EffectClass, bool) {
         | Action::SmolwebSubmissionFile { .. }
         | Action::OpenDocumentFind
         | Action::CloseDocumentFind
-        | Action::InsertDocumentFind(..)
-        | Action::BackspaceDocumentFind
+        | Action::EditDocumentFind(..)
         | Action::StepDocumentFind(..)
         | Action::PageZoomIn { .. }
         | Action::PageZoomOut { .. }
