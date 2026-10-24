@@ -1,0 +1,14 @@
+    --> src/knot_authoring.rs:2968:12
+     |
+2591 | impl KnotDocumentSession {
+     | ------------------------ methods in this implementation
+...
+2968 |     pub fn projection_input_binding(&self) -> Option<&ProjectionInputBinding> {
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^
+...
+2978 |     pub fn runtime_projection_source(&self) -> Option<RuntimeSourceBinding<KnotRuntimeWitness>> {
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `turnstone` (lib) generated 138 warnings (run `cargo fix --lib -p turnstone` to apply 54 suggestions)
+warning: `turnstone` (lib test) generated 102 warnings (77 duplicates) (run `cargo fix --lib -p turnstone --tests` to apply 12 suggestions)
+    Finished `dev` profile [unoptimized] target(s) in 11.47s

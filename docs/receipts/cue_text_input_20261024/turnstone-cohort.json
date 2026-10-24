@@ -1,0 +1,48 @@
+{
+  "cargo_lock_sha256": "c6998cb9631f457d7cc9e9391c75e7c8c21edb47edf47c87728fda194e384ef5",
+  "packages": [
+    {
+      "name": "document-session-api",
+      "version": "0.1.1",
+      "source": "git+https://github.com/merely-made/genet.git?branch=main#4532fe03755bdb61eee7847ebeb8ad47bda37d96"
+    },
+    {
+      "name": "genet-render",
+      "version": "0.2.0",
+      "source": "git+https://github.com/merely-made/genet.git?branch=main#4532fe03755bdb61eee7847ebeb8ad47bda37d96"
+    },
+    {
+      "name": "inker",
+      "version": "0.1.1",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#91d4086e79a366fb74d1f865252f549893728cf5"
+    },
+    {
+      "name": "mere",
+      "version": "0.0.2",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#91d4086e79a366fb74d1f865252f549893728cf5"
+    },
+    {
+      "name": "pelt-core",
+      "version": "0.2.0",
+      "source": "git+https://github.com/merely-made/mere.git?branch=main#91d4086e79a366fb74d1f865252f549893728cf5"
+    },
+    {
+      "name": "webcue",
+      "version": "0.1.2",
+      "source": "registry+https://github.com/rust-lang/crates.io-index"
+    },
+    {
+      "name": "wgpu-cue",
+      "version": "0.1.3",
+      "source": "registry+https://github.com/rust-lang/crates.io-index"
+    },
+    {
+      "name": "wgpu-cue-netrender",
+      "version": "0.1.2",
+      "source": "git+https://github.com/merely-made/wgpu-cue.git?rev=307c0e6c401be88f2ae12f5be00b6c666d41febc#307c0e6c401be88f2ae12f5be00b6c666d41febc"
+    }
+  ],
+  "metadata_sources_match_lock": true,
+  "metadata_package_count": 1040,
+  "native_genet_commit": "4532fe03755bdb61eee7847ebeb8ad47bda37d96"
+}

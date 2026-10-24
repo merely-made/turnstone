@@ -1,0 +1,17 @@
+[
+  {
+    "fixture": "standalone_genet_geometry",
+    "executable": "text_input-af0191dfefb4d2ce",
+    "sha256": "2f25d86b2a22661f8f56fd5d455abff5ed7bf191f69b2cebea0d7cd072bb64a4"
+  },
+  {
+    "fixture": "standalone_genet_lifecycle",
+    "executable": "retained-2773a7ca7a45881f",
+    "sha256": "b37743bed63d1a6baf5cb1295f0b6918642f8b1cc52966b2ffc8d42547abda9c"
+  },
+  {
+    "fixture": "pelt_native_receiving",
+    "executable": "cue-5b5fee1fc4cb7edc",
+    "sha256": "14a29fbb56ee083737b6a5b22b7df26dcafda9a97b0ae242336730cadd91abc0"
+  }
+]

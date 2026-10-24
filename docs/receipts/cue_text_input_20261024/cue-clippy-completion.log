@@ -1,0 +1,14 @@
+    Checking objc2-screen-capture-kit v0.3.2
+    Checking genet-documents v0.1.0 (https://github.com/merely-made/genet.git?rev=4532fe03755bdb61eee7847ebeb8ad47bda37d96#4532fe03)
+    Checking wgpu-cue-netrender v0.1.2 ($HOME/Code/worktrees/wgpu-cue-cue-text-input-20261024/adapters/netrender)
+    Checking genet-render-host v0.2.0 (https://github.com/merely-made/genet.git?rev=4532fe03755bdb61eee7847ebeb8ad47bda37d96#4532fe03)
+    Checking objc2-app-kit v0.2.2
+    Checking core-graphics v0.23.2
+    Checking smol_str v0.2.2
+    Checking cursor-icon v1.2.0
+    Checking winit v0.30.13
+    Checking wgpu-cue-genet v0.1.2 ($HOME/Code/worktrees/wgpu-cue-cue-text-input-20261024/adapters/genet)
+    Checking objc2-web-kit v0.3.2
+    Checking scrying v0.7.2 (https://github.com/merely-made/wgpu-scry.git?rev=6100df6889c736917987cc6363a822f742cae97e#6100df68)
+    Checking wgpu-cue-scry v0.1.2 ($HOME/Code/worktrees/wgpu-cue-cue-text-input-20261024/adapters/scry)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 8m 35s

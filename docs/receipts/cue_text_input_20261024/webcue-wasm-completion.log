@@ -1,0 +1,14 @@
+   Compiling unicode-ident v1.0.27
+   Compiling quote v1.0.47
+   Compiling serde_core v1.0.229
+   Compiling syn v3.0.9
+   Compiling serde v1.0.229
+   Compiling serde_derive v1.0.229
+   Compiling syn v2.0.119
+   Compiling enumn v0.1.14
+    Checking uuid v1.28.0
+    Checking grafting-frame v0.1.1
+    Checking document-session-api v0.1.1 (https://github.com/merely-made/genet.git?rev=4532fe03755bdb61eee7847ebeb8ad47bda37d96#4532fe03)
+    Checking accesskit v0.25.1
+    Checking webcue v0.1.2 ($HOME/Code/worktrees/wgpu-cue-cue-text-input-20261024/crates/webcue)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 37.45s

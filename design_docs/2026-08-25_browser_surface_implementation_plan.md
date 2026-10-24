@@ -44,8 +44,14 @@ unsupported setup shortcut and contributed-pane wheel step are corrected. A
 separate automated Sky setup check passes on B without repeating physical input.
 
 Candidate placement is operator-observed; app captures exclude OS popup pixels.
-The Genet shared `TextInput` geometry publication gap remains. Physical CJK
-methods, Servo IME, human AT, X11 and physical device loss retain separate bounds.
+The Genet shared `TextInput` geometry publication gap is closed by the
+[published contract and programmatic host receipt](../docs/receipts/cue_text_input_20261024/README.md):
+Genet publishes current native editor metadata, Pelt checks exact prepared
+appearance custody, and primary/lens windows map the current logical caret to
+physical candidate-area coordinates after frame preparation. The earlier
+physical receipt is unchanged. A new ThinkPad Linux/Vulkan rerun remains blocked
+on mesh SSH identity unlock. Physical CJK methods, Servo IME, human AT, X11 and
+physical device loss retain separate bounds.
 
 ## Linux native Cue receiving, 2026-10-23
 

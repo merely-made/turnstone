@@ -1,0 +1,47 @@
+running 12 tests
+test pool_lends_the_exact_receiver_for_shared_frames_and_revokes_hidden_admission ... ignored, requires a real wgpu adapter; run explicitly
+test shared_content_preserves_routing_and_presents_genet_through_the_neutral_host ... ignored, requires a real wgpu adapter; run explicitly
+test two_genet_producers_render_on_one_host_device_without_sharing_quality_state ... ignored, requires a real wgpu adapter; run explicitly
+test retained_genet_receives_ordered_requests_input_and_retirement ... ok
+test atomic_input_backpressure_does_not_mutate_the_retained_receiver ... ok
+test pool_visual_mutations_have_revisions_independent_of_layout_admission ... ok
+test hidden_retained_input_refuses_mutation_while_commands_still_advance ... ok
+test semantic_publication_retires_on_input_and_replacement_changes_scope ... ok
+test legacy_retained_typing_does_not_stall_when_shared_observations_are_unconsumed ... ok
+test canonical_ime_composition_changes_the_same_retained_pelt_value ... ok
+test unclaimed_legacy_observations_expire_but_accepted_requests_keep_their_final_stream ... ok
+test retained_text_input_geometry_publishes_without_semantics_and_retires_in_order ... ok
+
+test result: ok. 9 passed; 0 failed; 3 ignored; 0 measured; 0 filtered out; finished in 12.60s
+
+     Running tests/pool.rs ($HOME/Code/repos/mere/target/build/debug/deps/pool-000ad28cdb89f0b3)
+
+running 25 tests
+test hidden_and_invalid_placements_never_frame ... ok
+test placement_generation_invalidates_resized_and_reused_action_geometry ... ok
+test final_placement_close_retains_content_until_explicit_removal ... ok
+test invalid_geometry_is_hidden_and_mutable_iteration_admits_new_same_epoch_work ... ok
+test mutable_session_access_invalidates_same_size_input_layout ... ok
+test pending_observation_is_read_only_and_redraw_is_scoped_to_visible_windows ... ok
+test repeated_content_placements_keep_their_own_geometry ... ok
+test async_pump_invalidates_same_size_input_layout_without_hidden_paint ... ok
+test neutral_keyboard_lowers_document_keys_and_composed_text_explicitly ... ok
+test raw_session_mutation_invalidates_input_layout ... ok
+test mutable_iteration_invalidates_same_epoch_completion_observation ... ok
+test handled_accessibility_action_invalidates_input_layout ... ok
+test hidden_pending_work_advances_without_requesting_a_visible_frame ... ok
+test keyboard_scroll_prepares_its_addressed_appearance_and_retires_old_hit_layout ... ok
+test placement_focus_is_independent_of_visibility_and_replacement_keeps_arrangement ... ok
+test moving_focus_between_appearances_prepares_each_addressed_viewport ... ok
+test replacing_content_preserves_current_placements_with_new_admission ... ok
+test repeated_placement_input_prepares_the_addressed_layout ... ok
+test routed_scroll_invalidates_same_size_input_layout ... ok
+test review_overlap_pool_capture_outside_and_unrelated_release ... ok
+test review_overlap_pool_last_placement_receives_pointer_and_navigation ... ok
+test same_epoch_deduplicates_unchanged_windows_but_not_changed_placements ... ok
+test review_overlap_pool_wheel_follows_current_stacking_and_skips_hidden_top ... ok
+test workspace_reopens_closed_content_with_scroll_history_and_identity ... ok
+test scheduled_document_work_preserves_prepared_routes_and_current_receiver_custody ... ok
+
+test result: ok. 25 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

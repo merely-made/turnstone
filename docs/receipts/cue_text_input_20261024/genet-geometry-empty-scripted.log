@@ -1,0 +1,7 @@
+running 3 tests
+test engines::tests::text_input_tests::livery_text_input_geometry_tracks_selection_scroll_zoom_and_invalidation ... ok
+test engines::tests::text_input_tests::livery_text_input_geometry_handles_empty_password_blur_and_detach ... ok
+test engines::tests::text_input_tests::scripted_text_input_geometry_uses_live_utf16_selection_and_rejects_stale_layout ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 127 filtered out; finished in 20.39s
+

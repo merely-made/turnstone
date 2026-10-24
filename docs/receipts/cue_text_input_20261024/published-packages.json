@@ -1,0 +1,53 @@
+{
+  "verified_at": "2026-10-24T20:43:39.820366+00:00",
+  "packages": [
+    {
+      "crate": "document-session-api",
+      "version": "0.1.1",
+      "url": "https://static.crates.io/crates/document-session-api/document-session-api-0.1.1.crate",
+      "sha256": "96ff991df913cc24c4f81b28dde038247d7d00d7291f853e7b2696fd04b9c5ab",
+      "yanked": false,
+      "vcs": {
+        "git": {
+          "sha1": "4532fe03755bdb61eee7847ebeb8ad47bda37d96"
+        },
+        "path_in_vcs": "components/shared/document-session-api"
+      },
+      "rust_sources_match_git": true,
+      "manifest_source_matches_git": true,
+      "rust_source_files": 8
+    },
+    {
+      "crate": "webcue",
+      "version": "0.1.2",
+      "url": "https://static.crates.io/crates/webcue/webcue-0.1.2.crate",
+      "sha256": "60517bf01dc4c6ede5e4b9b64c7eba5d398ed6bad6480c82d46dbef99e92261c",
+      "yanked": false,
+      "vcs": {
+        "git": {
+          "sha1": "307c0e6c401be88f2ae12f5be00b6c666d41febc"
+        },
+        "path_in_vcs": "crates/webcue"
+      },
+      "rust_sources_match_git": true,
+      "manifest_source_matches_git": true,
+      "rust_source_files": 6
+    },
+    {
+      "crate": "wgpu-cue",
+      "version": "0.1.3",
+      "url": "https://static.crates.io/crates/wgpu-cue/wgpu-cue-0.1.3.crate",
+      "sha256": "51bb1c16373f520a02fe8dab49b91a246a4e50e921786a36b999d241fd30c9dd",
+      "yanked": false,
+      "vcs": {
+        "git": {
+          "sha1": "307c0e6c401be88f2ae12f5be00b6c666d41febc"
+        },
+        "path_in_vcs": "crates/wgpu-cue"
+      },
+      "rust_sources_match_git": true,
+      "manifest_source_matches_git": true,
+      "rust_source_files": 5
+    }
+  ]
+}

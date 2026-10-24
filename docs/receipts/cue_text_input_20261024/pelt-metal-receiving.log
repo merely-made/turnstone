@@ -1,0 +1,7 @@
+running 3 tests
+test pool_lends_the_exact_receiver_for_shared_frames_and_revokes_hidden_admission ... ok
+test shared_content_preserves_routing_and_presents_genet_through_the_neutral_host ... ok
+test two_genet_producers_render_on_one_host_device_without_sharing_quality_state ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 9 filtered out; finished in 1.90s
+
