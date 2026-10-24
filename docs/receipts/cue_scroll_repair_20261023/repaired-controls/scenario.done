@@ -1,0 +1,15 @@
+RESULT ok
+waited 72 frames
+waited 0 frames
+captured 01_retained_before_controls
+captured 02_retained_zoomed
+captured 03_retained_scrolled
+captured 04_live_taxonomy
+captured 05_retained_reopened
+Linux retained Cue taxonomy, controls and reopen receiving complete
+presentation frames=293 captures=5 blank=0
+capture /home/markik/Code/output/genet-scroll-background-20261023/repaired-controls/receiving/01_retained_before_controls.png digest=9575ee2bf62a9eb5 blank=false
+capture /home/markik/Code/output/genet-scroll-background-20261023/repaired-controls/receiving/02_retained_zoomed.png digest=78b1c88d60b3203c blank=false
+capture /home/markik/Code/output/genet-scroll-background-20261023/repaired-controls/receiving/03_retained_scrolled.png digest=ed48dcdc737dfc14 blank=false
+capture /home/markik/Code/output/genet-scroll-background-20261023/repaired-controls/receiving/04_live_taxonomy.png digest=c9d54e1d0bd573f9 blank=false
+capture /home/markik/Code/output/genet-scroll-background-20261023/repaired-controls/receiving/05_retained_reopened.png digest=bdd5ef5ffdc78591 blank=false

@@ -1,0 +1,37 @@
+{
+  "command": [
+    "nice",
+    "-n",
+    "10",
+    "cargo",
+    "+1.99.1",
+    "build",
+    "--bin",
+    "turnstone",
+    "--locked",
+    "--offline",
+    "-j2"
+  ],
+  "cwd": "/home/markik/Code/worktrees/turnstone-cue-scroll-20261023",
+  "started": 1792802417.6912909,
+  "exit": 0,
+  "source_commit": "0fc28484322a4863d49dd79c2321da99c2c1d268",
+  "source_status": "",
+  "manifest_sha256": "cddd888a6833d92e7146b7099f2729937a39e85d0dc95da494aa30e42f9e5fd2",
+  "lock_before_sha256": "23b9633221784110cb6160afcb2a56308381196f90956da446d21f6ccacdb3aa",
+  "environment": {
+    "CARGO_TARGET_DIR": "/home/markik/Code/target",
+    "CARGO_BUILD_BUILD_DIR": "/home/markik/Code/repos/turnstone/target/build",
+    "CARGO_BUILD_JOBS": "2",
+    "WGPU_BACKEND": "vulkan",
+    "VK_DRIVER_FILES": "/usr/share/vulkan/icd.d/radeon_icd.x86_64.json",
+    "XDG_RUNTIME_DIR": "/run/user/1000"
+  },
+  "child_nofile": [
+    65536,
+    1048576
+  ],
+  "elapsed_seconds": 64.072,
+  "lock_after_sha256": "23b9633221784110cb6160afcb2a56308381196f90956da446d21f6ccacdb3aa",
+  "binary_sha256": "557e1730d0f06e76b309997a12400148083ebefe429f28625b63406c03b540cf"
+}

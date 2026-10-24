@@ -1,0 +1,78 @@
+{
+  "passed": true,
+  "expected_canvas_rgba8": [
+    244,
+    239,
+    227,
+    255
+  ],
+  "source_rasters": [
+    {
+      "checkpoint": "02_retained_zoomed",
+      "file": "02_retained_zoomed.source-1176657005713031170.png",
+      "sha256": "6d560b9c2158a05105afb2f7e8c71953e3680b13300948d3e90a58831a722ff2",
+      "dimensions": [
+        1024,
+        477
+      ],
+      "adapter": {
+        "backend": "Vulkan",
+        "device": 5686,
+        "device_type": "IntegratedGpu",
+        "name": "AMD Radeon Graphics (RADV RENOIR)",
+        "vendor": 4098
+      },
+      "sample_position": [
+        8,
+        469
+      ],
+      "sample_rgba8": [
+        244,
+        239,
+        227,
+        255
+      ],
+      "wrong_canvas_rows": []
+    },
+    {
+      "checkpoint": "03_retained_scrolled",
+      "file": "03_retained_scrolled.source-1176657005713031170.png",
+      "sha256": "7137fb917b3661626458f13418cfef189976d13bacac57d0d911cf8f1a3db476",
+      "dimensions": [
+        1024,
+        477
+      ],
+      "adapter": {
+        "backend": "Vulkan",
+        "device": 5686,
+        "device_type": "IntegratedGpu",
+        "name": "AMD Radeon Graphics (RADV RENOIR)",
+        "vendor": 4098
+      },
+      "sample_position": [
+        8,
+        469
+      ],
+      "sample_rgba8": [
+        244,
+        239,
+        227,
+        255
+      ],
+      "wrong_canvas_rows": []
+    }
+  ],
+  "shift_pixels": 120,
+  "shift_mismatch_fraction": 0.0004887371615312792,
+  "unshifted_change_fraction": 0.27446968370681607,
+  "scopes": [
+    [
+      "1:1"
+    ],
+    [
+      "1:1"
+    ]
+  ],
+  "same_live_scope": true,
+  "scope": "Synthetic article source-raster colour and scroll check; no physical compositor, IME or human AT claim"
+}

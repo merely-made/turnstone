@@ -1,0 +1,454 @@
+warning: patch `chartulary v0.2.2 (https://github.com/merely-made/eidetic.git?rev=aa94fe22eea29e9b54e01ed21e6991536ed4f208#aa94fe22)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://www.github.com/merely-made/eidetic.git
+warning: patch `eidetic v0.0.2 (https://github.com/merely-made/eidetic.git?rev=aa94fe22eea29e9b54e01ed21e6991536ed4f208#aa94fe22)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://www.github.com/merely-made/eidetic.git
+warning: patch `esp v0.1.0 (https://github.com/merely-made/esp.git?rev=f27bee8eb5152618ab91fa8676d62c72ebfcb4fc#f27bee8e)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://www.github.com/merely-made/esp.git
+warning: patch `luggage v0.1.0 (https://github.com/merely-made/eidetic.git?rev=aa94fe22eea29e9b54e01ed21e6991536ed4f208#aa94fe22)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://www.github.com/merely-made/eidetic.git
+warning: patch `mere-proofs v0.1.0 (https://github.com/merely-made/eidetic.git?rev=aa94fe22eea29e9b54e01ed21e6991536ed4f208#aa94fe22)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://www.github.com/merely-made/eidetic.git
+warning: patch `muniment v0.2.0 (https://github.com/merely-made/eidetic.git?rev=aa94fe22eea29e9b54e01ed21e6991536ed4f208#aa94fe22)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://www.github.com/merely-made/eidetic.git
+warning: patch `servitor v0.0.2 (https://github.com/merely-made/eidetic.git?rev=aa94fe22eea29e9b54e01ed21e6991536ed4f208#aa94fe22)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://www.github.com/merely-made/eidetic.git
+warning: patch `stickleback v0.1.1 (https://github.com/merely-made/eidetic.git?rev=aa94fe22eea29e9b54e01ed21e6991536ed4f208#aa94fe22)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://www.github.com/merely-made/eidetic.git
+warning: patch `chartulary v0.2.2 (https://github.com/merely-made/eidetic.git?rev=aa94fe22eea29e9b54e01ed21e6991536ed4f208#aa94fe22)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://www.github.com/merely-made/eidetic.git
+warning: patch `eidetic v0.0.2 (https://github.com/merely-made/eidetic.git?rev=aa94fe22eea29e9b54e01ed21e6991536ed4f208#aa94fe22)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://www.github.com/merely-made/eidetic.git
+warning: patch `esp v0.1.0 (https://github.com/merely-made/esp.git?rev=f27bee8eb5152618ab91fa8676d62c72ebfcb4fc#f27bee8e)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://www.github.com/merely-made/esp.git
+warning: patch `luggage v0.1.0 (https://github.com/merely-made/eidetic.git?rev=aa94fe22eea29e9b54e01ed21e6991536ed4f208#aa94fe22)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://www.github.com/merely-made/eidetic.git
+warning: patch `mere-proofs v0.1.0 (https://github.com/merely-made/eidetic.git?rev=aa94fe22eea29e9b54e01ed21e6991536ed4f208#aa94fe22)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://www.github.com/merely-made/eidetic.git
+warning: patch `muniment v0.2.0 (https://github.com/merely-made/eidetic.git?rev=aa94fe22eea29e9b54e01ed21e6991536ed4f208#aa94fe22)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://www.github.com/merely-made/eidetic.git
+warning: patch `servitor v0.0.2 (https://github.com/merely-made/eidetic.git?rev=aa94fe22eea29e9b54e01ed21e6991536ed4f208#aa94fe22)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://www.github.com/merely-made/eidetic.git
+warning: patch `stickleback v0.1.1 (https://github.com/merely-made/eidetic.git?rev=aa94fe22eea29e9b54e01ed21e6991536ed4f208#aa94fe22)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://www.github.com/merely-made/eidetic.git
+warning: patch `chartulary v0.2.2 (https://github.com/merely-made/eidetic.git?rev=aa94fe22eea29e9b54e01ed21e6991536ed4f208#aa94fe22)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://www.github.com/merely-made/eidetic.git
+warning: patch `eidetic v0.0.2 (https://github.com/merely-made/eidetic.git?rev=aa94fe22eea29e9b54e01ed21e6991536ed4f208#aa94fe22)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://www.github.com/merely-made/eidetic.git
+warning: patch `esp v0.1.0 (https://github.com/merely-made/esp.git?rev=f27bee8eb5152618ab91fa8676d62c72ebfcb4fc#f27bee8e)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://www.github.com/merely-made/esp.git
+warning: patch `luggage v0.1.0 (https://github.com/merely-made/eidetic.git?rev=aa94fe22eea29e9b54e01ed21e6991536ed4f208#aa94fe22)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://www.github.com/merely-made/eidetic.git
+warning: patch `mere-proofs v0.1.0 (https://github.com/merely-made/eidetic.git?rev=aa94fe22eea29e9b54e01ed21e6991536ed4f208#aa94fe22)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://www.github.com/merely-made/eidetic.git
+warning: patch `servitor v0.0.2 (https://github.com/merely-made/eidetic.git?rev=aa94fe22eea29e9b54e01ed21e6991536ed4f208#aa94fe22)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://www.github.com/merely-made/eidetic.git
+warning: patch `stickleback v0.1.1 (https://github.com/merely-made/eidetic.git?rev=aa94fe22eea29e9b54e01ed21e6991536ed4f208#aa94fe22)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://www.github.com/merely-made/eidetic.git
+   Compiling stable_deref_trait v1.2.1
+   Compiling smallvec v1.16.1
+   Compiling syn v3.0.6
+   Compiling litemap v0.8.3
+   Compiling writeable v0.6.4
+   Compiling cc v1.6.0
+   Compiling mio v1.2.3
+   Compiling socket2 v0.6.5
+   Compiling percent-encoding v2.3.2
+   Compiling bytes v1.12.1
+   Compiling form_urlencoded v1.2.2
+   Compiling getrandom v0.2.17
+   Compiling untrusted v0.9.0
+   Compiling rustls-pki-types v1.15.1
+   Compiling parking_lot_core v0.9.12
+   Compiling ring v0.17.14
+   Compiling string_cache_codegen v0.11.2
+   Compiling parking_lot v0.12.5
+   Compiling web_atoms v0.3.0
+   Compiling rustls v0.23.45
+   Compiling string_cache v0.11.0
+   Compiling phf v0.14.0
+   Compiling subtle v2.6.1
+   Compiling synstructure v0.14.0
+   Compiling objc2-core-foundation v0.3.2
+   Compiling powerfmt v0.2.0
+   Compiling zerofrom-derive v0.1.8
+   Compiling yoke-derive v0.8.3
+   Compiling zerovec-derive v0.11.6
+   Compiling displaydoc v0.2.7
+   Compiling zerofrom v0.1.8
+   Compiling tokio-macros v2.7.2
+   Compiling yoke v0.8.3
+   Compiling serde_derive v1.0.229
+   Compiling tokio v1.53.2
+   Compiling zerovec v0.11.8
+   Compiling tinystr v0.8.4
+   Compiling potential_utf v0.1.6
+   Compiling icu_locale_core v2.3.0
+   Compiling zerotrie v0.2.5
+   Compiling icu_collections v2.3.0
+   Compiling serde v1.0.229
+   Compiling rustls-webpki v0.103.15
+   Compiling icu_provider v2.3.1
+   Compiling icu_properties v2.3.0
+   Compiling icu_normalizer v2.3.0
+   Compiling deranged v0.5.8
+   Compiling idna_adapter v1.2.2
+   Compiling idna v1.1.0
+   Compiling time-core v0.1.9
+   Compiling url v2.5.8
+   Compiling num-conv v0.2.2
+   Compiling objc2-io-surface v0.3.2
+   Compiling time v0.3.55
+   Compiling markup5ever v0.40.0
+   Compiling base64 v0.22.1
+   Compiling serde_json v1.0.151
+   Compiling yasna v0.5.2
+   Compiling pem v3.0.6
+   Compiling tokio-rustls v0.26.6
+   Compiling uuid v1.27.0
+   Compiling objc2-metal v0.3.2
+   Compiling accesskit v0.25.1 (/Users/markik/Code/worktrees/mere-servo-cue-20261023/support/patches/accesskit)
+   Compiling gemini-protocol v0.1.7 (https://github.com/merely-made/errand.git?rev=1155897e6debc61102ea219cced245d0abccb658#1155897e)
+   Compiling rcgen v0.13.2
+   Compiling document-session-api v0.1.0 (https://github.com/merely-made/genet.git?branch=main#621aa33c)
+   Compiling pulldown-cmark v0.13.4
+   Compiling petgraph v0.8.3
+   Compiling misfin v0.0.4 (https://github.com/merely-made/errand.git?rev=1155897e6debc61102ea219cced245d0abccb658#1155897e)
+   Compiling scroll-protocol v0.1.0 (https://github.com/merely-made/errand.git?rev=1155897e6debc61102ea219cced245d0abccb658#1155897e)
+   Compiling layout-dom-api v0.1.1 (https://github.com/merely-made/genet.git?branch=main#621aa33c)
+   Compiling html5ever v0.40.1
+   Compiling xml5ever v0.40.0
+   Compiling spartan-protocol v0.1.1 (https://github.com/merely-made/errand.git?rev=1155897e6debc61102ea219cced245d0abccb658#1155897e)
+   Compiling guppy-protocol v0.1.1 (https://github.com/merely-made/errand.git?rev=1155897e6debc61102ea219cced245d0abccb658#1155897e)
+   Compiling finger-protocol v0.1.1 (https://github.com/merely-made/errand.git?rev=1155897e6debc61102ea219cced245d0abccb658#1155897e)
+   Compiling gopher-protocol v0.2.0 (https://github.com/merely-made/errand.git?rev=1155897e6debc61102ea219cced245d0abccb658#1155897e)
+   Compiling nex-protocol v0.1.1 (https://github.com/merely-made/errand.git?rev=1155897e6debc61102ea219cced245d0abccb658#1155897e)
+   Compiling quick-xml v0.39.4
+   Compiling unicase v2.9.0
+   Compiling genet-static-dom v0.1.1 (https://github.com/merely-made/genet.git?branch=main#621aa33c)
+   Compiling errand v0.4.0 (https://github.com/merely-made/errand.git?rev=1155897e6debc61102ea219cced245d0abccb658#1155897e)
+   Compiling grafting-frame v0.1.1
+   Compiling jotdown v0.10.0
+   Compiling webcue v0.1.1
+   Compiling inker v0.1.1 (/Users/markik/Code/worktrees/mere-servo-cue-20261023/crates/inker/inker)
+   Compiling nematic v0.1.1 (/Users/markik/Code/worktrees/mere-servo-cue-20261023/crates/nematic/nematic)
+warning: unused imports: `BlockProvenanceMap`, `DocumentProvenance`, and `DocumentTrustState`
+  --> crates/nematic/nematic/src/knot/expand.rs:20:12
+   |
+20 |     Block, BlockProvenanceMap, DocumentProvenance, DocumentTrustState, Engine, EngineInput,
+   |            ^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `EngineDocument`
+ --> crates/nematic/nematic/src/knot/expand/build.rs:7:80
+  |
+7 | use inker::{Block, BlockProvenanceMap, DocumentProvenance, DocumentTrustState, EngineDocument};
+  |                                                                                ^^^^^^^^^^^^^^
+
+warning: `nematic` (lib) generated 2 warnings (run `cargo fix --lib -p nematic` to apply 2 suggestions)
+warning: `nematic` (lib test) generated 2 warnings (2 duplicates)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 40.13s
+     Running unittests src/lib.rs (target/build/debug/deps/nematic-0ebf8ecb15c70fd7)
+
+running 237 tests
+test feed::tests::engine_id_is_stable ... ok
+test feed::article::tests::fragments_round_trip_awkward_guids ... ok
+test feed::tests::empty_feed_emits_only_a_header_block ... ok
+test feed::tests::dispatches_through_inker_registry ... ok
+test feed::tests::atom_content_html_is_stripped_into_entry_summary ... ok
+test feed::tests::atom_feed_extracts_title_and_entries ... ok
+test feed::tests::json_feed_detected_via_content_type_over_body_sniff ... ok
+test feed::tests::json_feed_content_text_is_kept_verbatim ... ok
+test feed::tests::json_feed_retains_item_ids_as_guids ... ok
+test feed::tests::malformed_json_feed_yields_invalid_content_error ... ok
+test feed::tests::json_feed_extracts_title_lang_and_entries ... ok
+test feed::tests::json_feed_content_html_is_stripped_and_flagged ... ok
+test feed::tests::json_feed_emits_header_with_subtitle ... ok
+test feed::tests::malformed_xml_yields_invalid_content_error ... ok
+test feed::tests::entries_carry_dates_guid_enclosures_and_an_address_for_their_body ... ok
+test feed::tests::an_entry_without_a_body_shows_its_summary_and_a_link_out ... ok
+test feed::tests::end_to_end_via_default_policy_with_content_type ... ok
+test feed::tests::rss_emits_feed_header_with_subtitle ... ok
+test feed::tests::rss_feed_extracts_title_and_entries ... ok
+test feed::tests::rss_html_strip_emits_degraded_rendering_diagnostic ... ok
+test file::tests::engine_id_is_stable ... ok
+test feed::tests::rss_summary_strips_html_tags_into_feed_entry_summary ... ok
+test file::tests::extension_extraction_handles_query_strings ... ok
+test file::tests::dispatches_through_inker_registry ... ok
+test file::tests::end_to_end_via_default_policy_routes_file_scheme ... ok
+test file::tests::extension_match_is_case_insensitive ... ok
+test file::tests::hidden_files_have_no_extension ... ok
+test file::tests::gmi_extension_dispatches_to_gemtext ... ok
+test feed::tests::an_entry_address_renders_the_entry_as_its_own_document ... ok
+test file::tests::md_extension_dispatches_to_markdown ... ok
+test file::tests::no_extension_falls_back_to_text ... ok
+test file::tests::unknown_extension_falls_back_to_text ... ok
+test finger::tests::default_content_type_is_finger_specific ... ok
+test file::tests::xml_extension_dispatches_to_feed ... ok
+test file::tests::micron_extension_keeps_foreign_source_engine_provenance ... ok
+test finger::tests::dispatches_through_inker_registry ... ok
+test finger::tests::engine_id_is_stable ... ok
+test finger::tests::host_supplied_content_type_wins ... ok
+test gemtext::tests::consecutive_list_items_merge_into_one_list ... ok
+test gemtext::tests::consecutive_quote_lines_merge_into_one_quote ... ok
+test gemtext::tests::dispatches_through_inker_registry ... ok
+test gemtext::tests::engine_id_is_stable ... ok
+test gemtext::tests::h1_becomes_title ... ok
+test gemtext::tests::headings_at_three_levels ... ok
+test gemtext::tests::link_line_with_label ... ok
+test gemtext::tests::link_line_without_label_uses_url_as_display ... ok
+test gemtext::tests::preformatted_block_with_alt_text ... ok
+test gemtext::tests::preformatted_swallows_other_prefixes ... ok
+test gemtext::tests::unprefixed_lines_accumulate_into_paragraph ... ok
+test gopher::tests::an_unknown_type_keeps_its_marker ... ok
+test gopher::tests::dispatches_through_inker_registry ... ok
+test gopher::tests::engine_id_is_stable ... ok
+test gopher::tests::error_lines_are_untargeted_error_rows ... ok
+test gopher::tests::folded_kinds_keep_their_own_characters ... ok
+test gopher::tests::info_lines_remain_literal_menu_rows ... ok
+test gopher::tests::info_then_resource_then_info_is_one_menu_of_three_rows ... ok
+test gopher::tests::non_default_port_appears_in_url ... ok
+test gopher::tests::outgoing_links_collect_all_resource_urls ... ok
+test gopher::tests::period_terminator_stops_parsing ... ok
+test gopher::tests::resource_with_missing_host_is_skipped ... ok
+test gopher::tests::search_item_submits_through_its_label ... ok
+test gopher::tests::standard_text_item_synthesises_gopher_url ... ok
+test gopher::tests::telnet_8_and_tn3270_t_both_read_as_telnet ... ok
+test gopher::tests::url_item_extracts_url_prefix ... ok
+test guppy::tests::body_parses_as_gemtext ... ok
+test guppy::tests::engine_id_is_stable ... ok
+test guppy::tests::provenance_records_guppy_with_gemtext_label ... ok
+test knot::djot::tests::badge_div_becomes_badge ... ok
+test knot::djot::tests::description_list_becomes_metadata_rows ... ok
+test knot::djot::tests::djot_engine_expands_protocol_fences_for_parity ... ok
+test knot::djot::tests::feed_entry_div_reads_attributes ... ok
+test knot::djot::tests::djot_engine_renders_frontmatter_and_body ... ok
+test knot::djot::tests::feed_entry_missing_required_title_warns ... ok
+test knot::djot::tests::heading_and_paragraph_map_structurally ... ok
+test html::tests::strips_active_elements_handlers_styles_and_unsafe_urls ... ok
+test knot::djot::tests::inline_link_captures_destination_and_rel ... ok
+test knot::djot::tests::inline_link_sits_between_text_runs ... ok
+test knot::djot::tests::plain_inline_link_has_no_predicate ... ok
+test html::tests::lowers_reader_structure_and_links ... ok
+test knot::djot::tests::recognized_div_with_required_attrs_has_no_diagnostics ... ok
+test knot::djot::tests::link_predicates_survive_the_inline_rewrite_pass ... ok
+test knot::djot::tests::unknown_div_class_renders_generically_with_a_diagnostic ... ok
+test knot::expand::tests::inline_expansion_walks_unicode_on_character_boundaries ... ok
+test knot::tests::advanced::build_clip_knot_does_not_double_emit_frontmatter ... ok
+test knot::tests::advanced::build_clip_knot_assembles_frontmatter_plus_blocks ... ok
+test knot::djot::tests::round_trip_preserves_semantic_blocks ... ok
+test knot::tests::advanced::build_clip_knot_with_block_provenance_emits_block_sources_list ... ok
+test knot::tests::advanced::build_clip_knot_with_block_provenance_emits_no_list_when_all_match_document ... ok
+test knot::tests::advanced::build_clip_knot_with_block_provenance_sorts_entries_by_index ... ok
+test knot::tests::advanced::hash_in_middle_of_word_is_not_a_hashtag ... ok
+test knot::tests::advanced::hashtag_extracts_to_badge_after_paragraph ... ok
+test knot::tests::advanced::hashtag_is_removed_from_paragraph_text ... ok
+test knot::tests::advanced::hashtags_in_headings_stay_as_text ... ok
+test knot::tests::advanced::unterminated_wikilink_stays_as_text ... ok
+test knot::tests::advanced::polyglot_knot_with_wikilinks_and_hashtags ... ok
+test knot::tests::advanced::wikilink_lowercases_and_dashes_the_slug ... ok
+test knot::tests::advanced::wikilink_rewrites_to_mere_node_url ... ok
+test knot::tests::advanced::wikilinks_inside_existing_links_are_not_rewritten ... ok
+test knot::tests::badge_fence_emits_one_badge_per_line ... ok
+test knot::tests::body_h1_is_used_when_frontmatter_lacks_title ... ok
+test knot::tests::captured_field_populates_fetched_at ... ok
+test knot::tests::engine_id_is_stable ... ok
+test knot::tests::dispatches_through_inker_registry ... ok
+test knot::tests::feed_entry_fence_expands_to_feed_entry_block ... ok
+test knot::tests::frontmatter_title_overrides_body_h1 ... ok
+test knot::tests::full_clip_round_trip_through_to_markdown ... ok
+test knot::tests::full_round_trip_preserves_feed_entry_information ... ok
+test knot::tests::gemtext_fence_expands_to_real_blocks ... ok
+test knot::tests::metadata_blocks_appear_before_body_blocks ... ok
+test knot::tests::metadata_row_fence_emits_one_row_per_line ... ok
+test knot::tests::no_frontmatter_parses_as_plain_markdown ... ok
+test knot::tests::note_kind_emits_metadata_row ... ok
+test knot::tests::quoted_strings_have_quotes_stripped ... ok
+test knot::tests::polyglot_knot_aggregates_protocol_blocks_with_provenance ... ok
+test knot::tests::source_field_populates_canonical_uri ... ok
+test knot::tests::tags_array_emits_metadata_row ... ok
+test knot::tests::to_knot_emits_badge_as_fence ... ok
+test knot::tests::to_knot_emits_feed_entry_as_fence ... ok
+test knot::tests::to_knot_emits_metadata_row_as_fence ... ok
+test knot::tests::to_knot_renders_structural_blocks_as_markdown ... ok
+test knot::tests::unknown_fence_languages_pass_through_as_code_blocks ... ok
+test knot::tests::unterminated_frontmatter_treated_as_body ... ok
+test markdown::tests::engine_id_is_stable ... ok
+test knot::tests::trust_field_parses_known_states ... ok
+test markdown::tests::dispatches_through_inker_registry ... ok
+test markdown::tests::fenced_code_block_preserves_language_and_text ... ok
+test markdown::tests::h1_becomes_document_title ... ok
+test markdown::tests::image_alt_text_preserved_as_plain_text ... ok
+test markdown::tests::loose_list_items_preserve_paragraph_blocks ... ok
+test markdown::tests::nested_quote_preserves_inner_paragraph ... ok
+test markdown::tests::ordered_list_marks_ordered ... ok
+test markdown::tests::outgoing_links_walks_paragraph_and_quote ... ok
+test markdown::tests::paragraph_with_emphasis_and_link ... ok
+test markdown::tests::rule_emits_block ... ok
+test markdown::tests::tight_list_items_carry_paragraph_content ... ok
+test markdown::tests::unordered_list_with_two_items ... ok
+test micron::forms::tests::ambiguous_or_incomplete_forms_are_refused ... ok
+test micron::forms::tests::debug_does_not_disclose_field_or_fixed_values ... ok
+test micron::forms::tests::configurable_limits_apply_before_submission ... ok
+test micron::forms::tests::navigation_and_invalid_edits_cannot_reuse_prepared_state ... ok
+test micron::forms::tests::stock_client_default_and_edited_maps ... ok
+test micron::forms::tests::stock_client_selected_fields_and_radio_exclusion ... ok
+test micron::navigation::tests::guide_structure_folds_anchors_and_unnamed_section ... ok
+test micron::forms::tests::stock_client_omits_unchecked_groups_but_retains_empty_text ... ok
+test micron::navigation::tests::probe_06_extents_ignore_collapsibility_and_nest ... ok
+test micron::navigation::tests::probe_03_missing_anchor_resolves_to_nothing ... ok
+test micron::navigation::tests::probe_08_toggle_page_folds ... ok
+test micron::navigation::tests::probe_01_duplicate_heading_slugs_first_wins ... ok
+test micron::navigation::tests::probe_07_less_than_ends_folds_and_keeps_depth ... ok
+test micron::navigation::tests::probe_04_next_heading_counts_from_the_link_line ... ok
+test micron::navigation::tests::table_cell_anchors_are_declared_on_the_table_line ... ok
+test micron::navigation::tests::probe_05_targets_inside_a_closed_fold ... ok
+test micron::navigation::tests::probes_12_13_less_than_spellings_stop_before_their_own_line ... ok
+test micron::navigation::tests::probe_16_duplicate_explicit_anchors_first_wins ... ok
+test micron::navigation::tests::probe_11_unnamed_sections_end_only_shallower_folds ... ok
+test micron::render::navigation_tests::guide_structure_folds_replace_the_collapsible_diagnostic ... ok
+test micron::render::navigation_tests::probe_06b_nested_folds_keep_authored_state ... ok
+test micron::navigation::tests::probe_17_target_inside_two_closed_folds ... ok
+test micron::navigation::tests::probe_15_explicit_anchor_after_a_heading_never_renames_it ... ok
+test micron::navigation::tests::probe_02_heading_and_explicit_anchor_first_declaration_wins ... ok
+test micron::render::navigation_tests::probe_06b_an_edited_heading_drops_only_its_own_state ... ok
+test micron::render::navigation_tests::table_cell_anchor_and_unnamed_collapse_marker ... ok
+test micron::render::tests::invalid_or_contextless_native_targets_do_not_gain_authority ... ok
+test micron::render::tests::captured_presentation_becomes_typed_source_wrappers ... ok
+test micron::render::navigation_tests::probes_06b_06a_nested_state_survives_an_ancestor_close_and_reopen ... ok
+test micron::render::navigation_tests::probes_07c_12_13_less_than_lines_end_folds_and_keep_source_with_a_badge ... ok
+test micron::render::tests::ordinary_links_resolve_but_actions_and_anchors_never_become_fetches ... ok
+test micron::render::tests::same_node_alias_is_retained_without_fabricating_a_destination ... ok
+test micron::render::tests::table_lowering_preserves_cells_and_column_alignment ... ok
+test micron::syntax::tests::anchor_shaped_variable_in_request_list_stays_a_request ... ok
+test micron::syntax::tests::crlf_preserves_document_source_while_control_lexemes_parse ... ok
+test micron::render::navigation_tests::request_and_cross_page_anchor_links_keep_their_diagnostics ... ok
+test micron::syntax::tests::empty_and_unterminated_controls_are_inert_without_panics ... ok
+test micron::syntax::tests::guide_controls_keep_combined_style_and_reset ... ok
+test micron::syntax::tests::guide_field_forms_are_typed_and_invalid_options_stay_inert ... ok
+test micron::syntax::tests::heading_anchors_follow_visible_text_and_first_declaration_wins ... ok
+test micron::syntax::tests::link_effects_keep_request_selectors_distinct_from_page_anchors ... ok
+test micron::syntax::tests::literal_table_and_image_boundaries_retain_source ... ok
+test micron::syntax::tests::table_anchor_reserves_name_before_later_heading ... ok
+test micron::render::navigation_tests::probe_11_unnamed_sections_in_block_space ... ok
+test micron::syntax::tests::table_inline_state_flows_into_following_document_lines ... ok
+test micron::tests::captured_probe_lowers_only_the_observed_lf_forms ... ok
+test micron::tests::captured_inline_styles_lower_but_link_candidates_stay_inert ... ok
+test micron::tests::host_content_type_is_preserved_without_inventing_one ... ok
+test misfin::tests::body_parses_as_gemtext ... ok
+test micron::tests::unqualified_or_crlf_source_is_visible_and_inert ... ok
+test misfin::tests::content_type_defaults_to_misfin_message ... ok
+test misfin::tests::engine_id_is_stable ... ok
+test misfin::tests::missing_envelope_verification_emits_diagnostic ... ok
+test misfin::tests::provenance_records_misfin_with_gemtext_label ... ok
+test nex::tests::content_response_dispatches_to_text ... ok
+test nex::tests::directory_listing_emits_list_of_links ... ok
+test micron::render::navigation_tests::probes_03_04_missing_targets_are_silent_no_ops ... ok
+test micron::render::navigation_tests::probe_09_in_page_links_never_reach_the_network_path ... ok
+test nex::tests::directory_listing_falls_back_when_address_lacks_trailing_slash ... ok
+test nex::tests::directory_listing_resolves_against_path_base ... ok
+test nex::tests::dispatches_through_inker_registry ... ok
+test nex::tests::empty_body_falls_back_to_text ... ok
+test nex::tests::engine_id_is_stable ... ok
+test nex::tests::lines_with_whitespace_disqualify_directory_detection ... ok
+test micron::render::navigation_tests::probes_05_17_targets_know_their_closed_ancestors ... ok
+test scroll::tests::an_input_link_survives_as_a_link_and_reports_its_loss ... ok
+test scroll::tests::code_blocks_keep_their_tag_and_a_break_is_a_rule ... ok
+test scroll::tests::engine_id_is_stable ... ok
+test scroll::tests::default_body_treated_as_gemtext ... ok
+test scroll::tests::five_heading_levels_survive_where_gemtext_has_three ... ok
+test micron::syntax::tests::guide_style_fixture_matches_independent_renderer_character_attributes ... ok
+test scroll::tests::inline_markup_reaches_the_span_model ... ok
+test scroll::tests::link_relations_become_predicates_verbatim ... ok
+test micron::render::navigation_tests::probes_01_02_first_declaration_wins_by_label ... ok
+test scroll::tests::markdown_content_type_routes_to_markdown_engine ... ok
+test scroll::tests::nested_quotes_become_nested_quote_blocks ... ok
+test micron::render::navigation_tests::probes_15_16_explicit_anchor_precedence_by_label ... ok
+test scroll::tests::no_diagnostic_claims_anything_about_signatures ... ok
+test scroll::tests::text_scroll_is_parsed_for_real_with_no_degradation ... ok
+test scroll::tests::the_specs_nested_list_example_lowers_with_verbatim_ordinals ... ok
+test spartan::tests::default_body_treated_as_gemtext ... ok
+test spartan::tests::dispatches_through_inker_registry ... ok
+test spartan::tests::engine_id_is_stable ... ok
+test spartan::tests::prompt_line_stays_a_typed_submission ... ok
+test spartan::tests::markdown_content_type_routes_to_markdown_engine ... ok
+test tests::end_to_end_routing_with_default_policy_dispatches_to_gemtext ... ok
+test tests::engines_helper_registers_all_default_engines ... ok
+test text::tests::blank_lines_separate_paragraphs ... ok
+test text::tests::empty_body_yields_no_blocks ... ok
+test text::tests::engine_id_is_stable ... ok
+test text::tests::input_content_type_overrides_default ... ok
+test text::tests::no_title_extracted ... ok
+test tests::engines_helper_can_dispatch_each_id ... ok
+test text::tests::soft_breaks_preserved_within_paragraph ... ok
+test text::tests::verbatim_mode_preserves_lines_columns_and_blank_lines ... ok
+test titan::tests::engine_id_is_stable ... ok
+test titan::tests::provenance_records_titan_with_gemtext_label ... ok
+test titan::tests::response_body_parses_as_gemtext ... ok
+test micron::render::navigation_tests::guide_structure_07c_06b_fold_state_survives_every_line_prefix ... ok
+test micron::render::navigation_tests::serde_round_trip_keeps_the_table_and_old_packets_default_it ... ok
+test micron::render::navigation_tests::every_probe_page_keeps_a_consistent_table_and_no_retired_diagnostic ... ok
+
+test result: ok. 237 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running unittests examples/knot-render.rs (target/build/debug/examples/knot_render-20f0f3d06ce45a52)
+
+running 3 tests
+test tests::plain_text_export_flattens_a_knot ... ok
+test tests::a_djot_knot_exports_to_gemtext_and_gophermap ... ok
+test tests::a_gemtext_fence_round_trips_to_live_gemtext ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests nematic
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

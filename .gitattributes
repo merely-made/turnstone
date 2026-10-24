@@ -39,3 +39,6 @@ docs/receipts/stations_windows_20261013/harness/** text eol=lf
 
 # Source-bound A4 native captures, metadata and raw diagnostics keep their bytes.
 docs/receipts/stations_windows_20261013/** -text -whitespace
+
+# Canvas-scroll receiving: preserve raw captures and diagnostic bytes.
+docs/receipts/cue_scroll_repair_20261023/** -text -whitespace

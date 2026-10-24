@@ -996,5 +996,40 @@ endpoint-dependent ignores), nine Pelt shared-contract tests and the default
 Linux all-targets check. These are bounded Linux gates, separate from the full
 Metal library run above. The rejected controls fixture without sampled-frame
 observations is preserved alongside the successful corrected fixture. The
-receipt's explicit appearance finding remains open despite passing transport,
-control and lifecycle gates.
+receipt preserves the failed appearance check alongside passing transport,
+control and lifecycle gates. The repair has separate receiving evidence below.
+
+
+### Canvas colour repair and Linux receiving, 2026-10-23
+
+- **Document scroll and surface placement have different coordinate owners.**
+  Genet `621aa33c` keeps the propagated CSS canvas colour outside the document
+  scroll transform. Cached frames, retained repaint, the scripted owner and
+  Rootstock use the same operation. Surface placement and page scale still
+  include the canvas, while ordinary element backgrounds and child/text/host
+  slots follow document scroll. Transparent canvases remain transparent;
+  background-image emission is unchanged.
+- **The original failed image remains a useful negative control.** The pixel
+  checker rejects its 120 transparent lower rows. With the repaired executable,
+  a positive 120-pixel scroll at 110% zoom keeps `(8,469)` opaque beige and all
+  477 rows of the sampled canvas margin match the expected colour. The centre
+  follows the document translation on the same producer scope. This accepts
+  the observed colour-fill repair separately from frame transport.
+- **Receiving belongs to the refreshed executable and supplier cohort.**
+  Turnstone `0fc28484`, Mere `b0e7647f`, Genet `621aa33c` and Netrender
+  `8a3d289a` pass both native GNOME Wayland cases on AMD RADV Renoir/Vulkan.
+  Retained Genet/Reader produces 241 primary presentations, three nonblank
+  primary captures and a sampled lens capture; live controls produce 293
+  primary presentations and five nonblank captures. Taxonomy, effective 110%
+  zoom, actual document movement and scope replacement on reopen all pass.
+  The locked source cohort also includes the necessary HTML atom string
+  compatibility repairs and one ESP type family.
+- **A viewport-colour repair does not extend other acceptance bounds.** Linux
+  native-frame import and concrete Servo receiving, X11/Xwayland, physical IME,
+  human assistive technology, physical device loss, native alpha/colour and
+  OS-compositor pixel correlation retain their own gates.
+
+[The scroll repair receipt](../docs/receipts/cue_scroll_repair_20261023/README.md)
+records the original negative raster and repaired positive raster, exact source
+and executable hashes, current receiving scenarios and focused validation.
+The earlier Linux receipt remains byte-identical.
