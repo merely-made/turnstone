@@ -915,8 +915,8 @@ impl Shell {
         if !self.pending_native_diagnostics.is_empty()
             && let Some(window) = &self.window
         {
-            // Selected diagnostics belong to the primary renderer. Continue
-            // its asynchronous readback even outside a self-drive scenario.
+            // Primary and lens diagnostics use the shared render core. Continue
+            // their asynchronous readback even outside a self-drive scenario.
             window.request_redraw();
         }
         if !self.poll_render_recovery() || self.host.is_none() {

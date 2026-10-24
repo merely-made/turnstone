@@ -544,7 +544,16 @@ impl Shell {
                 layers,
                 &mut raster_textures,
                 (lw, lh),
-                None,
+                self.pending_lens_capture
+                    .as_deref()
+                    .filter(|_| {
+                        self.pending_lens_capture_window == Some(id)
+                            && std::env::var("TURNSTONE_A4_DIAGNOSTICS")
+                                .is_ok_and(|value| value == "1")
+                    })
+                    .map(|path| {
+                        (path, &mut self.pending_native_diagnostics, lens.window.scale_factor())
+                    }),
             ) {
                 Ok(layers) => layers,
                 Err(failure) => {
