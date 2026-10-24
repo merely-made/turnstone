@@ -24,6 +24,29 @@ succeeds the remaining-work portion of the historical
 [browser gap analysis](2026-08-17_smolweb_browser_gap_analysis.md); the analysis
 remains useful as research and acceptance evidence.
 
+## ThinkPad physical IME receiving, 2026-10-24
+
+**Status: bounded physical Typing Booster receiving is reviewed.** The operator
+completed preedit, OS candidate selection, commit, cancellation and focus-switch
+checks in the address field, retained Genet document and document lens. The Sky
+contributed field failed initially because its editor was omitted from OS-IME
+enablement; its repaired retest now has all seven positive operator observations
+and native preedit/commit events. Host admission, contributed caret geometry,
+lens redraw and Sky field legibility are repaired in `16df175`.
+
+The [physical receipt](../docs/receipts/cue_ime_linux_20261024/README.md) retains
+both executable hashes and source patches, operator checklists, window-bound
+native events, captures and input-settings restoration. The first three paths
+were exercised on executable A and repaired Sky on B; this is not a complete
+four-stage run on B. Both original scenarios retain their failed setup outcomes.
+The collector's stderr/stdout error is reconciled from intact logs, and the
+unsupported setup shortcut and contributed-pane wheel step are corrected. A
+separate automated Sky setup check passes on B without repeating physical input.
+
+Candidate placement is operator-observed; app captures exclude OS popup pixels.
+The Genet shared `TextInput` geometry publication gap remains. Physical CJK
+methods, Servo IME, human AT, X11 and physical device loss retain separate bounds.
+
 ## Linux native Cue receiving, 2026-10-23
 
 **Status: bounded native product receiving passes.** The Linux Servo build uses

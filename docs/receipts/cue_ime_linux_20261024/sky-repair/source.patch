@@ -1,0 +1,435 @@
+diff --git a/src/contributed_surface.rs b/src/contributed_surface.rs
+index 7b38f57..7d753f8 100644
+--- a/src/contributed_surface.rs
++++ b/src/contributed_surface.rs
+@@ -473,6 +473,14 @@ impl ContributedSurfacePane {
+         self.session.focus()
+     }
+ 
++    pub(crate) fn accepts_text(&self) -> bool {
++        self.layout.editable_focus(&self.dom.borrow(), self.session.focus())
++    }
++
++    pub(crate) fn ime_cursor_area(&self) -> Option<(f32, f32, f32, f32)> {
++        self.layout.cursor_area(&self.dom.borrow(), self.session.focus())
++    }
++
+     /// Render using the same retained layout that subsequent hit testing uses.
+     /// `width` and `height` are the pane's physical size: the provider's DOM is
+     /// laid out at `size / scale_factor`, the scene is rasterized at
+diff --git a/src/scenario.rs b/src/scenario.rs
+index 4f3316b..1e12456 100644
+--- a/src/scenario.rs
++++ b/src/scenario.rs
+@@ -985,6 +985,18 @@ drop-file 350 280 receipt.txt",
+         ));
+     }
+ 
++    #[test]
++    fn physical_ime_scenarios_use_valid_native_harness_grammar() {
++        for source in [
++            include_str!("../scenarios/cue_ime_linux.scn"),
++            include_str!("../scenarios/cue_ime_sky_linux.scn"),
++        ] {
++            let source = source.replace("${CUE_IME_EXCHANGE}", "/tmp/cue-ime-exchange")
++                .replace("${SERVO_FIXTURE_BASE}", "http://127.0.0.1:12345");
++            taproot::Scenario::parse(&source).expect("valid native harness grammar");
++        }
++    }
++
+     #[test]
+     fn wait_knot_is_a_typed_step() {
+         let steps = parse("wait-knot 600 visiting knot://abcd/field.knot").unwrap();
+diff --git a/src/shell/controller_input.rs b/src/shell/controller_input.rs
+index 4f1b346..ee64eec 100644
+--- a/src/shell/controller_input.rs
++++ b/src/shell/controller_input.rs
+@@ -105,7 +105,9 @@ impl Shell {
+             ),
+             _ => self.content_sessions.pool.input(&appearance, input),
+         };
+-        Some(self.apply_content_effect(node, effect))
++        let handled = self.apply_content_effect(node, effect);
++        self.sync_ime_allowed();
++        Some(handled)
+     }
+ 
+     pub(super) fn apply_content_effect(
+@@ -206,6 +208,19 @@ pub(super) fn session_key(key: &WinitKey) -> Option<SessionKey> {
+     })
+ }
+ 
++/// Native event-boundary diagnostics omit text. Scenario inserts bypass this
++/// boundary and therefore cannot be mistaken for OS composition observations.
++pub(super) fn trace_native_ime(window: u64, ime: &winit::event::Ime) {
++    let (kind, utf8_bytes, selection) = match ime {
++        winit::event::Ime::Enabled => ("enabled", 0, None),
++        winit::event::Ime::Disabled => ("disabled", 0, None),
++        winit::event::Ime::Preedit(text, selection) => ("preedit", text.len(), *selection),
++        winit::event::Ime::Commit(text) => ("commit", text.len(), None),
++    };
++    tracing::debug!(target: "turnstone::ime", window, kind, utf8_bytes, ?selection,
++        "native IME event");
++}
++
+ /// A winit IME event in the neutral session vocabulary.
+ pub(super) fn session_ime(ime: &winit::event::Ime) -> inker::SessionIme {
+     match ime {
+@@ -348,6 +363,7 @@ impl Shell {
+             }
+         }
+         self.sync_content_placements();
++        self.sync_ime_allowed();
+     }
+     pub(super) fn deliver_window_key(
+         &mut self,
+@@ -382,6 +398,7 @@ impl Shell {
+             self.window_focus.insert(window, self.app.focus);
+         }
+         self.input_window = 0;
++        self.sync_ime_allowed();
+     }
+     pub(super) fn deliver_window_ime(&mut self, window: u64, ime: &winit::event::Ime) -> bool {
+         if !self.select_input_window(window) {
+@@ -396,6 +413,7 @@ impl Shell {
+         }
+         self.input_window = window;
+         let handled = self.deliver_contributed_ime(ime) || self.deliver_document_ime(ime);
++        tracing::debug!(target: "turnstone::ime", window, handled, "IME delivery");
+         self.input_window = 0;
+         handled
+     }
+diff --git a/src/shell/events.rs b/src/shell/events.rs
+index 28dc781..e48459c 100644
+--- a/src/shell/events.rs
++++ b/src/shell/events.rs
+@@ -407,6 +407,7 @@ impl ApplicationHandler for Shell {
+             // rides directly on state and only the commit lowers to an
+             // Action (`OmnibarInsert`, the same path a future paste takes).
+             WindowEvent::Ime(ime) => {
++                super::controller_input::trace_native_ime(0, &ime);
+                 if self.app.user_agent_decision.is_open() {
+                     if self.app.user_agent_decision.accepts_text()
+                         && let Ime::Commit(s) = ime
+diff --git a/src/shell/frame_keys.rs b/src/shell/frame_keys.rs
+index 3d577b3..ac74a03 100644
+--- a/src/shell/frame_keys.rs
++++ b/src/shell/frame_keys.rs
+@@ -176,7 +176,11 @@ impl Shell {
+                 .values()
+                 .find(|l| l.ordinal + 1 == owner.slot)
+             {
+-                lens.window.set_ime_allowed(self.accepts_controlled_text());
++                let window = lens.ordinal as u64 + 1;
++                lens.window.set_ime_allowed(
++                    self.pane_text_in_window(window)
++                        || super::window_input::document_accepts_ime(&self.content_sessions.pool, self.app.focus, window),
++                );
+             }
+         }
+     }
+diff --git a/src/shell/input.rs b/src/shell/input.rs
+index 048dd55..0d25885 100644
+--- a/src/shell/input.rs
++++ b/src/shell/input.rs
+@@ -723,6 +723,7 @@ impl Shell {
+                                     window: 0,
+                                 });
+                             pane.mouse_press(hit.local.0, hit.local.1);
++                            self.sync_ime_allowed();
+                             self.request_redraw();
+                             return;
+                         }
+diff --git a/src/shell/lens.rs b/src/shell/lens.rs
+index 2cced2c..02f9118 100644
+--- a/src/shell/lens.rs
++++ b/src/shell/lens.rs
+@@ -310,7 +310,7 @@ impl Shell {
+         #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
+         let (surface_device, surface_queue) = (host.device().clone(), host.queue().clone());
+         self.prepare_inline_owners(ordinal + 1, (lw, lh));
+-        if let Some(area) = self.inline_cursor_area(ordinal as u64 + 1)
++        if let Some(area) = self.pane_ime_cursor_area(ordinal as u64 + 1)
+             && let Some(lens) = self.lens_windows.get(&id)
+         {
+             lens.window.set_ime_cursor_area(
+@@ -742,7 +742,10 @@ impl Shell {
+             },
+             WindowEvent::Ime(ime) => {
+                 let window = lens.ordinal as u64 + 1;
+-                self.deliver_window_ime(window, &ime);
++                super::controller_input::trace_native_ime(window, &ime);
++                if self.deliver_window_ime(window, &ime) {
++                    self.request_redraw();
++                }
+                 return;
+             },
+             WindowEvent::CloseRequested => {
+@@ -873,6 +876,7 @@ impl Shell {
+                                     });
+                                 pane.focus_at(hit.local.0, hit.local.1);
+                                 pane.mouse_press(hit.local.0, hit.local.1);
++                                self.sync_ime_allowed();
+                                 self.request_redraw();
+                                 return;
+                             }
+diff --git a/src/shell/mod.rs b/src/shell/mod.rs
+index 83a43f7..085d14c 100644
+--- a/src/shell/mod.rs
++++ b/src/shell/mod.rs
+@@ -2041,7 +2041,8 @@ impl Shell {
+         {
+             return false;
+         }
+-        self.inline_text_in_window(0)
++        self.pane_text_in_window(0)
++            || window_input::document_accepts_ime(&self.content_sessions.pool, self.app.focus, 0)
+             || self.app.omnibar.open
+             || self.app.document_find.open
+             || self.app.user_agent_decision.accepts_text()
+@@ -2052,11 +2053,14 @@ impl Shell {
+             window.set_ime_allowed(self.accepts_controlled_text());
+         }
+         for lens in self.lens_windows.values() {
+-            if matches!(self.app.focus, crate::surface::FocusTarget::Pane(pane) if self.renderers.inline_mount(pane).is_some())
+-            {
+-                lens.window
+-                    .set_ime_allowed(self.inline_text_in_window(lens.ordinal as u64 + 1));
+-            }
++            let window = lens.ordinal as u64 + 1;
++            let host_editor = self.app.omnibar.open
++                || self.app.document_find.open
++                || self.app.user_agent_decision.is_open();
++            lens.window.set_ime_allowed(!host_editor && (
++                self.pane_text_in_window(window)
++                    || window_input::document_accepts_ime(&self.content_sessions.pool, self.app.focus, window)
++            ));
+         }
+     }
+     fn inline_text_in_window(&self, window: u64) -> bool {
+@@ -2075,8 +2079,20 @@ impl Shell {
+             _ => false,
+         }
+     }
+-    fn inline_cursor_area(&self, window: u64) -> Option<crate::surface::Rect> {
+-        if !self.inline_text_in_window(window) {
++    fn pane_text_in_window(&self, window: u64) -> bool {
++        if frame_keys::header_focus_in_window(
++            self.outer_focus.as_ref(), window, self.app.session_id.as_uuid(),
++        ) {
++            return false;
++        }
++        let crate::surface::FocusTarget::Pane(pane) = self.app.focus else { return false; };
++        self.focus_in_window(window, self.app.focus)
++            && (self.renderers.inline_accepts_text(pane)
++                || self.renderers.contributed.get(pane).is_some_and(|view| view.accepts_text()))
++    }
++
++    fn pane_ime_cursor_area(&self, window: u64) -> Option<crate::surface::Rect> {
++        if !self.pane_text_in_window(window) {
+             return None;
+         }
+         let crate::surface::FocusTarget::Pane(pane) = self.app.focus else {
+@@ -2094,7 +2110,8 @@ impl Shell {
+         let surface = plan
+             .iter()
+             .find(|s| s.kind == crate::surface::SurfaceKind::Pane(pane))?;
+-        let (x, y, width, height) = self.renderers.inline_cursor_area(pane)?;
++        let (x, y, width, height) = self.renderers.inline_cursor_area(pane)
++            .or_else(|| self.renderers.contributed.get(pane)?.ime_cursor_area())?;
+         Some(crate::surface::Rect::new(
+             surface.rect.x + x,
+             surface.rect.y + y,
+diff --git a/src/shell/render.rs b/src/shell/render.rs
+index c8c2db4..a06078d 100644
+--- a/src/shell/render.rs
++++ b/src/shell/render.rs
+@@ -965,7 +965,7 @@ impl Shell {
+         // surfaces, each with its own rect. Built by the same helper input
+         // routing uses, so what a frame draws and what a pointer hits agree.
+         self.prepare_inline_owners(0, (w, h));
+-        if let Some(area) = self.inline_cursor_area(0)
++        if let Some(area) = self.pane_ime_cursor_area(0)
+             && let Some(window) = &self.window
+         {
+             window.set_ime_cursor_area(
+diff --git a/src/shell/window_input.rs b/src/shell/window_input.rs
+index 9f276a9..4c42e9f 100644
+--- a/src/shell/window_input.rs
++++ b/src/shell/window_input.rs
+@@ -10,6 +10,23 @@ use pelt_core::{PeltControllerPool, PeltHostEffect, PeltInput};
+ use std::collections::HashMap;
+ 
+ pub(super) type Pool = PeltControllerPool<ContentKey, SurfaceId, netrender::Scene>;
++
++/// OS IME admission follows the live retained editor in this window. A hidden
++/// placement, a different window or a browser without retained composition
++/// cannot inherit another document's editable focus.
++pub(super) fn document_accepts_ime(pool: &Pool, focus: FocusTarget, window: u64) -> bool {
++    let FocusTarget::Content { node, appearance } = focus else { return false; };
++    let Some(placement) = pool.placement(&appearance) else { return false; };
++    let same_node = match placement.content {
++        ContentKey::Node(owner) | ContentKey::Reader { node: owner, .. } => owner == node,
++    };
++    same_node && placement.window == window && placement.visible && placement.focused
++        && pool.focused_content(window) == Some(&placement.content)
++        && pool.content(&placement.content)
++            .and_then(pelt_core::PeltContent::document)
++            .is_some_and(|controller| controller.session().editable_focus())
++}
++
+ #[derive(Clone, Copy)]
+ struct Contact {
+     pointer_id: i32,
+diff --git a/src/shell/window_input_tests.rs b/src/shell/window_input_tests.rs
+index d7ecc1c..30c02f8 100644
+--- a/src/shell/window_input_tests.rs
++++ b/src/shell/window_input_tests.rs
+@@ -3608,3 +3608,57 @@ fn review_modal_touch_fresh_down_is_blocked_then_new_gesture_is_admitted() {
+             vec![PointerPhase::Down, PointerPhase::Up]);
+     }
+ }
++
++
++#[test]
++fn document_ime_admission_tracks_editable_focus_window_visibility_and_replacement() {
++    struct Editor(std::sync::Arc<std::sync::atomic::AtomicBool>);
++    impl inker::DocumentSession<netrender::Scene> for Editor {
++        fn frame(&mut self, _: u32, _: u32) -> netrender::Scene { Default::default() }
++        fn scroll_by(&mut self, _: f32, _: f32) -> bool { false }
++        fn scroll_for_key(&mut self, _: inker::SessionScrollKey) -> bool { false }
++        fn click_at(&mut self, _: f32, _: f32) -> inker::SessionClick { inker::SessionClick::Miss }
++        fn links(&self) -> Vec<inker::SessionLink> { vec![] }
++        fn editable_focus(&self) -> bool { self.0.load(std::sync::atomic::Ordering::SeqCst) }
++        fn focus_input(&mut self, focused: bool) {
++            if !focused { self.0.store(false, std::sync::atomic::Ordering::SeqCst); }
++        }
++        fn as_any_ref(&self) -> &dyn std::any::Any { self }
++        fn as_any(&mut self) -> &mut dyn std::any::Any { self }
++    }
++    let editable = Arc::new(std::sync::atomic::AtomicBool::new(false));
++    let controller = pelt_core::PeltController::from_session_shared(
++        Arc::new(inker::SessionRegistry::new()),
++        Arc::new(inker::SurfaceEngineRegistry::new()),
++        pelt_core::PeltControllerConfig::new("ime", "https://fixture.test/ime", (100, 100)),
++        super::super::ShellClock(std::time::Instant::now()),
++        Box::new(Editor(editable.clone())),
++    );
++    let mut pool = Pool::new();
++    let focus = FocusTarget::Content { node: uuid::Uuid::from_u128(7), appearance: SurfaceId(10) };
++    pool.insert(key(7), PeltContent::from_controller(controller, route()));
++    pool.set_placements([(SurfaceId(10), placed(key(7), 0, 0., true))]);
++    assert!(!document_accepts_ime(&pool, focus, 0));
++    editable.store(true, std::sync::atomic::Ordering::SeqCst);
++    assert!(document_accepts_ime(&pool, focus, 0));
++    assert!(!document_accepts_ime(&pool, FocusTarget::Graph(crate::panes::PaneId(99)), 0),
++        "an old placement cannot enable IME after host focus leaves content");
++    assert!(!document_accepts_ime(&pool, focus, 1));
++    pool.set_placements([(SurfaceId(10), placed(key(7), 1, 0., true))]);
++    // Focus loss retires editor composition; a new native editor focus admits
++    // the lens only, even though it retains the same content identity.
++    editable.store(true, std::sync::atomic::Ordering::SeqCst);
++    assert!(document_accepts_ime(&pool, focus, 1));
++    assert!(!document_accepts_ime(&pool, focus, 0));
++    let mut hidden = placed(key(7), 1, 0., true);
++    hidden.visible = false;
++    pool.set_placements([(SurfaceId(10), hidden)]);
++    assert!(!document_accepts_ime(&pool, focus, 1));
++    pool.set_placements([(SurfaceId(10), placed(key(7), 1, 0., true))]);
++    editable.store(true, std::sync::atomic::Ordering::SeqCst);
++    assert!(document_accepts_ime(&pool, focus, 1));
++    pool.insert(key(7), hosted(&Calls::default()));
++    assert!(!document_accepts_ime(&pool, focus, 1), "a browser cannot inherit the old retained editor");
++    pool.set_placements([]);
++    assert!(!document_accepts_ime(&pool, focus, 1));
++}
+diff --git a/src/sky_surface.rs b/src/sky_surface.rs
+index 7fc98a4..f754bce 100644
+--- a/src/sky_surface.rs
++++ b/src/sky_surface.rs
+@@ -55,6 +55,9 @@ pub const SKY_SURFACE_CSS: &str = r#"
+ .setting-label { color: rgb(150, 160, 180); font-size: 12px; }
+ .setting-apply { color: rgb(238, 242, 250); background-color: rgb(36, 44, 62); border: 1px solid rgb(70, 82, 110); border-radius: 6px; padding: 5px 9px; }
+ .sky-controls { padding: 8px; }
++.sky-input { min-width: 240px; min-height: 28px; padding: 4px 6px; color: rgb(238, 242, 250); background-color: rgb(25, 32, 48); border: 1px solid rgb(70, 82, 110); border-radius: 4px; }
++.sky-input .field-preedit { text-decoration: underline; }
++.sky-input .field-caret { display: inline-block; width: 0; height: 1em; overflow: hidden; border-left: 1px solid currentColor; vertical-align: text-bottom; }
+ .sky-fact { padding: 6px 8px; }
+ .sky-receipt-digest { font-family: monospace; }
+ .sky-alert { padding: 8px; }
+diff --git a/src/sky_surface/tests.rs b/src/sky_surface/tests.rs
+index eaff99f..d670587 100644
+--- a/src/sky_surface/tests.rs
++++ b/src/sky_surface/tests.rs
+@@ -21,6 +21,56 @@ fn admitted_reference() -> crate::contributed_surface::ContributedSurfacePane {
+         .expect("reference Sky source")
+ }
+ 
++#[test]
++fn contributed_editor_exposes_ime_admission_caret_commit_and_cancel() {
++    for scale in [1.0, 1.5] {
++        let mut pane = admitted_reference();
++        pane.scene(1200, 1600, scale);
++        assert!(!pane.accepts_text());
++        let target = {
++            let dom = pane.dom_ref();
++            let matches = taproot::matching_estimated_fixture(
++                &dom,
++                &taproot::Selector::role("textbox").containing("Observer label"),
++            );
++            assert_eq!(matches.len(), 1);
++            matches[0]
++        };
++        pane.reveal(target);
++        pane.focus(Some(target));
++        pane.scene(1200, 1600, scale);
++        assert!(pane.accepts_text(), "a contributed editor must admit OS IME");
++        let area = pane.ime_cursor_area().expect("painted editor caret");
++        assert!([area.0, area.1, area.2, area.3].into_iter().all(f32::is_finite));
++        assert!(area.2 > 0.0 && area.3 > 0.0);
++        let value = |pane: &crate::contributed_surface::ContributedSurfacePane| {
++            let id = pane.dom_ref().opaque_id(target);
++            pane.document_projection().unwrap().nodes().iter()
++                .find(|n| n.id.get() == id)
++                .expect("focused editor semantics").value.clone().expect("committed editor value")
++        };
++        let original = value(&pane);
++        let composition = |event| cambium::KeyEvent::new(cambium::Key::Composition(event));
++        pane.key(composition(cambium::CompositionEvent::Preedit {
++            text: "temporary".into(), selection: Some((0, 9)),
++        }));
++        pane.scene(1200, 1600, scale);
++        assert_eq!(value(&pane), original, "preedit cannot enter the committed value");
++        pane.key(composition(cambium::CompositionEvent::Commit("世界".into())));
++        pane.scene(1200, 1600, scale);
++        assert_eq!(value(&pane), format!("{original}世界"));
++        pane.key(composition(cambium::CompositionEvent::Preedit {
++            text: "zzcancel".into(), selection: Some((8, 8)),
++        }));
++        pane.key(composition(cambium::CompositionEvent::Disabled));
++        pane.scene(1200, 1600, scale);
++        assert_eq!(value(&pane), format!("{original}世界"));
++        pane.focus(None);
++        assert!(!pane.accepts_text());
++        assert!(pane.ime_cursor_area().is_none());
++    }
++}
++
+ fn text_present(dom: &genet_scripted_dom::ScriptedDom, needle: &str) -> bool {
+     fn contains(
+         dom: &genet_scripted_dom::ScriptedDom,
+diff --git a/src/sky_surface/view.rs b/src/sky_surface/view.rs
+index 84cb643..abe8e68 100644
+--- a/src/sky_surface/view.rs
++++ b/src/sky_surface/view.rs
+@@ -141,7 +141,9 @@ fn field(
+     field_name: &'static str,
+ ) -> SkyView {
+     let input = Box::new(lens(
+-        move |input: &mut TextInput| text_field_typed(input).attr("aria-label", label),
++        move |input: &mut TextInput| text_field_typed(input)
++            .attr("aria-label", label)
++            .attr("class", "sky-input"),
+         getter,
+     )) as SkyView;
+     Box::new(

@@ -1,0 +1,8 @@
+{
+  "exit_code": 0,
+  "scenario": "RESULT ok\ncaptured 02_inline_ready\nPhysical Sky IME observations collected; scenario completion alone is not qualification\npresentation frames=79 captures=1 blank=0\ncapture /home/markik/Code/output/cue-ime-linux-20261024/sky-setup-smoke/receiving/02_inline_ready.png digest=d507526c1561f2de blank=false\n",
+  "purpose": "Automated Sky setup only; no physical composition or key/text injection",
+  "binary_sha256": "ee27bcacba3278100d6d816091eaf907b1a2ad9a38d9a09b65ab7314441b31e7",
+  "scenario_sha256": "4cc97ce59a9b9bcc2120d2ecee51a951df1fdbd31b3776dd94af545f349ff439",
+  "passed": true
+}

@@ -1,0 +1,130 @@
+{
+  "raw_result_preserved": true,
+  "raw_scenario_result": "RESULT fail",
+  "collector_corrections": [
+    "tracing diagnostics were written to stdout, while the original collector watched stderr",
+    "key ctrl+l was rejected by the scenario grammar; the human opened the address field normally"
+  ],
+  "stage_correlations": "UTC native event timestamps bounded by the original ready/done marker mtimes; expected native window id required",
+  "physical_keyboard_provenance": "Operator checklist and direct chat confirmation; no text injection in the composition scenario",
+  "restoration": {
+    "settings": [
+      {
+        "schema": "org.gnome.desktop.input-sources",
+        "key": "sources",
+        "exit": 0,
+        "value": "[('xkb', 'us')]",
+        "matches": true
+      },
+      {
+        "schema": "org.gnome.desktop.input-sources",
+        "key": "mru-sources",
+        "exit": 0,
+        "value": "@a(ss) []",
+        "matches": true
+      },
+      {
+        "schema": "org.freedesktop.ibus.engine.typing-booster:/org/freedesktop/ibus/engine/typing-booster/",
+        "key": "offtherecord",
+        "exit": 0,
+        "value": "false",
+        "matches": true
+      }
+    ],
+    "engine_exit": 0,
+    "engine": "xkb:us::eng"
+  },
+  "stages": [
+    {
+      "stage": "01",
+      "title": "Address field",
+      "window": 0,
+      "start_unix": 1792817709.0,
+      "end_unix": 1792818280.0,
+      "human_observed": [
+        "I physically typed using the ThinkPad keyboard",
+        "Composing text was visible before commit",
+        "The OS candidate popup was visible",
+        "The candidate popup appeared beside the caret",
+        "F1 committed one candidate without duplicate text",
+        "Escape cancelled zzcancel without inserting it",
+        "Switching away and back left no stale composition"
+      ],
+      "human_all_checks": true,
+      "native_preedit_nonempty": 478,
+      "native_preedit_empty": 2074,
+      "native_commits": 2,
+      "handled_deliveries": 0,
+      "refused_deliveries": 0
+    },
+    {
+      "stage": "02",
+      "title": "Native inline pane",
+      "window": 0,
+      "start_unix": 1792818313.0,
+      "end_unix": 1792818456.0,
+      "human_observed": [
+        "I physically typed using the ThinkPad keyboard",
+        "Switching away and back left no stale composition"
+      ],
+      "human_all_checks": false,
+      "native_preedit_nonempty": 0,
+      "native_preedit_empty": 0,
+      "native_commits": 0,
+      "handled_deliveries": 0,
+      "refused_deliveries": 0
+    },
+    {
+      "stage": "03",
+      "title": "Genet document",
+      "window": 0,
+      "start_unix": 1792818467.0,
+      "end_unix": 1792818595.0,
+      "human_observed": [
+        "I physically typed using the ThinkPad keyboard",
+        "Composing text was visible before commit",
+        "The OS candidate popup was visible",
+        "The candidate popup appeared beside the caret",
+        "F1 committed one candidate without duplicate text",
+        "Escape cancelled zzcancel without inserting it",
+        "Switching away and back left no stale composition"
+      ],
+      "human_all_checks": true,
+      "native_preedit_nonempty": 29,
+      "native_preedit_empty": 7,
+      "native_commits": 2,
+      "handled_deliveries": 40,
+      "refused_deliveries": 0
+    },
+    {
+      "stage": "04",
+      "title": "Genet document in a lens",
+      "window": 1,
+      "start_unix": 1792818604.0,
+      "end_unix": 1792818702.0,
+      "human_observed": [
+        "I physically typed using the ThinkPad keyboard",
+        "Composing text was visible before commit",
+        "The OS candidate popup was visible",
+        "The candidate popup appeared beside the caret",
+        "F1 committed one candidate without duplicate text",
+        "Escape cancelled zzcancel without inserting it",
+        "Switching away and back left no stale composition"
+      ],
+      "human_all_checks": true,
+      "native_preedit_nonempty": 34,
+      "native_preedit_empty": 8,
+      "native_commits": 3,
+      "handled_deliveries": 46,
+      "refused_deliveries": 0
+    }
+  ],
+  "raw_hashes": {
+    "stdout.log": "e455dd9366b5a95c549c424cff69f49a1eceb0daa0864a1d1c0356d468e1b50c",
+    "stderr.log": "8af5e360c352eb1026b509d508d6091687899edaf6242650e0b18aaf09ab16ec",
+    "run.json": "8aae573002a54b6569ed43633a6531545b149ece25e25fc66aa9b8a6749bdcc1",
+    "receiving/scenario.done": "bf1b725f549504b62c6eddabe219385d86a741ee16a7f15b09fbabece332cf89",
+    "driver.py": "c1eff7e90ab0c1e572f32fd32c7ed845400e6fe0313fc3c7aa50dd9570157c20",
+    "scenario.scn": "8146bd703135b38356259144395afd1fdd2fdf54ebbaf142362fafa6f37ae47d"
+  }
+}

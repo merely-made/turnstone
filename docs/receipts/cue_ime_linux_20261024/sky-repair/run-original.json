@@ -1,0 +1,883 @@
+{
+  "binary_sha256": "ee27bcacba3278100d6d816091eaf907b1a2ad9a38d9a09b65ab7314441b31e7",
+  "source_head": "0c6f5997bb1a483c3ea9c3d2e438489893b8976c",
+  "source_diff_sha256": "aeeb9a41b0f0e51c19b639d5f86de99c4af48a1a7c7b286752818fd43d03307e",
+  "receiving_inputs_sha256": {
+    "driver.py": "80c8224c315ae46a7595cd1fd423b7492eb7f0ed919a98f48b308d160c425954",
+    "scenario.scn": "638e2ac019882f3264df145ff2a51ebaa1b5d1ceeb405a868628168a60d0009c",
+    "fixture.html": "3ed56d2b8b0c5a1f158fb844cd6fb502715dd70904fa2444e18f16cb2e09430d"
+  },
+  "stages": [
+    {
+      "stage": "02",
+      "title": "Native inline pane",
+      "human_observed": [
+        "I physically typed using the ThinkPad keyboard",
+        "Composing text was visible before commit",
+        "The OS candidate popup was visible",
+        "The candidate popup appeared beside the caret",
+        "F1 committed one candidate without duplicate text",
+        "Escape cancelled zzcancel without inserting it",
+        "Switching away and back left no stale composition"
+      ],
+      "native_events": [
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "disabled",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "enabled",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "disabled",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "enabled",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "disabled",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "enabled",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "disabled",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "enabled",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 1,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 2,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 3,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 3,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 4,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 5,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 5,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 5,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 5,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 5,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 5,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 5,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 5,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 5,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 5,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 5,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 5,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 5,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 5,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 5,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 5,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "commit",
+          "utf8_bytes": 6,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "commit",
+          "utf8_bytes": 1,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 1,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 1,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 1,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 1,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 2,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 2,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 2,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 3,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 3,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 3,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 4,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 4,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 4,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 4,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 4,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 4,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 5,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 5,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 5,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 6,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 6,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 6,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 7,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 8,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 8,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 8,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 8,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 8,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 1,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 1,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 2,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 3,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 4,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 4,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 4,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 4,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 4,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 4,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 4,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 4,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 4,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 4,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 4,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 4,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "commit",
+          "utf8_bytes": 4,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "disabled",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "enabled",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "disabled",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "enabled",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "preedit",
+          "utf8_bytes": 0,
+          "window": 0
+        },
+        {
+          "kind": "disabled",
+          "utf8_bytes": 0,
+          "window": 0
+        }
+      ],
+      "expected_window": 0,
+      "human_all_checks": true,
+      "native_preedit": true,
+      "native_commit": true
+    }
+  ],
+  "complete": false,
+  "qualified": false,
+  "limits": "Human checklist and native events; app captures do not include OS candidate windows. No CJK, Servo IME, X11 or human accessibility qualification.",
+  "exit_code": 0,
+  "all_observation_gates": false,
+  "restoration": {
+    "settings": [
+      {
+        "schema": "org.gnome.desktop.input-sources",
+        "key": "sources",
+        "exit": 0,
+        "value": "[('xkb', 'us')]",
+        "matches": true
+      },
+      {
+        "schema": "org.gnome.desktop.input-sources",
+        "key": "mru-sources",
+        "exit": 0,
+        "value": "@a(ss) []",
+        "matches": true
+      },
+      {
+        "schema": "org.freedesktop.ibus.engine.typing-booster:/org/freedesktop/ibus/engine/typing-booster/",
+        "key": "offtherecord",
+        "exit": 0,
+        "value": "false",
+        "matches": true
+      }
+    ],
+    "engine_exit": 0,
+    "engine": "xkb:us::eng"
+  }
+}

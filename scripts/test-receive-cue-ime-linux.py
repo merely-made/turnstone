@@ -39,10 +39,12 @@ class EvidenceBoundary(unittest.TestCase):
             ])
 
     def test_composition_scenario_has_no_text_injection(self):
-        scenario = Path(__file__).resolve().parent.parent / "scenarios/cue_ime_linux.scn"
-        verbs = [line.split()[0] for line in scenario.read_text().splitlines()
-                 if line.strip() and not line.lstrip().startswith("#")]
-        self.assertFalse(set(verbs) & {"type", "insert", "input-text"})
+        for name in ("cue_ime_linux.scn", "cue_ime_sky_linux.scn"):
+            with self.subTest(scenario=name):
+                scenario = Path(__file__).resolve().parent.parent / "scenarios" / name
+                verbs = [line.split()[0] for line in scenario.read_text().splitlines()
+                         if line.strip() and not line.lstrip().startswith("#")]
+                self.assertFalse(set(verbs) & {"type", "insert", "input-text"})
 
 
 if __name__ == "__main__":

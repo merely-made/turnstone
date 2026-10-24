@@ -1,0 +1,72 @@
+{
+  "checks": [
+    {
+      "gate": "sky-ime-test-v3",
+      "command": [
+        "test",
+        "--locked",
+        "-j2",
+        "--lib",
+        "contributed_editor_exposes_ime",
+        "--",
+        "--nocapture"
+      ],
+      "exit": 0
+    },
+    {
+      "gate": "window-input-v3",
+      "command": [
+        "test",
+        "--locked",
+        "-j2",
+        "--lib",
+        "shell::window_input::tests",
+        "--",
+        "--nocapture"
+      ],
+      "exit": 0
+    },
+    {
+      "gate": "ime-scenario-grammar-final",
+      "command": [
+        "test",
+        "--locked",
+        "-j2",
+        "--lib",
+        "physical_ime_scenarios",
+        "--",
+        "--nocapture"
+      ],
+      "exit": 0
+    },
+    {
+      "gate": "sky-build-v3",
+      "command": [
+        "build",
+        "--locked",
+        "--features",
+        "servo",
+        "-j2"
+      ],
+      "exit": 0
+    },
+    {
+      "gate": "macos-sky-ime-test",
+      "exit": 0,
+      "raw_log_sha256": "402cf927a3ecf661274b8fb6b5ed266d69a290d30d790828efadea54cfae7d4b",
+      "result": "1 passed; 0 failed; two layout scales"
+    },
+    {
+      "gate": "python-collector-boundary-tests",
+      "command": [
+        "python3",
+        "scripts/test-receive-cue-ime-linux.py"
+      ],
+      "exit": 0,
+      "tests_passed": 4,
+      "both_composition_scenarios_have_no_text_injection": true
+    }
+  ],
+  "full_library_suite_rerun": false,
+  "known_diagnostic": "The canonical Unicode composition unit test reports the existing missing ICU4X Chinese/Japanese segmentation model; no physical CJK or segmentation-quality acceptance is claimed."
+}

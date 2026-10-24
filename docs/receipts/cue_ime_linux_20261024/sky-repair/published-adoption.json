@@ -1,0 +1,26 @@
+{
+  "head": "16df1756e343c2ee51faa1fd39e76100ed1872d9",
+  "checked_files": [
+    "scenarios/cue_ime_linux.scn",
+    "scenarios/cue_ime_sky_linux.scn",
+    "scenarios/fixtures/document_a11y/ime.html",
+    "scripts/receive-cue-ime-linux.py",
+    "scripts/test-receive-cue-ime-linux.py",
+    "src/contributed_surface.rs",
+    "src/scenario.rs",
+    "src/shell/controller_input.rs",
+    "src/shell/events.rs",
+    "src/shell/frame_keys.rs",
+    "src/shell/input.rs",
+    "src/shell/lens.rs",
+    "src/shell/mod.rs",
+    "src/shell/render.rs",
+    "src/shell/window_input.rs",
+    "src/shell/window_input_tests.rs",
+    "src/sky_surface.rs",
+    "src/sky_surface/tests.rs",
+    "src/sky_surface/view.rs"
+  ],
+  "status": "",
+  "byte_identical_before_checkout": true
+}

@@ -45,3 +45,6 @@ docs/receipts/cue_scroll_repair_20261023/** -text -whitespace
 
 # Linux native Cue receiving keeps exact captured and diagnostic bytes.
 docs/receipts/cue_native_linux_20261023/** -text -whitespace
+
+# Physical IME observations preserve original outcomes and captured bytes.
+docs/receipts/cue_ime_linux_20261024/** -text -whitespace

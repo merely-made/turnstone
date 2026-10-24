@@ -6,7 +6,6 @@ settle 30
 act Maximize pane
 settle 10
 click surface:contributed role:textbox Observer label
-scroll-pane-window 0 400 450 0 180
 settle 10
 click surface:contributed role:textbox Observer label
 capture 02_inline_ready
