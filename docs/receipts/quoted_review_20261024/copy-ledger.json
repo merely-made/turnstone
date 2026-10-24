@@ -1,0 +1,2662 @@
+{
+  "candidate-01/conflict.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/candidate-01/conflict.json",
+    "sha256": "88359fd94a60438a07b085503cc2ff81fd0ef489610fdd3f57dd709069f8826a"
+  },
+  "candidate-01/conflict.partial.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/candidate-01/conflict.partial.json",
+    "sha256": "88359fd94a60438a07b085503cc2ff81fd0ef489610fdd3f57dd709069f8826a"
+  },
+  "candidate-01/contract-input-review.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/candidate-01/contract-input-review.json",
+    "sha256": "b76ff1551c7a7c5d87bbe0819e288c24cc5051e5580897845e0ef647b9d5345a"
+  },
+  "candidate-01/contract-verification.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/candidate-01/contract-verification.log",
+    "sha256": "b76ff1551c7a7c5d87bbe0819e288c24cc5051e5580897845e0ef647b9d5345a"
+  },
+  "candidate-01/cross.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/candidate-01/cross.json",
+    "sha256": "c700ff7c97064c89e434385277ea2e24b6aa42b93a46043db0fd1a2831973a68"
+  },
+  "candidate-01/cross.partial.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/candidate-01/cross.partial.json",
+    "sha256": "c700ff7c97064c89e434385277ea2e24b6aa42b93a46043db0fd1a2831973a68"
+  },
+  "candidate-01/frozen/answer_contract.rs": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/candidate-01/frozen/answer_contract.rs",
+    "sha256": "df3ae7b3e67f6282ab71dd19558aad0fbced66eb83a0cb06bb83d1496cd5d9dd"
+  },
+  "candidate-01/frozen/candidate_review.rs": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/candidate-01/frozen/candidate_review.rs",
+    "sha256": "56e01184d07f534f55bbb9db76d2a23b4b16ffdaccbd09d0ab2a4c14602c756e"
+  },
+  "candidate-01/frozen/case-freeze.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/candidate-01/frozen/case-freeze.json",
+    "sha256": "846dfad5b614c926f5bd8845d9b323eb5bb9267edf06bddf49c06c606b549f7d"
+  },
+  "candidate-01/frozen/cases.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/candidate-01/frozen/cases.json",
+    "sha256": "b91de4627aee873389066f4a8ed814fe4faff85cf1c8a3ae1d8e74f988d27ea2"
+  },
+  "candidate-01/frozen/measurement-contract.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/candidate-01/frozen/measurement-contract.json",
+    "sha256": "5d52c823c98d45ef88021a8ea1fbf2e6c1869c2a5beae691c50563e5bcaf5d16"
+  },
+  "candidate-01/frozen/optimized-runtime.toml": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/candidate-01/frozen/optimized-runtime.toml",
+    "sha256": "7ed6fb12d461f4b4bcec5bba79f0a23d47b3266118ceedf2e8f641c24ec3bbc8"
+  },
+  "candidate-01/frozen/run_probe.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/candidate-01/frozen/run_probe.py",
+    "sha256": "e46fc759e885cc596c8275c51ebb04edea4f83b47de887351ad76138809df643"
+  },
+  "candidate-01/frozen/verify_contract_inputs.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/candidate-01/frozen/verify_contract_inputs.py",
+    "sha256": "d49ff64385efabd4ee46419b438b7382ba6f7b72210dd86a96d0ed4de66db92e"
+  },
+  "candidate-01/frozen/verify_native.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/candidate-01/frozen/verify_native.py",
+    "sha256": "f3a0e939cef9ac3bf85f80cb9d1e984ee40d94a0757cf6d4c6c6d55e23b88594"
+  },
+  "candidate-01/frozen/verify_probe.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/candidate-01/frozen/verify_probe.py",
+    "sha256": "e93875eb35e02136038789415f5dfb272c2f491c407d6246322dc21fdbc9cd4d"
+  },
+  "candidate-01/frozen/verify_score_health.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/candidate-01/frozen/verify_score_health.py",
+    "sha256": "6dfbc4ab0dc034e0ee9997aab1b4a42be38ed841e938c461bccfb87023a4550f"
+  },
+  "candidate-01/frozen/verify_structured_output.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/candidate-01/frozen/verify_structured_output.py",
+    "sha256": "6275bd267af6aefe19bdd82f1d748a6dbbdb7dcc15c4d12d0bc96fe934c55062"
+  },
+  "candidate-01/frozen/verify_wire_defaults.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/candidate-01/frozen/verify_wire_defaults.py",
+    "sha256": "672a972bf5848b9b3cf578a21ced9986b32721a117f566edf438761a938d4160"
+  },
+  "candidate-01/gate.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/candidate-01/gate.json",
+    "sha256": "b9ff6390a10886ae7aba1dfc20da010d3dd172cb9dde8a5bdbcdeb8935136dd4"
+  },
+  "candidate-01/inputs.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/candidate-01/inputs.json",
+    "sha256": "aba4a8e546d2c8d748b6fac0091757bf88f0c47b048fc876ed4ba45cb8d81c93"
+  },
+  "candidate-01/missing.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/candidate-01/missing.json",
+    "sha256": "708bdaaab1dd7292fd8567996f73e89cdb6e90c201aaa01abb0d6fc0dae3c4ae"
+  },
+  "candidate-01/missing.partial.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/candidate-01/missing.partial.json",
+    "sha256": "708bdaaab1dd7292fd8567996f73e89cdb6e90c201aaa01abb0d6fc0dae3c4ae"
+  },
+  "candidate-01/process-exit.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/candidate-01/process-exit.json",
+    "sha256": "6d3fdba035918d9a9a91606a7fc55b56e3f117b1afbd6b98fa07efcdcd36aa43"
+  },
+  "candidate-01/process.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/candidate-01/process.json",
+    "sha256": "975348df7f0ff790a5b09cd7cba53a860d8ab08836bbb5d8f71ddecd980962a0"
+  },
+  "candidate-01/progress.jsonl": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/candidate-01/progress.jsonl",
+    "sha256": "2bfe87d85928f609642fe15bd7be7b5a3f1d64c6a519d7c4a0416db2f43571c5"
+  },
+  "candidate-01/reduced.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/candidate-01/reduced.json",
+    "sha256": "bb500a3afc439561530c8a7f4fcf63d503908a7bb234fc5a7c8f1ae1d1d31a8d"
+  },
+  "candidate-01/reduced.partial.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/candidate-01/reduced.partial.json",
+    "sha256": "bb500a3afc439561530c8a7f4fcf63d503908a7bb234fc5a7c8f1ae1d1d31a8d"
+  },
+  "candidate-01/run.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/candidate-01/run.log",
+    "sha256": "7c391e62d7a9d2338056fd03e52bf6deec0e518ace47f56f19a2ff44f180bca5"
+  },
+  "candidate-01/score-health-review.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/candidate-01/score-health-review.json",
+    "sha256": "771565427c049ab36d25812f359607e272deb320a6a3c902d7ad09ad83cdbb68"
+  },
+  "candidate-01/score-health-verification.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/candidate-01/score-health-verification.log",
+    "sha256": "771565427c049ab36d25812f359607e272deb320a6a3c902d7ad09ad83cdbb68"
+  },
+  "candidate-01/structured-output-review.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/candidate-01/structured-output-review.json",
+    "sha256": "1b74e77ff95d6dad188c6a1943ddb02a5cc74f81e1c8bd194c312e367aa67f22"
+  },
+  "candidate-01/structured-verification.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/candidate-01/structured-verification.log",
+    "sha256": "1b74e77ff95d6dad188c6a1943ddb02a5cc74f81e1c8bd194c312e367aa67f22"
+  },
+  "candidate-01/verification.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/candidate-01/verification.log",
+    "sha256": "b9ff6390a10886ae7aba1dfc20da010d3dd172cb9dde8a5bdbcdeb8935136dd4"
+  },
+  "candidate-01/wire-default-review.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/candidate-01/wire-default-review.json",
+    "sha256": "5b6bb71428d4e476c535c8002219d5c45b43eee7b0ab2612d6c6b06f4aa2aace"
+  },
+  "candidate-01/wire-default-verification.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/candidate-01/wire-default-verification.log",
+    "sha256": "5b6bb71428d4e476c535c8002219d5c45b43eee7b0ab2612d6c6b06f4aa2aace"
+  },
+  "native-pair-01/frozen/answer_contract.rs": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/frozen/answer_contract.rs",
+    "sha256": "df3ae7b3e67f6282ab71dd19558aad0fbced66eb83a0cb06bb83d1496cd5d9dd"
+  },
+  "native-pair-01/frozen/auxiliary-inputs.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/frozen/auxiliary-inputs.json",
+    "sha256": "20faf4ad055ae89712da65570ced6be94f94cf8630d467373e52761cf469b4ea"
+  },
+  "native-pair-01/frozen/candidate_review.rs": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/frozen/candidate_review.rs",
+    "sha256": "56e01184d07f534f55bbb9db76d2a23b4b16ffdaccbd09d0ab2a4c14602c756e"
+  },
+  "native-pair-01/frozen/case-freeze.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/frozen/case-freeze.json",
+    "sha256": "846dfad5b614c926f5bd8845d9b323eb5bb9267edf06bddf49c06c606b549f7d"
+  },
+  "native-pair-01/frozen/cases.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/frozen/cases.json",
+    "sha256": "b91de4627aee873389066f4a8ed814fe4faff85cf1c8a3ae1d8e74f988d27ea2"
+  },
+  "native-pair-01/frozen/cold.scn": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/frozen/cold.scn",
+    "sha256": "73471527a25d744da516e41d4ef5b76270c182635d2640d2109c68a81a6f8667"
+  },
+  "native-pair-01/frozen/fixture_server.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/frozen/fixture_server.py",
+    "sha256": "ebb42aa6a04fff2866c3a5c8c3128be7a4bf9b3dfe117ecc02a41c2c9b14119f"
+  },
+  "native-pair-01/frozen/knot.mereclip": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/frozen/knot.mereclip",
+    "sha256": "34939ee4b6346295181961581bbaa628201eedda98567f7fde409e546628c8ef"
+  },
+  "native-pair-01/frozen/measurement-contract.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/frozen/measurement-contract.json",
+    "sha256": "5d52c823c98d45ef88021a8ea1fbf2e6c1869c2a5beae691c50563e5bcaf5d16"
+  },
+  "native-pair-01/frozen/product-baseline.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/frozen/product-baseline.json",
+    "sha256": "4d074d4c2ea3672300f5b1478db00c44544049703809f5f69f79191fb40e9014"
+  },
+  "native-pair-01/frozen/questions.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/frozen/questions.json",
+    "sha256": "4b1eee1a59543c97729b8497b325420af2ed94a6391516b815170005804f2af4"
+  },
+  "native-pair-01/frozen/redshank.mereclip": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/frozen/redshank.mereclip",
+    "sha256": "fa046f22a24a4aed93a6b3500008b3beac5f1395efb4feeff3bc74883423a69e"
+  },
+  "native-pair-01/frozen/run_macos_scenario.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/frozen/run_macos_scenario.py",
+    "sha256": "c1a6cb530152f3c8accc3dec41a6e7ab0dfb32a10079778ac900c1306f28c69d"
+  },
+  "native-pair-01/frozen/run_native.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/frozen/run_native.py",
+    "sha256": "097e2d66c2eacb8a5f944b6dc68a674ae2d65df294c97956ff3f6ef543cd4e9b"
+  },
+  "native-pair-01/frozen/verify_contract_inputs.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/frozen/verify_contract_inputs.py",
+    "sha256": "d49ff64385efabd4ee46419b438b7382ba6f7b72210dd86a96d0ed4de66db92e"
+  },
+  "native-pair-01/frozen/verify_native.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/frozen/verify_native.py",
+    "sha256": "f3a0e939cef9ac3bf85f80cb9d1e984ee40d94a0757cf6d4c6c6d55e23b88594"
+  },
+  "native-pair-01/frozen/verify_native_defaults.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/frozen/verify_native_defaults.py",
+    "sha256": "bfbf4e7c7faeab96e439e8147b6a7fc0ddbe7b31477662836ebc40cfb6543690"
+  },
+  "native-pair-01/frozen/verify_native_facts.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/frozen/verify_native_facts.py",
+    "sha256": "adbed9d715c8f37657beb4f38da01075f17a4b2e7641bd665b8f27479cbc23ba"
+  },
+  "native-pair-01/frozen/verify_probe.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/frozen/verify_probe.py",
+    "sha256": "e93875eb35e02136038789415f5dfb272c2f491c407d6246322dc21fdbc9cd4d"
+  },
+  "native-pair-01/frozen/verify_structured_output.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/frozen/verify_structured_output.py",
+    "sha256": "6275bd267af6aefe19bdd82f1d748a6dbbdb7dcc15c4d12d0bc96fe934c55062"
+  },
+  "native-pair-01/frozen/verify_wire_defaults.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/frozen/verify_wire_defaults.py",
+    "sha256": "672a972bf5848b9b3cf578a21ced9986b32721a117f566edf438761a938d4160"
+  },
+  "native-pair-01/frozen/warm.scn": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/frozen/warm.scn",
+    "sha256": "281d51d1751d142004f7124c640efe468622636ac52481158d39373d3a157589"
+  },
+  "native-pair-01/fused/control/origin-stopped": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/fused/control/origin-stopped",
+    "sha256": "0823b521aae200b808d96992208acb7a6fa49e997321e4e3455efc0b081ce64f"
+  },
+  "native-pair-01/fused/control/selected-1.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/fused/control/selected-1.json",
+    "sha256": "7216a22e4724e348f51feeb2891d3791589b942e3640df88c00a4d253156489b"
+  },
+  "native-pair-01/fused/control/selected-2.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/fused/control/selected-2.json",
+    "sha256": "5c0ced67c09dff3718901599ab00b79f837ff622aae5cf5e09fe6923ffa87f02"
+  },
+  "native-pair-01/fused/control/selected-3.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/fused/control/selected-3.json",
+    "sha256": "f36c807d24e1eb5ab5fd0b21f5cd4ec0c9149988dfffe72b4923c0db18623a5b"
+  },
+  "native-pair-01/fused/knot.mereclip": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/fused/knot.mereclip",
+    "sha256": "34939ee4b6346295181961581bbaa628201eedda98567f7fde409e546628c8ef"
+  },
+  "native-pair-01/fused/note.mereclip": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/fused/note.mereclip",
+    "sha256": "fa046f22a24a4aed93a6b3500008b3beac5f1395efb4feeff3bc74883423a69e"
+  },
+  "native-pair-01/fused/origin/requests.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/fused/origin/requests.json",
+    "sha256": "12e284531d64bb0e01303577e4e6d49ce38d995971a27fe3f0e61ea7f0f58b0b"
+  },
+  "native-pair-01/fused/origin-ready.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/fused/origin-ready.json",
+    "sha256": "aa51291230c0da6e9de4541fef813fea32a47bc33f3b341f9917f896fbad5743"
+  },
+  "native-pair-01/fused/origin-stop.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/fused/origin-stop.json",
+    "sha256": "9c956df4a73eff604e7a6539c54010b543413921c7abb22cc63959b849538770"
+  },
+  "native-pair-01/fused/requests-at-stop.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/fused/requests-at-stop.json",
+    "sha256": "12e284531d64bb0e01303577e4e6d49ce38d995971a27fe3f0e61ea7f0f58b0b"
+  },
+  "native-pair-01/fused/resident/embedding-model.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/fused/resident/embedding-model.json",
+    "sha256": "0ed25d73cf0f1bbf0081036e4e0ea2381571b5d3cd2af4fcb1040c46166bf9f1"
+  },
+  "native-pair-01/fused/resident/endpoint.txt": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/fused/resident/endpoint.txt",
+    "sha256": "907778ed9c315d5c51caa3e005b1ca0cb35629aa13ea7fdf2cd508d348b0cee3"
+  },
+  "native-pair-01/fused/resident/finished.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/fused/resident/finished.json",
+    "sha256": "1061cffbf6eeaf778b4b0005f8f92b4a989fbe4bfe2a64570e2099516646611d"
+  },
+  "native-pair-01/fused/resident/live-runs-0.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/fused/resident/live-runs-0.json",
+    "sha256": "464bdd42a8818a4ab77e98ba6787a15604e4a1fc49d32656cb09aa6ca084b977"
+  },
+  "native-pair-01/fused/resident/mixed-0-cross.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/fused/resident/mixed-0-cross.json",
+    "sha256": "1061cffbf6eeaf778b4b0005f8f92b4a989fbe4bfe2a64570e2099516646611d"
+  },
+  "native-pair-01/fused/resident/mixed-rankings-0.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/fused/resident/mixed-rankings-0.json",
+    "sha256": "05401a687b25b565d0b4cdc09ff40d722462938085c9e7dedafe76f20660893e"
+  },
+  "native-pair-01/fused/resident/model-row.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/fused/resident/model-row.json",
+    "sha256": "48a3bd0406fbe40d3c100e21c7b289c57b11737065af4af5a3c7f6be4bdd732f"
+  },
+  "native-pair-01/fused/resident/ready-0.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/fused/resident/ready-0.json",
+    "sha256": "0dd2f6f875cc658d32e07f06d9fc64be432f0701fd227d5597ac73390505b0c9"
+  },
+  "native-pair-01/fused/resident/streaming.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/fused/resident/streaming.json",
+    "sha256": "cbb46c2ee488616581db452661d7a2d56c586cbb0352d23fad54566416cb4f93"
+  },
+  "native-pair-01/fused/warm/01_capture_A.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/fused/warm/01_capture_A.png",
+    "sha256": "ccd7b7aba707a5c1a989d82a147a73fd71af1b8f6d5b30e7561e56b301ee9a4e"
+  },
+  "native-pair-01/fused/warm/01_capture_A.source-captures.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/fused/warm/01_capture_A.source-captures.json",
+    "sha256": "ca4e4506e82792361cf82ef2e0595fa0dd7edcb44bc17e05c280856cb1ab7e3c"
+  },
+  "native-pair-01/fused/warm/02_capture_B.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/fused/warm/02_capture_B.png",
+    "sha256": "e0ec06c89ba2ee57a593900fe9486a6f288a38aa5ab76633e88b8fc4fb1a27d2"
+  },
+  "native-pair-01/fused/warm/02_capture_B.source-captures.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/fused/warm/02_capture_B.source-captures.json",
+    "sha256": "b93a47347833a40f84112a1ad4863b1e5057c5a04f4399b4172dfa6cf272d626"
+  },
+  "native-pair-01/fused/warm/03_mixed_sources.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/fused/warm/03_mixed_sources.png",
+    "sha256": "eb1cb91150a371ac0121f464f2a2ae6eddf75427d4057470de6b13a8facf5f62"
+  },
+  "native-pair-01/fused/warm/03_mixed_sources.saved-sources.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/fused/warm/03_mixed_sources.saved-sources.json",
+    "sha256": "a6b13cad97ff0135b20e7cbdd668ccc4b7de55c53d162a263f6223d8cb8cdcf7"
+  },
+  "native-pair-01/fused/warm/cross_answer.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/fused/warm/cross_answer.png",
+    "sha256": "fe51a3c5e566e8776e4c5c25b9e56d91e487fa2c621189e91a129f97940803eb"
+  },
+  "native-pair-01/fused/warm/cross_raw.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/fused/warm/cross_raw.png",
+    "sha256": "f76fd0498d164454f62e2a91fbc2662e1a584d86c18d937268b08fb6cf274594"
+  },
+  "native-pair-01/fused/warm/diagnostics.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/fused/warm/diagnostics.json",
+    "sha256": "56e601c0b16916781debdc7b792d599a9dc0ba5954a66a75487031bf5c91095e"
+  },
+  "native-pair-01/fused/warm/explicit_scope.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/fused/warm/explicit_scope.png",
+    "sha256": "bd4b98b565cad49266af6793ff7d363f2cad951387e8f2bed1d55575ef2a0a7f"
+  },
+  "native-pair-01/fused/warm/launch.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/fused/warm/launch.json",
+    "sha256": "376caab567b8fd0de963d75e6d4f9d42dba980cd96200f86c87dcd17f3e5773b"
+  },
+  "native-pair-01/fused/warm/launcher.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/fused/warm/launcher.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "native-pair-01/fused/warm/native.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/fused/warm/native.log",
+    "sha256": "0c9298a8a8ea2f57e456e8b8f40ac48a3bb58f56ac2b67df7715ce629f8a7a01"
+  },
+  "native-pair-01/fused/warm/process.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/fused/warm/process.json",
+    "sha256": "18c98ff725fde7f0c3996af59346e0a4824ae304993cc54ce55355ffded42c2f"
+  },
+  "native-pair-01/fused/warm/scenario.done": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/fused/warm/scenario.done",
+    "sha256": "999dd30ab2e40034a18a43969f787b79f7dcce4f2ec5072d118a73a8a95c46d9"
+  },
+  "native-pair-01/fused/warm-command.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/fused/warm-command.json",
+    "sha256": "44ce0cf18a39c94b6324a39b8c04a19eaafa273e880afd0cf4f9ced1cf9c8785"
+  },
+  "native-pair-01/fused-origin.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/fused-origin.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "native-pair-01/fused-resident-0.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/fused-resident-0.log",
+    "sha256": "a611e918afaf33355be683454f32b21f9bc42641fc9df7aaf8ed490b9214206b"
+  },
+  "native-pair-01/fused-warm-launcher.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/fused-warm-launcher.log",
+    "sha256": "57e42bf71b4f65399e3291f71ec979dff0e2126286d71395e3975aeef5617f5a"
+  },
+  "native-pair-01/inputs.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/inputs.json",
+    "sha256": "f9957b3ce2745fb709424c9158fa3f3a0a37e402638f1aca10de06e3df726c58"
+  },
+  "native-pair-01/warm-cross-review.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-01/warm-cross-review.json",
+    "sha256": "6bcc1da5568243785480b0c87e565743f0fabd758d091aa76fc3faecfa817f0e"
+  },
+  "native-pair-02/frozen/answer_contract.rs": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/frozen/answer_contract.rs",
+    "sha256": "df3ae7b3e67f6282ab71dd19558aad0fbced66eb83a0cb06bb83d1496cd5d9dd"
+  },
+  "native-pair-02/frozen/auxiliary-inputs.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/frozen/auxiliary-inputs.json",
+    "sha256": "b627dd02c0b03034e0b06888331b799f53ea7d8b8f85a69393a5aa4bec69e9eb"
+  },
+  "native-pair-02/frozen/candidate_review.rs": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/frozen/candidate_review.rs",
+    "sha256": "56e01184d07f534f55bbb9db76d2a23b4b16ffdaccbd09d0ab2a4c14602c756e"
+  },
+  "native-pair-02/frozen/case-freeze.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/frozen/case-freeze.json",
+    "sha256": "846dfad5b614c926f5bd8845d9b323eb5bb9267edf06bddf49c06c606b549f7d"
+  },
+  "native-pair-02/frozen/cases.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/frozen/cases.json",
+    "sha256": "b91de4627aee873389066f4a8ed814fe4faff85cf1c8a3ae1d8e74f988d27ea2"
+  },
+  "native-pair-02/frozen/cold.scn": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/frozen/cold.scn",
+    "sha256": "73471527a25d744da516e41d4ef5b76270c182635d2640d2109c68a81a6f8667"
+  },
+  "native-pair-02/frozen/fixture_server.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/frozen/fixture_server.py",
+    "sha256": "ebb42aa6a04fff2866c3a5c8c3128be7a4bf9b3dfe117ecc02a41c2c9b14119f"
+  },
+  "native-pair-02/frozen/knot.mereclip": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/frozen/knot.mereclip",
+    "sha256": "34939ee4b6346295181961581bbaa628201eedda98567f7fde409e546628c8ef"
+  },
+  "native-pair-02/frozen/measurement-contract.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/frozen/measurement-contract.json",
+    "sha256": "5d52c823c98d45ef88021a8ea1fbf2e6c1869c2a5beae691c50563e5bcaf5d16"
+  },
+  "native-pair-02/frozen/product-baseline.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/frozen/product-baseline.json",
+    "sha256": "6591d99d1bb49745bfd8f1980624564f6921e52c02014d9f6104843ff93d15ec"
+  },
+  "native-pair-02/frozen/questions.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/frozen/questions.json",
+    "sha256": "4b1eee1a59543c97729b8497b325420af2ed94a6391516b815170005804f2af4"
+  },
+  "native-pair-02/frozen/redshank.mereclip": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/frozen/redshank.mereclip",
+    "sha256": "fa046f22a24a4aed93a6b3500008b3beac5f1395efb4feeff3bc74883423a69e"
+  },
+  "native-pair-02/frozen/run_macos_scenario.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/frozen/run_macos_scenario.py",
+    "sha256": "c1a6cb530152f3c8accc3dec41a6e7ab0dfb32a10079778ac900c1306f28c69d"
+  },
+  "native-pair-02/frozen/run_native.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/frozen/run_native.py",
+    "sha256": "8bbb04b429e36b5262ed2cc878d6e460a97041c0f7f35cee4b80841b152dcaf2"
+  },
+  "native-pair-02/frozen/verify_contract_inputs.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/frozen/verify_contract_inputs.py",
+    "sha256": "d49ff64385efabd4ee46419b438b7382ba6f7b72210dd86a96d0ed4de66db92e"
+  },
+  "native-pair-02/frozen/verify_native.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/frozen/verify_native.py",
+    "sha256": "f3a0e939cef9ac3bf85f80cb9d1e984ee40d94a0757cf6d4c6c6d55e23b88594"
+  },
+  "native-pair-02/frozen/verify_native_bindings.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/frozen/verify_native_bindings.py",
+    "sha256": "e01bf2ecf2a035a64e6a549679e193ec70fe432d5bd6e3c5a13744f1148a80b2"
+  },
+  "native-pair-02/frozen/verify_native_defaults.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/frozen/verify_native_defaults.py",
+    "sha256": "e3865d4dcb14cbc28bd4b98a3732cbf128dfda0805571eed7f556b102c2daa74"
+  },
+  "native-pair-02/frozen/verify_native_defaults_original.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/frozen/verify_native_defaults_original.py",
+    "sha256": "bfbf4e7c7faeab96e439e8147b6a7fc0ddbe7b31477662836ebc40cfb6543690"
+  },
+  "native-pair-02/frozen/verify_native_facts.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/frozen/verify_native_facts.py",
+    "sha256": "adbed9d715c8f37657beb4f38da01075f17a4b2e7641bd665b8f27479cbc23ba"
+  },
+  "native-pair-02/frozen/verify_probe.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/frozen/verify_probe.py",
+    "sha256": "e93875eb35e02136038789415f5dfb272c2f491c407d6246322dc21fdbc9cd4d"
+  },
+  "native-pair-02/frozen/verify_structured_output.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/frozen/verify_structured_output.py",
+    "sha256": "6275bd267af6aefe19bdd82f1d748a6dbbdb7dcc15c4d12d0bc96fe934c55062"
+  },
+  "native-pair-02/frozen/verify_wire_defaults.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/frozen/verify_wire_defaults.py",
+    "sha256": "672a972bf5848b9b3cf578a21ced9986b32721a117f566edf438761a938d4160"
+  },
+  "native-pair-02/frozen/warm.scn": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/frozen/warm.scn",
+    "sha256": "281d51d1751d142004f7124c640efe468622636ac52481158d39373d3a157589"
+  },
+  "native-pair-02/fused/control/origin-stopped": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/control/origin-stopped",
+    "sha256": "0823b521aae200b808d96992208acb7a6fa49e997321e4e3455efc0b081ce64f"
+  },
+  "native-pair-02/fused/control/reduced-scope.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/control/reduced-scope.json",
+    "sha256": "d6c5472ab29d1472699e8037687495c8a39e19b3b6b3c8dd34618cbf46380afd"
+  },
+  "native-pair-02/fused/control/selected-1.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/control/selected-1.json",
+    "sha256": "66f4b122dbc9fb9ac6a17dd8a5f5ababcaeece65a9bc3742153a9b07e93a9404"
+  },
+  "native-pair-02/fused/control/selected-2.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/control/selected-2.json",
+    "sha256": "58fa9cd2dd4e9cfa0c7f6ff71bbc120bce1e285ca404e49db867bfbfaae5f2d8"
+  },
+  "native-pair-02/fused/control/selected-3.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/control/selected-3.json",
+    "sha256": "f8bd35baf29300f67327bef8a3ace1ead9355656f03bcda1d33fc122d725b117"
+  },
+  "native-pair-02/fused/control/selected-4.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/control/selected-4.json",
+    "sha256": "6198ef2944cf5d986bbf7fb938c324817b23c454b366beab90e925927ca1d5e2"
+  },
+  "native-pair-02/fused/knot.mereclip": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/knot.mereclip",
+    "sha256": "34939ee4b6346295181961581bbaa628201eedda98567f7fde409e546628c8ef"
+  },
+  "native-pair-02/fused/note.mereclip": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/note.mereclip",
+    "sha256": "fa046f22a24a4aed93a6b3500008b3beac5f1395efb4feeff3bc74883423a69e"
+  },
+  "native-pair-02/fused/origin/requests.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/origin/requests.json",
+    "sha256": "12e284531d64bb0e01303577e4e6d49ce38d995971a27fe3f0e61ea7f0f58b0b"
+  },
+  "native-pair-02/fused/origin-ready.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/origin-ready.json",
+    "sha256": "19167452f19bf94f4b849fe99139ee92bc0f3be8e5f9f7ba75fab335d3d38304"
+  },
+  "native-pair-02/fused/origin-stop.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/origin-stop.json",
+    "sha256": "7d3abecf70ef39b65e8d42b9720136089b25ed18312450991fbc5153368f51f8"
+  },
+  "native-pair-02/fused/requests-at-stop.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/requests-at-stop.json",
+    "sha256": "12e284531d64bb0e01303577e4e6d49ce38d995971a27fe3f0e61ea7f0f58b0b"
+  },
+  "native-pair-02/fused/resident/embedding-model.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/resident/embedding-model.json",
+    "sha256": "0ed25d73cf0f1bbf0081036e4e0ea2381571b5d3cd2af4fcb1040c46166bf9f1"
+  },
+  "native-pair-02/fused/resident/endpoint.txt": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/resident/endpoint.txt",
+    "sha256": "b2d85c17b1b17175a1c865acad1193686d4d89d31b8beaa02d881c2d86a19f46"
+  },
+  "native-pair-02/fused/resident/finished.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/resident/finished.json",
+    "sha256": "d6b35a66942a4f4a8c1c5ea950ba6f84c7a33a605d20c365f13d3bdc2e9e8eff"
+  },
+  "native-pair-02/fused/resident/live-runs-0.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/resident/live-runs-0.json",
+    "sha256": "d024b537479bddb3e03d6e0046da42d031297778b20dd714206cda94cd5e578a"
+  },
+  "native-pair-02/fused/resident/mixed-0-conflict.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/resident/mixed-0-conflict.json",
+    "sha256": "950ad28cab7641f03cc1a86621499e5837e30a7b35be20f265ea70e64d12b99c"
+  },
+  "native-pair-02/fused/resident/mixed-0-cross.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/resident/mixed-0-cross.json",
+    "sha256": "d6b35a66942a4f4a8c1c5ea950ba6f84c7a33a605d20c365f13d3bdc2e9e8eff"
+  },
+  "native-pair-02/fused/resident/mixed-0-missing.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/resident/mixed-0-missing.json",
+    "sha256": "7cdd199c08856bd59e9104175e4a49b3920c5c93373b1397cc77d4eb55d452e9"
+  },
+  "native-pair-02/fused/resident/mixed-0-reduced.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/resident/mixed-0-reduced.json",
+    "sha256": "631b5641775dee5efecbed705139bdd9530f42435bd6fa9dbb53c7ed51f01257"
+  },
+  "native-pair-02/fused/resident/mixed-rankings-0.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/resident/mixed-rankings-0.json",
+    "sha256": "ec2b923a19c9b516ba4b7d5fda21dd72256fa1d068524eef2e9ceaa957b2a86b"
+  },
+  "native-pair-02/fused/resident/model-row.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/resident/model-row.json",
+    "sha256": "48a3bd0406fbe40d3c100e21c7b289c57b11737065af4af5a3c7f6be4bdd732f"
+  },
+  "native-pair-02/fused/resident/ready-0.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/resident/ready-0.json",
+    "sha256": "0dd2f6f875cc658d32e07f06d9fc64be432f0701fd227d5597ac73390505b0c9"
+  },
+  "native-pair-02/fused/resident/second-started.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/resident/second-started.json",
+    "sha256": "03494afd4248c42f5fa1237bf2eeebe751ab8d9c977d55405fcb17469dbd91f8"
+  },
+  "native-pair-02/fused/resident/streaming.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/resident/streaming.json",
+    "sha256": "3b47c2836fd165bf46e230a986fe03e7f7e8d377e4eacd61f608242b41198699"
+  },
+  "native-pair-02/fused/warm/01_capture_A.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/warm/01_capture_A.png",
+    "sha256": "08603876c88de552ba5d9c6da4343bd84e6e86f74fb66c2d8ee546fb88f0612f"
+  },
+  "native-pair-02/fused/warm/01_capture_A.source-captures.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/warm/01_capture_A.source-captures.json",
+    "sha256": "d913193fcbcfe3999d65b197d8afb67e09ff344a8d0d048cc482670a3a96bf93"
+  },
+  "native-pair-02/fused/warm/02_capture_B.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/warm/02_capture_B.png",
+    "sha256": "7b65ec3f90dbb61ab95536aa26ec74ad434c66b5cac35cf66e5941c26e039f2f"
+  },
+  "native-pair-02/fused/warm/02_capture_B.source-captures.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/warm/02_capture_B.source-captures.json",
+    "sha256": "9064edb84fc421577d255a15342989694e474aa694d19f79e910fb1346af523d"
+  },
+  "native-pair-02/fused/warm/03_mixed_sources.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/warm/03_mixed_sources.png",
+    "sha256": "280f3e11c52bf56fe2bb479e1921968405f41414c738a4a53108ab4d74e139b4"
+  },
+  "native-pair-02/fused/warm/03_mixed_sources.saved-sources.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/warm/03_mixed_sources.saved-sources.json",
+    "sha256": "b4669696255e6e7817a66625ff9daac21353916d26e44497c4d8da4ab025ab5c"
+  },
+  "native-pair-02/fused/warm/conflict_answer.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/warm/conflict_answer.png",
+    "sha256": "b36954fd6b00966f7d699038138f9f05f43daa1f9653991518edd8cc9d4d213c"
+  },
+  "native-pair-02/fused/warm/cross_answer.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/warm/cross_answer.png",
+    "sha256": "59a62d625cc1da7c780eee1a014e4bbbfd069473aeb78feaac58ad87050fe1da"
+  },
+  "native-pair-02/fused/warm/cross_raw.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/warm/cross_raw.png",
+    "sha256": "f76fd0498d164454f62e2a91fbc2662e1a584d86c18d937268b08fb6cf274594"
+  },
+  "native-pair-02/fused/warm/cross_warm_claim_1_citation.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/warm/cross_warm_claim_1_citation.png",
+    "sha256": "cf6f0530b0ed51548eebdcf77e8cb540a62cd2e3711a7e27e672bd444f24e9b6"
+  },
+  "native-pair-02/fused/warm/cross_warm_claim_1_citation.saved-sources.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/warm/cross_warm_claim_1_citation.saved-sources.json",
+    "sha256": "7022bf43a871fef349f8c35c66d9f84e3880c3689a0f04932ffcfa0865408c6a"
+  },
+  "native-pair-02/fused/warm/cross_warm_claim_2_citation.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/warm/cross_warm_claim_2_citation.png",
+    "sha256": "6ef9a0115b531152dcbb5c94199c40c489fa200cbf3a8f2883a9e2470b861637"
+  },
+  "native-pair-02/fused/warm/cross_warm_claim_2_citation.saved-sources.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/warm/cross_warm_claim_2_citation.saved-sources.json",
+    "sha256": "7022bf43a871fef349f8c35c66d9f84e3880c3689a0f04932ffcfa0865408c6a"
+  },
+  "native-pair-02/fused/warm/cross_warm_claim_3_citation.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/warm/cross_warm_claim_3_citation.png",
+    "sha256": "dd355c06ba9fce1248c0dcfc6d34b85bbcca14bb5ed983d00360967272ae2494"
+  },
+  "native-pair-02/fused/warm/cross_warm_claim_3_citation.saved-sources.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/warm/cross_warm_claim_3_citation.saved-sources.json",
+    "sha256": "7022bf43a871fef349f8c35c66d9f84e3880c3689a0f04932ffcfa0865408c6a"
+  },
+  "native-pair-02/fused/warm/diagnostics.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/warm/diagnostics.json",
+    "sha256": "b8de16c0e6b56e6310a9558b6aa61d5dfbab19fa07b5b849749acab58a4d828c"
+  },
+  "native-pair-02/fused/warm/explicit_scope.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/warm/explicit_scope.png",
+    "sha256": "bc740c7fd546357cb41824a80e8b9a820c6d33499f55c9f746c6267565e198d5"
+  },
+  "native-pair-02/fused/warm/launch.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/warm/launch.json",
+    "sha256": "6b1646f55cb866e1fa617b7874e5f65b4278145a23baaa1b63921bf0311e2aa5"
+  },
+  "native-pair-02/fused/warm/launcher.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/warm/launcher.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "native-pair-02/fused/warm/missing_answer.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/warm/missing_answer.png",
+    "sha256": "08f47ffe8eef78f65f83b811eb1bc23ea95dbcd7d6d47b893a8cb775093a9aa7"
+  },
+  "native-pair-02/fused/warm/native.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/warm/native.log",
+    "sha256": "289c3690ce90278288178b4689b3a42d9899747d9c9091d2ebc07a5cdc0d94e4"
+  },
+  "native-pair-02/fused/warm/process.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/warm/process.json",
+    "sha256": "74a95c172079baefdde2023ecc1f5c785a624044fecd3df0af99ef3b43501c36"
+  },
+  "native-pair-02/fused/warm/reduced_answer.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/warm/reduced_answer.png",
+    "sha256": "f74672f2fbb83724de9c8f02eb71c3bfcdbaf0446771ef5a9d61c394c4ecad1a"
+  },
+  "native-pair-02/fused/warm/scenario.done": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/warm/scenario.done",
+    "sha256": "d96d43bcb896a854a0cec2a1bb8af98d74bb1e41718c1f497d7b7f889e7c84af"
+  },
+  "native-pair-02/fused/warm-command.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/warm-command.json",
+    "sha256": "6cc7d244145b19006be1c1b3ef6e21056cf6b293cd56fe75ae2704a04a7ef3f8"
+  },
+  "native-pair-02/fused-origin.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused-origin.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "native-pair-02/fused-resident-0.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused-resident-0.log",
+    "sha256": "525a14577f3e52413e8bc2891f9d36b105ccd69ae96430199423e7a421b843da"
+  },
+  "native-pair-02/fused-warm-launcher.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused-warm-launcher.log",
+    "sha256": "72110823ff51294bc3e7c8d16e86512fab6f8a8cf6b4552f03fc7a42c0e9368f"
+  },
+  "native-pair-02/inputs.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/inputs.json",
+    "sha256": "252eade4b6a5a73a82f5874d0122a08bef4d03b047055d19ebcf663172411943"
+  },
+  "native-pair-02/warm-only-review.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-02/warm-only-review.json",
+    "sha256": "a5ecbe38fc9f8b7c90852f810463b4408c78a35bb6c4f1a323efb46b49409c7d"
+  },
+  "native-pair-03/frozen/answer_contract.rs": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/frozen/answer_contract.rs",
+    "sha256": "df3ae7b3e67f6282ab71dd19558aad0fbced66eb83a0cb06bb83d1496cd5d9dd"
+  },
+  "native-pair-03/frozen/auxiliary-inputs.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/frozen/auxiliary-inputs.json",
+    "sha256": "61e2a7344f30b827e7f640dc6556cc6b2c08b799930bd0d863457e6ad40f7300"
+  },
+  "native-pair-03/frozen/candidate_review.rs": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/frozen/candidate_review.rs",
+    "sha256": "56e01184d07f534f55bbb9db76d2a23b4b16ffdaccbd09d0ab2a4c14602c756e"
+  },
+  "native-pair-03/frozen/case-freeze.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/frozen/case-freeze.json",
+    "sha256": "846dfad5b614c926f5bd8845d9b323eb5bb9267edf06bddf49c06c606b549f7d"
+  },
+  "native-pair-03/frozen/cases.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/frozen/cases.json",
+    "sha256": "b91de4627aee873389066f4a8ed814fe4faff85cf1c8a3ae1d8e74f988d27ea2"
+  },
+  "native-pair-03/frozen/cold.scn": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/frozen/cold.scn",
+    "sha256": "73471527a25d744da516e41d4ef5b76270c182635d2640d2109c68a81a6f8667"
+  },
+  "native-pair-03/frozen/fixture_server.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/frozen/fixture_server.py",
+    "sha256": "ebb42aa6a04fff2866c3a5c8c3128be7a4bf9b3dfe117ecc02a41c2c9b14119f"
+  },
+  "native-pair-03/frozen/knot.mereclip": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/frozen/knot.mereclip",
+    "sha256": "34939ee4b6346295181961581bbaa628201eedda98567f7fde409e546628c8ef"
+  },
+  "native-pair-03/frozen/measurement-contract.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/frozen/measurement-contract.json",
+    "sha256": "c01c251a60a00c1e3982b88591e06a604bcacede8df16b6642307c10ef3c58bf"
+  },
+  "native-pair-03/frozen/optimized-runtime.toml": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/frozen/optimized-runtime.toml",
+    "sha256": "7da287858eb9da9788ca02e5871a23c3d01aee9e54319e6517e6199bb778a857"
+  },
+  "native-pair-03/frozen/product-baseline.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/frozen/product-baseline.json",
+    "sha256": "b4a6d23ac276e7123c17d2436727ba9a4d96dd80fe9cdffe9c113308fdd76de1"
+  },
+  "native-pair-03/frozen/questions.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/frozen/questions.json",
+    "sha256": "4b1eee1a59543c97729b8497b325420af2ed94a6391516b815170005804f2af4"
+  },
+  "native-pair-03/frozen/redshank.mereclip": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/frozen/redshank.mereclip",
+    "sha256": "fa046f22a24a4aed93a6b3500008b3beac5f1395efb4feeff3bc74883423a69e"
+  },
+  "native-pair-03/frozen/run_macos_scenario.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/frozen/run_macos_scenario.py",
+    "sha256": "c1a6cb530152f3c8accc3dec41a6e7ab0dfb32a10079778ac900c1306f28c69d"
+  },
+  "native-pair-03/frozen/run_native.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/frozen/run_native.py",
+    "sha256": "f82e845281d978b74a88902fc4e1f73f055929df5dfae921d8e5378e2bc6b24c"
+  },
+  "native-pair-03/frozen/verify_contract_inputs.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/frozen/verify_contract_inputs.py",
+    "sha256": "d49ff64385efabd4ee46419b438b7382ba6f7b72210dd86a96d0ed4de66db92e"
+  },
+  "native-pair-03/frozen/verify_native.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/frozen/verify_native.py",
+    "sha256": "f3a0e939cef9ac3bf85f80cb9d1e984ee40d94a0757cf6d4c6c6d55e23b88594"
+  },
+  "native-pair-03/frozen/verify_native_bindings.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/frozen/verify_native_bindings.py",
+    "sha256": "e01bf2ecf2a035a64e6a549679e193ec70fe432d5bd6e3c5a13744f1148a80b2"
+  },
+  "native-pair-03/frozen/verify_native_defaults.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/frozen/verify_native_defaults.py",
+    "sha256": "e3865d4dcb14cbc28bd4b98a3732cbf128dfda0805571eed7f556b102c2daa74"
+  },
+  "native-pair-03/frozen/verify_native_defaults_original.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/frozen/verify_native_defaults_original.py",
+    "sha256": "bfbf4e7c7faeab96e439e8147b6a7fc0ddbe7b31477662836ebc40cfb6543690"
+  },
+  "native-pair-03/frozen/verify_native_facts.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/frozen/verify_native_facts.py",
+    "sha256": "adbed9d715c8f37657beb4f38da01075f17a4b2e7641bd665b8f27479cbc23ba"
+  },
+  "native-pair-03/frozen/verify_probe.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/frozen/verify_probe.py",
+    "sha256": "e93875eb35e02136038789415f5dfb272c2f491c407d6246322dc21fdbc9cd4d"
+  },
+  "native-pair-03/frozen/verify_structured_output.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/frozen/verify_structured_output.py",
+    "sha256": "6275bd267af6aefe19bdd82f1d748a6dbbdb7dcc15c4d12d0bc96fe934c55062"
+  },
+  "native-pair-03/frozen/verify_wire_defaults.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/frozen/verify_wire_defaults.py",
+    "sha256": "672a972bf5848b9b3cf578a21ced9986b32721a117f566edf438761a938d4160"
+  },
+  "native-pair-03/frozen/warm.scn": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/frozen/warm.scn",
+    "sha256": "281d51d1751d142004f7124c640efe468622636ac52481158d39373d3a157589"
+  },
+  "native-pair-03/fused/control/origin-stopped": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/control/origin-stopped",
+    "sha256": "0823b521aae200b808d96992208acb7a6fa49e997321e4e3455efc0b081ce64f"
+  },
+  "native-pair-03/fused/control/reduced-scope.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/control/reduced-scope.json",
+    "sha256": "1a35d59d4d0e7cc36f8aa6629caf3a5f21dd4487384b929515e933af105eb1f9"
+  },
+  "native-pair-03/fused/control/selected-1.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/control/selected-1.json",
+    "sha256": "283972a2e38b63f60a9f710af3279ab18549bb0213fbcfb1806b75665358a0bf"
+  },
+  "native-pair-03/fused/control/selected-2.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/control/selected-2.json",
+    "sha256": "30eebc1730268224a69f77137816aa201f77311e9c75d4d97e919cc32e74b05f"
+  },
+  "native-pair-03/fused/control/selected-3.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/control/selected-3.json",
+    "sha256": "bdb2bb8c9811d3f71677bcc6d9482e8fb001d2549e72128cb856c5ec37dba02b"
+  },
+  "native-pair-03/fused/control/selected-4.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/control/selected-4.json",
+    "sha256": "d169de5467ef3cb881ea960bb0a62e7cf24fd978328d7b59a411a44333c3de90"
+  },
+  "native-pair-03/fused/knot.mereclip": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/knot.mereclip",
+    "sha256": "34939ee4b6346295181961581bbaa628201eedda98567f7fde409e546628c8ef"
+  },
+  "native-pair-03/fused/note.mereclip": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/note.mereclip",
+    "sha256": "fa046f22a24a4aed93a6b3500008b3beac5f1395efb4feeff3bc74883423a69e"
+  },
+  "native-pair-03/fused/origin/requests.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/origin/requests.json",
+    "sha256": "12e284531d64bb0e01303577e4e6d49ce38d995971a27fe3f0e61ea7f0f58b0b"
+  },
+  "native-pair-03/fused/origin-ready.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/origin-ready.json",
+    "sha256": "cf55e8d1aaceb390e8a80554849d227cefec8645631e3702913db5315ccc2373"
+  },
+  "native-pair-03/fused/origin-stop.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/origin-stop.json",
+    "sha256": "ebea2ef6834214584ca7f3ea5c252e2a8b389565afc8b1964a823a6ca8c1c4f3"
+  },
+  "native-pair-03/fused/requests-at-stop.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/requests-at-stop.json",
+    "sha256": "12e284531d64bb0e01303577e4e6d49ce38d995971a27fe3f0e61ea7f0f58b0b"
+  },
+  "native-pair-03/fused/resident/embedding-model.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/resident/embedding-model.json",
+    "sha256": "0ed25d73cf0f1bbf0081036e4e0ea2381571b5d3cd2af4fcb1040c46166bf9f1"
+  },
+  "native-pair-03/fused/resident/endpoint.txt": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/resident/endpoint.txt",
+    "sha256": "1c32f50c457aab6cfeb6a6b672ceb2a4a4e8836071504ed66e942014f86a8be3"
+  },
+  "native-pair-03/fused/resident/finished.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/resident/finished.json",
+    "sha256": "c8e1e00c7ff4a1a069507f9e7fbe568e09512fda24736d4fd796201d0adbb90f"
+  },
+  "native-pair-03/fused/resident/live-runs-0.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/resident/live-runs-0.json",
+    "sha256": "84171fcaad65012565eb925e090754cffb9ce2acb79d94c3ec980ebb3cd8aabe"
+  },
+  "native-pair-03/fused/resident/mixed-0-conflict.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/resident/mixed-0-conflict.json",
+    "sha256": "a56a05e02b53ebb8d34bca90a16c75feecba96734e049be6080ba4d09543b2ee"
+  },
+  "native-pair-03/fused/resident/mixed-0-cross.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/resident/mixed-0-cross.json",
+    "sha256": "c8e1e00c7ff4a1a069507f9e7fbe568e09512fda24736d4fd796201d0adbb90f"
+  },
+  "native-pair-03/fused/resident/mixed-0-missing.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/resident/mixed-0-missing.json",
+    "sha256": "fae1d8077b81e31bee149881b145f4de0ee15e64f74bc84a1821bc69d8d3072c"
+  },
+  "native-pair-03/fused/resident/mixed-0-reduced.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/resident/mixed-0-reduced.json",
+    "sha256": "2892e061a60ccd79fd2ece420d603585346e5485989153be3409a306f17287aa"
+  },
+  "native-pair-03/fused/resident/mixed-rankings-0.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/resident/mixed-rankings-0.json",
+    "sha256": "be5856100a4cfb0817f66186520435a470fbf8ce70c9a9ce1691c183e132ef2c"
+  },
+  "native-pair-03/fused/resident/model-row.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/resident/model-row.json",
+    "sha256": "48a3bd0406fbe40d3c100e21c7b289c57b11737065af4af5a3c7f6be4bdd732f"
+  },
+  "native-pair-03/fused/resident/ready-0.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/resident/ready-0.json",
+    "sha256": "0dd2f6f875cc658d32e07f06d9fc64be432f0701fd227d5597ac73390505b0c9"
+  },
+  "native-pair-03/fused/resident/second-started.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/resident/second-started.json",
+    "sha256": "03494afd4248c42f5fa1237bf2eeebe751ab8d9c977d55405fcb17469dbd91f8"
+  },
+  "native-pair-03/fused/resident/streaming.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/resident/streaming.json",
+    "sha256": "e225a956765b61d18f7dea06f58c6f00b6aa7fac995a88a62ac46b0a9c68aca9"
+  },
+  "native-pair-03/fused/warm/01_capture_A.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/warm/01_capture_A.png",
+    "sha256": "274ef4915f46694d9ae1172f1a512d26c1b66b3798bf3cdaeb98bb122d1836d0"
+  },
+  "native-pair-03/fused/warm/01_capture_A.source-captures.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/warm/01_capture_A.source-captures.json",
+    "sha256": "a70a61cb09899f9493c8b1f5507d763b31250a06793e03562f58050d2746a52c"
+  },
+  "native-pair-03/fused/warm/02_capture_B.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/warm/02_capture_B.png",
+    "sha256": "a928e55180ba59fcd819cf2d8449ae4d22da021b9d66bd4ef302ee759b6f275e"
+  },
+  "native-pair-03/fused/warm/02_capture_B.source-captures.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/warm/02_capture_B.source-captures.json",
+    "sha256": "bbc04130e33172bdffa18f47fbe343823e367be7851c178a4ee336c691b6cd0e"
+  },
+  "native-pair-03/fused/warm/03_mixed_sources.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/warm/03_mixed_sources.png",
+    "sha256": "280f3e11c52bf56fe2bb479e1921968405f41414c738a4a53108ab4d74e139b4"
+  },
+  "native-pair-03/fused/warm/03_mixed_sources.saved-sources.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/warm/03_mixed_sources.saved-sources.json",
+    "sha256": "ffaf3ef86918a0b502a73a968e0e5d0cacfd708735a90f89f607fa56243cac25"
+  },
+  "native-pair-03/fused/warm/conflict_answer.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/warm/conflict_answer.png",
+    "sha256": "80a6bba32e054de4e6e26ba78384c799f8fa74f58796460aead7b4f807433e3a"
+  },
+  "native-pair-03/fused/warm/cross_answer.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/warm/cross_answer.png",
+    "sha256": "abc15b3b37383b97d80c20be40e86ae768307dc655430a8e2eb72b11a91aab64"
+  },
+  "native-pair-03/fused/warm/cross_raw.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/warm/cross_raw.png",
+    "sha256": "0d57edf5ba85da89327074f639bd491d4c14da2517f7818fcc1ff2df9c96bc08"
+  },
+  "native-pair-03/fused/warm/cross_warm_claim_1_citation.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/warm/cross_warm_claim_1_citation.png",
+    "sha256": "b884117bd8b1a748b40cc04508e4ffa6bacc7fc76f5e588bf18de4e8701e4b6d"
+  },
+  "native-pair-03/fused/warm/cross_warm_claim_1_citation.saved-sources.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/warm/cross_warm_claim_1_citation.saved-sources.json",
+    "sha256": "5831930a15428a8dc9eccf16f1f157eb31b9108b79a887008b5c36dd3bd9dc2e"
+  },
+  "native-pair-03/fused/warm/cross_warm_claim_2_citation.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/warm/cross_warm_claim_2_citation.png",
+    "sha256": "e58b42f093bf1a7360a0c3ad767b246c3c7a11de7b05eedb307ecbbb8b722ada"
+  },
+  "native-pair-03/fused/warm/cross_warm_claim_2_citation.saved-sources.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/warm/cross_warm_claim_2_citation.saved-sources.json",
+    "sha256": "5831930a15428a8dc9eccf16f1f157eb31b9108b79a887008b5c36dd3bd9dc2e"
+  },
+  "native-pair-03/fused/warm/cross_warm_claim_3_citation.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/warm/cross_warm_claim_3_citation.png",
+    "sha256": "9f9041b2c7ccd12ac3ccc5f5347609834af8c9f3728e67be7b973f526b0be828"
+  },
+  "native-pair-03/fused/warm/cross_warm_claim_3_citation.saved-sources.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/warm/cross_warm_claim_3_citation.saved-sources.json",
+    "sha256": "5831930a15428a8dc9eccf16f1f157eb31b9108b79a887008b5c36dd3bd9dc2e"
+  },
+  "native-pair-03/fused/warm/diagnostics.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/warm/diagnostics.json",
+    "sha256": "e99b61b9904eaaecfec1a20e1805353464adf0dd179c03650abb79d7ba8f1fa3"
+  },
+  "native-pair-03/fused/warm/explicit_scope.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/warm/explicit_scope.png",
+    "sha256": "3a02d974aa93b8adccab80f0d75d328ee96d0aa3f33da8e4e19b345c51c350bf"
+  },
+  "native-pair-03/fused/warm/launch.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/warm/launch.json",
+    "sha256": "5e92362c00df6825a989047cd86f217ae1344fb5835dfa08479897e9f5482c39"
+  },
+  "native-pair-03/fused/warm/launcher.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/warm/launcher.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "native-pair-03/fused/warm/missing_answer.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/warm/missing_answer.png",
+    "sha256": "f86ae5fd55d1917048f30f6a1737ca9e7690bd85c0d3679f3674c5e1624dacfb"
+  },
+  "native-pair-03/fused/warm/native.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/warm/native.log",
+    "sha256": "1e0f681f88ba99fed2afafeeb34887e58743007de56aad1a45aff752d3e1d8b9"
+  },
+  "native-pair-03/fused/warm/process.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/warm/process.json",
+    "sha256": "d0c5d32f186a6497a4264aafaabe71c7f1d37d29912b07e436b974b46215c838"
+  },
+  "native-pair-03/fused/warm/reduced_answer.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/warm/reduced_answer.png",
+    "sha256": "c69df28b13b54fb3c93d94e2884f90eba946413be02086a2ca8552dde6c749e6"
+  },
+  "native-pair-03/fused/warm/scenario.done": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/warm/scenario.done",
+    "sha256": "fee22eb7c3f162399962d80576fc0e13a361ffb0402011bef364e4579e09e212"
+  },
+  "native-pair-03/fused/warm-command.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/warm-command.json",
+    "sha256": "2c6f6a55bfb1c15951a203a4b68d89c08e3d7fb1147eb070d97c3da22f8cca89"
+  },
+  "native-pair-03/fused-origin.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused-origin.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "native-pair-03/fused-resident-0.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused-resident-0.log",
+    "sha256": "806e03f276afe4fd0f699aa81db43899354af95708bc791fed74b91009dec7f2"
+  },
+  "native-pair-03/fused-warm-launcher.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused-warm-launcher.log",
+    "sha256": "cf0627a7f188ddac80b29efa17b78a783117917e15a1513491b77ab391345604"
+  },
+  "native-pair-03/inputs.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/inputs.json",
+    "sha256": "d95d4d2b142ed400e2d18a06dcc917516cb1ae5bdabab1a50d92b7749f84805e"
+  },
+  "native-pair-03/warm-failure-review.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-03/warm-failure-review.json",
+    "sha256": "e7942c1c43c9d19659f54febfdbdd35f9b6424c35cbb201ccb16c4319cb54d53"
+  },
+  "native-pair-04/completion.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/completion.json",
+    "sha256": "a9b95863288b5eea0d56960244310b1f280b4f27277a09add5ca448c7d4b4bb2"
+  },
+  "native-pair-04/frozen/answer_contract.rs": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/frozen/answer_contract.rs",
+    "sha256": "df3ae7b3e67f6282ab71dd19558aad0fbced66eb83a0cb06bb83d1496cd5d9dd"
+  },
+  "native-pair-04/frozen/auxiliary-inputs.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/frozen/auxiliary-inputs.json",
+    "sha256": "659cb81661eb21171cf75faaefd4f689974bf506955832b50b82896a1e9b1393"
+  },
+  "native-pair-04/frozen/candidate_review.rs": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/frozen/candidate_review.rs",
+    "sha256": "56e01184d07f534f55bbb9db76d2a23b4b16ffdaccbd09d0ab2a4c14602c756e"
+  },
+  "native-pair-04/frozen/case-freeze.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/frozen/case-freeze.json",
+    "sha256": "846dfad5b614c926f5bd8845d9b323eb5bb9267edf06bddf49c06c606b549f7d"
+  },
+  "native-pair-04/frozen/cases.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/frozen/cases.json",
+    "sha256": "b91de4627aee873389066f4a8ed814fe4faff85cf1c8a3ae1d8e74f988d27ea2"
+  },
+  "native-pair-04/frozen/cold.scn": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/frozen/cold.scn",
+    "sha256": "73471527a25d744da516e41d4ef5b76270c182635d2640d2109c68a81a6f8667"
+  },
+  "native-pair-04/frozen/fixture_server.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/frozen/fixture_server.py",
+    "sha256": "ebb42aa6a04fff2866c3a5c8c3128be7a4bf9b3dfe117ecc02a41c2c9b14119f"
+  },
+  "native-pair-04/frozen/knot.mereclip": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/frozen/knot.mereclip",
+    "sha256": "34939ee4b6346295181961581bbaa628201eedda98567f7fde409e546628c8ef"
+  },
+  "native-pair-04/frozen/measurement-contract.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/frozen/measurement-contract.json",
+    "sha256": "44564e66f1dc320d9485e86a59123ff119844e6d009c695b3c1b6a408c72b187"
+  },
+  "native-pair-04/frozen/optimized-runtime.toml": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/frozen/optimized-runtime.toml",
+    "sha256": "7da287858eb9da9788ca02e5871a23c3d01aee9e54319e6517e6199bb778a857"
+  },
+  "native-pair-04/frozen/product-baseline.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/frozen/product-baseline.json",
+    "sha256": "13016535284f8aa4d623897c55d41acdce0cf8d5c50f8512edb67ee6cc5b5c4d"
+  },
+  "native-pair-04/frozen/questions.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/frozen/questions.json",
+    "sha256": "4b1eee1a59543c97729b8497b325420af2ed94a6391516b815170005804f2af4"
+  },
+  "native-pair-04/frozen/recall.rs": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/frozen/recall.rs",
+    "sha256": "b5a0c329282c0b20618487a5cd481c9f6c66f9fdd4b69355da05d676334771ad"
+  },
+  "native-pair-04/frozen/recall_embedding.rs": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/frozen/recall_embedding.rs",
+    "sha256": "edff7d72dc855e1f3f7494c1d3942594105d05ab9861a5adc3fbd8b9bfd79ff9"
+  },
+  "native-pair-04/frozen/redshank.mereclip": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/frozen/redshank.mereclip",
+    "sha256": "fa046f22a24a4aed93a6b3500008b3beac5f1395efb4feeff3bc74883423a69e"
+  },
+  "native-pair-04/frozen/run_macos_scenario.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/frozen/run_macos_scenario.py",
+    "sha256": "c1a6cb530152f3c8accc3dec41a6e7ab0dfb32a10079778ac900c1306f28c69d"
+  },
+  "native-pair-04/frozen/run_native.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/frozen/run_native.py",
+    "sha256": "997e2b7b472410442a2b01cc28b0e4c65fde8f1bc1540c13639ce43523b71919"
+  },
+  "native-pair-04/frozen/verify_contract_inputs.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/frozen/verify_contract_inputs.py",
+    "sha256": "d49ff64385efabd4ee46419b438b7382ba6f7b72210dd86a96d0ed4de66db92e"
+  },
+  "native-pair-04/frozen/verify_native.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/frozen/verify_native.py",
+    "sha256": "f3a0e939cef9ac3bf85f80cb9d1e984ee40d94a0757cf6d4c6c6d55e23b88594"
+  },
+  "native-pair-04/frozen/verify_native_bindings.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/frozen/verify_native_bindings.py",
+    "sha256": "e01bf2ecf2a035a64e6a549679e193ec70fe432d5bd6e3c5a13744f1148a80b2"
+  },
+  "native-pair-04/frozen/verify_native_defaults.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/frozen/verify_native_defaults.py",
+    "sha256": "e3865d4dcb14cbc28bd4b98a3732cbf128dfda0805571eed7f556b102c2daa74"
+  },
+  "native-pair-04/frozen/verify_native_defaults_original.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/frozen/verify_native_defaults_original.py",
+    "sha256": "bfbf4e7c7faeab96e439e8147b6a7fc0ddbe7b31477662836ebc40cfb6543690"
+  },
+  "native-pair-04/frozen/verify_native_facts.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/frozen/verify_native_facts.py",
+    "sha256": "adbed9d715c8f37657beb4f38da01075f17a4b2e7641bd665b8f27479cbc23ba"
+  },
+  "native-pair-04/frozen/verify_probe.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/frozen/verify_probe.py",
+    "sha256": "e93875eb35e02136038789415f5dfb272c2f491c407d6246322dc21fdbc9cd4d"
+  },
+  "native-pair-04/frozen/verify_structured_output.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/frozen/verify_structured_output.py",
+    "sha256": "6275bd267af6aefe19bdd82f1d748a6dbbdb7dcc15c4d12d0bc96fe934c55062"
+  },
+  "native-pair-04/frozen/verify_wire_defaults.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/frozen/verify_wire_defaults.py",
+    "sha256": "672a972bf5848b9b3cf578a21ced9986b32721a117f566edf438761a938d4160"
+  },
+  "native-pair-04/frozen/warm.scn": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/frozen/warm.scn",
+    "sha256": "281d51d1751d142004f7124c640efe468622636ac52481158d39373d3a157589"
+  },
+  "native-pair-04/fused/cold/cold_scope.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/cold/cold_scope.png",
+    "sha256": "eb3bd36dadc01e2e389cb1f1d62c4a65c1eba322718a6c07d6802fadca66d3a0"
+  },
+  "native-pair-04/fused/cold/conflict_historical_answer.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/cold/conflict_historical_answer.png",
+    "sha256": "b779d07fa1850c24b8fbb59364f0834f82e29bd6e8a9dc9b4833fba54f259212"
+  },
+  "native-pair-04/fused/cold/cross_answer.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/cold/cross_answer.png",
+    "sha256": "e8154adbb1a4d0ea225aedeced4f5ffbfc1771e8f0b3d3d07f354d2841b1aee0"
+  },
+  "native-pair-04/fused/cold/cross_cold_claim_1_citation.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/cold/cross_cold_claim_1_citation.png",
+    "sha256": "1326c20f8cb2f2ba3626bf876064dfbdee44b73050232e87ae866f038fa7a707"
+  },
+  "native-pair-04/fused/cold/cross_cold_claim_1_citation.saved-sources.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/cold/cross_cold_claim_1_citation.saved-sources.json",
+    "sha256": "f9d1c957f5d2585671fd2f97eafad03914c33e9b209d8ef9042146814522ae0b"
+  },
+  "native-pair-04/fused/cold/cross_cold_claim_2_citation.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/cold/cross_cold_claim_2_citation.png",
+    "sha256": "8d10140452dd1c2c2a5da6beec6afc3650e21c4d30457bafabaffa86a047586d"
+  },
+  "native-pair-04/fused/cold/cross_cold_claim_2_citation.saved-sources.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/cold/cross_cold_claim_2_citation.saved-sources.json",
+    "sha256": "f9d1c957f5d2585671fd2f97eafad03914c33e9b209d8ef9042146814522ae0b"
+  },
+  "native-pair-04/fused/cold/cross_cold_claim_3_citation.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/cold/cross_cold_claim_3_citation.png",
+    "sha256": "ac404bbd93afa5d9f6889a8ada85a1c4e09926443aa4b209363b4c65f5158da8"
+  },
+  "native-pair-04/fused/cold/cross_cold_claim_3_citation.saved-sources.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/cold/cross_cold_claim_3_citation.saved-sources.json",
+    "sha256": "f9d1c957f5d2585671fd2f97eafad03914c33e9b209d8ef9042146814522ae0b"
+  },
+  "native-pair-04/fused/cold/cross_historical_answer.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/cold/cross_historical_answer.png",
+    "sha256": "17227f2d1c3c4782cf7f02d9da3f4f86e183ecd16a5f52a8d38e737b2c75db38"
+  },
+  "native-pair-04/fused/cold/diagnostics.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/cold/diagnostics.json",
+    "sha256": "50992e48589880f763882c11631860e386791c082198016bc445a663df098652"
+  },
+  "native-pair-04/fused/cold/launch.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/cold/launch.json",
+    "sha256": "b791e733bf72da0bc72af5b8b7d30bf3a15bdab2c6b6ef0f9fc9ba77758c1b8e"
+  },
+  "native-pair-04/fused/cold/launcher.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/cold/launcher.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "native-pair-04/fused/cold/missing_historical_answer.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/cold/missing_historical_answer.png",
+    "sha256": "7812bded655bdf85579c05d54580a23f554e1b289c908d3f7c87acb7b48fa758"
+  },
+  "native-pair-04/fused/cold/native.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/cold/native.log",
+    "sha256": "e23492ef5705856f88d48627737c369f574dc0301b05785aad22ee49f0dd610a"
+  },
+  "native-pair-04/fused/cold/process.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/cold/process.json",
+    "sha256": "1e5558b758929921db14c4a7c9ac4183c3df062d586d8737bfc9e7835af8f9f9"
+  },
+  "native-pair-04/fused/cold/reduced_historical_answer.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/cold/reduced_historical_answer.png",
+    "sha256": "4ac0dfaa50e1686095e2f371128d3d48eeb434fc318fd618c16a861a43ba4615"
+  },
+  "native-pair-04/fused/cold/scenario.done": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/cold/scenario.done",
+    "sha256": "951cdbf988d631c2b2472acd05e8b3896c2c0d3ee85f2e52dee427e888c3e77e"
+  },
+  "native-pair-04/fused/cold-command.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/cold-command.json",
+    "sha256": "04b083f0b2b986efc65665d0122206b43269cd0a843db2ae79d9e6a78a71e677"
+  },
+  "native-pair-04/fused/completion.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/completion.json",
+    "sha256": "0a771e662e756ac911d5b045b50a0f2df8a5acd7657b2db4bea08590daa2dad5"
+  },
+  "native-pair-04/fused/control/cold-scope.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/control/cold-scope.json",
+    "sha256": "df95503dd4b756f73a2afba959e0706112a0da419d582c7663272e260fec78a0"
+  },
+  "native-pair-04/fused/control/origin-stopped": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/control/origin-stopped",
+    "sha256": "0823b521aae200b808d96992208acb7a6fa49e997321e4e3455efc0b081ce64f"
+  },
+  "native-pair-04/fused/control/reduced-scope.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/control/reduced-scope.json",
+    "sha256": "b7b1f0dc3040b73af891ab115f1fae79aa39c7f152dd4250a013db6d5a127b85"
+  },
+  "native-pair-04/fused/control/selected-1.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/control/selected-1.json",
+    "sha256": "65dd8080d8f0442671bfc9ce2e2e3db91ec62f6cc03b9261e360c95007a24a7c"
+  },
+  "native-pair-04/fused/control/selected-2.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/control/selected-2.json",
+    "sha256": "5b6c1707415bcb1d0ead50be00c2aecf223f7239e4e8fcab3cdc8305e396a8b6"
+  },
+  "native-pair-04/fused/control/selected-3.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/control/selected-3.json",
+    "sha256": "97fdfea100950a10d4f00ea84cee8836c9fea21f1dfbe91502a4ba95b27b98e9"
+  },
+  "native-pair-04/fused/control/selected-4.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/control/selected-4.json",
+    "sha256": "02f4cec6b38eeefb461afa81e7e5a3a53391f860552cd82f13ab59d6a0ed4a70"
+  },
+  "native-pair-04/fused/origin/requests.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/origin/requests.json",
+    "sha256": "12e284531d64bb0e01303577e4e6d49ce38d995971a27fe3f0e61ea7f0f58b0b"
+  },
+  "native-pair-04/fused/origin-ready.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/origin-ready.json",
+    "sha256": "fa457066e69821f7d3aea36463a10e610e1cc4a8cc3e231d2c8a490ff684e7a4"
+  },
+  "native-pair-04/fused/origin-stop.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/origin-stop.json",
+    "sha256": "86284bc30a9e4a8e51da116a6bde009d3917ceeafa809367eee28dc3980e5305"
+  },
+  "native-pair-04/fused/phases.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/phases.json",
+    "sha256": "8434b900249debb247c6e947ada9cf69ca42de66cccd240c3007833ab154e95c"
+  },
+  "native-pair-04/fused/requests-at-stop.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/requests-at-stop.json",
+    "sha256": "12e284531d64bb0e01303577e4e6d49ce38d995971a27fe3f0e61ea7f0f58b0b"
+  },
+  "native-pair-04/fused/requests-final.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/requests-final.json",
+    "sha256": "12e284531d64bb0e01303577e4e6d49ce38d995971a27fe3f0e61ea7f0f58b0b"
+  },
+  "native-pair-04/fused/resident/embedding-cold-ask.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/resident/embedding-cold-ask.json",
+    "sha256": "6ac211dd080d3f7b9bcb1c2acee7e32ebda77dbb44e7020f1bb2883b54d0319d"
+  },
+  "native-pair-04/fused/resident/embedding-model.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/resident/embedding-model.json",
+    "sha256": "0ed25d73cf0f1bbf0081036e4e0ea2381571b5d3cd2af4fcb1040c46166bf9f1"
+  },
+  "native-pair-04/fused/resident/endpoint.txt": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/resident/endpoint.txt",
+    "sha256": "dc771827893d623cd298e1da9a2ace7e0d8602a96029b92846fcdf1c5d44838d"
+  },
+  "native-pair-04/fused/resident/finished.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/resident/finished.json",
+    "sha256": "b1ee8b9d8741b064fbbdd411c2b6d14cda212da9a8dba80f8ba95e1cc0953f34"
+  },
+  "native-pair-04/fused/resident/history-1-conflict.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/resident/history-1-conflict.json",
+    "sha256": "da13e18a193358db2d1013f6b786979bcb4116053aefb8184886140b15a2095c"
+  },
+  "native-pair-04/fused/resident/history-1-cross.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/resident/history-1-cross.json",
+    "sha256": "b1ee8b9d8741b064fbbdd411c2b6d14cda212da9a8dba80f8ba95e1cc0953f34"
+  },
+  "native-pair-04/fused/resident/history-1-missing.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/resident/history-1-missing.json",
+    "sha256": "23075b36ed2fb6bc495cdb31d21d8c51d4ac5c3e572b55af1e56a672f238c5cd"
+  },
+  "native-pair-04/fused/resident/history-1-reduced.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/resident/history-1-reduced.json",
+    "sha256": "0a8fb571451ecbd4061ef99dddc408e05f938099185b2b43e9388f5307bf7721"
+  },
+  "native-pair-04/fused/resident/live-runs-0.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/resident/live-runs-0.json",
+    "sha256": "1eafea6d03f6cce05c9c904cf3ef99db8b809b8710ee933e0dbb83b2e0167fa9"
+  },
+  "native-pair-04/fused/resident/live-runs-1.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/resident/live-runs-1.json",
+    "sha256": "4a753cfb19bef3ce4b1d1766a71b0957672a0bd6b9d9621f0161a4b4fb948c2c"
+  },
+  "native-pair-04/fused/resident/mixed-0-conflict.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/resident/mixed-0-conflict.json",
+    "sha256": "da13e18a193358db2d1013f6b786979bcb4116053aefb8184886140b15a2095c"
+  },
+  "native-pair-04/fused/resident/mixed-0-cross.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/resident/mixed-0-cross.json",
+    "sha256": "b1ee8b9d8741b064fbbdd411c2b6d14cda212da9a8dba80f8ba95e1cc0953f34"
+  },
+  "native-pair-04/fused/resident/mixed-0-missing.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/resident/mixed-0-missing.json",
+    "sha256": "23075b36ed2fb6bc495cdb31d21d8c51d4ac5c3e572b55af1e56a672f238c5cd"
+  },
+  "native-pair-04/fused/resident/mixed-0-reduced.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/resident/mixed-0-reduced.json",
+    "sha256": "0a8fb571451ecbd4061ef99dddc408e05f938099185b2b43e9388f5307bf7721"
+  },
+  "native-pair-04/fused/resident/mixed-1-cross.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/resident/mixed-1-cross.json",
+    "sha256": "6ac211dd080d3f7b9bcb1c2acee7e32ebda77dbb44e7020f1bb2883b54d0319d"
+  },
+  "native-pair-04/fused/resident/mixed-rankings-0.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/resident/mixed-rankings-0.json",
+    "sha256": "028205ad6d91f68c36e9b4d6dc0f2fd9a1ead5c3554a74a8398bbe2ba3ccb4f2"
+  },
+  "native-pair-04/fused/resident/mixed-rankings-1.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/resident/mixed-rankings-1.json",
+    "sha256": "3afde302d618d866f98520e61cf19814bc032bf2a99c035146deb922a005be58"
+  },
+  "native-pair-04/fused/resident/model-row.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/resident/model-row.json",
+    "sha256": "48a3bd0406fbe40d3c100e21c7b289c57b11737065af4af5a3c7f6be4bdd732f"
+  },
+  "native-pair-04/fused/resident/process-0.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/resident/process-0.json",
+    "sha256": "db82f69119e686897f3a2a11fa6ec2c8a6620df5079678e0d685c0c0f714a152"
+  },
+  "native-pair-04/fused/resident/process-1.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/resident/process-1.json",
+    "sha256": "673e5669dff0e675d20ce8e688210ebf1c2de3d8f08e17e05c64bc0025f7bf5f"
+  },
+  "native-pair-04/fused/resident/ready-0.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/resident/ready-0.json",
+    "sha256": "0dd2f6f875cc658d32e07f06d9fc64be432f0701fd227d5597ac73390505b0c9"
+  },
+  "native-pair-04/fused/resident/ready-1.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/resident/ready-1.json",
+    "sha256": "eaf9e41386364209f1f04fe9e3ed2447b0a4d866fb3ceed895e935708ff4e5f2"
+  },
+  "native-pair-04/fused/resident/reopened.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/resident/reopened.json",
+    "sha256": "6ac211dd080d3f7b9bcb1c2acee7e32ebda77dbb44e7020f1bb2883b54d0319d"
+  },
+  "native-pair-04/fused/resident/resident-receipt.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/resident/resident-receipt.json",
+    "sha256": "44206a3879a85e68d5cca1461006cfffc73b8bb2f3ee697544d466bc530dcf0e"
+  },
+  "native-pair-04/fused/resident/second-started.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/resident/second-started.json",
+    "sha256": "03494afd4248c42f5fa1237bf2eeebe751ab8d9c977d55405fcb17469dbd91f8"
+  },
+  "native-pair-04/fused/resident/snapshot-0.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/resident/snapshot-0.json",
+    "sha256": "1868ea4ede94aa93885c5c039b1a058cc35e3456faaa843458c4766e7813ac60"
+  },
+  "native-pair-04/fused/resident/snapshot-1.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/resident/snapshot-1.json",
+    "sha256": "30d590decafb1e468c508f1dac2d24fe58637f71e9a78e7417c17bcbc9e25b43"
+  },
+  "native-pair-04/fused/resident/streaming.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/resident/streaming.json",
+    "sha256": "13f01cc3d9755a7cd505d99ab7e0d9f4fdd382ef60589e4dfd3988b3aa35a394"
+  },
+  "native-pair-04/fused/warm/01_capture_A.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/warm/01_capture_A.png",
+    "sha256": "3c4f36cfc82987a092cfc4fb51e4fedb07e0f243249d8efaf271642d5baa699e"
+  },
+  "native-pair-04/fused/warm/01_capture_A.source-captures.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/warm/01_capture_A.source-captures.json",
+    "sha256": "af67e5abf4d31c12fb34b82eb76ddfd307dd7623c10bb5e0092376e8af015d76"
+  },
+  "native-pair-04/fused/warm/02_capture_B.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/warm/02_capture_B.png",
+    "sha256": "d82f8deed7ae2c34b288e96176bd8bb835589257472b28c5479921850207da71"
+  },
+  "native-pair-04/fused/warm/02_capture_B.source-captures.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/warm/02_capture_B.source-captures.json",
+    "sha256": "5987fb7b3d2f5fc33ce4a8bb0bf9c9b6c565c74c5d1f18b52b2bfcbfc117c29d"
+  },
+  "native-pair-04/fused/warm/03_mixed_sources.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/warm/03_mixed_sources.png",
+    "sha256": "280f3e11c52bf56fe2bb479e1921968405f41414c738a4a53108ab4d74e139b4"
+  },
+  "native-pair-04/fused/warm/03_mixed_sources.saved-sources.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/warm/03_mixed_sources.saved-sources.json",
+    "sha256": "9ac89b03f99a7ef07fd6afb63d76def20b2af5830dfbd158baab004da6126f63"
+  },
+  "native-pair-04/fused/warm/conflict_answer.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/warm/conflict_answer.png",
+    "sha256": "d0d9161966a8c43a8055a06b8a46dced390e185938b538b0a5c6ed9a2951556f"
+  },
+  "native-pair-04/fused/warm/cross_answer.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/warm/cross_answer.png",
+    "sha256": "59763568dce7f99a24f169a58daa125f5bfe57ee1997518a3582b1151907e77a"
+  },
+  "native-pair-04/fused/warm/cross_raw.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/warm/cross_raw.png",
+    "sha256": "0d57edf5ba85da89327074f639bd491d4c14da2517f7818fcc1ff2df9c96bc08"
+  },
+  "native-pair-04/fused/warm/cross_warm_claim_1_citation.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/warm/cross_warm_claim_1_citation.png",
+    "sha256": "a62b5c69ceb4cf93d93b24787a0ede8cf39a28802189c21f02788e242a9df5dc"
+  },
+  "native-pair-04/fused/warm/cross_warm_claim_1_citation.saved-sources.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/warm/cross_warm_claim_1_citation.saved-sources.json",
+    "sha256": "6debd6c14446917876d0371637d49f1daab4a02f35ec28d734fdaf165f23de0a"
+  },
+  "native-pair-04/fused/warm/cross_warm_claim_2_citation.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/warm/cross_warm_claim_2_citation.png",
+    "sha256": "08b34e57d8df814ae33ab6998a5a7d3f77e49e354dc60cc5ddf3b2929df59045"
+  },
+  "native-pair-04/fused/warm/cross_warm_claim_2_citation.saved-sources.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/warm/cross_warm_claim_2_citation.saved-sources.json",
+    "sha256": "6debd6c14446917876d0371637d49f1daab4a02f35ec28d734fdaf165f23de0a"
+  },
+  "native-pair-04/fused/warm/cross_warm_claim_3_citation.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/warm/cross_warm_claim_3_citation.png",
+    "sha256": "4890b493040c9ec930b21827d568e961fd83eb7ce232668a3e8b5f08aa1e6c94"
+  },
+  "native-pair-04/fused/warm/cross_warm_claim_3_citation.saved-sources.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/warm/cross_warm_claim_3_citation.saved-sources.json",
+    "sha256": "6debd6c14446917876d0371637d49f1daab4a02f35ec28d734fdaf165f23de0a"
+  },
+  "native-pair-04/fused/warm/diagnostics.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/warm/diagnostics.json",
+    "sha256": "cbd061787d6880a266dfd22f66047873c3ab38e5db0b52f62da56305a853ec2c"
+  },
+  "native-pair-04/fused/warm/explicit_scope.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/warm/explicit_scope.png",
+    "sha256": "52c73a30c2046224a032ceffdf06861ba4762f50eccdc4ba2b77cff0c2a24c40"
+  },
+  "native-pair-04/fused/warm/launch.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/warm/launch.json",
+    "sha256": "e105c5a060d257eeb624f6b4ee30769265b37d97d73a15c5b6219853fa90fad7"
+  },
+  "native-pair-04/fused/warm/launcher.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/warm/launcher.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "native-pair-04/fused/warm/missing_answer.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/warm/missing_answer.png",
+    "sha256": "a48dc4dfa8bdc9fb4012ee47f91ec59c65c94e851165a5c166887ad13b043e2d"
+  },
+  "native-pair-04/fused/warm/native.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/warm/native.log",
+    "sha256": "f8ba90d2b178abbe21adb6d52b261ed968bffc617a113b9eb5a6260052aed388"
+  },
+  "native-pair-04/fused/warm/process.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/warm/process.json",
+    "sha256": "722a22759acb327e4acaae7491f5f343a14a4ad5444f9f95e0aa32f45aa85906"
+  },
+  "native-pair-04/fused/warm/reduced_answer.png": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/warm/reduced_answer.png",
+    "sha256": "51a4bfafa0773c0b7e58c9985171e02065fe0997239723b302d4b52adb1a9a7c"
+  },
+  "native-pair-04/fused/warm/scenario.done": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/warm/scenario.done",
+    "sha256": "454bdba6a147db581ccbc12d4599b5a2869b47f036819172de677421c89c224d"
+  },
+  "native-pair-04/fused/warm-command.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/warm-command.json",
+    "sha256": "6bff7f308bc31626a662497445b722a3a85d25eebbdac73f9d80c0db1a3abe64"
+  },
+  "native-pair-04/fused-cold-launcher.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused-cold-launcher.log",
+    "sha256": "c02ca109f42c046e10291dc957e35b7beacae52cb0dc6880cee0866628c869af"
+  },
+  "native-pair-04/fused-origin.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused-origin.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "native-pair-04/fused-resident-0.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused-resident-0.log",
+    "sha256": "254451c5af8193d5953cfc3d003e2da230aa6ff0df22850e5475ec3cc2a86711"
+  },
+  "native-pair-04/fused-resident-1.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused-resident-1.log",
+    "sha256": "445d5861bcd4a210dd9cdf6a52787df84e69602607b3a628724487571a3cc0aa"
+  },
+  "native-pair-04/fused-warm-launcher.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused-warm-launcher.log",
+    "sha256": "f448d44a44e93eca41936333b154f93e9498f54a50e57c13bf41541b5dc39e76"
+  },
+  "native-pair-04/inputs.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/inputs.json",
+    "sha256": "f14419f08f1a7fd140d2e0415a7583bc6d4f43187b101a88db067d728b9ce866"
+  },
+  "native-pair-04/process-cleanup-review.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/process-cleanup-review.json",
+    "sha256": "486284111efe1e19db9d9188e6122f6bbceb1f1d43312ea2246d485ad1c7e874"
+  },
+  "native-pair-04/quoted-review-native-review.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/quoted-review-native-review.json",
+    "sha256": "93f6049c39349ff09098263f71623492742bb7c262e8bbd2089bbffb051f52be"
+  },
+  "native-pair-04/score-health-review.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/score-health-review.json",
+    "sha256": "7b72d0408ac72d970e5cadca15ffd7e7e7f9fa956eb10e00abfc247caab42fd4"
+  },
+  "native-pair-04/visual-review.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/visual-review.json",
+    "sha256": "6ccac781751624feebd2e558d4bcba756f062b8b69bcd64af2e87e6786506423"
+  },
+  "native-pair-04/warm-review.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/warm-review.json",
+    "sha256": "0e72422692b71b141ca82e7a80981418735565673822c7a95ce0c6be9b9557a3"
+  },
+  "native-pair-04/wire-default-native-review.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-04/wire-default-native-review.json",
+    "sha256": "208a63b550ef833be78faf6d033506ce2793d0c38265ec63f41d9d266dbaefa5"
+  },
+  "native-harness/answer_contract.rs": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-harness/answer_contract.rs",
+    "sha256": "df3ae7b3e67f6282ab71dd19558aad0fbced66eb83a0cb06bb83d1496cd5d9dd"
+  },
+  "native-harness/auxiliary-inputs.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-harness/auxiliary-inputs.json",
+    "sha256": "659cb81661eb21171cf75faaefd4f689974bf506955832b50b82896a1e9b1393"
+  },
+  "native-harness/candidate_review.rs": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-harness/candidate_review.rs",
+    "sha256": "56e01184d07f534f55bbb9db76d2a23b4b16ffdaccbd09d0ab2a4c14602c756e"
+  },
+  "native-harness/case-freeze.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-harness/case-freeze.json",
+    "sha256": "846dfad5b614c926f5bd8845d9b323eb5bb9267edf06bddf49c06c606b549f7d"
+  },
+  "native-harness/cases.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-harness/cases.json",
+    "sha256": "b91de4627aee873389066f4a8ed814fe4faff85cf1c8a3ae1d8e74f988d27ea2"
+  },
+  "native-harness/cold.scn": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-harness/cold.scn",
+    "sha256": "73471527a25d744da516e41d4ef5b76270c182635d2640d2109c68a81a6f8667"
+  },
+  "native-harness/fixture_server.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-harness/fixture_server.py",
+    "sha256": "ebb42aa6a04fff2866c3a5c8c3128be7a4bf9b3dfe117ecc02a41c2c9b14119f"
+  },
+  "native-harness/knot.mereclip": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-harness/knot.mereclip",
+    "sha256": "34939ee4b6346295181961581bbaa628201eedda98567f7fde409e546628c8ef"
+  },
+  "native-harness/measurement-contract.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-harness/measurement-contract.json",
+    "sha256": "44564e66f1dc320d9485e86a59123ff119844e6d009c695b3c1b6a408c72b187"
+  },
+  "native-harness/optimized-runtime.toml": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-harness/optimized-runtime.toml",
+    "sha256": "7da287858eb9da9788ca02e5871a23c3d01aee9e54319e6517e6199bb778a857"
+  },
+  "native-harness/product-baseline.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-harness/product-baseline.json",
+    "sha256": "13016535284f8aa4d623897c55d41acdce0cf8d5c50f8512edb67ee6cc5b5c4d"
+  },
+  "native-harness/recall.rs": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-harness/recall.rs",
+    "sha256": "b5a0c329282c0b20618487a5cd481c9f6c66f9fdd4b69355da05d676334771ad"
+  },
+  "native-harness/recall_embedding.rs": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-harness/recall_embedding.rs",
+    "sha256": "edff7d72dc855e1f3f7494c1d3942594105d05ab9861a5adc3fbd8b9bfd79ff9"
+  },
+  "native-harness/redshank.mereclip": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-harness/redshank.mereclip",
+    "sha256": "fa046f22a24a4aed93a6b3500008b3beac5f1395efb4feeff3bc74883423a69e"
+  },
+  "native-harness/run_macos_scenario.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-harness/run_macos_scenario.py",
+    "sha256": "c1a6cb530152f3c8accc3dec41a6e7ab0dfb32a10079778ac900c1306f28c69d"
+  },
+  "native-harness/run_native.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-harness/run_native.py",
+    "sha256": "997e2b7b472410442a2b01cc28b0e4c65fde8f1bc1540c13639ce43523b71919"
+  },
+  "native-harness/verify_contract_inputs.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-harness/verify_contract_inputs.py",
+    "sha256": "d49ff64385efabd4ee46419b438b7382ba6f7b72210dd86a96d0ed4de66db92e"
+  },
+  "native-harness/verify_native.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-harness/verify_native.py",
+    "sha256": "f3a0e939cef9ac3bf85f80cb9d1e984ee40d94a0757cf6d4c6c6d55e23b88594"
+  },
+  "native-harness/verify_native_bindings.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-harness/verify_native_bindings.py",
+    "sha256": "e01bf2ecf2a035a64e6a549679e193ec70fe432d5bd6e3c5a13744f1148a80b2"
+  },
+  "native-harness/verify_native_defaults.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-harness/verify_native_defaults.py",
+    "sha256": "e3865d4dcb14cbc28bd4b98a3732cbf128dfda0805571eed7f556b102c2daa74"
+  },
+  "native-harness/verify_native_defaults_original.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-harness/verify_native_defaults_original.py",
+    "sha256": "bfbf4e7c7faeab96e439e8147b6a7fc0ddbe7b31477662836ebc40cfb6543690"
+  },
+  "native-harness/verify_native_facts.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-harness/verify_native_facts.py",
+    "sha256": "adbed9d715c8f37657beb4f38da01075f17a4b2e7641bd665b8f27479cbc23ba"
+  },
+  "native-harness/verify_probe.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-harness/verify_probe.py",
+    "sha256": "e93875eb35e02136038789415f5dfb272c2f491c407d6246322dc21fdbc9cd4d"
+  },
+  "native-harness/verify_structured_output.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-harness/verify_structured_output.py",
+    "sha256": "6275bd267af6aefe19bdd82f1d748a6dbbdb7dcc15c4d12d0bc96fe934c55062"
+  },
+  "native-harness/verify_wire_defaults.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-harness/verify_wire_defaults.py",
+    "sha256": "672a972bf5848b9b3cf578a21ced9986b32721a117f566edf438761a938d4160"
+  },
+  "native-harness/warm.scn": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-harness/warm.scn",
+    "sha256": "281d51d1751d142004f7124c640efe468622636ac52481158d39373d3a157589"
+  },
+  "candidate-02/conflict.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/audit-replay/candidate-01/conflict.json",
+    "sha256": "8137a0f6682991250ba857d973c4ca7127544cbbe6347e85c65371f43e19ced9"
+  },
+  "candidate-02/conflict.partial.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/audit-replay/candidate-01/conflict.partial.json",
+    "sha256": "8137a0f6682991250ba857d973c4ca7127544cbbe6347e85c65371f43e19ced9"
+  },
+  "candidate-02/contract-input-review.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/audit-replay/candidate-01/contract-input-review.json",
+    "sha256": "b76ff1551c7a7c5d87bbe0819e288c24cc5051e5580897845e0ef647b9d5345a"
+  },
+  "candidate-02/contract-verification.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/audit-replay/candidate-01/contract-verification.log",
+    "sha256": "b76ff1551c7a7c5d87bbe0819e288c24cc5051e5580897845e0ef647b9d5345a"
+  },
+  "candidate-02/cross.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/audit-replay/candidate-01/cross.json",
+    "sha256": "114416e8e9e6c58c4f37d7cd8d700e4576ef20e63b7e72c165d20b90fcd82d47"
+  },
+  "candidate-02/cross.partial.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/audit-replay/candidate-01/cross.partial.json",
+    "sha256": "114416e8e9e6c58c4f37d7cd8d700e4576ef20e63b7e72c165d20b90fcd82d47"
+  },
+  "candidate-02/frozen/answer_contract.rs": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/audit-replay/candidate-01/frozen/answer_contract.rs",
+    "sha256": "df3ae7b3e67f6282ab71dd19558aad0fbced66eb83a0cb06bb83d1496cd5d9dd"
+  },
+  "candidate-02/frozen/candidate_review.rs": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/audit-replay/candidate-01/frozen/candidate_review.rs",
+    "sha256": "56e01184d07f534f55bbb9db76d2a23b4b16ffdaccbd09d0ab2a4c14602c756e"
+  },
+  "candidate-02/frozen/case-freeze.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/audit-replay/candidate-01/frozen/case-freeze.json",
+    "sha256": "846dfad5b614c926f5bd8845d9b323eb5bb9267edf06bddf49c06c606b549f7d"
+  },
+  "candidate-02/frozen/cases.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/audit-replay/candidate-01/frozen/cases.json",
+    "sha256": "b91de4627aee873389066f4a8ed814fe4faff85cf1c8a3ae1d8e74f988d27ea2"
+  },
+  "candidate-02/frozen/measurement-contract.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/audit-replay/candidate-01/frozen/measurement-contract.json",
+    "sha256": "c01c251a60a00c1e3982b88591e06a604bcacede8df16b6642307c10ef3c58bf"
+  },
+  "candidate-02/frozen/optimized-runtime.toml": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/audit-replay/candidate-01/frozen/optimized-runtime.toml",
+    "sha256": "7da287858eb9da9788ca02e5871a23c3d01aee9e54319e6517e6199bb778a857"
+  },
+  "candidate-02/frozen/run_probe.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/audit-replay/candidate-01/frozen/run_probe.py",
+    "sha256": "628bd0ab010fc0524bedc38d9bd7db6581d9f3bd3c90cbc2d165d2beae299031"
+  },
+  "candidate-02/frozen/verify_contract_inputs.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/audit-replay/candidate-01/frozen/verify_contract_inputs.py",
+    "sha256": "d49ff64385efabd4ee46419b438b7382ba6f7b72210dd86a96d0ed4de66db92e"
+  },
+  "candidate-02/frozen/verify_native.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/audit-replay/candidate-01/frozen/verify_native.py",
+    "sha256": "f3a0e939cef9ac3bf85f80cb9d1e984ee40d94a0757cf6d4c6c6d55e23b88594"
+  },
+  "candidate-02/frozen/verify_probe.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/audit-replay/candidate-01/frozen/verify_probe.py",
+    "sha256": "e93875eb35e02136038789415f5dfb272c2f491c407d6246322dc21fdbc9cd4d"
+  },
+  "candidate-02/frozen/verify_score_health.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/audit-replay/candidate-01/frozen/verify_score_health.py",
+    "sha256": "6dfbc4ab0dc034e0ee9997aab1b4a42be38ed841e938c461bccfb87023a4550f"
+  },
+  "candidate-02/frozen/verify_structured_output.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/audit-replay/candidate-01/frozen/verify_structured_output.py",
+    "sha256": "6275bd267af6aefe19bdd82f1d748a6dbbdb7dcc15c4d12d0bc96fe934c55062"
+  },
+  "candidate-02/frozen/verify_wire_defaults.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/audit-replay/candidate-01/frozen/verify_wire_defaults.py",
+    "sha256": "672a972bf5848b9b3cf578a21ced9986b32721a117f566edf438761a938d4160"
+  },
+  "candidate-02/gate.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/audit-replay/candidate-01/gate.json",
+    "sha256": "b9ff6390a10886ae7aba1dfc20da010d3dd172cb9dde8a5bdbcdeb8935136dd4"
+  },
+  "candidate-02/inputs.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/audit-replay/candidate-01/inputs.json",
+    "sha256": "810b58d720250ac4c3a4356b392ee6f60cd8c7331e7eea0928b6821a0363dcaf"
+  },
+  "candidate-02/missing.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/audit-replay/candidate-01/missing.json",
+    "sha256": "85a5f61975e669138a9a090888e4a1137b35248844f690005f034c21a804cbf3"
+  },
+  "candidate-02/missing.partial.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/audit-replay/candidate-01/missing.partial.json",
+    "sha256": "85a5f61975e669138a9a090888e4a1137b35248844f690005f034c21a804cbf3"
+  },
+  "candidate-02/process-exit.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/audit-replay/candidate-01/process-exit.json",
+    "sha256": "949933f64d2bf1840bf1f28082dfd95d9178160899a94a927705e4712d6de457"
+  },
+  "candidate-02/process.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/audit-replay/candidate-01/process.json",
+    "sha256": "1c79ac4606ca3d9cffb2e82d9900ed4af35cba113e8926ab840d747785d667fd"
+  },
+  "candidate-02/progress.jsonl": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/audit-replay/candidate-01/progress.jsonl",
+    "sha256": "54525c54c53f079e48dd843f01b4d6a4d0149e0a2bc51921017ed2370d43cdd3"
+  },
+  "candidate-02/reduced.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/audit-replay/candidate-01/reduced.json",
+    "sha256": "0174be1b6a4ca7e3d0edaf44c8d1a9eef305fe8d91b05b0164663f0d6dfea134"
+  },
+  "candidate-02/reduced.partial.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/audit-replay/candidate-01/reduced.partial.json",
+    "sha256": "0174be1b6a4ca7e3d0edaf44c8d1a9eef305fe8d91b05b0164663f0d6dfea134"
+  },
+  "candidate-02/run.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/audit-replay/candidate-01/run.log",
+    "sha256": "3a4febdf030ea31044453045df035247cb9e068c897965e3d087fe3000eeb31b"
+  },
+  "candidate-02/score-health-review.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/audit-replay/candidate-01/score-health-review.json",
+    "sha256": "771565427c049ab36d25812f359607e272deb320a6a3c902d7ad09ad83cdbb68"
+  },
+  "candidate-02/score-health-verification.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/audit-replay/candidate-01/score-health-verification.log",
+    "sha256": "771565427c049ab36d25812f359607e272deb320a6a3c902d7ad09ad83cdbb68"
+  },
+  "candidate-02/structured-output-review.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/audit-replay/candidate-01/structured-output-review.json",
+    "sha256": "1b74e77ff95d6dad188c6a1943ddb02a5cc74f81e1c8bd194c312e367aa67f22"
+  },
+  "candidate-02/structured-verification.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/audit-replay/candidate-01/structured-verification.log",
+    "sha256": "1b74e77ff95d6dad188c6a1943ddb02a5cc74f81e1c8bd194c312e367aa67f22"
+  },
+  "candidate-02/verification.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/audit-replay/candidate-01/verification.log",
+    "sha256": "b9ff6390a10886ae7aba1dfc20da010d3dd172cb9dde8a5bdbcdeb8935136dd4"
+  },
+  "candidate-02/wire-default-review.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/audit-replay/candidate-01/wire-default-review.json",
+    "sha256": "5b6bb71428d4e476c535c8002219d5c45b43eee7b0ab2612d6c6b06f4aa2aace"
+  },
+  "candidate-02/wire-default-verification.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/audit-replay/candidate-01/wire-default-verification.log",
+    "sha256": "5b6bb71428d4e476c535c8002219d5c45b43eee7b0ab2612d6c6b06f4aa2aace"
+  },
+  "candidate-03/conflict.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-replay/candidate-01/conflict.json",
+    "sha256": "6ea8551e8db96cfa9f4402e6ce328d113074cef228d22b0723f062f0784e269a"
+  },
+  "candidate-03/conflict.partial.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-replay/candidate-01/conflict.partial.json",
+    "sha256": "6ea8551e8db96cfa9f4402e6ce328d113074cef228d22b0723f062f0784e269a"
+  },
+  "candidate-03/contract-input-review.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-replay/candidate-01/contract-input-review.json",
+    "sha256": "b76ff1551c7a7c5d87bbe0819e288c24cc5051e5580897845e0ef647b9d5345a"
+  },
+  "candidate-03/contract-verification.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-replay/candidate-01/contract-verification.log",
+    "sha256": "b76ff1551c7a7c5d87bbe0819e288c24cc5051e5580897845e0ef647b9d5345a"
+  },
+  "candidate-03/cross.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-replay/candidate-01/cross.json",
+    "sha256": "e7a785e968c0378c7de57cc514c07c990b5f19db6b88318c56b07b71dc3fa369"
+  },
+  "candidate-03/cross.partial.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-replay/candidate-01/cross.partial.json",
+    "sha256": "e7a785e968c0378c7de57cc514c07c990b5f19db6b88318c56b07b71dc3fa369"
+  },
+  "candidate-03/frozen/answer_contract.rs": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-replay/candidate-01/frozen/answer_contract.rs",
+    "sha256": "df3ae7b3e67f6282ab71dd19558aad0fbced66eb83a0cb06bb83d1496cd5d9dd"
+  },
+  "candidate-03/frozen/candidate_review.rs": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-replay/candidate-01/frozen/candidate_review.rs",
+    "sha256": "56e01184d07f534f55bbb9db76d2a23b4b16ffdaccbd09d0ab2a4c14602c756e"
+  },
+  "candidate-03/frozen/case-freeze.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-replay/candidate-01/frozen/case-freeze.json",
+    "sha256": "846dfad5b614c926f5bd8845d9b323eb5bb9267edf06bddf49c06c606b549f7d"
+  },
+  "candidate-03/frozen/cases.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-replay/candidate-01/frozen/cases.json",
+    "sha256": "b91de4627aee873389066f4a8ed814fe4faff85cf1c8a3ae1d8e74f988d27ea2"
+  },
+  "candidate-03/frozen/measurement-contract.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-replay/candidate-01/frozen/measurement-contract.json",
+    "sha256": "44564e66f1dc320d9485e86a59123ff119844e6d009c695b3c1b6a408c72b187"
+  },
+  "candidate-03/frozen/optimized-runtime.toml": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-replay/candidate-01/frozen/optimized-runtime.toml",
+    "sha256": "7da287858eb9da9788ca02e5871a23c3d01aee9e54319e6517e6199bb778a857"
+  },
+  "candidate-03/frozen/recall.rs": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-replay/candidate-01/frozen/recall.rs",
+    "sha256": "b5a0c329282c0b20618487a5cd481c9f6c66f9fdd4b69355da05d676334771ad"
+  },
+  "candidate-03/frozen/recall_embedding.rs": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-replay/candidate-01/frozen/recall_embedding.rs",
+    "sha256": "edff7d72dc855e1f3f7494c1d3942594105d05ab9861a5adc3fbd8b9bfd79ff9"
+  },
+  "candidate-03/frozen/run_probe.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-replay/candidate-01/frozen/run_probe.py",
+    "sha256": "3bf5ed0b385937cb08cdfbd26a332f82bfae4b559a506a54fac6fd45e58f8ad1"
+  },
+  "candidate-03/frozen/verify_contract_inputs.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-replay/candidate-01/frozen/verify_contract_inputs.py",
+    "sha256": "d49ff64385efabd4ee46419b438b7382ba6f7b72210dd86a96d0ed4de66db92e"
+  },
+  "candidate-03/frozen/verify_native.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-replay/candidate-01/frozen/verify_native.py",
+    "sha256": "f3a0e939cef9ac3bf85f80cb9d1e984ee40d94a0757cf6d4c6c6d55e23b88594"
+  },
+  "candidate-03/frozen/verify_probe.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-replay/candidate-01/frozen/verify_probe.py",
+    "sha256": "e93875eb35e02136038789415f5dfb272c2f491c407d6246322dc21fdbc9cd4d"
+  },
+  "candidate-03/frozen/verify_score_health.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-replay/candidate-01/frozen/verify_score_health.py",
+    "sha256": "6dfbc4ab0dc034e0ee9997aab1b4a42be38ed841e938c461bccfb87023a4550f"
+  },
+  "candidate-03/frozen/verify_structured_output.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-replay/candidate-01/frozen/verify_structured_output.py",
+    "sha256": "6275bd267af6aefe19bdd82f1d748a6dbbdb7dcc15c4d12d0bc96fe934c55062"
+  },
+  "candidate-03/frozen/verify_wire_defaults.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-replay/candidate-01/frozen/verify_wire_defaults.py",
+    "sha256": "672a972bf5848b9b3cf578a21ced9986b32721a117f566edf438761a938d4160"
+  },
+  "candidate-03/gate.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-replay/candidate-01/gate.json",
+    "sha256": "b9ff6390a10886ae7aba1dfc20da010d3dd172cb9dde8a5bdbcdeb8935136dd4"
+  },
+  "candidate-03/inputs.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-replay/candidate-01/inputs.json",
+    "sha256": "427e079411f76c41ac1203506d63cc965a28198a5fe6925fd86635a84d7c7bc1"
+  },
+  "candidate-03/missing.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-replay/candidate-01/missing.json",
+    "sha256": "ccbf45278fbaed6bdfd9f9c259779732a210a5f942a10dd3243fa1385f7f448a"
+  },
+  "candidate-03/missing.partial.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-replay/candidate-01/missing.partial.json",
+    "sha256": "ccbf45278fbaed6bdfd9f9c259779732a210a5f942a10dd3243fa1385f7f448a"
+  },
+  "candidate-03/process-exit.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-replay/candidate-01/process-exit.json",
+    "sha256": "bc232cba1021b19c220136d1a5aca2bc9d5aa16d025985c4cfa9ed44933da8a1"
+  },
+  "candidate-03/process.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-replay/candidate-01/process.json",
+    "sha256": "ac515545b4cad7f5946bf38976dbc52f233b2ba2dfeb8156f66ec01859eff6a8"
+  },
+  "candidate-03/progress.jsonl": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-replay/candidate-01/progress.jsonl",
+    "sha256": "b38a137fc155db5ea328c322864e0e6cb689420308ffdaaa0687c2af7b109698"
+  },
+  "candidate-03/reduced.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-replay/candidate-01/reduced.json",
+    "sha256": "2ee5dce9bc8dcf1cf4e75a6506175594c7ec77ead49faa12f1659adec24b9412"
+  },
+  "candidate-03/reduced.partial.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-replay/candidate-01/reduced.partial.json",
+    "sha256": "2ee5dce9bc8dcf1cf4e75a6506175594c7ec77ead49faa12f1659adec24b9412"
+  },
+  "candidate-03/run.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-replay/candidate-01/run.log",
+    "sha256": "7d7415fd1c3ca028f2838be71f5314e270a13acbc3eb08556627c66866fce273"
+  },
+  "candidate-03/score-health-review.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-replay/candidate-01/score-health-review.json",
+    "sha256": "771565427c049ab36d25812f359607e272deb320a6a3c902d7ad09ad83cdbb68"
+  },
+  "candidate-03/score-health-verification.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-replay/candidate-01/score-health-verification.log",
+    "sha256": "771565427c049ab36d25812f359607e272deb320a6a3c902d7ad09ad83cdbb68"
+  },
+  "candidate-03/structured-output-review.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-replay/candidate-01/structured-output-review.json",
+    "sha256": "1b74e77ff95d6dad188c6a1943ddb02a5cc74f81e1c8bd194c312e367aa67f22"
+  },
+  "candidate-03/structured-verification.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-replay/candidate-01/structured-verification.log",
+    "sha256": "1b74e77ff95d6dad188c6a1943ddb02a5cc74f81e1c8bd194c312e367aa67f22"
+  },
+  "candidate-03/verification.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-replay/candidate-01/verification.log",
+    "sha256": "b9ff6390a10886ae7aba1dfc20da010d3dd172cb9dde8a5bdbcdeb8935136dd4"
+  },
+  "candidate-03/wire-default-review.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-replay/candidate-01/wire-default-review.json",
+    "sha256": "5b6bb71428d4e476c535c8002219d5c45b43eee7b0ab2612d6c6b06f4aa2aace"
+  },
+  "candidate-03/wire-default-verification.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-replay/candidate-01/wire-default-verification.log",
+    "sha256": "5b6bb71428d4e476c535c8002219d5c45b43eee7b0ab2612d6c6b06f4aa2aace"
+  },
+  "sources-before-order/mere/ports/distillery/src/inference/recall.rs": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/sources-before-order/mere/ports/distillery/src/inference/recall.rs",
+    "sha256": "cb787ac9103fdb045ac9c37c02f2cc4365fd29d14e8abbde8384fcb241f0b56b"
+  },
+  "sources-before-order/mere/ports/distillery/src/inference/recall_embedding.rs": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/sources-before-order/mere/ports/distillery/src/inference/recall_embedding.rs",
+    "sha256": "f3f85dacf5ce555b4c91915c8395ce56e54a579e65b655082004e7c1b8006013"
+  },
+  "sources-before-order/mere/ports/distillery/src/inference.rs": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/sources-before-order/mere/ports/distillery/src/inference.rs",
+    "sha256": "02ebc4e35138772603e47d1c6bc836733dbbf5d44e6de78517b8ea75b84c43e2"
+  },
+  "failed-v6/candidate-01/conflict.json": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/candidate-01/conflict.json",
+    "sha256": "858caf3369a179b31a49207a010516c488aadb8df5858be8dc4f6ff557f5504f"
+  },
+  "failed-v6/candidate-01/conflict.partial.json": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/candidate-01/conflict.partial.json",
+    "sha256": "858caf3369a179b31a49207a010516c488aadb8df5858be8dc4f6ff557f5504f"
+  },
+  "failed-v6/candidate-01/contract-input-review.json": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/candidate-01/contract-input-review.json",
+    "sha256": "88451e9decd85364c2d62456e0456cfa3faddbe6ec03bc3377687ade00694b08"
+  },
+  "failed-v6/candidate-01/contract-verification.log": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/candidate-01/contract-verification.log",
+    "sha256": "88451e9decd85364c2d62456e0456cfa3faddbe6ec03bc3377687ade00694b08"
+  },
+  "failed-v6/candidate-01/cross.json": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/candidate-01/cross.json",
+    "sha256": "3bc0846e74e4af956544fbe36db729b5506192e97001533f5f71821615be92f9"
+  },
+  "failed-v6/candidate-01/cross.partial.json": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/candidate-01/cross.partial.json",
+    "sha256": "3bc0846e74e4af956544fbe36db729b5506192e97001533f5f71821615be92f9"
+  },
+  "failed-v6/candidate-01/frozen/answer_contract.rs": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/candidate-01/frozen/answer_contract.rs",
+    "sha256": "86ad5a502cc4f9aff886a2caa0c3e259fd7e7b1f1214b059cb14aed9c79ad729"
+  },
+  "failed-v6/candidate-01/frozen/candidate_review.rs": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/candidate-01/frozen/candidate_review.rs",
+    "sha256": "0bf3a421e833f8c90d2cc57494c5bba45cf5b401168f302a009c2aae69d18e29"
+  },
+  "failed-v6/candidate-01/frozen/case-freeze.json": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/candidate-01/frozen/case-freeze.json",
+    "sha256": "846dfad5b614c926f5bd8845d9b323eb5bb9267edf06bddf49c06c606b549f7d"
+  },
+  "failed-v6/candidate-01/frozen/cases.json": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/candidate-01/frozen/cases.json",
+    "sha256": "b91de4627aee873389066f4a8ed814fe4faff85cf1c8a3ae1d8e74f988d27ea2"
+  },
+  "failed-v6/candidate-01/frozen/measurement-contract.json": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/candidate-01/frozen/measurement-contract.json",
+    "sha256": "5a4ffa76debd663ee40f9fdb9260a8e57312a3088c2bdb3a8ee7663f40c8f842"
+  },
+  "failed-v6/candidate-01/frozen/optimized-runtime.toml": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/candidate-01/frozen/optimized-runtime.toml",
+    "sha256": "7ed6fb12d461f4b4bcec5bba79f0a23d47b3266118ceedf2e8f641c24ec3bbc8"
+  },
+  "failed-v6/candidate-01/frozen/run_probe.py": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/candidate-01/frozen/run_probe.py",
+    "sha256": "e46fc759e885cc596c8275c51ebb04edea4f83b47de887351ad76138809df643"
+  },
+  "failed-v6/candidate-01/frozen/verify_contract_inputs.py": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/candidate-01/frozen/verify_contract_inputs.py",
+    "sha256": "96d06949cc8444f0b53cb3fd3dc50a9daa6efbfbc455b9247d9152173e13da69"
+  },
+  "failed-v6/candidate-01/frozen/verify_native.py": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/candidate-01/frozen/verify_native.py",
+    "sha256": "f3a0e939cef9ac3bf85f80cb9d1e984ee40d94a0757cf6d4c6c6d55e23b88594"
+  },
+  "failed-v6/candidate-01/frozen/verify_probe.py": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/candidate-01/frozen/verify_probe.py",
+    "sha256": "e93875eb35e02136038789415f5dfb272c2f491c407d6246322dc21fdbc9cd4d"
+  },
+  "failed-v6/candidate-01/frozen/verify_score_health.py": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/candidate-01/frozen/verify_score_health.py",
+    "sha256": "6dfbc4ab0dc034e0ee9997aab1b4a42be38ed841e938c461bccfb87023a4550f"
+  },
+  "failed-v6/candidate-01/frozen/verify_structured_output.py": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/candidate-01/frozen/verify_structured_output.py",
+    "sha256": "b0f43b5bf844b4a3b0401bd730337aee8932a4049e53475b9b4936c532df1251"
+  },
+  "failed-v6/candidate-01/frozen/verify_wire_defaults.py": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/candidate-01/frozen/verify_wire_defaults.py",
+    "sha256": "672a972bf5848b9b3cf578a21ced9986b32721a117f566edf438761a938d4160"
+  },
+  "failed-v6/candidate-01/gate.json": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/candidate-01/gate.json",
+    "sha256": "f37f454f8a3ad519e9118432c3dc31f289555ba9a8955896c2bacc548c081a40"
+  },
+  "failed-v6/candidate-01/inputs.json": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/candidate-01/inputs.json",
+    "sha256": "6a56643213e1736d7ad60b7a5e987a2409dc0c298f843d7a455b68928b3f5c8a"
+  },
+  "failed-v6/candidate-01/missing.json": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/candidate-01/missing.json",
+    "sha256": "39bbd9c868376803cf5a3f1cd4c427644fb5f21ed9cdac4c0e662613b0cb6ffb"
+  },
+  "failed-v6/candidate-01/missing.partial.json": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/candidate-01/missing.partial.json",
+    "sha256": "39bbd9c868376803cf5a3f1cd4c427644fb5f21ed9cdac4c0e662613b0cb6ffb"
+  },
+  "failed-v6/candidate-01/process-exit.json": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/candidate-01/process-exit.json",
+    "sha256": "1efac5125b307f6dde5026b2ffd993f53d7f381a1f1f2dffae5edd5640da1f9d"
+  },
+  "failed-v6/candidate-01/process.json": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/candidate-01/process.json",
+    "sha256": "b4d1423d4d77a5621ebca9abb68ff5a3bfe28a112bf98f6a5f2873f6bdcaee31"
+  },
+  "failed-v6/candidate-01/progress.jsonl": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/candidate-01/progress.jsonl",
+    "sha256": "c42c802739ae29942b85e83d96af9c77867ce94801b047503e8a52b80309dab5"
+  },
+  "failed-v6/candidate-01/reduced.json": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/candidate-01/reduced.json",
+    "sha256": "aaca08fa117821ad52a670f7e16ec854f0d490cb04fdf7cab1cc8e3950c41364"
+  },
+  "failed-v6/candidate-01/reduced.partial.json": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/candidate-01/reduced.partial.json",
+    "sha256": "aaca08fa117821ad52a670f7e16ec854f0d490cb04fdf7cab1cc8e3950c41364"
+  },
+  "failed-v6/candidate-01/run.log": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/candidate-01/run.log",
+    "sha256": "7d18e1513f1b8fa720cde6aa044a6a7c0fcada044f76814c86877eca8ea4fc65"
+  },
+  "failed-v6/candidate-01/score-health-review.json": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/candidate-01/score-health-review.json",
+    "sha256": "3cb14bea8e84a47b01bebc5703ad43968f0618b4724bed13a35902046124ec47"
+  },
+  "failed-v6/candidate-01/score-health-verification.log": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/candidate-01/score-health-verification.log",
+    "sha256": "3cb14bea8e84a47b01bebc5703ad43968f0618b4724bed13a35902046124ec47"
+  },
+  "failed-v6/candidate-01/structured-output-review.json": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/candidate-01/structured-output-review.json",
+    "sha256": "8271e129283645b6bd696895ebfff782d76260a15662dda55e4cd1c0d4088146"
+  },
+  "failed-v6/candidate-01/structured-verification.log": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/candidate-01/structured-verification.log",
+    "sha256": "8271e129283645b6bd696895ebfff782d76260a15662dda55e4cd1c0d4088146"
+  },
+  "failed-v6/candidate-01/verification.log": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/candidate-01/verification.log",
+    "sha256": "f37f454f8a3ad519e9118432c3dc31f289555ba9a8955896c2bacc548c081a40"
+  },
+  "failed-v6/candidate-01/wire-default-review.json": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/candidate-01/wire-default-review.json",
+    "sha256": "0b3a19923c3cad50f939399d2b20b744490f4e467b1664d7dc9d22cb0ca9384d"
+  },
+  "failed-v6/candidate-01/wire-default-verification.log": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/candidate-01/wire-default-verification.log",
+    "sha256": "0b3a19923c3cad50f939399d2b20b744490f4e467b1664d7dc9d22cb0ca9384d"
+  },
+  "failed-v6/sources-v6/eidetic/crates/eidetic-core/src/models/answer.rs": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/sources-v6/eidetic/crates/eidetic-core/src/models/answer.rs",
+    "sha256": "2959cd0e995a9a3022e15397f3603271595adf95f9a9750ef760689d5f5ba041"
+  },
+  "failed-v6/sources-v6/mere/ports/distillery/src/inference/answer_contract.rs": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/sources-v6/mere/ports/distillery/src/inference/answer_contract.rs",
+    "sha256": "86ad5a502cc4f9aff886a2caa0c3e259fd7e7b1f1214b059cb14aed9c79ad729"
+  },
+  "failed-v6/sources-v6/mere/ports/distillery/src/inference/candidate_review.rs": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/sources-v6/mere/ports/distillery/src/inference/candidate_review.rs",
+    "sha256": "0bf3a421e833f8c90d2cc57494c5bba45cf5b401168f302a009c2aae69d18e29"
+  },
+  "failed-v6/sources-v6/mere/ports/distillery/src/inference/durable.rs": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/sources-v6/mere/ports/distillery/src/inference/durable.rs",
+    "sha256": "1f39c53d398405bc7109bf7aca50665d247ed71d7390240c0dd9dab8440eaedd"
+  },
+  "failed-v6/sources-v6/mere/ports/distillery/src/inference/recall.rs": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/sources-v6/mere/ports/distillery/src/inference/recall.rs",
+    "sha256": "f897ceae7ac8aaa5ac71ed694507687dc24a723c8a3d09d9cedb90d470c0861c"
+  },
+  "failed-v6/sources-v6/turnstone/src/inference_surface.rs": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/sources-v6/turnstone/src/inference_surface.rs",
+    "sha256": "c43d1a12b2928a488a43b2f2c89068e7083dcb52f84e6a1d62e047007792dfb3"
+  },
+  "failed-v6/canonical-sources.json": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/canonical-sources.json",
+    "sha256": "4282b88cf3d005ef860386d48471e9e86398c3513de43097595c447927bc575c"
+  },
+  "failed-v6/eidetic-tests.log": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/eidetic-tests.log",
+    "sha256": "b521d3eae7b921bbce1d5c42bd9e14ed53b404f632cb553bd9f45ee5933a6da1"
+  },
+  "failed-v6/lock-resolution.log": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/lock-resolution.log",
+    "sha256": "5c90e88d2013f06e1ce11c4313affe1d98f188fcaf5c77bc8e3cd4d3b643c2a1"
+  },
+  "failed-v6/measurement-contract.json": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/measurement-contract.json",
+    "sha256": "5a4ffa76debd663ee40f9fdb9260a8e57312a3088c2bdb3a8ee7663f40c8f842"
+  },
+  "failed-v6/observed-failures.json": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/observed-failures.json",
+    "sha256": "96e08fbf0330e8a2c1aba6143a0d5f606bffa58eb24867178f10475ffe726847"
+  },
+  "failed-v6/optimized-runtime.toml": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/optimized-runtime.toml",
+    "sha256": "7ed6fb12d461f4b4bcec5bba79f0a23d47b3266118ceedf2e8f641c24ec3bbc8"
+  },
+  "failed-v6/preservation-before.json": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/preservation-before.json",
+    "sha256": "5b743b255a5a4a80c308ea09e60acb90690ef745d8290ca003ccfef14db6aea2"
+  },
+  "failed-v6/probe-driver.log": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/probe-driver.log",
+    "sha256": "f6a47d73dca5828d0246f5f19a68d20a7c2f4a20e98739e53bd560acd3a2ab2e"
+  },
+  "failed-v6/refresh_suppliers.py": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/refresh_suppliers.py",
+    "sha256": "aaabf450cebf4a5fa43d8ff725d2f14b8fc5448126cb6bae4db0c3ce54b2f022"
+  },
+  "failed-v6/resident-build.log": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/resident-build.log",
+    "sha256": "60712a92088c935755d737107429859c3e8f761b847d4dea2dc5e36a088b65bf"
+  },
+  "failed-v6/resident-route-tests.log": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/resident-route-tests.log",
+    "sha256": "78ba8c0620cbba1aa1a3cbcdb4ebb2e406ce6b83d6c57af9f057f1cb704ae135"
+  },
+  "failed-v6/resident-tests-final.log": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/resident-tests-final.log",
+    "sha256": "442ef129f17944dbd92fc9101eef44c33fd90a72a6d0a39262011043feda19c6"
+  },
+  "failed-v6/resident-tests.log": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/resident-tests.log",
+    "sha256": "c80e1a21c0816f61ddaec5214123446059c9409c77f30386f5a23fd2d490456f"
+  },
+  "failed-v6/run_probe.py": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/run_probe.py",
+    "sha256": "e46fc759e885cc596c8275c51ebb04edea4f83b47de887351ad76138809df643"
+  },
+  "failed-v6/supplier-pins.json": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/supplier-pins.json",
+    "sha256": "847825d3b0c1092b27b9800597d879678de2720bc967d6b89feb89c1cc683dab"
+  },
+  "failed-v6/supplier-refresh.log": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/supplier-refresh.log",
+    "sha256": "1a7429b857948af9063787b8f65d050e543605cc4ddd5e088bf4ed25215a9057"
+  },
+  "failed-v6/turnstone-lock-resolution.log": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/turnstone-lock-resolution.log",
+    "sha256": "538acc7350c0ae37d509b2340bb9b1b151384ae9e08ce2589c00a3053c8e67f6"
+  },
+  "failed-v6/turnstone-tests.log": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/turnstone-tests.log",
+    "sha256": "b8b91d602473eab104510ccc1d5fc6a29d6a374b44667cfc40b35588fbf3c4e0"
+  },
+  "failed-v6/verify_contract_inputs.py": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/verify_contract_inputs.py",
+    "sha256": "96d06949cc8444f0b53cb3fd3dc50a9daa6efbfbc455b9247d9152173e13da69"
+  },
+  "failed-v6/verify_score_health.py": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/verify_score_health.py",
+    "sha256": "6dfbc4ab0dc034e0ee9997aab1b4a42be38ed841e938c461bccfb87023a4550f"
+  },
+  "failed-v6/verify_structured_output.py": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/verify_structured_output.py",
+    "sha256": "b0f43b5bf844b4a3b0401bd730337aee8932a4049e53475b9b4936c532df1251"
+  },
+  "failed-v6/verify_wire_defaults.py": {
+    "source": "/Users/markik/Code/output/candidate-review-20261024/verify_wire_defaults.py",
+    "sha256": "672a972bf5848b9b3cf578a21ced9986b32721a117f566edf438761a938d4160"
+  },
+  "qualification/audit-probe-driver-02.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/audit-probe-driver-02.log",
+    "sha256": "37e3f911fd64f55e32b0a6b7af9ffc8c0b3cd18ea11f2de2045d43a2f51fcc59"
+  },
+  "qualification/audit-probe-driver.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/audit-probe-driver.log",
+    "sha256": "3e06b18de10a60bbe2a9844ae51add3e18dc8d50aa5d557fa50017c2fbba76ed"
+  },
+  "qualification/audit-probe-exit-02.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/audit-probe-exit-02.json",
+    "sha256": "3e42a2ad3dbeab9d1167d20261ad6305bdea31103ffc09c30f25558345966de2"
+  },
+  "qualification/audit-probe-exit.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/audit-probe-exit.json",
+    "sha256": "331dd85020eaf7c911e3417ee78f7ff17a0d1257e2a5c310696fc702d1c3f16f"
+  },
+  "qualification/audit-product-build-02.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/audit-product-build-02.log",
+    "sha256": "a16fbdec826f602a169c426ac022354ae0994fb8cb4a2a2110ec9d2b66b8d2cc"
+  },
+  "qualification/audit-product-build.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/audit-product-build.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "qualification/audit-resident-build.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/audit-resident-build.log",
+    "sha256": "d06d71302b77e7052cfb543b425515edfb63c5cea1b06b12bd64164923d97ccd"
+  },
+  "qualification/audit-resident-tests.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/audit-resident-tests.log",
+    "sha256": "9d3c22a644e38a92675ec5829e8c40e4b6d29e319cf8636136ef8bedce4c496a"
+  },
+  "qualification/audit-runtime.toml": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/audit-runtime.toml",
+    "sha256": "7da287858eb9da9788ca02e5871a23c3d01aee9e54319e6517e6199bb778a857"
+  },
+  "qualification/baseline-v6-pins.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/baseline-v6-pins.json",
+    "sha256": "847825d3b0c1092b27b9800597d879678de2720bc967d6b89feb89c1cc683dab"
+  },
+  "qualification/before-order-pins.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/before-order-pins.json",
+    "sha256": "0f07b7475ffc6c54c777d1c152748e4be5c9aa452ff6d9a47507f96816e41071"
+  },
+  "qualification/canonical-sources.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/canonical-sources.json",
+    "sha256": "7cc10af33d09d5cca7929323a2339dfce6f313ea255417e2c1cf9454e8f9c4e4"
+  },
+  "qualification/check_native_health.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/check_native_health.py",
+    "sha256": "2d4ec2e924828827e4d13d3dfda6d61d2313f3503969faef881971e1f447117e"
+  },
+  "qualification/diagnose_snapshot.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/diagnose_snapshot.py",
+    "sha256": "ec156e0447f813a9e0ae12424697b59da20ebf47855675dd9ef7a49043ede828"
+  },
+  "qualification/diagnose_snapshot_phase1.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/diagnose_snapshot_phase1.py",
+    "sha256": "55334456ac77e223471188dd7d97b7f78612e0d133881eb296b2aaafdf8bd927"
+  },
+  "qualification/diagnose_snapshot_phase1_02.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/diagnose_snapshot_phase1_02.py",
+    "sha256": "76c935b008546db6173c01412f58570b41c6bdd85e2fefa822b0d50d973dc104"
+  },
+  "qualification/diagnose_snapshot_profile.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/diagnose_snapshot_profile.py",
+    "sha256": "be2ba4ce3b9c99bc92b42008061515f67957a80fa550b07dba85c9f7cd6877a0"
+  },
+  "qualification/driver-log-provenance.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/driver-log-provenance.json",
+    "sha256": "4dce24cc361f3b0d616a570089965f73e2d577c65072e702a170853c372523b4"
+  },
+  "qualification/eidetic-tests.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/eidetic-tests.log",
+    "sha256": "1d4e32e820efc4ba77e7fd38a144a39feb7e33d77609326de73065a964f02005"
+  },
+  "qualification/final-source-state.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/final-source-state.json",
+    "sha256": "09535aef84bfe91b7a024bbb3150689bc62b79c6bea4c6d680d7b5e39a7f99f5"
+  },
+  "qualification/finalize-receipt.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/finalize-receipt.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "qualification/finalize_receipt.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/finalize_receipt.py",
+    "sha256": "aaa843ca7c38a5050b8d4c49d21a3d23e792de069816cb1d423678d654e029b9"
+  },
+  "qualification/headless-native-input-equality.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/headless-native-input-equality.json",
+    "sha256": "0ef742fece8cde8d36bf6ad6fc2c5843a6e5788fa219a8be92a71f456abea64b"
+  },
+  "qualification/historical-prompt-check.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/historical-prompt-check.json",
+    "sha256": "270ab31aabd7d070458ca1c04dd6f31fe647d3253a150c0f59a486312e2fcfed"
+  },
+  "qualification/measurement-contract.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/measurement-contract.json",
+    "sha256": "5d52c823c98d45ef88021a8ea1fbf2e6c1869c2a5beae691c50563e5bcaf5d16"
+  },
+  "qualification/native-pair-driver-02.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-driver-02.log",
+    "sha256": "4264875ff150f2d93f7cca10c638d90ab382367ebde693d9449df55083f26b3a"
+  },
+  "qualification/native-pair-driver-04.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-driver-04.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "qualification/native-pair-driver.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-driver.log",
+    "sha256": "5d24da5e917044792801e11a592304feaf7edf09ea24cb54cf05dd72c834cd9a"
+  },
+  "qualification/native-pair-exit-03.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-exit-03.json",
+    "sha256": "331dd85020eaf7c911e3417ee78f7ff17a0d1257e2a5c310696fc702d1c3f16f"
+  },
+  "qualification/native-pair-exit-04.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-pair-exit-04.json",
+    "sha256": "3e42a2ad3dbeab9d1167d20261ad6305bdea31103ffc09c30f25558345966de2"
+  },
+  "qualification/native-product-build-02.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-product-build-02.log",
+    "sha256": "4fa4682cf401d1b7f9814a5e1774de14f85b9349ba4694c629bdabdd69975ea3"
+  },
+  "qualification/native-product-build.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native-product-build.log",
+    "sha256": "627d671b44131aeb4201f0a317a977f7d7aa352a9b3b10dc85dcff6da7bfffc2"
+  },
+  "qualification/native03-start.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native03-start.json",
+    "sha256": "f1f6f8ebeb10151bdba750253d3758b88544802a57bd60641631ca7136e36567"
+  },
+  "qualification/native04-start.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native04-start.json",
+    "sha256": "44355c10a781dc9c5ca445ebdd9657512d12857c64b63fe42f221375b71b6443"
+  },
+  "qualification/native04-verify_native_defaults.py.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native04-verify_native_defaults.py.log",
+    "sha256": "44aa0b02dbbc4c2da45c41d91e81e07912a5761d513e52703f12af79a964269b"
+  },
+  "qualification/native04-verify_native_facts.py.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/native04-verify_native_facts.py.log",
+    "sha256": "93f6049c39349ff09098263f71623492742bb7c262e8bbd2089bbffb051f52be"
+  },
+  "qualification/optimized-runtime.toml": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/optimized-runtime.toml",
+    "sha256": "7ed6fb12d461f4b4bcec5bba79f0a23d47b3266118ceedf2e8f641c24ec3bbc8"
+  },
+  "qualification/order-canonical-sources.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-canonical-sources.json",
+    "sha256": "097dc310dcdf5d18ce019f03732bd5eadac1ff46717228c7ed0564ea89978755"
+  },
+  "qualification/order-phase.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-phase.json",
+    "sha256": "6a13c5b875702209774d93a469a2ec7058e25f1a28008a9a35915d3a34d84e0b"
+  },
+  "qualification/order-probe-driver.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-probe-driver.log",
+    "sha256": "37e3f911fd64f55e32b0a6b7af9ffc8c0b3cd18ea11f2de2045d43a2f51fcc59"
+  },
+  "qualification/order-probe-exit.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-probe-exit.json",
+    "sha256": "3e42a2ad3dbeab9d1167d20261ad6305bdea31103ffc09c30f25558345966de2"
+  },
+  "qualification/order-product-build.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-product-build.log",
+    "sha256": "9b3fc048e86d285e4683bd8ff0cefcdf08e65382918f7a07892a2475a30a13f1"
+  },
+  "qualification/order-qualification-driver.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-qualification-driver.log",
+    "sha256": "8a2d45d3b45439e0173081178ac137e98c93fd71ba3303defa4fad4c39b13adb"
+  },
+  "qualification/order-regression-before-final.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-regression-before-final.log",
+    "sha256": "6a6ef832b663f71a377da71c402168146358bb50a5923c279d37435ce4973b2d"
+  },
+  "qualification/order-regression-before-unified.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-regression-before-unified.log",
+    "sha256": "89b05c05531e02c2e8ed041f7a1056dbb99ccaa197efe2dda43dbfb64246df31"
+  },
+  "qualification/order-regression-before.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-regression-before.log",
+    "sha256": "226eba6bc8d48a621374fca866d022a49425217ec39de20dfbcd2f62ddd3b8fe"
+  },
+  "qualification/order-resident-build.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-resident-build.log",
+    "sha256": "1d947e5956471de243658d264f3262aa9aa81264c3ab50e8b08be0b0a6e21534"
+  },
+  "qualification/order-resident-tests.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-resident-tests.log",
+    "sha256": "b9383d3ff65a5dded013db07b254963a53795a9e50010a6f854e1d5031b2faaa"
+  },
+  "qualification/order-route-tests.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-route-tests.log",
+    "sha256": "8a3a8ec0b07f64c3f0b3acd01031b763f35aa79f6400ea17a246f00da7cfd804"
+  },
+  "qualification/order-turnstone-tests.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order-turnstone-tests.log",
+    "sha256": "f13478b5467952af22fd4b1ef0367b4220e78a708e65ce3216f3175bbb7448e7"
+  },
+  "qualification/order_qualification.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/order_qualification.py",
+    "sha256": "1a981bcd2466f31a138b32dac5622199e2b9adb14dbcb26ca4384d9ac9289262"
+  },
+  "qualification/phase.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/phase.json",
+    "sha256": "eb468a460645436b160ab227b761453514ccaa6c6349c1ab0f0a1e94125f0a25"
+  },
+  "qualification/preservation-before.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/preservation-before.json",
+    "sha256": "5b743b255a5a4a80c308ea09e60acb90690ef745d8290ca003ccfef14db6aea2"
+  },
+  "qualification/probe-exit.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/probe-exit.json",
+    "sha256": "81868a6e94ffc0178bf833deb1c9013d9fab4ee95ddb876a5e8ec4f1d26376d2"
+  },
+  "qualification/profile-headless-native-input-equality.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/profile-headless-native-input-equality.json",
+    "sha256": "18bdb43aa4926dd6120bf482d7a3e48d98eb986fe98c7f1778841b6a28ed7ce3"
+  },
+  "qualification/profile-phase.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/profile-phase.json",
+    "sha256": "154148a1abc2fc842d1661ce4a665d8522647402a8ca54e4def1fba4e04b07fd"
+  },
+  "qualification/profile-qualification-driver.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/profile-qualification-driver.log",
+    "sha256": "a51ea7a23d04cb8fa918a7d344bff7a5b0b610e80fd63152f27071b799730357"
+  },
+  "qualification/profile-qualification-resume.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/profile-qualification-resume.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "qualification/profile_qualification.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/profile_qualification.py",
+    "sha256": "3aa5398ab26f1c4dd6103f99df50e5cb3899a49173440ac29c4d43bfa89575f4"
+  },
+  "qualification/profile_qualification_resume.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/profile_qualification_resume.py",
+    "sha256": "704e537557228b37ca095d03db1d95a72dea7e95d583c2570e6fc33a7df40e3e"
+  },
+  "qualification/qualification-driver.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/qualification-driver.log",
+    "sha256": "bbfa943fb8821888d765c87fea4e36d4d3e4e2a7e4e80e5e27245689b8d062c5"
+  },
+  "qualification/qualification-resume.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/qualification-resume.log",
+    "sha256": "37e3f911fd64f55e32b0a6b7af9ffc8c0b3cd18ea11f2de2045d43a2f51fcc59"
+  },
+  "qualification/qualify.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/qualify.py",
+    "sha256": "b4003503cd7b7931bbe86f15cdb89cb4e1fb9ec4e2c3cbedb9940dab6d932d3f"
+  },
+  "qualification/reader-identity-check.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/reader-identity-check.json",
+    "sha256": "9b9eca4d64732081e2aaa2c804a1d5ef0c10d39486b9cfe84950d582f72d18ba"
+  },
+  "qualification/refresh_suppliers.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/refresh_suppliers.py",
+    "sha256": "ace9150c008fd25727f09d1f9f46f14930e6159620b484fb6f98720070879a91"
+  },
+  "qualification/remote-source-heads.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/remote-source-heads.json",
+    "sha256": "4ce46934054f379d0ca8dbbe11e491290bc3b6e5a9cdffc194e48ffde3b93b85"
+  },
+  "qualification/resident-build.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/resident-build.log",
+    "sha256": "8d020259e489aa1d19e7248e4b5853480d48c6069d388ba3b648481391f119c5"
+  },
+  "qualification/resident-route-tests.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/resident-route-tests.log",
+    "sha256": "0e62f8ab72bd8dd99d55782437d1f43d23bce44965dd272217d3ac9823e95ec6"
+  },
+  "qualification/resident-tests-final.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/resident-tests-final.log",
+    "sha256": "df8efd325779d03552587357e30b5135b7f7511c6fc9572981faea02791b7900"
+  },
+  "qualification/resident-tests.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/resident-tests.log",
+    "sha256": "a240e379dab0ff452520e314c6752ce1994b9d1bde25e0e34af1f1a9983e679a"
+  },
+  "qualification/resume-native-driver.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/resume-native-driver.log",
+    "sha256": "7ea70b54692d60703c393ea279f8623a78780a9629bdef492894775c0efe41b7"
+  },
+  "qualification/resume-native-order-driver.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/resume-native-order-driver.log",
+    "sha256": "7b72d0408ac72d970e5cadca15ffd7e7e7f9fa956eb10e00abfc247caab42fd4"
+  },
+  "qualification/resume_native.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/resume_native.py",
+    "sha256": "bdad2bfd037e0d0186d608cbee65ba5b0a3b4cb5ac1281a3ec0733f551012dfb"
+  },
+  "qualification/resume_native_order.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/resume_native_order.py",
+    "sha256": "4465008f6298a2c9f2c7ebbfa06d8d8f131f10cba25a6a9add34ee6cc7b25bcd"
+  },
+  "qualification/resume_probe.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/resume_probe.py",
+    "sha256": "a57f72b3c2e29cb59c3fdb3723bb424be8ee590e131065bbdca81e319f975579"
+  },
+  "qualification/run_probe.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/run_probe.py",
+    "sha256": "e46fc759e885cc596c8275c51ebb04edea4f83b47de887351ad76138809df643"
+  },
+  "qualification/saved-reader-probe-tests-final.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/saved-reader-probe-tests-final.log",
+    "sha256": "78f7dd3433f6ff35154571877ccb0c9c65488ca9e3e0c74f2abafff5bd841ab8"
+  },
+  "qualification/saved-reader-probe-tests.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/saved-reader-probe-tests.log",
+    "sha256": "d5adbf5430045bb434f1c6071cb26090139d89c405264373e3dc9e917c3ad531"
+  },
+  "qualification/snapshot-audit-diagnosis.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/snapshot-audit-diagnosis.json",
+    "sha256": "33945cd871e4f4da9977d55026cbf74b0d99476a4833d02333ae1be803923f83"
+  },
+  "qualification/stable-identity-cross-comparison.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/stable-identity-cross-comparison.json",
+    "sha256": "a3d990a05e6b5130a5bf81b23174e11feccc186d9875187040097ddbbd100eb1"
+  },
+  "qualification/supplier-pins.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/supplier-pins.json",
+    "sha256": "f414c9c55cf1fe0e50e283480d0074a7b5550b2b90fe9fd048f3dc6774909e8d"
+  },
+  "qualification/supplier-refresh.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/supplier-refresh.log",
+    "sha256": "a5d4700e269d41d8eb621807f87b79a614e43ce23a79be896ff56f4bfa2f739c"
+  },
+  "qualification/turnstone-tests-after-probe.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/turnstone-tests-after-probe.log",
+    "sha256": "b99c0cfa8f90eea636ab9082594caa8050d1f209b6defda63ba76b986bda0052"
+  },
+  "qualification/turnstone-tests.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/turnstone-tests.log",
+    "sha256": "b8c1648312bb77eae4635ed51ac87bb8cb7bb9b3ee4f656f74bdb924110d89df"
+  },
+  "qualification/verify_contract_inputs.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/verify_contract_inputs.py",
+    "sha256": "d49ff64385efabd4ee46419b438b7382ba6f7b72210dd86a96d0ed4de66db92e"
+  },
+  "qualification/verify_current_sources.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/verify_current_sources.py",
+    "sha256": "3d1dfd5d7e7b9464c66f9204e77f874e37da9b6db557401035285a616da23b9e"
+  },
+  "qualification/verify_receipt.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/verify_receipt.py",
+    "sha256": "35efd7184b27258b5dfd99b6454f987d1a0c311248ed8a594a9189965c305437"
+  },
+  "qualification/verify_score_health.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/verify_score_health.py",
+    "sha256": "6dfbc4ab0dc034e0ee9997aab1b4a42be38ed841e938c461bccfb87023a4550f"
+  },
+  "qualification/verify_structured_output.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/verify_structured_output.py",
+    "sha256": "6275bd267af6aefe19bdd82f1d748a6dbbdb7dcc15c4d12d0bc96fe934c55062"
+  },
+  "qualification/verify_wire_defaults.py": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/verify_wire_defaults.py",
+    "sha256": "672a972bf5848b9b3cf578a21ced9986b32721a117f566edf438761a938d4160"
+  },
+  "qualification/visual-review-notes.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/visual-review-notes.json",
+    "sha256": "fea15f320ada2718615c23ded5444119f3f18b67905995285a3db6b63233421a"
+  },
+  "qualification/visual04-notes.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/visual04-notes.json",
+    "sha256": "15b8fd05ac6cea4db61f03a160b447f3c744b2cd1bd5869ead6af2b4aad8ddc2"
+  },
+  "qualification/worktree-state-before-receipt.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/worktree-state-before-receipt.json",
+    "sha256": "474d329e9abeb1fb79c58a98f5605e2e04ad984c09ab7140df9e7961c126b21f"
+  },
+  "sources-v7/eidetic/Cargo.toml": {
+    "source": "/Users/markik/Code/worktrees/eidetic-cross-source-answers-20261022/Cargo.toml",
+    "sha256": "4c30f469168c867b6f3e8768a38c44b16d20899e8d28b28148ea8be4d71e8fc8"
+  },
+  "sources-v7/eidetic/Cargo.lock": {
+    "source": "/Users/markik/Code/worktrees/eidetic-cross-source-answers-20261022/Cargo.lock",
+    "sha256": "506248868541ac06ce771855c7ac7ddfe4ea58c6ab5a1eab4fd11e0f138cbf4c"
+  },
+  "sources-v7/eidetic/crates/eidetic-core/src/models/answer.rs": {
+    "source": "/Users/markik/Code/worktrees/eidetic-cross-source-answers-20261022/crates/eidetic-core/src/models/answer.rs",
+    "sha256": "2df6548f87fb93b2de4f1b8f764ea92ebb34c6bd95cb50f3d5fa2e0e6880e951"
+  },
+  "sources-v7/mere/Cargo.toml": {
+    "source": "/Users/markik/Code/worktrees/mere-cross-source-answers-20261022/Cargo.toml",
+    "sha256": "e209fc97daa9939049b0c1f654ece7aba7496ebf88068daf0a3ddc78a523d795"
+  },
+  "sources-v7/mere/Cargo.lock": {
+    "source": "/Users/markik/Code/worktrees/mere-cross-source-answers-20261022/Cargo.lock",
+    "sha256": "8fcf77e81eb90458f66e41a9b4ba2981f56de38813fd91ef4b037ad5d40e250b"
+  },
+  "sources-v7/mere/ports/distillery/src/inference/answer_contract.rs": {
+    "source": "/Users/markik/Code/worktrees/mere-cross-source-answers-20261022/ports/distillery/src/inference/answer_contract.rs",
+    "sha256": "df3ae7b3e67f6282ab71dd19558aad0fbced66eb83a0cb06bb83d1496cd5d9dd"
+  },
+  "sources-v7/mere/ports/distillery/src/inference/candidate_review.rs": {
+    "source": "/Users/markik/Code/worktrees/mere-cross-source-answers-20261022/ports/distillery/src/inference/candidate_review.rs",
+    "sha256": "56e01184d07f534f55bbb9db76d2a23b4b16ffdaccbd09d0ab2a4c14602c756e"
+  },
+  "sources-v7/mere/ports/distillery/src/inference/recall.rs": {
+    "source": "/Users/markik/Code/worktrees/mere-cross-source-answers-20261022/ports/distillery/src/inference/recall.rs",
+    "sha256": "b5a0c329282c0b20618487a5cd481c9f6c66f9fdd4b69355da05d676334771ad"
+  },
+  "sources-v7/mere/ports/distillery/src/inference/recall_embedding.rs": {
+    "source": "/Users/markik/Code/worktrees/mere-cross-source-answers-20261022/ports/distillery/src/inference/recall_embedding.rs",
+    "sha256": "edff7d72dc855e1f3f7494c1d3942594105d05ab9861a5adc3fbd8b9bfd79ff9"
+  },
+  "sources-v7/mere/ports/distillery/src/inference/durable.rs": {
+    "source": "/Users/markik/Code/worktrees/mere-cross-source-answers-20261022/ports/distillery/src/inference/durable.rs",
+    "sha256": "df63edd692b86f8f12f024442f3918c6af0e05a7a9440644cec6b2f98430725c"
+  },
+  "sources-v7/turnstone/Cargo.toml": {
+    "source": "/Users/markik/Code/worktrees/turnstone-cross-source-answers-20261022/Cargo.toml",
+    "sha256": "1f975b310906479849cc1f7eb3e13cbcce9736338615fa3d79bb93c97cff7bc0"
+  },
+  "sources-v7/turnstone/Cargo.lock": {
+    "source": "/Users/markik/Code/worktrees/turnstone-cross-source-answers-20261022/Cargo.lock",
+    "sha256": "945d47f1109c03879f932598da7066f0ff25b04d2dba70461f0bbbb9884a58cc"
+  },
+  "sources-v7/turnstone/src/inference_surface.rs": {
+    "source": "/Users/markik/Code/worktrees/turnstone-cross-source-answers-20261022/src/inference_surface.rs",
+    "sha256": "c43d1a12b2928a488a43b2f2c89068e7083dcb52f84e6a1d62e047007792dfb3"
+  },
+  "sources-v7/turnstone/src/shell/drive.rs": {
+    "source": "/Users/markik/Code/worktrees/turnstone-cross-source-answers-20261022/src/shell/drive.rs",
+    "sha256": "2628f00bbeb0758138a58b0480db8be2fbe925c668698ae0d145dc417617904c"
+  },
+  "diagnostics/sample-snapshot-now.txt": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/snapshot-diagnostic/sample-snapshot-now.txt",
+    "sha256": "5f34ac6a301a0233004290f77134b83fe19cc0d5ef7863cda68141d48fd65c7a"
+  },
+  "diagnostics/sample-profile-5.txt": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/snapshot-diagnostic/sample-profile-5.txt",
+    "sha256": "abc2b66083f84280779f16e70ef94db5523b8c8793c41f01f70447e9dbef4887"
+  },
+  "diagnostics/run-phase1-02.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/snapshot-diagnostic/run-phase1-02.log",
+    "sha256": "4a4d25719b95f9effe40344f37c4f44ba2322d68bcaa516685608b4866a438b2"
+  },
+  "diagnostics/run-profile.log": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/snapshot-diagnostic/run-profile.log",
+    "sha256": "734849243ed7ff205127afeffb6074e9578682f3fa0549647d8692b0cd91800f"
+  },
+  "diagnostics/process-phase1-02.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/snapshot-diagnostic/process-phase1-02.json",
+    "sha256": "09b82cbab1f17c404d30db3b7c49343a89cc1a57d0f582c0a3e9ae2c4cff0a37"
+  },
+  "diagnostics/process-profile.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/snapshot-diagnostic/process-profile.json",
+    "sha256": "7cb50cc498148ee23e3d6ad373df5afa7d6770ff1732322b1338bfca816f400f"
+  },
+  "diagnostics/exit-phase1-02.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/snapshot-diagnostic/exit-phase1-02.json",
+    "sha256": "86503c776c37ced65c418733c8292425a560d08c9c9411023fe6126d94e9cb4c"
+  },
+  "diagnostics/exit-profile.json": {
+    "source": "/Users/markik/Code/output/quoted-review-20261024/snapshot-diagnostic/exit-profile.json",
+    "sha256": "5eb197973e39b36b3501d98caf1f99627e58bb18ece0aee2356af133a6b641d0"
+  }
+}

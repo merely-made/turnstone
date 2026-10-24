@@ -1,0 +1,21 @@
+[codex/cross-source-answers-20261022 8bf8b3e30] Bind quoted candidate reviews to extractive answers and exact claim citations
+ 6 files changed, 509 insertions(+), 155 deletions(-)
+To https://github.com/merely-made/mere.git
+   94c61893c..8bf8b3e30  HEAD -> codex/cross-source-answers-20261022
+[codex/cross-source-answers-20261022 70b8e29] Refresh quoted-review resident and evidence suppliers
+ 2 files changed, 128 insertions(+), 128 deletions(-)
+To https://github.com/merely-made/turnstone.git
+   deb50f3..70b8e29  HEAD -> codex/cross-source-answers-20261022
+Traceback (most recent call last):
+  File "/Users/markik/Code/output/quoted-review-20261024/qualify.py", line 46, in <module>
+    canonical={}
+       ^^^^^^^^^
+  File "/usr/local/Cellar/python@3.15/3.15.0/Frameworks/Python.framework/Versions/3.15/lib/python3.15/json/__init__.py", line 371, in loads
+    return _default_decoder.decode(s)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "/usr/local/Cellar/python@3.15/3.15.0/Frameworks/Python.framework/Versions/3.15/lib/python3.15/json/decoder.py", line 358, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/Cellar/python@3.15/3.15.0/Frameworks/Python.framework/Versions/3.15/lib/python3.15/json/decoder.py", line 376, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 5 (char 4)

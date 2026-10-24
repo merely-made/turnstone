@@ -1,0 +1,95 @@
+warning: patch `p2panda-auth v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5-upstream-20261013#1f69c9bc)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+   Compiling eidetic v0.0.2 (/Users/markik/Code/worktrees/eidetic-cross-source-answers-20261022/crates/eidetic-core)
+warning: unused import: `async_trait::async_trait`
+ --> crates/eidetic-core/src/browsing/tests.rs:9:5
+  |
+9 | use async_trait::async_trait;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `std::collections::HashMap`
+  --> crates/eidetic-core/src/browsing/tests.rs:10:5
+   |
+10 | use std::collections::HashMap;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `async_trait::async_trait`
+   --> crates/eidetic-core/src/bundle.rs:189:9
+    |
+189 |     use async_trait::async_trait;
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::collections::HashMap`
+   --> crates/eidetic-core/src/bundle.rs:190:9
+    |
+190 |     use std::collections::HashMap;
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `async_trait::async_trait`
+   --> crates/eidetic-core/src/deleted.rs:149:9
+    |
+149 |     use async_trait::async_trait;
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::collections::HashMap`
+   --> crates/eidetic-core/src/deleted.rs:150:9
+    |
+150 |     use std::collections::HashMap;
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `async_trait::async_trait`
+  --> crates/eidetic-core/src/schema_def/tests.rs:10:5
+   |
+10 | use async_trait::async_trait;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::collections::HashMap`
+  --> crates/eidetic-core/src/schema_def/tests.rs:11:5
+   |
+11 | use std::collections::HashMap;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `async_trait::async_trait`
+   --> crates/eidetic-core/src/typed.rs:213:9
+    |
+213 |     use async_trait::async_trait;
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::collections::HashMap`
+   --> crates/eidetic-core/src/typed.rs:215:9
+    |
+215 |     use std::collections::HashMap;
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `eidetic` (lib test) generated 10 warnings (run `cargo fix --lib -p eidetic --tests` to apply 10 suggestions)
+    Finished `test` profile [unoptimized] target(s) in 32.23s
+     Running unittests src/lib.rs (/Users/markik/Code/output/embedding-envelope-20261020/resident-build/debug/deps/eidetic-e8e2fc02a41003c4)
+
+running 19 tests
+test models::adapter::tests::rejects_ambiguous_or_non_finite_envelopes ... ok
+test models::answer::tests::corrupt_passage_ranges_and_repeated_claims_are_reported ... ok
+test models::answer::tests::chunk_quotes_preserve_the_full_source_hash_and_absolute_range ... ok
+test models::answer::tests::conflict_requires_distinct_sources_and_keeps_both_versions ... ok
+test models::answer::tests::insufficient_is_a_retained_model_judgment_not_an_absence_proof ... ok
+test models::answer::tests::exact_links_use_unicode_offsets_and_do_not_certify_entailment ... ok
+test models::answer::tests::malformed_unknown_and_invented_support_fail_closed ... ok
+test models::training::tests::rejects_ambiguous_corpora_and_incomparable_reports ... ok
+test models::training::tests::schema_refs_are_stable ... ok
+test models::training::tests::validates_adapter_provenance_without_reading_mesh_facts ... ok
+test models::embedding::tests::unknown_versions_and_ambiguous_corpus_identities_are_refused ... ok
+test models::requested::tests::ambiguous_requests_require_explicit_ranges_and_never_read_evidence ... ok
+test models::adapter::tests::typed_round_trip_preserves_compatibility_envelope ... ok
+test models::training::tests::v1_training_corpus_schema_and_fields_remain_readable ... ok
+test models::training::tests::typed_round_trips_preserve_immutable_training_artifacts ... ok
+test models::answer::tests::candidate_review_binds_all_decisions_to_status_and_links_without_claiming_truth ... ok
+test models::requested::tests::explicit_list_is_ordered_unicode_question_identity ... ok
+test models::answer::tests::requested_facts_refuse_missing_extra_and_reordered_claims ... ok
+test models::embedding::tests::every_output_or_corpus_setting_is_part_of_compatibility ... ok
+
+test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 129 filtered out; finished in 0.00s
+

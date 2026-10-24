@@ -1,0 +1,46 @@
+[
+  {
+    "error": null,
+    "graph": "e748ecf5-49c3-4c0b-a9e5-8ac7848cae69",
+    "keep": true,
+    "node": "b4998b52-8447-4875-8521-8371dc2024a7",
+    "ordinal": 1,
+    "phase": "saved",
+    "request": "6abe84ed-f202-4181-94d9-cda9f6a92eb4",
+    "session": "6ff62fb4-07a3-483a-9477-c945411e69ee",
+    "source": {
+      "acquired_at_ms": 1792877598782,
+      "body_hash": "blake3:7cc9267a86f52cbe7873920c5525e06d3b4f8a9e94a463711e3b498e5b499e59",
+      "content_type": "text/html; charset=utf-8",
+      "effective_url": "http://127.0.0.1:57818/A",
+      "hash": "blake3:7cc9267a86f52cbe7873920c5525e06d3b4f8a9e94a463711e3b498e5b499e59"
+    },
+    "stored": {
+      "annotation_manifest": "blake3:260f1472d9f72eb313d4b7fbfc85c2f972507c4015857cf417ad8f491ffac37c",
+      "raw_manifest": "blake3:7cc9267a86f52cbe7873920c5525e06d3b4f8a9e94a463711e3b498e5b499e59"
+    },
+    "url": "http://127.0.0.1:57818/A"
+  },
+  {
+    "error": null,
+    "graph": "e748ecf5-49c3-4c0b-a9e5-8ac7848cae69",
+    "keep": true,
+    "node": "db8ef51e-d9db-4f12-9ed4-30cf9ab7ce1a",
+    "ordinal": 2,
+    "phase": "saved",
+    "request": "dc9fd7d4-0fb0-43be-9d01-c9ffc0519639",
+    "session": "6ff62fb4-07a3-483a-9477-c945411e69ee",
+    "source": {
+      "acquired_at_ms": 1792877607943,
+      "body_hash": "blake3:9a99b8132c41e30bdbc0ba470a96c9dae793c1b7e4ce3b8125f47e7ea0c0d3af",
+      "content_type": "text/html; charset=utf-8",
+      "effective_url": "http://127.0.0.1:57818/B",
+      "hash": "blake3:9a99b8132c41e30bdbc0ba470a96c9dae793c1b7e4ce3b8125f47e7ea0c0d3af"
+    },
+    "stored": {
+      "annotation_manifest": "blake3:00e7fadb40ad3e8fbc40766d391e2d6a53faf055a68b06d923957bfae248d811",
+      "raw_manifest": "blake3:9a99b8132c41e30bdbc0ba470a96c9dae793c1b7e4ce3b8125f47e7ea0c0d3af"
+    },
+    "url": "http://127.0.0.1:57818/B"
+  }
+]

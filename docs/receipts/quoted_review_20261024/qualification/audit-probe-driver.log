@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/Users/markik/Code/output/quoted-review-20261024/audit-replay/run_probe.py", line 28, in <module>
+    for name,digest in contract['unchanged_frozen_sha256'].items(): assert sha(frozen/name)==digest
+                                                                           ^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

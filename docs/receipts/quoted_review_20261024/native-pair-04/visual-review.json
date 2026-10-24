@@ -1,0 +1,71 @@
+{
+  "method": "Direct visual inspection of fresh native04 renderer captures with view_image; LaunchServices-launched scripted native scenarios. Independent OS AX observer timed out without input and is not qualified.",
+  "entries": {
+    "fused/warm/cross_answer.png": {
+      "sha256": "59763568dce7f99a24f169a58daa125f5bfe57ee1997518a3582b1151907e77a",
+      "observed": "Three support-proposed cards in requested capture/Knot/note order, one of three passages marked relevant per card, exact violet lantern/café/listener-note quotations, all inspection buttons visible, semantic support unreviewed label visible. UI source ordering differs from prior attempts; numeric handles remain bound to their real sources."
+    },
+    "fused/warm/cross_warm_claim_1_citation.png": {
+      "sha256": "a62b5c69ceb4cf93d93b24787a0ede8cf39a28802189c21f02788e242a9df5dc",
+      "observed": "Capture A reader shows saved version3d9d70488162 and exact violet lantern quotation after origin stop."
+    },
+    "fused/warm/cross_warm_claim_2_citation.png": {
+      "sha256": "08b34e57d8df814ae33ab6998a5a7d3f77e49e354dc60cc5ddf3b2929df59045",
+      "observed": "Knot retained reader shows exact Pelican access word café, original selected text, UTF8 source anchor and export control; producer file absent."
+    },
+    "fused/warm/cross_warm_claim_3_citation.png": {
+      "sha256": "4890b493040c9ec930b21827d568e961fd83eb7ce232668a3e8b5f08aa1e6c94",
+      "observed": "Redshank retained reader shows café → harbor and Keep this timed note, source recording unavailable, timed anchor and original1.250second position, export control; producer recording absent."
+    },
+    "fused/warm/missing_answer.png": {
+      "sha256": "a48dc4dfa8bdc9fb4012ee47f91ec59c65c94e851165a5c166887ad13b043e2d",
+      "observed": "One insufficient annual-budget card;0of3 passages relevant; no answer found and no citation/source controls for the refusal; semantic support unreviewed label visible."
+    },
+    "fused/warm/conflict_answer.png": {
+      "sha256": "d0d9161966a8c43a8055a06b8a46dced390e185938b538b0a5c6ed9a2951556f",
+      "observed": "Conflicting evidence card explicitly states supplied sources disagree; both violet lantern and amber harbor are displayed and individually quoted, with two inspection buttons/source links. Model review says two of four relevant and disagreement. No winner; semantic support unreviewed label remains."
+    },
+    "fused/warm/reduced_answer.png": {
+      "sha256": "51a4bfafa0773c0b7e58c9985171e02065fe0997239723b302d4b52adb1a9a7c",
+      "observed": "Scope has two chosen sources and the Redshank note is unchosen. One insufficient listener-reminder card, no answer found and no citations; no café/harbor text borrowed from the omitted note. Semantic-support warning remains visible."
+    },
+    "fused/cold/cross_historical_answer.png": {
+      "sha256": "17227f2d1c3c4782cf7f02d9da3f4f86e183ecd16a5f52a8d38e737b2c75db38",
+      "observed": "After both process restarts, reopening the historical mixed-source answer renders all three original support-proposed cards, exact quotations and inspection controls, with model review and semantic-support warning intact. The separate current request source selection is still two sources."
+    },
+    "fused/cold/cross_cold_claim_1_citation.png": {
+      "sha256": "1326c20f8cb2f2ba3626bf876064dfbdee44b73050232e87ae866f038fa7a707",
+      "observed": "Cold citation selects Capture A and reports its live saved-source engine. Restored Workbench is very narrow and clips/wraps body content; full quotation identity is established by recorded source document/selector checks, not complete viewport readability."
+    },
+    "fused/cold/cross_cold_claim_2_citation.png": {
+      "sha256": "8d10140452dd1c2c2a5da6beec6afc3650e21c4d30457bafabaffa86a047586d",
+      "observed": "Cold citation selects Knot selection with the retained-clip engine and original clip address. Workbench body is cramped; structured source observation supplies exact document identity."
+    },
+    "fused/cold/cross_cold_claim_3_citation.png": {
+      "sha256": "ac404bbd93afa5d9f6889a8ada85a1c4e09926443aa4b209363b4c65f5158da8",
+      "observed": "Cold citation selects Redshank note with the retained-clip engine and original clip address. Workbench body is cramped; structured source observation supplies exact document identity."
+    },
+    "fused/cold/missing_historical_answer.png": {
+      "sha256": "7812bded655bdf85579c05d54580a23f554e1b289c908d3f7c87acb7b48fa758",
+      "observed": "Reopened annual-budget answer remains insufficient with zero relevant passages and no citations. Card and support warning are visible in the narrow Answers pane."
+    },
+    "fused/cold/conflict_historical_answer.png": {
+      "sha256": "b779d07fa1850c24b8fbb59364f0834f82e29bd6e8a9dc9b4833fba54f259212",
+      "observed": "Reopened conflict retains both violet lantern and amber harbor, disagreement label, two quotation controls and two source links; no winner."
+    },
+    "fused/cold/reduced_historical_answer.png": {
+      "sha256": "4ac0dfaa50e1686095e2f371128d3d48eeb434fc318fd618c16a861a43ba4615",
+      "observed": "Reopened reduced-scope answer remains insufficient for the listener reminder with zero of two relevant and no citations."
+    },
+    "fused/cold/cross_answer.png": {
+      "sha256": "e8154adbb1a4d0ea225aedeced4f5ffbfc1771e8f0b3d3d07f354d2841b1aee0",
+      "observed": "Fresh cold request with three selected sources finishes with three support-proposed claims in requested order and exact capture/Knot/note quotations. Relevance summaries, all three inspection controls and semantic-support warning are visible in the narrow restored Answers pane."
+    }
+  },
+  "limitations": [
+    "Cold pane restoration produces a cramped four-pane layout; complete reader viewport fit/readability is not qualified. Exact retained document identity and selectors are independently checked.",
+    "Scripted headed native interaction and renderer captures only; no independent OS accessibility/manual input acceptance."
+  ],
+  "result": "pass",
+  "scope": "Recorded functional rendering of answers and native source selection. Cold restored-pane readability/viewport fit remains a limitation, not an accepted UI layout."
+}

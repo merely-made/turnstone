@@ -1,0 +1,25 @@
+{
+  "method": "Direct visual inspection of fresh renderer PNGs with view_image; LaunchServices-launched scripted native scenarios. OS AX observer timed out without input and is not qualified.",
+  "entries": {
+    "fused/warm/cross_answer.png": {
+      "sha256": "abc15b3b37383b97d80c20be40e86ae768307dc655430a8e2eb72b11a91aab64",
+      "observed": "Three supported cards in requested capture/Knot/note order, review summary one of three relevant per card, exact violet lantern/café/listener note quotations, all inspection buttons visible, semantic support unreviewed label visible."
+    },
+    "fused/warm/cross_warm_claim_1_citation.png": {
+      "sha256": "b884117bd8b1a748b40cc04508e4ffa6bacc7fc76f5e588bf18de4e8701e4b6d",
+      "observed": "Capture A reader shows saved version260f1472d9f7 and exact violet lantern quotation; original origin address remains an inert source link after origin stop."
+    },
+    "fused/warm/cross_warm_claim_2_citation.png": {
+      "sha256": "e58b42f093bf1a7360a0c3ad767b246c3c7a11de7b05eedb307ecbbb8b722ada",
+      "observed": "Knot retained reader shows exact Pelican access word café, original selected text, UTF8 source anchor, export control; producer file absent."
+    },
+    "fused/warm/cross_warm_claim_3_citation.png": {
+      "sha256": "9f9041b2c7ccd12ac3ccc5f5347609834af8c9f3728e67be7b973f526b0be828",
+      "observed": "Redshank retained reader shows café → harbor and Keep this timed note, timed source anchor, original1.250second position, source recording unavailable, export control; producer recording absent."
+    },
+    "fused/warm/missing_answer.png": {
+      "sha256": "f86ae5fd55d1917048f30f6a1737ca9e7690bd85c0d3679f3674c5e1624dacfb",
+      "observed": "One insufficient annual-budget card,0of3 supplied passages relevant, no answer found, no citation/source controls for the refusal; semantic support warning remains visible."
+    }
+  }
+}

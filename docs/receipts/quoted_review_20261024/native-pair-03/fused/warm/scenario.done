@@ -1,0 +1,27 @@
+RESULT fail
+captured 01_capture_A
+captured 02_capture_B
+captured 03_mixed_sources
+captured explicit_scope
+captured cross_answer
+captured cross_raw
+captured cross_warm_claim_1_citation
+captured cross_warm_claim_2_citation
+captured cross_warm_claim_3_citation
+captured missing_answer
+captured conflict_answer
+FAIL: assert text 'Conflicting evidence': not on any surface
+captured reduced_answer
+presentation frames=785 captures=12 blank=0
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/warm/01_capture_A.png digest=242b6417a4e6e648 blank=false
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/warm/02_capture_B.png digest=cf5749c542ccd615 blank=false
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/warm/03_mixed_sources.png digest=83582fdf832b28ed blank=false
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/warm/explicit_scope.png digest=9b62b1c2b3ed14eb blank=false
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/warm/cross_answer.png digest=0c96a3e0d45f6298 blank=false
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/warm/cross_raw.png digest=64138f8e2e947163 blank=false
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/warm/cross_warm_claim_1_citation.png digest=2b8a4884a9cc54a5 blank=false
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/warm/cross_warm_claim_2_citation.png digest=1ef79899e5860827 blank=false
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/warm/cross_warm_claim_3_citation.png digest=f1271c8e0f896e0f blank=false
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/warm/missing_answer.png digest=3642856d17ce328f blank=false
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/warm/conflict_answer.png digest=74e5358e73057b41 blank=false
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-03/fused/warm/reduced_answer.png digest=850559d9a8c5b600 blank=false

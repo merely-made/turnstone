@@ -1,0 +1,233 @@
+{
+  "result": "pass",
+  "cases": {
+    "cross": {
+      "input_identity": "pass",
+      "run_state": "finished",
+      "model_tokens": 480,
+      "facts": {
+        "method": "eidetic.explicit-question-list/v1",
+        "question": "blake3:4657f1751f50b3e04c3c667edb273a670346b7ba9d57e9fb1f876b02127f1aa4",
+        "facts": [
+          {
+            "id": "blake3:285b8bb775f4382eab12c41cc5413b73726eb5640ddd4df7974b4cc6618cb3d1",
+            "selector": {
+              "start": 9,
+              "end": 44
+            },
+            "text": "the Juniper archive recovery phrase"
+          },
+          {
+            "id": "blake3:1882e5dc5498d8f4bf5ad8f9e4d44e3a3f24cc41b0a17a7895bb0dd1fcd15258",
+            "selector": {
+              "start": 46,
+              "end": 81
+            },
+            "text": "the Pelican observatory access word"
+          },
+          {
+            "id": "blake3:8c216773b8023940bd059bd243ed4b67ca9fa5a57a669540ba1e34d8dd7de38e",
+            "selector": {
+              "start": 87,
+              "end": 114
+            },
+            "text": "the saved listener reminder"
+          }
+        ]
+      },
+      "set_id": "blake3:bfe51ded56c33198390ee443f0373c8839000b70eb6955785151bb5d64c9e0c6",
+      "prompt_chars": 2703,
+      "context_chars": 304,
+      "contract": {
+        "method": "distillery.candidate-review/v6",
+        "question": "blake3:4657f1751f50b3e04c3c667edb273a670346b7ba9d57e9fb1f876b02127f1aa4",
+        "prompt": "blake3:ac4c6bfe35329c1c1af1e06a2044cad6eff603c3f0e0bbf690c750b2b0a886fd",
+        "context": "blake3:ea095b38d10a1b1bb8f3348edad620810f38a32a270bff0a5a3c469dd818c8c3",
+        "max_claims": 3,
+        "output_grammar": "blake3:9f4b04ff75c12c07e77bc410451c0b9afa04427df18c4afc26e00bf17338beb3",
+        "requested_facts": {
+          "method": "eidetic.explicit-question-list/v1",
+          "question": "blake3:4657f1751f50b3e04c3c667edb273a670346b7ba9d57e9fb1f876b02127f1aa4",
+          "facts": [
+            {
+              "id": "blake3:285b8bb775f4382eab12c41cc5413b73726eb5640ddd4df7974b4cc6618cb3d1",
+              "selector": {
+                "start": 9,
+                "end": 44
+              },
+              "text": "the Juniper archive recovery phrase"
+            },
+            {
+              "id": "blake3:1882e5dc5498d8f4bf5ad8f9e4d44e3a3f24cc41b0a17a7895bb0dd1fcd15258",
+              "selector": {
+                "start": 46,
+                "end": 81
+              },
+              "text": "the Pelican observatory access word"
+            },
+            {
+              "id": "blake3:8c216773b8023940bd059bd243ed4b67ca9fa5a57a669540ba1e34d8dd7de38e",
+              "selector": {
+                "start": 87,
+                "end": 114
+              },
+              "text": "the saved listener reminder"
+            }
+          ]
+        }
+      }
+    },
+    "missing": {
+      "input_identity": "pass",
+      "run_state": "finished",
+      "model_tokens": 165,
+      "facts": {
+        "method": "eidetic.explicit-question-list/v1",
+        "question": "blake3:9402c656e90d1a02dca03c4f61c8700659e815fb31fef2d4a5f8a0047b5bcfa7",
+        "facts": [
+          {
+            "id": "blake3:77a439c20f0c7d794e16bc299eaba5cd7d3add8516799b66f853a3abcb311b4c",
+            "selector": {
+              "start": 8,
+              "end": 52
+            },
+            "text": "the Juniper archive annual budget in dollars"
+          }
+        ]
+      },
+      "set_id": "blake3:b6e44985a0112e67eb8acaa950139cee987e279fe64c93477f2ff934fe7b9fd0",
+      "prompt_chars": 2344,
+      "context_chars": 304,
+      "contract": {
+        "method": "distillery.candidate-review/v6",
+        "question": "blake3:9402c656e90d1a02dca03c4f61c8700659e815fb31fef2d4a5f8a0047b5bcfa7",
+        "prompt": "blake3:e333bb69ae4482e40aa45a8a7b87d70660c47b5bd79ee46df3a63fdf02f00c24",
+        "context": "blake3:cc9b4af30728a9e38dd0eac209672499e11a6f314ef170c578763ad05a9ba98d",
+        "max_claims": 1,
+        "output_grammar": "blake3:32d26ec27aaa2555489ccc49070595dff1a28f6766b37cf291735561bb6510af",
+        "requested_facts": {
+          "method": "eidetic.explicit-question-list/v1",
+          "question": "blake3:9402c656e90d1a02dca03c4f61c8700659e815fb31fef2d4a5f8a0047b5bcfa7",
+          "facts": [
+            {
+              "id": "blake3:77a439c20f0c7d794e16bc299eaba5cd7d3add8516799b66f853a3abcb311b4c",
+              "selector": {
+                "start": 8,
+                "end": 52
+              },
+              "text": "the Juniper archive annual budget in dollars"
+            }
+          ]
+        }
+      }
+    },
+    "conflict": {
+      "input_identity": "pass",
+      "run_state": "finished",
+      "model_tokens": 163,
+      "facts": {
+        "method": "eidetic.explicit-question-list/v1",
+        "question": "blake3:1e79a88e5e9410ed82671698f2e4aa3c73f5a762e1774bff95808297e75f6fc6",
+        "facts": [
+          {
+            "id": "blake3:f825980c30a69c738ed0ea4273e45a231cdff10fc075b1ca42ac53189d403e6f",
+            "selector": {
+              "start": 8,
+              "end": 43
+            },
+            "text": "the Juniper archive recovery phrase"
+          }
+        ]
+      },
+      "set_id": "blake3:44fce1e07d2bef9e1eebf69dabfaf7362ef02e22e18b9b1fcaad9b1a9b39773c",
+      "prompt_chars": 2349,
+      "context_chars": 382,
+      "contract": {
+        "method": "distillery.candidate-review/v6",
+        "question": "blake3:1e79a88e5e9410ed82671698f2e4aa3c73f5a762e1774bff95808297e75f6fc6",
+        "prompt": "blake3:dc0528fd951d3e581ed2439473254811e5c64e33cbddef4a548046e033b99394",
+        "context": "blake3:bcba4148f9b134917791a74dc4832d33ce74d70efb28757e7f9fdda91137cae5",
+        "max_claims": 1,
+        "output_grammar": "blake3:95cc47b4bc32d04e2318f3e207793f4670b05c767c1b019272a78149900c641c",
+        "requested_facts": {
+          "method": "eidetic.explicit-question-list/v1",
+          "question": "blake3:1e79a88e5e9410ed82671698f2e4aa3c73f5a762e1774bff95808297e75f6fc6",
+          "facts": [
+            {
+              "id": "blake3:f825980c30a69c738ed0ea4273e45a231cdff10fc075b1ca42ac53189d403e6f",
+              "selector": {
+                "start": 8,
+                "end": 43
+              },
+              "text": "the Juniper archive recovery phrase"
+            }
+          ]
+        }
+      }
+    },
+    "reduced": {
+      "input_identity": "pass",
+      "run_state": "finished",
+      "model_tokens": 161,
+      "facts": {
+        "method": "eidetic.explicit-question-list/v1",
+        "question": "blake3:02c42498256cb1e8ff04cd7bd4dcace5e93fc69ea6b0fa63016da454db4354ee",
+        "facts": [
+          {
+            "id": "blake3:1ad587291a4b40dcf39b77143c2b8eca47c176dc38258cd6c0521259627299fa",
+            "selector": {
+              "start": 8,
+              "end": 35
+            },
+            "text": "the saved listener reminder"
+          }
+        ]
+      },
+      "set_id": "blake3:fac6c94d6348a24d8aca30b203e1670e1075cd5179ea4d5e7805b591646ab618",
+      "prompt_chars": 2354,
+      "context_chars": 209,
+      "contract": {
+        "method": "distillery.candidate-review/v6",
+        "question": "blake3:02c42498256cb1e8ff04cd7bd4dcace5e93fc69ea6b0fa63016da454db4354ee",
+        "prompt": "blake3:74087cee04f8cec4963a163b1ca3ae38d87c52de548a9c9ba9e822efaa5dd438",
+        "context": "blake3:a168535e54b51fb6e3302b31a976d2817579fcda8c9f1273210788c1f7ff127d",
+        "max_claims": 1,
+        "output_grammar": "blake3:d3bf6ff44ff2355ad544f5d763a90e836e88285410c56288d5e3a5397b36c2e0",
+        "requested_facts": {
+          "method": "eidetic.explicit-question-list/v1",
+          "question": "blake3:02c42498256cb1e8ff04cd7bd4dcace5e93fc69ea6b0fa63016da454db4354ee",
+          "facts": [
+            {
+              "id": "blake3:1ad587291a4b40dcf39b77143c2b8eca47c176dc38258cd6c0521259627299fa",
+              "selector": {
+                "start": 8,
+                "end": 35
+              },
+              "text": "the saved listener reminder"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "negative_controls": {
+    "cross_foreign_question": "rejected",
+    "cross_altered_fact": "rejected",
+    "cross_missing": "rejected",
+    "cross_extra": "rejected",
+    "cross_reordered": "rejected",
+    "missing_foreign_question": "rejected",
+    "missing_altered_fact": "rejected",
+    "missing_missing": "rejected",
+    "missing_extra": "rejected",
+    "conflict_foreign_question": "rejected",
+    "conflict_altered_fact": "rejected",
+    "conflict_missing": "rejected",
+    "conflict_extra": "rejected",
+    "reduced_foreign_question": "rejected",
+    "reduced_altered_fact": "rejected",
+    "reduced_missing": "rejected",
+    "reduced_extra": "rejected"
+  },
+  "boundary": "Question-only fact plan, fixed count/order, input and raw/support identity. Semantic correctness uses the separate unchanged frozen rubric."
+}

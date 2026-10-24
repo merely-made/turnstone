@@ -1,0 +1,10 @@
+{
+  "schema": "distillery.inference-runs/v1",
+  "model": "Qwen/Qwen2.5-1.5B-Instruct",
+  "session": {
+    "session_id": "blake3:0960d64d68cf80b35a5781e3daeddfcf453f30579861e02af8d93a535db58d3d",
+    "prompt_template_hash": "blake3:9c222535ed31aadd676fc2f1beb16d0dd0402c76a9ee1398bc0c200c825103da"
+  },
+  "load_error": null,
+  "runs": []
+}

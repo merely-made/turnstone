@@ -1,0 +1,77 @@
+{
+  "version": 1,
+  "scope_members": 4,
+  "max_passages": 4,
+  "corpus": {
+    "capture": {
+      "title": "Mixed Capture A",
+      "path": "/A",
+      "text": "The Juniper archive's recovery phrase is violet lantern."
+    },
+    "control": {
+      "title": "Mixed Capture B",
+      "path": "/B",
+      "text": "The Juniper archive's recovery phrase is amber harbor."
+    },
+    "knot": {
+      "title": "Knot selection",
+      "package": "knot.mereclip",
+      "text": "The Pelican observatory's access word is café."
+    },
+    "note": {
+      "title": "Redshank note",
+      "package": "redshank.mereclip",
+      "text": "Saved from the embedded listener: café → harbor.\nKeep this timed note."
+    }
+  },
+  "asks": [
+    {
+      "id": "cross",
+      "question": "What are the Juniper archive recovery phrase, the Pelican observatory access word, and the saved listener reminder? Give one claim for each, in that order.",
+      "scope_members": 3,
+      "expected_status": [
+        "supported",
+        "supported",
+        "supported"
+      ],
+      "relevant": [
+        "capture",
+        "knot",
+        "note"
+      ]
+    },
+    {
+      "id": "missing",
+      "question": "What is the Juniper archive annual budget in dollars? The retained sources may not state a budget.",
+      "scope_members": 3,
+      "expected_status": [
+        "insufficient"
+      ],
+      "relevant": []
+    },
+    {
+      "id": "conflict",
+      "question": "What is the Juniper archive recovery phrase? Report disagreement if the retained sources give different phrases.",
+      "scope_members": 4,
+      "expected_status": [
+        "conflicting"
+      ],
+      "relevant": [
+        "capture",
+        "control"
+      ]
+    },
+    {
+      "id": "reduced",
+      "question": "What is the saved listener reminder? Answer only from the chosen sources; the listener note has been removed from this scope.",
+      "scope_members": 2,
+      "expected_status": [
+        "insufficient"
+      ],
+      "relevant": []
+    }
+  ],
+  "rankings": [],
+  "judgment_policy": "Frozen before measuring; lexical and fused relevance measured against these labels. No blanket improvement assertion.",
+  "claim_support": true
+}

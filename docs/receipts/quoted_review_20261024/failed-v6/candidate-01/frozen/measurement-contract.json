@@ -1,0 +1,51 @@
+{
+  "baseline_receipt": "/Users/markik/Code/worktrees/turnstone-cross-source-answers-20261022/docs/receipts/decoder_finite_20261023",
+  "unchanged_frozen_sha256": {
+    "case-freeze.json": "846dfad5b614c926f5bd8845d9b323eb5bb9267edf06bddf49c06c606b549f7d",
+    "verify_probe.py": "e93875eb35e02136038789415f5dfb272c2f491c407d6246322dc21fdbc9cd4d",
+    "verify_native.py": "f3a0e939cef9ac3bf85f80cb9d1e984ee40d94a0757cf6d4c6c6d55e23b88594",
+    "optimized-runtime.toml": "7ed6fb12d461f4b4bcec5bba79f0a23d47b3266118ceedf2e8f641c24ec3bbc8",
+    "cases.json": "b91de4627aee873389066f4a8ed814fe4faff85cf1c8a3ae1d8e74f988d27ea2"
+  },
+  "cases": "All four original questions, source cuts and expectations unchanged",
+  "runtime": "Same Qwen2.5-1.5B weights, template, 1024-token cap, 900-second per-case limit, 3GiB host and 4GiB device layer budgets",
+  "gate": "All four complete answers must pass unchanged frozen semantic assertions under declared wire defaults, raw structured-output checks and exact input binding before headed checks",
+  "output_constraint": "ByteLevel grammar with fixed fact slots and ordered reviews of every candidate. Model chooses relevance and agreement; runtime restricts corresponding status and exact candidates. Claim prose remains model-authored. Insufficiency wording is a decoded literal naming the exact requested fact.",
+  "semantic_gate": "Same original verify_answer assertions with declared empty-citations wire default; original frozen checker also retained",
+  "headed_condition": "all four Finished within original deadlines, same session, raw structured shape passes, original semantic assertions pass under declared wire defaults",
+  "change": "v6 per-fact complete model-authored candidate relevance review before agreement/status/text; grammar couples review to allowed citations and status. No post-hoc output repair. Same frozen cases, model, token/deadline and memory caps.",
+  "prompt_module_sha256_before_measurement": "86ad5a502cc4f9aff886a2caa0c3e259fd7e7b1f1214b059cb14aed9c79ad729",
+  "instruction_characters": 1961,
+  "probe_source_sha256": "436a123a09d69263b82bf670d4028f1db00f9882d383a72689b0cbcc41619e13",
+  "unchanged_probe_function_sha256": "3ba8ee4d699a6c90c7f23e1af8ad2f8a91fa670ddca23820db5c1beaafa057ac",
+  "supplier_pins": {
+    "eidetic": "2fd1722c2eea1bf203853ac4795b7e28d980b50b",
+    "esp": "32ad02451f52e6a4408879f0cb0881b70d8e6984",
+    "knot": "8465e35b7cdacee8e7b17a15cf7112d4304e6806",
+    "cleromancy": "a770744a8ea66298f81de2a3f85c4d3eaec95fc2",
+    "gemot": "29166ff62f449da8d89a1de3f6e76759d4c59e73",
+    "murm": "43dd4d2942f06221cb53c3faa7352d62f5a44245",
+    "mere": "94c61893c7dbfed4b55925dfc1165a207b02b2bf",
+    "turnstone": "deb50f376198c3d52668c73d931630a195bdf56b"
+  },
+  "policy": "distillery.candidate-review/v6",
+  "prior_diagnostic": "v5 completed 4/4; semantic 1/4. No non-finite scores in 91 checked decision rows.",
+  "additional_gates": [
+    "unchanged original semantic assertions under declared omitted-citations default",
+    "whole raw JSON, complete ordered review and decision-to-status/citation invariants",
+    "raw/support review identity",
+    "exact fact/question/prompt/context/grammar identity",
+    "negative controls for skipped/reordered reviews and contradictory agreement",
+    "score health for each original request"
+  ],
+  "supplier_commit": "94c61893c7dbfed4b55925dfc1165a207b02b2bf",
+  "score_health_verifier_sha256": "6dfbc4ab0dc034e0ee9997aab1b4a42be38ed841e938c461bccfb87023a4550f",
+  "review_grammar_source_sha256": "0bf3a421e833f8c90d2cc57494c5bba45cf5b401168f302a009c2aae69d18e29",
+  "helper_sha256": {
+    "run_probe.py": "e46fc759e885cc596c8275c51ebb04edea4f83b47de887351ad76138809df643",
+    "verify_contract_inputs.py": "96d06949cc8444f0b53cb3fd3dc50a9daa6efbfbc455b9247d9152173e13da69",
+    "verify_wire_defaults.py": "672a972bf5848b9b3cf578a21ced9986b32721a117f566edf438761a938d4160",
+    "verify_structured_output.py": "b0f43b5bf844b4a3b0401bd730337aee8932a4049e53475b9b4936c532df1251",
+    "verify_score_health.py": "6dfbc4ab0dc034e0ee9997aab1b4a42be38ed841e938c461bccfb87023a4550f"
+  }
+}

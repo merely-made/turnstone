@@ -1,0 +1,342 @@
+{
+  "run": "turnstone/cb7e6811-400d-4b94-a74c-340d71fb8a0e/research/v1/bb1be6df-f38e-43bd-a4c8-60882b81eb6a",
+  "question": "What are the Juniper archive recovery phrase, the Pelican observatory access word, and the saved listener reminder? Give one claim for each, in that order.",
+  "state": "finished",
+  "text": "{\"claims\":[{\"fact\":{\"id\":\"blake3:285b8bb775f4382eab12c41cc5413b73726eb5640ddd4df7974b4cc6618cb3d1\",\"selector\":{\"start\":9,\"end\":44},\"text\":\"the Juniper archive recovery phrase\"},\"review\":{\"candidates\":[{\"handle\":1,\"requested\":\"the Juniper archive recovery phrase\",\"quote\":\"The Pelican observatory's access word is café.\",\"answers\":false},{\"handle\":2,\"requested\":\"the Juniper archive recovery phrase\",\"quote\":\"The Juniper archive's recovery phrase is violet lantern.\",\"answers\":true},{\"handle\":3,\"requested\":\"the Juniper archive recovery phrase\",\"quote\":\"Saved from the embedded listener: café → harbor.\\nKeep this timed note.\",\"answers\":false}],\"agreement\":\"single\"},\"status\":\"supported\",\"text\":\"The Juniper archive's recovery phrase is violet lantern.\",\"evidence\":[{\"handle\":2,\"quote\":\"The Juniper archive's recovery phrase is violet lantern.\"}]},{\"fact\":{\"id\":\"blake3:1882e5dc5498d8f4bf5ad8f9e4d44e3a3f24cc41b0a17a7895bb0dd1fcd15258\",\"selector\":{\"start\":46,\"end\":81},\"text\":\"the Pelican observatory access word\"},\"review\":{\"candidates\":[{\"handle\":1,\"requested\":\"the Pelican observatory access word\",\"quote\":\"The Pelican observatory's access word is café.\",\"answers\":true},{\"handle\":2,\"requested\":\"the Pelican observatory access word\",\"quote\":\"The Juniper archive's recovery phrase is violet lantern.\",\"answers\":false},{\"handle\":3,\"requested\":\"the Pelican observatory access word\",\"quote\":\"Saved from the embedded listener: café → harbor.\\nKeep this timed note.\",\"answers\":false}],\"agreement\":\"single\"},\"status\":\"supported\",\"text\":\"The Pelican observatory's access word is café.\",\"evidence\":[{\"handle\":1,\"quote\":\"The Pelican observatory's access word is café.\"}]},{\"fact\":{\"id\":\"blake3:8c216773b8023940bd059bd243ed4b67ca9fa5a57a669540ba1e34d8dd7de38e\",\"selector\":{\"start\":87,\"end\":114},\"text\":\"the saved listener reminder\"},\"review\":{\"candidates\":[{\"handle\":1,\"requested\":\"the saved listener reminder\",\"quote\":\"The Pelican observatory's access word is café.\",\"answers\":false},{\"handle\":2,\"requested\":\"the saved listener reminder\",\"quote\":\"The Juniper archive's recovery phrase is violet lantern.\",\"answers\":false},{\"handle\":3,\"requested\":\"the saved listener reminder\",\"quote\":\"Saved from the embedded listener: café → harbor.\\nKeep this timed note.\",\"answers\":true}],\"agreement\":\"single\"},\"status\":\"supported\",\"text\":\"Saved from the embedded listener: café → harbor.\\nKeep this timed note.\",\"evidence\":[{\"handle\":3,\"quote\":\"Saved from the embedded listener: café → harbor.\\nKeep this timed note.\"}]}]}",
+  "error": null,
+  "session": {
+    "session_id": "blake3:0960d64d68cf80b35a5781e3daeddfcf453f30579861e02af8d93a535db58d3d",
+    "prompt_template_hash": "blake3:9c222535ed31aadd676fc2f1beb16d0dd0402c76a9ee1398bc0c200c825103da"
+  },
+  "tokens": 700,
+  "continuations": [
+    {
+      "device": "device:da65c31848f60c16177fcd6fe2d20116",
+      "at_token": 0,
+      "reason": "ask",
+      "first_differing_token": null,
+      "compared_token_ids_hash": null
+    }
+  ],
+  "recall": {
+    "answer_format": "claim_support_v1",
+    "answer_contract": {
+      "method": "distillery.quoted-review/v7",
+      "question": "blake3:4657f1751f50b3e04c3c667edb273a670346b7ba9d57e9fb1f876b02127f1aa4",
+      "prompt": "blake3:22f56f65b3b963c4422e6b6b06fdb6227fdfa3632cc3e6c3485c46b21e62501b",
+      "context": "blake3:ea095b38d10a1b1bb8f3348edad620810f38a32a270bff0a5a3c469dd818c8c3",
+      "max_claims": 3,
+      "output_grammar": "blake3:c688ab1669c09296d19fecaef062cca1bac2c0230b8b821efd9c3442e0c0c335",
+      "requested_facts": {
+        "method": "eidetic.explicit-question-list/v1",
+        "question": "blake3:4657f1751f50b3e04c3c667edb273a670346b7ba9d57e9fb1f876b02127f1aa4",
+        "facts": [
+          {
+            "id": "blake3:285b8bb775f4382eab12c41cc5413b73726eb5640ddd4df7974b4cc6618cb3d1",
+            "selector": {
+              "start": 9,
+              "end": 44
+            },
+            "text": "the Juniper archive recovery phrase"
+          },
+          {
+            "id": "blake3:1882e5dc5498d8f4bf5ad8f9e4d44e3a3f24cc41b0a17a7895bb0dd1fcd15258",
+            "selector": {
+              "start": 46,
+              "end": 81
+            },
+            "text": "the Pelican observatory access word"
+          },
+          {
+            "id": "blake3:8c216773b8023940bd059bd243ed4b67ca9fa5a57a669540ba1e34d8dd7de38e",
+            "selector": {
+              "start": 87,
+              "end": 114
+            },
+            "text": "the saved listener reminder"
+          }
+        ]
+      }
+    },
+    "support": {
+      "requested_facts": "blake3:bfe51ded56c33198390ee443f0373c8839000b70eb6955785151bb5d64c9e0c6",
+      "method": "eidetic.claim-support/v1",
+      "raw_output": "blake3:4e321b35ca372a23f65badb2f5094fa2516309b15d9b4dc3eeba46034878399e",
+      "semantic_review": "unreviewed",
+      "claims": [
+        {
+          "fact": {
+            "id": "blake3:285b8bb775f4382eab12c41cc5413b73726eb5640ddd4df7974b4cc6618cb3d1",
+            "selector": {
+              "start": 9,
+              "end": 44
+            },
+            "text": "the Juniper archive recovery phrase"
+          },
+          "review": {
+            "candidates": [
+              {
+                "handle": 1,
+                "requested": "the Juniper archive recovery phrase",
+                "quote": "The Pelican observatory's access word is café.",
+                "answers": false
+              },
+              {
+                "handle": 2,
+                "requested": "the Juniper archive recovery phrase",
+                "quote": "The Juniper archive's recovery phrase is violet lantern.",
+                "answers": true
+              },
+              {
+                "handle": 3,
+                "requested": "the Juniper archive recovery phrase",
+                "quote": "Saved from the embedded listener: café → harbor.\nKeep this timed note.",
+                "answers": false
+              }
+            ],
+            "agreement": "single"
+          },
+          "status": "supported",
+          "text": "The Juniper archive's recovery phrase is violet lantern.",
+          "evidence": [
+            {
+              "handle": 2,
+              "quote": "The Juniper archive's recovery phrase is violet lantern.",
+              "passage": "blake3:fac52c01ee373bf9ce9259cde8d4496364a8afa3e86a25a1d0e384ea78e4381b",
+              "selector": {
+                "start": 0,
+                "end": 56
+              },
+              "error": null
+            }
+          ],
+          "issues": []
+        },
+        {
+          "fact": {
+            "id": "blake3:1882e5dc5498d8f4bf5ad8f9e4d44e3a3f24cc41b0a17a7895bb0dd1fcd15258",
+            "selector": {
+              "start": 46,
+              "end": 81
+            },
+            "text": "the Pelican observatory access word"
+          },
+          "review": {
+            "candidates": [
+              {
+                "handle": 1,
+                "requested": "the Pelican observatory access word",
+                "quote": "The Pelican observatory's access word is café.",
+                "answers": true
+              },
+              {
+                "handle": 2,
+                "requested": "the Pelican observatory access word",
+                "quote": "The Juniper archive's recovery phrase is violet lantern.",
+                "answers": false
+              },
+              {
+                "handle": 3,
+                "requested": "the Pelican observatory access word",
+                "quote": "Saved from the embedded listener: café → harbor.\nKeep this timed note.",
+                "answers": false
+              }
+            ],
+            "agreement": "single"
+          },
+          "status": "supported",
+          "text": "The Pelican observatory's access word is café.",
+          "evidence": [
+            {
+              "handle": 1,
+              "quote": "The Pelican observatory's access word is café.",
+              "passage": "blake3:a3c008a2e9c7ded0a1331e81fbee66cbd9b1188b0394ab60bd8d26e4d41dd4d7",
+              "selector": {
+                "start": 0,
+                "end": 46
+              },
+              "error": null
+            }
+          ],
+          "issues": []
+        },
+        {
+          "fact": {
+            "id": "blake3:8c216773b8023940bd059bd243ed4b67ca9fa5a57a669540ba1e34d8dd7de38e",
+            "selector": {
+              "start": 87,
+              "end": 114
+            },
+            "text": "the saved listener reminder"
+          },
+          "review": {
+            "candidates": [
+              {
+                "handle": 1,
+                "requested": "the saved listener reminder",
+                "quote": "The Pelican observatory's access word is café.",
+                "answers": false
+              },
+              {
+                "handle": 2,
+                "requested": "the saved listener reminder",
+                "quote": "The Juniper archive's recovery phrase is violet lantern.",
+                "answers": false
+              },
+              {
+                "handle": 3,
+                "requested": "the saved listener reminder",
+                "quote": "Saved from the embedded listener: café → harbor.\nKeep this timed note.",
+                "answers": true
+              }
+            ],
+            "agreement": "single"
+          },
+          "status": "supported",
+          "text": "Saved from the embedded listener: café → harbor.\nKeep this timed note.",
+          "evidence": [
+            {
+              "handle": 3,
+              "quote": "Saved from the embedded listener: café → harbor.\nKeep this timed note.",
+              "passage": "blake3:d3f07518b1002ae738d14f9ec8ee2e467bf2b90255d739f6b607ebca3339f92f",
+              "selector": {
+                "start": 0,
+                "end": 70
+              },
+              "error": null
+            }
+          ],
+          "issues": []
+        }
+      ],
+      "error": null
+    },
+    "embedding": {
+      "envelope": "blake3:9953768a3ea422c4b8e25b23926ce3dd800e37482605ef1d11270a0f7831d145",
+      "index": "blake3:e1be73bb3cc639666a07a3914ebbc743b7cc9a13ddff2c775c4c98fb99e97e7a",
+      "cache": "built",
+      "vector_bytes": 6144,
+      "persisted_bytes": 22490,
+      "lexical_weight": 1,
+      "vector_weight": 1,
+      "rrf_k": 60
+    },
+    "owner": "turnstone/cb7e6811-400d-4b94-a74c-340d71fb8a0e/research/v1",
+    "scope": [
+      {
+        "kind": "fleece",
+        "owner": "turnstone/cb7e6811-400d-4b94-a74c-340d71fb8a0e/research/v1",
+        "source": "mere://saved-source/cb7e6811-400d-4b94-a74c-340d71fb8a0e/7b140ed8-9c2a-48f1-ad28-9a4d15dc81ff/99a550f7-42d8-4477-ac9c-bd68db35e656/3d9d70488162e0cff4ca2178d0660a88919c22ff8095dffcdfee2ca5b74ee6d1/7d51f2ed929706e8a8d24f17da016384ac94f3ab88c95054fb8658e6a1fa5399",
+        "node": "99a550f7-42d8-4477-ac9c-bd68db35e656"
+      },
+      {
+        "kind": "fleece",
+        "owner": "turnstone/cb7e6811-400d-4b94-a74c-340d71fb8a0e/research/v1",
+        "source": "mere://retained-text/cb7e6811-400d-4b94-a74c-340d71fb8a0e/7b140ed8-9c2a-48f1-ad28-9a4d15dc81ff/a2f64449-d495-43d2-ae5e-12c311401122/48674921cc190ad421d84c8fb5ad3351b87ddb574d7a05afd476dde67f0e9773/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+        "node": "a2f64449-d495-43d2-ae5e-12c311401122"
+      },
+      {
+        "kind": "fleece",
+        "owner": "turnstone/cb7e6811-400d-4b94-a74c-340d71fb8a0e/research/v1",
+        "source": "mere://retained-text/cb7e6811-400d-4b94-a74c-340d71fb8a0e/7b140ed8-9c2a-48f1-ad28-9a4d15dc81ff/1d0a1916-3cea-4ab4-b914-2b37411b424c/45ea9bc24519f7791689b075b3b74fd8cb4c3cbd35adb89f5c684d0508a470d0/34a68a8f92ee65534850537f585c9daef4de2101765295a242ec022af7acfb96",
+        "node": "1d0a1916-3cea-4ab4-b914-2b37411b424c"
+      }
+    ],
+    "config": {
+      "chunk_chars": 512,
+      "max_passages": 4,
+      "min_quote_chars": 32,
+      "max_context_chars": 12000,
+      "max_corpus_chars": 1000000
+    },
+    "passages": [
+      {
+        "handle": 1,
+        "passage": {
+          "source": {
+            "kind": "fleece",
+            "owner": "turnstone/cb7e6811-400d-4b94-a74c-340d71fb8a0e/research/v1",
+            "source": "mere://retained-text/cb7e6811-400d-4b94-a74c-340d71fb8a0e/7b140ed8-9c2a-48f1-ad28-9a4d15dc81ff/a2f64449-d495-43d2-ae5e-12c311401122/48674921cc190ad421d84c8fb5ad3351b87ddb574d7a05afd476dde67f0e9773/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+            "node": "a2f64449-d495-43d2-ae5e-12c311401122"
+          },
+          "version": "blake3:110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+          "text_hash": "blake3:110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+          "selector": {
+            "start": 0,
+            "end": 46
+          },
+          "chunker": "mere.unicode-chunks/v1/512",
+          "text": "The Pelican observatory's access word is café."
+        }
+      },
+      {
+        "handle": 2,
+        "passage": {
+          "source": {
+            "kind": "fleece",
+            "owner": "turnstone/cb7e6811-400d-4b94-a74c-340d71fb8a0e/research/v1",
+            "source": "mere://saved-source/cb7e6811-400d-4b94-a74c-340d71fb8a0e/7b140ed8-9c2a-48f1-ad28-9a4d15dc81ff/99a550f7-42d8-4477-ac9c-bd68db35e656/3d9d70488162e0cff4ca2178d0660a88919c22ff8095dffcdfee2ca5b74ee6d1/7d51f2ed929706e8a8d24f17da016384ac94f3ab88c95054fb8658e6a1fa5399",
+            "node": "99a550f7-42d8-4477-ac9c-bd68db35e656"
+          },
+          "version": "blake3:7d51f2ed929706e8a8d24f17da016384ac94f3ab88c95054fb8658e6a1fa5399",
+          "text_hash": "blake3:7d51f2ed929706e8a8d24f17da016384ac94f3ab88c95054fb8658e6a1fa5399",
+          "selector": {
+            "start": 0,
+            "end": 56
+          },
+          "chunker": "mere.unicode-chunks/v1/512",
+          "text": "The Juniper archive's recovery phrase is violet lantern."
+        }
+      },
+      {
+        "handle": 3,
+        "passage": {
+          "source": {
+            "kind": "fleece",
+            "owner": "turnstone/cb7e6811-400d-4b94-a74c-340d71fb8a0e/research/v1",
+            "source": "mere://retained-text/cb7e6811-400d-4b94-a74c-340d71fb8a0e/7b140ed8-9c2a-48f1-ad28-9a4d15dc81ff/1d0a1916-3cea-4ab4-b914-2b37411b424c/45ea9bc24519f7791689b075b3b74fd8cb4c3cbd35adb89f5c684d0508a470d0/34a68a8f92ee65534850537f585c9daef4de2101765295a242ec022af7acfb96",
+            "node": "1d0a1916-3cea-4ab4-b914-2b37411b424c"
+          },
+          "version": "blake3:34a68a8f92ee65534850537f585c9daef4de2101765295a242ec022af7acfb96",
+          "text_hash": "blake3:34a68a8f92ee65534850537f585c9daef4de2101765295a242ec022af7acfb96",
+          "selector": {
+            "start": 0,
+            "end": 70
+          },
+          "chunker": "mere.unicode-chunks/v1/512",
+          "text": "Saved from the embedded listener: café → harbor.\nKeep this timed note."
+        }
+      }
+    ],
+    "stale": [],
+    "citations": [
+      {
+        "handle": 2,
+        "passage": "blake3:fac52c01ee373bf9ce9259cde8d4496364a8afa3e86a25a1d0e384ea78e4381b",
+        "basis": "claim_quotation",
+        "answer_selector": {
+          "start": 785,
+          "end": 843
+        }
+      },
+      {
+        "handle": 1,
+        "passage": "blake3:a3c008a2e9c7ded0a1331e81fbee66cbd9b1188b0394ab60bd8d26e4d41dd4d7",
+        "basis": "claim_quotation",
+        "answer_selector": {
+          "start": 1612,
+          "end": 1660
+        }
+      },
+      {
+        "handle": 3,
+        "passage": "blake3:d3f07518b1002ae738d14f9ec8ee2e467bf2b90255d739f6b607ebca3339f92f",
+        "basis": "claim_quotation",
+        "answer_selector": {
+          "start": 2423,
+          "end": 2496
+        }
+      }
+    ]
+  }
+}

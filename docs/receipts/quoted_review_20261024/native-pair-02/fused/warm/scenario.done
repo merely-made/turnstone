@@ -1,0 +1,26 @@
+RESULT ok
+captured 01_capture_A
+captured 02_capture_B
+captured 03_mixed_sources
+captured explicit_scope
+captured cross_answer
+captured cross_raw
+captured cross_warm_claim_1_citation
+captured cross_warm_claim_2_citation
+captured cross_warm_claim_3_citation
+captured missing_answer
+captured conflict_answer
+captured reduced_answer
+presentation frames=968 captures=12 blank=0
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/warm/01_capture_A.png digest=1b3c4077bd2d7089 blank=false
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/warm/02_capture_B.png digest=afd686215b00587f blank=false
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/warm/03_mixed_sources.png digest=83582fdf832b28ed blank=false
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/warm/explicit_scope.png digest=129d367140487d07 blank=false
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/warm/cross_answer.png digest=536df897a5525557 blank=false
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/warm/cross_raw.png digest=5ecfb5ee375437d2 blank=false
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/warm/cross_warm_claim_1_citation.png digest=9f6c5af75179ee24 blank=false
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/warm/cross_warm_claim_2_citation.png digest=6a2e27398e8d064b blank=false
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/warm/cross_warm_claim_3_citation.png digest=98f6396000915ee0 blank=false
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/warm/missing_answer.png digest=6d07e71fa1a0a968 blank=false
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/warm/conflict_answer.png digest=ebd6fb139adbcdcc blank=false
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-02/fused/warm/reduced_answer.png digest=96bce1a86005e105 blank=false

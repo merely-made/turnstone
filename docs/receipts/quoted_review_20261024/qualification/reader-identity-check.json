@@ -1,0 +1,10 @@
+{
+  "result": "pass",
+  "original_checker_sha256": "f3a0e939cef9ac3bf85f80cb9d1e984ee40d94a0757cf6d4c6c6d55e23b88594",
+  "semantic_function_sha256": "617a22575793b5f33919a3f6cd4b15dc6b2d812da3ceeafccd3866fc957d642a",
+  "semantic_assertions": "byte-identical",
+  "canonical_saved_reader_source": "target.key.node",
+  "source_alias_control": "view differs from admitted source; canonical source selected",
+  "forged_view_control": "matching view ID cannot substitute a foreign target.key.node",
+  "retained_reader_identity": "unchanged"
+}

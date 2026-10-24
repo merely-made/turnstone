@@ -1,0 +1,8 @@
+{
+  "resident": [
+    "git+https://github.com/merely-made/eidetic.git?rev=2fd1722c2eea1bf203853ac4795b7e28d980b50b#2fd1722c2eea1bf203853ac4795b7e28d980b50b"
+  ],
+  "turnstone": [
+    "git+https://github.com/merely-made/eidetic.git?rev=2fd1722c2eea1bf203853ac4795b7e28d980b50b#2fd1722c2eea1bf203853ac4795b7e28d980b50b"
+  ]
+}

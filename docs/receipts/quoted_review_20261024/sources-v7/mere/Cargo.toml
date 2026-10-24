@@ -1,0 +1,897 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/mere",
+    "crates/canvas/cartography",
+    "crates/canvas/pictograph",
+    "crates/graph/graph-kernel",
+    "crates/graph/linked-data",
+    "crates/shell/chrome",
+    "crates/shell/comms",
+    "crates/incipit",
+    "crates/system/pandect",
+    "crates/system/fetch",
+    "crates/system/page-load",
+    "crates/system/framing",
+    # The labelled state witness G8 and Isocosm share (F116 to F131).
+    "crates/system/state-witness",
+    "crates/system/source-edit",
+    "crates/system/content-contract",
+    "crates/system/shell-state",
+    "crates/system/registry",
+    "crates/system/tabard",
+    "crates/distillery/alembic",
+    "crates/system/ux-events",
+    "crates/forme/curation",
+    "crates/forme/forme",
+    "crates/forme/uxtree",
+    "crates/domain/apparatus",
+    "crates/domain/personal-facts",
+    "crates/domain/site",
+    "crates/platen/platen",
+    "crates/fleece",
+    "crates/intel/eidetic-search",
+    "crates/intel/mora-cmudict",
+    "crates/intel/reference-data",
+    # personae, insigne, gaz, chatelaine, notochord and the dramatis facade
+    # left for their own repository on 2026-10-09 (dramatis repo plan, DR-D);
+    # the persona picker stays until D7's condition is met.
+    "crates/dramatis/persona-picker",
+    "crates/mesh/mesh",
+    "crates/script/rhai",
+    "crates/script/document-host",
+    "crates/script/app-host",
+    # ─── Absorbed 2026-07-23 (design_docs/.../2026-07-23_repo_consolidation_plan.md) ───
+    # Cambium and Conatus remain platform components. The 2026-10-19 foundation
+    # promotion moved Eidetic, Armillary, ESP and Gemot to independent suppliers;
+    # their crate identities and public APIs are unchanged.
+    "crates/conatus/numen",
+    "crates/conatus/seiche",
+    "crates/conatus/nisus",
+    "crates/conatus/modulus",
+    "crates/conatus/conatus",
+    # The lit body tenant over the reshaped kiss3d fork (wing rulings 471, 735).
+    "crates/conatus/tenant",
+    # The scene family sits under the Cambium umbrella (platform boundary plan
+    # §1, P2): one family per crates/<family>/ directory, with the widget lane
+    # and the scene lane sharing a home and keeping their state models apart.
+    # The generic `scenograph` facade crate is gone; its solver registry moved
+    # into `scenomise`. The published name now belongs to the host-neutral
+    # projection authoring model, not a runtime facade.
+    "crates/cambium/scenes/sceno",
+    "crates/cambium/scenes/scenomise",
+    "crates/cambium/scenes/scenotime",
+    "crates/cambium/scenes/scenograph",
+    "crates/chirograph",
+    "crates/graphshell/graphshell-client",
+    "crates/graphshell/graphshell-endpoint",
+    "crates/graphshell/graphshell-host",
+    "ports/graphshell",
+    "ports/graphshell/mere",
+    "ports/djinn",
+    "ports/dramatis",
+    "ports/djinn/castellan",
+    "ports/distillery",
+    "ports/moot",
+    "ports/distillery/athanor",
+    "ports/gazette",
+    # Commissions and operates Retinue stations through Castellan. A member
+    # since the p2panda 0.7.5 repin (device pairing plan, ruling 35).
+    "ports/signalman",
+    # ─── Landed 2026-09-03 from genet (design_docs/mere_docs/implementation_
+    # strategy/2026-09-02_platform_boundary_and_repository_topology_plan.md,
+    # the consumers-first half of P3) ───
+    # Pelt is the reference-browser port. Tabard moved to `crates/system/`
+    # on 2026-10-07 after becoming the shared theme library. The document lanes
+    # are a content lane, not a widget, so they land in `crates/system/` beside
+    # `fetch`. Package names are unchanged.
+    # The Knot editor host moved to `crates/inker/knot-editor-host` on
+    # 2026-09-04, when Knot's own sources left this repository (knot-editor
+    # `design_docs/2026-09-01_knot_editor_repository_extraction_plan.md`, E2).
+    # It is inker-family integration code, not Knot product source, so it
+    # stays here; `ports/knot/` does not survive as a directory holding only
+    # it.
+    "ports/tabard/desktop",
+    "ports/pelt",
+    "ports/pelt/core",
+    "ports/pelt/desktop",
+    "crates/inker/knot-editor-host",
+    "crates/system/document-lanes",
+    # ─── Landed 2026-09-03 from genet (the same plan, P2) ───
+    # The Cambium family: the retained widget lane. It keeps its own crate
+    # names and versions; only its repository home moved. The scene lane lives
+    # beside it under `crates/cambium/scenes/` (listed above with the other
+    # absorbed families, because it has been mere's since 2026-07-23).
+    "crates/cambium/cambium",
+    "crates/cambium/cambium-rootstock",
+    "crates/cambium/cambium-winit",
+    "crates/cambium/cambium-winit-a11y",
+    "crates/cambium/cambium-genet-winit-host",
+    # Shared authoring surface; the standalone product is ports/tabard/desktop.
+    "crates/cambium/tabard-workshop",
+    "crates/cambium/cambium-genet-web-host",
+    "crates/cambium/command-menu",
+    "crates/cambium/hest",
+    "crates/cambium/backstep",
+    "crates/cambium/meristem",
+    "crates/cambium/sprigging",
+    # The scenario lane over a Cambium document host. Landed 2026-09-14 from
+    # Isometry, where it was `wing-scenario`; the products switch to it next.
+    "crates/cambium/mesquite",
+    # Retained application chrome over Cambium, so it sits under the umbrella.
+    "crates/cambium/workbench",
+    # The mere view every application embeds (reservoir plan V2b).
+    "crates/cambium/mere-view",
+    # A mere route read remotely, filling the mere view (stack lift plan L14, R7).
+    "crates/cambium/mere-overmap",
+    # The application host contract genet's P1 split out of genet-host-api. A
+    # host contract rather than a widget, so it lands beside `fetch`.
+    "crates/system/surface-api",
+    # The djinn test harness (djinn test harness plan, ruling 5): unpublished,
+    # a path dev-dependency for djinn, castellan, personae and their siblings.
+    "crates/system/djinn-testkit",
+    # ─── Landed 2026-09-03 from genet (the same plan, P3) ───
+    # The engine-management layer: inker selects and orchestrates content
+    # engines, document-canvas lays its documents out, the three engine
+    # adapters wrap a system WebView (scrying), a Servo embedding (graft) and
+    # CEF (weld); the engine flip that carries one address between engines is
+    # inker::flip (folded from verso-tile 2026-09-05). They keep their own
+    # crate names and versions; only their repository home moved.
+    "crates/inker/inker",
+    "crates/inker/document-canvas",
+    "crates/inker/engines/scrying-engine",
+    "crates/inker/engines/graft-engine",
+    "crates/inker/engines/weld-engine",
+    # The smolweb rendering lane: nematic lowers the small-web formats into
+    # inker's document model, illume lexes and highlights their text.
+    "crates/nematic/nematic",
+    "crates/nematic/illume",
+    # Errand now owns the continuing Smolweb family in merely-made/errand.
+    # Fetch consumes its independently versioned integration crate.
+    # Tinct derives a palette from a few seed colours: a theming facility for
+    # the widget lane, so it sits under the Cambium umbrella.
+    "crates/cambium/tinct",
+]
+exclude = [
+    "crates/cambium/hest-0_1",
+    "crates/probes",
+    # The unpublished browser host carries Git-only Genet presentation deps.
+    # Keep it outside release resolution. NOTE: the entry below sits inside a
+    # directory that is itself an explicit member (`ports/graphshell`), so
+    # cargo never applies the exclusion and the line is documentation, not
+    # mechanism. What actually keeps it out is the empty `[workspace]` table in
+    # its own manifest, which is also what makes it buildable by
+    # `--manifest-path`; and standing alone, it has to restate every `[patch]`
+    # entry below that its graph needs.
+    "ports/graphshell/web",
+]
+
+[workspace.package]
+rust-version = "1.97.1"
+version = "0.0.1"
+edition = "2024"
+license = "MPL-2.0"
+repository = "https://github.com/merely-made/mere"
+# The scene crates inherit this; it matches what their own workspace
+# declared before the 2026-07-23 absorption.
+authors = ["Mark AB (markik)"]
+
+# Centralized load-bearing pins. Every crate that uses one of these declares
+# it directly with `<dep>.workspace = true` rather than via transitive
+# resolution through another crate's re-export. Per
+# `~/.claude/.../memory/feedback_workspace_pins_drive_probes.md`: workspace
+# pins canonically, probes adapt; pick once with the user, don't churn.
+[workspace.dependencies]
+# ─── Workspace-internal path deps ────────────────────────────────────────────
+# Every workspace member listed here; consumers do `dep.workspace = true`
+# so only the root Cargo.toml knows where each crate lives. Package names
+# below are the *current* names — rename passes (drop mere-* prefix etc.)
+# update both this list and consumer references in one shot.
+# Seiche and numen are workspace-owned field/runtime components. The default
+# field evaluation path stays portable; optional Burn/Rhai/Resident carriage is
+# selected at the owning crate.
+seiche = { version = "0.0.6", path = "crates/conatus/seiche" }
+nisus = { version = "0.1.0", path = "crates/conatus/nisus" }
+modulus = { version = "0.1.0", path = "crates/conatus/modulus" }
+conatus = { path = "crates/conatus/conatus" }
+cartography = { package = "mere-cartography", version = "0.0.2", path = "crates/canvas/cartography" }
+linked-data = { package = "mere-linked-data", version = "0.0.1", path = "crates/graph/linked-data" }
+kernel = { package = "mere-kernel", version = "0.0.2", path = "crates/graph/graph-kernel" }
+# The graph-canvas content-root (was `orrery`; that name retired to the Merely
+# product tier ladder, 2026-07-09 — see the boundary pass plan amendments).
+pictograph = { version = "0.2.0", path = "crates/canvas/pictograph", default-features = false }
+# The IconVG implementation pictograph encodes faces with (repos/emblem).
+emblem = "0.2.0"
+# Graph digest projections (djot outline, metrics) — `glossary` (was `mere-orrery`).
+
+# The actor-kernel runtime (host-neutral): the !Send host-kernel boundary + the
+# Send actor harness the constellation is built on. Promoted to its standalone
+# repo (code-identical cutover 2026-07-09, boundary pass slice A); git sibling
+# consumed one-way, local checkout via the gitignored `.cargo/config.toml` patch.
+armillary = { version = "0.1.1", git = "https://github.com/merely-made/armillary.git", rev = "92d5b15cf39aaac40a3f2d863ffee69c9be11bfc" }
+# The scenograph projection-engine family's core contract (scene snapshots,
+# footprints, spaces, measurements) — git sibling consumed one-way, local
+# checkout via the gitignored `.cargo/config.toml` patch. cartography emits
+# sceno scenes (the P2 consumption slice; projection_proofs_plan).
+sceno = { version = "0.0.6", path = "crates/cambium/scenes/sceno" }
+scenomise = { version = "0.0.6", path = "crates/cambium/scenes/scenomise" }
+scenotime = { version = "0.0.4", path = "crates/cambium/scenes/scenotime" }
+scenograph = { version = "0.0.5", path = "crates/cambium/scenes/scenograph" }
+# The remaining families absorbed 2026-07-23. Consumers keep using
+# `<dep>.workspace = true`, so only this block knows where each one lives.
+# The identity tier lives in merely-made/dramatis since DR-D (dramatis repo
+# plan). Every entry names the SAME revision: two revisions are two sources,
+# and two personae in one graph split its types. A sibling that embeds in
+# this graph (Knot, through djinn) must pin the same revision too. Until
+# dramatis is pushed, the gitignored `.cargo/config.toml` patches these to a
+# local checkout.
+personae = { version = "0.3.0", git = "https://github.com/merely-made/dramatis.git", branch = "main" }
+notochord = { version = "0.1.1", git = "https://github.com/merely-made/dramatis.git", branch = "main" }
+chartulary = { version = "0.2.1", git = "https://github.com/merely-made/eidetic.git", rev = "56601d9cb0c4901fd352bc789ce0ab53b5b6edd6" }
+# The legend/memorial view over journals and codicils; reservation only.
+hagiograph = { version = "0.0.1", git = "https://github.com/merely-made/eidetic.git", rev = "56601d9cb0c4901fd352bc789ce0ab53b5b6edd6" }
+numen = { version = "0.2.0", path = "crates/conatus/numen" }
+esp = { version = "0.1.0", git = "https://github.com/merely-made/esp.git", rev = "7955994686c07535417803d041a5aa95dd3ec4f1" }
+# Fixture data is a dev-only supplier package; keep the runtime cohort unchanged.
+esp-test-support = { version = "0.1.0", git = "https://github.com/merely-made/esp.git", rev = "7955994686c07535417803d041a5aa95dd3ec4f1" }
+mora = "0.1.0"
+mora-cmudict = { version = "0.0.1", path = "crates/intel/mora-cmudict" }
+reference-data = { version = "0.0.1", path = "crates/intel/reference-data" }
+# The projection contract, executed in duplicate (was graphshell-protocol;
+# renamed 2026-08-14 because the contract is the family's, not the portal's).
+chirograph = { version = "0.0.2", path = "crates/chirograph" }
+# The card vocabulary chirograph re-exports and castellan wants without the wire.
+graphshell-client = { version = "0.0.2", path = "crates/graphshell/graphshell-client" }
+graphshell-endpoint = { version = "0.0.2", path = "crates/graphshell/graphshell-endpoint" }
+# The serving half: admission, the session loop, the catalog and the projection
+# host (Graphshell stack lift plan, L2, ruling R4). Default features off here;
+# each consumer names the half it serves.
+graphshell-host = { version = "0.0.2", path = "crates/graphshell/graphshell-host", default-features = false }
+# Knot is an independent document product that Mere embeds rather than owns
+# (knot-editor `design_docs/2026-09-01_knot_editor_repository_extraction_plan.md`).
+# Its sources left this repository on 2026-09-04 under that plan's E2; Djinn and
+# Turnstone consume one immutable revision. The `[patch]` table at the bottom of
+# this file makes this checkout the implementation source for the Mere contracts
+# Knot names, so those types keep one Cargo source identity. Standalone Knot
+# pins Mere `ef0994ba` and Genet `2c7ef73b` on the qualified renderer family;
+# embedded contracts resolve locally through the complete patch table below.
+# The receipt records supplier graph and compile qualification. Djinn's `knot-site`
+# row moves with these two pins so all Knot packages share one source.
+# On 2026-10-15 both move to a27911ad, which imports custody and admission from
+# `graphshell-endpoint`'s `door` (stack lift plan P1) and adds `mere_overlay`,
+# Knot's overmap layer over a resident mere's route; Knot pins Mere 19573b51.
+# On 2026-10-15 both move again to c487a7c, which repins Knot onto Mere
+# e92572a4 for the lift plan's P2 and P3; Knot's sources are unchanged.
+# On 2026-10-15 both move to 6e3e740, which shows the resident mere as the
+# overmap tier on the catalog's canvas and repins Knot onto Mere 2d6d81804.
+# Then to c1427d2: Knot on Mere 2222917f3 (picks, the "+N" setting,
+# apply_and_lay_out and the native-run fixes), with the tier's native receipt.
+# Then to 451ae24: Knot on Mere 3847ec491 (tier labels by name, exact cards).
+# Then to b0feec9: Knot on Mere 71761a553 (the stack lift's P4: knot-editor's
+# place projection test and k2 peer serve through `graphshell-host`) and on
+# `backstep`, `edit-history`'s new name.
+# Then to b19eebf: Knot on Mere 0c03dff3 (P5: the app-route receipt is
+# Djinn's, `graphshell` is Knot's dev-dependency for `view` and `sessions`
+# only) with merges carried from its overlay to the route.
+# Then to fe9d98c: Knot on Mere 75a2e6ae and Murm fb6360c12b, the one repin round
+# (remote mere route spec 7.3): sceno and scenomise 0.0.5, and `graphshell` is no
+# longer named by Knot at all (its `view` and `sessions` are `graphshell-host`'s).
+# Family source convention (2026-10-15): every first-party row names its repository
+# by `branch = "main"` at the canonical URL; Cargo.lock pins the tested revision and
+# a repin is `cargo update -p knot-editor`. See the family composition brief.
+knot-editor = { version = "0.0.3", git = "https://github.com/merely-made/knot-editor.git", branch = "main" }
+knot-document = { version = "0.0.1", git = "https://github.com/merely-made/knot-editor.git", branch = "main" }
+# The credential-keeper port (dramatis plan D4). No longer a reservation:
+# C1/C2 landed the OTP core, sealed OTP items, the release gate, and the
+# `keeper` identity surface graphshell re-exports.
+castellan = { version = "0.0.3", path = "ports/djinn/castellan" }
+# The model-works port; first real consumer of the mesh host supervisor.
+distillery = { version = "0.0.1", path = "ports/distillery" }
+# The places port: one port, two surfaces (murmur = conversation, moot =
+# community), composing gemot, commons, murm, and stickleback without owning
+# their authority. Founding reservation, no implementation. Package is
+# `mere-moot` because crates.io `moot` and `murmur` are both held elsewhere.
+moot = { package = "mere-moot", version = "0.0.1", path = "ports/moot" }
+# Distillery's shared recall-and-workshop library: memory levels behind
+# `recall`, with the granted-agent workshop still reserved. Athanor is its
+# first actor. Package is `mere-alembic`; crates.io `alembic` is the Linux
+# Foundation VFX binding.
+alembic = { package = "mere-alembic", version = "0.0.1", path = "crates/distillery/alembic" }
+athanor = { package = "mere-athanor", version = "0.0.1", path = "ports/distillery/athanor" }
+# Shared pins the graphshell crates inherit.
+base64 = "0.22"
+blake3 = "1"
+mere = { path = "crates/mere" }
+
+fetch = { package = "mere-fetch", version = "0.0.1", path = "crates/system/fetch" }
+framing = { package = "mere-framing", version = "0.0.2", path = "crates/system/framing" }
+page-load = { package = "mere-page-load", version = "0.0.1", path = "crates/system/page-load" }
+content-contract = { path = "crates/system/content-contract" }
+proofs = { package = "mere-proofs", version = "0.1.0", git = "https://github.com/merely-made/eidetic.git", rev = "56601d9cb0c4901fd352bc789ce0ab53b5b6edd6" }
+shell-state = { path = "crates/system/shell-state" }
+incipit = { version = "0.2.0", path = "crates/incipit" }
+chrome = { package = "mere-chrome", path = "crates/shell/chrome" }
+comms = { package = "mere-comms", path = "crates/shell/comms" }
+pandect = { version = "0.1.1", path = "crates/system/pandect" }
+# Self-update over signed manifests (the cargo-packager-updater fork; ruled
+# 2026-07-24: name luggage, home mere). Apps consume it via git dep like the
+# rest of the family; mere itself will when its own packaging lands.
+#
+# `default-features = false` here is the release-identity core only. Cargo
+# forbids a member turning a workspace dependency's defaults *off*, so the
+# workspace declaration has to be the minimal common denominator and each
+# member opts up. A member that wants the update pipeline writes
+# `luggage = { workspace = true, features = ["native"] }`; forgetting to is a
+# compile error naming the missing item, never a silently crippled updater.
+# The crate's own `default = ["native"]` still serves consumers outside this
+# workspace, which is who it is for.
+luggage = { default-features = false, git = "https://github.com/merely-made/eidetic.git", rev = "56601d9cb0c4901fd352bc789ce0ab53b5b6edd6" }
+ux-events = { path = "crates/system/ux-events" }
+registry = { package = "mere-registry", path = "crates/system/registry", default-features = false }
+
+# The engine-management family moved to genet 2026-07-10 (genet
+# docs/2026-07-09_inker_genet_adoption_plan.md) and came back on 2026-09-03
+# under the platform boundary plan's P3, this time as mere's own workspace
+# members. Path deps now: none of the ten may appear in .cargo/config.toml's
+# genet or crates-io patch tables, because patching a git or crates.io source
+# at a path that is also a workspace member is a hard lockfile collision.
+inker = { version = "0.1.1", path = "crates/inker/inker" }
+document-canvas = { version = "0.1.0", path = "crates/inker/document-canvas" }
+# `default-features = false` belongs on this declaration:
+# `crates/inker/knot-editor-host` opts back into `html-fragment` explicitly, and
+# so does the external knot-editor.
+nematic = { version = "0.1.1", path = "crates/nematic/nematic", default-features = false }
+fleece-extract = { package = "fleece", version = "0.5.0", git = "https://github.com/merely-made/genet.git", branch = "main" }
+fleece = { package = "mere-fleece", path = "crates/fleece", version = "0.0.1" }
+genet-text = { version = "0.1.0", git = "https://github.com/merely-made/genet.git", branch = "main" }
+# Landed here from genet 2026-09-03 (platform boundary plan, P3): a workspace
+# member now, so it is a path dep and must NOT appear in .cargo/config.toml's
+# genet patch table — patching a git source at a path that is also a workspace
+# member is a hard lockfile collision. `default-features = false` is kept
+# because knot-document opts back into `preview` explicitly.
+knot-editor-host = { version = "0.1.1", path = "crates/inker/knot-editor-host", default-features = false }
+illume = { version = "0.0.3", path = "crates/nematic/illume" }
+# ─── Landed from genet 2026-09-03 (platform boundary plan, P2) ──────────────
+# Workspace members, so path deps. None of the eleven may appear in
+# .cargo/config.toml's genet patch table: patching a git source at a path that
+# is also a workspace member is a hard lockfile collision.
+cambium = { version = "0.6.0", path = "crates/cambium/cambium" }
+cambium-rootstock = { version = "0.1.0", path = "crates/cambium/cambium-rootstock", default-features = false }
+mesquite = { version = "0.1.0", path = "crates/cambium/mesquite" }
+cambium-winit = { version = "0.3.0", path = "crates/cambium/cambium-winit" }
+cambium-winit-a11y = { version = "0.3.0", path = "crates/cambium/cambium-winit-a11y" }
+cambium-genet-web-host = { version = "0.1.0", path = "crates/cambium/cambium-genet-web-host" }
+command-menu = { version = "0.1.1", path = "crates/cambium/command-menu" }
+hest = { version = "0.2.0", path = "crates/cambium/hest" }
+backstep = { version = "0.1.0", path = "crates/cambium/backstep" }
+meristem = { version = "0.2.0", path = "crates/cambium/meristem" }
+sprigging = { version = "0.3.0", path = "crates/cambium/sprigging" }
+# The three engine adapters, unpublished. Their version was genet's
+# workspace 0.2.0, inlined on landing because mere's workspace version is
+# 0.0.1 and the move is not a version decision.
+scrying-engine = { version = "0.2.0", path = "crates/inker/engines/scrying-engine" }
+graft-engine = { version = "0.2.0", path = "crates/inker/engines/graft-engine" }
+weld-engine = { version = "0.2.0", path = "crates/inker/engines/weld-engine" }
+
+# Centralized 2026-08-26. These were previously restated in each member with a
+# full git spec, so a genet bump meant editing fifteen files and a missed one
+# silently forked the lineage. Stated once here; members inherit with
+# `foo.workspace = true` and add only their own features/optional flags.
+genet-scripted-dom = { version = "=0.1.2", git = "https://github.com/merely-made/genet.git", branch = "main" }
+layout-dom-api = { version = "=0.1.1", git = "https://github.com/merely-made/genet.git", branch = "main" }
+layout_dom_api = { package = "layout-dom-api", version = "=0.1.1", git = "https://github.com/merely-made/genet.git", branch = "main" }
+genet-livery = { version = "0.0.4", git = "https://github.com/merely-made/genet.git", branch = "main", default-features = false }
+# Named genet-probe until genet 7baa554c (2026-09-14); same crate, new name.
+taproot = { version = "0.1.0", git = "https://github.com/merely-made/genet.git", branch = "main", default-features = false, features = ["accesskit"] }
+genet-static-dom = { git = "https://github.com/merely-made/genet.git", branch = "main" }
+# The application half of the former `genet-host-api` — the settings
+# projection and the surface admission vocabulary. Genet's P1 split it out as
+# `mere-surface-api` (genet 57bcc38fdae, platform boundary plan §9.3), leaving
+# `genet-host-api` at 0.2.0 as the raw engine half, which mere does not
+# consume. The plan moved it here on 2026-09-03; it is a workspace member now.
+mere-surface-api = { version = "0.1.0", path = "crates/system/surface-api" }
+workbench = { version = "=0.1.0", path = "crates/cambium/workbench" }
+mere-view = { version = "0.1.0", path = "crates/cambium/mere-view" }
+mere-overmap = { version = "0.1.0", path = "crates/cambium/mere-overmap", default-features = false }
+errand = { version = "0.4.0", git = "https://github.com/merely-made/errand.git", rev = "3d2ce3a568ffd63a98c0057fc5c798f3c999d2ab" }
+# Errand's wire layer: one spec-faithful crate per protocol, published under
+# names that belong to the protocols' communities rather than to the engine
+# that speaks them (the 2026-07-23 repo consolidation and the 2026-08-03
+# smolweb home decision). They were genet's `[workspace.dependencies]` while
+# errand lived there; they arrive here with it. `finger-protocol` carries
+# WebFinger too, which errand deliberately does not enable, since WebFinger is
+# HTTP and errand does not speak HTTP.
+nex-protocol = { version = "=0.1.1" }
+spartan-protocol = { version = "=0.1.1" }
+guppy-protocol = { version = "=0.1.1" }
+gopher-protocol = { version = "=0.2.0" }
+gemini-protocol = { version = "=0.1.7" }
+scroll-protocol = { version = "=0.1.0" }
+finger-protocol = { version = "=0.1.1", default-features = false, features = [
+    "client",
+] }
+netfetcher = { version = "0.1.1", git = "https://github.com/merely-made/genet.git", branch = "main" }
+# ─── Landed from genet 2026-09-03 (platform boundary plan, P3) ───────────────
+# Workspace members, so path deps. None of these may appear in
+# .cargo/config.toml's genet patch table.
+pelt-core = { path = "ports/pelt/core" }
+# `default-features = false` belongs on the workspace declaration, not on
+# pelt's line: cargo will not let a member turn an inherited dependency's
+# defaults off. Pelt re-enables livery/reader/netfetch through its own features.
+pelt-desktop = { path = "ports/pelt/desktop", default-features = false }
+tabard = { version = "0.0.2", path = "crates/system/tabard" }
+tabard-workshop = { path = "crates/cambium/tabard-workshop" }
+mere-document-lanes = { version = "0.1.0", path = "crates/system/document-lanes" }
+
+# Genet crates the landed ports reach. In genet these were relative paths into
+# `components/`; here they are git pins at the same single revision as every
+# other genet.git line in this file — the source-identity invariant (plan §8.7,
+# §9.4). Package names that differ from the key are spelled out.
+genet-host-api = { git = "https://github.com/merely-made/genet.git", branch = "main" }
+genet-documents = { git = "https://github.com/merely-made/genet.git", branch = "main", default-features = false }
+genet-document-resources = { git = "https://github.com/merely-made/genet.git", branch = "main" }
+genet-render = { git = "https://github.com/merely-made/genet.git", branch = "main", default-features = false, features = ["livery", "accesskit"] }
+# The present core (wgpu boot, surface format, Scene rasterization) every host
+# stands on. Named here because the landed Cambium hosts reached it by relative
+# path inside genet and now reach genet.git like the rest of the family.
+genet-render-host = { git = "https://github.com/merely-made/genet.git", branch = "main" }
+genet-winit-host = { git = "https://github.com/merely-made/genet.git", branch = "main" }
+genet-scripted = { git = "https://github.com/merely-made/genet.git", branch = "main", default-features = false }
+document-session-api = { git = "https://github.com/merely-made/genet.git", branch = "main" }
+cambium-genet-winit-host = { version = "0.1.0", path = "crates/cambium/cambium-genet-winit-host" }
+script-runtime-api = { git = "https://github.com/merely-made/genet.git", branch = "main" }
+script-engine-api = { version = "0.1.0", git = "https://github.com/merely-made/genet.git", branch = "main" }
+# Deterministic maths for scripted rules (Scenograph editor plan, SE40, SE93). No
+# default features: the host functions must give the same bits on every target.
+libm = { version = "0.2", default-features = false }
+script-engine-boa = { git = "https://github.com/merely-made/genet.git", branch = "main" }
+script-engine-nova = { git = "https://github.com/merely-made/genet.git", branch = "main" }
+# `servo-paint` was retired in genet 5af76a0cb8c; its platform compositor half
+# (DXGI, CALayer, Wayland, HostWgpuContext, `default_compositor_for_window`)
+# is `genet-compositor` with the public names unchanged, so the `paint` key
+# and Pelt's `paint::` paths stay as they are.
+paint = { package = "genet-compositor", git = "https://github.com/merely-made/genet.git", branch = "main" }
+webgl_wgpu = { package = "servo-webgl-wgpu", git = "https://github.com/merely-made/genet.git", branch = "main" }
+# Tabard's dev-dependency: the owned static CSS/layout engine it renders its
+# generated stylesheets through.
+livery = { version = "0.0.5", git = "https://github.com/merely-made/genet.git", branch = "main" }
+# The seed-palette engine, under its published name. `tincture` below is the
+# SAME package under mere's historical alias; both must stay on this one
+# source and version or the graph carries two incompatible `Tinct`s — which is
+# why the alias moved to the path in the same motion as this line, and why
+# neither may be patched: tinct is a workspace member as of 2026-09-03.
+tinct = { version = "=0.2.0", path = "crates/cambium/tinct" }
+
+netrender = { version = "=0.1.2", git = "https://github.com/merely-made/netrender.git", branch = "main" }
+paint_list_api = { version = "=0.1.2", git = "https://github.com/merely-made/netrender.git", branch = "main" }
+paint_list_render = { version = "=0.1.2", git = "https://github.com/merely-made/netrender.git", branch = "main" }
+
+# Published as `mere-forme`: the crates.io name `forme` is owned by someone else
+# (an HTML template engine). The `package =` alias keeps every `use forme::...`
+# in the tree working, so this rename is one line, not a sweep.
+curation = { package = "mere-curation", version = "0.1.1", path = "crates/forme/curation" }
+forme = { package = "mere-forme", version = "0.2.0", path = "crates/forme/forme" }
+uxtree = { version = "0.0.2", path = "crates/forme/uxtree" }
+
+platen = { version = "0.0.1", path = "crates/platen/platen" }
+site-model = { package = "mere-site", version = "0.1.0", path = "crates/domain/site" }
+personal-facts = { package = "mere-personal-facts", version = "0.1.0", path = "crates/domain/personal-facts" }
+apparatus = { package = "mere-apparatus", version = "0.0.1", path = "crates/domain/apparatus", default-features = false }
+eidetic = { version = "0.0.2", default-features = false, git = "https://github.com/merely-made/eidetic.git", rev = "56601d9cb0c4901fd352bc789ce0ab53b5b6edd6" }
+# Lexical search over the trail (Phase 9 producer half): an in-tree BM25
+# index + weighted-field recall + column reports + the hybrid-fusion seam.
+# tantivy was retired 2026-09-07 (98 crates, a C build, no wasm). Lives under
+# `crates/intel/` since 2026-09-04 (platform boundary plan, P5): it is a Mere
+# product concern over browsing traces, reaching esp and import, and the
+# lexical half of the hybrid recall whose vector half is `esp::embed`. The
+# portable eidetic core it was sitting beside reaches neither.
+eidetic-search = { path = "crates/intel/eidetic-search" }
+
+# Standalone spec-B misfin implementation (promoted out of this workspace
+# 2026-07-03). It moved into the smolweb workspace in the 2026-07-23
+# consolidation and its own repo was deleted, so this is a crates.io pin rather
+# than a branch dep — genet's errand consumes it the same way. Held in
+# stewardship, so the published crate is the stable face.
+misfin = { version = "0.0.4", features = ["ring"] }
+# The shared replicated-space runtime beneath every signed peer domain: joined
+# spaces, policy-before-insert processing, operation storage, checkpoints,
+# retention mechanics, and native drop carriage. Promoted out of the murm
+# supercrate 2026-07-26 (it was `murm-replication`, but Murm, Mesh, Moot, and
+# transport all consume it). Domains keep their own operation grammar,
+# addressing, authorization, and materialization.
+stickleback = { version = "0.1.1", git = "https://github.com/merely-made/eidetic.git", rev = "56601d9cb0c4901fd352bc789ce0ab53b5b6edd6" }
+# Murm at fb6360c12b (main: the merge of 3d9e799f, the browser initiator's
+# callback-lifetime fix, and 38e9c9b8, `TransportKind::InProcess`, so Djinn's
+# local doors hand admission an `AcceptedSession`; lift plan pass (b)).
+# Named through the `www` alias; see the Murm patch table below.
+murm = { version = "0.0.1", git = "https://github.com/merely-made/murm.git", branch = "main" }
+transport = { package = "mere-transport", version = "0.0.2", git = "https://github.com/merely-made/murm.git", branch = "main" }
+# The Wasm-clean half of the browser WebRTC carrier: bounded frames, invite
+# ids, role-tagged DTLS fingerprints, and the link-challenge transcript that
+# derives Notochord's `shared_link`. It depends on neither `transport` nor
+# `notochord` on purpose; the browser build stays free of both, and the
+# admission layers receive only a `[u8; 16]`.
+webrtc-carrier = { package = "mere-webrtc-carrier", version = "0.0.1", git = "https://github.com/merely-made/murm.git", branch = "main" }
+
+gemot = { version = "0.1.1", git = "https://github.com/merely-made/gemot.git", rev = "16678ab1c91cde1e0c973b368b422eb46b1a3364" }
+commons-spine = { git = "https://github.com/merely-made/gemot.git", rev = "16678ab1c91cde1e0c973b368b422eb46b1a3364" }
+moothold = { version = "0.1.0", git = "https://github.com/merely-made/gemot.git", rev = "16678ab1c91cde1e0c973b368b422eb46b1a3364" }
+mooting = { version = "0.1.0", git = "https://github.com/merely-made/gemot.git", rev = "16678ab1c91cde1e0c973b368b422eb46b1a3364" }
+mien = { version = "0.0.1", git = "https://github.com/merely-made/gemot.git", rev = "16678ab1c91cde1e0c973b368b422eb46b1a3364" }
+
+# The personal-space compute mesh (resource-coordination M1): signed job ops
+# over the Standing-proven LogSync lane + the deterministic job board.
+mesh = { package = "mere-mesh", path = "crates/mesh/mesh" }
+# The host supervisor above the mesh (host lanes plan, gate H0): owns in-flight
+# jobs, their control handles, and the OS-facing condition/clock seams that
+# `mere-mesh` deliberately refuses to have.
+
+# The same crate as `personae` above, under mere's historical alias. Both
+# entries must carry the SAME version: they resolve to one package, and a
+# stale pin here is invisible from the personae line.
+identity = { package = "personae", version = "0.3.0", git = "https://github.com/merely-made/dramatis.git", branch = "main" }
+# The participant authority gate (participant gate B1/B3): document-host derives
+# its import-level Grant from a servitor authority — one grant, two faces.
+servitor = { version = "0.0.2", git = "https://github.com/merely-made/eidetic.git", rev = "56601d9cb0c4901fd352bc789ce0ab53b5b6edd6" }
+# Path + version: the path is used for local workspace builds, the version lets
+# a publishable dependent (stickleback) record the crates.io dependency.
+muniment = { version = "0.1.2", git = "https://github.com/merely-made/eidetic.git", rev = "56601d9cb0c4901fd352bc789ce0ab53b5b6edd6" }
+# The directory port. Promoted from `crates/dramatis/` to `ports/` 2026-08-23
+# (suite census 7.3): the three senses of the word were always the roadmap —
+# an index, being gazetted, and the paper you read — so the resolver grows
+# into the port rather than sitting beside one. Built today: WebFinger
+# resolution. Unbuilt: the contact and recipient surfaces over `gaz`, feed
+# polling over `fleece::crawl`, and the reading room. Its blocking reqwest
+# still needs an async port before a resident polls with it.
+gazette = { version = "0.0.1", path = "ports/gazette" }
+# Stored key-rooted contacts (the "them" side personae keeps): petnames, handles,
+# per-endpoint trust, kith/kin tiers, recency. Relocated from repos/gaz 2026-08-10.
+gaz = { version = "0.0.2", git = "https://github.com/merely-made/dramatis.git", branch = "main" }
+# The cast-list tier's facade reservation; empty until something imports it.
+dramatis = { version = "0.0.3", git = "https://github.com/merely-made/dramatis.git", branch = "main" }
+# The graded identity proofs and the never-shown secrets; reservations, no code.
+insigne = { version = "0.0.2", git = "https://github.com/merely-made/dramatis.git", branch = "main" }
+chatelaine = { version = "0.0.3", git = "https://github.com/merely-made/dramatis.git", branch = "main" }
+# The shared "which persona am I?" list. A Cambium view over the personae
+# roster, so the four applications with a GUI draw one picker rather than four.
+persona-picker = { package = "mere-persona-picker", path = "crates/dramatis/persona-picker" }
+
+# Rhai backend for the knot block-evaluator lane (the thin BlockEvaluator
+# slice, distinct from genet's full ScriptEngine seam). Pure Rust, sandboxed.
+script-rhai = { version = "0.0.1", path = "crates/script/rhai" }
+
+# ─── External pins ───────────────────────────────────────────────────────────
+# Linebender visual stack — both aliases use the same maintained Classic
+# package and revision, preserving one concrete Scene type across Sprigging,
+# Pictograph and Netrender. The fork retains the owned renderer repairs on
+# the upstream 0.11 release.
+vello = { package = "netrender-vello", version = "0.11.0", git = "https://github.com/mark-ik/vello", rev = "276b46648c08f3d2062e70559afa999842e1873c", default-features = false }
+netrender_vello = { package = "netrender-vello", version = "0.11.0", git = "https://github.com/mark-ik/vello", rev = "276b46648c08f3d2062e70559afa999842e1873c", default-features = false }
+# 30.0.1 at least: 30.0.0 decodes a successful WebGPU error-scope pop through
+# `JsOption`, which wasm-bindgen 0.2.126 and later read as an error, and panics
+# (burn plan 13.37, 13.38).
+wgpu = "30.0.1"
+welding-0-15 = { package = "welding", version = "0.15.0", default-features = false, features = ["wgpu-30"] }
+kurbo = "0.13"
+peniko = "0.6"
+# Genet's Parley fork, taken by git at the same revision genet-livery is pinned
+# to: livery reaches the fork by path inside that checkout, so a registry parley
+# beside it would put two copies of the same types in one graph. The key stays
+# `parley` so consumers' `parley::` paths and feature lists are unchanged; the
+# fork carries `AlignmentOptions::last_line_alignment` and
+# `StyleProperty::TabSize`, which published parley 0.10.0 lacks at the same
+# version number.
+parley = { package = "genet-parley", version = "0.10.0", git = "https://github.com/merely-made/genet.git", branch = "main" }
+skrifa = "0.42"
+color = "0.3"
+
+
+# Input + accessibility + window plumbing.
+accesskit = "0.25.1"
+accesskit_windows = "0.35.1"
+accesskit_unix = "0.24.0"
+accesskit_macos = "0.27.1"
+accesskit_winit = "0.34.1"
+accesskit_consumer = "=0.39.1"
+ui-events = "0.3"
+dpi = "0.1.2"
+raw-window-handle = "0.6"
+winit = "0.30.13"
+# The Win32 surface cambium-genet-winit-host reads snap and frame geometry
+# through. Genet's version, carried with the host.
+windows-sys = "0.61"
+
+# Cross-cutting utilities that benefit from one-version alignment.
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+uuid = { version = "1", features = ["serde", "v4"] }
+# Shared Merely seed-palette derivation engine (OKLCH). registry's theme module
+# derives the full ThemeTokenSet from a few seed colours via this. Published as
+# `tinct` on crates.io; kept under the local alias `tincture` (Cargo `package =`)
+# so consumers and every `use tincture::` stay unchanged. It landed here as a
+# workspace member on 2026-09-03, so this is the same path the `tinct` key
+# above names: one source, two keys, one package.
+tincture = { package = "tinct", version = "=0.2.0", path = "crates/cambium/tinct" }
+
+# Off-grid mesh transport backend (optional, default-off). `retinue` is Mark's
+# own from-scratch Rust Reticulum Network Stack implementation, wire-compatible
+# with RNS 1.3.x (it replaces the stale Beechat `reticulum` 0.1 crate, which
+# could not parse ratcheted announces from real RNS). Since the 2026-07-23 radio
+# merge the repo is one workspace (retinue, tulle, sennet, tucket, firmware), so
+# this is an immutable source-revision pin rather than a relative path.
+retinue = { version = "0.3.0", git = "https://github.com/merely-made/murm.git", branch = "main" }
+# Signalman's station crates come from the same Retinue revision, so one
+# rev governs all four (device pairing plan, rulings 42 and 44).
+outrider = { version = "=0.3.0", git = "https://github.com/merely-made/murm.git", branch = "main" }
+postilion = { version = "=0.3.0", git = "https://github.com/merely-made/murm.git", branch = "main" }
+radio-hand = { version = "=0.0.1", git = "https://github.com/merely-made/murm.git", branch = "main" }
+
+# Reticulum identity derivation: HKDF-SHA256 stretches Mere's 32-byte master seed
+# into retinue's 64-byte dual-key private identity. retinue owns the X25519/RNG
+# work, so the probe no longer needs x25519-dalek or a separate rand source.
+hkdf = "0.13"
+sha2 = "0.11"
+
+[workspace.lints.rust]
+unsafe_code = "warn"
+
+[workspace.lints.clippy]
+all = "warn"
+
+# ─── Knot's Mere contracts resolve from this checkout ───────────────────────
+# knot-editor pins a released Mere revision so it builds standalone. Embedded
+# here it must not bring a second copy of Mere's own crates: two sources for one
+# package is a type mismatch, not a resolution failure. Every package knot-editor
+# and knot-document name from `mere.git` is redirected to its workspace member,
+# so the shared contracts keep one Cargo source identity. Add an entry whenever
+# Knot names a new Mere package; a name missing here resolves from git and is a
+# duplicate.
+#
+# insigne, notochord and personae left for merely-made/dramatis (DR-D). A Knot
+# revision that still names them through mere.git is redirected to the one
+# dramatis revision this workspace pins, not to a path; a Knot revision that
+# names them through dramatis.git needs no entry, only the same revision
+# (Cargo refuses a patch from dramatis.git to dramatis.git).
+[patch."https://github.com/merely-made/mere.git"]
+mere-site = { path = "crates/domain/site" }
+# Promoted sources shared with immutable older Mere suppliers.
+commons-spine = { git = "https://github.com/merely-made/gemot.git", rev = "16678ab1c91cde1e0c973b368b422eb46b1a3364" }
+mere-personal-facts = { path = "crates/domain/personal-facts" }
+murm = { git = "https://github.com/merely-made/murm.git", branch = "main" }
+cambium = { path = "crates/cambium/cambium" }
+cambium-genet-winit-host = { path = "crates/cambium/cambium-genet-winit-host" }
+chartulary = { git = "https://github.com/merely-made/eidetic.git", rev = "56601d9cb0c4901fd352bc789ce0ab53b5b6edd6" }
+chirograph = { path = "crates/chirograph" }
+eidetic = { git = "https://github.com/merely-made/eidetic.git", rev = "56601d9cb0c4901fd352bc789ce0ab53b5b6edd6" }
+esp = { git = "https://github.com/merely-made/esp.git", rev = "7955994686c07535417803d041a5aa95dd3ec4f1" }
+mere-fetch = { path = "crates/system/fetch" }
+gemot = { git = "https://github.com/merely-made/gemot.git", rev = "16678ab1c91cde1e0c973b368b422eb46b1a3364" }
+graphshell = { path = "ports/graphshell" }
+graphshell-endpoint = { path = "crates/graphshell/graphshell-endpoint" }
+graphshell-host = { path = "crates/graphshell/graphshell-host" }
+illume = { path = "crates/nematic/illume" }
+inker = { path = "crates/inker/inker" }
+insigne = { git = "https://github.com/merely-made/dramatis.git", branch = "main" }
+knot-editor-host = { path = "crates/inker/knot-editor-host" }
+mere-proofs = { git = "https://github.com/merely-made/eidetic.git", rev = "56601d9cb0c4901fd352bc789ce0ab53b5b6edd6" }
+mere-surface-api = { path = "crates/system/surface-api" }
+mere-transport = { git = "https://github.com/merely-made/murm.git", branch = "main" }
+mora-cmudict = { path = "crates/intel/mora-cmudict" }
+reference-data = { path = "crates/intel/reference-data" }
+muniment = { git = "https://github.com/merely-made/eidetic.git", rev = "56601d9cb0c4901fd352bc789ce0ab53b5b6edd6" }
+nematic = { path = "crates/nematic/nematic" }
+notochord = { git = "https://github.com/merely-made/dramatis.git", branch = "main" }
+pandect = { path = "crates/system/pandect" }
+personae = { git = "https://github.com/merely-made/dramatis.git", branch = "main" }
+sceno = { path = "crates/cambium/scenes/sceno" }
+# Knot has named these two since its `5516606`; they arrived with the
+# `c966e31` pin (wing ruling 586, "With djinn's Knot repin (Recommended)").
+scenograph = { path = "crates/cambium/scenes/scenograph" }
+scenomise = { path = "crates/cambium/scenes/scenomise" }
+scenotime = { path = "crates/cambium/scenes/scenotime" }
+script-rhai = { path = "crates/script/rhai" }
+servitor = { git = "https://github.com/merely-made/eidetic.git", rev = "56601d9cb0c4901fd352bc789ce0ab53b5b6edd6" }
+stickleback = { git = "https://github.com/merely-made/eidetic.git", rev = "56601d9cb0c4901fd352bc789ce0ab53b5b6edd6" }
+
+# Complete the selected Knot contract closure so transitive Mere packages
+# use this workspace source rather than a second immutable Mere checkout.
+armillary = { git = "https://github.com/merely-made/armillary.git", rev = "92d5b15cf39aaac40a3f2d863ffee69c9be11bfc" }
+cambium-rootstock = { path = "crates/cambium/cambium-rootstock" }
+cambium-winit = { path = "crates/cambium/cambium-winit" }
+cambium-winit-a11y = { path = "crates/cambium/cambium-winit-a11y" }
+command-menu = { path = "crates/cambium/command-menu" }
+hest = { path = "crates/cambium/hest" }
+document-canvas = { path = "crates/inker/document-canvas" }
+backstep = { path = "crates/cambium/backstep" }
+errand = { git = "https://github.com/merely-made/errand.git", rev = "3d2ce3a568ffd63a98c0057fc5c798f3c999d2ab" }
+graphshell-client = { path = "crates/graphshell/graphshell-client" }
+incipit = { path = "crates/incipit" }
+luggage = { git = "https://github.com/merely-made/eidetic.git", rev = "56601d9cb0c4901fd352bc789ce0ab53b5b6edd6" }
+mere = { path = "crates/mere" }
+mere-alembic = { path = "crates/distillery/alembic" }
+mere-apparatus = { path = "crates/domain/apparatus" }
+mere-cartography = { path = "crates/canvas/cartography" }
+mere-curation = { path = "crates/forme/curation" }
+mere-document-lanes = { path = "crates/system/document-lanes" }
+mere-fleece = { path = "crates/fleece" }
+mere-forme = { path = "crates/forme/forme" }
+mere-kernel = { path = "crates/graph/graph-kernel" }
+mere-page-load = { path = "crates/system/page-load" }
+mere-overmap = { path = "crates/cambium/mere-overmap" }
+mere-view = { path = "crates/cambium/mere-view" }
+mere-webrtc-carrier = { git = "https://github.com/merely-made/murm.git", branch = "main" }
+meristem = { path = "crates/cambium/meristem" }
+mesquite = { path = "crates/cambium/mesquite" }
+mien = { git = "https://github.com/merely-made/gemot.git", rev = "16678ab1c91cde1e0c973b368b422eb46b1a3364" }
+mooting = { git = "https://github.com/merely-made/gemot.git", rev = "16678ab1c91cde1e0c973b368b422eb46b1a3364" }
+numen = { path = "crates/conatus/numen" }
+pictograph = { path = "crates/canvas/pictograph" }
+seiche = { path = "crates/conatus/seiche" }
+sprigging = { path = "crates/cambium/sprigging" }
+tabard = { path = "crates/system/tabard" }
+tabard-workshop = { path = "crates/cambium/tabard-workshop" }
+tinct = { path = "crates/cambium/tinct" }
+uxtree = { path = "crates/forme/uxtree" }
+workbench = { path = "crates/cambium/workbench" }
+
+[patch.crates-io]
+# Canonical promoted families; keep registry and Git consumers type-identical.
+armillary = { git = "https://github.com/merely-made/armillary.git", rev = "92d5b15cf39aaac40a3f2d863ffee69c9be11bfc" }
+chartulary = { git = "https://github.com/merely-made/eidetic.git", rev = "56601d9cb0c4901fd352bc789ce0ab53b5b6edd6" }
+commons-spine = { git = "https://github.com/merely-made/gemot.git", rev = "16678ab1c91cde1e0c973b368b422eb46b1a3364" }
+eidetic = { git = "https://github.com/merely-made/eidetic.git", rev = "56601d9cb0c4901fd352bc789ce0ab53b5b6edd6" }
+errand = { git = "https://github.com/merely-made/errand.git", rev = "3d2ce3a568ffd63a98c0057fc5c798f3c999d2ab" }
+esp = { git = "https://github.com/merely-made/esp.git", rev = "7955994686c07535417803d041a5aa95dd3ec4f1" }
+finger-protocol = { git = "https://github.com/merely-made/errand.git", rev = "3d2ce3a568ffd63a98c0057fc5c798f3c999d2ab" }
+gemini-protocol = { git = "https://github.com/merely-made/errand.git", rev = "3d2ce3a568ffd63a98c0057fc5c798f3c999d2ab" }
+gemot = { git = "https://github.com/merely-made/gemot.git", rev = "16678ab1c91cde1e0c973b368b422eb46b1a3364" }
+gopher-protocol = { git = "https://github.com/merely-made/errand.git", rev = "3d2ce3a568ffd63a98c0057fc5c798f3c999d2ab" }
+guppy-protocol = { git = "https://github.com/merely-made/errand.git", rev = "3d2ce3a568ffd63a98c0057fc5c798f3c999d2ab" }
+luggage = { git = "https://github.com/merely-made/eidetic.git", rev = "56601d9cb0c4901fd352bc789ce0ab53b5b6edd6" }
+mere-proofs = { git = "https://github.com/merely-made/eidetic.git", rev = "56601d9cb0c4901fd352bc789ce0ab53b5b6edd6" }
+mien = { git = "https://github.com/merely-made/gemot.git", rev = "16678ab1c91cde1e0c973b368b422eb46b1a3364" }
+misfin = { git = "https://github.com/merely-made/errand.git", rev = "3d2ce3a568ffd63a98c0057fc5c798f3c999d2ab" }
+mooting = { git = "https://github.com/merely-made/gemot.git", rev = "16678ab1c91cde1e0c973b368b422eb46b1a3364" }
+nex-protocol = { git = "https://github.com/merely-made/errand.git", rev = "3d2ce3a568ffd63a98c0057fc5c798f3c999d2ab" }
+scroll-protocol = { git = "https://github.com/merely-made/errand.git", rev = "3d2ce3a568ffd63a98c0057fc5c798f3c999d2ab" }
+servitor = { git = "https://github.com/merely-made/eidetic.git", rev = "56601d9cb0c4901fd352bc789ce0ab53b5b6edd6" }
+spartan-protocol = { git = "https://github.com/merely-made/errand.git", rev = "3d2ce3a568ffd63a98c0057fc5c798f3c999d2ab" }
+stickleback = { git = "https://github.com/merely-made/eidetic.git", rev = "56601d9cb0c4901fd352bc789ce0ab53b5b6edd6" }
+# Pictograph's published dev dependency shares the renderer's device source.
+netrender_device = { git = "https://github.com/merely-made/netrender.git", branch = "main" }
+# gaz (dramatis) takes muniment from crates.io so dramatis never pins mere;
+# this swaps in mere's own, so the graph holds one muniment and castellan's
+# stores and gaz's agree on its types.
+muniment = { git = "https://github.com/merely-made/eidetic.git", rev = "56601d9cb0c4901fd352bc789ce0ab53b5b6edd6" }
+# Classic 0.11 plus the owned Radeon, command-progress and resource repairs.
+# Patches are not inherited from Netrender. Keep Classic and its encoding/
+# shader packages on the exact source used by the workspace Scene aliases.
+netrender-vello = { git = "https://github.com/mark-ik/vello", rev = "276b46648c08f3d2062e70559afa999842e1873c" }
+vello_encoding = { git = "https://github.com/mark-ik/vello", rev = "276b46648c08f3d2062e70559afa999842e1873c" }
+vello_shaders = { git = "https://github.com/mark-ik/vello", rev = "276b46648c08f3d2062e70559afa999842e1873c" }
+# cubecl-wgpu 0.10.0, vendored from the registry and moved to wgpu 30. This is
+# the "narrow CubeCL backport" of the 2026-08-15 wgpu 30 unification: it is the
+# ONLY crate in the burn 0.21 / cubecl 0.10 stack that names wgpu at all, so
+# one vendored crate carries the whole resident lane across the major.
+#
+# The alternative was burn 0.22.0-pre.2 with cubecl 0.11.0-pre.2, which already
+# require wgpu ^30. When this was written that was not resolvable, because
+# cubecl-runtime 0.11 depends on cubecl-environment with the `cache` feature
+# NON-optionally, pulling rusqlite 0.40 -> libsqlite3-sys ^0.38, while this
+# graph also carried sqlx -> libsqlite3-sys <0.38. libsqlite3-sys sets
+# `links = "sqlite3"`, so exactly one may exist in a graph.
+#
+# 2026-08-16: OUR HALF OF THAT CONFLICT IS GONE. sqlx and libsqlite3-sys are no
+# longer in this workspace's graph at all. The note above misattributed the
+# cause to p2panda-store's `groups`/`encryption` features; `cargo tree -e
+# features` showed neither was ever enabled here. The real enablers were
+# `p2panda-net/address_book`, which forced `p2panda-store/sqlite` outright, and
+# `p2panda-store/default` arriving through p2panda-sync and p2panda-stream. The
+# address book now runs on stickleback's muniment-backed store and every
+# consumer opts out of the `sqlite` feature. See docs:
+# 2026-08-16_address_book_muniment_port_plan.md.
+#
+# So this vendored crate is now retire-ABLE on the sqlite axis, but that has not
+# been attempted: whether burn 0.22.0-pre.2 / cubecl 0.11.0-pre.2 resolve and
+# behave here is the burn migration's question, not this patch entry's. See
+# docs: 2026-08-09_burn_0_22_migration_plan.md.
+# RETIRED 2026-08-20 with the burn 0.22 migration: cubecl-wgpu 0.11.0-pre.2
+# from the registry already names wgpu 30, which is all the vendored backport
+# existed to do. The vendored copy remains at support/patches/cubecl-wgpu for
+# archaeology until a stable 0.22 lands, but it is no longer patched in.
+# cubecl-wgpu = { path = "support/patches/cubecl-wgpu" }
+# cubecl-runtime 0.11.0: the source is pristine upstream. The manifest
+# removes persistence from default features (ruling 375), avoiding the Turso
+# cache in Mere's defaults-disabled GPU graph. Remove when upstream makes
+# persistence opt-in or fixes the defaults-on edge in cubecl-wgpu.
+cubecl-runtime = { path = "support/patches/cubecl-runtime" }
+# cubek-matmul 0.3.0: retain packed Q4 execution on 48-KiB workgroup devices
+# by reducing unit stage partitions after register partitions reach one.
+# Remove when upstream selection admits the same bounded packed-weight rows.
+cubek-matmul = { path = "support/patches/cubek-matmul" }
+# burn-cubecl 0.22.0-pre.4: the selector was retired under ruling 410 after
+# the old pre.2 browser failure reproduced while upstream pre.4 passed all 21
+# cases, plus nine unfused native launcher controls. Vendored patch source
+# remains for provenance; current consumers select the registry crate.
+# burn-remote 0.22.0: pump-observed targeted close and session receipts
+# let owner reclaim stop one admitted lease without dropping the protocol.
+# Remove when upstream provides equivalent control and passes the lifecycle
+# receipt, including reclaim and recovery.
+burn-remote = { path = "support/patches/burn-remote" }
+layout-dom-api = { git = "https://github.com/merely-made/genet.git", branch = "main", version = "=0.1.1" }
+genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", branch = "main", version = "=0.1.2" }
+# Livery/Buckram require Genet's Taffy fork. Genet's workspace patch is not
+# inherited by consumers, so Mere restates the same immutable Genet revision.
+taffy = { package = "genet-taffy", version = "=0.14.0", git = "https://github.com/merely-made/genet.git", branch = "main" }
+# No parley/fontique patch rows: as of genet 5ae30cad the forks are published as
+# `genet-parley` and `genet-fontique`, so nothing in genet answers to the name
+# `parley` and a patch row here would match no package and fail resolution.
+# genet-livery reaches the fork by path inside the git checkout, and Mere's own
+# `parley` workspace dep names the fork by package (see [workspace.dependencies]).
+# The upstream-20261013 compatibility tag keeps net =0.7.5 for the pinned
+# Knot supplier while adopting current upstream. Net and its seven sibling
+# packages share one immutable source; fork main also offers net 0.7.6.
+mere-p2panda-net = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261013" }
+p2panda-auth = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261013" }
+p2panda-core = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261013" }
+p2panda-discovery = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261013" }
+p2panda-encryption = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261013" }
+p2panda-store = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261013" }
+p2panda-sync = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.5-upstream-20261013" }
+
+# Genet's optional script-engine-boa owns its exact Boa Git revision directly.
+# Registry overrides here would be unused and would not redirect that Git pin.
+
+# Physics in dev builds (physics catalog plan, ruled 2026-10-04, "Opt 3 in dev
+# for physics"): one Density start took 146.5 s at the dev profile's
+# opt-level 0 and 6.0 s with these six crates at 3, the pictograph suite
+# 102.5 s and 12.6 s, with the rebuild after a one-line seiche edit unchanged
+# and backtraces keeping file and line. graphshell-web's own manifest names the
+# same six.
+[profile.dev.package.seiche]
+opt-level = 3
+[profile.dev.package.rapier2d]
+opt-level = 3
+[profile.dev.package.parry2d]
+opt-level = 3
+[profile.dev.package.nalgebra]
+opt-level = 3
+[profile.dev.package.simba]
+opt-level = 3
+[profile.dev.package.glamx]
+opt-level = 3
+
+# Compatibility source keys for immutable suppliers published before the
+# repository rename. Targets and current direct dependencies use Murm.
+[patch."https://github.com/merely-made/retinue.git"]
+embedded-graphics = { git = "https://github.com/merely-made/murm.git", branch = "main" }
+embedded-graphics-core = { git = "https://github.com/merely-made/murm.git", branch = "main" }
+mere-transport = { git = "https://github.com/merely-made/murm.git", branch = "main" }
+mere-webrtc-carrier = { git = "https://github.com/merely-made/murm.git", branch = "main" }
+murm = { git = "https://github.com/merely-made/murm.git", branch = "main" }
+outrider = { git = "https://github.com/merely-made/murm.git", branch = "main" }
+postilion = { git = "https://github.com/merely-made/murm.git", branch = "main" }
+radio-face = { git = "https://github.com/merely-made/murm.git", branch = "main" }
+radio-hand = { git = "https://github.com/merely-made/murm.git", branch = "main" }
+retinue = { git = "https://github.com/merely-made/murm.git", branch = "main" }
+selvage = { git = "https://github.com/merely-made/murm.git", branch = "main" }
+seneschal = { git = "https://github.com/merely-made/murm.git", branch = "main" }
+tulle = { git = "https://github.com/merely-made/murm.git", branch = "main" }
+
+[patch."https://www.github.com/merely-made/mere.git"]
+armillary = { git = "https://github.com/merely-made/armillary.git", rev = "92d5b15cf39aaac40a3f2d863ffee69c9be11bfc" }
+chartulary = { git = "https://github.com/merely-made/eidetic.git", rev = "56601d9cb0c4901fd352bc789ce0ab53b5b6edd6" }
+commons-spine = { git = "https://github.com/merely-made/gemot.git", rev = "16678ab1c91cde1e0c973b368b422eb46b1a3364" }
+eidetic = { git = "https://github.com/merely-made/eidetic.git", rev = "56601d9cb0c4901fd352bc789ce0ab53b5b6edd6" }
+errand = { git = "https://github.com/merely-made/errand.git", rev = "3d2ce3a568ffd63a98c0057fc5c798f3c999d2ab" }
+esp = { git = "https://github.com/merely-made/esp.git", rev = "7955994686c07535417803d041a5aa95dd3ec4f1" }
+gemot = { git = "https://github.com/merely-made/gemot.git", rev = "16678ab1c91cde1e0c973b368b422eb46b1a3364" }
+luggage = { git = "https://github.com/merely-made/eidetic.git", rev = "56601d9cb0c4901fd352bc789ce0ab53b5b6edd6" }
+mere-proofs = { git = "https://github.com/merely-made/eidetic.git", rev = "56601d9cb0c4901fd352bc789ce0ab53b5b6edd6" }
+mien = { git = "https://github.com/merely-made/gemot.git", rev = "16678ab1c91cde1e0c973b368b422eb46b1a3364" }
+mooting = { git = "https://github.com/merely-made/gemot.git", rev = "16678ab1c91cde1e0c973b368b422eb46b1a3364" }
+muniment = { git = "https://github.com/merely-made/eidetic.git", rev = "56601d9cb0c4901fd352bc789ce0ab53b5b6edd6" }
+servitor = { git = "https://github.com/merely-made/eidetic.git", rev = "56601d9cb0c4901fd352bc789ce0ab53b5b6edd6" }
+stickleback = { git = "https://github.com/merely-made/eidetic.git", rev = "56601d9cb0c4901fd352bc789ce0ab53b5b6edd6" }

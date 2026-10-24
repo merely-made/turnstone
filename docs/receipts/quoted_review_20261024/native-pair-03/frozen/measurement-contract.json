@@ -1,0 +1,61 @@
+{
+  "baseline_receipt": "Previous v6 candidate at /Users/markik/Code/output/candidate-review-20261024/candidate-01; retained alongside this candidate in the final receipt",
+  "unchanged_frozen_sha256": {
+    "case-freeze.json": "846dfad5b614c926f5bd8845d9b323eb5bb9267edf06bddf49c06c606b549f7d",
+    "verify_probe.py": "e93875eb35e02136038789415f5dfb272c2f491c407d6246322dc21fdbc9cd4d",
+    "verify_native.py": "f3a0e939cef9ac3bf85f80cb9d1e984ee40d94a0757cf6d4c6c6d55e23b88594",
+    "cases.json": "b91de4627aee873389066f4a8ed814fe4faff85cf1c8a3ae1d8e74f988d27ea2"
+  },
+  "cases": "All four original questions, source cuts and expectations unchanged",
+  "runtime": "Same Qwen2.5-1.5B weights, template, 1024-token cap, 900-second per-case limit, 3GiB host and 4GiB device layer budgets",
+  "gate": "All four complete answers must pass unchanged frozen semantic assertions under declared wire defaults, raw structured-output checks and exact input binding before headed checks",
+  "output_constraint": "ByteLevel grammar with fixed fact slots and complete ordered quoted reviews. Model chooses relevance and agreement. Decoder emits extractive supported/conflicting text and exact corresponding citations, or names the missing fact. All literals are generated and checkpointed as tokens; no post-hoc rewrite.",
+  "semantic_gate": "Same original verify_answer assertions with declared empty-citations wire default; original frozen checker also retained",
+  "headed_condition": "all four Finished within original deadlines, same session, raw structured shape passes, original semantic assertions pass under declared wire defaults",
+  "change": "Quoted per-fact review repeats the exact requested property and candidate quotation beside each relevance boolean. Status/evidence follow review; supported and conflicting wording is exact extractive decoding. No post-hoc output repair. Same original questions, cuts, semantic rubric, model and token/deadline/memory caps.",
+  "prompt_module_sha256_before_measurement": "df3ae7b3e67f6282ab71dd19558aad0fbced66eb83a0cb06bb83d1496cd5d9dd",
+  "instruction_characters": 2037,
+  "probe_source_sha256": "436a123a09d69263b82bf670d4028f1db00f9882d383a72689b0cbcc41619e13",
+  "unchanged_probe_function_sha256": "3ba8ee4d699a6c90c7f23e1af8ad2f8a91fa670ddca23820db5c1beaafa057ac",
+  "supplier_pins": {
+    "eidetic": "56601d9cb0c4901fd352bc789ce0ab53b5b6edd6",
+    "esp": "7955994686c07535417803d041a5aa95dd3ec4f1",
+    "knot": "e3daea0949011a4600fda9c9b721a84140bf7964",
+    "cleromancy": "65127281903d98eb4598b57caa99085231c25fe1",
+    "gemot": "16678ab1c91cde1e0c973b368b422eb46b1a3364",
+    "murm": "5f84b465d3eb561fa4613580e62e1423bee6ca7a",
+    "mere": "8bf8b3e301ffe3c30acfcde8022b7bb51f9a66ad",
+    "turnstone": "4f80c68b7e86d3ad04aebe36ca6345941b3aca7b"
+  },
+  "policy": "distillery.quoted-review/v7",
+  "prior_diagnostic": "v6 completed 4/4; semantic 0/4. Handle/claim-position confusion, wrong relevance and prose/citation drift persisted. Zero non-finite rows.",
+  "additional_gates": [
+    "unchanged original semantic assertions under declared omitted-citations default",
+    "whole raw JSON, ordered quote/requested-property review and decision-to-status/citation invariants",
+    "extractive claim text must match selected quotations",
+    "raw/support review identity",
+    "exact fact/question/prompt/context/grammar identity",
+    "negative controls for wrong review quote/property, skipped/reordered rows, contradictory agreement and prose drift",
+    "score health for each unchanged question"
+  ],
+  "supplier_commit": "8bf8b3e301ffe3c30acfcde8022b7bb51f9a66ad",
+  "score_health_verifier_sha256": "6dfbc4ab0dc034e0ee9997aab1b4a42be38ed841e938c461bccfb87023a4550f",
+  "review_grammar_source_sha256": "56e01184d07f534f55bbb9db76d2a23b4b16ffdaccbd09d0ab2a4c14602c756e",
+  "helper_sha256": {
+    "run_probe.py": "628bd0ab010fc0524bedc38d9bd7db6581d9f3bd3c90cbc2d165d2beae299031",
+    "verify_contract_inputs.py": "d49ff64385efabd4ee46419b438b7382ba6f7b72210dd86a96d0ed4de66db92e",
+    "verify_wire_defaults.py": "672a972bf5848b9b3cf578a21ced9986b32721a117f566edf438761a938d4160",
+    "verify_structured_output.py": "6275bd267af6aefe19bdd82f1d748a6dbbdb7dcc15c4d12d0bc96fe934c55062",
+    "verify_score_health.py": "6dfbc4ab0dc034e0ee9997aab1b4a42be38ed841e938c461bccfb87023a4550f"
+  },
+  "admission": "Short supplied passages whose individual and pairwise conflict wording fits the existing 384-byte encoded claim-text bound. Oversized input is refused before generation, never truncated or declared insufficient.",
+  "citation_projection": "Structured citations use only checked claim-evidence links. Reviewed quotes and marker-like strings are data, and answer selectors address the actual evidence quotation inside the particular claim.",
+  "qualification_profile_followup": {
+    "reason": "Native pair02 warm4/4 passed but full retained snapshot exceeded90sec; sample shows repeated signature audits dominated by unoptimized Curve25519. Optimize crypto dependencies only, preserve per-request caps and all checks.",
+    "previous_runtime_sha256": "7ed6fb12d461f4b4bcec5bba79f0a23d47b3266118ceedf2e8f641c24ec3bbc8",
+    "runtime_sha256": "7da287858eb9da9788ca02e5871a23c3d01aee9e54319e6517e6199bb778a857",
+    "supplier_source_unchanged": true
+  },
+  "previous_frozen_runtime_sha256": "7ed6fb12d461f4b4bcec5bba79f0a23d47b3266118ceedf2e8f641c24ec3bbc8",
+  "runtime_profile_sha256": "7da287858eb9da9788ca02e5871a23c3d01aee9e54319e6517e6199bb778a857"
+}

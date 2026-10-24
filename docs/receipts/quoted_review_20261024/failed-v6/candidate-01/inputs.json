@@ -1,0 +1,55 @@
+{
+  "utc": "2026-10-24T19:16:23.060243+00:00",
+  "supplier_commit": "94c61893c7dbfed4b55925dfc1165a207b02b2bf",
+  "supplier_dirty_hashes": {},
+  "binary_sha256": "89a483edb4ad8386f9d455d5fd7a3d90bcba6f0108897217c44ccd1ba93b0bfa",
+  "frozen_sha256": {
+    "inference_route": "89a483edb4ad8386f9d455d5fd7a3d90bcba6f0108897217c44ccd1ba93b0bfa",
+    "case-freeze.json": "846dfad5b614c926f5bd8845d9b323eb5bb9267edf06bddf49c06c606b549f7d",
+    "verify_probe.py": "e93875eb35e02136038789415f5dfb272c2f491c407d6246322dc21fdbc9cd4d",
+    "run_probe.py": "e46fc759e885cc596c8275c51ebb04edea4f83b47de887351ad76138809df643",
+    "verify_contract_inputs.py": "96d06949cc8444f0b53cb3fd3dc50a9daa6efbfbc455b9247d9152173e13da69",
+    "measurement-contract.json": "5a4ffa76debd663ee40f9fdb9260a8e57312a3088c2bdb3a8ee7663f40c8f842",
+    "verify_native.py": "f3a0e939cef9ac3bf85f80cb9d1e984ee40d94a0757cf6d4c6c6d55e23b88594",
+    "verify_score_health.py": "6dfbc4ab0dc034e0ee9997aab1b4a42be38ed841e938c461bccfb87023a4550f",
+    "optimized-runtime.toml": "7ed6fb12d461f4b4bcec5bba79f0a23d47b3266118ceedf2e8f641c24ec3bbc8",
+    "candidate_review.rs": "0bf3a421e833f8c90d2cc57494c5bba45cf5b401168f302a009c2aae69d18e29",
+    "answer_contract.rs": "86ad5a502cc4f9aff886a2caa0c3e259fd7e7b1f1214b059cb14aed9c79ad729",
+    "cases.json": "b91de4627aee873389066f4a8ed814fe4faff85cf1c8a3ae1d8e74f988d27ea2",
+    "verify_structured_output.py": "b0f43b5bf844b4a3b0401bd730337aee8932a4049e53475b9b4936c532df1251",
+    "verify_wire_defaults.py": "672a972bf5848b9b3cf578a21ced9986b32721a117f566edf438761a938d4160"
+  },
+  "generation_model": {
+    "model_id": "Qwen/Qwen2.5-1.5B-Instruct",
+    "revision": "989aa7980e4cf806f80c7fef2b1adb7bc71aa306",
+    "artifacts": [
+      [
+        "config.json",
+        660,
+        "98d2ff8cc47488d08a2b0b3acf4eb99ef210779b42bd48605f6b8e36acdbf670"
+      ],
+      [
+        "tokenizer.json",
+        7031645,
+        "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539"
+      ],
+      [
+        "tokenizer_config.json",
+        7305,
+        "5b5d4f65d0acd3b2d56a35b56d374a36cbc1c8fa5cf3b3febbbfabf22f359583"
+      ],
+      [
+        "model.safetensors",
+        3087467144,
+        "dd924a11b4c220f385b51ffa522daea7c9f3d850e31b162bb5661df483c6d3ee"
+      ]
+    ]
+  },
+  "host_capacity_budget_bytes": 3221225472,
+  "device_layer_payload_budget_bytes": 4294967296,
+  "numerical_format": "original f32 layered execution",
+  "esp_opt_level": 3,
+  "runtime_optimization": "Explicit optimized-runtime.toml for hot tensor/backend crates and SHA-256; other local test orchestration remains unoptimized",
+  "case_timeout_seconds": 900,
+  "token_limit": 1024
+}

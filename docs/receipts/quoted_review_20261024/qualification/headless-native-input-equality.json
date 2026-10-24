@@ -1,0 +1,9 @@
+{
+  "headless_supplier": "8bf8b3e301ffe3c30acfcde8022b7bb51f9a66ad",
+  "native_supplier": "8bf8b3e301ffe3c30acfcde8022b7bb51f9a66ad",
+  "headless_turnstone": "70b8e29d2c67e4d092d5b9e82267b59bc5a5ba72",
+  "native_turnstone": "4f80c68b7e86d3ad04aebe36ca6345941b3aca7b",
+  "same_resident_binary": true,
+  "same_cases": true,
+  "same_generation_model": true
+}

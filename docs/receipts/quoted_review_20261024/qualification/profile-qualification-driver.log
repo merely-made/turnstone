@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/Users/markik/Code/output/quoted-review-20261024/profile_qualification.py", line 26, in <module>
+    write(O/'audit-probe-exit.json',{'exit':probe.returncode});assert probe.returncode==0
+                                                                      ^^^^^^^^^^^^^^^^^^^
+AssertionError

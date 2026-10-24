@@ -1,0 +1,26 @@
+{
+  "case": "headed warm cross",
+  "semantic": {
+    "claims": 3,
+    "status": [
+      "supported",
+      "supported",
+      "supported"
+    ],
+    "checked_quotes": 3,
+    "sources": [
+      "capture",
+      "knot",
+      "note"
+    ],
+    "semantic_review": "unreviewed",
+    "raw_output": "blake3:4e321b35ca372a23f65badb2f5094fa2516309b15d9b4dc3eeba46034878399e"
+  },
+  "identity": "blake3:bfe51ded56c33198390ee443f0373c8839000b70eb6955785151bb5d64c9e0c6",
+  "structure": {
+    "claims": 3,
+    "whole_raw_json": true,
+    "exact_candidate_links": 3
+  },
+  "tokens": 700
+}

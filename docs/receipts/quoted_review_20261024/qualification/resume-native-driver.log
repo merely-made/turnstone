@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/Users/markik/Code/output/quoted-review-20261024/resume_native.py", line 23, in <module>
+    write(O/'native-pair-exit-03.json',{'exit':r.returncode});assert r.returncode==0
+                                                                     ^^^^^^^^^^^^^^^
+AssertionError

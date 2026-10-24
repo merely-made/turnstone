@@ -1,0 +1,16 @@
+RESULT fail
+captured 01_capture_A
+captured 02_capture_B
+captured 03_mixed_sources
+captured explicit_scope
+captured cross_answer
+captured cross_raw
+FAIL: wait-saved-reader after 600 frames: focused reader state is None
+FAIL: no successful window presentation for ten seconds
+presentation frames=463 captures=6 blank=0
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-01/fused/warm/01_capture_A.png digest=15e32b3686e37e7a blank=false
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-01/fused/warm/02_capture_B.png digest=7dd9f4c66eb4a4e7 blank=false
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-01/fused/warm/03_mixed_sources.png digest=0d7e92624b438cb0 blank=false
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-01/fused/warm/explicit_scope.png digest=29fcd4aa3a670d62 blank=false
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-01/fused/warm/cross_answer.png digest=e7ab721ad5ab1a2a blank=false
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-01/fused/warm/cross_raw.png digest=5ecfb5ee375437d2 blank=false

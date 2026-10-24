@@ -1,0 +1,75 @@
+{
+  "result": "pass",
+  "cases": {
+    "cross": {
+      "result": "pass",
+      "protocol_defaults_applied": [],
+      "claims": 3,
+      "status": [
+        "supported",
+        "supported",
+        "supported"
+      ],
+      "checked_quotes": 3,
+      "sources": [
+        "capture",
+        "knot",
+        "note"
+      ],
+      "semantic_review": "unreviewed",
+      "raw_output": "blake3:4e321b35ca372a23f65badb2f5094fa2516309b15d9b4dc3eeba46034878399e"
+    },
+    "missing": {
+      "result": "pass",
+      "protocol_defaults_applied": [
+        "recall.citations=[]"
+      ],
+      "claims": 1,
+      "status": [
+        "insufficient"
+      ],
+      "checked_quotes": 0,
+      "sources": [],
+      "semantic_review": "unreviewed",
+      "raw_output": "blake3:2fa67715b0c2134c6abd1a5dc98f3c9bd71c85cc1615371549dbba55334850e9"
+    },
+    "conflict": {
+      "result": "pass",
+      "protocol_defaults_applied": [],
+      "claims": 1,
+      "status": [
+        "conflicting"
+      ],
+      "checked_quotes": 2,
+      "sources": [
+        "capture",
+        "control"
+      ],
+      "semantic_review": "unreviewed",
+      "raw_output": "blake3:e2e22cb76244bef89e5b1d05fd932b9114946e1b4c96a0e3c728febfc72803bb"
+    },
+    "reduced": {
+      "result": "pass",
+      "protocol_defaults_applied": [
+        "recall.citations=[]"
+      ],
+      "claims": 1,
+      "status": [
+        "insufficient"
+      ],
+      "checked_quotes": 0,
+      "sources": [],
+      "semantic_review": "unreviewed",
+      "raw_output": "blake3:b28621e5e831b34677fa1ca769c0b246df019f836e37742951e54460cda33b5d"
+    }
+  },
+  "negative_controls": {
+    "missing_nonempty_citation": "rejected",
+    "missing_null_citations": "rejected",
+    "reduced_nonempty_citation": "rejected",
+    "reduced_null_citations": "rejected"
+  },
+  "unchanged_checker_sha256": "f3a0e939cef9ac3bf85f80cb9d1e984ee40d94a0757cf6d4c6c6d55e23b88594",
+  "cases_sha256": "b91de4627aee873389066f4a8ed814fe4faff85cf1c8a3ae1d8e74f988d27ea2",
+  "boundary": "Same frozen rubric; decode omitted citations as [] per RecallEvidence serde(default,skip_serializing_if=Vec::is_empty). Raw files, model output and support remain unchanged. Any incomplete case still blocks headed checks."
+}

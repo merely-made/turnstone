@@ -1,0 +1,161 @@
+[profile.dev.package.esp]
+opt-level = 3
+
+[profile.dev.package.sha2]
+opt-level = 3
+
+[profile.dev.package.burn-backend]
+opt-level = 3
+
+[profile.dev.package.burn-backend-extension]
+opt-level = 3
+
+[profile.dev.package.burn-core]
+opt-level = 3
+
+[profile.dev.package.burn-tensor]
+opt-level = 3
+
+[profile.dev.package.burn-dispatch]
+opt-level = 3
+
+[profile.dev.package.burn-std]
+opt-level = 3
+
+[profile.dev.package.burn-nn]
+opt-level = 3
+
+[profile.dev.package.burn-cubecl]
+opt-level = 3
+
+[profile.dev.package.burn-fusion]
+opt-level = 3
+
+[profile.dev.package.burn-ir]
+opt-level = 3
+
+[profile.dev.package.burn-linalg]
+opt-level = 3
+
+[profile.dev.package.burn-wgpu]
+opt-level = 3
+
+[profile.dev.package.cubecl-common]
+opt-level = 3
+
+[profile.dev.package.cubecl-core]
+opt-level = 3
+
+[profile.dev.package.cubecl-environment]
+opt-level = 3
+
+[profile.dev.package.cubecl-ir]
+opt-level = 3
+
+[profile.dev.package.cubecl-opt]
+opt-level = 3
+
+[profile.dev.package.cubecl-runtime]
+opt-level = 3
+
+[profile.dev.package.cubecl-server]
+opt-level = 3
+
+[profile.dev.package.cubecl-std]
+opt-level = 3
+
+[profile.dev.package.cubecl-wgpu]
+opt-level = 3
+
+[profile.dev.package.cubecl-zspace]
+opt-level = 3
+
+[profile.dev.package.pliron]
+opt-level = 3
+
+[profile.test.package.esp]
+opt-level = 3
+
+[profile.test.package.sha2]
+opt-level = 3
+
+[profile.test.package.burn-backend]
+opt-level = 3
+
+[profile.test.package.burn-backend-extension]
+opt-level = 3
+
+[profile.test.package.burn-core]
+opt-level = 3
+
+[profile.test.package.burn-tensor]
+opt-level = 3
+
+[profile.test.package.burn-dispatch]
+opt-level = 3
+
+[profile.test.package.burn-std]
+opt-level = 3
+
+[profile.test.package.burn-nn]
+opt-level = 3
+
+[profile.test.package.burn-cubecl]
+opt-level = 3
+
+[profile.test.package.burn-fusion]
+opt-level = 3
+
+[profile.test.package.burn-ir]
+opt-level = 3
+
+[profile.test.package.burn-linalg]
+opt-level = 3
+
+[profile.test.package.burn-wgpu]
+opt-level = 3
+
+[profile.test.package.cubecl-common]
+opt-level = 3
+
+[profile.test.package.cubecl-core]
+opt-level = 3
+
+[profile.test.package.cubecl-environment]
+opt-level = 3
+
+[profile.test.package.cubecl-ir]
+opt-level = 3
+
+[profile.test.package.cubecl-opt]
+opt-level = 3
+
+[profile.test.package.cubecl-runtime]
+opt-level = 3
+
+[profile.test.package.cubecl-server]
+opt-level = 3
+
+[profile.test.package.cubecl-std]
+opt-level = 3
+
+[profile.test.package.cubecl-wgpu]
+opt-level = 3
+
+[profile.test.package.cubecl-zspace]
+opt-level = 3
+
+[profile.test.package.pliron]
+opt-level = 3
+
+[profile.dev.package.curve25519-dalek]
+opt-level = 3
+
+[profile.dev.package.ed25519-dalek]
+opt-level = 3
+
+[profile.test.package.curve25519-dalek]
+opt-level = 3
+
+[profile.test.package.ed25519-dalek]
+opt-level = 3

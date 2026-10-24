@@ -1,0 +1,137 @@
+{
+  "version": 1,
+  "clip": {
+    "version": 1,
+    "clip_id": "embedded-text-selected",
+    "capture_id": "redshank:fc0a407960f6691a651abc5b56f5b250bb14d868b4deb80af211609c3b48d0c0",
+    "title": "Redshank note",
+    "source": {
+      "owner": null,
+      "entity": "mere://redshank/note/embedded-text-selected",
+      "revision": null
+    },
+    "source_evidence": null,
+    "parts": [
+      {
+        "name": "body",
+        "role": "note-body",
+        "media_type": "text/plain;charset=utf-8",
+        "schema": null,
+        "manifest": "blake3:34a68a8f92ee65534850537f585c9daef4de2101765295a242ec022af7acfb96",
+        "dependencies": []
+      }
+    ],
+    "anchors": [
+      {
+        "source": "file:///Users/markik/Code/output/redshank-text-retention-20261020/runtime/origin-recording.wav",
+        "representation": null,
+        "units": "milliseconds",
+        "selector": {
+          "end_offset_ms": 4500,
+          "item_id": "embedded-recording",
+          "offset_ms": 1250,
+          "pressed_offset_ms": 1400,
+          "representation": {
+            "byte_length": 1344044,
+            "complete_digest": "blake3:c4f4dd0407d49e0f5c9d82dc95bdfcbcabf6f0cdf82e69072556aa68c484008c",
+            "etag": null,
+            "final_url": null,
+            "last_modified": null,
+            "media_type": null,
+            "requested_url": null,
+            "retrieved_at_ms": null
+          }
+        },
+        "evidence": {
+          "body": {
+            "kind": "text",
+            "plain_text": "Saved from the embedded listener: café → harbor.\nKeep this timed note."
+          },
+          "historical_author": null,
+          "source_revision": null
+        }
+      }
+    ],
+    "tags": []
+  },
+  "payloads": [
+    {
+      "id": "blake3:34a68a8f92ee65534850537f585c9daef4de2101765295a242ec022af7acfb96",
+      "bytes": [
+        83,
+        97,
+        118,
+        101,
+        100,
+        32,
+        102,
+        114,
+        111,
+        109,
+        32,
+        116,
+        104,
+        101,
+        32,
+        101,
+        109,
+        98,
+        101,
+        100,
+        100,
+        101,
+        100,
+        32,
+        108,
+        105,
+        115,
+        116,
+        101,
+        110,
+        101,
+        114,
+        58,
+        32,
+        99,
+        97,
+        102,
+        195,
+        169,
+        32,
+        226,
+        134,
+        146,
+        32,
+        104,
+        97,
+        114,
+        98,
+        111,
+        114,
+        46,
+        10,
+        75,
+        101,
+        101,
+        112,
+        32,
+        116,
+        104,
+        105,
+        115,
+        32,
+        116,
+        105,
+        109,
+        101,
+        100,
+        32,
+        110,
+        111,
+        116,
+        101,
+        46
+      ]
+    }
+  ]
+}

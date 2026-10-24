@@ -1,0 +1,27 @@
+{
+  "result": "diagnosed",
+  "native_pair_02": "Warm4/4 and12captures pass;90-second snapshot/shutdown timeout; no cold launch.",
+  "profile_change": "Optimize curve25519-dalek and ed25519-dalek at3 in dev/test; no verification bypass.",
+  "old_profile_diagnostic": "Copied-store snapshot still incomplete at240 seconds; process terminated by diagnostic bound.",
+  "optimized_profile_diagnostic": {
+    "snapshot_written": true,
+    "clean_shutdown_receipt": {
+      "clean_shutdown": true,
+      "phase": 1,
+      "pid": 49538
+    },
+    "ready_to_snapshot_seconds": 98.11529970169067,
+    "test_exit": 101,
+    "expected_late_failure": "Diagnostic-only snapshot0 placeholder and no fresh cold request; final acceptance assertions intentionally not satisfied. This diagnostic is not a headed qualification."
+  },
+  "qualification_followup": {
+    "snapshot_shutdown_limit_seconds": 300,
+    "per_answer_timeout_seconds": 900,
+    "per_answer_token_limit": 1024,
+    "source_model_cases_unchanged": true
+  },
+  "sample_files": [
+    "sample-snapshot-now.txt",
+    "sample-profile-5.txt"
+  ]
+}

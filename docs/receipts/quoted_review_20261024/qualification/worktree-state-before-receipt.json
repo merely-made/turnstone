@@ -1,0 +1,58 @@
+{
+  "eidetic": {
+    "head": "56601d9cb0c4901fd352bc789ce0ab53b5b6edd6",
+    "branch": "codex/cross-source-answers-20261022",
+    "status": "",
+    "upstream": "56601d9cb0c4901fd352bc789ce0ab53b5b6edd6",
+    "remote": "https://github.com/merely-made/eidetic.git"
+  },
+  "esp": {
+    "head": "7955994686c07535417803d041a5aa95dd3ec4f1",
+    "branch": "codex/cross-source-answers-20261022",
+    "status": "",
+    "upstream": "7955994686c07535417803d041a5aa95dd3ec4f1",
+    "remote": "https://github.com/merely-made/esp.git"
+  },
+  "knot": {
+    "head": "e3daea0949011a4600fda9c9b721a84140bf7964",
+    "branch": "codex/cross-source-answers-20261022",
+    "status": "",
+    "upstream": "e3daea0949011a4600fda9c9b721a84140bf7964",
+    "remote": "https://github.com/merely-made/knot-editor.git"
+  },
+  "cleromancy": {
+    "head": "65127281903d98eb4598b57caa99085231c25fe1",
+    "branch": "codex/cross-source-answers-20261022",
+    "status": "",
+    "upstream": "65127281903d98eb4598b57caa99085231c25fe1",
+    "remote": "https://github.com/merely-made/cleromancy.git"
+  },
+  "gemot": {
+    "head": "16678ab1c91cde1e0c973b368b422eb46b1a3364",
+    "branch": "codex/cross-source-answers-20261022",
+    "status": "",
+    "upstream": "16678ab1c91cde1e0c973b368b422eb46b1a3364",
+    "remote": "https://github.com/merely-made/gemot.git"
+  },
+  "murm": {
+    "head": "5f84b465d3eb561fa4613580e62e1423bee6ca7a",
+    "branch": "codex/cross-source-answers-20261022",
+    "status": "",
+    "upstream": "5f84b465d3eb561fa4613580e62e1423bee6ca7a",
+    "remote": "https://github.com/merely-made/murm.git"
+  },
+  "mere": {
+    "head": "8bf8b3e301ffe3c30acfcde8022b7bb51f9a66ad",
+    "branch": "codex/cross-source-answers-20261022",
+    "status": "",
+    "upstream": "8bf8b3e301ffe3c30acfcde8022b7bb51f9a66ad",
+    "remote": "https://github.com/merely-made/mere.git"
+  },
+  "turnstone": {
+    "head": "4f80c68b7e86d3ad04aebe36ca6345941b3aca7b",
+    "branch": "codex/cross-source-answers-20261022",
+    "status": "",
+    "upstream": "4f80c68b7e86d3ad04aebe36ca6345941b3aca7b",
+    "remote": "https://github.com/merely-made/turnstone.git"
+  }
+}
