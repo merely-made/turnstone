@@ -44,7 +44,7 @@ pub struct FormeWorkspace {
     #[serde(default)]
     pub reading_trail: tabard::ReadingTrail<Uuid>,
     #[serde(default)]
-    pub scope_navigation: cambium::scope_navigation::ScopeNavigation<Uuid,Uuid,tabard::ReadingAnchor>,
+    pub scope_navigation: crate::scope_policy::ScopeNavigation<tabard::ReadingAnchor>,
     tile_ids: BTreeMap<Uuid, u64>,
 }
 
@@ -281,8 +281,14 @@ impl FormeWorkspace {
     }
     pub fn validate(&self, graph_id: Uuid) -> Result<(), String> {
         self.reading_trail.validate()?;
-        self.scope_navigation.validate(|a|a.validate().is_ok())?;
-        if self.scope_navigation.visits().any(|v|v.place.graph!=graph_id) {return Err("Scope route belongs to another graph".into());}
+        self.scope_navigation.validate(
+            |place| {
+                place.valid()
+                    && place.graph == graph_id
+                    && place.parents().iter().all(|parent| parent.graph == graph_id)
+            },
+            |anchor| anchor.validate().is_ok(),
+        )?;
         if self.reading_anchors.len()>1024 {return Err("Too many reading anchors".into());}
         for (access,anchor) in &self.reading_anchors { if !self.tile_ids.contains_key(access) {return Err("Reading anchor has no projection".into());} anchor.validate()?; }
         self.reading_preferences.validate()?;

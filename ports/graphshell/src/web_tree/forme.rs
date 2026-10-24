@@ -415,7 +415,7 @@ pub(super) fn open_selected(page: &mut TreePage) {
 /// first Read with an empty arrangement admits the already-selected members.
 pub(super) fn show_projection(page: &mut TreePage, map: bool) {
     if map {
-        super::scope_navigation::command(page,cambium::scope_navigation::ScopeCommand::To(cambium::scope_navigation::ScopeLevel::Graph));
+        super::scope_navigation::command(page,graphshell::scope_policy::ScopeCommand::To(graphshell::scope_policy::ScopeLevel::Graph.into()));
     } else {
         let member=page.shared.canvas.borrow().focused_member().or_else(||page.forme.as_ref().and_then(|p|p.current().focused_reading));
         if let Some(member)=member {read_related(page,member);} else {open_selected(page);}

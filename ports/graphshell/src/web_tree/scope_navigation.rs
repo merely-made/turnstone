@@ -3,10 +3,10 @@
 
 //! A small host adapter for Cambium's shared scope route and visit history.
 use super::*;
-use cambium::scope_navigation::*;
+use graphshell::scope_policy::*;
 use uuid::Uuid;
-type Navigation = ScopeNavigation<Uuid, Uuid, tabard::ReadingAnchor>;
-type Visit = ScopeVisit<Uuid, Uuid, tabard::ReadingAnchor>;
+type Navigation = ScopeNavigation<tabard::ReadingAnchor>;
+type Visit = ScopeVisit<tabard::ReadingAnchor>;
 #[derive(Default)]
 pub(super) struct State {
     owner: Option<Uuid>,
@@ -29,7 +29,7 @@ pub(super) fn place(page: &TreePage) -> Option<ScopePlace<Uuid, Uuid>> {
         .current()
         .map(|v| v.place.clone())
         .filter(|p| p.graph == graph)
-        .unwrap_or(ScopePlace {
+        .unwrap_or(ScopePlace { contexts:None,
             level: ScopeLevel::Graph,
             graph,
             root: None,
@@ -38,21 +38,12 @@ pub(super) fn place(page: &TreePage) -> Option<ScopePlace<Uuid, Uuid>> {
     if pane.workbench {
         let focus = pane.current().focused_reading;
         if focus.is_none() {
-            place.level = ScopeLevel::Graph;
-            place.focus = None;
+            place=place.project(ScopeLevel::Graph,None,None);
             return Some(place);
         }
-        if place.level != ScopeLevel::Document || place.focus != focus {
-            if place.level != ScopeLevel::Neighborhood {
-                place.root = focus;
-            }
-            place.level = ScopeLevel::Document;
-            place.focus = focus;
-        }
+        if place.level!=ScopeLevel::Document || place.focus!=focus {place=place.reading(graph,focus.unwrap());}
     } else if place.level != ScopeLevel::Overmap {
-        if place.level == ScopeLevel::Document {
-            place.level = ScopeLevel::Graph;
-        }
+        if place.level == ScopeLevel::Document {place=place.project(ScopeLevel::Graph,None,place.focus);}
         if let Some(focus) = page.shared.canvas.borrow().focused_member() {
             place.select(focus);
         }
@@ -127,16 +118,7 @@ pub(super) fn record_reading(page: &mut TreePage, member: Uuid) {
     let Some(mut visit) = capture(page) else {
         return;
     };
-    visit.place.root = page
-        .instrument
-        .scope
-        .navigation
-        .current()
-        .filter(|v| v.place.level == ScopeLevel::Neighborhood)
-        .and_then(|v| v.place.root)
-        .or(Some(member));
-    visit.place.level = ScopeLevel::Document;
-    visit.place.focus = Some(member);
+    visit.place=page.instrument.scope.navigation.current().map(|v|v.place.reading(visit.place.graph,member)).unwrap_or_else(||visit.place.reading(visit.place.graph,member));
     visit.anchor = super::reading::capture_progress(page)
         .0
         .get(&member)
@@ -211,32 +193,16 @@ pub(super) fn controls(page: &TreePage) -> Child {
 }
 pub(super) fn trail(page: &TreePage) -> Option<Child> {
     let place = place(page)?;
-    let crumbs = [
-        ScopeLevel::Overmap,
-        ScopeLevel::Graph,
-        ScopeLevel::Neighborhood,
-        ScopeLevel::Document,
-    ]
-    .into_iter()
-    .filter(|l| *l as u8 >= place.level as u8)
-    .map(|level| ScopeCrumb {
-        label: if level == ScopeLevel::Neighborhood {
-            "Neighborhood".into()
-        } else {
-            label(
-                page,
-                &ScopePlace {
-                    level,
-                    ..place.clone()
-                },
-            )
-        },
-        level,
-        current: level == place.level,
-    })
-    .collect();
-    Some(cambium::scope_navigation::scope_trail(crumbs, command))
+    let trail=place.trail();let nested=trail.iter().filter(|p|p.level==ScopeLevel::Neighborhood).count()>1;let last=trail.len().saturating_sub(1);
+    let crumbs=trail.into_iter().enumerate().map(|(index,destination)|ScopeCrumb {
+        label:if destination.level==ScopeLevel::Neighborhood && !nested {"Neighborhood".into()} else {label(page,&destination)},
+        target:ScopeDestination::Place(destination),current:index==last,
+    }).collect();
+    // This supplier's browser shell has no location editor yet. The GUI lane
+    // adds that editor; the compatibility adapter keeps its current crumb text.
+    Some(cambium::scope_navigation::scope_trail_with_location_edit(crumbs,false,command))
 }
+
 pub(super) fn command(page: &mut TreePage, command: ScopeCommand) {
     if let ScopeCommand::Hint(hint) = command {
         page.instrument.scope.hint = hint;
@@ -276,14 +242,11 @@ pub(super) fn command(page: &mut TreePage, command: ScopeCommand) {
         let place = match command {
             ScopeCommand::Navigate(ScopeDirection::Up) => origin.place.up(),
             ScopeCommand::Navigate(ScopeDirection::Down) => origin.place.down(),
-            ScopeCommand::To(level) if level != origin.place.level => Some(ScopePlace {
-                level,
-                ..origin.place.clone()
-            }),
+            ScopeCommand::To(ref destination) => destination.resolve(&origin.place).filter(|p|p!=&origin.place),
             _ => None,
         };
         place.map(|place| {
-            let saved = page.instrument.scope.navigation.saved(&place);
+            let saved = page.instrument.scope.navigation.saved_matching(|p|p.same_scope(&place));
             ScopeVisit {
                 camera: saved.and_then(|v| v.camera),
                 anchor: saved.and_then(|v| v.anchor.clone()),
