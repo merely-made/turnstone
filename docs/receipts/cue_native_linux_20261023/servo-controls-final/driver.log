@@ -1,0 +1,27 @@
+{
+  "platform": "Linux-7.2.11-200.fc44.x86_64-x86_64-with-glibc2.43",
+  "binary_sha256": "5b77504a3bc627d9b70b9de92ec5cbf6da75db0ee33f918bedd75827701a16aa",
+  "requested_backend": "Vulkan",
+  "budget_seconds": 480,
+  "session_type": "wayland",
+  "wayland_display": "wayland-0",
+  "display": null,
+  "vulkan_driver_files": "/usr/share/vulkan/icd.d/radeon_icd.x86_64.json",
+  "passed": true,
+  "timed_out": false,
+  "exit_code": 0,
+  "elapsed_seconds": 145.294,
+  "adapters": [
+    {
+      "backend": "Vulkan",
+      "device": 5686,
+      "device_type": "IntegratedGpu",
+      "name": "AMD Radeon Graphics (RADV RENOIR)",
+      "vendor": 4098
+    }
+  ],
+  "required_direction": "native-frame",
+  "observed_directions": [
+    "native-frame"
+  ]
+}

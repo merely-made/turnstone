@@ -1,0 +1,180 @@
+{
+  "passed": true,
+  "scope": "Scripted native Wayland / hardware RADV Renoir Vulkan receiving; completed Servo native frames and retained Genet through one shared Cue pool",
+  "source": {
+    "turnstone_commit": "a2655c6ea200b912ebf1665329bc44c3c0b123b1",
+    "mere_commit": "114f4ea263c4474a8aed302208413dde522820e7",
+    "genet_commit": "2b5c01811e6051ecd815cb407ff1ec9b40724fc9",
+    "graft_commit": "db2736815e9d1893b8f9372355126056093f7155",
+    "cue_adapter_commit": "e18584a80e5cf23268ea0330ee70386b01e25de8",
+    "registry": {
+      "grafting": "0.6.1",
+      "wgpu-cue": "0.1.2",
+      "webcue": "0.1.1",
+      "grafting-frame": "0.1.1"
+    },
+    "runtime_binary_sha256": "5b77504a3bc627d9b70b9de92ec5cbf6da75db0ee33f918bedd75827701a16aa",
+    "source_sha256": {
+      "Cargo.lock": "aa99e7d743e98ba8d508f6daa109634bc8e4207bf9b2e8a0fe725e115ca20da6",
+      "Cargo.toml": "b7f2deddfadf2b40ab9e0ddbe3c89c3f8a1f6422bb2eba3af6d4a807ec403c7a",
+      "scenarios/cue_ui_mixed_linux.scn": "5fbc9228f518931f1c05336dd62ea6b2db21fd5a563a3b565ca3d1dfcdd9647c",
+      "scenarios/cue_ui_servo_linux.scn": "57775d077d1c067f5d2befc682afbf27497e7a73fb807766edca74cf8fade0c9",
+      "scripts/check-cue-native-pixels.py": "09745059473448ea686b4244c71bd29d747cae3386d895ab71c0b27216223cd8",
+      "scripts/receive-cue-ui-linux.py": "ae5fc30f27d90f31337595e56132cb37120849cee7c3dd37af550fa91905b0e4",
+      "scripts/test-receive-cue-ui-linux.py": "12f4b33a66e2ba66704971609606bad672cb9007493b4fa4017f42bb73d588ce",
+      "src/shell/cue_content.rs": "a61054039041511341b8107e94404f5394ebb0d24760918076549ca61113969d",
+      "src/shell/drive.rs": "d6cc9318c7d7a8c306fdca867b68ba728d70688f3df0de2e987ab2a73ae8b862",
+      "src/shell/effects.rs": "1339223ff2c9f0eff1461c797ebbcb9f3d5100fc932bc656d9a5f7cfe43588bf",
+      "src/shell/events.rs": "5738344652823ecc1b35f2b010f88aa05bb75eba12c36d61deec931a174d6722",
+      "src/shell/lens.rs": "c0db49a52ae39b4d56ac99f212544910a8740fbe4a6850ecc001acdbb418bb53",
+      "src/shell/mod.rs": "0603c5722c32bfcd77834c0541312b150ff2867d52264b8dc16f7d63ca521459",
+      "src/shell/render.rs": "0cbdf4b3957422a4701f03d0ceec503715e69b57b27f427606a28d827b048210",
+      "src/shell/servo.rs": "29030560aeaafcbbfd0968576ef3ae7c20f2a3f9631e4e99f5a0b2b227c953b3",
+      "src/shell/servo_cue.rs": "8d075e71e798dde1dc8f5e0522a20341b1a2ab710acce73a3f092335418a9119",
+      "src/shell/servo_cue_capabilities.rs": "ca88976ee2b6cc69ca8762283203b993ddd47d93f4a6cca83f74892dd898b056",
+      "src/shell/servo_cue_linux.rs": "d1fd8b63281bae10b524e479f370c8a3781750c7c32f84f3f6975b4e4f8523b7"
+    },
+    "scope": "Synthetic browser fixtures on native GNOME Wayland and RADV RENOIR hardware Vulkan; no identity-bound acceptance",
+    "test_fixture_commit": "e527392dbc9ca52428841d3d2ed9a849aef5ba74",
+    "test_fixture_sha256": {
+      "src/shell/content_pool.rs": "8ac59075e3d119bb0047677150dd811c34496ce776702215feab5f9fe129c8da"
+    },
+    "test_fixture_scope": "Only a cfg(test) Reader fixture explicitly selects its bundled font family; production font selection and native runtime source are unchanged."
+  },
+  "validation": {
+    "reader-content-pool-final": {
+      "exit": 0,
+      "elapsed_seconds": 33.521,
+      "test_counts": [
+        [
+          7,
+          0,
+          0
+        ]
+      ],
+      "test_binaries_sha256": {
+        "/home/markik/Code/repos/turnstone/target/build/debug/deps/turnstone-c51c1a617e20b96b": "bf6b12563a7ff67fa901b4a7e0920a7086868eb7fb84f1e616960ecfc9e3ce57"
+      }
+    },
+    "turnstone-pending-vulkan": {
+      "exit": 0,
+      "elapsed_seconds": 2.996,
+      "test_counts": [
+        [
+          1,
+          0,
+          0
+        ]
+      ],
+      "test_binaries_sha256": {
+        "/home/markik/Code/repos/turnstone/target/build/debug/deps/turnstone-c51c1a617e20b96b": "bf6b12563a7ff67fa901b4a7e0920a7086868eb7fb84f1e616960ecfc9e3ce57"
+      }
+    },
+    "turnstone-default-all-targets": {
+      "exit": 0,
+      "elapsed_seconds": 63.962,
+      "test_counts": [],
+      "test_binaries_sha256": {}
+    },
+    "turnstone-servo-all-targets": {
+      "exit": 0,
+      "elapsed_seconds": 258.935,
+      "test_counts": [],
+      "test_binaries_sha256": {}
+    },
+    "pelt-vulkan-final": {
+      "exit": 0,
+      "elapsed_seconds": 4.842,
+      "test_counts": [
+        [
+          9,
+          0,
+          0
+        ]
+      ],
+      "test_binaries_sha256": {
+        "/home/markik/Code/repos/mere/target/build/debug/deps/cue-3c098184ddd15cf3": "214161f58f41df47e8c32db0ae4735ed80109dbae300d10e2039501126d56afc"
+      }
+    }
+  },
+  "broader_library_run": {
+    "passed": 1182,
+    "failed": 1,
+    "ignored": 17,
+    "failure": "System-font-dependent Reader fixture; isolated reproduction retained, test-only correction passes all seven affected content-pool tests",
+    "fresh_full_suite_after_fixture_correction": false
+  },
+  "native_ui": {
+    "servo-controls-final": {
+      "passed": true,
+      "primary_presentations": 488,
+      "primary_captures": 13,
+      "blank_primary_captures": 0,
+      "adapters": [
+        {
+          "backend": "Vulkan",
+          "device": 5686,
+          "device_type": "IntegratedGpu",
+          "name": "AMD Radeon Graphics (RADV RENOIR)",
+          "vendor": 4098
+        }
+      ]
+    },
+    "mixed-producers": {
+      "passed": true,
+      "primary_presentations": 736,
+      "primary_captures": 4,
+      "blank_primary_captures": 0,
+      "adapters": [
+        {
+          "backend": "Vulkan",
+          "device": 5686,
+          "device_type": "IntegratedGpu",
+          "name": "AMD Radeon Graphics (RADV RENOIR)",
+          "vendor": 4098
+        }
+      ]
+    }
+  },
+  "native_pixel_rasters": 7,
+  "mixed_native_pixel_rasters": 4,
+  "mixed_direction_checkpoints": [
+    "06_mixed_retained",
+    "07_mixed_native"
+  ],
+  "scopes_primary_lens_reopened": [
+    [
+      "106505332861070371884015571475469031085:1"
+    ],
+    [
+      "106505332861070371884015571475469031085:1"
+    ],
+    [
+      "127996426892166724269896685132932958796:1"
+    ]
+  ],
+  "preserved_negative": "Successful original UI case rejected for absent lens source-raster evidence; corrected diagnostic path and unchanged stronger guard pass",
+  "preservation": {
+    "passed": true,
+    "local_primary_heads_status_unchanged": 5,
+    "thinkpad_preexisting_worktree_heads_status_unchanged": 16,
+    "historical_receipt_files_byte_identical": 285,
+    "remaining_owned_build_or_application_processes": 0,
+    "private_baseline_sha256": {
+      "local": "6762f416f722285486e209f82f60afbb64011fb1eb7f517f3554bf572b812309",
+      "thinkpad": "729cfccd30f728578b1027dab2a21d577f4dba4bf0ba86c18acfe6492139a19b"
+    },
+    "private_final_state_sha256": {
+      "thinkpad": "729cfccd30f728578b1027dab2a21d577f4dba4bf0ba86c18acfe6492139a19b"
+    },
+    "scope": "Heads and porcelain status with identical flags; exact bytes checked for the prior sealed receipts. Provider probe snapshots are retained privately in Git, with their worktrees switched to clean published revisions."
+  },
+  "limits": [
+    "Native Servo keyboard, IME and semantics remain explicitly unavailable; live report remains Constructed",
+    "No physical IME, human AT, physical device loss, transparent native colour/alpha, X11/Xwayland or OS compositor correlation",
+    "External semaphore transport is explicitly refused",
+    "Mixed global idle waits reach their 240-frame bounds; no idle-cost acceptance",
+    "Fresh public fixture profile identity remains pending/locked; no identity-bound acceptance",
+    "Clipboard unavailable and single-GPU DRI_PRIME fallback advisory retained in runtime diagnostics"
+  ]
+}

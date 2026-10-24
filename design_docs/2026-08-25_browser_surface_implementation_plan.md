@@ -24,6 +24,37 @@ succeeds the remaining-work portion of the historical
 [browser gap analysis](2026-08-17_smolweb_browser_gap_analysis.md); the analysis
 remains useful as research and acceptance evidence.
 
+## Linux native Cue receiving, 2026-10-23
+
+**Status: bounded native product receiving passes.** The Linux Servo build uses
+completed, move-owned DMA-BUF snapshots and the shared Vulkan importer. The host
+provisions native import before constructing Genet's shared `RenderCore`;
+primary/lens composition and both producer directions keep one device and queue.
+The shared browser lane continues to own navigation, input and ordered outcomes.
+Native keyboard, IME and semantic exposure remain unavailable in this binding.
+
+The canonical cross-repository record is
+[the Graft implementation plan](https://github.com/merely-made/wgpu-graft/blob/main/design_docs/2026-10-23_linux_native_cue_plan.md).
+Graft 0.6.1 and Wgpu Cue 0.1.2 are published. The
+[Linux native product receipt](../docs/receipts/cue_native_linux_20261023/README.md)
+binds Turnstone `a2655c6e`, Mere `114f4ea26`, Genet `2b5c0181` and Graft
+`db273681` to executable
+`5b77504a3bc627d9b70b9de92ec5cbf6da75db0ee33f918bedd75827701a16aa`.
+On native GNOME Wayland and hardware RADV Renoir Vulkan, the full controls case
+passes text entry/deletion, native navigation, reload, history, effective 110%
+zoom, lens sizing, docking and close/reopen. Seven native source rasters pass
+explicit red-top/white-centre/blue-bottom pixel checks. The mixed-card run samples
+both native Servo and retained Genet in one checkpoint on the same device.
+
+The first full run's composed lens image is correct, but its source-raster
+diagnostic is absent; the stronger receiving driver rejects it. Lens composition
+now queues that diagnostic through the same asynchronous path as primary
+composition, and the repeated run passes. Matching actual source surface IDs to
+live frame-direction reports prevents cached entries from qualifying a mixed
+frame. Earlier sealed Linux retained receipts remain unchanged. These scripted
+fixture results do not qualify physical IME, human AT, physical device loss,
+transparent native colour/alpha, X11/Xwayland or OS-compositor pixel correlation.
+
 ## Authority and order
 
 ### Current upstream and coordinated repin, 2026-10-07

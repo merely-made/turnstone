@@ -1,0 +1,47 @@
+{
+  "command": [
+    "nice",
+    "-n",
+    "10",
+    "cargo",
+    "+1.99.1",
+    "test",
+    "--locked",
+    "--offline",
+    "-j2",
+    "-p",
+    "pelt-core",
+    "--features",
+    "cue",
+    "--test",
+    "cue",
+    "--",
+    "--include-ignored",
+    "--test-threads=1",
+    "--nocapture"
+  ],
+  "cwd": "/home/markik/Code/worktrees/mere-cue-native-20261023",
+  "started": 1792812859.2602568,
+  "exit": 0,
+  "source_commit": "114f4ea263c4474a8aed302208413dde522820e7",
+  "source_status": "",
+  "manifest_sha256": "7e17f67701ea13deecac1ee40b11d76ab6411b234c804ba1f0a5d3c654ec13d9",
+  "lock_before_sha256": "dcab0b473b6005fe6ef778d6baf603d50f4474c92f61ca39148a4cf68522bece",
+  "environment": {
+    "CARGO_TARGET_DIR": "/home/markik/Code/target",
+    "CARGO_BUILD_BUILD_DIR": "/home/markik/Code/repos/mere/target/build",
+    "CARGO_BUILD_JOBS": "2",
+    "WGPU_BACKEND": "vulkan",
+    "VK_DRIVER_FILES": "/usr/share/vulkan/icd.d/radeon_icd.x86_64.json",
+    "XDG_RUNTIME_DIR": "/run/user/1000"
+  },
+  "child_nofile": [
+    65536,
+    1048576
+  ],
+  "elapsed_seconds": 4.842,
+  "lock_after_sha256": "dcab0b473b6005fe6ef778d6baf603d50f4474c92f61ca39148a4cf68522bece",
+  "test_binaries_sha256": {
+    "/home/markik/Code/repos/mere/target/build/debug/deps/cue-3c098184ddd15cf3": "214161f58f41df47e8c32db0ae4735ed80109dbae300d10e2039501126d56afc"
+  }
+}

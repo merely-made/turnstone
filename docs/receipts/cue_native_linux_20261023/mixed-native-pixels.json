@@ -1,0 +1,162 @@
+{
+  "passed": true,
+  "native_source_rasters": [
+    {
+      "checkpoint": "01_servo_inspector.cue-frames.json",
+      "file": "01_servo_inspector.source-1176657005713031172.png",
+      "sha256": "f6a470141aba9c7482852405e2ebc33a5f9557f76fddce97820e50038178b7de",
+      "dimensions": [
+        716,
+        477
+      ],
+      "window": 0,
+      "device_generation": 1,
+      "adapter": {
+        "name": "AMD Radeon Graphics (RADV RENOIR)",
+        "backend": "Vulkan",
+        "vendor": 4098,
+        "device": 5686,
+        "device_type": "IntegratedGpu"
+      },
+      "samples_rgba8": [
+        [
+          211,
+          40,
+          48,
+          255
+        ],
+        [
+          255,
+          255,
+          255,
+          255
+        ],
+        [
+          31,
+          87,
+          207,
+          255
+        ]
+      ],
+      "passed": true
+    },
+    {
+      "checkpoint": "02_servo_primary.cue-frames.json",
+      "file": "02_servo_primary.source-1176657005713031173.png",
+      "sha256": "da2701fb8a586d3689017982db10a6c4ac1bcf0d063c9b5395b4fe6bad25acae",
+      "dimensions": [
+        1024,
+        477
+      ],
+      "window": 0,
+      "device_generation": 1,
+      "adapter": {
+        "name": "AMD Radeon Graphics (RADV RENOIR)",
+        "backend": "Vulkan",
+        "vendor": 4098,
+        "device": 5686,
+        "device_type": "IntegratedGpu"
+      },
+      "samples_rgba8": [
+        [
+          211,
+          40,
+          48,
+          255
+        ],
+        [
+          255,
+          255,
+          255,
+          255
+        ],
+        [
+          31,
+          87,
+          207,
+          255
+        ]
+      ],
+      "passed": true
+    },
+    {
+      "checkpoint": "06_mixed_retained.cue-frames.json",
+      "file": "06_mixed_retained.source-1176657005713031174.png",
+      "sha256": "f1e5f1c7590061dbe538ef4602f4f295deb57c389d4373f17032428af4e2f6d2",
+      "dimensions": [
+        512,
+        477
+      ],
+      "window": 0,
+      "device_generation": 1,
+      "adapter": {
+        "name": "AMD Radeon Graphics (RADV RENOIR)",
+        "backend": "Vulkan",
+        "vendor": 4098,
+        "device": 5686,
+        "device_type": "IntegratedGpu"
+      },
+      "samples_rgba8": [
+        [
+          211,
+          40,
+          48,
+          255
+        ],
+        [
+          255,
+          255,
+          255,
+          255
+        ],
+        [
+          31,
+          87,
+          207,
+          255
+        ]
+      ],
+      "passed": true
+    },
+    {
+      "checkpoint": "07_mixed_native.cue-frames.json",
+      "file": "07_mixed_native.source-1176657005713031174.png",
+      "sha256": "f1e5f1c7590061dbe538ef4602f4f295deb57c389d4373f17032428af4e2f6d2",
+      "dimensions": [
+        512,
+        477
+      ],
+      "window": 0,
+      "device_generation": 1,
+      "adapter": {
+        "name": "AMD Radeon Graphics (RADV RENOIR)",
+        "backend": "Vulkan",
+        "vendor": 4098,
+        "device": 5686,
+        "device_type": "IntegratedGpu"
+      },
+      "samples_rgba8": [
+        [
+          211,
+          40,
+          48,
+          255
+        ],
+        [
+          255,
+          255,
+          255,
+          255
+        ],
+        [
+          31,
+          87,
+          207,
+          255
+        ]
+      ],
+      "passed": true
+    }
+  ],
+  "scope": "Synthetic Servo top-red, centre-white, bottom-blue source-raster orientation and colour; no transparent-colour or OS compositor qualification"
+}
