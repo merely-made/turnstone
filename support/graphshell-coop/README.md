@@ -15,6 +15,11 @@ Reconnect and explicitly retries its edit. Only an owner acknowledgement is a
 save. A later live withdrawal and full cold reopen prove that recovery did not
 widen scope or restore a revoked grant.
 
+After the listener restarts, the controller waits for both original endpoints
+to rejoin it before releasing Reconnect. Listener readiness alone is not peer
+readiness; the owner's relay reconnect can still be backing off. This observation
+does not retry an application edit or extend its deadline.
+
 `machine.py` selects the shared native desktop/custodian and optional Linux
 network-namespace providers. Those providers, the isolated resident lifetime
 helper, artifact freezing and the locked relay fixture all live in this directory.

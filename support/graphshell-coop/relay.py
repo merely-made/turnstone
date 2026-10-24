@@ -6,6 +6,7 @@ import queue
 import shlex
 import subprocess
 import threading
+import time
 from urllib.parse import urlsplit
 
 class Relay:
@@ -18,14 +19,38 @@ class Relay:
         self.process = None
         self.url = None
 
+    def next_event(self, deadline):
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise TimeoutError('relay observation deadline elapsed')
+        line = self.lines.get(timeout=remaining)
+        assert line, 'relay closed before the expected observation'
+        value = json.loads(line)
+        self.segments[-1]['events'].append(value)
+        return value
+
     def until(self, event):
+        deadline = time.monotonic() + 60
         while True:
-            line = self.lines.get(timeout=60)
-            assert line, 'relay closed before ' + event
-            value = json.loads(line)
-            self.segments[-1]['events'].append(value)
+            value = self.next_event(deadline)
             if value['event'] == event:
                 return value
+
+    def wait_for_rejoined(self):
+        """A listening relay does not yet prove either endpoint is reachable."""
+        expected = {e['endpoint'] for e in self.segments[0]['events']
+                    if e['event'] == 'connect'}
+        assert len(expected) == 2, 'recovery must retain the same two endpoints'
+        deadline = time.monotonic() + 60
+        while not expected.issubset({e['endpoint'] for e in self.segments[-1]['events']
+                                    if e['event'] == 'connect'}):
+            self.next_event(deadline)
+        events = self.segments[-1]['events']
+        return {'endpoints': sorted(expected),
+                'registrations': {peer: min(e['at_ms'] for e in events
+                                           if e['event'] == 'connect' and e['endpoint'] == peer)
+                                  for peer in sorted(expected)},
+                'relay_pid': next(e['pid'] for e in events if e['event'] == 'ready')}
 
     def start(self):
         assert self.process is None

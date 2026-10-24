@@ -236,6 +236,7 @@ def workflow(args, relay=None):
             guest.wait('guest-return', 'guest-save-failed.png', seconds=120)
             owner.call('prepare', arguments=['read', domain, chosen], save='after-failed-save.json')
             relay.start()
+            write(accepted / 'relay-ready-for-reconnect.json', relay.wait_for_rejoined())
             guest.call('marker', name='relay-restored')
             guest.wait('guest-return', 'guest-save-retried.png', seconds=120)
         owner.call('marker', name='revoke-now')
@@ -283,7 +284,8 @@ def workflow(args, relay=None):
               'machines': topology, 'native_processes': pids, 'phases': phases,
               'original_invitation_sha256': original, 'cold_invitation_sha256': cold['invitation_sha256'],
               'custodian_launches': 4, 'all_owned_processes_stopped': True,
-              'mode': args.mode, 'controller_sha256': sha(HERE / 'run.py'), 'worker_sha256': sha(HERE / 'machine.py')})
+              'mode': args.mode, 'relay_rejoin_barrier': args.mode == 'recovery',
+              'controller_sha256': sha(HERE / 'run.py'), 'worker_sha256': sha(HERE / 'machine.py')})
         print(json.dumps({'result': 'ok', 'evidence': str(accepted)}), flush=True)
     except Exception:
         for machine in workers:

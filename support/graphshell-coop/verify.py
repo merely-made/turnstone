@@ -232,6 +232,15 @@ def main():
             assert [e['event'] for e in segment['events']][-2:] == ['final', 'stopped']
         assert segments[0]['events'][0]['url'] == segments[1]['events'][0]['url']
         assert segments[0]['events'][0]['pid'] != segments[1]['events'][0]['pid']
+        if q.get('relay_rejoin_barrier'):
+            observed = read(evidence / 'relay-ready-for-reconnect.json')
+            peers = {e['endpoint'] for e in segments[0]['events'] if e['event'] == 'connect'}
+            assert len(peers) == 2 and observed['endpoints'] == sorted(peers)
+            assert observed['relay_pid'] == segments[1]['events'][0]['pid']
+            assert observed['registrations'] == {
+                peer: min(e['at_ms'] for e in segments[1]['events']
+                          if e['event'] == 'connect' and e['endpoint'] == peer)
+                for peer in peers}
         before_loss, failed = read(evidence/'before-relay-loss.json'), read(evidence/'after-failed-save.json')
         assert before_loss == failed, 'unacknowledged offline edit changed owner storage'
         assert 'Saved' not in fields('guest-save-pending')['coop-status']
