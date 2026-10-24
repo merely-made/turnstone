@@ -236,6 +236,60 @@ impl Shell {
     }
 }
 
+/// Resolve only the focused view and test membership in the saved-reader set.
+fn focused_saved_reader_node_for(
+    app: &crate::app::App,
+    is_reader: impl FnOnce(uuid::Uuid) -> bool,
+) -> Option<uuid::Uuid> {
+    let focused = match app.focus {
+        crate::surface::FocusTarget::Content { node, .. } => Some(node),
+        crate::surface::FocusTarget::Graph(pane) => app.graph_pane_focused_member(pane),
+        crate::surface::FocusTarget::Pane(pane)
+            if app.pane_content(pane) == Some(&PaneContent::Workbench) =>
+        {
+            app.pane_context
+                .resolve_context(
+                    pane,
+                    &crate::panes::ContextBinding::Own,
+                    crate::panes::SourceSelector::Graph,
+                )
+                .and_then(|context| context.member)
+        },
+        _ => None,
+    }?;
+    is_reader(focused).then_some(focused)
+}
+
+#[cfg(test)]
+mod saved_reader_probe_tests {
+    use super::*;
+    #[test]
+    fn saved_reader_probe_follows_the_focused_workbenchs_own_member() {
+        let mut app = crate::app::App::test_stub();
+        app.update(Action::OpenAddress("mere://reader".into()));
+        let node = app.graph_runtimes.focused_member().unwrap();
+        app.update(Action::OpenInWorkbench);
+        let crate::surface::FocusTarget::Pane(pane) = app.focus else {
+            panic!("Workbench has pane focus")
+        };
+        assert_eq!(focused_saved_reader_node_for(&app, |member| member == node), Some(node));
+        app.publish_member_context(pane, None);
+        assert_eq!(
+            focused_saved_reader_node_for(&app, |member| member == node),
+            None,
+            "a reader elsewhere is not focused"
+        );
+        app.publish_member_context(pane, Some(uuid::Uuid::new_v4()));
+        assert_eq!(
+            focused_saved_reader_node_for(&app, |member| member == node),
+            None,
+            "another member is not a saved reader"
+        );
+        app.focus = crate::surface::FocusTarget::Chrome;
+        assert_eq!(focused_saved_reader_node_for(&app, |member| member == node), None);
+    }
+}
+
 /// turnstone drives through the shared taproot harness: implementing this
 /// small surface grants the `resolve` / `click` verbs (used by the collapsed
 /// `click_pane_*` above) for free. `with_surfaces` hands the retained pane DOMs
@@ -245,17 +299,7 @@ impl Shell {
 /// they grow click verbs.
 impl Shell {
     fn focused_saved_reader_node(&self) -> Option<uuid::Uuid> {
-        let focused = match self.app.focus {
-            crate::surface::FocusTarget::Content { node, .. } => Some(node),
-            crate::surface::FocusTarget::Graph(pane) => {
-                self.app.graph_pane_focused_member(pane)
-            }
-            _ => None,
-        }?;
-        self.app
-            .saved_readers
-            .contains_key(&focused)
-            .then_some(focused)
+        focused_saved_reader_node_for(&self.app, |node| self.app.saved_readers.contains_key(&node))
     }
 
     fn saved_reader_engine_live(&self, node: uuid::Uuid) -> bool {
