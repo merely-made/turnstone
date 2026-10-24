@@ -32,10 +32,10 @@ assert wb-cells == 1
 record-idle 02_servo_primary
 capture 02_servo_primary
 
-# Coordinates belong to this fixed 1024x600 fixture: content begins at y=199.
+# Coordinates belong to this fixed 1024x600 fixture: content begins at y=100.
 # A composed checkpoint returns to the native event loop; legacy wait-row is
 # scoped to OPEN panes and cannot observe this page after Inspect closes.
-click-at 200 315
+click-at 200 215
 assert focus content
 assert snap frame-focus-slot == none
 capture 02a_field_focused
@@ -51,7 +51,7 @@ type a
 settle 15
 capture 02a_edited
 assert snap browser-current ~ Servo A | text=alpha | clicks=0
-click-at 200 385
+click-at 200 285
 settle 25
 capture 02b_input_navigation
 assert snap browser-current ~ result.html?page=A&text=alpha&clicks=1
