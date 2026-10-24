@@ -3608,3 +3608,57 @@ fn review_modal_touch_fresh_down_is_blocked_then_new_gesture_is_admitted() {
             vec![PointerPhase::Down, PointerPhase::Up]);
     }
 }
+
+
+#[test]
+fn document_ime_admission_tracks_editable_focus_window_visibility_and_replacement() {
+    struct Editor(std::sync::Arc<std::sync::atomic::AtomicBool>);
+    impl inker::DocumentSession<netrender::Scene> for Editor {
+        fn frame(&mut self, _: u32, _: u32) -> netrender::Scene { Default::default() }
+        fn scroll_by(&mut self, _: f32, _: f32) -> bool { false }
+        fn scroll_for_key(&mut self, _: inker::SessionScrollKey) -> bool { false }
+        fn click_at(&mut self, _: f32, _: f32) -> inker::SessionClick { inker::SessionClick::Miss }
+        fn links(&self) -> Vec<inker::SessionLink> { vec![] }
+        fn editable_focus(&self) -> bool { self.0.load(std::sync::atomic::Ordering::SeqCst) }
+        fn focus_input(&mut self, focused: bool) {
+            if !focused { self.0.store(false, std::sync::atomic::Ordering::SeqCst); }
+        }
+        fn as_any_ref(&self) -> &dyn std::any::Any { self }
+        fn as_any(&mut self) -> &mut dyn std::any::Any { self }
+    }
+    let editable = Arc::new(std::sync::atomic::AtomicBool::new(false));
+    let controller = pelt_core::PeltController::from_session_shared(
+        Arc::new(inker::SessionRegistry::new()),
+        Arc::new(inker::SurfaceEngineRegistry::new()),
+        pelt_core::PeltControllerConfig::new("ime", "https://fixture.test/ime", (100, 100)),
+        super::super::ShellClock(std::time::Instant::now()),
+        Box::new(Editor(editable.clone())),
+    );
+    let mut pool = Pool::new();
+    let focus = FocusTarget::Content { node: uuid::Uuid::from_u128(7), appearance: SurfaceId(10) };
+    pool.insert(key(7), PeltContent::from_controller(controller, route()));
+    pool.set_placements([(SurfaceId(10), placed(key(7), 0, 0., true))]);
+    assert!(!document_accepts_ime(&pool, focus, 0));
+    editable.store(true, std::sync::atomic::Ordering::SeqCst);
+    assert!(document_accepts_ime(&pool, focus, 0));
+    assert!(!document_accepts_ime(&pool, FocusTarget::Graph(crate::panes::PaneId(99)), 0),
+        "an old placement cannot enable IME after host focus leaves content");
+    assert!(!document_accepts_ime(&pool, focus, 1));
+    pool.set_placements([(SurfaceId(10), placed(key(7), 1, 0., true))]);
+    // Focus loss retires editor composition; a new native editor focus admits
+    // the lens only, even though it retains the same content identity.
+    editable.store(true, std::sync::atomic::Ordering::SeqCst);
+    assert!(document_accepts_ime(&pool, focus, 1));
+    assert!(!document_accepts_ime(&pool, focus, 0));
+    let mut hidden = placed(key(7), 1, 0., true);
+    hidden.visible = false;
+    pool.set_placements([(SurfaceId(10), hidden)]);
+    assert!(!document_accepts_ime(&pool, focus, 1));
+    pool.set_placements([(SurfaceId(10), placed(key(7), 1, 0., true))]);
+    editable.store(true, std::sync::atomic::Ordering::SeqCst);
+    assert!(document_accepts_ime(&pool, focus, 1));
+    pool.insert(key(7), hosted(&Calls::default()));
+    assert!(!document_accepts_ime(&pool, focus, 1), "a browser cannot inherit the old retained editor");
+    pool.set_placements([]);
+    assert!(!document_accepts_ime(&pool, focus, 1));
+}

@@ -141,7 +141,9 @@ fn field(
     field_name: &'static str,
 ) -> SkyView {
     let input = Box::new(lens(
-        move |input: &mut TextInput| text_field_typed(input).attr("aria-label", label),
+        move |input: &mut TextInput| text_field_typed(input)
+            .attr("aria-label", label)
+            .attr("class", "sky-input"),
         getter,
     )) as SkyView;
     Box::new(

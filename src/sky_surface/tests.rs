@@ -21,6 +21,56 @@ fn admitted_reference() -> crate::contributed_surface::ContributedSurfacePane {
         .expect("reference Sky source")
 }
 
+#[test]
+fn contributed_editor_exposes_ime_admission_caret_commit_and_cancel() {
+    for scale in [1.0, 1.5] {
+        let mut pane = admitted_reference();
+        pane.scene(1200, 1600, scale);
+        assert!(!pane.accepts_text());
+        let target = {
+            let dom = pane.dom_ref();
+            let matches = taproot::matching_estimated_fixture(
+                &dom,
+                &taproot::Selector::role("textbox").containing("Observer label"),
+            );
+            assert_eq!(matches.len(), 1);
+            matches[0]
+        };
+        pane.reveal(target);
+        pane.focus(Some(target));
+        pane.scene(1200, 1600, scale);
+        assert!(pane.accepts_text(), "a contributed editor must admit OS IME");
+        let area = pane.ime_cursor_area().expect("painted editor caret");
+        assert!([area.0, area.1, area.2, area.3].into_iter().all(f32::is_finite));
+        assert!(area.2 > 0.0 && area.3 > 0.0);
+        let value = |pane: &crate::contributed_surface::ContributedSurfacePane| {
+            let id = pane.dom_ref().opaque_id(target);
+            pane.document_projection().unwrap().nodes().iter()
+                .find(|n| n.id.get() == id)
+                .expect("focused editor semantics").value.clone().expect("committed editor value")
+        };
+        let original = value(&pane);
+        let composition = |event| cambium::KeyEvent::new(cambium::Key::Composition(event));
+        pane.key(composition(cambium::CompositionEvent::Preedit {
+            text: "temporary".into(), selection: Some((0, 9)),
+        }));
+        pane.scene(1200, 1600, scale);
+        assert_eq!(value(&pane), original, "preedit cannot enter the committed value");
+        pane.key(composition(cambium::CompositionEvent::Commit("世界".into())));
+        pane.scene(1200, 1600, scale);
+        assert_eq!(value(&pane), format!("{original}世界"));
+        pane.key(composition(cambium::CompositionEvent::Preedit {
+            text: "zzcancel".into(), selection: Some((8, 8)),
+        }));
+        pane.key(composition(cambium::CompositionEvent::Disabled));
+        pane.scene(1200, 1600, scale);
+        assert_eq!(value(&pane), format!("{original}世界"));
+        pane.focus(None);
+        assert!(!pane.accepts_text());
+        assert!(pane.ime_cursor_area().is_none());
+    }
+}
+
 fn text_present(dom: &genet_scripted_dom::ScriptedDom, needle: &str) -> bool {
     fn contains(
         dom: &genet_scripted_dom::ScriptedDom,

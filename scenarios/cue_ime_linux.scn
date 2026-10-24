@@ -1,0 +1,57 @@
+# Setup and observation only. The composition exercises require a human at
+# the physical keyboard; no type/insert/input-text steps are used here.
+settle 15
+key escape
+resize 1024 700
+omnibar find
+settle 10
+capture 01_omnibar_ready
+touch ${CUE_IME_EXCHANGE}/01.ready
+wait-file 60000 ${CUE_IME_EXCHANGE}/01.sample
+capture 01_omnibar_during
+wait-file 60000 ${CUE_IME_EXCHANGE}/01.done
+capture 01_omnibar_after
+key escape
+
+act Open Sky reference
+settle 30
+act Maximize pane
+settle 10
+click surface:contributed role:textbox Observer label
+capture 02_inline_ready
+touch ${CUE_IME_EXCHANGE}/02.ready
+wait-file 60000 ${CUE_IME_EXCHANGE}/02.sample
+capture 02_inline_during
+wait-file 60000 ${CUE_IME_EXCHANGE}/02.done
+capture 02_inline_after
+act Close pane
+settle 10
+
+open ${SERVO_FIXTURE_BASE}/document_a11y/ime.html
+wait 240
+act Open node in Workbench
+wait 240
+assert content-live
+assert snap browser-current-engine ~ genet
+capture 03_document_ready
+touch ${CUE_IME_EXCHANGE}/03.ready
+wait-file 60000 ${CUE_IME_EXCHANGE}/03.sample
+capture 03_document_during
+wait-file 60000 ${CUE_IME_EXCHANGE}/03.done
+capture 03_document_after
+
+act Float pane
+settle 5
+act Tear out pane
+settle 5
+act Dock pane
+settle 20
+assert windows == 2
+assert lens-surface content
+capture-lens 04_lens_ready
+touch ${CUE_IME_EXCHANGE}/04.ready
+wait-file 60000 ${CUE_IME_EXCHANGE}/04.sample
+capture-lens 04_lens_during
+wait-file 60000 ${CUE_IME_EXCHANGE}/04.done
+capture-lens 04_lens_after
+log Physical IME observations collected; scenario completion alone is not qualification

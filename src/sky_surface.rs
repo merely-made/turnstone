@@ -55,6 +55,9 @@ pub const SKY_SURFACE_CSS: &str = r#"
 .setting-label { color: rgb(150, 160, 180); font-size: 12px; }
 .setting-apply { color: rgb(238, 242, 250); background-color: rgb(36, 44, 62); border: 1px solid rgb(70, 82, 110); border-radius: 6px; padding: 5px 9px; }
 .sky-controls { padding: 8px; }
+.sky-input { min-width: 240px; min-height: 28px; padding: 4px 6px; color: rgb(238, 242, 250); background-color: rgb(25, 32, 48); border: 1px solid rgb(70, 82, 110); border-radius: 4px; }
+.sky-input .field-preedit { text-decoration: underline; }
+.sky-input .field-caret { display: inline-block; width: 0; height: 1em; overflow: hidden; border-left: 1px solid currentColor; vertical-align: text-bottom; }
 .sky-fact { padding: 6px 8px; }
 .sky-receipt-digest { font-family: monospace; }
 .sky-alert { padding: 8px; }
