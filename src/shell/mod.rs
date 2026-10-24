@@ -2041,7 +2041,8 @@ impl Shell {
         {
             return false;
         }
-        self.inline_text_in_window(0)
+        self.pane_text_in_window(0)
+            || window_input::document_accepts_ime(&self.content_sessions.pool, self.app.focus, 0)
             || self.app.omnibar.open
             || self.app.document_find.open
             || self.app.user_agent_decision.accepts_text()
@@ -2052,11 +2053,14 @@ impl Shell {
             window.set_ime_allowed(self.accepts_controlled_text());
         }
         for lens in self.lens_windows.values() {
-            if matches!(self.app.focus, crate::surface::FocusTarget::Pane(pane) if self.renderers.inline_mount(pane).is_some())
-            {
-                lens.window
-                    .set_ime_allowed(self.inline_text_in_window(lens.ordinal as u64 + 1));
-            }
+            let window = lens.ordinal as u64 + 1;
+            let host_editor = self.app.omnibar.open
+                || self.app.document_find.open
+                || self.app.user_agent_decision.is_open();
+            lens.window.set_ime_allowed(!host_editor && (
+                self.pane_text_in_window(window)
+                    || window_input::document_accepts_ime(&self.content_sessions.pool, self.app.focus, window)
+            ));
         }
     }
     fn inline_text_in_window(&self, window: u64) -> bool {
@@ -2075,8 +2079,20 @@ impl Shell {
             _ => false,
         }
     }
-    fn inline_cursor_area(&self, window: u64) -> Option<crate::surface::Rect> {
-        if !self.inline_text_in_window(window) {
+    fn pane_text_in_window(&self, window: u64) -> bool {
+        if frame_keys::header_focus_in_window(
+            self.outer_focus.as_ref(), window, self.app.session_id.as_uuid(),
+        ) {
+            return false;
+        }
+        let crate::surface::FocusTarget::Pane(pane) = self.app.focus else { return false; };
+        self.focus_in_window(window, self.app.focus)
+            && (self.renderers.inline_accepts_text(pane)
+                || self.renderers.contributed.get(pane).is_some_and(|view| view.accepts_text()))
+    }
+
+    fn pane_ime_cursor_area(&self, window: u64) -> Option<crate::surface::Rect> {
+        if !self.pane_text_in_window(window) {
             return None;
         }
         let crate::surface::FocusTarget::Pane(pane) = self.app.focus else {
@@ -2094,7 +2110,8 @@ impl Shell {
         let surface = plan
             .iter()
             .find(|s| s.kind == crate::surface::SurfaceKind::Pane(pane))?;
-        let (x, y, width, height) = self.renderers.inline_cursor_area(pane)?;
+        let (x, y, width, height) = self.renderers.inline_cursor_area(pane)
+            .or_else(|| self.renderers.contributed.get(pane)?.ime_cursor_area())?;
         Some(crate::surface::Rect::new(
             surface.rect.x + x,
             surface.rect.y + y,

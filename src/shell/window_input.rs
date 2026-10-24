@@ -10,6 +10,23 @@ use pelt_core::{PeltControllerPool, PeltHostEffect, PeltInput};
 use std::collections::HashMap;
 
 pub(super) type Pool = PeltControllerPool<ContentKey, SurfaceId, netrender::Scene>;
+
+/// OS IME admission follows the live retained editor in this window. A hidden
+/// placement, a different window or a browser without retained composition
+/// cannot inherit another document's editable focus.
+pub(super) fn document_accepts_ime(pool: &Pool, focus: FocusTarget, window: u64) -> bool {
+    let FocusTarget::Content { node, appearance } = focus else { return false; };
+    let Some(placement) = pool.placement(&appearance) else { return false; };
+    let same_node = match placement.content {
+        ContentKey::Node(owner) | ContentKey::Reader { node: owner, .. } => owner == node,
+    };
+    same_node && placement.window == window && placement.visible && placement.focused
+        && pool.focused_content(window) == Some(&placement.content)
+        && pool.content(&placement.content)
+            .and_then(pelt_core::PeltContent::document)
+            .is_some_and(|controller| controller.session().editable_focus())
+}
+
 #[derive(Clone, Copy)]
 struct Contact {
     pointer_id: i32,

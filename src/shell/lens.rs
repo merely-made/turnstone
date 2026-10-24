@@ -310,7 +310,7 @@ impl Shell {
         #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
         let (surface_device, surface_queue) = (host.device().clone(), host.queue().clone());
         self.prepare_inline_owners(ordinal + 1, (lw, lh));
-        if let Some(area) = self.inline_cursor_area(ordinal as u64 + 1)
+        if let Some(area) = self.pane_ime_cursor_area(ordinal as u64 + 1)
             && let Some(lens) = self.lens_windows.get(&id)
         {
             lens.window.set_ime_cursor_area(
@@ -742,7 +742,10 @@ impl Shell {
             },
             WindowEvent::Ime(ime) => {
                 let window = lens.ordinal as u64 + 1;
-                self.deliver_window_ime(window, &ime);
+                super::controller_input::trace_native_ime(window, &ime);
+                if self.deliver_window_ime(window, &ime) {
+                    self.request_redraw();
+                }
                 return;
             },
             WindowEvent::CloseRequested => {
@@ -873,6 +876,7 @@ impl Shell {
                                     });
                                 pane.focus_at(hit.local.0, hit.local.1);
                                 pane.mouse_press(hit.local.0, hit.local.1);
+                                self.sync_ime_allowed();
                                 self.request_redraw();
                                 return;
                             }

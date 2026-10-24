@@ -965,7 +965,7 @@ impl Shell {
         // surfaces, each with its own rect. Built by the same helper input
         // routing uses, so what a frame draws and what a pointer hits agree.
         self.prepare_inline_owners(0, (w, h));
-        if let Some(area) = self.inline_cursor_area(0)
+        if let Some(area) = self.pane_ime_cursor_area(0)
             && let Some(window) = &self.window
         {
             window.set_ime_cursor_area(

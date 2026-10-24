@@ -723,6 +723,7 @@ impl Shell {
                                     window: 0,
                                 });
                             pane.mouse_press(hit.local.0, hit.local.1);
+                            self.sync_ime_allowed();
                             self.request_redraw();
                             return;
                         }

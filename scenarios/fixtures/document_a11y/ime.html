@@ -1,0 +1,20 @@
+<!doctype html>
+<!-- Copyright 2026 Mark Alan Boykin. SPDX-License-Identifier: MPL-2.0 -->
+<meta charset="utf-8">
+<title>Physical IME fixture</title>
+<style>
+html,body{margin:0;padding:0;background:#f4efe3;color:#172033}
+body{font:20px/1.4 sans-serif;padding:24px}
+h1{font-size:24px;margin:0 0 16px}
+label{display:block;margin-top:16px}
+textarea,input{display:block;width:440px;font:24px/1.4 sans-serif;padding:8px}
+p{max-width:650px}
+</style>
+<h1>Physical IME qualification — synthetic text only</h1>
+<label for="ime-entry">Document IME field</label>
+<textarea id="ime-entry" rows="3" autocomplete="off"></textarea>
+<label for="other-entry">Other field — focus-switch control</label>
+<input id="other-entry" autocomplete="off">
+<p>Type hello, select a candidate with F1, then type zzcancel and cancel with
+Escape. Observe the preedit, candidate popup, final value and focus changes.
+The host records composition separately from your physical observations.</p>

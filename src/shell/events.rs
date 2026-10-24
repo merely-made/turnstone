@@ -407,6 +407,7 @@ impl ApplicationHandler for Shell {
             // rides directly on state and only the commit lowers to an
             // Action (`OmnibarInsert`, the same path a future paste takes).
             WindowEvent::Ime(ime) => {
+                super::controller_input::trace_native_ime(0, &ime);
                 if self.app.user_agent_decision.is_open() {
                     if self.app.user_agent_decision.accepts_text()
                         && let Ime::Commit(s) = ime
