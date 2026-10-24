@@ -310,7 +310,7 @@ redshank-playback = { git = "https://github.com/merely-made/woodshed.git", branc
 redshank-storage = { git = "https://github.com/merely-made/woodshed.git", branch = "main" }
 
 # Shared browser controls and both presentation directions use the published core.
-wgpu-cue = { version = "=0.1.2" }
+wgpu-cue = { version = "=0.1.3" }
 
 # The offscreen Servo host is reusable on macOS, Linux and Windows.
 graft-engine = { git = "https://github.com/merely-made/mere.git", branch = "main", optional = true }

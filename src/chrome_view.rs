@@ -54,7 +54,7 @@ pub enum ChromeIntent {
     CommitRow(usize),
     /// Keep or drop the command on this suggestion row.
     ToggleKeep(usize),
-    Scope(cambium::scope_navigation::ScopeCommand),
+    Scope(crate::scope_navigation::ScopeCommand),
     NavBack,
     NavForward,
     Reload,
@@ -205,7 +205,7 @@ struct ChromeState {
     shellbar_visible: bool,
     zoom: f32,
     scope_controls: cambium::scope_navigation::ScopeControls,
-    scope_crumbs: Vec<cambium::scope_navigation::ScopeCrumb>,
+    scope_crumbs: Vec<crate::scope_navigation::ScopeCrumb>,
     can_back: bool,
     can_forward: bool,
     focused_node: Option<uuid::Uuid>,
@@ -230,8 +230,8 @@ type ChromeView = Box<dyn AnyView<ChromeState, ChromeIntent, GenetCtx, GenetElem
 /// One window's chrome view: the caption chip, plus the omnibar card on the
 /// primary while open. Positioned by transform-translate (the property the
 /// canvas gnode pool proves the retained engine honors on absolutes).
-fn scope_chrome_intent(state:&mut ChromeState,command:cambium::scope_navigation::ScopeCommand)->ChromeIntent {
-    if let cambium::scope_navigation::ScopeCommand::Hint(hint)=command {state.scope_controls.hint=hint;ChromeIntent::MenuChanged} else {ChromeIntent::Scope(command)}
+fn scope_chrome_intent(state:&mut ChromeState,command:crate::scope_navigation::ScopeCommand)->ChromeIntent {
+    if let crate::scope_navigation::ScopeCommand::Hint(hint)=command {state.scope_controls.hint=hint;ChromeIntent::MenuChanged} else {ChromeIntent::Scope(command)}
 }
 
 fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
@@ -2518,8 +2518,8 @@ pub(crate) mod tests {
         assert_eq!(
             browser_button_intents(&mut chrome),
             vec![
-                ChromeIntent::Scope(cambium::scope_navigation::ScopeCommand::Navigate(cambium::scope_navigation::ScopeDirection::Back)),
-                ChromeIntent::Scope(cambium::scope_navigation::ScopeCommand::Navigate(cambium::scope_navigation::ScopeDirection::Forward)),
+                ChromeIntent::Scope(crate::scope_navigation::ScopeCommand::Navigate(cambium::scope_navigation::ScopeDirection::Back)),
+                ChromeIntent::Scope(crate::scope_navigation::ScopeCommand::Navigate(cambium::scope_navigation::ScopeDirection::Forward)),
                 ChromeIntent::Reload,
                 ChromeIntent::KeepNode(app.graph_runtimes.focused_member().expect("focused node")),
             ]
@@ -2543,8 +2543,8 @@ pub(crate) mod tests {
         assert_eq!(
             browser_button_intents(&mut chrome),
             vec![
-                ChromeIntent::Scope(cambium::scope_navigation::ScopeCommand::Navigate(cambium::scope_navigation::ScopeDirection::Back)),
-                ChromeIntent::Scope(cambium::scope_navigation::ScopeCommand::Navigate(cambium::scope_navigation::ScopeDirection::Forward)),
+                ChromeIntent::Scope(crate::scope_navigation::ScopeCommand::Navigate(cambium::scope_navigation::ScopeDirection::Back)),
+                ChromeIntent::Scope(crate::scope_navigation::ScopeCommand::Navigate(cambium::scope_navigation::ScopeDirection::Forward)),
                 ChromeIntent::Stop,
                 ChromeIntent::KeepNode(app.graph_runtimes.focused_member().expect("focused node")),
             ]

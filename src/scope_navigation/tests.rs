@@ -279,3 +279,21 @@ fn legacy_scope_anchors_load_and_malformed_bookmarks_are_not_silently_dropped() 
     invalid["text"] = serde_json::json!({"invalid":"number"});
     assert!(serde_json::from_value::<ScopeBookmark>(invalid).is_err());
 }
+
+#[test]
+fn scope_crumb_resolves_its_real_route_after_generic_navigation_adoption() {
+    let (mut app, member, _, _) = fixture();
+    let graph = app.scope_crumbs().into_iter().find(|crumb| {
+        matches!(&crumb.target, ScopeDestination::Place(place) if place.level == ScopeLevel::Graph)
+    }).unwrap();
+    app.update(Action::Scope(ScopeCommand::To(graph.target)));
+    let place = app.scope_place();
+    assert_eq!(place.level, ScopeLevel::Graph);
+    assert_eq!(place.focus, Some(member));
+    assert_eq!(place.up().unwrap().level, ScopeLevel::Overmap);
+    command(&mut app, ScopeDirection::Down);
+    assert_eq!(app.scope_place().level, ScopeLevel::Neighborhood);
+    command(&mut app, ScopeDirection::Down);
+    assert_eq!(app.scope_place().level, ScopeLevel::Document);
+    assert_eq!(app.scope_place().focus, Some(member));
+}

@@ -207,7 +207,7 @@ pub enum Action {
     },
     /// Step the focused node back through its own content lineage. No-op at
     /// that node's oldest entry.
-    Scope(cambium::scope_navigation::ScopeCommand),
+    Scope(crate::scope_navigation::ScopeCommand),
     SelectScopeMere(crate::panes::SessionId),
     NavBack,
     /// Step the focused node forward through its own content lineage.

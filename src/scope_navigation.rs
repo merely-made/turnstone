@@ -9,7 +9,10 @@ use crate::{
     panes::{GraphId, PaneContent, PaneId},
     reading_view::ReadTarget,
 };
-use cambium::scope_navigation::*;
+use cambium::scope_navigation::{ScopeCamera, ScopeControls, ScopeDirection, ScopeNavigation, ScopeVisit};
+use mere::navigation::browser::{ScopeDestination, ScopeLevel, ScopePlace};
+pub type ScopeCommand = cambium::scope_navigation::ScopeCommand<ScopeDestination<GraphId, Uuid>>;
+pub type ScopeCrumb = cambium::scope_navigation::ScopeCrumb<ScopeDestination<GraphId, Uuid>>;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -52,8 +55,8 @@ impl ScopeBookmark {
         self.reading.as_ref().is_none_or(|a| a.validate().is_ok())
     }
 }
-pub type Navigation = ScopeNavigation<GraphId, Uuid, ScopeBookmark>;
-type Visit = ScopeVisit<GraphId, Uuid, ScopeBookmark>;
+pub type Navigation = ScopeNavigation<ScopePlace<GraphId, Uuid>, ScopeBookmark>;
+type Visit = ScopeVisit<ScopePlace<GraphId, Uuid>, ScopeBookmark>;
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct ScopeState {
     pub navigation: Navigation,
@@ -63,7 +66,7 @@ pub struct ScopeState {
     #[serde(skip)]
     pub restoring: bool,
     #[serde(skip)]
-    pub pending: Option<(ScopeVisit<GraphId, Uuid, ScopeBookmark>, Option<bool>)>,
+    pub pending: Option<(ScopeVisit<ScopePlace<GraphId, Uuid>, ScopeBookmark>, Option<bool>)>,
 }
 
 impl App {
@@ -88,9 +91,8 @@ impl App {
             .active_pane
             .is_some_and(|p| matches!(self.pane_content(p), Some(PaneContent::Overmap(_))))
         {
-            if let Some(mut place) = held {
-                place.level = ScopeLevel::Overmap;
-                return place;
+            if let Some(place) = held {
+                return place.project(ScopeLevel::Overmap, None, place.focus);
             }
         }
         let reader = self
@@ -112,19 +114,14 @@ impl App {
             graph,
             root: member,
             focus: member,
+            contexts: None,
         });
         if reader.is_some() {
             if member.is_none() {
-                place.level = ScopeLevel::Graph;
-                place.focus = None;
-                return place;
+                return place.project(ScopeLevel::Graph, None, None);
             }
             if place.level != ScopeLevel::Document || place.focus != member {
-                if place.focus != member && !matches!(place.level, ScopeLevel::Neighborhood) {
-                    place.root = member;
-                }
-                place.level = ScopeLevel::Document;
-                place.focus = member;
+                place = place.reading(graph, member.unwrap());
             }
         } else {
             if let Some(pane) = self
@@ -132,13 +129,12 @@ impl App {
                 .filter(|p| self.pane_content(*p) == Some(&PaneContent::Orrery))
             {
                 if let Some(root) = self.graph_views.neighborhood_root(pane) {
-                    place.level = ScopeLevel::Neighborhood;
-                    place.root = Some(root);
+                    place = place.project(ScopeLevel::Neighborhood, Some(root), place.focus);
                 } else {
-                    place.level = ScopeLevel::Graph;
+                    place = place.project(ScopeLevel::Graph, None, place.focus);
                 }
             } else if matches!(place.level, ScopeLevel::Document | ScopeLevel::Overmap) {
-                place.level = ScopeLevel::Graph;
+                place = place.project(ScopeLevel::Graph, None, place.focus);
             }
             if let Some(member) = member {
                 place.select(member);
@@ -207,6 +203,7 @@ impl App {
                 graph,
                 root,
                 focus: Some(member),
+                contexts: None,
             },
             camera: None,
             anchor: Some(ScopeBookmark {
@@ -267,14 +264,12 @@ impl App {
             let place = match command {
                 ScopeCommand::Navigate(ScopeDirection::Up) => origin.place.up(),
                 ScopeCommand::Navigate(ScopeDirection::Down) => origin.place.down(),
-                ScopeCommand::To(level) if level != origin.place.level => Some(ScopePlace {
-                    level,
-                    ..origin.place.clone()
-                }),
+                ScopeCommand::To(ref target) => target.resolve(&origin.place)
+                    .filter(|place| !place.same_scope(&origin.place)),
                 _ => None,
             };
             place.map(|place| {
-                let saved = self.reading.scope.navigation.saved(&place);
+                let saved = self.reading.scope.navigation.saved_matching(|saved| saved.same_scope(&place));
                 ScopeVisit {
                     camera: saved.and_then(|v| v.camera),
                     anchor: Some(ScopeBookmark {
@@ -399,12 +394,13 @@ impl App {
                 graph,
                 root: None,
                 focus: None,
+                contexts: None,
             };
             let visit = self
                 .reading
                 .scope
                 .navigation
-                .saved(&place)
+                .saved_matching(|saved| saved.same_scope(&place))
                 .cloned()
                 .unwrap_or(ScopeVisit {
                     place,

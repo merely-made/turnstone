@@ -100,7 +100,7 @@ impl ReadingState {
             if choices.len() > 1024 || trails.len() > 128 {
                 return Err("Too many reading projections".into());
             }
-            scope.navigation.validate(|bookmark| bookmark.validate())?;
+            scope.navigation.validate(|place| place.valid(), |bookmark| bookmark.validate())?;
             let mut state = Self {
                 scope,
                 ..Default::default()
