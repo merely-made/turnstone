@@ -374,7 +374,7 @@ document-session-api = { git = "https://github.com/merely-made/genet.git", branc
 # native consumers of Mere use Mere's patched AccessKit (support/patches/accesskit).
 accesskit = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 # Promoted sources shared with immutable older Mere suppliers.
-esp = { git = "https://github.com/merely-made/esp.git", rev = "6d6ad84b773c9baf2390bd7807a21ca9887e6efd" }
+esp = { git = "https://github.com/merely-made/esp.git", rev = "f27bee8eb5152618ab91fa8676d62c72ebfcb4fc" }
 # Canonical promoted families; keep registry and Git consumers type-identical.
 armillary = { git = "https://github.com/merely-made/armillary.git", rev = "92d5b15cf39aaac40a3f2d863ffee69c9be11bfc" }
 chartulary = { git = "https://github.com/merely-made/eidetic.git", rev = "aa94fe22eea29e9b54e01ed21e6991536ed4f208" }
@@ -486,7 +486,7 @@ chartulary = { git = "https://github.com/merely-made/eidetic.git", rev = "aa94fe
 commons-spine = { git = "https://github.com/merely-made/gemot.git", rev = "8ffdc9a5bab5dcc82fe3be4bfa0e1c5d8dbbab1c" }
 eidetic = { git = "https://github.com/merely-made/eidetic.git", rev = "aa94fe22eea29e9b54e01ed21e6991536ed4f208" }
 errand = { git = "https://github.com/merely-made/errand.git", rev = "1155897e6debc61102ea219cced245d0abccb658" }
-esp = { git = "https://github.com/merely-made/esp.git", rev = "6d6ad84b773c9baf2390bd7807a21ca9887e6efd" }
+esp = { git = "https://github.com/merely-made/esp.git", rev = "f27bee8eb5152618ab91fa8676d62c72ebfcb4fc" }
 gemot = { git = "https://github.com/merely-made/gemot.git", rev = "8ffdc9a5bab5dcc82fe3be4bfa0e1c5d8dbbab1c" }
 luggage = { git = "https://github.com/merely-made/eidetic.git", rev = "aa94fe22eea29e9b54e01ed21e6991536ed4f208" }
 mere-proofs = { git = "https://github.com/merely-made/eidetic.git", rev = "aa94fe22eea29e9b54e01ed21e6991536ed4f208" }
@@ -518,7 +518,7 @@ chartulary = { git = "https://github.com/merely-made/eidetic.git", rev = "aa94fe
 commons-spine = { git = "https://github.com/merely-made/gemot.git", rev = "8ffdc9a5bab5dcc82fe3be4bfa0e1c5d8dbbab1c" }
 eidetic = { git = "https://github.com/merely-made/eidetic.git", rev = "aa94fe22eea29e9b54e01ed21e6991536ed4f208" }
 errand = { git = "https://github.com/merely-made/errand.git", rev = "1155897e6debc61102ea219cced245d0abccb658" }
-esp = { git = "https://github.com/merely-made/esp.git", rev = "6d6ad84b773c9baf2390bd7807a21ca9887e6efd" }
+esp = { git = "https://github.com/merely-made/esp.git", rev = "f27bee8eb5152618ab91fa8676d62c72ebfcb4fc" }
 gemot = { git = "https://github.com/merely-made/gemot.git", rev = "8ffdc9a5bab5dcc82fe3be4bfa0e1c5d8dbbab1c" }
 luggage = { git = "https://github.com/merely-made/eidetic.git", rev = "aa94fe22eea29e9b54e01ed21e6991536ed4f208" }
 mere-proofs = { git = "https://github.com/merely-made/eidetic.git", rev = "aa94fe22eea29e9b54e01ed21e6991536ed4f208" }
@@ -557,3 +557,7 @@ commons-spine = { git = "https://www.github.com/merely-made/gemot.git", rev = "8
 gemot = { git = "https://www.github.com/merely-made/gemot.git", rev = "8ffdc9a5bab5dcc82fe3be4bfa0e1c5d8dbbab1c" }
 mien = { git = "https://www.github.com/merely-made/gemot.git", rev = "8ffdc9a5bab5dcc82fe3be4bfa0e1c5d8dbbab1c" }
 mooting = { git = "https://www.github.com/merely-made/gemot.git", rev = "8ffdc9a5bab5dcc82fe3be4bfa0e1c5d8dbbab1c" }
+
+# Keep Knot's older ESP source on the same cohort as the Mere supplier.
+[patch."https://github.com/merely-made/esp.git"]
+esp = { git = "https://www.github.com/merely-made/esp.git", rev = "f27bee8eb5152618ab91fa8676d62c72ebfcb4fc" }
