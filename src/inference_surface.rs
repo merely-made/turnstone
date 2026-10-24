@@ -490,6 +490,20 @@ fn answer_view(state: &AnswerState) -> AnswerView {
                     };
                     let mut parts: Vec<AnswerView> =
                         vec![row(format!("{}. {status}: {}", index + 1, claim.text))];
+                    if let Some(review) = &claim.review {
+                        use eidetic::models::answer::CandidateAgreement;
+                        let relevant = review.candidates.iter().filter(|c| c.answers).count();
+                        let agreement = match review.agreement {
+                            CandidateAgreement::None => "no answer found",
+                            CandidateAgreement::Single => "one answer found",
+                            CandidateAgreement::Same => "answers judged to agree",
+                            CandidateAgreement::Different => "answers judged to disagree",
+                        };
+                        parts.push(row(format!(
+                            "Model evidence review: {relevant} of {} supplied passages marked relevant; {agreement}.",
+                            review.candidates.len()
+                        )));
+                    }
                     for issue in &claim.issues {
                         parts.push(row(format!("Support check: {issue}")));
                     }
