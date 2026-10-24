@@ -34,7 +34,7 @@ impl ApplicationHandler for Shell {
         let started = std::time::Instant::now();
         self.poll_render_recovery();
         self.observe_physics_display_rate(false);
-        #[cfg(all(feature = "servo", any(windows, target_os = "macos")))]
+        #[cfg(all(feature = "servo", any(windows, target_os = "macos", target_os = "linux")))]
         if let Err(error) = super::servo::pump() {
             tracing::warn!(%error, "Servo process event pump failed");
         }
@@ -100,7 +100,7 @@ impl ApplicationHandler for Shell {
         self.run_effects(effects);
         self.pump_redshank();
         self.pump_research();
-        #[cfg(all(feature = "servo", any(windows, target_os = "macos")))]
+        #[cfg(all(feature = "servo", any(windows, target_os = "macos", target_os = "linux")))]
         if let Err(error) = super::servo::pump() {
             tracing::warn!(%error, "Servo process event pump failed");
         }
@@ -135,7 +135,7 @@ impl ApplicationHandler for Shell {
             self.retire_render_receivers(window);
         }
         self.retire_render_receivers(0);
-        #[cfg(all(feature = "servo", any(windows, target_os = "macos")))]
+        #[cfg(all(feature = "servo", any(windows, target_os = "macos", target_os = "linux")))]
         {
             self.clear_surface_content();
             if let Err(error) = super::servo::shutdown() {
@@ -207,7 +207,13 @@ impl ApplicationHandler for Shell {
             backends: Some(wgpu::Backends::DX12),
             ..Default::default()
         };
-        match SurfaceHost::boot(window.clone(), self.width, self.height, options) {
+        #[cfg(all(feature = "servo", target_os = "linux"))]
+        let booted = super::servo::cue::boot_render_core(options).and_then(|core| {
+            SurfaceHost::from_shared_core(window.clone(), self.width, self.height, Arc::new(core))
+        });
+        #[cfg(not(all(feature = "servo", target_os = "linux")))]
+        let booted = SurfaceHost::boot(window.clone(), self.width, self.height, options);
+        match booted {
             Ok(host) => {
                 self.host = Some(host);
                 self.ensure_render_recovery();
