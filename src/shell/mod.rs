@@ -33,7 +33,7 @@ mod saved_sources;
 mod research_notes;
 #[cfg(all(feature = "scry", windows))]
 mod scry;
-#[cfg(all(feature = "servo", any(windows, target_os = "macos")))]
+#[cfg(all(feature = "servo", any(windows, target_os = "macos", target_os = "linux")))]
 use crate::servo_host as servo;
 #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
 mod surface_frames;
@@ -284,15 +284,15 @@ pub(crate) fn project_engine_inventory(
 
 fn servo_construction_availability() -> crate::content::EngineAvailability {
     use crate::content::EngineAvailability;
-    #[cfg(all(feature = "servo", any(windows, target_os = "macos")))]
+    #[cfg(all(feature = "servo", any(windows, target_os = "macos", target_os = "linux")))]
     {
         EngineAvailability::OnDemand {
             detail: "upstream Servo shares the configured named profile across this process's views; native construction is checked when selected".into(),
         }
     }
-    #[cfg(not(all(feature = "servo", any(windows, target_os = "macos"))))]
+    #[cfg(not(all(feature = "servo", any(windows, target_os = "macos", target_os = "linux"))))]
     EngineAvailability::Unavailable {
-        reason: "requires a Windows or macOS build with the servo feature".into(),
+        reason: "requires a Windows, macOS or Linux build with the servo feature".into(),
     }
 }
 
@@ -502,7 +502,7 @@ fn shared_scenario_from_env() -> Option<taproot::Scenario> {
 
 /// A launch-selected name identifies Servo's process profile. An explicit
 /// directory overrides its storage location, while keeping that visible name.
-#[cfg(any(test, all(feature = "servo", any(windows, target_os = "macos"))))]
+#[cfg(any(test, all(feature = "servo", any(windows, target_os = "macos", target_os = "linux"))))]
 fn servo_profile_directory(
     data_root: &std::path::Path,
     name: &str,
@@ -950,7 +950,7 @@ impl Shell {
                 #[cfg(feature = "scry")]
                 self.scry_frame_importers.clear();
             }
-            #[cfg(all(feature = "servo", target_os = "macos"))]
+            #[cfg(all(feature = "servo", any(target_os = "macos", target_os = "linux")))]
             { can_replace &= self.servo_factory.is_none(); }
             if !can_replace && self.render_recovery_blocked.is_none() {
                 let error = "device-loss recovery refused: registered native producers require explicit device rebinding".to_owned();
@@ -1302,7 +1302,7 @@ pub struct Shell {
         std::collections::HashMap<uuid::Uuid, Option<surface_frames::ImportedSurfaceFrame>>,
     #[cfg(all(feature = "scry", windows))]
     scry_factory: Option<Arc<scry::TurnstoneScryFactory>>,
-    #[cfg(all(feature = "servo", any(windows, target_os = "macos")))]
+    #[cfg(all(feature = "servo", any(windows, target_os = "macos", target_os = "linux")))]
     servo_factory: Option<Arc<servo::TurnstoneServoFactory>>,
     #[cfg(all(feature = "scry", windows))]
     scry_frame_importers:
@@ -1773,7 +1773,7 @@ impl Shell {
             surface_frames: std::collections::HashMap::new(),
             #[cfg(all(feature = "scry", windows))]
             scry_factory: None,
-            #[cfg(all(feature = "servo", any(windows, target_os = "macos")))]
+            #[cfg(all(feature = "servo", any(windows, target_os = "macos", target_os = "linux")))]
             servo_factory: None,
             #[cfg(all(feature = "scry", windows))]
             scry_frame_importers: std::collections::HashMap::new(),
@@ -1923,7 +1923,7 @@ impl Shell {
         Err("scrying.web is available only in a Windows build with `--features scry`".into())
     }
 
-    #[cfg(all(feature = "servo", any(windows, target_os = "macos")))]
+    #[cfg(all(feature = "servo", any(windows, target_os = "macos", target_os = "linux")))]
     fn ensure_servo_engine(&mut self) -> Result<std::path::PathBuf, String> {
         if let Some(factory) = &self.servo_factory {
             return Ok(factory.profile_dir().to_owned());
@@ -1978,9 +1978,9 @@ impl Shell {
         Ok(profile)
     }
 
-    #[cfg(not(all(feature = "servo", any(windows, target_os = "macos"))))]
+    #[cfg(not(all(feature = "servo", any(windows, target_os = "macos", target_os = "linux"))))]
     fn ensure_servo_engine(&mut self) -> Result<std::path::PathBuf, String> {
-        Err("graft.servo is available only in a Windows or macOS build with `--features servo`".into())
+        Err("graft.servo is available only in a Windows, macOS or Linux build with `--features servo`".into())
     }
 
     /// Poll the value projection after a settings pane persists a write. The

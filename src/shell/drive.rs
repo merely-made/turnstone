@@ -903,7 +903,7 @@ impl taproot::Automatable for Shell {
                 )
                 .with_field("host-scry-imported-pages", ready.to_string());
         }
-        #[cfg(all(feature = "servo", any(windows, target_os = "macos")))]
+        #[cfg(all(feature = "servo", any(windows, target_os = "macos", target_os = "linux")))]
         {
             out = out
                 .with_field("host-servo-views", super::servo::active_views().to_string())
@@ -1668,7 +1668,7 @@ impl Shell {
                     .shared_out_dir
                     .join(format!("{name}.foreign-a11y.json"));
                 let mut diagnostic = self.surface_a11y.publication_diagnostic(public_fixture);
-                #[cfg(all(feature = "servo", any(windows, target_os = "macos")))]
+                #[cfg(all(feature = "servo", any(windows, target_os = "macos", target_os = "linux")))]
                 if let Some(factory) = &self.servo_factory {
                     diagnostic["servo_focus_policy"] =
                         serde_json::json!(factory.a11y_focus_policy());

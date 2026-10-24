@@ -310,14 +310,14 @@ redshank-playback = { git = "https://github.com/merely-made/woodshed.git", branc
 redshank-storage = { git = "https://github.com/merely-made/woodshed.git", branch = "main" }
 
 # Shared browser controls and both presentation directions use the published core.
-wgpu-cue = { version = "=0.1.1" }
+wgpu-cue = { version = "=0.1.2" }
 
 # The offscreen Servo host is reusable on macOS, Linux and Windows.
 graft-engine = { git = "https://github.com/merely-made/mere.git", branch = "main", optional = true }
 servo = { git = "https://github.com/servo/servo", rev = "aac43a3f31a259f04a574f5ec4e959c943ad7cc7", optional = true }
 rustls = { version = "0.23.37", features = ["aws_lc_rs"], optional = true }
-servo-wgpu-interop-adapter = { git = "https://github.com/merely-made/wgpu-graft.git", rev = "bb48281bd4a88a726a009e0518706881b74b7604", default-features = false, features = ["wgpu-30", "servo"], optional = true }
-grafting = { git = "https://github.com/merely-made/wgpu-graft.git", rev = "bb48281bd4a88a726a009e0518706881b74b7604", default-features = false, features = ["wgpu-30"], optional = true }
+servo-wgpu-interop-adapter = { git = "https://github.com/merely-made/wgpu-graft.git", rev = "db2736815e9d1893b8f9372355126056093f7155", default-features = false, features = ["wgpu-30", "servo"], optional = true }
+grafting = { git = "https://github.com/merely-made/wgpu-graft.git", rev = "db2736815e9d1893b8f9372355126056093f7155", default-features = false, features = ["wgpu-30"], optional = true }
 
 [dev-dependencies]
 async-trait = "=0.1.92"
@@ -416,7 +416,7 @@ mozjs_icu_collator = { path = "vendor/mozjs-icu-collator" }
 mozjs_icu_normalizer = { path = "vendor/mozjs-icu-normalizer" }
 # The Servo interop adapter is git-only and carries this Grafting rev, so
 # registry consumers (Scrying, Welding) must share it to keep one Grafting.
-grafting = { git = "https://github.com/merely-made/wgpu-graft.git", rev = "bb48281bd4a88a726a009e0518706881b74b7604" }
+grafting = { git = "https://github.com/merely-made/wgpu-graft.git", rev = "db2736815e9d1893b8f9372355126056093f7155" }
 # Match Distillery's stable Burn graph; root patches are not inherited.
 gemini-protocol = { git = "https://github.com/merely-made/errand.git", rev = "1155897e6debc61102ea219cced245d0abccb658" }
 # No Stylo-family patch: Genet's live route is Livery/Buckram. The surviving

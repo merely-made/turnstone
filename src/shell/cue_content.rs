@@ -166,9 +166,9 @@ impl CueFrames {
     }
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(not(any(target_os = "macos", target_os = "linux")))]
 struct NoNative;
-#[cfg(not(target_os = "macos"))]
+#[cfg(not(any(target_os = "macos", target_os = "linux")))]
 impl NativeImporter for NoNative {
     fn try_import(
         &mut self,
@@ -196,7 +196,9 @@ impl super::Shell {
             .clone();
         #[cfg(target_os = "macos")]
         let mut importer = wgpu_cue::GraftMetalImporter;
-        #[cfg(not(target_os = "macos"))]
+        #[cfg(target_os = "linux")]
+        let mut importer = wgpu_cue::GraftVulkanImporter;
+        #[cfg(not(any(target_os = "macos", target_os = "linux")))]
         let mut importer = NoNative;
         self.cue_frames
             .present(

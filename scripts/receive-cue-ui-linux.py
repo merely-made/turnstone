@@ -18,6 +18,17 @@ import sys
 import time
 
 
+def require_directions(checkpoints, required, sources=None):
+    """Require sampled content in the named frame direction, within one frame."""
+    observed = [{entry["direction"] for entry in entries
+                 if entry["scope"] and entry["sampled_layers"] > 0
+                 and (sources is None or entry["surface"] in sources.get(name, set()))}
+                for name, entries in checkpoints.items()]
+    wanted = {"native-frame", "host-device"} if required == "mixed" else {required}
+    assert any(wanted <= directions for directions in observed), (
+        f"no checkpoint samples required frame directions: {sorted(wanted)}")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("binary", type=Path)
@@ -25,6 +36,7 @@ def main():
     parser.add_argument("run_root", type=Path)
     parser.add_argument("fixture_base")
     parser.add_argument("--budget", type=int, default=480)
+    parser.add_argument("--require-direction", choices=["native-frame", "host-device", "mixed"])
     args = parser.parse_args()
     assert sys.platform == "linux", "run on the Linux receiving host"
     assert args.budget > 0
@@ -85,11 +97,22 @@ def main():
     assert outcome.read_text().splitlines()[0] == "RESULT ok", outcome.read_text()
     frames = list(receiving.glob("*.cue-frames.json"))
     assert frames, "no shared-presentation observations"
-    entries = [entry for path in frames for entry in json.loads(path.read_text())["entries"]]
+    checkpoints = {path.name: json.loads(path.read_text())["entries"] for path in frames}
+    entries = [entry for rows in checkpoints.values() for entry in rows]
+    actual_sources = {}
+    for name in checkpoints:
+        path = receiving / name.replace(".cue-frames.json", ".sources.json")
+        actual_sources[name] = {row["surface_id"] for row in json.loads(path.read_text())} if path.exists() else set()
     assert any(e["sampled_layers"] > 0 and e["scope"] for e in entries), "no sampled shared frame"
+    if args.require_direction:
+        require_directions(checkpoints, args.require_direction, actual_sources)
     for path in receiving.glob("*lens.cue-frames.json"):
         assert any(e["sampled_layers"] > 0 and e["scope"]
                    for e in json.loads(path.read_text())["entries"]), f"blank content in lens: {path}"
+        lens_sources = path.with_name(path.name.replace(".cue-frames.json", ".sources.json"))
+        assert lens_sources.exists() and json.loads(lens_sources.read_text()), f"lens has no actual source rasters: {path}"
+        if args.require_direction and args.require_direction != "mixed":
+            require_directions({path.name: checkpoints[path.name]}, args.require_direction, actual_sources)
     assert list(receiving.glob("*.png")), "no composed captures"
     sources = [row for path in receiving.glob("*.sources.json") for row in json.loads(path.read_text())]
     assert sources, "no actual receiving adapter observations"
@@ -98,7 +121,9 @@ def main():
         info = json.loads(adapter)
         assert info["backend"] == "Vulkan", info
         assert info["device_type"] in ("IntegratedGpu", "DiscreteGpu"), info
-    result.update(passed=True, adapters=[json.loads(a) for a in sorted(adapters)])
+    result.update(passed=True, adapters=[json.loads(a) for a in sorted(adapters)],
+                  required_direction=args.require_direction,
+                  observed_directions=sorted({e["direction"] for e in entries if e["scope"] and e["sampled_layers"] > 0}))
     (root / "run.json").write_text(json.dumps(result, indent=2) + "\n")
     print(json.dumps(result, indent=2))
 

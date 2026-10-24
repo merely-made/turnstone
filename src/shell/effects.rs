@@ -915,7 +915,7 @@ impl Shell {
                 source,
                 state: pelt_core::PeltRouteState::Surface,
             };
-            #[cfg(all(feature = "servo", target_os = "macos"))]
+            #[cfg(all(feature = "servo", any(target_os = "macos", target_os = "linux")))]
             let content = if servo_profile.is_some() {
                 let host = self.host.as_ref().ok_or("the Turnstone wgpu host is not ready")?;
                 let browser = inker::cue_browser::BrowserSurface::new_with_report(
@@ -929,7 +929,7 @@ impl Shell {
             } else {
                 pelt_core::PeltContent::from_surface(producer, (spawn.width, spawn.height), route)
             };
-            #[cfg(not(all(feature = "servo", target_os = "macos")))]
+            #[cfg(not(all(feature = "servo", any(target_os = "macos", target_os = "linux"))))]
             let content = pelt_core::PeltContent::from_surface(producer, (spawn.width, spawn.height), route);
             self.content_sessions.insert(node, content);
             self.activate_surface_accessibility(node, false);
