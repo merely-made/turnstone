@@ -2091,6 +2091,18 @@ impl Shell {
                 || self.renderers.contributed.get(pane).is_some_and(|view| view.accepts_text()))
     }
 
+    fn document_ime_cursor_area(&self, window: u64) -> Option<crate::surface::Rect> {
+        if self.app.omnibar.open || self.app.document_find.open
+            || self.app.user_agent_decision.is_open()
+            || frame_keys::header_focus_in_window(
+                self.outer_focus.as_ref(), window, self.app.session_id.as_uuid(),
+            )
+        {
+            return None;
+        }
+        window_input::document_text_input_area(&self.content_sessions.pool, self.app.focus, window)
+    }
+
     fn pane_ime_cursor_area(&self, window: u64) -> Option<crate::surface::Rect> {
         if !self.pane_text_in_window(window) {
             return None;

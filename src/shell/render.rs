@@ -1170,6 +1170,16 @@ impl Shell {
             return false;
         }
 
+        // Frame preparation publishes the current shaped document caret. Read
+        // it afterwards so a resize, edit or page zoom cannot reuse old layout.
+        if let Some(area) = self.document_ime_cursor_area(0) && let Some(window) = &self.window {
+            tracing::debug!(target: "turnstone::ime", window = 0, x = area.x, y = area.y,
+                width = area.w, height = area.h, "shared document caret geometry");
+            window.set_ime_cursor_area(
+                PhysicalPosition::new(area.x, area.y), PhysicalSize::new(area.w, area.h),
+            );
+        }
+
         // Pass 2 (immutable): rasterize each scene keyed by its surface id (so
         // an unchanged surface reuses its tile instead of rebuilding every
         // frame) and compose the layers in order.
