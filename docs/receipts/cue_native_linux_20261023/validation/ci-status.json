@@ -1,0 +1,67 @@
+{
+  "captured_at_utc": "2026-10-24T03:37:15.943395+00:00",
+  "wgpu-cue": {
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/merely-made/wgpu-cue/actions/runs/40056214196",
+    "jobs": [
+      {
+        "name": "adapters",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "core (windows-latest)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "core (ubuntu-latest)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "wasm",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "core (macos-latest)",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "graft": {
+    "status": "in_progress",
+    "conclusion": "",
+    "url": "https://github.com/merely-made/wgpu-graft/actions/runs/40056480742",
+    "jobs": [
+      {
+        "name": "Check (macOS / Metal)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Check and test (Linux)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Check core (Windows / Vulkan + D3D)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Check Iced Servo demo (Windows / DX12)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Check Servo demos (Windows)",
+        "status": "in_progress",
+        "conclusion": ""
+      }
+    ]
+  }
+}

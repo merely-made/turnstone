@@ -1,0 +1,31 @@
+RESULT ok
+waited 71 frames
+waited 0 frames
+captured 01_servo_inspector
+captured 02_servo_primary
+captured 02a_field_focused
+captured 02a_alpha
+captured 02a_deleted
+captured 02a_edited
+captured 02b_input_navigation
+captured 02b_reloaded
+captured 02b_back
+captured 02b_forward
+captured 02c_controls
+captured 04_servo_docked
+captured 05_servo_reopened
+Real Turnstone Servo Cue primary/lens/return/reopen receiving complete
+presentation frames=488 captures=13 blank=0
+capture /home/markik/Code/output/cue-native-vulkan-20261023/servo-controls-final/receiving/01_servo_inspector.png digest=b2be192d0ff4de8c blank=false
+capture /home/markik/Code/output/cue-native-vulkan-20261023/servo-controls-final/receiving/02_servo_primary.png digest=fbef4722cdfcb13c blank=false
+capture /home/markik/Code/output/cue-native-vulkan-20261023/servo-controls-final/receiving/02a_field_focused.png digest=35ac1e7a0fc997b8 blank=false
+capture /home/markik/Code/output/cue-native-vulkan-20261023/servo-controls-final/receiving/02a_alpha.png digest=41d7087e9e7846f1 blank=false
+capture /home/markik/Code/output/cue-native-vulkan-20261023/servo-controls-final/receiving/02a_deleted.png digest=0159f50623a04333 blank=false
+capture /home/markik/Code/output/cue-native-vulkan-20261023/servo-controls-final/receiving/02a_edited.png digest=41d7087e9e7846f1 blank=false
+capture /home/markik/Code/output/cue-native-vulkan-20261023/servo-controls-final/receiving/02b_input_navigation.png digest=4ffae1d50e22420d blank=false
+capture /home/markik/Code/output/cue-native-vulkan-20261023/servo-controls-final/receiving/02b_reloaded.png digest=4ffae1d50e22420d blank=false
+capture /home/markik/Code/output/cue-native-vulkan-20261023/servo-controls-final/receiving/02b_back.png digest=f76b6c53b222a712 blank=false
+capture /home/markik/Code/output/cue-native-vulkan-20261023/servo-controls-final/receiving/02b_forward.png digest=5256a913ece261b0 blank=false
+capture /home/markik/Code/output/cue-native-vulkan-20261023/servo-controls-final/receiving/02c_controls.png digest=71af318b3e2836a1 blank=false
+capture /home/markik/Code/output/cue-native-vulkan-20261023/servo-controls-final/receiving/04_servo_docked.png digest=ddbd901a98fafe9b blank=false
+capture /home/markik/Code/output/cue-native-vulkan-20261023/servo-controls-final/receiving/05_servo_reopened.png digest=dc00cf0567d5a852 blank=false

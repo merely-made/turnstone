@@ -1,0 +1,15 @@
+{
+  "passed": true,
+  "local_primary_heads_status_unchanged": 5,
+  "thinkpad_preexisting_worktree_heads_status_unchanged": 16,
+  "historical_receipt_files_byte_identical": 285,
+  "remaining_owned_build_or_application_processes": 0,
+  "private_baseline_sha256": {
+    "local": "6762f416f722285486e209f82f60afbb64011fb1eb7f517f3554bf572b812309",
+    "thinkpad": "729cfccd30f728578b1027dab2a21d577f4dba4bf0ba86c18acfe6492139a19b"
+  },
+  "private_final_state_sha256": {
+    "thinkpad": "729cfccd30f728578b1027dab2a21d577f4dba4bf0ba86c18acfe6492139a19b"
+  },
+  "scope": "Heads and porcelain status with identical flags; exact bytes checked for the prior sealed receipts. Provider probe snapshots are retained privately in Git, with their worktrees switched to clean published revisions."
+}

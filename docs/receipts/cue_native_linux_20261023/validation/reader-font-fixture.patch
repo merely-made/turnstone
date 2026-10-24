@@ -1,0 +1,25 @@
+diff --git a/src/shell/content_pool.rs b/src/shell/content_pool.rs
+index 4497069..dc02c5f 100644
+--- a/src/shell/content_pool.rs
++++ b/src/shell/content_pool.rs
+@@ -962,6 +962,20 @@ mod tests {
+             &reader(&contents, &first).source_document(),
+             &reader(&contents, &second).source_document()
+         ));
++        // Generic serif/sans faces can already cover the arrow on Linux.
++        // Request the supplied family when checking its exact bytes, keeping
++        // this registration check independent of system font availability.
++        contents
++            .pool
++            .content_mut(&first)
++            .unwrap()
++            .document_mut()
++            .unwrap()
++            .session_mut()
++            .as_any()
++            .downcast_mut::<mere_document_lanes::ReaderDocumentSession>()
++            .unwrap()
++            .set_font_family("\"Noto Sans Math\"");
+         let Some(pelt_core::PeltLayer::Document(scene)) = contents.pool.frame(&SurfaceId(11)) else {
+             panic!("the reading appearance must paint");
+         };

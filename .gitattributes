@@ -42,3 +42,6 @@ docs/receipts/stations_windows_20261013/** -text -whitespace
 
 # Canvas-scroll receiving: preserve raw captures and diagnostic bytes.
 docs/receipts/cue_scroll_repair_20261023/** -text -whitespace
+
+# Linux native Cue receiving keeps exact captured and diagnostic bytes.
+docs/receipts/cue_native_linux_20261023/** -text -whitespace

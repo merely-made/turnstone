@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/home/markik/Code/worktrees/turnstone-cue-native-20261023/scripts/receive-cue-ui-linux.py", line 132, in <module>
+    main()
+    ~~~~^^
+  File "/home/markik/Code/worktrees/turnstone-cue-native-20261023/scripts/receive-cue-ui-linux.py", line 113, in main
+    assert lens_sources.exists() and json.loads(lens_sources.read_text()), f"lens has no actual source rasters: {path}"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: lens has no actual source rasters: /home/markik/Code/output/cue-native-vulkan-20261023/servo-controls/receiving/03_servo_lens.cue-frames.json
