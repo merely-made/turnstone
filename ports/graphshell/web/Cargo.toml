@@ -32,12 +32,12 @@ default = ["product", "remote", "canvas-gpu", "image-decode", "presentation-webg
 # boot. The read-only viewer ships one artifact per route, chosen by
 # `mount.js` before loading: `presentation-webgpu`, or `presentation-webgl2`
 # with `without-classic-vello` (Classic Vello and its shaders not linked).
-presentation-webgpu = ["cambium-genet-web-host/webgpu", "cambium-genet-web-host/portable"]
-presentation-webgl2 = ["cambium-genet-web-host/webgl"]
-without-classic-vello = ["genet-render-host/without-classic-vello"]
+presentation-webgpu = ["cambium-web/webgpu", "cambium-web/portable"]
+presentation-webgl2 = ["cambium-web/webgl"]
+without-classic-vello = ["genet-presenter/without-classic-vello"]
 # What a page saves: IndexedDB, saved scenes, the tree's product mode,
 # `web_product` and `web_practice`.
-product = ["muniment/indexeddb", "dep:pandect", "dep:sha2", "graphshell/document-layout", "graphshell/retained-content", "graphshell/query-views", "graphshell/editable-blocks", "mere/query", "dep:mere-document-lanes", "dep:fleece", "dep:woodshed-notation"]
+product = ["muniment/indexeddb", "dep:pandect", "dep:sha2", "graphshell/document-layout", "graphshell/retained-content", "graphshell/query-views", "graphshell/editable-blocks", "mere/query", "dep:mere-lanes", "dep:fleece", "dep:woodshed-notation"]
 applets = ["graphshell/applets", "muniment/indexeddb"]
 # The WebRTC door and the remote board: `web_remote`, `web_rtc_link`, the tree's
 # remote board.
@@ -45,7 +45,7 @@ remote = ["graphshell/webrtc-browser", "dep:mere-overmap", "dep:mere-view", "dep
 # The canvas's repulsion on the page's own WebGPU device (physics catalog P5c).
 canvas-gpu = ["graphshell/canvas-gpu", "mere/canvas-gpu"]
 # Forwards genet-livery's image decoding (mer3ly Ruling 111); on by default.
-image-decode = ["genet-render/image-decode", "taproot/image-decode", "cambium-rootstock/image-decode", "mesquite/image-decode", "cambium-genet-web-host/image-decode", "graphshell/image-decode", "mere/image-decode"]
+image-decode = ["genet-render/image-decode", "taproot/image-decode", "cambium-rootstock/image-decode", "mesquite/image-decode", "cambium-web/image-decode", "graphshell/image-decode", "mere/image-decode"]
 
 [dependencies]
 # Product document readings only; the read-only graph viewer has no music cone.
@@ -56,7 +56,7 @@ mere-view = { path="../../../crates/cambium/mere-view", optional=true }
 mere-overmap = { path = "../../../crates/cambium/mere-overmap", optional = true }
 # The saved-scene shapes the scene page reads (`pandect::saved_scene`).
 pandect = { path = "../../../crates/system/pandect", optional = true }
-mere-document-lanes = { path = "../../../crates/system/document-lanes", features = ["retained-clips"], optional = true }
+mere-lanes = { path = "../../../crates/system/document-lanes", features = ["retained-clips"], optional = true }
 fleece = { package = "mere-fleece", path = "../../../crates/fleece", features = ["portable-clip", "page-links"], optional = true }
 eidetic = { default-features = false, git = "https://github.com/merely-made/eidetic.git", rev = "aa94fe22eea29e9b54e01ed21e6991536ed4f208" }
 moot = { package = "mere-moot", path = "../../moot", default-features = false, features = ["presentation"], optional = true }
@@ -83,7 +83,7 @@ cambium = { path = "../../../crates/cambium/cambium" }
 tabard = { path = "../../../crates/system/tabard" }
 # The one-tree page (`src/web_tree.rs`): Cambium's web host mounts the tree,
 # and rootstock carries the host types and the canvas's texture producer.
-cambium-genet-web-host = { path = "../../../crates/cambium/cambium-genet-web-host", default-features = false }
+cambium-web = { path = "../../../crates/cambium/cambium-genet-web-host", default-features = false }
 cambium-rootstock = { path = "../../../crates/cambium/cambium-rootstock", default-features = false }
 mesquite = { path = "../../../crates/cambium/mesquite", default-features = false }
 genet-render = { git = "https://github.com/merely-made/genet.git", branch = "main", default-features = false, features = ["livery", "accesskit"] }
@@ -91,7 +91,7 @@ genet-render = { git = "https://github.com/merely-made/genet.git", branch = "mai
 # non-sRGB surface format, and rasterizing a Scene are not browser-specific, so
 # this crate no longer hand-rolls them; only the canvas target and the
 # content-over-chrome composition below are ours.
-genet-render-host = { git = "https://github.com/merely-made/genet.git", branch = "main" }
+genet-presenter = { git = "https://github.com/merely-made/genet.git", branch = "main" }
 genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", branch = "main", version = "=0.1.2" }
 # Retained scenario attributes use the shared DOM seam.
 layout-dom-api = { git = "https://github.com/merely-made/genet.git", branch = "main", version = "=0.1.1" }
@@ -231,7 +231,7 @@ opt-level = 3
 armillary = { git = "https://github.com/merely-made/armillary.git", rev = "92d5b15cf39aaac40a3f2d863ffee69c9be11bfc" }
 chartulary = { git = "https://github.com/merely-made/eidetic.git", rev = "aa94fe22eea29e9b54e01ed21e6991536ed4f208" }
 eidetic = { git = "https://github.com/merely-made/eidetic.git", rev = "aa94fe22eea29e9b54e01ed21e6991536ed4f208" }
-esp = { git = "https://github.com/merely-made/esp.git", rev = "cd73d12cefd2c2719f9afdf99ac5666ee8bc045c" }
+esp = { git = "https://github.com/merely-made/esp.git", rev = "0ba91dbce5aaaad1b866a3891a0255045ba5131b" }
 gemot = { git = "https://github.com/merely-made/gemot.git", rev = "8ffdc9a5bab5dcc82fe3be4bfa0e1c5d8dbbab1c" }
 luggage = { git = "https://github.com/merely-made/eidetic.git", rev = "aa94fe22eea29e9b54e01ed21e6991536ed4f208" }
 mere-proofs = { git = "https://github.com/merely-made/eidetic.git", rev = "aa94fe22eea29e9b54e01ed21e6991536ed4f208" }
@@ -276,7 +276,7 @@ sprigging = { path = "../../../crates/cambium/sprigging" }
 armillary = { git = "https://github.com/merely-made/armillary.git", rev = "92d5b15cf39aaac40a3f2d863ffee69c9be11bfc" }
 chartulary = { git = "https://github.com/merely-made/eidetic.git", rev = "aa94fe22eea29e9b54e01ed21e6991536ed4f208" }
 eidetic = { git = "https://github.com/merely-made/eidetic.git", rev = "aa94fe22eea29e9b54e01ed21e6991536ed4f208" }
-esp = { git = "https://github.com/merely-made/esp.git", rev = "cd73d12cefd2c2719f9afdf99ac5666ee8bc045c" }
+esp = { git = "https://github.com/merely-made/esp.git", rev = "0ba91dbce5aaaad1b866a3891a0255045ba5131b" }
 gemot = { git = "https://github.com/merely-made/gemot.git", rev = "8ffdc9a5bab5dcc82fe3be4bfa0e1c5d8dbbab1c" }
 mien = { git = "https://github.com/merely-made/gemot.git", rev = "8ffdc9a5bab5dcc82fe3be4bfa0e1c5d8dbbab1c" }
 mooting = { git = "https://github.com/merely-made/gemot.git", rev = "8ffdc9a5bab5dcc82fe3be4bfa0e1c5d8dbbab1c" }
@@ -290,7 +290,7 @@ luggage = { git = "https://github.com/merely-made/eidetic.git", rev = "aa94fe22e
 armillary = { git = "https://github.com/merely-made/armillary.git", rev = "92d5b15cf39aaac40a3f2d863ffee69c9be11bfc" }
 chartulary = { git = "https://github.com/merely-made/eidetic.git", rev = "aa94fe22eea29e9b54e01ed21e6991536ed4f208" }
 eidetic = { git = "https://github.com/merely-made/eidetic.git", rev = "aa94fe22eea29e9b54e01ed21e6991536ed4f208" }
-esp = { git = "https://github.com/merely-made/esp.git", rev = "cd73d12cefd2c2719f9afdf99ac5666ee8bc045c" }
+esp = { git = "https://github.com/merely-made/esp.git", rev = "0ba91dbce5aaaad1b866a3891a0255045ba5131b" }
 gemot = { git = "https://github.com/merely-made/gemot.git", rev = "8ffdc9a5bab5dcc82fe3be4bfa0e1c5d8dbbab1c" }
 luggage = { git = "https://github.com/merely-made/eidetic.git", rev = "aa94fe22eea29e9b54e01ed21e6991536ed4f208" }
 mere-proofs = { git = "https://github.com/merely-made/eidetic.git", rev = "aa94fe22eea29e9b54e01ed21e6991536ed4f208" }

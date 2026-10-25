@@ -25,6 +25,41 @@ fn graph() -> (Graph, Uuid, Uuid) {
     );
     (g, a, b)
 }
+
+#[test]
+fn validation_checks_immutable_scope_contexts_against_the_owner_graph() {
+    let graph_id = Uuid::from_u128(10);
+    let mut workspace = FormeWorkspace::new(graph_id);
+    workspace.scope_navigation.visit(crate::scope_policy::ScopeVisit {
+        place: mere::navigation::browser::ScopePlace {
+            level: mere::navigation::browser::ScopeLevel::Graph,
+            graph: graph_id,
+            root: None,
+            focus: None,
+            contexts: None,
+        },
+        camera: None,
+        anchor: None,
+    });
+
+    // Model a captured bookmark moving to the owning graph while the
+    // immutable lineage context still names a different graph.
+    let mut wire = serde_json::to_value(&workspace.scope_navigation).unwrap();
+    wire["lineage"]["visits"][0]["context"]["place"]["graph"] =
+        serde_json::json!(Uuid::from_u128(20));
+    workspace.scope_navigation = serde_json::from_value(wire).unwrap();
+
+    assert!(workspace.scope_navigation.visits().all(|visit| {
+        visit.place.graph == graph_id
+            && visit
+                .place
+                .parents()
+                .iter()
+                .all(|parent| parent.graph == graph_id)
+    }));
+    assert!(workspace.validate(graph_id).is_err());
+}
+
 #[test]
 fn two_accesses_share_resource_but_keep_separate_tiles_and_regions() {
     let (g, a, b) = graph();
@@ -173,6 +208,7 @@ fn persistence_reconciles_removed_access_and_rejects_foreign_session() {
         assert!(w.validate(Uuid::from_u128(20)).is_err());
     });
 }
+
 #[test]
 fn malformed_geometry_is_refused_before_any_install_or_write() {
     let (g, a, _) = graph();
