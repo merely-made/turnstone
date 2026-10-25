@@ -152,6 +152,14 @@ fn readonly_tests_producer_actions_keep_owner_identity_and_reject_retired_source
     assert_eq!(producer.child_lifetime(target.0), Some(life.clone()));
     assert!(second.children.iter().any(|n| n.key == target.0));
     assert!(!producer.act(target.0, "activate/999999"));
+    let old_token = producer
+        .child_lifetime(target.0)
+        .expect("authored child life");
+    assert_eq!(
+        producer.act_checked(target.0, "activate/999999", Some(&old_token)),
+        cambium_rootstock::ProducerActionDispatch::Declined
+    );
+
     let recreated = ContentProducer::new(slot.clone(), 92);
     let recreated_description = recreated.semantics().unwrap();
     assert_eq!(recreated.child_lifetime(target.0), Some(life.clone()));
@@ -164,7 +172,7 @@ fn readonly_tests_producer_actions_keep_owner_identity_and_reject_retired_source
     assert_eq!(slot.borrow().semantic_keys, keys);
     // Activation resolves against the owner without a priming semantic read.
     let mut unobserved = ContentProducer::new(slot.clone(), 93);
-    assert!(unobserved.act(target.0, &target.1));
+    assert_eq!(unobserved.act_checked(target.0, &target.1, Some(&old_token)), cambium_rootstock::ProducerActionDispatch::Dispatched);
     let effects = host.get(access).unwrap().borrow_mut().take_effects();
     assert!(effects.iter().any(|effect| {
         effect
@@ -175,6 +183,11 @@ fn readonly_tests_producer_actions_keep_owner_identity_and_reject_retired_source
     host.close(access);
     assert_eq!(producer.child_lifetime(target.0), None);
     assert!(!producer.act(target.0, &target.1));
+    assert_eq!(
+        producer.act_checked(target.0, &target.1, Some(&old_token)),
+        cambium_rootstock::ProducerActionDispatch::StaleTarget
+    );
+
     assert!(producer.semantics().is_none());
 }
 

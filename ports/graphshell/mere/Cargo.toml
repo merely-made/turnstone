@@ -22,7 +22,7 @@ url = "2"
 uuid.workspace = true
 serde = { version = "1", features = ["derive"] }
 cambium.workspace = true
-cambium-genet-winit-host.workspace = true
+cambium-desktop.workspace = true
 # `HostWake`; image decoding as the viewer had it inside Graphshell.
 cambium-rootstock = { workspace = true, features = ["image-decode"] }
 chirograph.workspace = true

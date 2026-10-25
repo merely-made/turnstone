@@ -651,3 +651,104 @@ fn the_clients_tree_lists_the_boards_drag_and_pin_through_the_local_route() {
     let after = intents(&mut board);
     assert_eq!(after[0], [PIN_INTENT], "a pinned card lists Pin alone");
 }
+
+#[test]
+fn same_call_recreation_must_retire_old_pin() {
+    use mere::kernel::graph::apply::{GraphDelta, GraphDeltaResult, apply_graph_delta};
+    let canvas = sample_canvas();
+    let mut host = harness(canvas.clone(), Plant::None);
+    let old = canvas.borrow().describe_items(DESCRIBED_ITEMS).items[0].clone();
+    let stale = host
+        .a11y_produced_actions()
+        .into_values()
+        .find(|a| a.key == old.key && a.id == PIN_INTENT)
+        .unwrap();
+    let old_slot = canvas
+        .borrow()
+        .graph()
+        .get_node_key_by_id(old.member)
+        .unwrap();
+    assert!(canvas.borrow_mut().ingest_graph(|graph| {
+        assert!(matches!(
+            apply_graph_delta(graph, GraphDelta::RemoveNode { key: old_slot }),
+            GraphDeltaResult::NodeRemoved(true)
+        ));
+        assert!(matches!(
+            apply_graph_delta(
+                graph,
+                GraphDelta::AddNode {
+                    id: Some(old.member),
+                    url: "https://same-call.example/".into(),
+                    position: Default::default()
+                }
+            ),
+            GraphDeltaResult::NodeAdded(_)
+        ));
+        true
+    }));
+    host.a11y_produced_request(A11yAction::Click, stale);
+    let current = canvas
+        .borrow()
+        .graph()
+        .get_node_key_by_id(old.member)
+        .unwrap();
+    assert_ne!(
+        canvas.borrow().arrangement_role_of(current),
+        ItemRole::Pinned,
+        "old captured Pin must not act on same-call recreation"
+    );
+    let fresh = host
+        .a11y_produced_actions()
+        .into_values()
+        .find(|a| {
+            a.key != old.key
+                && a.id == PIN_INTENT
+                && canvas.borrow().member_of_described(a.key) == Some(old.member)
+        })
+        .unwrap();
+    host.a11y_produced_request(A11yAction::Click, fresh);
+    assert_eq!(
+        canvas.borrow().arrangement_role_of(current),
+        ItemRole::Pinned,
+        "newly captured Pin remains usable"
+    );
+}
+
+#[test]
+fn same_call_recreation_retires_old_drag_and_keeps_other_members_actions() {
+    use mere::kernel::graph::apply::{GraphDelta, GraphDeltaResult, apply_graph_delta};
+    let canvas = sample_canvas();
+    let mut host = harness(canvas.clone(), Plant::None);
+    let items = canvas.borrow().describe_items(DESCRIBED_ITEMS).items;
+    let old = items[0].clone();
+    let other = items[1].clone();
+    let stale = host
+        .a11y_produced_actions()
+        .into_values()
+        .find(|a| a.key == old.key && a.id == DRAG_INTENT)
+        .unwrap();
+    let slot = canvas
+        .borrow()
+        .graph()
+        .get_node_key_by_id(old.member)
+        .unwrap();
+    canvas.borrow_mut().ingest_graph(|graph| {
+        assert!(matches!(
+            apply_graph_delta(graph, GraphDelta::RemoveNode { key: slot }),
+            GraphDeltaResult::NodeRemoved(true)
+        ));
+        apply_graph_delta(
+            graph,
+            GraphDelta::AddNode {
+                id: Some(old.member),
+                url: "https://same-call-drag.example".into(),
+                position: Default::default(),
+            },
+        );
+        true
+    });
+    host.a11y_produced_request(A11yAction::Click, stale);
+    assert_ne!(canvas.borrow().key_moving(), Some(old.member));
+    assert_eq!(described_key(&canvas, other.member), other.key);
+    assert_ne!(described_key(&canvas, old.member), old.key);
+}

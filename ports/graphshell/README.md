@@ -50,7 +50,7 @@ The receipts retain the exact evidence for each boundary:
 | Intel Mac owner and M4 Mac guest, direct LAN and cold reopen | [Mac-to-Mac](docs/receipts/coop_two_machines_20261020/README.md) |
 | Mac owner and physical Fedora ThinkPad guest, Radeon/Wayland and cold reopen | [Mac-to-ThinkPad](docs/receipts/coop_mac_thinkpad_20261020/README.md) |
 | Forced relay carriage, scope, attribution, revocation and cold reopen | [Relay](docs/receipts/coop_relay_20261020/README.md) |
-| Relay loss during save, explicit reconnect/retry, revocation and cold reopen | [Recovery](docs/receipts/coop_recovery_20261021/README.md) |
+| Relay loss during save, explicit reconnect/retry, revocation and cold reopen | [Current recovery](docs/receipts/coop_recovery_20261024/README.md) |
 
 To select relays, add `"coop_relay_urls": ["https://relay.example/"]` to the
 owner's existing Djinn profile settings and restart Djinn. An empty or absent

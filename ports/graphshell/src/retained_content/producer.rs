@@ -288,83 +288,101 @@ impl TextureProducer for ContentProducer {
         self.slot.borrow().semantic_child_tokens.get(&key).cloned()
     }
     fn act(&mut self, key: u64, action: &str) -> bool {
-        let Some((action, observed_revision)) = action.split_once('/') else {
-            return false;
-        };
-        let Ok(revision) = observed_revision.parse::<u64>() else {
-            return false;
-        };
-        let mut slot = self.slot.borrow_mut();
-        if !slot.visible {
-            return false;
-        }
-        let Some(identity) = slot.session_identity() else {
-            return false;
-        };
-        let Some(target_id) =
-            slot.semantic_keys
-                .iter()
-                .find_map(|(&(instance, generation, node), value)| {
-                    (value.key == key
-                        && instance == identity.instance_id
-                        && generation == identity.generation)
-                        .then_some(node)
-                })
-        else {
-            return false;
-        };
-        let Some(controller) = slot.content.document_mut() else {
-            return false;
-        };
-        let Some(projection) = controller.accessibility_projection() else {
-            return false;
-        };
-        if projection.revision() != revision {
-            return false;
-        }
-        let Some(target) = projection
-            .nodes()
-            .iter()
-            .find(|node| node.id.get() == target_id)
-            .map(|node| node.id)
-        else {
-            return false;
-        };
-        let advertised = projection.node(target).map(|n| &n.actions);
-        if action == "focus" && advertised.is_some_and(|a| a.contains(&DocumentA11yAction::Focus)) {
-            let done = controller.dispatch_accessibility_action(&DocumentA11yActionRequest {
-                revision,
-                target,
-                action: DocumentA11yAction::Focus,
-                data: None,
-            });
-            if done {
-                slot.revision = slot.revision.wrapping_add(1);
-            }
-            return done;
-        }
-        if action != "activate"
-            || !advertised.is_some_and(|a| a.contains(&DocumentA11yAction::Click))
-        {
-            return false;
-        }
-        let Some(point) = controller
-            .accessibility_click_target(target)
-            .filter(|p| p.revision == revision)
-        else {
-            return false;
-        };
-        for state in [SessionButtonState::Pressed, SessionButtonState::Released] {
-            slot.input(SessionInput::PointerButton {
-                x: point.point.x,
-                y: point.point.y,
-                button: SessionPointerButton::Primary,
-                state,
-                modifiers: SessionModifiers::default(),
-            });
-        }
-        true
+        activate_semantic(&mut self.slot.borrow_mut(), key, action)
     }
+    fn act_checked(
+        &mut self,
+        key: u64,
+        action: &str,
+        expected: Option<&cambium_rootstock::ProducerChildToken>,
+    ) -> cambium_rootstock::ProducerActionDispatch {
+        use cambium_rootstock::{ProducerActionDispatch as Dispatch, ProducerChildToken};
+        let mut slot = self.slot.borrow_mut();
+        if !ProducerChildToken::matches_current(expected, slot.semantic_child_tokens.get(&key)) {
+            return Dispatch::StaleTarget;
+        }
+        if activate_semantic(&mut slot, key, action) {
+            Dispatch::Dispatched
+        } else {
+            Dispatch::Declined
+        }
+    }
+}
+
+fn activate_semantic(slot: &mut ContentSlot, key: u64, action: &str) -> bool {
+    let Some((action, observed_revision)) = action.split_once('/') else {
+        return false;
+    };
+    let Ok(revision) = observed_revision.parse::<u64>() else {
+        return false;
+    };
+    if !slot.visible {
+        return false;
+    }
+    let Some(identity) = slot.session_identity() else {
+        return false;
+    };
+    let Some(target_id) =
+        slot.semantic_keys
+            .iter()
+            .find_map(|(&(instance, generation, node), value)| {
+                (value.key == key
+                    && instance == identity.instance_id
+                    && generation == identity.generation)
+                    .then_some(node)
+            })
+    else {
+        return false;
+    };
+    let Some(controller) = slot.content.document_mut() else {
+        return false;
+    };
+    let Some(projection) = controller.accessibility_projection() else {
+        return false;
+    };
+    if projection.revision() != revision {
+        return false;
+    }
+    let Some(target) = projection
+        .nodes()
+        .iter()
+        .find(|node| node.id.get() == target_id)
+        .map(|node| node.id)
+    else {
+        return false;
+    };
+    let advertised = projection.node(target).map(|n| &n.actions);
+    if action == "focus" && advertised.is_some_and(|a| a.contains(&DocumentA11yAction::Focus)) {
+        let done = controller.dispatch_accessibility_action(&DocumentA11yActionRequest {
+            revision,
+            target,
+            action: DocumentA11yAction::Focus,
+            data: None,
+        });
+        if done {
+            slot.revision = slot.revision.wrapping_add(1);
+        }
+        return done;
+    }
+    if action != "activate" || !advertised.is_some_and(|a| a.contains(&DocumentA11yAction::Click)) {
+        return false;
+    }
+    let Some(point) = controller
+        .accessibility_click_target(target)
+        .filter(|p| p.revision == revision)
+    else {
+        return false;
+    };
+    for state in [SessionButtonState::Pressed, SessionButtonState::Released] {
+        slot.input(SessionInput::PointerButton {
+            x: point.point.x,
+            y: point.point.y,
+            button: SessionPointerButton::Primary,
+            state,
+            modifiers: SessionModifiers::default(),
+        });
+    }
+    true
 }
 
 // The shared control plane is the same retained receiver used by the native

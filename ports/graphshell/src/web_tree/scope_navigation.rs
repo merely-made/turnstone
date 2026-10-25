@@ -211,6 +211,7 @@ pub(super) fn trail(page: &TreePage) -> Option<Child> {
     }).collect();
     Some(cambium::scope_navigation::scope_trail(crumbs, command))
 }
+
 pub(super) fn command(page: &mut TreePage, command: ScopeCommand) {
     if command == ScopeCommand::EditLocation {
         super::location::edit(page);
