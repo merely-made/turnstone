@@ -1,0 +1,21 @@
+name: Default links
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  default-links:
+    # A default Turnstone links no Reticulum-licensed engine. The positive
+    # control proves the walker sees Retinue when the `nomadnet` feature is on.
+    name: Default build links no Reticulum engine
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust toolchain
+        run: rustup show
+      - name: Default features
+        run: python3 scripts/check_default_links.py
+      - name: Positive control
+        run: python3 scripts/check_default_links.py --features nomadnet --expect retinue

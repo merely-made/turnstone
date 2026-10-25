@@ -189,7 +189,9 @@ mere-document-lanes = { git = "https://github.com/merely-made/mere.git", branch 
 nematic = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 # Native Reticulum page transport.  The NomadNet adapter owns only the public
 # destination and opaque page bytes; Turnstone owns navigation and rendering.
-retinue = { git = "https://github.com/merely-made/murm.git", branch = "main" }
+# Optional: Retinue carries Reticulum-licensed terms, so the `nomadnet` feature
+# is the only way it enters a build.
+retinue = { git = "https://github.com/merely-made/murm.git", branch = "main", optional = true }
 # An ephemeral Reticulum client identity is generated per NomadNet page fetch;
 # it is never persisted as a browsing preference or discovery record.
 getrandom = "0.2"
@@ -333,6 +335,11 @@ netfetcher = { git = "https://github.com/merely-made/genet.git", branch = "main"
 
 [features]
 default = []
+# NomadNet page and form requests over a Reticulum TCP interface. Off by
+# default: Retinue's terms bar uses contributing to model training, so a build
+# opts in by name. Without it `nomadnet::fetch_page` and `submit_form` answer
+# with a typed refusal; address parsing and the Micron projection stay built.
+nomadnet = ["dep:retinue"]
 # The wasm participant lane (participant gate B3): an `app-core` component acts
 # through the action envelope, ring-gated per emission. Opt-in like piccolo
 # so an ordinary browser build carries no wasm runtime.

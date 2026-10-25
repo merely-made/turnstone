@@ -181,7 +181,7 @@ fn open_prepared_content_controller(
 #[path = "local_micron_source_tests.rs"]
 mod local_micron_source_tests;
 
-#[cfg(test)]
+#[cfg(all(test, feature = "nomadnet"))]
 #[path = "nomadnet_receiving_tests.rs"]
 mod nomadnet_receiving_tests;
 

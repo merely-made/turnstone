@@ -58,6 +58,13 @@ when working across repositories. Local config and locks are never committed.
 Advance Git pins as tested integration sets, rather than chasing every sibling
 commit. A local build and a redirect-free locked build are separate checks.
 
+NomadNet pages over Reticulum are optional: `cargo run --features nomadnet`
+links Retinue, whose terms bar uses contributing to model training, so no default
+build carries it. Without the feature a `destinationhex:/path` address still
+parses and the Micron projection still renders saved source, and a page request
+answers with a typed refusal. `scripts/check_default_links.py` keeps the default
+free of Reticulum engines.
+
 The local Windows system-webview implementation is optional:
 `cargo run --features scry`. It requires the WebView2 runtime and a D3D12 host;
 construction failures are reported by the browser. Two-page native qualification

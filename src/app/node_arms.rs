@@ -1341,13 +1341,7 @@ impl App {
         if !path.starts_with('/') || path.contains('\0') {
             return None;
         }
-        let destination = base
-            .destination()
-            .as_slice()
-            .iter()
-            .map(|byte| format!("{byte:02x}"))
-            .collect::<String>();
-        Some(format!("{destination}:{path}"))
+        Some(format!("{}:{path}", base.destination_hex()))
     }
 
     pub(super) fn begin_smolweb_submission(
