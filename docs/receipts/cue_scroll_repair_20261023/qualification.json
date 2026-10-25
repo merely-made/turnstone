@@ -1,0 +1,155 @@
+{
+  "passed": true,
+  "scope": "Repaired retained Genet/Reader host-device receiving on hardware Vulkan and native GNOME Wayland; synthetic fixtures",
+  "turnstone_commit": "0fc28484322a4863d49dd79c2321da99c2c1d268",
+  "mere_commit": "b0e7647ff014a3c2c475f8c608d6ac99b75f65d2",
+  "genet_commit": "621aa33cce3d3fc3c708313efef4c7b825d8a953",
+  "runtime_binary_sha256": "557e1730d0f06e76b309997a12400148083ebefe429f28625b63406c03b540cf",
+  "validation": {
+    "turnstone-pending-vulkan": {
+      "exit": 0,
+      "elapsed_seconds": 85.919,
+      "test_counts": [
+        [
+          1,
+          0,
+          0
+        ]
+      ],
+      "test_binaries_sha256": {
+        "/home/markik/Code/repos/turnstone/target/build/debug/deps/turnstone-f6c818dc521585e6": "418f12ddd7c97ce0064e19a8ebd6a6af837162e161ccb1d90b18e713f8885963"
+      }
+    },
+    "turnstone-history": {
+      "exit": 0,
+      "elapsed_seconds": 3.611,
+      "test_counts": [
+        [
+          7,
+          0,
+          0
+        ]
+      ],
+      "test_binaries_sha256": {
+        "/home/markik/Code/repos/turnstone/target/build/debug/deps/turnstone-f6c818dc521585e6": "418f12ddd7c97ce0064e19a8ebd6a6af837162e161ccb1d90b18e713f8885963"
+      }
+    },
+    "turnstone-inspector": {
+      "exit": 0,
+      "elapsed_seconds": 7.862,
+      "test_counts": [
+        [
+          27,
+          0,
+          2
+        ]
+      ],
+      "test_binaries_sha256": {
+        "/home/markik/Code/repos/turnstone/target/build/debug/deps/turnstone-f6c818dc521585e6": "418f12ddd7c97ce0064e19a8ebd6a6af837162e161ccb1d90b18e713f8885963"
+      }
+    },
+    "turnstone-browse": {
+      "exit": 0,
+      "elapsed_seconds": 1.819,
+      "test_counts": [
+        [
+          12,
+          0,
+          0
+        ]
+      ],
+      "test_binaries_sha256": {
+        "/home/markik/Code/repos/turnstone/target/build/debug/deps/turnstone-f6c818dc521585e6": "418f12ddd7c97ce0064e19a8ebd6a6af837162e161ccb1d90b18e713f8885963"
+      }
+    },
+    "turnstone-all-targets": {
+      "exit": 0,
+      "elapsed_seconds": 71.605,
+      "test_counts": [],
+      "test_binaries_sha256": {}
+    },
+    "pelt-receiving-vulkan": {
+      "exit": 0,
+      "elapsed_seconds": 4.51,
+      "test_counts": [
+        [
+          9,
+          0,
+          0
+        ]
+      ],
+      "test_binaries_sha256": {
+        "/home/markik/Code/repos/mere/target/build/debug/deps/cue-e6292742cf6d9d08": "5a335dbe29a309bea2168c0305ab0d1248afe42d764f549c63d6a2dc8661c385"
+      }
+    }
+  },
+  "native_ui": {
+    "repaired-controls": {
+      "passed": true,
+      "primary_presentations": 293,
+      "primary_captures": 5,
+      "blank_primary_captures": 0,
+      "adapters": [
+        {
+          "backend": "Vulkan",
+          "device": 5686,
+          "device_type": "IntegratedGpu",
+          "name": "AMD Radeon Graphics (RADV RENOIR)",
+          "vendor": 4098
+        }
+      ]
+    },
+    "repaired-retained": {
+      "passed": true,
+      "primary_presentations": 241,
+      "primary_captures": 3,
+      "blank_primary_captures": 0,
+      "adapters": [
+        {
+          "backend": "Vulkan",
+          "device": 5686,
+          "device_type": "IntegratedGpu",
+          "name": "AMD Radeon Graphics (RADV RENOIR)",
+          "vendor": 4098
+        }
+      ]
+    }
+  },
+  "scroll_appearance": {
+    "original_negative_passed": false,
+    "original_wrong_rows": 120,
+    "repaired_passed": true,
+    "repaired_wrong_rows": 0,
+    "bottom_pixel_rgba8": [
+      244,
+      239,
+      227,
+      255
+    ],
+    "shift_mismatch_fraction": 0.0004887371615312792,
+    "same_live_scope": true
+  },
+  "reopen_scopes": [
+    [
+      "1:1"
+    ],
+    [
+      "2:1"
+    ]
+  ],
+  "preservation": {
+    "historical_receipt_files_byte_identical": 176,
+    "local_primary_heads_and_status_unchanged": 3,
+    "thinkpad_preexisting_worktree_heads_and_status_unchanged": 13,
+    "remaining_build_or_application_processes": 0
+  },
+  "limits": [
+    "No full Turnstone library rerun on Linux",
+    "No Linux native-frame shared importer or concrete Servo receiving",
+    "No X11 or Xwayland receiving",
+    "No physical IME or candidate-window qualification",
+    "No human assistive-technology acceptance",
+    "No physical device loss, native alpha/colour or OS-compositor pixel correlation",
+    "Pelt canonical IME test retains the ICU4X missing Chinese/Japanese segmentation-model diagnostic; no CJK segmentation-quality claim"
+  ]
+}

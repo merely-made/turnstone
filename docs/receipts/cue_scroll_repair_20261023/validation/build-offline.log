@@ -1,0 +1,7 @@
+error: failed to load source for dependency `accesskit`
+
+Caused by:
+  unable to update https://github.com/merely-made/mere.git?branch=main#f4311757
+
+Caused by:
+  can't checkout from 'https://github.com/merely-made/mere.git': you are in the offline mode (--offline)

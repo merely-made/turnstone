@@ -310,7 +310,7 @@ impl Shell {
         #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
         let (surface_device, surface_queue) = (host.device().clone(), host.queue().clone());
         self.prepare_inline_owners(ordinal + 1, (lw, lh));
-        if let Some(area) = self.inline_cursor_area(ordinal as u64 + 1)
+        if let Some(area) = self.pane_ime_cursor_area(ordinal as u64 + 1)
             && let Some(lens) = self.lens_windows.get(&id)
         {
             lens.window.set_ime_cursor_area(
@@ -368,6 +368,19 @@ impl Shell {
                 // the primary would frame, at this cell's size (already pumped
                 // above).
                 crate::surface::SurfaceKind::Content(node) => {
+                    if self.content_sessions.appearance(node, surface.id).is_some_and(|content| content.cue_surface().is_some()) {
+                        match self.cue_content_layer(surface, scale) {
+                            Ok((layer, pending)) => {
+                                if let Some(layer) = layer { scenes.push(PlannedLayer::Imported(layer)); }
+                                animating |= pending;
+                            },
+                            Err(error) => {
+                                tracing::error!(%node, %error, "shared content presentation refused");
+                                self.main_receipt.errors.push(format!("shared content {node}: {error}"));
+                            },
+                        }
+                        continue;
+                    }
                     match super::render::lens_content_frame(
                         &mut self.content_sessions.pool,
                         &surface.id,
@@ -459,6 +472,13 @@ impl Shell {
         if self.fail_surface_frames(surface_failures) {
             return false;
         }
+        if let Some(area) = self.document_ime_cursor_area(ordinal as u64 + 1) && let Some(lens) = self.lens_windows.get(&id) {
+            tracing::debug!(target: "turnstone::ime", window = ordinal + 1, x = area.x, y = area.y,
+                width = area.w, height = area.h, "shared document caret geometry");
+            lens.window.set_ime_cursor_area(
+                PhysicalPosition::new(area.x, area.y), PhysicalSize::new(area.w, area.h),
+            );
+        }
         // Pass 2 is all-or-refused; keep textures alive until presentation/capture.
         let Some(lens) = self.lens_windows.get_mut(&id) else {
             return false;
@@ -531,7 +551,16 @@ impl Shell {
                 layers,
                 &mut raster_textures,
                 (lw, lh),
-                None,
+                self.pending_lens_capture
+                    .as_deref()
+                    .filter(|_| {
+                        self.pending_lens_capture_window == Some(id)
+                            && std::env::var("TURNSTONE_A4_DIAGNOSTICS")
+                                .is_ok_and(|value| value == "1")
+                    })
+                    .map(|path| {
+                        (path, &mut self.pending_native_diagnostics, lens.window.scale_factor())
+                    }),
             ) {
                 Ok(layers) => layers,
                 Err(failure) => {
@@ -720,7 +749,10 @@ impl Shell {
             },
             WindowEvent::Ime(ime) => {
                 let window = lens.ordinal as u64 + 1;
-                self.deliver_window_ime(window, &ime);
+                super::controller_input::trace_native_ime(window, &ime);
+                if self.deliver_window_ime(window, &ime) {
+                    self.request_redraw();
+                }
                 return;
             },
             WindowEvent::CloseRequested => {
@@ -851,6 +883,7 @@ impl Shell {
                                     });
                                 pane.focus_at(hit.local.0, hit.local.1);
                                 pane.mouse_press(hit.local.0, hit.local.1);
+                                self.sync_ime_allowed();
                                 self.request_redraw();
                                 return;
                             }

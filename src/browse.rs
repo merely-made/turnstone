@@ -616,7 +616,7 @@ fn linked_icon_href(doc: &genet_static_dom::StaticDocument) -> Option<String> {
         pending.extend(doc.dom_children(node));
         if !doc
             .element_name(node)
-            .is_some_and(|name| name.local.as_ref().eq_ignore_ascii_case("link"))
+            .is_some_and(|name| str::eq_ignore_ascii_case(&name.local, "link"))
         {
             continue;
         }

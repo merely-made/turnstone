@@ -1,0 +1,25 @@
+{
+  "restored_unrelated_records": [
+    "anstyle-query",
+    "anstyle-wincon",
+    "arboard",
+    "bevy_platform",
+    "data-encoding-macro-internal",
+    "dirs-sys",
+    "errno",
+    "nu-ansi-term",
+    "os_pipe",
+    "quinn-udp",
+    "rustix",
+    "rustls-platform-verifier",
+    "socket2",
+    "stacker",
+    "tempfile",
+    "uds_windows",
+    "winapi-util"
+  ],
+  "baseline_package_count": 1661,
+  "final_package_count": 1661,
+  "unrelated_package_records_unchanged": true,
+  "same_key_package_records_unchanged": true
+}

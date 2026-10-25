@@ -1,0 +1,37 @@
+{
+  "command": [
+    "nice",
+    "-n",
+    "10",
+    "cargo",
+    "+1.99.1",
+    "check",
+    "--all-targets",
+    "--features",
+    "servo",
+    "--locked",
+    "--offline",
+    "-j2"
+  ],
+  "cwd": "/home/markik/Code/worktrees/turnstone-cue-native-20261023",
+  "started": 1792812600.2702649,
+  "exit": 0,
+  "source_commit": "e527392dbc9ca52428841d3d2ed9a849aef5ba74",
+  "source_status": "",
+  "manifest_sha256": "b7f2deddfadf2b40ab9e0ddbe3c89c3f8a1f6422bb2eba3af6d4a807ec403c7a",
+  "lock_before_sha256": "aa99e7d743e98ba8d508f6daa109634bc8e4207bf9b2e8a0fe725e115ca20da6",
+  "environment": {
+    "CARGO_TARGET_DIR": "/home/markik/Code/target",
+    "CARGO_BUILD_BUILD_DIR": "/home/markik/Code/repos/turnstone/target/build",
+    "CARGO_BUILD_JOBS": "2",
+    "WGPU_BACKEND": "vulkan",
+    "VK_DRIVER_FILES": "/usr/share/vulkan/icd.d/radeon_icd.x86_64.json",
+    "XDG_RUNTIME_DIR": "/run/user/1000"
+  },
+  "child_nofile": [
+    65536,
+    1048576
+  ],
+  "elapsed_seconds": 258.935,
+  "lock_after_sha256": "aa99e7d743e98ba8d508f6daa109634bc8e4207bf9b2e8a0fe725e115ca20da6"
+}

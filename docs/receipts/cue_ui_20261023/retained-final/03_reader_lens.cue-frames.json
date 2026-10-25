@@ -1,0 +1,13 @@
+{
+  "entries": [
+    {
+      "surface": 18344841147769651027,
+      "content": "Reader { node: 6d435016-705f-4e7b-bd41-8e4a9fc5eb10, appearance: SurfaceId(18344841147769651027) }",
+      "direction": "host-device",
+      "sampled_layers": 17,
+      "scope": "5:1",
+      "revision": 9,
+      "pending": false
+    }
+  ]
+}

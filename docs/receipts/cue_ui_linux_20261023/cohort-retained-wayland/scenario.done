@@ -1,0 +1,12 @@
+RESULT ok
+waited 71 frames
+waited 0 frames
+captured 01_retained_primary
+waited 0 frames
+captured 02_reader_primary
+captured 04_reader_docked
+Real Turnstone retained Cue primary/lens/return receiving complete
+presentation frames=241 captures=3 blank=0
+capture /home/markik/Code/output/cue-vulkan-thinkpad-20261023/cohort-retained-final/receiving/01_retained_primary.png digest=b861fa7629098b3f blank=false
+capture /home/markik/Code/output/cue-vulkan-thinkpad-20261023/cohort-retained-final/receiving/02_reader_primary.png digest=554ec143ba2e21b2 blank=false
+capture /home/markik/Code/output/cue-vulkan-thinkpad-20261023/cohort-retained-final/receiving/04_reader_docked.png digest=9d4bf41cb1a9401d blank=false

@@ -1,0 +1,61 @@
+{
+  "scope": "Physical IBus Typing Booster composition in the ThinkPad Wayland Turnstone Sky Observer label field",
+  "physical_result": "passed bounded operator and native-event observations",
+  "human_observed": [
+    "I physically typed using the ThinkPad keyboard",
+    "Composing text was visible before commit",
+    "The OS candidate popup was visible",
+    "The candidate popup appeared beside the caret",
+    "F1 committed one candidate without duplicate text",
+    "Escape cancelled zzcancel without inserting it",
+    "Switching away and back left no stale composition"
+  ],
+  "native_nonempty_preedit_events": 65,
+  "native_commit_events": 3,
+  "window": 0,
+  "raw_scenario_result": [
+    "RESULT fail",
+    "FAIL: window 0: no current pane owns wheel at 400,450"
+  ],
+  "raw_result_preserved": true,
+  "setup_failure": "The optional scroll-pane-window step cannot target this contributed pane. The physical exercise ran afterward. Remove this setup step; retain the original RESULT fail.",
+  "published_source": "16df1756e343c2ee51faa1fd39e76100ed1872d9",
+  "published_source_adoption": "The 19 changed files were checked byte-for-byte before the remote task checkout adopted the published commit.",
+  "binary_sha256": "ee27bcacba3278100d6d816091eaf907b1a2ad9a38d9a09b65ab7314441b31e7",
+  "restoration": {
+    "settings": [
+      {
+        "schema": "org.gnome.desktop.input-sources",
+        "key": "sources",
+        "exit": 0,
+        "value": "[('xkb', 'us')]",
+        "matches": true
+      },
+      {
+        "schema": "org.gnome.desktop.input-sources",
+        "key": "mru-sources",
+        "exit": 0,
+        "value": "@a(ss) []",
+        "matches": true
+      },
+      {
+        "schema": "org.freedesktop.ibus.engine.typing-booster:/org/freedesktop/ibus/engine/typing-booster/",
+        "key": "offtherecord",
+        "exit": 0,
+        "value": "false",
+        "matches": true
+      }
+    ],
+    "engine_exit": 0,
+    "engine": "xkb:us::eng"
+  },
+  "raw_hashes": {
+    "run.json": "632342640f04a7e43ebfbfff1a6255c5997dc3196e7e669b08a847b4e607caf5",
+    "stdout.log": "90cb2cb6dba31ab607ccbd02b77ea244fe6c286ba7efe3abf3537d064ddd44c9",
+    "stderr.log": "df7567987b6bbd8757aae418d58ee034a840356bf644b6c15480cdbf15fb8731",
+    "source.patch": "aeeb9a41b0f0e51c19b639d5f86de99c4af48a1a7c7b286752818fd43d03307e",
+    "receiving/scenario.done": "1bcbf572a400222fab405cfb6a12e2221b66b94071a4b52795c7af8fbec8a33a",
+    "driver.py": "80c8224c315ae46a7595cd1fd423b7492eb7f0ed919a98f48b308d160c425954",
+    "scenario.scn": "638e2ac019882f3264df145ff2a51ebaa1b5d1ceeb405a868628168a60d0009c"
+  }
+}

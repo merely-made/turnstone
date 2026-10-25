@@ -1,0 +1,13 @@
+RESULT fail
+waited 71 frames
+waited 0 frames
+captured 01_retained_primary
+waited 0 frames
+captured 02_reader_primary
+FAIL: assert surface 'content': the plan is ["canvas", "chrome"]
+captured 04_reader_docked
+Real Turnstone retained Cue primary/lens/dock receiving complete
+presentation frames=221 captures=3 blank=0
+capture /Users/markik/Code/output/cue-ui-retained-attempt1/receiving/01_retained_primary.png digest=335caaa4c7d177b0 blank=false
+capture /Users/markik/Code/output/cue-ui-retained-attempt1/receiving/02_reader_primary.png digest=0fdc262b1204977e blank=false
+capture /Users/markik/Code/output/cue-ui-retained-attempt1/receiving/04_reader_docked.png digest=e7513d5e14115997 blank=false

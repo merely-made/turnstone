@@ -1,0 +1,63 @@
+{
+  "reviewed_status": "passed_bounded_physical_observations",
+  "scope": "ThinkPad native GNOME Wayland, hardware RADV Renoir Vulkan, physical IBus Typing Booster Latin exercises",
+  "paths": [
+    {
+      "path": "Address field",
+      "binary": "A",
+      "window": 0,
+      "operator_checklist_passed": true,
+      "native_nonempty_preedit_events": 478,
+      "native_commit_events": 2
+    },
+    {
+      "path": "Genet document",
+      "binary": "A",
+      "window": 0,
+      "operator_checklist_passed": true,
+      "native_nonempty_preedit_events": 29,
+      "native_commit_events": 2
+    },
+    {
+      "path": "Genet document in a lens",
+      "binary": "A",
+      "window": 1,
+      "operator_checklist_passed": true,
+      "native_nonempty_preedit_events": 34,
+      "native_commit_events": 3
+    },
+    {
+      "path": "Sky Observer label",
+      "binary": "B",
+      "window": 0,
+      "operator_checklist_passed": true,
+      "native_nonempty_preedit_events": 65,
+      "native_commit_events": 3
+    }
+  ],
+  "executables": {
+    "A": "57ad069a97511ba38a5417d0ac37550d5bf424acd47eefc891ccb6bf71c1a263",
+    "B": "ee27bcacba3278100d6d816091eaf907b1a2ad9a38d9a09b65ab7314441b31e7"
+  },
+  "original_global_scenario_results": [
+    "RESULT fail",
+    "RESULT fail"
+  ],
+  "original_global_results_changed": false,
+  "corrected_automated_setup_passed": true,
+  "operator_repeat_of_three_successful_paths_required": false,
+  "full_four_stage_run_on_binary_B": false,
+  "settings_restored": true,
+  "render_adapter": {
+    "name": "AMD Radeon Graphics (RADV RENOIR)",
+    "backend": "Vulkan",
+    "vendor": 4098,
+    "device": 5686,
+    "device_type": "IntegratedGpu"
+  },
+  "limits": [
+    "Candidate visibility and placement are operator observations, not OS-compositor capture evidence.",
+    "No physical CJK method, Servo IME, X11, human accessibility or device-loss qualification.",
+    "The shared Genet TextInput geometry publication gap remains."
+  ]
+}

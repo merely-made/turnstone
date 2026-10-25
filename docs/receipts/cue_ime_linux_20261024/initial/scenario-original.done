@@ -1,0 +1,24 @@
+RESULT fail
+FAIL: line 1: key wants enter|escape|tab|backspace|delete|up|down|left|right|home|end|pagedown|pageup|space|shift+right|shift+left|shift+enter|ctrl+a|ctrl+s|ctrl+f|ctrl+d: 'key ctrl+l'
+captured 01_omnibar_ready
+captured 01_omnibar_during
+captured 01_omnibar_after
+captured 02_inline_ready
+captured 02_inline_during
+captured 02_inline_after
+waited 60 frames
+waited 0 frames
+captured 03_document_ready
+captured 03_document_during
+captured 03_document_after
+Physical IME observations collected; scenario completion alone is not qualification
+presentation frames=10395 captures=9 blank=0
+capture /home/markik/Code/output/cue-ime-linux-20261024/physical-r2/receiving/01_omnibar_ready.png digest=176aeacf0bf74e32 blank=false
+capture /home/markik/Code/output/cue-ime-linux-20261024/physical-r2/receiving/01_omnibar_during.png digest=d114d25945dd2be8 blank=false
+capture /home/markik/Code/output/cue-ime-linux-20261024/physical-r2/receiving/01_omnibar_after.png digest=d114d25945dd2be8 blank=false
+capture /home/markik/Code/output/cue-ime-linux-20261024/physical-r2/receiving/02_inline_ready.png digest=358bd42c9cf868ae blank=false
+capture /home/markik/Code/output/cue-ime-linux-20261024/physical-r2/receiving/02_inline_during.png digest=a64e276f5487d77b blank=false
+capture /home/markik/Code/output/cue-ime-linux-20261024/physical-r2/receiving/02_inline_after.png digest=a64e276f5487d77b blank=false
+capture /home/markik/Code/output/cue-ime-linux-20261024/physical-r2/receiving/03_document_ready.png digest=9a8b59862b616930 blank=false
+capture /home/markik/Code/output/cue-ime-linux-20261024/physical-r2/receiving/03_document_during.png digest=9943edbf3352a104 blank=false
+capture /home/markik/Code/output/cue-ime-linux-20261024/physical-r2/receiving/03_document_after.png digest=7cbf7951aea3bfd5 blank=false

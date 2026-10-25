@@ -1,0 +1,2 @@
+# Preserve process-output bytes, including Clippy's whitespace-bearing suggestions.
+*.log -whitespace

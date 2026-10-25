@@ -1,0 +1,122 @@
+{
+  "date": "2026-10-24",
+  "recorded_at": "2026-10-24T22:04:02.398029+00:00",
+  "scope": "Shared native Genet text-input publication and programmatic Turnstone host receiving",
+  "sources": {
+    "genet_runtime_and_document_session_api": "4532fe03755bdb61eee7847ebeb8ad47bda37d96",
+    "genet_additional_test_only": "8d52d5b724b7498aafeb1927d3fba277d327b73b",
+    "genet_test_only_changed_path": "components/genet-documents/src/engines/tests/text_input.rs",
+    "webcue_wgpu_cue_and_private_netrender_adapter": "307c0e6c401be88f2ae12f5be00b6c666d41febc",
+    "mere_inker_pelt": "91d4086e79a366fb74d1f865252f549893728cf5",
+    "turnstone_runtime": "ae3b589cc23ab2ed93ddcc75c2b781718339cedb"
+  },
+  "platform": {
+    "os": "macOS 15.8.1 (24H32)",
+    "architecture": "x86_64",
+    "gpu": "AMD Radeon Pro Vega 56",
+    "backend": "Metal"
+  },
+  "toolchains": {
+    "provider_sdk_mere": "rustc 1.99.0 (b940084d7 2026-09-28)",
+    "turnstone_and_core_wasm": "rustc 1.99.1 (58cf8f9c3 2026-10-13)"
+  },
+  "checks": [
+    {
+      "check": "genet_static_and_scripted_geometry",
+      "passed": 3,
+      "log": "genet-geometry-empty-scripted.log"
+    },
+    {
+      "check": "cue_workspace_ordinary",
+      "passed": 14,
+      "ignored_native_tests": 4,
+      "log": "cue-workspace-tests.log"
+    },
+    {
+      "check": "standalone_genet_hardware_geometry",
+      "passed": 1,
+      "log": "cue-genet-metal-geometry-v2.log"
+    },
+    {
+      "check": "standalone_genet_hardware_pixels_and_lifecycle",
+      "passed": 1,
+      "log": "cue-genet-metal-lifecycle.log"
+    },
+    {
+      "check": "inker_cue_control_and_compatibility",
+      "passed": 8,
+      "log": "inker-cue-compat.log"
+    },
+    {
+      "check": "pelt_cue_control_and_pool",
+      "passed": 34,
+      "ignored_native_tests": 3,
+      "log": "pelt-cue-compat.log"
+    },
+    {
+      "check": "pelt_explicit_hardware_receiving",
+      "passed": 3,
+      "log": "pelt-metal-receiving.log"
+    },
+    {
+      "check": "turnstone_geometry_primary_and_lens_identities",
+      "passed": 1,
+      "log": "turnstone-geometry-coherent-lock.log"
+    },
+    {
+      "check": "turnstone_scope_navigation_compatibility",
+      "passed": 9,
+      "log": "turnstone-scope-final.log"
+    },
+    {
+      "check": "turnstone_existing_ime_admission",
+      "passed": 1,
+      "log": "turnstone-ime-admission-final.log"
+    },
+    {
+      "check": "cue_workspace_clippy_all_targets_deny_warnings",
+      "passed": true
+    },
+    {
+      "check": "renderer_free_webcue_wasm32",
+      "passed": true
+    },
+    {
+      "check": "graphshell_web_locked_wasm_dependency_resolution",
+      "passed": true
+    },
+    {
+      "check": "turnstone_default_features_all_targets_compile",
+      "passed": true,
+      "command": "cargo check --locked --all-targets -j2",
+      "warnings": "Existing unused imports, dead code and AccessKit deprecations remain."
+    },
+    {
+      "check": "turnstone_locked_offline_platform_metadata",
+      "passed": true,
+      "resolved_package_count": 1040
+    },
+    {
+      "check": "published_registry_archives_match_clean_source",
+      "passed": true,
+      "evidence": "published-packages.json"
+    }
+  ],
+  "prior_physical_receipt": {
+    "path": "docs/receipts/cue_ime_linux_20261024",
+    "git_tree": "0517c18c73e5a1ce3991a7ea8ced6d5d4209f7c4",
+    "unchanged": true
+  },
+  "not_qualified": [
+    "New Linux/Vulkan rerun (mesh SSH identity remained locked)",
+    "Physical CJK input methods",
+    "Human accessibility use",
+    "Servo IME",
+    "New OS candidate popup placement",
+    "Password editing-offset to masked-glyph accuracy"
+  ],
+  "turnstone_test_executable": {
+    "name": "turnstone-12341cd7eb61d199",
+    "sha256": "def6d7ae62c827944c90751443d54f781a38befd9756b2e2128e960efab80cc9"
+  }
+}

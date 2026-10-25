@@ -1,0 +1,15 @@
+RESULT ok
+waited 54 frames
+waited 0 frames
+captured 01_servo_inspector
+captured 02_servo_primary
+wait: still busy after 240 frames
+wait: still busy after 240 frames
+captured 06_mixed_retained
+captured 07_mixed_native
+Real product selects retained and native producers per card on one host
+presentation frames=720 captures=4 blank=0
+capture /Users/markik/Code/output/cue-ui-mixed-attempt1/receiving/01_servo_inspector.png digest=16ccfb6a6f3ae1b9 blank=false
+capture /Users/markik/Code/output/cue-ui-mixed-attempt1/receiving/02_servo_primary.png digest=8191057b043d192d blank=false
+capture /Users/markik/Code/output/cue-ui-mixed-attempt1/receiving/06_mixed_retained.png digest=b1ccd095c1f5c017 blank=false
+capture /Users/markik/Code/output/cue-ui-mixed-attempt1/receiving/07_mixed_native.png digest=fa005289e6770c33 blank=false

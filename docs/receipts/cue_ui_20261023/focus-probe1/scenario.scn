@@ -1,0 +1,39 @@
+# The real engine picker installs Servo in the product pool on Metal.
+settle 15
+key escape
+open ${SERVO_FIXTURE_BASE}/browser_servo/page-a.html
+wait 240
+act Open node in Workbench
+wait 240
+act Open Inspector pane
+settle 15
+click surface:inspector role:button Change viewer
+settle 5
+click-row graft.servo
+settle 25
+assert row Viewer: graft.servo
+assert snap browser-current-engine == graft.servo
+assert snap browser-current-content == live
+assert snap host-servo-views == 1
+assert snap host-cue-frames >= 1
+record-idle 01_servo_inspector
+capture 01_servo_inspector
+act Close pane
+settle 20
+act Open node in Workbench
+settle 20
+assert wb-cells == 1
+record-idle 02_servo_primary
+capture 02_servo_primary
+
+click-at 200 315
+assert focus content
+assert snap frame-focus-slot == none
+capture 02a_field_focused
+type alpha
+settle 15
+assert focus content
+assert snap frame-focus-slot == none
+assert snap browser-current ~ Servo A | text=alpha | clicks=0
+capture 02b_typed
+log Actual product input focus probe complete

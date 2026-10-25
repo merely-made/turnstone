@@ -134,21 +134,124 @@ impl Shell {
     pub(super) fn drain_surface_web_events(&mut self) {
         const MAX_EVENTS_PER_SURFACE: usize = 256;
         let mut pending = Vec::new();
-        for (node, producer) in self.content_sessions.surfaces_mut() {
-            let Some(web) = producer.as_web_surface() else {
-                continue;
-            };
+        let shared = self
+            .content_sessions
+            .pool
+            .iter()
+            .filter_map(|(key, content)| {
+                let super::content_pool::ContentKey::Node(node) = *key else {
+                    return None;
+                };
+                Some((node, *key, content.cue_surface()?.capabilities().clone()))
+            })
+            .collect::<Vec<_>>();
+        for (node, key, report) in shared {
+            self.app.content.note_cue_report(node, report);
+            if let Err(error) = self
+                .content_sessions
+                .pool
+                .advance_cue_browser(&key, self.epoch.elapsed())
+            {
+                tracing::warn!(%node, %error, "shared browser advance refused");
+            }
             for _ in 0..MAX_EVENTS_PER_SURFACE {
-                let Some(event) = web.poll_web_event() else {
+                let Some(envelope) = self.content_sessions.pool.poll_cue_event(&key) else {
                     break;
                 };
-                pending.push((node, event));
+                use inker::webcue::Event;
+                let event = match envelope.event {
+                    Event::NavigationStarted { address } => {
+                        Some(inker::WebSurfaceEvent::Navigation(
+                            inker::NavigationEvent::Started { url: address },
+                        ))
+                    }
+                    Event::AddressChanged(url) => {
+                        Some(inker::WebSurfaceEvent::AddressChanged { url })
+                    }
+                    Event::TitleChanged(title) => {
+                        Some(inker::WebSurfaceEvent::TitleChanged { title })
+                    }
+                    Event::NavigationFinished {
+                        address,
+                        success: true,
+                    } => Some(inker::WebSurfaceEvent::Navigation(
+                        inker::NavigationEvent::Finished {
+                            url: address,
+                            title: None,
+                        },
+                    )),
+                    Event::NavigationFinished {
+                        address,
+                        success: false,
+                    } => Some(inker::WebSurfaceEvent::Navigation(
+                        inker::NavigationEvent::Failed {
+                            url: address,
+                            reason: "shared browser reported navigation failure".into(),
+                        },
+                    )),
+                    Event::CursorChanged(cursor) => {
+                        if let Some(shape) = super::cue_content::cursor_shape(&cursor) {
+                            self.content_sessions.cue_cursors.insert(node, shape);
+                        }
+                        None
+                    }
+                    Event::Message(message) => {
+                        serde_json::from_str::<inker::WebSurfaceEvent>(&message)
+                            .ok()
+                            .or_else(|| {
+                                serde_json::from_str::<inker::WebMessage>(&message)
+                                    .ok()
+                                    .map(inker::WebSurfaceEvent::WebMessage)
+                            })
+                    }
+                    Event::Completed {
+                        result: Ok(inker::webcue::Reply::Zoom(zoom)),
+                        ..
+                    } => {
+                        self.app
+                            .content
+                            .note_page_zoom(node, super::effects::app_page_zoom_facts(zoom));
+                        None
+                    }
+                    Event::Completed {
+                        request,
+                        result: Err(error),
+                    } => {
+                        self.app.content.refuse_surface_traversal_request(node, request);
+                        tracing::warn!(%node, ?request, %error, "shared browser command refused");
+                        None
+                    }
+                    _ => None,
+                };
+                if let Some(event) = event {
+                    pending.push((node, event));
+                }
+            }
+        }
+        for (key, content) in self.content_sessions.pool.surfaces_mut() {
+            let super::content_pool::ContentKey::Node(node) = *key else {
+                continue;
+            };
+            if content.cue_surface().is_some() {
+                continue;
+            }
+            if let Some(web) = content
+                .surface_producer_mut()
+                .and_then(|p| p.as_web_surface())
+            {
+                for _ in 0..MAX_EVENTS_PER_SURFACE {
+                    let Some(event) = web.poll_web_event() else {
+                        break;
+                    };
+                    pending.push((node, event));
+                }
             }
         }
         for (node, event) in pending {
             self.consume_surface_web_event(node, event);
         }
         self.expire_user_agent_requests();
+        self.apply_pending_surface_cursor();
     }
 
     fn consume_surface_web_event(&mut self, node: uuid::Uuid, event: inker::WebSurfaceEvent) {
@@ -812,8 +915,8 @@ impl Shell {
         if !self.pending_native_diagnostics.is_empty()
             && let Some(window) = &self.window
         {
-            // Selected diagnostics belong to the primary renderer. Continue
-            // its asynchronous readback even outside a self-drive scenario.
+            // Primary and lens diagnostics use the shared render core. Continue
+            // their asynchronous readback even outside a self-drive scenario.
             window.request_redraw();
         }
         if !self.poll_render_recovery() || self.host.is_none() {
@@ -862,7 +965,7 @@ impl Shell {
         // surfaces, each with its own rect. Built by the same helper input
         // routing uses, so what a frame draws and what a pointer hits agree.
         self.prepare_inline_owners(0, (w, h));
-        if let Some(area) = self.inline_cursor_area(0)
+        if let Some(area) = self.pane_ime_cursor_area(0)
             && let Some(window) = &self.window
         {
             window.set_ime_cursor_area(
@@ -928,6 +1031,19 @@ impl Shell {
                     (scene, crate::map_theme::clear_color(self.app.map_theme()))
                 },
                 crate::surface::SurfaceKind::Content(node) => {
+                    if self.content_sessions.appearance(node, surface.id).is_some_and(|content| content.cue_surface().is_some()) {
+                        match self.cue_content_layer(surface, scale) {
+                            Ok((layer, pending)) => {
+                                if let Some(layer) = layer { scenes.push(PlannedLayer::Imported(layer)); }
+                                needs_redraw |= pending;
+                            },
+                            Err(error) => {
+                                tracing::error!(%node, %error, "shared content presentation refused");
+                                self.main_receipt.errors.push(format!("shared content {node}: {error}"));
+                            },
+                        }
+                        continue;
+                    }
                     let mut surface_frame = None;
                     let document_frame = match self.content_sessions.pool.frame(&surface.id) {
                         Some(pelt_core::PeltLayer::Document(scene)) => Some(scene),
@@ -1052,6 +1168,16 @@ impl Shell {
         #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
         if self.fail_surface_frames(surface_failures) {
             return false;
+        }
+
+        // Frame preparation publishes the current shaped document caret. Read
+        // it afterwards so a resize, edit or page zoom cannot reuse old layout.
+        if let Some(area) = self.document_ime_cursor_area(0) && let Some(window) = &self.window {
+            tracing::debug!(target: "turnstone::ime", window = 0, x = area.x, y = area.y,
+                width = area.w, height = area.h, "shared document caret geometry");
+            window.set_ime_cursor_area(
+                PhysicalPosition::new(area.x, area.y), PhysicalSize::new(area.w, area.h),
+            );
         }
 
         // Pass 2 (immutable): rasterize each scene keyed by its surface id (so

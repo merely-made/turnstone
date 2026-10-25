@@ -1,0 +1,12 @@
+# Human-only composition receiving for the contributed-pane repair.
+settle 15
+key escape
+act Open Sky reference
+settle 30
+act Maximize pane
+settle 10
+click surface:contributed role:textbox Observer label
+settle 10
+click surface:contributed role:textbox Observer label
+capture 02_inline_ready
+log Physical Sky IME observations collected; scenario completion alone is not qualification

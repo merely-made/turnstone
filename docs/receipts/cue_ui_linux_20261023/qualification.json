@@ -1,0 +1,15 @@
+{
+  "date": "2026-10-23",
+  "source_commit": "b4628119208e970eb485d45f83f88c7586e4fee6",
+  "runtime_binary_sha256": "ec18a4abedea09ab01fa1d180421962bba1ae2e1006cceb8387a4122edd7448a",
+  "retained_hardware_vulkan_wayland_receiving": "passed for the named frame, input, control and lifecycle gates",
+  "scroll_opaque_viewport_coverage": "failed visual acceptance; producer raster already has a transparent lower band",
+  "linux_native_frame_cue_import": "not implemented at the tested source",
+  "physical_ime_and_human_at": "not qualified",
+  "evidence": [
+    "cohort-gates.json",
+    "gates.json",
+    "scroll-background-defect.json"
+  ],
+  "scope": "Successful scenario assertions and present calls do not imply complete document-paint correctness or acceptance of the unimplemented native frame direction."
+}

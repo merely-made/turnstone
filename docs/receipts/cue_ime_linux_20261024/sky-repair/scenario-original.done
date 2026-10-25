@@ -1,0 +1,10 @@
+RESULT fail
+FAIL: window 0: no current pane owns wheel at 400,450
+captured 02_inline_ready
+captured 02_inline_during
+captured 02_inline_after
+Physical Sky IME observations collected; scenario completion alone is not qualification
+presentation frames=1889 captures=3 blank=0
+capture /home/markik/Code/output/cue-ime-linux-20261024/sky-physical-r1/receiving/02_inline_ready.png digest=02c1b9ec21cdf68a blank=false
+capture /home/markik/Code/output/cue-ime-linux-20261024/sky-physical-r1/receiving/02_inline_during.png digest=acaf8f22e665e331 blank=false
+capture /home/markik/Code/output/cue-ime-linux-20261024/sky-physical-r1/receiving/02_inline_after.png digest=0bdbc6ebc240494e blank=false

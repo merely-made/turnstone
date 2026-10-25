@@ -1,0 +1,2 @@
+Repeated profile identity pending/locked messages: 173; public fixture browser run, no identity-bound acceptance.
+2026-10-24T03:02:28.143985Z  WARN turnstone::shell: the system clipboard is unavailable error=clipboard unavailable: Unknown error while interacting with the clipboard: X11 server connection timed out because it was unreachable

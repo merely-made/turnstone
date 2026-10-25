@@ -181,7 +181,7 @@ fn open_prepared_content_controller(
 #[path = "local_micron_source_tests.rs"]
 mod local_micron_source_tests;
 
-#[cfg(test)]
+#[cfg(all(test, feature = "nomadnet"))]
 #[path = "nomadnet_receiving_tests.rs"]
 mod nomadnet_receiving_tests;
 
@@ -395,7 +395,7 @@ pub(super) fn app_document_capabilities(
 /// Mirror one engine's page-zoom answer into app truth. Transient by
 /// construction: it belongs to the live session that computed it, and the
 /// sidecar keeps only what the node requested.
-fn app_page_zoom_facts(state: inker::DocumentZoomState) -> crate::content::PageZoomFacts {
+pub(super) fn app_page_zoom_facts(state: inker::DocumentZoomState) -> crate::content::PageZoomFacts {
     crate::content::PageZoomFacts {
         requested: state.requested,
         applied: state.applied,
@@ -825,8 +825,8 @@ impl Shell {
             } else if servo_profile.is_none() {
                 self.ensure_weld_engine()?;
             }
-            let profile = if let Some(profile) = servo_profile {
-                profile
+            let profile = if let Some(profile) = &servo_profile {
+                profile.clone()
             } else if scry {
                 self.app
                     .data_root
@@ -915,10 +915,23 @@ impl Shell {
                 source,
                 state: pelt_core::PeltRouteState::Surface,
             };
-            self.content_sessions.insert(
-                node,
-                pelt_core::PeltContent::from_surface(producer, (spawn.width, spawn.height), route),
-            );
+            #[cfg(all(feature = "servo", any(target_os = "macos", target_os = "linux")))]
+            let content = if servo_profile.is_some() {
+                let host = self.host.as_ref().ok_or("the Turnstone wgpu host is not ready")?;
+                let browser = inker::cue_browser::BrowserSurface::new_with_report(
+                    producer,
+                    inker::webcue::Scope {owner: uuid::Uuid::new_v4().as_u128(), generation: 1},
+                    inker::webcue::Viewport {width: spawn.width, height: spawn.height, scale: 1.},
+                    super::servo::cue::capabilities().map_err(|e| e.to_string())?,
+                    super::servo::cue::frame_reader(host.device().clone(), host.queue().clone()),
+                ).map_err(|e| e.to_string())?;
+                pelt_core::PeltContent::from_browser(browser, route)
+            } else {
+                pelt_core::PeltContent::from_surface(producer, (spawn.width, spawn.height), route)
+            };
+            #[cfg(not(all(feature = "servo", any(target_os = "macos", target_os = "linux"))))]
+            let content = pelt_core::PeltContent::from_surface(producer, (spawn.width, spawn.height), route);
+            self.content_sessions.insert(node, content);
             self.activate_surface_accessibility(node, false);
             self.page_captures.register_surface(node);
             tracing::info!(%node, %url, engine = %decision.engine_id, "surface content live");
@@ -1806,6 +1819,15 @@ impl Shell {
                         .filter(|content| content.lane() == pelt_core::PeltLane::Surface)
                         .ok_or_else(|| "content has no web control plane".to_string())
                         .and_then(|content| {
+                            if content.cue_browser_mut().is_some() {
+                                let command = match control {
+                                    crate::action::ContentControl::Back => inker::webcue::Command::Back,
+                                    crate::action::ContentControl::Forward => inker::webcue::Command::Forward,
+                                    crate::action::ContentControl::Reload => inker::webcue::Command::Reload,
+                                    crate::action::ContentControl::Stop => inker::webcue::Command::Stop,
+                                };
+                                return content.request_cue_browser(command).map(Some).map_err(|e|e.to_string());
+                            }
                             let effect = content.command(match control {
                                 crate::action::ContentControl::Back => {
                                     inker::SessionNavigationCommand::Back
@@ -1820,8 +1842,13 @@ impl Shell {
                                     inker::SessionNavigationCommand::Stop
                                 },
                             });
-                            effect.error.map_or(Ok(()), Err)
+                            effect.error.map_or(Ok(None), Err)
                         });
+                    if let Ok(Some(request)) = &result {
+                        if matches!(control, crate::action::ContentControl::Back | crate::action::ContentControl::Forward) {
+                            self.app.content.bind_surface_traversal_request(node, *request);
+                        }
+                    }
                     if let Err(error) = result {
                         tracing::warn!(%node, ?control, %error, "web content control failed");
                         self.app.content.note_surface_stopped(node);
@@ -1829,6 +1856,14 @@ impl Shell {
                     self.request_redraw();
                 }
                 Effect::ScaleContent { node, scale } => {
+                    if let Some(content) = self.content_sessions.get_mut(&node)
+                        && content.cue_browser_mut().is_some() {
+                        if let Err(error) = content.request_cue_browser(inker::webcue::Command::Zoom(scale)) {
+                            tracing::warn!(%node, %error, "shared page zoom refused");
+                        }
+                        self.request_redraw();
+                        continue;
+                    }
                     if let Some(producer) = self.content_sessions.surface_mut(&node) {
                         apply_page_scale(&mut self.app, node, scale, producer);
                     } else if let Some(session) = self.content_sessions.session_mut(&node) {

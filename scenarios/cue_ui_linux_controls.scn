@@ -1,0 +1,73 @@
+# Linux/Vulkan receiving: live taxonomy, effective zoom, scroll and reopening.
+# Serve scenarios/fixtures on loopback; use a fresh synthetic profile.
+settle 15
+key escape
+open ${SERVO_FIXTURE_BASE}/document_a11y/article.html
+wait 240
+act Open node in Workbench
+wait 240
+assert content-live
+assert snap host-cue-frames >= 1
+record-idle 01_retained_before_controls
+capture 01_retained_before_controls
+act Zoom in
+settle 20
+assert snap page-zoom-requested == 110
+assert snap page-zoom-applied == 110
+record-idle 02_retained_zoomed
+capture 02_retained_zoomed
+# Retained sessions use a positive document delta to move down from the top.
+scroll 500 350 120
+settle 15
+record-idle 03_retained_scrolled
+capture 03_retained_scrolled
+act Open Inspector pane
+settle 20
+assert row Engine: genet.
+assert row Platform: linux
+assert row Presentation: HostDevice
+assert row Evidence: Observed
+assert row Semantics: DocumentSnapshot
+assert row Navigation:
+assert row InlineHtml:
+assert row Reload:
+assert row Stop:
+assert row History:
+assert row Find:
+assert row Zoom:
+assert row Capture:
+assert row ScriptResult:
+assert row CookieRead:
+assert row Mouse:
+assert row Scroll:
+assert row Keyboard:
+assert row NativeKeyboard: unavailable
+assert row Text:
+assert row Ime: partial
+assert row Focus:
+assert row Touch:
+assert row Pen:
+assert row Drag:
+assert row Semantics: partial
+assert row SemanticActions:
+assert row ResourceInterception:
+assert row Downloads:
+assert row Permissions:
+assert row Authentication:
+assert row Popups:
+assert row Devtools:
+record-idle 04_live_taxonomy
+capture 04_live_taxonomy
+act Close pane
+settle 15
+act Open node in Workbench
+settle 15
+act Toggle live content
+settle 15
+act Toggle live content
+settle 30
+assert content-live
+assert snap host-cue-frames >= 1
+record-idle 05_retained_reopened
+capture 05_retained_reopened
+log Linux retained Cue taxonomy, controls and reopen receiving complete

@@ -1,0 +1,205 @@
+diff --git a/src/shell/controller_input.rs b/src/shell/controller_input.rs
+index 4f1b346..0cc0a52 100644
+--- a/src/shell/controller_input.rs
++++ b/src/shell/controller_input.rs
+@@ -105,7 +105,9 @@ impl Shell {
+             ),
+             _ => self.content_sessions.pool.input(&appearance, input),
+         };
+-        Some(self.apply_content_effect(node, effect))
++        let handled = self.apply_content_effect(node, effect);
++        self.sync_ime_allowed();
++        Some(handled)
+     }
+ 
+     pub(super) fn apply_content_effect(
+@@ -206,6 +208,19 @@ pub(super) fn session_key(key: &WinitKey) -> Option<SessionKey> {
+     })
+ }
+ 
++/// Native event-boundary diagnostics omit text. Scenario inserts bypass this
++/// boundary and therefore cannot be mistaken for OS composition observations.
++pub(super) fn trace_native_ime(window: u64, ime: &winit::event::Ime) {
++    let (kind, utf8_bytes, selection) = match ime {
++        winit::event::Ime::Enabled => ("enabled", 0, None),
++        winit::event::Ime::Disabled => ("disabled", 0, None),
++        winit::event::Ime::Preedit(text, selection) => ("preedit", text.len(), *selection),
++        winit::event::Ime::Commit(text) => ("commit", text.len(), None),
++    };
++    tracing::debug!(target: "turnstone::ime", window, kind, utf8_bytes, ?selection,
++        "native IME event");
++}
++
+ /// A winit IME event in the neutral session vocabulary.
+ pub(super) fn session_ime(ime: &winit::event::Ime) -> inker::SessionIme {
+     match ime {
+@@ -348,6 +363,7 @@ impl Shell {
+             }
+         }
+         self.sync_content_placements();
++        self.sync_ime_allowed();
+     }
+     pub(super) fn deliver_window_key(
+         &mut self,
+@@ -396,6 +412,7 @@ impl Shell {
+         }
+         self.input_window = window;
+         let handled = self.deliver_contributed_ime(ime) || self.deliver_document_ime(ime);
++        tracing::debug!(target: "turnstone::ime", window, handled, "IME delivery");
+         self.input_window = 0;
+         handled
+     }
+diff --git a/src/shell/events.rs b/src/shell/events.rs
+index 28dc781..e48459c 100644
+--- a/src/shell/events.rs
++++ b/src/shell/events.rs
+@@ -407,6 +407,7 @@ impl ApplicationHandler for Shell {
+             // rides directly on state and only the commit lowers to an
+             // Action (`OmnibarInsert`, the same path a future paste takes).
+             WindowEvent::Ime(ime) => {
++                super::controller_input::trace_native_ime(0, &ime);
+                 if self.app.user_agent_decision.is_open() {
+                     if self.app.user_agent_decision.accepts_text()
+                         && let Ime::Commit(s) = ime
+diff --git a/src/shell/frame_keys.rs b/src/shell/frame_keys.rs
+index 3d577b3..fc6c46a 100644
+--- a/src/shell/frame_keys.rs
++++ b/src/shell/frame_keys.rs
+@@ -176,7 +176,11 @@ impl Shell {
+                 .values()
+                 .find(|l| l.ordinal + 1 == owner.slot)
+             {
+-                lens.window.set_ime_allowed(self.accepts_controlled_text());
++                let window = lens.ordinal as u64 + 1;
++                lens.window.set_ime_allowed(
++                    self.inline_text_in_window(window)
++                        || super::window_input::document_accepts_ime(&self.content_sessions.pool, window),
++                );
+             }
+         }
+     }
+diff --git a/src/shell/lens.rs b/src/shell/lens.rs
+index 2cced2c..9c8a5cf 100644
+--- a/src/shell/lens.rs
++++ b/src/shell/lens.rs
+@@ -742,6 +742,7 @@ impl Shell {
+             },
+             WindowEvent::Ime(ime) => {
+                 let window = lens.ordinal as u64 + 1;
++                super::controller_input::trace_native_ime(window, &ime);
+                 self.deliver_window_ime(window, &ime);
+                 return;
+             },
+diff --git a/src/shell/mod.rs b/src/shell/mod.rs
+index 83a43f7..01fe723 100644
+--- a/src/shell/mod.rs
++++ b/src/shell/mod.rs
+@@ -2042,6 +2042,7 @@ impl Shell {
+             return false;
+         }
+         self.inline_text_in_window(0)
++            || window_input::document_accepts_ime(&self.content_sessions.pool, 0)
+             || self.app.omnibar.open
+             || self.app.document_find.open
+             || self.app.user_agent_decision.accepts_text()
+@@ -2052,11 +2053,14 @@ impl Shell {
+             window.set_ime_allowed(self.accepts_controlled_text());
+         }
+         for lens in self.lens_windows.values() {
+-            if matches!(self.app.focus, crate::surface::FocusTarget::Pane(pane) if self.renderers.inline_mount(pane).is_some())
+-            {
+-                lens.window
+-                    .set_ime_allowed(self.inline_text_in_window(lens.ordinal as u64 + 1));
+-            }
++            let window = lens.ordinal as u64 + 1;
++            let host_editor = self.app.omnibar.open
++                || self.app.document_find.open
++                || self.app.user_agent_decision.is_open();
++            lens.window.set_ime_allowed(!host_editor && (
++                self.inline_text_in_window(window)
++                    || window_input::document_accepts_ime(&self.content_sessions.pool, window)
++            ));
+         }
+     }
+     fn inline_text_in_window(&self, window: u64) -> bool {
+diff --git a/src/shell/window_input.rs b/src/shell/window_input.rs
+index 9f276a9..5906fc9 100644
+--- a/src/shell/window_input.rs
++++ b/src/shell/window_input.rs
+@@ -10,6 +10,17 @@ use pelt_core::{PeltControllerPool, PeltHostEffect, PeltInput};
+ use std::collections::HashMap;
+ 
+ pub(super) type Pool = PeltControllerPool<ContentKey, SurfaceId, netrender::Scene>;
++
++/// OS IME admission follows the live retained editor in this window. A hidden
++/// placement, a different window or a browser without retained composition
++/// cannot inherit another document's editable focus.
++pub(super) fn document_accepts_ime(pool: &Pool, window: u64) -> bool {
++    pool.focused_content(window)
++        .and_then(|key| pool.content(key))
++        .and_then(pelt_core::PeltContent::document)
++        .is_some_and(|controller| controller.session().editable_focus())
++}
++
+ #[derive(Clone, Copy)]
+ struct Contact {
+     pointer_id: i32,
+diff --git a/src/shell/window_input_tests.rs b/src/shell/window_input_tests.rs
+index d7ecc1c..746dc57 100644
+--- a/src/shell/window_input_tests.rs
++++ b/src/shell/window_input_tests.rs
+@@ -3608,3 +3608,54 @@ fn review_modal_touch_fresh_down_is_blocked_then_new_gesture_is_admitted() {
+             vec![PointerPhase::Down, PointerPhase::Up]);
+     }
+ }
++
++
++#[test]
++fn document_ime_admission_tracks_editable_focus_window_visibility_and_replacement() {
++    struct Editor(std::sync::Arc<std::sync::atomic::AtomicBool>);
++    impl inker::DocumentSession<netrender::Scene> for Editor {
++        fn frame(&mut self, _: u32, _: u32) -> netrender::Scene { Default::default() }
++        fn scroll_by(&mut self, _: f32, _: f32) -> bool { false }
++        fn scroll_for_key(&mut self, _: inker::SessionScrollKey) -> bool { false }
++        fn click_at(&mut self, _: f32, _: f32) -> inker::SessionClick { inker::SessionClick::Miss }
++        fn links(&self) -> Vec<inker::SessionLink> { vec![] }
++        fn editable_focus(&self) -> bool { self.0.load(std::sync::atomic::Ordering::SeqCst) }
++        fn focus_input(&mut self, focused: bool) {
++            if !focused { self.0.store(false, std::sync::atomic::Ordering::SeqCst); }
++        }
++        fn as_any_ref(&self) -> &dyn std::any::Any { self }
++        fn as_any(&mut self) -> &mut dyn std::any::Any { self }
++    }
++    let editable = Arc::new(std::sync::atomic::AtomicBool::new(false));
++    let controller = pelt_core::PeltController::from_session_shared(
++        Arc::new(inker::SessionRegistry::new()),
++        Arc::new(inker::SurfaceEngineRegistry::new()),
++        pelt_core::PeltControllerConfig::new("ime", "https://fixture.test/ime", (100, 100)),
++        super::super::ShellClock(std::time::Instant::now()),
++        Box::new(Editor(editable.clone())),
++    );
++    let mut pool = Pool::new();
++    pool.insert(key(7), PeltContent::from_controller(controller, route()));
++    pool.set_placements([(SurfaceId(10), placed(key(7), 0, 0., true))]);
++    assert!(!document_accepts_ime(&pool, 0));
++    editable.store(true, std::sync::atomic::Ordering::SeqCst);
++    assert!(document_accepts_ime(&pool, 0));
++    assert!(!document_accepts_ime(&pool, 1));
++    pool.set_placements([(SurfaceId(10), placed(key(7), 1, 0., true))]);
++    // Focus loss retires editor composition; a new native editor focus admits
++    // the lens only, even though it retains the same content identity.
++    editable.store(true, std::sync::atomic::Ordering::SeqCst);
++    assert!(document_accepts_ime(&pool, 1));
++    assert!(!document_accepts_ime(&pool, 0));
++    let mut hidden = placed(key(7), 1, 0., true);
++    hidden.visible = false;
++    pool.set_placements([(SurfaceId(10), hidden)]);
++    assert!(!document_accepts_ime(&pool, 1));
++    pool.set_placements([(SurfaceId(10), placed(key(7), 1, 0., true))]);
++    editable.store(true, std::sync::atomic::Ordering::SeqCst);
++    assert!(document_accepts_ime(&pool, 1));
++    pool.insert(key(7), hosted(&Calls::default()));
++    assert!(!document_accepts_ime(&pool, 1), "a browser cannot inherit the old retained editor");
++    pool.set_placements([]);
++    assert!(!document_accepts_ime(&pool, 1));
++}

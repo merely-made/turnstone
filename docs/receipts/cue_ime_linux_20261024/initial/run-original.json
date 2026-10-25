@@ -1,0 +1,106 @@
+{
+  "binary_sha256": "57ad069a97511ba38a5417d0ac37550d5bf424acd47eefc891ccb6bf71c1a263",
+  "source_head": "0c6f5997bb1a483c3ea9c3d2e438489893b8976c",
+  "source_diff_sha256": "7f29ee54ebb3aaf3d08eef411ae52f6a0160591ae33960814d181b3eb7a6582e",
+  "stages": [
+    {
+      "stage": "01",
+      "title": "Address field",
+      "human_observed": [
+        "I physically typed using the ThinkPad keyboard",
+        "Composing text was visible before commit",
+        "The OS candidate popup was visible",
+        "The candidate popup appeared beside the caret",
+        "F1 committed one candidate without duplicate text",
+        "Escape cancelled zzcancel without inserting it",
+        "Switching away and back left no stale composition"
+      ],
+      "native_events": [],
+      "expected_window": 0,
+      "human_all_checks": true,
+      "native_preedit": false,
+      "native_commit": false
+    },
+    {
+      "stage": "02",
+      "title": "Native inline pane",
+      "human_observed": [
+        "I physically typed using the ThinkPad keyboard",
+        "Switching away and back left no stale composition"
+      ],
+      "native_events": [],
+      "expected_window": 0,
+      "human_all_checks": false,
+      "native_preedit": false,
+      "native_commit": false
+    },
+    {
+      "stage": "03",
+      "title": "Genet document",
+      "human_observed": [
+        "I physically typed using the ThinkPad keyboard",
+        "Composing text was visible before commit",
+        "The OS candidate popup was visible",
+        "The candidate popup appeared beside the caret",
+        "F1 committed one candidate without duplicate text",
+        "Escape cancelled zzcancel without inserting it",
+        "Switching away and back left no stale composition"
+      ],
+      "native_events": [],
+      "expected_window": 0,
+      "human_all_checks": true,
+      "native_preedit": false,
+      "native_commit": false
+    },
+    {
+      "stage": "04",
+      "title": "Genet document in a lens",
+      "human_observed": [
+        "I physically typed using the ThinkPad keyboard",
+        "Composing text was visible before commit",
+        "The OS candidate popup was visible",
+        "The candidate popup appeared beside the caret",
+        "F1 committed one candidate without duplicate text",
+        "Escape cancelled zzcancel without inserting it",
+        "Switching away and back left no stale composition"
+      ],
+      "native_events": [],
+      "expected_window": 1,
+      "human_all_checks": true,
+      "native_preedit": false,
+      "native_commit": false
+    }
+  ],
+  "complete": false,
+  "qualified": false,
+  "limits": "Human checklist and native events; app captures do not include OS candidate windows. No CJK, Servo IME, X11 or human accessibility qualification.",
+  "exit_code": 0,
+  "all_observation_gates": false,
+  "restoration": {
+    "settings": [
+      {
+        "schema": "org.gnome.desktop.input-sources",
+        "key": "sources",
+        "exit": 0,
+        "value": "[('xkb', 'us')]",
+        "matches": true
+      },
+      {
+        "schema": "org.gnome.desktop.input-sources",
+        "key": "mru-sources",
+        "exit": 0,
+        "value": "@a(ss) []",
+        "matches": true
+      },
+      {
+        "schema": "org.freedesktop.ibus.engine.typing-booster:/org/freedesktop/ibus/engine/typing-booster/",
+        "key": "offtherecord",
+        "exit": 0,
+        "value": "false",
+        "matches": true
+      }
+    ],
+    "engine_exit": 0,
+    "engine": "xkb:us::eng"
+  }
+}

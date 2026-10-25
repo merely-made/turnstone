@@ -121,6 +121,7 @@ impl App {
             graph,
             root: member,
             focus: member,
+            contexts: None,
         });
         if reader.is_some() {
             if let Some(member)=member {
@@ -385,6 +386,7 @@ impl App {
                 graph,
                 root: None,
                 focus: None,
+                contexts: None,
             };
             let visit = self
                 .reading

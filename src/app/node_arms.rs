@@ -100,6 +100,9 @@ impl App {
     }
 
     pub(crate) fn member_can_back(&self, node: Uuid) -> bool {
+        if self.content.surface_traversal_pending(node) {
+            return false;
+        }
         self.graph_runtimes
             .graph_containing_member(node)
             .and_then(|graph| self.graph_runtimes.canvas(graph))
@@ -112,6 +115,9 @@ impl App {
     }
 
     pub(crate) fn member_can_forward(&self, node: Uuid) -> bool {
+        if self.content.surface_traversal_pending(node) {
+            return false;
+        }
         self.graph_runtimes
             .graph_containing_member(node)
             .and_then(|graph| self.graph_runtimes.canvas(graph))
@@ -379,10 +385,7 @@ impl App {
         matches!(
             self.content.get(member),
             Some(crate::content::NodeContent::Live)
-        ) && self
-            .content
-            .facts(member)
-            .is_some_and(|facts| facts.capabilities.page_zoom.is_available())
+        ) && self.content.offers(member, inker::webcue::Feature::Zoom)
     }
 
     /// One node's requested scale, defaulting an unset sidecar entry.
@@ -531,6 +534,7 @@ impl App {
         find_effects.extend(self.invalidate_micron_submission());
 
         if self.node_uses_web_surface(node) {
+            self.content.take_surface_traversal(node);
             self.content.note_surface_started(node);
             find_effects.push(Effect::ControlContent {
                 node,
@@ -1349,13 +1353,7 @@ impl App {
         if !path.starts_with('/') || path.contains('\0') {
             return None;
         }
-        let destination = base
-            .destination()
-            .as_slice()
-            .iter()
-            .map(|byte| format!("{byte:02x}"))
-            .collect::<String>();
-        Some(format!("{destination}:{path}"))
+        Some(format!("{}:{path}", base.destination_hex()))
     }
 
     pub(super) fn begin_smolweb_submission(
@@ -1679,19 +1677,47 @@ impl App {
     }
 
     pub(super) fn commit_content_navigation(&mut self, member: Uuid, url: String) -> Vec<Effect> {
-        if let Some(effects) = self.retained_clip_control(&url) { return effects; }
+        if let Some(effects) = self.retained_clip_control(&url) {
+            return effects;
+        }
         let Some(graph) = self.graph_runtimes.graph_containing_member(member) else {
             tracing::warn!(%member, %url, "content navigation named an unknown member");
             return Vec::new();
         };
+        if self
+            .graph_runtimes
+            .canvas(graph)
+            .and_then(|canvas| canvas.graph().get_node_by_id(member))
+            .is_some_and(|(_, node)| node.url() == url)
+        {
+            // A duplicate observation of the old address can precede the
+            // queued traversal. It must not consume that traversal's intent.
+            return Vec::new();
+        }
+        let traversal = self.content.take_surface_traversal(member);
         let Some(canvas) = self.graph_runtimes.canvas_mut(graph) else {
             return Vec::new();
         };
-        let already_current = canvas
-            .graph()
-            .get_node_by_id(member)
-            .is_some_and(|(_, node)| node.url() == url);
-        if already_current || !canvas.navigate_member(member, &url) {
+        // A browser traversal commits only after its actual address matches
+        // the requested neighbour. Ordinary links back to an old URL remain
+        // new visits, and a refusal never moves the host history cursor.
+        let traversed = traversal.is_some_and(|step| {
+            if step.target != url
+                || !canvas
+                    .graph()
+                    .get_node_by_id(member)
+                    .is_some_and(|(_, node)| node.url() == step.from)
+            {
+                return false;
+            }
+            let actual = if step.back {
+                canvas.member_history_back(member)
+            } else {
+                canvas.member_history_forward(member)
+            };
+            actual.as_deref() == Some(url.as_str())
+        });
+        if !traversed && !canvas.navigate_member(member, &url) {
             return Vec::new();
         }
         // A retained read belongs to this view's exact address. Dropping it
@@ -1737,20 +1763,31 @@ impl App {
             return vec![Effect::Redraw];
         };
         if self.node_uses_web_surface(node) {
-            let allowed = self
+            if self.content.surface_traversal_pending(node) {
+                return vec![Effect::Redraw];
+            }
+            let step = self
                 .graph_runtimes
                 .graph_containing_member(node)
                 .and_then(|graph| self.graph_runtimes.canvas(graph))
-                .is_some_and(|canvas| {
-                    if back {
-                        canvas.member_can_back(node)
+                .and_then(|canvas| {
+                    let (key, _) = canvas.graph().get_node_by_id(node)?;
+                    let history = canvas.graph().node_history_projection(key);
+                    let index = if back {
+                        history.current_index.checked_sub(1)?
                     } else {
-                        canvas.member_can_forward(node)
-                    }
+                        history.current_index.checked_add(1)?
+                    };
+                    Some((
+                        history.entries.get(history.current_index)?.clone(),
+                        history.entries.get(index)?.clone(),
+                    ))
                 });
-            if !allowed {
+            let Some((from, target)) = step else {
                 return vec![Effect::Redraw];
-            }
+            };
+            self.content
+                .begin_surface_traversal(node, from, target, back);
             self.content.note_surface_started(node);
             let mut effects = self.invalidate_document_find_for(node);
             effects.push(Effect::ControlContent {

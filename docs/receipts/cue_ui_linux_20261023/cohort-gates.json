@@ -1,0 +1,99 @@
+{
+  "source_commit": "b4628119208e970eb485d45f83f88c7586e4fee6",
+  "runtime_binary_sha256": "ec18a4abedea09ab01fa1d180421962bba1ae2e1006cceb8387a4122edd7448a",
+  "changed_inputs": [
+    "Cargo.lock",
+    "Cargo.toml"
+  ],
+  "unchanged_supplier": "86796a2447d68b3e6538d0ceff9f387a5d56e29c",
+  "validation": {
+    "cohort-build": {
+      "exit": 0,
+      "elapsed_seconds": 144.478,
+      "test_counts": []
+    },
+    "cohort-turnstone-pending-vulkan": {
+      "exit": 0,
+      "elapsed_seconds": 84.869,
+      "test_counts": [
+        [
+          "1",
+          "0",
+          "0"
+        ]
+      ],
+      "test_binary_sha256": "62ac7c8b831047df199724efb8347d33c505f7325e05d15c87a971d30e9016d8"
+    },
+    "cohort-turnstone-history": {
+      "exit": 0,
+      "elapsed_seconds": 3.497,
+      "test_counts": [
+        [
+          "7",
+          "0",
+          "0"
+        ]
+      ]
+    },
+    "cohort-turnstone-inspector": {
+      "exit": 0,
+      "elapsed_seconds": 8.011,
+      "test_counts": [
+        [
+          "27",
+          "0",
+          "2"
+        ]
+      ]
+    },
+    "cohort-turnstone-all-targets": {
+      "exit": 0,
+      "elapsed_seconds": 57.578,
+      "test_counts": []
+    }
+  },
+  "native_ui": {
+    "cohort-retained-wayland": {
+      "passed": true,
+      "raw_case": "cohort-retained-final",
+      "primary_presentations": 241,
+      "primary_captures": 3,
+      "blank_primary_captures": 0,
+      "adapters": [
+        {
+          "backend": "Vulkan",
+          "device": 5686,
+          "device_type": "IntegratedGpu",
+          "name": "AMD Radeon Graphics (RADV RENOIR)",
+          "vendor": 4098
+        }
+      ]
+    },
+    "cohort-controls-wayland": {
+      "passed": true,
+      "raw_case": "cohort-controls-final",
+      "primary_presentations": 291,
+      "primary_captures": 5,
+      "blank_primary_captures": 0,
+      "adapters": [
+        {
+          "backend": "Vulkan",
+          "device": 5686,
+          "device_type": "IntegratedGpu",
+          "name": "AMD Radeon Graphics (RADV RENOIR)",
+          "vendor": 4098
+        }
+      ]
+    }
+  },
+  "reopen_scopes": {
+    "before": [
+      "1:1"
+    ],
+    "after": [
+      "2:1"
+    ],
+    "replaced": true
+  },
+  "limits": "Same retained Vulkan/Wayland scope and qualification limits as gates.json; the Pelt supplier and its separate nine-test suite are unchanged."
+}

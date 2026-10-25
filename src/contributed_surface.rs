@@ -473,6 +473,14 @@ impl ContributedSurfacePane {
         self.session.focus()
     }
 
+    pub(crate) fn accepts_text(&self) -> bool {
+        self.layout.editable_focus(&self.dom.borrow(), self.session.focus())
+    }
+
+    pub(crate) fn ime_cursor_area(&self) -> Option<(f32, f32, f32, f32)> {
+        self.layout.cursor_area(&self.dom.borrow(), self.session.focus())
+    }
+
     /// Render using the same retained layout that subsequent hit testing uses.
     /// `width` and `height` are the pane's physical size: the provider's DOM is
     /// laid out at `size / scale_factor`, the scene is rasterized at

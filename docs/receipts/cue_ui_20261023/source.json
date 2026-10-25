@@ -1,0 +1,31 @@
+{
+  "base_turnstone": "b6983aae3dd78789a8436de8dd57b5459b85eee7",
+  "mere_supplier": "86796a2447d68b3e6538d0ceff9f387a5d56e29c",
+  "features": [
+    "servo"
+  ],
+  "rust": "1.99.1-x86_64-apple-darwin",
+  "source_sha256": {
+    "Cargo.lock": "96c3e4e864fdfede59cdfb5fb4c25900a6d94ac833de5c4f9a0f7bdfb033372a",
+    "Cargo.toml": "eea72cb436e92f7e11ccf7405ececb882a5a17de9210762d5820a3854fe559b1",
+    "src/app/node_arms.rs": "25c7fae3414233f9c1529b6673405c99818bd02cba9ff051dfd6929ea87cb843",
+    "src/app/palette.rs": "75d4b531cf51157b88c23da3ec09b7f31791a8a5439657e10419980614f62f45",
+    "src/app/surface_control_tests.rs": "d37925b5da152bbce6e7564e43c3c03537da833e5e583d6d7cadbd72e755246b",
+    "src/content.rs": "3f222111665e6ba8e6cc082cf5dc548aba9bba65c06de903da07cdfc3a855afa",
+    "src/inspector_controls.rs": "2676ad42b2d21830cb2bbcf41fddeb057feea1d811403d9ce383227a46754036",
+    "src/inspector_pane/tests.rs": "02a28bcef9ae00a841c2c7b0e7f31aa593070ecd4a34e26a72097a82b2a182f0",
+    "src/inspector_view.rs": "0b2b35566dc47c56ab254f57aef37cc529273bade7a1a0be7fb1cb935e577c19",
+    "src/shell/content_pool.rs": "5b57e5e03cd88ef2d24911c6331613907723cbda4f9eb4cb3c972f29c23200ee",
+    "src/shell/cue_content.rs": "193d779278840c2f7d17a2a2a3e96c73f35513ebd46a2dd9adff7d5b6efe6109",
+    "src/shell/drive.rs": "23c71682f1695e47f4bce84191740ce1e7318e0df674e6366c0781740e3849c0",
+    "src/shell/effects.rs": "5d117a358e238c644f744bb83cf5937f1aa6e706e0f1602fbe16498d124a86ed",
+    "src/shell/events.rs": "232127dc20102776a8d8fd0c62f09688e0636fd3031974066dfa5cc6973fb825",
+    "src/shell/input.rs": "6adb0217fc02511c64912dc1cc1a411ef87d821099ebd134b52dbaf7e3dd914f",
+    "src/shell/lens.rs": "25ed1faeaea8e47f42ba55b13dcd1889da0ed076e515565e460e52ce7cc08c27",
+    "src/shell/mod.rs": "9672c3a42efd96e393b082e0eee67af08648ebcc3caec8960254855786c4fb3c",
+    "src/shell/render.rs": "a323856ce5378222cd2a2980d4e8c9e86bedb1f9689261d706e4c327836098bb",
+    "src/shell/servo_cue.rs": "8da189c1d7c0d0b72fb713ecf7c7816681b7b9513a074ee22ac17689bf1751dc"
+  },
+  "binary_sha256": "c962c7f715dc5e020b258d89034c8bdc1deaf6cf168adcfddcd3f71dcda3726f",
+  "source_commit": "5e9e3bfea88e9e9b9133d01ec9486ed7fd056322"
+}

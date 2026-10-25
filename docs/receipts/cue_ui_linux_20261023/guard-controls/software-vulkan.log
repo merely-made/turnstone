@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/home/markik/Code/worktrees/turnstone-cue-vulkan-20261023/scripts/receive-cue-ui-linux.py", line 107, in <module>
+    main()
+    ~~~~^^
+  File "/home/markik/Code/worktrees/turnstone-cue-vulkan-20261023/scripts/receive-cue-ui-linux.py", line 100, in main
+    assert info["device_type"] in ("IntegratedGpu", "DiscreteGpu"), info
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'backend': 'Vulkan', 'device_type': 'Cpu', 'name': 'synthetic guard control'}

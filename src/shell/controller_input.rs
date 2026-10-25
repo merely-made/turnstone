@@ -105,7 +105,9 @@ impl Shell {
             ),
             _ => self.content_sessions.pool.input(&appearance, input),
         };
-        Some(self.apply_content_effect(node, effect))
+        let handled = self.apply_content_effect(node, effect);
+        self.sync_ime_allowed();
+        Some(handled)
     }
 
     pub(super) fn apply_content_effect(
@@ -204,6 +206,19 @@ pub(super) fn session_key(key: &WinitKey) -> Option<SessionKey> {
         },
         _ => return None,
     })
+}
+
+/// Native event-boundary diagnostics omit text. Scenario inserts bypass this
+/// boundary and therefore cannot be mistaken for OS composition observations.
+pub(super) fn trace_native_ime(window: u64, ime: &winit::event::Ime) {
+    let (kind, utf8_bytes, selection) = match ime {
+        winit::event::Ime::Enabled => ("enabled", 0, None),
+        winit::event::Ime::Disabled => ("disabled", 0, None),
+        winit::event::Ime::Preedit(text, selection) => ("preedit", text.len(), *selection),
+        winit::event::Ime::Commit(text) => ("commit", text.len(), None),
+    };
+    tracing::debug!(target: "turnstone::ime", window, kind, utf8_bytes, ?selection,
+        "native IME event");
 }
 
 /// A winit IME event in the neutral session vocabulary.
@@ -348,6 +363,7 @@ impl Shell {
             }
         }
         self.sync_content_placements();
+        self.sync_ime_allowed();
     }
     pub(super) fn deliver_window_key(
         &mut self,
@@ -382,6 +398,7 @@ impl Shell {
             self.window_focus.insert(window, self.app.focus);
         }
         self.input_window = 0;
+        self.sync_ime_allowed();
     }
     pub(super) fn deliver_window_ime(&mut self, window: u64, ime: &winit::event::Ime) -> bool {
         if !self.select_input_window(window) {
@@ -396,6 +413,7 @@ impl Shell {
         }
         self.input_window = window;
         let handled = self.deliver_contributed_ime(ime) || self.deliver_document_ime(ime);
+        tracing::debug!(target: "turnstone::ime", window, handled, "IME delivery");
         self.input_window = 0;
         handled
     }

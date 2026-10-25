@@ -837,3 +837,32 @@ fn inspector_starts_with_a_compact_viewer_and_one_capability_table() {
     let _=pane.scene(400,600,1.0);
     assert!(pane.runner.state().viewer_options.iter().all(|option|option.selectable));
 }
+
+#[test]
+fn live_shared_report_reaches_the_inspector_and_dies_with_the_receiver() {
+    use inker::webcue::*;
+    let mut app = App::test_stub();
+    app.update(Action::OpenAddress("https://fixture.test/shared".into()));
+    let node = app.graph_runtimes.focused_member().unwrap();
+    app.content.note_live(node, None);
+    let report = CapabilityReport::new(
+        BackendIdentity {engine:"fixture.shared".into(),version:None,platform:"fixture-os".into(),build_features:vec![]},
+        PresentationMode::HostDevice, Evidence::Constructed, SemanticProtocol::Unavailable,
+        Feature::ALL.map(|feature| (feature, if feature == Feature::Zoom {
+            Support::Partial("effective zoom read-back".into())
+        } else {Support::Unsupported("not wired by this binding".into())})),
+    ).unwrap();
+    app.content.note_cue_report(node, report);
+    let rows = crate::inspector_controls::capabilities(&app, Some(node));
+    assert_eq!(rows.len(), Feature::ALL.len()+6);
+    assert!(rows.contains(&"Platform: fixture-os".into()));
+    assert!(rows.contains(&"Zoom: partial: effective zoom read-back".into()));
+    assert!(rows.contains(&"Ime: unavailable: not wired by this binding".into()));
+    let mut pane = InspectorPane::new();
+    pane.sync(&app, app.default_graph_pane(),400.,600.,None,None,"unconfigured");
+    assert!(content_lines(&pane).iter().any(|row| row == "Engine: fixture.shared"));
+    assert!(content_lines(&pane).iter().any(|row| row.starts_with("NativeKeyboard: unavailable:")));
+    app.content.note_requested(node);
+    assert!(app.content.cue_report(node).is_none());
+    assert!(!crate::inspector_controls::capabilities(&app, Some(node)).iter().any(|row|row.contains("fixture.shared")));
+}

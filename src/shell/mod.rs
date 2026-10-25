@@ -13,6 +13,7 @@
 mod appearance_editor;
 mod appearance_receipt;
 mod content_pool;
+mod cue_content;
 mod contributed_automation;
 mod controller_input;
 mod document_a11y;
@@ -32,7 +33,7 @@ mod saved_sources;
 mod research_notes;
 #[cfg(all(feature = "scry", windows))]
 mod scry;
-#[cfg(all(feature = "servo", windows))]
+#[cfg(all(feature = "servo", any(windows, target_os = "macos", target_os = "linux")))]
 use crate::servo_host as servo;
 #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
 mod surface_frames;
@@ -283,15 +284,15 @@ pub(crate) fn project_engine_inventory(
 
 fn servo_construction_availability() -> crate::content::EngineAvailability {
     use crate::content::EngineAvailability;
-    #[cfg(all(feature = "servo", windows))]
+    #[cfg(all(feature = "servo", any(windows, target_os = "macos", target_os = "linux")))]
     {
         EngineAvailability::OnDemand {
             detail: "upstream Servo shares the configured named profile across this process's views; native construction is checked when selected".into(),
         }
     }
-    #[cfg(not(all(feature = "servo", windows)))]
+    #[cfg(not(all(feature = "servo", any(windows, target_os = "macos", target_os = "linux"))))]
     EngineAvailability::Unavailable {
-        reason: "requires a Windows build with the servo feature".into(),
+        reason: "requires a Windows, macOS or Linux build with the servo feature".into(),
     }
 }
 
@@ -501,7 +502,7 @@ fn shared_scenario_from_env() -> Option<taproot::Scenario> {
 
 /// A launch-selected name identifies Servo's process profile. An explicit
 /// directory overrides its storage location, while keeping that visible name.
-#[cfg(any(test, all(feature = "servo", windows)))]
+#[cfg(any(test, all(feature = "servo", any(windows, target_os = "macos", target_os = "linux"))))]
 fn servo_profile_directory(
     data_root: &std::path::Path,
     name: &str,
@@ -932,6 +933,7 @@ impl Shell {
             return false;
         };
         if let Some(loss) = owner.status().loss().cloned() {
+            self.cue_frames.clear();
             let mut can_replace = true;
             #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
             {
@@ -948,8 +950,10 @@ impl Shell {
                 #[cfg(feature = "scry")]
                 self.scry_frame_importers.clear();
             }
+            #[cfg(all(feature = "servo", any(target_os = "macos", target_os = "linux")))]
+            { can_replace &= self.servo_factory.is_none(); }
             if !can_replace && self.render_recovery_blocked.is_none() {
-                let error = "device-loss recovery refused: registered Windows producers require explicit device rebinding".to_owned();
+                let error = "device-loss recovery refused: registered native producers require explicit device rebinding".to_owned();
                 tracing::warn!(%error);
                 self.main_receipt.errors.push(error.clone());
                 self.render_recovery_blocked = Some(error);
@@ -1279,6 +1283,7 @@ pub struct Shell {
     /// of its content.
     pelt_surface_engines: Arc<inker::SurfaceEngineRegistry>,
     content_sessions: NodeDocuments,
+    cue_frames: cue_content::CueFrames,
     /// Long-lived frame-streaming engines. The neutral inker registry chooses
     /// the producer; each node's content holds its non-Send live handle, and
     /// the shell keeps the imported frame cache.
@@ -1297,7 +1302,7 @@ pub struct Shell {
         std::collections::HashMap<uuid::Uuid, Option<surface_frames::ImportedSurfaceFrame>>,
     #[cfg(all(feature = "scry", windows))]
     scry_factory: Option<Arc<scry::TurnstoneScryFactory>>,
-    #[cfg(all(feature = "servo", windows))]
+    #[cfg(all(feature = "servo", any(windows, target_os = "macos", target_os = "linux")))]
     servo_factory: Option<Arc<servo::TurnstoneServoFactory>>,
     #[cfg(all(feature = "scry", windows))]
     scry_frame_importers:
@@ -1754,6 +1759,7 @@ impl Shell {
             content_engines: Arc::new(content_engines),
             pelt_surface_engines: Arc::new(inker::SurfaceEngineRegistry::new()),
             content_sessions: NodeDocuments::default(),
+            cue_frames: Default::default(),
             surface_engines: inker::SurfaceEngineRegistry::new(),
             surface_poll_clock: surface_poll::SurfacePollClock::new(
                 surface_poll_interval_from_env(),
@@ -1767,7 +1773,7 @@ impl Shell {
             surface_frames: std::collections::HashMap::new(),
             #[cfg(all(feature = "scry", windows))]
             scry_factory: None,
-            #[cfg(all(feature = "servo", windows))]
+            #[cfg(all(feature = "servo", any(windows, target_os = "macos", target_os = "linux")))]
             servo_factory: None,
             #[cfg(all(feature = "scry", windows))]
             scry_frame_importers: std::collections::HashMap::new(),
@@ -1834,6 +1840,7 @@ impl Shell {
 
     fn clear_surface_content(&mut self) {
         self.cancel_content_pointer();
+        self.cue_frames.clear();
         self.content_sessions.retain_appearances(|_, _| false);
         self.clear_surface_semantics();
         self.content_sessions
@@ -1916,7 +1923,7 @@ impl Shell {
         Err("scrying.web is available only in a Windows build with `--features scry`".into())
     }
 
-    #[cfg(all(feature = "servo", windows))]
+    #[cfg(all(feature = "servo", any(windows, target_os = "macos", target_os = "linux")))]
     fn ensure_servo_engine(&mut self) -> Result<std::path::PathBuf, String> {
         if let Some(factory) = &self.servo_factory {
             return Ok(factory.profile_dir().to_owned());
@@ -1971,9 +1978,9 @@ impl Shell {
         Ok(profile)
     }
 
-    #[cfg(not(all(feature = "servo", windows)))]
+    #[cfg(not(all(feature = "servo", any(windows, target_os = "macos", target_os = "linux"))))]
     fn ensure_servo_engine(&mut self) -> Result<std::path::PathBuf, String> {
-        Err("graft.servo is available only in a Windows build with `--features servo`".into())
+        Err("graft.servo is available only in a Windows, macOS or Linux build with `--features servo`".into())
     }
 
     /// Poll the value projection after a settings pane persists a write. The
@@ -2034,7 +2041,8 @@ impl Shell {
         {
             return false;
         }
-        self.inline_text_in_window(0)
+        self.pane_text_in_window(0)
+            || window_input::document_accepts_ime(&self.content_sessions.pool, self.app.focus, 0)
             || self.app.omnibar.open
             || self.app.document_find.open
             || self.app.user_agent_decision.accepts_text()
@@ -2045,11 +2053,14 @@ impl Shell {
             window.set_ime_allowed(self.accepts_controlled_text());
         }
         for lens in self.lens_windows.values() {
-            if matches!(self.app.focus, crate::surface::FocusTarget::Pane(pane) if self.renderers.inline_mount(pane).is_some())
-            {
-                lens.window
-                    .set_ime_allowed(self.inline_text_in_window(lens.ordinal as u64 + 1));
-            }
+            let window = lens.ordinal as u64 + 1;
+            let host_editor = self.app.omnibar.open
+                || self.app.document_find.open
+                || self.app.user_agent_decision.is_open();
+            lens.window.set_ime_allowed(!host_editor && (
+                self.pane_text_in_window(window)
+                    || window_input::document_accepts_ime(&self.content_sessions.pool, self.app.focus, window)
+            ));
         }
     }
     fn inline_text_in_window(&self, window: u64) -> bool {
@@ -2068,8 +2079,32 @@ impl Shell {
             _ => false,
         }
     }
-    fn inline_cursor_area(&self, window: u64) -> Option<crate::surface::Rect> {
-        if !self.inline_text_in_window(window) {
+    fn pane_text_in_window(&self, window: u64) -> bool {
+        if frame_keys::header_focus_in_window(
+            self.outer_focus.as_ref(), window, self.app.session_id.as_uuid(),
+        ) {
+            return false;
+        }
+        let crate::surface::FocusTarget::Pane(pane) = self.app.focus else { return false; };
+        self.focus_in_window(window, self.app.focus)
+            && (self.renderers.inline_accepts_text(pane)
+                || self.renderers.contributed.get(pane).is_some_and(|view| view.accepts_text()))
+    }
+
+    fn document_ime_cursor_area(&self, window: u64) -> Option<crate::surface::Rect> {
+        if self.app.omnibar.open || self.app.document_find.open
+            || self.app.user_agent_decision.is_open()
+            || frame_keys::header_focus_in_window(
+                self.outer_focus.as_ref(), window, self.app.session_id.as_uuid(),
+            )
+        {
+            return None;
+        }
+        window_input::document_text_input_area(&self.content_sessions.pool, self.app.focus, window)
+    }
+
+    fn pane_ime_cursor_area(&self, window: u64) -> Option<crate::surface::Rect> {
+        if !self.pane_text_in_window(window) {
             return None;
         }
         let crate::surface::FocusTarget::Pane(pane) = self.app.focus else {
@@ -2087,7 +2122,8 @@ impl Shell {
         let surface = plan
             .iter()
             .find(|s| s.kind == crate::surface::SurfaceKind::Pane(pane))?;
-        let (x, y, width, height) = self.renderers.inline_cursor_area(pane)?;
+        let (x, y, width, height) = self.renderers.inline_cursor_area(pane)
+            .or_else(|| self.renderers.contributed.get(pane)?.ime_cursor_area())?;
         Some(crate::surface::Rect::new(
             surface.rect.x + x,
             surface.rect.y + y,
@@ -2175,6 +2211,7 @@ impl Shell {
             self.pelt_surface_engines.clone(),
             self.epoch,
         );
+        self.cue_frames.retain(&self.content_sessions.pool);
         if let Some(admitted) = self.contributed_pointer
             && !self.contributed_pointer_is_current(admitted)
         {
@@ -2187,11 +2224,21 @@ impl Shell {
         let pump_started = std::time::Instant::now();
         let mut visible_pending = false;
         content_pool::pump_document_turn(self, Self::request_pending_document_redraws, |host| {
+            for work in host.document_clock.due_work(pump_started) {
+                if host.content_sessions.pool.content(&work.content).and_then(|content|content.session_identity()) == Some(work.identity) {
+                    host.content_sessions.pool.invalidate_paint(&work.content);
+                }
+            }
             let pending = host.content_sessions.pool.pump();
             // A pump during another window's render can cross a timer's
             // deadline and settle it. Keep that old receiver's final paint
             // before replacing its scheduling observation.
             let due = host.document_clock.due_work(std::time::Instant::now());
+            for work in &due {
+                if host.content_sessions.pool.content(&work.content).and_then(|content|content.session_identity()) == Some(work.identity) {
+                    host.content_sessions.pool.invalidate_paint(&work.content);
+                }
+            }
             host.request_document_work_redraws(&due);
             host.document_clock.observe_work(
                 pending,

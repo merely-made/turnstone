@@ -11,6 +11,11 @@
 #[cfg(target_os = "macos")]
 #[path = "servo_cue.rs"]
 pub mod cue;
+#[cfg(target_os = "linux")]
+#[path = "servo_cue_linux.rs"]
+pub mod cue;
+#[path = "servo_cue_capabilities.rs"]
+mod cue_capabilities;
 
 use graft_engine::{GraftFrame, GraftProducerFactory, GraftSurface};
 use grafting::{DiagnosticGpuSync, ImportedTexture, TextureOrigin};
@@ -28,6 +33,9 @@ use servo::{
     Preferences, Servo, ServoBuilder, WebView, WebViewBuilder, WebViewDelegate, WebViewPoint,
     WheelDelta, WheelEvent, WheelMode,
 };
+#[cfg(target_os = "linux")]
+use servo_wgpu_interop_adapter::ServoDmaBufAdapter;
+#[cfg(not(target_os = "linux"))]
 use servo_wgpu_interop_adapter::ServoWgpuInteropAdapter;
 use std::{
     cell::{Cell, RefCell},
@@ -40,7 +48,10 @@ use std::{
 use url::Url;
 use winit::dpi::PhysicalSize;
 
+#[cfg(not(target_os = "linux"))]
 pub(crate) const FRAME_KIND: &str = "turnstone.servo.imported-frame";
+#[cfg(target_os = "linux")]
+pub(crate) const FRAME_KIND: &str = "turnstone.servo.native-dmabuf-frame";
 
 /// Servo pins AccessKit 0.24 while Mere's surface contract is 0.25. 0.25 only
 /// adds node properties and renames `Tree` to `TreeInfo`, so the serde form of
@@ -154,6 +165,24 @@ impl TurnstoneServoFactory {
         queue: wgpu::Queue,
         wake: Arc<dyn Fn() + Send + Sync>,
     ) -> Result<Self, SurfaceError> {
+        #[cfg(target_os = "linux")]
+        {
+            let host = grafting::HostWgpuContext::new(device.clone(), queue.clone());
+            // Inspect the enabled native extensions before process-global
+            // Servo initialization. Recovery cannot silently lose native import.
+            let foreign =
+                unsafe { device.as_hal::<wgpu::wgc::api::Vulkan>() }.is_some_and(|device| {
+                    device
+                        .enabled_device_extensions()
+                        .contains(&c"VK_EXT_queue_family_foreign")
+                });
+            if host.backend != grafting::InteropBackend::Vulkan || !host.dmabuf_support || !foreign
+            {
+                return Err(spawn_error(
+                    "Servo DMA-BUF requires a Vulkan host provisioned for foreign native import",
+                ));
+            }
+        }
         // Refuse unknown settings before touching upstream process globals.
         // Factory reuse and every later view retain this one selection.
         let a11y_focus_policy = requested_a11y_focus_policy()?;
@@ -286,6 +315,13 @@ impl GraftProducerFactory for TurnstoneServoFactory {
             ));
         }
         let url = Url::parse(&request.url).map_err(|error| spawn_error(error.to_string()))?;
+        #[cfg(target_os = "linux")]
+        let interop = ServoDmaBufAdapter::new(
+            &self.device,
+            PhysicalSize::new(request.width.max(1), request.height.max(1)),
+        )
+        .map_err(|error| spawn_error(error.to_string()))?;
+        #[cfg(not(target_os = "linux"))]
         let interop = ServoWgpuInteropAdapter::new_with_diagnostic_sync(
             self.device.clone(),
             self.queue.clone(),
@@ -330,6 +366,21 @@ pub(crate) struct ServoImportedFrame {
     pub resource_epoch: u64,
 }
 impl OwnedSurfaceFrame for ServoImportedFrame {
+    fn payload_kind(&self) -> &'static str {
+        FRAME_KIND
+    }
+    fn into_any(self: Box<Self>) -> Box<dyn std::any::Any> {
+        self
+    }
+}
+
+#[cfg(target_os = "linux")]
+#[derive(Debug)]
+pub(crate) struct ServoDmaBufFrame {
+    pub frame: wgpu_cue::webcue::OwnedNativeFrame,
+}
+#[cfg(target_os = "linux")]
+impl OwnedSurfaceFrame for ServoDmaBufFrame {
     fn payload_kind(&self) -> &'static str {
         FRAME_KIND
     }
@@ -476,7 +527,10 @@ impl WebViewDelegate for Delegate {
 
 struct TurnstoneServoSurface {
     view: Option<WebView>,
+    #[cfg(not(target_os = "linux"))]
     interop: Option<ServoWgpuInteropAdapter>,
+    #[cfg(target_os = "linux")]
+    interop: Option<ServoDmaBufAdapter>,
     delegate: Rc<Delegate>,
     root: Rc<ProcessRoot>,
     frame_epoch: u64,
@@ -555,6 +609,41 @@ impl GraftSurface for TurnstoneServoSurface {
             .resize(PhysicalSize::new(width.max(1), height.max(1)));
         Ok(())
     }
+    #[cfg(target_os = "linux")]
+    fn acquire_frame(&mut self) -> Result<Option<GraftFrame>, SurfaceError> {
+        self.root.servo.spin_event_loop();
+        let interop = self.interop.as_ref().unwrap();
+        let mut native = interop
+            .try_acquire_frame()
+            .map_err(|e| SurfaceError::FrameAcquisitionFailed(e.to_string()))?;
+        if native.is_none() {
+            if interop.has_pending_frame() {
+                return Ok(None);
+            }
+            if !self.delegate.ready.replace(false) && !self.delegate.animating.get() {
+                return Ok(None);
+            }
+            self.view().paint();
+            interop.rendering_context().present();
+            native = interop
+                .try_acquire_frame()
+                .map_err(|e| SurfaceError::FrameAcquisitionFailed(e.to_string()))?;
+        }
+        let Some(frame) = native else {
+            return Ok(None);
+        };
+        let metadata = frame.metadata();
+        self.frame_epoch = metadata.generation;
+        Ok(Some(GraftFrame {
+            texture: NativeTextureHandle::OwnedPayload(Box::new(ServoDmaBufFrame { frame })),
+            sync: SurfaceSyncHandle::None,
+            width: metadata.size.width,
+            height: metadata.size.height,
+            format: SurfaceTextureFormat::Rgba8Unorm,
+            resource_epoch: metadata.generation,
+        }))
+    }
+    #[cfg(not(target_os = "linux"))]
     fn acquire_frame(&mut self) -> Result<Option<GraftFrame>, SurfaceError> {
         self.root.servo.spin_event_loop();
         if !self.delegate.ready.replace(false) && !self.delegate.animating.get() {

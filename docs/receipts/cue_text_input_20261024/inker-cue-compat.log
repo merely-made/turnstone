@@ -1,0 +1,12 @@
+running 8 tests
+test cue::platform_identity_covers_targets_without_an_os_name ... ok
+test cue::text_input_tests::ignored_input_keeps_unchanged_current_geometry_without_requiring_a_frame ... ok
+test cue_browser::tests::common_browser_controls_and_frame_binding_use_one_scope_without_blocking_fallback ... ok
+test cue_browser::tests::concrete_reports_keep_independent_refusals_and_gate_input ... ok
+test cue_browser::tests::engine_turns_continue_while_hidden_and_stop_after_retirement ... ok
+test cue_browser::tests::callback_backlog_cannot_starve_an_accepted_host_command ... ok
+test cue::text_input_tests::legacy_fallible_frames_continue_without_an_observation_consumer ... ok
+test cue::text_input_tests::infallible_frame_backpressure_clears_old_geometry_and_poll_retries_current_layout ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 123 filtered out; finished in 0.00s
+

@@ -1,0 +1,13 @@
+running 9 tests
+test scope_navigation::tests::legacy_scope_anchors_load_and_malformed_bookmarks_are_not_silently_dropped ... ok
+test scope_navigation::tests::up_down_keeps_reading_anchor_and_neighborhood_does_not_edit_graph ... ok
+test scope_navigation::tests::camera_is_restored_per_scope_and_routes_survive_cold_load ... ok
+test scope_navigation::tests::a_cold_current_visit_uses_the_latest_saved_reading_position ... ok
+test scope_navigation::tests::stale_destination_does_not_advance_history ... ok
+test scope_navigation::tests::scope_crumb_resolves_its_real_route_after_generic_navigation_adoption ... ok
+test scope_navigation::tests::selecting_a_mere_and_entering_it_preserves_cross_session_history ... ok
+test scope_navigation::tests::selected_child_and_temporal_previous_have_different_destinations ... ok
+test scope_navigation::tests::neighborhood_is_live_and_does_not_leak_to_a_second_pane ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 1187 filtered out; finished in 0.96s
+

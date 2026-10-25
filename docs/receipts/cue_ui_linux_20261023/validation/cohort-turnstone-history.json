@@ -1,0 +1,33 @@
+{
+  "command": [
+    "nice",
+    "-n",
+    "10",
+    "cargo",
+    "+1.99.1",
+    "test",
+    "--lib",
+    "--locked",
+    "--offline",
+    "-j2",
+    "app::surface_control_tests::",
+    "--",
+    "--test-threads=1"
+  ],
+  "cwd": "/home/markik/Code/worktrees/turnstone-cue-vulkan-20261023",
+  "started": 1792782320.84033,
+  "exit": 0,
+  "environment": {
+    "CARGO_TARGET_DIR": "/home/markik/Code/target",
+    "CARGO_BUILD_BUILD_DIR": "/home/markik/Code/repos/turnstone/target/build",
+    "CARGO_BUILD_JOBS": "2",
+    "WGPU_BACKEND": "vulkan",
+    "VK_DRIVER_FILES": "/usr/share/vulkan/icd.d/radeon_icd.x86_64.json",
+    "XDG_RUNTIME_DIR": "/run/user/1000"
+  },
+  "child_nofile": [
+    65536,
+    1048576
+  ],
+  "elapsed_seconds": 3.497
+}

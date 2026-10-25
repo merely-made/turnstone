@@ -992,6 +992,18 @@ drop-file 350 280 receipt.txt",
     }
 
     #[test]
+    fn physical_ime_scenarios_use_valid_native_harness_grammar() {
+        for source in [
+            include_str!("../scenarios/cue_ime_linux.scn"),
+            include_str!("../scenarios/cue_ime_sky_linux.scn"),
+        ] {
+            let source = source.replace("${CUE_IME_EXCHANGE}", "/tmp/cue-ime-exchange")
+                .replace("${SERVO_FIXTURE_BASE}", "http://127.0.0.1:12345");
+            taproot::Scenario::parse(&source).expect("valid native harness grammar");
+        }
+    }
+
+    #[test]
     fn wait_knot_is_a_typed_step() {
         let steps = parse("wait-knot 600 visiting knot://abcd/field.knot").unwrap();
         assert!(matches!(

@@ -1,0 +1,27 @@
+[
+  {
+    "adapter": {
+      "backend": "Vulkan",
+      "device": 5686,
+      "device_type": "IntegratedGpu",
+      "name": "AMD Radeon Graphics (RADV RENOIR)",
+      "vendor": 4098
+    },
+    "alpha": "Straight",
+    "content_generation": 97,
+    "device_generation": 1,
+    "dimensions": [
+      1024,
+      477
+    ],
+    "file": "01_retained_primary.source-1176657005713031170.png",
+    "format": "Rgba8Unorm",
+    "image_key": 15011715060995194882,
+    "native_window_scale": 1.0,
+    "producer_key": 1176657005713031170,
+    "raster_scale": 1.0,
+    "session": "5e013ff4-2659-4e2b-996e-5a0288bf8756",
+    "surface_id": 17470368499713656847,
+    "window": 0
+  }
+]
