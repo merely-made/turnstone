@@ -760,7 +760,8 @@ impl App {
         ) {
             return self.show_all_commands();
         }
-        let reading = self.active_pane.is_some_and(|pane| {
+        let location_graph=self.reading.scope.editing_location.then(||self.scope_place().graph);
+        let reading = std::mem::take(&mut self.reading.scope.editing_location) || self.active_pane.is_some_and(|pane| {
             self.pane_content(pane) == Some(&PaneContent::Workbench)
         });
         // Commit always ends with the omnibar closed, so chrome hands
@@ -788,11 +789,22 @@ impl App {
                     target,
                     EntryPrivacy::Ordinary,
                 );
-                let pane = self.focused_graph_pane().unwrap_or_else(|| self.default_graph_pane());
-                self.with_graph_pane(pane, |canvas| canvas.select_by_url(&url));
+                let pane = location_graph.and_then(|graph|self.graph_pane_for_navigation(graph))
+                    .or_else(||self.focused_graph_pane()).unwrap_or_else(|| self.default_graph_pane());
                 let mut effects = vec![Effect::Redraw];
-                if reading && let Some(member) = self.graph_pane_focused_member(pane) {
-                    effects.extend(self.read_graph_member(member));
+                if reading {
+                    // Resolve without selecting first: Read captures the current
+                    // reading before it changes graph focus or the active tab.
+                    let target = self.graph_for_pane(pane).and_then(|graph| {
+                        self.graph_runtimes.canvas(graph)
+                            .and_then(|canvas| canvas.graph().get_node_by_url(&url))
+                            .map(|(_, node)| (graph, node.id))
+                    });
+                    if let Some((graph, member)) = target {
+                        effects.extend(self.read_member_in_graph(graph, member));
+                    }
+                } else {
+                    self.with_graph_pane(pane, |canvas| canvas.select_by_url(&url));
                 }
                 self.shell.complete(
                     entry,

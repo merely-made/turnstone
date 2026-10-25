@@ -193,6 +193,8 @@ pub enum Step {
     RecordGraphScene(String),
     /// Activate a real native fold badge by index through pointer input.
     ActivateGraphFold(usize),
+    /// Resolve an actual painted node, then deliver two ordinary pointer clicks.
+    DoubleClickGraphNode(String),
     /// Click the list-pane (Trail/Roster) row whose text contains this substring.
     /// The shell resolves the row's window position (it owns the pane rects and
     /// rows), so the receipt names a row by text, not pixels.
@@ -201,6 +203,8 @@ pub enum Step {
     ClickTab(String),
     /// Click the Gloss minimap's node by label/url substring.
     ClickNode(String),
+    /// Click a visible link from the actual retained reader geometry.
+    ClickReadingReference(String),
     /// Press at the first point, move through it, release at the second.
     Drag((f32, f32), (f32, f32)),
     /// Drag the workbench tab labelled like the first substring onto the cell
@@ -529,6 +533,7 @@ pub fn parse(body: &str) -> Result<Vec<Step>, String> {
             }
             "click-tab" if !rest.is_empty() => Step::ClickTab(rest.to_string()),
             "click-node" if !rest.is_empty() => Step::ClickNode(rest.to_string()),
+            "click-reading-reference" if !rest.is_empty() => Step::ClickReadingReference(rest.to_string()),
             "drag" => {
                 let nums: Vec<f32> = rest
                     .split_whitespace()
@@ -645,6 +650,7 @@ pub fn parse(body: &str) -> Result<Vec<Step>, String> {
             "record-idle" if !rest.is_empty() => Step::RecordIdle(rest.to_string()),
             "select-graph-member" if !rest.is_empty() => Step::SelectGraphMember(rest.to_string()),
             "activate-graph-fold" => Step::ActivateGraphFold(rest.parse().map_err(|_| format!("line {}: fold index required", i + 1))?),
+            "double-click-node" if !rest.is_empty() => Step::DoubleClickGraphNode(rest.to_string()),
             "record-graph-scene" if !rest.is_empty() => {
                 if rest.contains(['/', '\\']) { return err("simple checkpoint name required"); }
                 Step::RecordGraphScene(rest.into())

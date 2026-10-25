@@ -155,6 +155,16 @@ impl App {
                 fitted_limit,
             );
         }
+        if self.reading.scope.editing_location && !self.omnibar.text.trim().starts_with('>') {
+            let query=self.omnibar.text.trim().to_lowercase();
+            if !query.is_empty() {
+                let scopes:Vec<_>=self.scope_crumbs().into_iter()
+                    .filter(|crumb|!crumb.current && crumb.label.to_lowercase().contains(&query))
+                    .map(|crumb|Suggestion::Act {label:format!("Scope: {}",crumb.label),action:Action::Scope(crate::scope_navigation::ScopeCommand::To(crumb.target))}).collect();
+                self.omnibar.suggestions.splice(0..0,scopes);
+                self.omnibar.suggestions.truncate(fitted_limit.max(1));
+            }
+        }
         self.frame_timings
             .note_suggestions(started.elapsed(), refit);
     }
@@ -266,6 +276,7 @@ impl App {
     }
 
     pub(super) fn open_omnibar(&mut self, command: bool) -> Vec<Effect> {
+        self.reading.scope.editing_location=false;
         let command = command || self.session_load_refused();
         let mut effects = self.cancel_smolweb_conversation();
         let target = self.fallback_shell_context();
@@ -333,6 +344,7 @@ impl App {
     }
 
     pub(super) fn close_omnibar(&mut self) -> Vec<Effect> {
+        self.reading.scope.editing_location=false;
         let mut effects = self.cancel_smolweb_conversation();
         self.omnibar = OmnibarState::default();
         // Drop the recall cache with the line it answered; a reopened omnibar
@@ -348,6 +360,13 @@ impl App {
         }
         self.events.push(AppEvent::OmnibarClosed);
         effects.push(Effect::Redraw);
+        effects
+    }
+
+    pub(crate) fn edit_scope_location(&mut self) -> Vec<Effect> {
+        let effects=self.open_omnibar(false);
+        self.reading.scope.editing_location=true;
+        self.recompute_omnibar_suggestions();
         effects
     }
 

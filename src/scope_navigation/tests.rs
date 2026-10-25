@@ -1,4 +1,132 @@
 use super::*;
+#[test]
+fn nested_contexts_survive_reading_visits_and_up_follows_the_chosen_route() {
+    let (mut app,a,b,_)=fixture();let mut visit=app.reading.scope.navigation.current().unwrap().clone();
+    let graph=visit.place.graph;visit.place.root=Some(b);
+    visit.place.contexts=Some(vec![ScopeContext {level:ScopeLevel::Graph,graph,root:None},ScopeContext {level:ScopeLevel::Neighborhood,graph,root:Some(a)},ScopeContext {level:ScopeLevel::Neighborhood,graph,root:Some(b)}]);
+    app.reading.scope.navigation.capture(visit);
+    command(&mut app,ScopeDirection::Up);assert_eq!(app.scope_place().root,Some(b));
+    command(&mut app,ScopeDirection::Up);assert_eq!(app.scope_place().root,Some(a));
+    assert_eq!(app.scope_place().focus,Some(a));
+    command(&mut app,ScopeDirection::Down);assert_eq!(app.scope_place().focus,Some(a));
+}
+#[test]
+fn replacing_the_live_canvas_cannot_complete_an_earlier_click_on_the_same_document() {
+    let (mut app,a,_,_)=fixture();let graph=app.scope_place().graph;
+    let before=app.graph_runtimes.get(graph).unwrap().instance;
+    let mut activation=cambium::scope_navigation::NodeActivation::default();
+    activation.press(Some((before,a)),(0.,0.),false);assert_eq!(activation.release(Some((before,a)),(0.,0.),10.),None);
+    let canvas=mere::canvas::Canvas::new();
+    app.graph_runtimes.replace_active_canvas(canvas);
+    let after=app.graph_runtimes.get(graph).unwrap().instance;assert_ne!(before,after);
+    activation.press(Some((after,a)),(0.,0.),false);assert_eq!(activation.release(Some((after,a)),(0.,0.),100.),None);
+}
+#[test]
+fn close_prefers_the_remaining_tab_in_its_own_stack_over_another_cell() {
+    let (mut app, a, b, c) = fixture();
+    let reader = app.active_pane.unwrap();
+    app.update(Action::ReadGraphMember(b));
+    app.workbench_for_pane_mut(reader).unwrap().open_tile(c);
+    app.update(Action::WorkbenchActivate(b));
+    app.update(Action::Reading(crate::reading_view::ReadAction::Close(
+        ReadTarget {
+            pane: reader,
+            member: b,
+        },
+    )));
+    assert_eq!(
+        app.browser_command_target().map(|(member, _)| member),
+        Some(a)
+    );
+    assert!(app.workbench_for_pane(reader).unwrap().has_tile(c));
+}
+#[test]
+fn location_search_from_a_map_opens_a_reading_and_offers_structural_scopes() {
+    let (mut app, _, b, _) = fixture();
+    command(&mut app, ScopeDirection::Up);
+    command(&mut app, ScopeDirection::Up);
+    app.update(Action::Scope(ScopeCommand::EditLocation));
+    app.update(Action::OmnibarInsert("https://scope.test/b".into()));
+    app.update(Action::OmnibarCommit);
+    assert_eq!(app.scope_place().level, ScopeLevel::Document);
+    assert_eq!(app.scope_place().focus, Some(b));
+    assert_eq!(app.graph_runtimes.graph().node_count(), 3);
+    app.update(Action::Scope(ScopeCommand::EditLocation));
+    app.update(Action::OmnibarInsert("Meres".into()));
+    app.update(Action::OmnibarCommit);
+    assert_eq!(app.scope_place().level, ScopeLevel::Overmap);
+    command(&mut app, ScopeDirection::Back);
+    assert_eq!(app.scope_place().level, ScopeLevel::Document);
+    assert_eq!(app.scope_place().focus, Some(b));
+}
+#[test]
+fn reading_another_member_records_the_origin_before_revealing_the_destination() {
+    let (mut app, a, b, _) = fixture();
+    app.update(Action::ReadGraphMember(b));
+    assert_eq!(app.scope_place().focus, Some(b));
+    command(&mut app, ScopeDirection::Back);
+    assert_eq!(app.scope_place().level, ScopeLevel::Document);
+    assert_eq!(app.scope_place().focus, Some(a));
+    command(&mut app, ScopeDirection::Forward);
+    assert_eq!(app.scope_place().level, ScopeLevel::Document);
+    assert_eq!(app.scope_place().focus, Some(b));
+}
+#[test]
+fn accepting_a_location_from_reading_preserves_back_and_forward_between_documents() {
+    let (mut app, a, b, _) = fixture();
+    app.update(Action::Scope(ScopeCommand::EditLocation));
+    app.update(Action::OmnibarInsert("https://scope.test/b".into()));
+    app.update(Action::OmnibarCommit);
+    assert_eq!(app.scope_place().level, ScopeLevel::Document);
+    assert_eq!(app.scope_place().focus, Some(b));
+    command(&mut app, ScopeDirection::Back);
+    assert_eq!(app.scope_place().level, ScopeLevel::Document);
+    assert_eq!(app.scope_place().focus, Some(a));
+    command(&mut app, ScopeDirection::Forward);
+    assert_eq!(app.scope_place().level, ScopeLevel::Document);
+    assert_eq!(app.scope_place().focus, Some(b));
+}
+#[test]
+fn editing_location_cancels_without_changing_scope_history() {
+    let (mut app, _, _, _) = fixture();
+    let history = app.reading.scope.navigation.clone();
+    let place = app.scope_place();
+    app.update(Action::Scope(ScopeCommand::EditLocation));
+    assert!(app.omnibar.open);
+    app.update(Action::OmnibarInsert("uncommitted address".into()));
+    app.update(Action::OmnibarClose);
+    assert_eq!(app.scope_place(), place);
+    assert_eq!(app.reading.scope.navigation, history);
+}
+#[test]
+fn close_controls_preserve_documents_and_return_the_last_reading_to_its_map() {
+    let (mut app, a, b, _) = fixture();
+    let reader = app.active_pane.unwrap();
+    app.update(Action::ReadGraphMember(b));
+    app.update(Action::Reading(crate::reading_view::ReadAction::Close(
+        ReadTarget {
+            pane: reader,
+            member: a,
+        },
+    )));
+    assert_eq!(app.scope_place().focus, Some(b));
+    assert_eq!(app.scope_place().level, ScopeLevel::Document);
+    assert!(!app.workbench_for_pane(reader).unwrap().has_tile(a));
+    assert!(app.workbench_for_pane(reader).unwrap().has_tile(b));
+    app.update(Action::Reading(crate::reading_view::ReadAction::Close(
+        ReadTarget {
+            pane: reader,
+            member: b,
+        },
+    )));
+    assert_eq!(app.scope_place().level, ScopeLevel::Neighborhood);
+    assert_eq!(app.scope_place().focus, Some(b));
+    assert_eq!(app.workbench_for_pane(reader).unwrap().tile_count(), 0);
+    assert_eq!(app.graph_runtimes.graph().node_count(), 3);
+    command(&mut app, ScopeDirection::Down);
+    assert_eq!(app.scope_place().level, ScopeLevel::Document);
+    assert_eq!(app.scope_place().focus, Some(b));
+}
 fn command(app: &mut App, direction: ScopeDirection) -> Vec<Effect> {
     app.update(Action::Scope(ScopeCommand::Navigate(direction)))
 }

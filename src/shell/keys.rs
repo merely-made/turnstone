@@ -396,6 +396,19 @@ impl Shell {
     }
 
     pub(super) fn on_key_in_window(&mut self, slot: usize, size: (u32, u32), key: &WinitKey) {
+        let peek_keys = slot == 0 && !self.app.omnibar.open && !self.app.user_agent_decision.is_open()
+            && self.chrome.focus_cards_visible() && self.app.reading.cards.peek.as_ref().is_some_and(|t|self.app.valid_focus_card(t));
+        if peek_keys && matches!(key,WinitKey::Named(WinitNamedKey::Escape)) {
+            self.act(Action::FocusCard(crate::focus_card::Command::DismissPeek));
+            return;
+        }
+        if peek_keys && matches!(key,WinitKey::Named(WinitNamedKey::Tab|WinitNamedKey::Enter|WinitNamedKey::Space)) {
+            if let Some(event)=self.cambium_key(key) {
+                let intents=self.chrome.focus_card_key(event);
+                for intent in intents {super::input::dispatch_primary_chrome_press(self,Some(intent));}
+                self.request_redraw();return;
+            }
+        }
         if slot == 0 {
             let menu_key=match key {
                 WinitKey::Named(WinitNamedKey::Escape)=>Some("escape"),
@@ -471,9 +484,22 @@ impl Shell {
             self.act(Action::Reading(crate::reading_view::ReadAction::Command(target, cambium::ReadCommand::CloseFind)));
             return;
         }
-        if matches!(key,WinitKey::Named(WinitNamedKey::Escape)) && !self.app.omnibar.open && !self.app.document_find.open
-            && let Some(target)=self.app.focused_read_target().filter(|target|self.app.reading.find.get(target).is_some_and(|ui|ui.appearance_open)) {
-            self.act(Action::Reading(crate::reading_view::ReadAction::Command(target,cambium::ReadCommand::Appearance)));return;
+        if matches!(key, WinitKey::Named(WinitNamedKey::Escape))
+            && !self.app.omnibar.open
+            && !self.app.document_find.open
+            && let Some(target) = self.app.focused_read_target().filter(|target| {
+                self.app
+                    .reading
+                    .find
+                    .get(target)
+                    .is_some_and(|ui| ui.appearance_open)
+            })
+        {
+            self.act(Action::Reading(crate::reading_view::ReadAction::Command(
+                target,
+                cambium::ReadCommand::Appearance,
+            )));
+            return;
         }
         if self.cambium_key(key).as_ref().is_some_and(cambium::is_find_shortcut) {
             if let Some(target) = self.app.focused_read_target() {
@@ -509,6 +535,20 @@ impl Shell {
         // Actions (the gesture law). When one is consumed, no Action is
         // computed — the canvas view hotkeys stay suspended while a page reads.
         if !self.app.omnibar.open && self.deliver_content_key(key) {
+            return;
+        }
+        if !self.app.omnibar.open
+            && !self.ctrl
+            && !self.alt
+            && !self.meta
+            && !self.shift
+            && matches!(key, WinitKey::Named(WinitNamedKey::Enter))
+            && let crate::surface::FocusTarget::Graph(pane) = self.app.focus
+            && let Some(member) = self.app.graph_pane_focused_member(pane)
+            && let Some(graph) = self.app.graph_for_pane(pane)
+        {
+            let effects = self.app.read_member_in_graph(graph, member);
+            self.run_effects(effects);
             return;
         }
         let action = if self.app.omnibar.open {

@@ -194,6 +194,7 @@ pub fn ring_of(action: &Action) -> Ring {
         | ToggleSizeByRecency
         | ToggleNodeContent
         | SearchCapturedPages
+        | FocusCard(_)
         | Scope(_)
         | SelectScopeMere(_)
         | Reading(_)

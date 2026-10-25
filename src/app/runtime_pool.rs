@@ -30,6 +30,8 @@ use crate::panes::{GraphId, PaneId, SessionId};
 /// it inside the graph runtime makes that incumbent coupling explicit while
 /// preventing the host from treating a window or pane as the graph owner.
 pub struct GraphRuntime {
+    /// Process-local incarnation; durable graph/document IDs never name a live gesture.
+    pub(crate) instance:uuid::Uuid,
     pub graph: GraphId,
     pub session: Option<SessionId>,
     pub canvas: Canvas,
@@ -50,6 +52,7 @@ impl GraphRuntime {
     pub fn new(graph: GraphId, session: Option<SessionId>, mut canvas: Canvas) -> Self {
         canvas.set_graph_grammar(true);
         Self {
+            instance:uuid::Uuid::new_v4(),
             graph,
             session,
             canvas,
@@ -159,6 +162,7 @@ impl GraphRuntimePool {
         runtime.scene_save_pending = false;
         runtime.scene_restore_pending = false;
         runtime.canvas = canvas;
+        runtime.instance=uuid::Uuid::new_v4();
         runtime.origin = None;
         let _ = self.bind_recording(self.active);
     }
@@ -177,6 +181,7 @@ impl GraphRuntimePool {
         runtime.scene_save_pending = false;
         runtime.scene_restore_pending = false;
         runtime.canvas.set_graph(graph);
+        runtime.instance=uuid::Uuid::new_v4();
         runtime.persistence = state;
         runtime.origin = None;
         let _ = self.bind_recording(self.active);
@@ -191,6 +196,7 @@ impl GraphRuntimePool {
         runtime.scene_save_pending = false;
         runtime.scene_restore_pending = false;
         runtime.canvas.set_graph(graph);
+        runtime.instance=uuid::Uuid::new_v4();
         runtime.origin = None;
         let _ = self.bind_recording(self.active);
     }

@@ -1025,7 +1025,7 @@ pub(crate) fn chrome_sheet(appearance: &crate::shell_services::AppearanceConfig)
         .chrome-panes-menu .shell-popup {{ flex-direction:row; flex-wrap:wrap; }}
         .chrome-panes-menu .chrome-menu-entry {{ width:50%; flex-basis:50%; }}"
     );
-    themed_sheet(appearance, format!("{sheet}\n{}\n{controls}", cambium::SHELL_CSS))
+    themed_sheet(appearance, format!("{sheet}\n{}\n{}\n{controls}", cambium::SHELL_CSS, cambium::GRAPH_CANVAS_SWATCH_CSS))
 }
 
 /// The Settings pane's live Cambium sheet, in layout pixels. Other pane kinds
@@ -2764,6 +2764,35 @@ impl RetainedSubtreeLayout {
             (0.0, 0.0),
         );
         composite(DeviceIntSize::new(lw as i32, lh as i32), &plist)
+    }
+
+    /// The same retained forest-root layout, with shared Cambium paint leaves.
+    pub fn scene_with_leaves(
+        &mut self, dom:&ScriptedDom, root:DomNodeId, sheet:&str, w:u32, h:u32,
+        registry:&mut sprigging::LeafRegistry<u64>, cache:&mut sprigging::RenderedLeaves,
+    ) -> netrender::Scene {
+        self.ensure(dom,root,sheet,w,h);
+        let (lw,lh)=logical_size(self.size,self.scale);
+        let view=SubtreeView::new(dom,root);
+        let snapshot=self.snapshot.as_mut().expect("ensure leaves a snapshot");
+        let mut nodes=Vec::new(); let mut sizes=HashMap::new();
+        walk_dom(&view,root,&mut |node| {
+            if let (Some(key),Some(fragment))=(custom_leaf_key(&view,node),snapshot.fragments.get(node)) {
+                nodes.push((node,key));sizes.insert(key,sprigging::Size{width:fragment.width,height:fragment.height});
+            }
+        });
+        registry.render_into(|key|sizes.get(&key).copied(),cache);
+        let mut plist=paint_snapshot(&view,snapshot,lw,lh,&HashMap::new(),(0.,0.));
+        for (node,key) in nodes {
+            let Some((x,y,_,_))=snapshot_node_rect(&view,snapshot,node,&HashMap::new(),(0.,0.)) else {continue};
+            let Some((vx,vy,vw,vh))=snapshot_visible_rect(&view,snapshot,node,&HashMap::new(),(0.,0.),(lw,lh)) else {continue};
+            if let Some(commands)=cache.get(key) {
+                let mut clipped=vec![paint_list_api::PaintCmd::PushClip(paint_list_api::ClipSpec{kind:paint_list_api::ClipKind::Rect(paint_list_api::LayoutRect::new(paint_list_api::LayoutPoint::new(vx-x,vy-y),paint_list_api::LayoutPoint::new(vx-x+vw,vy-y+vh)))})];
+                clipped.extend_from_slice(commands);clipped.push(paint_list_api::PaintCmd::PopClip);
+                plist.push_host_commands_at(paint_list_api::LayoutPoint::new(x,y),&clipped);
+            }
+        }
+        composite(DeviceIntSize::new(lw as i32,lh as i32),&plist)
     }
 
     /// Hit-test this root against the same retained layout the frame painted.

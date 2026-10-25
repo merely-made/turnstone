@@ -188,6 +188,7 @@ pub(crate) fn command_metadata(action: &Action) -> (EffectClass, bool) {
         | Action::BeginRenameSession
         | Action::RenameSession { .. }
         | Action::CancelInstallDenizen
+        | Action::FocusCard(..)
         | Action::Scope(..)
         | Action::SelectScopeMere(..)
         | Action::Reading(..)

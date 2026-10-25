@@ -11,6 +11,7 @@ impl App {
         });
         match place.level {
             ScopeLevel::Document => member.unwrap_or_else(|| "Document".into()),
+            ScopeLevel::Forme(_) => "Reading layout".into(),
             ScopeLevel::Neighborhood => format!(
                 "Neighborhood of {}",
                 place
@@ -57,29 +58,10 @@ impl App {
     }
     pub(crate) fn scope_crumbs(&self) -> Vec<ScopeCrumb> {
         let place = self.scope_place();
-        [
-            ScopeLevel::Overmap,
-            ScopeLevel::Graph,
-            ScopeLevel::Neighborhood,
-            ScopeLevel::Document,
-        ]
-        .into_iter()
-        .filter(|l| *l as u8 >= place.level as u8)
-        .map(|level| {
-            let label = if level == ScopeLevel::Neighborhood {
-                "Neighborhood".into()
-            } else {
-                self.scope_label(&ScopePlace {
-                    level,
-                    ..place.clone()
-                })
-            };
-            ScopeCrumb {
-                label,
-                level,
-                current: level == place.level,
-            }
-        })
-        .collect()
+        let trail=place.trail();let nested=trail.iter().filter(|p|p.level==ScopeLevel::Neighborhood).count()>1;let last=trail.len().saturating_sub(1);
+        trail.into_iter().enumerate().map(|(index, destination)| ScopeCrumb {
+            label:if destination.level==ScopeLevel::Neighborhood && !nested {"Neighborhood".into()} else {self.scope_label(&destination)},
+            target:ScopeDestination::Place(destination),current:index==last,
+        }).collect()
     }
 }

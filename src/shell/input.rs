@@ -212,6 +212,7 @@ pub(super) fn dispatch_primary_chrome_press(
         crate::chrome_view::ChromeIntent::CommitRow(index) => Action::OmnibarCommitRow(index),
         crate::chrome_view::ChromeIntent::ToggleKeep(index) => Action::OmnibarToggleKeepRow(index),
         crate::chrome_view::ChromeIntent::Scope(command) => Action::Scope(command),
+        crate::chrome_view::ChromeIntent::FocusCard(command) => Action::FocusCard(command),
         crate::chrome_view::ChromeIntent::NavBack => Action::NavBack,
         crate::chrome_view::ChromeIntent::NavForward => Action::NavForward,
         crate::chrome_view::ChromeIntent::Reload => Action::Reload,
@@ -219,10 +220,16 @@ pub(super) fn dispatch_primary_chrome_press(
         crate::chrome_view::ChromeIntent::KeepNode(member) => Action::KeepNode { member },
         crate::chrome_view::ChromeIntent::Address => Action::OmnibarOpen { command: false },
         crate::chrome_view::ChromeIntent::WorkspaceMap(map) => Action::SetWorkspaceMap(map),
-        crate::chrome_view::ChromeIntent::Tool(kind) => Action::ToggleToolPane(crate::panes::PaneKindId::new(kind)),
+        crate::chrome_view::ChromeIntent::Tool(kind) => {
+            Action::ToggleToolPane(crate::panes::PaneKindId::new(kind))
+        },
         crate::chrome_view::ChromeIntent::ReadMember(member) => Action::ReadGraphMember(member),
-        crate::chrome_view::ChromeIntent::NavigateRelationship(target) => Action::NavigateRelationship(target),
-        crate::chrome_view::ChromeIntent::RevealRelationship(target) => Action::RevealRelationship(target),
+        crate::chrome_view::ChromeIntent::NavigateRelationship(target) => {
+            Action::NavigateRelationship(target)
+        },
+        crate::chrome_view::ChromeIntent::RevealRelationship(target) => {
+            Action::RevealRelationship(target)
+        },
         crate::chrome_view::ChromeIntent::RevealMember(member) => Action::RevealGraphMember(member),
         crate::chrome_view::ChromeIntent::Layout(layout) => Action::SetChromeLayout(layout),
         crate::chrome_view::ChromeIntent::FitGraph => {
@@ -419,13 +426,25 @@ fn workbench_resize_target(
     use crate::surface::{SurfaceId, SurfaceKind};
     let hit = hit?;
     plan.iter().rev().find_map(|surface| {
-        let SurfaceKind::Pane(pane) = surface.kind else { return None };
-        if !matches!(app.pane_content(pane), Some(crate::panes::PaneContent::Workbench))
-            || !surface.rect.contains(x, y) { return None; }
+        let SurfaceKind::Pane(pane) = surface.kind else {
+            return None;
+        };
+        if !matches!(
+            app.pane_content(pane),
+            Some(crate::panes::PaneContent::Workbench)
+        ) || !surface.rect.contains(x, y)
+        {
+            return None;
+        }
         let owned = match hit.kind {
             SurfaceKind::Pane(id) => id == pane,
-            SurfaceKind::Content(node) => hit.id == SurfaceId::content_appearance(node,
-                crate::surface::appearance::workbench_appearance_role(pane, node)),
+            SurfaceKind::Content(node) => {
+                hit.id
+                    == SurfaceId::content_appearance(
+                        node,
+                        crate::surface::appearance::workbench_appearance_role(pane, node),
+                    )
+            },
             _ => false,
         };
         if !owned { return None; }
@@ -1052,9 +1071,11 @@ impl Shell {
                                         // Controls are ordinary pane input. Only tabs
                                         // and dividers enter the tiling gesture path.
                                         let member=pane.tiling().cell_at(lx,ly).and_then(|cell|cell.active_member());
-                                        self.app.focus=crate::surface::FocusTarget::Pane(id);
-                                        self.app.active_pane=Some(id);
-                                        self.app.publish_member_context(id,member);
+                                        if !pane.is_close_at(lx,ly) {
+                                            self.app.focus=crate::surface::FocusTarget::Pane(id);
+                                            self.app.active_pane=Some(id);
+                                            self.app.publish_member_context(id,member);
+                                        }
                                         let actions=self.pane_click_actions(id,&PaneContent::Workbench,(lx,ly),(rw,rh));
                                         for action in actions { self.act(action); }
                                     }
@@ -1626,13 +1647,34 @@ impl Shell {
             .map(|c| c.fold_records().to_vec());
         let mosaic_before = graph.and_then(|g| self.app.graph_runtimes.canvas(g))
             .and_then(|c| c.cartography_geometry().mosaic().cloned());
+        if self.ctrl || self.shift || self.alt || self.meta {
+            self.app
+                .reading
+                .scope
+                .activation
+                .entry(pane)
+                .or_default()
+                .cancel();
+        }
         let handled = self.app.graph_pane_pointer_up(pane, button, x, y);
         let mosaic_after = graph.and_then(|g| self.app.graph_runtimes.canvas(g))
             .and_then(|c| c.cartography_geometry().mosaic().cloned());
         if mosaic_before != mosaic_after { self.app.mark_graph_scene_changed(pane); }
         if let Some(graph) = graph {
-            let after = self.app.graph_runtimes.canvas(graph).map(|c| c.fold_records().to_vec());
-            if before != after { self.save_graph_folds(graph); }
+            let after = self
+                .app
+                .graph_runtimes
+                .canvas(graph)
+                .map(|c| c.fold_records().to_vec());
+            if before != after {
+                self.save_graph_folds(graph);
+            }
+        }
+        if let Some((graph, instance, member)) = self.app.reading.scope.read_request.take()
+            && self.app.graph_runtimes.get(graph).is_some_and(|runtime|runtime.instance==instance) {
+            self.app.active_pane = Some(pane);
+            let effects = self.app.read_member_in_graph(graph, member);
+            self.run_effects(effects);
         }
         handled
     }

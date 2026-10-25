@@ -144,9 +144,13 @@ impl App {
                 )
             })
             .and_then(|context| context.member)
-            .or_else(|| self.workbench_for_pane(pane).and_then(|workbench| {
-                workbench.slot_views().find_map(|slot| slot.members.get(slot.active).copied())
-            }));
+            .or_else(|| {
+                self.workbench_for_pane(pane).and_then(|workbench| {
+                    workbench
+                        .slot_views()
+                        .find_map(|slot| slot.members.get(slot.active).copied())
+                })
+            });
         if let Some(workbench) = self.workbench_for_pane_mut(pane)
             && !workbench.has_tile(member)
             && let Some(target) = target
@@ -157,8 +161,30 @@ impl App {
         self.graph_pane_select_member(pane, member);
         self.focus = crate::surface::FocusTarget::Graph(pane);
         let mut effects = self.open_in_workbench();
-        effects.extend(self.update(Action::WorkbenchActivate(member)));
+        // The origin was captured before revealing the destination. Running the
+        // public action wrapper here would capture the newly revealed reading
+        // again and overwrite the history entry we are leaving.
+        effects.extend(self.activate_workbench_member(member));
         effects
+    }
+
+    pub(super) fn activate_workbench_member(&mut self, member: Uuid) -> Vec<Effect> {
+        let owner = self.workbench_owner_pane();
+        let activated = owner
+            .and_then(|pane| self.workbench_for_pane_mut(pane))
+            .is_some_and(|workbench| workbench.activate(member));
+        if !activated {
+            return vec![Effect::Redraw];
+        }
+        if let Some(owner) = owner {
+            self.publish_member_context(owner, Some(member));
+            self.record_scope_reading(owner, member);
+            if let Some(graph) = self.graph_for_pane(owner) {
+                self.reading.trails.entry(owner).or_default()
+                    .visit(crate::reading_view::ReadVisit { graph, member });
+            }
+        }
+        vec![Effect::SaveSession, Effect::SaveReadingPreferences, Effect::Redraw]
     }
 
     pub(crate) fn read_visit_in_pane(&mut self,pane:PaneId,member:Uuid)->Vec<Effect> {
@@ -501,9 +527,16 @@ impl App {
                 let pane = self.active_pane.unwrap_or(graph_pane);
                 if pane != graph_pane
                     && let Some(space) = reading_stack
-                    && let Some(stack) = self.space(space).and_then(|layout|layout.outer_workspace().ok())
-                        .and_then(|frame|crate::panes::workspace_bridge::path_for(frame.workspace.tiled(),workbench::TileId(graph_pane.0)))
-                        .map(|path|crate::panes::workspace_bridge::path_indices(&path))
+                    && let Some(stack) = self
+                        .space(space)
+                        .and_then(|layout| layout.outer_workspace().ok())
+                        .and_then(|frame| {
+                            crate::panes::workspace_bridge::path_for(
+                                frame.workspace.tiled(),
+                                workbench::TileId(graph_pane.0),
+                            )
+                        })
+                        .map(|path| crate::panes::workspace_bridge::path_indices(&path))
                 {
                     effects.extend(
                         self.update(Action::OuterWorkspace {
@@ -673,15 +706,62 @@ impl App {
         let Some(member) = member else {
             return vec![Effect::Redraw];
         };
-        if self
-            .workbench_for_pane_mut(owner)
-            .is_some_and(|workbench| workbench.close_tile(member))
-        {
-            self.events.push(AppEvent::WorkbenchTileClosed);
-            vec![Effect::SaveSession, Effect::Redraw]
-        } else {
-            vec![Effect::Redraw]
+        self.close_reading_view(crate::reading_view::ReadTarget {
+            pane: owner,
+            member,
+        })
+    }
+
+    pub(crate) fn close_reading_view(
+        &mut self,
+        target: crate::reading_view::ReadTarget,
+    ) -> Vec<Effect> {
+        let Some(workbench) = self.workbench_for_pane(target.pane) else {
+            return vec![Effect::Redraw];
+        };
+        if !workbench.has_tile(target.member) {
+            return vec![Effect::Redraw];
         }
+        let members = workbench.open_members();
+        let stack=workbench.slot_views().find(|slot|slot.members.contains(&target.member)).map(|slot|slot.members.to_vec()).unwrap_or_default();
+        let focused = self.follower_context(target.pane).and_then(|c| c.member);
+        let next = cambium::scope_navigation::reading_after_close_in_stack(
+            &members,
+            &stack,
+            focused.as_ref(),
+            &target.member,
+        );
+        self.capture_scope_origin();
+        let mut effects = if next.is_none() && self.active_pane == Some(target.pane) {
+            self.scope_command(crate::scope_navigation::ScopeCommand::To(
+                crate::scope_navigation::ScopeLevel::Neighborhood.into()))
+        } else {
+            Vec::new()
+        };
+        if self
+            .workbench_for_pane_mut(target.pane)
+            .is_some_and(|w| w.close_tile(target.member))
+        {
+            if focused == Some(target.member)
+                && let Some(member) = next
+            {
+                self.workbench_for_pane_mut(target.pane)
+                    .unwrap()
+                    .activate(member);
+                self.publish_member_context(target.pane, Some(member));
+                if self.active_pane == Some(target.pane) {
+                    self.focus = crate::surface::FocusTarget::Pane(target.pane);
+                    self.record_scope_reading(target.pane, member);
+                }
+            }
+            self.events.push(AppEvent::WorkbenchTileClosed);
+            effects.extend([
+                Effect::SaveSession,
+                Effect::SaveReadingPreferences,
+                Effect::Redraw,
+            ]);
+        }
+        effects
     }
 
     pub(super) fn toggle_maximize_pane(&mut self) -> Vec<Effect> {

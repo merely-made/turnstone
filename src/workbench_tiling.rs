@@ -36,6 +36,7 @@ pub struct CellPlacement {
     pub chrome_scale: f32,
     pub reading_toolbar_height: f32,
     pub tab_edge: crate::chrome_layout::TabEdge,
+    pub tab_policy:cambium::TabStripPolicy,
     /// The stack's members in tab order.
     pub members: Vec<Uuid>,
     /// Index of the active (visible) tab.
@@ -97,6 +98,7 @@ impl CellPlacement {
 
     pub fn tab_rect(&self) -> Rect {
         use crate::chrome_layout::TabEdge;
+        if !self.tab_policy.visible(self.members.len()) {return Rect::new(self.rect.x,self.rect.y,0.0,0.0);}
         let height = (crate::ui::TABLIST_HEIGHT * self.chrome_scale).min(self.rect.h);
         let width = (cambium::ShellMetrics::DOCUMENT_RAIL_MAX_WIDTH * self.chrome_scale).min(self.rect.w * 0.30);
         match self.tab_edge {
@@ -188,6 +190,7 @@ pub(crate) fn place_reading_workbench(app: &crate::app::App, pane: crate::panes:
     let scale = app.pane_layout_scale(pane);
     for cell in &mut tiling.cells {
         cell.chrome_scale = scale;
+        cell.tab_policy=cambium::TabStripPolicy::Multiple;
         let ui=cell.active_member().and_then(|member|app.reading.find.get(&crate::reading_view::ReadTarget{pane,member}));
         let width=cell.stack_body().w / scale;
         let header=if width>=240.0 {32.0} else {64.0};
@@ -203,6 +206,7 @@ fn walk(node: &TreeGeometry, area: Rect, path: &mut Vec<usize>, out: &mut Workbe
             chrome_scale: 1.0,
             reading_toolbar_height: 0.0,
             tab_edge: Default::default(),
+            tab_policy:Default::default(),
             members: members.clone(),
             active: *active,
             rect: area,
@@ -521,6 +525,7 @@ mod tests {
         let other_cell = CellPlacement {
             chrome_scale:1.0, reading_toolbar_height:0.0,
             tab_edge: Default::default(),
+            tab_policy:Default::default(),
             members: vec![t],
             active: 0,
             rect: Rect::new(100.0, 50.0, 400.0, 430.0),
@@ -566,6 +571,7 @@ mod tests {
         let own_cell = CellPlacement {
             chrome_scale:1.0, reading_toolbar_height:0.0,
             tab_edge: Default::default(),
+            tab_policy:Default::default(),
             members: vec![d, t],
             active: 1,
             rect: other_cell.rect,

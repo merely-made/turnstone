@@ -27,12 +27,14 @@ impl ReadTarget {
 }
 #[derive(Clone, Debug, PartialEq)]
 pub enum ReadAction {
+    Close(ReadTarget),
     Command(ReadTarget, cambium::ReadCommand),
     Query(ReadTarget, cambium::TextInput),
 }
 pub type FindUi = cambium::ReadFind;
 #[derive(Default)]
 pub struct ReadingState {
+    pub cards: cambium::FocusCardDeck<crate::focus_card::Target>,
     preferences: tabard::ReadingProjections<ReadTarget>,
     pub find: BTreeMap<ReadTarget, FindUi>,
     pub anchors: BTreeMap<ReadTarget, tabard::ReadingAnchor>,
@@ -100,7 +102,7 @@ impl ReadingState {
             if choices.len() > 1024 || trails.len() > 128 {
                 return Err("Too many reading projections".into());
             }
-            scope.navigation.validate(|bookmark| bookmark.validate())?;
+            scope.navigation.validate(|place| place.valid(), |bookmark| bookmark.validate())?;
             let mut state = Self {
                 scope,
                 ..Default::default()
@@ -226,6 +228,7 @@ impl App {
     pub(crate) fn read_action(&mut self, action: ReadAction) -> Vec<Effect> {
         use cambium::ReadCommand as C;
         let (target, command) = match action {
+            ReadAction::Close(target) => return self.close_reading_view(target),
             ReadAction::Query(target, input) => {
                 let query = input.text().to_owned();
                 if !self.reading.find.get(&target).is_some_and(|ui| ui.open) {

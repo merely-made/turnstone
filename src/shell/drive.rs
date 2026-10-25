@@ -744,6 +744,10 @@ impl taproot::Automatable for Shell {
         let mut out = taproot::ProbeSnapshot::default()
             .with_field("reading-text-size",reading_target.map(|target|self.app.reading.preferences(target).text_size.to_string()).unwrap_or_default())
             .with_field("reading-column-em",reading_target.map(|target|self.app.reading.preferences(target).column_em.to_string()).unwrap_or_default())
+            .with_field("focus-card-count",self.app.focus_card_views().len().to_string())
+            .with_field("focus-card-kept",self.app.focus_card_views().iter().filter(|c|c.kept).count().to_string())
+            .with_field("focus-card-scope",self.app.reading.cards.peek.as_ref().and_then(|t|if let crate::focus_card::Origin::Scope(p)=&t.origin {Some(p.level.label())} else {None}).unwrap_or_default())
+            .with_field("focus-card-peek",self.app.reading.cards.peek.as_ref().filter(|t|self.app.valid_focus_card(t)).map(|t|t.address.clone()).unwrap_or_default())
             .with_field("scope-level",self.app.scope_place().level.label())
             .with_field("scope-focus",self.app.scope_place().focus.map(|m|m.to_string()).unwrap_or_default())
             .with_field("scope-back",self.app.reading.scope.navigation.destination(false).is_some().to_string())
@@ -1439,6 +1443,23 @@ impl Shell {
                 );
                 self.request_redraw();
             },
+            Step::DoubleClickGraphNode(address) => {
+                let pane=self.app.graph_command_pane().ok_or("no graph owner pane")?;
+                let point=self.app.with_graph_pane(pane,|canvas| {
+                    let (key,_)=canvas.graph().get_node_by_url(address)?;
+                    canvas.screen_position_of(key)
+                }).flatten().ok_or("graph node is not painted")?;
+                let scale=self.app.pane_layout_scale(pane);
+                let surface=self.surface_plan().into_iter().find(|s|s.kind==crate::surface::SurfaceKind::Graph(pane)).ok_or("graph surface is not visible")?;
+                let (x,y)=(surface.rect.x+point.0*scale,surface.rect.y+point.1*scale);
+                if !surface.rect.contains(x,y) {return Err("graph node is outside its painted surface".into());}
+                self.deliver_move(x,y);
+                for _ in 0..2 {
+                    self.deliver_press(x,y,winit::event::MouseButton::Left);
+                    self.deliver_release(x,y,winit::event::MouseButton::Left);
+                }
+                self.request_redraw();
+            },
             Step::RecordGraphScene(name) => {
                 let pane = self.app.scene_command_pane().ok_or("no graph owner pane")?;
                 let graph = self.app.graph_for_pane(pane).ok_or("graph absent")?;
@@ -1610,6 +1631,20 @@ impl Shell {
             Step::ClickRow(substr) => self.click_pane_row(substr),
             Step::ClickTab(label) => self.click_pane_tab(label),
             Step::ClickNode(substr) => self.click_pane_node(substr),
+            Step::ClickReadingReference(address) => {
+                let target=self.app.focused_read_target().ok_or("No focused retained reading")?;
+                self.sync_content_placements();
+                let id=target.appearance(0);
+                let surface=self.surface_plan().into_iter().find(|s|s.id==id).ok_or("Reading appearance is not visible")?;
+                let _=self.content_sessions.pool.prepare(&id);
+                let links=self.content_sessions.appearance(target.member,id).and_then(pelt_core::PeltContent::document).ok_or("No retained reading controller")?.links();
+                let link=links.into_iter().find(|link|super::content_link_target(&self.app,target.member,&link.url)==*address).ok_or("Reference is not in the retained document")?;
+                let scale=self.content_sessions.pool.placement(&id).ok_or("No reading placement")?.scale_factor;
+                let [left,top,width,height]=link.rect;
+                let (x,y)=(surface.rect.x+(left+width*0.5)*scale,surface.rect.y+(top+height*0.5)*scale);
+                if !surface.rect.contains(x,y) {return Err("Reference is outside the visible reading; scroll or Find it first".into());}
+                self.deliver_move(x,y);self.deliver_press(x,y,MouseButton::Left);self.deliver_release(x,y,MouseButton::Left);
+            },
             Step::Drag(from, to) => {
                 self.deliver_press(from.0, from.1, MouseButton::Left);
                 let mid = ((from.0 + to.0) / 2.0, (from.1 + to.1) / 2.0);

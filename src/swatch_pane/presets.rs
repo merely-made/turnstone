@@ -194,7 +194,7 @@ fn overmap_gather(app: &App) -> SwatchModel {
         }
     };
 
-    let current_container = app.reading.scope.navigation.current().filter(|v|v.place.level==cambium::scope_navigation::ScopeLevel::Overmap).map(|v|*v.place.graph.as_uuid()).or_else(||app.container_id());
+    let current_container = app.reading.scope.navigation.current().filter(|v|v.place.level==crate::scope_navigation::ScopeLevel::Overmap).map(|v|*v.place.graph.as_uuid()).or_else(||app.container_id());
     let mut model = SwatchModel::default();
     for &(id, depth, row) in &placed {
         let (key, node) = graph.get_node_by_id(id).expect("placed from this graph");

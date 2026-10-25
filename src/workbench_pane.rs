@@ -22,8 +22,8 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 use cambium::{
-    AnyView, DomHandle, GenetAppRunner, GenetCtx, GenetElement, PointerClick, TabStrip,
-    arrangement, el, lens, placed_with, tab_strip,
+    AnyView, DomHandle, GenetAppRunner, GenetCtx, GenetElement, PointerClick, TabBar, TabItem,
+    TabStrip, arrangement, el, placed_with, tab_bar_view,
 };
 use genet_scripted_dom::ScriptedDom;
 use layout_dom_api::LayoutDom;
@@ -36,8 +36,9 @@ use crate::surface::Rect;
 use crate::workbench_tiling::{WorkbenchTiling, place_workbench_at};
 
 fn workbench_sheet() -> &'static str {
-    static SHEET: std::sync::LazyLock<String> = std::sync::LazyLock::new(||
-        format!("{}\n{}", crate::ui::CAMBIUM_SHEET, cambium::SHELL_CSS));
+    static SHEET: std::sync::LazyLock<String> = std::sync::LazyLock::new(|| {
+        format!("{}\n{}\n.wb-single-reading .read-header {{ cursor:grab; }}", crate::ui::CAMBIUM_SHEET, cambium::SHELL_CSS)
+    });
     &SHEET
 }
 
@@ -80,13 +81,32 @@ type WbRunner = GenetAppRunner<WorkbenchState, fn(&WorkbenchState) -> WbView, Wb
 fn workbench_view(state: &WorkbenchState) -> WbView {
     let mut children: Vec<WbView> = Vec::new();
     for (i, cell) in state.cells.iter().enumerate() {
-        let labels = cell.labels.clone();
-        let strip = lens(
-            move |tabs: &mut TabStrip| {
-                let refs: Vec<&str> = labels.iter().map(String::as_str).collect();
-                tab_strip::<()>(tabs, &refs)
-            },
-            move |state: &mut WorkbenchState| &mut state.cells[i].strip,
+        let items: Vec<_> = cell
+            .labels
+            .iter()
+            .zip(&cell.members)
+            .map(|(label, member)| TabItem::new(label).with_key(member.to_string()))
+            .collect();
+        let targets: Vec<_> = cell
+            .members
+            .iter()
+            .filter_map(|member| {
+                cell.target.map(|target| crate::reading_view::ReadTarget {
+                    pane: target.pane,
+                    member: *member,
+                })
+            })
+            .collect();
+        let strip = tab_bar_view(
+            TabBar::new(&items, cell.strip.selected).with_label("Reading documents").with_names(cambium::TabBarNames {label:Some("reading-tab-label"),..Default::default()}),
+            move |state: &mut WorkbenchState, selected| state.cells[i].strip.selected = selected,
+            Some(move |state: &mut WorkbenchState, index: usize| {
+                if let Some(target) = targets.get(index) {
+                    state.read_actions.push(crate::action::Action::Reading(
+                        crate::reading_view::ReadAction::Close(*target),
+                    ));
+                }
+            }),
         );
         let body_h = cell.body.h;
         let body = el::<_, WorkbenchState, ()>("div", cell.hint.clone())
@@ -115,7 +135,7 @@ fn workbench_view(state: &WorkbenchState) -> WbView {
                 cell.rect.w,
                 cell.rect.h,
                 vec![
-                    Box::new(placed_with(
+                    if cell.tabs.w<=0.0 || cell.tabs.h<=0.0 {Box::new(el("div",()).attr("style","display:none;")) as WbView} else {Box::new(placed_with(
                         Placement::new(cell.tabs.x - cell.rect.x, cell.tabs.y - cell.rect.y),
                         format!(
                             "width:{}px;height:{}px;overflow:hidden;",
@@ -131,7 +151,7 @@ fn workbench_view(state: &WorkbenchState) -> WbView {
                                 },
                             )
                             .attr("style", "width:100%;height:100%;"),
-                    )) as WbView,
+                    )) as WbView},
                     Box::new(placed_with(
                         Placement::new(cell.toolbar.x - cell.rect.x, cell.toolbar.y - cell.rect.y),
                         format!("width:{}px;height:{}px;overflow:hidden;",cell.toolbar.w,cell.toolbar.h),
@@ -164,7 +184,28 @@ fn reading_toolbar(state: &WorkbenchState, index: usize) -> WbView {
     let mut ui = cell.find.clone();
     ui.available = cell.find_enabled;
     let find = Some(&ui);
-    cambium::read_toolbar(cell.preferences.text_size, cell.preferences.column_em, cell.text_controls, find,
+    let close = cambium::shell_control(
+        "×",
+        format!(
+            "Close reading: {}",
+            cell.labels
+                .get(cell.strip.selected)
+                .map(String::as_str)
+                .unwrap_or("document")
+        ),
+        Default::default(),
+        move |state: &mut WorkbenchState, _| {
+            state.read_actions.push(crate::action::Action::Reading(
+                crate::reading_view::ReadAction::Close(target),
+            ))
+        },
+    );
+    let toolbar=cambium::read_toolbar_with_trailing(
+        cell.preferences.text_size,
+        cell.preferences.column_em,
+        cell.text_controls,
+        find,
+        if cell.tabs.w>0.0 && cell.tabs.h>0.0 {Vec::new()} else {vec![close]},
         move |state: &mut WorkbenchState, event| {
             use crate::reading_view::ReadAction;
             let action = match event {
@@ -172,7 +213,8 @@ fn reading_toolbar(state: &WorkbenchState, index: usize) -> WbView {
                 cambium::ReadEvent::Query(input) => ReadAction::Query(target, input),
             };
             state.read_actions.push(crate::action::Action::Reading(action));
-        })
+        });
+    Box::new(el("div",toolbar).attr("class",if cell.tabs.w<=0.0 {"wb-single-reading"} else {"wb-tabbed-reading"}))
 }
 
 /// An activation the pane reports back after a click: make this member's tab
@@ -301,8 +343,20 @@ impl WorkbenchPane {
         // The tiling is the plan's geometry, in physical pixels, and input
         // routing reads it as such; the pane's DOM is in layout pixels.
         let scale = app.pane_layout_scale(pane_id);
-        let logical = |rect: Rect| Rect::new(rect.x / scale, rect.y / scale, rect.w / scale, rect.h / scale);
-        self.tiling = crate::workbench_tiling::place_reading_workbench(app, pane_id, geom.as_ref(), Rect::new(0.0, 0.0, pane_w, pane_h));
+        let logical = |rect: Rect| {
+            Rect::new(
+                rect.x / scale,
+                rect.y / scale,
+                rect.w / scale,
+                rect.h / scale,
+            )
+        };
+        self.tiling = crate::workbench_tiling::place_reading_workbench(
+            app,
+            pane_id,
+            geom.as_ref(),
+            Rect::new(0.0, 0.0, pane_w, pane_h),
+        );
         let graph = app
             .graph_for_pane(pane_id)
             .and_then(|graph| app.graph_runtimes.canvas(graph));
@@ -344,11 +398,42 @@ impl WorkbenchPane {
                 };
                 CellView {
                     toolbar: logical(c.toolbar_rect()),
-                    target: c.active_member().map(|member| crate::reading_view::ReadTarget { pane:pane_id, member }),
-                    find_enabled: c.active_member().is_some_and(|member|app.content.facts(member).is_some_and(|facts|facts.capabilities.find_in_page.is_available())),
-                    text_controls: c.active_member().is_some_and(|member|app.has_reading_controls(crate::reading_view::ReadTarget{pane:pane_id,member})),
-                    preferences: c.active_member().map(|member|app.reading.preferences(crate::reading_view::ReadTarget{pane:pane_id,member})).unwrap_or_default(),
-                    find: c.active_member().and_then(|member|app.reading.find.get(&crate::reading_view::ReadTarget{pane:pane_id,member})).cloned().unwrap_or_default(),
+                    target: c
+                        .active_member()
+                        .map(|member| crate::reading_view::ReadTarget {
+                            pane: pane_id,
+                            member,
+                        }),
+                    find_enabled: c.active_member().is_some_and(|member| {
+                        app.content
+                            .facts(member)
+                            .is_some_and(|facts| facts.capabilities.find_in_page.is_available())
+                    }),
+                    text_controls: c.active_member().is_some_and(|member| {
+                        app.has_reading_controls(crate::reading_view::ReadTarget {
+                            pane: pane_id,
+                            member,
+                        })
+                    }),
+                    preferences: c
+                        .active_member()
+                        .map(|member| {
+                            app.reading.preferences(crate::reading_view::ReadTarget {
+                                pane: pane_id,
+                                member,
+                            })
+                        })
+                        .unwrap_or_default(),
+                    find: c
+                        .active_member()
+                        .and_then(|member| {
+                            app.reading.find.get(&crate::reading_view::ReadTarget {
+                                pane: pane_id,
+                                member,
+                            })
+                        })
+                        .cloned()
+                        .unwrap_or_default(),
                     tabs: logical(c.tab_rect()),
                     body: logical(c.body()),
                     vertical: matches!(
@@ -411,28 +496,45 @@ impl WorkbenchPane {
     /// measurement, so only the layout knows them). The tab-drag gesture's
     /// press resolution.
     pub fn tab_at(&self, x: f32, y: f32, _w: u32, _h: u32) -> Option<Uuid> {
+        if self.is_close_at(x,y) {return None;}
         let dom = self.dom.borrow();
-        // Tabs appear in DOM order: cells in walk order, tabs in member order.
-        let flat: Vec<Uuid> = self
-            .runner
-            .state()
-            .cells
-            .iter()
-            .flat_map(|c| c.members.iter().copied())
-            .collect();
-        let root = self.mount.as_ref().map_or_else(|| dom.document(), cambium::RetainedMount::node);
+        // Resolve the host-owned stable key on the actual painted tab. Hidden
+        // singleton strips do not shift the identity of another cell's tabs.
+        let root = self
+            .mount
+            .as_ref()
+            .map_or_else(|| dom.document(), cambium::RetainedMount::node);
         let tabs = dom.all_with_class(root, "tab");
-        for (i, &tab) in tabs.iter().enumerate() {
+        for &tab in &tabs {
             if let Some((tx, ty, tw, th)) = self.layout.visible_rect(&dom, tab)
                 && x >= tx
                 && x < tx + tw
                 && y >= ty
                 && y < ty + th
             {
-                return flat.get(i).copied();
+                let member=dom.attribute(tab,&layout_dom_api::Namespace::from(""),&layout_dom_api::LocalName::from("data-tabkey"))
+                    .and_then(|key|Uuid::parse_str(key).ok())?;
+                return self.runner.state().cells.iter().any(|cell|cell.members.contains(&member)).then_some(member);
             }
         }
+        // A singleton retains a grab region in the blank part of its Read
+        // header. Aa, Find and Close keep their own pointer ownership.
+        let within=|node|self.layout.visible_rect(&dom,node).is_some_and(|(rx,ry,rw,rh)|x>=rx&&x<rx+rw&&y>=ry&&y<ry+rh);
+        if dom.all_with_class(root,"read-header").into_iter().any(within)
+            && !dom.all_with_class(root,"shell-control").into_iter().any(within) {
+            return self.runner.state().cells.iter().find(|cell|cell.members.len()==1 && cell.tabs.w<=0.0 && x>=cell.rect.x&&x<cell.rect.x+cell.rect.w&&y>=cell.rect.y&&y<cell.rect.y+cell.rect.h).map(|cell|cell.members[0]);
+        }
         None
+    }
+
+    /// Closing a view must not activate its stack or steal another pane's
+    /// document context before the targeted close action is delivered.
+    pub(crate) fn is_close_at(&self,x:f32,y:f32)->bool {
+        let dom=self.dom.borrow();
+        let root=self.mount.as_ref().map_or_else(||dom.document(),cambium::RetainedMount::node);
+        ["tab-close","read-header-trailing"].into_iter().any(|class|
+            dom.all_with_class(root,class).into_iter().any(|node|
+                self.layout.visible_rect(&dom,node).is_some_and(|(cx,cy,cw,ch)|x>=cx&&x<cx+cw&&y>=cy&&y<cy+ch)))
     }
 
     /// Resolve only visible painted tabs, retaining their real member hit.
@@ -513,6 +615,24 @@ mod tests {
     use super::*;
     use crate::action::Action;
     use layout_dom_api::LayoutDomMut;
+    #[test]
+    fn closing_a_background_tab_uses_its_own_target_and_never_starts_a_drag() {
+        let (mut app,a,b)=app_with_two_tiles();
+        app.update(Action::WorkbenchStackOnto {dragged:b,target:a});
+        app.update(Action::WorkbenchActivate(b));
+        let owner=app.frisket.iter_leaves().find(|(_,c,_)|matches!(c,crate::panes::PaneContent::Workbench)).unwrap().0;
+        let mut pane=WorkbenchPane::new();pane.sync(&app,owner,800.,600.);pane.scene(800,600,1.0);
+        let selector=taproot::Selector::role("button").on_surface("workbench").containing("Close mere://alpha");
+        let (x,y)=pane.selector_point(&selector).unwrap().unwrap();
+        assert_eq!(pane.tab_at(x,y,800,600),None);
+        assert!(pane.click(x,y,800,600).is_empty());
+        let actions=pane.take_read_actions();
+        assert!(matches!(actions.as_slice(),[Action::Reading(crate::reading_view::ReadAction::Close(crate::reading_view::ReadTarget {pane,member}))] if *pane==owner && *member==a));
+        for action in actions {app.update(action);}
+        assert!(!app.workbench_for_pane(owner).unwrap().has_tile(a));
+        assert!(app.workbench_for_pane(owner).unwrap().has_tile(b));
+        assert_eq!(app.browser_command_target().map(|(m,_)|m),Some(b));
+    }
 
     fn pane_over(app: &App, w: f32, h: f32) -> WorkbenchPane {
         let mut pane = WorkbenchPane::new();
@@ -604,6 +724,7 @@ mod tests {
     #[test]
     fn long_page_titles_cannot_claim_the_siblings_tab() {
         let (mut app, a, b) = app_with_two_tiles();
+        app.update(Action::WorkbenchStackOnto {dragged:b,target:a});
         for (member, name) in [(a, "Scry A"), (b, "Scry B")] {
             app.update(Action::ContentTitleChanged {
                 member,
@@ -638,29 +759,44 @@ mod tests {
         );
     }
 
-    /// Two tiles draw as two cells, each wearing a real tab strip; the strips'
-    /// tabs resolve by label through the shared prober.
     #[test]
-    fn two_tiles_draw_two_strips() {
-        let (app, _, _) = app_with_two_tiles();
-        let pane = pane_over(&app, 800.0, 600.0);
-        assert_eq!(pane.tiling().cells.len(), 2);
-        let alpha = pane.resolve(
-            &taproot::Selector::class("tab").containing("alpha"),
-            [0.0, 0.0, 800.0, 600.0],
-        );
-        let beta = pane.resolve(
-            &taproot::Selector::class("tab").containing("beta"),
-            [0.0, 0.0, 800.0, 600.0],
-        );
-        let (ax, _) = alpha.expect("alpha's tab is drawn");
-        let (bx, _) = beta.expect("beta's tab is drawn");
-        assert!(bx > ax, "beta's cell sits to the right");
+    fn singleton_cells_hide_strips_and_keep_one_header_close_per_reading() {
+        let (app,_,_)=app_with_two_tiles();let pane=pane_over(&app,800.,600.);
+        assert_eq!(pane.tiling().cells.len(),2);
+        let dom=pane.dom.borrow();let root=dom.document();
+        assert!(dom.all_with_class(root,"tab").is_empty());
+        assert_eq!(dom.all_with_class(root,"read-header-trailing").len(),2);
+        for cell in &pane.tiling().cells {assert_eq!(cell.tab_rect().w,0.);assert_eq!(cell.toolbar_rect().y,cell.rect.y);}
+    }
+    #[test]
+    fn a_singleton_keeps_a_header_grab_region_clear_of_appearance_and_close_controls() {
+        let (app,a,_)=app_with_two_tiles();let pane=pane_over(&app,800.,600.);let cell=&pane.tiling().cells[0];
+        let toolbar=cell.toolbar_rect();assert_eq!(pane.tab_at(toolbar.x+toolbar.w*0.5,toolbar.y+8.,800,600),Some(a));
+        let close=taproot::Selector::role("button").on_surface("workbench").containing("Close reading: mere://alpha");
+        let (x,y)=pane.selector_point(&close).unwrap().unwrap();assert_eq!(pane.tab_at(x,y,800,600),None);
+    }
+    #[test]
+    fn tabs_after_a_hidden_singleton_still_resolve_to_their_actual_members() {
+        let (mut app,_,b)=app_with_two_tiles();
+        app.update(Action::OpenAddress("mere://gamma".into()));let c=app.graph_runtimes.focused_member().unwrap();
+        app.update(Action::OpenInWorkbench);app.update(Action::WorkbenchStackOnto {dragged:c,target:b});
+        let pane=pane_over(&app,800.,600.);
+        for (name,member) in [("beta",b),("gamma",c)] {
+            let (x,y)=pane.selector_point(&taproot::Selector::class("tab").on_surface("workbench").containing(name)).unwrap().unwrap();
+            assert_eq!(pane.tab_at(x,y,800,600),Some(member));
+        }
+    }
+    #[test]
+    fn a_multi_tab_cell_has_tab_closes_and_no_duplicate_header_close() {
+        let (mut app,a,b)=app_with_two_tiles();app.update(Action::WorkbenchStackOnto {dragged:b,target:a});
+        let pane=pane_over(&app,800.,600.);let dom=pane.dom.borrow();let root=dom.document();
+        assert_eq!(dom.all_with_class(root,"tab-close").len(),2);
+        assert!(dom.all_with_class(root,"read-header-trailing").is_empty());
     }
 
     #[test]
     fn selector_resolution_waits_for_current_paint() {
-        let (app, _, _) = app_with_two_tiles();
+        let (mut app,a,b)=app_with_two_tiles();app.update(Action::WorkbenchStackOnto {dragged:b,target:a});
         let mut pane = WorkbenchPane::new();
         pane.sync(&app, app.default_graph_pane(), 800.0, 600.0);
         let selector = taproot::Selector::class("tab").containing("alpha");
@@ -691,7 +827,7 @@ mod tests {
     /// member — the tab-drag gesture's anchor.
     #[test]
     fn a_tab_point_resolves_to_its_member() {
-        let (app, a, b) = app_with_two_tiles();
+        let (mut app,a,b)=app_with_two_tiles();app.update(Action::WorkbenchStackOnto {dragged:b,target:a});
         let pane = pane_over(&app, 800.0, 600.0);
         let (ax, ay) = pane
             .resolve(

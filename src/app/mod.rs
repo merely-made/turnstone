@@ -27,28 +27,28 @@ use crate::{browse, session};
 
 mod contributed_pane_arms;
 mod document_find_arms;
+mod fold_arms;
 mod journal_origin;
 #[cfg(test)]
 mod journal_origin_tests;
+mod physics_arms;
+#[cfg(test)]
+mod r1_source_keep_tests;
+#[cfg(test)]
+mod r2_saved_source_tests;
+pub(crate) mod research_note_arms;
 #[cfg(test)]
 mod resident_admission_tests;
 #[cfg(test)]
 mod resident_run_tests;
-mod source_capture_arms;
+mod runtime_pool;
 mod saved_source_arms;
-pub(crate) mod research_note_arms;
-#[cfg(test)]
-mod r2_saved_source_tests;
-#[cfg(test)]
-mod source_capture_persistence_tests;
-#[cfg(test)]
-mod r1_source_keep_tests;
-mod fold_arms;
 mod scene_arms;
-mod physics_arms;
 #[cfg(test)]
 mod scene_tests;
-mod runtime_pool;
+mod source_capture_arms;
+#[cfg(test)]
+mod source_capture_persistence_tests;
 mod user_agent_decision_arms;
 
 pub use runtime_pool::{
@@ -890,6 +890,12 @@ impl App {
 
     pub fn graph_pane_cursor_moved(&mut self, pane: PaneId, x: f32, y: f32) -> bool {
         let (x, y) = self.logical(pane, x, y);
+        self.reading
+            .scope
+            .activation
+            .entry(pane)
+            .or_default()
+            .moved((x, y));
         self.with_graph_pane(pane, |canvas| canvas.cursor_moved(x, y))
             .unwrap_or(false)
     }
@@ -908,6 +914,16 @@ impl App {
         y: f32,
     ) -> bool {
         let (x, y) = self.logical(pane, x, y);
+        let member = self
+            .with_graph_pane(pane, |canvas| canvas.node_at_screen(x, y))
+            .flatten()
+            .and_then(|member|self.graph_for_pane(pane).and_then(|graph|self.graph_runtimes.get(graph)).map(|runtime|(runtime.instance,member)));
+        self.reading
+            .scope
+            .activation
+            .entry(pane)
+            .or_default()
+            .press(member, (x, y), button != mere::canvas::PointerButton::Left);
         if let Some(graph) = self.graph_for_pane(pane) {
             self.graph_runtimes.get_mut(graph).unwrap().scene_transition = None;
         }
@@ -935,8 +951,40 @@ impl App {
         y: f32,
     ) -> bool {
         let (x, y) = self.logical(pane, x, y);
-        self.with_graph_pane(pane, |canvas| canvas.pointer_up(button, x, y))
-            .unwrap_or(false)
+        let handled = self
+            .with_graph_pane(pane, |canvas| canvas.pointer_up(button, x, y))
+            .unwrap_or(false);
+        let member = self
+            .with_graph_pane(pane, |canvas| canvas.node_at_screen(x, y))
+            .flatten()
+            .and_then(|member|self.graph_for_pane(pane).and_then(|graph|self.graph_runtimes.get(graph)).map(|runtime|(runtime.instance,member)));
+        static CLOCK: std::sync::OnceLock<std::time::Instant> = std::sync::OnceLock::new();
+        let now = CLOCK
+            .get_or_init(std::time::Instant::now)
+            .elapsed()
+            .as_secs_f64()
+            * 1000.0;
+        if button == mere::canvas::PointerButton::Left {
+            if let Some(member) = self
+                .reading
+                .scope
+                .activation
+                .entry(pane)
+                .or_default()
+                .release(member, (x, y), now)
+            {
+                self.reading.scope.read_request =
+                    self.graph_for_pane(pane).map(|graph| (graph, member.0, member.1));
+            }
+        } else {
+            self.reading
+                .scope
+                .activation
+                .entry(pane)
+                .or_default()
+                .cancel();
+        }
+        handled
     }
 
     /// Record that a place refused something, in the one event stream a
@@ -1058,10 +1106,19 @@ impl App {
     /// A pointer press promotes the clicked float above its siblings. Tiled
     /// panes deliberately do not instantiate a blueprint by being clicked.
     pub(crate) fn raise_floating_pane(&mut self, pane: PaneId) -> bool {
-        let Some(space) = self.space_of(pane) else {return false};
-        if self.ensure_shared_space(space).is_err() { return false; }
-        self.space_mut(space).and_then(|layout|layout.workspace_mut())
-            .is_some_and(|frame|frame.apply(&workbench::FloatEvent::Raise(workbench::TileId(pane.0)).into()).is_ok_and(|outcome|outcome.changed()))
+        let Some(space) = self.space_of(pane) else {
+            return false;
+        };
+        if self.ensure_shared_space(space).is_err() {
+            return false;
+        }
+        self.space_mut(space)
+            .and_then(|layout| layout.workspace_mut())
+            .is_some_and(|frame| {
+                frame
+                    .apply(&workbench::FloatEvent::Raise(workbench::TileId(pane.0)).into())
+                    .is_ok_and(|outcome| outcome.changed())
+            })
     }
 
     /// Choose the newest live lens that is not `exclude`, spawning a lens when
@@ -1203,7 +1260,9 @@ impl App {
             Action::Reading(action) => self.read_action(action),
             Action::OpenThemeWorkshop => vec![Effect::OpenThemeWorkshop],
             Action::OpenAddress(url) => self.open_address(url),
-            Action::RetainProducerSelection { choice, selection } => self.retain_producer_selection(choice, selection),
+            Action::RetainProducerSelection { choice, selection } => {
+                self.retain_producer_selection(choice, selection)
+            },
             Action::ChooseClipPackageFile => vec![Effect::ChooseClipPackageFile],
             Action::ImportClipPackage(path) => vec![Effect::ImportClipPackage(path)],
             Action::ChooseClipExportFile => self.choose_retained_clip_export(),
@@ -1244,6 +1303,7 @@ impl App {
             Action::SubmitAuthentication { request } => self.submit_authentication(request),
             Action::CancelAuthentication { request } => self.cancel_authentication(request),
             Action::Scope(command) => self.scope_command(command),
+            Action::FocusCard(command) => self.focus_card_command(command),
             Action::SelectScopeMere(id) => self.select_scope_mere(id),
             Action::NavBack => self.nav_back(),
             Action::NavForward => self.nav_forward(),
@@ -1306,7 +1366,9 @@ impl App {
                 self.begin_place_prompt(crate::ui::PlacePrompt::ExportCard)
             }
             Action::ExportPlaceCard { path } => self.export_place_card(path),
-            Action::BeginRefreshPlaceContact => self.begin_place_prompt(crate::ui::PlacePrompt::RefreshContact),
+            Action::BeginRefreshPlaceContact => {
+                self.begin_place_prompt(crate::ui::PlacePrompt::RefreshContact)
+            },
             Action::RefreshPlaceContact { path } => self.refresh_place_contact(path),
             Action::ReconnectPlaceWithCard { session, generation, card } => {
                 if session != self.session_id || self.place.generation() != Some(generation) {
@@ -1512,24 +1574,7 @@ impl App {
             // opening a tile summons it if absent, through the same summon
             // path as a palette summon (one spine, no side door).
             Action::OpenInWorkbench => self.open_in_workbench(),
-            Action::WorkbenchActivate(member) => {
-                let owner = self.workbench_owner_pane();
-                let activated = owner
-                    .and_then(|pane| self.workbench_for_pane_mut(pane))
-                    .is_some_and(|workbench| workbench.activate(member));
-                if activated {
-                    if let Some(owner) = owner {
-                        self.publish_member_context(owner, Some(member));
-                        self.record_scope_reading(owner, member);
-                        if let Some(graph)=self.graph_for_pane(owner) {
-                            self.reading.trails.entry(owner).or_default().visit(crate::reading_view::ReadVisit {graph,member});
-                        }
-                    }
-                    vec![Effect::SaveSession, Effect::SaveReadingPreferences, Effect::Redraw]
-                } else {
-                    vec![Effect::Redraw]
-                }
-            }
+            Action::WorkbenchActivate(member) => self.activate_workbench_member(member),
             Action::CloseWorkbenchTile => self.close_workbench_tile(),
             Action::WorkbenchStackOnto { dragged, target } => {
                 self.workbench_stack_onto(dragged, target)
@@ -1562,12 +1607,11 @@ mod feed_arms;
 mod  fixtures;
 mod node_arms;
 
-mod omnibar_arms;
-mod palette;
 mod command_invocation;
-mod pane_arms;
+mod omnibar_arms;
 mod outer_workspace_arms;
-mod workspace_stations;
+mod palette;
+mod pane_arms;
 mod redshank_arms;
 mod session_lifecycle;
 #[cfg(test)]
@@ -1575,6 +1619,7 @@ mod session_persistence_tests;
 #[cfg(test)]
 mod surface_control_tests;
 mod updates;
+mod workspace_stations;
 
 #[cfg(test)]
 mod tests;
