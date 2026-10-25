@@ -913,28 +913,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "cambium-genet-web-host"
-version = "0.1.0"
-dependencies = [
- "accesskit",
- "cambium",
- "cambium-rootstock",
- "document-session-api",
- "genet-render-host",
- "genet-scripted-dom",
- "js-sys",
- "layout-dom-api",
- "mesquite",
- "netrender",
- "paint_list_api",
- "paint_list_render",
- "wasm-bindgen",
- "wasm-bindgen-futures",
- "web-sys",
- "wgpu",
-]
-
-[[package]]
 name = "cambium-rootstock"
 version = "0.1.0"
 dependencies = [
@@ -954,6 +932,28 @@ dependencies = [
  "serde",
  "sprigging",
  "web-time",
+ "wgpu",
+]
+
+[[package]]
+name = "cambium-web"
+version = "0.1.0"
+dependencies = [
+ "accesskit",
+ "cambium",
+ "cambium-rootstock",
+ "document-session-api",
+ "genet-render-host",
+ "genet-scripted-dom",
+ "js-sys",
+ "layout-dom-api",
+ "mesquite",
+ "netrender",
+ "paint_list_api",
+ "paint_list_render",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
  "wgpu",
 ]
 
@@ -3555,8 +3555,8 @@ dependencies = [
  "insigne",
  "knot-editor-host",
  "mere",
- "mere-document-lanes",
  "mere-fleece",
+ "mere-lanes",
  "mere-moot",
  "mere-overmap",
  "mere-webrtc-carrier",
@@ -3629,8 +3629,8 @@ name = "graphshell-web"
 version = "0.1.0"
 dependencies = [
  "cambium",
- "cambium-genet-web-host",
  "cambium-rootstock",
+ "cambium-web",
  "console_error_panic_hook",
  "eidetic",
  "futures-channel",
@@ -3643,8 +3643,8 @@ dependencies = [
  "js-sys",
  "layout-dom-api",
  "mere",
- "mere-document-lanes",
  "mere-fleece",
+ "mere-lanes",
  "mere-moot",
  "mere-overmap",
  "mere-view",
@@ -5391,7 +5391,7 @@ dependencies = [
  "inker",
  "mere-forme",
  "mere-kernel",
- "mere-linked-data",
+ "mere-rdf",
  "netrender",
  "pictograph",
  "serde",
@@ -5440,25 +5440,6 @@ name = "mere-curation"
 version = "0.1.1"
 dependencies = [
  "serde",
-]
-
-[[package]]
-name = "mere-document-lanes"
-version = "0.1.0"
-dependencies = [
- "document-canvas",
- "document-session-api",
- "eidetic",
- "genet-host-api",
- "genet-static-dom",
- "image",
- "inker",
- "mere-fleece",
- "netrender",
- "serde_json",
- "tabard",
- "tempfile",
- "url",
 ]
 
 [[package]]
@@ -5511,22 +5492,22 @@ dependencies = [
 ]
 
 [[package]]
-name = "mere-linked-data"
-version = "0.0.1"
+name = "mere-lanes"
+version = "0.1.0"
 dependencies = [
- "getrandom 0.2.17",
- "getrandom 0.3.4",
+ "document-canvas",
+ "document-session-api",
+ "eidetic",
+ "genet-host-api",
+ "genet-static-dom",
+ "image",
  "inker",
- "mere-kernel",
- "oxjsonld",
- "oxrdf",
- "oxsdatatypes",
- "oxttl",
+ "mere-fleece",
+ "netrender",
  "serde_json",
- "spareval",
- "spargebra",
- "time",
- "uuid",
+ "tabard",
+ "tempfile",
+ "url",
 ]
 
 [[package]]
@@ -5591,7 +5572,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mere-page-load"
+name = "mere-pageload"
 version = "0.0.1"
 
 [[package]]
@@ -5602,6 +5583,25 @@ dependencies = [
  "blake3",
  "serde",
  "thiserror 1.0.69",
+]
+
+[[package]]
+name = "mere-rdf"
+version = "0.0.1"
+dependencies = [
+ "getrandom 0.2.17",
+ "getrandom 0.3.4",
+ "inker",
+ "mere-kernel",
+ "oxjsonld",
+ "oxrdf",
+ "oxsdatatypes",
+ "oxttl",
+ "serde_json",
+ "spareval",
+ "spargebra",
+ "time",
+ "uuid",
 ]
 
 [[package]]
@@ -7314,8 +7314,8 @@ dependencies = [
  "genet-documents",
  "genet-host-api",
  "inker",
- "mere-document-lanes",
- "mere-page-load",
+ "mere-lanes",
+ "mere-pageload",
  "netrender",
  "serde_json",
  "url",

@@ -35,7 +35,7 @@ required-features = ["moot-resources"]
 [features]
 # One holder-owned graph with an explicitly invited guest.
 coop = ["native", "web", "muniment/redb", "dep:pollster", "graphshell-client/pump"]
-coop-window = ["coop", "dep:cambium-genet-winit-host", "dep:mien", "dep:genet-scripted-dom", "dep:layout_dom_api", "dep:image"]
+coop-window = ["coop", "dep:cambium-desktop", "dep:mien", "dep:genet-scripted-dom", "dep:layout_dom_api", "dep:image"]
 editable-blocks = ["web", "dep:knot-editor-host", "dep:illume", "dep:woodshedding"]
 query-views = ["web", "mere/query", "dep:cambium"]
 caller-owned-toolkit-bench = ["retained-content", "cambium-rootstock/embedding-egui", "cambium-rootstock/embedding-iced", "dep:image"]
@@ -46,7 +46,7 @@ default = ["native", "image-decode", "document-layout", "retained-content"]
 document-layout = ["platen?/document-layout"]
 # Retained document sessions belong to the application host, not the read-only
 # graph viewer. Product web builds opt in explicitly; native defaults retain it.
-retained-content = ["web", "document-layout", "dep:genet-render-host", "dep:cambium", "dep:fleece", "dep:wgpu", "dep:pelt-core", "pelt-core/cue", "dep:wgpu-cue", "dep:wgpu-cue-netrender", "dep:inker", "dep:netrender", "dep:mere-document-lanes"]
+retained-content = ["web", "document-layout", "dep:genet-render-host", "dep:cambium", "dep:fleece", "dep:wgpu", "dep:pelt-core", "pelt-core/cue", "dep:wgpu-cue", "dep:wgpu-cue-netrender", "dep:inker", "dep:netrender", "dep:mere-lanes"]
 # Forwards genet-livery's image decoding (mer3ly Ruling 111); on by default.
 image-decode = ["cambium-rootstock?/image-decode", "mere?/image-decode", "pelt-core?/image-decode"]
 # Existing admitted sessions, transports, Personae composition, and receipt
@@ -158,7 +158,7 @@ applets = ["web", "eidetic/pack-signing", "dep:personae"]
 # enter the ordinary browser cone or install an application activity owner.
 # Finite native owner-composition proof; ordinary consumers need no window or
 # fixture dependencies. It installs neither peer services nor an activity owner.
-moot-resource-proof = ["moot-resources", "dep:cambium-genet-winit-host", "dep:mien", "dep:proofs", "dep:servitor", "dep:tokio", "dep:pollster", "dep:genet-scripted-dom", "dep:layout_dom_api", "dep:image"]
+moot-resource-proof = ["moot-resources", "dep:cambium-desktop", "dep:mien", "dep:proofs", "dep:servitor", "dep:tokio", "dep:pollster", "dep:genet-scripted-dom", "dep:layout_dom_api", "dep:image"]
 # Native device-agent composition for H7 personal graph synchronization. The
 # browser/PWA reaches this authority through its admitted device session.
 personal-sync = [
@@ -185,7 +185,7 @@ wgpu = { workspace = true, optional = true }
 pelt-core = { workspace = true, features = ["genet"], optional = true }
 inker = { workspace = true, optional = true }
 netrender = { workspace = true, optional = true }
-mere-document-lanes = { workspace = true, features = ["retained-clips"], optional = true }
+mere-lanes = { workspace = true, features = ["retained-clips"], optional = true }
 hest = { workspace = true, optional = true }
 # The check conclusions and faults, named directly (insigne proofs plan, B).
 insigne = { workspace = true, features = ["verify"] }
@@ -246,7 +246,7 @@ getrandom = { version = "0.3", optional = true }
 webrtc-carrier = { workspace = true, optional = true }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-cambium-genet-winit-host = { workspace = true, optional = true }
+cambium-desktop = { workspace = true, optional = true }
 mien = { workspace = true, optional = true }
 proofs = { workspace = true, optional = true }
 servitor = { workspace = true, optional = true }
@@ -377,8 +377,8 @@ mien.workspace = true
 genet-scripted-dom.workspace = true
 layout_dom_api.workspace = true
 accesskit.workspace = true
-cambium-genet-winit-host = { workspace = true }
-cambium-winit-a11y = { workspace = true }
+cambium-desktop = { workspace = true }
+cambium-a11y = { workspace = true }
 
 [[bin]]
 name = "c4_webrtc_host"
