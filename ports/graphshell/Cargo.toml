@@ -46,7 +46,7 @@ default = ["native", "image-decode", "document-layout", "retained-content"]
 document-layout = ["platen?/document-layout"]
 # Retained document sessions belong to the application host, not the read-only
 # graph viewer. Product web builds opt in explicitly; native defaults retain it.
-retained-content = ["web", "document-layout", "dep:genet-render-host", "dep:cambium", "dep:fleece", "dep:wgpu", "dep:pelt-core", "pelt-core/cue", "dep:wgpu-cue", "dep:wgpu-cue-netrender", "dep:inker", "dep:netrender", "dep:mere-lanes"]
+retained-content = ["web", "document-layout", "dep:genet-presenter", "dep:cambium", "dep:fleece", "dep:wgpu", "dep:pelt-core", "pelt-core/cue", "dep:wgpu-cue", "dep:cue-netrender", "dep:inker", "dep:netrender", "dep:mere-lanes"]
 # Forwards genet-livery's image decoding (mer3ly Ruling 111); on by default.
 image-decode = ["cambium-rootstock?/image-decode", "mere?/image-decode", "pelt-core?/image-decode"]
 # Existing admitted sessions, transports, Personae composition, and receipt
@@ -172,12 +172,12 @@ personal-sync = [
 
 [dependencies]
 wgpu-cue = { workspace = true, optional = true }
-wgpu-cue-netrender = { workspace = true, optional = true }
+cue-netrender = { workspace = true, optional = true }
 knot-editor-host = { workspace = true, optional = true }
 illume = { workspace = true, optional = true }
 # Canonical sibling owner; no dependency on Woodshed application or native host.
 woodshedding = { git = "https://github.com/merely-made/woodshed.git", rev = "a0ae58f97ca962b29fcd6ae08c9e6aec35d74c61", optional = true }
-genet-render-host = { workspace = true, optional = true }
+genet-presenter = { workspace = true, optional = true }
 cambium = { workspace = true, optional = true }
 moot = { package = "mere-moot", path = "../moot", features = ["resource-view", "presentation"], optional = true }
 fleece = { workspace = true, features = ["portable-clip", "page-links"], optional = true }
