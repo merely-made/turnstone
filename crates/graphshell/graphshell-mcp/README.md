@@ -71,6 +71,12 @@ time.
 
 `cargo test -p graphshell-mcp` drives the real JSON-RPC against a route that
 behaves like djinn's (opens a session, refuses an ungranted write, checks the
-observed revision). That proves the adapter; it does not prove djinn's side. The
-dial path (`--features door`) compiles and `claude mcp list` connects to the
-fixture, but a live resident has not served it yet.
+observed revision). `cargo test -p djinn --lib resident_mere::tests::mcp` serves
+the adapter over djinn's real mere route (the reservoir, the route grants and the
+session item, through the endpoint catalog the application door uses). There an
+unadmitted app reaches no mere; an admitted agent lists the route's projections,
+applies an edit through `mere_invoke`, reads it back, undoes it, and the stored
+change names the app the door admitted; a malformed edit is the route's refusal and
+leaves the mere alone; and the read-only ambient route advertises no edit. Not
+covered: the socket itself (`AppRouteCarrier` against a running `djinn`) and
+a model driving the tools.
