@@ -135,3 +135,7 @@ pub mod webrtc_browser;
 pub use chirograph as protocol;
 pub use graphshell_client as client;
 pub use graphshell_endpoint as endpoint;
+
+/// Graph browser policy shared by the product projections.
+#[cfg(feature="web")]
+pub mod scope_policy;

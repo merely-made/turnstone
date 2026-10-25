@@ -16,6 +16,7 @@ use cambium::{
 
 #[derive(Default)]
 pub(super) struct State {
+    pub cards: super::focus_card::State,
     pub panes_open: bool,
     pub graph_controls: bool,
     pub document_controls: bool,
@@ -23,6 +24,7 @@ pub(super) struct State {
     pub binding_open: bool,
     pub navigation: super::navigation::State,
     pub scope: super::scope_navigation::State,
+    pub location: super::location::State,
 }
 
 pub(super) const SHEET: &str = r#"
@@ -39,12 +41,14 @@ pub(super) const SHEET: &str = r#"
 .tree-instrument .workspace-panes { position:absolute; top:100%; right:8px; z-index:25; width:220px; }
 .tree-instrument .workspace-related { position:absolute; top:100%; right:8px; z-index:25; width:360px; max-width:90%; max-height:70vh; overflow-y:auto; }
 .tree-instrument .workspace-related-heading { margin:0; font-weight:500; }
+.tree-instrument .workspace-locations { position:absolute; top:100%; left:96px; right:8px; z-index:26; max-height:320px; overflow-y:auto; background:var(--workspace-surface); }
+.tree-instrument .workspace-location-input { width:100%; min-width:0; height:28px; padding:3px 7px; border:1px solid var(--workspace-rule); background:var(--workspace-surface); color:var(--workspace-ink); font-size:13px; }
 .tree-instrument .tree-tools > .cambium-source-binding { margin-bottom:8px; }
 .tree-instrument .workspace-related .shell-navigation-detail { overflow-wrap:anywhere; }
 .tree-instrument .cambium-shell-toolbar { padding:0; }
 .tree-instrument { --shell-background:var(--workspace-surface, #17232b); --shell-foreground:var(--workspace-ink, #dce3e8); --shell-rule:var(--workspace-rule, #637581); --shell-selection:var(--workspace-rule, #263640); }
 .tree-instrument .workspace-app-context { margin:2px 0 0; font-size:12px; color:var(--workspace-muted); }
-.tree-instrument .workspace-app-identity { display:flex; flex-direction:row; align-items:center; gap:4px; }
+.tree-instrument .workspace-app-identity { display:flex; flex:1 1 0; min-width:0; flex-direction:row; align-items:center; gap:4px; }
 .tree-instrument .workspace-brand { font-size:14px; font-weight:500; color:var(--tabard-color-accent, var(--workspace-accent)); }
 .tree-instrument .tree-status { color:var(--workspace-muted); font-size:12px; }
 .tree-instrument .tree-controls { padding:6px 12px; border-bottom:1px solid var(--workspace-rule); }
@@ -80,6 +84,8 @@ pub(super) fn app_header(page: &TreePage) -> Option<Child> {
     let narrow = density.is_compact();
     let mut trailing: Vec<Child> = Vec::new();
     if navigation_active {
+        trailing.push(super::focus_card::control(page));
+        trailing.push(super::focus_card::forme_control(page));
         trailing.push(super::navigation::control(page));
         trailing.push(control(
             "Panes",
@@ -97,20 +103,14 @@ pub(super) fn app_header(page: &TreePage) -> Option<Child> {
         "Map navigation",
         if navigation_active {vec![super::scope_navigation::controls(page)]} else {Vec::new()},
         Box::new(
-            el(
-                "div",
-                (
-                    el("h1", "Graphshell"),
-                    super::scope_navigation::trail(page),
-                ),
-            )
-            .attr("class", "workspace-app-identity")
-            .attr("data-mere-session", product.session.clone()),
+            el("div", super::location::view(page))
+                .attr("class", "workspace-app-identity")
+                .attr("data-mere-session", product.session.clone()),
         ),
         trailing,
     );
     let bar = title_bar(
-        Box::new(el("span", "mere").attr("class", "workspace-brand")),
+        Box::new(el("span", "Graphshell").attr("class", "workspace-brand")),
         toolbar,
         Box::new(el("div", ())),
         Box::new(el("div", ())),
@@ -122,7 +122,8 @@ pub(super) fn app_header(page: &TreePage) -> Option<Child> {
                 shell_popup(
                     "Panes",
                     vec![
-                        control(
+                        super::focus_card::selection_control(page),
+                    control(
                             "Inspector",
                             ShellControl {
                                 pressed: Some(page.tools_open),
@@ -179,13 +180,31 @@ pub(super) fn app_header(page: &TreePage) -> Option<Child> {
         ) as Child
     });
     Some(Box::new(cambium::on_key(
-        el("div", (bar, popup, super::navigation::popup(page))).attr("class", "workspace-shell-header"),
+        el(
+            "div",
+            (
+                bar,
+                popup,
+                super::navigation::popup(page),
+                super::focus_card::view(page),
+                super::location::popup(page),
+            ),
+        )
+        .attr("class", "workspace-shell-header"),
         |page: &mut TreePage, key: cambium::KeyEvent| {
+            if matches!(key.key,cambium::Key::Named(cambium::NamedKey::Escape))
+                && !(page.instrument.panes_open || page.instrument.navigation.open || page.instrument.location.open)
+                && super::focus_card::dismiss(page) {
+                key.prevent_default(); key.stop_propagation(); return;
+            }
             if matches!(key.key, cambium::Key::Named(cambium::NamedKey::Escape))
-                && (page.instrument.panes_open || page.instrument.navigation.open)
+                && (page.instrument.panes_open
+                    || page.instrument.navigation.open
+                    || page.instrument.location.open)
             {
                 page.instrument.panes_open = false;
                 page.instrument.navigation.open = false;
+                page.instrument.location.open = false;
                 key.stop_propagation();
                 key.prevent_default();
             }
@@ -209,13 +228,14 @@ pub(super) fn document_controls(page: &TreePage) -> bool {
 }
 
 pub(super) fn dismiss(page: &TreePage) -> Option<Child> {
-    (enabled(page) && !super::blocks_active(page) && (page.instrument.panes_open || page.instrument.navigation.open)).then(|| {
+    (enabled(page) && !super::blocks_active(page) && (page.instrument.panes_open || page.instrument.navigation.open || page.instrument.location.open)).then(|| {
         Box::new(cambium::on_click(el("div", ())
             .attr("aria-hidden", "true")
             .attr("style", format!("position:absolute;top:0px;left:0px;width:{}px;height:{}px;z-index:24;background:transparent;", page.size.0, page.size.1)),
             |page: &mut TreePage, click: cambium::PointerClick| {
                 page.instrument.panes_open = false;
                 page.instrument.navigation.open = false;
+                page.instrument.location.open = false;
                 page.shared.dirty.set(true);
                 click.stop_propagation();
             })) as Child
@@ -251,7 +271,7 @@ pub(super) fn activity_rail(page: &TreePage) -> Option<Child> {
     let tools = vec![
         activity("ⓘ", "Inspect", "Inspector", ShellControl { pressed: Some(page.tools_open), ..Default::default() }, |p| p.tools_open = !p.tools_open),
         activity("▥", "Tabs", "Reading tabs", ShellControl { pressed: Some(page.instrument.document_rail), ..Default::default() }, |p| p.instrument.document_rail = !p.instrument.document_rail),
-        activity("⌕", "Search", "All commands…", ShellControl::default(), super::commands::open_keyboard),
+        activity("⌕", "Search", "Search document graph", ShellControl::default(), super::location::edit),
     ];
     let utilities = vec![activity("⌖", "Fit", "Fit graph", ShellControl::default(), |p| {
         super::forme::show_projection(p, true);
@@ -271,18 +291,58 @@ fn activity(mark: &str, label: &str, name: &str, state: ShellControl, activate: 
 pub(super) fn document_rail(page: &TreePage) -> Option<Child> {
     if !enabled(page) || super::blocks_active(page) || !page.instrument.document_rail { return None; }
     let graph = page.shared.canvas.borrow().graph().clone();
-    let groups = page.forme.as_ref().map(|pane| {
-        let layout = pane.current().layout();
-        layout.slot_views().enumerate().map(|(i, slot)| {
-            (format!("Tile {}", i + 1), slot.members.iter().enumerate().map(|(index, member)| {
-                let member = *member;
-                let title = graph.get_node_by_id(member).map(|(key, _)| graph.node_display_label(key)).unwrap_or_else(|| "Unavailable document".into());
-                shell_control(title.clone(), title, ShellControl { pressed: Some(slot.active == index), ..Default::default() }, move |p: &mut TreePage, _| {
-                    super::forme::activate_from_rail(p, member);
+    let groups = page
+        .forme
+        .as_ref()
+        .map(|pane| {
+            let layout = pane.current().layout();
+            layout
+                .slot_views()
+                .enumerate()
+                .map(|(i, slot)| {
+                    (
+                        format!("Tile {}", i + 1),
+                        slot.members
+                            .iter()
+                            .enumerate()
+                            .map(|(index, member)| {
+                                let member = *member;
+                                let title = graph
+                                    .get_node_by_id(member)
+                                    .map(|(key, _)| graph.node_display_label(key))
+                                    .unwrap_or_else(|| "Unavailable document".into());
+                                shell_control(
+                                    title.clone(),
+                                    title,
+                                    ShellControl {
+                                        pressed: Some(slot.active == index),
+                                        ..Default::default()
+                                    },
+                                    move |p: &mut TreePage, _| {
+                                        super::forme::activate_from_rail(p, member);
+                                    },
+                                )
+                            })
+                            .collect(),
+                    )
                 })
-            }).collect())
-        }).collect::<Vec<_>>()
-    }).unwrap_or_default();
-    let groups = if groups.is_empty() { vec![("Reading tiles".into(), vec![control("No arranged documents", ShellControl { disabled:true, ..Default::default() }, |_| {})])] } else { groups };
+                .collect::<Vec<_>>()
+        })
+        .unwrap_or_default();
+    let groups = if groups.is_empty() {
+        vec![(
+            "Reading tiles".into(),
+            vec![control(
+                "No arranged documents",
+                ShellControl {
+                    disabled: true,
+                    ..Default::default()
+                },
+                |_| {},
+            )],
+        )]
+    } else {
+        groups
+    };
     Some(cambium::shell_document_rail(groups))
 }

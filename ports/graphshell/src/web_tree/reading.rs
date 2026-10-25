@@ -172,11 +172,24 @@ impl Default for Reading {
                     include_bytes!("../../web/IBMPlexMono-Regular.ttf").to_vec(),
                     include_bytes!("../../web/NotoSansMath-Regular.ttf").to_vec(),
                 ],
-                vec!["Newsreader".into(), "IBM Plex Sans".into(), "Noto Sans Math".into()],
                 vec![
-                    ("serif".into(), include_bytes!("../../web/Newsreader-Regular.ttf").to_vec()),
-                    ("sans-serif".into(), include_bytes!("../../web/IBMPlexSans-Regular.ttf").to_vec()),
-                    ("monospace".into(), include_bytes!("../../web/IBMPlexMono-Regular.ttf").to_vec()),
+                    "Newsreader".into(),
+                    "IBM Plex Sans".into(),
+                    "Noto Sans Math".into(),
+                ],
+                vec![
+                    (
+                        "serif".into(),
+                        include_bytes!("../../web/Newsreader-Regular.ttf").to_vec(),
+                    ),
+                    (
+                        "sans-serif".into(),
+                        include_bytes!("../../web/IBMPlexSans-Regular.ttf").to_vec(),
+                    ),
+                    (
+                        "monospace".into(),
+                        include_bytes!("../../web/IBMPlexMono-Regular.ttf").to_vec(),
+                    ),
                 ],
             ),
             bindings: Default::default(),
@@ -878,18 +891,29 @@ pub(super) fn render(appearance: Appearance) -> Child {
             let leaf =
                 graphshell::retained_content::filling_content_view::<TreePage, ()>(key, slot);
             Box::new(
-                el("div", (leaf, (!status.is_empty()).then(|| el("p", status).attr("role", "status").attr("class", "shell-reading-status"))))
-                    .attr("class", "pelt-reading cambium-reading-surface"),
+                el(
+                    "div",
+                    (
+                        leaf,
+                        (!status.is_empty()).then(|| {
+                            el("p", status)
+                                .attr("role", "status")
+                                .attr("class", "shell-reading-status")
+                        }),
+                    ),
+                )
+                .attr("class", "pelt-reading cambium-reading-surface"),
             )
         },
     }
 }
 
 #[derive(Clone)]
-pub(super) struct ToolbarSnapshot { preferences: tabard::ReadingPreferences, ui: cambium::ReadFind, text_controls: bool, find_enabled: bool }
+pub(super) struct ToolbarSnapshot { title:String, preferences: tabard::ReadingPreferences, ui: cambium::ReadFind, text_controls: bool, find_enabled: bool }
 pub(super) fn toolbar_snapshot(page: &TreePage, member: Uuid) -> ToolbarSnapshot {
     let pane = page.forme.as_ref().expect("reading workspace");
     ToolbarSnapshot {
+        title:page.shared.canvas.borrow().graph().get_node_by_id(member).map(|(_,node)|node.title.clone()).filter(|title|!title.is_empty()).unwrap_or_else(||"document".into()),
         find_enabled: page.shared.reading.borrow().bindings.get(&member).is_some_and(|binding|binding.slot.borrow().has_document_find()),
         text_controls: page.shared.reading.borrow().bindings.get(&member).is_some_and(|binding|binding.slot.borrow().has_reading_controls()),
         preferences: pane.model().reading_preferences.get(&member),
@@ -920,16 +944,33 @@ pub(super) fn read_command(page: &mut TreePage, member: Uuid, command: cambium::
         C::Appearance => {let ui=pane.reading_ui.entry(member).or_default();ui.appearance_open=!ui.appearance_open;page.shared.dirty.set(true);return;},
         C::ShowGraph => {show_graph(page,member);return;},
         C::Back | C::Forward => {
-            if pane.saving {return;}
-            let (mut anchors,mut trail)=capture_progress(page);
-            let Some(destination)=trail.step(command==C::Forward) else {return;};
-            if page.shared.canvas.borrow().graph().get_node_by_id(destination).is_none() {return;}
-            if let Some(anchor)=trail.current_anchor().cloned() {
-                anchors.insert(destination,anchor.clone());
-                if let Some(binding)=page.shared.reading.borrow().bindings.get(&destination) {binding.slot.borrow_mut().restore_reading_anchor(anchor);}
+            if pane.saving {
+                return;
             }
-            super::forme::edit(page,None,true,move |workspace,graph| {
-                workspace.reading_anchors=anchors; workspace.reading_trail=trail;workspace.read(destination,graph)
+            let (mut anchors, mut trail) = capture_progress(page);
+            let Some(destination) = trail.step(command == C::Forward) else {
+                return;
+            };
+            if page
+                .shared
+                .canvas
+                .borrow()
+                .graph()
+                .get_node_by_id(destination)
+                .is_none()
+            {
+                return;
+            }
+            if let Some(anchor) = trail.current_anchor().cloned() {
+                anchors.insert(destination, anchor.clone());
+                if let Some(binding) = page.shared.reading.borrow().bindings.get(&destination) {
+                    binding.slot.borrow_mut().restore_reading_anchor(anchor);
+                }
+            }
+            super::forme::edit(page, None, true, move |workspace, graph| {
+                workspace.reading_anchors = anchors;
+                workspace.reading_trail = trail;
+                workspace.read(destination, graph)
             });
             return;
         },
@@ -954,11 +995,22 @@ pub(super) fn read_command(page: &mut TreePage, member: Uuid, command: cambium::
     pane.save(graphshell::forme_session::SaveKind::Reading(member, value));
     page.shared.dirty.set(true);
 }
-pub(super) fn toolbar(member: Uuid, snapshot: ToolbarSnapshot) -> Child {
+pub(super) fn toolbar(member: Uuid, snapshot: ToolbarSnapshot, tabs_visible:bool) -> Child {
     let mut ui = snapshot.ui;
     ui.available = snapshot.find_enabled;
     let field = Some(&ui);
-    cambium::read_toolbar(snapshot.preferences.text_size, snapshot.preferences.column_em, snapshot.text_controls, field,
+    let close = cambium::shell_control(
+        "×",
+        format!("Close reading: {}",snapshot.title),
+        Default::default(),
+        move |page: &mut TreePage, _| super::forme::close_reading(page, member),
+    );
+    cambium::read_toolbar_with_trailing(
+        snapshot.preferences.text_size,
+        snapshot.preferences.column_em,
+        snapshot.text_controls,
+        field,
+        if tabs_visible {Vec::new()} else {vec![close]},
         move |page: &mut TreePage, event| match event {
             cambium::ReadEvent::Command(command) => read_command(page, member, command),
             cambium::ReadEvent::Query(input) => {
@@ -1004,7 +1056,10 @@ pub(super) fn show_graph(page:&mut TreePage,member:Uuid) {
 }
 
 pub(super) fn preview_excerpt(page:&TreePage,member:Uuid)->Option<String> {
-    let excerpt=page.shared.reading.borrow().bindings.get(&member).and_then(|binding|binding.slot.borrow().reading_excerpt());
+    let address=page.shared.canvas.borrow().graph().get_node_by_id(member)?.1.url().to_owned();
+    let excerpt=page.shared.reading.borrow().bindings.get(&member).and_then(|binding| {
+        let slot=binding.slot.borrow();(slot.source().address==address).then(||slot.reading_excerpt()).flatten()
+    });
     let excerpt=excerpt.or_else(|| {
         let canvas=page.shared.canvas.borrow();let (_,node)=canvas.graph().get_node_by_id(member)?;
         let body=node.body.as_ref().filter(|body|body.len()<=256*1024)?;
@@ -1012,8 +1067,15 @@ pub(super) fn preview_excerpt(page:&TreePage,member:Uuid)->Option<String> {
             graphshell::retained_content::retained_packet_excerpt(body)
         } else {None}
     });
-    excerpt.map(|text|format!("Retained document excerpt: {text}"))
-        .or_else(||page.forme.as_ref().and_then(|pane|pane.model().reading_anchors.get(&member)).map(|anchor|format!("Last reading position: {}",anchor.exact)))
+    excerpt
+        .map(|text| format!("Retained document excerpt: {text}"))
+        .or_else(|| {
+            page.forme
+                .as_ref()
+                .and_then(|pane| pane.model().reading_anchors.get(&member))
+                .filter(|anchor|anchor.source==address)
+                .map(|anchor| format!("Last reading position: {}", anchor.exact))
+        })
 }
 pub(super) fn capture_progress(page:&TreePage)->(BTreeMap<Uuid,tabard::ReadingAnchor>,tabard::ReadingTrail<Uuid>) {
     let anchors=progress(page);
@@ -1025,7 +1087,18 @@ pub(super) fn capture_progress(page:&TreePage)->(BTreeMap<Uuid,tabard::ReadingAn
 pub(super) fn restore_anchor(page:&TreePage,member:Uuid,anchor:tabard::ReadingAnchor) {
     if let Some(binding)=page.shared.reading.borrow().bindings.get(&member) {binding.slot.borrow_mut().restore_reading_anchor(anchor);}
 }
-pub(super) fn anchor_field(page:&TreePage)->String {
-    page.forme.as_ref().and_then(|pane|pane.model().focused_reading).and_then(|member|page.shared.reading.borrow().bindings.get(&member).and_then(|binding|binding.slot.borrow().reading_anchor()))
-        .map(|anchor|format!("{}:{}:{}",anchor.text,anchor.offset,anchor.exact)).unwrap_or_default()
+pub(super) fn anchor_field(page: &TreePage) -> String {
+    page.forme
+        .as_ref()
+        .and_then(|pane| pane.model().focused_reading)
+        .and_then(|member| {
+            page.shared
+                .reading
+                .borrow()
+                .bindings
+                .get(&member)
+                .and_then(|binding| binding.slot.borrow().reading_anchor())
+        })
+        .map(|anchor| format!("{}:{}:{}", anchor.text, anchor.offset, anchor.exact))
+        .unwrap_or_default()
 }

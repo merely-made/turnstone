@@ -949,6 +949,7 @@ dependencies = [
  "netrender",
  "paint_list_api",
  "paint_list_render",
+ "serde",
  "sprigging",
  "web-time",
  "wgpu",

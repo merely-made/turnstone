@@ -111,7 +111,7 @@ pub async fn seed_reading<B: muniment::Backend + Clone>(
             Block::Heading { level: 2, spans: vec![InlineSpan::Text("Room to think".into())] },
             paragraph("Long lines make it easy to lose the next sentence. A measured column and a little space between lines give the eye a reliable place to return. On a narrow window the column follows the available space; the text stays readable without a second horizontal journey."),
             Block::CodeBlock { language: None, text: "document → reading projection\n         → map projection\n         → related sources".into() },
-            Block::Paragraph { spans: vec![InlineSpan::Link { url: "https://retained.example/notes".into(), title: None, spans: vec![InlineSpan::Text("Visit the related field notes".into())], predicate: None }] },
+            Block::Paragraph { spans: vec![InlineSpan::Link { url: "mere://reading/related-note".into(), title: None, spans: vec![InlineSpan::Text("Visit the related field notes".into())], predicate: None }] },
             paragraph("The surrounding controls use a smaller interface scale. Their labels remain clear, but their spacing gives the page priority. This local document is a deterministic layout sample; it does not fetch remote content."),
         ],
     };

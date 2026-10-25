@@ -7,6 +7,52 @@
 use super::*;
 use mere::kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta};
 use muniment::MemoryBackend;
+#[test]
+fn closing_an_active_tab_prefers_its_stack_before_crossing_tiled_cells() {
+    let (mut g, a, b) = graph();
+    let c = Uuid::from_u128(3);
+    add_node(
+        &mut g,
+        Some(c),
+        "https://example.org/third".into(),
+        Default::default(),
+    );
+    let mut workspace = FormeWorkspace::new(Uuid::from_u128(10));
+    workspace.open(a, &g).unwrap();
+    workspace.read(b, &g).unwrap();
+    workspace.open(c, &g).unwrap();
+    workspace
+        .event(
+            TileEvent::Activated(workspace.tile_for_member(b).unwrap()),
+            &g,
+        )
+        .unwrap();
+    workspace
+        .event(TileEvent::Closed(workspace.tile_for_member(b).unwrap()), &g)
+        .unwrap();
+    assert_eq!(workspace.focused_reading, Some(a));
+    assert!(workspace.members().contains(&c));
+}
+#[test]
+fn closing_readings_keeps_graph_truth_and_updates_focus_to_remaining_access() {
+    let (g, a, b) = graph();
+    let mut workspace = FormeWorkspace::new(Uuid::from_u128(10));
+    workspace.open(a, &g).unwrap();
+    workspace.read(b, &g).unwrap();
+    workspace
+        .event(TileEvent::Closed(workspace.tile_for_member(a).unwrap()), &g)
+        .unwrap();
+    assert_eq!(workspace.focused_reading, Some(b));
+    assert_eq!(workspace.members(), vec![b]);
+    workspace
+        .event(TileEvent::Closed(workspace.tile_for_member(b).unwrap()), &g)
+        .unwrap();
+    assert_eq!(workspace.focused_reading, None);
+    assert!(workspace.members().is_empty());
+    assert_eq!(g.node_count(), 2);
+    workspace.open(b, &g).unwrap();
+    assert_eq!(workspace.focused_reading, Some(b));
+}
 fn graph() -> (Graph, Uuid, Uuid) {
     let mut g = Graph::new();
     let a = Uuid::from_u128(1);

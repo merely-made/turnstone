@@ -127,7 +127,7 @@ pub enum SaveKind {
     Redo,
     InspectorSource(crate::pane_source::InspectorSource),
     Visibility,
-    Scope(cambium::scope_navigation::ScopeNavigation<Uuid,Uuid,tabard::ReadingAnchor>),
+    Scope(crate::scope_policy::ScopeNavigation<tabard::ReadingAnchor>),
     Reading(Uuid, tabard::ReadingPreferences),
     ReadingProgress(std::collections::BTreeMap<Uuid,tabard::ReadingAnchor>, tabard::ReadingTrail<Uuid>),
 }
@@ -428,7 +428,7 @@ impl FormeSession {
                 to.push(current);
                 state.restore(&mut next.workspace);
             },
-            SaveKind::Scope(nav) => { nav.validate(|a|a.validate().is_ok())?; next.workspace.scope_navigation=nav; },
+            SaveKind::Scope(nav) => { nav.validate(|place|place.valid(), |a|a.validate().is_ok())?; next.workspace.scope_navigation=nav; },
             SaveKind::Reading(access, value) => {
                 value.validate()?;
                 if next.workspace.tile_for_member(access).is_none() { return Err("Reading projection is no longer present".into()); }
@@ -750,12 +750,12 @@ mod tests {
     #[test]
     fn scope_route_saves_independently_of_layout_drafts_and_reopens_with_its_anchor() {
         pollster::block_on(async {
-            use cambium::scope_navigation::*;
+            use crate::scope_policy::*;
             let (graph,mut session,[a,_,c])=fixture();let backend=MemoryBackend::new();let owner=session.committed().document.graph_id;
             let document=serde_json::to_value(&session.committed().document).unwrap();
             session.committed().save(backend.clone()).await.unwrap();session.unlock().unwrap();session.edit(None,1,|w|w.open(c,&graph)).unwrap();
             let anchor=tabard::ReadingAnchor{source:"mere://reading/a".into(),revision:42,text:3,offset:0,exact:"A retained passage".into(),prefix:String::new(),suffix:String::new(),line_offset:0.0,fallback_y:600.0};
-            let mut nav=ScopeNavigation::default();let place=ScopePlace{level:ScopeLevel::Document,graph:owner,root:Some(a),focus:Some(a)};
+            let mut nav=ScopeNavigation::default();let place=ScopePlace{ contexts:Some(vec![ScopeContext{level:ScopeLevel::Graph,graph:owner,root:None},ScopeContext{level:ScopeLevel::Neighborhood,graph:owner,root:Some(c)},ScopeContext{level:ScopeLevel::Neighborhood,graph:owner,root:Some(a)}]), level:ScopeLevel::Document,graph:owner,root:Some(a),focus:Some(a)};
             nav.visit(ScopeVisit{place:place.clone(),camera:None,anchor:Some(anchor.clone())});
             nav.visit(ScopeVisit{place:place.up().unwrap(),camera:Some(ScopeCamera{x:100.0,y:80.0,zoom:2.0}),anchor:None});
             save(&mut session,backend.clone(),SaveKind::Scope(nav.clone())).await;
@@ -768,9 +768,9 @@ mod tests {
     }
     #[test]
     fn scope_write_failure_keeps_acknowledged_route_and_foreign_graph_is_refused() {
-        use cambium::scope_navigation::*;
+        use crate::scope_policy::*;
         let (_,mut session,[a,_,_])=fixture();let owner=session.committed().document.graph_id;
-        let mut nav=ScopeNavigation::default();nav.visit(ScopeVisit{place:ScopePlace{level:ScopeLevel::Graph,graph:owner,root:Some(a),focus:Some(a)},camera:None,anchor:None});
+        let mut nav=ScopeNavigation::default();nav.visit(ScopeVisit{place:ScopePlace{ contexts:None, level:ScopeLevel::Graph,graph:owner,root:Some(a),focus:Some(a)},camera:None,anchor:None});
         let proposal=session.prepare_save(SaveKind::Scope(nav.clone()),1).unwrap();assert!(session.finish_save(proposal,Err("offline".into())).is_err());
         assert!(session.committed().scope_navigation.current().is_none());
         let mut foreign=nav.current().unwrap().clone();foreign.place.graph=Uuid::nil();nav.visit(foreign);

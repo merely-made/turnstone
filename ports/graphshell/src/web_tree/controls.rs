@@ -212,6 +212,7 @@ impl TreePage {
         if event.phase == PointerPhase::Cancel {
             #[cfg(feature = "product")]
             {
+                self.instrument.scope.activation.cancel();
                 forme::pointer(self, &event);
                 field_inspection::pointer(self, &event);
             }
@@ -262,8 +263,20 @@ impl TreePage {
         let mut context = None;
         #[cfg(feature = "product")]
         let mut opened_pair = None;
+        #[cfg(feature = "product")]
+        let mut read = None;
         match event.phase {
             PointerPhase::Down => {
+                #[cfg(feature = "product")]
+                self.instrument.scope.activation.press(
+                    canvas.node_at_screen(x, y).map(|member|(self.instrument.scope.gesture_epoch,member)),
+                    (x, y),
+                    event.button != PointerButton::Primary
+                        || event.modifiers.ctrl
+                        || event.modifiers.shift
+                        || event.modifiers.alt
+                        || event.modifiers.meta,
+                );
                 // Canvas right-drag is a marquee; shared menu handlers retain
                 // their default one-shot secondary press behavior.
                 if event.button == PointerButton::Secondary {
@@ -272,10 +285,20 @@ impl TreePage {
                 canvas.pointer_down(button, x, y);
             },
             PointerPhase::Move => {
+                #[cfg(feature = "product")]
+                self.instrument.scope.activation.moved((x, y));
                 canvas.cursor_moved(x, y);
             },
             PointerPhase::Up => {
                 canvas.pointer_up(button, x, y);
+                #[cfg(feature = "product")]
+                {
+                    read = self.instrument.scope.activation.release(
+                        canvas.node_at_screen(x, y).map(|member|(self.instrument.scope.gesture_epoch,member)),
+                        (x, y),
+                        now_ms(),
+                    );
+                }
                 #[cfg(feature = "product")]
                 if event.button == PointerButton::Primary {
                     let keys = canvas.selected_link_keys();
@@ -296,6 +319,11 @@ impl TreePage {
         canvas.set_shift(false);
         canvas.set_alt(false);
         drop(canvas);
+        #[cfg(feature = "product")]
+        if let Some((_, member)) = read {
+            super::location::read_document(self, member);
+            return;
+        }
         #[cfg(feature = "product")]
         if let Some((first, second)) = opened_pair {
             let target = graphshell::link_inspection::LinkTarget::new(first, second);

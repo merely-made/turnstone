@@ -179,7 +179,8 @@ const SHEET: &str = "\
 fn tree_stylesheet(appearance: &str) -> String {
     #[cfg(feature = "product")]
     let workspace_sheet = format!(
-        "{}\n{}\n{}\n{}",
+        "{}\n{}\n{}\n{}\n{}",
+        cambium::GRAPH_CANVAS_SWATCH_CSS,
         cambium::TITLE_BAR_CSS,
         cambium::INSTRUMENT_CSS,
         cambium::SHELL_CSS,
@@ -802,11 +803,8 @@ fn view(page: &TreePage) -> Child {
                                 .to_owned(),
                         ))
                     }),
-                    (!document_active && page.product.is_none()).then(|| {
-                        Box::new(
-                            status_note("tree-status", page.status()),
-                        ) as Child
-                    }),
+                    (!document_active && page.product.is_none())
+                        .then(|| Box::new(status_note("tree-status", page.status())) as Child),
                     (!document_active).then(|| history::region(page)),
                     (!document_active)
                         .then(|| page.presenter.is_none().then(|| hosted_dataset(page)))
@@ -1082,6 +1080,18 @@ fn keys(page: &mut TreePage, key: &Key) -> bool {
                 return true;
             }
         }
+    }
+    #[cfg(feature = "product")]
+    if matches!(key, Key::Named(NamedKey::Enter))
+        && page.shared.canvas.borrow().key_moving().is_none()
+        && page.shared.canvas.borrow().focused_member().is_some()
+    {
+        scope_navigation::command(
+            page,
+            graphshell::scope_policy::ScopeCommand::To(
+                graphshell::scope_policy::ScopeLevel::Document.into()),
+        );
+        return true;
     }
     use graphshell::canvas_reader::{MoveKey, key_move};
     if page
@@ -1977,10 +1987,18 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
             }
             #[cfg(feature = "product")]
             {
-                if scope_navigation::needs_poll(ctx.runner.state()) {ctx.runner.update(scope_navigation::poll);}
-                if reading::needs_progress_save(ctx.runner.state()) {ctx.runner.update(reading::persist_progress);}
+                if scope_navigation::needs_poll(ctx.runner.state()) {
+                    ctx.runner.update(scope_navigation::poll);
+                }
+                if location::needs_poll(ctx.runner.state()) {
+                    ctx.runner.update(location::poll);
+                }
+                if reading::needs_progress_save(ctx.runner.state()) {
+                    ctx.runner.update(reading::persist_progress);
+                }
                 scope_navigation::refresh(ctx.runner.state());
                 reading::prepare(ctx.runner.state());
+                focus_card::register(ctx);
                 backdrop::register(ctx);
                 blocks::register(ctx);
                 frame_shared.reading.borrow_mut().register(ctx);
@@ -2022,7 +2040,7 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
                                 .then_some(node.id)
                             });
                     if let Some(target) = target {
-                        ctx.runner.update(|page| forme::open_retained(page, target));
+                        ctx.runner.update(|page| focus_card::reference(page,source,target));
                     } else {
                         frame_shared.reading.borrow_mut().set_status(
                             source,
@@ -2137,6 +2155,10 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
         after_wake: Box::new(|_ctx| {}),
         close_request: Box::new(|_ctx, _request| CloseDisposition::KeepVisible),
         focused_text: Box::new(|runner| {
+            #[cfg(feature = "product")]
+            if let Some(slot) = location::focused_text(runner) {
+                return Some(slot);
+            }
             if let Some(slot) = commands::focused_text(runner) {
                 return Some(slot);
             }
@@ -2298,15 +2320,17 @@ mod host_boundary;
 mod inspection;
 #[cfg(feature = "product")]
 mod instrument;
-#[cfg(feature = "product")]
-mod source_binding;
-#[cfg(feature = "product")]
-mod navigation;
 mod lane;
 #[cfg(feature = "product")]
 mod link_inspection;
+#[cfg(feature = "product")]
+mod location;
 #[cfg(feature = "moot-resources")]
 mod moot_resources;
+#[cfg(feature = "product")]
+mod navigation;
+#[cfg(feature = "product")]
+mod focus_card;
 #[cfg(feature = "product")]
 mod node_presentation;
 mod observe;
@@ -2333,8 +2357,6 @@ mod promoted_links;
 mod query_view;
 #[cfg(feature = "product")]
 mod reading;
-#[cfg(feature = "product")]
-mod scope_navigation;
 #[cfg(feature = "remote")]
 mod remote;
 #[cfg(not(feature = "remote"))]
@@ -2342,6 +2364,10 @@ mod remote;
 mod remote;
 #[cfg(feature = "remote")]
 mod reservoir;
+#[cfg(feature = "product")]
+mod scope_navigation;
+#[cfg(feature = "product")]
+mod source_binding;
 mod speed;
 mod visibility;
 

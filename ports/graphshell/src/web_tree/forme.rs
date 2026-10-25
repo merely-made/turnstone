@@ -195,6 +195,12 @@ pub(super) fn after_graph_change(page: &mut TreePage) {
     let (new_owner, same_owner) = page.product.as_mut().map_or((None, None), |p| {
         (p.forme_new_session.take(), p.forme_reconcile_session.take())
     });
+    if new_owner.is_some() || same_owner.is_some() {
+        // Durable anchors may survive a graph reopen. An unfinished click is
+        // only valid for the exact live canvas that received its first press.
+        page.instrument.scope.gesture_epoch=page.instrument.scope.gesture_epoch.checked_add(1).expect("Gesture epoch exhausted");
+        page.instrument.scope.activation.cancel();
+    }
     if let Some(owner) = new_owner {
         retire_owner(page, owner);
         return;
@@ -415,10 +421,18 @@ pub(super) fn open_selected(page: &mut TreePage) {
 /// first Read with an empty arrangement admits the already-selected members.
 pub(super) fn show_projection(page: &mut TreePage, map: bool) {
     if map {
-        super::scope_navigation::command(page,cambium::scope_navigation::ScopeCommand::To(cambium::scope_navigation::ScopeLevel::Graph));
+        super::scope_navigation::command(page,graphshell::scope_policy::ScopeCommand::To(graphshell::scope_policy::ScopeLevel::Graph.into()));
     } else {
-        let member=page.shared.canvas.borrow().focused_member().or_else(||page.forme.as_ref().and_then(|p|p.current().focused_reading));
-        if let Some(member)=member {read_related(page,member);} else {open_selected(page);}
+        let member = page.shared.canvas.borrow().focused_member().or_else(|| {
+            page.forme
+                .as_ref()
+                .and_then(|p| p.current().focused_reading)
+        });
+        if let Some(member) = member {
+            read_related(page, member);
+        } else {
+            open_selected(page);
+        }
     }
     page.shared.dirty.set(true);
 }
@@ -470,6 +484,16 @@ fn arrange(page: &mut TreePage, axis: Option<SplitAxis>) {
     });
 }
 fn tile_event(page: &mut TreePage, event: TileEvent) {
+    if let TileEvent::Closed(tile) = &event {
+        if let Some(member) = page
+            .forme
+            .as_ref()
+            .and_then(|p| p.model().member_for_tile(*tile))
+        {
+            close_reading(page, member);
+        }
+        return;
+    }
     let activated = if let TileEvent::Activated(tile) = &event {
         page.forme
             .as_ref()
@@ -490,7 +514,60 @@ fn tile_event(page: &mut TreePage, event: TileEvent) {
     if let Some(member) = activated {
         page.shared.canvas.borrow_mut().select_member(member);
         selection_changed(page);
+        super::scope_navigation::record_reading(page, member);
     }
+}
+
+pub(super) fn close_reading(page: &mut TreePage, member: Uuid) {
+    let Some(pane) = page.forme.as_ref() else {
+        return;
+    };
+    if !pane.current().members().contains(&member) {
+        return;
+    }
+    if pane.saving {
+        if page.instrument.scope.pending_closes.len() < 32 {
+            page.instrument.scope.pending_closes.push_back(member);
+        }
+        page.shared.dirty.set(true);
+        return;
+    }
+    let Some(tile) = pane.current().tile_for_member(member) else {
+        return;
+    };
+    let stack=pane.current().layout().slot_views().find(|slot|slot.members.contains(&member)).map(|slot|slot.members.to_vec()).unwrap_or_default();
+    let next = cambium::scope_navigation::reading_after_close_in_stack(
+        &pane.current().members(),
+        &stack,
+        pane.current().focused_reading.as_ref(),
+        &member,
+    );
+    let current = pane.current().focused_reading;
+    let reading = pane.workbench;
+    super::scope_navigation::capture_origin(page);
+    let (anchors, trail) = super::reading::capture_progress(page);
+    if next.is_none() && reading {
+        super::scope_navigation::command(
+            page,
+            graphshell::scope_policy::ScopeCommand::To(
+                graphshell::scope_policy::ScopeLevel::Neighborhood.into()),
+        );
+    }
+    edit(page, None, true, move |workspace, graph| {
+        workspace.reading_anchors = anchors;
+        workspace.reading_trail = trail;
+        workspace.event(TileEvent::Closed(tile), graph)
+    });
+    if current == Some(member)
+        && let Some(next) = next
+    {
+        page.shared.canvas.borrow_mut().select_member(next);
+        selection_changed(page);
+        if reading {
+            super::scope_navigation::record_reading(page, next);
+        }
+    }
+    page.shared.dirty.set(true);
 }
 fn translate(page: &mut TreePage, dx: f32, dy: f32, scale: f32) {
     edit(page, None, false, |workspace, _| {
@@ -1147,11 +1224,8 @@ fn offer_links(page: &TreePage, member: Uuid, address: &str, media_type: Option<
 pub(super) fn workbench(page: &TreePage) -> Option<Child> {
     let pane = page.forme.as_ref().filter(|p| p.workbench)?;
     let graph = page.shared.canvas.borrow().graph().clone();
-    let tree = pane
-        .candidate
-        .as_ref()
-        .unwrap_or_else(|| pane.model())
-        .tile_tree(&graph);
+    let displayed=pane.candidate.as_ref().unwrap_or_else(||pane.model());
+    let tree=displayed.tile_tree(&graph);
     Some(match tree {
         None => Box::new(el(
             "p",
@@ -1211,7 +1285,9 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
                 }
             }
             super::reading::prepare(page);
-            let reading_toolbars: std::collections::BTreeMap<_, _> = appearances.keys().map(|member| (*member, super::reading::toolbar_snapshot(page, *member))).collect();
+            let reading_toolbars: std::collections::BTreeMap<_, _> = pane.model().members().iter().map(|member| (*member, super::reading::toolbar_snapshot(page, *member))).collect();
+            let tab_visibility:std::collections::BTreeMap<_,_>=displayed.layout().slot_views()
+                .flat_map(|stack| {let visible=cambium::TabStripPolicy::Multiple.visible(stack.members.len());stack.members.iter().copied().map(move |member|(member,visible)).collect::<Vec<_>>()}).collect();
             let reading = move |tile: &Tile| -> Slot<TreePage, ()> {
                 let ContentSource::Open { id, .. } = &tile.content else {
                     return Slot::Hole;
@@ -1235,11 +1311,11 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
                 if !tags.is_empty() {
                     controls.push(Box::new(el("p", tags.join(" · ")).attr("class", "shell-reading-status")));
                 }
+                controls.push(super::reading::toolbar(member, reading_toolbars[&member].clone(), tab_visibility.get(&member).copied().unwrap_or(false)));
                 if let Some(snapshot) = query_appearances.get(&member) {
                     controls.push(super::query_view::render(snapshot.clone()));
                 }
                 if let Some(appearance) = appearances.get(&member) {
-                    controls.push(super::reading::toolbar(member, reading_toolbars[&member].clone()));
                     controls.push(super::reading::render(appearance.clone()));
                 }
                 if !locked {
@@ -1291,7 +1367,7 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
             };
             Box::new(
                 cambium::on_key(
-                    el("div", frisket_with(&tree, tile_event, reading)),
+                    el("div", cambium::frisket_with_tab_policy(&tree, None, &|_|None, cambium::TabStripPolicy::Multiple, tile_event, reading)),
                     |p: &mut TreePage, event| {
                         if shortcut(p, &event) {
                             event.prevent_default();
@@ -1316,9 +1392,19 @@ pub(super) const SHEET: &str = " .forme-workbench { width:100%;height:100%;min-h
 /// Activate an already arranged member without changing its tile or split.
 pub(super) fn activate_from_rail(page: &mut TreePage, member: Uuid) {
     super::scope_navigation::capture_origin(page);
-    if !page.forme.as_ref().is_some_and(|pane| pane.current().layout().has_tile(member)) { return; }
-    edit(page, None, true, |workspace, graph| workspace.open(member, graph));
-    if let Some(pane) = &mut page.forme { pane.workbench = true; }
+    if !page
+        .forme
+        .as_ref()
+        .is_some_and(|pane| pane.current().layout().has_tile(member))
+    {
+        return;
+    }
+    edit(page, None, true, |workspace, graph| {
+        workspace.open(member, graph)
+    });
+    if let Some(pane) = &mut page.forme {
+        pane.workbench = true;
+    }
     page.shared.canvas.borrow_mut().select_member(member);
     selection_changed(page);
     super::scope_navigation::record_reading(page,member);
