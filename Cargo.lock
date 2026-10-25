@@ -7416,7 +7416,7 @@ checksum = "e2db585e1d738fc771bf08a151420d3ed193d9d895a36df7f6f8a9456b911ddc"
 [[package]]
 name = "knot-capture"
 version = "0.0.1"
-source = "git+https://github.com/merely-made/knot-editor.git?branch=main#4dafff1f591c18a5b4d20e987054722d01406613"
+source = "git+https://github.com/merely-made/knot-editor.git?branch=main#1766bf2119571b482f2007bc811966f629dcf160"
 dependencies = [
  "knot-file-catalog",
 ]
@@ -7424,7 +7424,7 @@ dependencies = [
 [[package]]
 name = "knot-composition"
 version = "0.0.1"
-source = "git+https://github.com/merely-made/knot-editor.git?branch=main#4dafff1f591c18a5b4d20e987054722d01406613"
+source = "git+https://github.com/merely-made/knot-editor.git?branch=main#1766bf2119571b482f2007bc811966f629dcf160"
 dependencies = [
  "blake3",
  "knot-capture",
@@ -7444,7 +7444,7 @@ dependencies = [
 [[package]]
 name = "knot-document"
 version = "0.0.1"
-source = "git+https://github.com/merely-made/knot-editor.git?branch=main#4dafff1f591c18a5b4d20e987054722d01406613"
+source = "git+https://github.com/merely-made/knot-editor.git?branch=main#1766bf2119571b482f2007bc811966f629dcf160"
 dependencies = [
  "cambium",
  "illume",
@@ -7461,7 +7461,7 @@ dependencies = [
 [[package]]
 name = "knot-editor"
 version = "0.0.3"
-source = "git+https://github.com/merely-made/knot-editor.git?branch=main#4dafff1f591c18a5b4d20e987054722d01406613"
+source = "git+https://github.com/merely-made/knot-editor.git?branch=main#1766bf2119571b482f2007bc811966f629dcf160"
 dependencies = [
  "base64 0.22.1",
  "blake3",
@@ -7530,7 +7530,7 @@ dependencies = [
 [[package]]
 name = "knot-file-catalog"
 version = "0.0.1"
-source = "git+https://github.com/merely-made/knot-editor.git?branch=main#4dafff1f591c18a5b4d20e987054722d01406613"
+source = "git+https://github.com/merely-made/knot-editor.git?branch=main#1766bf2119571b482f2007bc811966f629dcf160"
 dependencies = [
  "muniment",
  "pollster 0.4.0",
@@ -8387,7 +8387,7 @@ dependencies = [
 [[package]]
 name = "mere-source-edit"
 version = "0.1.0"
-source = "git+https://github.com/merely-made/mere.git?rev=70deef2c8cf3d3410ae35b496a9396514070b24f#70deef2c8cf3d3410ae35b496a9396514070b24f"
+source = "git+https://github.com/merely-made/mere.git?branch=main#91d4086e79a366fb74d1f865252f549893728cf5"
 dependencies = [
  "serde",
 ]
