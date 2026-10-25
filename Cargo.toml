@@ -35,7 +35,7 @@ athanor = { package = "mere-athanor", git = "https://github.com/merely-made/mere
 tabard = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 tabard-workshop = { git = "https://github.com/merely-made/mere.git", branch = "main", features = ["native-host"] }
 mesquite = { git = "https://github.com/merely-made/mere.git", branch = "main" }
-cambium-genet-winit-host = { git = "https://github.com/merely-made/mere.git", branch = "main" }
+cambium-desktop = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 cambium-rootstock = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 
 # The library this app is the reference host for: graph truth + the
@@ -59,7 +59,7 @@ fetch = { package = "mere-fetch", git = "https://github.com/merely-made/mere.git
 # Pelt's browsing controller and the sans-IO page load (SC, 2026-10-07): each
 # node's document is a PeltContent, and each node's load is a PageLoad.
 pelt-core = { git = "https://github.com/merely-made/mere.git", branch = "main", features = ["genet", "image-decode", "cue"] }
-page-load = { package = "mere-page-load", git = "https://github.com/merely-made/mere.git", branch = "main" }
+page-load = { package = "mere-pageload", git = "https://github.com/merely-made/mere.git", branch = "main" }
 # Session persistence: the flat single-session `graph.json` beside the data
 # root (session_graph_store's blessed single-session shape). App-side
 # material that moves here with the port, like fetch.
@@ -183,7 +183,7 @@ genet-documents = { git = "https://github.com/merely-made/genet.git", branch = "
 # reader and smolweb lanes, and the remote fetcher that supplies the http(s)
 # schemes Genet's `LocalFetcher` no longer branches on. The two compose at
 # `LocalFetcher::with_fallback`, which is the seam the split introduced.
-mere-document-lanes = { git = "https://github.com/merely-made/mere.git", branch = "main", features = ["netfetch", "smolweb", "retained-clips"] }
+mere-lanes = { git = "https://github.com/merely-made/mere.git", branch = "main", features = ["netfetch", "smolweb", "retained-clips"] }
 # The source-preserving Micron native projection. Turnstone adapts
 # its portable EngineDocument into the existing retained document session.
 nematic = { git = "https://github.com/merely-made/mere.git", branch = "main" }
@@ -202,7 +202,7 @@ errand = { git = "https://github.com/merely-made/errand.git", rev = "1155897e6de
 # Optional app-control scripting. Piccolo is a Turnstone mod/workflow backend,
 # not a browser-page engine; Vano/Boa remain the JavaScript lanes.
 script-engine-api = { git = "https://github.com/merely-made/genet.git", branch = "main", optional = true }
-script-engine-piccolo = { git = "https://github.com/merely-made/genet.git", branch = "main", optional = true }
+genet-didge = { git = "https://github.com/merely-made/genet.git", branch = "main", optional = true }
 # The app-core component host (mere): instantiates the envelope world and
 # backs `emit` with turnstone's ring gate. Optional — the `wasm` feature.
 app-host = { git = "https://github.com/merely-made/mere.git", branch = "main", optional = true }
@@ -236,8 +236,8 @@ uuid = "1"
 url = "2.5"
 # Rasterize + composite the canvas Scene through the shared present stack.
 netrender = { git = "https://github.com/merely-made/netrender.git", branch = "main" }
-genet-winit-host = { git = "https://github.com/merely-made/genet.git", branch = "main" }
-genet-render-host = { git = "https://github.com/merely-made/genet.git", branch = "main" }
+genet-winit = { git = "https://github.com/merely-made/genet.git", branch = "main" }
+genet-presenter = { git = "https://github.com/merely-made/genet.git", branch = "main" }
 # The view toolkit (rung 5 slice D, the toolkit adoption): cambium (the xilem
 # fork) + sprigging (its custom-paint leaves, incl. the data_grid and GraphCanvas
 # a Roster grid and a Gloss minimap swatch need). Git dep on cambium.git so the
@@ -318,8 +318,8 @@ wgpu-cue = { version = "=0.1.3" }
 graft-engine = { git = "https://github.com/merely-made/mere.git", branch = "main", optional = true }
 servo = { git = "https://github.com/servo/servo", rev = "aac43a3f31a259f04a574f5ec4e959c943ad7cc7", optional = true }
 rustls = { version = "0.23.37", features = ["aws_lc_rs"], optional = true }
-servo-wgpu-interop-adapter = { git = "https://github.com/merely-made/wgpu-graft.git", rev = "db2736815e9d1893b8f9372355126056093f7155", default-features = false, features = ["wgpu-30", "servo"], optional = true }
-grafting = { git = "https://github.com/merely-made/wgpu-graft.git", rev = "db2736815e9d1893b8f9372355126056093f7155", default-features = false, features = ["wgpu-30"], optional = true }
+grafting-servo = { git = "https://github.com/merely-made/wgpu-graft.git", rev = "9f410f193eb82a9a70ff704674bba7df3eed981b", default-features = false, features = ["wgpu-30", "servo"], optional = true }
+grafting = { git = "https://github.com/merely-made/wgpu-graft.git", rev = "9f410f193eb82a9a70ff704674bba7df3eed981b", default-features = false, features = ["wgpu-30"], optional = true }
 
 [dev-dependencies]
 async-trait = "=0.1.92"
@@ -346,7 +346,7 @@ nomadnet = ["dep:retinue"]
 wasm = ["dep:app-host", "dep:wasmtime"]
 # Piccolo drives Turnstone's capability-scoped control scripts. It is kept
 # opt-in so the browser host's ordinary build carries no scripting runtime.
-piccolo = ["dep:script-engine-api", "dep:script-engine-piccolo"]
+piccolo = ["dep:script-engine-api", "dep:genet-didge"]
 # Bundled Chromium in an accelerated OSR tile. Windows is the first Turnstone
 # host because it has the live D3D12 shared-handle receipt; the feature stays
 # compile-visible elsewhere but registers no platform producer there yet.
@@ -356,7 +356,7 @@ weld = ["dep:weld-engine", "dep:welding", "dep:grafting", "dep:windows"]
 scry = ["dep:scrying-engine", "dep:windows", "dep:webview2-com"]
 # Upstream Servo views share one named process profile and import through Graft
 # on the existing host device. The shared receiving host also runs on Metal.
-servo = [ "dep:graft-engine", "dep:servo", "dep:servo-wgpu-interop-adapter", "dep:grafting", "dep:windows", "dep:rustls", "accesskit/serde"]
+servo = [ "dep:graft-engine", "dep:servo", "dep:grafting-servo", "dep:grafting", "dep:windows", "dep:rustls", "accesskit/serde"]
 
 [target.'cfg(windows)'.dependencies]
 # ANGLE EGL DLL selection is Windows-only; macOS uses Surfman CGL.
@@ -381,7 +381,7 @@ document-session-api = { git = "https://github.com/merely-made/genet.git", branc
 # native consumers of Mere use Mere's patched AccessKit (support/patches/accesskit).
 accesskit = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 # Promoted sources shared with immutable older Mere suppliers.
-esp = { git = "https://github.com/merely-made/esp.git", rev = "f27bee8eb5152618ab91fa8676d62c72ebfcb4fc" }
+esp = { git = "https://github.com/merely-made/esp.git", rev = "86fadf2bf0f14f2c5f4ef3a40d092867c1986175" }
 # Canonical promoted families; keep registry and Git consumers type-identical.
 armillary = { git = "https://github.com/merely-made/armillary.git", rev = "92d5b15cf39aaac40a3f2d863ffee69c9be11bfc" }
 chartulary = { git = "https://github.com/merely-made/eidetic.git", rev = "aa94fe22eea29e9b54e01ed21e6991536ed4f208" }
@@ -423,7 +423,7 @@ mozjs_icu_collator = { path = "vendor/mozjs-icu-collator" }
 mozjs_icu_normalizer = { path = "vendor/mozjs-icu-normalizer" }
 # The Servo interop adapter is git-only and carries this Grafting rev, so
 # registry consumers (Scrying, Welding) must share it to keep one Grafting.
-grafting = { git = "https://github.com/merely-made/wgpu-graft.git", rev = "db2736815e9d1893b8f9372355126056093f7155" }
+grafting = { git = "https://github.com/merely-made/wgpu-graft.git", rev = "9f410f193eb82a9a70ff704674bba7df3eed981b" }
 # Match Distillery's stable Burn graph; root patches are not inherited.
 gemini-protocol = { git = "https://github.com/merely-made/errand.git", rev = "1155897e6debc61102ea219cced245d0abccb658" }
 # No Stylo-family patch: Genet's live route is Livery/Buckram. The surviving
@@ -493,7 +493,7 @@ chartulary = { git = "https://github.com/merely-made/eidetic.git", rev = "aa94fe
 commons-spine = { git = "https://github.com/merely-made/gemot.git", rev = "8ffdc9a5bab5dcc82fe3be4bfa0e1c5d8dbbab1c" }
 eidetic = { git = "https://github.com/merely-made/eidetic.git", rev = "aa94fe22eea29e9b54e01ed21e6991536ed4f208" }
 errand = { git = "https://github.com/merely-made/errand.git", rev = "1155897e6debc61102ea219cced245d0abccb658" }
-esp = { git = "https://github.com/merely-made/esp.git", rev = "f27bee8eb5152618ab91fa8676d62c72ebfcb4fc" }
+esp = { git = "https://github.com/merely-made/esp.git", rev = "86fadf2bf0f14f2c5f4ef3a40d092867c1986175" }
 gemot = { git = "https://github.com/merely-made/gemot.git", rev = "8ffdc9a5bab5dcc82fe3be4bfa0e1c5d8dbbab1c" }
 luggage = { git = "https://github.com/merely-made/eidetic.git", rev = "aa94fe22eea29e9b54e01ed21e6991536ed4f208" }
 mere-proofs = { git = "https://github.com/merely-made/eidetic.git", rev = "aa94fe22eea29e9b54e01ed21e6991536ed4f208" }
@@ -507,7 +507,7 @@ insigne = { git = "https://github.com/merely-made/dramatis.git", branch = "main"
 mere-transport = { git = "https://github.com/merely-made/murm.git", branch = "main" }
 notochord = { git = "https://github.com/merely-made/dramatis.git", branch = "main" }
 personae = { git = "https://github.com/merely-made/dramatis.git", branch = "main" }
-mere-webrtc-carrier = { git = "https://github.com/merely-made/murm.git", branch = "main" }
+murm-webrtc = { git = "https://github.com/merely-made/murm.git", branch = "main" }
 
 [workspace.package]
 rust-version = "1.97.1"
@@ -516,7 +516,7 @@ rust-version = "1.97.1"
 # repository rename. Targets and current direct dependencies use Murm.
 [patch."https://github.com/merely-made/retinue.git"]
 mere-transport = { git = "https://github.com/merely-made/murm.git", branch = "main" }
-mere-webrtc-carrier = { git = "https://github.com/merely-made/murm.git", branch = "main" }
+murm-webrtc = { git = "https://github.com/merely-made/murm.git", branch = "main" }
 retinue = { git = "https://github.com/merely-made/murm.git", branch = "main" }
 
 [patch."https://www.github.com/merely-made/mere.git"]
@@ -525,7 +525,7 @@ chartulary = { git = "https://github.com/merely-made/eidetic.git", rev = "aa94fe
 commons-spine = { git = "https://github.com/merely-made/gemot.git", rev = "8ffdc9a5bab5dcc82fe3be4bfa0e1c5d8dbbab1c" }
 eidetic = { git = "https://github.com/merely-made/eidetic.git", rev = "aa94fe22eea29e9b54e01ed21e6991536ed4f208" }
 errand = { git = "https://github.com/merely-made/errand.git", rev = "1155897e6debc61102ea219cced245d0abccb658" }
-esp = { git = "https://github.com/merely-made/esp.git", rev = "f27bee8eb5152618ab91fa8676d62c72ebfcb4fc" }
+esp = { git = "https://github.com/merely-made/esp.git", rev = "86fadf2bf0f14f2c5f4ef3a40d092867c1986175" }
 gemot = { git = "https://github.com/merely-made/gemot.git", rev = "8ffdc9a5bab5dcc82fe3be4bfa0e1c5d8dbbab1c" }
 luggage = { git = "https://github.com/merely-made/eidetic.git", rev = "aa94fe22eea29e9b54e01ed21e6991536ed4f208" }
 mere-proofs = { git = "https://github.com/merely-made/eidetic.git", rev = "aa94fe22eea29e9b54e01ed21e6991536ed4f208" }
@@ -567,4 +567,4 @@ mooting = { git = "https://www.github.com/merely-made/gemot.git", rev = "8ffdc9a
 
 # Keep Knot's older ESP source on the same cohort as the Mere supplier.
 [patch."https://github.com/merely-made/esp.git"]
-esp = { git = "https://www.github.com/merely-made/esp.git", rev = "f27bee8eb5152618ab91fa8676d62c72ebfcb4fc" }
+esp = { git = "https://www.github.com/merely-made/esp.git", rev = "86fadf2bf0f14f2c5f4ef3a40d092867c1986175" }
