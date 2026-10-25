@@ -16,7 +16,7 @@ cambium-rootstock.workspace = true
 mesquite = { workspace = true }
 taproot = { workspace = true }
 layout_dom_api = { workspace = true }
-genet-render-host.workspace = true
+genet-presenter.workspace = true
 wgpu.workspace = true
 serde_json.workspace = true
 dirs = "5"
