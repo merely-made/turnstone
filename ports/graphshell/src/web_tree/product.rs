@@ -27,7 +27,7 @@ mod promoted_links;
 #[cfg(feature = "product")]
 mod query;
 mod scenes;
-pub(super) use commands::menu;
+pub(super) use commands::{focused_command_text, menu};
 use fields::TextField;
 pub(super) use fields::focused_text;
 pub(super) use find::section as find_section;
@@ -108,6 +108,8 @@ pub(super) struct SavedProduct {
     commands: commands::Commands,
     operation_completed: Rc<RefCell<Option<OperationCompletion>>>,
     operation_pending: bool,
+    // Preference-only saves retain live scope/card targets and Forme gestures.
+    operation_reconciles_graph: bool,
     link_visibility_completed: Rc<RefCell<Option<LinkVisibilityCompletion>>>,
     link_visibility_pending: bool,
     link_visibility_uncertain_session: Option<Uuid>,
@@ -277,6 +279,7 @@ async fn open_inner(root: &Element) -> Result<Option<SavedProduct>, String> {
         commands,
         operation_completed: Rc::new(RefCell::new(None)),
         operation_pending: false,
+        operation_reconciles_graph: true,
         link_visibility_completed: Rc::new(RefCell::new(None)),
         link_visibility_pending: false,
         link_visibility_uncertain_session: None,
@@ -1093,6 +1096,14 @@ impl SavedProduct {
 
     /// Persist the current typed owner transaction without holding a borrow across await.
     fn persist_operation(&mut self) {
+        self.persist_operation_kind(true);
+    }
+
+    fn persist_menu_choices(&mut self) {
+        self.persist_operation_kind(false);
+    }
+
+    fn persist_operation_kind(&mut self, reconciles_graph: bool) {
         if self.saving {
             return;
         }
@@ -1100,6 +1111,7 @@ impl SavedProduct {
             return;
         };
         self.operation_pending = true;
+        self.operation_reconciles_graph = reconciles_graph;
         self.status = "Saving changes…".into();
         self.saving = true;
         self.save_state = "saving";
@@ -1278,7 +1290,9 @@ impl SavedProduct {
                 app.host.graph(),
             );
             self.session = owner.to_string();
-            self.forme_reconcile_session = Some(owner);
+            if owner_changed || self.operation_reconciles_graph {
+                self.forme_reconcile_session = Some(owner);
+            }
             self.app = Some(app);
             if owner_changed {
                 self.restore_canvas_link_hides(canvas);
@@ -1287,7 +1301,9 @@ impl SavedProduct {
             match result {
                 Ok(()) => {
                     self.operation_pending = false;
-                    self.projection.saved();
+                    if self.operation_reconciles_graph {
+                        self.projection.saved();
+                    }
                     self.save_state = "saved";
                     self.status = self
                         .operation_success
@@ -1551,7 +1567,7 @@ pub(super) fn controls(page: &TreePage) -> Child {
     if product.operation_pending && !product.saving {
         children.push(Box::new(button("Retry save", |page: &mut TreePage, _| {
             if let Some(product) = &mut page.product {
-                product.persist_operation();
+                product.persist_operation_kind(product.operation_reconciles_graph);
             }
         })));
     }

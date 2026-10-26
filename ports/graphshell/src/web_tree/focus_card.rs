@@ -163,6 +163,49 @@ fn forme_target(page: &TreePage) -> Option<Target> {
         relation: None,
     })
 }
+
+pub(super) fn has_forme(page: &TreePage) -> bool {
+    forme_target(page).is_some_and(|t|valid(page,&t))
+}
+
+fn enter_forme(page: &mut TreePage, target: Target) {
+    let Some(id)=target.forme else {return;};
+    if !valid(page,&target) {return;}
+    let Some(workspace)=page.forme.as_ref().map(|p|p.current()) else {return;};
+    let Some(place)=super::scope_navigation::place(page) else {return;};
+    let context=place.project(ScopeLevel::Graph,None,workspace.focused_reading)
+        .enter(ScopeLevel::Forme(id));
+    page.instrument.cards.deck.peek=None;
+    super::scope_navigation::command(page,ScopeCommand::To(
+        mere::navigation::browser::ScopeDestination::Place(context)));
+}
+
+pub(super) fn field_command(page:&mut TreePage, command:cambium::ScopeFieldCommand) {
+    page.instrument.panes_open=false;
+    let Some(target)=forme_target(page) else {return;};
+    match command {cambium::ScopeFieldCommand::Peek=>show(page,target),cambium::ScopeFieldCommand::Enter=>enter_forme(page,target)}
+}
+
+pub(super) fn field_controls(page:&TreePage) -> Option<Child> {
+    if !super::instrument::enabled(page) || super::blocks_active(page)
+        || page.instrument.panes_open || page.instrument.navigation.open || page.commands.open.is_some()
+        || page.product.as_ref().is_some_and(|p|p.menu_open())
+        || page.forme.as_ref()?.workbench {return None;}
+    let target=forme_target(page)?;
+    if !valid(page,&target) {return None;}
+    let place=super::scope_navigation::place(page)?;
+    if place.level==ScopeLevel::Overmap {return None;}
+    let canvas=page.shared.canvas.borrow();
+    let region=canvas.forme_region().filter(|r|Some(r.id)==target.forme)?;
+    let viewport=canvas.viewport();
+    let field=cambium::ScopeField {label:"Reading layout".into(),bounds:region.screen_bounds(viewport)?,
+        aperture:[0.,0.,viewport.view.0 as f32,viewport.view.1 as f32],
+        can_enter:place.level!=ScopeLevel::Forme(region.id),scale:1.0};
+    cambium::scope_field_controls(&field,move |page:&mut TreePage,command| {
+        if !valid(page,&target) {return;}
+        match command {cambium::ScopeFieldCommand::Peek=>show(page,target.clone()),cambium::ScopeFieldCommand::Enter=>enter_forme(page,target.clone())}
+    })
+}
 pub(super) fn forme_control(page: &TreePage) -> Child {
     let target = forme_target(page);
     cambium::shell_control(
@@ -358,7 +401,8 @@ pub(super) fn fields(page: &TreePage, snap: ProbeSnapshot) -> ProbeSnapshot {
         .cards()
         .iter()
         .any(|(t, _)| t.forme.is_some() && valid(page, t));
-    snap.with_field("focus-card-forme", has_forme.to_string())
+    snap.with_field("forme-field-controls",usize::from(field_controls(page).is_some()).to_string())
+        .with_field("focus-card-forme", has_forme.to_string())
         .with_field(
             "focus-card-scope",
             page.instrument

@@ -14,6 +14,8 @@ use graphshell::viewer_commands::{self, Action, Availability};
 
 pub(super) const SHEET: &str = "\
 .tree-command-menu { z-index:30; padding:10px; box-sizing:border-box; background:#17232b; border:1px solid #79a9be; color:#dce3e8; } \
+.tree-command-menu button { background:#263640; color:#dce3e8; border:1px solid #637581; padding:5px 8px; } \
+.tree-command-menu [data-command-highlight=true] { border-color:#79a9be; background:#2d5a63; } \
 .tree-command-menu h2 { font-size:16px; margin:0 0 8px; } \
 .tree-command-menu label { display:block; margin:4px 0 8px; } \
 .tree-command-menu [data-cambium-text-value] { display:block; width:100%; min-height:26px; background:#263640; color:#dce3e8; border:1px solid #637581; } \
@@ -67,6 +69,12 @@ pub(super) fn catalog(page: &TreePage) -> CommandSet {
             })
             .map(|pane| pane.history_open),
     });
+    #[cfg(feature="product")]
+    if super::instrument::enabled(page) && super::focus_card::has_forme(page) {
+        set.register(Command::new("forme:peek","Preview reading layout","canvas",cambium::EffectClass::Curation));
+        set.register(Command::new("forme:enter","Enter reading layout","canvas",cambium::EffectClass::Curation));
+        if locked {for id in ["forme:peek","forme:enter"] {set.set_disabled(id,Some("Finish the pending graph operation first".into()));}}
+    }
     if let Some(grouped) = &page.grouping {
         let picked = canvas
             .focused_url()
@@ -232,6 +240,13 @@ fn run(page: &mut TreePage, id: &str) {
     };
     if let Some(reason) = &command.disabled_reason {
         page.commands.last = reason.clone();
+        return;
+    }
+    #[cfg(feature="product")]
+    if matches!(id,"forme:peek"|"forme:enter") {
+        let operation=if id=="forme:peek" {cambium::ScopeFieldCommand::Peek} else {cambium::ScopeFieldCommand::Enter};
+        close(page);
+        super::focus_card::field_command(page,operation);
         return;
     }
     match viewer_commands::action(id, matches!(page.dataset, HostedDataset::Loaded(_))) {

@@ -119,6 +119,7 @@ impl SavedProduct {
         let summary_slot = history.completed.clone();
         let completed = self.operation_completed.clone();
         let mut app = self.app.take().ok_or("Local graph is busy")?;
+        self.operation_reconciles_graph = true;
         self.saving = true;
         self.save_state = "saving";
         wasm_bindgen_futures::spawn_local(async move {

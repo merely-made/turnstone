@@ -1,0 +1,121 @@
+# Fresh loopback origin; ?app=local&fixture=reading-typography.
+# Real saved accesses and layout edits. Peek adds no visit or content session.
+assert snap source == saved graph
+remember initial
+click role:button Map
+wait 120
+click role:button Fit graph
+settle 15
+press-node mere://reading/related-note
+settle 1
+move-by 180 -90
+settle 1
+release-at
+wait 90
+click role:button Fit graph
+settle 15
+click-node mere://reading/field-notes
+click role:button Panes
+click role:button Read selected
+wait 120
+click role:button Find in reading
+settle 5
+click role:textbox Find text in reading
+input-text Field observation 4
+settle 10
+key Escape
+wait 90
+remember passage
+click role:button Map
+wait 120
+click role:button Fit graph
+settle 15
+click-node mere://reading/related-note
+click role:button Panes
+click role:button Read selected
+wait 120
+assert snap forme-accesses == 2
+# Use the two accesses' existing arrangement; no layout edits are needed.
+assert snap forme-cells == 2
+click role:button Map
+wait 120
+click role:button Fit graph
+settle 15
+assert snap forme-cells == 2
+remember map-origin
+assert snap forme-field-controls == 1
+click role:button Preview field: Reading layout
+settle 5
+assert snap focus-card-forme == true
+same map-origin scope-level
+same map-origin scope-focus
+same map-origin scope-back
+same map-origin camera
+same map-origin zoom
+same map-origin forme-geometry
+same map-origin forme-committed-geometry
+same map-origin forme-bounds
+capture graphshell_field_preview
+click role:button Close focus card: Reading layout
+settle 5
+click role:button Enter field: Reading layout
+wait 120
+assert snap scope-level == Forme
+assert snap forme-field-controls == 1
+assert retained {"role":"button","label":"Enter field: Reading layout","attribute":"aria-disabled","value":"true"}
+capture graphshell_field_entered
+click role:button Down:
+wait 120
+assert snap scope-level == Document
+assert snap scope-trail == Meres/Graph/Forme/Document
+assert snap forme-cells == 2
+remember reading
+capture graphshell_field_reading
+click role:button Up:
+wait 120
+assert snap scope-level == Forme
+click role:button Up:
+wait 120
+assert snap scope-level == Graph
+click role:button Back:
+wait 120
+assert snap scope-level == Forme
+click role:button Back:
+wait 120
+assert snap scope-level == Document
+same reading reading-anchor
+same reading scope-focus
+same initial node-count
+capture graphshell_field_returned
+
+# The product's saved command menu shares the same field operations.
+click role:button Map
+wait 120
+click role:button Panes
+click role:button All commands…
+settle 5
+click role:textbox Search commands
+input-text Preview reading layout
+settle 5
+assert retained {"role":"textbox","label":"Search commands","attribute":"data-cambium-text-value","value":"Preview reading layout"}
+key ArrowDown
+key Enter
+wait 600
+assert snap focus-card-forme == true
+click role:button Close focus card: Reading layout
+settle 5
+click role:button Panes
+click role:button All commands…
+settle 5
+click role:textbox Search commands
+input-text Enter reading layout
+settle 5
+assert retained {"role":"textbox","label":"Search commands","attribute":"data-cambium-text-value","value":"Enter reading layout"}
+key Enter
+wait 120
+assert snap scope-level == Forme
+assert snap forme-field-controls == 1
+
+same map-origin forme-geometry
+same map-origin forme-committed-geometry
+same map-origin forme-bounds

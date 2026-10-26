@@ -3,7 +3,10 @@
 
 //! Command choices are session data; the retained menu is a shared widget view.
 use super::*;
-use cambium::{CommandChoices, CommandSet, MenuSession, button, lens, on_key, text_field_typed};
+use cambium::{
+    Command, CommandChoices, CommandSet, EffectClass, MenuSession, button, lens, on_key,
+    request_focus, text_field_typed,
+};
 use graphshell::mere_host::{GRAPHSHELL, SessionViewIntent};
 
 pub(super) struct Commands {
@@ -14,8 +17,21 @@ pub(super) struct Commands {
 }
 impl Commands {
     pub(super) fn load(app: &App) -> Self {
+        let mut set = crate::web_command_catalog::page_commands();
+        set.register(Command::new(
+            "forme:peek",
+            "Preview reading layout",
+            "canvas",
+            EffectClass::Curation,
+        ));
+        set.register(Command::new(
+            "forme:enter",
+            "Enter reading layout",
+            "canvas",
+            EffectClass::Curation,
+        ));
         Self {
-            set: crate::web_command_catalog::page_commands(),
+            set,
             choices: app
                 .host
                 .view(GRAPHSHELL, "commands")
@@ -177,13 +193,23 @@ pub(in crate::web_tree) fn menu(page: &TreePage) -> Option<Child> {
     let (session, at) = c.menu.as_ref()?;
     let mut session = session.clone();
     session.set_query(c.query.text());
-    let rows = session.rows(&c.set, &c.choices);
+    let has_forme = super::super::focus_card::has_forme(page);
+    let rows = session
+        .rows(&c.set, &c.choices)
+        .into_iter()
+        .filter(|row| !is_forme_command(&row.id) || has_forme)
+        .collect::<Vec<_>>();
     let kept = c.set.kept(&c.choices);
     let mut children: Vec<Child> = vec![Box::new(lens(
-        |input: &mut TextInput| text_field_typed(input).attr("aria-label", "Search commands"),
+        |input: &mut TextInput| {
+            request_focus(
+                text_field_typed(input).attr("aria-label", "Search commands"),
+                true,
+            )
+        },
         |page: &mut TreePage| &mut page.product.as_mut().expect("menu").commands.query,
     ))];
-    for item in rows {
+    for (index, item) in rows.into_iter().enumerate() {
         for (verb, label) in [
             ("run", item.label.clone()),
             if kept.iter().any(|kept| kept.id == item.id) {
@@ -196,29 +222,17 @@ pub(in crate::web_tree) fn menu(page: &TreePage) -> Option<Child> {
             let target = action.clone();
             children.push(Box::new(
                 button(label, move |page: &mut TreePage, _| {
-                    let result = page
-                        .product
-                        .as_mut()
-                        .ok_or("Local graph is unavailable".to_owned())
-                        .and_then(|product| product.menu_action(&action));
-                    match result {
-                        Ok(command) => {
-                            if let Some(command) = command {
-                                page.command(&command);
-                            }
-                            if let Some(product) = &mut page.product {
-                                product.persist_operation();
-                            }
-                        },
-                        Err(error) => {
-                            if let Some(product) = &mut page.product {
-                                product.status = error;
-                            }
-                        },
-                    }
-                    page.shared.dirty.set(true);
+                    apply_menu_action(page, &action);
                 })
-                .attr("data-command-menu", target),
+                .attr("data-command-menu", target)
+                .attr(
+                    "data-command-highlight",
+                    if verb == "run" && session.selected == Some(index) {
+                        "true"
+                    } else {
+                        "false"
+                    },
+                ),
             ));
         }
     }
@@ -238,9 +252,90 @@ pub(in crate::web_tree) fn menu(page: &TreePage) -> Option<Child> {
     Some(Box::new(on_key(el("section",children).attr("aria-label","Graph commands").attr("class","tree-command-menu")
         .attr("style",format!("position:absolute;left:{x}px;top:{y}px;width:320px;max-height:350px;overflow:auto;z-index:12;background:#1e303d;padding:10px;")),
         |page: &mut TreePage,event: cambium::KeyEvent| {
-            if matches!(event.key, Key::Named(NamedKey::Escape)) {
-                if let Some(product) = &mut page.product { product.close_menu(); }
-                event.prevent_default();
-            }
+            let has_forme = super::super::focus_card::has_forme(page);
+            let Some(product) = &mut page.product else { return; };
+            let c = &mut product.commands;
+            let Some((session, _)) = &mut c.menu else { return; };
+            session.set_query(c.query.text());
+            let rows = session.rows(&c.set, &c.choices).into_iter()
+                .filter(|row| !is_forme_command(&row.id) || has_forme).collect::<Vec<_>>();
+            let command = match event.key {
+                Key::Named(NamedKey::Escape) => { product.close_menu(); None },
+                Key::Named(NamedKey::ArrowDown | NamedKey::ArrowUp) => {
+                    session.step(if matches!(event.key, Key::Named(NamedKey::ArrowDown)) {1} else {-1}, rows.len());
+                    None
+                },
+                Key::Named(NamedKey::Enter) => session.chosen(&rows).map(|row| format!("run:{}",row.id)),
+                _ => return,
+            };
+            if let Some(command) = command { apply_menu_action(page, &command); }
+            event.prevent_default();
+            event.stop_propagation();
         })))
+}
+
+fn is_forme_command(id: &str) -> bool {
+    matches!(id, "forme:peek" | "forme:enter")
+}
+
+fn apply_menu_action(page: &mut TreePage, action: &str) {
+    let result = page
+        .product
+        .as_mut()
+        .ok_or("Local graph is unavailable".to_owned())
+        .and_then(|product| product.menu_action(action));
+    match result {
+        Ok(command) => {
+            if let Some(command) = command {
+                page.command(&command);
+            }
+            if let Some(product) = &mut page.product {
+                if action.starts_with("keep:")
+                    || action.starts_with("drop:")
+                    || action.strip_prefix("run:").is_some_and(is_forme_command)
+                {
+                    product.persist_menu_choices();
+                } else {
+                    product.persist_operation();
+                }
+            }
+        },
+        Err(error) => {
+            if let Some(product) = &mut page.product {
+                product.status = error;
+            }
+        },
+    }
+    page.shared.dirty.set(true);
+}
+
+/// Give the shared text host the product menu's actual query owner for IME,
+/// paste and multi-character browser input, as well as direct key events.
+pub(in crate::web_tree) fn focused_command_text(
+    runner: &cambium_rootstock::Runner<TreePage, Logic, Child>,
+) -> Option<cambium_rootstock::FocusedTextSlot<TreePage>> {
+    runner.state().product.as_ref()?.commands.menu.as_ref()?;
+    let node = runner.focus()?;
+    if !focused_field_has_label(&runner.dom().borrow(), node, "Search commands") {
+        return None;
+    }
+    Some(cambium_rootstock::FocusedTextSlot {
+        node,
+        get: Box::new(|page| {
+            &page
+                .product
+                .as_ref()
+                .expect("focused command product")
+                .commands
+                .query
+        }),
+        get_mut: Box::new(|page| {
+            &mut page
+                .product
+                .as_mut()
+                .expect("focused command product")
+                .commands
+                .query
+        }),
+    })
 }

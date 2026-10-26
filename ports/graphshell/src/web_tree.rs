@@ -772,6 +772,13 @@ fn view(page: &TreePage) -> Child {
     #[cfg(not(feature = "product"))]
     let scene_header: Option<Child> = None;
     #[cfg(feature = "product")]
+    let field_controls=focus_card::field_controls(page);
+    #[cfg(not(feature = "product"))]
+    let field_controls:Option<Child>=None;
+    let graph=el("div",(graph,field_controls))
+        .attr("class","tree-map-canvas")
+        .attr("style","position:relative;display:flex;flex-direction:column;flex:1 1 auto;min-width:0;min-height:0;");
+    #[cfg(feature = "product")]
     let backdrop_workspace = blocks::workspace(page).or_else(|| backdrop::workspace(page));
     #[cfg(not(feature = "product"))]
     let backdrop_workspace: Option<Child> = None;
@@ -1029,6 +1036,15 @@ impl TreePage {
         }
         if self.resident_mere_shown() {
             return false;
+        }
+        #[cfg(feature = "product")]
+        if matches!(command, "forme:peek" | "forme:enter") {
+            if !self.shared.selection_locked.get() && !self.shared.remote_shown.get() {
+                focus_card::field_command(self, if command == "forme:peek" {
+                    cambium::ScopeFieldCommand::Peek
+                } else { cambium::ScopeFieldCommand::Enter });
+            }
+            return true;
         }
         if let Some(action) = controls::named_command(command) {
             if let CanvasCommand::Pan { dx, dy } = action {
@@ -2157,6 +2173,10 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
         focused_text: Box::new(|runner| {
             #[cfg(feature = "product")]
             if let Some(slot) = location::focused_text(runner) {
+                return Some(slot);
+            }
+            #[cfg(feature = "product")]
+            if let Some(slot) = product::focused_command_text(runner) {
                 return Some(slot);
             }
             if let Some(slot) = commands::focused_text(runner) {
