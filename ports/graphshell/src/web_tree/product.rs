@@ -23,9 +23,10 @@ mod fields;
 mod find;
 mod history;
 mod projection;
-mod promoted_links;
+pub(super) mod promoted_links;
 #[cfg(feature = "product")]
 mod query;
+pub(super) use query::QueryCompletion;
 mod scenes;
 pub(super) use commands::{focused_command_text, menu};
 use fields::TextField;
@@ -43,7 +44,7 @@ enum CompletedEdit {
     Detail(Option<Uuid>),
 }
 type Completion = (App, CompletedEdit, Result<NodeMetadata, String>);
-type OperationCompletion = (App, Result<(), String>);
+type OperationCompletion = (App, Option<PendingOperation>, Result<(), String>);
 type CouplingCompletion = (App, CouplingId, Result<Option<String>, String>);
 type LinkVisibilityCompletion = (
     App,
@@ -62,6 +63,12 @@ type AssertionVisibilityCompletion = (
 pub(super) enum CouplingOperation {
     Apply(mere::coupling_edit::StrengthDraft),
     History(CouplingId, bool),
+}
+
+#[derive(Clone)]
+enum PendingOperation {
+    Query(query::PendingQuery),
+    Promoted(promoted_links::PendingWrite),
 }
 
 pub(super) struct SavedProduct {
@@ -108,6 +115,9 @@ pub(super) struct SavedProduct {
     commands: commands::Commands,
     operation_completed: Rc<RefCell<Option<OperationCompletion>>>,
     operation_pending: bool,
+    query_completed: std::collections::VecDeque<query::QueryCompletion>,
+    pending_operation: Option<PendingOperation>,
+    promoted_completed: std::collections::VecDeque<promoted_links::Completion>,
     // Preference-only saves retain live scope/card targets and Forme gestures.
     operation_reconciles_graph: bool,
     link_visibility_completed: Rc<RefCell<Option<LinkVisibilityCompletion>>>,
@@ -161,8 +171,9 @@ async fn open_inner(root: &Element) -> Result<Option<SavedProduct>, String> {
     let promoted_link_fixture = params.get("fixture").as_deref() == Some("promoted-link");
     let query_fixture = params.get("fixture").as_deref() == Some("retained-content-query");
     let reading_fixture = params.get("fixture").as_deref() == Some("reading-typography");
-    let retained_fixture =
-        query_fixture || reading_fixture || params.get("fixture").as_deref() == Some("retained-content");
+    let retained_fixture = query_fixture
+        || reading_fixture
+        || params.get("fixture").as_deref() == Some("retained-content");
     let database = if promoted_link_fixture {
         "graphshell-promoted-link-p7-v1"
     } else if link_family_assertion_fixture {
@@ -213,7 +224,9 @@ async fn open_inner(root: &Element) -> Result<Option<SavedProduct>, String> {
             .map_err(|error| error.to_string())?;
     }
     if promoted_link_fixture && !reopened {
-        app.host.seed_link_promotion_fixture().map_err(|error| error.to_string())?;
+        app.host
+            .seed_link_promotion_fixture()
+            .map_err(|error| error.to_string())?;
     }
     let history = history::HistoryControls::load(&mut app, capture_store).await?;
     app.host
@@ -279,6 +292,9 @@ async fn open_inner(root: &Element) -> Result<Option<SavedProduct>, String> {
         commands,
         operation_completed: Rc::new(RefCell::new(None)),
         operation_pending: false,
+        query_completed: Default::default(),
+        pending_operation: None,
+        promoted_completed: Default::default(),
         operation_reconciles_graph: true,
         link_visibility_completed: Rc::new(RefCell::new(None)),
         link_visibility_pending: false,
@@ -339,6 +355,9 @@ impl SavedProduct {
             || self.projection.changed()
             || self.projection.needs_frame()
     }
+    pub(super) fn promoted_completion_ready(&self) -> bool {
+        !self.promoted_completed.is_empty()
+    }
     pub(super) fn selection_locked(&self) -> bool {
         self.saving
             || self.operation_pending
@@ -349,6 +368,51 @@ impl SavedProduct {
             || self.file_requested
             || self.pending_intake.is_some()
             || self.pending_detail.is_some()
+    }
+
+    pub(super) fn retry_owner_operation(
+        &mut self,
+    ) -> Result<Option<graphshell::promoted_links::WriteCorrelation>, String> {
+        if self.saving || !self.operation_pending {
+            return Err("Owner operation is not ready to retry".into());
+        }
+        let retained = self.retained_scope();
+        let promoted_correlation = match self.pending_operation.as_mut() {
+            Some(PendingOperation::Query(query::PendingQuery::Save { request, .. })) => {
+                if retained.as_ref() != Some(&request.scope.pair()) {
+                    return Err("Pending query save belongs to another owner".into());
+                }
+                request.id.attempt = request
+                    .id
+                    .attempt
+                    .checked_add(1)
+                    .ok_or("Query retry counter exhausted")?;
+                None
+            },
+            Some(PendingOperation::Query(query::PendingQuery::Freeze { correlation })) => {
+                if retained.as_ref() != Some(&correlation.scope) {
+                    return Err("Pending query freeze belongs to another owner".into());
+                }
+                *correlation = correlation
+                    .next_attempt()
+                    .ok_or("Query freeze retry counter exhausted")?;
+                None
+            },
+            Some(PendingOperation::Promoted(pending)) => {
+                if retained.as_ref() != Some(&pending.correlation.scope) {
+                    return Err("Pending promoted-link write belongs to another source".into());
+                }
+                let next = pending
+                    .correlation
+                    .next_attempt()
+                    .ok_or("Promoted-link retry counter exhausted")?;
+                pending.correlation = next.clone();
+                Some(next)
+            },
+            None => None,
+        };
+        self.persist_operation_kind(self.operation_reconciles_graph);
+        Ok(promoted_correlation)
     }
     pub(super) fn authority_nodes(&self) -> Option<usize> {
         self.app.as_ref().map(|app| app.host.graph().node_count())
@@ -1116,13 +1180,14 @@ impl SavedProduct {
         self.saving = true;
         self.save_state = "saving";
         let completed = self.operation_completed.clone();
+        let pending_operation = self.pending_operation.clone();
         wasm_bindgen_futures::spawn_local(async move {
             let result = app
                 .host
                 .persist(now_secs())
                 .await
                 .map_err(|error| error.to_string());
-            *completed.borrow_mut() = Some((app, result));
+            *completed.borrow_mut() = Some((app, pending_operation, result));
         });
     }
 
@@ -1280,7 +1345,7 @@ impl SavedProduct {
         }
 
         let operation = self.operation_completed.borrow_mut().take();
-        if let Some((app, result)) = operation {
+        if let Some((app, pending_operation, result)) = operation {
             let owner = app.host.graph_session().id().0;
             let owner_changed = self.session.parse().ok() != Some(owner);
             graphshell::local_scene::reconcile_completed_graph(
@@ -1294,6 +1359,13 @@ impl SavedProduct {
                 self.forme_reconcile_session = Some(owner);
             }
             self.app = Some(app);
+            match pending_operation {
+                Some(PendingOperation::Query(query)) => self.complete_query(query, &result),
+                Some(PendingOperation::Promoted(promoted)) => {
+                    self.complete_promoted(promoted, &result)
+                },
+                None => {},
+            }
             if owner_changed {
                 self.restore_canvas_link_hides(canvas);
             }
@@ -1456,8 +1528,10 @@ fn apply_item_role(page: &mut TreePage) {
 fn intake_controls(page: &TreePage) -> Child {
     use cambium::{FileFilter, button, el, lens, open_file, text_field_typed};
     let product = page.product.as_ref().expect("local intake");
-    let mut children: Vec<Child> = vec![Box::new(
-        disclosure_trigger("Add an object", product.intake_open, |page: &mut TreePage| {
+    let mut children: Vec<Child> = vec![Box::new(disclosure_trigger(
+        "Add an object",
+        product.intake_open,
+        |page: &mut TreePage| {
             if let Some(product) = &mut page.product
                 && !product.saving
                 && !product.file_requested
@@ -1468,8 +1542,8 @@ fn intake_controls(page: &TreePage) -> Child {
                     product.detail_open = false;
                 }
             }
-        }),
-    )];
+        },
+    ))];
     if product.intake_open {
         let mut fields: Vec<Child> = Vec::new();
         if product.saving {
@@ -1555,19 +1629,30 @@ pub(super) fn controls(page: &TreePage) -> Child {
     };
     let mut children: Vec<Child> = Vec::new();
     if product.inspection_fixture {
-        children.push(Box::new(
-            status_note("", "Field inspection fixture · separate browser store"),
-        ));
+        children.push(Box::new(status_note(
+            "",
+            "Field inspection fixture · separate browser store",
+        )));
     }
     if !product.status.is_empty() {
-        children.push(Box::new(
-            status_note_labelled("", "Graph status", product.status.clone()),
-        ));
+        children.push(Box::new(status_note_labelled(
+            "",
+            "Graph status",
+            product.status.clone(),
+        )));
     }
     if product.operation_pending && !product.saving {
         children.push(Box::new(button("Retry save", |page: &mut TreePage, _| {
+            if super::query_view::retry_pending(page) {
+                return;
+            }
+            if super::promoted_links::retry_pending(page) {
+                return;
+            }
             if let Some(product) = &mut page.product {
-                product.persist_operation_kind(product.operation_reconciles_graph);
+                if let Err(error) = product.retry_owner_operation() {
+                    product.status = error;
+                }
             }
         })));
     }

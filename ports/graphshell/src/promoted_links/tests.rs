@@ -19,6 +19,28 @@ use muniment::MemoryBackend;
 use scenograph::link::{LinkKey, LinkSource, LinkStratum};
 use std::collections::BTreeSet;
 
+#[test]
+fn promoted_write_retry_keeps_source_and_operation_but_rejects_the_old_attempt() {
+    let accepted = WriteCorrelation {
+        scope: (Uuid::new_v4(), FIXTURE_PERSONA_ADDRESS.into()),
+        operation: Uuid::new_v4(),
+        attempt: 0,
+    };
+    let retry = accepted.next_attempt().unwrap();
+    assert_eq!(retry.scope, accepted.scope);
+    assert_eq!(retry.operation, accepted.operation);
+    assert_eq!(retry.attempt, accepted.attempt + 1);
+    assert!(!accepted.same_attempt(&retry));
+
+    let mut wrong_scope = retry.clone();
+    wrong_scope.scope.1.push_str("/other");
+    assert!(!retry.same_attempt(&wrong_scope));
+    let mut wrong_operation = retry.clone();
+    wrong_operation.operation = Uuid::new_v4();
+    assert!(!retry.same_attempt(&wrong_operation));
+    assert!(retry.same_attempt(&retry));
+}
+
 const PRIMARY: &str = "fixture:p7:collection-primary";
 const INDEPENDENT: &str = "fixture:p7:collection-independent";
 

@@ -52,7 +52,7 @@ pub(super) enum Request {
 
 pub(super) fn catalog(page: &TreePage) -> CommandSet {
     let canvas = page.shared.canvas.borrow();
-    let locked = page.shared.selection_locked.get() || page.shared.remote_shown.get();
+    let locked = page.shared.selection_locked() || page.shared.remote_is_shown();
     let mut set = viewer_commands::commands(Availability {
         hosted: matches!(page.dataset, HostedDataset::Loaded(_)),
         selection: canvas.can_fit_selection(),
@@ -69,11 +69,25 @@ pub(super) fn catalog(page: &TreePage) -> CommandSet {
             })
             .map(|pane| pane.history_open),
     });
-    #[cfg(feature="product")]
+    #[cfg(feature = "product")]
     if super::instrument::enabled(page) && super::focus_card::has_forme(page) {
-        set.register(Command::new("forme:peek","Preview reading layout","canvas",cambium::EffectClass::Curation));
-        set.register(Command::new("forme:enter","Enter reading layout","canvas",cambium::EffectClass::Curation));
-        if locked {for id in ["forme:peek","forme:enter"] {set.set_disabled(id,Some("Finish the pending graph operation first".into()));}}
+        set.register(Command::new(
+            "forme:peek",
+            "Preview reading layout",
+            "canvas",
+            cambium::EffectClass::Curation,
+        ));
+        set.register(Command::new(
+            "forme:enter",
+            "Enter reading layout",
+            "canvas",
+            cambium::EffectClass::Curation,
+        ));
+        if locked {
+            for id in ["forme:peek", "forme:enter"] {
+                set.set_disabled(id, Some("Finish the pending graph operation first".into()));
+            }
+        }
     }
     if let Some(grouped) = &page.grouping {
         let picked = canvas
@@ -149,14 +163,10 @@ pub(super) fn catalog(page: &TreePage) -> CommandSet {
 
 pub(super) fn open(page: &mut TreePage, request: Request) {
     // A local Product owns its pending operation and its command menu.
-    if page
-        .product
-        .as_ref()
-        .is_some_and(|product| product.selection_locked())
-    {
+    if page.shared.selection_locked() {
         return;
     }
-    if (page.shared.selection_locked.get() || page.shared.remote_shown.get())
+    if (page.shared.selection_locked() || page.shared.remote_is_shown())
         && matches!(
             &request,
             Request::Selection | Request::Context { node: Some(_), .. }
@@ -167,6 +177,7 @@ pub(super) fn open(page: &mut TreePage, request: Request) {
     let Request::Context { at, node } = request else {
         let canvas = page.shared.canvas.borrow();
         page.picked = canvas.focused_url().map(str::to_owned);
+        #[cfg(feature = "product")]
         if let Some(product) = &mut page.product {
             product.close_menu();
             product.select(canvas.selected_members().first().copied());
@@ -176,6 +187,7 @@ pub(super) fn open(page: &mut TreePage, request: Request) {
         page.shared.dirty.set(true);
         return;
     };
+    #[cfg(feature = "product")]
     if let Some(product) = &mut page.product {
         // DOM secondary capture and keyboard invocation use the same persisted
         // local command owner as retained HostPointer delivery.
@@ -195,6 +207,7 @@ pub(super) fn open(page: &mut TreePage, request: Request) {
             canvas.select_member(node);
         }
         page.picked = canvas.focused_url().map(str::to_owned);
+        #[cfg(feature = "product")]
         if let Some(product) = &mut page.product {
             product.select(Some(node));
         }
@@ -224,6 +237,7 @@ pub(super) fn open_keyboard(page: &mut TreePage) {
 }
 
 pub(super) fn close(page: &mut TreePage) {
+    #[cfg(feature = "product")]
     if let Some(product) = &mut page.product {
         product.close_menu();
     }
@@ -242,17 +256,24 @@ fn run(page: &mut TreePage, id: &str) {
         page.commands.last = reason.clone();
         return;
     }
-    #[cfg(feature="product")]
-    if matches!(id,"forme:peek"|"forme:enter") {
-        let operation=if id=="forme:peek" {cambium::ScopeFieldCommand::Peek} else {cambium::ScopeFieldCommand::Enter};
+    #[cfg(feature = "product")]
+    if matches!(id, "forme:peek" | "forme:enter") {
+        let operation = if id == "forme:peek" {
+            cambium::ScopeFieldCommand::Peek
+        } else {
+            cambium::ScopeFieldCommand::Enter
+        };
         close(page);
-        super::focus_card::field_command(page,operation);
+        super::focus_card::field_command(page, operation);
         return;
     }
     match viewer_commands::action(id, matches!(page.dataset, HostedDataset::Loaded(_))) {
         Some(Action::Canvas(CanvasCommand::Pan { dx, dy })) => page.shared.pan(dx, dy),
         Some(Action::Canvas(command)) => {
-            command.apply(&mut *page.shared.canvas.borrow_mut(), page.shared.size.get());
+            command.apply(
+                &mut *page.shared.canvas.borrow_mut(),
+                page.shared.size.get(),
+            );
             crate::web_suggestions::after_command(command, &page.shared.canvas.borrow());
         },
         Some(Action::Wheel(mode)) => {

@@ -12,7 +12,10 @@ use crate::presentation_editor::presentation::{
     Condition, Context, Effect, PRESENTATION_RULE_VERSION, PrimitiveKind, Property, Resolution,
     Rule, RuleSet, Scalar, Target, ViewState,
 };
-use crate::projection_compile::{HostDatasetV1, ProjectionOccurrence, ProjectionValue};
+use scenomise::{
+    host_dataset::HostDatasetV1,
+    projection::{ProjectionOccurrence, ProjectionValue},
+};
 use uuid::Uuid;
 
 pub struct HostPresenter {

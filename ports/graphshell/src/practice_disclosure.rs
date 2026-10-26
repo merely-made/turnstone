@@ -23,10 +23,10 @@ use scenomise::host_dataset::{HOST_DATASET_SCHEMA_V1, HostDatasetRevision, HostD
 use serde_json::{Value, json};
 
 use crate::practice_workspace::ComparisonRecord;
-use crate::projection_compile::{
+use scenograph::SourceBinding;
+use scenomise::projection::{
     ProjectionDataset, ProjectionFieldType, ProjectionOccurrence, ProjectionValue,
 };
-use scenograph::SourceBinding;
 
 /// Maximum accepted UTF-8 input size before JSON parsing.
 pub const MAX_WOODSHED_DISCLOSURE_BYTES: usize = 256 * 1024;

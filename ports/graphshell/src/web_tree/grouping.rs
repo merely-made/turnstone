@@ -65,15 +65,17 @@ pub(super) fn controls(page: &TreePage) -> Option<Child> {
                 .map_or(0, Vec::len)
         );
         let toggle = (!entered).then(|| {
-            Box::new(
-                disclosure_trigger(format!("{} {label}", if expanded { "Collapse" } else { "Expand" }), expanded, move |page: &mut TreePage| {
-                        page.change_group(|state| {
-                            if !state.expanded.remove(&id_for_toggle) {
-                                state.expanded.insert(id_for_toggle.clone());
-                            }
-                        });
-                    }),
-            ) as Child
+            Box::new(disclosure_trigger(
+                format!("{} {label}", if expanded { "Collapse" } else { "Expand" }),
+                expanded,
+                move |page: &mut TreePage| {
+                    page.change_group(|state| {
+                        if !state.expanded.remove(&id_for_toggle) {
+                            state.expanded.insert(id_for_toggle.clone());
+                        }
+                    });
+                },
+            )) as Child
         });
         let enter = (!entered).then(|| {
             Box::new(button(
@@ -86,15 +88,17 @@ pub(super) fn controls(page: &TreePage) -> Option<Child> {
         rows.push(Box::new(el("li", (el("span", summary), toggle, enter))));
     }
     children.push(Box::new(el("ul", rows).attr("role", "list")));
-    children.push(Box::new(
-        disclosure_trigger(if page.grouping_evidence {
-                "Hide relationship evidence"
-            } else {
-                "Show relationship evidence"
-            }, page.grouping_evidence, |page: &mut TreePage| {
-                page.grouping_evidence = !page.grouping_evidence;
-            }),
-    ));
+    children.push(Box::new(disclosure_trigger(
+        if page.grouping_evidence {
+            "Hide relationship evidence"
+        } else {
+            "Show relationship evidence"
+        },
+        page.grouping_evidence,
+        |page: &mut TreePage| {
+            page.grouping_evidence = !page.grouping_evidence;
+        },
+    )));
     if page.grouping_evidence {
         for (id, witnesses) in &projection.internal_relationships {
             children.push(Box::new(el(
@@ -119,7 +123,7 @@ pub(super) fn controls(page: &TreePage) -> Option<Child> {
     ))
 }
 
-pub(super) fn evidence(witness: &graphshell::projection_compile::DisclosedRelationship) -> String {
+pub(super) fn evidence(witness: &scenomise::projection::DisclosedRelationship) -> String {
     format!(
         "{}: {} → {}. {} Source: {} / {} / {}, revision {}; {} v{}, provider {}. Evidence: {}.",
         witness.id,

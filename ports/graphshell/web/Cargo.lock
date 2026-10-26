@@ -3865,6 +3865,7 @@ dependencies = [
  "cambium",
  "cambium-rootstock",
  "cambium-web",
+ "chirograph",
  "console_error_panic_hook",
  "eidetic",
  "futures-channel",
@@ -3887,6 +3888,7 @@ dependencies = [
  "netrender",
  "netrender_device",
  "pandect",
+ "platen",
  "sceno",
  "scenograph",
  "scenomise",
@@ -5713,13 +5715,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "mere-apparatus"
-version = "0.0.1"
-dependencies = [
- "apparatus-core",
-]
-
-[[package]]
 name = "mere-cartography"
 version = "0.0.2"
 dependencies = [
@@ -5919,10 +5914,12 @@ version = "0.1.0"
 dependencies = [
  "cambium",
  "incipit",
+ "mere",
  "mere-cartography",
  "mere-curation",
  "mere-kernel",
  "pictograph",
+ "platen",
  "sprigging",
  "uuid",
 ]
@@ -5939,10 +5936,10 @@ dependencies = [
 name = "mesquite"
 version = "0.1.0"
 dependencies = [
+ "apparatus-core",
  "cambium",
  "cambium-rootstock",
  "genet-scripted-dom",
- "mere-apparatus",
  "paint_list_api",
  "png 0.17.16",
  "postcard",
@@ -7894,9 +7891,11 @@ name = "platen"
 version = "0.0.1"
 dependencies = [
  "accesskit",
+ "backstep",
  "document-canvas",
  "inker",
  "mere-forme",
+ "mere-kernel",
  "serde",
  "serde_json",
  "tracing",

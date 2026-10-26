@@ -248,12 +248,24 @@ impl PhysicsPanel {
         let mut fields = vec![
             ("panel-role", form.value(FieldId::Role)),
             ("panel-role-group-source", form.value(FieldId::RoleGroups)),
-            ("panel-mix-first-share", form.value(FieldId::MixShare(Slot::First))),
-            ("panel-mix-second-share", form.value(FieldId::MixShare(Slot::Second))),
-            ("panel-grouping-partition", form.value(FieldId::GroupPartition)),
+            (
+                "panel-mix-first-share",
+                form.value(FieldId::MixShare(Slot::First)),
+            ),
+            (
+                "panel-mix-second-share",
+                form.value(FieldId::MixShare(Slot::Second)),
+            ),
+            (
+                "panel-grouping-partition",
+                form.value(FieldId::GroupPartition),
+            ),
             ("panel-grouping-outer", form.value(FieldId::GroupOuter)),
             ("panel-grouping-inner", form.value(FieldId::GroupInner)),
-            ("panel-grouping-outer-share", form.value(FieldId::GroupOuterShare)),
+            (
+                "panel-grouping-outer-share",
+                form.value(FieldId::GroupOuterShare),
+            ),
             ("panel-grouping-note", self.readback.note(Section::Grouping)),
         ];
         const STAGE_KEYS: [[&str; 4]; 2] = [
@@ -270,9 +282,7 @@ impl PhysicsPanel {
                 "panel-schedule-second-capture",
             ],
         ];
-        for (slot, [law, stop_key, frames, capture]) in
-            Slot::BOTH.into_iter().zip(STAGE_KEYS)
-        {
+        for (slot, [law, stop_key, frames, capture]) in Slot::BOTH.into_iter().zip(STAGE_KEYS) {
             fields.push((law, form.value(FieldId::StageLaw(slot))));
             fields.push((stop_key, stop(slot).to_string()));
             fields.push((frames, form.value(FieldId::StageFrames(slot))));
@@ -342,11 +352,15 @@ impl PhysicsPanel {
     }
 
     fn select_mut(&mut self, id: FieldId) -> &mut SelectState {
-        self.selects.get_mut(&id).expect("a choice field has a select")
+        self.selects
+            .get_mut(&id)
+            .expect("a choice field has a select")
     }
 
     fn input_mut(&mut self, id: FieldId) -> &mut TextInput {
-        self.inputs.get_mut(&id).expect("a number field has an input")
+        self.inputs
+            .get_mut(&id)
+            .expect("a number field has an input")
     }
 
     fn tick_mut(&mut self, id: FieldId) -> &mut bool {
@@ -699,7 +713,8 @@ fn overlay_group(page: &TreePage) -> Child {
         .collect();
     if let Some(reason) = reason {
         boxes.push(Box::new(
-            status_note_labelled("tools-note", "Overlay availability", reason).attr("id", "tools-overlay-note"),
+            status_note_labelled("tools-note", "Overlay availability", reason)
+                .attr("id", "tools-overlay-note"),
         ));
     }
     let group = el("div", boxes)
@@ -719,9 +734,11 @@ fn overlay_group(page: &TreePage) -> Child {
 /// The speed reached, beneath the speed picker, while the budget binds.
 fn speed_note(page: &TreePage) -> Child {
     match &page.physics.speed_note {
-        Some(note) => Box::new(
-            status_note_labelled("tools-note", "Speed status", note.clone()),
-        ),
+        Some(note) => Box::new(status_note_labelled(
+            "tools-note",
+            "Speed status",
+            note.clone(),
+        )),
         None => Box::new(el("span", "").attr("hidden", "")),
     }
 }
@@ -770,15 +787,17 @@ pub(super) fn section(page: &TreePage) -> Child {
         speed_note(page),
         picker("Profile", profiles, |page| &mut page.physics.profile),
         apply("Apply profile", TreePage::apply_profile),
-        Box::new(
-            status_note_labelled("tools-status", "Physics status", page.physics.status.clone()),
-        ),
+        Box::new(status_note_labelled(
+            "tools-status",
+            "Physics status",
+            page.physics.status.clone(),
+        )),
     ];
     Box::new(
         el(
             "section",
-            disclosure(&page.sections.physics, section, |page: &mut TreePage| {
-                page.sections.physics.toggle()
+            disclosure(&page.physics_section, section, |page: &mut TreePage| {
+                page.physics_section.toggle()
             }),
         )
         .attr("class", "tools-section")

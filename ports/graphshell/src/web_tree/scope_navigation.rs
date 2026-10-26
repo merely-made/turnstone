@@ -1,10 +1,13 @@
 // Copyright 2026 Mark Alan Boykin
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 
 //! A small host adapter for Cambium's shared scope route and visit history.
 use super::*;
-use graphshell::scope_policy::*;
 use cambium::scope_navigation::NodeActivation;
+use graphshell::scope_policy::*;
 use uuid::Uuid;
 type Navigation = ScopeNavigation<tabard::ReadingAnchor>;
 type Visit = ScopeVisit<tabard::ReadingAnchor>;
@@ -16,8 +19,8 @@ pub(super) struct State {
     pending: std::collections::VecDeque<ScopeCommand>,
     dirty: bool,
     restoring: bool,
-    pub(super) activation: NodeActivation<(u64,Uuid)>,
-    pub(super) gesture_epoch:u64,
+    pub(super) activation: NodeActivation<(u64, Uuid)>,
+    pub(super) gesture_epoch: u64,
     pub(super) pending_closes: std::collections::VecDeque<Uuid>,
 }
 pub(super) fn owner(page: &TreePage) -> Option<Uuid> {
@@ -33,24 +36,25 @@ pub(super) fn place(page: &TreePage) -> Option<ScopePlace<Uuid, Uuid>> {
         .current()
         .map(|v| v.place.clone())
         .filter(|p| p.graph == graph)
-        .unwrap_or(ScopePlace { contexts:None,
+        .unwrap_or(ScopePlace {
+            contexts: None,
             level: ScopeLevel::Graph,
             graph,
             root: None,
             focus: None,
         });
     if pane.workbench {
-        let focus = pane.current().focused_reading;
+        let focus = pane.current().preferences.focused_reading;
         if focus.is_none() {
-            place=place.project(ScopeLevel::Graph,None,None);
+            place = place.project(ScopeLevel::Graph, None, None);
             return Some(place);
         }
-        if place.level!=ScopeLevel::Document || place.focus!=focus {
-            place=place.reading(graph,focus.unwrap());
+        if place.level != ScopeLevel::Document || place.focus != focus {
+            place = place.reading(graph, focus.unwrap());
         }
     } else if place.level != ScopeLevel::Overmap {
         if place.level == ScopeLevel::Document {
-            place=place.project(ScopeLevel::Graph,None,place.focus);
+            place = place.project(ScopeLevel::Graph, None, place.focus);
         }
         if let Some(focus) = page.shared.canvas.borrow().focused_member() {
             place.select(focus);
@@ -87,6 +91,7 @@ pub(super) fn initialize(page: &mut TreePage) {
             .as_ref()
             .unwrap()
             .model()
+            .preferences
             .scope_navigation
             .clone();
         page.instrument.scope = State {
@@ -102,7 +107,7 @@ pub(super) fn initialize(page: &mut TreePage) {
                     .and_then(|m| {
                         page.forme
                             .as_ref()
-                            .and_then(|p| p.model().reading_anchors.get(&m))
+                            .and_then(|p| p.model().preferences.reading_anchors.get(&m))
                     })
                     .cloned()
                 {
@@ -126,9 +131,13 @@ pub(super) fn record_reading(page: &mut TreePage, member: Uuid) {
     let Some(mut visit) = capture(page) else {
         return;
     };
-    visit.place=page.instrument.scope.navigation.current()
-        .map(|v|v.place.reading(visit.place.graph,member))
-        .unwrap_or_else(||visit.place.reading(visit.place.graph,member));
+    visit.place = page
+        .instrument
+        .scope
+        .navigation
+        .current()
+        .map(|v| v.place.reading(visit.place.graph, member))
+        .unwrap_or_else(|| visit.place.reading(visit.place.graph, member));
     visit.anchor = super::reading::capture_progress(page)
         .0
         .get(&member)
@@ -204,11 +213,26 @@ pub(super) fn controls(page: &TreePage) -> Child {
 }
 pub(super) fn trail(page: &TreePage) -> Option<Child> {
     let place = place(page)?;
-    let trail=place.trail();let nested=trail.iter().filter(|p|p.level==ScopeLevel::Neighborhood).count()>1;let last=trail.len().saturating_sub(1);
-    let crumbs=trail.into_iter().enumerate().map(|(index,destination)|ScopeCrumb {
-        label:if destination.level==ScopeLevel::Neighborhood && !nested {"Neighborhood".into()} else {label(page,&destination)},
-        target:ScopeDestination::Place(destination),current:index==last,
-    }).collect();
+    let trail = place.trail();
+    let nested = trail
+        .iter()
+        .filter(|p| p.level == ScopeLevel::Neighborhood)
+        .count()
+        > 1;
+    let last = trail.len().saturating_sub(1);
+    let crumbs = trail
+        .into_iter()
+        .enumerate()
+        .map(|(index, destination)| ScopeCrumb {
+            label: if destination.level == ScopeLevel::Neighborhood && !nested {
+                "Neighborhood".into()
+            } else {
+                label(page, &destination)
+            },
+            target: ScopeDestination::Place(destination),
+            current: index == last,
+        })
+        .collect();
     Some(cambium::scope_navigation::scope_trail(crumbs, command))
 }
 
@@ -255,11 +279,17 @@ pub(super) fn command(page: &mut TreePage, command: ScopeCommand) {
         let place = match command {
             ScopeCommand::Navigate(ScopeDirection::Up) => origin.place.up(),
             ScopeCommand::Navigate(ScopeDirection::Down) => origin.place.down(),
-            ScopeCommand::To(ref destination) => destination.resolve(&origin.place).filter(|p| p != &origin.place),
+            ScopeCommand::To(ref destination) => destination
+                .resolve(&origin.place)
+                .filter(|p| p != &origin.place),
             _ => None,
         };
         place.map(|place| {
-            let saved = page.instrument.scope.navigation.saved_matching(|p| p.same_scope(&place));
+            let saved = page
+                .instrument
+                .scope
+                .navigation
+                .saved_matching(|p| p.same_scope(&place));
             ScopeVisit {
                 camera: saved.and_then(|v| v.camera),
                 anchor: saved.and_then(|v| v.anchor.clone()),
@@ -301,9 +331,21 @@ fn apply(page: &mut TreePage, visit: &Visit) -> bool {
     {
         return false;
     }
-    let forme_context=p.trail().into_iter().find_map(|p|if let ScopeLevel::Forme(id)=p.level {Some(id)} else {None});
-    if let Some(id)=forme_context {
-        if page.forme.as_ref().is_none_or(|pane|pane.current().document.id.as_uuid()!=id || p.focus.is_some_and(|m|!pane.current().members().contains(&m))) { return false; }
+    let forme_context = p.trail().into_iter().find_map(|p| {
+        if let ScopeLevel::Forme(id) = p.level {
+            Some(id)
+        } else {
+            None
+        }
+    });
+    if let Some(id) = forme_context {
+        if page.forme.as_ref().is_none_or(|pane| {
+            pane.current().document.id.as_uuid() != id
+                || p.focus
+                    .is_some_and(|m| !pane.current().members().contains(&m))
+        }) {
+            return false;
+        }
     }
     if p.level == ScopeLevel::Document {
         let Some(member) = p.focus else {
@@ -313,7 +355,7 @@ fn apply(page: &mut TreePage, visit: &Visit) -> bool {
         if let Some(anchor) = visit.anchor.clone().or_else(|| {
             page.forme
                 .as_ref()
-                .and_then(|p| p.model().reading_anchors.get(&member).cloned())
+                .and_then(|p| p.model().preferences.reading_anchors.get(&member).cloned())
         }) {
             super::reading::restore_anchor(page, member, anchor);
         }
@@ -322,8 +364,8 @@ fn apply(page: &mut TreePage, visit: &Visit) -> bool {
             pane.workbench = false;
         }
         let mut canvas = page.shared.canvas.borrow_mut();
-        if matches!(p.level,ScopeLevel::Forme(_)) {
-            let members=page.forme.as_ref().unwrap().current().members();
+        if matches!(p.level, ScopeLevel::Forme(_)) {
+            let members = page.forme.as_ref().unwrap().current().members();
             canvas.scope_to_exact_members(members);
         } else if p.level == ScopeLevel::Neighborhood {
             let Some(root) = p.root.or(p.focus) else {
@@ -357,13 +399,22 @@ fn apply(page: &mut TreePage, visit: &Visit) -> bool {
     true
 }
 pub(super) fn refresh(page: &TreePage) {
-    if let Some(place)=place(page).filter(|p|matches!(p.level,ScopeLevel::Forme(_))) {
-        let ScopeLevel::Forme(id)=place.level else {unreachable!()};
-        if let Some(pane)=page.forme.as_ref().filter(|p|p.current().document.id.as_uuid()==id) {
-            let members=pane.current().members();
-            let mut canvas=page.shared.canvas.borrow_mut();
-            let exact=members.iter().copied().collect();
-            if canvas.scope_members().as_ref()!=Some(&exact) {canvas.scope_to_exact_members(members);page.shared.dirty.set(true);}
+    if let Some(place) = place(page).filter(|p| matches!(p.level, ScopeLevel::Forme(_))) {
+        let ScopeLevel::Forme(id) = place.level else {
+            unreachable!()
+        };
+        if let Some(pane) = page
+            .forme
+            .as_ref()
+            .filter(|p| p.current().document.id.as_uuid() == id)
+        {
+            let members = pane.current().members();
+            let mut canvas = page.shared.canvas.borrow_mut();
+            let exact = members.iter().copied().collect();
+            if canvas.scope_members().as_ref() != Some(&exact) {
+                canvas.scope_to_exact_members(members);
+                page.shared.dirty.set(true);
+            }
         }
         return;
     }
@@ -412,10 +463,11 @@ pub(super) fn poll(page: &mut TreePage) {
     }
     if page.instrument.scope.dirty && page.forme.as_ref().is_some_and(|p| !p.saving) {
         let nav = page.instrument.scope.navigation.clone();
-        page.forme
-            .as_mut()
-            .unwrap()
-            .save(graphshell::forme_session::SaveKind::Scope(nav));
+        let pane = page.forme.as_mut().unwrap();
+        let update = pane.session.preferences_update(false, |preferences| {
+            preferences.scope_navigation = nav.clone();
+        });
+        pane.save(update);
         page.instrument.scope.dirty = false;
     }
 }
@@ -443,7 +495,19 @@ pub(super) fn overmap(page: &TreePage) -> Option<Child> {
     ))
 }
 pub(super) fn fields(page: &TreePage, snapshot: ProbeSnapshot) -> ProbeSnapshot {
-    snapshot.with_field("scope-trail",place(page).map(|p|p.trail().iter().map(|p|p.level.label()).collect::<Vec<_>>().join("/")).unwrap_or_default())
+    snapshot
+        .with_field(
+            "scope-trail",
+            place(page)
+                .map(|p| {
+                    p.trail()
+                        .iter()
+                        .map(|p| p.level.label())
+                        .collect::<Vec<_>>()
+                        .join("/")
+                })
+                .unwrap_or_default(),
+        )
         .with_field(
             "scope-level",
             place(page).map(|p| p.level.label()).unwrap_or("Graph"),

@@ -9,11 +9,11 @@
 //! G1 adds a native semantic view over the portable client state. Networking,
 //! product models, and source authority remain injected at the edge.
 
-#[cfg(all(feature = "coop", not(target_arch = "wasm32")))]
-pub mod coop;
 #[cfg(feature = "editable-blocks")]
 pub mod block_editing;
 pub mod bound_actions;
+#[cfg(all(feature = "coop", not(target_arch = "wasm32")))]
+pub mod coop;
 
 #[cfg(feature = "moot-resources")]
 pub mod moot_resources;
@@ -41,22 +41,18 @@ pub mod canvas_reader;
 pub mod capsule_applet;
 #[cfg(feature = "web")]
 pub mod capture;
-#[cfg(feature = "web")]
-pub mod command_invocation;
 #[cfg(all(test, feature = "web"))]
 mod capture_resources;
 #[cfg(all(feature = "personal-sync", not(target_arch = "wasm32")))]
 pub mod carriage;
+#[cfg(feature = "web")]
+pub mod command_invocation;
 #[cfg(any(feature = "native", feature = "web"))]
 pub mod distillery_w1;
 #[cfg(feature = "web")]
 pub mod field_inspection;
 #[cfg(feature = "web")]
-pub mod forme_session;
-#[cfg(feature = "web")]
 pub mod forme_workspace;
-#[cfg(feature = "web")]
-pub mod pane_source;
 #[cfg(feature = "web")]
 pub mod frame_budget;
 #[cfg(feature = "web")]
@@ -83,6 +79,8 @@ pub mod mere_host;
 mod mere_host_fixture;
 #[cfg(feature = "web")]
 pub mod node_presentation;
+#[cfg(feature = "web")]
+pub mod pane_source;
 #[cfg(all(feature = "personal-sync", not(target_arch = "wasm32")))]
 pub mod personal_sync;
 #[cfg(feature = "web")]
@@ -132,10 +130,6 @@ pub mod transfer_offer;
 #[cfg(all(feature = "webrtc-browser", target_arch = "wasm32"))]
 pub mod webrtc_browser;
 
-pub use chirograph as protocol;
-pub use graphshell_client as client;
-pub use graphshell_endpoint as endpoint;
-
 /// Graph browser policy shared by the product projections.
-#[cfg(feature="web")]
+#[cfg(feature = "web")]
 pub mod scope_policy;

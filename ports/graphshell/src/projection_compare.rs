@@ -18,9 +18,10 @@ use scenomise::facet::compose_facet;
 // The page draws the grid from these.
 pub use scenomise::facet::{FACET_AXIS_ADAPTER, FACET_CELL_ADAPTER, FacetLayout};
 
-use crate::projection_compile::{ProjectionDataset, practice_compiler};
+use crate::projection_compile::practice_compiler;
 use scenograph::ProjectionDraft;
 use scenomise::arrangement::with_kind;
+use scenomise::projection::{CompiledProjection, ProjectionDataset};
 
 /// The view a working cell reflects (SE58, SE66).
 pub const EDITOR_VIEW: (&str, &str) = ("graphshell", "projection-editor");
@@ -60,7 +61,9 @@ pub fn compare_arrangements(
     compare_arrangements_with_scene(draft, dataset, selected, layout, |definition, compiled| {
         if definition.dynamics.is_some() {
             Err("dynamics: this comparison needs an explicit preview step limit and a dynamics host".into())
-        } else { Ok(compiled.scene) }
+        } else {
+            Ok(compiled.scene)
+        }
     })
 }
 
@@ -71,7 +74,10 @@ pub fn compare_arrangements_with_scene(
     dataset: &ProjectionDataset,
     selected: Option<&str>,
     layout: &FacetLayout,
-    mut realize: impl FnMut(&scenograph::ProjectionDefinition, crate::projection_compile::CompiledProjection) -> Result<sceno::Scene, String>,
+    mut realize: impl FnMut(
+        &scenograph::ProjectionDefinition,
+        CompiledProjection,
+    ) -> Result<sceno::Scene, String>,
 ) -> Result<Comparison, String> {
     let compiler = practice_compiler();
     let working_kind = draft.arrangement.kind.clone();
@@ -118,15 +124,13 @@ pub fn compare_arrangements_with_scene(
                         .collect::<Vec<_>>()
                         .join("; ")
                 })?;
-                let compiled = compiler
-                    .compile(&definition, data)
-                    .map_err(|issues| {
-                        issues
-                            .iter()
-                            .map(|i| i.message.clone())
-                            .collect::<Vec<_>>()
-                            .join("; ")
-                    })?;
+                let compiled = compiler.compile(&definition, data).map_err(|issues| {
+                    issues
+                        .iter()
+                        .map(|i| i.message.clone())
+                        .collect::<Vec<_>>()
+                        .join("; ")
+                })?;
                 realize(&definition, compiled)
             })
             .collect();
@@ -237,7 +241,7 @@ mod tests {
         let definition = default_definition(&dataset);
         let draft = ProjectionDraft {
             dynamics: definition.dynamics.clone(),
-        version: definition.version,
+            version: definition.version,
             id: definition.id.clone(),
             label: definition.label.clone(),
             source: definition.source.clone(),

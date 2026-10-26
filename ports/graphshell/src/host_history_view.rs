@@ -31,7 +31,7 @@ use scenomise::host_dataset::{
 };
 
 use crate::host_dataset_view::{HostDatasetView, host_dataset_view};
-use crate::projection_compile::ProjectionDataset;
+use scenomise::projection::ProjectionDataset;
 
 /// How a change is said.
 pub fn change_word(change: Change) -> &'static str {

@@ -146,6 +146,7 @@ web = [
     "dep:muniment",
     "dep:pandect",
     "dep:platen",
+    "platen/workspace-editor",
     "dep:serde",
     "dep:sha2",
     "dep:uuid",

@@ -10,15 +10,9 @@ use cambium::{TextInput, button, el, lens, text_field_typed};
 use graphshell::promoted_links::{LinkDrift, PromotedLinkInspection};
 use mere::kernel::graph::{FrozenLinkSource, FrozenSourceRevision, GraphStratum};
 use mere::kernel::types::GraphScope;
+use product::promoted_links::{PendingWrite, WriteKind};
 use std::collections::BTreeSet;
 use uuid::Uuid;
-
-#[derive(Clone)]
-struct PendingWrite {
-    scope: (Uuid, String),
-    owner: Uuid,
-    expected_comment: Option<String>,
-}
 
 pub(super) struct Pane {
     pub(super) selected: Option<Uuid>,
@@ -41,50 +35,62 @@ impl Default for Pane {
 }
 
 pub(super) fn ready(page: &TreePage) -> bool {
-    page.promoted_links.pending.is_some()
-        && page.product.as_ref().is_some_and(|product| !product.saving)
+    page.product
+        .as_ref()
+        .is_some_and(|product| product.promoted_completion_ready())
 }
 
 pub(super) fn poll(page: &mut TreePage) {
+    let Some(completion) = page
+        .product
+        .as_mut()
+        .and_then(|product| product.take_promoted_completion())
+    else {
+        return;
+    };
     let Some(pending) = page.promoted_links.pending.clone() else {
         return;
     };
+    if !pending
+        .correlation
+        .same_attempt(&completion.pending.correlation)
+        || pending.kind != completion.pending.kind
+    {
+        return;
+    }
     let Some(product) = page.product.as_ref() else {
-        page.promoted_links.pending = None;
-        page.promoted_links.status = "The source is unavailable".into();
         return;
     };
-    if product.retained_scope().as_ref() != Some(&pending.scope) {
+    if product.retained_scope().as_ref() != Some(&pending.correlation.scope) {
         page.promoted_links.pending = None;
         page.promoted_links.status = "The promoted Resource belongs to another source owner".into();
         return;
     }
-    if product.save_state == "error" {
-        let owner = pending.owner;
-        let was_freeze = pending.expected_comment.is_none();
+    if let Err(error) = completion.result {
+        let (owner, was_freeze) = match pending.kind {
+            WriteKind::Freeze { owner } => (owner, true),
+            WriteKind::Comment { owner, .. } => (owner, false),
+        };
         if was_freeze {
             page.promoted_links.unconfirmed.insert(owner);
         }
-        page.promoted_links.pending = None;
         page.promoted_links.status = if was_freeze {
-            format!("Promoted Resource {owner} is unconfirmed; the save failed")
+            format!("Promoted Resource {owner} is unconfirmed; retry the pending save: {error}")
         } else {
-            format!("Review comment on {owner} is unconfirmed; the save failed")
+            format!("Review comment on {owner} is unconfirmed; retry the pending save: {error}")
         };
         return;
     }
-    if product.selection_locked() {
-        return;
-    }
-    if product.save_state != "saved" {
-        return;
-    }
-    let inspection = product.inspect_promoted_link(pending.owner);
-    match (inspection, pending.expected_comment.as_deref()) {
-        (Ok(inspection), None) => {
-            let owner = pending.owner;
+    let (owner, expected_comment) = match &pending.kind {
+        WriteKind::Freeze { owner } => (*owner, None),
+        WriteKind::Comment { owner, expected } => (*owner, Some(expected.as_str())),
+    };
+    let inspection = product.inspect_promoted_link(owner);
+    match (inspection, expected_comment) {
+        (Ok(_inspection), None) => {
             page.promoted_links.pending = None;
             page.promoted_links.selected = Some(owner);
+            page.promoted_links.unconfirmed.remove(&owner);
             page.promoted_links.status = format!("Promoted Resource {owner} is saved and readable");
         },
         (Ok(inspection), Some(expected))
@@ -93,7 +99,6 @@ pub(super) fn poll(page: &mut TreePage) {
                 .iter()
                 .any(|comment| comment.value == expected) =>
         {
-            let owner = pending.owner;
             page.promoted_links.pending = None;
             page.promoted_links.status = format!("Review comment on {owner} is saved and readable");
         },
@@ -101,7 +106,11 @@ pub(super) fn poll(page: &mut TreePage) {
             page.promoted_links.pending = None;
             page.promoted_links.status = format!("Promoted Resource could not be reread: {error}");
         },
-        _ => {},
+        (Ok(_), Some(_)) => {
+            page.promoted_links.pending = None;
+            page.promoted_links.status =
+                "Review comment was acknowledged but is not readable yet".into();
+        },
     }
 }
 
@@ -110,7 +119,7 @@ pub(super) fn freeze(
     key: &scenograph::link::LinkKey,
     expected_source: &scenograph::link::LinkSource,
 ) {
-    let Some(scope) = page
+    let Some(_scope) = page
         .product
         .as_ref()
         .and_then(|product| product.retained_scope())
@@ -129,12 +138,11 @@ pub(super) fn freeze(
             product.freeze_link(key)
         });
     match result {
-        Ok(owner) => {
+        Ok((owner, correlation)) => {
             page.promoted_links.unconfirmed.remove(&owner);
             page.promoted_links.pending = Some(PendingWrite {
-                scope,
-                owner,
-                expected_comment: None,
+                correlation,
+                kind: WriteKind::Freeze { owner },
             });
             page.promoted_links.status = "Saving promoted link Resource…".into();
         },
@@ -369,30 +377,49 @@ fn promoted_rows(inspection: &PromotedLinkInspection) -> Vec<Child> {
 
 fn add_comment(page: &mut TreePage, owner: Uuid) {
     let text = page.promoted_links.comment.text().trim().to_owned();
-    let Some(scope) = page
-        .product
-        .as_ref()
-        .and_then(|product| product.retained_scope())
-    else {
-        page.promoted_links.status = "No retained source owner is available".into();
-        return;
-    };
     match page
         .product
         .as_mut()
         .ok_or_else(|| "Saved graph unavailable".to_owned())
         .and_then(|product| product.comment_promoted_link(owner, &text))
     {
-        Ok(()) => {
+        Ok(correlation) => {
             page.promoted_links.pending = Some(PendingWrite {
-                scope,
-                owner,
-                expected_comment: Some(text),
+                correlation,
+                kind: WriteKind::Comment {
+                    owner,
+                    expected: text,
+                },
             });
             page.promoted_links.status = "Saving review comment…".into();
             page.promoted_links.comment = TextInput::new("");
         },
         Err(error) => page.promoted_links.status = error,
+    }
+}
+
+pub(super) fn retry_pending(page: &mut TreePage) -> bool {
+    let Some(pending) = page.promoted_links.pending.as_ref() else {
+        return false;
+    };
+    let Some(product) = page.product.as_mut() else {
+        return false;
+    };
+    if !product.has_promoted_operation(pending.correlation.operation) {
+        return false;
+    }
+    match product.retry_owner_operation() {
+        Ok(Some(correlation)) => {
+            if let Some(pending) = &mut page.promoted_links.pending {
+                pending.correlation = correlation;
+            }
+            true
+        },
+        Ok(None) => false,
+        Err(error) => {
+            page.promoted_links.status = error;
+            true
+        },
     }
 }
 
@@ -456,7 +483,8 @@ pub(super) fn section(page: &TreePage) -> Child {
     }
     if !page.promoted_links.status.is_empty() {
         children.push(Box::new(
-            status_note("", page.promoted_links.status.clone()).attr("data-promoted-link-status", "true"),
+            status_note("", page.promoted_links.status.clone())
+                .attr("data-promoted-link-status", "true"),
         ));
     }
     Box::new(
@@ -542,12 +570,14 @@ pub(super) fn fields(page: &TreePage, snapshot: ProbeSnapshot) -> ProbeSnapshot 
 }
 
 fn visible_owners(page: &TreePage) -> Vec<Uuid> {
-    let pending_freeze = page
-        .promoted_links
-        .pending
-        .as_ref()
-        .filter(|pending| pending.expected_comment.is_none())
-        .map(|pending| pending.owner);
+    let pending_freeze =
+        page.promoted_links
+            .pending
+            .as_ref()
+            .and_then(|pending| match &pending.kind {
+                WriteKind::Freeze { owner } => Some(*owner),
+                WriteKind::Comment { .. } => None,
+            });
     page.product
         .as_ref()
         .and_then(|product| product.promoted_links().ok())

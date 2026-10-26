@@ -17,6 +17,32 @@ use uuid::Uuid;
 
 pub const REVIEW_COMMENT: &str = "https://mere.computer/ns/rel#reviewComment";
 
+/// Correlates one accepted promoted-link write with its source and retry.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct WriteCorrelation {
+    pub scope: (Uuid, String),
+    pub operation: Uuid,
+    pub attempt: u32,
+}
+
+impl WriteCorrelation {
+    /// Whether a completion belongs to this precise attempt.
+    pub fn same_attempt(&self, other: &Self) -> bool {
+        self.scope == other.scope
+            && self.operation == other.operation
+            && self.attempt == other.attempt
+    }
+
+    /// Advance the attempt without changing its source or operation identity.
+    pub fn next_attempt(&self) -> Option<Self> {
+        Some(Self {
+            scope: self.scope.clone(),
+            operation: self.operation,
+            attempt: self.attempt.checked_add(1)?,
+        })
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct LinkDrift {
     pub status: String,

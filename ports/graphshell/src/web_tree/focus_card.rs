@@ -1,4 +1,7 @@
 // Copyright 2026 Mark Alan Boykin
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 
 //! Host-resolved, transient focus cards. A kept card holds a source reference,
@@ -165,45 +168,86 @@ fn forme_target(page: &TreePage) -> Option<Target> {
 }
 
 pub(super) fn has_forme(page: &TreePage) -> bool {
-    forme_target(page).is_some_and(|t|valid(page,&t))
+    forme_target(page).is_some_and(|t| valid(page, &t))
 }
 
 fn enter_forme(page: &mut TreePage, target: Target) {
-    let Some(id)=target.forme else {return;};
-    if !valid(page,&target) {return;}
-    let Some(workspace)=page.forme.as_ref().map(|p|p.current()) else {return;};
-    let Some(place)=super::scope_navigation::place(page) else {return;};
-    let context=place.project(ScopeLevel::Graph,None,workspace.focused_reading)
+    let Some(id) = target.forme else {
+        return;
+    };
+    if !valid(page, &target) {
+        return;
+    }
+    let Some(workspace) = page.forme.as_ref().map(|p| p.current()) else {
+        return;
+    };
+    let Some(place) = super::scope_navigation::place(page) else {
+        return;
+    };
+    let context = place
+        .project(
+            ScopeLevel::Graph,
+            None,
+            workspace.preferences.focused_reading,
+        )
         .enter(ScopeLevel::Forme(id));
-    page.instrument.cards.deck.peek=None;
-    super::scope_navigation::command(page,ScopeCommand::To(
-        mere::navigation::browser::ScopeDestination::Place(context)));
+    page.instrument.cards.deck.peek = None;
+    super::scope_navigation::command(
+        page,
+        ScopeCommand::To(mere::navigation::browser::ScopeDestination::Place(context)),
+    );
 }
 
-pub(super) fn field_command(page:&mut TreePage, command:cambium::ScopeFieldCommand) {
-    page.instrument.panes_open=false;
-    let Some(target)=forme_target(page) else {return;};
-    match command {cambium::ScopeFieldCommand::Peek=>show(page,target),cambium::ScopeFieldCommand::Enter=>enter_forme(page,target)}
+pub(super) fn field_command(page: &mut TreePage, command: cambium::ScopeFieldCommand) {
+    page.instrument.panes_open = false;
+    let Some(target) = forme_target(page) else {
+        return;
+    };
+    match command {
+        cambium::ScopeFieldCommand::Peek => show(page, target),
+        cambium::ScopeFieldCommand::Enter => enter_forme(page, target),
+    }
 }
 
-pub(super) fn field_controls(page:&TreePage) -> Option<Child> {
-    if !super::instrument::enabled(page) || super::blocks_active(page)
-        || page.instrument.panes_open || page.instrument.navigation.open || page.commands.open.is_some()
-        || page.product.as_ref().is_some_and(|p|p.menu_open())
-        || page.forme.as_ref()?.workbench {return None;}
-    let target=forme_target(page)?;
-    if !valid(page,&target) {return None;}
-    let place=super::scope_navigation::place(page)?;
-    if place.level==ScopeLevel::Overmap {return None;}
-    let canvas=page.shared.canvas.borrow();
-    let region=canvas.forme_region().filter(|r|Some(r.id)==target.forme)?;
-    let viewport=canvas.viewport();
-    let field=cambium::ScopeField {label:"Reading layout".into(),bounds:region.screen_bounds(viewport)?,
-        aperture:[0.,0.,viewport.view.0 as f32,viewport.view.1 as f32],
-        can_enter:place.level!=ScopeLevel::Forme(region.id),scale:1.0};
-    cambium::scope_field_controls(&field,move |page:&mut TreePage,command| {
-        if !valid(page,&target) {return;}
-        match command {cambium::ScopeFieldCommand::Peek=>show(page,target.clone()),cambium::ScopeFieldCommand::Enter=>enter_forme(page,target.clone())}
+pub(super) fn field_controls(page: &TreePage) -> Option<Child> {
+    if !super::instrument::enabled(page)
+        || super::blocks_active(page)
+        || page.instrument.panes_open
+        || page.instrument.navigation.open
+        || page.commands.open.is_some()
+        || page.product.as_ref().is_some_and(|p| p.menu_open())
+        || page.forme.as_ref()?.workbench
+    {
+        return None;
+    }
+    let target = forme_target(page)?;
+    if !valid(page, &target) {
+        return None;
+    }
+    let place = super::scope_navigation::place(page)?;
+    if place.level == ScopeLevel::Overmap {
+        return None;
+    }
+    let canvas = page.shared.canvas.borrow();
+    let region = canvas
+        .forme_region()
+        .filter(|r| Some(r.id) == target.forme)?;
+    let viewport = canvas.viewport();
+    let field = cambium::ScopeField {
+        label: "Reading layout".into(),
+        bounds: region.screen_bounds(viewport)?,
+        aperture: [0., 0., viewport.view.0 as f32, viewport.view.1 as f32],
+        can_enter: place.level != ScopeLevel::Forme(region.id),
+        scale: 1.0,
+    };
+    cambium::scope_field_controls(&field, move |page: &mut TreePage, command| {
+        if !valid(page, &target) {
+            return;
+        }
+        match command {
+            cambium::ScopeFieldCommand::Peek => show(page, target.clone()),
+            cambium::ScopeFieldCommand::Enter => enter_forme(page, target.clone()),
+        }
     })
 }
 pub(super) fn forme_control(page: &TreePage) -> Child {
@@ -246,13 +290,17 @@ fn forme_card(page: &TreePage, t: &Target, kept: bool) -> Option<Child> {
             id: member,
             title: tile.title.clone(),
             passage,
-            focused: workspace.focused_reading == Some(member),
+            focused: workspace.preferences.focused_reading == Some(member),
         })
     });
     let mut context = super::scope_navigation::place(page)?
-        .project(ScopeLevel::Graph, None, workspace.focused_reading)
+        .project(
+            ScopeLevel::Graph,
+            None,
+            workspace.preferences.focused_reading,
+        )
         .enter(ScopeLevel::Forme(t.forme?));
-    context.focus = workspace.focused_reading;
+    context.focus = workspace.preferences.focused_reading;
     let destinations = swatch
         .cells
         .iter()
@@ -401,52 +449,55 @@ pub(super) fn fields(page: &TreePage, snap: ProbeSnapshot) -> ProbeSnapshot {
         .cards()
         .iter()
         .any(|(t, _)| t.forme.is_some() && valid(page, t));
-    snap.with_field("forme-field-controls",usize::from(field_controls(page).is_some()).to_string())
-        .with_field("focus-card-forme", has_forme.to_string())
-        .with_field(
-            "focus-card-scope",
-            page.instrument
-                .cards
-                .deck
-                .peek
-                .as_ref()
-                .and_then(|t| t.scope.as_ref())
-                .map(|p| p.level.label())
-                .unwrap_or_default(),
-        )
-        .with_field(
-            "focus-card-count",
-            page.instrument
-                .cards
-                .deck
-                .cards()
-                .iter()
-                .filter(|(t, _)| valid(page, t))
-                .count()
-                .to_string(),
-        )
-        .with_field(
-            "focus-card-kept",
-            page.instrument
-                .cards
-                .deck
-                .kept
-                .iter()
-                .filter(|t| valid(page, t))
-                .count()
-                .to_string(),
-        )
-        .with_field(
-            "focus-card-peek",
-            page.instrument
-                .cards
-                .deck
-                .peek
-                .as_ref()
-                .filter(|t| valid(page, t))
-                .map(|t| t.address.clone())
-                .unwrap_or_default(),
-        )
+    snap.with_field(
+        "forme-field-controls",
+        usize::from(field_controls(page).is_some()).to_string(),
+    )
+    .with_field("focus-card-forme", has_forme.to_string())
+    .with_field(
+        "focus-card-scope",
+        page.instrument
+            .cards
+            .deck
+            .peek
+            .as_ref()
+            .and_then(|t| t.scope.as_ref())
+            .map(|p| p.level.label())
+            .unwrap_or_default(),
+    )
+    .with_field(
+        "focus-card-count",
+        page.instrument
+            .cards
+            .deck
+            .cards()
+            .iter()
+            .filter(|(t, _)| valid(page, t))
+            .count()
+            .to_string(),
+    )
+    .with_field(
+        "focus-card-kept",
+        page.instrument
+            .cards
+            .deck
+            .kept
+            .iter()
+            .filter(|t| valid(page, t))
+            .count()
+            .to_string(),
+    )
+    .with_field(
+        "focus-card-peek",
+        page.instrument
+            .cards
+            .deck
+            .peek
+            .as_ref()
+            .filter(|t| valid(page, t))
+            .map(|t| t.address.clone())
+            .unwrap_or_default(),
+    )
 }
 pub(super) fn view(page: &TreePage) -> Option<Child> {
     // Command overlays temporarily own the column; keeping the binding does

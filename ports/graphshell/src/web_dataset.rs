@@ -17,8 +17,8 @@
 //! revision; the practice proof reads one v1 dataset.
 
 #[cfg(feature = "product")]
-use graphshell::projection_compile::HostDatasetV1;
-use graphshell::projection_compile::HostDatasetV2;
+use scenomise::host_dataset::{HostDatasetV1, parse_host_dataset};
+use scenomise::host_dataset::{HostDatasetV2, parse_host_history};
 use web_sys::Element;
 
 /// The envelope's text, on the mounted root.
@@ -39,8 +39,7 @@ fn supplied_text(root: &Element) -> Option<Result<String, String>> {
 #[cfg(feature = "product")]
 pub(crate) fn supplied(root: &Element) -> Option<Result<HostDatasetV1, String>> {
     Some(supplied_text(root)?.and_then(|text| {
-        graphshell::projection_compile::parse_host_dataset(&text)
-            .map_err(|error| format!("Dataset refused: {error}"))
+        parse_host_dataset(&text).map_err(|error| format!("Dataset refused: {error}"))
     }))
 }
 
@@ -48,7 +47,6 @@ pub(crate) fn supplied(root: &Element) -> Option<Result<HostDatasetV1, String>> 
 /// envelope, or a v1 envelope as its one revision. The viewer's input.
 pub(crate) fn supplied_history(root: &Element) -> Option<Result<HostDatasetV2, String>> {
     Some(supplied_text(root)?.and_then(|text| {
-        graphshell::projection_compile::parse_host_history(&text)
-            .map_err(|error| format!("Dataset refused: {error}"))
+        parse_host_history(&text).map_err(|error| format!("Dataset refused: {error}"))
     }))
 }

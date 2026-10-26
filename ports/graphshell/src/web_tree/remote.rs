@@ -16,9 +16,9 @@
 //! the link's disconnect, reconnect and nudge, and the action status.
 use super::*;
 use cambium::{DisclosureState, SelectState, button, disclosure, lens, select};
-use graphshell::client::remote::ActionForm;
-use graphshell::client::{ActionDraftSemantics, MountedScene};
 use graphshell::remote_board::RemoteBoard;
+use graphshell_client::remote::ActionForm;
+use graphshell_client::{ActionDraftSemantics, MountedScene};
 use mere::canvas::{BoardFit, BoardText};
 
 use super::super::web_rtc_link::{self, LiveRemote, RemoteHost};
@@ -35,19 +35,15 @@ pub(super) const BOARD_FIT: BoardFit = BoardFit {
 /// The draft form's unset choice.
 const CHOOSE: &str = "Choose…";
 
-/// Which Graph tools sections are open. Arrangement and physics starts
-/// open; Remote session starts closed and opens when a link is established or
-/// remote is shown ("Remote starts collapsed"). The region scrolls.
+/// Remote session disclosure starts closed and opens when a link is established
+/// or remote is shown ("Remote starts collapsed"). The region scrolls.
 pub(super) struct Sections {
-    pub(super) physics: DisclosureState,
     pub(super) remote: DisclosureState,
 }
 
 impl Default for Sections {
     fn default() -> Self {
         Self {
-            physics: DisclosureState::new("tools-physics", "Arrangement and physics")
-                .expanded(true),
             remote: DisclosureState::new("tools-remote", "Remote session").expanded(false),
         }
     }
@@ -597,9 +593,7 @@ pub(super) fn section(page: &TreePage) -> Child {
             .attr("role", "group")
             .attr("aria-label", "Session"),
         ),
-        Box::new(
-            status_note("tools-active", active_line(page)),
-        ),
+        Box::new(status_note("tools-active", active_line(page))),
     ];
     // The board steps at the viewer's own dial (ruled 2026-10-04, "The
     // viewer's own dial").
@@ -663,13 +657,14 @@ pub(super) fn section(page: &TreePage) -> Child {
                 .attr("aria-label", "Link"),
         ));
     }
-    children.push(Box::new(
-        status_note("tools-status", if remote.reservoir.is_some() {
-                remote.status().to_owned()
-            } else {
-                remote.form().status.clone()
-            }),
-    ));
+    children.push(Box::new(status_note(
+        "tools-status",
+        if remote.reservoir.is_some() {
+            remote.status().to_owned()
+        } else {
+            remote.form().status.clone()
+        },
+    )));
     drop(remote);
     Box::new(
         el(

@@ -1,14 +1,18 @@
 // Copyright 2026 Mark Alan Boykin
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 
 //! The projection editor and its two views share one typed draft and occurrence selection.
 use super::*;
-use cambium::{TabBar, TabBarNames, TabItem, button, disclosure_trigger, el, lens, tab_bar_view, text_field_typed};
-use graphshell::local_projection::{compile_editor, draft_from_definition, snapshot_editor};
-use graphshell::projection_compile::initial_projection_draft;
-use graphshell::projection_compile::{
-    CompiledProjection, ProjectionDataset, ProjectionSnapshot, default_definition,
+use cambium::{
+    TabBar, TabBarNames, TabItem, button, disclosure_trigger, el, lens, tab_bar_view,
+    text_field_typed,
 };
+use graphshell::local_projection::{compile_editor, draft_from_definition, snapshot_editor};
+use graphshell::projection_compile::default_definition;
+use graphshell::projection_compile::initial_projection_draft;
 use graphshell::projection_dynamics_compare::{
     DynamicsComparison, compare_arrangements_dynamics, compare_dynamics,
 };
@@ -18,6 +22,7 @@ use mere::canvas::projection_dynamics::ProjectionDynamics;
 use sceno::InstanceId;
 use scenograph::Channel;
 use scenomise::authoring::{EditorAction, ProjectionEditor, ProjectionPanel};
+use scenomise::projection::{CompiledProjection, ProjectionDataset, ProjectionSnapshot};
 mod comparison;
 mod options;
 const PRACTICE: &str = include_str!("../../../web/fixtures/woodshed-stage.json");
@@ -719,13 +724,15 @@ pub(in crate::web_tree) fn section(page: &TreePage) -> Child {
     let Some(product) = &page.product else {
         return Box::new(el("div", ()));
     };
-    let mut children: Vec<Child> = vec![Box::new(
-        disclosure_trigger("Projection editor", product.projection.open, |page: &mut TreePage| {
+    let mut children: Vec<Child> = vec![Box::new(disclosure_trigger(
+        "Projection editor",
+        product.projection.open,
+        |page: &mut TreePage| {
             if let Some(product) = &mut page.product {
                 product.projection.open = !product.projection.open;
             }
-        }),
-    )];
+        },
+    ))];
     if product.projection.open {
         children.push(action_button("Load practice set", "load"));
     }
@@ -758,9 +765,11 @@ pub(in crate::web_tree) fn editor(page: &TreePage) -> Option<Child> {
     }
     let mut children: Vec<Child> = vec![
         Box::new(el("h2", "Projection editor")),
-        Box::new(
-            status_note_labelled("", "Projection status", p.status.clone()),
-        ),
+        Box::new(status_note_labelled(
+            "",
+            "Projection status",
+            p.status.clone(),
+        )),
     ];
     let panels = ProjectionPanel::ALL;
     let items: Vec<TabItem> = panels
@@ -771,7 +780,13 @@ pub(in crate::web_tree) fn editor(page: &TreePage) -> Option<Child> {
         .iter()
         .position(|panel| *panel == p.editor.panel())
         .unwrap_or(0);
-    children.push(Box::new(tab_bar_view::<TreePage, (), (), _, fn(&mut TreePage, usize) -> ()>(
+    children.push(Box::new(tab_bar_view::<
+        TreePage,
+        (),
+        (),
+        _,
+        fn(&mut TreePage, usize) -> (),
+    >(
         TabBar::new(&items, selected)
             .with_label("Projection panels")
             .with_names(TabBarNames {
@@ -780,10 +795,10 @@ pub(in crate::web_tree) fn editor(page: &TreePage) -> Option<Child> {
             }),
         move |page: &mut TreePage, index: usize| {
             if let (Some(product), Some(panel)) = (&mut page.product, panels.get(index)) {
-                product
-                    .projection
-                    .editor
-                    .reduce(EditorAction::SelectPanel(*panel), js_sys::Date::now() as u64);
+                product.projection.editor.reduce(
+                    EditorAction::SelectPanel(*panel),
+                    js_sys::Date::now() as u64,
+                );
             }
         },
         None,
@@ -824,20 +839,24 @@ pub(in crate::web_tree) fn editor(page: &TreePage) -> Option<Child> {
                 .attr("aria-label", "Arrangement options"),
         ));
     }
-    children.push(Box::new(
-        status_note_labelled("", "Projection preview", format!(
-                "{} · {}",
-                p.editor.draft().appearance.title,
-                p.editor.draft().arrangement.kind
-            )),
-    ));
-    children.push(Box::new(
-        status_note_labelled("", "Projection saved state", if p.editor.is_dirty() {
-                "Unsaved changes"
-            } else {
-                "No unsaved changes"
-            }),
-    ));
+    children.push(Box::new(status_note_labelled(
+        "",
+        "Projection preview",
+        format!(
+            "{} · {}",
+            p.editor.draft().appearance.title,
+            p.editor.draft().arrangement.kind
+        ),
+    )));
+    children.push(Box::new(status_note_labelled(
+        "",
+        "Projection saved state",
+        if p.editor.is_dirty() {
+            "Unsaved changes"
+        } else {
+            "No unsaved changes"
+        },
+    )));
     for (label, action) in [
         ("Undo projection", "undo"),
         ("Redo projection", "redo"),

@@ -4,8 +4,9 @@ The reference application over [`crates/graphshell`](../../crates/graphshell).
 The stack crates carry sessions; this port decides who gets one, runs the serve
 loops, hosts resident endpoints, and renders projections.
 
-Package name `graphshell`. It re-exports the stack as `graphshell::protocol`,
-`graphshell::client`, and `graphshell::endpoint`.
+Package name `graphshell`. Embedders depend directly on `chirograph` for the
+protocol, `graphshell-client` for client state, and `graphshell-endpoint` for
+serving projections. These capabilities do not require the reference port.
 
 The native opt-in `moot-resources` module composes the existing Moot resource
 view with verified retained Graphshell session authority and current Gemot and

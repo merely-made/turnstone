@@ -16,8 +16,11 @@ use scenomise::catalog::{FAMILIES, Family};
 use scenomise::facet::{FacetLayout, compose_facet};
 
 use crate::projection_compare::{ComparedCell, Comparison, EDITOR_VIEW, WORKING};
-use crate::projection_compile::{ProjectionDataset, practice_compiler};
+use crate::projection_compile::practice_compiler;
 use scenomise::arrangement::with_kind;
+use scenomise::projection::ProjectionDataset;
+#[cfg(test)]
+use scenomise::projection::ProjectionValue;
 
 fn end_label(end: mere::canvas::dynamics_recipe::SettleEnd) -> &'static str {
     match end {
@@ -309,8 +312,8 @@ pub fn compare_dynamics(
 mod tests {
     use super::*;
     use crate::projection_compile::default_definition;
-    use scenomise::authoring::{EditorAction, ProjectionEditor};
     use mere::canvas::dynamics_recipe::preset_slot;
+    use scenomise::authoring::{EditorAction, ProjectionEditor};
 
     fn fixture() -> (ProjectionDraft, ProjectionDataset) {
         let data: ProjectionDataset =
@@ -457,10 +460,9 @@ mod tests {
         // Separate coordinates so F47's contact exception cannot mask drift.
         for (i, occurrence) in data.occurrences.iter_mut().enumerate() {
             for field in ["order", "tempo_bpm"] {
-                occurrence.values.insert(
-                    field.into(),
-                    crate::projection_compile::ProjectionValue::Number(i as f64 * 1000.0),
-                );
+                occurrence
+                    .values
+                    .insert(field.into(), ProjectionValue::Number(i as f64 * 1000.0));
             }
         }
         let compiler = practice_compiler();
