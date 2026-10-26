@@ -757,9 +757,18 @@ impl App {
         operation: impl FnOnce(&mut mere::canvas::Canvas) -> R,
     ) -> Option<R> {
         let graph = self.graph_for_pane(pane)?;
+        self.graph_views.bind_graph(pane,graph);
+        if let Some(id)=self.graph_views.installed_forme(pane).or_else(||self.forme_for_pane(pane).map(|key|match key.forme {mere::forme::FormeRef::Identity(id)=>id,mere::forme::FormeRef::Stored(id)=>id.as_uuid()})) {
+            let place=crate::scope_navigation::ScopePlace {level:crate::scope_navigation::ScopeLevel::Forme(id),graph,root:None,focus:None,contexts:None};
+            let region=self.scope_forme_region(&place);
+            self.graph_views.set_forme_region(pane,region);
+            if self.graph_views.forme_scope(pane)==Some(id) {
+                let members=self.scope_forme_reader(&place).and_then(|p|self.workbench_for_pane(p)).map(|w|w.open_members()).unwrap_or_default();
+                self.graph_views.set_forme_scope(pane,id,members);
+            }
+        }
         let result = {
             let canvas = self.graph_runtimes.canvas_mut(graph)?;
-            self.graph_views.bind_graph(pane,graph);
             self.graph_views.install(pane, canvas);
             let result = operation(canvas);
             self.graph_views.stash(pane, canvas);
@@ -840,7 +849,7 @@ impl App {
             mere::canvas::physics_controls::advance_arrangement(canvas, &mut transition, &id, host_ms);
             if fit {
                 canvas.resize(width, height);
-                canvas.fit_to_content();
+                canvas.fit_visible();
             }
             let (scene, redraw) = canvas.frame(width, height);
             (scene, redraw || transition.is_some() || canvas.has_stop_return())
@@ -1353,7 +1362,7 @@ impl App {
             }
             Action::FitView => {
                 if let Some(pane) = self.graph_command_pane() {
-                    self.with_graph_pane(pane, |canvas| canvas.fit_to_content());
+                    self.with_graph_pane(pane, |canvas| canvas.fit_visible());
                     self.graph_views.request_fit(pane);
                 }
                 vec![Effect::Redraw]

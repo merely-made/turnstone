@@ -6493,7 +6493,7 @@ fn graph_navigation_fit_after_read_uses_the_new_pane_aperture() {
     app.with_graph_pane(pane, |canvas| {
         assert_eq!(canvas.viewport().view, (638, 521));
         let actual = canvas.viewport();
-        canvas.fit_to_content();
+        canvas.fit_visible();
         let expected = canvas.viewport();
         assert_eq!(actual.offset, expected.offset);
         assert_eq!(actual.zoom, expected.zoom);

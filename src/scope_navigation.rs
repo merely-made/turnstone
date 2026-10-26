@@ -116,7 +116,7 @@ impl App {
             self.graph_pane_for_navigation(graph)
                 .and_then(|p| self.graph_pane_focused_member(p))
         };
-        let mut place = held.filter(|p| p.graph == graph).unwrap_or(ScopePlace { contexts:None,
+        let mut place = held.filter(|p| p.graph == graph).unwrap_or(ScopePlace {
             level: ScopeLevel::Graph,
             graph,
             root: member,
@@ -215,6 +215,9 @@ impl App {
         });
     }
     pub(crate) fn scope_command(&mut self, command: ScopeCommand) -> Vec<Effect> {
+        self.scope_command_for_reader(command,None)
+    }
+    pub(crate) fn scope_command_for_reader(&mut self, command: ScopeCommand, requested_reader:Option<PaneId>) -> Vec<Effect> {
         if command == ScopeCommand::EditLocation {
             return self.edit_scope_location();
         }
@@ -257,14 +260,15 @@ impl App {
             let place = match command {
                 ScopeCommand::Navigate(ScopeDirection::Up) => origin.place.up(),
                 ScopeCommand::Navigate(ScopeDirection::Down) => origin.place.down(),
-                ScopeCommand::To(ref destination) => destination.resolve(&origin.place).filter(|p| p != &origin.place),
+                ScopeCommand::To(ref destination) => destination.resolve(&origin.place).filter(|p| p != &origin.place || requested_reader.is_some_and(|reader|origin.anchor.as_ref().and_then(|b|b.reader)!=Some(reader))),
                 _ => None,
             };
             place.map(|place| {
-                let saved = self.reading.scope.navigation.saved_matching(|p| p.same_scope(&place));
+                let saved = self.reading.scope.navigation.saved_matching(|p| p.same_scope(&place)).filter(|v|requested_reader.is_none_or(|reader|v.anchor.as_ref().and_then(|b|b.reader)==Some(reader)));
                 cambium::scope_navigation::ScopeVisit {
-                    camera: saved.and_then(|v| v.camera).or_else(|| matches!(place.level,ScopeLevel::Forme(_)).then_some(origin.camera).flatten()),
+                    camera: saved.and_then(|v| v.camera),
                     anchor: Some(ScopeBookmark {
+                        reader: requested_reader.or_else(||saved.and_then(|v|v.anchor.as_ref()).and_then(|b|b.reader)).or_else(||origin.anchor.as_ref().and_then(|b|b.reader)),
                         reading: saved
                             .and_then(|v| v.anchor.as_ref())
                             .and_then(|a| a.reading.clone()),
@@ -381,7 +385,7 @@ impl App {
     pub(crate) fn enter_scope_session(&mut self, id: crate::panes::SessionId) {
         self.capture_scope_origin();
         if let Some(graph) = self.sessions.get(id).map(|m| m.root_graph_id) {
-            let place = ScopePlace { contexts:None,
+            let place = ScopePlace {
                 level: ScopeLevel::Graph,
                 graph,
                 root: None,
@@ -505,15 +509,13 @@ impl App {
         self.graph_views.bind_graph(pane, place.graph);
         if place.level == ScopeLevel::Document {
             let member = place.focus?;
-            let reader = self.scope_forme_reader(place).or_else(|| visit
-                .anchor
-                .as_ref()
-                .and_then(|b| b.reader)
-                .or(self.reading.scope.reader))
-                .filter(|p| {
-                    self.graph_for_pane(*p) == Some(place.graph)
-                        && self.workbench_for_pane(*p).is_some()
-                });
+            if place.parents().iter().any(|p|matches!(p.level,ScopeLevel::Forme(_))) {
+                let reader=self.scope_forme_reader(place)?;
+                if !self.workbench_for_pane(reader)?.has_tile(member) {return None;}
+            }
+            let reader=visit.anchor.as_ref().and_then(|b|b.reader).filter(|reader|self.reader_matches_scope(*reader,place))
+                .or_else(||self.scope_forme_reader(place))
+                .or(self.reading.scope.reader).filter(|reader|self.reader_matches_scope(*reader,place));
             let mut effects = if let Some(reader) = reader {
                 self.read_visit_in_pane(reader, member)
             } else {
@@ -553,9 +555,15 @@ impl App {
             return Some(effects);
         }
         if matches!(place.level,ScopeLevel::Forme(_)) {
-            let reader=self.scope_forme_reader(place)?;
+            let reader=visit.anchor.as_ref().and_then(|b|b.reader)
+                .filter(|reader|self.reader_matches_scope(*reader,place))
+                .or_else(||self.scope_forme_reader(place))?;
+            self.reading.scope.reader=Some(reader);
             let members=self.workbench_for_pane(reader)?.open_members();
-            self.graph_views.set_scope(pane,Some(members));
+            let ScopeLevel::Forme(id)=place.level else {unreachable!()};
+            self.graph_views.set_forme_scope(pane,id,members);
+            let region=self.scope_forme_region(place)?;
+            self.graph_views.set_forme_region(pane,Some(region));
         } else if place.level == ScopeLevel::Neighborhood {
             let root = place.root.or(place.focus)?;
             self.graph_views.set_neighborhood(pane, root);

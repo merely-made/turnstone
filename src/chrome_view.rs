@@ -286,6 +286,7 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
         if wide {
             let name=state.scope_controls.down.as_ref().map(|label|format!("Peek below: {label}")).unwrap_or_else(||"Peek below".into());
             controls.push(browser_control("Peek", &name, state.peek_below.clone().map(|t|ChromeIntent::FocusCard(crate::focus_card::Command::Peek(t)))));
+            controls.push(browser_control("Layout", "Preview reading layout", state.peek_forme.clone().map(|t|ChromeIntent::FocusCard(crate::focus_card::Command::Peek(t)))));
         }
         if !compact {
             controls.push(browser_control(

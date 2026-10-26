@@ -9,7 +9,10 @@ use uuid::Uuid;
 #[derive(Clone, Debug, PartialEq)]
 pub enum Origin {
     Node,
-    Forme { reader: crate::panes::PaneId, forme: mere::forme::FormeRef },
+    Forme {
+        reader: crate::panes::PaneId,
+        forme: mere::forme::FormeRef,
+    },
     Scope(crate::scope_navigation::ScopePlace<GraphId, Uuid>),
     Relationship(crate::relationship_navigation::RelationshipTarget),
     Inline(Uuid),
@@ -19,6 +22,7 @@ pub struct Target {
     pub graph: GraphId,
     pub instance: Uuid,
     pub member: Option<Uuid>,
+    pub reader: Option<crate::panes::PaneId>,
     pub address: String,
     pub origin: Origin,
 }
@@ -53,6 +57,7 @@ impl App {
             graph,
             instance: runtime.instance,
             member: Some(member),
+            reader: None,
             address: node.url().into(),
             origin,
         })
@@ -65,7 +70,20 @@ impl App {
             return runtime.instance == target.instance && self.valid_forme_card(target);
         }
         if let Origin::Scope(place) = &target.origin {
-            if place.trail().iter().any(|p| matches!(p.level, crate::scope_navigation::ScopeLevel::Forme(_))) && self.scope_forme_reader(place).is_none() { return false; }
+            if target
+                .reader
+                .is_some_and(|reader| !self.reader_matches_scope(reader, place))
+            {
+                return false;
+            }
+            if place
+                .trail()
+                .iter()
+                .any(|p| matches!(p.level, crate::scope_navigation::ScopeLevel::Forme(_)))
+                && self.scope_forme_reader(place).is_none()
+            {
+                return false;
+            }
             return runtime.instance == target.instance
                 && place.valid()
                 && place.graph == target.graph
@@ -100,6 +118,7 @@ impl App {
             graph: place.graph,
             instance: runtime.instance,
             member: place.focus,
+            reader: self.scope_forme_reader(&place),
             address: place
                 .focus
                 .and_then(|m| runtime.canvas.graph().get_node_by_id(m))
@@ -152,16 +171,21 @@ impl App {
             return vec![Effect::Redraw];
         }
         let shown = self.reading.cards.cards().iter().any(|(t, _)| t == target)
-            || self.focus_card_views().iter().any(|card|card.forme.is_some() && card.related.iter().any(|(t,_,_)|t==target));
+            || self.focus_card_views().iter().any(|card| {
+                card.forme.is_some() && card.related.iter().any(|(t, _, _)| t == target)
+            });
         match command {
             Command::Peek(target) => self.reading.cards.show(target),
             Command::Keep(target) => self.reading.cards.keep(&target),
             Command::Read(target) if shown => {
                 self.reading.cards.peek = None;
                 if let Origin::Scope(place) = target.origin {
-                    return self.scope_command(crate::scope_navigation::ScopeCommand::To(
-                        crate::scope_navigation::ScopeDestination::Place(place),
-                    ));
+                    return self.scope_command_for_reader(
+                        crate::scope_navigation::ScopeCommand::To(
+                            crate::scope_navigation::ScopeDestination::Place(place),
+                        ),
+                        target.reader,
+                    );
                 }
                 return self.read_member_in_graph(target.graph, target.member.unwrap());
             },
@@ -191,7 +215,9 @@ impl App {
                 if !self.valid_focus_card(&target) {
                     return None;
                 }
-                if matches!(target.origin, Origin::Forme { .. }) { return self.forme_card_view(target,kept); }
+                if matches!(target.origin, Origin::Forme { .. }) {
+                    return self.forme_card_view(target, kept);
+                }
                 let graph = self.graph_runtimes.canvas(target.graph)?.graph();
                 if let Origin::Scope(place) = &target.origin {
                     if place.level != crate::scope_navigation::ScopeLevel::Document {
@@ -381,60 +407,116 @@ mod tests {
         (app, graph, source, member)
     }
     #[test]
-    fn forme_peek_enters_existing_access_and_round_trips_without_rearrangement() {
-        use crate::scope_navigation::{ScopeCommand,ScopeLevel};
-        use cambium::scope_navigation::ScopeDirection;
-        let (mut app,graph,source,member)=fixture();
-        let reader=app.active_pane.unwrap();
-        app.workbench_for_pane_mut(reader).unwrap().open_split(&[source,member]);
-        let layout=app.workbench_for_pane(reader).unwrap().to_arrangement();
-        let anchors=app.reading.anchors.clone();
+    fn forme_preview_prefers_the_active_then_retained_reader_over_tree_order() {
+        let (mut app, graph, _, _) = fixture();
+        let reader = app.active_pane.unwrap();
+        let other = crate::panes::PaneId(900);
+        app.frisket.root = crate::panes::PaneNode::Split {
+            axis: crate::panes::SplitAxis::Horizontal, ratio: 0.5,
+            first: Box::new(crate::panes::PaneNode::Leaf {
+                pane_id: other, content: crate::panes::PaneContent::Workbench, graph_id: graph,
+            }),
+            second: Box::new(app.frisket.root.clone()),
+        };
+        app.index_pane_spaces();
+        assert_eq!(app.forme_card_target().unwrap().reader, Some(reader));
         app.update(Action::SetWorkspaceMap(true));
-        let map=app.active_pane.unwrap();
-        let camera=app.with_graph_pane(map,|c|c.camera()).unwrap();
-        let history=serde_json::to_value(&app.reading.scope.navigation).unwrap();
-        let target=app.forme_card_target().unwrap();
+        assert_eq!(app.forme_card_target().unwrap().reader, Some(reader));
+    }
+    #[test]
+    fn forme_peek_enters_existing_access_and_round_trips_without_rearrangement() {
+        use crate::scope_navigation::{ScopeCommand, ScopeLevel};
+        use cambium::scope_navigation::ScopeDirection;
+        let (mut app, graph, source, member) = fixture();
+        let reader = app.active_pane.unwrap();
+        app.workbench_for_pane_mut(reader)
+            .unwrap()
+            .open_split(&[source, member]);
+        let layout = app.workbench_for_pane(reader).unwrap().to_arrangement().1;
+        let anchors = app.reading.anchors.clone();
+        app.update(Action::SetWorkspaceMap(true));
+        let map = app.active_pane.unwrap();
+        let camera = app.with_graph_pane(map, |c| c.camera()).unwrap();
+        let history = serde_json::to_value(&app.reading.scope.navigation).unwrap();
+        let target = app.forme_card_target().unwrap();
         app.update(Action::FocusCard(Command::Peek(target.clone())));
         app.update(Action::FocusCard(Command::Keep(target.clone())));
-        assert_eq!(serde_json::to_value(&app.reading.scope.navigation).unwrap(),history);
-        assert_eq!(app.reading.anchors,anchors);
-        assert_eq!(app.workbench_for_pane(reader).unwrap().to_arrangement(),layout);
-        let card=app.focus_card_views().pop().unwrap();
-        assert_eq!(card.forme.as_ref().unwrap().cells.len(),2);
-        let child=card.related.iter().find(|(t,_,_)|t.member==Some(source)).unwrap().0.clone();
+        assert_eq!(
+            serde_json::to_value(&app.reading.scope.navigation).unwrap(),
+            history
+        );
+        assert_eq!(app.reading.anchors, anchors);
+        assert_eq!(
+            app.workbench_for_pane(reader).unwrap().to_arrangement().1,
+            layout
+        );
+        let card = app.focus_card_views().pop().unwrap();
+        assert_eq!(card.forme.as_ref().unwrap().cells.len(), 2);
+        let child = card
+            .related
+            .iter()
+            .find(|(t, _, _)| t.member == Some(source))
+            .unwrap()
+            .0
+            .clone();
         app.update(Action::FocusCard(Command::Read(child)));
-        assert_eq!(app.active_pane,Some(reader));
-        assert_eq!(app.scope_place().focus,Some(source));
-        assert!(matches!(app.scope_place().up().unwrap().level,ScopeLevel::Forme(_)));
-        assert_eq!(app.reading.anchors,anchors);
+        assert_eq!(app.active_pane, Some(reader));
+        assert_eq!(app.scope_place().focus, Some(source));
+        assert!(matches!(
+            app.scope_place().up().unwrap().level,
+            ScopeLevel::Forme(_)
+        ));
+        assert_eq!(app.reading.anchors, anchors);
         app.update(Action::Scope(ScopeCommand::Navigate(ScopeDirection::Up)));
-        assert!(matches!(app.scope_place().level,ScopeLevel::Forme(_)));
+        assert!(matches!(app.scope_place().level, ScopeLevel::Forme(_)));
         app.update(Action::Scope(ScopeCommand::Navigate(ScopeDirection::Up)));
-        assert_eq!(app.scope_place().level,ScopeLevel::Graph);
-        assert_eq!(app.scope_place().graph,graph);
-        assert_eq!(app.with_graph_pane(map,|c|c.camera()).unwrap(),camera);
+        assert_eq!(app.scope_place().level, ScopeLevel::Graph);
+        assert_eq!(app.scope_place().graph, graph);
+        assert_eq!(app.with_graph_pane(map, |c| c.camera()).unwrap(), camera);
         app.update(Action::Scope(ScopeCommand::Navigate(ScopeDirection::Back)));
-        assert!(matches!(app.scope_place().level,ScopeLevel::Forme(_)));
+        assert!(matches!(app.scope_place().level, ScopeLevel::Forme(_)));
         app.update(Action::Scope(ScopeCommand::Navigate(ScopeDirection::Back)));
-        assert_eq!(app.scope_place().focus,Some(source));
-        assert_eq!(app.scope_place().level,ScopeLevel::Document);
-        assert_eq!(app.workbench_for_pane(reader).unwrap().to_arrangement(),layout);
-        assert_eq!(app.reading.anchors,anchors);
+        assert_eq!(app.scope_place().focus, Some(source));
+        assert_eq!(app.scope_place().level, ScopeLevel::Document);
+        assert_eq!(
+            app.workbench_for_pane(reader).unwrap().to_arrangement().1,
+            layout
+        );
+        assert_eq!(app.reading.anchors, anchors);
     }
     #[test]
     fn kept_forme_card_reads_live_layout_and_rejects_a_removed_tile_target() {
-        let (mut app,_,source,member)=fixture();let reader=app.active_pane.unwrap();
-        app.workbench_for_pane_mut(reader).unwrap().open_split(&[source,member]);
-        let target=app.forme_card_target().unwrap();
+        let (mut app, _, source, member) = fixture();
+        let reader = app.active_pane.unwrap();
+        app.workbench_for_pane_mut(reader)
+            .unwrap()
+            .open_split(&[source, member]);
+        let target = app.forme_card_target().unwrap();
         app.update(Action::FocusCard(Command::Peek(target.clone())));
         app.update(Action::FocusCard(Command::Keep(target)));
-        let stale=app.focus_card_views()[0].related.iter().find(|(t,_,_)|t.member==Some(member)).unwrap().0.clone();
-        app.workbench_for_pane_mut(reader).unwrap().close_tile(member);
-        let before=app.scope_place();
+        let stale = app.focus_card_views()[0]
+            .related
+            .iter()
+            .find(|(t, _, _)| t.member == Some(member))
+            .unwrap()
+            .0
+            .clone();
+        app.workbench_for_pane_mut(reader)
+            .unwrap()
+            .close_tile(member);
+        let before = app.scope_place();
         app.update(Action::FocusCard(Command::Read(stale)));
-        assert_eq!(app.scope_place(),before);
+        assert_eq!(app.scope_place(), before);
         assert!(!app.workbench_for_pane(reader).unwrap().has_tile(member));
-        assert_eq!(app.focus_card_views()[0].forme.as_ref().unwrap().cells.len(),1);
+        assert_eq!(
+            app.focus_card_views()[0]
+                .forme
+                .as_ref()
+                .unwrap()
+                .cells
+                .len(),
+            1
+        );
     }
 
     #[test]
