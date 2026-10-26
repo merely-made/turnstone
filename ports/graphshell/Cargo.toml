@@ -41,9 +41,12 @@ query-views = ["web", "mere/query", "dep:cambium"]
 caller-owned-toolkit-bench = ["retained-content", "cambium-rootstock/embedding-egui", "cambium-rootstock/embedding-iced", "dep:image"]
 moot-resources = ["web", "webrtc-join", "dep:cambium", "dep:moot", "dep:gemot", "dep:eidetic", "dep:muniment"]
 default = ["native", "image-decode", "document-layout", "retained-content"]
-# Document-capable hosts retain Platen's document producer. The read-only
-# browser viewer uses its portable pane/geometry model alone.
-document-layout = ["platen?/document-layout"]
+# Document-capable hosts retain Platen's document producer. Activating this
+# feature also activates the optional dependency before forwarding the feature.
+document-layout = ["dep:platen", "platen/document-layout"]
+# The retained workspace and its acknowledged editing lifecycle belong to
+# product hosts, not the read-only browser viewer.
+workspace-editor = ["web", "dep:platen", "platen/workspace-editor"]
 # Retained document sessions belong to the application host, not the read-only
 # graph viewer. Product web builds opt in explicitly; native defaults retain it.
 retained-content = ["web", "document-layout", "dep:genet-presenter", "dep:cambium", "dep:fleece", "dep:wgpu", "dep:pelt-core", "pelt-core/cue", "dep:wgpu-cue", "dep:cue-netrender", "dep:inker", "dep:netrender", "dep:mere-lanes"]
@@ -145,8 +148,6 @@ web = [
     "dep:mere-overmap",
     "dep:muniment",
     "dep:pandect",
-    "dep:platen",
-    "platen/workspace-editor",
     "dep:serde",
     "dep:sha2",
     "dep:uuid",

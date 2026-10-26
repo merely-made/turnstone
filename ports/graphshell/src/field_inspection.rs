@@ -6,7 +6,9 @@
 
 //! Held field/coupling reads and authored-region discovery, without evaluation.
 //! A geometry hit, a selector match and a measured influence are different facts.
-use crate::{access_inspection::AccessSummary, forme_workspace::FormeWorkspace};
+use crate::access_inspection::AccessSummary;
+#[cfg(feature = "workspace-editor")]
+use crate::forme_workspace::FormeWorkspace;
 use mere::kernel::graph::{
     Coupling, CouplingId, CouplingResponse, CoverageNote, Field, FieldDefinition, FieldExtent,
     FieldId, Graph,
@@ -144,6 +146,7 @@ pub fn inspect_field(graph: &Graph, id: FieldId) -> Result<FieldInspection, Stri
     })
 }
 
+#[cfg(feature = "workspace-editor")]
 pub fn inspect_forme(
     workspace: &FormeWorkspace,
     expected: Uuid,
