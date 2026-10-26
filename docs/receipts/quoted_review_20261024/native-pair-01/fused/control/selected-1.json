@@ -1,0 +1,19 @@
+{
+  "condition": "native selection committed by the app; exact expected text hashes",
+  "source": {
+    "chosen": [
+      {
+        "key": {
+          "annotation_manifest": "blake3:88b88dc2912816fa0e0e4e8fe96c3fa8e53aafb1aafa3d405164dd3c9e476c7b",
+          "graph": "b0251806-c072-401c-b2f1-71804bb3773f",
+          "node": "846824ab-5edb-4942-bc87-603e07c18e7e",
+          "session": "0b7c8480-3367-472e-bd20-e9e5a0be6e5a"
+        },
+        "selector": null,
+        "text_hash": "blake3:7d51f2ed929706e8a8d24f17da016384ac94f3ab88c95054fb8658e6a1fa5399"
+      }
+    ],
+    "session": "0b7c8480-3367-472e-bd20-e9e5a0be6e5a",
+    "view": "405145b7-b4ec-43e3-9427-aba4368cb915"
+  }
+}

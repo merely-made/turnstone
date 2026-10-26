@@ -1,0 +1,32 @@
+{
+  "boundary": "actual live published binding; same scoped current-version/provider path as generation",
+  "config": {
+    "chunk_chars": 512,
+    "max_context_chars": 12000,
+    "max_corpus_chars": 1000000,
+    "max_passages": 4,
+    "min_quote_chars": 32
+  },
+  "owner": "turnstone/31509cf8-5e1b-4bc6-919e-cb05bc3d0d17/research/v1",
+  "rows": [],
+  "scope": [
+    {
+      "kind": "fleece",
+      "node": "c1e54b86-1637-4092-84ce-73dde6bde6dd",
+      "owner": "turnstone/31509cf8-5e1b-4bc6-919e-cb05bc3d0d17/research/v1",
+      "source": "mere://saved-source/31509cf8-5e1b-4bc6-919e-cb05bc3d0d17/4f150aff-f5b8-4dd8-8553-63b41b43276e/c1e54b86-1637-4092-84ce-73dde6bde6dd/8ad09d8681fc7df64aa8e0fedbb31843159c968ecc4ab8280652118d51079a78/7d51f2ed929706e8a8d24f17da016384ac94f3ab88c95054fb8658e6a1fa5399"
+    },
+    {
+      "kind": "fleece",
+      "node": "dd2f0317-8166-4368-8188-f5fe6eb9cbd8",
+      "owner": "turnstone/31509cf8-5e1b-4bc6-919e-cb05bc3d0d17/research/v1",
+      "source": "mere://retained-text/31509cf8-5e1b-4bc6-919e-cb05bc3d0d17/4f150aff-f5b8-4dd8-8553-63b41b43276e/dd2f0317-8166-4368-8188-f5fe6eb9cbd8/48674921cc190ad421d84c8fb5ad3351b87ddb574d7a05afd476dde67f0e9773/110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275"
+    },
+    {
+      "kind": "fleece",
+      "node": "3f0f7b7b-4277-49cd-8ca4-6d5f310d116d",
+      "owner": "turnstone/31509cf8-5e1b-4bc6-919e-cb05bc3d0d17/research/v1",
+      "source": "mere://retained-text/31509cf8-5e1b-4bc6-919e-cb05bc3d0d17/4f150aff-f5b8-4dd8-8553-63b41b43276e/3f0f7b7b-4277-49cd-8ca4-6d5f310d116d/45ea9bc24519f7791689b075b3b74fd8cb4c3cbd35adb89f5c684d0508a470d0/34a68a8f92ee65534850537f585c9daef4de2101765295a242ec022af7acfb96"
+    }
+  ]
+}

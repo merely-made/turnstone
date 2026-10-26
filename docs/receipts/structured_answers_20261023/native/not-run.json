@@ -1,0 +1,5 @@
+{
+  "headed_answer": "not_run_gate_not_passed",
+  "cold_reopen": "not_run_gate_not_passed",
+  "reason": "The complete frozen answer cohort did not pass every semantic assertion. Prepared native scripts were not executed and no native build was claimed for this source."
+}

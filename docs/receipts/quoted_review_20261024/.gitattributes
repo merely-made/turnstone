@@ -1,0 +1,6 @@
+# Raw public evidence retains its original captured bytes.
+*.log -text -whitespace
+*.json -text
+*.jsonl -text
+*.png -text
+*.mereclip -text

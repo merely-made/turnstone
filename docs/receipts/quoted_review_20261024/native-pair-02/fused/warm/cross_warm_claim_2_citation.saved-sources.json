@@ -1,0 +1,335 @@
+{
+  "admissions": [
+    {
+      "error": null,
+      "key": {
+        "annotation_manifest": "blake3:8ad09d8681fc7df64aa8e0fedbb31843159c968ecc4ab8280652118d51079a78",
+        "graph": "4f150aff-f5b8-4dd8-8553-63b41b43276e",
+        "node": "c1e54b86-1637-4092-84ce-73dde6bde6dd",
+        "session": "31509cf8-5e1b-4bc6-919e-cb05bc3d0d17"
+      },
+      "occurrence": 0,
+      "title": "Mixed Capture A",
+      "url": "http://127.0.0.1:56784/A"
+    },
+    {
+      "error": null,
+      "key": {
+        "annotation_manifest": "blake3:f5d3263ea61d591c554bf133187b1786489d73915516ac425016321935252961",
+        "graph": "4f150aff-f5b8-4dd8-8553-63b41b43276e",
+        "node": "d5a16b8e-7f11-4ef9-b9de-b66693c92e70",
+        "session": "31509cf8-5e1b-4bc6-919e-cb05bc3d0d17"
+      },
+      "occurrence": 0,
+      "title": "Mixed Capture B",
+      "url": "http://127.0.0.1:56784/B"
+    }
+  ],
+  "entries": [],
+  "generation": "92bbfb19-1c88-4b1c-8746-9459b12add58",
+  "readers": [
+    {
+      "content": {
+        "captured_at_ms": 1792875438741,
+        "origin": "http://127.0.0.1:56784/A",
+        "raw_manifest": "blake3:7cc9267a86f52cbe7873920c5525e06d3b4f8a9e94a463711e3b498e5b499e59",
+        "text": "The Juniper archive's recovery phrase is violet lantern.",
+        "text_hash": "blake3:7d51f2ed929706e8a8d24f17da016384ac94f3ab88c95054fb8658e6a1fa5399",
+        "title": "Mixed Capture A"
+      },
+      "engine": "turnstone.saved-source",
+      "error": null,
+      "node": "d0a5d672-5dcf-425c-b4c0-76127171130f",
+      "phase": "Ready",
+      "rendered_document": {
+        "address": "mere://saved-source/31509cf8-5e1b-4bc6-919e-cb05bc3d0d17/4f150aff-f5b8-4dd8-8553-63b41b43276e/c1e54b86-1637-4092-84ce-73dde6bde6dd/8ad09d8681fc7df64aa8e0fedbb31843159c968ecc4ab8280652118d51079a78/7d51f2ed929706e8a8d24f17da016384ac94f3ab88c95054fb8658e6a1fa5399?start=0&end=56",
+        "blocks": [
+          {
+            "Heading": {
+              "level": 1,
+              "spans": [
+                {
+                  "Text": "Mixed Capture A"
+                }
+              ]
+            }
+          },
+          {
+            "Paragraph": {
+              "spans": [
+                {
+                  "Text": "Saved from http://127.0.0.1:56784/A"
+                }
+              ]
+            }
+          },
+          {
+            "Paragraph": {
+              "spans": [
+                {
+                  "Text": "Captured 2026-10-24T20:57:18Z"
+                }
+              ]
+            }
+          },
+          {
+            "Paragraph": {
+              "spans": [
+                {
+                  "Text": "Saved version: 8ad09d8681fc"
+                }
+              ]
+            }
+          },
+          {
+            "Quote": {
+              "blocks": [
+                {
+                  "Paragraph": {
+                    "spans": [
+                      {
+                        "Strong": [
+                          {
+                            "Text": "The Juniper archive's recovery phrase is violet lantern."
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "Paragraph": {
+              "spans": [
+                {
+                  "Text": "The Juniper archive's recovery phrase is violet lantern."
+                }
+              ]
+            }
+          },
+          {
+            "Paragraph": {
+              "spans": [
+                {
+                  "Link": {
+                    "predicate": null,
+                    "spans": [
+                      {
+                        "Text": "Open original address"
+                      }
+                    ],
+                    "title": "Open original address",
+                    "url": "http://127.0.0.1:56784/A"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "content_type": "text/plain; profile=saved-source",
+        "diagnostics": [],
+        "lang": null,
+        "navigation": {
+          "anchors": [],
+          "block_count": 0,
+          "folds": []
+        },
+        "provenance": {
+          "canonical_uri": "mere://saved-source/31509cf8-5e1b-4bc6-919e-cb05bc3d0d17/4f150aff-f5b8-4dd8-8553-63b41b43276e/c1e54b86-1637-4092-84ce-73dde6bde6dd/8ad09d8681fc7df64aa8e0fedbb31843159c968ecc4ab8280652118d51079a78/7d51f2ed929706e8a8d24f17da016384ac94f3ab88c95054fb8658e6a1fa5399?start=0&end=56",
+          "fetched_at": null,
+          "source_kind": "turnstone.saved-source",
+          "source_label": "http://127.0.0.1:56784/A"
+        },
+        "title": "Mixed Capture A",
+        "trust": "Unknown"
+      },
+      "target": {
+        "key": {
+          "annotation_manifest": "blake3:8ad09d8681fc7df64aa8e0fedbb31843159c968ecc4ab8280652118d51079a78",
+          "graph": "4f150aff-f5b8-4dd8-8553-63b41b43276e",
+          "node": "c1e54b86-1637-4092-84ce-73dde6bde6dd",
+          "session": "31509cf8-5e1b-4bc6-919e-cb05bc3d0d17"
+        },
+        "selector": {
+          "end": 56,
+          "start": 0
+        },
+        "text_hash": "blake3:7d51f2ed929706e8a8d24f17da016384ac94f3ab88c95054fb8658e6a1fa5399"
+      },
+      "url": "mere://saved-source/31509cf8-5e1b-4bc6-919e-cb05bc3d0d17/4f150aff-f5b8-4dd8-8553-63b41b43276e/c1e54b86-1637-4092-84ce-73dde6bde6dd/8ad09d8681fc7df64aa8e0fedbb31843159c968ecc4ab8280652118d51079a78/7d51f2ed929706e8a8d24f17da016384ac94f3ab88c95054fb8658e6a1fa5399?start=0&end=56"
+    }
+  ],
+  "retained_admissions": [
+    {
+      "graph": "4f150aff-f5b8-4dd8-8553-63b41b43276e",
+      "manifest": "blake3:45ea9bc24519f7791689b075b3b74fd8cb4c3cbd35adb89f5c684d0508a470d0",
+      "node": "3f0f7b7b-4277-49cd-8ca4-6d5f310d116d",
+      "session": "31509cf8-5e1b-4bc6-919e-cb05bc3d0d17"
+    },
+    {
+      "graph": "4f150aff-f5b8-4dd8-8553-63b41b43276e",
+      "manifest": "blake3:48674921cc190ad421d84c8fb5ad3351b87ddb574d7a05afd476dde67f0e9773",
+      "node": "dd2f0317-8166-4368-8188-f5fe6eb9cbd8",
+      "session": "31509cf8-5e1b-4bc6-919e-cb05bc3d0d17"
+    }
+  ],
+  "retained_readers": [
+    {
+      "engine": "fleece.retained-clip",
+      "node": "3f0f7b7b-4277-49cd-8ca4-6d5f310d116d",
+      "rendered_document": {
+        "address": "mere://clip/45ea9bc24519f7791689b075b3b74fd8cb4c3cbd35adb89f5c684d0508a470d0",
+        "blocks": [
+          {
+            "Heading": {
+              "level": 1,
+              "spans": [
+                {
+                  "Text": "Redshank note"
+                }
+              ]
+            }
+          },
+          {
+            "Paragraph": {
+              "spans": [
+                {
+                  "Text": "Saved from the embedded listener: café → harbor.\nKeep this timed note."
+                }
+              ]
+            }
+          },
+          {
+            "Badge": {
+              "text": "Source recording unavailable in this clip"
+            }
+          },
+          {
+            "MetadataRow": {
+              "label": "Source anchor (milliseconds)",
+              "value": "file:///Users/markik/Code/output/redshank-text-retention-20261020/runtime/origin-recording.wav"
+            }
+          },
+          {
+            "MetadataRow": {
+              "label": "Original note position",
+              "value": "1.250 seconds"
+            }
+          },
+          {
+            "Paragraph": {
+              "spans": [
+                {
+                  "Link": {
+                    "predicate": null,
+                    "spans": [
+                      {
+                        "Text": "Export selected clip"
+                      }
+                    ],
+                    "title": null,
+                    "url": "mere://clip/45ea9bc24519f7791689b075b3b74fd8cb4c3cbd35adb89f5c684d0508a470d0/export"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "content_type": "application/vnd.mere.clip+json",
+        "diagnostics": [],
+        "lang": null,
+        "navigation": {
+          "anchors": [],
+          "block_count": 0,
+          "folds": []
+        },
+        "provenance": {
+          "canonical_uri": "mere://clip/45ea9bc24519f7791689b075b3b74fd8cb4c3cbd35adb89f5c684d0508a470d0",
+          "fetched_at": null,
+          "source_kind": "fleece.retained-clip",
+          "source_label": null
+        },
+        "title": "Redshank note",
+        "trust": "Unknown"
+      }
+    },
+    {
+      "engine": "fleece.retained-clip",
+      "node": "dd2f0317-8166-4368-8188-f5fe6eb9cbd8",
+      "rendered_document": {
+        "address": "mere://clip/48674921cc190ad421d84c8fb5ad3351b87ddb574d7a05afd476dde67f0e9773",
+        "blocks": [
+          {
+            "Heading": {
+              "level": 1,
+              "spans": [
+                {
+                  "Text": "Knot selection"
+                }
+              ]
+            }
+          },
+          {
+            "Paragraph": {
+              "spans": [
+                {
+                  "Text": "The Pelican observatory's access word is café."
+                }
+              ]
+            }
+          },
+          {
+            "MetadataRow": {
+              "label": "Source anchor (utf8-bytes)",
+              "value": "file:///Users/markik/Code/output/turnstone-retained-embedding-20261020/knot-producer/source/selected.djot"
+            }
+          },
+          {
+            "MetadataRow": {
+              "label": "Original selection",
+              "value": "The Pelican observatory's access word is café."
+            }
+          },
+          {
+            "Paragraph": {
+              "spans": [
+                {
+                  "Link": {
+                    "predicate": null,
+                    "spans": [
+                      {
+                        "Text": "Export selected clip"
+                      }
+                    ],
+                    "title": null,
+                    "url": "mere://clip/48674921cc190ad421d84c8fb5ad3351b87ddb574d7a05afd476dde67f0e9773/export"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "content_type": "application/vnd.mere.clip+json",
+        "diagnostics": [],
+        "lang": null,
+        "navigation": {
+          "anchors": [],
+          "block_count": 0,
+          "folds": []
+        },
+        "provenance": {
+          "canonical_uri": "mere://clip/48674921cc190ad421d84c8fb5ad3351b87ddb574d7a05afd476dde67f0e9773",
+          "fetched_at": null,
+          "source_kind": "fleece.retained-clip",
+          "source_label": null
+        },
+        "title": "Knot selection",
+        "trust": "Unknown"
+      }
+    }
+  ],
+  "session": "31509cf8-5e1b-4bc6-919e-cb05bc3d0d17",
+  "status": ""
+}

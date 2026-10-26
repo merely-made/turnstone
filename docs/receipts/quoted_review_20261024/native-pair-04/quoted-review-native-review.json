@@ -1,0 +1,33 @@
+{
+  "result": "pass",
+  "cases": {
+    "fused": {
+      "cross": {
+        "retained_set": "blake3:bfe51ded56c33198390ee443f0373c8839000b70eb6955785151bb5d64c9e0c6",
+        "sealed_warm_cold_equal": true,
+        "fixed_count": 3
+      },
+      "missing": {
+        "retained_set": "blake3:b6e44985a0112e67eb8acaa950139cee987e279fe64c93477f2ff934fe7b9fd0",
+        "sealed_warm_cold_equal": true,
+        "fixed_count": 1
+      },
+      "conflict": {
+        "retained_set": "blake3:44fce1e07d2bef9e1eebf69dabfaf7362ef02e22e18b9b1fcaad9b1a9b39773c",
+        "sealed_warm_cold_equal": true,
+        "fixed_count": 1
+      },
+      "reduced": {
+        "retained_set": "blake3:fac6c94d6348a24d8aca30b203e1670e1075cd5179ea4d5e7805b591646ab618",
+        "sealed_warm_cold_equal": true,
+        "fixed_count": 1
+      },
+      "fresh_cold_cross": {
+        "retained_set": "blake3:bfe51ded56c33198390ee443f0373c8839000b70eb6955785151bb5d64c9e0c6",
+        "fixed_count": 3,
+        "sealed_equal": true
+      }
+    }
+  },
+  "boundary": "Additional question-plan, exact claim-slot and sealed-artifact checks. Native source absence, citations and semantics require the unchanged frozen checks and recorded visual review."
+}

@@ -1,0 +1,421 @@
+{
+  "result": "pass",
+  "contract": "distillery.quoted-review/v7",
+  "supplier_pins": {
+    "eidetic": "56601d9cb0c4901fd352bc789ce0ab53b5b6edd6",
+    "esp": "7955994686c07535417803d041a5aa95dd3ec4f1",
+    "knot": "e3daea0949011a4600fda9c9b721a84140bf7964",
+    "cleromancy": "65127281903d98eb4598b57caa99085231c25fe1",
+    "gemot": "16678ab1c91cde1e0c973b368b422eb46b1a3364",
+    "murm": "5f84b465d3eb561fa4613580e62e1423bee6ca7a",
+    "mere": "5bfde191655273619bd10fd54393c45f036384a7",
+    "turnstone": "7f0fb58d2f5ad5565c5d11d558bfe1e365e13cfb"
+  },
+  "frozen_cases_sha256": "b91de4627aee873389066f4a8ed814fe4faff85cf1c8a3ae1d8e74f988d27ea2",
+  "software_checks": {
+    "eidetic": 20,
+    "resident": 46,
+    "djinn": 8,
+    "ordinary_routes": 4,
+    "turnstone_inference": 9,
+    "reader_probe": 1,
+    "total_distinct": 88,
+    "profile_followup_resident_djinn_repeated": 53,
+    "final_resident_djinn_with_tie_regression": 54
+  },
+  "headless": {
+    "first": {
+      "exit_code": 0,
+      "elapsed_seconds": 406.63462460017763,
+      "session_mismatch": false
+    },
+    "profile_repeat": {
+      "exit_code": 0,
+      "elapsed_seconds": 298.0260733580217,
+      "session_mismatch": false
+    },
+    "final_stable_tie": {
+      "exit_code": 0,
+      "elapsed_seconds": 283.28885263600387,
+      "session_mismatch": false
+    },
+    "semantic": {
+      "result": "pass",
+      "cases": {
+        "cross": {
+          "result": "pass",
+          "protocol_defaults_applied": [],
+          "claims": 3,
+          "status": [
+            "supported",
+            "supported",
+            "supported"
+          ],
+          "checked_quotes": 3,
+          "sources": [
+            "capture",
+            "knot",
+            "note"
+          ],
+          "semantic_review": "unreviewed",
+          "raw_output": "blake3:4e321b35ca372a23f65badb2f5094fa2516309b15d9b4dc3eeba46034878399e"
+        },
+        "missing": {
+          "result": "pass",
+          "protocol_defaults_applied": [
+            "recall.citations=[]"
+          ],
+          "claims": 1,
+          "status": [
+            "insufficient"
+          ],
+          "checked_quotes": 0,
+          "sources": [],
+          "semantic_review": "unreviewed",
+          "raw_output": "blake3:2fa67715b0c2134c6abd1a5dc98f3c9bd71c85cc1615371549dbba55334850e9"
+        },
+        "conflict": {
+          "result": "pass",
+          "protocol_defaults_applied": [],
+          "claims": 1,
+          "status": [
+            "conflicting"
+          ],
+          "checked_quotes": 2,
+          "sources": [
+            "capture",
+            "control"
+          ],
+          "semantic_review": "unreviewed",
+          "raw_output": "blake3:e2e22cb76244bef89e5b1d05fd932b9114946e1b4c96a0e3c728febfc72803bb"
+        },
+        "reduced": {
+          "result": "pass",
+          "protocol_defaults_applied": [
+            "recall.citations=[]"
+          ],
+          "claims": 1,
+          "status": [
+            "insufficient"
+          ],
+          "checked_quotes": 0,
+          "sources": [],
+          "semantic_review": "unreviewed",
+          "raw_output": "blake3:b28621e5e831b34677fa1ca769c0b246df019f836e37742951e54460cda33b5d"
+        }
+      },
+      "negative_controls": {
+        "missing_nonempty_citation": "rejected",
+        "missing_null_citations": "rejected",
+        "reduced_nonempty_citation": "rejected",
+        "reduced_null_citations": "rejected"
+      },
+      "unchanged_checker_sha256": "f3a0e939cef9ac3bf85f80cb9d1e984ee40d94a0757cf6d4c6c6d55e23b88594",
+      "cases_sha256": "b91de4627aee873389066f4a8ed814fe4faff85cf1c8a3ae1d8e74f988d27ea2",
+      "boundary": "Same frozen rubric; decode omitted citations as [] per RecallEvidence serde(default,skip_serializing_if=Vec::is_empty). Raw files, model output and support remain unchanged. Any incomplete case still blocks headed checks."
+    },
+    "input_binding": "pass",
+    "shape": "pass",
+    "numerical_health": {
+      "result": "pass",
+      "cases": {
+        "cross": {
+          "prompt": "blake3:22f56f65b3b963c4422e6b6b06fdb6227fdfa3632cc3e6c3485c46b21e62501b",
+          "checked_rows": 9,
+          "invalid_rows": 0,
+          "prefix_recomputations": 0,
+          "failed_recoveries": 0
+        },
+        "missing": {
+          "prompt": "blake3:75aefc86bdeb5432d5139557e4e4a068cec8ad44c816690b202eeca569b1a065",
+          "checked_rows": 3,
+          "invalid_rows": 0,
+          "prefix_recomputations": 0,
+          "failed_recoveries": 0
+        },
+        "conflict": {
+          "prompt": "blake3:7fa6c525750cd39526302ea305bf9409cf962470d6244706ca03b7589e443e1e",
+          "checked_rows": 5,
+          "invalid_rows": 0,
+          "prefix_recomputations": 0,
+          "failed_recoveries": 0
+        },
+        "reduced": {
+          "prompt": "blake3:ac2d1daba8d8713fd69009a73660689f6fa8f89d485df397a177529741c59ce0",
+          "checked_rows": 2,
+          "invalid_rows": 0,
+          "prefix_recomputations": 0,
+          "failed_recoveries": 0
+        }
+      },
+      "total_observed_invalid_rows": 0,
+      "total_prefix_recomputations": 0,
+      "boundary": "Content-free score observations for this cohort. No recovery-needed conclusion is drawn from suppressed logs; all four logged requests are required. Recomputed rows stay inside the same original token, deadline and model budgets. Frozen semantics remains separate."
+    }
+  },
+  "native": {
+    "completion": {
+      "result": "pass",
+      "modes": [
+        "fused"
+      ]
+    },
+    "semantic_sources_process_reopen": {
+      "result": "pass",
+      "cases": {
+        "fused": {
+          "cross": {
+            "claims": 3,
+            "status": [
+              "supported",
+              "supported",
+              "supported"
+            ],
+            "checked_quotes": 3,
+            "sources": [
+              "capture",
+              "knot",
+              "note"
+            ],
+            "semantic_review": "unreviewed",
+            "raw_output": "blake3:4e321b35ca372a23f65badb2f5094fa2516309b15d9b4dc3eeba46034878399e"
+          },
+          "missing": {
+            "claims": 1,
+            "status": [
+              "insufficient"
+            ],
+            "checked_quotes": 0,
+            "sources": [],
+            "semantic_review": "unreviewed",
+            "raw_output": "blake3:2fa67715b0c2134c6abd1a5dc98f3c9bd71c85cc1615371549dbba55334850e9"
+          },
+          "conflict": {
+            "claims": 1,
+            "status": [
+              "conflicting"
+            ],
+            "checked_quotes": 2,
+            "sources": [
+              "capture",
+              "control"
+            ],
+            "semantic_review": "unreviewed",
+            "raw_output": "blake3:e2e22cb76244bef89e5b1d05fd932b9114946e1b4c96a0e3c728febfc72803bb"
+          },
+          "reduced": {
+            "claims": 1,
+            "status": [
+              "insufficient"
+            ],
+            "checked_quotes": 0,
+            "sources": [],
+            "semantic_review": "unreviewed",
+            "raw_output": "blake3:bc1cc911050605b9044556e7448d0b000bfa119dd0758486084ee2e9ee887a96"
+          },
+          "fresh_cold_cross": {
+            "claims": 3,
+            "status": [
+              "supported",
+              "supported",
+              "supported"
+            ],
+            "checked_quotes": 3,
+            "sources": [
+              "capture",
+              "knot",
+              "note"
+            ],
+            "semantic_review": "unreviewed",
+            "raw_output": "blake3:4e321b35ca372a23f65badb2f5094fa2516309b15d9b4dc3eeba46034878399e"
+          }
+        }
+      },
+      "distinct_processes": 4,
+      "captures": [
+        "fused/warm/reduced_answer.png",
+        "fused/warm/explicit_scope.png",
+        "fused/warm/03_mixed_sources.png",
+        "fused/warm/cross_warm_claim_1_citation.png",
+        "fused/warm/cross_answer.png",
+        "fused/warm/missing_answer.png",
+        "fused/warm/02_capture_B.png",
+        "fused/warm/conflict_answer.png",
+        "fused/warm/01_capture_A.png",
+        "fused/warm/cross_raw.png",
+        "fused/warm/cross_warm_claim_2_citation.png",
+        "fused/warm/cross_warm_claim_3_citation.png",
+        "fused/cold/cross_answer.png",
+        "fused/cold/cross_cold_claim_3_citation.png",
+        "fused/cold/cross_cold_claim_2_citation.png",
+        "fused/cold/reduced_historical_answer.png",
+        "fused/cold/cold_scope.png",
+        "fused/cold/cross_cold_claim_1_citation.png",
+        "fused/cold/cross_historical_answer.png",
+        "fused/cold/conflict_historical_answer.png",
+        "fused/cold/missing_historical_answer.png"
+      ],
+      "scope": "Frozen fixture and exact quotation/provenance checks; semantic interpretations remain unreviewed until the separate recorded visual/rubric review.",
+      "protocol_default": "Only omitted recall.citations decodes to []; raw files, support, native assertions and cases unchanged.",
+      "original_native_checker_sha256": "f3a0e939cef9ac3bf85f80cb9d1e984ee40d94a0757cf6d4c6c6d55e23b88594",
+      "native_binding_checker_sha256": "e01bf2ecf2a035a64e6a549679e193ec70fe432d5bd6e3c5a13744f1148a80b2",
+      "reader_identity_policy": "Saved-reader target.key.node identifies the admitted source; top-level node identifies the reader view. Retained-reader node remains its source identity."
+    },
+    "sealed_facts_reviews_support": {
+      "result": "pass",
+      "cases": {
+        "fused": {
+          "cross": {
+            "retained_set": "blake3:bfe51ded56c33198390ee443f0373c8839000b70eb6955785151bb5d64c9e0c6",
+            "sealed_warm_cold_equal": true,
+            "fixed_count": 3
+          },
+          "missing": {
+            "retained_set": "blake3:b6e44985a0112e67eb8acaa950139cee987e279fe64c93477f2ff934fe7b9fd0",
+            "sealed_warm_cold_equal": true,
+            "fixed_count": 1
+          },
+          "conflict": {
+            "retained_set": "blake3:44fce1e07d2bef9e1eebf69dabfaf7362ef02e22e18b9b1fcaad9b1a9b39773c",
+            "sealed_warm_cold_equal": true,
+            "fixed_count": 1
+          },
+          "reduced": {
+            "retained_set": "blake3:fac6c94d6348a24d8aca30b203e1670e1075cd5179ea4d5e7805b591646ab618",
+            "sealed_warm_cold_equal": true,
+            "fixed_count": 1
+          },
+          "fresh_cold_cross": {
+            "retained_set": "blake3:bfe51ded56c33198390ee443f0373c8839000b70eb6955785151bb5d64c9e0c6",
+            "fixed_count": 3,
+            "sealed_equal": true
+          }
+        }
+      },
+      "boundary": "Additional question-plan, exact claim-slot and sealed-artifact checks. Native source absence, citations and semantics require the unchanged frozen checks and recorded visual review."
+    },
+    "numerical_health": {
+      "result": "pass",
+      "generations": {
+        "mixed-0-cross.json": {
+          "prompt": "blake3:22f56f65b3b963c4422e6b6b06fdb6227fdfa3632cc3e6c3485c46b21e62501b",
+          "checked_rows": 9,
+          "invalid_rows": 0,
+          "prefix_recomputations": 0,
+          "failed_recoveries": 0
+        },
+        "mixed-0-missing.json": {
+          "prompt": "blake3:75aefc86bdeb5432d5139557e4e4a068cec8ad44c816690b202eeca569b1a065",
+          "checked_rows": 3,
+          "invalid_rows": 0,
+          "prefix_recomputations": 0,
+          "failed_recoveries": 0
+        },
+        "mixed-0-conflict.json": {
+          "prompt": "blake3:7fa6c525750cd39526302ea305bf9409cf962470d6244706ca03b7589e443e1e",
+          "checked_rows": 5,
+          "invalid_rows": 0,
+          "prefix_recomputations": 0,
+          "failed_recoveries": 0
+        },
+        "mixed-0-reduced.json": {
+          "prompt": "blake3:ac2d1daba8d8713fd69009a73660689f6fa8f89d485df397a177529741c59ce0",
+          "checked_rows": 2,
+          "invalid_rows": 0,
+          "prefix_recomputations": 0,
+          "failed_recoveries": 0
+        },
+        "mixed-1-cross.json": {
+          "prompt": "blake3:22f56f65b3b963c4422e6b6b06fdb6227fdfa3632cc3e6c3485c46b21e62501b",
+          "checked_rows": 9,
+          "invalid_rows": 0,
+          "prefix_recomputations": 0,
+          "failed_recoveries": 0
+        }
+      },
+      "observed_invalid_rows": 0,
+      "prefix_recomputations": 0,
+      "boundary": "Five logged native generations. Historical reopen does not generate; no recovery-required conclusion inferred from missing logs."
+    },
+    "phases": [
+      {
+        "snapshot_shutdown_seconds": 86.85919888410717,
+        "snapshot_shutdown_limit_seconds": 300,
+        "phase": 0,
+        "resident_pid": 56609,
+        "product_pids": [
+          56685
+        ],
+        "clean_shutdown": true,
+        "endpoint_unreachable": true,
+        "origin_refused": true,
+        "transfer_absent": false,
+        "producer_paths_absent": [
+          "/Users/markik/Code/output/turnstone-retained-embedding-20261020/knot-producer/source/selected.djot",
+          "/Users/markik/Code/output/turnstone-retained-embedding-20261020/knot-producer/source/selected.djot",
+          "/Users/markik/Code/output/redshank-text-retention-20261020/runtime/origin-recording.wav"
+        ]
+      },
+      {
+        "snapshot_shutdown_seconds": 160.84661191911437,
+        "snapshot_shutdown_limit_seconds": 300,
+        "phase": 1,
+        "resident_pid": 57488,
+        "product_pids": [
+          57506
+        ],
+        "clean_shutdown": true,
+        "endpoint_unreachable": true,
+        "origin_refused": true,
+        "transfer_absent": true,
+        "producer_paths_absent": [
+          "/Users/markik/Code/output/turnstone-retained-embedding-20261020/knot-producer/source/selected.djot",
+          "/Users/markik/Code/output/turnstone-retained-embedding-20261020/knot-producer/source/selected.djot",
+          "/Users/markik/Code/output/redshank-text-retention-20261020/runtime/origin-recording.wav"
+        ]
+      }
+    ],
+    "visual_review": "native-pair-04/visual-review.json"
+  },
+  "preserved_failures": {
+    "v6": "failed-v6/candidate-01/wire-default-review.json: all4 finished,semantic0/4",
+    "native01": "correct first answer and reader opened, focused-reader observation failed; no cold acceptance",
+    "native02": "all4 warm answers/12nonblank captures pass;90sec snapshot timeout; no cold acceptance",
+    "native03": "three warm cases pass; conflict selects amber, scenarioRESULTfail; no cold acceptance"
+  },
+  "audit_profile_and_budget": {
+    "result": "diagnosed",
+    "native_pair_02": "Warm4/4 and12captures pass;90-second snapshot/shutdown timeout; no cold launch.",
+    "profile_change": "Optimize curve25519-dalek and ed25519-dalek at3 in dev/test; no verification bypass.",
+    "old_profile_diagnostic": "Copied-store snapshot still incomplete at240 seconds; process terminated by diagnostic bound.",
+    "optimized_profile_diagnostic": {
+      "snapshot_written": true,
+      "clean_shutdown_receipt": {
+        "clean_shutdown": true,
+        "phase": 1,
+        "pid": 49538
+      },
+      "ready_to_snapshot_seconds": 98.11529970169067,
+      "test_exit": 101,
+      "expected_late_failure": "Diagnostic-only snapshot0 placeholder and no fresh cold request; final acceptance assertions intentionally not satisfied. This diagnostic is not a headed qualification."
+    },
+    "qualification_followup": {
+      "snapshot_shutdown_limit_seconds": 300,
+      "per_answer_timeout_seconds": 900,
+      "per_answer_token_limit": 1024,
+      "source_model_cases_unchanged": true
+    },
+    "sample_files": [
+      "sample-snapshot-now.txt",
+      "sample-profile-5.txt"
+    ]
+  },
+  "boundaries": [
+    "At most8 unique candidate handles, short extractive text/combined conflict wording within384encodedbytes; grammar budget admission before generation.",
+    "Model relevance and agreement remain SemanticReview::Unreviewed; four synthetic cases are empirical qualification, not general entailment proof.",
+    "Original checker/failure preserved. Only omitted citations decode to[]; no raw/support/modeltext repair.",
+    "Native binding checker fixes reader-view/source alias only; semantic function byte-identical to original.",
+    "Headed fused scripted native flow, not independent OSaccessibility/manual-input acceptance.",
+    "Only public synthetic reports/captures/sources included; no executables, weights, library stores, wallet keys or profile databases."
+  ]
+}

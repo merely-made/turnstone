@@ -1,0 +1,37 @@
+[
+  {
+    "name": "distillery",
+    "version": "0.0.1",
+    "source": "git+https://github.com/merely-made/mere.git?branch=main#7b01f4685a7b916d6be0d86bfa7d9ec5dd0797ee"
+  },
+  {
+    "name": "eidetic",
+    "version": "0.0.2",
+    "source": "git+https://github.com/merely-made/eidetic.git?rev=44f0664748238d7a96603925a0268caf60e091aa#44f0664748238d7a96603925a0268caf60e091aa"
+  },
+  {
+    "name": "esp",
+    "version": "0.1.0",
+    "source": "git+https://github.com/merely-made/esp.git?rev=aaae5d19365adcfa0b0292137eddd71edcb39337#aaae5d19365adcfa0b0292137eddd71edcb39337"
+  },
+  {
+    "name": "knot-document",
+    "version": "0.0.1",
+    "source": "git+https://github.com/merely-made/knot-editor.git?branch=main#a23664ae1915d0daf723aaa80618f2933102018d"
+  },
+  {
+    "name": "knot-editor",
+    "version": "0.0.3",
+    "source": "git+https://github.com/merely-made/knot-editor.git?branch=main#a23664ae1915d0daf723aaa80618f2933102018d"
+  },
+  {
+    "name": "mere-source-edit",
+    "version": "0.1.0",
+    "source": "git+https://github.com/merely-made/mere.git?rev=70deef2c8cf3d3410ae35b496a9396514070b24f#70deef2c8cf3d3410ae35b496a9396514070b24f"
+  },
+  {
+    "name": "muniment",
+    "version": "0.1.2",
+    "source": "git+https://github.com/merely-made/eidetic.git?rev=44f0664748238d7a96603925a0268caf60e091aa#44f0664748238d7a96603925a0268caf60e091aa"
+  }
+]

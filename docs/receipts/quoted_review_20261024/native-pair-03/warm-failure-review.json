@@ -1,0 +1,89 @@
+{
+  "result": "gate_not_passed",
+  "cases": {
+    "cross": {
+      "result": "pass",
+      "semantic": {
+        "claims": 3,
+        "status": [
+          "supported",
+          "supported",
+          "supported"
+        ],
+        "checked_quotes": 3,
+        "sources": [
+          "capture",
+          "knot",
+          "note"
+        ],
+        "semantic_review": "unreviewed",
+        "raw_output": "blake3:4e321b35ca372a23f65badb2f5094fa2516309b15d9b4dc3eeba46034878399e"
+      },
+      "shape": {
+        "claims": 3,
+        "whole_raw_json": true,
+        "exact_candidate_links": 3
+      },
+      "retained_set": "blake3:bfe51ded56c33198390ee443f0373c8839000b70eb6955785151bb5d64c9e0c6",
+      "tokens": 700
+    },
+    "missing": {
+      "result": "pass",
+      "semantic": {
+        "claims": 1,
+        "status": [
+          "insufficient"
+        ],
+        "checked_quotes": 0,
+        "sources": [],
+        "semantic_review": "unreviewed",
+        "raw_output": "blake3:2fa67715b0c2134c6abd1a5dc98f3c9bd71c85cc1615371549dbba55334850e9"
+      },
+      "shape": {
+        "claims": 1,
+        "whole_raw_json": true,
+        "exact_candidate_links": 0
+      },
+      "retained_set": "blake3:b6e44985a0112e67eb8acaa950139cee987e279fe64c93477f2ff934fe7b9fd0",
+      "tokens": 228
+    },
+    "conflict": {
+      "result": "fail",
+      "semantic": {
+        "error": "AssertionError()",
+        "observed": [
+          "supported"
+        ]
+      },
+      "shape": {
+        "claims": 1,
+        "whole_raw_json": true,
+        "exact_candidate_links": 1
+      },
+      "retained_set": "blake3:44fce1e07d2bef9e1eebf69dabfaf7362ef02e22e18b9b1fcaad9b1a9b39773c",
+      "tokens": 263
+    },
+    "reduced": {
+      "result": "pass",
+      "semantic": {
+        "claims": 1,
+        "status": [
+          "insufficient"
+        ],
+        "checked_quotes": 0,
+        "sources": [],
+        "semantic_review": "unreviewed",
+        "raw_output": "blake3:bc1cc911050605b9044556e7448d0b000bfa119dd0758486084ee2e9ee887a96"
+      },
+      "shape": {
+        "claims": 1,
+        "whole_raw_json": true,
+        "exact_candidate_links": 0
+      },
+      "retained_set": "blake3:fac6c94d6348a24d8aca30b203e1670e1075cd5179ea4d5e7805b591646ab618",
+      "tokens": 176
+    }
+  },
+  "cold_allowed": false,
+  "boundary": "All4 complete/input/shape valid; conflictsemanticfails. NativewarmRESULTfail; no cold launch. Rawoutputpreserved."
+}

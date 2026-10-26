@@ -1,0 +1,26 @@
+{
+  "chosen": [
+    {
+      "key": {
+        "annotation_manifest": "blake3:8ad09d8681fc7df64aa8e0fedbb31843159c968ecc4ab8280652118d51079a78",
+        "graph": "4f150aff-f5b8-4dd8-8553-63b41b43276e",
+        "node": "c1e54b86-1637-4092-84ce-73dde6bde6dd",
+        "session": "31509cf8-5e1b-4bc6-919e-cb05bc3d0d17"
+      },
+      "selector": null,
+      "text_hash": "blake3:7d51f2ed929706e8a8d24f17da016384ac94f3ab88c95054fb8658e6a1fa5399"
+    },
+    {
+      "clip": {
+        "graph": "4f150aff-f5b8-4dd8-8553-63b41b43276e",
+        "manifest": "blake3:48674921cc190ad421d84c8fb5ad3351b87ddb574d7a05afd476dde67f0e9773",
+        "node": "dd2f0317-8166-4368-8188-f5fe6eb9cbd8",
+        "session": "31509cf8-5e1b-4bc6-919e-cb05bc3d0d17"
+      },
+      "selector": null,
+      "text_hash": "blake3:110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275"
+    }
+  ],
+  "session": "31509cf8-5e1b-4bc6-919e-cb05bc3d0d17",
+  "view": "b6eaeb71-1731-4d41-8e14-b78cb1078f4b"
+}

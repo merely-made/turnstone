@@ -1,0 +1,48 @@
+{
+  "result": "gate_not_passed",
+  "semantic_cases": {
+    "total": 15,
+    "passed": 8,
+    "failed": 7,
+    "incomplete": 0
+  },
+  "admission_negatives": {
+    "total": 1,
+    "passed": 1
+  },
+  "complete_raw_documents": 15,
+  "contract_input_bindings": 15,
+  "score_events": 15,
+  "invalid_rows": 0,
+  "prefix_recomputations": 0,
+  "model_sessions": [
+    "blake3:0960d64d68cf80b35a5781e3daeddfcf453f30579861e02af8d93a535db58d3d"
+  ],
+  "negative_controls": [
+    "paraphrases/missing: flipped relevance rejected",
+    "paraphrases/reduced: flipped relevance rejected",
+    "qualifiers/missing: flipped relevance rejected",
+    "qualifiers/conflict: flipped relevance rejected",
+    "agreement/missing: flipped relevance rejected",
+    "agreement/reduced: flipped relevance rejected",
+    "long_passages/cross: flipped relevance rejected",
+    "long_passages/missing: flipped relevance rejected"
+  ],
+  "limits": "Lexical synthetic PageText probe only; no new producer, fused recall, headed or cold-reopen qualification. Retained review is model authored and unreviewed. Admission panic comes from the probe unwrap, not an application crash."
+}
+paraphrases cross fail [(0, [{'kind': 'candidate_relevance', 'expected_handles': [3], 'actual_handles': [1, 2]}, {'kind': 'agreement', 'expected': 'single', 'actual': 'different'}, {'kind': 'status', 'expected': 'supported', 'actual': 'conflicting'}, {'kind': 'unsupported_selected_source', 'selected': ['knot', 'note']}]), (1, [{'kind': 'candidate_relevance', 'expected_handles': [1], 'actual_handles': [1, 2]}, {'kind': 'agreement', 'expected': 'single', 'actual': 'different'}, {'kind': 'status', 'expected': 'supported', 'actual': 'conflicting'}, {'kind': 'unsupported_selected_source', 'selected': ['knot', 'note']}]), (2, [{'kind': 'candidate_relevance', 'expected_handles': [2], 'actual_handles': [1, 2]}, {'kind': 'agreement', 'expected': 'single', 'actual': 'different'}, {'kind': 'status', 'expected': 'supported', 'actual': 'conflicting'}, {'kind': 'unsupported_selected_source', 'selected': ['knot', 'note']}])]  
+paraphrases missing pass []  
+paraphrases conflict fail [(0, [{'kind': 'candidate_relevance', 'expected_handles': [1, 2], 'actual_handles': [1]}, {'kind': 'agreement', 'expected': 'different', 'actual': 'single'}, {'kind': 'status', 'expected': 'conflicting', 'actual': 'supported'}, {'kind': 'conflict_does_not_show_distinct_values', 'selected': ['capture']}])]  
+paraphrases reduced pass []  
+qualifiers cross fail [(0, [{'kind': 'candidate_relevance', 'expected_handles': [1], 'actual_handles': []}, {'kind': 'agreement', 'expected': 'single', 'actual': 'none'}, {'kind': 'status', 'expected': 'supported', 'actual': 'insufficient'}, {'kind': 'unsupported_selected_source', 'selected': []}])]  
+qualifiers missing pass []  
+qualifiers conflict pass []  
+qualifiers reduced fail [(0, [{'kind': 'candidate_relevance', 'expected_handles': [], 'actual_handles': [1]}, {'kind': 'agreement', 'expected': 'none', 'actual': 'single'}, {'kind': 'status', 'expected': 'insufficient', 'actual': 'supported'}, {'kind': 'insufficient_has_links'}])]  
+agreement cross fail [(0, [{'kind': 'agreement', 'expected': 'same', 'actual': 'different'}, {'kind': 'status', 'expected': 'supported', 'actual': 'conflicting'}, {'kind': 'unsupported_selected_source', 'selected': ['knot', 'capture']}])]  
+agreement missing pass []  
+agreement conflict fail [(0, [{'kind': 'candidate_relevance', 'expected_handles': [1, 2, 3], 'actual_handles': [1]}, {'kind': 'agreement', 'expected': 'different', 'actual': 'single'}, {'kind': 'status', 'expected': 'conflicting', 'actual': 'supported'}, {'kind': 'conflict_does_not_show_distinct_values', 'selected': ['control']}])]  
+agreement reduced pass []  
+long_passages cross pass []  
+long_passages missing pass []  
+long_passages reduced fail [(0, [{'kind': 'candidate_relevance', 'expected_handles': [], 'actual_handles': [1]}, {'kind': 'agreement', 'expected': 'none', 'actual': 'single'}, {'kind': 'status', 'expected': 'insufficient', 'actual': 'supported'}, {'kind': 'insufficient_has_links'}])]  
+long_conflict_admission conflict pass []  

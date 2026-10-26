@@ -1,0 +1,140 @@
+{
+  "run": "reduced",
+  "question": "What did the saved listener ask me to remember?",
+  "state": "finished",
+  "text": "{\"claims\":[{\"fact\":{\"id\":\"blake3:1b5f58c35079d846b68ccd8e8a07ad5a413f522beba2764f9bd08bb0ba0b25bb\",\"selector\":{\"start\":0,\"end\":46},\"text\":\"What did the saved listener ask me to remember\"},\"review\":{\"candidates\":[{\"handle\":1,\"requested\":\"What did the saved listener ask me to remember\",\"quote\":\"The Pelican observatory's access word is café.\",\"answers\":false},{\"handle\":2,\"requested\":\"What did the saved listener ask me to remember\",\"quote\":\"The Juniper archive's recovery phrase is violet lantern.\",\"answers\":false}],\"agreement\":\"none\"},\"status\":\"insufficient\",\"text\":\"The supplied evidence does not state What did the saved listener ask me to remember.\",\"evidence\":[]}]}",
+  "error": null,
+  "session": {
+    "session_id": "blake3:0960d64d68cf80b35a5781e3daeddfcf453f30579861e02af8d93a535db58d3d",
+    "prompt_template_hash": "blake3:9c222535ed31aadd676fc2f1beb16d0dd0402c76a9ee1398bc0c200c825103da"
+  },
+  "tokens": 194,
+  "continuations": [
+    {
+      "device": "device:d4ee38084c4f2195e28ee13ae372cff7",
+      "at_token": 0,
+      "reason": "ask",
+      "first_differing_token": null,
+      "compared_token_ids_hash": null
+    }
+  ],
+  "recall": {
+    "answer_format": "claim_support_v1",
+    "answer_contract": {
+      "method": "distillery.quoted-review/v7",
+      "question": "blake3:4fdd3091cc72eca943f830e9d7b39c08d847f55cf8e27a9f880d9ec229e6e8c0",
+      "prompt": "blake3:259d056898c5ccb521302cc8bcd8232e0a08810fffaa9839e075bed48a58dec8",
+      "context": "blake3:a168535e54b51fb6e3302b31a976d2817579fcda8c9f1273210788c1f7ff127d",
+      "max_claims": 1,
+      "output_grammar": "blake3:4dde44ef23bc0579341fd2ce353ed5d6e5f36b5df18c9e117e9b3e9572f946ac",
+      "requested_facts": {
+        "method": "eidetic.explicit-question-list/v1",
+        "question": "blake3:4fdd3091cc72eca943f830e9d7b39c08d847f55cf8e27a9f880d9ec229e6e8c0",
+        "facts": [
+          {
+            "id": "blake3:1b5f58c35079d846b68ccd8e8a07ad5a413f522beba2764f9bd08bb0ba0b25bb",
+            "selector": {
+              "start": 0,
+              "end": 46
+            },
+            "text": "What did the saved listener ask me to remember"
+          }
+        ]
+      }
+    },
+    "support": {
+      "requested_facts": "blake3:024f6e5b30c166d8fc2fbb06a3e22bce33c8e8d15f7ede41c2bc6bc3022a527d",
+      "method": "eidetic.claim-support/v1",
+      "raw_output": "blake3:037311128f68869578feb59dfa256dc745290e508d38613f08c7bffe103af810",
+      "semantic_review": "unreviewed",
+      "claims": [
+        {
+          "fact": {
+            "id": "blake3:1b5f58c35079d846b68ccd8e8a07ad5a413f522beba2764f9bd08bb0ba0b25bb",
+            "selector": {
+              "start": 0,
+              "end": 46
+            },
+            "text": "What did the saved listener ask me to remember"
+          },
+          "review": {
+            "candidates": [
+              {
+                "handle": 1,
+                "requested": "What did the saved listener ask me to remember",
+                "quote": "The Pelican observatory's access word is café.",
+                "answers": false
+              },
+              {
+                "handle": 2,
+                "requested": "What did the saved listener ask me to remember",
+                "quote": "The Juniper archive's recovery phrase is violet lantern.",
+                "answers": false
+              }
+            ],
+            "agreement": "none"
+          },
+          "status": "insufficient",
+          "text": "The supplied evidence does not state What did the saved listener ask me to remember.",
+          "evidence": [],
+          "issues": []
+        }
+      ],
+      "error": null
+    },
+    "scope": [
+      {
+        "kind": "page_text",
+        "source": "https://probe.test/capture"
+      },
+      {
+        "kind": "page_text",
+        "source": "https://probe.test/knot"
+      }
+    ],
+    "config": {
+      "chunk_chars": 512,
+      "max_passages": 4,
+      "min_quote_chars": 32,
+      "max_context_chars": 12000,
+      "max_corpus_chars": 1000000
+    },
+    "passages": [
+      {
+        "handle": 1,
+        "passage": {
+          "source": {
+            "kind": "page_text",
+            "source": "https://probe.test/knot"
+          },
+          "version": "blake3:110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+          "text_hash": "blake3:110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+          "selector": {
+            "start": 0,
+            "end": 46
+          },
+          "chunker": "mere.unicode-chunks/v1/512",
+          "text": "The Pelican observatory's access word is café."
+        }
+      },
+      {
+        "handle": 2,
+        "passage": {
+          "source": {
+            "kind": "page_text",
+            "source": "https://probe.test/capture"
+          },
+          "version": "blake3:7d51f2ed929706e8a8d24f17da016384ac94f3ab88c95054fb8658e6a1fa5399",
+          "text_hash": "blake3:7d51f2ed929706e8a8d24f17da016384ac94f3ab88c95054fb8658e6a1fa5399",
+          "selector": {
+            "start": 0,
+            "end": 56
+          },
+          "chunker": "mere.unicode-chunks/v1/512",
+          "text": "The Juniper archive's recovery phrase is violet lantern."
+        }
+      }
+    ],
+    "stale": []
+  }
+}

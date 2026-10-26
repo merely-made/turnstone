@@ -1,0 +1,21 @@
+{
+  "cases_sha256": "b91de4627aee873389066f4a8ed814fe4faff85cf1c8a3ae1d8e74f988d27ea2",
+  "checkpoint": "Qwen/Qwen2.5-1.5B-Instruct",
+  "revision": "989aa7980e4cf806f80c7fef2b1adb7bc71aa306",
+  "weights_sha256": "dd924a11b4c220f385b51ffa522daea7c9f3d850e31b162bb5661df483c6d3ee",
+  "format": "original f32 layered execution",
+  "host_capacity_budget_bytes": 3221225472,
+  "device_layer_payload_budget_bytes": 4294967296,
+  "case_timeout_seconds": 900,
+  "generated_token_limit": 1024,
+  "gate": "All four frozen answers must finish without timeout and pass the unchanged answer rubric and exact quotation/provenance verifier. A timeout sidecar always refuses headed acceptance.",
+  "memory_boundary": "Budgets cover retained Vec capacity and dense f32 layer payload, not total RSS or VRAM. Shared weights, KV, transient streamed layers, execution workspace, allocator overhead and other applications require additional capacity.",
+  "precision_boundary": "No checkpoint, weight format, prompt, sampling, expected claim count or semantic rubric changes.",
+  "runtime_profile": {
+    "file": "optimized-runtime.toml",
+    "sha256": "7ed6fb12d461f4b4bcec5bba79f0a23d47b3266118ceedf2e8f641c24ec3bbc8",
+    "boundary": "Final qualification optimizes the hot tensor/backend crates and SHA-256. Earlier diagnostic rates used only ESP opt-level 3, so they are not a controlled attribution of performance gains to caching alone."
+  },
+  "unchanged_answer_rubric_function_sha256": "617a22575793b5f33919a3f6cd4b15dc6b2d812da3ceeafccd3866fc957d642a",
+  "unchanged_probe_function_since_f6b41cc_sha256": "3ba8ee4d699a6c90c7f23e1af8ad2f8a91fa670ddca23820db5c1beaafa057ac"
+}

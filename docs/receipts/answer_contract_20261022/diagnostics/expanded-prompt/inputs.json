@@ -1,0 +1,51 @@
+{
+  "utc": "2026-10-23T04:27:28.327834+00:00",
+  "supplier_commit": "374351329f5ae6b296bd685b79e8fa44545db3c8",
+  "supplier_dirty_hashes": {},
+  "binary_sha256": "c12217265b50a3fd18bb51db6ebef451949da8aee351be60054509215f05682d",
+  "frozen_sha256": {
+    "inference_route": "c12217265b50a3fd18bb51db6ebef451949da8aee351be60054509215f05682d",
+    "verify_contract.py": "97aa38c6a07ad1e5a1277df26962d803b36fcbfd030973aa53b612d9dede96cf",
+    "case-freeze.json": "846dfad5b614c926f5bd8845d9b323eb5bb9267edf06bddf49c06c606b549f7d",
+    "verify_probe.py": "e93875eb35e02136038789415f5dfb272c2f491c407d6246322dc21fdbc9cd4d",
+    "run_probe.py": "2ff1c803c8810e61b0586fb75d855a743ee3e45d7f99a323d7ba9656af813e48",
+    "measurement-contract.json": "c7afda054b43cf757aa1179cc566e21afb9a191a72ebd537dae2ab1ad62ad91f",
+    "verify_native.py": "f3a0e939cef9ac3bf85f80cb9d1e984ee40d94a0757cf6d4c6c6d55e23b88594",
+    "optimized-runtime.toml": "7ed6fb12d461f4b4bcec5bba79f0a23d47b3266118ceedf2e8f641c24ec3bbc8",
+    "answer_contract.rs": "1d370a6388b5fab3153e7058538f1a0914ae9f6c753e8bf1097bef98500ddac3",
+    "cases.json": "b91de4627aee873389066f4a8ed814fe4faff85cf1c8a3ae1d8e74f988d27ea2"
+  },
+  "generation_model": {
+    "model_id": "Qwen/Qwen2.5-1.5B-Instruct",
+    "revision": "989aa7980e4cf806f80c7fef2b1adb7bc71aa306",
+    "artifacts": [
+      [
+        "config.json",
+        660,
+        "98d2ff8cc47488d08a2b0b3acf4eb99ef210779b42bd48605f6b8e36acdbf670"
+      ],
+      [
+        "tokenizer.json",
+        7031645,
+        "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539"
+      ],
+      [
+        "tokenizer_config.json",
+        7305,
+        "5b5d4f65d0acd3b2d56a35b56d374a36cbc1c8fa5cf3b3febbbfabf22f359583"
+      ],
+      [
+        "model.safetensors",
+        3087467144,
+        "dd924a11b4c220f385b51ffa522daea7c9f3d850e31b162bb5661df483c6d3ee"
+      ]
+    ]
+  },
+  "host_capacity_budget_bytes": 3221225472,
+  "device_layer_payload_budget_bytes": 4294967296,
+  "numerical_format": "original f32 layered execution",
+  "esp_opt_level": 3,
+  "runtime_optimization": "Explicit optimized-runtime.toml for hot tensor/backend crates and SHA-256; other local test orchestration remains unoptimized",
+  "case_timeout_seconds": 900,
+  "token_limit": 1024
+}

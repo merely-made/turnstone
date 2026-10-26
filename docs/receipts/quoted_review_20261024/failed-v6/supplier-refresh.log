@@ -1,0 +1,26 @@
+[codex/cross-source-answers-20261022 32ad024] Refresh retained candidate-review supplier pins
+ 2 files changed, 6 insertions(+), 6 deletions(-)
+To https://github.com/merely-made/esp.git
+   f92f5c1..32ad024  HEAD -> codex/cross-source-answers-20261022
+[codex/cross-source-answers-20261022 8465e35] Refresh retained candidate-review supplier pins
+ 2 files changed, 39 insertions(+), 39 deletions(-)
+To https://github.com/merely-made/knot-editor.git
+   4686132..8465e35  HEAD -> codex/cross-source-answers-20261022
+[codex/cross-source-answers-20261022 036fef2] Refresh retained candidate-review supplier pins
+ 2 files changed, 53 insertions(+), 53 deletions(-)
+To https://github.com/merely-made/cleromancy.git
+   a7e3cac..036fef2  HEAD -> codex/cross-source-answers-20261022
+[codex/cross-source-answers-20261022 29166ff] Refresh retained candidate-review supplier pins
+ 1 file changed, 13 insertions(+), 13 deletions(-)
+To https://github.com/merely-made/gemot.git
+   391c95b..29166ff  HEAD -> codex/cross-source-answers-20261022
+{
+  "eidetic": "2fd1722c2eea1bf203853ac4795b7e28d980b50b",
+  "mere": "09e135d3de727c9b0ad2bdab2663715d1f6d7017",
+  "turnstone": "4cd3dbc7f5b4a0b4218fbc59510c2aea000aaf3d",
+  "esp": "32ad02451f52e6a4408879f0cb0881b70d8e6984",
+  "knot": "8465e35b7cdacee8e7b17a15cf7112d4304e6806",
+  "cleromancy": "036fef2088aa02d831b6a5b3c0a457c24a309ab9",
+  "gemot": "29166ff62f449da8d89a1de3f6e76759d4c59e73",
+  "murm": "b266e38b91d35121040fac84944c6418a7a02bdf"
+}

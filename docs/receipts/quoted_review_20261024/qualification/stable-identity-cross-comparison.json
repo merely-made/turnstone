@@ -1,0 +1,6 @@
+{
+  "same_exact_generated_text": true,
+  "same_context_digest": true,
+  "same_prompt_digest": true,
+  "different_provenance": true
+}

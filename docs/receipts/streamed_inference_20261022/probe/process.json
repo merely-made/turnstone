@@ -1,0 +1,11 @@
+{
+  "pid": 70239,
+  "command": [
+    "/Users/markik/Code/output/streamed-inference-20261022/candidate-03/frozen/inference_route",
+    "probe_bounded_cross_source_answers",
+    "--exact",
+    "--ignored",
+    "--nocapture"
+  ],
+  "utc": "2026-10-22T22:35:49.213041+00:00"
+}

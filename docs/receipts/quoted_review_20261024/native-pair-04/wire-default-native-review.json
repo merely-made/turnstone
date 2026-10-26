@@ -1,0 +1,101 @@
+{
+  "result": "pass",
+  "cases": {
+    "fused": {
+      "cross": {
+        "claims": 3,
+        "status": [
+          "supported",
+          "supported",
+          "supported"
+        ],
+        "checked_quotes": 3,
+        "sources": [
+          "capture",
+          "knot",
+          "note"
+        ],
+        "semantic_review": "unreviewed",
+        "raw_output": "blake3:4e321b35ca372a23f65badb2f5094fa2516309b15d9b4dc3eeba46034878399e"
+      },
+      "missing": {
+        "claims": 1,
+        "status": [
+          "insufficient"
+        ],
+        "checked_quotes": 0,
+        "sources": [],
+        "semantic_review": "unreviewed",
+        "raw_output": "blake3:2fa67715b0c2134c6abd1a5dc98f3c9bd71c85cc1615371549dbba55334850e9"
+      },
+      "conflict": {
+        "claims": 1,
+        "status": [
+          "conflicting"
+        ],
+        "checked_quotes": 2,
+        "sources": [
+          "capture",
+          "control"
+        ],
+        "semantic_review": "unreviewed",
+        "raw_output": "blake3:e2e22cb76244bef89e5b1d05fd932b9114946e1b4c96a0e3c728febfc72803bb"
+      },
+      "reduced": {
+        "claims": 1,
+        "status": [
+          "insufficient"
+        ],
+        "checked_quotes": 0,
+        "sources": [],
+        "semantic_review": "unreviewed",
+        "raw_output": "blake3:bc1cc911050605b9044556e7448d0b000bfa119dd0758486084ee2e9ee887a96"
+      },
+      "fresh_cold_cross": {
+        "claims": 3,
+        "status": [
+          "supported",
+          "supported",
+          "supported"
+        ],
+        "checked_quotes": 3,
+        "sources": [
+          "capture",
+          "knot",
+          "note"
+        ],
+        "semantic_review": "unreviewed",
+        "raw_output": "blake3:4e321b35ca372a23f65badb2f5094fa2516309b15d9b4dc3eeba46034878399e"
+      }
+    }
+  },
+  "distinct_processes": 4,
+  "captures": [
+    "fused/warm/reduced_answer.png",
+    "fused/warm/explicit_scope.png",
+    "fused/warm/03_mixed_sources.png",
+    "fused/warm/cross_warm_claim_1_citation.png",
+    "fused/warm/cross_answer.png",
+    "fused/warm/missing_answer.png",
+    "fused/warm/02_capture_B.png",
+    "fused/warm/conflict_answer.png",
+    "fused/warm/01_capture_A.png",
+    "fused/warm/cross_raw.png",
+    "fused/warm/cross_warm_claim_2_citation.png",
+    "fused/warm/cross_warm_claim_3_citation.png",
+    "fused/cold/cross_answer.png",
+    "fused/cold/cross_cold_claim_3_citation.png",
+    "fused/cold/cross_cold_claim_2_citation.png",
+    "fused/cold/reduced_historical_answer.png",
+    "fused/cold/cold_scope.png",
+    "fused/cold/cross_cold_claim_1_citation.png",
+    "fused/cold/cross_historical_answer.png",
+    "fused/cold/conflict_historical_answer.png",
+    "fused/cold/missing_historical_answer.png"
+  ],
+  "scope": "Frozen fixture and exact quotation/provenance checks; semantic interpretations remain unreviewed until the separate recorded visual/rubric review.",
+  "protocol_default": "Only omitted recall.citations decodes to []; raw files, support, native assertions and cases unchanged.",
+  "original_native_checker_sha256": "f3a0e939cef9ac3bf85f80cb9d1e984ee40d94a0757cf6d4c6c6d55e23b88594",
+  "native_binding_checker_sha256": "e01bf2ecf2a035a64e6a549679e193ec70fe432d5bd6e3c5a13744f1148a80b2",
+  "reader_identity_policy": "Saved-reader target.key.node identifies the admitted source; top-level node identifies the reader view. Retained-reader node remains its source identity."
+}

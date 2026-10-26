@@ -1,0 +1,330 @@
+{
+  "version": 1,
+  "kind": "synthetic lexical semantic challenge",
+  "cases": 16,
+  "model_requests": 15,
+  "expected_admission_refusals": 1,
+  "cohorts": [
+    {
+      "name": "paraphrases",
+      "corpus": {
+        "capture": {
+          "text": "The Juniper archive's recovery phrase is violet lantern."
+        },
+        "control": {
+          "text": "The Juniper archive's recovery phrase is amber harbor."
+        },
+        "knot": {
+          "text": "The Pelican observatory's access word is café."
+        },
+        "note": {
+          "text": "Saved from the embedded listener: café → harbor.\nKeep this timed note."
+        }
+      },
+      "asks": [
+        {
+          "id": "cross",
+          "question": "What are the archive emergency phrase, the observatory entry word, and the listener's saved reminder? Give one claim for each, in that order.",
+          "gold": [
+            {
+              "relevant": [
+                "capture"
+              ],
+              "values": {
+                "capture": "capture"
+              }
+            },
+            {
+              "relevant": [
+                "knot"
+              ],
+              "values": {
+                "knot": "knot"
+              }
+            },
+            {
+              "relevant": [
+                "note"
+              ],
+              "values": {
+                "note": "note"
+              }
+            }
+          ]
+        },
+        {
+          "id": "missing",
+          "question": "How much money is allocated annually to the Juniper archive?",
+          "gold": [
+            {
+              "relevant": [],
+              "values": {}
+            }
+          ]
+        },
+        {
+          "id": "conflict",
+          "question": "Which recovery phrase should I use for the Juniper archive? Report incompatible retained answers.",
+          "gold": [
+            {
+              "relevant": [
+                "capture",
+                "control"
+              ],
+              "values": {
+                "capture": "violet lantern",
+                "control": "amber harbor"
+              }
+            }
+          ]
+        },
+        {
+          "id": "reduced",
+          "question": "What did the saved listener ask me to remember?",
+          "gold": [
+            {
+              "relevant": [],
+              "values": {}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "qualifiers",
+      "corpus": {
+        "capture": {
+          "text": "The Pelican observatory's access word is café. This note gives no access word for the Cormorant observatory."
+        },
+        "control": {
+          "text": "The Cormorant observatory's access word is cedar."
+        },
+        "knot": {
+          "text": "The Juniper archive's former recovery phrase was violet lantern; its current phrase is not recorded here."
+        },
+        "note": {
+          "text": "A volunteer guessed that the Fern reserve budget is $7000; no budget has been approved."
+        }
+      },
+      "asks": [
+        {
+          "id": "cross",
+          "question": "What is the Pelican observatory access word?",
+          "gold": [
+            {
+              "relevant": [
+                "capture"
+              ],
+              "values": {
+                "capture": "capture"
+              }
+            }
+          ]
+        },
+        {
+          "id": "missing",
+          "question": "What is the approved Fern reserve budget?",
+          "gold": [
+            {
+              "relevant": [],
+              "values": {}
+            }
+          ]
+        },
+        {
+          "id": "conflict",
+          "question": "What is the Cormorant observatory access word?",
+          "gold": [
+            {
+              "relevant": [
+                "control"
+              ],
+              "values": {
+                "control": "control"
+              }
+            }
+          ]
+        },
+        {
+          "id": "reduced",
+          "question": "What is the current Juniper archive recovery phrase?",
+          "gold": [
+            {
+              "relevant": [],
+              "values": {}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "agreement",
+      "corpus": {
+        "capture": {
+          "text": "The Bracken ferry departure time is 09:30."
+        },
+        "control": {
+          "text": "The Bracken ferry departure time is 10:15."
+        },
+        "knot": {
+          "text": "The Bracken ferry departure time is 09:30."
+        },
+        "note": {
+          "text": "The Pelican ferry departure time is 08:00."
+        }
+      },
+      "asks": [
+        {
+          "id": "cross",
+          "question": "What is the Bracken ferry departure time?",
+          "gold": [
+            {
+              "relevant": [
+                "capture",
+                "knot"
+              ],
+              "values": {
+                "capture": "09:30",
+                "knot": "09:30"
+              }
+            }
+          ]
+        },
+        {
+          "id": "missing",
+          "question": "What is the Bracken ferry arrival time?",
+          "gold": [
+            {
+              "relevant": [],
+              "values": {}
+            }
+          ]
+        },
+        {
+          "id": "conflict",
+          "question": "What is the Bracken ferry departure time?",
+          "gold": [
+            {
+              "relevant": [
+                "capture",
+                "control",
+                "knot"
+              ],
+              "values": {
+                "capture": "09:30",
+                "control": "10:15",
+                "knot": "09:30"
+              }
+            }
+          ]
+        },
+        {
+          "id": "reduced",
+          "question": "What is the Bracken ferry departure time?",
+          "gold": [
+            {
+              "relevant": [
+                "capture",
+                "knot"
+              ],
+              "values": {
+                "capture": "09:30",
+                "knot": "09:30"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "long_passages",
+      "corpus": {
+        "capture": {
+          "text": "Broomgate station log: the access code is maple-42. The lobby has two benches, a blue noticeboard, a clock, a rack of folded maps, a painted floor, a shelf of empty folders, three hooks for coats, a brass bell, a small table, a glass door, a mat, a lamp, and a bin."
+        },
+        "control": {
+          "text": "Broomgate station log: the access code is birch-73. The lobby has two benches, a blue noticeboard, a clock, a rack of folded maps, a painted floor, a shelf of empty folders, three hooks for coats, a brass bell, a small table, a glass door, a mat, a lamp, and a bin."
+        },
+        "knot": {
+          "text": "The Broomgate quay is open."
+        },
+        "note": {
+          "text": "Broomgate has no recorded maintenance budget."
+        }
+      },
+      "asks": [
+        {
+          "id": "cross",
+          "question": "What is the Broomgate station access code?",
+          "gold": [
+            {
+              "relevant": [
+                "capture"
+              ],
+              "values": {
+                "capture": "capture"
+              }
+            }
+          ]
+        },
+        {
+          "id": "missing",
+          "question": "What is the Broomgate annual maintenance budget?",
+          "gold": [
+            {
+              "relevant": [],
+              "values": {}
+            }
+          ]
+        },
+        {
+          "id": "reduced",
+          "question": "What is the Broomgate quay access code?",
+          "gold": [
+            {
+              "relevant": [],
+              "values": {}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "long_conflict_admission",
+      "corpus": {
+        "capture": {
+          "text": "Broomgate station log: the access code is maple-42. The lobby has two benches, a blue noticeboard, a clock, a rack of folded maps, a painted floor, a shelf of empty folders, three hooks for coats, a brass bell, a small table, a glass door, a mat, a lamp, and a bin."
+        },
+        "control": {
+          "text": "Broomgate station log: the access code is birch-73. The lobby has two benches, a blue noticeboard, a clock, a rack of folded maps, a painted floor, a shelf of empty folders, three hooks for coats, a brass bell, a small table, a glass door, a mat, a lamp, and a bin."
+        },
+        "knot": {
+          "text": "The Broomgate quay is open."
+        },
+        "note": {
+          "text": "Broomgate has no recorded maintenance budget."
+        }
+      },
+      "asks": [
+        {
+          "id": "conflict",
+          "question": "What is the Broomgate station access code?",
+          "gold": [
+            {
+              "relevant": [
+                "capture",
+                "control"
+              ],
+              "values": {
+                "capture": "maple-42",
+                "control": "birch-73"
+              }
+            }
+          ],
+          "expected_admission_error": "extractive conflict text exceeds the 384-byte claim bound"
+        }
+      ]
+    }
+  ],
+  "rubric": "Every supplied candidate relevance flag, agreement, status and selected support must match the frozen property-specific gold. Conflict links must represent distinct gold values, not merely distinct sources. Missing required relevant passages is a retrieval failure. SemanticReview remains unreviewed. No prompt, grammar, model, token or timeout tuning on this challenge."
+}

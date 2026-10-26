@@ -1,0 +1,86 @@
+{
+  "result": "pass",
+  "cases": {
+    "cross": {
+      "input_identity": "pass",
+      "run_state": "cancelled",
+      "model_tokens": 122,
+      "scope": [
+        "capture",
+        "knot",
+        "note"
+      ],
+      "supplied_passages": 3,
+      "admitted_claims": null,
+      "support_error": null,
+      "contract": {
+        "method": "distillery.requested-facts/v2",
+        "question": "blake3:4657f1751f50b3e04c3c667edb273a670346b7ba9d57e9fb1f876b02127f1aa4",
+        "prompt": "blake3:ab632d5994e5a4232e7e82b0074b1d7271cf9be222104d4e553044fb193d6d41",
+        "context": "blake3:ea095b38d10a1b1bb8f3348edad620810f38a32a270bff0a5a3c469dd818c8c3",
+        "max_claims": 8
+      }
+    },
+    "missing": {
+      "input_identity": "pass",
+      "run_state": "finished",
+      "model_tokens": 29,
+      "scope": [
+        "capture",
+        "knot",
+        "note"
+      ],
+      "supplied_passages": 3,
+      "admitted_claims": 1,
+      "support_error": null,
+      "contract": {
+        "method": "distillery.requested-facts/v2",
+        "question": "blake3:9402c656e90d1a02dca03c4f61c8700659e815fb31fef2d4a5f8a0047b5bcfa7",
+        "prompt": "blake3:71c39be71511a81f9cd6c1db990ed49b618898e9efd0ddbe7aef040920697d8b",
+        "context": "blake3:cc9b4af30728a9e38dd0eac209672499e11a6f314ef170c578763ad05a9ba98d",
+        "max_claims": 8
+      }
+    },
+    "conflict": {
+      "input_identity": "pass",
+      "run_state": "finished",
+      "model_tokens": 48,
+      "scope": [
+        "capture",
+        "control",
+        "knot",
+        "note"
+      ],
+      "supplied_passages": 4,
+      "admitted_claims": 0,
+      "support_error": "The model did not return a complete claim-support document. Raw output is retained.",
+      "contract": {
+        "method": "distillery.requested-facts/v2",
+        "question": "blake3:1e79a88e5e9410ed82671698f2e4aa3c73f5a762e1774bff95808297e75f6fc6",
+        "prompt": "blake3:4aca38e632010dddd310492288aa55448176d4923739e37d435a377a7767523e",
+        "context": "blake3:bcba4148f9b134917791a74dc4832d33ce74d70efb28757e7f9fdda91137cae5",
+        "max_claims": 8
+      }
+    },
+    "reduced": {
+      "input_identity": "pass",
+      "run_state": "finished",
+      "model_tokens": 29,
+      "scope": [
+        "capture",
+        "knot"
+      ],
+      "supplied_passages": 2,
+      "admitted_claims": 0,
+      "support_error": "The model did not return a complete claim-support document. Raw output is retained.",
+      "contract": {
+        "method": "distillery.requested-facts/v2",
+        "question": "blake3:02c42498256cb1e8ff04cd7bd4dcace5e93fc69ea6b0fa63016da454db4354ee",
+        "prompt": "blake3:49f9d1ea734d7d2d352c485258ba541b8a26e7186501176a8ec4dd529a306777",
+        "context": "blake3:a168535e54b51fb6e3302b31a976d2817579fcda8c9f1273210788c1f7ff127d",
+        "max_claims": 8
+      }
+    }
+  },
+  "boundary": "Exact inputs, source cuts, retained task identity and admitted-claim bound only. A cancelled run or a rejected document remains unqualified; no semantic or cold-reopen acceptance is implied."
+}

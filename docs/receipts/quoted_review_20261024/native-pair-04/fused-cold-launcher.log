@@ -1,0 +1,21 @@
+{"launch_method": "LaunchServices temporary application bundle", "launcher_exit": 0, "timeout": false, "success": true, "elapsed_seconds": 448.237, "binary_sha256": "309572579232a0dd9c6a127610716fa0bf27ff34671751aaa7f177196aa3a141", "scenario_sha256": "73471527a25d744da516e41d4ef5b76270c182635d2640d2109c68a81a6f8667", "receipt": "scenario.done", "captures": 9}
+RESULT ok
+captured cold_scope
+captured cross_historical_answer
+captured cross_cold_claim_1_citation
+captured cross_cold_claim_2_citation
+captured cross_cold_claim_3_citation
+captured missing_historical_answer
+captured conflict_historical_answer
+captured reduced_historical_answer
+captured cross_answer
+presentation frames=280 captures=9 blank=0
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/cold/cold_scope.png digest=9f86b35736133bde blank=false
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/cold/cross_historical_answer.png digest=f7583b5248a1c931 blank=false
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/cold/cross_cold_claim_1_citation.png digest=6b8c2f7b9218b68a blank=false
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/cold/cross_cold_claim_2_citation.png digest=97f135d730016706 blank=false
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/cold/cross_cold_claim_3_citation.png digest=b1a22fe0de47d16b blank=false
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/cold/missing_historical_answer.png digest=ee3413164bb898ab blank=false
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/cold/conflict_historical_answer.png digest=a6b58c462d0f7532 blank=false
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/cold/reduced_historical_answer.png digest=c28ca56c98799376 blank=false
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/cold/cross_answer.png digest=6fa8eb909d1da2b8 blank=false

@@ -1,0 +1,162 @@
+{
+  "run": "reduced",
+  "question": "What is the Broomgate quay access code?",
+  "state": "finished",
+  "text": "{\"claims\":[{\"fact\":{\"id\":\"blake3:c8506935899ea384b52b5db78a0db3f4f36b3716188ed867167e63397a14e4c1\",\"selector\":{\"start\":8,\"end\":38},\"text\":\"the Broomgate quay access code\"},\"review\":{\"candidates\":[{\"handle\":1,\"requested\":\"the Broomgate quay access code\",\"quote\":\"The Broomgate quay is open.\",\"answers\":true},{\"handle\":2,\"requested\":\"the Broomgate quay access code\",\"quote\":\"Broomgate station log: the access code is maple-42. The lobby has two benches, a blue noticeboard, a clock, a rack of folded maps, a painted floor, a shelf of empty folders, three hooks for coats, a brass bell, a small table, a glass door, a mat, a lamp, and a bin.\",\"answers\":false}],\"agreement\":\"single\"},\"status\":\"supported\",\"text\":\"The Broomgate quay is open.\",\"evidence\":[{\"handle\":1,\"quote\":\"The Broomgate quay is open.\"}]}]}",
+  "error": null,
+  "session": {
+    "session_id": "blake3:0960d64d68cf80b35a5781e3daeddfcf453f30579861e02af8d93a535db58d3d",
+    "prompt_template_hash": "blake3:9c222535ed31aadd676fc2f1beb16d0dd0402c76a9ee1398bc0c200c825103da"
+  },
+  "tokens": 262,
+  "continuations": [
+    {
+      "device": "device:900320c348fcd333149b2540e2a30760",
+      "at_token": 0,
+      "reason": "ask",
+      "first_differing_token": null,
+      "compared_token_ids_hash": null
+    }
+  ],
+  "recall": {
+    "answer_format": "claim_support_v1",
+    "answer_contract": {
+      "method": "distillery.quoted-review/v7",
+      "question": "blake3:55fb7effad7afbdafd64f4b695e4cf2004e98405e5613861fa3960a09751e76e",
+      "prompt": "blake3:cdbbda49131f52016c155b615deb364edd0187fd5410496c0d4c1ea476cc8458",
+      "context": "blake3:318d64f1d03ce6547e25f6a35e0a0785be096bb18fd7ceacd368e0d9cbff179e",
+      "max_claims": 1,
+      "output_grammar": "blake3:7b71c4e987d6440666ac829b50fd678581f7749768ba66ce869dee9389c6d63e",
+      "requested_facts": {
+        "method": "eidetic.explicit-question-list/v1",
+        "question": "blake3:55fb7effad7afbdafd64f4b695e4cf2004e98405e5613861fa3960a09751e76e",
+        "facts": [
+          {
+            "id": "blake3:c8506935899ea384b52b5db78a0db3f4f36b3716188ed867167e63397a14e4c1",
+            "selector": {
+              "start": 8,
+              "end": 38
+            },
+            "text": "the Broomgate quay access code"
+          }
+        ]
+      }
+    },
+    "support": {
+      "requested_facts": "blake3:d2883d50c8ea4a5311b02a0d9b2cea09bc40d00f3c27a1be6888263af93af64d",
+      "method": "eidetic.claim-support/v1",
+      "raw_output": "blake3:06bec076645e3351568e1e4e170db6db0e3847d0a9851fe77f7e4cff629833d5",
+      "semantic_review": "unreviewed",
+      "claims": [
+        {
+          "fact": {
+            "id": "blake3:c8506935899ea384b52b5db78a0db3f4f36b3716188ed867167e63397a14e4c1",
+            "selector": {
+              "start": 8,
+              "end": 38
+            },
+            "text": "the Broomgate quay access code"
+          },
+          "review": {
+            "candidates": [
+              {
+                "handle": 1,
+                "requested": "the Broomgate quay access code",
+                "quote": "The Broomgate quay is open.",
+                "answers": true
+              },
+              {
+                "handle": 2,
+                "requested": "the Broomgate quay access code",
+                "quote": "Broomgate station log: the access code is maple-42. The lobby has two benches, a blue noticeboard, a clock, a rack of folded maps, a painted floor, a shelf of empty folders, three hooks for coats, a brass bell, a small table, a glass door, a mat, a lamp, and a bin.",
+                "answers": false
+              }
+            ],
+            "agreement": "single"
+          },
+          "status": "supported",
+          "text": "The Broomgate quay is open.",
+          "evidence": [
+            {
+              "handle": 1,
+              "quote": "The Broomgate quay is open.",
+              "passage": "blake3:cb3bb6ea59147f0ca06b155dab1ffc88e8cbf8adacc35b3bb7c8caef59737896",
+              "selector": {
+                "start": 0,
+                "end": 27
+              },
+              "error": null
+            }
+          ],
+          "issues": []
+        }
+      ],
+      "error": null
+    },
+    "scope": [
+      {
+        "kind": "page_text",
+        "source": "https://probe.test/capture"
+      },
+      {
+        "kind": "page_text",
+        "source": "https://probe.test/knot"
+      }
+    ],
+    "config": {
+      "chunk_chars": 512,
+      "max_passages": 4,
+      "min_quote_chars": 32,
+      "max_context_chars": 12000,
+      "max_corpus_chars": 1000000
+    },
+    "passages": [
+      {
+        "handle": 1,
+        "passage": {
+          "source": {
+            "kind": "page_text",
+            "source": "https://probe.test/knot"
+          },
+          "version": "blake3:586155af090760fac1656ff0b59b6bfea3174b2636377e77d76b29ee23ed1060",
+          "text_hash": "blake3:586155af090760fac1656ff0b59b6bfea3174b2636377e77d76b29ee23ed1060",
+          "selector": {
+            "start": 0,
+            "end": 27
+          },
+          "chunker": "mere.unicode-chunks/v1/512",
+          "text": "The Broomgate quay is open."
+        }
+      },
+      {
+        "handle": 2,
+        "passage": {
+          "source": {
+            "kind": "page_text",
+            "source": "https://probe.test/capture"
+          },
+          "version": "blake3:eda6c95266f20b1d3ada5c1df91ea07c827b47bdc5601b52188b5e30f2e5f919",
+          "text_hash": "blake3:eda6c95266f20b1d3ada5c1df91ea07c827b47bdc5601b52188b5e30f2e5f919",
+          "selector": {
+            "start": 0,
+            "end": 265
+          },
+          "chunker": "mere.unicode-chunks/v1/512",
+          "text": "Broomgate station log: the access code is maple-42. The lobby has two benches, a blue noticeboard, a clock, a rack of folded maps, a painted floor, a shelf of empty folders, three hooks for coats, a brass bell, a small table, a glass door, a mat, a lamp, and a bin."
+        }
+      }
+    ],
+    "stale": [],
+    "citations": [
+      {
+        "handle": 1,
+        "passage": "blake3:cb3bb6ea59147f0ca06b155dab1ffc88e8cbf8adacc35b3bb7c8caef59737896",
+        "basis": "claim_quotation",
+        "answer_selector": {
+          "start": 770,
+          "end": 799
+        }
+      }
+    ]
+  }
+}

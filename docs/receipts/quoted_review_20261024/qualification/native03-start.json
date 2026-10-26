@@ -1,0 +1,9 @@
+{
+  "product_sha256": "fd3640e3a68a0bcb42e9641d93dc5d7f375e27e1d08eea790d8515261a366e54",
+  "resident_sha256": "f3dddd287852c06cb50360495f7da43c6f9a7b831287a66deca8def0cb4ce63b",
+  "snapshot_shutdown_limit_seconds": 300,
+  "per_answer_timeout_seconds": 900,
+  "per_answer_tokens": 1024,
+  "frozen_cases_sha256": "b91de4627aee873389066f4a8ed814fe4faff85cf1c8a3ae1d8e74f988d27ea2",
+  "wall_time": 1792877501.033393
+}

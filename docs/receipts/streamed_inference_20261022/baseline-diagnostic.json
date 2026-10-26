@@ -1,0 +1,9 @@
+{
+  "result": "diagnostic_stopped",
+  "window_seconds": 42.455456018447876,
+  "tokens_at_start": 15,
+  "tokens_at_end": 18,
+  "tokens_per_second": 0.0706622960002227,
+  "state": "running",
+  "reason": "Stopped after profiling steady-state generation; not semantic qualification."
+}

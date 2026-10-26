@@ -1,0 +1,37 @@
+{
+  "/Users/markik/Code/worktrees/eidetic-cross-source-answers-20261022": {
+    "head": "44f0664748238d7a96603925a0268caf60e091aa",
+    "status": "",
+    "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "/Users/markik/Code/worktrees/esp-cross-source-answers-20261022": {
+    "head": "aaae5d19365adcfa0b0292137eddd71edcb39337",
+    "status": "",
+    "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "/Users/markik/Code/worktrees/knot-cross-source-answers-20261022": {
+    "head": "a23664ae1915d0daf723aaa80618f2933102018d",
+    "status": "",
+    "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "/Users/markik/Code/worktrees/mere-cross-source-answers-20261022": {
+    "head": "7b01f4685a7b916d6be0d86bfa7d9ec5dd0797ee",
+    "status": "",
+    "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "/Users/markik/Code/worktrees/turnstone-cross-source-answers-20261022": {
+    "head": "083d5aac8974a238cf56c38e6a5bff14086998de",
+    "status": "",
+    "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "/Users/markik/Code/repos/mere": {
+    "head": "d918f670c8328ac6544242b0b753992b5124df09",
+    "status": "",
+    "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "/Users/markik/Code/repos/turnstone": {
+    "head": "e5f2e97964a9d353def509e9197ab7c9dbf29014",
+    "status": "",
+    "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

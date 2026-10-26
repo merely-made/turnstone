@@ -1,0 +1,27 @@
+{
+  "baseline_receipt": "/Users/markik/Code/worktrees/turnstone-cross-source-answers-20261022/docs/receipts/streamed_inference_20261022",
+  "unchanged_frozen_sha256": {
+    "case-freeze.json": "846dfad5b614c926f5bd8845d9b323eb5bb9267edf06bddf49c06c606b549f7d",
+    "verify_probe.py": "e93875eb35e02136038789415f5dfb272c2f491c407d6246322dc21fdbc9cd4d",
+    "verify_native.py": "f3a0e939cef9ac3bf85f80cb9d1e984ee40d94a0757cf6d4c6c6d55e23b88594",
+    "optimized-runtime.toml": "7ed6fb12d461f4b4bcec5bba79f0a23d47b3266118ceedf2e8f641c24ec3bbc8",
+    "cases.json": "b91de4627aee873389066f4a8ed814fe4faff85cf1c8a3ae1d8e74f988d27ea2"
+  },
+  "cases": "All four original questions, source cuts and expectations unchanged",
+  "runtime": "Same Qwen2.5-1.5B weights, template, 1024-token cap, 900-second per-case limit, 3GiB host and 4GiB device layer budgets",
+  "change": "Enforced bounded byte grammar with v4 relevance-first decisions and completion of all requested facts; no fixture-specific extraction or output repair",
+  "gate": "All four complete answers must pass unchanged frozen semantic assertions under declared wire defaults, raw structured-output checks and exact input binding before headed checks",
+  "prompt_module_sha256_before_measurement": "5f15b7640abd0a4c27991d3ad4642c58c35972769d1a88b3842b9ea7a136289d",
+  "instruction_characters": 2527,
+  "probe_source_sha256": "81510b572b8028cf46bf892254a8971f59f2f7ec66d39eb409538d42c4e1bb91",
+  "prior_diagnostic": "2026-10-23 candidate-01 (v3): four Finished, raw shape 4/4, semantic assertions 2/4; cross omitted two facts and reduced scope falsely declared unrelated facts conflicting.",
+  "supplier_commit": "7b01f4685a7b916d6be0d86bfa7d9ec5dd0797ee",
+  "policy": "distillery.requested-facts/v4",
+  "output_constraint": "ByteLevel token masking with canonical forced syntax spans; every emitted token checkpointed; no repair",
+  "semantic_gate": "Same original verify_answer assertions with declared empty-citations wire default; original frozen checker also retained",
+  "additional_gates": [
+    "whole raw JSON and bounded exact-candidate shape",
+    "exact versioned grammar/prompt/question/context binding"
+  ],
+  "headed_condition": "all four Finished within original deadlines, same session, raw structured shape passes, original semantic assertions pass under declared wire defaults"
+}

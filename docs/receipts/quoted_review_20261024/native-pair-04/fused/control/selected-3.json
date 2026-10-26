@@ -1,0 +1,39 @@
+{
+  "condition": "native selection committed by the app; exact expected text hashes",
+  "source": {
+    "chosen": [
+      {
+        "key": {
+          "annotation_manifest": "blake3:3d9d70488162e0cff4ca2178d0660a88919c22ff8095dffcdfee2ca5b74ee6d1",
+          "graph": "7b140ed8-9c2a-48f1-ad28-9a4d15dc81ff",
+          "node": "99a550f7-42d8-4477-ac9c-bd68db35e656",
+          "session": "cb7e6811-400d-4b94-a74c-340d71fb8a0e"
+        },
+        "selector": null,
+        "text_hash": "blake3:7d51f2ed929706e8a8d24f17da016384ac94f3ab88c95054fb8658e6a1fa5399"
+      },
+      {
+        "clip": {
+          "graph": "7b140ed8-9c2a-48f1-ad28-9a4d15dc81ff",
+          "manifest": "blake3:48674921cc190ad421d84c8fb5ad3351b87ddb574d7a05afd476dde67f0e9773",
+          "node": "a2f64449-d495-43d2-ae5e-12c311401122",
+          "session": "cb7e6811-400d-4b94-a74c-340d71fb8a0e"
+        },
+        "selector": null,
+        "text_hash": "blake3:110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275"
+      },
+      {
+        "clip": {
+          "graph": "7b140ed8-9c2a-48f1-ad28-9a4d15dc81ff",
+          "manifest": "blake3:45ea9bc24519f7791689b075b3b74fd8cb4c3cbd35adb89f5c684d0508a470d0",
+          "node": "1d0a1916-3cea-4ab4-b914-2b37411b424c",
+          "session": "cb7e6811-400d-4b94-a74c-340d71fb8a0e"
+        },
+        "selector": null,
+        "text_hash": "blake3:34a68a8f92ee65534850537f585c9daef4de2101765295a242ec022af7acfb96"
+      }
+    ],
+    "session": "cb7e6811-400d-4b94-a74c-340d71fb8a0e",
+    "view": "d0af8ee9-fc99-4449-9304-94731bcee943"
+  }
+}

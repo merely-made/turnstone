@@ -1,0 +1,4 @@
+
+running 1 test
+resident inference GPU: AMD Radeon Pro Vega 56 (metal, discrete adapter)
+test serve_trained_model_for_headed_turnstone has been running for over 60 seconds

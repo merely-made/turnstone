@@ -1,0 +1,11 @@
+{
+  "utc": "2026-10-22T05:48:05.795255+00:00",
+  "cases_sha256": "b91de4627aee873389066f4a8ed814fe4faff85cf1c8a3ae1d8e74f988d27ea2",
+  "rubric": {
+    "cross": "Three claims in requested order; each gives the fact stated in its corresponding capture, Knot selection and listener note, with checked quotations and no duplicate or extra claims.",
+    "missing": "An insufficient-evidence statement with no asserted budget value and no supporting links.",
+    "conflict": "Report disagreement without selecting a winner; quote both distinct capture sources.",
+    "reduced": "Report insufficient evidence for the listener reminder; no retained note passage is supplied in the two-source scope."
+  },
+  "boundary": "Frozen before any real model probe. Exact quotation checks do not establish general entailment or corpus completeness."
+}

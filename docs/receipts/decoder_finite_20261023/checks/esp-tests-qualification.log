@@ -1,0 +1,385 @@
+   Compiling esp v0.1.0 (/Users/markik/Code/worktrees/esp-cross-source-answers-20261022/crates/esp)
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+  --> crates/esp/src/infer/decoder/architecture_tests.rs:33:28
+   |
+33 |     check_on(name, Device::ndarray());
+   |                            ^^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/attention.rs:419:22
+    |
+419 |             &Device::ndarray(),
+    |                      ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/attention.rs:424:27
+    |
+424 |         let dev = Device::ndarray();
+    |                           ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/attention.rs:442:30
+    |
+442 |         let device = Device::ndarray();
+    |                              ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/attention.rs:486:52
+    |
+486 |             t2(5, config.hidden_size, 99, &Device::ndarray()).reshape([1, 5, config.hidden_size]);
+    |                                                    ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/attention.rs:493:30
+    |
+493 |         let device = Device::ndarray();
+    |                              ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/attention.rs:525:27
+    |
+525 |         let dev = Device::ndarray();
+    |                           ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/attention.rs:580:27
+    |
+580 |         let dev = Device::ndarray();
+    |                           ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/generate.rs:304:27
+    |
+304 |         let dev = Device::ndarray();
+    |                           ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/layer.rs:192:27
+    |
+192 |         let dev = Device::ndarray();
+    |                           ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/layer.rs:270:47
+    |
+270 |         let cpu = layer_out(&config, &Device::ndarray());
+    |                                               ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/loader.rs:683:55
+    |
+683 |         Tensor::from_data([[1, 5, 9, 2, 7]], &Device::ndarray())
+    |                                                       ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/loader.rs:690:71
+    |
+690 |         let model = load_decoder_from_bytes(&config, &bytes, &Device::ndarray()).unwrap();
+    |                                                                       ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/loader.rs:702:79
+    |
+702 |             load_decoder_from_bytes(&config, &serialize_f32(&table), &Device::ndarray()).unwrap();
+    |                                                                               ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/loader.rs:704:80
+    |
+704 |             load_decoder_from_bytes(&config, &serialize_bf16(&table), &Device::ndarray()).unwrap();
+    |                                                                                ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/loader.rs:728:71
+    |
+728 |         let model = load_decoder_from_bytes(&config, &bytes, &Device::ndarray()).unwrap();
+    |                                                                       ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/loader.rs:736:69
+    |
+736 |         let err = load_decoder_from_bytes(&config, &bytes, &Device::ndarray()).unwrap_err();
+    |                                                                     ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/loader.rs:747:81
+    |
+747 |         match load_decoder_from_bytes(&config, &serialize_f32(&table), &Device::ndarray()) {
+    |                                                                                 ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/loader.rs:809:75
+    |
+809 |         load_decoder_from_bytes(&config, &serialize_f32(&table), &Device::ndarray()).unwrap();
+    |                                                                           ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/loader.rs:817:85
+    |
+817 |         let err = load_decoder_from_bytes(&config, &serialize_f32(&table), &Device::ndarray())
+    |                                                                                     ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/model.rs:729:27
+    |
+729 |         let dev = Device::ndarray();
+    |                           ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/model.rs:768:27
+    |
+768 |         let dev = Device::ndarray();
+    |                           ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/model.rs:791:27
+    |
+791 |         let dev = Device::ndarray();
+    |                           ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/provider.rs:930:27
+    |
+930 |         let dev = Device::ndarray();
+    |                           ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/provider.rs:987:27
+    |
+987 |         let dev = Device::ndarray();
+    |                           ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+    --> crates/esp/src/infer/decoder/provider.rs:1042:27
+     |
+1042 |         let dev = Device::ndarray();
+     |                           ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+    --> crates/esp/src/infer/decoder/provider.rs:1111:27
+     |
+1111 |         let dev = Device::ndarray();
+     |                           ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/stage.rs:534:30
+    |
+534 |         let device = Device::ndarray();
+    |                              ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/stage.rs:647:30
+    |
+647 |         let device = Device::ndarray();
+    |                              ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/tensors.rs:112:30
+    |
+112 |         let device = Device::ndarray();
+    |                              ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/tensors.rs:131:30
+    |
+131 |         let device = Device::ndarray();
+    |                              ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/tensors.rs:143:30
+    |
+143 |         let device = Device::ndarray();
+    |                              ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/tensors.rs:152:30
+    |
+152 |         let device = Device::ndarray();
+    |                              ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/layer_library.rs:480:33
+    |
+480 |                 &DecoderDevice::ndarray(),
+    |                                 ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/layer_library.rs:492:29
+    |
+492 |             &DecoderDevice::ndarray(),
+    |                             ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/layer_library.rs:499:39
+    |
+499 |                 .load(&DecoderDevice::ndarray(), "burn-ndarray", 8)
+    |                                       ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/layer_library.rs:575:29
+    |
+575 |             &DecoderDevice::ndarray(),
+    |                             ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/layer_library.rs:644:33
+    |
+644 |                 &DecoderDevice::ndarray(),
+    |                                 ^^^^^^^
+
+warning: method `detach` is never used
+  --> crates/esp/src/infer/decoder/moe.rs:32:19
+   |
+31 | impl MlpWeights {
+   | --------------- method in this implementation
+32 |     pub(crate) fn detach(&mut self) {
+   |                   ^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `esp` (lib test) generated 39 warnings
+    Finished `test` profile [unoptimized] target(s) in 32.60s
+     Running unittests src/lib.rs (/Users/markik/Code/output/embedding-envelope-20261020/resident-build/debug/deps/esp-115cbd3cbe02c930)
+
+running 112 tests
+test infer::decoder::architecture_tests::gpu_architecture_streaming_and_stages_match_reference ... ignored, requires a native discrete GPU
+test infer::decoder::config::tests::biases_refused ... ok
+test infer::decoder::config::tests::effective_and_disabled_sliding_windows ... ok
+test infer::decoder::config::tests::eos_list_form_parses ... ok
+test infer::decoder::config::tests::experts_refused ... ok
+test infer::decoder::config::tests::foreign_architecture_refused ... ok
+test infer::decoder::config::tests::foreign_model_type_refused ... ok
+test infer::decoder::config::tests::inconsistent_heads_rejected ... ok
+test infer::decoder::config::tests::independent_query_width_and_zero_kv_heads_are_validated ... ok
+test infer::decoder::config::tests::llama3_scaling_is_validated_and_unknown_scaling_is_refused ... ok
+test infer::decoder::config::tests::missing_kv_heads_falls_back_to_mha ... ok
+test infer::decoder::attention::tests::rotary_pairs_split_halves_like_llama ... ok
+test infer::decoder::config::tests::multimodal_nesting_refused_before_missing_fields ... ok
+test infer::decoder::config::tests::non_silu_activation_refused ... ok
+test infer::decoder::config::tests::parses_real_tinyllama_config ... ok
+test infer::decoder::config::tests::partial_rotary_refused ... ok
+test infer::decoder::config::tests::real_llama_block_fields_are_accepted ... ok
+test infer::decoder::config::tests::soft_capping_refused ... ok
+test infer::decoder::attention::tests::forward_preserves_shape ... ok
+test infer::decoder::attention::tests::gqa_matches_mha_with_duplicated_kv_blocks ... ok
+test infer::decoder::attention::tests::causal_mask_blocks_future_positions ... ok
+test infer::decoder::constraint::tests::masking_and_forced_spans_refuse_extra_syntax ... ok
+test infer::decoder::constraint::tests::nonfinite_scores_cannot_win_or_create_an_eligible_choice ... ok
+test infer::decoder::constraint::tests::utf8_split_tokens_and_escapes_are_exact_and_bounded ... ok
+test infer::decoder::generate::tests::async_control_cancels_before_the_next_token_is_observed ... ok
+test infer::decoder::generate::tests::callback_break_stops_after_current_token ... ok
+test infer::decoder::constraint::tests::every_accepted_small_string_is_valid_json ... ok
+test infer::decoder::generate::tests::eos_stops_generation_without_emitting_it ... ok
+test infer::decoder::attention::tests::chunked_queries_match_full_causal_prefill_and_warm_decode ... ok
+test infer::decoder::layer::tests::layer_forward_shape_and_finite_and_deterministic ... ok
+test infer::decoder::loader::tests::attention_bias_tensor_refused ... ok
+test infer::decoder::loader::tests::bf16_checkpoint_loads_and_stays_close_to_f32 ... ok
+test infer::decoder::loader::tests::expert_tensor_refused ... ok
+test infer::decoder::loader::tests::extra_norm_tensor_refused ... ok
+test infer::decoder::loader::tests::layer_beyond_config_refused ... ok
+test infer::decoder::generate::tests::generation_is_deterministic ... ok
+test infer::decoder::loader::tests::loads_synthetic_checkpoint_and_produces_logits ... ok
+test infer::decoder::loader::tests::missing_layer_tensor_names_the_tensor ... ok
+test infer::decoder::loader::tests::missing_lm_head_without_tie_flag_rejected ... ok
+test infer::decoder::loader::tests::mlp_bias_tensor_refused ... ok
+test infer::decoder::loader::tests::qk_norm_tensor_refused ... ok
+test infer::decoder::loader::tests::rope_inv_freq_buffer_is_tolerated ... ok
+test infer::decoder::loader::tests::tied_checkpoint_without_lm_head_loads_when_config_says_tied ... ok
+test infer::decoder::generate::tests::async_readback_matches_sync_generation ... ok
+test infer::decoder::model::tests::logits_shape_finite_deterministic ... ok
+test infer::decoder::provider::tests::a_normal_limit_flushes_an_incomplete_stop_but_cancellation_does_not ... ok
+test infer::decoder::provider::tests::a_stop_across_fragments_never_leaks_its_prefix ... ok
+test infer::decoder::model::tests::tied_lm_head_equals_explicit_transposed_embedding ... ok
+test infer::decoder::provider::tests::capability_reflects_model_and_loader ... ok
+test infer::decoder::generate::tests::seeded_sampled_generation_is_reproducible ... ok
+test infer::decoder::generate::tests::cached_generation_equals_full_recompute ... ok
+test infer::decoder::provider::tests::corrupt_scores_recompute_once_before_any_token_choice ... ok
+test infer::decoder::provider::tests::invalid_temperature_rejected ... ok
+test infer::decoder::provider::tests::async_control_cancels_before_the_next_observed_token ... ok
+test infer::decoder::provider::tests::prompt_too_long_names_the_window ... ok
+test infer::decoder::architecture_tests::original_llama_reference ... ok
+test infer::decoder::provider::tests::observed_generation_counts_model_tokens_not_text_fragments ... ok
+test infer::decoder::architecture_tests::linear_scaled_reference ... ok
+test infer::decoder::architecture_tests::mistral_window_and_independent_head_reference ... ok
+test infer::decoder::model::tests::warm_blocks_match_single_tokens_and_full_recompute ... ok
+test infer::decoder::provider::tests::valid_scores_preserve_values_and_do_not_recompute ... ok
+test infer::decoder::sample::tests::entropy_seeds_vary_across_draws ... ok
+test infer::decoder::sample::tests::frequencies_track_the_distribution ... ok
+test infer::decoder::sample::tests::low_temperature_is_effectively_greedy ... ok
+test infer::decoder::sample::tests::same_seed_same_stream ... ok
+test infer::decoder::sample::tests::tiny_top_p_collapses_to_greedy ... ok
+test infer::decoder::architecture_tests::qwen2_biases_and_mixed_windows_reference ... ok
+test infer::decoder::stage::tests::hidden_wire_refuses_overflow_nonfinite_and_dtype_changes ... ok
+test infer::decoder::stage::tests::hybrid_admission_covers_a_dense_mlp_larger_than_the_expert_bank ... ok
+test infer::decoder::stage::tests::ranges_honor_runtime_budgets_and_distinct_devices ... ok
+test infer::decoder::streaming::cache_tests::budget_counts_allocation_capacity_and_does_not_thrash_on_a_sweep ... ok
+test infer::decoder::streaming::cache_tests::failed_or_oversized_reads_never_enter_the_cache ... ok
+test infer::decoder::streaming::cache_tests::immutable_hits_share_the_verified_allocation_and_recheck_limits ... ok
+test infer::decoder::tensors::tests::bf16_decodes_close_to_f32 ... ok
+test infer::decoder::tensors::tests::shape_mismatch_rejected ... ok
+test infer::decoder::tensors::tests::transposed_extraction_flips_hf_orientation ... ok
+test infer::decoder::tensors::tests::unsupported_dtype_names_the_policy ... ok
+test infer::decoder::architecture_tests::qwen3_head_norms_and_mixed_windows_reference ... ok
+test infer::layer_library::tests::corrupted_or_oversized_layer_is_refused_before_generation ... ok
+test infer::layer_library::tests::direct_provider_refuses_shared_artifacts_over_budget ... ok
+test infer::decoder::provider::tests::stop_sequence_truncates_before_emission ... ok
+test infer::layer_library::tests::shard_directory_and_missing_entries_are_refused ... ok
+test infer::provider::tests::capability_rejects_small_window_wrong_loader_no_streaming ... ok
+test infer::provider::tests::capability_satisfies_matching_query ... ok
+test infer::provider::tests::capability_serde_roundtrip ... ok
+test infer::provider::tests::infer_error_display_is_stable ... ok
+test infer::decoder::provider::tests::template_end_token_finishes_before_committing_its_id ... ok
+test infer::session::tests::exact_adapter_envelope_passes_and_mismatch_rejects ... ok
+test infer::session::tests::order_changes_session_identity ... ok
+test infer::session::tests::prepared_request_cannot_cross_session_or_template ... ok
+test infer::stub::tests::callback_break_stops_after_current_fragment ... ok
+test infer::stub::tests::echoes_unknown_prompts_and_streams_in_order ... ok
+test infer::stub::tests::invalid_requests_rejected ... ok
+test infer::stub::tests::max_tokens_truncates ... ok
+test infer::stub::tests::prompt_too_long_reports_window ... ok
+test infer::stub::tests::provider_is_object_safe_and_shared ... ok
+test infer::stub::tests::stop_sequence_halts_before_emitting ... ok
+test infer::stub::tests::stub_response_wins_over_echo ... ok
+test infer::decoder::gpu_probe::tests::an_absent_index_is_refused_rather_than_panicking_or_substituting ... ok
+test infer::decoder::gpu_probe::tests::the_discrete_probe_names_a_real_discrete_adapter ... ok
+test infer::decoder::stage::tests::disjoint_stages_match_full_layers_and_enforce_positions ... ok
+test infer::layer_library::tests::failed_layer_read_commits_no_generated_token ... ok
+test infer::decoder::provider::tests::constrained_checkpoint_replay_and_truncation_fail_closed ... ok
+test infer::decoder::provider::tests::numerical_recovery_preserves_committed_prefix_and_sampling_draws ... ok
+test infer::decoder::provider::tests::streams_deltas_that_concatenate_to_the_result ... ok
+test infer::decoder::provider::tests::repeated_numerical_fault_stops_before_a_second_token_decision ... ok
+test infer::decoder::architecture_tests::qwen2_moe_normalized_routes_and_hybrid_layers_reference ... ok
+test infer::decoder::provider::tests::seeded_sampling_is_reproducible_and_unseeded_runs ... ok
+test infer::decoder::architecture_tests::qwen2_moe_selected_experts_and_shared_gate_reference ... ok
+test infer::decoder::architecture_tests::llama3_scaled_reference_past_original_context ... ok
+test infer::layer_library::tests::sharded_library_matches_resident_and_resumes_at_every_boundary ... ok
+test infer::decoder::layer::tests_wgpu::layer_parity_ndarray_wgpu ... ok
+
+test result: ok. 111 passed; 0 failed; 1 ignored; 0 measured; 81 filtered out; finished in 0.86s
+
+   Compiling esp v0.1.0 (/Users/markik/Code/worktrees/esp-cross-source-answers-20261022/crates/esp)
+warning: method `detach` is never used
+  --> crates/esp/src/infer/decoder/moe.rs:32:19
+   |
+31 | impl MlpWeights {
+   | --------------- method in this implementation
+32 |     pub(crate) fn detach(&mut self) {
+   |                   ^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `esp` (lib) generated 1 warning
+    Finished `test` profile [unoptimized] target(s) in 21.97s
+     Running tests/prompt_template.rs (/Users/markik/Code/output/embedding-envelope-20261020/resident-build/debug/deps/prompt_template-b8a4055c2178102d)
+
+running 6 tests
+test empty_context_preserves_the_legacy_serialized_request ... ok
+test literal_roles_context_bos_and_eos_have_explicit_positions ... ok
+test constrained_requests_keep_grammar_and_use_acceptance_instead_of_template_stops ... ok
+test retained_context_is_rendered_as_literal_data_then_removed_from_decoder_fields ... ok
+test unknown_fields_versions_and_empty_stops_are_refused ... ok
+test exact_template_bytes_bind_the_session_and_prepared_request ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s

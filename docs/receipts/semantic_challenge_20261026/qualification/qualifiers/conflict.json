@@ -1,0 +1,216 @@
+{
+  "run": "conflict",
+  "question": "What is the Cormorant observatory access word?",
+  "state": "finished",
+  "text": "{\"claims\":[{\"fact\":{\"id\":\"blake3:8c8e9489fd60bf5826838d8eed92b20e330ab36edab17f533e2cbb6e8ba08bd8\",\"selector\":{\"start\":8,\"end\":45},\"text\":\"the Cormorant observatory access word\"},\"review\":{\"candidates\":[{\"handle\":1,\"requested\":\"the Cormorant observatory access word\",\"quote\":\"The Cormorant observatory's access word is cedar.\",\"answers\":true},{\"handle\":2,\"requested\":\"the Cormorant observatory access word\",\"quote\":\"The Pelican observatory's access word is café. This note gives no access word for the Cormorant observatory.\",\"answers\":false},{\"handle\":3,\"requested\":\"the Cormorant observatory access word\",\"quote\":\"A volunteer guessed that the Fern reserve budget is $7000; no budget has been approved.\",\"answers\":false},{\"handle\":4,\"requested\":\"the Cormorant observatory access word\",\"quote\":\"The Juniper archive's former recovery phrase was violet lantern; its current phrase is not recorded here.\",\"answers\":false}],\"agreement\":\"single\"},\"status\":\"supported\",\"text\":\"The Cormorant observatory's access word is cedar.\",\"evidence\":[{\"handle\":1,\"quote\":\"The Cormorant observatory's access word is cedar.\"}]}]}",
+  "error": null,
+  "session": {
+    "session_id": "blake3:0960d64d68cf80b35a5781e3daeddfcf453f30579861e02af8d93a535db58d3d",
+    "prompt_template_hash": "blake3:9c222535ed31aadd676fc2f1beb16d0dd0402c76a9ee1398bc0c200c825103da"
+  },
+  "tokens": 302,
+  "continuations": [
+    {
+      "device": "device:8574546edeaf9af0f26d54d0001e2383",
+      "at_token": 0,
+      "reason": "ask",
+      "first_differing_token": null,
+      "compared_token_ids_hash": null
+    }
+  ],
+  "recall": {
+    "answer_format": "claim_support_v1",
+    "answer_contract": {
+      "method": "distillery.quoted-review/v7",
+      "question": "blake3:787798d214afe01abd9390cb7eb44a11164ecff5a56df06e90dcae6a4b947648",
+      "prompt": "blake3:d53330ef195c2fb653b3a9f1add872228691c160242ab271178ede63d35a857d",
+      "context": "blake3:b914684d190b181b178f3e8efeb3733b41aa1fe98a3ad6a5f8191bce910f016c",
+      "max_claims": 1,
+      "output_grammar": "blake3:931ee7332ef9e17f95ff1cfcffc79efffc47ceb83771817d2a967fcc51679742",
+      "requested_facts": {
+        "method": "eidetic.explicit-question-list/v1",
+        "question": "blake3:787798d214afe01abd9390cb7eb44a11164ecff5a56df06e90dcae6a4b947648",
+        "facts": [
+          {
+            "id": "blake3:8c8e9489fd60bf5826838d8eed92b20e330ab36edab17f533e2cbb6e8ba08bd8",
+            "selector": {
+              "start": 8,
+              "end": 45
+            },
+            "text": "the Cormorant observatory access word"
+          }
+        ]
+      }
+    },
+    "support": {
+      "requested_facts": "blake3:44b92e11c99e957177164c5e2e50d271d318f9440a969bcacda093f1f46f4a94",
+      "method": "eidetic.claim-support/v1",
+      "raw_output": "blake3:6458b76fd937e7122453ed9448f6f7cf1756ccade79b39af3d801422780c1090",
+      "semantic_review": "unreviewed",
+      "claims": [
+        {
+          "fact": {
+            "id": "blake3:8c8e9489fd60bf5826838d8eed92b20e330ab36edab17f533e2cbb6e8ba08bd8",
+            "selector": {
+              "start": 8,
+              "end": 45
+            },
+            "text": "the Cormorant observatory access word"
+          },
+          "review": {
+            "candidates": [
+              {
+                "handle": 1,
+                "requested": "the Cormorant observatory access word",
+                "quote": "The Cormorant observatory's access word is cedar.",
+                "answers": true
+              },
+              {
+                "handle": 2,
+                "requested": "the Cormorant observatory access word",
+                "quote": "The Pelican observatory's access word is café. This note gives no access word for the Cormorant observatory.",
+                "answers": false
+              },
+              {
+                "handle": 3,
+                "requested": "the Cormorant observatory access word",
+                "quote": "A volunteer guessed that the Fern reserve budget is $7000; no budget has been approved.",
+                "answers": false
+              },
+              {
+                "handle": 4,
+                "requested": "the Cormorant observatory access word",
+                "quote": "The Juniper archive's former recovery phrase was violet lantern; its current phrase is not recorded here.",
+                "answers": false
+              }
+            ],
+            "agreement": "single"
+          },
+          "status": "supported",
+          "text": "The Cormorant observatory's access word is cedar.",
+          "evidence": [
+            {
+              "handle": 1,
+              "quote": "The Cormorant observatory's access word is cedar.",
+              "passage": "blake3:14f1b0a87e8a1d2bd9b2b5d482721ef24821bc37ae27c44b3c9bc773aedcbf29",
+              "selector": {
+                "start": 0,
+                "end": 49
+              },
+              "error": null
+            }
+          ],
+          "issues": []
+        }
+      ],
+      "error": null
+    },
+    "scope": [
+      {
+        "kind": "page_text",
+        "source": "https://probe.test/capture"
+      },
+      {
+        "kind": "page_text",
+        "source": "https://probe.test/control"
+      },
+      {
+        "kind": "page_text",
+        "source": "https://probe.test/knot"
+      },
+      {
+        "kind": "page_text",
+        "source": "https://probe.test/note"
+      }
+    ],
+    "config": {
+      "chunk_chars": 512,
+      "max_passages": 4,
+      "min_quote_chars": 32,
+      "max_context_chars": 12000,
+      "max_corpus_chars": 1000000
+    },
+    "passages": [
+      {
+        "handle": 1,
+        "passage": {
+          "source": {
+            "kind": "page_text",
+            "source": "https://probe.test/control"
+          },
+          "version": "blake3:1acf2ad101d9dcc6112cc65f0bcc3010d92d5e7c503235265c6ff10bc6a82669",
+          "text_hash": "blake3:1acf2ad101d9dcc6112cc65f0bcc3010d92d5e7c503235265c6ff10bc6a82669",
+          "selector": {
+            "start": 0,
+            "end": 49
+          },
+          "chunker": "mere.unicode-chunks/v1/512",
+          "text": "The Cormorant observatory's access word is cedar."
+        }
+      },
+      {
+        "handle": 2,
+        "passage": {
+          "source": {
+            "kind": "page_text",
+            "source": "https://probe.test/capture"
+          },
+          "version": "blake3:4938de2a0223972b78e56a7bf4146949cc5f24eddaa321fa1f463487513ad481",
+          "text_hash": "blake3:4938de2a0223972b78e56a7bf4146949cc5f24eddaa321fa1f463487513ad481",
+          "selector": {
+            "start": 0,
+            "end": 108
+          },
+          "chunker": "mere.unicode-chunks/v1/512",
+          "text": "The Pelican observatory's access word is café. This note gives no access word for the Cormorant observatory."
+        }
+      },
+      {
+        "handle": 3,
+        "passage": {
+          "source": {
+            "kind": "page_text",
+            "source": "https://probe.test/note"
+          },
+          "version": "blake3:1941bec8fb7b47e99d59d615ee04c710815eb0106b4a13200cd5f2156c068385",
+          "text_hash": "blake3:1941bec8fb7b47e99d59d615ee04c710815eb0106b4a13200cd5f2156c068385",
+          "selector": {
+            "start": 0,
+            "end": 87
+          },
+          "chunker": "mere.unicode-chunks/v1/512",
+          "text": "A volunteer guessed that the Fern reserve budget is $7000; no budget has been approved."
+        }
+      },
+      {
+        "handle": 4,
+        "passage": {
+          "source": {
+            "kind": "page_text",
+            "source": "https://probe.test/knot"
+          },
+          "version": "blake3:0237a09f79deb7566f3cee8b8a6347be4b874db555345eb8bbb02d1614ae57b9",
+          "text_hash": "blake3:0237a09f79deb7566f3cee8b8a6347be4b874db555345eb8bbb02d1614ae57b9",
+          "selector": {
+            "start": 0,
+            "end": 105
+          },
+          "chunker": "mere.unicode-chunks/v1/512",
+          "text": "The Juniper archive's former recovery phrase was violet lantern; its current phrase is not recorded here."
+        }
+      }
+    ],
+    "stale": [],
+    "citations": [
+      {
+        "handle": 1,
+        "passage": "blake3:14f1b0a87e8a1d2bd9b2b5d482721ef24821bc37ae27c44b3c9bc773aedcbf29",
+        "basis": "claim_quotation",
+        "answer_selector": {
+          "start": 1054,
+          "end": 1105
+        }
+      }
+    ]
+  }
+}

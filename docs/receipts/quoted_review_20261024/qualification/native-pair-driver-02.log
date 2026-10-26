@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "/Users/markik/Code/output/quoted-review-20261024/native-harness/run_native.py", line 145, in <module>
+    if __name__=='__main__':main()
+                            ~~~~^^
+  File "/Users/markik/Code/output/quoted-review-20261024/native-harness/run_native.py", line 120, in main
+    (rdir/('restart.request' if phase==0 else 'stop.request')).touch();resident.wait(timeout=90);assert resident.returncode==0
+                                                                       ~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "/usr/local/Cellar/python@3.15/3.15.0/Frameworks/Python.framework/Versions/3.15/lib/python3.15/subprocess.py", line 1445, in wait
+    return self._wait(timeout=timeout)
+           ~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/usr/local/Cellar/python@3.15/3.15.0/Frameworks/Python.framework/Versions/3.15/lib/python3.15/subprocess.py", line 2310, in _wait
+    if self._wait_pidfd(timeout) or self._wait_kqueue(timeout):
+                                    ~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/usr/local/Cellar/python@3.15/3.15.0/Frameworks/Python.framework/Versions/3.15/lib/python3.15/subprocess.py", line 2286, in _wait_kqueue
+    raise TimeoutExpired(self.args, timeout)
+subprocess.TimeoutExpired: Command '['/Users/markik/Code/output/quoted-review-20261024/native-pair-02/frozen/inference_route', 'serve_trained_model_for_headed_turnstone', '--ignored', '--exact', '--nocapture']' timed out after 90 seconds

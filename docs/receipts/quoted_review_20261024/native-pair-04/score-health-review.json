@@ -1,0 +1,43 @@
+{
+  "result": "pass",
+  "generations": {
+    "mixed-0-cross.json": {
+      "prompt": "blake3:22f56f65b3b963c4422e6b6b06fdb6227fdfa3632cc3e6c3485c46b21e62501b",
+      "checked_rows": 9,
+      "invalid_rows": 0,
+      "prefix_recomputations": 0,
+      "failed_recoveries": 0
+    },
+    "mixed-0-missing.json": {
+      "prompt": "blake3:75aefc86bdeb5432d5139557e4e4a068cec8ad44c816690b202eeca569b1a065",
+      "checked_rows": 3,
+      "invalid_rows": 0,
+      "prefix_recomputations": 0,
+      "failed_recoveries": 0
+    },
+    "mixed-0-conflict.json": {
+      "prompt": "blake3:7fa6c525750cd39526302ea305bf9409cf962470d6244706ca03b7589e443e1e",
+      "checked_rows": 5,
+      "invalid_rows": 0,
+      "prefix_recomputations": 0,
+      "failed_recoveries": 0
+    },
+    "mixed-0-reduced.json": {
+      "prompt": "blake3:ac2d1daba8d8713fd69009a73660689f6fa8f89d485df397a177529741c59ce0",
+      "checked_rows": 2,
+      "invalid_rows": 0,
+      "prefix_recomputations": 0,
+      "failed_recoveries": 0
+    },
+    "mixed-1-cross.json": {
+      "prompt": "blake3:22f56f65b3b963c4422e6b6b06fdb6227fdfa3632cc3e6c3485c46b21e62501b",
+      "checked_rows": 9,
+      "invalid_rows": 0,
+      "prefix_recomputations": 0,
+      "failed_recoveries": 0
+    }
+  },
+  "observed_invalid_rows": 0,
+  "prefix_recomputations": 0,
+  "boundary": "Five logged native generations. Historical reopen does not generate; no recovery-required conclusion inferred from missing logs."
+}

@@ -1,0 +1,25 @@
+{
+  "result": "pass",
+  "processes": {
+    "56609": {
+      "owned_process_absent": true,
+      "pid_reused": false
+    },
+    "56685": {
+      "owned_process_absent": true,
+      "pid_reused": false
+    },
+    "57488": {
+      "owned_process_absent": true,
+      "pid_reused": false
+    },
+    "57506": {
+      "owned_process_absent": true,
+      "pid_reused": false
+    }
+  },
+  "controller_exit": {
+    "exit": 0
+  },
+  "boundary": "All four recorded product/resident processes are absent; runner completed its owned origin/caffeinate cleanup."
+}

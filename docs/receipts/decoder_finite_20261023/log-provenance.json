@@ -1,0 +1,32 @@
+{
+  "candidate-01/run.log": {
+    "original_sha256": "3810cdbbf21ab3d9132a627f230a327622065372a78ecf4c934125a616bd9f76",
+    "published_sha256": "0b0d71f05a24b9c639910d06d9c9d1ce255970948dc095a4608821928e8d9696",
+    "transform": "remove terminal empty log lines only; raw JSON unchanged"
+  },
+  "checks/resident-route-tests.log": {
+    "original_sha256": "30f36a0c7bd5250281ea8abe0f13aa86dffe28f254434a837ebe6060c9cda7a7",
+    "published_sha256": "ccf1c732795b7b1a5e1038213ead79e8a16b0badfa22e6a1998e0cd722e73f14",
+    "transform": "remove terminal empty log lines only; raw JSON unchanged"
+  },
+  "checks/resident-tests-qualification.log": {
+    "original_sha256": "20615701dc562af0fc5efb3a449efcfffeae91668ab0ae6efc3d3dd1ebf053e6",
+    "published_sha256": "b81c267799e26cc71cfa3b1b090a3c18c074ee1a6d849d1a3e595de124396188",
+    "transform": "remove terminal empty log lines only; raw JSON unchanged"
+  },
+  "checks/turnstone-tests.log": {
+    "original_sha256": "53377733b560af86fb5830f35d7a985fffe6a4dd150306e214e0421fb7c21582",
+    "published_sha256": "6b310ae8b67836edd63162932cf5ad84a8cc85677c9f6abe80d992281113ac62",
+    "transform": "remove terminal empty log lines only; raw JSON unchanged"
+  },
+  "checks/esp-tests-qualification.log": {
+    "original_sha256": "c046d63e3e3147bfe62018a27a78e9a192ee8b23ed8d6217c118b9d78d8f3d38",
+    "published_sha256": "0106118c98723df88d447f033ca9849410460b305a53896a1718f3b134bbbadd",
+    "transform": "remove terminal empty log lines only; raw JSON unchanged"
+  },
+  "diagnostics/resident-baseline/run.log": {
+    "original_sha256": "68d0a4fafbf847b7cdc4a030eb58366fd3ac98b08e252bc5aaec91b6de07126b",
+    "published_sha256": "03a7af0dca303e12b8936d82130b5ca4746222f5cdc3912b9088d8818450704d",
+    "transform": "remove terminal empty log lines only; raw JSON unchanged"
+  }
+}

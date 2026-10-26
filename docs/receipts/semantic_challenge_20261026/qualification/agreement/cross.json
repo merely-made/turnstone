@@ -1,0 +1,208 @@
+{
+  "run": "cross",
+  "question": "What is the Bracken ferry departure time?",
+  "state": "finished",
+  "text": "{\"claims\":[{\"fact\":{\"id\":\"blake3:3a379add044a0dd16b9a7d4ce893aa907f230e5de53e3b26ea5036b823cec09c\",\"selector\":{\"start\":8,\"end\":40},\"text\":\"the Bracken ferry departure time\"},\"review\":{\"candidates\":[{\"handle\":1,\"requested\":\"the Bracken ferry departure time\",\"quote\":\"The Bracken ferry departure time is 09:30.\",\"answers\":true},{\"handle\":2,\"requested\":\"the Bracken ferry departure time\",\"quote\":\"The Bracken ferry departure time is 09:30.\",\"answers\":true},{\"handle\":3,\"requested\":\"the Bracken ferry departure time\",\"quote\":\"The Pelican ferry departure time is 08:00.\",\"answers\":false}],\"agreement\":\"different\"},\"status\":\"conflicting\",\"text\":\"The supplied sources disagree: The Bracken ferry departure time is 09:30. / The Bracken ferry departure time is 09:30.\",\"evidence\":[{\"handle\":1,\"quote\":\"The Bracken ferry departure time is 09:30.\"},{\"handle\":2,\"quote\":\"The Bracken ferry departure time is 09:30.\"}]}]}",
+  "error": null,
+  "session": {
+    "session_id": "blake3:0960d64d68cf80b35a5781e3daeddfcf453f30579861e02af8d93a535db58d3d",
+    "prompt_template_hash": "blake3:9c222535ed31aadd676fc2f1beb16d0dd0402c76a9ee1398bc0c200c825103da"
+  },
+  "tokens": 294,
+  "continuations": [
+    {
+      "device": "device:f533517d6de6026bd90d5e6801aa91d4",
+      "at_token": 0,
+      "reason": "ask",
+      "first_differing_token": null,
+      "compared_token_ids_hash": null
+    }
+  ],
+  "recall": {
+    "answer_format": "claim_support_v1",
+    "answer_contract": {
+      "method": "distillery.quoted-review/v7",
+      "question": "blake3:59bf5bd25b1ac96575c7e2166280cd4ded1b70df01692230fa85758c6539356f",
+      "prompt": "blake3:8f5109661d2649c25d245356d90fb456b93536801a942010722e3317d57f7bd7",
+      "context": "blake3:9cc676422da55708a20f8b1c4a07cc29dc97b7697de24c3d29b736a3ee4fb347",
+      "max_claims": 1,
+      "output_grammar": "blake3:75d74f59937e14391ffd33413bd43baf7fd4ee18e5a85fd843aae6f4b47299ad",
+      "requested_facts": {
+        "method": "eidetic.explicit-question-list/v1",
+        "question": "blake3:59bf5bd25b1ac96575c7e2166280cd4ded1b70df01692230fa85758c6539356f",
+        "facts": [
+          {
+            "id": "blake3:3a379add044a0dd16b9a7d4ce893aa907f230e5de53e3b26ea5036b823cec09c",
+            "selector": {
+              "start": 8,
+              "end": 40
+            },
+            "text": "the Bracken ferry departure time"
+          }
+        ]
+      }
+    },
+    "support": {
+      "requested_facts": "blake3:b7d8e3df2059a9dcd08061d818f50b01de04c48fa529bc847db0505e0f290524",
+      "method": "eidetic.claim-support/v1",
+      "raw_output": "blake3:99cd7d6d2dd65caf60f0eab41074fae733b6af99bbec587942c9d6ee1f54b6ed",
+      "semantic_review": "unreviewed",
+      "claims": [
+        {
+          "fact": {
+            "id": "blake3:3a379add044a0dd16b9a7d4ce893aa907f230e5de53e3b26ea5036b823cec09c",
+            "selector": {
+              "start": 8,
+              "end": 40
+            },
+            "text": "the Bracken ferry departure time"
+          },
+          "review": {
+            "candidates": [
+              {
+                "handle": 1,
+                "requested": "the Bracken ferry departure time",
+                "quote": "The Bracken ferry departure time is 09:30.",
+                "answers": true
+              },
+              {
+                "handle": 2,
+                "requested": "the Bracken ferry departure time",
+                "quote": "The Bracken ferry departure time is 09:30.",
+                "answers": true
+              },
+              {
+                "handle": 3,
+                "requested": "the Bracken ferry departure time",
+                "quote": "The Pelican ferry departure time is 08:00.",
+                "answers": false
+              }
+            ],
+            "agreement": "different"
+          },
+          "status": "conflicting",
+          "text": "The supplied sources disagree: The Bracken ferry departure time is 09:30. / The Bracken ferry departure time is 09:30.",
+          "evidence": [
+            {
+              "handle": 1,
+              "quote": "The Bracken ferry departure time is 09:30.",
+              "passage": "blake3:88aafd9e9a3cec20414c6320a0fd083dd149b24aded6d33aa84e07df6aae187c",
+              "selector": {
+                "start": 0,
+                "end": 42
+              },
+              "error": null
+            },
+            {
+              "handle": 2,
+              "quote": "The Bracken ferry departure time is 09:30.",
+              "passage": "blake3:a5e8bddd9f4e1820c7e5aae80df305efb85d195c709c9bd17ae928f3ee579f29",
+              "selector": {
+                "start": 0,
+                "end": 42
+              },
+              "error": null
+            }
+          ],
+          "issues": []
+        }
+      ],
+      "error": null
+    },
+    "scope": [
+      {
+        "kind": "page_text",
+        "source": "https://probe.test/capture"
+      },
+      {
+        "kind": "page_text",
+        "source": "https://probe.test/knot"
+      },
+      {
+        "kind": "page_text",
+        "source": "https://probe.test/note"
+      }
+    ],
+    "config": {
+      "chunk_chars": 512,
+      "max_passages": 4,
+      "min_quote_chars": 32,
+      "max_context_chars": 12000,
+      "max_corpus_chars": 1000000
+    },
+    "passages": [
+      {
+        "handle": 1,
+        "passage": {
+          "source": {
+            "kind": "page_text",
+            "source": "https://probe.test/knot"
+          },
+          "version": "blake3:0f26fd7da68a7e3231eb932d313e0581e8f3083abadfd0e1b90d4415c9809599",
+          "text_hash": "blake3:0f26fd7da68a7e3231eb932d313e0581e8f3083abadfd0e1b90d4415c9809599",
+          "selector": {
+            "start": 0,
+            "end": 42
+          },
+          "chunker": "mere.unicode-chunks/v1/512",
+          "text": "The Bracken ferry departure time is 09:30."
+        }
+      },
+      {
+        "handle": 2,
+        "passage": {
+          "source": {
+            "kind": "page_text",
+            "source": "https://probe.test/capture"
+          },
+          "version": "blake3:0f26fd7da68a7e3231eb932d313e0581e8f3083abadfd0e1b90d4415c9809599",
+          "text_hash": "blake3:0f26fd7da68a7e3231eb932d313e0581e8f3083abadfd0e1b90d4415c9809599",
+          "selector": {
+            "start": 0,
+            "end": 42
+          },
+          "chunker": "mere.unicode-chunks/v1/512",
+          "text": "The Bracken ferry departure time is 09:30."
+        }
+      },
+      {
+        "handle": 3,
+        "passage": {
+          "source": {
+            "kind": "page_text",
+            "source": "https://probe.test/note"
+          },
+          "version": "blake3:70c08d5519b8a98e62ec8976236f36fb88f544a266e202f944ef40a762ee1fc2",
+          "text_hash": "blake3:70c08d5519b8a98e62ec8976236f36fb88f544a266e202f944ef40a762ee1fc2",
+          "selector": {
+            "start": 0,
+            "end": 42
+          },
+          "chunker": "mere.unicode-chunks/v1/512",
+          "text": "The Pelican ferry departure time is 08:00."
+        }
+      }
+    ],
+    "stale": [],
+    "citations": [
+      {
+        "handle": 1,
+        "passage": "blake3:88aafd9e9a3cec20414c6320a0fd083dd149b24aded6d33aa84e07df6aae187c",
+        "basis": "claim_quotation",
+        "answer_selector": {
+          "start": 792,
+          "end": 836
+        }
+      },
+      {
+        "handle": 2,
+        "passage": "blake3:a5e8bddd9f4e1820c7e5aae80df305efb85d195c709c9bd17ae928f3ee579f29",
+        "basis": "claim_quotation",
+        "answer_selector": {
+          "start": 858,
+          "end": 902
+        }
+      }
+    ]
+  }
+}

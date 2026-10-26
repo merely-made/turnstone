@@ -1,0 +1,8 @@
+[codex/cross-source-answers-20261022 5bfde1916] Stabilize recall score ties before source identities
+ 2 files changed, 133 insertions(+), 10 deletions(-)
+To https://github.com/merely-made/mere.git
+   8bf8b3e30..5bfde1916  HEAD -> codex/cross-source-answers-20261022
+[codex/cross-source-answers-20261022 7f0fb58] Refresh resident with stable recall tie ordering
+ 1 file changed, 62 insertions(+), 62 deletions(-)
+To https://github.com/merely-made/turnstone.git
+   4f80c68..7f0fb58  HEAD -> codex/cross-source-answers-20261022

@@ -1,0 +1,49 @@
+{
+  "result": "gate_not_passed",
+  "cases_sha256": "b91de4627aee873389066f4a8ed814fe4faff85cf1c8a3ae1d8e74f988d27ea2",
+  "cases": {
+    "cross": {
+      "result": "pass",
+      "claims": 3,
+      "status": [
+        "supported",
+        "supported",
+        "supported"
+      ],
+      "checked_quotes": 3,
+      "sources": [
+        "capture",
+        "knot",
+        "note"
+      ],
+      "semantic_review": "unreviewed",
+      "raw_output": "blake3:4e321b35ca372a23f65badb2f5094fa2516309b15d9b4dc3eeba46034878399e"
+    },
+    "missing": {
+      "result": "fail",
+      "error": "'citations'",
+      "state": "finished"
+    },
+    "conflict": {
+      "result": "pass",
+      "claims": 1,
+      "status": [
+        "conflicting"
+      ],
+      "checked_quotes": 2,
+      "sources": [
+        "capture",
+        "control"
+      ],
+      "semantic_review": "unreviewed",
+      "raw_output": "blake3:e2e22cb76244bef89e5b1d05fd932b9114946e1b4c96a0e3c728febfc72803bb"
+    },
+    "reduced": {
+      "result": "fail",
+      "error": "'citations'",
+      "state": "finished"
+    }
+  },
+  "headed_allowed": false,
+  "boundary": "Partial or absent output is not a completed semantic measurement. All four completed frozen answers must pass before headed acceptance."
+}

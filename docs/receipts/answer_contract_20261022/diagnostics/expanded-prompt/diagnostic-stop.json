@@ -1,0 +1,7 @@
+{
+  "utc": "2026-10-23T04:37:04.036734+00:00",
+  "reason": "Expanded prompt and pretty-printed output exceed practical frozen-case execution budget; deliberately stopped before answer completion. This is not a semantic result.",
+  "tokens": 30,
+  "state": "running",
+  "observed_decode_tokens_per_second": 0.1384761412
+}

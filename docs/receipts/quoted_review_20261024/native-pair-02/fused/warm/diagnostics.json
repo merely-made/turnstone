@@ -1,0 +1,31 @@
+{
+  "records": [],
+  "gaps": [
+    {
+      "run": "314bd684-f430-4421-aca9-3c3b0993767a",
+      "source": "turnstone.app-event-fanout",
+      "first_sequence": 1,
+      "next_sequence": 38
+    }
+  ],
+  "boundary": null,
+  "stats": {
+    "run": "314bd684-f430-4421-aca9-3c3b0993767a",
+    "source": "turnstone.app-event-fanout",
+    "generation": 0,
+    "retained_records": 0,
+    "retained_bytes": 0,
+    "first_retained_sequence": null,
+    "last_retained_sequence": null,
+    "next_sequence": 38,
+    "loss": {
+      "rejected_disabled": 0,
+      "rejected_oversized": 0,
+      "rejected_accounting": 0,
+      "evicted": 0,
+      "expired": 37,
+      "dropped": 0
+    }
+  },
+  "next_sequence": 38
+}

@@ -1,0 +1,167 @@
+{
+  "run": "missing",
+  "question": "What is the approved Fern reserve budget?",
+  "state": "finished",
+  "text": "{\"claims\":[{\"fact\":{\"id\":\"blake3:a16894dfbfff5d1b6bd94c92accd23fdf5dd0fdeb84160eafc572c2fec4cacf8\",\"selector\":{\"start\":8,\"end\":40},\"text\":\"the approved Fern reserve budget\"},\"review\":{\"candidates\":[{\"handle\":1,\"requested\":\"the approved Fern reserve budget\",\"quote\":\"A volunteer guessed that the Fern reserve budget is $7000; no budget has been approved.\",\"answers\":false},{\"handle\":2,\"requested\":\"the approved Fern reserve budget\",\"quote\":\"The Pelican observatory's access word is café. This note gives no access word for the Cormorant observatory.\",\"answers\":false},{\"handle\":3,\"requested\":\"the approved Fern reserve budget\",\"quote\":\"The Juniper archive's former recovery phrase was violet lantern; its current phrase is not recorded here.\",\"answers\":false}],\"agreement\":\"none\"},\"status\":\"insufficient\",\"text\":\"The supplied evidence does not state the approved Fern reserve budget.\",\"evidence\":[]}]}",
+  "error": null,
+  "session": {
+    "session_id": "blake3:0960d64d68cf80b35a5781e3daeddfcf453f30579861e02af8d93a535db58d3d",
+    "prompt_template_hash": "blake3:9c222535ed31aadd676fc2f1beb16d0dd0402c76a9ee1398bc0c200c825103da"
+  },
+  "tokens": 231,
+  "continuations": [
+    {
+      "device": "device:8574546edeaf9af0f26d54d0001e2383",
+      "at_token": 0,
+      "reason": "ask",
+      "first_differing_token": null,
+      "compared_token_ids_hash": null
+    }
+  ],
+  "recall": {
+    "answer_format": "claim_support_v1",
+    "answer_contract": {
+      "method": "distillery.quoted-review/v7",
+      "question": "blake3:fff7d2d0de0af9bcdcc755bb3d7da1a173187a59e857b3196bdd99f71db7021e",
+      "prompt": "blake3:61d52844e896f4c7264d1694f37741882f56ca5745c25eb10810ccab7a330397",
+      "context": "blake3:54789fb53d7aaa7d48cc4e0e249fb5ddefc2bfb645b92a799e237150124ccd74",
+      "max_claims": 1,
+      "output_grammar": "blake3:645b34433cd0096f667a1e76c0204ad55ae12a58dfecd9d81b5f1b41903da6b6",
+      "requested_facts": {
+        "method": "eidetic.explicit-question-list/v1",
+        "question": "blake3:fff7d2d0de0af9bcdcc755bb3d7da1a173187a59e857b3196bdd99f71db7021e",
+        "facts": [
+          {
+            "id": "blake3:a16894dfbfff5d1b6bd94c92accd23fdf5dd0fdeb84160eafc572c2fec4cacf8",
+            "selector": {
+              "start": 8,
+              "end": 40
+            },
+            "text": "the approved Fern reserve budget"
+          }
+        ]
+      }
+    },
+    "support": {
+      "requested_facts": "blake3:50deda0b226e645f3981f1844fb4518ef878252f607045f0f393097bf3cb2220",
+      "method": "eidetic.claim-support/v1",
+      "raw_output": "blake3:5c9ca643e970965e960cc77fa740490278abda58d7485822398a12571b33ac50",
+      "semantic_review": "unreviewed",
+      "claims": [
+        {
+          "fact": {
+            "id": "blake3:a16894dfbfff5d1b6bd94c92accd23fdf5dd0fdeb84160eafc572c2fec4cacf8",
+            "selector": {
+              "start": 8,
+              "end": 40
+            },
+            "text": "the approved Fern reserve budget"
+          },
+          "review": {
+            "candidates": [
+              {
+                "handle": 1,
+                "requested": "the approved Fern reserve budget",
+                "quote": "A volunteer guessed that the Fern reserve budget is $7000; no budget has been approved.",
+                "answers": false
+              },
+              {
+                "handle": 2,
+                "requested": "the approved Fern reserve budget",
+                "quote": "The Pelican observatory's access word is café. This note gives no access word for the Cormorant observatory.",
+                "answers": false
+              },
+              {
+                "handle": 3,
+                "requested": "the approved Fern reserve budget",
+                "quote": "The Juniper archive's former recovery phrase was violet lantern; its current phrase is not recorded here.",
+                "answers": false
+              }
+            ],
+            "agreement": "none"
+          },
+          "status": "insufficient",
+          "text": "The supplied evidence does not state the approved Fern reserve budget.",
+          "evidence": [],
+          "issues": []
+        }
+      ],
+      "error": null
+    },
+    "scope": [
+      {
+        "kind": "page_text",
+        "source": "https://probe.test/capture"
+      },
+      {
+        "kind": "page_text",
+        "source": "https://probe.test/knot"
+      },
+      {
+        "kind": "page_text",
+        "source": "https://probe.test/note"
+      }
+    ],
+    "config": {
+      "chunk_chars": 512,
+      "max_passages": 4,
+      "min_quote_chars": 32,
+      "max_context_chars": 12000,
+      "max_corpus_chars": 1000000
+    },
+    "passages": [
+      {
+        "handle": 1,
+        "passage": {
+          "source": {
+            "kind": "page_text",
+            "source": "https://probe.test/note"
+          },
+          "version": "blake3:1941bec8fb7b47e99d59d615ee04c710815eb0106b4a13200cd5f2156c068385",
+          "text_hash": "blake3:1941bec8fb7b47e99d59d615ee04c710815eb0106b4a13200cd5f2156c068385",
+          "selector": {
+            "start": 0,
+            "end": 87
+          },
+          "chunker": "mere.unicode-chunks/v1/512",
+          "text": "A volunteer guessed that the Fern reserve budget is $7000; no budget has been approved."
+        }
+      },
+      {
+        "handle": 2,
+        "passage": {
+          "source": {
+            "kind": "page_text",
+            "source": "https://probe.test/capture"
+          },
+          "version": "blake3:4938de2a0223972b78e56a7bf4146949cc5f24eddaa321fa1f463487513ad481",
+          "text_hash": "blake3:4938de2a0223972b78e56a7bf4146949cc5f24eddaa321fa1f463487513ad481",
+          "selector": {
+            "start": 0,
+            "end": 108
+          },
+          "chunker": "mere.unicode-chunks/v1/512",
+          "text": "The Pelican observatory's access word is café. This note gives no access word for the Cormorant observatory."
+        }
+      },
+      {
+        "handle": 3,
+        "passage": {
+          "source": {
+            "kind": "page_text",
+            "source": "https://probe.test/knot"
+          },
+          "version": "blake3:0237a09f79deb7566f3cee8b8a6347be4b874db555345eb8bbb02d1614ae57b9",
+          "text_hash": "blake3:0237a09f79deb7566f3cee8b8a6347be4b874db555345eb8bbb02d1614ae57b9",
+          "selector": {
+            "start": 0,
+            "end": 105
+          },
+          "chunker": "mere.unicode-chunks/v1/512",
+          "text": "The Juniper archive's former recovery phrase was violet lantern; its current phrase is not recorded here."
+        }
+      }
+    ],
+    "stale": []
+  }
+}

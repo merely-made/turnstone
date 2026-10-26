@@ -1,0 +1,15 @@
+{
+  "result": "pass",
+  "sources": {
+    "mere": {
+      "eidetic": "git+https://github.com/merely-made/eidetic.git?rev=56601d9cb0c4901fd352bc789ce0ab53b5b6edd6#56601d9cb0c4901fd352bc789ce0ab53b5b6edd6"
+    },
+    "turnstone": {
+      "eidetic": "git+https://github.com/merely-made/eidetic.git?rev=56601d9cb0c4901fd352bc789ce0ab53b5b6edd6#56601d9cb0c4901fd352bc789ce0ab53b5b6edd6",
+      "resident_mere": "git+https://github.com/merely-made/mere.git?branch=main#5bfde191655273619bd10fd54393c45f036384a7",
+      "other_mere_pins_unchanged": {
+        "mere-source-edit": "git+https://github.com/merely-made/mere.git?rev=70deef2c8cf3d3410ae35b496a9396514070b24f#70deef2c8cf3d3410ae35b496a9396514070b24f"
+      }
+    }
+  }
+}

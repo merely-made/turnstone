@@ -1,0 +1,39 @@
+{
+  "result": "gate_not_passed",
+  "cases": {
+    "cross": {
+      "result": "pass",
+      "protocol_defaults_applied": [],
+      "claims": 3,
+      "status": [
+        "supported",
+        "supported",
+        "supported"
+      ],
+      "checked_quotes": 3,
+      "sources": [
+        "capture",
+        "knot",
+        "note"
+      ],
+      "semantic_review": "unreviewed",
+      "raw_output": "blake3:608bdbc25485f49ac36ca01c996aa6c49dc67dd448a0c97dcf910a9e00ee544d"
+    },
+    "missing": {
+      "result": "fail",
+      "error": "AssertionError()"
+    },
+    "conflict": {
+      "result": "fail",
+      "error": "AssertionError()"
+    },
+    "reduced": {
+      "result": "fail",
+      "error": "AssertionError()"
+    }
+  },
+  "negative_controls": {},
+  "unchanged_checker_sha256": "f3a0e939cef9ac3bf85f80cb9d1e984ee40d94a0757cf6d4c6c6d55e23b88594",
+  "cases_sha256": "b91de4627aee873389066f4a8ed814fe4faff85cf1c8a3ae1d8e74f988d27ea2",
+  "boundary": "Same frozen rubric; decode omitted citations as [] per RecallEvidence serde(default,skip_serializing_if=Vec::is_empty). Raw files, model output and support remain unchanged. Any incomplete case still blocks headed checks."
+}

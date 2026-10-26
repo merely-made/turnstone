@@ -1,0 +1,265 @@
+   Compiling cubecl-environment v0.11.0
+   Compiling cubecl-common v0.11.0
+   Compiling pliron v0.19.0
+   Compiling cubecl-zspace v0.11.0
+   Compiling cubecl-runtime v0.11.0
+   Compiling cubecl-server v0.11.0
+   Compiling cubecl-wgpu v0.11.0
+   Compiling burn-dispatch v0.22.0
+   Compiling burn-backend-extension v0.22.0
+   Compiling sha2 v0.11.1
+   Compiling burn-std v0.22.0
+   Compiling cubecl-ir v0.11.0
+   Compiling burn-pack v0.22.0
+   Compiling ed25519-dalek v3.0.0
+   Compiling insigne v0.0.2 (https://github.com/merely-made/dramatis.git?branch=main#0c537848)
+   Compiling personae v0.3.0 (https://github.com/merely-made/dramatis.git?branch=main#0c537848)
+   Compiling eidetic v0.0.2 (https://github.com/merely-made/eidetic.git?rev=44f0664748238d7a96603925a0268caf60e091aa#44f06647)
+   Compiling cubecl-monitoring v0.11.0
+   Compiling cubecl-core v0.11.0
+   Compiling cubecl-opt v0.11.0
+   Compiling cubecl-cpp v0.11.0
+   Compiling cubecl-std v0.11.0
+   Compiling cubecl v0.11.0
+   Compiling cubek-tile v0.3.0
+   Compiling cubek-std v0.3.0
+   Compiling cubek-matmul v0.3.0
+   Compiling burn-backend v0.22.0
+   Compiling burn-ir v0.22.0
+   Compiling cubek-attention v0.3.0
+   Compiling cubek-convolution v0.3.0
+   Compiling cubek-reduce v0.3.0
+   Compiling cubek-random v0.3.0
+   Compiling cubek-interpolate v0.3.0
+   Compiling cubek-quant v0.3.0
+   Compiling cubek-pool v0.3.0
+   Compiling cubek v0.3.0
+   Compiling burn-cubecl v0.22.0
+   Compiling burn-ndarray v0.22.0
+   Compiling burn-flex v0.22.0
+   Compiling burn-wgpu v0.22.0
+   Compiling burn-tensor v0.22.0
+   Compiling burn-core v0.22.0
+   Compiling burn-linalg v0.22.0
+   Compiling burn-nn v0.22.0
+   Compiling burn v0.22.0
+   Compiling esp v0.1.0 (/Users/markik/Code/worktrees/esp-cross-source-answers-20261022/crates/esp)
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+  --> crates/esp/src/infer/decoder/architecture_tests.rs:33:28
+   |
+33 |     check_on(name, Device::ndarray());
+   |                            ^^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/attention.rs:427:22
+    |
+427 |             &Device::ndarray(),
+    |                      ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/attention.rs:432:27
+    |
+432 |         let dev = Device::ndarray();
+    |                           ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/attention.rs:450:30
+    |
+450 |         let device = Device::ndarray();
+    |                              ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/attention.rs:494:52
+    |
+494 |             t2(5, config.hidden_size, 99, &Device::ndarray()).reshape([1, 5, config.hidden_size]);
+    |                                                    ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/attention.rs:501:30
+    |
+501 |         let device = Device::ndarray();
+    |                              ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/attention.rs:533:27
+    |
+533 |         let dev = Device::ndarray();
+    |                           ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/attention.rs:588:27
+    |
+588 |         let dev = Device::ndarray();
+    |                           ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/generate.rs:304:27
+    |
+304 |         let dev = Device::ndarray();
+    |                           ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/layer.rs:192:27
+    |
+192 |         let dev = Device::ndarray();
+    |                           ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/layer.rs:270:47
+    |
+270 |         let cpu = layer_out(&config, &Device::ndarray());
+    |                                               ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/loader.rs:683:55
+    |
+683 |         Tensor::from_data([[1, 5, 9, 2, 7]], &Device::ndarray())
+    |                                                       ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/loader.rs:690:71
+    |
+690 |         let model = load_decoder_from_bytes(&config, &bytes, &Device::ndarray()).unwrap();
+    |                                                                       ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/loader.rs:702:79
+    |
+702 |             load_decoder_from_bytes(&config, &serialize_f32(&table), &Device::ndarray()).unwrap();
+    |                                                                               ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/loader.rs:704:80
+    |
+704 |             load_decoder_from_bytes(&config, &serialize_bf16(&table), &Device::ndarray()).unwrap();
+    |                                                                                ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/loader.rs:728:71
+    |
+728 |         let model = load_decoder_from_bytes(&config, &bytes, &Device::ndarray()).unwrap();
+    |                                                                       ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/loader.rs:736:69
+    |
+736 |         let err = load_decoder_from_bytes(&config, &bytes, &Device::ndarray()).unwrap_err();
+    |                                                                     ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/loader.rs:747:81
+    |
+747 |         match load_decoder_from_bytes(&config, &serialize_f32(&table), &Device::ndarray()) {
+    |                                                                                 ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/loader.rs:809:75
+    |
+809 |         load_decoder_from_bytes(&config, &serialize_f32(&table), &Device::ndarray()).unwrap();
+    |                                                                           ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/loader.rs:817:85
+    |
+817 |         let err = load_decoder_from_bytes(&config, &serialize_f32(&table), &Device::ndarray())
+    |                                                                                     ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/model.rs:728:27
+    |
+728 |         let dev = Device::ndarray();
+    |                           ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/model.rs:751:27
+    |
+751 |         let dev = Device::ndarray();
+    |                           ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/provider.rs:679:27
+    |
+679 |         let dev = Device::ndarray();
+    |                           ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/stage.rs:534:30
+    |
+534 |         let device = Device::ndarray();
+    |                              ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/stage.rs:647:30
+    |
+647 |         let device = Device::ndarray();
+    |                              ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/tensors.rs:112:30
+    |
+112 |         let device = Device::ndarray();
+    |                              ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/tensors.rs:131:30
+    |
+131 |         let device = Device::ndarray();
+    |                              ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/tensors.rs:143:30
+    |
+143 |         let device = Device::ndarray();
+    |                              ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/decoder/tensors.rs:152:30
+    |
+152 |         let device = Device::ndarray();
+    |                              ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/layer_library.rs:480:33
+    |
+480 |                 &DecoderDevice::ndarray(),
+    |                                 ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/layer_library.rs:492:29
+    |
+492 |             &DecoderDevice::ndarray(),
+    |                             ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/layer_library.rs:499:39
+    |
+499 |                 .load(&DecoderDevice::ndarray(), "burn-ndarray", 8)
+    |                                       ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/layer_library.rs:575:29
+    |
+575 |             &DecoderDevice::ndarray(),
+    |                             ^^^^^^^
+
+warning: use of deprecated associated function `burn::tensor::Device::ndarray`: burn-ndarray is deprecated and will be removed in a future release. Use `Device::flex()` for pure-Rust CPU execution instead.
+   --> crates/esp/src/infer/layer_library.rs:644:33
+    |
+644 |                 &DecoderDevice::ndarray(),
+    |                                 ^^^^^^^
+
+warning: method `detach` is never used
+  --> crates/esp/src/infer/decoder/moe.rs:32:19
+   |
+31 | impl MlpWeights {
+   | --------------- method in this implementation
+32 |     pub(crate) fn detach(&mut self) {
+   |                   ^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `esp` (lib test) generated 35 warnings
+    Finished `test` profile [unoptimized] target(s) in 26m 17s
+  Executable unittests src/lib.rs (/Users/markik/Code/output/embedding-envelope-20261020/resident-build/debug/deps/esp-f5e172538c1d7fab)

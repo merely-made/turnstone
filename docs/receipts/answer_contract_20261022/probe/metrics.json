@@ -1,0 +1,34 @@
+{
+  "cross": {
+    "state": "cancelled",
+    "tokens": 122,
+    "case_seconds": 906.6109974950086,
+    "seconds_to_first_token": 94.63458270393312,
+    "decode_tokens_per_second": 0.14901910670783922,
+    "answer_gate": "incomplete"
+  },
+  "missing": {
+    "state": "finished",
+    "tokens": 29,
+    "case_seconds": 211.75217220396735,
+    "seconds_to_first_token": 71.21821760898456,
+    "decode_tokens_per_second": 0.19924010592810593,
+    "answer_gate": "fail"
+  },
+  "conflict": {
+    "state": "finished",
+    "tokens": 48,
+    "case_seconds": 265.59636919782497,
+    "seconds_to_first_token": 27.12988664302975,
+    "decode_tokens_per_second": 0.19709268781284708,
+    "answer_gate": "fail"
+  },
+  "reduced": {
+    "state": "finished",
+    "tokens": 29,
+    "case_seconds": 149.1806603751611,
+    "seconds_to_first_token": 27.967237798962742,
+    "decode_tokens_per_second": 0.2309975199520364,
+    "answer_gate": "fail"
+  }
+}

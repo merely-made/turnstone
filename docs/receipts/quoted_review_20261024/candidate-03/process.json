@@ -1,0 +1,11 @@
+{
+  "pid": 55942,
+  "command": [
+    "/Users/markik/Code/output/quoted-review-20261024/order-replay/candidate-01/frozen/inference_route",
+    "probe_bounded_cross_source_answers",
+    "--exact",
+    "--ignored",
+    "--nocapture"
+  ],
+  "utc": "2026-10-24T22:03:40.748505+00:00"
+}

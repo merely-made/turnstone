@@ -1,0 +1,15 @@
+{
+  "native04_driver_log": "native-pair-driver-04.log",
+  "rename": "Controller opened this file under native-pair-driver-03.log; renamed its live inode to04 after detecting the label collision. Ongoing output follows the same open file descriptor.",
+  "lost_file": "The original native03 outer run_native stderr log was overwritten by native04 controller startup. It cannot be claimed byte-preserved.",
+  "native03_preserved_evidence": [
+    "native-pair-03/fused/warm/scenario.done",
+    "native-pair-03/fused/warm/process.json",
+    "native-pair-03/fused/warm/native.log",
+    "native-pair-03/fused-warm-launcher.log",
+    "native-pair-03/fused/resident/mixed-0-conflict.json",
+    "native-pair-03/warm-failure-review.json",
+    "resume-native-driver.log"
+  ],
+  "boundary": "No model answer, native scenario report, source snapshot or capture was altered. Native03 remains a semantic failure and never launched cold."
+}

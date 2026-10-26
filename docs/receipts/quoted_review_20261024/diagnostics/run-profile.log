@@ -1,0 +1,17 @@
+
+running 1 test
+resident inference GPU: AMD Radeon Pro Vega 56 (metal, discrete adapter)
+test serve_trained_model_for_headed_turnstone has been running for over 60 seconds
+
+thread 'serve_trained_model_for_headed_turnstone' (62401165) panicked at ports/djinn/tests/inference_route.rs:2064:74:
+called `Result::unwrap()` on an `Err` value: Os { code: 2, kind: NotFound, message: "No such file or directory" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test serve_trained_model_for_headed_turnstone ... FAILED
+
+failures:
+
+failures:
+    serve_trained_model_for_headed_turnstone
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 6 filtered out; finished in 133.70s
+

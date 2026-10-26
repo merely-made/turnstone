@@ -1,0 +1,79 @@
+{
+  "name": "agreement",
+  "corpus": {
+    "capture": {
+      "text": "The Bracken ferry departure time is 09:30."
+    },
+    "control": {
+      "text": "The Bracken ferry departure time is 10:15."
+    },
+    "knot": {
+      "text": "The Bracken ferry departure time is 09:30."
+    },
+    "note": {
+      "text": "The Pelican ferry departure time is 08:00."
+    }
+  },
+  "asks": [
+    {
+      "id": "cross",
+      "question": "What is the Bracken ferry departure time?",
+      "gold": [
+        {
+          "relevant": [
+            "capture",
+            "knot"
+          ],
+          "values": {
+            "capture": "09:30",
+            "knot": "09:30"
+          }
+        }
+      ]
+    },
+    {
+      "id": "missing",
+      "question": "What is the Bracken ferry arrival time?",
+      "gold": [
+        {
+          "relevant": [],
+          "values": {}
+        }
+      ]
+    },
+    {
+      "id": "conflict",
+      "question": "What is the Bracken ferry departure time?",
+      "gold": [
+        {
+          "relevant": [
+            "capture",
+            "control",
+            "knot"
+          ],
+          "values": {
+            "capture": "09:30",
+            "control": "10:15",
+            "knot": "09:30"
+          }
+        }
+      ]
+    },
+    {
+      "id": "reduced",
+      "question": "What is the Bracken ferry departure time?",
+      "gold": [
+        {
+          "relevant": [
+            "capture",
+            "knot"
+          ],
+          "values": {
+            "capture": "09:30",
+            "knot": "09:30"
+          }
+        }
+      ]
+    }
+  ]
+}

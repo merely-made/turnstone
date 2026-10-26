@@ -1,0 +1,16 @@
+
+running 1 test
+test probe_bounded_cross_source_answers has been running for over 60 seconds
+resident inference GPU: AMD Radeon Pro Vega 56 (metal, discrete adapter)
+
+thread 'probe_bounded_cross_source_answers' (53862832) panicked at ports/djinn/tests/inference_route.rs:2337:13:
+assertion failed: tokio::time::Instant::now() < deadline
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test probe_bounded_cross_source_answers ... FAILED
+
+failures:
+
+failures:
+    probe_bounded_cross_source_answers
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 6 filtered out; finished in 1029.55s

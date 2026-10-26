@@ -1,0 +1,26 @@
+{
+  "resident": {
+    "source": "git+https://github.com/merely-made/eidetic.git?rev=56601d9cb0c4901fd352bc789ce0ab53b5b6edd6#56601d9cb0c4901fd352bc789ce0ab53b5b6edd6",
+    "packages": [
+      "chartulary",
+      "eidetic",
+      "luggage",
+      "mere-proofs",
+      "muniment",
+      "servitor",
+      "stickleback"
+    ]
+  },
+  "turnstone": {
+    "source": "git+https://github.com/merely-made/eidetic.git?rev=56601d9cb0c4901fd352bc789ce0ab53b5b6edd6#56601d9cb0c4901fd352bc789ce0ab53b5b6edd6",
+    "packages": [
+      "chartulary",
+      "eidetic",
+      "luggage",
+      "mere-proofs",
+      "muniment",
+      "servitor",
+      "stickleback"
+    ]
+  }
+}

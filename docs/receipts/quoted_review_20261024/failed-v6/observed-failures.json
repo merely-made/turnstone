@@ -1,0 +1,166 @@
+{
+  "cross": {
+    "tokens": 480,
+    "claims": [
+      {
+        "status": "supported",
+        "text": "the Juniper archive recovery phrase is violet lantern.",
+        "review": {
+          "candidates": [
+            {
+              "handle": 1,
+              "answers": true
+            },
+            {
+              "handle": 2,
+              "answers": false
+            },
+            {
+              "handle": 3,
+              "answers": false
+            }
+          ],
+          "agreement": "single"
+        },
+        "links": [
+          1
+        ]
+      },
+      {
+        "status": "supported",
+        "text": "the Pelican observatory access word is café.",
+        "review": {
+          "candidates": [
+            {
+              "handle": 1,
+              "answers": false
+            },
+            {
+              "handle": 2,
+              "answers": true
+            },
+            {
+              "handle": 3,
+              "answers": false
+            }
+          ],
+          "agreement": "single"
+        },
+        "links": [
+          2
+        ]
+      },
+      {
+        "status": "supported",
+        "text": "the saved listener reminder is harbor.",
+        "review": {
+          "candidates": [
+            {
+              "handle": 1,
+              "answers": false
+            },
+            {
+              "handle": 2,
+              "answers": false
+            },
+            {
+              "handle": 3,
+              "answers": true
+            }
+          ],
+          "agreement": "single"
+        },
+        "links": [
+          3
+        ]
+      }
+    ]
+  },
+  "missing": {
+    "tokens": 165,
+    "claims": [
+      {
+        "status": "supported",
+        "text": "The Juniper archive's recovery phrase is violet lantern.",
+        "review": {
+          "candidates": [
+            {
+              "handle": 1,
+              "answers": true
+            },
+            {
+              "handle": 2,
+              "answers": true
+            },
+            {
+              "handle": 3,
+              "answers": true
+            }
+          ],
+          "agreement": "same"
+        },
+        "links": [
+          1
+        ]
+      }
+    ]
+  },
+  "conflict": {
+    "tokens": 163,
+    "claims": [
+      {
+        "status": "supported",
+        "text": "violet lantern",
+        "review": {
+          "candidates": [
+            {
+              "handle": 1,
+              "answers": true
+            },
+            {
+              "handle": 2,
+              "answers": true
+            },
+            {
+              "handle": 3,
+              "answers": false
+            },
+            {
+              "handle": 4,
+              "answers": true
+            }
+          ],
+          "agreement": "same"
+        },
+        "links": [
+          1
+        ]
+      }
+    ]
+  },
+  "reduced": {
+    "tokens": 161,
+    "claims": [
+      {
+        "status": "supported",
+        "text": "The saved listener reminder is the Pelican observatory's access word, which is café.",
+        "review": {
+          "candidates": [
+            {
+              "handle": 1,
+              "answers": true
+            },
+            {
+              "handle": 2,
+              "answers": true
+            }
+          ],
+          "agreement": "same"
+        },
+        "links": [
+          1
+        ]
+      }
+    ]
+  }
+}

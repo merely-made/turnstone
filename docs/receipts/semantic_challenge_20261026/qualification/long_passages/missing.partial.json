@@ -1,0 +1,167 @@
+{
+  "run": "missing",
+  "question": "What is the Broomgate annual maintenance budget?",
+  "state": "finished",
+  "text": "{\"claims\":[{\"fact\":{\"id\":\"blake3:82ed021a2c308bac62015affc8e340a4f23876f4a4cf41c47ddc873ac45fb89c\",\"selector\":{\"start\":8,\"end\":47},\"text\":\"the Broomgate annual maintenance budget\"},\"review\":{\"candidates\":[{\"handle\":1,\"requested\":\"the Broomgate annual maintenance budget\",\"quote\":\"Broomgate has no recorded maintenance budget.\",\"answers\":false},{\"handle\":2,\"requested\":\"the Broomgate annual maintenance budget\",\"quote\":\"The Broomgate quay is open.\",\"answers\":false},{\"handle\":3,\"requested\":\"the Broomgate annual maintenance budget\",\"quote\":\"Broomgate station log: the access code is maple-42. The lobby has two benches, a blue noticeboard, a clock, a rack of folded maps, a painted floor, a shelf of empty folders, three hooks for coats, a brass bell, a small table, a glass door, a mat, a lamp, and a bin.\",\"answers\":false}],\"agreement\":\"none\"},\"status\":\"insufficient\",\"text\":\"The supplied evidence does not state the Broomgate annual maintenance budget.\",\"evidence\":[]}]}",
+  "error": null,
+  "session": {
+    "session_id": "blake3:0960d64d68cf80b35a5781e3daeddfcf453f30579861e02af8d93a535db58d3d",
+    "prompt_template_hash": "blake3:9c222535ed31aadd676fc2f1beb16d0dd0402c76a9ee1398bc0c200c825103da"
+  },
+  "tokens": 274,
+  "continuations": [
+    {
+      "device": "device:900320c348fcd333149b2540e2a30760",
+      "at_token": 0,
+      "reason": "ask",
+      "first_differing_token": null,
+      "compared_token_ids_hash": null
+    }
+  ],
+  "recall": {
+    "answer_format": "claim_support_v1",
+    "answer_contract": {
+      "method": "distillery.quoted-review/v7",
+      "question": "blake3:adc6752c0392423509e4f9d4b3e15a083ab31a6c344b0d5865e41fe9710b18d2",
+      "prompt": "blake3:703735940d2597c7d61f3608d6dc604704377faaa3ce71d3e0ac9bceb854be19",
+      "context": "blake3:41a8677ef8c9ae25f9a75737457fdb7f07be6c3f0674e0b0439a5fd66e8ffa35",
+      "max_claims": 1,
+      "output_grammar": "blake3:8fabecc64379c100148875dcfdb6df87cf7f96ceba21b599c14dfd2fe8ea2aa9",
+      "requested_facts": {
+        "method": "eidetic.explicit-question-list/v1",
+        "question": "blake3:adc6752c0392423509e4f9d4b3e15a083ab31a6c344b0d5865e41fe9710b18d2",
+        "facts": [
+          {
+            "id": "blake3:82ed021a2c308bac62015affc8e340a4f23876f4a4cf41c47ddc873ac45fb89c",
+            "selector": {
+              "start": 8,
+              "end": 47
+            },
+            "text": "the Broomgate annual maintenance budget"
+          }
+        ]
+      }
+    },
+    "support": {
+      "requested_facts": "blake3:0bb998894d59af7cadd59e8b42844618d0dae225e4bd1f29b3ceb1a2d4ad46e6",
+      "method": "eidetic.claim-support/v1",
+      "raw_output": "blake3:8396d1c9666cd8b4064d40a681e43be8b2e216b101396c77921159fb5749088b",
+      "semantic_review": "unreviewed",
+      "claims": [
+        {
+          "fact": {
+            "id": "blake3:82ed021a2c308bac62015affc8e340a4f23876f4a4cf41c47ddc873ac45fb89c",
+            "selector": {
+              "start": 8,
+              "end": 47
+            },
+            "text": "the Broomgate annual maintenance budget"
+          },
+          "review": {
+            "candidates": [
+              {
+                "handle": 1,
+                "requested": "the Broomgate annual maintenance budget",
+                "quote": "Broomgate has no recorded maintenance budget.",
+                "answers": false
+              },
+              {
+                "handle": 2,
+                "requested": "the Broomgate annual maintenance budget",
+                "quote": "The Broomgate quay is open.",
+                "answers": false
+              },
+              {
+                "handle": 3,
+                "requested": "the Broomgate annual maintenance budget",
+                "quote": "Broomgate station log: the access code is maple-42. The lobby has two benches, a blue noticeboard, a clock, a rack of folded maps, a painted floor, a shelf of empty folders, three hooks for coats, a brass bell, a small table, a glass door, a mat, a lamp, and a bin.",
+                "answers": false
+              }
+            ],
+            "agreement": "none"
+          },
+          "status": "insufficient",
+          "text": "The supplied evidence does not state the Broomgate annual maintenance budget.",
+          "evidence": [],
+          "issues": []
+        }
+      ],
+      "error": null
+    },
+    "scope": [
+      {
+        "kind": "page_text",
+        "source": "https://probe.test/capture"
+      },
+      {
+        "kind": "page_text",
+        "source": "https://probe.test/knot"
+      },
+      {
+        "kind": "page_text",
+        "source": "https://probe.test/note"
+      }
+    ],
+    "config": {
+      "chunk_chars": 512,
+      "max_passages": 4,
+      "min_quote_chars": 32,
+      "max_context_chars": 12000,
+      "max_corpus_chars": 1000000
+    },
+    "passages": [
+      {
+        "handle": 1,
+        "passage": {
+          "source": {
+            "kind": "page_text",
+            "source": "https://probe.test/note"
+          },
+          "version": "blake3:683374a0b6284addbeacf684388f64177fdf1ca9e74650ac83e265db02db2b1e",
+          "text_hash": "blake3:683374a0b6284addbeacf684388f64177fdf1ca9e74650ac83e265db02db2b1e",
+          "selector": {
+            "start": 0,
+            "end": 45
+          },
+          "chunker": "mere.unicode-chunks/v1/512",
+          "text": "Broomgate has no recorded maintenance budget."
+        }
+      },
+      {
+        "handle": 2,
+        "passage": {
+          "source": {
+            "kind": "page_text",
+            "source": "https://probe.test/knot"
+          },
+          "version": "blake3:586155af090760fac1656ff0b59b6bfea3174b2636377e77d76b29ee23ed1060",
+          "text_hash": "blake3:586155af090760fac1656ff0b59b6bfea3174b2636377e77d76b29ee23ed1060",
+          "selector": {
+            "start": 0,
+            "end": 27
+          },
+          "chunker": "mere.unicode-chunks/v1/512",
+          "text": "The Broomgate quay is open."
+        }
+      },
+      {
+        "handle": 3,
+        "passage": {
+          "source": {
+            "kind": "page_text",
+            "source": "https://probe.test/capture"
+          },
+          "version": "blake3:eda6c95266f20b1d3ada5c1df91ea07c827b47bdc5601b52188b5e30f2e5f919",
+          "text_hash": "blake3:eda6c95266f20b1d3ada5c1df91ea07c827b47bdc5601b52188b5e30f2e5f919",
+          "selector": {
+            "start": 0,
+            "end": 265
+          },
+          "chunker": "mere.unicode-chunks/v1/512",
+          "text": "Broomgate station log: the access code is maple-42. The lobby has two benches, a blue noticeboard, a clock, a rack of folded maps, a painted floor, a shelf of empty folders, three hooks for coats, a brass bell, a small table, a glass door, a mat, a lamp, and a bin."
+        }
+      }
+    ],
+    "stale": []
+  }
+}

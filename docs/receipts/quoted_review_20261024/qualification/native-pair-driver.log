@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/Users/markik/Code/output/quoted-review-20261024/native-harness/run_native.py", line 145, in <module>
+    if __name__=='__main__':main()
+                            ~~~~^^
+  File "/Users/markik/Code/output/quoted-review-20261024/native-harness/run_native.py", line 119, in main
+    process=read(lane/name/'process.json');assert app.returncode==0 and process['success'],mode+' '+name
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: fused warm

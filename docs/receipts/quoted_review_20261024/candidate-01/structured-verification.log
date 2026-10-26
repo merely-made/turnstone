@@ -1,0 +1,72 @@
+{
+  "result": "pass",
+  "cases": {
+    "cross": {
+      "result": "pass",
+      "claims": 3,
+      "whole_raw_json": true,
+      "exact_candidate_links": 3
+    },
+    "missing": {
+      "result": "pass",
+      "claims": 1,
+      "whole_raw_json": true,
+      "exact_candidate_links": 0
+    },
+    "conflict": {
+      "result": "pass",
+      "claims": 1,
+      "whole_raw_json": true,
+      "exact_candidate_links": 2
+    },
+    "reduced": {
+      "result": "pass",
+      "claims": 1,
+      "whole_raw_json": true,
+      "exact_candidate_links": 0
+    }
+  },
+  "negative_controls": {
+    "cross_fence": "rejected",
+    "cross_suffix": "rejected",
+    "cross_extra_field": "rejected",
+    "cross_missing_review": "rejected",
+    "cross_skipped_candidate": "rejected",
+    "cross_reordered_candidates": "rejected",
+    "cross_contradictory_agreement": "rejected",
+    "cross_prose_drift": "rejected",
+    "cross_foreign_review_quote": "rejected",
+    "cross_foreign_review_property": "rejected",
+    "missing_fence": "rejected",
+    "missing_suffix": "rejected",
+    "missing_extra_field": "rejected",
+    "missing_missing_review": "rejected",
+    "missing_skipped_candidate": "rejected",
+    "missing_reordered_candidates": "rejected",
+    "missing_contradictory_agreement": "rejected",
+    "missing_prose_drift": "rejected",
+    "missing_foreign_review_quote": "rejected",
+    "missing_foreign_review_property": "rejected",
+    "conflict_fence": "rejected",
+    "conflict_suffix": "rejected",
+    "conflict_extra_field": "rejected",
+    "conflict_missing_review": "rejected",
+    "conflict_skipped_candidate": "rejected",
+    "conflict_reordered_candidates": "rejected",
+    "conflict_contradictory_agreement": "rejected",
+    "conflict_prose_drift": "rejected",
+    "conflict_foreign_review_quote": "rejected",
+    "conflict_foreign_review_property": "rejected",
+    "reduced_fence": "rejected",
+    "reduced_suffix": "rejected",
+    "reduced_extra_field": "rejected",
+    "reduced_missing_review": "rejected",
+    "reduced_skipped_candidate": "rejected",
+    "reduced_reordered_candidates": "rejected",
+    "reduced_contradictory_agreement": "rejected",
+    "reduced_prose_drift": "rejected",
+    "reduced_foreign_review_quote": "rejected",
+    "reduced_foreign_review_property": "rejected"
+  },
+  "boundary": "Raw whole-document syntax and bounded quotation shape; semantic correctness remains the separate frozen rubric."
+}

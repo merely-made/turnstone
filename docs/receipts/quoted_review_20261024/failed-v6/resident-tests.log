@@ -1,0 +1,9 @@
+    Updating git repository `https://github.com/merely-made/eidetic.git`
+    Updating git repository `https://github.com/merely-made/gemot.git`
+    Updating git repository `https://github.com/merely-made/esp.git`
+    Updating git repository `https://github.com/merely-made/cleromancy.git`
+    Updating git repository `https://github.com/merely-made/knot-editor.git`
+    Updating git repository `https://github.com/merely-made/eidetic.git`
+    Updating crates.io index
+error: cannot update the lock file /Users/markik/Code/worktrees/mere-cross-source-answers-20261022/Cargo.lock because --locked was passed to prevent this
+help: to generate the lock file without accessing the network, remove the --locked flag and use --offline instead.

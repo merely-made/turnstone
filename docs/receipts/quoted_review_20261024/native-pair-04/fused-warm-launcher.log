@@ -1,0 +1,27 @@
+{"launch_method": "LaunchServices temporary application bundle", "launcher_exit": 0, "timeout": false, "success": true, "elapsed_seconds": 505.287, "binary_sha256": "309572579232a0dd9c6a127610716fa0bf27ff34671751aaa7f177196aa3a141", "scenario_sha256": "281d51d1751d142004f7124c640efe468622636ac52481158d39373d3a157589", "receipt": "scenario.done", "captures": 12}
+RESULT ok
+captured 01_capture_A
+captured 02_capture_B
+captured 03_mixed_sources
+captured explicit_scope
+captured cross_answer
+captured cross_raw
+captured cross_warm_claim_1_citation
+captured cross_warm_claim_2_citation
+captured cross_warm_claim_3_citation
+captured missing_answer
+captured conflict_answer
+captured reduced_answer
+presentation frames=781 captures=12 blank=0
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/warm/01_capture_A.png digest=70372b356f7c21f4 blank=false
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/warm/02_capture_B.png digest=e9711ef38a0ad6bf blank=false
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/warm/03_mixed_sources.png digest=83582fdf832b28ed blank=false
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/warm/explicit_scope.png digest=5c342ac97fa5d63a blank=false
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/warm/cross_answer.png digest=80c361ef13c5e61f blank=false
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/warm/cross_raw.png digest=64138f8e2e947163 blank=false
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/warm/cross_warm_claim_1_citation.png digest=08b89ae4bf95fe41 blank=false
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/warm/cross_warm_claim_2_citation.png digest=7940dc968a56597f blank=false
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/warm/cross_warm_claim_3_citation.png digest=0686ac2fd1ce87b8 blank=false
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/warm/missing_answer.png digest=c38bd6713d696acc blank=false
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/warm/conflict_answer.png digest=20a10342c860c041 blank=false
+capture /Users/markik/Code/output/quoted-review-20261024/native-pair-04/fused/warm/reduced_answer.png digest=8f7f149df4c5ccc7 blank=false

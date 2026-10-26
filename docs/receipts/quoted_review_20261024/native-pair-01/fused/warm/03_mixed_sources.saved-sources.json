@@ -1,0 +1,202 @@
+{
+  "admissions": [
+    {
+      "error": null,
+      "key": {
+        "annotation_manifest": "blake3:88b88dc2912816fa0e0e4e8fe96c3fa8e53aafb1aafa3d405164dd3c9e476c7b",
+        "graph": "b0251806-c072-401c-b2f1-71804bb3773f",
+        "node": "846824ab-5edb-4942-bc87-603e07c18e7e",
+        "session": "0b7c8480-3367-472e-bd20-e9e5a0be6e5a"
+      },
+      "occurrence": 0,
+      "title": "Mixed Capture A",
+      "url": "http://127.0.0.1:55799/A"
+    },
+    {
+      "error": null,
+      "key": {
+        "annotation_manifest": "blake3:911e30a7ab070ef8555044847fa9a88768121650f460399555d95a80af14350c",
+        "graph": "b0251806-c072-401c-b2f1-71804bb3773f",
+        "node": "b241523a-e6f5-429f-a8c3-957c390a076c",
+        "session": "0b7c8480-3367-472e-bd20-e9e5a0be6e5a"
+      },
+      "occurrence": 0,
+      "title": "Mixed Capture B",
+      "url": "http://127.0.0.1:55799/B"
+    }
+  ],
+  "entries": [],
+  "generation": "1253f453-3a8d-40e1-a3ce-ea5da33f7850",
+  "readers": [],
+  "retained_admissions": [
+    {
+      "graph": "b0251806-c072-401c-b2f1-71804bb3773f",
+      "manifest": "blake3:45ea9bc24519f7791689b075b3b74fd8cb4c3cbd35adb89f5c684d0508a470d0",
+      "node": "4bd9c44b-17fd-4d26-88e9-c91a4f0e719a",
+      "session": "0b7c8480-3367-472e-bd20-e9e5a0be6e5a"
+    },
+    {
+      "graph": "b0251806-c072-401c-b2f1-71804bb3773f",
+      "manifest": "blake3:48674921cc190ad421d84c8fb5ad3351b87ddb574d7a05afd476dde67f0e9773",
+      "node": "b782c45e-2bbd-4f6b-80a8-bc25b8f6132f",
+      "session": "0b7c8480-3367-472e-bd20-e9e5a0be6e5a"
+    }
+  ],
+  "retained_readers": [
+    {
+      "engine": "fleece.retained-clip",
+      "node": "4bd9c44b-17fd-4d26-88e9-c91a4f0e719a",
+      "rendered_document": {
+        "address": "mere://clip/45ea9bc24519f7791689b075b3b74fd8cb4c3cbd35adb89f5c684d0508a470d0",
+        "blocks": [
+          {
+            "Heading": {
+              "level": 1,
+              "spans": [
+                {
+                  "Text": "Redshank note"
+                }
+              ]
+            }
+          },
+          {
+            "Paragraph": {
+              "spans": [
+                {
+                  "Text": "Saved from the embedded listener: café → harbor.\nKeep this timed note."
+                }
+              ]
+            }
+          },
+          {
+            "Badge": {
+              "text": "Source recording unavailable in this clip"
+            }
+          },
+          {
+            "MetadataRow": {
+              "label": "Source anchor (milliseconds)",
+              "value": "file:///Users/markik/Code/output/redshank-text-retention-20261020/runtime/origin-recording.wav"
+            }
+          },
+          {
+            "MetadataRow": {
+              "label": "Original note position",
+              "value": "1.250 seconds"
+            }
+          },
+          {
+            "Paragraph": {
+              "spans": [
+                {
+                  "Link": {
+                    "predicate": null,
+                    "spans": [
+                      {
+                        "Text": "Export selected clip"
+                      }
+                    ],
+                    "title": null,
+                    "url": "mere://clip/45ea9bc24519f7791689b075b3b74fd8cb4c3cbd35adb89f5c684d0508a470d0/export"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "content_type": "application/vnd.mere.clip+json",
+        "diagnostics": [],
+        "lang": null,
+        "navigation": {
+          "anchors": [],
+          "block_count": 0,
+          "folds": []
+        },
+        "provenance": {
+          "canonical_uri": "mere://clip/45ea9bc24519f7791689b075b3b74fd8cb4c3cbd35adb89f5c684d0508a470d0",
+          "fetched_at": null,
+          "source_kind": "fleece.retained-clip",
+          "source_label": null
+        },
+        "title": "Redshank note",
+        "trust": "Unknown"
+      }
+    },
+    {
+      "engine": "fleece.retained-clip",
+      "node": "b782c45e-2bbd-4f6b-80a8-bc25b8f6132f",
+      "rendered_document": {
+        "address": "mere://clip/48674921cc190ad421d84c8fb5ad3351b87ddb574d7a05afd476dde67f0e9773",
+        "blocks": [
+          {
+            "Heading": {
+              "level": 1,
+              "spans": [
+                {
+                  "Text": "Knot selection"
+                }
+              ]
+            }
+          },
+          {
+            "Paragraph": {
+              "spans": [
+                {
+                  "Text": "The Pelican observatory's access word is café."
+                }
+              ]
+            }
+          },
+          {
+            "MetadataRow": {
+              "label": "Source anchor (utf8-bytes)",
+              "value": "file:///Users/markik/Code/output/turnstone-retained-embedding-20261020/knot-producer/source/selected.djot"
+            }
+          },
+          {
+            "MetadataRow": {
+              "label": "Original selection",
+              "value": "The Pelican observatory's access word is café."
+            }
+          },
+          {
+            "Paragraph": {
+              "spans": [
+                {
+                  "Link": {
+                    "predicate": null,
+                    "spans": [
+                      {
+                        "Text": "Export selected clip"
+                      }
+                    ],
+                    "title": null,
+                    "url": "mere://clip/48674921cc190ad421d84c8fb5ad3351b87ddb574d7a05afd476dde67f0e9773/export"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "content_type": "application/vnd.mere.clip+json",
+        "diagnostics": [],
+        "lang": null,
+        "navigation": {
+          "anchors": [],
+          "block_count": 0,
+          "folds": []
+        },
+        "provenance": {
+          "canonical_uri": "mere://clip/48674921cc190ad421d84c8fb5ad3351b87ddb574d7a05afd476dde67f0e9773",
+          "fetched_at": null,
+          "source_kind": "fleece.retained-clip",
+          "source_label": null
+        },
+        "title": "Knot selection",
+        "trust": "Unknown"
+      }
+    }
+  ],
+  "session": "0b7c8480-3367-472e-bd20-e9e5a0be6e5a",
+  "status": ""
+}

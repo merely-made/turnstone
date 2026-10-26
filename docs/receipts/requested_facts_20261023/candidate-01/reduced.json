@@ -1,0 +1,123 @@
+{
+  "run": "reduced",
+  "question": "What is the saved listener reminder? Answer only from the chosen sources; the listener note has been removed from this scope.",
+  "state": "finished",
+  "text": "{\"claims\":[{\"fact\":{\"id\":\"blake3:1ad587291a4b40dcf39b77143c2b8eca47c176dc38258cd6c0521259627299fa\",\"selector\":{\"start\":8,\"end\":35},\"text\":\"the saved listener reminder\"},\"status\":\"insufficient\",\"text\":\"the saved listener reminder is not available in the supplied evidence.\",\"evidence\":[]}]}",
+  "error": null,
+  "session": {
+    "session_id": "blake3:0960d64d68cf80b35a5781e3daeddfcf453f30579861e02af8d93a535db58d3d",
+    "prompt_template_hash": "blake3:9c222535ed31aadd676fc2f1beb16d0dd0402c76a9ee1398bc0c200c825103da"
+  },
+  "tokens": 112,
+  "continuations": [
+    {
+      "device": "device:c08fae69d2742436f96bc9a1967d4369",
+      "at_token": 0,
+      "reason": "ask",
+      "first_differing_token": null,
+      "compared_token_ids_hash": null
+    }
+  ],
+  "recall": {
+    "answer_format": "claim_support_v1",
+    "answer_contract": {
+      "method": "distillery.requested-facts/v5",
+      "question": "blake3:02c42498256cb1e8ff04cd7bd4dcace5e93fc69ea6b0fa63016da454db4354ee",
+      "prompt": "blake3:12072c658a3e706f09c8d42d35883713da278f44420bef5c2905d24c271e5dc5",
+      "context": "blake3:a168535e54b51fb6e3302b31a976d2817579fcda8c9f1273210788c1f7ff127d",
+      "max_claims": 1,
+      "output_grammar": "blake3:ae4f87a22eb63c994891c9ec8acae658aaae1dc9a1c4a235c18a4b3a72534f15",
+      "requested_facts": {
+        "method": "eidetic.explicit-question-list/v1",
+        "question": "blake3:02c42498256cb1e8ff04cd7bd4dcace5e93fc69ea6b0fa63016da454db4354ee",
+        "facts": [
+          {
+            "id": "blake3:1ad587291a4b40dcf39b77143c2b8eca47c176dc38258cd6c0521259627299fa",
+            "selector": {
+              "start": 8,
+              "end": 35
+            },
+            "text": "the saved listener reminder"
+          }
+        ]
+      }
+    },
+    "support": {
+      "requested_facts": "blake3:fac6c94d6348a24d8aca30b203e1670e1075cd5179ea4d5e7805b591646ab618",
+      "method": "eidetic.claim-support/v1",
+      "raw_output": "blake3:01e4c3130015d8be05352eb19e2da7cf6b4cdd5c22b6a1b41bf1375a9c3cefbc",
+      "semantic_review": "unreviewed",
+      "claims": [
+        {
+          "fact": {
+            "id": "blake3:1ad587291a4b40dcf39b77143c2b8eca47c176dc38258cd6c0521259627299fa",
+            "selector": {
+              "start": 8,
+              "end": 35
+            },
+            "text": "the saved listener reminder"
+          },
+          "status": "insufficient",
+          "text": "the saved listener reminder is not available in the supplied evidence.",
+          "evidence": [],
+          "issues": []
+        }
+      ],
+      "error": null
+    },
+    "scope": [
+      {
+        "kind": "page_text",
+        "source": "https://probe.test/capture"
+      },
+      {
+        "kind": "page_text",
+        "source": "https://probe.test/knot"
+      }
+    ],
+    "config": {
+      "chunk_chars": 512,
+      "max_passages": 4,
+      "min_quote_chars": 32,
+      "max_context_chars": 12000,
+      "max_corpus_chars": 1000000
+    },
+    "passages": [
+      {
+        "handle": 1,
+        "passage": {
+          "source": {
+            "kind": "page_text",
+            "source": "https://probe.test/knot"
+          },
+          "version": "blake3:110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+          "text_hash": "blake3:110216f8e8f7f1f116c1f3f029b1cc34f43cc1c767c7dabdb96561dcb3474275",
+          "selector": {
+            "start": 0,
+            "end": 46
+          },
+          "chunker": "mere.unicode-chunks/v1/512",
+          "text": "The Pelican observatory's access word is café."
+        }
+      },
+      {
+        "handle": 2,
+        "passage": {
+          "source": {
+            "kind": "page_text",
+            "source": "https://probe.test/capture"
+          },
+          "version": "blake3:7d51f2ed929706e8a8d24f17da016384ac94f3ab88c95054fb8658e6a1fa5399",
+          "text_hash": "blake3:7d51f2ed929706e8a8d24f17da016384ac94f3ab88c95054fb8658e6a1fa5399",
+          "selector": {
+            "start": 0,
+            "end": 56
+          },
+          "chunker": "mere.unicode-chunks/v1/512",
+          "text": "The Juniper archive's recovery phrase is violet lantern."
+        }
+      }
+    ],
+    "stale": []
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "same_resident_binary": true,
+  "same_source_commit": true,
+  "same_generation_artifacts": true,
+  "same_cases": true,
+  "same_runtime_profile": true,
+  "request_seconds": 900,
+  "request_tokens": 1024
+}
