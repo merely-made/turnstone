@@ -1,0 +1,477 @@
+Lane eidetic-main-integration: build=/Users/markik/Code/targets/lanes/eidetic-main-integration/build artifacts=/Users/markik/Code/targets/lanes/eidetic-main-integration/artifacts
+   Compiling getrandom v0.4.3
+   Compiling serde v1.0.229
+   Compiling num-traits v0.2.19
+   Compiling arrayvec v0.7.8
+   Compiling crypto-common v0.2.2
+   Compiling memchr v2.8.3
+   Compiling uuid v1.27.0
+   Compiling yoke v0.8.3
+   Compiling serde_json v1.0.151
+   Compiling blake3 v1.8.7
+   Compiling zerovec v0.11.8
+   Compiling hashbrown v0.17.1
+   Compiling smallvec v1.16.2
+   Compiling tinystr v0.8.4
+   Compiling digest v0.11.3
+   Compiling icu_locale_core v2.3.0
+   Compiling zeroize v1.9.1
+   Compiling indexmap v2.14.2
+   Compiling potential_utf v0.1.6
+   Compiling zerotrie v0.2.5
+   Compiling bytecheck v0.8.3
+   Compiling icu_collections v2.3.0
+   Compiling slotmap v1.1.1
+   Compiling icu_provider v2.3.1
+   Compiling sha2 v0.11.0
+   Compiling petgraph v0.8.3
+   Compiling rend v0.5.4
+   Compiling bytemuck v1.25.2
+   Compiling curve25519-dalek v5.0.0
+   Compiling safe_arch v1.2.0
+   Compiling icu_normalizer v2.3.0
+   Compiling icu_properties v2.3.0
+   Compiling approx v0.5.1
+   Compiling unicase v2.10.0
+   Compiling wide v1.7.1
+   Compiling mime_guess v2.0.5
+   Compiling idna_adapter v1.2.2
+   Compiling ed25519-dalek v3.0.0
+   Compiling universal-hash v0.6.1
+   Compiling cipher v0.5.2
+   Compiling num-complex v0.4.6
+   Compiling rkyv v0.8.18
+   Compiling num-integer v0.1.47
+   Compiling mere-curation v0.1.1 (https://github.com/merely-made/mere.git?branch=main#1c61d792)
+   Compiling hest v0.2.0 (https://github.com/merely-made/mere.git?branch=main#1c61d792)
+   Compiling percent-encoding v2.3.2
+   Compiling grid v1.0.1
+   Compiling cfb v0.7.3
+   Compiling taffy v0.11.0-experimental-cache-fix.3
+   Compiling form_urlencoded v1.2.2
+   Compiling matrixmultiply v0.3.11
+   Compiling num-rational v0.4.2
+   Compiling chacha20 v0.10.2
+   Compiling poly1305 v0.9.1
+   Compiling insigne v0.0.2 (https://github.com/merely-made/dramatis.git?branch=main#d508a0fb)
+   Compiling idna v1.1.0
+   Compiling numen v0.2.0 (https://github.com/merely-made/mere.git?branch=main#1c61d792)
+   Compiling crossbeam-utils v0.8.23
+   Compiling glam v0.33.12
+   Compiling aead v0.6.1
+   Compiling muniment v0.2.0 (https://github.com/merely-made/eidetic.git?rev=aa94fe22eea29e9b54e01ed21e6991536ed4f208#aa94fe22)
+   Compiling euclid v0.22.14
+   Compiling simba v0.10.2
+   Compiling futures-core v0.3.34
+   Compiling mime v0.3.17
+   Compiling lexical-util v1.0.7
+   Compiling lexical-parse-integer v1.0.6
+   Compiling hashbrown v0.16.1
+   Compiling time v0.3.55
+   Compiling futures-util v0.3.34
+   Compiling accesskit v0.25.1
+   Compiling chartulary v0.2.2 (https://github.com/merely-made/eidetic.git?rev=aa94fe22eea29e9b54e01ed21e6991536ed4f208#aa94fe22)
+   Compiling chacha20poly1305 v0.11.0
+   Compiling crossbeam-channel v0.5.17
+   Compiling url v2.5.8
+   Compiling mere-forme v0.2.0 (https://github.com/merely-made/mere.git?branch=main#1c61d792)
+   Compiling nalgebra v0.35.0
+   Compiling getrandom v0.3.4
+   Compiling infer v0.19.0
+   Compiling sceno v0.0.6 (https://github.com/merely-made/mere.git?branch=main#1c61d792)
+   Compiling robust v1.2.0
+   Compiling ena v0.14.4
+   Compiling spade v2.15.1
+   Compiling mere-kernel v0.0.2 (https://github.com/merely-made/mere.git?branch=main#1c61d792)
+   Compiling personae v0.3.0 (https://github.com/merely-made/dramatis.git?branch=main#d508a0fb)
+   Compiling redb v2.6.4
+   Compiling lexical-parse-float v1.0.6
+   Compiling snafu-derive v0.9.2
+   Compiling glamx v0.3.1
+   Compiling ordered-float v5.5.0
+   Compiling either v1.19.0
+   Compiling downcast-rs v2.0.2
+   Compiling siphasher v1.0.4
+   Compiling parry2d v0.31.1
+   Compiling phf_shared v0.12.1
+   Compiling profiling v1.0.18
+   Compiling snafu v0.9.2
+   Compiling muniment v0.2.0 (https://github.com/merely-made/eidetic.git?rev=8626888bf4f6af1147c9691f031c56197afef22b#8626888b)
+   Compiling lexical-core v1.0.6
+   Compiling scenotime v0.0.4 (https://github.com/merely-made/mere.git?branch=main#1c61d792)
+   Compiling gaz v0.0.2 (https://github.com/merely-made/dramatis.git?branch=main#d508a0fb)
+   Compiling chrono-tz v0.10.4
+   Compiling static_assertions v1.1.0
+   Compiling rapier2d v0.36.1
+   Compiling chirograph v0.0.2 (https://github.com/merely-made/mere.git?branch=main#1c61d792)
+   Compiling tracing v0.1.44
+   Compiling dramatis v0.0.3 (https://github.com/merely-made/dramatis.git?branch=main#d508a0fb)
+   Compiling chartulary v0.2.2 (https://github.com/merely-made/eidetic.git?rev=8626888bf4f6af1147c9691f031c56197afef22b#8626888b)
+   Compiling hifitime v4.3.1
+   Compiling phf v0.12.1
+   Compiling chrono v0.4.45
+   Compiling serde_path_to_error v0.1.20
+   Compiling getrandom v0.2.17
+   Compiling sofars v0.6.1
+   Compiling tempfile v3.27.0
+   Compiling rand_core v0.6.4
+   Compiling turquet v0.17.0 (https://github.com/merely-made/turquet.git?rev=8e3755bbd0d40343eb4750b072801c941ff32802#8e3755bb)
+   Compiling seiche v0.0.6 (https://github.com/merely-made/mere.git?branch=main#1c61d792)
+   Compiling servitor v0.0.2 (https://github.com/merely-made/eidetic.git?rev=8626888bf4f6af1147c9691f031c56197afef22b#8626888b)
+   Compiling mere-facts v0.1.0 (https://github.com/merely-made/mere.git?branch=main#1c61d792)
+   Compiling graphshell-client v0.0.2 (https://github.com/merely-made/mere.git?branch=main#1c61d792)
+   Compiling mere-alembic v0.0.1 (https://github.com/merely-made/mere.git?branch=main#1c61d792)
+   Compiling mere v0.0.2 (https://github.com/merely-made/mere.git?branch=main#1c61d792)
+   Compiling scenograph v0.0.5 (https://github.com/merely-made/mere.git?branch=main#1c61d792)
+   Compiling cleromancy-core v0.1.0 (/Users/markik/Code/worktrees/cleromancy-cross-source-answers-20261022/core)
+error[E0308]: mismatched types
+   --> ../src/host/domain.rs:245:49
+    |
+245 |         let mut value = graph.facets().get(&id, &facet).unwrap().clone();
+    |                                        ---      ^^^^^^ expected `chartulary::facet::FacetId`, found `FacetId`
+    |                                        |
+    |                                        arguments to this method are incorrect
+    |
+note: there are multiple different versions of crate `chartulary` in the dependency graph
+   --> /Users/markik/.cargo/git/checkouts/eidetic-da5f5f1bff0a3046/aa94fe2/crates/chartulary/src/facet.rs:36:1
+    |
+ 36 | pub struct FacetId(pub String);
+    | ^^^^^^^^^^^^^^^^^^ this is the expected type
+    |
+   ::: /Users/markik/.cargo/git/checkouts/eidetic-da5f5f1bff0a3046/8626888/crates/chartulary/src/facet.rs:36:1
+    |
+ 36 | pub struct FacetId(pub String);
+    | ------------------ this is the found type
+    = help: you can use `cargo tree` to explore your dependency tree
+note: method defined here
+   --> /Users/markik/.cargo/git/checkouts/eidetic-da5f5f1bff0a3046/aa94fe2/crates/chartulary/src/facet.rs:214:12
+    |
+214 |     pub fn get(&self, node: &Id, facet_id: &FacetId) -> Option<&Value> {
+    |            ^^^
+
+error[E0277]: the trait bound `AcceptAll: chartulary::facet::FacetValidator` is not satisfied
+   --> ../src/host/domain.rs:249:36
+    |
+249 |             .set(id, facet, value, &AcceptAll)
+    |              ---                   ^^^^^^^^^^ the trait `chartulary::facet::FacetValidator` is not implemented for `AcceptAll`
+    |              |
+    |              required by a bound introduced by this call
+    |
+note: there are multiple different versions of crate `chartulary` in the dependency graph
+   --> /Users/markik/.cargo/git/checkouts/eidetic-da5f5f1bff0a3046/aa94fe2/crates/chartulary/src/facet.rs:114:1
+    |
+114 | pub trait FacetValidator {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^ this is the expected trait
+    |
+   ::: /Users/markik/.cargo/git/checkouts/eidetic-da5f5f1bff0a3046/8626888/crates/chartulary/src/facet.rs:114:1
+    |
+114 | pub trait FacetValidator {
+    | ------------------------ this is the found trait
+    = help: you can use `cargo tree` to explore your dependency tree
+help: the trait `chartulary::facet::FacetValidator` is implemented for `chartulary::facet::AcceptAll`
+   --> /Users/markik/.cargo/git/checkouts/eidetic-da5f5f1bff0a3046/aa94fe2/crates/chartulary/src/facet.rs:124:1
+    |
+124 | impl FacetValidator for AcceptAll {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: required by a bound in `chartulary::facet::FacetStore::<Id>::set`
+   --> /Users/markik/.cargo/git/checkouts/eidetic-da5f5f1bff0a3046/aa94fe2/crates/chartulary/src/facet.rs:202:26
+    |
+197 |     pub fn set(
+    |            --- required by a bound in this associated function
+...
+202 |         validator: &impl FacetValidator,
+    |                          ^^^^^^^^^^^^^^ required by this bound in `FacetStore::<Id>::set`
+
+error[E0308]: mismatched types
+   --> ../src/host/domain.rs:249:22
+    |
+249 |             .set(id, facet, value, &AcceptAll)
+    |              ---     ^^^^^ expected `chartulary::facet::FacetId`, found `FacetId`
+    |              |
+    |              arguments to this method are incorrect
+    |
+note: there are multiple different versions of crate `chartulary` in the dependency graph
+   --> /Users/markik/.cargo/git/checkouts/eidetic-da5f5f1bff0a3046/aa94fe2/crates/chartulary/src/facet.rs:36:1
+    |
+ 36 | pub struct FacetId(pub String);
+    | ^^^^^^^^^^^^^^^^^^ this is the expected type
+    |
+   ::: /Users/markik/.cargo/git/checkouts/eidetic-da5f5f1bff0a3046/8626888/crates/chartulary/src/facet.rs:36:1
+    |
+ 36 | pub struct FacetId(pub String);
+    | ------------------ this is the found type
+    = help: you can use `cargo tree` to explore your dependency tree
+note: method defined here
+   --> /Users/markik/.cargo/git/checkouts/eidetic-da5f5f1bff0a3046/aa94fe2/crates/chartulary/src/facet.rs:197:12
+    |
+197 |     pub fn set(
+    |            ^^^
+
+error[E0277]: the trait bound `AcceptAll: chartulary::facet::FacetValidator` is not satisfied
+   --> ../src/host/domain.rs:290:17
+    |
+286 |             .set(
+    |              --- required by a bound introduced by this call
+...
+290 |                 &AcceptAll,
+    |                 ^^^^^^^^^^ the trait `chartulary::facet::FacetValidator` is not implemented for `AcceptAll`
+    |
+note: there are multiple different versions of crate `chartulary` in the dependency graph
+   --> /Users/markik/.cargo/git/checkouts/eidetic-da5f5f1bff0a3046/aa94fe2/crates/chartulary/src/facet.rs:114:1
+    |
+114 | pub trait FacetValidator {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^ this is the expected trait
+    |
+   ::: /Users/markik/.cargo/git/checkouts/eidetic-da5f5f1bff0a3046/8626888/crates/chartulary/src/facet.rs:114:1
+    |
+114 | pub trait FacetValidator {
+    | ------------------------ this is the found trait
+    = help: you can use `cargo tree` to explore your dependency tree
+help: the trait `chartulary::facet::FacetValidator` is implemented for `chartulary::facet::AcceptAll`
+   --> /Users/markik/.cargo/git/checkouts/eidetic-da5f5f1bff0a3046/aa94fe2/crates/chartulary/src/facet.rs:124:1
+    |
+124 | impl FacetValidator for AcceptAll {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: required by a bound in `chartulary::facet::FacetStore::<Id>::set`
+   --> /Users/markik/.cargo/git/checkouts/eidetic-da5f5f1bff0a3046/aa94fe2/crates/chartulary/src/facet.rs:202:26
+    |
+197 |     pub fn set(
+    |            --- required by a bound in this associated function
+...
+202 |         validator: &impl FacetValidator,
+    |                          ^^^^^^^^^^^^^^ required by this bound in `FacetStore::<Id>::set`
+
+error[E0308]: mismatched types
+   --> ../src/host/domain.rs:288:17
+    |
+286 |             .set(
+    |              --- arguments to this method are incorrect
+287 |                 id,
+288 |                 FacetId::new(REFLECTION_FACET),
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `chartulary::facet::FacetId`, found `FacetId`
+    |
+note: there are multiple different versions of crate `chartulary` in the dependency graph
+   --> /Users/markik/.cargo/git/checkouts/eidetic-da5f5f1bff0a3046/aa94fe2/crates/chartulary/src/facet.rs:36:1
+    |
+ 36 | pub struct FacetId(pub String);
+    | ^^^^^^^^^^^^^^^^^^ this is the expected type
+    |
+   ::: /Users/markik/.cargo/git/checkouts/eidetic-da5f5f1bff0a3046/8626888/crates/chartulary/src/facet.rs:36:1
+    |
+ 36 | pub struct FacetId(pub String);
+    | ------------------ this is the found type
+    = help: you can use `cargo tree` to explore your dependency tree
+note: method defined here
+   --> /Users/markik/.cargo/git/checkouts/eidetic-da5f5f1bff0a3046/aa94fe2/crates/chartulary/src/facet.rs:197:12
+    |
+197 |     pub fn set(
+    |            ^^^
+
+error[E0277]: the trait bound `AcceptAll: chartulary::facet::FacetValidator` is not satisfied
+   --> ../src/host/domain.rs:341:17
+    |
+337 |             .set(
+    |              --- required by a bound introduced by this call
+...
+341 |                 &AcceptAll,
+    |                 ^^^^^^^^^^ the trait `chartulary::facet::FacetValidator` is not implemented for `AcceptAll`
+    |
+note: there are multiple different versions of crate `chartulary` in the dependency graph
+   --> /Users/markik/.cargo/git/checkouts/eidetic-da5f5f1bff0a3046/aa94fe2/crates/chartulary/src/facet.rs:114:1
+    |
+114 | pub trait FacetValidator {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^ this is the expected trait
+    |
+   ::: /Users/markik/.cargo/git/checkouts/eidetic-da5f5f1bff0a3046/8626888/crates/chartulary/src/facet.rs:114:1
+    |
+114 | pub trait FacetValidator {
+    | ------------------------ this is the found trait
+    = help: you can use `cargo tree` to explore your dependency tree
+help: the trait `chartulary::facet::FacetValidator` is implemented for `chartulary::facet::AcceptAll`
+   --> /Users/markik/.cargo/git/checkouts/eidetic-da5f5f1bff0a3046/aa94fe2/crates/chartulary/src/facet.rs:124:1
+    |
+124 | impl FacetValidator for AcceptAll {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: required by a bound in `chartulary::facet::FacetStore::<Id>::set`
+   --> /Users/markik/.cargo/git/checkouts/eidetic-da5f5f1bff0a3046/aa94fe2/crates/chartulary/src/facet.rs:202:26
+    |
+197 |     pub fn set(
+    |            --- required by a bound in this associated function
+...
+202 |         validator: &impl FacetValidator,
+    |                          ^^^^^^^^^^^^^^ required by this bound in `FacetStore::<Id>::set`
+
+error[E0308]: mismatched types
+   --> ../src/host/domain.rs:339:17
+    |
+337 |             .set(
+    |              --- arguments to this method are incorrect
+338 |                 id,
+339 |                 FacetId::new("cleromancy.future/v9"),
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `chartulary::facet::FacetId`, found `FacetId`
+    |
+note: there are multiple different versions of crate `chartulary` in the dependency graph
+   --> /Users/markik/.cargo/git/checkouts/eidetic-da5f5f1bff0a3046/aa94fe2/crates/chartulary/src/facet.rs:36:1
+    |
+ 36 | pub struct FacetId(pub String);
+    | ^^^^^^^^^^^^^^^^^^ this is the expected type
+    |
+   ::: /Users/markik/.cargo/git/checkouts/eidetic-da5f5f1bff0a3046/8626888/crates/chartulary/src/facet.rs:36:1
+    |
+ 36 | pub struct FacetId(pub String);
+    | ------------------ this is the found type
+    = help: you can use `cargo tree` to explore your dependency tree
+note: method defined here
+   --> /Users/markik/.cargo/git/checkouts/eidetic-da5f5f1bff0a3046/aa94fe2/crates/chartulary/src/facet.rs:197:12
+    |
+197 |     pub fn set(
+    |            ^^^
+
+error[E0277]: the trait bound `AcceptAll: chartulary::facet::FacetValidator` is not satisfied
+   --> ../src/host/domain.rs:352:17
+    |
+348 |             .set(
+    |              --- required by a bound introduced by this call
+...
+352 |                 &AcceptAll,
+    |                 ^^^^^^^^^^ the trait `chartulary::facet::FacetValidator` is not implemented for `AcceptAll`
+    |
+note: there are multiple different versions of crate `chartulary` in the dependency graph
+   --> /Users/markik/.cargo/git/checkouts/eidetic-da5f5f1bff0a3046/aa94fe2/crates/chartulary/src/facet.rs:114:1
+    |
+114 | pub trait FacetValidator {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^ this is the expected trait
+    |
+   ::: /Users/markik/.cargo/git/checkouts/eidetic-da5f5f1bff0a3046/8626888/crates/chartulary/src/facet.rs:114:1
+    |
+114 | pub trait FacetValidator {
+    | ------------------------ this is the found trait
+    = help: you can use `cargo tree` to explore your dependency tree
+help: the trait `chartulary::facet::FacetValidator` is implemented for `chartulary::facet::AcceptAll`
+   --> /Users/markik/.cargo/git/checkouts/eidetic-da5f5f1bff0a3046/aa94fe2/crates/chartulary/src/facet.rs:124:1
+    |
+124 | impl FacetValidator for AcceptAll {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: required by a bound in `chartulary::facet::FacetStore::<Id>::set`
+   --> /Users/markik/.cargo/git/checkouts/eidetic-da5f5f1bff0a3046/aa94fe2/crates/chartulary/src/facet.rs:202:26
+    |
+197 |     pub fn set(
+    |            --- required by a bound in this associated function
+...
+202 |         validator: &impl FacetValidator,
+    |                          ^^^^^^^^^^^^^^ required by this bound in `FacetStore::<Id>::set`
+
+error[E0308]: mismatched types
+   --> ../src/host/domain.rs:350:17
+    |
+348 |             .set(
+    |              --- arguments to this method are incorrect
+349 |                 id,
+350 |                 FacetId::new(REFLECTION_FACET),
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `chartulary::facet::FacetId`, found `FacetId`
+    |
+note: there are multiple different versions of crate `chartulary` in the dependency graph
+   --> /Users/markik/.cargo/git/checkouts/eidetic-da5f5f1bff0a3046/aa94fe2/crates/chartulary/src/facet.rs:36:1
+    |
+ 36 | pub struct FacetId(pub String);
+    | ^^^^^^^^^^^^^^^^^^ this is the expected type
+    |
+   ::: /Users/markik/.cargo/git/checkouts/eidetic-da5f5f1bff0a3046/8626888/crates/chartulary/src/facet.rs:36:1
+    |
+ 36 | pub struct FacetId(pub String);
+    | ------------------ this is the found type
+    = help: you can use `cargo tree` to explore your dependency tree
+note: method defined here
+   --> /Users/markik/.cargo/git/checkouts/eidetic-da5f5f1bff0a3046/aa94fe2/crates/chartulary/src/facet.rs:197:12
+    |
+197 |     pub fn set(
+    |            ^^^
+
+error[E0277]: the trait bound `AcceptAll: chartulary::facet::FacetValidator` is not satisfied
+   --> ../src/host/domain.rs:368:17
+    |
+364 |             .set(
+    |              --- required by a bound introduced by this call
+...
+368 |                 &AcceptAll,
+    |                 ^^^^^^^^^^ the trait `chartulary::facet::FacetValidator` is not implemented for `AcceptAll`
+    |
+note: there are multiple different versions of crate `chartulary` in the dependency graph
+   --> /Users/markik/.cargo/git/checkouts/eidetic-da5f5f1bff0a3046/aa94fe2/crates/chartulary/src/facet.rs:114:1
+    |
+114 | pub trait FacetValidator {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^ this is the expected trait
+    |
+   ::: /Users/markik/.cargo/git/checkouts/eidetic-da5f5f1bff0a3046/8626888/crates/chartulary/src/facet.rs:114:1
+    |
+114 | pub trait FacetValidator {
+    | ------------------------ this is the found trait
+    = help: you can use `cargo tree` to explore your dependency tree
+help: the trait `chartulary::facet::FacetValidator` is implemented for `chartulary::facet::AcceptAll`
+   --> /Users/markik/.cargo/git/checkouts/eidetic-da5f5f1bff0a3046/aa94fe2/crates/chartulary/src/facet.rs:124:1
+    |
+124 | impl FacetValidator for AcceptAll {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+note: required by a bound in `chartulary::facet::FacetStore::<Id>::set`
+   --> /Users/markik/.cargo/git/checkouts/eidetic-da5f5f1bff0a3046/aa94fe2/crates/chartulary/src/facet.rs:202:26
+    |
+197 |     pub fn set(
+    |            --- required by a bound in this associated function
+...
+202 |         validator: &impl FacetValidator,
+    |                          ^^^^^^^^^^^^^^ required by this bound in `FacetStore::<Id>::set`
+
+error[E0308]: mismatched types
+   --> ../src/host/domain.rs:366:17
+    |
+364 |             .set(
+    |              --- arguments to this method are incorrect
+365 |                 id,
+366 |                 FacetId::new("future.presentation/v9"),
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `chartulary::facet::FacetId`, found `FacetId`
+    |
+note: there are multiple different versions of crate `chartulary` in the dependency graph
+   --> /Users/markik/.cargo/git/checkouts/eidetic-da5f5f1bff0a3046/aa94fe2/crates/chartulary/src/facet.rs:36:1
+    |
+ 36 | pub struct FacetId(pub String);
+    | ^^^^^^^^^^^^^^^^^^ this is the expected type
+    |
+   ::: /Users/markik/.cargo/git/checkouts/eidetic-da5f5f1bff0a3046/8626888/crates/chartulary/src/facet.rs:36:1
+    |
+ 36 | pub struct FacetId(pub String);
+    | ------------------ this is the found type
+    = help: you can use `cargo tree` to explore your dependency tree
+note: method defined here
+   --> /Users/markik/.cargo/git/checkouts/eidetic-da5f5f1bff0a3046/aa94fe2/crates/chartulary/src/facet.rs:197:12
+    |
+197 |     pub fn set(
+    |            ^^^
+
+error[E0308]: mismatched types
+   --> ../src/host/mod.rs:415:43
+    |
+415 |         self.graph.facets().get(&node.id, &FacetId::new(facet))
+    |                             ---           ^^^^^^^^^^^^^^^^^^^^ expected `chartulary::facet::FacetId`, found `FacetId`
+    |                             |
+    |                             arguments to this method are incorrect
+    |
+note: there are multiple different versions of crate `chartulary` in the dependency graph
+   --> /Users/markik/.cargo/git/checkouts/eidetic-da5f5f1bff0a3046/aa94fe2/crates/chartulary/src/facet.rs:36:1
+    |
+ 36 | pub struct FacetId(pub String);
+    | ^^^^^^^^^^^^^^^^^^ this is the expected type
+    |
+   ::: /Users/markik/.cargo/git/checkouts/eidetic-da5f5f1bff0a3046/8626888/crates/chartulary/src/facet.rs:36:1
+    |
+ 36 | pub struct FacetId(pub String);
+    | ------------------ this is the found type
+    = help: you can use `cargo tree` to explore your dependency tree
+note: method defined here
+   --> /Users/markik/.cargo/git/checkouts/eidetic-da5f5f1bff0a3046/aa94fe2/crates/chartulary/src/facet.rs:214:12
+    |
+214 |     pub fn get(&self, node: &Id, facet_id: &FacetId) -> Option<&Value> {
+    |            ^^^
+
+Some errors have detailed explanations: E0277, E0308.
+For more information about an error, try `rustc --explain E0277`.
+error: could not compile `cleromancy-core` (lib test) due to 12 previous errors

@@ -1,0 +1,17 @@
+{
+  "repo": "knot",
+  "commit": "3e2251698bada90d20cc0eb19551841339376f9a",
+  "remote_main": "3e2251698bada90d20cc0eb19551841339376f9a",
+  "base": "3cf6f7bb8a77ea593928349ba3608d47c5c3d1ed",
+  "utc": "2026-10-26T20:57:16.260323+00:00",
+  "history_cleanup_authoritative": true,
+  "no_old_history_rejoined": true,
+  "changed_files": [
+    "Cargo.lock",
+    "Cargo.toml"
+  ],
+  "canonical_main": {
+    "path": "/Users/markik/Code/repos/knot-editor",
+    "preserved_dirty": false
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "source": "/Users/markik/Code/targets/lanes/eidetic-main-integration/artifacts/debug/turnstone",
+  "frozen": "/Users/markik/Code/output/eidetic-integration-20261026/frozen-products/turnstone",
+  "sha256": "c789e5b89cc1a0c0946284c5dcbfd49938c64bcee1ad3866f5eb57fc0062c1af",
+  "bytes": 510306296,
+  "features": [
+    "default"
+  ],
+  "source_commit": "c26652ca9714f1915924365a87138c17ab73c124",
+  "guarded_product_result": "turnstone-product-build-result.json"
+}

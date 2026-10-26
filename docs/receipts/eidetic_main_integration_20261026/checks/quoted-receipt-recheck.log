@@ -1,0 +1,10 @@
+{
+  "result": "pass",
+  "files": 670,
+  "software_checks": 88,
+  "headless_semantic": 4,
+  "headed_warm_semantic": 4,
+  "reopened_histories": 4,
+  "fresh_cold_generations": 1,
+  "note": "Checks recorded evidence consistency; does not rerun inference or native windows."
+}

@@ -1,0 +1,548 @@
+Lane eidetic-main-integration: build=/Users/markik/Code/targets/lanes/eidetic-main-integration/build artifacts=/Users/markik/Code/targets/lanes/eidetic-main-integration/artifacts
+warning: patch `p2panda-auth v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5-upstream-20261013#1f69c9bc)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.26
+   Compiling quote v1.0.47
+   Compiling libc v0.2.190
+   Compiling cfg-if v1.0.5
+   Compiling serde_core v1.0.229
+   Compiling serde v1.0.229
+   Compiling typenum v1.20.1
+   Compiling syn v3.0.6
+   Compiling syn v2.0.119
+   Compiling rand_core v0.10.1
+   Compiling version_check v0.9.5
+   Compiling getrandom v0.4.3
+   Compiling subtle v2.6.1
+   Compiling pin-project-lite v0.2.17
+   Compiling memchr v2.8.3
+   Compiling portable-atomic v1.15.0
+   Compiling hybrid-array v0.4.15
+   Compiling scopeguard v1.2.0
+   Compiling lock_api v0.4.14
+   Compiling futures-core v0.3.34
+   Compiling critical-section v1.2.0
+   Compiling crypto-common v0.2.2
+   Compiling parking_lot_core v0.9.12
+   Compiling cpufeatures v0.3.1
+   Compiling block-buffer v0.12.1
+   Compiling log v0.4.34
+   Compiling generic-array v0.14.7
+   Compiling getrandom v0.2.17
+   Compiling shlex v2.0.1
+   Compiling find-msvc-tools v0.1.14
+   Compiling cc v1.6.0
+   Compiling socket2 v0.6.5
+   Compiling futures-io v0.3.34
+   Compiling mio v1.2.3
+   Compiling zeroize_derive v1.5.0
+   Compiling serde_derive v1.0.229
+   Compiling zeroize v1.9.1
+   Compiling tokio-macros v2.7.2
+   Compiling equivalent v1.0.2
+   Compiling semver v1.0.28
+   Compiling rustc_version v0.4.1
+   Compiling synstructure v0.14.0
+   Compiling slab v0.4.12
+   Compiling stable_deref_trait v1.2.1
+   Compiling futures-sink v0.3.34
+   Compiling futures-macro v0.3.34
+   Compiling futures-channel v0.3.34
+   Compiling futures-task v0.3.34
+   Compiling zerofrom-derive v0.1.8
+   Compiling yoke-derive v0.8.3
+   Compiling futures-util v0.3.34
+   Compiling crypto-common v0.1.7
+   Compiling inout v0.2.2
+   Compiling zerofrom v0.1.8
+   Compiling bitflags v2.13.2
+   Compiling cfg_aliases v0.2.2
+   Compiling yoke v0.8.3
+   Compiling itoa v1.0.18
+   Compiling cipher v0.5.2
+   Compiling zerovec-derive v0.11.6
+   Compiling foldhash v0.2.0
+   Compiling smallvec v1.16.1
+   Compiling once_cell v1.21.4
+   Compiling bytes v1.12.1
+   Compiling parking_lot v0.12.5
+   Compiling zerovec v0.11.8
+   Compiling tokio v1.53.2
+   Compiling tracing-core v0.1.36
+   Compiling chacha20 v0.10.2
+   Compiling displaydoc v0.2.7
+   Compiling tracing-attributes v0.1.31
+   Compiling cmov v0.5.4
+   Compiling ctutils v0.4.2
+   Compiling tinystr v0.8.4
+   Compiling rand v0.10.3
+   Compiling writeable v0.6.4
+   Compiling tracing v0.1.44
+   Compiling litemap v0.8.3
+   Compiling allocator-api2 v0.2.21
+   Compiling icu_locale_core v2.3.0
+   Compiling zerotrie v0.2.5
+   Compiling hashbrown v0.17.1
+   Compiling potential_utf v0.1.6
+   Compiling icu_normalizer_data v2.3.0
+   Compiling icu_properties_data v2.3.0
+   Compiling utf8_iter v1.0.4
+   Compiling fastrand v2.5.0
+   Compiling percent-encoding v2.3.2
+   Compiling icu_collections v2.3.0
+   Compiling icu_provider v2.3.1
+   Compiling digest v0.11.3
+   Compiling ring v0.17.14
+   Compiling curve25519-dalek-derive v0.1.1
+   Compiling base64ct v1.8.3
+   Compiling pem-rfc7468 v1.0.0
+   Compiling icu_properties v2.3.0
+   Compiling tokio-util v0.7.19
+   Compiling icu_normalizer v2.3.0
+   Compiling form_urlencoded v1.2.2
+   Compiling indexmap v2.14.2
+   Compiling http v1.5.0
+   Compiling cpufeatures v0.2.17
+   Compiling thiserror v2.0.21
+   Compiling const-oid v0.10.2
+   Compiling der v0.8.2
+   Compiling idna_adapter v1.2.2
+   Compiling curve25519-dalek v5.0.0
+   Compiling rustls-pki-types v1.15.1
+   Compiling thiserror-impl v2.0.21
+   Compiling untrusted v0.9.0
+   Compiling core-foundation-sys v0.8.7
+   Compiling unicode-segmentation v1.13.3
+   Compiling convert_case v0.10.0
+   Compiling spki v0.8.0
+   Compiling idna v1.1.0
+   Compiling blake3 v1.8.7
+   Compiling unicode-xid v0.2.6
+   Compiling base16ct v1.0.0
+   Compiling anyhow v1.0.104
+   Compiling serdect v0.4.3
+   Compiling derive_more-impl v2.1.1
+   Compiling url v2.5.8
+   Compiling pkcs8 v0.11.0
+   Compiling sha2 v0.11.0
+   Compiling signature v3.0.0
+   Compiling ipnet v2.12.2
+   Compiling rustls v0.23.45
+   Compiling arrayvec v0.7.8
+   Compiling constant_time_eq v0.4.2
+   Compiling httparse v1.10.1
+   Compiling ed25519 v3.0.0
+   Compiling rustls-webpki v0.103.15
+   Compiling http-body v1.1.0
+   Compiling inout v0.1.4
+   Compiling pin-project-internal v1.1.13
+   Compiling rand_core v0.6.4
+   Compiling derive_more v2.1.1
+   Compiling atomic-waker v1.1.2
+   Compiling base64 v0.22.1
+   Compiling zerocopy v0.8.57
+   Compiling parking v2.2.1
+   Compiling futures-lite v2.6.1
+   Compiling pin-project v1.1.13
+   Compiling cipher v0.4.4
+   Compiling ed25519-dalek v3.0.0
+   Compiling universal-hash v0.5.1
+   Compiling spez v0.1.2
+   Compiling n0-error-macros v1.0.1
+   Compiling base64 v0.23.1
+   Compiling byteorder v1.5.0
+   Compiling opaque-debug v0.3.1
+   Compiling tower-service v0.3.3
+   Compiling fnv v1.0.7
+   Compiling try-lock v0.2.5
+   Compiling rustc-hash v2.1.3
+   Compiling want v0.3.1
+   Compiling n0-error v1.0.1
+   Compiling h2 v0.4.19
+   Compiling core-foundation v0.10.1
+   Compiling objc2 v0.6.4
+   Compiling time-core v0.1.9
+   Compiling num-conv v0.2.2
+   Compiling httpdate v1.0.3
+   Compiling time-macros v0.2.32
+   Compiling security-framework-sys v2.17.0
+   Compiling hyper v1.11.1
+   Compiling n0-future v0.3.2
+   Compiling powerfmt v0.2.0
+   Compiling diatomic-waker v0.2.3
+   Compiling deranged v0.5.8
+   Compiling spin v0.10.1
+   Compiling objc2-encode v4.1.0
+   Compiling cordyceps v0.3.5
+   Compiling time v0.3.55
+   Compiling futures-buffered v0.2.13
+   Compiling hyper-util v0.1.20
+   Compiling security-framework v3.7.0
+   Compiling polyval v0.6.2
+   Compiling aead v0.5.2
+   Compiling sync_wrapper v1.0.2
+   Compiling winnow v1.0.4
+   Compiling heck v0.5.0
+   Compiling rustls-platform-verifier v0.7.0
+   Compiling ghash v0.5.1
+   Compiling ppv-lite86 v0.2.21
+   Compiling aes v0.8.4
+   Compiling ctr v0.9.2
+   Compiling toml_parser v1.1.3+spec-1.1.0
+   Compiling http-body-util v0.1.5
+   Compiling noq-udp v1.3.0
+   Compiling data-encoding v2.11.1
+   Compiling tower-layer v0.3.3
+   Compiling libm v0.2.16
+   Compiling toml_datetime v1.1.1+spec-1.1.0
+   Compiling rustversion v1.0.23
+   Compiling toml_edit v0.25.15+spec-1.1.0
+   Compiling aes-gcm v0.10.3
+   Compiling dispatch2 v0.3.1
+   Compiling block2 v0.6.2
+   Compiling tokio-rustls v0.26.6
+   Compiling heapless v0.7.17
+   Compiling serde_bytes v0.11.19
+   Compiling autocfg v1.5.1
+   Compiling simdutf8 v0.1.5
+   Compiling tinyvec v1.13.3
+   Compiling sha1_smol v1.0.1
+   Compiling system-configuration-sys v0.6.0
+   Compiling num-traits v0.2.19
+   Compiling objc2-core-foundation v0.3.2
+   Compiling data-encoding-macro-internal v0.1.19
+   Compiling proc-macro-crate v3.5.0
+   Compiling tower v0.5.3
+   Compiling hash32 v0.2.1
+   Compiling block-buffer v0.10.4
+   Compiling spin v0.9.9
+   Compiling ryu v1.0.23
+   Compiling crossbeam-utils v0.8.23
+   Compiling siphasher v1.0.3
+   Compiling fastbloom v0.17.0
+   Compiling tower-http v0.6.11
+   Compiling digest v0.10.7
+   Compiling objc2-security v0.3.2
+   Compiling data-encoding-macro v0.1.21
+   Compiling hyper-rustls v0.27.9
+   Compiling strum_macros v0.28.0
+   Compiling cobs v0.3.0
+   Compiling tokio-stream v0.1.19
+   Compiling futures-executor v0.3.34
+   Compiling noq v1.3.0
+   Compiling enum-assoc v1.4.1
+   Compiling postcard-derive v0.2.2
+   Compiling quick-xml v0.42.0
+   Compiling rand_pcg v0.10.2
+   Compiling sorted-index-buffer v0.2.1
+   Compiling n0-dns-resolver v0.1.0
+   Compiling identity-hash v0.1.0
+   Compiling netdev v0.46.3
+   Compiling lru-slab v0.1.3
+   Compiling getrandom v0.3.4
+   Compiling noq-proto v1.3.0
+   Compiling strum v0.28.0
+   Compiling plist v1.10.1
+   Compiling postcard v1.1.3
+   Compiling futures v0.3.34
+   Compiling reqwest v0.13.5
+   Compiling iroh-base v1.3.0
+   Compiling system-configuration v0.8.0
+   Compiling objc2-system-configuration v0.3.2
+   Compiling num_enum_derive v0.7.6
+   Compiling iroh-metrics-derive v1.0.1
+   Compiling webpki-roots v1.0.9
+   Compiling lru v0.18.4
+   Compiling netwatch v0.19.3
+   Compiling iroh-dns v1.3.0
+   Compiling simple-dns v0.12.0
+   Compiling const-oid v0.9.6
+   Compiling xml-rs v0.8.29
+   Compiling mac-addr v0.3.0
+   Compiling zmij v1.0.23
+   Compiling xmltree v0.10.3
+   Compiling der v0.7.10
+   Compiling iroh-metrics v1.0.2
+   Compiling num_enum v0.7.6
+   Compiling hmac v0.12.1
+   Compiling arc-swap v1.9.2
+   Compiling n0-watcher v1.0.0
+   Compiling attohttpc v0.30.1
+   Compiling ff v0.13.1
+   Compiling hex v0.4.3
+   Compiling iroh-relay v1.3.0
+   Compiling base16ct v0.2.0
+   Compiling hax-lib v0.3.7
+   Compiling syn v1.0.109
+   Compiling serde_json v1.0.151
+   Compiling rustix v1.1.5
+   Compiling sec1 v0.7.3
+   Compiling igd-next v0.17.1
+   Compiling group v0.13.0
+   Compiling hkdf v0.12.4
+   Compiling tokio-websockets v0.13.3
+   Compiling rand_chacha v0.3.1
+   Compiling crypto-bigint v0.5.5
+   Compiling iroh v1.3.0
+   Compiling hax-lib-macros v0.3.7
+   Compiling errno v0.3.14
+   Compiling seize v0.5.1
+   Compiling crossbeam-epoch v0.9.21
+   Compiling ident_case v1.0.1
+   Compiling strsim v0.11.1
+   Compiling darling_core v0.24.1
+   Compiling elliptic-curve v0.13.8
+   Compiling papaya v0.2.5
+   Compiling rand v0.8.8
+   Compiling portmapper v0.19.3
+   Compiling backon v1.6.0
+   Compiling path-dedot v3.1.1
+   Compiling cbor-core v0.10.1
+   Compiling proc-macro-error-attr v0.4.12
+   Compiling self_cell v1.3.0
+   Compiling compare v0.0.6
+   Compiling hashbrown v0.14.5
+   Compiling prettyplease v0.3.0
+   Compiling dashmap v6.2.1
+   Compiling p2panda-core v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5-upstream-20261013#1f69c9bc)
+   Compiling syn-mid v0.5.4
+   Compiling interval-heap v0.0.5
+   Compiling path-absolutize v3.1.1
+   Compiling darling_macro v0.24.1
+   Compiling tempfile v3.27.0
+   Compiling yasna v0.6.0
+   Compiling pem v4.0.0
+   Compiling acto v0.8.2
+   Compiling curve25519-dalek v4.1.3
+   Compiling async-stream-impl v0.3.6
+   Compiling proc-macro-error v0.4.12
+   Compiling libcrux-intrinsics v0.0.8
+   Compiling varint-rs v2.2.1
+   Compiling xxhash-rust v0.8.18
+   Compiling proc-macro-hack v0.5.20+deprecated
+   Compiling fixedbitset v0.5.7
+   Compiling byteview v0.6.1
+   Compiling hashbrown v0.16.1
+   Compiling value-log v1.9.0
+   Compiling enum_dispatch v0.3.13
+   Compiling quick_cache v0.6.24
+   Compiling async-stream v0.3.6
+   Compiling rcgen v0.14.10
+   Compiling crossbeam-skiplist v0.1.3
+   Compiling darling v0.24.1
+   Compiling libcrux-secrets v0.0.6
+   Compiling primeorder v0.13.6
+   Compiling rand_core v0.9.5
+   Compiling num-integer v0.1.47
+   Compiling ptr_meta_derive v0.3.2
+   Compiling irpc-derive v0.17.0
+   Compiling ref-cast v1.0.27
+   Compiling lz4_flex v0.11.6
+   Compiling smol_str v0.1.24
+   Compiling redb v2.6.3
+   Compiling guardian v1.3.0
+   Compiling libcrux-sha3 v0.0.10
+   Compiling double-ended-peekable v0.1.0
+   Compiling thiserror v1.0.69
+   Compiling lsm-tree v2.10.4
+   Compiling irpc v0.17.0
+   Compiling bon-macros v3.10.1
+   Compiling ptr_meta v0.3.2
+   Compiling rand_chacha v0.9.0
+   Compiling libcrux-traits v0.0.8
+   Compiling p2panda-store v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5-upstream-20261013#1f69c9bc)
+   Compiling hickory-proto v0.26.3
+   Compiling uuid v1.27.0
+   Compiling rand_chacha v0.10.0
+   Compiling poly1305 v0.8.0
+   Compiling chacha20 v0.9.1
+   Compiling hmac v0.13.0
+   Compiling hpke-rs-crypto v0.7.0
+   Compiling universal-hash v0.6.1
+   Compiling ref-cast-impl v1.0.27
+   Compiling thiserror-impl v1.0.69
+   Compiling aho-corasick v1.1.5
+   Compiling libcrux-platform v0.0.3
+   Compiling std-semaphore v0.1.0
+   Compiling regex-syntax v0.8.11
+   Compiling fjall v2.11.2
+   Compiling regex-automata v0.4.18
+   Compiling swarm-discovery v0.6.4
+   Compiling poly1305 v0.9.1
+   Compiling hkdf v0.13.0
+   Compiling chacha20poly1305 v0.10.1
+   Compiling bon v3.10.1
+   Compiling genawaiter-proc-macro v0.99.1
+   Compiling x25519-dalek v2.0.1
+   Compiling rancor v0.1.3
+   Compiling num-bigint v0.4.8
+   Compiling p384 v0.13.1
+   Compiling p256 v0.13.2
+   Compiling futures-concurrency v7.7.1
+   Compiling k256 v0.13.4
+   Compiling inplace-vec-builder v0.1.1
+   Compiling aead v0.6.1
+   Compiling bytecheck_derive v0.8.3
+   Compiling async-trait v0.1.92
+   Compiling binary-merge v0.1.2
+   Compiling genawaiter-macro v0.99.1
+   Compiling redb v4.3.0
+   Compiling genawaiter v0.99.1
+   Compiling range-collections v0.4.6
+   Compiling bytecheck v0.8.3
+   Compiling hpke-rs-rust-crypto v0.7.0
+   Compiling chacha20poly1305 v0.11.0
+   Compiling num-rational v0.4.2
+   Compiling iroh-mdns-address-lookup v0.6.0
+   Compiling ractor v0.16.5
+   Compiling muniment v0.2.0 (/Users/markik/Code/worktrees/eidetic-cross-source-answers-20261022/crates/muniment)
+   Compiling iroh-gossip v0.101.0
+   Compiling hpke-rs v0.7.0
+   Compiling p2panda-sync v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5-upstream-20261013#1f69c9bc)
+   Compiling p2panda-discovery v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5-upstream-20261013#1f69c9bc)
+   Compiling num-iter v0.1.46
+   Compiling num-complex v0.4.6
+   Compiling sha2 v0.10.9
+   Compiling insigne v0.0.2 (https://github.com/merely-made/dramatis.git?branch=main#6cc339f3)
+   Compiling iroh-io v0.6.2
+   Compiling x25519-dalek v3.0.0
+   Compiling iana-time-zone v0.1.65
+   Compiling iroh-blobs v0.103.1
+   Compiling munge_macro v0.4.7
+   Compiling slotmap v1.1.1
+   Compiling ahash v0.8.12
+   Compiling positioned-io v0.3.5
+   Compiling bit-vec v0.6.3
+   Compiling foldhash v0.1.5
+   Compiling bao-tree v0.16.1
+   Compiling hashbrown v0.15.5
+   Compiling bit-set v0.5.3
+   Compiling munge v0.4.7
+   Compiling chrono v0.4.45
+   Compiling personae v0.3.0 (https://github.com/merely-made/dramatis.git?branch=main#6cc339f3)
+   Compiling p2panda-encryption v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5-upstream-20261013#1f69c9bc)
+   Compiling num v0.4.3
+   Compiling rend v0.5.4
+   Compiling iroh-util v0.6.0
+   Compiling mere-p2panda-net v0.7.5 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5-upstream-20261013#1f69c9bc)
+   Compiling regex v1.13.1
+   Compiling mere-proofs v0.1.0 (/Users/markik/Code/worktrees/eidetic-cross-source-answers-20261022/crates/proofs)
+   Compiling iroh-tickets v1.0.0
+   Compiling nested_enum_utils v0.2.3
+   Compiling rkyv_derive v0.8.18
+   Compiling nom v8.0.0
+   Compiling reflink-copy v0.1.30
+   Compiling lazy_static v1.5.0
+   Compiling fraction v0.15.4
+   Compiling iso8601 v0.6.6
+   Compiling rkyv v0.8.18
+   Compiling stickleback v0.1.1 (/Users/markik/Code/worktrees/eidetic-cross-source-answers-20261022/crates/stickleback)
+   Compiling petgraph v0.8.3
+   Compiling fancy-regex v0.13.0
+   Compiling rand v0.9.5
+   Compiling assert-json-diff v2.0.2
+   Compiling serde_urlencoded v0.7.1
+   Compiling similar v2.7.0
+   Compiling num-cmp v0.1.0
+   Compiling bytecount v0.6.9
+   Compiling colored v3.1.1
+   Compiling mockito v1.7.2
+   Compiling jsonschema v0.18.3
+   Compiling chartulary v0.2.2 (/Users/markik/Code/worktrees/eidetic-cross-source-answers-20261022/crates/chartulary)
+   Compiling mere-transport v0.0.2 (https://github.com/merely-made/murm.git?branch=main#6ea211bd)
+   Compiling pollster v0.4.0
+   Compiling eidetic v0.0.2 (/Users/markik/Code/worktrees/eidetic-cross-source-answers-20261022/crates/eidetic-core)
+warning: unused import: `async_trait::async_trait`
+ --> crates/eidetic-core/src/browsing/tests.rs:9:5
+  |
+9 | use async_trait::async_trait;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `std::collections::HashMap`
+  --> crates/eidetic-core/src/browsing/tests.rs:10:5
+   |
+10 | use std::collections::HashMap;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `async_trait::async_trait`
+   --> crates/eidetic-core/src/bundle.rs:189:9
+    |
+189 |     use async_trait::async_trait;
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::collections::HashMap`
+   --> crates/eidetic-core/src/bundle.rs:190:9
+    |
+190 |     use std::collections::HashMap;
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `async_trait::async_trait`
+   --> crates/eidetic-core/src/deleted.rs:149:9
+    |
+149 |     use async_trait::async_trait;
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::collections::HashMap`
+   --> crates/eidetic-core/src/deleted.rs:150:9
+    |
+150 |     use std::collections::HashMap;
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `async_trait::async_trait`
+  --> crates/eidetic-core/src/schema_def/tests.rs:10:5
+   |
+10 | use async_trait::async_trait;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::collections::HashMap`
+  --> crates/eidetic-core/src/schema_def/tests.rs:11:5
+   |
+11 | use std::collections::HashMap;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `async_trait::async_trait`
+   --> crates/eidetic-core/src/typed.rs:213:9
+    |
+213 |     use async_trait::async_trait;
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::collections::HashMap`
+   --> crates/eidetic-core/src/typed.rs:215:9
+    |
+215 |     use std::collections::HashMap;
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `eidetic` (lib test) generated 10 warnings (run `cargo fix --lib -p eidetic --tests` to apply 10 suggestions)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2m 29s
+     Running unittests src/lib.rs (/Users/markik/Code/targets/lanes/eidetic-main-integration/build/debug/deps/eidetic-82ff83fadc4fe178)
+
+running 20 tests
+test models::adapter::tests::rejects_ambiguous_or_non_finite_envelopes ... ok
+test models::training::tests::rejects_ambiguous_corpora_and_incomparable_reports ... ok
+test models::answer::tests::exact_links_use_unicode_offsets_and_do_not_certify_entailment ... ok
+test models::answer::tests::chunk_quotes_preserve_the_full_source_hash_and_absolute_range ... ok
+test models::answer::tests::malformed_unknown_and_invented_support_fail_closed ... ok
+test models::training::tests::schema_refs_are_stable ... ok
+test models::answer::tests::corrupt_passage_ranges_and_repeated_claims_are_reported ... ok
+test models::requested::tests::ambiguous_requests_require_explicit_ranges_and_never_read_evidence ... ok
+test models::answer::tests::conflict_requires_distinct_sources_and_keeps_both_versions ... ok
+test models::embedding::tests::unknown_versions_and_ambiguous_corpus_identities_are_refused ... ok
+test models::answer::tests::insufficient_is_a_retained_model_judgment_not_an_absence_proof ... ok
+test models::training::tests::validates_adapter_provenance_without_reading_mesh_facts ... ok
+test models::answer::tests::quoted_candidate_decisions_preserve_exact_text_and_refuse_a_foreign_quote ... ok
+test models::training::tests::v1_training_corpus_schema_and_fields_remain_readable ... ok
+test models::adapter::tests::typed_round_trip_preserves_compatibility_envelope ... ok
+test models::requested::tests::explicit_list_is_ordered_unicode_question_identity ... ok
+test models::answer::tests::candidate_review_binds_all_decisions_to_status_and_links_without_claiming_truth ... ok
+test models::training::tests::typed_round_trips_preserve_immutable_training_artifacts ... ok
+test models::answer::tests::requested_facts_refuse_missing_extra_and_reordered_claims ... ok
+test models::embedding::tests::every_output_or_corpus_setting_is_part_of_compatibility ... ok
+
+test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 129 filtered out; finished in 0.00s
+

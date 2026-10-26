@@ -1,0 +1,15 @@
+
+running 10 tests
+test inference_service::tests::a_selector_beyond_the_source_is_refused_even_when_it_would_copy_the_same_text ... ok
+test inference_service::tests::admitted_research_route_refuses_wrong_owner ... ignored, requires the isolated R3 real resident and a public probe receipt path
+test inference_service::tests::citation_open_reads_the_exact_source_version_and_checks_its_passage_identity ... ok
+test inference_service::tests::claim_inspection_rechecks_the_exact_subrange_and_raw_answer_binding ... ok
+test inference_service::tests::publication_bounds_encoded_bytes_and_rejects_owner_hash_and_legacy_substitution ... ok
+test inference_service::tests::saved_citation_requires_requested_scope_and_exact_unicode_passage ... ok
+test inference_service::tests::withdrawn_citations_and_wrong_source_text_cannot_open ... ok
+test inference_surface::tests::research_panes_share_one_publisher_and_reject_foreign_or_legacy_sources ... ok
+test sky_surface::tests::polar_empty_crossings_are_described_without_visibility_inference ... ok
+test trail_memory::inference_owner_tests::the_actor_lends_versions_without_reopening_its_store_or_substituting_a_new_head ... ok
+
+test result: ok. 9 passed; 0 failed; 1 ignored; 0 measured; 1206 filtered out; finished in 19.65s
+

@@ -1,0 +1,13 @@
+{
+  "receipt_integrity": "pass",
+  "frozen_cases": 16,
+  "complete_raw_documents": 15,
+  "contract_bindings": 15,
+  "semantic_passed": 8,
+  "semantic_failed": 7,
+  "admission_negative_passed": 1,
+  "score_health_requests": 15,
+  "qualification_gate": "gate_not_passed",
+  "rubric_checks": 61,
+  "boundary": "This verifies the preserved measurement, including failures. It does not turn a failed semantic gate into a pass, replay the model, or qualify a headed/cold flow."
+}

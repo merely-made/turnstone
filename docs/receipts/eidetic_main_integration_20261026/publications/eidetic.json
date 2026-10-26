@@ -1,0 +1,8 @@
+{
+  "repo": "eidetic",
+  "commit": "f599ffe93298025bf6d65ae310a7cb4270ea52e3",
+  "remote_main": "f599ffe93298025bf6d65ae310a7cb4270ea52e3",
+  "history_cleanup_authoritative": true,
+  "source_tree_identical_to_previously_tested_integration": true,
+  "previous_publication": "eidetic-publication-before-history-cleanup.json"
+}

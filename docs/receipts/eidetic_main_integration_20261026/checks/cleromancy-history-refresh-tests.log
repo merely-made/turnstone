@@ -1,0 +1,22 @@
+
+running 17 tests
+test consultation::journal_policy::tests::date_cutoff_is_inclusive ... ok
+test consultation::journal_policy::tests::relative_dates_use_elapsed_duration_buckets ... ok
+test content::tests::content_editions_are_typed_and_complete ... ok
+test host::domain::tests::preserves_unrelated_unknown_facets ... ok
+test host::domain::tests::rejects_a_reading_after_its_field_node_is_removed ... ok
+test host::domain::tests::rejects_deleted_dependency_and_missing_domain_facet ... ok
+test host::domain::tests::rejects_orphan_domain_facets ... ok
+test host::domain::tests::rejects_tampered_unreferenced_sealed_reading ... ok
+test host::domain::tests::rejects_unknown_domain_version_and_multiple_domain_records ... ok
+test host::domain::tests::validates_a_session_and_reflection_and_refuses_a_missing_session ... ok
+test host::domain::tests::validates_complete_reading_without_mutating_candidate ... ok
+test host::sky::tests::enumerator_rejects_a_structurally_invalid_canonical_record ... ok
+test host::sky::tests::enumerator_rejects_a_valid_record_at_the_wrong_digest_address ... ok
+test narrative::typed_deck_tests::typed_metadata_identifies_cards_without_a_system_name_prefix ... ok
+test natal_cap::tests::classification_uses_the_retained_integer_rate ... ok
+test reading::shuffle::tests::rejection_includes_maximum_word_and_refuses_the_short_prefix ... ok
+test situation::sky::tests::unequal_hours_cover_each_boundary_and_keep_the_previous_day_before_sunrise ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+

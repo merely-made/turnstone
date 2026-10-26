@@ -1,0 +1,15 @@
+{
+  "validated_pinned_provider": "5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a",
+  "current_upstream_main": "2a7537486a206385d3832e6923e714eec24052b2",
+  "current_contains_validated_provider": true,
+  "subsequent_changed_paths": [
+    "design_docs/DOC_README.md",
+    "design_docs/TERMINOLOGY.md",
+    "design_docs/mere_docs/design/2026-07-01_node_card_summoning_design.md",
+    "design_docs/mere_docs/design/2026-10-26_gui_catalog_design.md",
+    "design_docs/mere_docs/technical_architecture/2026-06-06_peripheral_panes_architecture.md",
+    "support/doc-audit/d2/batch_113_gui_catalog.md"
+  ],
+  "subsequent_changes_docs_only": true,
+  "turnstone_retains_validated_provider_pin": true
+}

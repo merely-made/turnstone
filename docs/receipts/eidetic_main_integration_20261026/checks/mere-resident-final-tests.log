@@ -1,0 +1,50 @@
+
+running 45 tests
+test inference::answer_contract::tests::bounds_and_legacy_answers_are_explicit ... ok
+test inference::answer_contract::tests::candidate_review_rejects_ambiguous_handles_and_oversized_grammars_before_generation ... ok
+test inference::answer_contract::tests::constrained_policy_refuses_fences_foreign_quotes_and_false_conflict_shape ... ok
+test inference::answer_contract::tests::contract_binds_question_and_exact_candidates_without_teaching_source_leakage ... ok
+test inference::answer_contract::tests::exact_slots_are_retained_and_wrong_order_or_missing_claims_are_refused ... ok
+test inference::answer_contract::tests::reviews_are_required_only_by_the_new_method_and_survive_replay ... ok
+test inference::durable::tests::claim_support_is_sealed_reopened_and_bound_to_raw_output ... ok
+test inference::durable::tests::encrypted_logs_refuse_wrong_keys_signers_and_modified_bodies ... ok
+test inference::durable::tests::recall_entries_refuse_legacy_readers_instead_of_losing_context ... ok
+test inference::durable::tests::two_continuations_are_a_visible_fork_and_never_a_silent_winner ... ok
+test inference::observations::tests::stale_worker_replies_neither_revive_nor_rejournal_terminal_work ... ok
+test inference::publication_tests::publications_require_owner_and_exact_page_text_bytes_and_never_make_a_stub_answer ... ok
+test inference::publication_tests::published_rankings_follow_explicit_scope_republication_lock_and_withdrawal ... ok
+test inference::publication_tests::publishers_cannot_replace_another_live_owner_and_disconnect_withdraws_heads ... ok
+test inference::recall::tests::absent_source_owner_never_turns_a_marker_into_a_citation ... ok
+test inference::recall::tests::budgets_never_clip_a_citable_passage ... ok
+test inference::recall::tests::changed_page_is_reported_stale_without_substituting_or_citing_it ... ok
+test inference::recall::tests::exact_quote_annotations_are_distinct_from_model_markers_and_partial_matches ... ok
+test inference::recall::tests::retained_blob_corruption_is_an_error_instead_of_a_new_version ... ok
+test inference::recall::tests::reviewed_quotes_are_data_and_citation_anchors_name_only_claim_evidence ... ok
+test inference::recall::tests::scopes_filter_passage_handles_and_ties_are_stable ... ok
+test inference::recall::tests::short_accidental_matches_do_not_become_quote_citations ... ok
+test inference::recall::tests::short_passage_context_contains_content_and_keeps_identity_in_evidence ... ok
+test inference::recall::tests::source_changes_advance_projection_revision_without_rewriting_the_run ... ok
+test inference::recall::tests::structured_claim_quotes_keep_historical_support_but_withdraw_stale_inspection ... ok
+test inference::recall::tests::structured_quote_anchors_accept_alternative_json_unicode_escapes ... ok
+test inference::recall::tests::stub_cannot_satisfy_a_retained_ask ... ok
+test inference::recall::tests::unicode_selectors_and_passage_ids_bind_exact_retained_bytes ... ok
+test inference::recall_embedding::tests::a_sparse_provider_does_not_admit_an_oversized_stored_dense_representation ... ok
+test inference::recall_embedding::tests::matching_projection_reopens_scopes_before_fusion_and_observes_each_head_once ... ok
+test inference::recall_embedding::tests::private_cache_failure_and_byte_limits_do_not_silently_fall_back_to_lexical ... ok
+test inference::recall_embedding::tests::ranking_ties_and_answer_inputs_ignore_source_identity_permutations ... ok
+test inference::tests::a_cancel_mid_stream_keeps_partial_text_and_nothing_after ... ok
+test inference::tests::a_load_failure_is_visible_and_each_ask_fails ... ok
+test inference::tests::a_stub_ask_streams_to_a_finished_answer ... ok
+test inference::tests::actor_panic_is_reported_even_after_all_runs_become_terminal ... ok
+test inference::tests::another_sessions_requests_are_errors ... ok
+test inference::tests::buffered_finished_update_survives_a_later_actor_panic ... ok
+test inference::tests::close_cancels_an_ask_waiting_for_a_gpu_worker_to_stop ... ok
+test inference::tests::close_cancels_queued_runs_and_refuses_later_asks ... ok
+test inference::tests::close_retains_every_terminal_journal_failure ... ok
+test inference::tests::disconnected_durable_ask_is_failed_and_later_refusal_is_not_journaled ... ok
+test inference::tests::duplicate_and_unknown_runs_are_refused ... ok
+test inference::tests::retained_asks_do_not_auto_execute_without_current_authority ... ok
+test inference::tests::the_route_asks_streams_and_rings ... ok
+
+test result: ok. 45 passed; 0 failed; 0 ignored; 0 measured; 29 filtered out; finished in 1.09s
+

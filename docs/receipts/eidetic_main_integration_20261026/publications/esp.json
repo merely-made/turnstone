@@ -1,0 +1,17 @@
+{
+  "repo": "esp",
+  "commit": "bd0468c5c44c0b098494d30b3cfd0aa283cecf48",
+  "remote_main": "bd0468c5c44c0b098494d30b3cfd0aa283cecf48",
+  "base": "f4065b0a742025b81dd9902c429b1ff224bb3457",
+  "utc": "2026-10-26T20:45:41.862648+00:00",
+  "history_cleanup_authoritative": true,
+  "no_old_history_rejoined": true,
+  "changed_files": [
+    "Cargo.lock",
+    "Cargo.toml"
+  ],
+  "canonical_main": {
+    "path": "/Users/markik/Code/repos/esp",
+    "preserved_dirty": false
+  }
+}

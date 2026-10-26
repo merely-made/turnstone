@@ -1,0 +1,19 @@
+{
+  "repo": "cleromancy",
+  "commit": "ee21cf01edefa9ee685b2ab34c87c7e247175d55",
+  "remote_main": "ee21cf01edefa9ee685b2ab34c87c7e247175d55",
+  "base": "91c46279c092ff0d20e1a01302f2d3721d330cca",
+  "utc": "2026-10-26T21:00:21.805199+00:00",
+  "history_cleanup_authoritative": true,
+  "no_old_history_rejoined": true,
+  "changed_files": [
+    "Cargo.lock",
+    "Cargo.toml",
+    "core/Cargo.lock",
+    "core/Cargo.toml"
+  ],
+  "canonical_main": {
+    "path": "/Users/markik/Code/repos/cleromancy",
+    "preserved_dirty": false
+  }
+}

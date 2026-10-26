@@ -1,0 +1,12 @@
+{
+  "validated_candidate": "efc2109d0d43944930f4cecfffe49ed03090dd26",
+  "upstream_tip": "15d78a40f58890d02f58d6667a610a9557aa13ca",
+  "merged_candidate": "e88711496e290d23e5d8d90ad131177e3485c390",
+  "upstream_delta_files": [
+    "crates/eidetic/README.md",
+    "design_docs/DOC_README.md",
+    "design_docs/mere_docs/design/2026-10-26_gui_catalog_design.md",
+    "support/doc-audit/d2/batch_113_gui_catalog.md"
+  ],
+  "validation": "The second merge changes Markdown documentation only; the tested Rust, fixture and Cargo inputs are unchanged."
+}

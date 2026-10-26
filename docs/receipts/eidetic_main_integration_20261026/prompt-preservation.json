@@ -1,0 +1,15 @@
+{
+  "historical_prompt_bytes": "unchanged",
+  "constants": {
+    "INSTRUCTIONS": "320a728236cd67935dbb131a0ad2d5498216714c7757a917da671e24e8208f5a",
+    "INSTRUCTIONS_V3": "6173dad8f49e82bbfc686fa3954e45d83ba2f08565978c0f5a61900ef73d4262",
+    "INSTRUCTIONS_V4": "d1cacba5727c356fa27e83d302931d6fd72e528c96962d691ea56bb1bcd2ceee",
+    "INSTRUCTIONS_V5": "ac883ffe2474c07738b3608fa5bb7d22a5bdf8593e289239122c93ba57809b1d",
+    "INSTRUCTIONS_V6": "3d63c02e91f24476348a8d50dd1ee6fba32dd6e59b4cb9cb0a558b6c29ae785b",
+    "INSTRUCTIONS_V7": "5611f792facc92964f3b783c3a642ec47d9b672984eea3dc5a1e4a5413329f6a"
+  },
+  "old_source": "5bfde191655273619bd10fd54393c45f036384a7",
+  "candidate_source": "5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a",
+  "whole_answer_contract_module_identical": true,
+  "whole_module_sha256": "df3ae7b3e67f6282ab71dd19558aad0fbced66eb83a0cb06bb83d1496cd5d9dd"
+}

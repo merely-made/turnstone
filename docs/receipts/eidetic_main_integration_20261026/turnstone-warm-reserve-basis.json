@@ -1,0 +1,60 @@
+{
+  "completed_full_dependency_build": "turnstone-main-harness-build-result.json",
+  "remaining_test_target": "application library with cfg(test), same features and dependencies as the completed main harness graph",
+  "root_artifacts": [
+    {
+      "kind": [
+        "lib"
+      ],
+      "features": [
+        "default"
+      ],
+      "profile": {
+        "opt_level": "0",
+        "debuginfo": 0,
+        "debug_assertions": true,
+        "overflow_checks": true,
+        "test": false
+      },
+      "files": [
+        {
+          "path": "/Users/markik/Code/targets/lanes/eidetic-main-integration/build/debug/deps/libturnstone-92538842200b9532.rlib",
+          "bytes": 316910408
+        },
+        {
+          "path": "/Users/markik/Code/targets/lanes/eidetic-main-integration/build/debug/deps/libturnstone-92538842200b9532.rmeta",
+          "bytes": 26536826
+        }
+      ]
+    },
+    {
+      "kind": [
+        "bin"
+      ],
+      "features": [
+        "default"
+      ],
+      "profile": {
+        "opt_level": "0",
+        "debuginfo": 0,
+        "debug_assertions": true,
+        "overflow_checks": true,
+        "test": true
+      },
+      "files": [
+        {
+          "path": "/Users/markik/Code/targets/lanes/eidetic-main-integration/build/debug/deps/turnstone-dc395c573e0d2049",
+          "bytes": 964768
+        }
+      ]
+    }
+  ],
+  "profile": "debug=0, incremental=0, Rust1.99.1",
+  "reserve_choice_gib": 20,
+  "reserve_basis": "Full production application library and all test dependency units already compiled; remaining root library test code generation/linking uses the ordinary heavy-build reservation rather than the initial cold graph reservation of32GiB. No output relocation or cache deletion.",
+  "product_scope": {
+    "reserve_gib": 20,
+    "basis": "Normal product build uses the ordinary heavy-build reservation. Test-only taproot estimated-probe-fixtures and transport test-identity features can create different normal-build dependency units, so the remaining product is not assumed to be a link-only operation.",
+    "further_reserve_reduction": false
+  }
+}

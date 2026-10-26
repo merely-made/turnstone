@@ -1,0 +1,4 @@
+Lane eidetic-native-integration: build=/Users/markik/Code/targets/lanes/eidetic-native-integration/build artifacts=/Users/markik/Code/targets/lanes/eidetic-native-integration/artifacts
+    Blocking waiting for file lock on package cache
+error: cannot update the lock file /Users/markik/Code/worktrees/murm-cross-source-answers-20261022/native/Cargo.lock because --locked was passed to prevent this
+help: to generate the lock file without accessing the network, remove the --locked flag and use --offline instead.

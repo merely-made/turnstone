@@ -1,0 +1,133 @@
+{
+  "mere": {
+    "metadata": "mere-coherent-metadata.json",
+    "metadata_sha256": "7026a46540e92893769110022ec858983e73bd014fed1129c3649a2570cabb1f",
+    "sources": {
+      "chartulary": [
+        "f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+      ],
+      "cleromancy-core": [
+        "ee21cf01edefa9ee685b2ab34c87c7e247175d55"
+      ],
+      "commons-spine": [
+        "998133bc17b8636152e9c4f7605eb475498213c8"
+      ],
+      "eidetic": [
+        "f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+      ],
+      "embedded-graphics": [
+        "4ba804b3a52af2de43b659aa16d9ed99c16a94d9"
+      ],
+      "embedded-graphics-core": [
+        "4ba804b3a52af2de43b659aa16d9ed99c16a94d9"
+      ],
+      "esp": [
+        "bd0468c5c44c0b098494d30b3cfd0aa283cecf48"
+      ],
+      "esp-testkit": [
+        "bd0468c5c44c0b098494d30b3cfd0aa283cecf48"
+      ],
+      "gemot": [
+        "998133bc17b8636152e9c4f7605eb475498213c8"
+      ],
+      "knot-capture": [
+        "3e2251698bada90d20cc0eb19551841339376f9a"
+      ],
+      "knot-catalog": [
+        "3e2251698bada90d20cc0eb19551841339376f9a"
+      ],
+      "knot-composition": [
+        "3e2251698bada90d20cc0eb19551841339376f9a"
+      ],
+      "knot-document": [
+        "3e2251698bada90d20cc0eb19551841339376f9a"
+      ],
+      "knot-editor": [
+        "3e2251698bada90d20cc0eb19551841339376f9a"
+      ],
+      "knot-site": [
+        "3e2251698bada90d20cc0eb19551841339376f9a"
+      ],
+      "luggage": [
+        "f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+      ],
+      "mere-proofs": [
+        "f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+      ],
+      "mere-transport": [
+        "4ba804b3a52af2de43b659aa16d9ed99c16a94d9"
+      ],
+      "mien": [
+        "998133bc17b8636152e9c4f7605eb475498213c8"
+      ],
+      "mooting": [
+        "998133bc17b8636152e9c4f7605eb475498213c8"
+      ],
+      "muniment": [
+        "f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+      ],
+      "murm-webrtc": [
+        "4ba804b3a52af2de43b659aa16d9ed99c16a94d9"
+      ],
+      "murm-wire": [
+        "4ba804b3a52af2de43b659aa16d9ed99c16a94d9"
+      ],
+      "outrider": [
+        "4ba804b3a52af2de43b659aa16d9ed99c16a94d9"
+      ],
+      "postilion": [
+        "4ba804b3a52af2de43b659aa16d9ed99c16a94d9"
+      ],
+      "radio-face": [
+        "4ba804b3a52af2de43b659aa16d9ed99c16a94d9"
+      ],
+      "radio-hand": [
+        "4ba804b3a52af2de43b659aa16d9ed99c16a94d9"
+      ],
+      "retinue": [
+        "4ba804b3a52af2de43b659aa16d9ed99c16a94d9"
+      ],
+      "selvage": [
+        "4ba804b3a52af2de43b659aa16d9ed99c16a94d9"
+      ],
+      "seneschal": [
+        "4ba804b3a52af2de43b659aa16d9ed99c16a94d9"
+      ],
+      "servitor": [
+        "f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+      ],
+      "stickleback": [
+        "f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+      ],
+      "tulle": [
+        "4ba804b3a52af2de43b659aa16d9ed99c16a94d9"
+      ]
+    },
+    "duplicates": {}
+  },
+  "mere-web": {
+    "metadata": "mere-web-coherent-metadata.json",
+    "metadata_sha256": "b2d11cfc3e1de126a61d2667b064dfe6003e79a9d6691faf4b7dc46decbc9ef1",
+    "sources": {
+      "chartulary": [
+        "f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+      ],
+      "eidetic": [
+        "f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+      ],
+      "esp": [
+        "bd0468c5c44c0b098494d30b3cfd0aa283cecf48"
+      ],
+      "luggage": [
+        "f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+      ],
+      "muniment": [
+        "f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+      ],
+      "murm-webrtc": [
+        "4ba804b3a52af2de43b659aa16d9ed99c16a94d9"
+      ]
+    },
+    "duplicates": {}
+  }
+}

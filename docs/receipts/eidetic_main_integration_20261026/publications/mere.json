@@ -1,0 +1,14 @@
+{
+  "repo": "mere",
+  "commit": "5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a",
+  "remote_main": "5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a",
+  "base": "d969028bea3fee249bdc204a021bc4f0fef6c14b",
+  "validated_candidate": "3cf4bd3f608d3ab4674d5644d978604531d3c297",
+  "history_cleanup_authoritative": true,
+  "no_old_history_rejoined": true,
+  "canonical_main": {
+    "path": "/Users/markik/Code/repos/mere",
+    "preserved_dirty": false
+  },
+  "utc": "2026-10-26T21:17:44.383759+00:00"
+}

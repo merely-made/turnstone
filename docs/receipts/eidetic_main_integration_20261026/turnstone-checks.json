@@ -1,0 +1,27 @@
+{
+  "executable": "/Users/markik/Code/targets/lanes/eidetic-main-integration/build/debug/deps/turnstone-7a171b8d62b6af48",
+  "frozen": "/Users/markik/Code/output/eidetic-integration-20261026/frozen-tests/turnstone",
+  "sha256": "98daf9c9e6fbc5a9a3c4901ba6682183cae954192599c62407365984748c8303",
+  "tests": {
+    "inference": {
+      "passed": 9,
+      "failed": 0,
+      "ignored": 1,
+      "args": [
+        "inference",
+        "--test-threads=1"
+      ],
+      "log": "turnstone-inference-tests.log"
+    },
+    "reader_probe": {
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "args": [
+        "saved_reader_probe_tests::",
+        "--test-threads=1"
+      ],
+      "log": "turnstone-reader-probe-tests.log"
+    }
+  }
+}

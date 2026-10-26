@@ -1,0 +1,10 @@
+{
+  "Cargo.lock": {
+    "registry_records_unchanged": true,
+    "count": 1605
+  },
+  "ports/graphshell/web/Cargo.lock": {
+    "registry_records_unchanged": true,
+    "count": 1018
+  }
+}

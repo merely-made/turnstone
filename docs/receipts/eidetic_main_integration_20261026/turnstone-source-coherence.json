@@ -1,0 +1,277 @@
+{
+  "result": "pass",
+  "family_sources": {
+    "mere": [
+      "5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "eidetic": [
+      "f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+    ],
+    "gemot": [
+      "998133bc17b8636152e9c4f7605eb475498213c8"
+    ],
+    "esp": [
+      "bd0468c5c44c0b098494d30b3cfd0aa283cecf48"
+    ],
+    "knot": [
+      "3e2251698bada90d20cc0eb19551841339376f9a"
+    ],
+    "murm": [
+      "4ba804b3a52af2de43b659aa16d9ed99c16a94d9"
+    ]
+  },
+  "single_type_source_packages": {
+    "accesskit": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "apparatus-core": [
+      "git+https://www.github.com/merely-made/armillary.git?rev=06340b08327b29c3485ecb0089bb5cafed20fd80#06340b08327b29c3485ecb0089bb5cafed20fd80"
+    ],
+    "armillary": [
+      "git+https://www.github.com/merely-made/armillary.git?rev=864f107d44bf759111ad2ea3c9036b2cfbf03f4c#864f107d44bf759111ad2ea3c9036b2cfbf03f4c"
+    ],
+    "backstep": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "cambium": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "cambium-a11y": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "cambium-desktop": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "cambium-rootstock": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "cambium-winit": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "chartulary": [
+      "git+https://www.github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+    ],
+    "chirograph": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "commons-spine": [
+      "git+https://www.github.com/merely-made/gemot.git?rev=998133bc17b8636152e9c4f7605eb475498213c8#998133bc17b8636152e9c4f7605eb475498213c8"
+    ],
+    "distillery": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "document-canvas": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "eidetic": [
+      "git+https://www.github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+    ],
+    "eidetic-search": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "esp": [
+      "git+https://www.github.com/merely-made/esp.git?rev=bd0468c5c44c0b098494d30b3cfd0aa283cecf48#bd0468c5c44c0b098494d30b3cfd0aa283cecf48"
+    ],
+    "gemot": [
+      "git+https://www.github.com/merely-made/gemot.git?rev=998133bc17b8636152e9c4f7605eb475498213c8#998133bc17b8636152e9c4f7605eb475498213c8"
+    ],
+    "graphshell-client": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "graphshell-endpoint": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "graphshell-host": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "hest": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "illume": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "incipit": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "inker": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "knot-capture": [
+      "git+https://github.com/merely-made/knot-editor.git?branch=main#3e2251698bada90d20cc0eb19551841339376f9a"
+    ],
+    "knot-catalog": [
+      "git+https://github.com/merely-made/knot-editor.git?branch=main#3e2251698bada90d20cc0eb19551841339376f9a"
+    ],
+    "knot-composition": [
+      "git+https://github.com/merely-made/knot-editor.git?branch=main#3e2251698bada90d20cc0eb19551841339376f9a"
+    ],
+    "knot-document": [
+      "git+https://github.com/merely-made/knot-editor.git?branch=main#3e2251698bada90d20cc0eb19551841339376f9a"
+    ],
+    "knot-editor": [
+      "git+https://github.com/merely-made/knot-editor.git?branch=main#3e2251698bada90d20cc0eb19551841339376f9a"
+    ],
+    "knot-editor-host": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "luggage": [
+      "git+https://www.github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+    ],
+    "mere": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "mere-alembic": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "mere-apparatus": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "mere-athanor": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "mere-cartography": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "mere-chrome": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "mere-comms": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "mere-curation": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "mere-edit": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "mere-fetch": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "mere-fleece": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "mere-forme": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "mere-kernel": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "mere-lanes": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "mere-mesh": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "mere-moot": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "mere-pageload": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "mere-proofs": [
+      "git+https://www.github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+    ],
+    "mere-rdf": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "mere-surface-api": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "mere-transport": [
+      "git+https://github.com/merely-made/murm.git?branch=main#4ba804b3a52af2de43b659aa16d9ed99c16a94d9"
+    ],
+    "meristem": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "mesquite": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "mien": [
+      "git+https://www.github.com/merely-made/gemot.git?rev=998133bc17b8636152e9c4f7605eb475498213c8#998133bc17b8636152e9c4f7605eb475498213c8"
+    ],
+    "mooting": [
+      "git+https://www.github.com/merely-made/gemot.git?rev=998133bc17b8636152e9c4f7605eb475498213c8#998133bc17b8636152e9c4f7605eb475498213c8"
+    ],
+    "mora-cmudict": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "muniment": [
+      "git+https://www.github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+    ],
+    "murm-webrtc": [
+      "git+https://github.com/merely-made/murm.git?branch=main#4ba804b3a52af2de43b659aa16d9ed99c16a94d9"
+    ],
+    "murm-wire": [
+      "git+https://github.com/merely-made/murm.git?branch=main#4ba804b3a52af2de43b659aa16d9ed99c16a94d9"
+    ],
+    "nematic": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "numen": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "pandect": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "pelt-core": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "pictograph": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "platen": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "reference-data": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "sceno": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "scenograph": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "scenomise": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "scenotime": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "script-rhai": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "seiche": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "servitor": [
+      "git+https://www.github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+    ],
+    "sprigging": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "stickleback": [
+      "git+https://www.github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+    ],
+    "tabard": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "tabard-workshop": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "tinct": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "uxtree": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "weld-engine": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ],
+    "workbench": [
+      "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
+    ]
+  },
+  "registry_records_unchanged": true,
+  "metadata": "turnstone-coherent-metadata.json",
+  "metadata_sha256": "95bb89eca21d6b08a1783910734e83854bcddb623147ce76e62157e296b4c952"
+}

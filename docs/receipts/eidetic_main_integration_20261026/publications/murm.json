@@ -1,0 +1,19 @@
+{
+  "repo": "murm",
+  "commit": "4ba804b3a52af2de43b659aa16d9ed99c16a94d9",
+  "remote_main": "4ba804b3a52af2de43b659aa16d9ed99c16a94d9",
+  "base": "316b34193cd152e48a63d05e612b912feec294d4",
+  "utc": "2026-10-26T20:45:46.535147+00:00",
+  "history_cleanup_authoritative": true,
+  "no_old_history_rejoined": true,
+  "changed_files": [
+    "apps/signalman-desktop/Cargo.lock",
+    "apps/signalman-desktop/Cargo.toml",
+    "native/Cargo.lock",
+    "native/Cargo.toml"
+  ],
+  "canonical_main": {
+    "path": "/Users/markik/Code/repos/retinue",
+    "preserved_dirty": false
+  }
+}

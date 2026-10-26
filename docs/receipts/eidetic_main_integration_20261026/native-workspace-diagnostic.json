@@ -1,0 +1,9 @@
+{
+  "log": "checks/turnstone-product-build.log",
+  "diagnostic": "invalid type: boolean true, expected a map",
+  "referenced_manifest": "servo/python/tidy/tests/lints-configuration/no-workspace/Cargo.toml",
+  "build_exit_code": 0,
+  "build_finished": true,
+  "artifact_frozen": "turnstone-product-freeze.json",
+  "scope": "Diagnostic references a dependency test fixture; raw output is retained without claiming an error-free log."
+}

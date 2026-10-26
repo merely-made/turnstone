@@ -1,0 +1,13 @@
+
+running 8 tests
+test resident_inference::personal::tests::compact_attestation_round_trips_through_the_real_header_codec ... ok
+test resident_inference::tests::absent_settings_pass ... ok
+test resident_inference::tests::cpu_cache_budgets_are_refused_before_opening_any_lane ... ok
+test resident_inference::tests::invalid_library_rows_limits_and_gpu_are_refused_before_opening ... ok
+test resident_inference::tests::library_settings_are_explicit_and_refuse_unknown_fields ... ok
+test resident_inference::tests::settings_name_the_stub_in_kebab_case ... ok
+test resident_inference::tests::the_lane_without_a_distillery_lane_is_refused ... ok
+test resident_inference::tests::weight_cache_is_explicit_and_legacy_settings_keep_their_shape ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 244 filtered out; finished in 0.02s
+

@@ -1,0 +1,104 @@
+{
+  "knot": {
+    "selected_type_sources": {
+      "apparatus-core": [
+        "git+https://www.github.com/merely-made/armillary.git?rev=06340b08327b29c3485ecb0089bb5cafed20fd80#06340b08327b29c3485ecb0089bb5cafed20fd80"
+      ],
+      "armillary": [
+        "git+https://www.github.com/merely-made/armillary.git?rev=864f107d44bf759111ad2ea3c9036b2cfbf03f4c#864f107d44bf759111ad2ea3c9036b2cfbf03f4c"
+      ],
+      "chartulary": [
+        "git+https://www.github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+      ],
+      "eidetic": [
+        "git+https://www.github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+      ],
+      "esp": [
+        "git+https://www.github.com/merely-made/esp.git?rev=bd0468c5c44c0b098494d30b3cfd0aa283cecf48#bd0468c5c44c0b098494d30b3cfd0aa283cecf48"
+      ],
+      "luggage": [
+        "git+https://www.github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+      ],
+      "mere-proofs": [
+        "git+https://www.github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+      ],
+      "muniment": [
+        "git+https://www.github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+      ],
+      "servitor": [
+        "git+https://www.github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+      ],
+      "stickleback": [
+        "git+https://www.github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+      ]
+    },
+    "coherent": true
+  },
+  "cleromancy": {
+    "selected_type_sources": {
+      "apparatus-core": [
+        "git+https://www.github.com/merely-made/armillary.git?rev=06340b08327b29c3485ecb0089bb5cafed20fd80#06340b08327b29c3485ecb0089bb5cafed20fd80"
+      ],
+      "armillary": [
+        "git+https://www.github.com/merely-made/armillary.git?rev=864f107d44bf759111ad2ea3c9036b2cfbf03f4c#864f107d44bf759111ad2ea3c9036b2cfbf03f4c"
+      ],
+      "chartulary": [
+        "git+https://www.github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+      ],
+      "eidetic": [
+        "git+https://www.github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+      ],
+      "esp": [
+        "git+https://www.github.com/merely-made/esp.git?rev=bd0468c5c44c0b098494d30b3cfd0aa283cecf48#bd0468c5c44c0b098494d30b3cfd0aa283cecf48"
+      ],
+      "luggage": [
+        "git+https://www.github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+      ],
+      "mere-proofs": [
+        "git+https://www.github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+      ],
+      "muniment": [
+        "git+https://www.github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+      ],
+      "servitor": [
+        "git+https://www.github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+      ],
+      "stickleback": [
+        "git+https://www.github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+      ]
+    },
+    "coherent": true
+  },
+  "gemot": {
+    "selected_type_sources": {
+      "chartulary": [
+        "git+https://github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+      ],
+      "eidetic": [
+        "git+https://github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+      ],
+      "mere-proofs": [
+        "git+https://github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+      ],
+      "mere-transport": [
+        "git+https://github.com/merely-made/murm.git?branch=main#4ba804b3a52af2de43b659aa16d9ed99c16a94d9"
+      ],
+      "muniment": [
+        "git+https://github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+      ],
+      "murm": [
+        "git+https://github.com/merely-made/murm.git?branch=main#4ba804b3a52af2de43b659aa16d9ed99c16a94d9"
+      ],
+      "retinue": [
+        "git+https://github.com/merely-made/murm.git?branch=main#4ba804b3a52af2de43b659aa16d9ed99c16a94d9"
+      ],
+      "servitor": [
+        "git+https://github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+      ],
+      "stickleback": [
+        "git+https://github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+      ]
+    },
+    "coherent": true
+  }
+}

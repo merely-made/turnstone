@@ -1,0 +1,37 @@
+{
+  "esp": {
+    "authoritative_base": "f4065b0a742025b81dd9902c429b1ff224bb3457",
+    "private_draft": "f13bcbd899ea19ccb24afeae4d0f67bf14ff2202",
+    "scrub_map": "/Users/markik/Code/output/trailer-scrub-20261026/esp/commit-map"
+  },
+  "murm": {
+    "authoritative_base": "316b34193cd152e48a63d05e612b912feec294d4",
+    "private_draft": "600ec2ed27a9390cb852a47a94ae30b5bad2f515",
+    "scrub_map": "/Users/markik/Code/output/trailer-scrub-20261026/retinue/commit-map"
+  },
+  "knot": {
+    "authoritative_base": "3cf6f7bb8a77ea593928349ba3608d47c5c3d1ed",
+    "private_draft": "ce79aaf404dc9406a2aead81fae4bfc7a8ef35d4",
+    "scrub_map": "/Users/markik/Code/output/trailer-scrub-20261026/knot-editor/commit-map"
+  },
+  "cleromancy": {
+    "authoritative_base": "91c46279c092ff0d20e1a01302f2d3721d330cca",
+    "private_draft": "d8728e59220fa5f67610301911c3a7f61fba5f58",
+    "scrub_map": "/Users/markik/Code/output/trailer-scrub-20261026/cleromancy/commit-map"
+  },
+  "gemot": {
+    "authoritative_base": "6ae880e67c11ee6ea050786241d16777064b014c",
+    "private_draft": "6ae880e67c11ee6ea050786241d16777064b014c",
+    "scrub_map": "/Users/markik/Code/output/trailer-scrub-20261026/gemot/commit-map"
+  },
+  "mere": {
+    "authoritative_base": "af303421a96b72701f426e077d92ed5b443b8c5c",
+    "private_draft": "b85c7251550db41bf1bab6ae70f0ccca7f0e118b",
+    "scrub_map": "/Users/markik/Code/output/trailer-scrub-20261026/mere/commit-map"
+  },
+  "turnstone": {
+    "authoritative_base": "f412f8e065d5c4352d36e8a072cf6962655aa856",
+    "lane": "173f45c847fef50addd89c5e42a4b0cbb1e74809",
+    "private_draft": "5f552ecd8e28ee080bb2e2aa076d0237475c1b30"
+  }
+}

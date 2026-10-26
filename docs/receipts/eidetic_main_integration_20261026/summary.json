@@ -1,0 +1,108 @@
+{
+  "result": "integration_checks_pass",
+  "supplier_main_revisions": {
+    "eidetic": "f599ffe93298025bf6d65ae310a7cb4270ea52e3",
+    "esp": "bd0468c5c44c0b098494d30b3cfd0aa283cecf48",
+    "knot": "3e2251698bada90d20cc0eb19551841339376f9a",
+    "cleromancy": "ee21cf01edefa9ee685b2ab34c87c7e247175d55",
+    "murm": "4ba804b3a52af2de43b659aa16d9ed99c16a94d9",
+    "mere": "5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a",
+    "gemot": "998133bc17b8636152e9c4f7605eb475498213c8"
+  },
+  "turnstone_validated_source_commit": "c26652ca9714f1915924365a87138c17ab73c124",
+  "software_checks": {
+    "eidetic_models": {
+      "passed": 20,
+      "failed": 0,
+      "ignored": 0,
+      "log": "checks/eidetic-model-tests.log"
+    },
+    "esp_inference": {
+      "passed": 118,
+      "failed": 0,
+      "ignored": 0,
+      "log": "checks/esp-inference-armillary-history-refresh-tests.log"
+    },
+    "esp_prompt": {
+      "passed": 6,
+      "failed": 0,
+      "ignored": 0,
+      "log": "checks/esp-prompt-armillary-history-refresh-tests.log"
+    },
+    "gemot": {
+      "passed": 102,
+      "failed": 0,
+      "ignored": 0,
+      "log": "checks/gemot-history-refresh-tests.log"
+    },
+    "cleromancy_core": {
+      "passed": 17,
+      "failed": 0,
+      "ignored": 0,
+      "log": "checks/cleromancy-history-refresh-tests.log"
+    },
+    "resident_inference": {
+      "passed": 45,
+      "failed": 0,
+      "ignored": 0,
+      "log": "checks/mere-resident-final-tests.log"
+    },
+    "wire_protocol": {
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "log": "checks/mere-protocol-final-tests.log"
+    },
+    "djinn_resident": {
+      "passed": 8,
+      "failed": 0,
+      "ignored": 0,
+      "log": "checks/djinn-resident-final-tests.log"
+    },
+    "ordinary_routes": {
+      "passed": 4,
+      "failed": 0,
+      "ignored": 3,
+      "log": "checks/djinn-routes-final-tests.log"
+    },
+    "turnstone_inference": {
+      "passed": 9,
+      "failed": 0,
+      "ignored": 1,
+      "log": "checks/turnstone-inference-tests.log"
+    },
+    "saved_reader_probe": {
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "log": "checks/turnstone-reader-probe-tests.log"
+    }
+  },
+  "total_passed": 331,
+  "manual_route_helpers_ignored": 3,
+  "compiled_surfaces": [
+    "Murm transport and WebRTC libraries",
+    "Signalman desktop library",
+    "Knot editor without default features",
+    "Mere resident with inference embedding and GPU features",
+    "Turnstone default-feature native product"
+  ],
+  "prior_semantic_gate": {
+    "result": "gate_not_passed",
+    "passed": 8,
+    "failed": 7,
+    "unchanged": true
+  },
+  "historical_receipts_reverified": true,
+  "new_model_or_headed_qualification": false,
+  "upstream_preserved": [
+    "Muniment 0.2",
+    "Burn 0.22.1 and current CubeCL",
+    "ESP testkit and current package names",
+    "Knot peers/network feature boundaries",
+    "Current main documentation including 15d78a40f"
+  ],
+  "source_coherence": "One integrated source per used type-bearing family in the main/web/consumer graphs. Canonical Git patches align nested consumers; they add no runtime compatibility adapter.",
+  "graphshell_coordination": "Review Graphshell architecture reserved its own source refactor, preserved its candidate through the authoritative history cleanup, and received the settled provider revisions for forward replay. Guarded compiler windows were serialized. Its separately owned refactor is outside this integration packet.",
+  "preservation": "Original qualified and failed receipts retained unchanged. Private ESP ignored DB/WAL/shared-memory files are preserved separately under retained local output and excluded here."
+}

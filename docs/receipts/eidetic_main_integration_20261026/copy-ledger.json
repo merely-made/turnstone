@@ -1,0 +1,271 @@
+{
+  "copies": [
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/eidetic-model-tests.log",
+      "destination": "checks/eidetic-model-tests.log",
+      "sha256": "8ba96c9eb3e05fea01775efa6bb0416058bfc09ce1ea10de73665aa26db3c770"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/esp-inference-armillary-history-refresh-tests.log",
+      "destination": "checks/esp-inference-armillary-history-refresh-tests.log",
+      "sha256": "b352ad735153a4d5d4ee1604dcd1d7b666283b1a1423370d8b89b1deb2d43571"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/esp-prompt-armillary-history-refresh-tests.log",
+      "destination": "checks/esp-prompt-armillary-history-refresh-tests.log",
+      "sha256": "f7df8412219ec48def22bcf5aa5cf0617ed3794c45e23d0ea757c38bfeb07dfe"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/gemot-history-refresh-tests.log",
+      "destination": "checks/gemot-history-refresh-tests.log",
+      "sha256": "fe3cb1dafb1c525cfe63a8b3a85f8bde70fa8d03c188b6f483ac5830e8328edf"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/cleromancy-history-refresh-tests.log",
+      "destination": "checks/cleromancy-history-refresh-tests.log",
+      "sha256": "932d111c07ee4c00012ba188cd5f45e36fb6d36e5358e551bfe28fb58e17f12c"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/mere-resident-final-tests.log",
+      "destination": "checks/mere-resident-final-tests.log",
+      "sha256": "93c7c0810b381c0abdf0c3a6c60bc4cf98354f046d88e958bc1244116a2878ad"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/mere-protocol-final-tests.log",
+      "destination": "checks/mere-protocol-final-tests.log",
+      "sha256": "863942a006e55dae840a7599d8ad92db6de29bcdcfa12c9ed60d5256cd7e0011"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/djinn-resident-final-tests.log",
+      "destination": "checks/djinn-resident-final-tests.log",
+      "sha256": "d69b919f43a6baab002889565b67f086f89bd217d39fd940013ce3335bca36b8"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/djinn-routes-final-tests.log",
+      "destination": "checks/djinn-routes-final-tests.log",
+      "sha256": "142385894a3116328fda83e7deea54fb218fa51eb2fb48c71a39f0e24994b89e"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/turnstone-inference-tests.log",
+      "destination": "checks/turnstone-inference-tests.log",
+      "sha256": "a78531d08db1f3b000e922d2dab5eb2af268ce40cdaa986f036ca1192a82c29a"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/turnstone-reader-probe-tests.log",
+      "destination": "checks/turnstone-reader-probe-tests.log",
+      "sha256": "d4cd8bc78c6329bfc32d36cd94fb0c66963632f4483b17239db8815cf8fc092c"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/murm-native-history-refresh.log",
+      "destination": "checks/murm-native-history-refresh.log",
+      "sha256": "05b7035fde96380ef3a7db21b74b4d8fe20eb0272a9efbbbcbd736ba7d4e72a4"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/murm-desktop-history-refresh.log",
+      "destination": "checks/murm-desktop-history-refresh.log",
+      "sha256": "d8c400c5df9795d6241de5cbc356c82c6c0de84bf0b2f1ae894a63ae7379f9b8"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/knot-history-refresh.log",
+      "destination": "checks/knot-history-refresh.log",
+      "sha256": "c02c17634c73e78d8cf27971a7c69fc4651bc38fe1d5689e810d5337b4e48c61"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/turnstone-product-build.log",
+      "destination": "checks/turnstone-product-build.log",
+      "sha256": "cfa873418bee582c78298822503d3745b4805e3f9adb0ab88ca8623348465904"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/quoted-receipt-recheck.log",
+      "destination": "checks/quoted-receipt-recheck.log",
+      "sha256": "159d96c0c0cece623cf9bbc9465d993b404fcf4b785c8bcd241992ceda34db29"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/semantic-receipt-recheck.log",
+      "destination": "checks/semantic-receipt-recheck.log",
+      "sha256": "ee38f71f5a55e1ee5c327a071aa13f39544f460516f4f1d1816fcd4cb2adeda4"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/mere-upstream-reconciliation.json",
+      "destination": "mere-upstream-reconciliation.json",
+      "sha256": "95f6082cc5bb0c972764899734bbf29b8ad9e907770ece3f10b29a38e4f65cd1"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/receiving-source-preservation.json",
+      "destination": "receiving-source-preservation.json",
+      "sha256": "945fef2b8020a3df0cab3f87666377400db0d805a5b44c38fc26903b8b15f062"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/prompt-preservation.json",
+      "destination": "prompt-preservation.json",
+      "sha256": "7f3f9fe93fe80f78c43961007b8cd7908adbdb41df3eb7518cf6a5517228d8b1"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/mere-source-coherence.json",
+      "destination": "mere-source-coherence.json",
+      "sha256": "3b6244c98f8eae7ed187757b1a5a8cd1c575fabad3d95bf74d5cd5cd0a0cbc7c"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/turnstone-source-coherence.json",
+      "destination": "turnstone-source-coherence.json",
+      "sha256": "ea2db906af39734d12c84499f521f8f5c45d95b209b0ae472850ceba6a877673"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/compiler-identities.json",
+      "destination": "compiler-identities.json",
+      "sha256": "b72fab305bd06009376acb148d9f02565292e86c4de88aef524c7f6e7dd0b895"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/turnstone-compiler-identity.json",
+      "destination": "turnstone-compiler-identity.json",
+      "sha256": "668b9d04e1cdc3f08bb52fa19c1f3fb4900dda22238853d2a9bdbab18be24f82"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/turnstone-checks.json",
+      "destination": "turnstone-checks.json",
+      "sha256": "dd45eb7704fb9718e615a640be3e7184b66441a3ce6d20e0d19ec72258697d74"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/source-history-remap.json",
+      "destination": "source-history-remap.json",
+      "sha256": "c69c8cf7fe77396e0d660a61cff281d88279d8852d526f23cd62068afea65093"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/historical-receipt-preservation.json",
+      "destination": "historical-receipt-preservation.json",
+      "sha256": "dfdac457836eeccf7dc23896fb97c5da69d5e45b9eff45fad3c88165ffd86f18"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/armillary-history-equivalence.json",
+      "destination": "armillary-history-equivalence.json",
+      "sha256": "c8cbb5fec69ba1861680e67023b96334e8f98994ffd045ddf8b7b15d820c8c77"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/apparatus-core-history-equivalence.json",
+      "destination": "apparatus-core-history-equivalence.json",
+      "sha256": "1fb06c0d426dc2d42f8d6308d8103f4455aca6236ee6bd867b9040585d27790d"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/scrub-graph-equivalence.json",
+      "destination": "scrub-graph-equivalence.json",
+      "sha256": "0d8bdb66754e6ecde0f98c2e864d6b1aad9d38ef753b9890d38fc5dcfd5e535a"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/final-scrub-replay.json",
+      "destination": "final-scrub-replay.json",
+      "sha256": "e1407607c70bdf46cea44e2c92f3f8a7bcabc339762404a8b12d50774df25dd6"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/mere-final-registry-audit.json",
+      "destination": "mere-final-registry-audit.json",
+      "sha256": "dcd94b514052d7b103b7a5f22872a4d08cbe7a5cf70f3befc16e03cd81a7111a"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/final-consumer-coherence.json",
+      "destination": "final-consumer-coherence.json",
+      "sha256": "403160a1a1654064320b5cb95b365e9af771e0454bb121f8d25cd0c639e7ef61"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/turnstone-warm-reserve-basis.json",
+      "destination": "turnstone-warm-reserve-basis.json",
+      "sha256": "9218d28a09c5c558dce69ea0c27e90801baebbd8951a0f324fb264bd8ac7adb9"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/subsequent-mere-upstream.json",
+      "destination": "subsequent-mere-upstream.json",
+      "sha256": "ca0f69f55dc5d924be5523858d0a7c6107c9652047a670cccfe36030c7e806db"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/turnstone-product-freeze.json",
+      "destination": "turnstone-product-freeze.json",
+      "sha256": "93c6dcf1247f839f2939ced053e0c3f9c1333547434e498576d67b49a16f06ff"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/turnstone-product-build-result.json",
+      "destination": "turnstone-product-build-result.json",
+      "sha256": "9fbe26424609381cb259bdbf47434cd036bc6699f7419db5447be8124d6f8e12"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/native-workspace-diagnostic.json",
+      "destination": "native-workspace-diagnostic.json",
+      "sha256": "b4ec057588e7d092afdfab99901449e4ee3b76c6f426cc88b1562228d21ef7df"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/cleromancy-core-tests.log",
+      "destination": "diagnostics/cleromancy-initial-duplicate-source.log",
+      "sha256": "04d3061dae7d0950b0f970095d10e2e13771cd6ad821e5c5daf6c04887fc9852"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/murm-native-history-refresh-stale-lock.log",
+      "destination": "diagnostics/murm-initial-stale-lock.log",
+      "sha256": "17765f1344f6839e330712eba1a7aed2b7d3c06808e1a93a896671dbe76e5b4f"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/esp-history-refresh-capacity-refusal.log",
+      "destination": "diagnostics/esp-capacity-refusal.log",
+      "sha256": "6d53745f84ce98888f66c150adfedc13de1dbf51190f8d433622f46844cdbb39"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/turnstone-main-empty-harness-inference.log",
+      "destination": "diagnostics/turnstone-initial-empty-main-harness.log",
+      "sha256": "df166913f47ff1f04202cae9b31df67ed272d692d99a0023a8117dc3029100dd"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/turnstone-library-32gib-refusal.log",
+      "destination": "diagnostics/turnstone-initial-library-capacity-refusal.log",
+      "sha256": "a13279624a0108c23b8559ba4c2d1c1cddf71c861ab998c90b41bcc36de4cc13"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/turnstone-product-initial-capacity-refusal.log",
+      "destination": "diagnostics/turnstone-initial-product-capacity-refusal.log",
+      "sha256": "a13279624a0108c23b8559ba4c2d1c1cddf71c861ab998c90b41bcc36de4cc13"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/eidetic-publication.json",
+      "destination": "publications/eidetic.json",
+      "sha256": "27130ede851ca51f22f778de057571e1a9e674d7b3c9ca31053969f8c462484b"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/esp-publication.json",
+      "destination": "publications/esp.json",
+      "sha256": "349e02f715f95393b0735daab7232cef87e53a26ee713c1348cf0605e02ac4a3"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/knot-publication.json",
+      "destination": "publications/knot.json",
+      "sha256": "a5f5cc27ef6a3e3800767839eead1144af836954f25f06c104b1ce323de8bbf2"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/cleromancy-publication.json",
+      "destination": "publications/cleromancy.json",
+      "sha256": "8593293db9b028c1fdf5d3538dda212d0897b8f4e4b9b64cfa1e73339d01bf21"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/murm-publication.json",
+      "destination": "publications/murm.json",
+      "sha256": "3bffb90cdf2578f29961bb579bd175877dba5febaa479a6c2821159d0ed9836a"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/mere-publication.json",
+      "destination": "publications/mere.json",
+      "sha256": "97505a13fcf9e2524a38832e4e80ee5f088c27f847df38bfc59763b572359bf4"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/gemot-publication.json",
+      "destination": "publications/gemot.json",
+      "sha256": "e49636b00a93e1820dde15dc4f24cdac825db915a2bbfa3f86382717b5c0a05b"
+    },
+    {
+      "source": "/Users/markik/Code/output/eidetic-integration-20261026/verify_integration_receipt.py",
+      "destination": "verify_receipt.py",
+      "sha256": "f2a651801aa08fae6f2b56b2f1c3ff7096aa41fd97d3388b848e50d8d505221c"
+    }
+  ],
+  "excluded": [
+    "models",
+    "executables",
+    "profile/key/vault databases",
+    "private ignored ESP environment state",
+    "conversation transcripts"
+  ]
+}

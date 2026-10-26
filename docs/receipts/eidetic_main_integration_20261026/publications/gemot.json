@@ -1,0 +1,19 @@
+{
+  "repo": "gemot",
+  "commit": "998133bc17b8636152e9c4f7605eb475498213c8",
+  "remote_main": "998133bc17b8636152e9c4f7605eb475498213c8",
+  "base": "6ae880e67c11ee6ea050786241d16777064b014c",
+  "utc": "2026-10-26T20:57:18.586838+00:00",
+  "history_cleanup_authoritative": true,
+  "no_old_history_rejoined": true,
+  "changed_files": [
+    "Cargo.lock",
+    "Cargo.toml"
+  ],
+  "canonical_main": {
+    "path": "/Users/markik/Code/repos/gemot",
+    "preserved_dirty": false,
+    "fast_forwarded_after_verifying_all_pending_edits_in_publication": true,
+    "preservation": "gemot-primary-preservation.json"
+  }
+}

@@ -1,0 +1,108 @@
+{
+  "eidetic": {
+    "qualification_tip": {
+      "old": "56601d9cb0c4901fd352bc789ce0ab53b5b6edd6",
+      "authoritative": "2a4c83482aa6ea6657234e0482ddf268116c34cb",
+      "tree": "145c6f826a7115dd0dd205c019a546e4cc810529",
+      "identical_source_tree": true
+    },
+    "prior_published_integration": {
+      "old": "8626888bf4f6af1147c9691f031c56197afef22b",
+      "authoritative": "f599ffe93298025bf6d65ae310a7cb4270ea52e3",
+      "tree": "5f098ecd113b6d66a467dab731c36890d4a2814a",
+      "identical_source_tree": true
+    }
+  },
+  "esp": {
+    "qualification_tip": {
+      "old": "7955994686c07535417803d041a5aa95dd3ec4f1",
+      "authoritative": "36f3370b0b90f0a6eaed104a966420f43ce810db",
+      "tree": "6418448a0f57c9fb295f7b509bb393c96272f5a9",
+      "identical_source_tree": true
+    },
+    "prior_published_integration": {
+      "old": "4d5cfebd857014e50da2c5832980a440f8c8a9b3",
+      "authoritative": "7062f467a777dd869e03e7cc3ae1906809a7d7f5",
+      "tree": "d819555e980e210e5f0215138d1f0cf84c4945e6",
+      "identical_source_tree": true
+    }
+  },
+  "knot": {
+    "qualification_tip": {
+      "old": "e3daea0949011a4600fda9c9b721a84140bf7964",
+      "authoritative": "5fd8aeb64c804c207be8defe1e351acd41b29d10",
+      "tree": "0d77cfdfae822e37b264a06d96d14e0bdf8ccc3d",
+      "identical_source_tree": true
+    },
+    "prior_published_integration": {
+      "old": "d5cd4d58f9c65fbd99c26fb288548f3ab316f7d2",
+      "authoritative": "1079e92d5c83fc9ca0afe7b5625563464e32596f",
+      "tree": "395aced057f0de1c34843657c61cfd0239d57b09",
+      "identical_source_tree": true
+    }
+  },
+  "cleromancy": {
+    "qualification_tip": {
+      "old": "65127281903d98eb4598b57caa99085231c25fe1",
+      "authoritative": "2b870bdf9de442eff2f26a6903c797d4353e7195",
+      "tree": "29b77fe0e12d688bb2f65fc6f034127f1adc30e9",
+      "identical_source_tree": true
+    },
+    "prior_published_integration": {
+      "old": "d7dee147d12e8dd22652f379242ceca6a1724d0b",
+      "authoritative": "9d6ab8ad3e3003c52b281f293af87a237ccd2b4b",
+      "tree": "d89dc795cf6f49bbe998321c2ca57ba71280c616",
+      "identical_source_tree": true
+    }
+  },
+  "gemot": {
+    "qualification_tip": {
+      "old": "16678ab1c91cde1e0c973b368b422eb46b1a3364",
+      "authoritative": "f668b3414e9d26205908d4902f08eba7deef4f9d",
+      "tree": "97bd083ae3cb55ce1a4a558974227cbbe32d0d86",
+      "identical_source_tree": true
+    },
+    "prior_published_integration": {
+      "old": "8e1fb1c81f0c47ff0a1182b49dd7549147fb8810",
+      "authoritative": "6ae880e67c11ee6ea050786241d16777064b014c",
+      "tree": "b398a3673ae69f7e0644297969e66831192b4941",
+      "identical_source_tree": true
+    }
+  },
+  "murm": {
+    "qualification_tip": {
+      "old": "5f84b465d3eb561fa4613580e62e1423bee6ca7a",
+      "authoritative": "6d880e7793f7aad7ac895ac5dafa4682cef92b41",
+      "tree": "80bb08157e3731aebdcbc5df222f946c5181ba46",
+      "identical_source_tree": true
+    },
+    "prior_published_integration": {
+      "old": "bf85b05eec5fa1e960300be409e0a2889840ae95",
+      "authoritative": "91b7bed70083043554947108e281be976fe0f029",
+      "tree": "4dedbd477684ed54973f8c8f45fd02a6ed799fdc",
+      "identical_source_tree": true
+    }
+  },
+  "mere": {
+    "qualification_tip": {
+      "old": "5bfde191655273619bd10fd54393c45f036384a7",
+      "authoritative": "1fdfea1ca11c8aedec113687bbf6e48cf85a836d",
+      "tree": "a0eb1848d6251296e34a17affe1fda3215202b8a",
+      "identical_source_tree": true
+    },
+    "prior_published_integration": {
+      "old": "e88711496e290d23e5d8d90ad131177e3485c390",
+      "authoritative": "45d0196579d321ec30e12a9aa7063abf7c0a97cc",
+      "tree": "f26455df602dfbf74850d2f8841778aa9c92d78f",
+      "identical_source_tree": true
+    }
+  },
+  "turnstone": {
+    "qualification_tip": {
+      "old": "e0196922d65163b93cfce210a167a740d52e2192",
+      "authoritative": "173f45c847fef50addd89c5e42a4b0cbb1e74809",
+      "tree": "c66f203486ae2061c8d559cd20d209e317bf96f5",
+      "identical_source_tree": true
+    }
+  }
+}

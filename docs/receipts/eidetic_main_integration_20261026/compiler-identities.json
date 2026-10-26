@@ -1,0 +1,18 @@
+{
+  "eidetic-main-integration": [
+    {
+      "path": "/Users/markik/Code/targets/lanes/eidetic-main-integration/build/.rustc_info.json",
+      "version_outputs": [
+        "rustc 1.99.1 (58cf8f9c3 2026-10-13)\nbinary: rustc\ncommit-hash: 58cf8f9c35b355199727627d07ae34a4e2846d67\ncommit-date: 2026-10-13\nhost: x86_64-apple-darwin\nrelease: 1.99.1\nLLVM version: 23.1.1\n"
+      ]
+    }
+  ],
+  "eidetic-native-integration": [
+    {
+      "path": "/Users/markik/Code/targets/lanes/eidetic-native-integration/build/.rustc_info.json",
+      "version_outputs": [
+        "rustc 1.99.1 (58cf8f9c3 2026-10-13)\nbinary: rustc\ncommit-hash: 58cf8f9c35b355199727627d07ae34a4e2846d67\ncommit-date: 2026-10-13\nhost: x86_64-apple-darwin\nrelease: 1.99.1\nLLVM version: 23.1.1\n"
+      ]
+    }
+  ]
+}

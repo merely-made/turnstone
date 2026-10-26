@@ -1,0 +1,26 @@
+{
+  "mode": "product",
+  "started": "2026-10-26T22:11:10.100806+00:00",
+  "finished": "2026-10-26T22:15:48.473754+00:00",
+  "command": [
+    "python3",
+    "/Users/markik/Code/tools/build_storage.py",
+    "build",
+    "--lane",
+    "eidetic-main-integration",
+    "--reserve-gib",
+    "20",
+    "--cwd",
+    "/Users/markik/Code/worktrees/turnstone-cross-source-answers-20261022",
+    "--",
+    "build",
+    "--locked",
+    "--offline",
+    "--bin",
+    "turnstone",
+    "-j",
+    "4"
+  ],
+  "exit_code": 0,
+  "toolchain_bin": "/Users/markik/.rustup/toolchains/1.99.1-x86_64-apple-darwin/bin"
+}

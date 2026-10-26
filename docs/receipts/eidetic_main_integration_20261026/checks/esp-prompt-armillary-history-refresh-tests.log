@@ -1,0 +1,11 @@
+
+running 6 tests
+test constrained_requests_keep_grammar_and_use_acceptance_instead_of_template_stops ... ok
+test empty_context_preserves_the_legacy_serialized_request ... ok
+test exact_template_bytes_bind_the_session_and_prepared_request ... ok
+test literal_roles_context_bos_and_eos_have_explicit_positions ... ok
+test retained_context_is_rendered_as_literal_data_then_removed_from_decoder_fields ... ok
+test unknown_fields_versions_and_empty_stops_are_refused ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

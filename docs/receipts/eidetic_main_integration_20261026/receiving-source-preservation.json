@@ -1,0 +1,19 @@
+{
+  "authoritative_receiving_baseline": "d969028bea3fee249bdc204a021bc4f0fef6c14b",
+  "validated_pin_candidate": "3cf4bd3f608d3ab4674d5644d978604531d3c297",
+  "final_integrated_commit": "5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a",
+  "compiled_baseline": "af303421a96b72701f426e077d92ed5b443b8c5c",
+  "upstream_docs_since_compile": [
+    "design_docs/mere_docs/design/2026-10-26_gui_catalog_design.md"
+  ],
+  "post_test_delta_docs_only": true,
+  "pin_refresh_files": [
+    "Cargo.toml",
+    "Cargo.lock",
+    "ports/graphshell/web/Cargo.toml",
+    "ports/graphshell/web/Cargo.lock",
+    "crates/domain/apparatus/Cargo.toml"
+  ],
+  "upstream_source_and_fixtures_preserved": true,
+  "all_registry_records_unchanged": true
+}
