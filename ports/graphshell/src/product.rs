@@ -812,6 +812,19 @@ pub(crate) fn product_import_edits(
     scratch
         .validate_active_resource_assertion_handles()
         .map_err(|error| ProductError::InvalidCodicil(error.to_string()))?;
+    // Kernel replay refuses colliding surface sidecars without a fallible apply
+    // result. Prove every incoming facet survived preflight before admitting the
+    // batch, or the importer could report success after silently dropping it.
+    for (node_id, incoming_facets) in surfaces.facets().iter() {
+        for (facet, expected) in incoming_facets.iter() {
+            if scratch.facets().get(node_id, facet) != Some(expected) {
+                return Err(ProductError::InvalidCodicil(format!(
+                    "the import refused facet {} for node {node_id}",
+                    facet.as_str()
+                )));
+            }
+        }
+    }
     let actual = scratch.to_snapshot();
     let resources = |snapshot: &GraphSnapshot| {
         snapshot

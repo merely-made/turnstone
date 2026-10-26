@@ -1778,24 +1778,56 @@ mod tests {
                     at_ms: 17,
                 },
             );
-            let destination_id = collision_destination
-                .create_address("https://destination.test/page", "existing")
-                .unwrap();
-            let key = collision_destination
-                .graph()
-                .get_node_key_by_id(destination_id)
+            let collision_resource = "https://destination.test/page";
+            let target_resource = "https://destination.test/tag";
+            let collision_resource_id =
+                chartulary::resource_id_from_canonical_iri(collision_resource).to_string();
+            let target_resource_id =
+                chartulary::resource_id_from_canonical_iri(target_resource).to_string();
+            let mut collision_snapshot = Graph::new().to_snapshot();
+            collision_snapshot.resources = [collision_resource, target_resource]
+                .into_iter()
+                .map(
+                    |canonical_iri| mere::kernel::persistence::PersistedResourceRecord {
+                        canonical_iri: canonical_iri.into(),
+                        facets: Vec::new(),
+                    },
+                )
+                .collect();
+            collision_snapshot.resource_edges = vec![mere::kernel::persistence::PersistedEdge {
+                from_node_id: collision_resource_id,
+                to_node_id: target_resource_id,
+                families: vec![mere::kernel::persistence::PersistedEdgeFamily::Semantic],
+                semantic: None,
+                assertions: Some(vec![
+                    mere::kernel::persistence::PersistedSemanticStatement {
+                        statement_id: "destination-resource-only".into(),
+                        predicate: "urn:test:predicate".into(),
+                        recognized_sub_kind: None,
+                        label: Some("destination resource claim".into()),
+                        basis: mere::kernel::types::AssertionBasis::default(),
+                        graph_scope: mere::kernel::types::GraphScope::Default,
+                        provenance_iri: Some("urn:test:destination".into()),
+                        asserted_at_ms: Some(17),
+                        first_asserted_ms: Some(17),
+                        withdrawn: None,
+                    },
+                ]),
+                traversal: None,
+                containment: None,
+                arrangement: None,
+                imported: None,
+                provenance: None,
+            }];
+            let collision_graph = Graph::try_from_snapshot(&collision_snapshot)
+                .expect("destination resource claim fixture is valid");
+            collision_destination
+                .begin_profiled_session(collision_graph, Some(PlacementProfile::RecordedStrataV1))
                 .unwrap();
             let mut property =
                 mere::kernel::types::NodeProperty::new("urn:test:predicate".into(), "exact".into())
                     .with_metadata(Some("urn:test:source".into()), Some(42));
             property.statement_id = "destination-resource-only".into();
-            assert!(
-                collision_destination
-                    .mutate_product_graph(|graph| {
-                        graph.append_node_properties(key, vec![property.clone()])
-                    })
-                    .expect("valid collision fixture edit")
-            );
             product
                 .facets
                 .set(
