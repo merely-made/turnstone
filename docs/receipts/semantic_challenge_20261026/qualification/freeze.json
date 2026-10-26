@@ -1,0 +1,101 @@
+{
+  "frozen_utc": "2026-10-26T06:55:58.238727+00:00",
+  "baseline": "/Users/markik/Code/output/quoted-review-20261024/order-replay/candidate-01",
+  "baseline_binary_sha256": "699c8ac6c911e3b7e0cf017cd300bb238e93102501168629d4bf9703a9130466",
+  "generation_model": {
+    "model_id": "Qwen/Qwen2.5-1.5B-Instruct",
+    "revision": "989aa7980e4cf806f80c7fef2b1adb7bc71aa306",
+    "artifacts": [
+      [
+        "config.json",
+        660,
+        "98d2ff8cc47488d08a2b0b3acf4eb99ef210779b42bd48605f6b8e36acdbf670"
+      ],
+      [
+        "tokenizer.json",
+        7031645,
+        "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539"
+      ],
+      [
+        "tokenizer_config.json",
+        7305,
+        "5b5d4f65d0acd3b2d56a35b56d374a36cbc1c8fa5cf3b3febbbfabf22f359583"
+      ],
+      [
+        "model.safetensors",
+        3087467144,
+        "dd924a11b4c220f385b51ffa522daea7c9f3d850e31b162bb5661df483c6d3ee"
+      ]
+    ]
+  },
+  "sources": {
+    "eidetic": {
+      "path": "/Users/markik/Code/worktrees/eidetic-cross-source-answers-20261022",
+      "head": "56601d9cb0c4901fd352bc789ce0ab53b5b6edd6",
+      "status": "",
+      "branch": "codex/cross-source-answers-20261022"
+    },
+    "esp": {
+      "path": "/Users/markik/Code/worktrees/esp-cross-source-answers-20261022",
+      "head": "7955994686c07535417803d041a5aa95dd3ec4f1",
+      "status": "",
+      "branch": "codex/cross-source-answers-20261022"
+    },
+    "knot": {
+      "path": "/Users/markik/Code/worktrees/knot-cross-source-answers-20261022",
+      "head": "e3daea0949011a4600fda9c9b721a84140bf7964",
+      "status": "",
+      "branch": "codex/cross-source-answers-20261022"
+    },
+    "cleromancy": {
+      "path": "/Users/markik/Code/worktrees/cleromancy-cross-source-answers-20261022",
+      "head": "65127281903d98eb4598b57caa99085231c25fe1",
+      "status": "",
+      "branch": "codex/cross-source-answers-20261022"
+    },
+    "gemot": {
+      "path": "/Users/markik/Code/worktrees/gemot-cross-source-answers-20261022",
+      "head": "16678ab1c91cde1e0c973b368b422eb46b1a3364",
+      "status": "",
+      "branch": "codex/cross-source-answers-20261022"
+    },
+    "murm": {
+      "path": "/Users/markik/Code/worktrees/murm-cross-source-answers-20261022",
+      "head": "5f84b465d3eb561fa4613580e62e1423bee6ca7a",
+      "status": "",
+      "branch": "codex/cross-source-answers-20261022"
+    },
+    "mere": {
+      "path": "/Users/markik/Code/worktrees/mere-cross-source-answers-20261022",
+      "head": "5bfde191655273619bd10fd54393c45f036384a7",
+      "status": "",
+      "branch": "codex/cross-source-answers-20261022"
+    },
+    "turnstone": {
+      "path": "/Users/markik/Code/worktrees/turnstone-cross-source-answers-20261022",
+      "head": "69989460f4a2418cb54fac930e3c45612f5b6fbf",
+      "status": "",
+      "branch": "codex/cross-source-answers-20261022"
+    }
+  },
+  "sha256": {
+    "inference_route": "699c8ac6c911e3b7e0cf017cd300bb238e93102501168629d4bf9703a9130466",
+    "verify_contract_inputs.py": "d49ff64385efabd4ee46419b438b7382ba6f7b72210dd86a96d0ed4de66db92e",
+    "inference_route.rs": "436a123a09d69263b82bf670d4028f1db00f9882d383a72689b0cbcc41619e13",
+    "recall.rs": "b5a0c329282c0b20618487a5cd481c9f6c66f9fdd4b69355da05d676334771ad",
+    "suite.json": "8b6dcf8eb39c75753b61df027cf249ae453bb254e52109d9ed0d2cf17f2fb661",
+    "verify_score_health.py": "6dfbc4ab0dc034e0ee9997aab1b4a42be38ed841e938c461bccfb87023a4550f",
+    "candidate_review.rs": "56e01184d07f534f55bbb9db76d2a23b4b16ffdaccbd09d0ab2a4c14602c756e",
+    "answer_contract.rs": "df3ae7b3e67f6282ab71dd19558aad0fbced66eb83a0cb06bb83d1496cd5d9dd",
+    "recall_embedding.rs": "edff7d72dc855e1f3f7494c1d3942594105d05ab9861a5adc3fbd8b9bfd79ff9",
+    "verify_structured_output.py": "6275bd267af6aefe19bdd82f1d748a6dbbdb7dcc15c4d12d0bc96fe934c55062",
+    "prepare.py": "2111b3986b595baab3c124002f74ce6990a673bb03a5da51fc5df1d9d0495f84"
+  },
+  "limits": {
+    "tokens": 1024,
+    "seconds_per_request": 900,
+    "host_weight_bytes": 3221225472,
+    "device_layer_bytes": 4294967296
+  },
+  "preservation": "Existing baseline outputs untouched; executable APFS clone verified by SHA256; no Cargo compilation."
+}

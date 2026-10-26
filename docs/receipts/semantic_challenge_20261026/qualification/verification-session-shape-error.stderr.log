@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "verify_suite.py", line 48, in check
+    run=json.loads(path.read_text());session_ids.add(run['session'])
+TypeError: cannot use 'dict' as a set element (unhashable type: 'dict')

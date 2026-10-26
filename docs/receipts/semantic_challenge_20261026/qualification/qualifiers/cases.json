@@ -1,0 +1,67 @@
+{
+  "name": "qualifiers",
+  "corpus": {
+    "capture": {
+      "text": "The Pelican observatory's access word is café. This note gives no access word for the Cormorant observatory."
+    },
+    "control": {
+      "text": "The Cormorant observatory's access word is cedar."
+    },
+    "knot": {
+      "text": "The Juniper archive's former recovery phrase was violet lantern; its current phrase is not recorded here."
+    },
+    "note": {
+      "text": "A volunteer guessed that the Fern reserve budget is $7000; no budget has been approved."
+    }
+  },
+  "asks": [
+    {
+      "id": "cross",
+      "question": "What is the Pelican observatory access word?",
+      "gold": [
+        {
+          "relevant": [
+            "capture"
+          ],
+          "values": {
+            "capture": "capture"
+          }
+        }
+      ]
+    },
+    {
+      "id": "missing",
+      "question": "What is the approved Fern reserve budget?",
+      "gold": [
+        {
+          "relevant": [],
+          "values": {}
+        }
+      ]
+    },
+    {
+      "id": "conflict",
+      "question": "What is the Cormorant observatory access word?",
+      "gold": [
+        {
+          "relevant": [
+            "control"
+          ],
+          "values": {
+            "control": "control"
+          }
+        }
+      ]
+    },
+    {
+      "id": "reduced",
+      "question": "What is the current Juniper archive recovery phrase?",
+      "gold": [
+        {
+          "relevant": [],
+          "values": {}
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "name": "paraphrases",
+  "corpus": {
+    "capture": {
+      "text": "The Juniper archive's recovery phrase is violet lantern."
+    },
+    "control": {
+      "text": "The Juniper archive's recovery phrase is amber harbor."
+    },
+    "knot": {
+      "text": "The Pelican observatory's access word is café."
+    },
+    "note": {
+      "text": "Saved from the embedded listener: café → harbor.\nKeep this timed note."
+    }
+  },
+  "asks": [
+    {
+      "id": "cross",
+      "question": "What are the archive emergency phrase, the observatory entry word, and the listener's saved reminder? Give one claim for each, in that order.",
+      "gold": [
+        {
+          "relevant": [
+            "capture"
+          ],
+          "values": {
+            "capture": "capture"
+          }
+        },
+        {
+          "relevant": [
+            "knot"
+          ],
+          "values": {
+            "knot": "knot"
+          }
+        },
+        {
+          "relevant": [
+            "note"
+          ],
+          "values": {
+            "note": "note"
+          }
+        }
+      ]
+    },
+    {
+      "id": "missing",
+      "question": "How much money is allocated annually to the Juniper archive?",
+      "gold": [
+        {
+          "relevant": [],
+          "values": {}
+        }
+      ]
+    },
+    {
+      "id": "conflict",
+      "question": "Which recovery phrase should I use for the Juniper archive? Report incompatible retained answers.",
+      "gold": [
+        {
+          "relevant": [
+            "capture",
+            "control"
+          ],
+          "values": {
+            "capture": "violet lantern",
+            "control": "amber harbor"
+          }
+        }
+      ]
+    },
+    {
+      "id": "reduced",
+      "question": "What did the saved listener ask me to remember?",
+      "gold": [
+        {
+          "relevant": [],
+          "values": {}
+        }
+      ]
+    }
+  ]
+}

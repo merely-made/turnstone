@@ -1,0 +1,53 @@
+{
+  "name": "long_passages",
+  "corpus": {
+    "capture": {
+      "text": "Broomgate station log: the access code is maple-42. The lobby has two benches, a blue noticeboard, a clock, a rack of folded maps, a painted floor, a shelf of empty folders, three hooks for coats, a brass bell, a small table, a glass door, a mat, a lamp, and a bin."
+    },
+    "control": {
+      "text": "Broomgate station log: the access code is birch-73. The lobby has two benches, a blue noticeboard, a clock, a rack of folded maps, a painted floor, a shelf of empty folders, three hooks for coats, a brass bell, a small table, a glass door, a mat, a lamp, and a bin."
+    },
+    "knot": {
+      "text": "The Broomgate quay is open."
+    },
+    "note": {
+      "text": "Broomgate has no recorded maintenance budget."
+    }
+  },
+  "asks": [
+    {
+      "id": "cross",
+      "question": "What is the Broomgate station access code?",
+      "gold": [
+        {
+          "relevant": [
+            "capture"
+          ],
+          "values": {
+            "capture": "capture"
+          }
+        }
+      ]
+    },
+    {
+      "id": "missing",
+      "question": "What is the Broomgate annual maintenance budget?",
+      "gold": [
+        {
+          "relevant": [],
+          "values": {}
+        }
+      ]
+    },
+    {
+      "id": "reduced",
+      "question": "What is the Broomgate quay access code?",
+      "gold": [
+        {
+          "relevant": [],
+          "values": {}
+        }
+      ]
+    }
+  ]
+}

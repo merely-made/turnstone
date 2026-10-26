@@ -1,0 +1,35 @@
+{
+  "elapsed_seconds": 1028.3154092729092,
+  "cohorts": [
+    {
+      "cohort": "paraphrases",
+      "exit_code": 0,
+      "elapsed_seconds": 319.50205576303415,
+      "outer_timeout": false
+    },
+    {
+      "cohort": "qualifiers",
+      "exit_code": 0,
+      "elapsed_seconds": 230.71821878710762,
+      "outer_timeout": false
+    },
+    {
+      "cohort": "agreement",
+      "exit_code": 0,
+      "elapsed_seconds": 237.84594620298594,
+      "outer_timeout": false
+    },
+    {
+      "cohort": "long_passages",
+      "exit_code": 0,
+      "elapsed_seconds": 186.14477074705064,
+      "outer_timeout": false
+    },
+    {
+      "cohort": "long_conflict_admission",
+      "exit_code": 101,
+      "elapsed_seconds": 54.10158800100908,
+      "outer_timeout": false
+    }
+  ]
+}
