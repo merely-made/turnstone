@@ -181,6 +181,7 @@ struct WindowChrome {
 
 /// The one chrome state every projection renders (the one-state contract).
 struct ChromeState {
+    forme_fields: std::collections::BTreeMap<usize,Vec<FormeFieldControl>>,
     focus_cards: Vec<crate::focus_card::CardView>,
     peek_selected: Option<crate::focus_card::Target>,
     peek_below: Option<crate::focus_card::Target>,
@@ -222,6 +223,13 @@ struct ChromeState {
     decision: Option<DecisionCard>,
 }
 
+#[derive(Clone,Debug,PartialEq)]
+struct FormeFieldControl {
+    pane: crate::panes::PaneId,
+    field: cambium::ScopeField,
+    target: crate::focus_card::Target,
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum ChromeMenu {
     Panes,
@@ -241,6 +249,10 @@ fn scope_chrome_intent(state:&mut ChromeState,command:crate::scope_navigation::S
 fn context_cards_visible(state:&ChromeState)->bool {
     state.shellbar_visible && !state.focus_cards.is_empty() && state.menu.is_none()
         && !state.open && state.decision.is_none()
+}
+
+fn field_controls_visible(state:&ChromeState)->bool {
+    !state.open && state.decision.is_none() && state.menu.is_none() && state.shellbar_visible
 }
 
 fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
@@ -263,6 +275,17 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
         0.0
     };
     children.push(window_title_bar(state, &win, slot));
+    if win.primary && field_controls_visible(state) {
+        for entry in state.forme_fields.get(&slot).into_iter().flatten() {
+            let target=entry.target.clone();
+            if let Some(control)=cambium::scope_field_controls(&entry.field,move |_:&mut ChromeState,command| {
+                ChromeIntent::FocusCard(match command {
+                    cambium::ScopeFieldCommand::Peek=>crate::focus_card::Command::Peek(target.clone()),
+                    cambium::ScopeFieldCommand::Enter=>crate::focus_card::Command::EnterLayout(target.clone()),
+                })
+            }) {children.push(control);}
+        }
+    }
 
     if win.primary && state.shellbar_visible {
         let leading = if merged {
@@ -1280,6 +1303,7 @@ impl ChromeSurfaces {
         let dom: DomHandle = Rc::new(RefCell::new(ScriptedDom::new()));
         let state = ChromeState {
             focus_cards: Vec::new(),
+            forme_fields: Default::default(),
             peek_selected: None,
             peek_below: None,
             peek_forme: None,
@@ -1644,6 +1668,10 @@ impl ChromeSurfaces {
                 state.documents_start = 0;
             }
             state.focus_cards = app.focus_card_views();
+            for fields in state.forme_fields.values_mut() {
+                fields.retain(|entry| app.pane_content(entry.pane)==Some(&crate::panes::PaneContent::Orrery)
+                    && app.valid_focus_card(&entry.target));
+            }
             state.peek_selected = app.selected_focus_card();
             state.peek_below = app.lower_scope_card();
             state.peek_forme = app.forme_card_target();
@@ -1813,6 +1841,34 @@ impl ChromeSurfaces {
         intents
     }
 
+    /// Screen attachments use the same measured surface aperture as rendering
+    /// and input, and the viewport stashed by that exact graph pane.
+    pub(crate) fn sync_forme_fields(&mut self, app:&App, slot:usize, surfaces:&[crate::surface::Surface]) {
+        let chrome_scale=app.shell_chrome_config().layout_scale(slot);
+        let entries=surfaces.iter().filter_map(|surface| {
+            let crate::surface::SurfaceKind::Graph(pane)=surface.kind else {return None;};
+            let target=app.forme_field_target(pane)?;
+            let region=app.graph_views.forme_region(pane)?;
+            let bounds=region.screen_bounds(app.graph_views.viewport(pane)?)?;
+            let scale=app.pane_layout_scale(pane)/chrome_scale;
+            let x=surface.rect.x/chrome_scale;let y=surface.rect.y/chrome_scale;
+            let aperture=[x,y,x+surface.rect.w/chrome_scale,y+surface.rect.h/chrome_scale];
+            let place=app.scope_place();
+            let field=cambium::ScopeField {label:"Reading layout".into(),
+                bounds:[x+bounds[0]*scale,y+bounds[1]*scale,x+bounds[2]*scale,y+bounds[3]*scale],aperture,
+                can_enter:place.graph!=target.graph || place.level!=crate::scope_navigation::ScopeLevel::Forme(region.id),scale:self.runner.state().zoom};
+            field.placement()?;
+            Some(FormeFieldControl {pane,field,target})
+        }).collect::<Vec<_>>();
+        if self.runner.state().forme_fields.get(&slot)==Some(&entries) {return;}
+        self.runner.update(|state|{state.forme_fields.insert(slot,entries);});
+    }
+
+    pub(crate) fn forme_field_control_count(&self,slot:usize)->usize {
+        if !field_controls_visible(self.runner.state()) {return 0;}
+        self.runner.state().forme_fields.get(&slot).map_or(0,Vec::len)
+    }
+
     pub(crate) fn dismiss_menu(&mut self) -> bool {
         if self.runner.state().menu.is_none() {
             return false;
@@ -1936,6 +1992,32 @@ pub(crate) mod tests {
         (x + w / 2.0, y + h / 2.0)
     }
 
+    #[test]
+    fn field_preview_is_attached_to_its_measured_graph_aperture_and_keeps_graph_state() {
+        let mut app=App::test_stub();
+        app.update(Action::OpenAddress("https://field.test/document".into()));
+        let member=app.graph_runtimes.focused_member().unwrap();
+        app.update(Action::ReadGraphMember(member));app.update(Action::SetWorkspaceMap(true));
+        let pane=app.active_pane.unwrap();
+        app.graph_pane_frame(pane,800,420).unwrap();
+        app.with_graph_pane(pane,|c|c.set_camera(mere::canvas::CameraView {offset:(120.,90.),zoom:0.5}));
+        let before=app.with_graph_pane(pane,|c|(c.viewport(),c.selected_members())).unwrap();
+        let surfaces=[crate::surface::Surface {id:crate::surface::SurfaceId::graph(pane),kind:crate::surface::SurfaceKind::Graph(pane),rect:crate::surface::Rect::new(160.,100.,800.,420.)}];
+        let mut chrome=ChromeSurfaces::new();chrome.sync(&app,&[(0,1024.,700.)]);chrome.sync_forme_fields(&app,0,&surfaces);
+        let entry=&chrome.runner.state().forme_fields[&0][0];let [x,y,width]=entry.field.placement().unwrap();
+        assert!(x>=entry.field.aperture[0] && y>=entry.field.aperture[1]);
+        assert!(x+width<=entry.field.aperture[2]);
+        let _=chrome.scene(0,1024,700);
+        let scale=app.shell_chrome_config().layout_scale(0);
+        let (x,y)=toolbar_point(&chrome,"Preview field: Reading layout",(1024./scale) as u32,(700./scale) as u32);
+        assert!(surfaces[0].rect.contains(x*scale,y*scale),"the painted control must stay in its graph aperture");
+        let intents=chrome.click(0,x*scale,y*scale,1024,700);
+        let [ChromeIntent::FocusCard(crate::focus_card::Command::Peek(target))]=intents.as_slice() else {panic!("{intents:?}")};
+        app.update(Action::FocusCard(crate::focus_card::Command::Peek(target.clone())));
+        assert_eq!(app.with_graph_pane(pane,|c|(c.viewport(),c.selected_members())).unwrap(),before);
+        chrome.sync_forme_fields(&app,0,&[]);
+        assert!(chrome.runner.state().forme_fields[&0].is_empty());
+    }
     #[test]
     fn chrome_is_laid_out_in_layout_pixels_per_window_and_hit_in_physical_ones() {
         let mut app = App::test_stub();

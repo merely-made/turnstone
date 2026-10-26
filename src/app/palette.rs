@@ -226,6 +226,10 @@ impl App {
             return rows;
         }
         let mut rows = self.session_actions();
+        if let Some(target) = self.forme_card_target() {
+            rows.push(("Preview reading layout".into(),Action::FocusCard(crate::focus_card::Command::Peek(target.clone()))));
+            rows.push(("Enter reading layout".into(),Action::FocusCard(crate::focus_card::Command::EnterLayout(target))));
+        }
         if let Some(action) = self.producer_retention_action() { rows.push(action); }
         if let Some((member, _)) = self.browser_command_target()
             && let Ok(target) = self.source_capture_target(member)

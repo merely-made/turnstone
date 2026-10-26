@@ -29,6 +29,7 @@ pub struct Target {
 #[derive(Clone, Debug, PartialEq)]
 pub enum Command {
     Peek(Target),
+    EnterLayout(Target),
     Keep(Target),
     Close(Target),
     Read(Target),
@@ -156,6 +157,7 @@ impl App {
         }
         let target = match &command {
             Command::Peek(t)
+            | Command::EnterLayout(t)
             | Command::Keep(t)
             | Command::Close(t)
             | Command::Read(t)
@@ -176,6 +178,15 @@ impl App {
             });
         match command {
             Command::Peek(target) => self.reading.cards.show(target),
+            Command::EnterLayout(target) => {
+                if let Some(place) = self.forme_field_scope(&target) {
+                    self.reading.cards.peek = None;
+                    return self.scope_command_for_reader(
+                        crate::scope_navigation::ScopeCommand::To(crate::scope_navigation::ScopeDestination::Place(place)),
+                        target.reader,
+                    );
+                }
+            },
             Command::Keep(target) => self.reading.cards.keep(&target),
             Command::Read(target) if shown => {
                 self.reading.cards.peek = None;
@@ -405,6 +416,32 @@ mod tests {
             },
         );
         (app, graph, source, member)
+    }
+    #[test]
+    fn field_entry_uses_the_existing_forme_and_palette_commands_preserve_readings() {
+        let (mut app,_,source,member)=fixture();
+        let reader=app.active_pane.unwrap();
+        app.workbench_for_pane_mut(reader).unwrap().open_split(&[source,member]);
+        let layout=app.workbench_for_pane(reader).unwrap().to_arrangement().1;
+        let anchors=app.reading.anchors.clone();
+        app.update(Action::SetWorkspaceMap(true));let map=app.active_pane.unwrap();
+        app.graph_pane_frame(map,1024,600).unwrap();
+        let target=app.forme_field_target(map).unwrap();
+        let history=serde_json::to_value(&app.reading.scope.navigation).unwrap();
+        let commands=app.available_actions();
+        assert!(commands.iter().any(|(label,action)|label=="Preview reading layout" && matches!(action,Action::FocusCard(Command::Peek(_)))));
+        assert!(commands.iter().any(|(label,action)|label=="Enter reading layout" && matches!(action,Action::FocusCard(Command::EnterLayout(_)))));
+        app.update(Action::FocusCard(Command::Peek(target.clone())));
+        assert_eq!(serde_json::to_value(&app.reading.scope.navigation).unwrap(),history);
+        app.update(Action::FocusCard(Command::EnterLayout(target)));
+        assert!(matches!(app.scope_place().level,crate::scope_navigation::ScopeLevel::Forme(_)));
+        assert_eq!(app.reading.scope.reader,Some(reader));
+        assert_eq!(app.reading.anchors,anchors);
+        assert_eq!(app.workbench_for_pane(reader).unwrap().to_arrangement().1,layout);
+        app.update(Action::Scope(crate::scope_navigation::ScopeCommand::Navigate(cambium::scope_navigation::ScopeDirection::Down)));
+        assert_eq!(app.active_pane,Some(reader));
+        assert_eq!(app.scope_place().level,crate::scope_navigation::ScopeLevel::Document);
+        assert_eq!(app.reading.anchors,anchors);
     }
     #[test]
     fn forme_preview_prefers_the_active_then_retained_reader_over_tree_order() {

@@ -745,6 +745,7 @@ impl taproot::Automatable for Shell {
             .with_field("reading-text-size",reading_target.map(|target|self.app.reading.preferences(target).text_size.to_string()).unwrap_or_default())
             .with_field("reading-column-em",reading_target.map(|target|self.app.reading.preferences(target).column_em.to_string()).unwrap_or_default())
             .with_field("focus-card-forme",self.app.focus_card_views().iter().any(|c|c.forme.is_some()).to_string())
+            .with_field("forme-field-controls",self.chrome.forme_field_control_count(0).to_string())
             .with_field("focus-card-forme-cells",self.app.focus_card_views().iter().filter_map(|c|c.forme.as_ref()).map(|f|f.cells.len()).sum::<usize>().to_string())
             .with_field("focus-card-count",self.app.focus_card_views().len().to_string())
             .with_field("focus-card-kept",self.app.focus_card_views().iter().filter(|c|c.kept).count().to_string())

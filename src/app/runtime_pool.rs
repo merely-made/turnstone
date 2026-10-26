@@ -443,6 +443,7 @@ pub struct GraphPaneViews {
 }
 
 impl GraphPaneViews {
+    pub(crate) fn forme_region(&self, pane: PaneId) -> Option<&mere::canvas::FormeRegion> { self.forme_regions.get(&pane) }
     pub(crate) fn forme_scope(&self,pane:PaneId)->Option<uuid::Uuid> {self.forme_scopes.get(&pane).copied()}
     pub(crate) fn set_forme_scope(&mut self,pane:PaneId,id:uuid::Uuid,members:Vec<uuid::Uuid>) {self.set_scope(pane,Some(members));self.forme_scopes.insert(pane,id);}
     pub(crate) fn installed_forme(&self,pane:PaneId)->Option<uuid::Uuid> {self.forme_regions.get(&pane).map(|r|r.id)}

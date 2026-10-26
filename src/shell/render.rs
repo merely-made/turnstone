@@ -1129,6 +1129,7 @@ impl Shell {
                     // note suspects both; one number could not separate them.
                     let sync_started = std::time::Instant::now();
                     self.chrome.sync(&self.app, &sizes);
+                    self.chrome.sync_forme_fields(&self.app, 0, &surfaces);
                     let sync_elapsed = sync_started.elapsed();
                     let chrome_scene_started = std::time::Instant::now();
                     let scene = self.chrome.scene(0, rw, rh);

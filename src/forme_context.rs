@@ -19,6 +19,57 @@ fn identity(forme: FormeRef) -> Uuid {
     }
 }
 impl App {
+    pub(crate) fn forme_field_target(&self, map: PaneId) -> Option<Target> {
+        if self.pane_content(map) != Some(&PaneContent::Orrery) {
+            return None;
+        }
+        let graph = self.graph_for_pane(map)?;
+        let id = self.graph_views.forme_region(map)?.id;
+        let place = ScopePlace {
+            level: ScopeLevel::Forme(id),
+            graph,
+            root: None,
+            focus: None,
+            contexts: None,
+        };
+        let reader = self.scope_forme_reader(&place)?;
+        let target = Target {
+            graph,
+            instance: self.graph_runtimes.get(graph)?.instance,
+            member: None,
+            reader: Some(reader),
+            address: String::new(),
+            origin: Origin::Forme {
+                reader,
+                forme: self.forme_for_pane(reader)?.forme,
+            },
+        };
+        self.valid_focus_card(&target).then_some(target)
+    }
+
+    pub(crate) fn forme_field_scope(&self, target: &Target) -> Option<ScopePlace<GraphId, Uuid>> {
+        if !self.valid_focus_card(target) {
+            return None;
+        }
+        let card = self.forme_card_view(target.clone(), false)?;
+        let swatch = card.forme.as_ref()?;
+        let member = swatch
+            .cells
+            .iter()
+            .flat_map(|c| &c.tabs)
+            .find(|t| t.focused)
+            .or_else(|| swatch.cells.first().and_then(|c| c.tabs.get(c.active)))?
+            .id;
+        let (child, _, _) = card
+            .related
+            .iter()
+            .find(|(t, _, _)| t.member == Some(member))?;
+        let Origin::Scope(place) = &child.origin else {
+            return None;
+        };
+        place.up()
+    }
+
     pub(crate) fn reader_matches_scope(
         &self,
         reader: PaneId,
