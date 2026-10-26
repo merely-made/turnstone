@@ -56,6 +56,14 @@ comes back with the current pair. `payload` is JSON, sent as its text, or a stri
 sent verbatim. A mere's graph is edited through the session item's
 `mere.session.apply` action, whose schema `mere_actions` shows.
 
+An agent that only needs to remember things does not compose graph edits. Djinn's
+mere route also serves a **Notes** projection, and its card carries two actions.
+`mere.notes.append` appends a typed note: kind, subject, djot body and evidence
+refs. It is stored as a Knot note in the attached session and attributed like any
+edit. `mere.notes.search` sets the text the projection is filtered by, after which
+the agent reads the Notes resource. Each action's explanation spells out its
+payload.
+
 ## Protocol
 
 MCP 2026-07-28 (`server/discover`, per-request `_meta`, `resultType`) and the
