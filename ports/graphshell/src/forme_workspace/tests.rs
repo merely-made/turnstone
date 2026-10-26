@@ -8,6 +8,25 @@ use super::*;
 use mere::kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta};
 use muniment::MemoryBackend;
 #[test]
+fn forme_route_reopens_with_its_existing_arrangement() {
+    use crate::scope_policy::*;
+    pollster::block_on(async {
+        let (graph,a,b)=graph();let owner=Uuid::from_u128(10);
+        let mut workspace=FormeWorkspace::new(owner);workspace.open(a,&graph).unwrap();workspace.open(b,&graph).unwrap();
+        let arrangement=workspace.document.arrangement.clone();let geometry=workspace.geometry.clone();
+        let origin=Place {level:ScopeLevel::Graph,graph:owner,root:None,focus:Some(b),contexts:None};
+        let forme=origin.enter(ScopeLevel::Forme(workspace.document.id.as_uuid()));
+        let document=forme.reading(owner,b);
+        workspace.scope_navigation.visit(ScopeVisit {place:document.clone(),camera:Some(ScopeCamera {x:20.0,y:30.0,zoom:1.5}),anchor:None});
+        let backend=MemoryBackend::new();workspace.save(backend.clone()).await.unwrap();
+        let loaded=FormeWorkspace::load(backend,owner,&graph).await.unwrap();
+        assert_eq!(loaded.document.arrangement,arrangement);assert_eq!(loaded.geometry,geometry);
+        assert_eq!(loaded.scope_navigation.current().unwrap().place,document);
+        assert_eq!(loaded.scope_navigation.current().unwrap().place.up().unwrap().level,forme.level);
+        assert_eq!(origin.down().unwrap().level,ScopeLevel::Neighborhood);
+    });
+}
+#[test]
 fn closing_an_active_tab_prefers_its_stack_before_crossing_tiled_cells() {
     let (mut g, a, b) = graph();
     let c = Uuid::from_u128(3);

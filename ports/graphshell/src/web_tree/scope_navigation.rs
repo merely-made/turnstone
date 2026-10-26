@@ -261,7 +261,7 @@ pub(super) fn command(page: &mut TreePage, command: ScopeCommand) {
         place.map(|place| {
             let saved = page.instrument.scope.navigation.saved_matching(|p| p.same_scope(&place));
             ScopeVisit {
-                camera: saved.and_then(|v| v.camera).or_else(||matches!(place.level,ScopeLevel::Forme(_)).then_some(origin.camera).flatten()),
+                camera: saved.and_then(|v| v.camera),
                 anchor: saved.and_then(|v| v.anchor.clone()),
                 place,
             }
@@ -357,6 +357,16 @@ fn apply(page: &mut TreePage, visit: &Visit) -> bool {
     true
 }
 pub(super) fn refresh(page: &TreePage) {
+    if let Some(place)=place(page).filter(|p|matches!(p.level,ScopeLevel::Forme(_))) {
+        let ScopeLevel::Forme(id)=place.level else {unreachable!()};
+        if let Some(pane)=page.forme.as_ref().filter(|p|p.current().document.id.as_uuid()==id) {
+            let members=pane.current().members();
+            let mut canvas=page.shared.canvas.borrow_mut();
+            let exact=members.iter().copied().collect();
+            if canvas.scope_members().as_ref()!=Some(&exact) {canvas.scope_to_exact_members(members);page.shared.dirty.set(true);}
+        }
+        return;
+    }
     let Some(place) = place(page).filter(|p| p.level == ScopeLevel::Neighborhood) else {
         return;
     };
@@ -433,7 +443,7 @@ pub(super) fn overmap(page: &TreePage) -> Option<Child> {
     ))
 }
 pub(super) fn fields(page: &TreePage, snapshot: ProbeSnapshot) -> ProbeSnapshot {
-    snapshot
+    snapshot.with_field("scope-trail",place(page).map(|p|p.trail().iter().map(|p|p.level.label()).collect::<Vec<_>>().join("/")).unwrap_or_default())
         .with_field(
             "scope-level",
             place(page).map(|p| p.level.label()).unwrap_or("Graph"),

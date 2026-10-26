@@ -1,0 +1,99 @@
+# Fresh loopback origin; ?app=local&fixture=reading-typography.
+# Real saved accesses and layout edits. Peek adds no visit or content session.
+assert snap source == saved graph
+remember initial
+click role:button Map
+wait 120
+click role:button Fit graph
+settle 15
+press-node mere://reading/related-note
+settle 1
+move-by 180 -90
+settle 1
+release-at
+wait 90
+click role:button Fit graph
+settle 15
+click-node mere://reading/field-notes
+click role:button Panes
+click role:button Read selected
+wait 120
+click role:button Find in reading
+settle 5
+click role:textbox Find text in reading
+input-text Field observation 4
+settle 10
+key Escape
+wait 90
+remember passage
+click role:button Map
+wait 120
+click role:button Fit graph
+settle 15
+click-node mere://reading/related-note
+click role:button Panes
+click role:button Read selected
+wait 120
+assert snap forme-accesses == 2
+click role:button Panes
+click role:button Inspector
+settle 5
+reveal role:button Unlock forme
+click role:button Unlock forme
+wait 120
+reveal role:button Arrange side by side
+click role:button Arrange side by side
+wait 120
+reveal role:button Lock and apply
+click role:button Lock and apply
+wait 120
+click role:button Panes
+click role:button Inspector
+settle 5
+click role:button Map
+wait 120
+click role:button Fit graph
+settle 15
+assert snap forme-cells == 2
+remember map-origin
+click role:button Preview reading layout
+settle 5
+assert snap focus-card-forme == true
+same map-origin scope-level
+same map-origin scope-focus
+same map-origin scope-back
+same initial node-count
+capture graphshell_forme_swatch
+click role:button Keep focus card open: Reading layout
+settle 5
+click role:button Enter tile: Reading from the graph
+wait 120
+assert snap scope-level == Document
+assert snap scope-trail == Meres/Graph/Forme/Document
+assert snap forme-cells == 2
+click role:button Close focus card: Reading layout
+settle 5
+remember entered
+capture graphshell_forme_entered
+click role:button Up:
+wait 120
+assert snap scope-level == Forme
+capture graphshell_forme_field
+click role:button Up:
+wait 120
+assert snap scope-level == Graph
+same map-origin scope-focus
+click role:button Back:
+wait 120
+assert snap scope-level == Forme
+click role:button Back:
+wait 120
+assert snap scope-level == Document
+assert snap scope-trail == Meres/Graph/Forme/Document
+same entered reading-anchor
+same initial node-count
+capture graphshell_forme_returned
+click role:button Preview reading layout
+settle 5
+assert snap focus-card-forme == true
+capture graphshell_forme_reading_peek

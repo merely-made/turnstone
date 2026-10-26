@@ -51,7 +51,9 @@ fn valid(page: &TreePage, t: &Target) -> bool {
         return false;
     }
     if let Some(id) = t.forme {
-        return page.forme.as_ref().is_some_and(|p|p.current().document.id.as_uuid()==id && !p.current().members().is_empty());
+        return page.forme.as_ref().is_some_and(|p| {
+            p.current().document.id.as_uuid() == id && !p.current().members().is_empty()
+        });
     }
     let canvas = page.shared.canvas.borrow();
     let graph = canvas.graph();
@@ -146,48 +148,124 @@ pub(super) fn control(page: &TreePage) -> Child {
 }
 
 fn forme_target(page: &TreePage) -> Option<Target> {
-    let workspace=page.forme.as_ref()?.current();
-    if workspace.members().is_empty() {return None;}
-    Some(Target {owner:workspace.document.graph_id,epoch:page.instrument.scope.gesture_epoch,member:None,scope:None,forme:Some(workspace.document.id.as_uuid()),address:String::new(),source:None,relation:None})
-}
-pub(super) fn forme_control(page:&TreePage)->Child {
-    let target=forme_target(page);
-    cambium::shell_control("Layout","Preview reading layout",cambium::ShellControl {disabled:target.is_none(),..Default::default()},move |page:&mut TreePage,_| {
-        if let Some(target)=target.clone() {show(page,target);}
+    let workspace = page.forme.as_ref()?.current();
+    if workspace.members().is_empty() {
+        return None;
+    }
+    Some(Target {
+        owner: workspace.document.graph_id,
+        epoch: page.instrument.scope.gesture_epoch,
+        member: None,
+        scope: None,
+        forme: Some(workspace.document.id.as_uuid()),
+        address: String::new(),
+        source: None,
+        relation: None,
     })
 }
-fn forme_card(page:&TreePage,t:&Target,kept:bool)->Option<Child> {
-    let pane=page.forme.as_ref()?;
-    let workspace=pane.current();
-    let canvas=page.shared.canvas.borrow();
-    let tree=workspace.tile_tree(canvas.graph())?;
-    let swatch=cambium::FormeSwatch::from_tree("Reading layout".into(),&tree,|tile| {
-        let member=workspace.member_for_tile(tile.id)?;
-        let passage=super::reading::preview_excerpt(page,member).map(|p|p.trim_start_matches("Retained document excerpt: ").trim_start_matches("Last reading position: ").to_string());
-        Some(cambium::FormeSwatchTile {id:member,title:tile.title.clone(),passage,focused:workspace.focused_reading==Some(member)})
+pub(super) fn forme_control(page: &TreePage) -> Child {
+    let target = forme_target(page);
+    cambium::shell_control(
+        "Layout",
+        "Preview reading layout",
+        cambium::ShellControl {
+            disabled: target.is_none(),
+            ..Default::default()
+        },
+        move |page: &mut TreePage, _| {
+            if let Some(target) = target.clone() {
+                show(page, target);
+            }
+        },
+    )
+}
+fn forme_card(page: &TreePage, t: &Target, kept: bool) -> Option<Child> {
+    let pane = page.forme.as_ref()?;
+    let workspace = pane.current();
+    let canvas = page.shared.canvas.borrow();
+    let tree = workspace.tile_tree(canvas.graph())?;
+    let anchors = super::reading::capture_progress(page).0;
+    let swatch = cambium::FormeSwatch::from_tree("Reading layout".into(), &tree, |tile| {
+        let member = workspace.member_for_tile(tile.id)?;
+        let address = canvas.graph().get_node_by_id(member)?.1.url();
+        let passage = anchors
+            .get(&member)
+            .filter(|a| a.source == address && !a.exact.is_empty())
+            .map(|a| a.exact.clone())
+            .or_else(|| {
+                super::reading::preview_excerpt(page, member).map(|p| {
+                    p.trim_start_matches("Retained document excerpt: ")
+                        .trim_start_matches("Last reading position: ")
+                        .to_string()
+                })
+            });
+        Some(cambium::FormeSwatchTile {
+            id: member,
+            title: tile.title.clone(),
+            passage,
+            focused: workspace.focused_reading == Some(member),
+        })
     });
-    let mut context=super::scope_navigation::place(page)?.project(ScopeLevel::Graph,None,workspace.focused_reading).enter(ScopeLevel::Forme(t.forme?));
-    context.focus=workspace.focused_reading;
-    let destinations=swatch.cells.iter().flat_map(|c|&c.tabs).map(|tile|(tile.id,context.reading(t.owner,tile.id))).collect::<Vec<_>>();
-    let target=t.clone();
-    let body=cambium::forme_swatch(&swatch,move |page:&mut TreePage,member| {
-        if !valid(page,&target) || !page.instrument.cards.deck.cards().iter().any(|(t,_)|t==&target) {return;}
-        if let Some((_,place))=destinations.iter().find(|(id,_)|*id==member) {
-            page.instrument.cards.deck.peek=None;
-            super::scope_navigation::command(page,ScopeCommand::To(ScopeDestination::Place(place.clone())));
+    let mut context = super::scope_navigation::place(page)?
+        .project(ScopeLevel::Graph, None, workspace.focused_reading)
+        .enter(ScopeLevel::Forme(t.forme?));
+    context.focus = workspace.focused_reading;
+    let destinations = swatch
+        .cells
+        .iter()
+        .flat_map(|c| &c.tabs)
+        .map(|tile| (tile.id, context.reading(t.owner, tile.id)))
+        .collect::<Vec<_>>();
+    let target = t.clone();
+    let body = cambium::forme_swatch(&swatch, move |page: &mut TreePage, member| {
+        if !valid(page, &target)
+            || !page
+                .instrument
+                .cards
+                .deck
+                .cards()
+                .iter()
+                .any(|(t, _)| t == &target)
+        {
+            return;
+        }
+        if let Some((_, place)) = destinations.iter().find(|(id, _)| *id == member) {
+            page.instrument.cards.deck.peek = None;
+            super::scope_navigation::command(
+                page,
+                ScopeCommand::To(ScopeDestination::Place(place.clone())),
+            );
         }
     });
-    let info=cambium::FocusCardInfo {title:"Reading layout".into(),subtitle:format!("{} accesses · {} groups",workspace.members().len(),swatch.cells.len()),context:"Forme · existing working arrangement".into(),preview_status:"Live layout · retained passages".into(),excerpt:None,primary:None,secondary:None};
-    let target=t.clone();
-    Some(cambium::focus_card_with_body(info,kept,body,Vec::new(),move |page:&mut TreePage,command| {
-        use cambium::FocusCardCommand as C;
-        match command {
-            C::Close=>page.instrument.cards.deck.close(&target),
-            C::KeepOpen if valid(page,&target)=>page.instrument.cards.deck.keep(&target),
-            _=>{},
-        }
-        page.shared.dirty.set(true);
-    }))
+    let info = cambium::FocusCardInfo {
+        title: "Reading layout".into(),
+        subtitle: format!(
+            "{} accesses · {} groups",
+            workspace.members().len(),
+            swatch.cells.len()
+        ),
+        context: "Forme · existing working arrangement".into(),
+        preview_status: "Live layout · retained passages".into(),
+        excerpt: None,
+        primary: None,
+        secondary: None,
+    };
+    let target = t.clone();
+    Some(cambium::focus_card_with_body(
+        info,
+        kept,
+        body,
+        Vec::new(),
+        move |page: &mut TreePage, command| {
+            use cambium::FocusCardCommand as C;
+            match command {
+                C::Close => page.instrument.cards.deck.close(&target),
+                C::KeepOpen if valid(page, &target) => page.instrument.cards.deck.keep(&target),
+                _ => {},
+            }
+            page.shared.dirty.set(true);
+        },
+    ))
 }
 fn scoped_swatch(
     page: &TreePage,
@@ -273,55 +351,66 @@ pub(super) fn dismiss(page: &mut TreePage) -> bool {
     had
 }
 pub(super) fn fields(page: &TreePage, snap: ProbeSnapshot) -> ProbeSnapshot {
-    snap.with_field(
-        "focus-card-scope",
-        page.instrument
-            .cards
-            .deck
-            .peek
-            .as_ref()
-            .and_then(|t| t.scope.as_ref())
-            .map(|p| p.level.label())
-            .unwrap_or_default(),
-    )
-    .with_field(
-        "focus-card-count",
-        page.instrument
-            .cards
-            .deck
-            .cards()
-            .iter()
-            .filter(|(t, _)| valid(page, t))
-            .count()
-            .to_string(),
-    )
-    .with_field(
-        "focus-card-kept",
-        page.instrument
-            .cards
-            .deck
-            .kept
-            .iter()
-            .filter(|t| valid(page, t))
-            .count()
-            .to_string(),
-    )
-    .with_field(
-        "focus-card-peek",
-        page.instrument
-            .cards
-            .deck
-            .peek
-            .as_ref()
-            .filter(|t| valid(page, t))
-            .map(|t| t.address.clone())
-            .unwrap_or_default(),
-    )
+    let has_forme = page
+        .instrument
+        .cards
+        .deck
+        .cards()
+        .iter()
+        .any(|(t, _)| t.forme.is_some() && valid(page, t));
+    snap.with_field("focus-card-forme", has_forme.to_string())
+        .with_field(
+            "focus-card-scope",
+            page.instrument
+                .cards
+                .deck
+                .peek
+                .as_ref()
+                .and_then(|t| t.scope.as_ref())
+                .map(|p| p.level.label())
+                .unwrap_or_default(),
+        )
+        .with_field(
+            "focus-card-count",
+            page.instrument
+                .cards
+                .deck
+                .cards()
+                .iter()
+                .filter(|(t, _)| valid(page, t))
+                .count()
+                .to_string(),
+        )
+        .with_field(
+            "focus-card-kept",
+            page.instrument
+                .cards
+                .deck
+                .kept
+                .iter()
+                .filter(|t| valid(page, t))
+                .count()
+                .to_string(),
+        )
+        .with_field(
+            "focus-card-peek",
+            page.instrument
+                .cards
+                .deck
+                .peek
+                .as_ref()
+                .filter(|t| valid(page, t))
+                .map(|t| t.address.clone())
+                .unwrap_or_default(),
+        )
 }
 pub(super) fn view(page: &TreePage) -> Option<Child> {
     // Command overlays temporarily own the column; keeping the binding does
     // not give a card authority to intercept those controls.
-    if page.instrument.panes_open || page.instrument.navigation.open || page.instrument.location.open {
+    if page.instrument.panes_open
+        || page.instrument.navigation.open
+        || page.instrument.location.open
+    {
         return None;
     }
     let mut cards = Vec::new();
@@ -330,7 +419,9 @@ pub(super) fn view(page: &TreePage) -> Option<Child> {
             continue;
         }
         if t.forme.is_some() {
-            if let Some(card)=forme_card(page,&t,kept) { cards.push(card); }
+            if let Some(card) = forme_card(page, &t, kept) {
+                cards.push(card);
+            }
             continue;
         }
         let canvas = page.shared.canvas.borrow();
