@@ -5773,7 +5773,6 @@ dependencies = [
  "futures-util",
  "hest",
  "infer",
- "mere-forme",
  "mime_guess",
  "muniment",
  "numen",
