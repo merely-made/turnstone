@@ -78,11 +78,12 @@ capture graphshell_forme_entered
 click role:button Up:
 wait 120
 assert snap scope-level == Forme
+same entered scope-focus
 capture graphshell_forme_field
 click role:button Up:
 wait 120
 assert snap scope-level == Graph
-same map-origin scope-focus
+same entered scope-focus
 click role:button Back:
 wait 120
 assert snap scope-level == Forme
@@ -90,6 +91,18 @@ click role:button Back:
 wait 120
 assert snap scope-level == Document
 assert snap scope-trail == Meres/Graph/Forme/Document
+same entered reading-anchor
+same entered scope-focus
+# Spatial Up keeps the newly focused reading. Temporal Back restores the
+# earlier graph visit, including the selection that existed before entering.
+click role:button Back:
+wait 120
+assert snap scope-level == Graph
+same map-origin scope-focus
+click role:button Forward:
+wait 120
+assert snap scope-level == Document
+same entered scope-focus
 same entered reading-anchor
 same initial node-count
 capture graphshell_forme_returned
