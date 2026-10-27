@@ -803,7 +803,7 @@ pub(crate) fn product_import_edits(
 
     // Prove the whole import on a detached graph before changing the live session.
     let mut scratch = live.clone();
-    if edits.iter().any(|edit| edit.replay_delta().is_none()) {
+    if edits.iter().any(|edit| edit.replay().into_write().is_err()) {
         return Err(ProductError::InvalidCodicil(
             "an import edit cannot be replayed".into(),
         ));
