@@ -47,8 +47,9 @@ impl<B: pandect::graph_session::LegacyTransactionBackend + Clone> MereHost<B> {
         let deltas = edits
             .iter()
             .map(|edit| {
-                edit.replay_delta_as(&author)
-                    .ok_or_else(|| SessionError::NotReplayable(format!("{edit:?}")))
+                edit.replay_as(&author)
+                    .into_write()
+                    .map_err(|why| SessionError::NotReplayable(format!("{why}: {edit:?}")))
             })
             .collect::<Result<Vec<_>, _>>()?;
         if self.resident_publication {
@@ -322,7 +323,8 @@ mod tests {
                             url: "https://competing.test/".into(),
                             position: [0.0, 0.0],
                         }
-                        .replay_delta_as(&author)
+                        .replay_as(&author)
+                        .into_write()
                         .unwrap(),
                     ],
                     wall_clock_now(),
