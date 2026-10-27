@@ -46,7 +46,7 @@ default = ["native", "image-decode", "document-layout", "retained-content"]
 document-layout = ["dep:platen", "platen/document-layout"]
 # The retained workspace and its acknowledged editing lifecycle belong to
 # product hosts, not the read-only browser viewer.
-workspace-editor = ["web", "dep:platen", "platen/workspace-editor", "scenograph/editor"]
+workspace-editor = ["web", "dep:platen", "dep:comms", "platen/workspace-editor", "scenograph/editor"]
 # Retained document sessions belong to the application host, not the read-only
 # graph viewer. Product web builds opt in explicitly; native defaults retain it.
 retained-content = ["web", "document-layout", "dep:genet-presenter", "dep:cambium", "dep:fleece", "dep:wgpu", "dep:pelt-core", "pelt-core/cue", "dep:wgpu-cue", "dep:cue-netrender", "dep:inker", "dep:netrender", "dep:mere-lanes"]
@@ -189,6 +189,8 @@ inker = { workspace = true, optional = true }
 netrender = { workspace = true, optional = true }
 mere-lanes = { workspace = true, features = ["retained-clips"], optional = true }
 hest = { workspace = true, optional = true }
+# A node that names a correspondent opens Comms (`comms_open`); the model alone, no adapters.
+comms = { workspace = true, optional = true }
 # The check conclusions and faults, named directly (insigne proofs plan, B).
 insigne = { workspace = true, features = ["verify"] }
 async-trait = { version = "0.1", optional = true }

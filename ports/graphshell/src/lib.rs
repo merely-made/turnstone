@@ -47,6 +47,8 @@ mod capture_resources;
 pub mod carriage;
 #[cfg(feature = "web")]
 pub mod command_invocation;
+#[cfg(feature = "workspace-editor")]
+pub mod comms_open;
 #[cfg(any(feature = "native", feature = "web"))]
 pub mod distillery_w1;
 #[cfg(feature = "web")]

@@ -486,8 +486,17 @@ pub(super) fn edit(
     changed(page);
 }
 pub(super) fn open_selected(page: &mut TreePage) {
-    super::scope_navigation::capture_origin(page);
     let selected = page.shared.canvas.borrow().selected_members();
+    // A node naming a correspondent opens Comms, not a tile.
+    let tiles: Vec<_> = selected
+        .iter()
+        .copied()
+        .filter(|&member| !super::comms_pane::open_correspondent(page, member))
+        .collect();
+    if tiles.is_empty() && !selected.is_empty() {
+        return;
+    }
+    super::scope_navigation::capture_origin(page);
     if selected.is_empty() {
         if let Some(pane) = &mut page.forme {
             pane.status = "Select a node to open it in the workbench".into();
@@ -495,7 +504,7 @@ pub(super) fn open_selected(page: &mut TreePage) {
         return;
     }
     edit(page, None, true, |workspace, graph| {
-        for member in selected {
+        for member in tiles {
             workspace.open(member, graph)?;
         }
         Ok(())
@@ -536,6 +545,9 @@ pub(super) fn show_projection(page: &mut TreePage, map: bool) {
     page.shared.dirty.set(true);
 }
 pub(super) fn open_retained(page: &mut TreePage, member: Uuid) {
+    if super::comms_pane::open_correspondent(page, member) {
+        return;
+    }
     super::scope_navigation::capture_origin(page);
     let (anchors, trail) = super::reading::capture_progress(page);
     edit(page, None, true, move |workspace, graph| {
@@ -550,6 +562,9 @@ pub(super) fn open_retained(page: &mut TreePage, member: Uuid) {
 }
 
 pub(super) fn read_related(page: &mut TreePage, member: Uuid) {
+    if super::comms_pane::open_correspondent(page, member) {
+        return;
+    }
     super::scope_navigation::capture_origin(page);
     let (anchors, trail) = super::reading::capture_progress(page);
     edit(page, None, true, move |workspace, graph| {

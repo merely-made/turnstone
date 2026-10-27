@@ -3789,6 +3789,7 @@ dependencies = [
  "insigne",
  "knot-editor-host",
  "mere",
+ "mere-comms",
  "mere-fleece",
  "mere-lanes",
  "mere-moot",
