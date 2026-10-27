@@ -15,12 +15,12 @@ pub(super) fn fields(page: &TreePage, snapshot: ProbeSnapshot) -> ProbeSnapshot 
     let grouped_bend = paths
         .iter()
         .filter(|path| report.settings.compatible_links.contains(&path.key))
-        .map(|path| path_bend(&path.points))
+        .map(|path| path.max_bend())
         .fold(0.0_f32, f32::max);
     let other_bend = paths
         .iter()
         .filter(|path| !report.settings.compatible_links.contains(&path.key))
-        .map(|path| path_bend(&path.points))
+        .map(|path| path.max_bend())
         .fold(0.0_f32, f32::max);
     snapshot
         .with_field(

@@ -1,0 +1,38 @@
+# Existing authored field/coupling fixture; actual executed rows, not path forces.
+# tree.html?app=local&fixture=field-inspection&scenario=scenarios/p9_tree_field_effects.scn
+assert snap field-inspection-fixture == true
+assert snap physics-paused == true
+click role:button Restore arrangement
+settle 3
+click-node file:///Graphshell/reference-notes.md
+settle 2
+click role:button Graph tools
+settle 2
+reveal role:button Explain selected dynamics
+click role:button Explain selected dynamics
+settle 2
+assert snap dynamics-inspector-ready == true
+assert snap dynamics-inspector-coupling-observation ~ "trace":null
+remember exact-field-subject
+reveal role:button Play physics
+click role:button Play physics
+settle 6
+assert snap dynamics-inspector-paused == false
+assert snap dynamics-inspector-coupling-observation ~ "coupling_index":
+assert snap dynamics-inspector-coupling-observation ~ "bindings":{
+assert snap dynamics-inspector-coupling-observation ~ "source":{
+assert text matching endpoint calls recorded
+reveal role:button Pause physics
+click role:button Pause physics
+settle 3
+assert snap dynamics-inspector-paused == true
+same exact-field-subject dynamics-inspector-target
+remember field-effects-paused
+settle 3
+same field-effects-paused dynamics-inspector-coupling-observation
+reveal role:button Show dynamics details
+click role:button Show dynamics details
+settle 2
+assert text Recorded endpoint field effects
+reveal .tree-dynamics
+capture p9_authored_endpoint_effects

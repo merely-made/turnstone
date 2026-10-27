@@ -1,5 +1,7 @@
+# Extended to join path readback and endpoint execution in the existing inspector.
 # Fresh page/process, same retained origin/profile and promoted-link fixture.
 # tree.html?app=local&fixture=promoted-link&scenario=scenarios/p8_tree_counted_topology_reopen.scn
+assert snap dynamics-inspector-open == false
 click role:button Fit graph
 settle 2
 assert snap storage-reopened == true
@@ -26,6 +28,10 @@ reveal role:button Explain pair dynamics
 click role:button Explain pair dynamics
 settle 2
 assert snap dynamics-inspector-ready == true
+assert snap dynamics-inspector-details == false
+assert snap dynamics-inspector-path-response ~ "state":"disabled"
+assert snap dynamics-inspector-coupling-observation ~ "trace":null
+assert text Relationships: 2 held rows
 assert snap dynamics-inspector-topology-mode == relation_rows
 assert snap dynamics-inspector-held-rows == 2
 assert snap dynamics-inspector-visible-rows == 2
