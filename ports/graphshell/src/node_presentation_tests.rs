@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: MPL-2.0
 use super::*;
 use crate::presentation_binding::{ViewInputs, bind};
-use crate::presentation_editor::presentation::Scalar;
 use mere::kernel::graph::Graph;
 use mere::kernel::graph::apply::add_node;
+use scenograph::presentation::Scalar;
 fn fixture() -> (Graph, Uuid, Uuid, RuleSet) {
     let mut graph = Graph::new();
     let a = Uuid::from_u128(1);

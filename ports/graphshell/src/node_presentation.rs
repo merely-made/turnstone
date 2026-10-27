@@ -5,11 +5,9 @@
 // SPDX-License-Identifier: MPL-2.0
 //! Bounded node face decisions and view/occurrence-local hysteresis.
 use crate::presentation_binding::{BoundContext, Occurrence};
-use crate::presentation_editor::{
-    RuleSetDraft,
-    presentation::{Effect, PrimitiveKind, Property, Resolution, RuleSet, ViewState},
-};
 pub use sceno::Representation;
+use scenograph::presentation::editor::RuleSetDraft;
+use scenograph::presentation::{Effect, PrimitiveKind, Property, Resolution, RuleSet, ViewState};
 use serde::Serialize;
 use serde_json::json;
 use std::collections::{BTreeMap, BTreeSet};
@@ -114,8 +112,8 @@ impl NodeRuntime {
             } else {
                 BTreeSet::new()
             };
-            let resolution = bound
-                .resolve(rules)
+            let resolution = rules
+                .resolve_with_availability(&bound.context, &bound.availability())
                 .map_err(|issues| format!("Node rules refused: {issues:?}"))?;
             let face = resolution
                 .winners

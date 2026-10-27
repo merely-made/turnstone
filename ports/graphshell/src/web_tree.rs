@@ -2132,7 +2132,9 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
             #[cfg(feature = "product")]
             owner_waypoint::ready(ctx.runner.state());
             #[cfg(feature = "product")]
-            if ctx.runner.state().presentation.ready() {
+            if ctx.runner.state().presentation.ready()
+                || ctx.runner.state().presentation.owner_changed(ctx.runner.state().product.as_ref())
+            {
                 ctx.runner.update(presentation::poll);
             }
             #[cfg(feature = "product")]
@@ -2217,11 +2219,11 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
                 if location::needs_poll(ctx.runner.state()) {
                     ctx.runner.update(location::poll);
                 }
+                scope_navigation::refresh(ctx.runner.state());
+                reading::prepare(ctx.runner.state());
                 if reading::needs_progress_save(ctx.runner.state()) {
                     ctx.runner.update(reading::persist_progress);
                 }
-                scope_navigation::refresh(ctx.runner.state());
-                reading::prepare(ctx.runner.state());
                 focus_card::register(ctx);
                 backdrop::register(ctx);
                 blocks::register(ctx);

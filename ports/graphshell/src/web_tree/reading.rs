@@ -8,6 +8,7 @@
 use super::*;
 use graphshell::retained_content::ClipExportScope;
 use graphshell::retained_content::{ContentHost, ContentProducer, ContentSlot, HeldContent};
+use mere_document_lanes::reading_lifecycle::OperationKind;
 use std::collections::BTreeMap;
 use uuid::Uuid;
 use workbench::{ContentSource, TileTree};
@@ -19,11 +20,16 @@ struct Binding {
     producer: Rc<RefCell<ContentProducer>>,
 }
 type ClipAnswer = Rc<RefCell<Option<Result<HeldContent, String>>>>;
-type PendingClip = (String, ClipAnswer);
+struct PendingClip {
+    address: String,
+    ticket: mere_document_lanes::reading_lifecycle::OperationTicket,
+    answer: ClipAnswer,
+}
 type ExportAnswer =
     Rc<RefCell<Option<Result<mere_document_lanes::retained_clip::ClipExport, String>>>>;
 struct PendingExport {
     scope: ClipExportScope,
+    ticket: mere_document_lanes::reading_lifecycle::OperationTicket,
     answer: ExportAnswer,
     cancellation: Rc<RefCell<ExportCancellation>>,
 }
@@ -64,6 +70,9 @@ impl Drop for MediaPlayer {
 }
 pub(super) struct Reading {
     host: ContentHost,
+    lifecycle: mere_document_lanes::reading_lifecycle::ReadingLifecycle<
+        mere::kernel::graph::SurfaceNodeLifetime,
+    >,
     bindings: BTreeMap<Uuid, Binding>,
     registered: BTreeMap<u64, Rc<RefCell<ContentProducer>>>,
     statuses: BTreeMap<Uuid, String>,
@@ -74,7 +83,13 @@ pub(super) struct Reading {
     exports: BTreeMap<Uuid, PendingExport>,
     download_urls: BTreeMap<Uuid, DownloadUrl>,
     players: BTreeMap<Uuid, MediaPlayer>,
-    media_answers: BTreeMap<Uuid, (u64, Rc<RefCell<Option<String>>>)>,
+    media_answers: BTreeMap<
+        Uuid,
+        (
+            mere_document_lanes::reading_lifecycle::OperationTicket,
+            Rc<RefCell<Option<String>>>,
+        ),
+    >,
     requests: Vec<(Uuid, String)>,
     dictionaries: Dictionaries,
     pending_progress: Option<(BTreeMap<Uuid, tabard::ReadingAnchor>, f64)>,
@@ -192,6 +207,7 @@ impl Default for Reading {
                     ),
                 ],
             ),
+            lifecycle: Default::default(),
             bindings: Default::default(),
             registered: Default::default(),
             statuses: Default::default(),
@@ -264,14 +280,31 @@ pub(super) fn prepare(page: &TreePage) {
         .as_ref()
         .map(|p| p.model().members())
         .unwrap_or_default();
-    let graph = page.shared.canvas.borrow().graph().clone();
-    let tree = page
-        .forme
-        .as_ref()
-        .filter(|p| p.workbench)
-        // Reading tiles follow the candidate while a handle preview is active;
-        // FormeWorkspace::tile_tree masks any accesses absent from this graph.
-        .and_then(|p| p.current().tile_tree(&graph));
+    // Project only identities needed by this owner while borrowing the live
+    // graph. `tile_tree` masks candidate accesses which are absent from it.
+    let (tree, projection) = {
+        let canvas = page.shared.canvas.borrow();
+        let graph = canvas.graph();
+        let tree = page
+            .forme
+            .as_ref()
+            .filter(|p| p.workbench)
+            .and_then(|p| p.current().tile_tree(graph));
+        let visible = tree.as_ref().map(active_members).unwrap_or_default();
+        let projection = retained
+            .iter()
+            .filter_map(|access| {
+                let (_, node) = graph.get_node_by_id(*access)?;
+                Some(mere_document_lanes::reading_lifecycle::AccessProjection {
+                    access: *access,
+                    membership: graph.surface_node_lifetime(*access)?,
+                    source: node.url().to_owned(),
+                    visible: visible.contains(access),
+                })
+            })
+            .collect::<Vec<_>>();
+        (tree, projection)
+    };
     let owner = page.product.as_ref().and_then(|p| p.retained_scope());
     let scope = owner
         .as_ref()
@@ -284,22 +317,40 @@ pub(super) fn prepare(page: &TreePage) {
         .map(|(_, persona)| persona.clone())
         .unwrap_or_else(|| reading.persona.clone());
     reading.current_owner = owner;
-    if reading.scope != scope || reading.persona != persona {
-        for id in reading.bindings.keys().copied().collect::<Vec<_>>() {
-            reading.host.close(id);
-        }
-        reading.bindings.clear();
-        reading.clips.clear();
-        reading.statuses.clear();
-        reading.players.clear();
-        reading.media_answers.clear();
-        reading.requests.clear();
-        reading.exports.clear();
-        reading.download_urls.clear();
-        reading.scope = scope;
-        reading.persona = persona;
+    let owner_key = mere_document_lanes::reading_lifecycle::ReadingOwner {
+        session: scope.clone(),
+        persona: persona.clone(),
+    };
+    let changes = reading.lifecycle.reconcile(owner_key, projection);
+    if changes.iter().any(|change| {
+        matches!(
+            change,
+            mere_document_lanes::reading_lifecycle::AccessChange::Added(_)
+        )
+    }) {
+        page.shared.dirty.set(true);
     }
-    reading.prepare(tree.as_ref(), &retained);
+    if changes.iter().any(|change| {
+        matches!(
+            change,
+            mere_document_lanes::reading_lifecycle::AccessChange::OwnerChanged
+        )
+    }) {
+        reading.retire_all();
+    } else {
+        for change in &changes {
+            match change {
+                mere_document_lanes::reading_lifecycle::AccessChange::Retired(id)
+                | mere_document_lanes::reading_lifecycle::AccessChange::SourceChanged(id) => {
+                    reading.retire_access(*id);
+                },
+                _ => {},
+            }
+        }
+    }
+    reading.scope = scope;
+    reading.persona = persona;
+    reading.prepare(tree.as_ref());
     if let Some(pane) = &page.forme {
         for (member, binding) in &mut reading.bindings {
             if !binding.restored {
@@ -315,52 +366,48 @@ pub(super) fn prepare(page: &TreePage) {
             let _ = binding.slot.borrow_mut().reading_preferences(preferences);
         }
     }
-    reading.clips.retain(|id, (address, _)| {
-        graph
-            .get_node_by_id(*id)
-            .is_some_and(|(_, node)| node.url() == *address)
-    });
-    // A retained access may survive a graph edit while its address changes.
-    // Retire the old content before handling its queued host effects.
-    let stale: Vec<_> = reading
-        .bindings
-        .iter()
-        .filter_map(|(id, binding)| {
-            graph
-                .get_node_by_id(*id)
-                .is_none_or(|(_, node)| node.url() != binding.slot.borrow().source().address)
-                .then_some(*id)
-        })
-        .collect();
-    for id in stale {
-        reading.host.close(id);
-        reading.bindings.remove(&id);
-        reading.clips.remove(&id);
-        reading.exports.remove(&id);
-        reading.players.remove(&id);
-        reading.media_answers.remove(&id);
-        reading.download_urls.remove(&id);
-        reading.statuses.remove(&id);
-    }
 }
 impl Reading {
-    pub(super) fn prepare(&mut self, tree: Option<&TileTree>, retained: &[Uuid]) {
-        let closed: Vec<_> = self
+    fn retire_access(&mut self, id: Uuid) {
+        self.host.close(id);
+        self.bindings.remove(&id);
+        self.clips.remove(&id);
+        self.statuses.remove(&id);
+        self.players.remove(&id);
+        self.media_answers.remove(&id);
+        self.exports.remove(&id);
+        self.download_urls.remove(&id);
+        self.requests.retain(|(access, _)| *access != id);
+        let empty_progress = self.pending_progress.as_mut().is_some_and(|(anchors, _)| {
+            anchors.remove(&id);
+            anchors.is_empty()
+        });
+        if empty_progress {
+            self.pending_progress = None;
+        }
+    }
+
+    fn retire_all(&mut self) {
+        let ids: std::collections::BTreeSet<_> = self
             .bindings
             .keys()
+            .chain(self.clips.keys())
+            .chain(self.exports.keys())
             .copied()
-            .filter(|id| !retained.contains(id))
             .collect();
-        for id in closed {
-            self.host.close(id);
-            self.bindings.remove(&id);
-            self.statuses.remove(&id);
-            self.players.remove(&id);
-            self.media_answers.remove(&id);
-            self.exports.remove(&id);
-            self.download_urls.remove(&id);
+        for id in ids {
+            self.retire_access(id);
         }
-        self.clips.retain(|id, _| retained.contains(id));
+        self.statuses.clear();
+        self.players.clear();
+        self.media_answers.clear();
+        self.requests.clear();
+        self.exports.clear();
+        self.download_urls.clear();
+        self.pending_progress = None;
+    }
+
+    pub(super) fn prepare(&mut self, tree: Option<&TileTree>) {
         let mut shown = vec![];
         if let Some(tree) = tree {
             active(tree, &mut shown);
@@ -392,6 +439,10 @@ impl Reading {
             return Ok((binding.key, slot));
         }
         if self.bindings.contains_key(&member) {
+            // `ContentHost::open` has compared the complete HeldContent and
+            // rebound its Pelt session when bytes/engine/media changed. This
+            // also revokes any completion ticket minted for the old source.
+            self.lifecycle.rebind(member);
             let canceled_export = self.exports.remove(&member).is_some();
             self.players.remove(&member);
             self.media_answers.remove(&member);
@@ -415,13 +466,16 @@ impl Reading {
                 producer,
             },
         );
-        // This is called only by the active tile's fill callback.
+        // A clip read can finish after its tab becomes hidden. Opening its
+        // retained session must not make that access visible again.
         let mut shown: Vec<_> = self
             .bindings
             .iter()
-            .filter_map(|(id, b)| b.slot.borrow().is_visible().then_some(*id))
+            .filter_map(|(id, _)| self.lifecycle.is_visible(*id).then_some(*id))
             .collect();
-        shown.push(member);
+        if self.lifecycle.is_visible(member) {
+            shown.push(member);
+        }
         self.host.show_only(&shown);
         Ok((key, slot))
     }
@@ -469,13 +523,15 @@ impl Reading {
                     .answer
                     .borrow_mut()
                     .take()
-                    .map(|result| (*id, pending.scope.clone(), result))
+                    .map(|result| (*id, pending.scope.clone(), pending.ticket.clone(), result))
             })
             .collect();
-        for (id, scope, result) in completed_exports {
+        for (id, scope, ticket, result) in completed_exports {
             self.exports.remove(&id);
-            if !scope.is_current(self.export_scope(id).as_ref())
+            if !self.lifecycle.accepts(&ticket)
+                || !scope.is_current(self.export_scope(id).as_ref())
                 || !scope.is_owned_by(self.current_owner.as_ref())
+                || !self.lifecycle.complete(&ticket)
             {
                 continue;
             }
@@ -489,15 +545,25 @@ impl Reading {
             self.statuses.insert(id, status);
             changed = true;
         }
-        let completed: Vec<_> = self
-            .clips
-            .iter()
-            .filter_map(|(id, (_, answer))| answer.borrow_mut().take().map(|result| (*id, result)))
-            .collect();
-        for (id, result) in completed {
+        let completed: Vec<_> =
+            self.clips
+                .iter()
+                .filter_map(|(id, pending)| {
+                    pending.answer.borrow_mut().take().map(|result| {
+                        (*id, pending.address.clone(), pending.ticket.clone(), result)
+                    })
+                })
+                .collect();
+        for (id, address, ticket, result) in completed {
             self.clips.remove(&id);
+            if !self.lifecycle.contains(id) || !self.lifecycle.complete(&ticket) {
+                continue;
+            }
             match result {
                 Ok(source) => {
+                    if source.address != address {
+                        continue;
+                    }
                     if let Err(error) = self.open(id, source) {
                         self.statuses.insert(id, error);
                     }
@@ -554,14 +620,14 @@ impl Reading {
                                         }
                                     }
                                     let player = self.players.get(id).unwrap();
+                                    let Some(ticket) = self
+                                        .lifecycle
+                                        .begin_operation(*id, OperationKind::MediaPlayback)
+                                    else {
+                                        continue;
+                                    };
                                     let answer = Rc::new(RefCell::new(None));
-                                    self.media_answers.insert(
-                                        *id,
-                                        (
-                                            slot.session_identity().unwrap().instance_id,
-                                            answer.clone(),
-                                        ),
-                                    );
+                                    self.media_answers.insert(*id, (ticket, answer.clone()));
                                     match player.element.play() {
                                         Ok(promise) => {
                                             wasm_bindgen_futures::spawn_local(async move {
@@ -588,6 +654,9 @@ impl Reading {
                                     }
                                 },
                                 ClipRequest::Stop(_) => {
+                                    let _ = self
+                                        .lifecycle
+                                        .begin_operation(*id, OperationKind::MediaPlayback);
                                     self.media_answers.remove(id);
                                     if let Some(player) = self.players.get(id) {
                                         let _ = player.element.pause();
@@ -620,16 +689,16 @@ impl Reading {
         let answers: Vec<_> = self
             .media_answers
             .iter()
-            .filter_map(|(id, (session, answer))| {
+            .filter_map(|(id, (ticket, answer))| {
                 answer
                     .borrow_mut()
                     .take()
-                    .map(|message| (*id, *session, message))
+                    .map(|message| (*id, ticket.clone(), message))
             })
             .collect();
-        for (id, session, message) in answers {
+        for (id, ticket, message) in answers {
             self.media_answers.remove(&id);
-            if self.session(id) == Some(session) {
+            if self.lifecycle.complete(&ticket) {
                 self.statuses.insert(id, message);
                 changed = true;
             }
@@ -643,6 +712,9 @@ impl Reading {
             || self.dictionaries.in_flight > 0
     }
     fn export_scope(&self, access: Uuid) -> Option<ClipExportScope> {
+        if !self.lifecycle.is_visible(access) {
+            return None;
+        }
         let binding = self.bindings.get(&access)?;
         let slot = binding.slot.borrow();
         if !slot.is_visible() {
@@ -680,12 +752,19 @@ impl Reading {
         })();
         match result {
             Ok((scope, mut store, limits)) => {
+                let Some(ticket) = self
+                    .lifecycle
+                    .begin_operation(access, OperationKind::ClipExport)
+                else {
+                    return;
+                };
                 let answer = Rc::new(RefCell::new(None));
                 let cancellation = Rc::new(RefCell::new(ExportCancellation::default()));
                 self.exports.insert(
                     access,
                     PendingExport {
                         scope,
+                        ticket,
                         answer: answer.clone(),
                         cancellation: cancellation.clone(),
                     },
@@ -773,13 +852,8 @@ pub(super) fn clip_appearance(
             return appearance(shared, member, source);
         }
         let mut reading = shared.reading.borrow_mut();
-        reading.host.close(member);
-        reading.bindings.remove(&member);
-        reading.statuses.remove(&member);
-        reading.players.remove(&member);
-        reading.media_answers.remove(&member);
-        reading.exports.remove(&member);
-        reading.download_urls.remove(&member);
+        reading.lifecycle.rebind(member);
+        reading.retire_access(member);
     }
     let id = match mere_document_lanes::retained_clip::request(address) {
         Ok(Some(mere_document_lanes::retained_clip::ClipRequest::Read(id))) => id,
@@ -789,7 +863,7 @@ pub(super) fn clip_appearance(
     if reading
         .clips
         .get(&member)
-        .is_some_and(|(requested, _)| requested != address)
+        .is_some_and(|pending| pending.address != address)
     {
         reading.clips.remove(&member);
         reading.statuses.remove(&member);
@@ -803,10 +877,21 @@ pub(super) fn clip_appearance(
             Ok(limits) => limits,
             Err(error) => return Appearance::Message(error),
         };
+        let Some(ticket) = reading
+            .lifecycle
+            .begin_operation(member, OperationKind::ClipRead)
+        else {
+            return Appearance::Message("Retained access is no longer current".into());
+        };
         let answer = Rc::new(RefCell::new(None));
-        reading
-            .clips
-            .insert(member, (address.into(), answer.clone()));
+        reading.clips.insert(
+            member,
+            PendingClip {
+                address: address.into(),
+                ticket,
+                answer: answer.clone(),
+            },
+        );
         wasm_bindgen_futures::spawn_local(async move {
             let result = async {
                 let clip =
@@ -891,6 +976,50 @@ pub(super) fn appearance(shared: &Rc<Shared>, member: Uuid, source: HeldContent)
         .unwrap_or_default();
     Appearance::Ready { key, slot, status }
 }
+
+/// Resolve an existing held source against borrowed graph bytes before
+/// allocating a new `HeldContent` byte vector. Changed content falls back to
+/// the ordinary owner open/rebind path.
+pub(super) fn appearance_parts(
+    shared: &Rc<Shared>,
+    member: Uuid,
+    address: &str,
+    title: &str,
+    media_type: &str,
+    body: &str,
+) -> Appearance {
+    let existing = {
+        let reading = shared.reading.borrow();
+        reading
+            .host
+            .source_matches_parts(member, address, title, media_type, body.as_bytes())
+            .then(|| reading.bindings.get(&member))
+            .flatten()
+            .map(|binding| {
+                (
+                    binding.key,
+                    binding.slot.clone(),
+                    reading.statuses.get(&member).cloned().unwrap_or_default(),
+                )
+            })
+    };
+    if let Some((key, slot, status)) = existing {
+        return Appearance::Ready { key, slot, status };
+    }
+    appearance(
+        shared,
+        member,
+        HeldContent {
+            address: address.to_owned(),
+            title: title.to_owned(),
+            media_type: media_type.to_owned(),
+            bytes: body.as_bytes().to_vec(),
+            engine: None,
+            media: None,
+        },
+    )
+}
+
 pub(super) fn render(appearance: Appearance) -> Child {
     match appearance {
         Appearance::Message(message) => Box::new(el("p", message).attr("role", "status")),

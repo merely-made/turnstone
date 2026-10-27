@@ -3770,7 +3770,6 @@ name = "graphshell"
 version = "0.0.2"
 dependencies = [
  "async-trait",
- "backstep",
  "base64 0.22.1",
  "cambium",
  "cambium-rootstock",
@@ -5804,6 +5803,7 @@ dependencies = [
  "tabard",
  "tempfile",
  "url",
+ "uuid",
 ]
 
 [[package]]
@@ -9125,6 +9125,7 @@ dependencies = [
 name = "scenograph"
 version = "0.0.5"
 dependencies = [
+ "backstep",
  "mere-curation",
  "sceno",
  "serde",

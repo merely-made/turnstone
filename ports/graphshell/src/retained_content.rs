@@ -104,6 +104,26 @@ pub fn retained_packet_excerpt(body:&str)->Option<String> {
     mere_document_lanes::reading_excerpt(&document)
 }
 impl HeldContent {
+    /// Compare borrowed graph content with this retained source without
+    /// allocating a byte-vector clone. Hosts can use this before rebuilding a
+    /// `HeldContent` value for an unchanged access.
+    pub fn matches_parts(
+        &self,
+        address: &str,
+        title: &str,
+        media_type: &str,
+        bytes: &[u8],
+        engine: Option<&str>,
+        media: Option<&HeldMedia>,
+    ) -> bool {
+        self.address == address
+            && self.title == title
+            && self.media_type == media_type
+            && self.bytes.as_slice() == bytes
+            && self.engine.as_deref() == engine
+            && self.media.as_ref() == media
+    }
+
     pub fn text(
         address: impl Into<String>,
         title: impl Into<String>,
@@ -532,6 +552,22 @@ impl ContentHost {
     }
     pub fn get(&self, access: Uuid) -> Option<Rc<RefCell<ContentSlot>>> {
         self.slots.get(&access).cloned()
+    }
+    /// Compare borrowed graph bytes with an access's current held source before
+    /// materializing a replacement byte vector.
+    pub fn source_matches_parts(
+        &self,
+        access: Uuid,
+        address: &str,
+        title: &str,
+        media_type: &str,
+        bytes: &[u8],
+    ) -> bool {
+        self.slots.get(&access).is_some_and(|slot| {
+            slot.borrow()
+                .source()
+                .matches_parts(address, title, media_type, bytes, None, None)
+        })
     }
     pub fn len(&self) -> usize {
         self.slots.len()

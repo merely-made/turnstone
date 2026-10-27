@@ -11,12 +11,18 @@ use graphshell::field_inspection::FieldTarget;
 use graphshell::presentation_binding::{
     BoundContext, FormeFacts, Occurrence, ViewInputs, bind_with_source,
 };
-use graphshell::presentation_editor::presentation::{Context, PrimitiveKind, Property, Resolution};
-use graphshell::presentation_editor::{
-    PresentationSession, RuleDraft, RuleSetDraft, SaveKind, parse,
-};
+use graphshell::presentation_store;
+use graphshell::presentation_store::{Loaded, OwnerObservation, SaveFailure, binding_changed};
 use mere::canvas::Role;
+use mere_view::presentation_editor::{
+    self as controls, Effect as ControlEffect, PresentationEditor, Snapshot,
+};
 use muniment::IndexedDbBackend;
+use scenograph::presentation::editor::{
+    OperationId, RuleDraft, RuleSetDraft, RuleWorkspace, SaveKind, parse,
+};
+use scenograph::presentation::{Context, PrimitiveKind, Property, Resolution, RuleSet};
+use std::collections::VecDeque;
 
 #[derive(Clone, Debug, PartialEq)]
 pub(super) struct Inputs {
@@ -35,9 +41,16 @@ const LABELS: [&str; 7] = [
     "Preview context JSON",
 ];
 pub(super) struct Pane {
-    session: Option<PresentationSession>,
+    workspace: Option<RuleWorkspace>,
     backend: Option<IndexedDbBackend>,
-    completed: Rc<RefCell<Option<Result<(), String>>>>,
+    graph_id: Option<uuid::Uuid>,
+    baseline: Option<Vec<u8>>,
+    binding_generation: u64,
+    owner_suspended: bool,
+    reloading: bool,
+    conflict: bool,
+    controls: PresentationEditor,
+    completed: Rc<RefCell<VecDeque<Completion>>>,
     open: bool,
     selected: Option<usize>,
     inputs: Vec<TextInput>,
@@ -49,12 +62,32 @@ pub(super) struct Pane {
     live_enabled: bool,
     live_result: Option<Result<(BoundContext, Resolution), String>>,
 }
+enum Completion {
+    Saved {
+        binding: u64,
+        graph_id: uuid::Uuid,
+        operation: OperationId,
+        result: Result<Vec<u8>, SaveFailure>,
+    },
+    Loaded {
+        binding: u64,
+        graph_id: uuid::Uuid,
+        result: Result<Loaded, String>,
+    },
+}
 impl Pane {
     pub(super) async fn open(product: Option<&product::SavedProduct>) -> Self {
         let mut pane = Self {
-            session: None,
+            workspace: None,
             backend: None,
-            completed: Rc::new(RefCell::new(None)),
+            graph_id: None,
+            baseline: None,
+            binding_generation: 1,
+            owner_suspended: false,
+            reloading: false,
+            conflict: false,
+            controls: PresentationEditor::default(),
+            completed: Rc::new(RefCell::new(VecDeque::new())),
             open: false,
             selected: None,
             inputs: (0..7).map(|_| TextInput::new("")).collect(),
@@ -70,10 +103,10 @@ impl Pane {
             return pane;
         };
         pane.sample(PrimitiveKind::Node);
-        match PresentationSession::load(backend.clone(), id).await {
-            Ok(session) => {
-                pane.session = Some(session);
+        match presentation_store::load(backend.clone(), id).await {
+            Ok(loaded) => {
                 pane.backend = Some(backend);
+                pane.install_loaded(loaded);
             },
             Err(error) => {
                 pane.status =
@@ -83,32 +116,67 @@ impl Pane {
         pane
     }
     pub(super) fn ready(&self) -> bool {
-        self.completed.borrow().is_some()
+        !self.completed.borrow().is_empty() || self.controls.has_effects()
+    }
+    pub(super) fn owner_changed(&self, product: Option<&product::SavedProduct>) -> bool {
+        let observed = match product {
+            None => OwnerObservation::NoProduct,
+            Some(product) => match product.forme_source() {
+                Some((_, graph_id)) => OwnerObservation::Graph(graph_id),
+                None => OwnerObservation::TemporarilyUnavailable,
+            },
+        };
+        binding_changed(self.graph_id, observed)
+            || (!self.owner_suspended
+                && matches!(observed, OwnerObservation::TemporarilyUnavailable))
+            || (self.owner_suspended && matches!(observed, OwnerObservation::Graph(_)))
     }
     pub(super) fn live_enabled(&self) -> bool {
         self.live_enabled
     }
-    pub(super) fn saved_rules(
-        &self,
-    ) -> Option<(&graphshell::presentation_editor::presentation::RuleSet, u64)> {
-        self.session
+    pub(super) fn saved_rules(&self) -> Option<(&RuleSet, u64)> {
+        self.workspace
             .as_ref()
-            .map(|session| (session.committed(), session.generation()))
+            .map(|workspace| (workspace.committed(), workspace.generation()))
     }
     pub(super) fn busy(&self) -> bool {
-        self.session.as_ref().is_some_and(|s| s.busy())
+        self.owner_suspended
+            || self.reloading
+            || self.workspace.as_ref().is_some_and(RuleWorkspace::busy)
     }
     fn editing(&self) -> bool {
-        self.session.as_ref().is_some_and(|s| s.editing())
+        self.workspace.as_ref().is_some_and(RuleWorkspace::editing)
     }
     fn rows(&self) -> RuleSetDraft {
-        self.session
+        self.workspace
             .as_ref()
             .map_or_else(RuleSetDraft::default, |s| {
                 s.draft()
                     .cloned()
                     .unwrap_or_else(|| RuleSetDraft::from(s.committed()))
             })
+    }
+    fn install_loaded(&mut self, loaded: Loaded) {
+        self.graph_id = Some(loaded.graph_id);
+        self.baseline = loaded.baseline;
+        self.workspace = Some(loaded.workspace);
+        self.conflict = false;
+        self.reloading = false;
+        self.sync();
+        self.controls.set_snapshot(self.control_snapshot());
+    }
+    fn control_snapshot(&self) -> Snapshot {
+        let workspace = self.workspace.as_ref();
+        Snapshot {
+            available: self.backend.is_some() && self.graph_id.is_some() && !self.owner_suspended,
+            editing: workspace.is_some_and(RuleWorkspace::editing),
+            dirty: workspace.is_some_and(RuleWorkspace::dirty) || self.unstaged(),
+            busy: self.busy(),
+            can_undo: workspace.is_some_and(RuleWorkspace::can_undo),
+            can_redo: workspace.is_some_and(RuleWorkspace::can_redo),
+            can_reload: (self.conflict || workspace.is_none()) && !self.busy(),
+            notice: self.status.clone(),
+        }
     }
     fn input(&self) -> RuleDraft {
         RuleDraft {
@@ -122,11 +190,12 @@ impl Pane {
         }
     }
     fn unstaged(&self) -> bool {
+        let rows = self.rows();
         self.editing()
             && self
                 .selected
-                .and_then(|i| self.rows().rules.get(i).cloned())
-                .is_some_and(|r| r != self.input())
+                .and_then(|i| rows.rules.get(i))
+                .is_some_and(|row| row != &self.input())
     }
     fn sync(&mut self) {
         let rows = self.rows();
@@ -155,7 +224,7 @@ impl Pane {
         }
         if let Some(index) = self.selected {
             let rule = self.input();
-            self.session
+            self.workspace
                 .as_mut()
                 .ok_or("Rule workspace unavailable")?
                 .edit(None, now_ms() as u64, move |draft| {
@@ -197,7 +266,10 @@ impl Pane {
         let source = self.inputs[6].text().to_string();
         let context = parse::<Context>(&source, "context")
             .map_err(|e| format!("Preview context refused: {e:?}"))?;
-        let session = self.session.as_ref().ok_or("Rule workspace unavailable")?;
+        let session = self
+            .workspace
+            .as_ref()
+            .ok_or("Rule workspace unavailable")?;
         let result = if self.binding.is_some() {
             let bound = self
                 .inputs_seen
@@ -206,11 +278,10 @@ impl Pane {
                 .ok_or("Bound preview inputs have not been read")?
                 .as_ref()
                 .map_err(Clone::clone)?;
-            bound.resolve(
-                &session
-                    .rules()
-                    .map_err(|e| format!("Rule preview refused: {e:?}"))?,
-            )
+            session
+                .rules()
+                .map_err(|e| format!("Rule preview refused: {e:?}"))?
+                .resolve_with_availability(&bound.context, &bound.availability())
         } else {
             session.preview(&context)
         }
@@ -223,39 +294,259 @@ impl Pane {
             self.stage()?;
         }
         let backend = self.backend.clone().ok_or("Rule store unavailable")?;
-        let proposal = self
-            .session
-            .as_mut()
-            .ok_or("Rule workspace unavailable")?
-            .prepare_save(kind)?;
+        let graph_id = self.graph_id.ok_or("Rule workspace graph unavailable")?;
+        let proposal = presentation_store::prepare_save(
+            self.workspace
+                .as_mut()
+                .ok_or("Rule workspace unavailable")?,
+            graph_id,
+            self.baseline.clone(),
+            kind,
+        )?;
         self.status = "Saving presentation rules…".into();
         let completed = self.completed.clone();
+        let binding = self.binding_generation;
+        let operation = proposal.id();
         wasm_bindgen_futures::spawn_local(async move {
-            *completed.borrow_mut() = Some(proposal.save(backend).await);
+            let result = proposal.save(backend).await;
+            completed.borrow_mut().push_back(Completion::Saved {
+                binding,
+                graph_id,
+                operation,
+                result,
+            });
         });
         Ok(())
     }
     fn poll(&mut self) {
-        let Some(result) = self.completed.borrow_mut().take() else {
+        self.controls.set_snapshot(self.control_snapshot());
+        while let Some(effect) = self.controls.take_effect() {
+            let result = (|| -> Result<(), String> {
+                match effect {
+                    ControlEffect::Begin => self
+                        .workspace
+                        .as_mut()
+                        .ok_or_else(|| "Rule workspace unavailable".to_string())
+                        .and_then(RuleWorkspace::begin),
+                    ControlEffect::AddNode
+                    | ControlEffect::AddRelation
+                    | ControlEffect::AddField => {
+                        self.stage()?;
+                        let kind = match effect {
+                            ControlEffect::AddNode => PrimitiveKind::Node,
+                            ControlEffect::AddRelation => PrimitiveKind::Relation,
+                            _ => PrimitiveKind::Field,
+                        };
+                        let mut selected = None;
+                        self.workspace
+                            .as_mut()
+                            .ok_or("Rule workspace unavailable")?
+                            .edit(None, now_ms() as u64, |draft| {
+                                selected = Some(draft.add(kind))
+                            })?;
+                        self.selected = selected;
+                        self.sync();
+                        Ok(())
+                    },
+                    ControlEffect::Apply => self.save(SaveKind::Apply),
+                    ControlEffect::Discard => {
+                        self.workspace
+                            .as_mut()
+                            .ok_or("Rule workspace unavailable")?
+                            .discard()?;
+                        self.selected = None;
+                        self.sync();
+                        Ok(())
+                    },
+                    ControlEffect::Undo | ControlEffect::Redo => {
+                        let redo = effect == ControlEffect::Redo;
+                        if self.editing() {
+                            self.stage()?;
+                            self.workspace.as_mut().unwrap().undo_draft(redo)?;
+                            self.selected = None;
+                            self.sync();
+                            Ok(())
+                        } else {
+                            self.save(if redo { SaveKind::Redo } else { SaveKind::Undo })
+                        }
+                    },
+                    ControlEffect::Reload => {
+                        self.reload_latest();
+                        Ok(())
+                    },
+                }
+            })();
+            if let Err(error) = result {
+                self.status = error;
+            }
+            self.controls.set_snapshot(self.control_snapshot());
+        }
+        if self.owner_suspended {
+            return;
+        }
+        let Some(completion) = self.completed.borrow_mut().pop_front() else {
             return;
         };
-        match self
-            .session
-            .as_mut()
-            .expect("pending workspace")
-            .finish_save(result)
-        {
-            Ok(()) => {
-                self.status = "Presentation rules saved".into();
-                self.sync();
+        match completion {
+            Completion::Saved {
+                binding,
+                graph_id,
+                operation,
+                result,
+            } => {
+                if binding != self.binding_generation || Some(graph_id) != self.graph_id {
+                    return;
+                }
+                let finish = match &result {
+                    Ok(_) => Ok(()),
+                    Err(SaveFailure::Conflict(reason) | SaveFailure::Failed(reason)) => {
+                        Err(reason.clone())
+                    },
+                };
+                match self
+                    .workspace
+                    .as_mut()
+                    .expect("pending workspace")
+                    .finish(operation, finish)
+                {
+                    Ok(true) => {
+                        if let Ok(bytes) = result {
+                            self.baseline = Some(bytes);
+                        }
+                        self.conflict = false;
+                        self.status = "Presentation rules saved".into();
+                        self.sync();
+                    },
+                    Ok(false) => {},
+                    Err(error) => {
+                        self.conflict = matches!(result, Err(SaveFailure::Conflict(_)));
+                        self.status =
+                            format!("Save failed · {error} · Draft and saved version retained");
+                    },
+                }
             },
-            Err(error) => {
-                self.status = format!("Save failed · {error} · Draft and saved version retained")
+            Completion::Loaded {
+                binding,
+                graph_id,
+                result,
+            } => {
+                if binding != self.binding_generation || Some(graph_id) != self.graph_id {
+                    return;
+                }
+                match result {
+                    Ok(loaded) => {
+                        if let Some(workspace) = self.workspace.as_mut() {
+                            workspace
+                                .reconcile(loaded.workspace.saved_state().clone())
+                                .expect("loaded state validated");
+                            self.baseline = loaded.baseline;
+                            self.conflict = false;
+                            self.reloading = false;
+                            self.preview = None;
+                            self.inputs_seen = None;
+                            self.live_result = None;
+                            self.status =
+                                "Latest saved rules loaded; private draft retained for review"
+                                    .into();
+                        } else {
+                            self.install_loaded(loaded);
+                        }
+                    },
+                    Err(error) => {
+                        self.reloading = false;
+                        self.status = format!("Reload failed · {error} · Draft retained");
+                    },
+                }
             },
         }
+        self.controls.set_snapshot(self.control_snapshot());
+    }
+    fn reload_latest(&mut self) {
+        let (Some(backend), Some(graph_id)) = (self.backend.clone(), self.graph_id) else {
+            return;
+        };
+        self.binding_generation = self
+            .binding_generation
+            .checked_add(1)
+            .expect("presentation binding generation exhausted");
+        let binding = self.binding_generation;
+        self.reloading = true;
+        self.status = "Loading latest saved rules; private draft retained".into();
+        let completed = self.completed.clone();
+        wasm_bindgen_futures::spawn_local(async move {
+            let result = presentation_store::load(backend, graph_id).await;
+            completed.borrow_mut().push_back(Completion::Loaded {
+                binding,
+                graph_id,
+                result,
+            });
+        });
+    }
+    fn observe_owner(&mut self, product: Option<&product::SavedProduct>) {
+        let Some(product) = product else {
+            if self.graph_id.is_some() {
+                self.binding_generation = self
+                    .binding_generation
+                    .checked_add(1)
+                    .expect("presentation binding generation exhausted");
+                self.graph_id = None;
+                self.backend = None;
+                self.baseline = None;
+                self.workspace = None;
+                self.reloading = false;
+                self.owner_suspended = false;
+                self.conflict = false;
+                self.selected = None;
+                self.controls = PresentationEditor::default();
+                self.status = "Presentation workspace retired after graph owner change".into();
+            }
+            return;
+        };
+        let Some((backend, graph_id)) = product.forme_source() else {
+            // Product save temporarily takes the app out of SavedProduct. Keep
+            // the current graph workspace and its receipts until the owner is
+            // observable again; the missing value does not mean the product vanished.
+            self.owner_suspended = true;
+            self.status = "Presentation controls paused while the graph owner is saving".into();
+            self.controls.set_snapshot(self.control_snapshot());
+            return;
+        };
+        self.owner_suspended = false;
+        if self.graph_id == Some(graph_id) {
+            return;
+        }
+        self.binding_generation = self
+            .binding_generation
+            .checked_add(1)
+            .expect("presentation binding generation exhausted");
+        let binding = self.binding_generation;
+        self.graph_id = Some(graph_id);
+        self.backend = Some(backend.clone());
+        self.baseline = None;
+        self.workspace = None;
+        self.reloading = true;
+        self.owner_suspended = false;
+        self.conflict = false;
+        self.selected = None;
+        self.preview = None;
+        self.binding = None;
+        self.inputs_seen = None;
+        self.live_result = None;
+        self.controls = PresentationEditor::default();
+        self.status = "Loading presentation rules for the current graph".into();
+        let completed = self.completed.clone();
+        wasm_bindgen_futures::spawn_local(async move {
+            let result = presentation_store::load(backend, graph_id).await;
+            completed.borrow_mut().push_back(Completion::Loaded {
+                binding,
+                graph_id,
+                result,
+            });
+        });
     }
 }
 pub(super) fn poll(page: &mut TreePage) {
+    page.presentation.observe_owner(page.product.as_ref());
     page.presentation.poll();
 }
 fn bound(page: &TreePage, occurrence: &Occurrence) -> Result<BoundContext, String> {
@@ -348,9 +639,9 @@ pub(super) fn refresh(page: &TreePage) -> Option<Inputs> {
             None
         },
         generation: pane
-            .session
+            .workspace
             .as_ref()
-            .map_or(0, |session| session.generation()),
+            .map_or(0, |workspace| workspace.generation()),
     };
     (pane.inputs_seen.as_ref() != Some(&inputs)).then_some(inputs)
 }
@@ -365,11 +656,12 @@ pub(super) fn update(page: &mut TreePage, inputs: Inputs) {
     pane.live_result = inputs.live.as_ref().map(|result| {
         let bound = result.as_ref().map_err(Clone::clone)?;
         let session = pane
-            .session
+            .workspace
             .as_ref()
             .ok_or("Saved rule workspace unavailable")?;
-        let resolution = bound
-            .resolve(session.committed())
+        let resolution = session
+            .committed()
+            .resolve_with_availability(&bound.context, &bound.availability())
             .map_err(|issues| format!("Saved rules refused: {issues:?}"))?;
         Ok((bound.clone(), resolution))
     });
@@ -406,6 +698,7 @@ fn action(page: &mut TreePage, change: impl FnOnce(&mut Pane) -> Result<(), Stri
     if let Err(error) = change(pane) {
         pane.status = error;
     }
+    pane.controls.set_snapshot(pane.control_snapshot());
 }
 pub(super) fn focused_text(
     runner: &cambium_rootstock::Runner<TreePage, Logic, Child>,
@@ -445,146 +738,54 @@ fn input(index: usize) -> Child {
 }
 fn controls(page: &TreePage) -> Vec<Child> {
     let pane = &page.presentation;
-    let mut children: Vec<Child> = Vec::new();
-    if pane.busy() {
-        children.push(Box::new(el("p", "Saving presentation rules…")));
-        return children;
-    }
-    if !pane.editing() {
-        children.push(Box::new(button(
-            "Begin rule draft",
-            |page: &mut TreePage, _| {
-                action(page, |pane| {
-                    pane.session
-                        .as_mut()
-                        .ok_or("Rule workspace unavailable")?
-                        .begin()?;
-                    pane.sync();
-                    pane.status = "Private rule draft opened".into();
-                    Ok(())
-                })
-            },
-        )));
-    } else {
-        for (kind, label) in [
-            (PrimitiveKind::Node, "Add node rule"),
-            (PrimitiveKind::Relation, "Add link rule"),
-            (PrimitiveKind::Field, "Add field rule"),
-        ] {
-            children.push(Box::new(button(label, move |page: &mut TreePage, _| {
-                action(page, |pane| {
-                    pane.stage()?;
-                    let mut selected = None;
-                    pane.session
-                        .as_mut()
-                        .unwrap()
-                        .edit(None, now_ms() as u64, |draft| {
-                            selected = Some(draft.add(kind));
-                        })?;
-                    pane.selected = selected;
-                    pane.sync();
-                    Ok(())
-                })
-            })));
-        }
+    let mut children: Vec<Child> = vec![Box::new(lens(
+        |editor: &mut PresentationEditor| controls::view(editor),
+        controls_editor,
+    ))];
+    if pane.editing() {
         children.push(Box::new(button("Add node ladder defaults", |page: &mut TreePage, _| {
             action(page, |pane| {
                 pane.stage()?;
                 let mut selected = None;
-                pane.session.as_mut().unwrap().edit(None,now_ms() as u64,|draft| { selected = Some(graphshell::node_presentation::add_defaults(draft)); })?;
-                pane.selected = selected; pane.sync();
+                pane.workspace.as_mut().unwrap().edit(None, now_ms() as u64, |draft| selected = Some(graphshell::node_presentation::add_defaults(draft)))?;
+                pane.selected = selected;
+                pane.sync();
                 pane.status = "Node ladder defaults added to the private draft; edit priorities and thresholds before applying".into();
                 Ok(())
             })
         })));
-        children.push(Box::new(button(
-            "Discard rule draft",
-            |page: &mut TreePage, _| {
-                action(page, |pane| {
-                    pane.session.as_mut().unwrap().discard()?;
-                    pane.sync();
-                    pane.status = "Rule draft discarded".into();
-                    Ok(())
-                })
-            },
-        )));
-        children.push(Box::new(button("Apply rules", |page: &mut TreePage, _| {
-            action(page, |pane| pane.save(SaveKind::Apply))
-        })));
-    }
-    let session = pane.session.as_ref().unwrap();
-    for (redo, available, label) in [
-        (
-            false,
-            session.can_undo(),
-            if pane.editing() {
-                "Undo rule draft"
-            } else {
-                "Undo saved rules"
-            },
-        ),
-        (
-            true,
-            session.can_redo(),
-            if pane.editing() {
-                "Redo rule draft"
-            } else {
-                "Redo saved rules"
-            },
-        ),
-    ] {
-        let control = button(label, move |page: &mut TreePage, _| {
-            action(page, |pane| {
-                if pane.editing() {
-                    if redo && pane.unstaged() {
-                        return Err("Update or undo pending input before Redo".into());
-                    }
-                    // Pending text belongs to this draft too; stage before Undo.
-                    if !redo {
-                        pane.stage()?;
-                    }
-                    pane.session.as_mut().unwrap().undo_draft(redo)?;
-                    pane.selected = None;
-                    pane.sync();
-                    Ok(())
-                } else {
-                    pane.save(if redo { SaveKind::Redo } else { SaveKind::Undo })
-                }
-            })
-        });
-        let control = if (redo && pane.unstaged()) || (!available && !pane.unstaged()) {
-            control.attr("disabled", "")
-        } else {
-            control
-        };
-        children.push(Box::new(control));
     }
     children
+}
+fn controls_editor(page: &mut TreePage) -> &mut PresentationEditor {
+    let snapshot = page.presentation.control_snapshot();
+    page.presentation.controls.set_snapshot(snapshot);
+    &mut page.presentation.controls
 }
 pub(super) fn section(page: &TreePage) -> Child {
     let pane = &page.presentation;
     if page.product.is_none() {
         return Box::new(el("div", ()));
     }
-    let mut children: Vec<Child> = vec![Box::new(
-        disclosure_trigger(if pane.open {
-                "Close rule editor"
-            } else {
-                "Presentation rules"
-            }, pane.open, |page: &mut TreePage| {
-                page.presentation.open = !page.presentation.open;
-                page.tools_open = true;
-            }),
-    )];
+    let mut children: Vec<Child> = vec![Box::new(disclosure_trigger(
+        if pane.open {
+            "Close rule editor"
+        } else {
+            "Presentation rules"
+        },
+        pane.open,
+        |page: &mut TreePage| {
+            page.presentation.open = !page.presentation.open;
+            page.tools_open = true;
+        },
+    ))];
     if !pane.open {
         return Box::new(el("section", children).attr("class", "tools-section"));
     }
     children.push(Box::new(el("h2", "Presentation rules")));
     children.push(Box::new(el("p", "Target → condition → effect. Exact occurrence previews disclose their inputs. Saved rules can control Forme subdivisions in this view.")));
-    children.push(Box::new(
-        status_note("", pane.status.clone()),
-    ));
-    if let Some(session) = &pane.session {
+    children.push(Box::new(status_note("", pane.status.clone())));
+    if let Some(session) = &pane.workspace {
         children.push(Box::new(el(
             "p",
             format!(
@@ -712,7 +913,7 @@ pub(super) fn section(page: &TreePage) -> Child {
                         pane.stage()?;
                         let index = pane.selected.ok_or("Choose a rule")?;
                         let next = index.checked_add_signed(delta);
-                        pane.session
+                        pane.workspace
                             .as_mut()
                             .unwrap()
                             .edit(None, now_ms() as u64, |draft| {
@@ -890,7 +1091,7 @@ pub(super) fn section(page: &TreePage) -> Child {
 }
 pub(super) fn fields(page: &TreePage, snapshot: ProbeSnapshot) -> ProbeSnapshot {
     let pane = &page.presentation;
-    let session = pane.session.as_ref();
+    let session = pane.workspace.as_ref();
     let rules = session.and_then(|s| s.rules().ok());
     snapshot
         .with_field("rules-open", pane.open.to_string())

@@ -37,7 +37,7 @@ presentation-webgl2 = ["cambium-web/webgl"]
 without-classic-vello = ["genet-presenter/without-classic-vello"]
 # What a page saves: IndexedDB, saved scenes, the tree's product mode,
 # retained product panes and the practice workspace.
-product = ["dep:mere-view", "mere-view/query-editor", "mere-view/workbench-editor", "dep:platen", "muniment/indexeddb", "dep:pandect", "dep:sha2", "graphshell/document-layout", "graphshell/workspace-editor", "graphshell/retained-content", "graphshell/query-views", "graphshell/editable-blocks", "mere/query", "dep:mere-lanes", "dep:fleece", "dep:woodshed-notation"]
+product = ["dep:mere-view", "mere-view/query-editor", "mere-view/workbench-editor", "mere-view/presentation-editor", "dep:platen", "muniment/indexeddb", "dep:pandect", "dep:sha2", "graphshell/document-layout", "graphshell/workspace-editor", "graphshell/retained-content", "graphshell/query-views", "graphshell/editable-blocks", "mere/query", "dep:mere-lanes", "dep:fleece", "dep:woodshed-notation"]
 applets = ["graphshell/applets", "muniment/indexeddb"]
 # The WebRTC door and the remote board: `web_remote`, `web_rtc_link`, the tree's
 # remote board.

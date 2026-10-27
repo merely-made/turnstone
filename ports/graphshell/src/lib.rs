@@ -86,7 +86,7 @@ pub mod personal_sync;
 #[cfg(feature = "web")]
 pub mod presentation_binding;
 #[cfg(feature = "web")]
-pub mod presentation_editor;
+pub mod presentation_store;
 #[cfg(feature = "web")]
 pub mod product;
 #[cfg(feature = "web")]
