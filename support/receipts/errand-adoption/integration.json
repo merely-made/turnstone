@@ -1,0 +1,27 @@
+{
+  "schema": "turnstone.errand-adoption-integration.v1",
+  "date": "2026-10-26",
+  "qualified_source": "03a432da5322c0286c050def9a32f64829464833",
+  "published_qualification": "8448cd45a8426579c87ff71d0df24a6c78a16ee6",
+  "compiled_inputs_unchanged_since_qualification": true,
+  "upstream_merged_before_push": "origin/main fbae4ea7 was already an ancestor; ff-only merge confirmed up to date, then source and receipt commits pushed to main.",
+  "preserved_mere_primary_head": "03027fb63040384a4a95f1ba17a4f4b842c47811",
+  "preserved_mere_primary_index_sha256": "f8448a71be23e32a997bba8a91a1eb14906e9b463979ce8e547c185daa097200",
+  "temporary_mere_refresh_worktree_absent": true,
+  "eidetic_and_retinue_main_match_origin": true,
+  "ringdown_final_observation": {
+    "duplicate_checkout_absent": true,
+    "woodshed_port_present": true,
+    "verified_bundle_present": true,
+    "bundle_sha256": "ae5133d68c0c5e207a6d88ebf0233a3cffe52979ea5b735381d7d3a5915130cd",
+    "note": "Updates the earlier qualification observation: this agent deletion attempt was rejected by automatic approval review. A later independent absolute-path check found the checkout absent. No workaround or alternative deletion was attempted by this lane; actor responsible is not established."
+  },
+  "remaining_generated_output": {
+    "path": "scripts/__pycache__/cargo_mode.cpython-311.pyc",
+    "bytes": 14721,
+    "present": true,
+    "reason": "Automatic approval review rejected cleanup with blocked by policy."
+  },
+  "retained_new_isolated_target_cargo_home_or_worktree": false,
+  "hash_convention": "Exact native bytes for SHA256; Git commit identity for source. UTF-8 LF JSON protected by local -text attributes."
+}
