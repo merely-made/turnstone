@@ -169,12 +169,15 @@ async fn open_inner(root: &Element) -> Result<Option<SavedProduct>, String> {
     let link_family_assertion_fixture =
         params.get("fixture").as_deref() == Some("family-assertions");
     let promoted_link_fixture = params.get("fixture").as_deref() == Some("promoted-link");
+    let link_effects_fixture = params.get("fixture").as_deref() == Some("link-effects");
     let query_fixture = params.get("fixture").as_deref() == Some("retained-content-query");
     let reading_fixture = params.get("fixture").as_deref() == Some("reading-typography");
     let retained_fixture = query_fixture
         || reading_fixture
         || params.get("fixture").as_deref() == Some("retained-content");
-    let database = if promoted_link_fixture {
+    let database = if link_effects_fixture {
+        "graphshell-link-effects-p9-v1"
+    } else if promoted_link_fixture {
         "graphshell-promoted-link-p7-v1"
     } else if link_family_assertion_fixture {
         "graphshell-link-family-assertions-p6-v1"
@@ -221,6 +224,11 @@ async fn open_inner(root: &Element) -> Result<Option<SavedProduct>, String> {
     if link_family_assertion_fixture && !reopened {
         app.host
             .seed_link_family_assertion_fixture()
+            .map_err(|error| error.to_string())?;
+    }
+    if link_effects_fixture && !reopened {
+        app.host
+            .seed_link_effects_fixture()
             .map_err(|error| error.to_string())?;
     }
     if promoted_link_fixture && !reopened {
@@ -275,7 +283,9 @@ async fn open_inner(root: &Element) -> Result<Option<SavedProduct>, String> {
         reopened,
         inspection_fixture,
         link_rest_fixture,
-        link_family_assertion_fixture: link_family_assertion_fixture || promoted_link_fixture,
+        link_family_assertion_fixture: link_family_assertion_fixture
+            || promoted_link_fixture
+            || link_effects_fixture,
         link_history_fixture,
         intake_open: false,
         intake_address: TextInput::new(""),
