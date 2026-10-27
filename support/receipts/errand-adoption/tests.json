@@ -1,0 +1,764 @@
+{
+  "executable": "C:\\t\\cargo-targets\\turnstone\\build\\debug\\deps\\turnstone-5fc3bad5a10658bf.exe",
+  "bytes": 245937152,
+  "sha256_before": "19232b84cdc6e999963f83fad44ce0818c5cd29a3c0c68b8cfbe01ef34aec04c",
+  "sha256_after": "19232b84cdc6e999963f83fad44ce0818c5cd29a3c0c68b8cfbe01ef34aec04c",
+  "features": [
+    "nomadnet"
+  ],
+  "listed_tests": 1225,
+  "unique_selected_names": 174,
+  "absent_filters": [],
+  "command_template": "<executable> <filter> --test-threads=1",
+  "results": [
+    {
+      "filter": "client_limits",
+      "exit_code": 0,
+      "seconds": 0.45,
+      "matched_names": [
+        "client_limits::tests::explicit_launch_limits_are_kept_and_invalid_values_are_not_silently_clamped",
+        "nomadnet::link::client_limits_tests::invalid_native_policy_refuses_before_interface_contact",
+        "nomadnet::link::client_limits_tests::native_page_and_submit_propagate_independent_encoded_packed_and_body_limits"
+      ],
+      "summary": [
+        "ok",
+        "3",
+        "0",
+        "0"
+      ],
+      "output_tail": "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 1222 filtered out; finished in 0.35s",
+      "stderr_tail": ""
+    },
+    {
+      "filter": "nomadnet::tests::",
+      "exit_code": 0,
+      "seconds": 0.11,
+      "matched_names": [
+        "nomadnet::tests::micron_session_preserves_source_and_produces_scene",
+        "nomadnet::tests::native_address_keeps_destination_and_opaque_path",
+        "nomadnet::tests::native_projection_qualifies_same_node_page_links",
+        "nomadnet::tests::unresolved_aliases_are_rejected_in_every_retained_container"
+      ],
+      "summary": [
+        "ok",
+        "4",
+        "0",
+        "0"
+      ],
+      "output_tail": "test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 1221 filtered out; finished in 0.04s",
+      "stderr_tail": ""
+    },
+    {
+      "filter": "receiving_tests",
+      "exit_code": 0,
+      "seconds": 3.22,
+      "matched_names": [
+        "shell::effects::nomadnet_receiving_tests::governed_djinn_native_page_reaches_product_controller",
+        "shell::effects::nomadnet_receiving_tests::native_received_bytes_reach_controller_and_keep_reload_stop_and_empty_read_semantics",
+        "shell::effects::smolweb_receiving_tests::ordinary_product_reads_and_bodyless_sessions_require_explicit_submit_without_contact",
+        "shell::effects::smolweb_receiving_tests::scroll_response_mime_reaches_initial_controller_and_live_replacement"
+      ],
+      "summary": [
+        "ok",
+        "3",
+        "0",
+        "1"
+      ],
+      "output_tail": "test result: ok. 3 passed; 0 failed; 1 ignored; 0 measured; 1221 filtered out; finished in 3.12s",
+      "stderr_tail": ""
+    },
+    {
+      "filter": "local_micron_source_tests",
+      "exit_code": 0,
+      "seconds": 0.42,
+      "matched_names": [
+        "shell::effects::local_micron_source_tests::local_micron_spawn_failed_controller_does_not_publish_prepared_source",
+        "shell::effects::local_micron_source_tests::local_micron_spawn_opens_field_mask_and_confirm_from_real_file",
+        "shell::effects::local_micron_source_tests::local_micron_spawn_rejects_stale_uuid_and_address_before_open",
+        "shell::effects::local_micron_source_tests::local_micron_spawn_reload_missing_file_keeps_source_absent",
+        "shell::effects::local_micron_source_tests::local_micron_spawn_source_update_binds_uuid_and_current_address",
+        "shell::effects::local_micron_source_tests::local_micron_spawn_uses_one_held_body_after_file_changes",
+        "shell::effects::local_micron_source_tests::retained_clip_spawn_uses_held_document_through_standard_pelt_controller"
+      ],
+      "summary": [
+        "ok",
+        "7",
+        "0",
+        "0"
+      ],
+      "output_tail": "test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 1218 filtered out; finished in 0.33s",
+      "stderr_tail": ""
+    },
+    {
+      "filter": "gemini_trust::tests::",
+      "exit_code": 0,
+      "seconds": 0.09,
+      "matched_names": [
+        "gemini_trust::tests::a_change_requires_the_current_pin_and_persists_the_decision",
+        "gemini_trust::tests::an_interrupted_replace_recovers_the_previous_pin",
+        "gemini_trust::tests::first_contact_survives_reopen"
+      ],
+      "summary": [
+        "ok",
+        "3",
+        "0",
+        "0"
+      ],
+      "output_tail": "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 1222 filtered out; finished in 0.03s",
+      "stderr_tail": ""
+    },
+    {
+      "filter": "gemini_identity::tests::",
+      "exit_code": 0,
+      "seconds": 0.11,
+      "matched_names": [
+        "gemini_identity::tests::approval_is_persona_and_capsule_scoped_and_persists_without_secrets",
+        "gemini_identity::tests::identity_is_stable_per_persona_and_unlinkable_across_capsules"
+      ],
+      "summary": [
+        "ok",
+        "2",
+        "0",
+        "0"
+      ],
+      "output_tail": "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 1223 filtered out; finished in 0.02s",
+      "stderr_tail": ""
+    },
+    {
+      "filter": "browse::tests::",
+      "exit_code": 0,
+      "seconds": 0.14,
+      "matched_names": [
+        "browse::tests::certificate_request_prompts_once_then_reports_rejection",
+        "browse::tests::changed_certificate_preserves_the_fetch_target_and_both_fingerprints",
+        "browse::tests::enrichment_stamps_the_requesting_node_among_url_twins",
+        "browse::tests::failed_favicon_completion_clears_its_pending_request",
+        "browse::tests::favicon_completions_remove_only_their_own_request",
+        "browse::tests::favicon_write_stores_png_bytes_under_their_digest",
+        "browse::tests::input_response_keeps_actor_target_separate_from_graph_owner",
+        "browse::tests::page_progress_keeps_the_request_pending_until_terminal_answer",
+        "browse::tests::pending_table_correlates_and_refuses_to_guess",
+        "browse::tests::subresource_waiters_share_one_fetch_and_clear_together",
+        "browse::tests::superseded_node_drops_the_late_result",
+        "browse::tests::superseding_and_stopping_cancel_only_the_named_request"
+      ],
+      "summary": [
+        "ok",
+        "12",
+        "0",
+        "0"
+      ],
+      "output_tail": "test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 1213 filtered out; finished in 0.06s",
+      "stderr_tail": ""
+    },
+    {
+      "filter": "content::tests::",
+      "exit_code": 0,
+      "seconds": 0.09,
+      "matched_names": [
+        "content::tests::fetched_documents_are_member_and_address_scoped",
+        "content::tests::flip_toggles_and_failure_retries",
+        "content::tests::live_nodes_lists_only_live",
+        "content::tests::source_candidates_are_html_and_address_scoped",
+        "content::tests::streamed_documents_accumulate_exact_bytes_before_decoding",
+        "shell::cue_content::tests::input_during_a_pending_frame_gets_a_final_blue_frame_and_unadmitted_geometry_skips"
+      ],
+      "summary": [
+        "ok",
+        "5",
+        "0",
+        "1"
+      ],
+      "output_tail": "test result: ok. 5 passed; 0 failed; 1 ignored; 0 measured; 1219 filtered out; finished in 0.00s",
+      "stderr_tail": ""
+    },
+    {
+      "filter": "feed::tests::",
+      "exit_code": 0,
+      "seconds": 0.12,
+      "matched_names": [
+        "feed::tests::gemtext_feed_preserves_relative_urls_dates_and_dedupes",
+        "feed::tests::guid_identity_survives_an_enclosure_or_link_change",
+        "feed::tests::podcast_facts_resolve_against_the_caller_base_and_guid_wins_deduplication",
+        "feed::tests::rss_and_json_feed_share_the_entry_shape",
+        "feed::tests::schedule_survives_restart_and_suppresses_unchanged_entries",
+        "feed::tests::separate_guid_entries_with_one_url_keep_distinct_bindings",
+        "feed::tests::unchanged_unbound_entry_gets_an_explicit_view_without_adopting_a_sibling",
+        "feed::tests::unread_entry_missing_binding_retains_status_through_restart_and_repair"
+      ],
+      "summary": [
+        "ok",
+        "8",
+        "0",
+        "0"
+      ],
+      "output_tail": "test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 1217 filtered out; finished in 0.04s",
+      "stderr_tail": ""
+    },
+    {
+      "filter": "session::tests::",
+      "exit_code": 0,
+      "seconds": 0.5,
+      "matched_names": [
+        "session::tests::a_routine_save_updates_a_binding_but_never_mints_one",
+        "session::tests::current_session_marker_round_trips_and_falls_back",
+        "session::tests::flat_layout_migrates_into_sessions_once",
+        "session::tests::image_gc_keeps_live_blobs_and_drops_only_hash_named_orphans",
+        "session::tests::legacy_node_columns_migrate_on_load_and_existing_facets_win",
+        "session::tests::marking_a_place_left_preserves_the_binding_and_retained_session_files",
+        "session::tests::place_binding_round_trips_as_a_distinct_public_sidecar",
+        "session::tests::place_collection_sidecar_is_exact_and_refuses_corruption",
+        "session::tests::projection_score_sidecar_round_trips_without_becoming_graph_truth",
+        "session::tests::removing_place_binding_preserves_retained_session_files",
+        "session::tests::session_profile_absent_migration_does_not_mint_qualification",
+        "session::tests::session_profile_corrupt_facets_preserve_graph_labels_and_deposit_no_images",
+        "session::tests::session_profile_invalid_resource_and_declared_legacy_refuse_without_rewrite",
+        "session::tests::session_profile_migration_write_failure_preserves_raw_control_evidence",
+        "session::tests::session_profile_recorded_load_and_migration_preserve_held_relations",
+        "session::tests::unsupported_place_binding_stays_a_visible_error"
+      ],
+      "summary": [
+        "ok",
+        "16",
+        "0",
+        "0"
+      ],
+      "output_tail": "test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 1209 filtered out; finished in 0.42s",
+      "stderr_tail": ""
+    },
+    {
+      "filter": "session_persistence::tests::",
+      "exit_code": 0,
+      "seconds": 0.12,
+      "matched_names": [
+        "session_persistence::tests::facet_write_failure_preserves_actual_graph_bytes_and_evidence_retry",
+        "session_persistence::tests::failed_facets_prevent_graph_write_and_graph_failure_is_returned",
+        "session_persistence::tests::graph_replacement_clears_qualification_but_cannot_clear_refusal",
+        "session_persistence::tests::interrupted_replacement_is_not_a_fresh_writable_session",
+        "session_persistence::tests::ordinary_save_keeps_optional_placement_and_writes_facets_first",
+        "session_persistence::tests::refused_unbound_and_wrong_destination_write_nothing"
+      ],
+      "summary": [
+        "ok",
+        "6",
+        "0",
+        "0"
+      ],
+      "output_tail": "test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 1219 filtered out; finished in 0.03s",
+      "stderr_tail": ""
+    },
+    {
+      "filter": "app::session_persistence_tests::",
+      "exit_code": 0,
+      "seconds": 0.75,
+      "matched_names": [
+        "app::session_persistence_tests::host_session_facet_write_failure_does_not_replace_graph_or_migration_evidence",
+        "app::session_persistence_tests::host_session_fork_manifest_failure_never_publishes_or_switches",
+        "app::session_persistence_tests::host_session_fork_preserves_resource_records_and_tag_assertions",
+        "app::session_persistence_tests::host_session_graph_write_failure_preserves_original_and_returns_failure",
+        "app::session_persistence_tests::host_session_interrupted_replacement_never_overwrites_its_backup",
+        "app::session_persistence_tests::host_session_interrupted_unique_temporary_preserves_evidence_and_refuses_save",
+        "app::session_persistence_tests::host_session_recorded_and_absent_ordinary_save_reopen_and_replacement",
+        "app::session_persistence_tests::host_session_refusal_blocks_save_fork_background_and_survives_graph_replacement",
+        "app::session_persistence_tests::new_session_records_its_birth_and_reopens_same_site_relations_exactly"
+      ],
+      "summary": [
+        "ok",
+        "9",
+        "0",
+        "0"
+      ],
+      "output_tail": "test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 1216 filtered out; finished in 0.66s",
+      "stderr_tail": ""
+    },
+    {
+      "filter": "shell::tests::",
+      "exit_code": 0,
+      "seconds": 0.3,
+      "matched_names": [
+        "shell::tests::a_document_controller_hands_links_and_submissions_up",
+        "shell::tests::automatic_html_routes_to_the_registered_livery_session",
+        "shell::tests::dropped_files_classify_by_decodability",
+        "shell::tests::gemini_route_lands_in_a_live_nematic_session",
+        "shell::tests::hidden_livery_animation_reaches_quiescence_without_redraw",
+        "shell::tests::lens_viewports_stay_distinct",
+        "shell::tests::micron_file_uses_native_projection_and_preserves_source",
+        "shell::tests::reader_pin_uses_held_html_and_switching_back_restores_original_rendering",
+        "shell::tests::reserved_workspace_keeps_frame_and_chrome_at_full_window_size",
+        "shell::tests::scroll_route_lands_in_a_live_nematic_session"
+      ],
+      "summary": [
+        "ok",
+        "10",
+        "0",
+        "0"
+      ],
+      "output_tail": "test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 1215 filtered out; finished in 0.22s",
+      "stderr_tail": ""
+    },
+    {
+      "filter": "reading_view::tests::",
+      "exit_code": 0,
+      "seconds": 0.17,
+      "matched_names": [
+        "reading_view::tests::anchored_trails_roundtrip_per_pane_and_legacy_preferences_load",
+        "reading_view::tests::invalid_preferences_are_preserved_for_recovery",
+        "reading_view::tests::projections_with_shared_documents_keep_choices_across_cold_load",
+        "reading_view::tests::reading_back_restores_the_visit_in_its_owner_and_refuses_a_stale_owner"
+      ],
+      "summary": [
+        "ok",
+        "4",
+        "0",
+        "0"
+      ],
+      "output_tail": "test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 1221 filtered out; finished in 0.07s",
+      "stderr_tail": ""
+    },
+    {
+      "filter": "foreign_a11y",
+      "exit_code": 0,
+      "seconds": 0.11,
+      "matched_names": [
+        "foreign_a11y::tests::duplicate_ownership_cycles_invalid_focus_and_local_graphs_fail_closed",
+        "foreign_a11y::tests::fixture_text_optin_never_exposes_password_nodes_or_descendants",
+        "foreign_a11y::tests::foreign_lens_retains_native_forest_with_independent_publication_and_retirement",
+        "foreign_a11y::tests::hidden_remount_and_adapter_reactivation_replay_all_descendants",
+        "foreign_a11y::tests::idle_delta_reaches_consumer_without_a_pixel_frame",
+        "foreign_a11y::tests::inactive_adapter_does_not_consume_pending_activation",
+        "foreign_a11y::tests::incomplete_tree_waits_and_invalid_host_frame_keeps_publication_pending",
+        "foreign_a11y::tests::local_guests_and_nested_native_guests_share_one_observed_forest",
+        "foreign_a11y::tests::malformed_known_tree_withdraws_but_unknown_tree_cannot_corrupt",
+        "foreign_a11y::tests::navigation_prunes_old_nested_trees_and_ignores_stale_callbacks",
+        "foreign_a11y::tests::nested_focus_and_two_panes_keep_identical_local_ids_distinct",
+        "foreign_a11y::tests::platform_consumer::activation_at_every_batch_boundary_restarts_nested_replay",
+        "foreign_a11y::tests::platform_consumer::recursive_frame_orders_descendants_and_preserves_two_pane_ids",
+        "foreign_a11y::tests::publication_diagnostic_uses_emitted_frame_not_pending_supplier_delta",
+        "foreign_a11y::tests::publication_diagnostic_withdraws_hidden_retired_malformed_and_reset_trees",
+        "foreign_a11y::tests::removed_local_nodes_retire_their_actions",
+        "foreign_a11y::tests::retirement_and_new_root_reject_old_generation_actions_and_updates",
+        "foreign_a11y::tests::window_publishers_share_retained_nodes_and_keep_mount_and_replay_independent",
+        "shell::drive::foreign_a11y_receipt_tests::page_text_requires_exact_public_fixture_optin"
+      ],
+      "summary": [
+        "ok",
+        "19",
+        "0",
+        "0"
+      ],
+      "output_tail": "test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 1206 filtered out; finished in 0.03s",
+      "stderr_tail": ""
+    },
+    {
+      "filter": "document_a11y",
+      "exit_code": 0,
+      "seconds": 0.23,
+      "matched_names": [
+        "shell::document_a11y::tests::actual_field_semantics_keep_value_and_supported_actions",
+        "shell::document_a11y::tests::document_action_admission_checks_identity_revision_and_visible_placement",
+        "shell::document_a11y::tests::document_namespaces_separate_keys_instances_generations_and_placements",
+        "shell::document_a11y::tests::micron_fields_remain_partial_inert_source_text",
+        "shell::document_a11y::tests::projected_focus_never_performs_a_link_click",
+        "shell::document_a11y::tests::real_field_accepts_value_once_then_refuses_the_stale_admission",
+        "shell::document_a11y::tests::real_protocol_projections_keep_link_names_in_document_order",
+        "shell::document_a11y::tests::replacing_an_outline_removes_retired_descendants_and_hidden_document",
+        "shell::document_a11y::tests::source_click_uses_neutral_pointer_and_hands_navigation_to_the_host_once"
+      ],
+      "summary": [
+        "ok",
+        "9",
+        "0",
+        "0"
+      ],
+      "output_tail": "test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 1216 filtered out; finished in 0.13s",
+      "stderr_tail": ""
+    },
+    {
+      "filter": "a11y_bridge",
+      "exit_code": 0,
+      "seconds": 0.09,
+      "matched_names": [
+        "shell::a11y_bridge::tests::content_pool_activation_starts_on_guest_free_root_before_window_replay",
+        "shell::a11y_bridge::tests::queued_admission_stays_on_its_published_revision_and_placement"
+      ],
+      "summary": [
+        "ok",
+        "2",
+        "0",
+        "0"
+      ],
+      "output_tail": "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 1223 filtered out; finished in 0.00s",
+      "stderr_tail": ""
+    },
+    {
+      "filter": "contributed_a11y",
+      "exit_code": 0,
+      "seconds": 0.28,
+      "matched_names": [
+        "contributed_a11y::tests::a_new_admission_never_reuses_the_old_platform_action_id",
+        "contributed_a11y::tests::an_unfocused_dom_does_not_invent_focus_and_its_root_uses_the_pane_rect",
+        "contributed_a11y::tests::contributed_relations_resolve_inside_the_published_tree",
+        "contributed_a11y::tests::current_runner_focus_is_admitted_repeatedly_without_activation",
+        "contributed_a11y::tests::equal_dom_ids_in_two_panes_never_collide",
+        "contributed_a11y::tests::helper_refuses_hidden_disabled_and_unsupported_runner_actions",
+        "contributed_a11y::tests::namespacing_places_bounds_and_preserves_distinct_actions",
+        "contributed_a11y::tests::native_graft_composes_nested_transforms_and_keeps_dom_focus",
+        "contributed_a11y::tests::queued_old_admission_cannot_activate_a_current_runner_control",
+        "contributed_a11y::tests::test_provider_without_host_effects_still_admits_current_actions"
+      ],
+      "summary": [
+        "ok",
+        "10",
+        "0",
+        "0"
+      ],
+      "output_tail": "test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 1215 filtered out; finished in 0.18s",
+      "stderr_tail": ""
+    },
+    {
+      "filter": "app::palette::tests::",
+      "exit_code": 0,
+      "seconds": 0.24,
+      "matched_names": [
+        "app::palette::tests::captured_collection_rows_preserve_worker_versions_and_mark_selection",
+        "app::palette::tests::committing_a_captured_collection_row_emits_its_exact_version",
+        "app::palette::tests::duplicate_collection_names_have_stable_distinct_palette_labels",
+        "app::palette::tests::stale_captured_collection_selection_offers_the_latest_version"
+      ],
+      "summary": [
+        "ok",
+        "4",
+        "0",
+        "0"
+      ],
+      "output_tail": "test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 1221 filtered out; finished in 0.14s",
+      "stderr_tail": ""
+    },
+    {
+      "filter": "app::palette::command_menu_tests::",
+      "exit_code": 0,
+      "seconds": 0.7,
+      "matched_names": [
+        "app::palette::command_menu_tests::a_bare_lane_shows_context_then_kept_then_all_commands",
+        "app::palette::command_menu_tests::a_command_run_from_the_palette_becomes_recent",
+        "app::palette::command_menu_tests::a_label_keyed_choice_for_a_shared_verb_falls_away",
+        "app::palette::command_menu_tests::a_right_click_asks_for_the_menu_and_a_right_drag_does_not",
+        "app::palette::command_menu_tests::all_commands_expands_the_lane_and_keeps_the_palette_open",
+        "app::palette::command_menu_tests::keeping_and_dropping_change_the_lane_and_save",
+        "app::palette::command_menu_tests::offered_actions_carry_the_hosts_effect_and_destructive_declarations",
+        "app::palette::command_menu_tests::palette_rows_and_their_keep_controls_are_accessible",
+        "app::palette::command_menu_tests::search_reaches_every_command",
+        "app::palette::command_menu_tests::shared_verbs_register_under_catalogue_ids",
+        "app::palette::command_menu_tests::the_all_commands_row_survives_a_short_lane",
+        "app::palette::command_menu_tests::the_highlighted_command_toggles_with_ctrl_d",
+        "app::palette::command_menu_tests::the_lane_highlight_moves_through_its_menu_session"
+      ],
+      "summary": [
+        "ok",
+        "13",
+        "0",
+        "0"
+      ],
+      "output_tail": "test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 1212 filtered out; finished in 0.62s",
+      "stderr_tail": ""
+    },
+    {
+      "filter": "app::tests::toolbar_address_navigation_reads_without_changing_graph_command_semantics",
+      "exit_code": 0,
+      "seconds": 0.23,
+      "matched_names": [
+        "app::tests::toolbar_address_navigation_reads_without_changing_graph_command_semantics"
+      ],
+      "summary": [
+        "ok",
+        "1",
+        "0",
+        "0"
+      ],
+      "output_tail": "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1224 filtered out; finished in 0.12s",
+      "stderr_tail": ""
+    },
+    {
+      "filter": "app::tests::back_forward_and_reload_flow_through_the_spine",
+      "exit_code": 0,
+      "seconds": 0.12,
+      "matched_names": [
+        "app::tests::back_forward_and_reload_flow_through_the_spine"
+      ],
+      "summary": [
+        "ok",
+        "1",
+        "0",
+        "0"
+      ],
+      "output_tail": "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1224 filtered out; finished in 0.04s",
+      "stderr_tail": ""
+    },
+    {
+      "filter": "app::tests::stop_cancels_only_the_focused_request_and_rejects_its_late_answer",
+      "exit_code": 0,
+      "seconds": 0.11,
+      "matched_names": [
+        "app::tests::stop_cancels_only_the_focused_request_and_rejects_its_late_answer"
+      ],
+      "summary": [
+        "ok",
+        "1",
+        "0",
+        "0"
+      ],
+      "output_tail": "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1224 filtered out; finished in 0.03s",
+      "stderr_tail": ""
+    },
+    {
+      "filter": "app::tests::nomadnet_omnibar_stop_and_reload_keep_native_request_identity",
+      "exit_code": 0,
+      "seconds": 0.12,
+      "matched_names": [
+        "app::tests::nomadnet_omnibar_stop_and_reload_keep_native_request_identity"
+      ],
+      "summary": [
+        "ok",
+        "1",
+        "0",
+        "0"
+      ],
+      "output_tail": "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1224 filtered out; finished in 0.04s",
+      "stderr_tail": ""
+    },
+    {
+      "filter": "app::tests::every_surface_engine_takes_reload_and_stop_on_its_web_plane",
+      "exit_code": 0,
+      "seconds": 0.2,
+      "matched_names": [
+        "app::tests::every_surface_engine_takes_reload_and_stop_on_its_web_plane"
+      ],
+      "summary": [
+        "ok",
+        "1",
+        "0",
+        "0"
+      ],
+      "output_tail": "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1224 filtered out; finished in 0.12s",
+      "stderr_tail": ""
+    },
+    {
+      "filter": "app::tests::reload_after_a_failed_native_fetch_replaces_the_error_with_a_content_spawn",
+      "exit_code": 0,
+      "seconds": 0.14,
+      "matched_names": [
+        "app::tests::reload_after_a_failed_native_fetch_replaces_the_error_with_a_content_spawn"
+      ],
+      "summary": [
+        "ok",
+        "1",
+        "0",
+        "0"
+      ],
+      "output_tail": "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1224 filtered out; finished in 0.04s",
+      "stderr_tail": ""
+    },
+    {
+      "filter": "app::tests::streamed_page_spawns_from_a_prefix_then_replaces_and_settles",
+      "exit_code": 0,
+      "seconds": 0.12,
+      "matched_names": [
+        "app::tests::streamed_page_spawns_from_a_prefix_then_replaces_and_settles"
+      ],
+      "summary": [
+        "ok",
+        "1",
+        "0",
+        "0"
+      ],
+      "output_tail": "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1224 filtered out; finished in 0.04s",
+      "stderr_tail": ""
+    },
+    {
+      "filter": "app::tests::ordinary_smolweb_input_navigates_and_refetches_with_a_percent_encoded_query",
+      "exit_code": 0,
+      "seconds": 0.17,
+      "matched_names": [
+        "app::tests::ordinary_smolweb_input_navigates_and_refetches_with_a_percent_encoded_query"
+      ],
+      "summary": [
+        "ok",
+        "1",
+        "0",
+        "0"
+      ],
+      "output_tail": "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1224 filtered out; finished in 0.09s",
+      "stderr_tail": ""
+    },
+    {
+      "filter": "app::tests::sensitive_smolweb_input_is_masked_and_never_enters_graph_or_events",
+      "exit_code": 0,
+      "seconds": 0.2,
+      "matched_names": [
+        "app::tests::sensitive_smolweb_input_is_masked_and_never_enters_graph_or_events"
+      ],
+      "summary": [
+        "ok",
+        "1",
+        "0",
+        "0"
+      ],
+      "output_tail": "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1224 filtered out; finished in 0.10s",
+      "stderr_tail": ""
+    },
+    {
+      "filter": "app::tests::gemini_identity_is_confirmed_once_and_reused_only_for_its_capsule",
+      "exit_code": 0,
+      "seconds": 0.19,
+      "matched_names": [
+        "app::tests::gemini_identity_is_confirmed_once_and_reused_only_for_its_capsule"
+      ],
+      "summary": [
+        "ok",
+        "1",
+        "0",
+        "0"
+      ],
+      "output_tail": "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1224 filtered out; finished in 0.10s",
+      "stderr_tail": ""
+    },
+    {
+      "filter": "app::tests::changed_gemini_certificate_requires_an_explicit_trust_commit_before_refetch",
+      "exit_code": 0,
+      "seconds": 0.19,
+      "matched_names": [
+        "app::tests::changed_gemini_certificate_requires_an_explicit_trust_commit_before_refetch"
+      ],
+      "summary": [
+        "ok",
+        "1",
+        "0",
+        "0"
+      ],
+      "output_tail": "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1224 filtered out; finished in 0.09s",
+      "stderr_tail": ""
+    },
+    {
+      "filter": "app::tests::titan_",
+      "exit_code": 0,
+      "seconds": 0.28,
+      "matched_names": [
+        "app::tests::titan_address_opens_an_explicit_composer_without_uploading",
+        "app::tests::titan_composer_stages_body_mime_hidden_token_and_literal_confirmation"
+      ],
+      "summary": [
+        "ok",
+        "2",
+        "0",
+        "0"
+      ],
+      "output_tail": "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 1223 filtered out; finished in 0.18s",
+      "stderr_tail": ""
+    },
+    {
+      "filter": "app::tests::spartan_prompt_target_resolves_against_its_source_member",
+      "exit_code": 0,
+      "seconds": 0.19,
+      "matched_names": [
+        "app::tests::spartan_prompt_target_resolves_against_its_source_member"
+      ],
+      "summary": [
+        "ok",
+        "1",
+        "0",
+        "0"
+      ],
+      "output_tail": "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1224 filtered out; finished in 0.09s",
+      "stderr_tail": ""
+    },
+    {
+      "filter": "app::tests::micron_form_",
+      "exit_code": 0,
+      "seconds": 0.55,
+      "matched_names": [
+        "app::tests::micron_form_editor_is_explicit_redacts_masked_input_and_emits_one_request",
+        "app::tests::micron_form_fixed_variable_action_selection_and_visible_edit_errors",
+        "app::tests::micron_form_navigation_reload_and_close_cancel_and_ignore_late_reply",
+        "app::tests::micron_form_refuses_submission_after_source_address_changes",
+        "app::tests::micron_form_rejects_refreshed_source_before_send_and_on_reply"
+      ],
+      "summary": [
+        "ok",
+        "5",
+        "0",
+        "0"
+      ],
+      "output_tail": "test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 1220 filtered out; finished in 0.46s",
+      "stderr_tail": ""
+    },
+    {
+      "filter": "app::tests::a_rerooted_profile_refuses_automatic_certificate_reissue",
+      "exit_code": 0,
+      "seconds": 0.5,
+      "matched_names": [
+        "app::tests::a_rerooted_profile_refuses_automatic_certificate_reissue"
+      ],
+      "summary": [
+        "ok",
+        "1",
+        "0",
+        "0"
+      ],
+      "output_tail": "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1224 filtered out; finished in 0.40s",
+      "stderr_tail": ""
+    },
+    {
+      "filter": "app::tests::session_restore_applies_law_before_overlays_and_records_refusal",
+      "exit_code": 0,
+      "seconds": 0.19,
+      "matched_names": [
+        "app::tests::session_restore_applies_law_before_overlays_and_records_refusal"
+      ],
+      "summary": [
+        "ok",
+        "1",
+        "0",
+        "0"
+      ],
+      "output_tail": "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1224 filtered out; finished in 0.08s",
+      "stderr_tail": ""
+    },
+    {
+      "filter": "app::tests::adopt_session_restores_the_saved_canvas_layout_from_facets",
+      "exit_code": 0,
+      "seconds": 0.17,
+      "matched_names": [
+        "app::tests::adopt_session_restores_the_saved_canvas_layout_from_facets"
+      ],
+      "summary": [
+        "ok",
+        "1",
+        "0",
+        "0"
+      ],
+      "output_tail": "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1224 filtered out; finished in 0.08s",
+      "stderr_tail": ""
+    },
+    {
+      "filter": "app::tests::close_session_trashes_and_recover_restores_identity",
+      "exit_code": 0,
+      "seconds": 0.12,
+      "matched_names": [
+        "app::tests::close_session_trashes_and_recover_restores_identity"
+      ],
+      "summary": [
+        "ok",
+        "1",
+        "0",
+        "0"
+      ],
+      "output_tail": "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1224 filtered out; finished in 0.04s",
+      "stderr_tail": ""
+    }
+  ],
+  "totals": {
+    "passed": 172,
+    "failed": 0,
+    "ignored": 2
+  }
+}

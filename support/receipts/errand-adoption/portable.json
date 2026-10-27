@@ -1,0 +1,11 @@
+{
+  "command": "python scripts/cargo_mode.py verify --metadata-only",
+  "environment": {
+    "CARGO_NET_OFFLINE": "true",
+    "PYTHONDONTWRITEBYTECODE": "1"
+  },
+  "exit_code": 0,
+  "seconds": 17.72,
+  "stdout": "Verified C:\\Users\\mark_\\Code\\repos\\turnstone: cargo 1.99.1 (5f94df478 2026-08-27); lock sha256=5e4d5e03db15f163931b829cfce05fa7bf6acfbeb252cd92537d10ba975dd7f1; packages=1273\n",
+  "stderr_tail": ""
+}

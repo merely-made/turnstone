@@ -1,0 +1,65 @@
+[
+  {
+    "command": "cargo check --all-targets --locked -j 2 --message-format=json",
+    "exit_code": 0,
+    "seconds": 444.2,
+    "warnings": 244,
+    "errors": [],
+    "tail": [
+      "Checking redshank-surfaces v0.0.0 (https://github.com/merely-made/woodshed.git?branch=main#a0da751c)",
+      "Checking redshank-playback v0.0.0 (https://github.com/merely-made/woodshed.git?branch=main#a0da751c)",
+      "Checking mere-moot v0.0.1 (https://github.com/merely-made/mere.git?branch=main#5fb0e01f)",
+      "Checking distillery v0.0.1 (https://github.com/merely-made/mere.git?branch=main#5fb0e01f)",
+      "Checking dirs v6.0.0",
+      "Checking mesquite v0.1.0 (https://github.com/merely-made/mere.git?branch=main#5fb0e01f)",
+      "Checking graphshell-host v0.0.2 (https://github.com/merely-made/mere.git?branch=main#5fb0e01f)",
+      "Checking mere v0.0.2 (https://github.com/merely-made/mere.git?branch=main#5fb0e01f)",
+      "Checking genet-clipboard v0.1.0 (https://github.com/merely-made/genet.git?branch=main#01d3f528)",
+      "Checking pelt-core v0.2.0 (https://github.com/merely-made/mere.git?branch=main#5fb0e01f)",
+      "Checking tabard-workshop v0.0.1 (https://github.com/merely-made/mere.git?branch=main#5fb0e01f)",
+      "Checking rfd v0.17.2",
+      "Checking commons-spine v0.0.1 (https://www.github.com/merely-made/gemot.git?rev=998133bc17b8636152e9c4f7605eb475498213c8#998133bc)",
+      "Checking redshank-storage v0.0.0 (https://github.com/merely-made/woodshed.git?branch=main#a0da751c)",
+      "Checking mere-athanor v0.0.1 (https://github.com/merely-made/mere.git?branch=main#5fb0e01f)",
+      "Checking mere-chrome v0.0.1 (https://github.com/merely-made/mere.git?branch=main#5fb0e01f)",
+      "Checking turnstone v0.1.0 (C:\\Users\\mark_\\Code\\repos\\turnstone)",
+      "Finished `dev` profile [unoptimized] target(s) in 7m 24s"
+    ],
+    "artifacts": []
+  },
+  {
+    "command": "cargo test --lib --features nomadnet --no-run --locked --offline -j 2 --message-format=json",
+    "exit_code": 0,
+    "seconds": 323.08,
+    "warnings": 105,
+    "errors": [],
+    "tail": [
+      "Compiling redshank-playback v0.0.0 (https://github.com/merely-made/woodshed.git?branch=main#a0da751c)",
+      "Compiling redshank-surfaces v0.0.0 (https://github.com/merely-made/woodshed.git?branch=main#a0da751c)",
+      "Compiling knot-editor v0.0.3 (https://github.com/merely-made/knot-editor.git?branch=main#3e225169)",
+      "Compiling retinue v0.3.0 (https://github.com/merely-made/murm.git?branch=main#4ba804b3)",
+      "Compiling mere-moot v0.0.1 (https://github.com/merely-made/mere.git?branch=main#5fb0e01f)",
+      "Compiling graphshell-host v0.0.2 (https://github.com/merely-made/mere.git?branch=main#5fb0e01f)",
+      "Compiling mesquite v0.1.0 (https://github.com/merely-made/mere.git?branch=main#5fb0e01f)",
+      "Compiling mere v0.0.2 (https://github.com/merely-made/mere.git?branch=main#5fb0e01f)",
+      "Compiling distillery v0.0.1 (https://github.com/merely-made/mere.git?branch=main#5fb0e01f)",
+      "Compiling genet-clipboard v0.1.0 (https://github.com/merely-made/genet.git?branch=main#01d3f528)",
+      "Compiling pelt-core v0.2.0 (https://github.com/merely-made/mere.git?branch=main#5fb0e01f)",
+      "Compiling tabard-workshop v0.0.1 (https://github.com/merely-made/mere.git?branch=main#5fb0e01f)",
+      "Compiling commons-spine v0.0.1 (https://www.github.com/merely-made/gemot.git?rev=998133bc17b8636152e9c4f7605eb475498213c8#998133bc)",
+      "Compiling redshank-storage v0.0.0 (https://github.com/merely-made/woodshed.git?branch=main#a0da751c)",
+      "Compiling mere-athanor v0.0.1 (https://github.com/merely-made/mere.git?branch=main#5fb0e01f)",
+      "Compiling mere-chrome v0.0.1 (https://github.com/merely-made/mere.git?branch=main#5fb0e01f)",
+      "Compiling turnstone v0.1.0 (C:\\Users\\mark_\\Code\\repos\\turnstone)",
+      "Finished `test` profile [unoptimized] target(s) in 5m 22s"
+    ],
+    "artifacts": [
+      {
+        "package_id": "path+file:///C:/Users/mark_/Code/repos/turnstone#0.1.0",
+        "target": "turnstone",
+        "executable": "C:\\t\\cargo-targets\\turnstone\\build\\debug\\deps\\turnstone-5fc3bad5a10658bf.exe",
+        "test": true
+      }
+    ]
+  }
+]

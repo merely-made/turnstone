@@ -1,0 +1,228 @@
+{
+  "schema": "turnstone.errand-adoption-qualification.v1",
+  "date": "2026-10-26",
+  "status": "qualified_native_bounded_slice",
+  "source": {
+    "repository": "https://github.com/merely-made/turnstone",
+    "base_commit": "fbae4ea7ca202415cd8617fd880273742654cf29",
+    "qualified_commit": "03a432da5322c0286c050def9a32f64829464833",
+    "qualified_tree": "e35ed42c4a6162713160159464655f01c0fdface",
+    "errand_revision": "897fb963d184f0e379ab9041d68e17e726cb7763",
+    "manifest_git_blob": "eb887f6477f1b15f52556b14df9d2a517eb395f2",
+    "lock_git_blob": "5369186c65a3ad2a755d95909232823f456778d1",
+    "manifest_native_sha256": "cd5d6e824b5cd85dfcf4dcf391dd3fc4b4e1c7d510afca6a1bf98f8e7243f5cf",
+    "lock_native_sha256": "5e4d5e03db15f163931b829cfce05fa7bf6acfbeb252cd92537d10ba975dd7f1",
+    "src_tree_unchanged_from_base": true,
+    "scenarios_tree_unchanged_from_base": true
+  },
+  "cohort": {
+    "errand_records_before": 18,
+    "errand_records_after": 9,
+    "registry_records_unchanged": 1385,
+    "non_errand_git_records_unchanged": 263,
+    "package_versions_checksums_and_normalized_dependency_tables_unchanged": true,
+    "normalization": "Remove nine superseded duplicate Errand records, retain existing 897fb963 records, simplify qualified Errand dependency references. Only 12 Errand rev values change in the manifest. Cargo --locked validates the resulting selection.",
+    "other_suppliers": "Existing Mere 5fb0e01f, Genet 01d3f528, Murm 4ba804b3, Armillary 864f107d and the rest of the refreshed committed cohort remain fixed; no sibling path overrides."
+  },
+  "evidence": {
+    "tests_passed": 172,
+    "tests_failed": 0,
+    "existing_ignored_in_selection": 2,
+    "test_filters": 38,
+    "default_all_target_check": 0,
+    "nomadnet_native_test_build": 0,
+    "nomadnet_production_clippy": 0,
+    "portable_metadata_check": 0,
+    "test_executable": "C:\\t\\cargo-targets\\turnstone\\build\\debug\\deps\\turnstone-5fc3bad5a10658bf.exe",
+    "test_executable_bytes": 245937152,
+    "test_executable_sha256_before_and_after": "19232b84cdc6e999963f83fad44ce0818c5cd29a3c0c68b8cfbe01ef34aec04c",
+    "executable_not_copied": true,
+    "test_count_scope": "Selected software/native controls, not the full library suite."
+  },
+  "ownership_preserved": [
+    "registered Smolweb/Micron receiving engines",
+    "response MIME and retained source replacement",
+    "explicit Submit authority including read refusal before transport",
+    "fetch correlation and late-answer rejection",
+    "streaming and Stop/Reload request identity",
+    "ordinary and masked input handling",
+    "persona/capsule identity approval and explicit stale-safe trust replacement",
+    "native Micron limits, outer operation budget and endpoint draining",
+    "saved browser-session identity and restoration"
+  ],
+  "separate_gates": [
+    "headed/GPU browser interaction",
+    "governed Djinn external-host handoff (existing ignored prerequisite)",
+    "pending-frame Cue native prerequisite (existing ignored case)",
+    "live TLS first-contact and changed-certificate decision flow",
+    "general fetch actor admission/cancellation/concurrency",
+    "physical radio and independent-machine delivery",
+    "full-family release qualification"
+  ],
+  "lint_boundary": {
+    "production_clippy_exit_code": 0,
+    "existing_unchanged_source_warnings": 278,
+    "strict_warnings_as_errors_claimed": false,
+    "all_target_warning_diagnostics": 244,
+    "test_build_warning_diagnostics": 105,
+    "note": "No Rust source or test edits in this adoption. Clippy completion is distinct from warnings-as-errors qualification."
+  },
+  "toolchain": {
+    "rustc": "1.99.1 (58cf8f9c3 2026-10-13)",
+    "cargo": "1.99.1 (5f94df478 2026-08-27)"
+  },
+  "environment": {
+    "CARGO_TARGET_DIR": "C:/t/cargo-targets/turnstone",
+    "CARGO_BUILD_BUILD_DIR": "C:/t/cargo-targets/turnstone/build",
+    "CARGO_NET_GIT_FETCH_WITH_CLI": "true during locked online cache fill",
+    "PYTHONDONTWRITEBYTECODE": "1 after helper-import discovery",
+    "portable": "scripts/cargo_mode.py verify --metadata-only with CARGO_NET_OFFLINE=true checks tracked local packages and redirect-free configuration. config.local.toml never loaded."
+  },
+  "attempts": [
+    {
+      "command": "cargo metadata --offline --format-version 1",
+      "exit_code": 101,
+      "reason": "Pinned Murm 4ba804b3 not cached; no lock write."
+    },
+    {
+      "command": "cargo metadata --format-version 1",
+      "exit_code": 4294967295,
+      "seconds": 314.38,
+      "reason": "Stopped the owned broad metadata cache-preparation process before it wrote a lock; used exact existing-record consolidation instead. The subsequent Cargo --locked gates validate the new lock."
+    },
+    {
+      "command": "cargo check --all-targets --locked --offline -j 2 --message-format=json",
+      "exit_code": 101,
+      "seconds": 480.58,
+      "reason": "Prepared the pinned Genet checkout, then stopped at uncached Grafting 9f410f19. Retried locked online; passed without lock movement."
+    },
+    {
+      "command": "cargo test --locked --offline -p truchman -j 1 --quiet",
+      "cwd": "retinue",
+      "exit_code": 101,
+      "seconds": 175.83,
+      "reason": "Replay omitted the intervening package-version bump; corrected truchman manifest to 0.1.1 to match both locks and requirements, then all four Retinue gates passed."
+    },
+    {
+      "note": "Known nonfatal Servo Cargo.toml test-fixture invalid-type stderr appeared while discovering packages; final commands have zero compiler errors."
+    }
+  ],
+  "repo_refresh": {
+    "scope": "26 primary Git checkouts originally under Code/repos. Eleven fast-forwarded, eleven were current, three fetched-only, one inaccessible retired remote. Unique history in two fetched-only repos was then reconciled and pushed.",
+    "fast_forwarded": [
+      "cleromancy",
+      "esp",
+      "gemot",
+      "genet",
+      "isocosm",
+      "knot-editor",
+      "mer3ly",
+      "turnstone",
+      "wgpu-graft",
+      "wgpu-scry",
+      "woodshed"
+    ],
+    "already_current": [
+      "armillary",
+      "dramatis",
+      "emblem",
+      "merely-made.github",
+      "mora",
+      "netrender",
+      "pipit",
+      "smolweb",
+      "turquet",
+      "wavicle",
+      "wgpu-weld"
+    ],
+    "rewritten_history_reconciliation": {
+      "eidetic": {
+        "old_head": "04a38052d875e1ff0a909ff39c9186d77fc993b1",
+        "published_head": "5876a1a292f11f98f3e2dbe4c167177f9066f9d7",
+        "recovery_ref": "refs/recovery/pre-refresh-20261026-eidetic",
+        "result": "Preserved old tip, integrated refreshed origin by replaying the unique Responsa plan change; other old changes patch-equivalent. Docs only."
+      },
+      "retinue": {
+        "old_head": "a8caec2d84971fec378a137f8233cf45fab0fcb7",
+        "published_head": "a30c148cc7b8fb978f906257395239b15a8833ed",
+        "recovery_ref": "refs/recovery/pre-refresh-20261026-retinue",
+        "result": "Replayed Tokio macros and published truchman 0.1.1 constraints/version/locks over rewritten origin, preserving new supplier pins. Retained earlier qualification evidence through recovery ref, without reasserting removed I2P receipts. Existing retinue-cohort worktree unchanged.",
+        "gates": "21 truchman tests, no-default-feature check, retinue I2P library check and native murm-i2p check pass."
+      },
+      "mere": {
+        "primary_head_preserved": "03027fb63040384a4a95f1ba17a4f4b842c47811",
+        "fetched_origin": "a13cf09c76e397e0570ede23993fb2278559be1e",
+        "primary_index_sha256_preserved": "f8448a71be23e32a997bba8a91a1eb14906e9b463979ce8e547c185daa097200",
+        "result": "Primary main remains occupied by intentional staged diagnostics deletions plus untracked replacements. A detached current-origin worktree showed the candidate Canvas patch already present in all 14 production/test file blobs; empty cherry-pick skipped, newer docs retained. Temporary worktree and redundant recovery branch removed. Primary HEAD/index/files preserved; no new merge was needed for that code.",
+        "older_history_audit_limit": "Comparison bounded to latest 100 local first-parent non-merge patches against recent 500 upstream commits, then exact blob checks of candidate patch; no claim all old unrelated history is audited."
+      }
+    }
+  },
+  "ringdown_retirement": {
+    "woodshed_port": "C:/Users/mark_/Code/repos/woodshed/ports/ringdown",
+    "retired_head": "30af57d3f45643228981cf9e4ab174581365a837",
+    "checkout_clean_before_retirement": true,
+    "history_bundle": "C:/Users/mark_/Code/repos/woodshed/.git/retired-checkouts/ringdown.bundle",
+    "bundle_bytes": 409092,
+    "bundle_sha256": "ae5133d68c0c5e207a6d88ebf0233a3cffe52979ea5b735381d7d3a5915130cd",
+    "bundle_verified": true,
+    "bundle_scope": "Complete old repository history and retirement notice, local recovery metadata only; not uploaded with Woodshed.",
+    "duplicate_checkout_removed": false,
+    "reason": "Automatic approval review rejected Remove-Item for repos/ringdown with blocked by policy. No alternative deletion attempted."
+  },
+  "cleanup": {
+    "retained_new_isolated_target_cargo_home_or_worktree": false,
+    "stable_existing_targets_reused": [
+      "turnstone",
+      "retinue"
+    ],
+    "temporary_mere_refresh_worktree_removed": true,
+    "retained_recovery_refs_reason": "Keep pre-rewrite Eidetic and Retinue history and old evidence reachable.",
+    "generated_cache_retained": {
+      "path": "C:/Users/mark_/Code/repos/turnstone/scripts/__pycache__/cargo_mode.cpython-311.pyc",
+      "bytes": 14721,
+      "reason": "Helper import created it; automatic approval review rejected removal with blocked by policy. No alternative deletion attempted."
+    }
+  },
+  "receipt_budget": {
+    "cap_bytes": 100000000,
+    "scope": "Compact JSON/source identities plus local Ringdown recovery bundle and retained Python cache; no full build logs or copied executables. Standard shared Cargo targets/caches remain reusable build data.",
+    "ringdown_bundle_bytes": 409092,
+    "blocked_cache_bytes": 14721
+  },
+  "hash_convention": "SHA256 values identify exact native filesystem bytes; Git blobs/tree identify committed normalized source. Receipt JSON is UTF-8 LF with -text attributes.",
+  "receipt_files": {
+    ".gitattributes": {
+      "bytes": 34,
+      "sha256": "52aa6ee83155b75f631aca53d8bd09b4701c7944f374f453cff3cad89dba7a2c"
+    },
+    "clippy.json": {
+      "bytes": 1770,
+      "sha256": "3bdba80c34eda63f8be0e923751c0ddb0950d3fb8a964fbdb5fe41c423389961"
+    },
+    "commands.json": {
+      "bytes": 4221,
+      "sha256": "772b31bb4abfab844151ad4f4e358047582d407956b4ee729778e5afc5a7f3c1"
+    },
+    "dependency-audit.json": {
+      "bytes": 7917,
+      "sha256": "4c17385a34c304ee379568838a4bf06dcca02a3a32a4e486198f90375f2a6aca"
+    },
+    "ignored.json": {
+      "bytes": 1659,
+      "sha256": "c188c5c3cc55e6fc68290e9ab8467922a94f2e141acf29644ac239d583916654"
+    },
+    "portable.json": {
+      "bytes": 419,
+      "sha256": "d868403373f30b1ecc4dc82620c56f0ad0fd34354481b17b55b3395f299cbebb"
+    },
+    "retinue-refresh-checks.json": {
+      "bytes": 1217,
+      "sha256": "9dfb67f1d33ec71d8c6a3c28505aa4d7ddba80063fd4ad514012e1a4eff33787"
+    },
+    "tests.json": {
+      "bytes": 31199,
+      "sha256": "3d68640933bdab7ac202c3c67c29ed88f97df14b0c0f5ff1ee23a7c9f80c41e2"
+    }
+  }
+}

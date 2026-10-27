@@ -1,0 +1,27 @@
+{
+  "command": "cargo clippy --lib --features nomadnet --locked --offline --no-deps -j 2 --message-format=json",
+  "exit_code": 0,
+  "seconds": 119.94,
+  "warnings": 278,
+  "turnstone_warnings": 278,
+  "errors": [],
+  "tail": [
+    "Checking eidetic-search v0.0.1 (https://github.com/merely-made/mere.git?branch=main#5fb0e01f)",
+    "Checking cbc v0.2.1",
+    "Checking knot-editor v0.0.3 (https://github.com/merely-made/knot-editor.git?branch=main#3e225169)",
+    "Checking mere-moot v0.0.1 (https://github.com/merely-made/mere.git?branch=main#5fb0e01f)",
+    "Checking redshank-playback v0.0.0 (https://github.com/merely-made/woodshed.git?branch=main#a0da751c)",
+    "Checking retinue v0.3.0 (https://github.com/merely-made/murm.git?branch=main#4ba804b3)",
+    "Checking distillery v0.0.1 (https://github.com/merely-made/mere.git?branch=main#5fb0e01f)",
+    "Checking mesquite v0.1.0 (https://github.com/merely-made/mere.git?branch=main#5fb0e01f)",
+    "Checking graphshell-host v0.0.2 (https://github.com/merely-made/mere.git?branch=main#5fb0e01f)",
+    "Checking mere v0.0.2 (https://github.com/merely-made/mere.git?branch=main#5fb0e01f)",
+    "Checking pelt-core v0.2.0 (https://github.com/merely-made/mere.git?branch=main#5fb0e01f)",
+    "Checking tabard-workshop v0.0.1 (https://github.com/merely-made/mere.git?branch=main#5fb0e01f)",
+    "Checking commons-spine v0.0.1 (https://www.github.com/merely-made/gemot.git?rev=998133bc17b8636152e9c4f7605eb475498213c8#998133bc)",
+    "Checking mere-athanor v0.0.1 (https://github.com/merely-made/mere.git?branch=main#5fb0e01f)",
+    "Checking turnstone v0.1.0 (C:\\Users\\mark_\\Code\\repos\\turnstone)",
+    "Finished `dev` profile [unoptimized] target(s) in 1m 59s"
+  ],
+  "strict_warnings_as_errors_claimed": false
+}
