@@ -295,6 +295,19 @@ pub(super) fn prepare(page: &TreePage) {
             .iter()
             .filter_map(|access| {
                 let (_, node) = graph.get_node_by_id(*access)?;
+                // A removed inline body is no longer a readable source, even
+                // if the access and address survive. Clips are supplied by
+                // their immutable retained reference and need no inline body.
+                if node.body.is_none()
+                    && !matches!(
+                        mere_document_lanes::retained_clip::request(node.url()),
+                        Ok(Some(mere_document_lanes::retained_clip::ClipRequest::Read(
+                            _
+                        )))
+                    )
+                {
+                    return None;
+                }
                 Some(mere_document_lanes::reading_lifecycle::AccessProjection {
                     access: *access,
                     membership: graph.surface_node_lifetime(*access)?,
@@ -839,18 +852,25 @@ pub(super) fn clip_appearance(
     address: &str,
     store: Option<muniment::IndexedDbBackend>,
 ) -> Appearance {
-    let held = {
-        shared
-            .reading
-            .borrow()
-            .bindings
-            .get(&member)
-            .map(|b| b.slot.borrow().source().clone())
-    };
-    if let Some(source) = held {
-        if source.address == address {
-            return appearance(shared, member, source);
+    let has_binding = {
+        let reading = shared.reading.borrow();
+        if let Some(binding) = reading.bindings.get(&member) {
+            // A retained clip address names immutable verified content. The
+            // reconciled owner/access lease already fences this slot; reuse
+            // its handle without copying its document or media payloads.
+            if binding.slot.borrow().source().address == address {
+                return Appearance::Ready {
+                    key: binding.key,
+                    slot: binding.slot.clone(),
+                    status: reading.statuses.get(&member).cloned().unwrap_or_default(),
+                };
+            }
+            true
+        } else {
+            false
         }
+    };
+    if has_binding {
         let mut reading = shared.reading.borrow_mut();
         reading.lifecycle.rebind(member);
         reading.retire_access(member);

@@ -785,6 +785,9 @@ pub(super) fn section(page: &TreePage) -> Child {
     children.push(Box::new(el("h2", "Presentation rules")));
     children.push(Box::new(el("p", "Target → condition → effect. Exact occurrence previews disclose their inputs. Saved rules can control Forme subdivisions in this view.")));
     children.push(Box::new(status_note("", pane.status.clone())));
+    // Loading failures must still expose Reconcile; the workspace may not
+    // exist yet, while its known store and graph binding remain retryable.
+    children.extend(controls(page));
     if let Some(session) = &pane.workspace {
         children.push(Box::new(el(
             "p",
@@ -863,7 +866,6 @@ pub(super) fn section(page: &TreePage) -> Child {
                 ))),
             }
         }
-        children.extend(controls(page));
         for (index, row) in pane.rows().rules.iter().enumerate() {
             let label = format!("Edit rule {}: {}", index + 1, row.label);
             children.push(Box::new(

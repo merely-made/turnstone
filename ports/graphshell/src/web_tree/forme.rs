@@ -14,7 +14,7 @@ use graphshell::forme_workspace::{
 use muniment::{Backend, IndexedDbBackend};
 use platen::workspace::{DropEffect, FormeLoadGate, FormeLoadTicket, FormeWriteFence};
 use uuid::Uuid;
-use workbench::{ContentSource, SplitAxis, Tile, TileEvent};
+use workbench::{ContentSource, SplitAxis, Tile, TileEvent, TileTree};
 
 pub(super) struct Pane {
     pub(super) session: FormeSession,
@@ -1380,7 +1380,9 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
                     let address = node.url();
                     let appearance = if matches!(
                         mere_document_lanes::retained_clip::request(address),
-                        Ok(Some(mere_document_lanes::retained_clip::ClipRequest::Read(_)))
+                        Ok(Some(mere_document_lanes::retained_clip::ClipRequest::Read(
+                            _
+                        )))
                     ) {
                         Some(super::reading::clip_appearance(
                             &reading_shared,
@@ -1400,19 +1402,18 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
                             )
                         })
                     };
-                    let links = if canvas.suggestion_settings().on
-                        && !canvas.has_offered_links(member)
-                    {
-                        node.body.as_deref().map(|body| {
-                            fleece::page_links::html_links(
-                                address,
-                                node.media_type.as_deref(),
-                                body,
-                            )
-                        })
-                    } else {
-                        None
-                    };
+                    let links =
+                        if canvas.suggestion_settings().on && !canvas.has_offered_links(member) {
+                            node.body.as_deref().map(|body| {
+                                fleece::page_links::html_links(
+                                    address,
+                                    node.media_type.as_deref(),
+                                    body,
+                                )
+                            })
+                        } else {
+                            None
+                        };
                     (appearance, links)
                 };
                 if let Some(links) = links {
@@ -1494,8 +1495,11 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
                                     .attr("data-forme-preview", format!("{edge:?}").to_lowercase())
                                     .attr(
                                         "data-forme-control",
-                                        json!([address.as_str(), format!("{edge:?}").to_lowercase()])
-                                            .to_string(),
+                                        json!([
+                                            address.as_str(),
+                                            format!("{edge:?}").to_lowercase()
+                                        ])
+                                        .to_string(),
                                     )
                                     .attr("aria-label", format!("{label}: {title}")),
                             ));

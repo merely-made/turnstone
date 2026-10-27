@@ -6,9 +6,11 @@
 //! Bounded node face decisions and view/occurrence-local hysteresis.
 use crate::presentation_binding::{BoundContext, Occurrence};
 pub use sceno::Representation;
+#[cfg(any(test, feature = "workspace-editor"))]
 use scenograph::presentation::editor::RuleSetDraft;
 use scenograph::presentation::{Effect, PrimitiveKind, Property, Resolution, RuleSet, ViewState};
 use serde::Serialize;
+#[cfg(any(test, feature = "workspace-editor"))]
 use serde_json::json;
 use std::collections::{BTreeMap, BTreeSet};
 use uuid::Uuid;
@@ -159,6 +161,7 @@ impl NodeRuntime {
 }
 /// Ordinary Canvas face, compact icon, selected attributes, positional-pin guard.
 /// Users can edit all priorities, thresholds and conditions before applying.
+#[cfg(any(test, feature = "workspace-editor"))]
 pub fn add_defaults(draft: &mut RuleSetDraft) -> usize {
     let definitions = [
         (

@@ -85,7 +85,7 @@ pub mod pane_source;
 pub mod personal_sync;
 #[cfg(feature = "web")]
 pub mod presentation_binding;
-#[cfg(feature = "web")]
+#[cfg(feature = "workspace-editor")]
 pub mod presentation_store;
 #[cfg(feature = "web")]
 pub mod product;

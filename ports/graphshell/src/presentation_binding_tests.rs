@@ -9,7 +9,7 @@ use mere::kernel::graph::{
     Field, ScalarField, SemanticStatementSpec, SemanticSubKind, predicate_iri,
 };
 use mere::kernel::types::GraphScope;
-use scenograph::presentation::{Resolution, Rule, RuleSet, Target};
+use scenograph::presentation::{Condition, Resolution, Rule, RuleSet, Target};
 fn fixture() -> (Graph, [Uuid; 4]) {
     let mut graph = Graph::new();
     let ids = [1, 2, 3, 4].map(Uuid::from_u128);
