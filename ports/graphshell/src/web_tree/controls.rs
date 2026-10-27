@@ -98,9 +98,10 @@ pub(super) fn toolbar(page: &TreePage) -> Child {
         })
         .collect();
     if resident {
-        buttons.push(Box::new(
-            status_note("", "Resident graph · use the Mere panel to choose a layout or read a record"),
-        ));
+        buttons.push(Box::new(status_note(
+            "",
+            "Resident graph · use the Mere panel to choose a layout or read a record",
+        )));
     } else {
         buttons.push(Box::new(
             button("Graph commands", |page: &mut TreePage, _| {
@@ -109,12 +110,7 @@ pub(super) fn toolbar(page: &TreePage) -> Child {
             .attr("aria-haspopup", "dialog")
             .attr(
                 "aria-expanded",
-                if page.commands.open.is_some()
-                    || page
-                        .product
-                        .as_ref()
-                        .is_some_and(|product| product.menu_open())
-                {
+                if page.commands.open.is_some() || page.product_menu_open() {
                     "true"
                 } else {
                     "false"
@@ -185,11 +181,13 @@ pub(super) fn toolbar(page: &TreePage) -> Child {
     }
     // Collapsed, the Graph tools region opens over the canvas from here.
     {
-        buttons.push(Box::new(
-            disclosure_trigger("Graph tools", page.tools_open, |page: &mut TreePage| {
+        buttons.push(Box::new(disclosure_trigger(
+            "Graph tools",
+            page.tools_open,
+            |page: &mut TreePage| {
                 page.tools_open = !page.tools_open;
-            }),
-        ));
+            },
+        )));
     }
     Box::new(
         el("nav", buttons)
@@ -228,20 +226,12 @@ impl TreePage {
             event.prop.prevent_default();
             return;
         }
-        if self
-            .product
-            .as_ref()
-            .is_some_and(|product| product.selection_locked())
-        {
+        if self.shared.selection_locked() {
             return;
         }
         if event.button == PointerButton::Primary
             && event.phase == PointerPhase::Down
-            && (self.commands.open.is_some()
-                || self
-                    .product
-                    .as_ref()
-                    .is_some_and(|product| product.menu_open()))
+            && (self.commands.open.is_some() || self.product_menu_open())
         {
             commands::close(self);
         }
@@ -269,7 +259,9 @@ impl TreePage {
             PointerPhase::Down => {
                 #[cfg(feature = "product")]
                 self.instrument.scope.activation.press(
-                    canvas.node_at_screen(x, y).map(|member|(self.instrument.scope.gesture_epoch,member)),
+                    canvas
+                        .node_at_screen(x, y)
+                        .map(|member| (self.instrument.scope.gesture_epoch, member)),
                     (x, y),
                     event.button != PointerButton::Primary
                         || event.modifiers.ctrl
@@ -294,7 +286,9 @@ impl TreePage {
                 #[cfg(feature = "product")]
                 {
                     read = self.instrument.scope.activation.release(
-                        canvas.node_at_screen(x, y).map(|member|(self.instrument.scope.gesture_epoch,member)),
+                        canvas
+                            .node_at_screen(x, y)
+                            .map(|member| (self.instrument.scope.gesture_epoch, member)),
                         (x, y),
                         now_ms(),
                     );
@@ -308,6 +302,7 @@ impl TreePage {
                 }
                 context = canvas.take_context_request();
                 self.picked = canvas.focused_url().map(str::to_owned);
+                #[cfg(feature = "product")]
                 if let Some(product) = &mut self.product {
                     product.select(canvas.selected_members().first().copied());
                 }

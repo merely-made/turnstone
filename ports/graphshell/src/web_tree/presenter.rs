@@ -8,7 +8,7 @@
 use super::*;
 use cambium::button;
 use graphshell::host_presenter::{HostPresenter, navigation_url};
-use graphshell::projection_compile::HostDatasetV1;
+use scenomise::host_dataset::HostDatasetV1;
 use std::collections::BTreeMap;
 
 pub(super) const WIDTH: u32 = 304;
@@ -191,8 +191,10 @@ pub(super) fn toolbar(page: &TreePage) -> Child {
                 .attr("aria-expanded", page.commands.open.is_some().to_string())
                 .attr("aria-keyshortcuts", "Control+k Meta+k Shift+F10"),
                 button("Fit visible graph", |page: &mut TreePage, _| {
-                    CanvasCommand::FitVisible
-                        .apply(&mut *page.shared.canvas.borrow_mut(), page.shared.size.get());
+                    CanvasCommand::FitVisible.apply(
+                        &mut *page.shared.canvas.borrow_mut(),
+                        page.shared.size.get(),
+                    );
                     page.shared.dirty.set(true);
                 }),
                 disclosure_trigger("Graph tools", page.tools_open, |page: &mut TreePage| {
@@ -212,38 +214,43 @@ pub(super) fn panel(page: &TreePage) -> Option<Child> {
     let mut disclosure_rows: Vec<Child> = Vec::new();
     let mut rows: Vec<Child> = vec![
         Box::new(el("h2", "Project inspector")),
-        Box::new(
-            status_note("", format!(
-                    "{} selected · {} visible / {} disclosed",
-                    p.selected.len(),
-                    p.visible.len(),
-                    p.envelope.dataset.occurrences.len()
-                )),
-        ),
-        Box::new(
-            disclosure_trigger(if pane.roster_open {
-                    "Hide project list"
-                } else {
-                    "Choose projects"
-                }, pane.roster_open, |page: &mut TreePage| {
-                    if let Some(pane) = &mut page.presenter {
-                        pane.roster_open = !pane.roster_open;
-                    }
-                }),
-        ),
+        Box::new(status_note(
+            "",
+            format!(
+                "{} selected · {} visible / {} disclosed",
+                p.selected.len(),
+                p.visible.len(),
+                p.envelope.dataset.occurrences.len()
+            ),
+        )),
+        Box::new(disclosure_trigger(
+            if pane.roster_open {
+                "Hide project list"
+            } else {
+                "Choose projects"
+            },
+            pane.roster_open,
+            |page: &mut TreePage| {
+                if let Some(pane) = &mut page.presenter {
+                    pane.roster_open = !pane.roster_open;
+                }
+            },
+        )),
     ];
     if page.grouping.is_some() {
-        disclosure_rows.push(Box::new(
-            disclosure_trigger(if pane.folds_open {
-                    "Hide Fold controls"
-                } else {
-                    "Show Fold controls"
-                }, pane.folds_open, |page: &mut TreePage| {
-                    if let Some(pane) = &mut page.presenter {
-                        pane.folds_open = !pane.folds_open;
-                    }
-                }),
-        ));
+        disclosure_rows.push(Box::new(disclosure_trigger(
+            if pane.folds_open {
+                "Hide Fold controls"
+            } else {
+                "Show Fold controls"
+            },
+            pane.folds_open,
+            |page: &mut TreePage| {
+                if let Some(pane) = &mut page.presenter {
+                    pane.folds_open = !pane.folds_open;
+                }
+            },
+        )));
         if pane.folds_open {
             if let Some(controls) = grouping::controls(page) {
                 disclosure_rows.push(controls);
@@ -410,17 +417,19 @@ pub(super) fn panel(page: &TreePage) -> Option<Child> {
                 },
             )));
         }
-        rows.push(Box::new(
-            disclosure_trigger(if pane.evidence_open {
-                    "Hide source details"
-                } else {
-                    "Show source details"
-                }, pane.evidence_open, |page: &mut TreePage| {
-                    if let Some(pane) = &mut page.presenter {
-                        pane.evidence_open = !pane.evidence_open;
-                    }
-                }),
-        ));
+        rows.push(Box::new(disclosure_trigger(
+            if pane.evidence_open {
+                "Hide source details"
+            } else {
+                "Show source details"
+            },
+            pane.evidence_open,
+            |page: &mut TreePage| {
+                if let Some(pane) = &mut page.presenter {
+                    pane.evidence_open = !pane.evidence_open;
+                }
+            },
+        )));
         if pane.evidence_open {
             let source = &p.envelope.dataset.source;
             rows.push(Box::new(
@@ -481,17 +490,19 @@ pub(super) fn panel(page: &TreePage) -> Option<Child> {
         )));
     }
     if pane.options.browsing && !p.selected.is_empty() {
-        rows.push(Box::new(
-            disclosure_trigger(if pane.selection_open {
-                    "Hide selection controls"
-                } else {
-                    "Manage selection"
-                }, pane.selection_open, |page: &mut TreePage| {
-                    if let Some(pane) = &mut page.presenter {
-                        pane.selection_open = !pane.selection_open;
-                    }
-                }),
-        ));
+        rows.push(Box::new(disclosure_trigger(
+            if pane.selection_open {
+                "Hide selection controls"
+            } else {
+                "Manage selection"
+            },
+            pane.selection_open,
+            |page: &mut TreePage| {
+                if let Some(pane) = &mut page.presenter {
+                    pane.selection_open = !pane.selection_open;
+                }
+            },
+        )));
         if pane.selection_open {
             rows.extend(selection_rows);
         }

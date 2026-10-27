@@ -272,6 +272,7 @@ fn force_eligibility_discloses_lifecycle_and_definition_mismatch() {
     );
 }
 
+#[cfg(feature = "workspace-editor")]
 #[test]
 fn forme_and_numen_overlap_keep_independent_owners() {
     let (graph, members) = fixture();

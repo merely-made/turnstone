@@ -1,13 +1,16 @@
 // Copyright 2026 Mark Alan Boykin
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 
 //! Executable projection editing without a browser or widget owner.
-use crate::projection_compile::{
-    CompiledProjection, ProjectionDataset, ProjectionSnapshot, default_definition,
-    practice_compiler,
-};
+use crate::projection_compile::{default_definition, practice_compiler};
 use scenograph::{ProjectionDefinition, ProjectionDraft, ValidationIssue};
-use scenomise::authoring::{EditorAction, ProjectionEditor};
+use scenomise::{
+    authoring::{EditorAction, ProjectionEditor},
+    projection::{CompileIssue, CompiledProjection, ProjectionDataset, ProjectionSnapshot},
+};
 
 pub fn draft_from_definition(definition: &ProjectionDefinition) -> ProjectionDraft {
     ProjectionDraft {
@@ -33,7 +36,7 @@ fn issues(issues: Vec<ValidationIssue>) -> String {
         .join("; ")
 }
 
-fn compile_issues(issues: Vec<crate::projection_compile::CompileIssue>) -> String {
+fn compile_issues(issues: Vec<CompileIssue>) -> String {
     issues
         .iter()
         .map(|issue| format!("{}: {}", issue.field, issue.message))

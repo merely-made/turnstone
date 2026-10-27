@@ -7,10 +7,11 @@
 //! F195's native/wasm identity probe, using the actual practice compiler and
 //! occurrence adapter. Floating-point words are recorded without rounding.
 
-use crate::projection_compile::{ProjectionDataset, default_definition, practice_compiler};
+use crate::projection_compile::{default_definition, practice_compiler};
 use mere::canvas::{
     PhysicsLaw, dynamics_recipe::preset_slot, projection_dynamics::ProjectionDynamics,
 };
+use scenomise::projection::{ProjectionDataset, ProjectionValue};
 
 pub fn catalog_receipt(bound: u32) -> Result<String, String> {
     catalog_receipt_for(bound, "grid")
@@ -23,10 +24,9 @@ pub fn catalog_receipt_for(bound: u32, family: &str) -> Result<String, String> {
     if family == "geographic" {
         for (index, occurrence) in data.occurrences.iter_mut().enumerate() {
             for field in ["order", "tempo_bpm"] {
-                occurrence.values.insert(
-                    field.into(),
-                    crate::projection_compile::ProjectionValue::Number(index as f64 * 1000.0),
-                );
+                occurrence
+                    .values
+                    .insert(field.into(), ProjectionValue::Number(index as f64 * 1000.0));
             }
         }
     }

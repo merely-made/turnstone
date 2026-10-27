@@ -3,101 +3,34 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
-//! Author shared query Resources; read-only views retain source strata and access identities.
+//! Browser adapter for the reusable query editor and retained query readings.
 use super::*;
-use cambium::{TextInput, button, lens, text_field_typed};
-use graphshell::query_views::{PresentedLink, presented_links};
+use cambium::{button, lens};
+use graphshell::query_views::{PresentedLink, QueryFreezeCorrelation, presented_links};
 use mere::kernel::graph::GraphStratum;
+use mere::query_view::editor::{Completion, Effect, SaveResult, Scope};
 use mere::query_view::{self as model, *};
+use mere_view::query_editor::{FIELD_LABELS, QueryEditor};
 use sceno::{LinkKey, LinkMarks, LinkStratum};
 use uuid::Uuid;
-const LABELS: [&str; 5] = [
-    "Query view title",
-    "SELECT query",
-    "Query member budget",
-    "Query appearance budget",
-    "Query relation budget",
-];
-const SAVE_FAILED: &str = "Query write failed. Retry the existing pending save in Graph tools.";
 
+struct CatalogEntry {
+    owner: Uuid,
+    title: String,
+    frozen: bool,
+}
+#[derive(Default)]
 pub(super) struct Pane {
-    inputs: Vec<TextInput>,
-    scope: Option<(Uuid, String)>,
-    owner: Option<Uuid>,
-    expected: Option<QueryViewSpec>,
-    options: QueryViewSpec,
-    status: String,
-    pending: Option<(Uuid, Uuid)>,
-    pending_freeze: Option<((Uuid, String), Uuid)>,
+    editor: QueryEditor,
+    source: Option<(Scope, u64)>,
+    catalog: Vec<CatalogEntry>,
+    tags: Vec<(String, String)>,
+    pending_freeze: Option<QueryFreezeCorrelation>,
     definition: Option<String>,
     inspection: Option<((Uuid, String), u64, String)>,
 }
-impl Default for Pane {
-    fn default() -> Self {
-        Self {
-            inputs: vec![
-                TextInput::new("Saved query"),
-                TextInput::new("SELECT ?member WHERE { ?member ?predicate ?object }"),
-                TextInput::new("256"),
-                TextInput::new("256"),
-                TextInput::new("1024"),
-            ],
-            scope: None,
-            owner: None,
-            expected: None,
-            options: QueryViewSpec::select("Saved query", ""),
-            status: String::new(),
-            pending: None,
-            pending_freeze: None,
-            definition: None,
-            inspection: None,
-        }
-    }
-}
-impl Pane {
-    fn spec(&self) -> Result<QueryViewSpec, String> {
-        let mut spec = self.options.clone();
-        spec.title = self.inputs[0].text().into();
-        spec.set_query_text(self.inputs[1].text())?;
-        spec.max_members = self.inputs[2]
-            .text()
-            .parse()
-            .map_err(|_| "Enter a positive member budget")?;
-        spec.styles = self.options.styles.clone();
-        spec.max_appearances = self.inputs[3]
-            .text()
-            .parse()
-            .map_err(|_| "Enter a positive appearance budget")?;
-        spec.max_relations = self.inputs[4]
-            .text()
-            .parse()
-            .map_err(|_| "Enter a positive relation budget")?;
-        spec.appearances = self.options.appearances;
-        spec.include_tag_concepts = self.options.include_tag_concepts;
-        spec.validate()?;
-        Ok(spec)
-    }
-    fn load(&mut self, scope: (Uuid, String), owner: Option<Uuid>, spec: QueryViewSpec) {
-        self.inputs = vec![
-            TextInput::new(&spec.title),
-            TextInput::new(spec.query_text()),
-            TextInput::new(spec.max_members.to_string()),
-            TextInput::new(spec.max_appearances.to_string()),
-            TextInput::new(spec.max_relations.to_string()),
-        ];
-        self.scope = Some(scope);
-        self.owner = owner;
-        self.expected = owner.map(|_| spec.clone());
-        self.options = spec;
-        self.pending = None;
-        self.pending_freeze = None;
-        self.definition = None;
-        self.inspection = None;
-        self.status = "Query draft opened".into();
-    }
-}
 fn load(page: &mut TreePage, owner: Option<Uuid>) {
-    let result = (|| {
+    let result: Result<((Uuid, String), QueryViewSpec), String> = (|| {
         let product = page.product.as_ref().ok_or("Saved graph unavailable")?;
         if product.selection_locked() {
             return Err("Wait for the current save".into());
@@ -105,306 +38,280 @@ fn load(page: &mut TreePage, owner: Option<Uuid>) {
         let scope = product.retained_scope().ok_or("Source unavailable")?;
         let spec = match owner {
             Some(id) => model::read_spec(product.source_graph()?, id)?,
-            None => Pane::default().spec()?,
+            None => QueryViewSpec::select(
+                "Saved query",
+                "SELECT ?member WHERE { ?member ?predicate ?object }",
+            ),
         };
         Ok((scope, spec))
     })();
     match result {
-        Ok((scope, spec)) => page.query_views.load(scope, owner, spec),
-        Err(e) => page.query_views.status = e,
+        Ok((scope, spec)) => {
+            page.query_views.editor.open(scope.into(), owner, spec);
+            page.query_views.definition = None;
+        },
+        Err(error) => page.query_views.editor.notice(error),
     }
 }
-fn save(page: &mut TreePage) {
-    let result = (|| {
-        let pane = &page.query_views;
-        let spec = pane.spec()?;
-        let scope = pane
-            .scope
-            .as_ref()
-            .ok_or("Open a new or saved query draft first")?;
-        page.product
-            .as_mut()
-            .ok_or("Saved graph unavailable")?
-            .save_query(scope, pane.owner, pane.expected.as_ref(), &spec)
-            .map(|result| (result, spec))
-    })();
-    match result {
-        Ok(((owner, access), spec)) => {
-            let pane = &mut page.query_views;
-            pane.owner = Some(owner);
-            pane.expected = Some(spec);
-            pane.pending = Some((owner, access));
-            pane.status = "Saving query view…".into();
-        },
-        Err(e) => page.query_views.status = e,
-    }
-    page.shared.dirty.set(true);
+fn source(page: &TreePage) -> Option<(Scope, u64)> {
+    let product = page.product.as_ref()?;
+    Some((
+        product.retained_scope()?.into(),
+        product.source_graph().ok()?.revision(),
+    ))
 }
 pub(super) fn ready(page: &TreePage) -> bool {
     let pane = &page.query_views;
-    page.product.as_ref().is_some_and(|p| {
-        !p.saving
-            && ((pane
-                .inspection
-                .as_ref()
-                .is_some_and(|(scope, _, _)| p.retained_scope().as_ref() != Some(scope)))
-                || (pane.scope.is_some() && pane.scope != p.retained_scope())
-                || ((pane.pending.is_some() || pane.pending_freeze.is_some())
-                    && ((p.save_state == "error" && pane.status != SAVE_FAILED)
-                        || (!p.selection_locked() && p.save_state != "error"))))
-    })
+    let available = page.product.as_ref().is_some_and(|p| !p.selection_locked());
+    pane.editor.has_effects()
+        || pane.editor.available() != available
+        || page
+            .product
+            .as_ref()
+            .is_some_and(|p| p.query_completion_ready())
+        || (source(page).is_some() && source(page) != pane.source)
+        || (page.product.is_none() && pane.source.is_some())
 }
 pub(super) fn poll(page: &mut TreePage) {
+    let current = source(page);
     let pane = &mut page.query_views;
-    let Some(product) = page.product.as_ref() else {
-        return;
-    };
-    if product.saving {
-        return;
-    }
-    if pane
-        .inspection
-        .as_ref()
-        .is_some_and(|(scope, _, _)| product.retained_scope().as_ref() != Some(scope))
-    {
+    pane.editor
+        .set_available(page.product.as_ref().is_some_and(|p| !p.selection_locked()));
+    // While a store task owns the app, a missing reading is temporary. Only
+    // an actual new binding (or removal) retires the editor's interest.
+    if (current.is_some() || page.product.is_none()) && current != pane.source {
+        if current.as_ref().map(|(scope, _)| scope) != pane.source.as_ref().map(|(scope, _)| scope)
+        {
+            if pane
+                .editor
+                .lifecycle()
+                .scope()
+                .is_some_and(|scope| current.as_ref().map(|(current, _)| current) != Some(scope))
+            {
+                pane.editor.retire();
+            }
+            pane.definition = None;
+            pane.pending_freeze = None;
+        }
         pane.inspection = None;
+        pane.catalog.clear();
+        pane.tags.clear();
+        if let Some(graph) = page.product.as_ref().and_then(|p| p.source_graph().ok()) {
+            for resource in graph.resource_nodes() {
+                if let Ok(frozen) = graph.open_frozen_selection(resource.id()) {
+                    pane.catalog.push(CatalogEntry {
+                        owner: resource.id(),
+                        frozen: true,
+                        title: format!(
+                            "Frozen selection {} · {} members · source revision {}",
+                            resource.id(),
+                            frozen.selection.members().len(),
+                            frozen.selection.revision()
+                        ),
+                    });
+                }
+                if let Ok(spec) = model::read_spec(graph, resource.id()) {
+                    pane.catalog.push(CatalogEntry {
+                        owner: resource.id(),
+                        frozen: false,
+                        title: spec.title,
+                    });
+                }
+                if let Some(concept) = graph.resource_tag_concept(resource.id()) {
+                    let term = serde_json::to_string(resource.canonical_iri())
+                        .expect("IRI string serializes");
+                    pane.tags.push((format!("Use tag: {} ({})", concept.label, concept.owner_iri),
+                        format!("SELECT ?member WHERE {{ ?member <{}> ?tag . FILTER(STR(?tag) = {term}) }}", mere::kernel::graph::resource::TAGGED_WITH_IRI)));
+                }
+            }
+        }
+        pane.source = current;
     }
-    if let Some((scope, frozen)) = pane.pending_freeze.clone() {
-        if product.retained_scope().as_ref() != Some(&scope) {
-            pane.pending_freeze = None;
-            pane.status = "Frozen selection completion belongs to another owner".into();
-            return;
-        }
-        if product.save_state == "error" {
-            pane.status = SAVE_FAILED.into();
-            return;
-        }
-        if !product.selection_locked()
-            && product
-                .source_graph()
-                .is_ok_and(|g| g.open_frozen_selection(frozen).is_ok())
-        {
-            pane.pending_freeze = None;
-            pane.status = "Query selection frozen and saved".into();
-        }
-    }
-    if pane.scope.is_some() && pane.scope != product.retained_scope() {
-        *pane = Pane::default();
-        pane.status = "Query draft retired after owner change".into();
-        return;
-    }
-    if let Some((owner, access)) = pane.pending {
-        if product.save_state == "error" {
-            pane.status = SAVE_FAILED.into();
-            return;
-        }
-        if product.selection_locked() {
-            return;
-        }
-        if product
-            .source_graph()
-            .is_ok_and(|g| model::read_spec(g, owner).ok().as_ref() == pane.expected.as_ref())
-        {
-            pane.pending = None;
-            pane.status = "Query view saved".into();
-            super::forme::open_retained(page, access);
+    while let Some(effect) = pane.editor.take_effect() {
+        let (id, scope, result, retry) = match effect {
+            Effect::Save(request) => {
+                let id = request.id;
+                let scope = request.scope.clone();
+                let result = page
+                    .product
+                    .as_mut()
+                    .ok_or_else(|| "Saved graph unavailable".to_string())
+                    .and_then(|p| p.save_query(request));
+                (id, scope, result, false)
+            },
+            Effect::Retry { id, scope } => {
+                let result = page
+                    .product
+                    .as_mut()
+                    .ok_or_else(|| "Saved graph unavailable".to_string())
+                    .and_then(|p| p.retry_query(id, &scope));
+                (id, scope, result, true)
+            },
+        };
+        if let Err(reason) = result {
+            let result = if retry {
+                SaveResult::Unconfirmed { reason }
+            } else {
+                SaveResult::Refused { reason }
+            };
+            pane.editor.complete(Completion { id, scope, result });
         }
     }
-}
-fn field(index: usize) -> Child {
-    Box::new(el(
-        "label",
-        (
-            LABELS[index],
-            lens(
-                move |input: &mut TextInput| {
-                    text_field_typed(input).attr("aria-label", LABELS[index])
+    let mut open = Vec::new();
+    if let Some(product) = page.product.as_mut() {
+        while let Some(completion) = product.take_query_completion() {
+            match completion {
+                product::QueryCompletion::Save(completion) => {
+                    if let Some(access) = pane.editor.complete(completion) {
+                        open.push(access);
+                    }
                 },
-                move |page: &mut TreePage| &mut page.query_views.inputs[index],
-            ),
-        ),
-    ))
+                product::QueryCompletion::Freeze {
+                    correlation,
+                    result,
+                } => {
+                    if pane.pending_freeze.as_ref() != Some(&correlation) {
+                        continue;
+                    }
+                    match result {
+                        Ok(()) => { pane.pending_freeze = None; pane.editor.notice("Query selection frozen and saved"); },
+                        Err(reason) => pane.editor.notice(format!("Query freeze unconfirmed: {reason}. Retry the pending save in Graph tools.")),
+                    }
+                },
+            }
+        }
+    }
+    pane.editor
+        .set_available(page.product.as_ref().is_some_and(|p| !p.selection_locked()));
+    for access in open {
+        super::forme::open_retained(page, access);
+    }
 }
+/// The legacy Graph tools retry uses the same component request when its
+/// editor is still listening. Two retry controls cannot start distinct attempts.
+/// With no listening editor, the owner retains its ordinary retry affordance.
+pub(super) fn retry_pending(page: &mut TreePage) -> bool {
+    if let Some(pending_freeze) = page.query_views.pending_freeze.clone() {
+        let retry = page.product.as_mut().and_then(|product| {
+            (product.pending_query_freeze().as_ref() == Some(&pending_freeze)).then(|| {
+                let result = product.retry_owner_operation();
+                (result, product.pending_query_freeze())
+            })
+        });
+        if let Some((result, current)) = retry {
+            match result {
+                Ok(_) => {
+                    page.query_views.pending_freeze = current;
+                    page.query_views
+                        .editor
+                        .notice("Retrying frozen selection save…");
+                },
+                Err(error) => page.query_views.editor.notice(error),
+            }
+            return true;
+        }
+    }
+    let Some(pending) = page.product.as_ref().and_then(|p| p.pending_query_id()) else {
+        return false;
+    };
+    match *page.query_views.editor.lifecycle().state() {
+        model::editor::SaveState::Saving(id) if id.same_operation(pending) => true,
+        model::editor::SaveState::Unconfirmed(id) if id.same_operation(pending) => {
+            page.query_views.editor.retry();
+            true
+        },
+        _ => false,
+    }
+}
+
 pub(super) fn focused_text(
     runner: &cambium_rootstock::Runner<TreePage, Logic, Child>,
 ) -> Option<cambium_rootstock::FocusedTextSlot<TreePage>> {
-    if runner.state().query_views.scope.is_none()
-        || runner
-            .state()
-            .product
-            .as_ref()
-            .is_none_or(|p| p.selection_locked())
-    {
+    if !runner.state().query_views.editor.editable() {
         return None;
     }
     let node = runner.focus()?;
     let dom = runner.dom();
     let dom = dom.borrow();
-    let index = LABELS
+    let index = FIELD_LABELS
         .iter()
         .position(|label| focused_field_has_label(&dom, node, label))?;
     Some(cambium_rootstock::FocusedTextSlot {
         node,
-        get: Box::new(move |page| &page.query_views.inputs[index]),
-        get_mut: Box::new(move |page| &mut page.query_views.inputs[index]),
+        get: Box::new(move |page| page.query_views.editor.field(index)),
+        get_mut: Box::new(move |page| page.query_views.editor.field_mut(index)),
     })
 }
 pub(super) fn section(page: &TreePage) -> Child {
+    let pane = &page.query_views;
     let mut children: Vec<Child> = vec![
         Box::new(el("h3", "Saved query views")),
-        Box::new(button("New query view", |p: &mut TreePage, _| {
-            load(p, None)
+        Box::new(button("New query view", |page: &mut TreePage, _| {
+            load(page, None)
         })),
     ];
-    if let Some(graph) = page.product.as_ref().and_then(|p| p.source_graph().ok()) {
-        for resource in graph.resource_nodes() {
-            if let Ok(frozen) = graph.open_frozen_selection(resource.id()) {
-                let owner = resource.id();
-                let lease = page.product.as_ref().and_then(|p| p.retained_scope());
-                children.push(Box::new(el(
-                    "p",
-                    format!(
-                        "Frozen selection {owner} · {} members · source revision {}",
-                        frozen.selection.members().len(),
-                        frozen.selection.revision()
-                    ),
-                )));
-                children.push(Box::new(button(format!("Inspect frozen selection {owner}"), move |p: &mut TreePage, _| {
-                    let result = p.product.as_ref().ok_or("Source unavailable".into()).and_then(|product| {
-                        if product.retained_scope() != lease { return Err("Frozen selection belongs to another owner".into()); }
-                        let graph = product.source_graph()?;
-                        let frozen = graph.open_frozen_selection(owner)?;
-                        serde_json::to_string_pretty(&json!({"owner": owner, "selection": frozen.selection, "coverage": frozen.coverage})).map(|text| (graph.revision(), text)).map_err(|e| e.to_string())
-                    });
-                    match result { Ok((revision, text)) => { if let Some(scope) = lease.clone() { p.query_views.inspection = Some((scope, revision, text)); } }, Err(e) => p.query_views.status = e }
-                })));
-            }
-            if let Ok(spec) = model::read_spec(graph, resource.id()) {
-                let owner = resource.id();
-                children.push(Box::new(button(
-                    format!("Edit query: {}", spec.title),
-                    move |p: &mut TreePage, _| load(p, Some(owner)),
-                )));
-            }
+    for entry in &pane.catalog {
+        let owner = entry.owner;
+        if entry.frozen {
+            let lease = pane.source.as_ref().map(|(scope, _)| scope.pair());
+            children.push(Box::new(el("p", entry.title.clone())));
+            children.push(Box::new(button(format!("Inspect frozen selection {owner}"), move |page: &mut TreePage, _| {
+                let result = page.product.as_ref().ok_or("Source unavailable".into()).and_then(|product| {
+                    if product.retained_scope() != lease { return Err("Frozen selection belongs to another owner".into()); }
+                    let graph = product.source_graph()?;
+                    let frozen = graph.open_frozen_selection(owner)?;
+                    serde_json::to_string_pretty(&json!({"owner": owner, "selection": frozen.selection, "coverage": frozen.coverage})).map(|text| (graph.revision(), text)).map_err(|e| e.to_string())
+                });
+                match result {
+                    Ok((revision, text)) => { if let Some(scope) = lease.clone() { page.query_views.inspection = Some((scope, revision, text)); } },
+                    Err(error) => page.query_views.editor.notice(error),
+                }
+            })));
+        } else {
+            children.push(Box::new(button(
+                format!("Edit query: {}", entry.title),
+                move |page: &mut TreePage, _| load(page, Some(owner)),
+            )));
         }
     }
-    let pane = &page.query_views;
-    if pane.scope.is_some() && page.product.as_ref().is_some_and(|p| !p.selection_locked()) {
-        children.extend((0..5).map(field));
-        if let Some(graph) = page.product.as_ref().and_then(|p| p.source_graph().ok()) {
-            for resource in graph.resource_nodes() {
-                if let Some(concept) = graph.resource_tag_concept(resource.id()) {
-                    // Compare a serialized literal rather than injecting a foreign IRI into query syntax.
-                    let term = serde_json::to_string(resource.canonical_iri())
-                        .expect("IRI string serializes");
-                    let query = format!(
-                        "SELECT ?member WHERE {{ ?member <{}> ?tag . FILTER(STR(?tag) = {term}) }}",
-                        mere::kernel::graph::resource::TAGGED_WITH_IRI
-                    );
-                    children.push(Box::new(button(
-                        format!("Use tag: {} ({})", concept.label, concept.owner_iri),
-                        move |p: &mut TreePage, _| {
-                            p.query_views.options.definition =
-                                QueryViewSpec::select("", &query).definition;
-                            p.query_views.inputs[1] = TextInput::new(&query);
-                        },
-                    )));
-                }
-            }
-        }
-        children.push(Box::new(button(
-            match pane.options.appearances {
-                AppearancePolicy::AllHeldAccesses => "Show Resources and held appearances",
-                AppearancePolicy::ResourcesOnly => "Show Resources only",
-            },
-            |p: &mut TreePage, _| {
-                let v = &mut p.query_views.options.appearances;
-                *v = if *v == AppearancePolicy::AllHeldAccesses {
-                    AppearancePolicy::ResourcesOnly
-                } else {
-                    AppearancePolicy::AllHeldAccesses
-                };
-            },
-        )));
-        children.push(Box::new(button(
-            format!("Tag context: {}", pane.options.include_tag_concepts),
-            |p: &mut TreePage, _| {
-                p.query_views.options.include_tag_concepts =
-                    !p.query_views.options.include_tag_concepts
-            },
-        )));
-        for index in 0..3 {
-            let cue = match index {
-                0 => pane.options.styles.resource_link,
-                1 => pane.options.styles.surface_link,
-                _ => pane.options.styles.cross_stratum_edge,
-            };
+    if pane.editor.editable() {
+        for (label, query) in &pane.tags {
+            let query = query.clone();
             children.push(Box::new(button(
-                format!(
-                    "{} stroke: {}",
-                    ["Resource link", "Surface link", "Cross-stratum edge"][index],
-                    cue.css()
-                ),
-                move |p: &mut TreePage, _| {
-                    let styles = &mut p.query_views.options.styles;
-                    let current = match index {
-                        0 => styles.resource_link,
-                        1 => styles.surface_link,
-                        _ => styles.cross_stratum_edge,
-                    };
-                    let start = StrokeCue::ALL
-                        .iter()
-                        .position(|cue| *cue == current)
-                        .unwrap();
-                    let next = StrokeCue::ALL
-                        .iter()
-                        .cycle()
-                        .skip(start + 1)
-                        .take(4)
-                        .copied()
-                        .find(|cue| {
-                            if index < 2 {
-                                *cue != styles.cross_stratum_edge
-                            } else {
-                                *cue != styles.resource_link && *cue != styles.surface_link
+                label.clone(),
+                move |page: &mut TreePage, _| page.query_views.editor.use_query(&query),
+            )));
+        }
+        if let Some(owner) = pane.editor.lifecycle().owner() {
+            let lease = pane.editor.lifecycle().scope().map(Scope::pair);
+            children.push(Box::new(button(
+                "Copyable saved query definition",
+                move |page: &mut TreePage, _| {
+                    let result = page
+                        .product
+                        .as_ref()
+                        .ok_or("Source unavailable".into())
+                        .and_then(|product| {
+                            if product.selection_locked() || product.retained_scope() != lease {
+                                return Err(
+                                    "Query definition belongs to another owner or a pending save"
+                                        .into(),
+                                );
                             }
-                        })
-                        .expect("four cues provide a distinct link and edge choice");
-                    match index {
-                        0 => styles.resource_link = next,
-                        1 => styles.surface_link = next,
-                        _ => styles.cross_stratum_edge = next,
+                            model::shared_spec(product.source_graph()?, owner)
+                        });
+                    match result {
+                        Ok(text) => page.query_views.definition = Some(text),
+                        Err(error) => page.query_views.editor.notice(error),
                     }
                 },
             )));
         }
-        children.push(Box::new(button(
-            "Save query view",
-            |p: &mut TreePage, _| save(p),
-        )));
-        if let Some(owner) = pane.owner {
-            let lease = pane.scope.clone();
-            children.push(Box::new(button(
-                "Copyable saved query definition",
-                move |p: &mut TreePage, _| match p
-                    .product
-                    .as_ref()
-                    .ok_or("Source unavailable".into())
-                    .and_then(|product| {
-                        if product.selection_locked() || product.retained_scope() != lease {
-                            return Err(
-                                "Query definition belongs to another owner or a pending save"
-                                    .into(),
-                            );
-                        }
-                        model::shared_spec(product.source_graph()?, owner)
-                    }) {
-                    Ok(text) => p.query_views.definition = Some(text),
-                    Err(e) => p.query_views.status = e,
-                },
-            )));
-        }
     }
+    children.push(Box::new(lens(
+        |editor: &mut QueryEditor| mere_view::query_editor::view(editor),
+        |page: &mut TreePage| &mut page.query_views.editor,
+    )));
     if let Some((_, _, text)) = pane.inspection.as_ref().filter(|(scope, revision, _)| {
         page.product.as_ref().is_some_and(|p| {
             p.retained_scope().as_ref() == Some(scope)
@@ -424,15 +331,13 @@ pub(super) fn section(page: &TreePage) -> Child {
                 .attr("style", "white-space:pre-wrap;user-select:text"),
         ));
     }
-    children.push(Box::new(
-        status_note("", pane.status.clone()),
-    ));
     Box::new(
         el("section", children)
             .attr("class", "tree-query")
             .attr("aria-label", "Saved query views"),
     )
 }
+
 /// Resolve a retained tile by its explicit shown binding, not by address matching.
 pub(super) fn appearance(
     page: &TreePage,
@@ -610,7 +515,7 @@ pub(super) fn render(snapshot: (Result<QueryProjection, String>, Option<(Uuid, S
                             });
                         match result {
                             Ok(()) => super::forme::open_retained(p, access),
-                            Err(e) => p.query_views.status = e,
+                            Err(e) => p.query_views.editor.notice(e),
                         }
                     },
                 )));
@@ -690,7 +595,7 @@ pub(super) fn render(snapshot: (Result<QueryProjection, String>, Option<(Uuid, S
                 let result = p
                     .product
                     .as_ref()
-                    .ok_or("Source unavailable".into())
+                    .ok_or_else(|| "Source unavailable".to_owned())
                     .and_then(|product| {
                         if product.retained_scope() != lease
                             || !source.is_current(product.source_graph()?)
@@ -737,10 +642,10 @@ pub(super) fn render(snapshot: (Result<QueryProjection, String>, Option<(Uuid, S
                         }
                         p.inspected_link = Some(target);
                         p.tools_open = true;
-                        p.query_views.status = "Opened source link reading".into();
+                        p.query_views.editor.notice("Opened source link reading");
                         p.shared.dirty.set(true);
                     },
-                    Err(error) => p.query_views.status = error,
+                    Err(error) => p.query_views.editor.notice(error),
                 }
             },
         )));
@@ -789,13 +694,11 @@ pub(super) fn render(snapshot: (Result<QueryProjection, String>, Option<(Uuid, S
                         .freeze_query(scope, &source)
                 });
             match result {
-                Ok(frozen) => {
-                    if let Some(scope) = scope.clone() {
-                        p.query_views.pending_freeze = Some((scope, frozen));
-                    }
-                    p.query_views.status = "Saving frozen selection…".into();
+                Ok(correlation) => {
+                    p.query_views.pending_freeze = Some(correlation);
+                    p.query_views.editor.notice("Saving frozen selection…");
                 },
-                Err(e) => p.query_views.status = e,
+                Err(e) => p.query_views.editor.notice(e),
             }
         },
     )));
@@ -827,7 +730,7 @@ pub(super) fn fields(page: &TreePage, snapshot: ProbeSnapshot) -> ProbeSnapshot 
                 .collect()
         })
         .unwrap_or_default();
-    let projection = pane.owner.and_then(|owner| {
+    let projection = pane.editor.lifecycle().owner().and_then(|owner| {
         page.product
             .as_ref()
             .and_then(|p| p.source_graph().ok())
@@ -881,9 +784,16 @@ pub(super) fn fields(page: &TreePage, snapshot: ProbeSnapshot) -> ProbeSnapshot 
         )
         .with_field(
             "query-view-owner",
-            pane.owner.map(|id| id.to_string()).unwrap_or_default(),
+            pane.editor
+                .lifecycle()
+                .owner()
+                .map(|id| id.to_string())
+                .unwrap_or_default(),
         )
-        .with_field("query-view-status", pane.status.clone())
+        .with_field(
+            "query-view-status",
+            pane.editor.lifecycle().status().to_owned(),
+        )
         .with_field(
             "query-inspection-kind",
             inspected
@@ -927,10 +837,18 @@ pub(super) fn fields(page: &TreePage, snapshot: ProbeSnapshot) -> ProbeSnapshot 
         )
         .with_field(
             "query-view-pending",
-            (pane.pending.is_some() || pane.pending_freeze.is_some()).to_string(),
+            (!matches!(
+                pane.editor.lifecycle().state(),
+                model::editor::SaveState::Idle
+            ) || pane.pending_freeze.is_some())
+            .to_string(),
         )
         .with_field(
             "query-view-edge-stroke",
-            pane.options.styles.cross_stratum_edge.css(),
+            pane.editor
+                .lifecycle()
+                .draft()
+                .map_or(StrokeCue::Dashed, |draft| draft.styles.cross_stratum_edge)
+                .css(),
         )
 }

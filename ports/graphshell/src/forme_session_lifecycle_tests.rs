@@ -1,6 +1,40 @@
 // Copyright 2026 Mark Alan Boykin
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 use super::*;
+use crate::forme_workspace::{
+    GraphshellFormeSession as FormeSession, GraphshellPreparedSave as PreparedSave,
+    GraphshellSaveKind as SaveKind,
+};
+use muniment::Backend;
+use platen::workspace::{FormeLoadGate, FormeWriteFence};
+use uuid::Uuid;
+
+trait PersistPreparedSave {
+    async fn save<B: Backend>(&self, backend: B) -> Result<(), String>;
+}
+impl PersistPreparedSave for PreparedSave {
+    async fn save<B: Backend>(&self, backend: B) -> Result<(), String> {
+        let bytes = self.bytes()?;
+        backend
+            .put(&crate::forme_workspace::slot(self.graph_id()), &bytes)
+            .await
+            .map_err(|e| e.to_string())
+    }
+}
+async fn load<B: Backend>(
+    backend: &B,
+    graph_id: Uuid,
+    graph: &mere::kernel::graph::Graph,
+) -> Result<FormeSession, String> {
+    let bytes = backend
+        .get(&crate::forme_workspace::slot(graph_id))
+        .await
+        .map_err(|e| e.to_string())?;
+    FormeSession::from_bytes(bytes.as_deref(), graph_id, graph)
+}
 use crate::{
     app::GraphshellApp,
     mere_host::{FIXTURE_PERSONA_ADDRESS, FIXTURE_WEB_ADDRESS, GRAPHSHELL, SelectedPersonaRef},
@@ -32,6 +66,23 @@ fn fixture() -> (MemoryBackend, App, FormeSession, Uuid) {
     workspace.open(member, app.host.graph()).unwrap();
     (backend, app, FormeSession::new(workspace), member)
 }
+fn model_fixture() -> (mere::kernel::graph::Graph, FormeSession, [Uuid; 3]) {
+    use mere::kernel::graph::apply::add_node;
+    let mut graph = mere::kernel::graph::Graph::new();
+    let members = [Uuid::from_u128(1), Uuid::from_u128(2), Uuid::from_u128(3)];
+    for member in members {
+        add_node(
+            &mut graph,
+            Some(member),
+            "https://example.test/shared".into(),
+            Default::default(),
+        );
+    }
+    let owner = Uuid::from_u128(10);
+    let mut workspace = FormeWorkspace::new(owner);
+    workspace.open(members[0], &graph).unwrap();
+    (graph, FormeSession::new(workspace), members)
+}
 fn codicil(app: &App, member: Uuid) -> Vec<u8> {
     app.host
         .export_product_codicil(ExportRequest {
@@ -50,6 +101,475 @@ async fn persist(session: &mut FormeSession, backend: MemoryBackend) {
     session.finish_save(proposal, result).unwrap();
 }
 
+async fn save_kind(session: &mut FormeSession, backend: MemoryBackend, kind: SaveKind) {
+    let proposal = session.prepare_save(kind, 1000).unwrap();
+    let result = proposal.save(backend).await;
+    session.finish_save(proposal, result).unwrap();
+}
+
+#[test]
+fn inspector_binding_persists_without_committing_or_discarding_layout_draft() {
+    pollster::block_on(async {
+        use crate::pane_source::InspectorSource;
+        let (graph, mut session, [a, _, c]) = model_fixture();
+        let backend = MemoryBackend::new();
+        let owner = session.committed().document.graph_id;
+        persist(&mut session, backend.clone()).await;
+        let document = serde_json::to_value(&session.committed().document).unwrap();
+        let original_created = session.committed().document.created_at_ms;
+        let original_updated = session.committed().document.updated_at_ms;
+        session.unlock().unwrap();
+        session.edit(None, 1, |w| w.open(c, &graph)).unwrap();
+        let update = session.preferences_update(false, |preferences| {
+            preferences.inspector_source = InspectorSource::Pinned(a);
+        });
+        save_kind(&mut session, backend.clone(), update).await;
+        assert!(session.editing());
+        assert!(session.view().members().contains(&c));
+        assert!(!session.committed().members().contains(&c));
+        assert_eq!(
+            serde_json::to_value(&session.committed().document).unwrap(),
+            document
+        );
+        assert_eq!(
+            session.view().preferences.inspector_source,
+            InspectorSource::Pinned(a)
+        );
+        assert_eq!(session.committed().preferences.focused_reading, Some(a));
+        assert_eq!(session.view().preferences.focused_reading, Some(c));
+        assert_ne!(
+            session.committed().preferences.reading_trail,
+            session.view().preferences.reading_trail,
+            "an inspector update must preserve the separate committed and draft trails"
+        );
+        assert_eq!(session.committed().document.created_at_ms, original_created);
+        assert_eq!(session.committed().document.updated_at_ms, original_updated);
+        session.discard().unwrap();
+        let cold = load(&backend, owner, &graph).await.unwrap();
+        assert_eq!(
+            cold.view().preferences.inspector_source,
+            InspectorSource::Pinned(a)
+        );
+        assert!(!cold.view().members().contains(&c));
+        assert_eq!(
+            cold.view().preferences.focused_reading,
+            session.committed().preferences.focused_reading
+        );
+        let other = load(&backend, Uuid::from_u128(99), &graph).await.unwrap();
+        assert_eq!(
+            other.view().preferences.inspector_source,
+            InspectorSource::Active
+        );
+        assert!(other.view().preferences.focused_reading.is_none());
+    });
+}
+
+#[test]
+fn preference_retry_rejects_stale_draft_payload_but_accepts_unchanged_retry() {
+    use crate::pane_source::InspectorSource;
+    let (graph, mut session, [a, b, c]) = model_fixture();
+    session.unlock().unwrap();
+    session
+        .edit(None, 1, |workspace| workspace.open(c, &graph))
+        .unwrap();
+
+    let unchanged = session.preferences_update(false, |preferences| {
+        preferences.inspector_source = InspectorSource::Pinned(a);
+    });
+    let failed = session.prepare_save(unchanged.clone(), 2).unwrap();
+    assert!(session.finish_save(failed, Err("offline".into())).is_err());
+    let retry = session.prepare_save(unchanged, 3).unwrap();
+    session.finish_save(retry, Ok(())).unwrap();
+    assert_eq!(session.committed().preferences.focused_reading, Some(a));
+    assert_eq!(session.view().preferences.focused_reading, Some(c));
+
+    let stale = session.preferences_update(false, |preferences| {
+        preferences.inspector_source = InspectorSource::Pinned(b);
+    });
+    let failed = session.prepare_save(stale.clone(), 4).unwrap();
+    assert!(session.finish_save(failed, Err("offline".into())).is_err());
+    session
+        .edit(None, 5, |workspace| workspace.open(b, &graph))
+        .unwrap();
+    assert!(session.prepare_save(stale, 6).is_err());
+    assert_eq!(
+        session.committed().preferences.inspector_source,
+        InspectorSource::Pinned(a)
+    );
+    assert_eq!(session.committed().preferences.focused_reading, Some(a));
+    assert_eq!(
+        session.view().preferences.inspector_source,
+        InspectorSource::Pinned(a)
+    );
+    assert_eq!(session.view().preferences.focused_reading, Some(b));
+
+    let fresh = session.preferences_update(false, |preferences| {
+        preferences.inspector_source = InspectorSource::Pinned(b);
+    });
+    let saved = session.prepare_save(fresh, 7).unwrap();
+    session.finish_save(saved, Ok(())).unwrap();
+    assert_eq!(
+        session.committed().preferences.inspector_source,
+        InspectorSource::Pinned(b)
+    );
+    assert_eq!(session.committed().preferences.focused_reading, Some(a));
+    assert_eq!(session.view().preferences.focused_reading, Some(b));
+}
+
+#[test]
+fn reading_preferences_persist_without_layout_history_and_failed_write_is_atomic() {
+    pollster::block_on(async {
+        let (graph, mut session, [a, b, c]) = model_fixture();
+        let owner = session.view().document.graph_id;
+        let backend = MemoryBackend::new();
+        let mut value = tabard::ReadingPreferences::default();
+        value.step_text(true);
+        value.step_column(false);
+        session.unlock().unwrap();
+        session
+            .edit(None, 1, |workspace| workspace.open(c, &graph))
+            .unwrap();
+        let layout = session.view().geometry.clone();
+        let update_value = value.clone();
+        let update = session.preferences_update(true, move |preferences| {
+            preferences.reading_preferences.set(a, update_value.clone());
+        });
+        save_kind(&mut session, backend.clone(), update).await;
+        assert!(session.editing());
+        assert_eq!(session.view().geometry, layout);
+        assert_eq!(session.view().preferences.focused_reading, Some(c));
+        assert_eq!(
+            session.view().preferences.reading_preferences.get(&a),
+            value
+        );
+        session.discard().unwrap();
+        let mut cold = load(&backend, owner, &graph).await.unwrap();
+        assert_eq!(cold.view().preferences.reading_preferences.get(&a), value);
+        assert!(!cold.view().preferences.reading_preferences.contains(&b));
+        assert_eq!(cold.view().preferences.focused_reading, Some(a));
+        assert!(!cold.can_undo(), "preferences are not layout gestures");
+        let committed = serde_json::to_vec(cold.committed()).unwrap();
+        let mut next = value;
+        next.step_text(true);
+        let update = cold.preferences_update(true, move |preferences| {
+            preferences.reading_preferences.set(a, next.clone());
+        });
+        let proposal = cold.prepare_save(update, 2).unwrap();
+        assert!(cold.finish_save(proposal, Err("offline".into())).is_err());
+        assert_eq!(serde_json::to_vec(cold.committed()).unwrap(), committed);
+    });
+}
+
+#[test]
+fn anchored_reading_visits_reopen_and_failed_progress_keeps_acknowledged_state() {
+    pollster::block_on(async {
+        let (graph, mut session, [a, b, c]) = model_fixture();
+        let owner = session.view().document.graph_id;
+        let backend = MemoryBackend::new();
+        let anchor = tabard::ReadingAnchor {
+            source: "https://example.test/a".into(),
+            revision: 42,
+            text: 7,
+            offset: 0,
+            exact: "A retained passage".into(),
+            prefix: String::new(),
+            suffix: String::new(),
+            line_offset: 0.0,
+            fallback_y: 600.0,
+        };
+        let mut trail = tabard::ReadingTrail::default();
+        trail.visit(a);
+        trail.anchor_current(anchor.clone());
+        trail.visit(b);
+        session.unlock().unwrap();
+        session
+            .edit(None, 1, |workspace| workspace.open(c, &graph))
+            .unwrap();
+        let layout = session.view().geometry.clone();
+        let update_anchor = anchor.clone();
+        let update_trail = trail.clone();
+        let update = session.preferences_update(true, move |preferences| {
+            preferences.reading_anchors.insert(a, update_anchor.clone());
+            preferences.reading_trail = update_trail.clone();
+        });
+        save_kind(&mut session, backend.clone(), update).await;
+        assert_eq!(session.view().geometry, layout);
+        assert!(session.editing());
+        session.discard().unwrap();
+        let mut cold = load(&backend, owner, &graph).await.unwrap();
+        assert_eq!(
+            cold.view().preferences.reading_anchors.get(&a),
+            Some(&anchor)
+        );
+        let mut reopened = cold.view().preferences.reading_trail.clone();
+        assert_eq!(reopened.step(false), Some(a));
+        assert_eq!(reopened.current_anchor(), Some(&anchor));
+        let committed = serde_json::to_vec(cold.committed()).unwrap();
+        let update = cold.preferences_update(true, |preferences| {
+            preferences.reading_anchors.clear();
+            preferences.reading_trail = Default::default();
+        });
+        let proposal = cold.prepare_save(update, 3).unwrap();
+        assert!(cold.finish_save(proposal, Err("offline".into())).is_err());
+        assert_eq!(serde_json::to_vec(cold.committed()).unwrap(), committed);
+    });
+}
+
+#[test]
+fn failed_source_and_scope_writes_keep_acknowledged_policy_and_reject_foreign_graph() {
+    use crate::pane_source::InspectorSource;
+    use crate::scope_policy::*;
+    let (_, mut session, [a, _, _]) = model_fixture();
+    let owner = session.committed().document.graph_id;
+    let update = session.preferences_update(false, |preferences| {
+        preferences.inspector_source = InspectorSource::Pinned(a);
+    });
+    let proposal = session.prepare_save(update, 1).unwrap();
+    assert!(
+        session
+            .finish_save(proposal, Err("offline".into()))
+            .is_err()
+    );
+    assert_eq!(
+        session.committed().preferences.inspector_source,
+        InspectorSource::Active
+    );
+
+    let mut navigation = session.committed().preferences.scope_navigation.clone();
+    let anchor = tabard::ReadingAnchor {
+        source: "mere://reading/a".into(),
+        revision: 42,
+        text: 3,
+        offset: 0,
+        exact: "A retained passage".into(),
+        prefix: String::new(),
+        suffix: String::new(),
+        line_offset: 0.0,
+        fallback_y: 600.0,
+    };
+    let place = ScopePlace {
+        contexts: Some(vec![
+            ScopeContext {
+                level: ScopeLevel::Graph,
+                graph: owner,
+                root: None,
+            },
+            ScopeContext {
+                level: ScopeLevel::Neighborhood,
+                graph: owner,
+                root: Some(a),
+            },
+        ]),
+        level: ScopeLevel::Document,
+        graph: owner,
+        root: Some(a),
+        focus: Some(a),
+    };
+    navigation.visit(ScopeVisit {
+        place: place.clone(),
+        camera: None,
+        anchor: Some(anchor.clone()),
+    });
+    navigation.visit(ScopeVisit {
+        place: place.up().unwrap(),
+        camera: Some(ScopeCamera {
+            x: 100.0,
+            y: 80.0,
+            zoom: 2.0,
+        }),
+        anchor: None,
+    });
+    let update = session.preferences_update(false, {
+        let navigation = navigation.clone();
+        move |preferences| preferences.scope_navigation = navigation.clone()
+    });
+    let proposal = session.prepare_save(update, 2).unwrap();
+    assert!(
+        session
+            .finish_save(proposal, Err("offline".into()))
+            .is_err()
+    );
+    assert!(
+        session
+            .committed()
+            .preferences
+            .scope_navigation
+            .current()
+            .is_none()
+    );
+    let mut foreign = navigation.current().unwrap().clone();
+    foreign.place.graph = Uuid::nil();
+    navigation.visit(foreign);
+    let update = session.preferences_update(false, move |preferences| {
+        preferences.scope_navigation = navigation.clone();
+    });
+    assert!(session.prepare_save(update, 3).is_err());
+}
+
+#[test]
+fn closing_a_reading_prefers_its_stack_before_other_tiles() {
+    use mere::kernel::graph::apply::add_node;
+    let (graph, mut session, [a, b, _]) = model_fixture();
+    let c = Uuid::from_u128(99);
+    let mut graph = graph;
+    add_node(
+        &mut graph,
+        Some(c),
+        "https://example.test/third".into(),
+        Default::default(),
+    );
+    session.unlock().unwrap();
+    session
+        .edit(None, 1, |workspace| {
+            workspace.read(b, &graph)?;
+            workspace.open(c, &graph)
+        })
+        .unwrap();
+    session
+        .edit(None, 2, |workspace| {
+            workspace.event(
+                workbench::TileEvent::Activated(workspace.tile_for_member(b).unwrap()),
+                &graph,
+            )?;
+            workspace.event(
+                workbench::TileEvent::Closed(workspace.tile_for_member(b).unwrap()),
+                &graph,
+            )
+        })
+        .unwrap();
+    assert_eq!(session.view().preferences.focused_reading, Some(a));
+    assert!(session.view().members().contains(&c));
+    session
+        .edit(None, 3, |workspace| {
+            workspace.event(
+                workbench::TileEvent::Closed(workspace.tile_for_member(a).unwrap()),
+                &graph,
+            )?;
+            workspace.event(
+                workbench::TileEvent::Closed(workspace.tile_for_member(c).unwrap()),
+                &graph,
+            )
+        })
+        .unwrap();
+    assert_eq!(session.view().preferences.focused_reading, None);
+    assert!(session.view().members().is_empty());
+    session
+        .edit(None, 4, |workspace| workspace.open(b, &graph))
+        .unwrap();
+    assert_eq!(session.view().preferences.focused_reading, Some(b));
+}
+
+#[test]
+fn immutable_scope_contexts_are_validated_against_the_owner_graph() {
+    use crate::scope_policy::*;
+    let (graph, session, _) = model_fixture();
+    let owner = session.committed().document.graph_id;
+    let mut preferences = session.committed().preferences.clone();
+    preferences.scope_navigation.visit(ScopeVisit {
+        place: ScopePlace {
+            level: ScopeLevel::Graph,
+            graph: owner,
+            root: None,
+            focus: None,
+            contexts: None,
+        },
+        camera: None,
+        anchor: None,
+    });
+    let mut wire = serde_json::to_value(&preferences.scope_navigation).unwrap();
+    wire["lineage"]["visits"][0]["context"]["place"]["graph"] =
+        serde_json::json!(Uuid::from_u128(20));
+    preferences.scope_navigation = serde_json::from_value(wire).unwrap();
+    let mut workspace = FormeWorkspace::new(owner);
+    workspace.preferences = preferences;
+    assert!(workspace.validate(owner).is_err());
+    assert!(FormeSession::from_bytes(None, owner, &graph).is_ok());
+}
+
+#[test]
+fn scope_route_and_anchor_persist_while_layout_draft_and_timestamp_policy_hold() {
+    pollster::block_on(async {
+        use crate::scope_policy::*;
+        let (graph, mut session, [a, _, c]) = model_fixture();
+        let owner = session.committed().document.graph_id;
+        let backend = MemoryBackend::new();
+        persist(&mut session, backend.clone()).await;
+        let timestamp = session.committed().document.updated_at_ms;
+        session.unlock().unwrap();
+        session
+            .edit(None, 1, |workspace| workspace.open(c, &graph))
+            .unwrap();
+
+        let anchor = tabard::ReadingAnchor {
+            source: "mere://scope/document".into(),
+            revision: 11,
+            text: 2,
+            offset: 0,
+            exact: "Scoped passage".into(),
+            prefix: String::new(),
+            suffix: String::new(),
+            line_offset: 0.0,
+            fallback_y: 240.0,
+        };
+        let place = ScopePlace {
+            contexts: Some(vec![
+                ScopeContext {
+                    level: ScopeLevel::Graph,
+                    graph: owner,
+                    root: None,
+                },
+                ScopeContext {
+                    level: ScopeLevel::Neighborhood,
+                    graph: owner,
+                    root: Some(a),
+                },
+            ]),
+            level: ScopeLevel::Document,
+            graph: owner,
+            root: Some(a),
+            focus: Some(a),
+        };
+        let place_for_update = place.clone();
+        let anchor_for_update = anchor.clone();
+        let update = session.preferences_update(false, move |preferences| {
+            preferences.scope_navigation.visit(ScopeVisit {
+                place: place_for_update.clone(),
+                camera: Some(ScopeCamera {
+                    x: 24.0,
+                    y: 32.0,
+                    zoom: 1.5,
+                }),
+                anchor: Some(anchor_for_update.clone()),
+            });
+        });
+        save_kind(&mut session, backend.clone(), update).await;
+        assert!(session.editing());
+        assert!(session.view().members().contains(&c));
+        assert_eq!(session.committed().document.updated_at_ms, timestamp);
+        session.discard().unwrap();
+
+        let reopened = load(&backend, owner, &graph).await.unwrap();
+        let visit = reopened
+            .view()
+            .preferences
+            .scope_navigation
+            .current()
+            .unwrap();
+        assert_eq!(visit.place, place);
+        assert_eq!(visit.anchor, Some(anchor));
+        assert_eq!(
+            visit.camera,
+            Some(ScopeCamera {
+                x: 24.0,
+                y: 32.0,
+                zoom: 1.5
+            })
+        );
+        assert!(!reopened.view().members().contains(&c));
+        assert_eq!(reopened.committed().document.updated_at_ms, timestamp);
+    });
+}
+
 #[test]
 fn owner_lifecycle_same_app_undo_redo_preserves_layout_and_masks_only_missing_cells() {
     let (_, mut app, mut session, _) = fixture();
@@ -65,9 +585,7 @@ fn owner_lifecycle_same_app_undo_redo_preserves_layout_and_masks_only_missing_ce
     let mut canvas = Canvas::with_graph(app.host.graph().clone());
     canvas
         .set_forme_region(
-            session
-                .view()
-                .project_region(owner, app.host.graph())
+            crate::forme_workspace::project_region(session.view(), owner, app.host.graph())
                 .unwrap(),
         )
         .unwrap();
@@ -78,9 +596,7 @@ fn owner_lifecycle_same_app_undo_redo_preserves_layout_and_masks_only_missing_ce
     assert!(canvas.forme_region().is_none());
     canvas
         .set_forme_region(
-            session
-                .view()
-                .project_region(owner, app.host.graph())
+            crate::forme_workspace::project_region(session.view(), owner, app.host.graph())
                 .unwrap(),
         )
         .unwrap();
@@ -95,9 +611,7 @@ fn owner_lifecycle_same_app_undo_redo_preserves_layout_and_masks_only_missing_ce
     canvas.set_graph(app.host.graph().clone());
     canvas
         .set_forme_region(
-            session
-                .view()
-                .project_region(owner, app.host.graph())
+            crate::forme_workspace::project_region(session.view(), owner, app.host.graph())
                 .unwrap(),
         )
         .unwrap();
@@ -120,27 +634,27 @@ fn owner_lifecycle_actual_codicil_new_app_owner_has_empty_model_and_preserves_ol
         persist(&mut old, backend.clone()).await;
         let old_bytes = backend.get(&slot(old_owner)).await.unwrap().unwrap();
         let mut canvas = Canvas::with_graph(app.host.graph().clone());
-        let mut invalid_scene =
-            canvas.capture_scene("Graphshell working scene", mere::canvas::physics_controls::FREE_ARRANGEMENT, "")
-                .unwrap();
+        let mut invalid_scene = canvas
+            .capture_scene(
+                "Graphshell working scene",
+                mere::canvas::physics_controls::FREE_ARRANGEMENT,
+                "",
+            )
+            .unwrap();
         invalid_scene.camera_zoom = f32::NAN;
         let bytes = codicil(&app, member);
         app.host.replace_with_product_codicil(&bytes).unwrap();
         assert!(
-            canvas.restore_scene(app.host.graph(),
-                &invalid_scene,
-                (900, 600)
-            )
-            .is_err(),
+            canvas
+                .restore_scene(app.host.graph(), &invalid_scene, (900, 600))
+                .is_err(),
             "restore error follows accepted authority mutation"
         );
         let owner = app.host.graph_session().id().0;
         assert_ne!(owner, old_owner);
         let mut gate = FormeLoadGate::default();
         let ticket = gate.request(owner);
-        let loaded = FormeSession::load(backend.clone(), owner, app.host.graph())
-            .await
-            .unwrap();
+        let loaded = load(&backend, owner, app.host.graph()).await.unwrap();
         assert!(gate.finish_loaded(ticket, Some(app.host.graph_session().id().0), &loaded));
         assert_eq!(loaded.committed().document.graph_id, owner);
         assert!(
@@ -148,13 +662,13 @@ fn owner_lifecycle_actual_codicil_new_app_owner_has_empty_model_and_preserves_ol
             "overlapping member UUID is not ownership"
         );
         assert!(
-            loaded
-                .view()
-                .project_region(owner, app.host.graph())
+            crate::forme_workspace::project_region(loaded.view(), owner, app.host.graph())
                 .unwrap()
                 .is_none()
         );
-        assert!(old.view().project_region(owner, app.host.graph()).is_err());
+        assert!(
+            crate::forme_workspace::project_region(old.view(), owner, app.host.graph()).is_err()
+        );
         assert_eq!(
             backend.get(&slot(old_owner)).await.unwrap().unwrap(),
             old_bytes
@@ -182,9 +696,7 @@ fn owner_lifecycle_failed_codicil_preserves_actual_owner_layout_and_slot() {
         assert_eq!(app.host.graph_session().id().0, owner);
         assert_eq!(serde_json::to_vec(session.view()).unwrap(), view);
         assert!(
-            session
-                .view()
-                .project_region(owner, app.host.graph())
+            crate::forme_workspace::project_region(session.view(), owner, app.host.graph())
                 .unwrap()
                 .is_some()
         );
@@ -200,17 +712,13 @@ fn owner_lifecycle_loaded_session_rejects_absent_foreign_and_repeated_owner_stal
         persist(&mut old, backend.clone()).await;
         let mut gate = FormeLoadGate::default();
         let old_ticket = gate.request(a);
-        let a_loaded = FormeSession::load(backend.clone(), a, app.host.graph())
-            .await
-            .unwrap();
+        let a_loaded = load(&backend, a, app.host.graph()).await.unwrap();
         assert!(!gate.finish_loaded(old_ticket, None, &a_loaded));
         let bytes = codicil(&app, member);
         app.host.replace_with_product_codicil(&bytes).unwrap();
         let b = app.host.graph_session().id().0;
         let b_ticket = gate.request(b);
-        let b_loaded = FormeSession::load(backend, b, app.host.graph())
-            .await
-            .unwrap();
+        let b_loaded = load(&backend, b, app.host.graph()).await.unwrap();
         assert!(!gate.finish_loaded(old_ticket, Some(b), &a_loaded));
         assert!(!gate.finish_loaded(b_ticket, Some(b), &a_loaded));
         let newest = gate.request(b);
@@ -230,9 +738,7 @@ fn owner_lifecycle_old_save_cannot_mutate_reloaded_same_slot_busy_session() {
         let owner = app.host.graph_session().id().0;
         persist(&mut old, backend.clone()).await;
         let old_proposal = old.prepare_save(SaveKind::Visibility, 20).unwrap();
-        let mut current = FormeSession::load(backend.clone(), owner, app.host.graph())
-            .await
-            .unwrap();
+        let mut current = load(&backend, owner, app.host.graph()).await.unwrap();
         current.unlock().unwrap();
         current
             .edit(None, 21, |w| {
@@ -356,14 +862,9 @@ fn owner_lifecycle_reentered_actual_a_waits_for_retired_a_write_before_loading_o
         let bytes = codicil(&app, member);
         app.host.replace_with_product_codicil(&bytes).unwrap();
         let b = app.host.graph_session().id().0;
-        assert!(
-            fence
-                .load(backend.clone(), b, app.host.graph())
-                .await
-                .unwrap()
-                .is_some(),
-            "unrelated owner not blocked"
-        );
+        assert!(!fence.blocks(b), "unrelated owner not blocked");
+        let b_loaded = load(&backend, b, app.host.graph()).await.unwrap();
+        assert_eq!(b_loaded.committed().document.graph_id, b);
         app.host.persist(2).await.unwrap();
         let host_a = crate::mere_host::MereHost::open_session(
             backend.clone(),
@@ -384,21 +885,13 @@ fn owner_lifecycle_reentered_actual_a_waits_for_retired_a_write_before_loading_o
         let app_a = App::new(host_a);
         assert_eq!(app_a.host.graph_session().id().0, a_id.0);
         assert!(
-            fence
-                .load(backend.clone(), a_id.0, app_a.host.graph())
-                .await
-                .unwrap()
-                .is_none(),
+            fence.blocks(a_id.0),
             "new A cannot load/save ahead of old A writer"
         );
         delay.released.store(true, Ordering::SeqCst);
         old.finish_save(proposal.clone(), pending.await).unwrap();
         fence.finish(write);
-        let mut current = fence
-            .load(backend.clone(), a_id.0, app_a.host.graph())
-            .await
-            .unwrap()
-            .unwrap();
+        let mut current = load(&backend, a_id.0, app_a.host.graph()).await.unwrap();
         assert_eq!(
             current.view().visible,
             old.committed().visible,
@@ -414,9 +907,7 @@ fn owner_lifecycle_reentered_actual_a_waits_for_retired_a_write_before_loading_o
         let new_write = current.prepare_save(SaveKind::Apply, 33).unwrap();
         let result = new_write.save(backend.clone()).await;
         current.finish_save(new_write, result).unwrap();
-        let reopened = FormeSession::load(backend, a_id.0, app_a.host.graph())
-            .await
-            .unwrap();
+        let reopened = load(&backend, a_id.0, app_a.host.graph()).await.unwrap();
         assert_eq!(reopened.committed().bounds, current.committed().bounds);
     });
 }
@@ -484,26 +975,28 @@ fn owner_lifecycle_real_scene_restore_reprojects_same_owner_and_failed_restore_p
     let mut canvas = Canvas::with_graph(app.host.graph().clone());
     canvas
         .set_forme_region(
-            session
-                .view()
-                .project_region(owner, app.host.graph())
+            crate::forme_workspace::project_region(session.view(), owner, app.host.graph())
                 .unwrap(),
         )
         .unwrap();
     let before = canvas.forme_region().unwrap().clone();
-    let scene =
-        canvas.capture_scene("Graphshell working scene", mere::canvas::physics_controls::FREE_ARRANGEMENT, "")
-            .unwrap();
-    canvas.restore_scene(app.host.graph(), &scene, (900, 600)).unwrap();
+    let scene = canvas
+        .capture_scene(
+            "Graphshell working scene",
+            mere::canvas::physics_controls::FREE_ARRANGEMENT,
+            "",
+        )
+        .unwrap();
+    canvas
+        .restore_scene(app.host.graph(), &scene, (900, 600))
+        .unwrap();
     assert!(
         canvas.forme_region().is_none(),
         "real accepted scene restoration resets physical region"
     );
     canvas
         .set_forme_region(
-            session
-                .view()
-                .project_region(owner, app.host.graph())
+            crate::forme_workspace::project_region(session.view(), owner, app.host.graph())
                 .unwrap(),
         )
         .unwrap();
@@ -511,7 +1004,8 @@ fn owner_lifecycle_real_scene_restore_reprojects_same_owner_and_failed_restore_p
     let mut invalid = scene;
     invalid.camera_zoom = f32::NAN;
     assert!(
-        canvas.restore_scene(app.host.graph(), &invalid, (900, 600))
+        canvas
+            .restore_scene(app.host.graph(), &invalid, (900, 600))
             .is_err()
     );
     assert_eq!(
@@ -612,12 +1106,21 @@ fn owner_lifecycle_actual_button_preview_projects_missing_cell_and_checks_owner(
     let before = serde_json::to_vec(session.view()).unwrap();
     let mut canvas = Canvas::with_graph(app.host.graph().clone());
     let candidate = session
-        .install_edge_preview(owner, moving, target, workbench::Edge::Bottom, &mut canvas)
+        .edge_preview_candidate(
+            owner,
+            moving,
+            target,
+            workbench::Edge::Bottom,
+            app.host.graph(),
+        )
         .unwrap();
     assert!(
         candidate.region().cells.iter().any(|c| c.member == absent),
         "raw candidate still preserves the missing cell identity"
     );
+    let projected =
+        crate::forme_workspace::project_region(&candidate, owner, app.host.graph()).unwrap();
+    canvas.set_forme_region(projected).unwrap();
     let region = canvas.forme_region().unwrap().clone();
     assert!(region.cells.iter().any(|c| c.member == moving));
     assert!(region.cells.iter().any(|c| c.member == target));
@@ -629,18 +1132,24 @@ fn owner_lifecycle_actual_button_preview_projects_missing_cell_and_checks_owner(
     );
     assert!(
         session
-            .install_edge_preview(
+            .edge_preview_candidate(
                 Uuid::new_v4(),
                 moving,
                 target,
                 workbench::Edge::Left,
-                &mut canvas
+                app.host.graph(),
             )
             .is_err()
     );
     assert!(
         session
-            .install_edge_preview(owner, moving, absent, workbench::Edge::Left, &mut canvas)
+            .edge_preview_candidate(
+                owner,
+                moving,
+                absent,
+                workbench::Edge::Left,
+                app.host.graph(),
+            )
             .is_err()
     );
     assert_eq!(canvas.forme_region(), Some(&region));
@@ -656,17 +1165,19 @@ fn owner_lifecycle_actual_open_rejects_invalid_camera_before_owner_or_canvas_cha
         let mut canvas = Canvas::with_graph(app.host.graph().clone());
         canvas
             .set_forme_region(
-                session
-                    .view()
-                    .project_region(owner, app.host.graph())
+                crate::forme_workspace::project_region(session.view(), owner, app.host.graph())
                     .unwrap(),
             )
             .unwrap();
         let region = canvas.forme_region().unwrap().clone();
         let graph = serde_json::to_value(canvas.graph().to_snapshot_at(0)).unwrap();
-        let mut scene =
-            canvas.capture_scene("Graphshell working scene", mere::canvas::physics_controls::FREE_ARRANGEMENT, "")
-                .unwrap();
+        let mut scene = canvas
+            .capture_scene(
+                "Graphshell working scene",
+                mere::canvas::physics_controls::FREE_ARRANGEMENT,
+                "",
+            )
+            .unwrap();
         scene.camera_zoom = -1.0;
         let mut record: serde_json::Value = serde_json::from_slice(&codicil(&app, member)).unwrap();
         record["scene"] = serde_json::to_value(scene).unwrap();
@@ -695,9 +1206,7 @@ fn owner_lifecycle_actual_scene_open_installs_new_graph_and_empty_owner_model() 
         let mut canvas = Canvas::with_graph(app.host.graph().clone());
         canvas
             .set_forme_region(
-                session
-                    .view()
-                    .project_region(old_owner, app.host.graph())
+                crate::forme_workspace::project_region(session.view(), old_owner, app.host.graph())
                     .unwrap(),
             )
             .unwrap();
@@ -715,14 +1224,12 @@ fn owner_lifecycle_actual_scene_open_installs_new_graph_and_empty_owner_model() 
             serde_json::to_value(app.host.graph().to_snapshot_at(0)).unwrap()
         );
         assert!(canvas.forme_region().is_none());
-        let loaded = FormeSession::load(backend.clone(), accepted.owner, app.host.graph())
+        let loaded = load(&backend, accepted.owner, app.host.graph())
             .await
             .unwrap();
         assert!(loaded.view().members().is_empty());
         assert!(
-            loaded
-                .view()
-                .project_region(accepted.owner, canvas.graph())
+            crate::forme_workspace::project_region(loaded.view(), accepted.owner, canvas.graph())
                 .unwrap()
                 .is_none()
         );
@@ -741,15 +1248,17 @@ fn owner_lifecycle_postaccepted_view_error_cannot_leave_previous_canvas_graph() 
     let mut canvas = Canvas::with_graph(app.host.graph().clone());
     canvas
         .set_forme_region(
-            session
-                .view()
-                .project_region(old_owner, app.host.graph())
+            crate::forme_workspace::project_region(session.view(), old_owner, app.host.graph())
                 .unwrap(),
         )
         .unwrap();
-    let mut invalid =
-        canvas.capture_scene("Graphshell working scene", mere::canvas::physics_controls::FREE_ARRANGEMENT, "")
-            .unwrap();
+    let mut invalid = canvas
+        .capture_scene(
+            "Graphshell working scene",
+            mere::canvas::physics_controls::FREE_ARRANGEMENT,
+            "",
+        )
+        .unwrap();
     invalid.camera_zoom = -1.0;
     let bytes = codicil(&app, member);
     app.host.replace_with_product_codicil(&bytes).unwrap();
@@ -836,9 +1345,7 @@ fn owner_lifecycle_actual_history_forget_completion_updates_canvas_before_projec
         canvas.set_physics_paused(true);
         canvas
             .set_forme_region(
-                session
-                    .view()
-                    .project_region(owner, app.host.graph())
+                crate::forme_workspace::project_region(session.view(), owner, app.host.graph())
                     .unwrap(),
             )
             .unwrap();
@@ -866,9 +1373,7 @@ fn owner_lifecycle_actual_history_forget_completion_updates_canvas_before_projec
         assert!(canvas.graph().get_node_by_id(captured).is_none());
         canvas
             .set_forme_region(
-                session
-                    .view()
-                    .project_region(owner, canvas.graph())
+                crate::forme_workspace::project_region(session.view(), owner, canvas.graph())
                     .unwrap(),
             )
             .unwrap();
@@ -888,7 +1393,9 @@ fn owner_lifecycle_async_completion_new_actual_owner_releases_old_region() {
     let a = app.host.graph_session().id().0;
     let mut canvas = Canvas::with_graph(app.host.graph().clone());
     canvas
-        .set_forme_region(session.view().project_region(a, app.host.graph()).unwrap())
+        .set_forme_region(
+            crate::forme_workspace::project_region(session.view(), a, app.host.graph()).unwrap(),
+        )
         .unwrap();
     let bytes = codicil(&app, member);
     app.host.replace_with_product_codicil(&bytes).unwrap();
@@ -969,9 +1476,7 @@ fn owner_lifecycle_failed_real_intake_persistence_still_reconciles_returned_app(
         let mut canvas = Canvas::with_graph(app.host.graph().clone());
         canvas
             .set_forme_region(
-                session
-                    .view()
-                    .project_region(owner, app.host.graph())
+                crate::forme_workspace::project_region(session.view(), owner, app.host.graph())
                     .unwrap(),
             )
             .unwrap();
@@ -1009,9 +1514,7 @@ fn owner_lifecycle_failed_real_intake_persistence_still_reconciles_returned_app(
         assert!(canvas.graph().get_node_by_id(added).is_some());
         canvas
             .set_forme_region(
-                session
-                    .view()
-                    .project_region(owner, canvas.graph())
+                crate::forme_workspace::project_region(session.view(), owner, canvas.graph())
                     .unwrap(),
             )
             .unwrap();

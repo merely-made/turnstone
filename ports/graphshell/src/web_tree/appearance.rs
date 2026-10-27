@@ -1,4 +1,7 @@
 // Copyright 2026 Mark Alan Boykin
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 
 //! Shared controls over the existing Tabard browser preference session.
@@ -66,15 +69,19 @@ pub(super) fn apply(page: &mut TreePage) {
 pub(super) fn view(page: &TreePage) -> Option<Child> {
     let model = page.shared.appearance.borrow().controls()?;
     let control = &page.appearance_controls;
-    let mut children: Vec<Child> = vec![Box::new(
-        disclosure_trigger("Appearance", control.open, |page: &mut TreePage| {
+    let mut children: Vec<Child> = vec![Box::new(disclosure_trigger(
+        "Appearance",
+        control.open,
+        |page: &mut TreePage| {
             page.appearance_controls.open = !page.appearance_controls.open;
-        }),
-    )];
+        },
+    ))];
     // Status remains visible when the disclosure is closed, including a reopened preference.
-    children.push(Box::new(
-        status_note_labelled("", "Appearance status", model.status),
-    ));
+    children.push(Box::new(status_note_labelled(
+        "",
+        "Appearance status",
+        model.status,
+    )));
     if control.open {
         let themes: Vec<String> = control
             .themes
@@ -147,5 +154,12 @@ pub(super) fn focused_text(
         });
     }
     drop(dom);
-    product::focused_text(runner)
+    #[cfg(feature = "product")]
+    {
+        product::focused_text(runner)
+    }
+    #[cfg(not(feature = "product"))]
+    {
+        None
+    }
 }

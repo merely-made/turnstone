@@ -12,6 +12,24 @@ use muniment::Backend;
 use sceno::{LinkKey, LinkMarks, LinkStratum};
 use std::collections::{BTreeMap, BTreeSet};
 use uuid::Uuid;
+
+/// Correlates an accepted query freeze to its source, retained Resource, and retry attempt.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct QueryFreezeCorrelation {
+    pub scope: (Uuid, String),
+    pub frozen: Uuid,
+    pub attempt: u32,
+}
+
+impl QueryFreezeCorrelation {
+    pub fn next_attempt(&self) -> Option<Self> {
+        Some(Self {
+            scope: self.scope.clone(),
+            frozen: self.frozen,
+            attempt: self.attempt.checked_add(1)?,
+        })
+    }
+}
 pub fn save<B: Backend>(
     app: &mut GraphshellApp<B>,
     owner: Option<Uuid>,
@@ -26,6 +44,41 @@ pub fn save<B: Backend>(
         .map_err(|e| e.to_string())??;
     Ok(id)
 }
+/// Save the definition and provide its local appearance as one owner edit.
+/// All fallible admission runs on a candidate before touching the journal, so
+/// an effect refused here cannot leave a newly created query behind.
+pub fn save_with_access<B: Backend>(
+    app: &mut GraphshellApp<B>,
+    owner: Option<Uuid>,
+    expected: Option<&QueryViewSpec>,
+    nonce: Uuid,
+    access_nonce: Uuid,
+    spec: &QueryViewSpec,
+) -> Result<(Uuid, Uuid), String> {
+    let apply = |graph: &mut mere::kernel::graph::Graph| -> Result<(Uuid, Uuid), String> {
+        let id = query_view::save_spec(graph, owner, expected, nonce, spec)?;
+        let iri = graph
+            .resource(id)
+            .ok_or("Saved view Resource missing")?
+            .canonical_iri()
+            .to_owned();
+        let access = graph
+            .surface_ids_showing_resource(id)
+            .first()
+            .copied()
+            .or_else(|| graph.get_node_by_url(&iri).map(|(_, node)| node.id))
+            .unwrap_or_else(|| {
+                crate::product::add_address(graph, access_nonce, &iri, &spec.title);
+                access_nonce
+            });
+        Ok((id, access))
+    };
+    mere::kernel::graph::with_isolated_capture(|| apply(&mut app.host.graph().clone()))?;
+    app.host
+        .mutate_product_graph(apply)
+        .map_err(|error| error.to_string())?
+}
+
 pub fn freeze<B: Backend>(
     app: &mut GraphshellApp<B>,
     owner: Uuid,
@@ -44,6 +97,69 @@ mod tests {
     use super::*;
     use crate::mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef};
     use muniment::MemoryBackend;
+
+    #[test]
+    fn query_freeze_retry_keeps_scope_and_resource_but_advances_attempt() {
+        let accepted = QueryFreezeCorrelation {
+            scope: (Uuid::new_v4(), FIXTURE_PERSONA_ADDRESS.into()),
+            frozen: Uuid::new_v4(),
+            attempt: 0,
+        };
+        let retry = accepted.next_attempt().unwrap();
+        assert_eq!(retry.scope, accepted.scope);
+        assert_eq!(retry.frozen, accepted.frozen);
+        assert_eq!(retry.attempt, accepted.attempt + 1);
+        assert_ne!(retry, accepted);
+    }
+
+    #[test]
+    fn query_and_appearance_are_one_edit_and_rejected_update_leaves_no_changes() {
+        let persona = SelectedPersonaRef {
+            persona: FIXTURE_PERSONA_ADDRESS.into(),
+            profile: "profile:query-component".into(),
+        };
+        let mut app = GraphshellApp::fixture(MemoryBackend::new(), persona).unwrap();
+        let spec = QueryViewSpec::select("Empty view", "SELECT ?member WHERE { FILTER(false) }");
+        let (owner, access) = save_with_access(
+            &mut app,
+            None,
+            None,
+            Uuid::from_u128(901),
+            Uuid::from_u128(902),
+            &spec,
+        )
+        .unwrap();
+        assert!(app.host.graph().get_node_by_id(access).is_some());
+        assert_eq!(
+            query_view::read_spec(app.host.graph(), owner).unwrap(),
+            spec
+        );
+        let before = serde_json::to_value(app.host.graph().to_snapshot_at(0)).unwrap();
+        let mut changed = spec.clone();
+        changed.title = "Concurrent edit".into();
+        assert!(
+            save_with_access(
+                &mut app,
+                Some(owner),
+                Some(&changed),
+                Uuid::from_u128(903),
+                Uuid::from_u128(904),
+                &spec
+            )
+            .is_err()
+        );
+        assert_eq!(
+            serde_json::to_value(app.host.graph().to_snapshot_at(0)).unwrap(),
+            before
+        );
+        app.host
+            .undo_now("graphshell")
+            .unwrap()
+            .expect("one edit to undo");
+        assert!(app.host.graph().get_node_by_id(access).is_none());
+        assert!(query_view::read_spec(app.host.graph(), owner).is_err());
+    }
+
     #[test]
     fn query_resource_save_freeze_undo_and_reopen_use_current_owner_journal() {
         pollster::block_on(async {

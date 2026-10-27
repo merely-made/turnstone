@@ -36,8 +36,8 @@ presentation-webgpu = ["cambium-web/webgpu", "cambium-web/portable"]
 presentation-webgl2 = ["cambium-web/webgl"]
 without-classic-vello = ["genet-presenter/without-classic-vello"]
 # What a page saves: IndexedDB, saved scenes, the tree's product mode,
-# `web_product` and `web_practice`.
-product = ["muniment/indexeddb", "dep:pandect", "dep:sha2", "graphshell/document-layout", "graphshell/retained-content", "graphshell/query-views", "graphshell/editable-blocks", "mere/query", "dep:mere-lanes", "dep:fleece", "dep:woodshed-notation"]
+# retained product panes and the practice workspace.
+product = ["dep:mere-view", "mere-view/query-editor", "mere-view/workbench-editor", "dep:platen", "muniment/indexeddb", "dep:pandect", "dep:sha2", "graphshell/document-layout", "graphshell/workspace-editor", "graphshell/retained-content", "graphshell/query-views", "graphshell/editable-blocks", "mere/query", "dep:mere-lanes", "dep:fleece", "dep:woodshed-notation"]
 applets = ["graphshell/applets", "muniment/indexeddb"]
 # The WebRTC door and the remote board: `web_remote`, `web_rtc_link`, the tree's
 # remote board.
@@ -52,6 +52,7 @@ image-decode = ["genet-render/image-decode", "taproot/image-decode", "cambium-ro
 # Graphshell supplies the accessible label and event controls itself.
 woodshed-notation = { git = "https://github.com/merely-made/woodshed.git", rev = "a0ae58f97ca962b29fcd6ae08c9e6aec35d74c61", default-features = false, optional = true }
 mere-view = { path="../../../crates/cambium/mere-view", optional=true }
+platen = { path = "../../../crates/platen/platen", default-features = false, features = ["workspace-editor"], optional = true }
 # The shared mere panel over the remote board's admitted route (stack lift plan L14).
 mere-overmap = { path = "../../../crates/cambium/mere-overmap", optional = true }
 # The saved-scene shapes the scene page reads (`pandect::saved_scene`).
@@ -71,6 +72,7 @@ mere = { path = "../../../crates/mere", default-features = false, features = ["g
 # the duplicate showed up; muniment owns the backend family, so it owns this.
 muniment = { git = "https://github.com/merely-made/eidetic.git", rev = "f599ffe93298025bf6d65ae310a7cb4270ea52e3" }
 graphshell-client = { path = "../../../crates/graphshell/graphshell-client" }
+chirograph = { path = "../../../crates/chirograph" }
 workbench = { path = "../../../crates/cambium/workbench" }
 sceno = { path = "../../../crates/cambium/scenes/sceno" }
 scenograph = { path = "../../../crates/cambium/scenes/scenograph" }

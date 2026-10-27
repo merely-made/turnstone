@@ -13,7 +13,7 @@ use chirograph::{PortableCardV1, Sha256NamedInformation};
 use mere::canvas::saved_scene::{self, SceneReadError};
 use mere::kernel::geometry::PortablePoint;
 use mere::kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta, assert_relation};
-use mere::kernel::graph::capture::{CapturedDelta, replay_captured_deltas_onto};
+use mere::kernel::graph::capture::{CapturedDelta, replay_captured_deltas_onto_checked};
 use mere::kernel::graph::node_facets::SEMANTIC_PROPERTIES;
 use mere::kernel::graph::predicate_declarations::PREDICATE_DECLARATIONS_FACET;
 use mere::kernel::graph::resource::TAGGED_WITH_IRI;
@@ -34,7 +34,7 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::mere_host::{MereHost, MereHostError};
-use crate::projection_compile::ProjectionSnapshot;
+use scenomise::projection::ProjectionSnapshot;
 
 /// What an undo kept because another author changed it since, in words for
 /// a status line (Scenograph editor plan, SE21). `None` when nothing was kept.
@@ -76,11 +76,6 @@ pub const PROJECTION_DEFINITION_FACET: &str = "graphshell.projection-definition/
 pub const PROJECTION_EDITOR_VIA: &str = "graphshell.projection-editor";
 /// A codicil carrying a version-4 scene ([`ProductCodicilV3`], F159).
 pub const PRODUCT_CODICIL_SCHEMA: &str = "graphshell.graph-codicil/v3";
-/// Read only: a codicil whose scene is a [`SavedSceneV2`], converted on read.
-pub const PRODUCT_CODICIL_SCHEMA_V2: &str = "graphshell.graph-codicil/v2";
-/// Read-only compatibility tag for graph selections exported before the
-/// Engram-to-Codicil vocabulary migration.
-pub const LEGACY_PRODUCT_ENGRAM_SCHEMA: &str = "graphshell.graph-engram/v1";
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
@@ -251,18 +246,6 @@ pub struct ProductCodicilV3 {
     pub scene: Option<SavedSceneV3>,
 }
 
-/// A codicil as written before version 3, read and converted.
-#[derive(Deserialize)]
-struct ProductCodicilV2 {
-    schema: String,
-    scope: TransferScope,
-    exported_at_ms: u64,
-    graph: GraphSnapshot,
-    facets: NodeFacetStore,
-    #[serde(default)]
-    scene: Option<SavedSceneV2>,
-}
-
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub(crate) struct ProfiledProductCodicil {
     #[serde(flatten)]
@@ -340,7 +323,7 @@ impl From<MereHostError> for ProductError {
     }
 }
 
-fn add_address(graph: &mut Graph, id: Uuid, address: &str, title: &str) -> NodeKey {
+pub(crate) fn add_address(graph: &mut Graph, id: Uuid, address: &str, title: &str) -> NodeKey {
     let key = add_node(
         graph,
         Some(id),
@@ -653,7 +636,9 @@ impl<B: Backend> MereHost<B> {
             &members,
             request.include_local_file_locations,
         );
-        let scene = request.scene.map(|scene| saved_scene::filter_scene(scene, &members));
+        let scene = request
+            .scene
+            .map(|scene| saved_scene::filter_scene(scene, &members));
         serde_json::to_vec_pretty(&ProfiledProductCodicil {
             placement: self.snapshot_placement(),
             product: ProductCodicilV3 {
@@ -816,17 +801,29 @@ pub(crate) fn product_import_edits(
         }
     }
 
-    // Replay setters can refuse input without an error result; prove the whole batch first.
+    // Prove the whole import on a detached graph before changing the live session.
     let mut scratch = live.clone();
     if edits.iter().any(|edit| edit.replay_delta().is_none()) {
         return Err(ProductError::InvalidCodicil(
             "an import edit cannot be replayed".into(),
         ));
     }
-    replay_captured_deltas_onto(&mut scratch, edits.clone());
+    replay_captured_deltas_onto_checked(&mut scratch, edits.clone())
+        .map_err(|error| ProductError::InvalidCodicil(error.to_string()))?;
     scratch
         .validate_active_resource_assertion_handles()
         .map_err(|error| ProductError::InvalidCodicil(error.to_string()))?;
+    // Confirm the entire requested overlay survived replay before admitting the batch.
+    for (node_id, incoming_facets) in surfaces.facets().iter() {
+        for (facet, expected) in incoming_facets.iter() {
+            if scratch.facets().get(node_id, facet) != Some(expected) {
+                return Err(ProductError::InvalidCodicil(format!(
+                    "the import refused facet {} for node {node_id}",
+                    facet.as_str()
+                )));
+            }
+        }
+    }
     let actual = scratch.to_snapshot();
     let resources = |snapshot: &GraphSnapshot| {
         snapshot
@@ -1069,28 +1066,12 @@ pub(crate) fn decode_profiled_codicil(
     }
     let invalid = |error: serde_json::Error| ProductError::InvalidCodicil(error.to_string());
     let Head { schema, placement } = serde_json::from_slice(bytes).map_err(invalid)?;
-    let codicil = if schema == PRODUCT_CODICIL_SCHEMA {
-        serde_json::from_slice::<ProductCodicilV3>(bytes).map_err(invalid)?
-    } else if schema == PRODUCT_CODICIL_SCHEMA_V2 || schema == LEGACY_PRODUCT_ENGRAM_SCHEMA {
-        let old: ProductCodicilV2 = serde_json::from_slice(bytes).map_err(invalid)?;
-        ProductCodicilV3 {
-            schema: old.schema,
-            scope: old.scope,
-            exported_at_ms: old.exported_at_ms,
-            graph: old.graph,
-            facets: old.facets,
-            scene: old
-                .scene
-                .map(saved_scene::scene_from_v2)
-                .transpose()
-                .map_err(ProductError::InvalidScene)?,
-        }
-    } else {
+    if schema != PRODUCT_CODICIL_SCHEMA {
         return Err(ProductError::InvalidCodicil(format!(
-            "expected {PRODUCT_CODICIL_SCHEMA}, or {PRODUCT_CODICIL_SCHEMA_V2} or legacy \
-             {LEGACY_PRODUCT_ENGRAM_SCHEMA} read and converted, found {schema}"
+            "expected {PRODUCT_CODICIL_SCHEMA}, found {schema}"
         )));
-    };
+    }
+    let codicil = serde_json::from_slice::<ProductCodicilV3>(bytes).map_err(invalid)?;
     let ids: HashSet<_> = codicil
         .graph
         .nodes
@@ -1119,9 +1100,9 @@ mod tests {
     use scenotime::ProjectionClock;
 
     use super::*;
+    use crate::access::AccessContext;
     use mere::canvas::dynamics_spec::DynamicsSpec;
     use mere::canvas::saved_scene::SavedRoles;
-    use crate::access::AccessContext;
 
     /// The scene reads the canvas owns, as these tests call them.
     trait SceneReads {
@@ -2780,18 +2761,6 @@ mod tests {
         assert!(!json.contains(LOCAL_FILE_FACET));
         assert!(json.contains(CONTENT_FACET));
 
-        let mut legacy: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
-        legacy["schema"] = serde_json::Value::String(LEGACY_PRODUCT_ENGRAM_SCHEMA.to_string());
-        // An engram never carried a version-4 scene; its own scenes convert
-        // (`a_version_2_codicil_converts_and_an_export_narrows_the_target`).
-        legacy.as_object_mut().unwrap().remove("scene");
-        let legacy_bytes = serde_json::to_vec(&legacy).unwrap();
-        assert_eq!(
-            decode_codicil(&legacy_bytes).unwrap().schema,
-            LEGACY_PRODUCT_ENGRAM_SCHEMA,
-            "the v1 graph-engram tag remains readable"
-        );
-
         let mut reopened = MereHost::empty(
             MemoryBackend::new(),
             selected_persona(),
@@ -3553,7 +3522,10 @@ mod tests {
                 let nesting = json_nesting(&bytes);
                 println!("depth {depth}: codicil JSON nesting {nesting} (serde_json limit 128)");
                 let codicil = decode_codicil(&bytes).expect("parsed within serde_json's limit");
-                assert_eq!(saved_scene::read_dynamics(&codicil.scene.unwrap().dynamics), Ok(spec.clone()));
+                assert_eq!(
+                    saved_scene::read_dynamics(&codicil.scene.unwrap().dynamics),
+                    Ok(spec.clone())
+                );
                 let refusal = mere::canvas::dynamics_spec::derive(&spec)
                     .unwrap_err()
                     .to_string();
@@ -3568,12 +3540,11 @@ mod tests {
             }
         }
 
-        /// F159: a version-2 codicil is read and its scene converted, the
-        /// legacy engram too; any other schema is refused by name; and an
-        /// export narrows the target's items to the exported members.
+        /// Export keeps only selected target items. Unsupported transport
+        /// schemas are refused before either import path can mutate an owner.
         #[test]
-        fn a_version_2_codicil_converts_and_an_export_narrows_the_target() {
-            let host = host();
+        fn exports_narrow_targets_and_imports_require_the_current_schema() {
+            let mut host = host();
             let web = web(&host);
             let outside = Uuid::from_u128(77);
             let mut spec = runnable(web);
@@ -3591,34 +3562,28 @@ mod tests {
                 "only exported members keep their roles"
             );
 
-            let mut old: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
-            let mut flat = legacy();
-            flat["physics_law"] = "stress.kamada-kawai".into();
-            old["scene"] = flat;
-            for schema in [PRODUCT_CODICIL_SCHEMA_V2, LEGACY_PRODUCT_ENGRAM_SCHEMA] {
-                old["schema"] = schema.into();
-                let read = decode_codicil(&serde_json::to_vec(&old).unwrap()).unwrap();
-                assert_eq!(read.schema, schema);
-                // Every field but the scene comes across as written.
-                let carried = serde_json::to_value(&read).unwrap();
-                for field in ["scope", "exported_at_ms", "graph", "facets"] {
-                    assert_eq!(carried[field], old[field], "{schema}: {field}");
-                }
+            let before = serde_json::to_value(host.graph().to_snapshot_at(0)).unwrap();
+            let session = host.graph_session().id();
+            let journal_len = host.graph_session().journal().entries().len();
+            let mut input: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
+            for schema in [
+                "graphshell.graph-codicil/v2",
+                "graphshell.graph-engram/v1",
+                "graphshell.graph-codicil/v9",
+            ] {
+                input["schema"] = schema.into();
+                let bytes = serde_json::to_vec(&input).unwrap();
+                let error = decode_codicil(&bytes).unwrap_err().to_string();
+                assert!(error.ends_with(&format!("found {schema}")), "{error}");
+                assert!(host.import_product_codicil(&bytes).is_err());
+                assert!(host.replace_with_product_codicil(&bytes).is_err());
+                assert_eq!(host.graph_session().id(), session);
+                assert_eq!(host.graph_session().journal().entries().len(), journal_len);
                 assert_eq!(
-                    read.scene.unwrap().dynamics_spec().unwrap().root,
-                    law(PhysicsLaw::Stress)
+                    serde_json::to_value(host.graph().to_snapshot_at(0)).unwrap(),
+                    before
                 );
             }
-            old["scene"]["physics_law"] = "spring.hooke".into();
-            assert!(matches!(
-                decode_codicil(&serde_json::to_vec(&old).unwrap()),
-                Err(ProductError::InvalidScene(error)) if error == "unknown physics law spring.hooke"
-            ));
-            old["schema"] = "graphshell.graph-codicil/v9".into();
-            let err = decode_codicil(&serde_json::to_vec(&old).unwrap())
-                .unwrap_err()
-                .to_string();
-            assert!(err.ends_with("found graphshell.graph-codicil/v9"), "{err}");
         }
 
         /// The codicil the `codicil_grouping` receipt opens (F161): eight

@@ -6,27 +6,24 @@
 
 //! Headed browser presenter for the Graphshell reference host.
 //!
-//! The whole crate is browser-only: it presents onto an
-//! `HtmlCanvasElement` through WebGPU and stores through IndexedDB, neither
-//! of which exists off wasm. The crate-level `cfg` below makes it compile to
-//! nothing on a native host, so `cargo check --workspace` — the gate that
-//! covers every other member — is not permanently red for a target this
-//! crate was never meant to build for. It stays a workspace member rather
-//! than an `exclude`d one so it keeps sharing the workspace lock and the
-//! root `[patch]` table; excluding it would mean maintaining a second copy
-//! of both.
+//! The crate is browser-only. It presents onto an `HtmlCanvasElement` using
+//! the selected browser renderer; the optional product feature adds IndexedDB
+//! storage and workspace editing. Its standalone manifest and lockfile live
+//! in `ports/graphshell/web`, with this file as the library entry point.
 //!
 //! Check it for the target it is for:
-//! `cargo check -p graphshell-web --target wasm32-unknown-unknown`.
+//! `cargo check --manifest-path ports/graphshell/web/Cargo.toml --target wasm32-unknown-unknown`.
 #![cfg(target_arch = "wasm32")]
 
 // The viewer cone (mer3ly site canvas plan, Rulings 109-110, 118): the tree page
 // and what it reads are always compiled; the H5 reference host, the product
 // modes and the remote board are additive features, all on by default.
 mod web_appearance;
-mod web_dataset;
 #[cfg(feature = "product")]
 mod web_capture;
+#[cfg(feature = "product")]
+mod web_command_catalog;
+mod web_dataset;
 mod web_graphs;
 mod web_period_worker;
 #[cfg(feature = "product")]
@@ -34,11 +31,9 @@ mod web_practice;
 #[cfg(feature = "remote")]
 mod web_rtc_link;
 mod web_scenario;
-#[cfg(feature = "product")]
-mod web_command_catalog;
 mod web_speed;
-mod web_timing;
 mod web_suggestions;
+mod web_timing;
 mod web_tree;
 
 #[cfg(feature = "product")]
@@ -111,19 +106,22 @@ pub fn start() {
 #[cfg(feature = "dynamics-receipt")]
 #[wasm_bindgen]
 pub fn projection_dynamics_receipt(bound: u32) -> Result<String, JsValue> {
-    graphshell::projection_dynamics_receipt::catalog_receipt(bound).map_err(|e| JsValue::from_str(&e))
+    graphshell::projection_dynamics_receipt::catalog_receipt(bound)
+        .map_err(|e| JsValue::from_str(&e))
 }
 
 #[cfg(feature = "dynamics-receipt")]
 #[wasm_bindgen]
 pub fn projection_coordinates_receipt(bound: u32) -> Result<String, JsValue> {
-    graphshell::projection_dynamics_receipt::catalog_receipt_for(bound, "geographic").map_err(|e| JsValue::from_str(&e))
+    graphshell::projection_dynamics_receipt::catalog_receipt_for(bound, "geographic")
+        .map_err(|e| JsValue::from_str(&e))
 }
 
 /// Join a host over WebRTC as the tree's remote session; `loader.js` calls this
 /// from `?signal=` once the page is ready. Without `remote` the tree has no
 /// session, so it says so on the
 /// console and the link simply never comes up: a refusal, not a page error.
+#[cfg(feature = "remote")]
 #[wasm_bindgen]
 pub fn connect_remote(signal_url: String, invite: Option<String>) -> Result<(), JsValue> {
     if let Err(error) = web_tree::connect_remote(signal_url, invite) {
@@ -148,5 +146,7 @@ pub fn mount(root: web_sys::Element) -> Result<(), JsValue> {
 /// Preflight the same parser used by the retained lane without running the scenario.
 #[wasm_bindgen]
 pub fn validate_scenario(text: &str) -> Result<(), JsValue> {
-    taproot::Scenario::parse(text).map(|_| ()).map_err(|error| JsValue::from_str(&error.to_string()))
+    taproot::Scenario::parse(text)
+        .map(|_| ())
+        .map_err(|error| JsValue::from_str(&error.to_string()))
 }

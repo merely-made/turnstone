@@ -64,7 +64,8 @@ impl CanvasProducer {
             shared.speed.plant_owed,
         );
         let profile = shared.timing.borrow().active();
-        if shared.remote_shown.get() {
+        #[cfg(feature = "remote")]
+        if shared.remote_is_shown() {
             // One leaf, the producer picks the scene: the board, mirroring
             // the canvas's law and speed, ticked once a frame and drawn from
             // its bodies.

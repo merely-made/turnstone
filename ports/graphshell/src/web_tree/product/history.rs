@@ -1,4 +1,7 @@
 // Copyright 2026 Mark Alan Boykin
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 
 //! Capture and history controls over the durable access authority.
@@ -135,7 +138,7 @@ impl SavedProduct {
                     .map_err(|e| e.to_string())
             };
             *summary_slot.borrow_mut() = Some(summary);
-            *completed.borrow_mut() = Some((app, result));
+            *completed.borrow_mut() = Some((app, None, result));
         });
         Ok(())
     }
@@ -144,17 +147,20 @@ pub(in crate::web_tree) fn section(page: &TreePage) -> Child {
     let Some(product) = &page.product else {
         return Box::new(el("div", ()));
     };
-    let mut children: Vec<Child> = vec![Box::new(
-        disclosure_trigger("History", product.history.open, |page: &mut TreePage| {
+    let mut children: Vec<Child> = vec![Box::new(disclosure_trigger(
+        "History",
+        product.history.open,
+        |page: &mut TreePage| {
             if let Some(product) = &mut page.product {
                 product.history.open = !product.history.open;
             }
-        }),
-    )];
+        },
+    ))];
     if product.history.open {
-        children.push(Box::new(
-            status_note("", format!("{} history records", product.history.summary.records.len())),
-        ));
+        children.push(Box::new(status_note(
+            "",
+            format!("{} history records", product.history.summary.records.len()),
+        )));
         for (index, label) in LABELS.into_iter().enumerate() {
             children.push(Box::new(el(
                 "label",

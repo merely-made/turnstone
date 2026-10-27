@@ -430,7 +430,11 @@ try {
         graphshellRoot().dataset.ready === "true" ? resolve() : setTimeout(poll, 50);
       poll();
     });
-    module.connect_remote(signal, params.get("invite"));
+    if (typeof module.connect_remote === "function") {
+      module.connect_remote(signal, params.get("invite"));
+    } else {
+      console.warn("This Graphshell build does not include remote sessions; ignoring ?signal=.");
+    }
   }
   // W2 binds the mounted scene to a host-generated report. It is loaded before
   // the page-side scenario, so its verified fields and the remote carrier are

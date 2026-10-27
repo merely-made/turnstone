@@ -19,7 +19,7 @@ use graphshell::host_history_view::{
     Change, HistoryView, ViewedChanges, change_mark, change_word, checkpoint_text, history_view,
     host_history_view, mark_changes, revision_envelope,
 };
-use graphshell::projection_compile::HostDatasetV2;
+use scenomise::host_dataset::{HostDatasetV1, HostDatasetV2};
 
 /// A host history, and the checkpoint the graph shows.
 pub(crate) struct HostedHistory {
@@ -83,10 +83,7 @@ impl HostedHistory {
         self.history.revisions.len()
     }
 
-    pub(super) fn envelope_at(
-        &self,
-        index: usize,
-    ) -> Result<graphshell::projection_compile::HostDatasetV1, String> {
+    pub(super) fn envelope_at(&self, index: usize) -> Result<HostDatasetV1, String> {
         revision_envelope(&self.history, index)
             .ok_or_else(|| format!("No disclosed checkpoint {}", index + 1))
     }
@@ -264,22 +261,25 @@ pub(super) fn region(page: &TreePage) -> Option<Child> {
         )
         .attr("class", "history-control"),
     )];
-    children.push(Box::new(
-        status_note("history-value", hosted.caption(presenter::browsing(page))),
-    ));
+    children.push(Box::new(status_note(
+        "history-value",
+        hosted.caption(presenter::browsing(page)),
+    )));
     if presenter::browsing(page) {
         let shown = page.presenter.as_ref()?.checkpoint_source_open;
-        children.push(Box::new(
-            disclosure_trigger(if shown {
-                    "Hide checkpoint source"
-                } else {
-                    "Show checkpoint source"
-                }, shown, |page: &mut TreePage| {
-                    if let Some(pane) = &mut page.presenter {
-                        pane.checkpoint_source_open = !pane.checkpoint_source_open;
-                    }
-                }),
-        ));
+        children.push(Box::new(disclosure_trigger(
+            if shown {
+                "Hide checkpoint source"
+            } else {
+                "Show checkpoint source"
+            },
+            shown,
+            |page: &mut TreePage| {
+                if let Some(pane) = &mut page.presenter {
+                    pane.checkpoint_source_open = !pane.checkpoint_source_open;
+                }
+            },
+        )));
         if shown {
             children.push(Box::new(
                 el("p", hosted.checkpoint()).attr("class", "presenter-evidence"),

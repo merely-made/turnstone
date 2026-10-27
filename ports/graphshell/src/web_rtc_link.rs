@@ -17,9 +17,9 @@
 use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
+use chirograph::{CapabilityProfile, PresentationCapability};
 use futures_channel::mpsc::{UnboundedReceiver, UnboundedSender, unbounded};
 use futures_util::StreamExt;
-use graphshell::protocol::{CapabilityProfile, PresentationCapability};
 use graphshell::webrtc_browser::{
     BrowserFrames, BrowserInitiatorConfig, BrowserJoin, BrowserSession, BrowserWriter,
     HandshakeLimits, InMemoryProvider, InviteV1, RetiredSession, SignedDelegationCertificate,

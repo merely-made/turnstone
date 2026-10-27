@@ -197,7 +197,7 @@ impl Listeners {
             return;
         }
         event.prevent_default();
-        if self.shared.selection_locked.get() {
+        if self.shared.selection_locked() {
             return;
         }
         let (dx, dy) = wheel_delta_from_dom(&event, WHEEL_LINE_PX, WHEEL_PAGE_PX);
@@ -219,7 +219,7 @@ impl Listeners {
             {
                 event.stop_propagation();
                 event.prevent_default();
-                if self.shared.selection_locked.get() || self.shared.remote_shown.get() {
+                if self.shared.selection_locked() || self.shared.remote_is_shown() {
                     return;
                 }
                 let mut canvas = self.shared.canvas.borrow_mut();
@@ -262,8 +262,8 @@ impl Listeners {
             let zoom = (self.host.ui_zoom)();
             let graph = self.shared.gestures.borrow().graph;
             let cancelled = event.type_() == "pointercancel"
-                || self.shared.selection_locked.get()
-                || self.shared.remote_shown.get();
+                || self.shared.selection_locked()
+                || self.shared.remote_is_shown();
             if cancelled || (ends && graph.is_none()) {
                 // Cancellation never becomes a release, selection or menu.
                 self.shared.canvas.borrow_mut().pointer_cancel();

@@ -13,21 +13,20 @@
 //! keyed realization of the very same Control records, including their
 //! rectangles.
 
+use super::window;
 use graphshell::{
     practice_disclosure::tone_labels as tones,
     practice_workspace::{
         PracticeAction, PracticeRuntimeConfig, PracticeSource, PracticeView, PracticeWorkspace,
         PracticeWorkspaceSnapshot, Selection,
     },
-    projection_compile::{
-        CompiledProjection, HostDatasetV1, PRACTICE_CARD, default_definition, practice_compiler,
-    },
+    projection_compile::{PRACTICE_CARD, default_definition, practice_compiler},
 };
-use scenograph::{Channel, ProjectionDefinition};
 use mere::canvas::{ArrangementAction, Axes, BoardItem, PermittedActions, PhysicsBoard};
+use scenograph::{Channel, ProjectionDefinition};
+use scenomise::{host_dataset::HostDatasetV1, projection::CompiledProjection};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
-use super::window;
 
 const STORAGE: &str = "graphshellPracticeWorkspaceV1";
 const HISTORY_LIMIT: usize = 64;
@@ -987,5 +986,4 @@ impl PracticeHost {
         .into_iter()
         .collect())
     }
-
 }

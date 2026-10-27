@@ -702,6 +702,7 @@ impl TreeLane {
     }
 
     /// The remote session's observations, named as the old page names them.
+    #[cfg(feature = "remote")]
     fn remote_fields(
         &self,
         ctx: &AppCtx<'_, TreePage, Logic, Child>,
@@ -726,7 +727,7 @@ impl TreeLane {
                 "tools-sections",
                 format!(
                     "physics:{},remote:{}",
-                    if page.sections.physics.expanded {
+                    if page.physics_section.expanded {
                         "open"
                     } else {
                         "closed"
@@ -889,10 +890,15 @@ impl Product for TreeLane {
         let mut lines = vec![format!("RESULT {}", if outcome.ok { "ok" } else { "fail" })];
         lines.extend(outcome.log.iter().cloned());
         lines.extend(self.receipt_lines());
-        #[cfg(feature="product")]
-        let scope_receipt=(scope_navigation::place(ctx.runner.state()).map(|p|p.level.label()),scope_navigation::place(ctx.runner.state()).and_then(|p|p.focus),reading::anchor_field(ctx.runner.state()));
-        #[cfg(not(feature="product"))]
-        let scope_receipt:(Option<&str>,Option<uuid::Uuid>,String)=(None,None,String::new());
+        #[cfg(feature = "product")]
+        let scope_receipt = (
+            scope_navigation::place(ctx.runner.state()).map(|p| p.level.label()),
+            scope_navigation::place(ctx.runner.state()).and_then(|p| p.focus),
+            reading::anchor_field(ctx.runner.state()),
+        );
+        #[cfg(not(feature = "product"))]
+        let scope_receipt: (Option<&str>, Option<uuid::Uuid>, String) = (None, None, String::new());
+        #[cfg(feature = "product")]
         let saved = ctx.runner.state().product.as_ref().map(|product| {
             json!({
                 "session": product.session, "selected": product.selected,
@@ -906,6 +912,8 @@ impl Product for TreeLane {
                 "reading_anchor": scope_receipt.2,
             })
         });
+        #[cfg(not(feature = "product"))]
+        let saved: Option<serde_json::Value> = None;
         publish(outcome.ok, &lines.join("\n"), &self.shared, saved);
         Ok(())
     }
@@ -969,7 +977,9 @@ impl Product for TreeLane {
                 Some((left + x - px).hypot(top + y - py))
             });
         let step = canvas.elapsed_step_report().unwrap_or_default();
-        let snapshot = self.remote_fields(ctx, self.physics_fields(ctx, ProbeSnapshot::default()));
+        let snapshot = self.physics_fields(ctx, ProbeSnapshot::default());
+        #[cfg(feature = "remote")]
+        let snapshot = self.remote_fields(ctx, snapshot);
         #[cfg(feature = "product")]
         let snapshot = snapshot
             .with_field("shell-panes-open", page.instrument.panes_open.to_string())
@@ -1005,7 +1015,7 @@ impl Product for TreeLane {
         #[cfg(feature = "product")]
         let snapshot = navigation::fields(page, snapshot);
         #[cfg(feature = "product")]
-        let snapshot = scope_navigation::fields(page,snapshot);
+        let snapshot = scope_navigation::fields(page, snapshot);
         #[cfg(feature = "product")]
         let snapshot = link_inspection::fields(page, snapshot);
         #[cfg(feature = "product")]
@@ -1351,6 +1361,7 @@ impl Product for TreeLane {
         let snapshot = link_rest_fields(&canvas, snapshot);
         let snapshot = link_paths::fields(&canvas, snapshot);
         let faces = self.shared.faces.get().unwrap_or_default().fields();
+        #[cfg(feature = "product")]
         let snapshot = practice::fields(page, snapshot);
         let snapshot = responsive_links::fields(page, snapshot);
         #[cfg(feature = "product")]
@@ -1385,6 +1396,7 @@ impl Product for TreeLane {
         let snapshot = faces.into_iter().fold(snapshot, |snapshot, (name, value)| {
             snapshot.with_field(name, value)
         });
+        #[cfg(feature = "product")]
         if let Some(product) = &page.product {
             // Detail observations describe the selected node. Before selection,
             // observe the faces actually on the canvas rather than conflating
@@ -1492,6 +1504,8 @@ impl Product for TreeLane {
         } else {
             snapshot
         }
+        #[cfg(not(feature = "product"))]
+        snapshot
     }
 
     /// `timing start <label>` and `timing stop`, and `click-node <url>`.
@@ -2198,7 +2212,7 @@ impl Product for TreeLane {
     ) -> Option<cambium::Outcome> {
         let mut outcome = cambium::Outcome::Stale;
         ctx.runner.update(|page| {
-            if page.resident_mere_shown() || page.shared.remote_shown.get() {
+            if page.resident_mere_shown() || page.shared.remote_is_shown() {
                 outcome = cambium::Outcome::Refused {
                     reason: "Viewer commands require the local canvas.".into(),
                 };
@@ -2225,6 +2239,7 @@ impl Product for TreeLane {
     /// Events emitted by the same command owners as the visible controls.
     fn drain_events(&mut self, _ctx: &mut mesquite::Ctx<'_, Self>) -> Vec<String> {
         let mut events = std::mem::take(&mut *self.shared.events.borrow_mut());
+        #[cfg(feature = "remote")]
         events.extend(std::mem::take(&mut self.shared.remote.borrow_mut().events));
         events
     }
@@ -2239,7 +2254,10 @@ impl Product for TreeLane {
     ) -> Option<bool> {
         let host_pending = host_boundary::pending(&ctx.runner.state().root, &mut self.errors);
         let pending = self.shared.timing.borrow_mut().poll();
+        #[cfg(feature = "remote")]
         let local_shown = ctx.runner.state().session == remote::Session::Local;
+        #[cfg(not(feature = "remote"))]
+        let local_shown = true;
         // A hidden canvas cannot advance its last motion flag. Workbench
         // waits still need workspace store writes to finish before reopening.
         let canvas_shown = local_shown
@@ -2264,7 +2282,16 @@ impl Product for TreeLane {
             capture_pending
                 || host_pending
                 || pending
-                || self.shared.remote.borrow().in_flight()
+                || {
+                    #[cfg(feature = "remote")]
+                    {
+                        self.shared.remote.borrow().in_flight()
+                    }
+                    #[cfg(not(feature = "remote"))]
+                    {
+                        false
+                    }
+                }
                 || (canvas_shown && self.shared.moving.get())
                 || workspace_saving
                 || {
@@ -2278,12 +2305,20 @@ impl Product for TreeLane {
                     }
                 }
                 || resource_pending
-                || ctx
-                    .runner
-                    .state()
-                    .product
-                    .as_ref()
-                    .is_some_and(|product| product.saving),
+                || {
+                    #[cfg(feature = "product")]
+                    {
+                        ctx.runner
+                            .state()
+                            .product
+                            .as_ref()
+                            .is_some_and(|product| product.saving)
+                    }
+                    #[cfg(not(feature = "product"))]
+                    {
+                        false
+                    }
+                },
         )
     }
 
@@ -2395,12 +2430,62 @@ fn forme_fields(page: &TreePage, canvas: &Canvas, snapshot: ProbeSnapshot) -> Pr
     snapshot
         .with_field("forme", pane.current().document.id.as_uuid().to_string())
         .with_field("forme-accesses", pane.current().members().len().to_string())
-        .with_field("reading-text-size", pane.current().focused_reading.map(|id|pane.current().reading_preferences.get(&id).text_size.to_string()).unwrap_or_default())
-        .with_field("reading-column-em", pane.current().focused_reading.map(|id|pane.current().reading_preferences.get(&id).column_em.to_string()).unwrap_or_default())
-        .with_field("reading-history-back", pane.current().reading_trail.can_back().to_string())
-        .with_field("reading-history-forward", pane.current().reading_trail.can_forward().to_string())
+        .with_field(
+            "reading-text-size",
+            pane.current()
+                .preferences
+                .focused_reading
+                .map(|id| {
+                    pane.current()
+                        .preferences
+                        .reading_preferences
+                        .get(&id)
+                        .text_size
+                        .to_string()
+                })
+                .unwrap_or_default(),
+        )
+        .with_field(
+            "reading-column-em",
+            pane.current()
+                .preferences
+                .focused_reading
+                .map(|id| {
+                    pane.current()
+                        .preferences
+                        .reading_preferences
+                        .get(&id)
+                        .column_em
+                        .to_string()
+                })
+                .unwrap_or_default(),
+        )
+        .with_field(
+            "reading-history-back",
+            pane.current()
+                .preferences
+                .reading_trail
+                .can_back()
+                .to_string(),
+        )
+        .with_field(
+            "reading-history-forward",
+            pane.current()
+                .preferences
+                .reading_trail
+                .can_forward()
+                .to_string(),
+        )
         .with_field("reading-anchor", super::reading::anchor_field(page))
-        .with_field("reading-find", pane.current().focused_reading.and_then(|id|pane.reading_ui.get(&id)).filter(|ui|ui.open).map_or("closed",|ui|ui.status.as_str()))
+        .with_field(
+            "reading-find",
+            pane.current()
+                .preferences
+                .focused_reading
+                .and_then(|id| pane.reading_ui.get(&id))
+                .filter(|ui| ui.open)
+                .map_or("closed", |ui| ui.status.as_str()),
+        )
         .with_field(
             "forme-cells",
             region.map_or(0, |r| r.cells.len()).to_string(),

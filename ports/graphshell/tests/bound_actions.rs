@@ -1,4 +1,7 @@
 // Copyright 2026 Mark Alan Boykin
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 
 #![cfg(any(feature = "native", feature = "web"))]
@@ -16,10 +19,10 @@ use chirograph::{
 };
 use graphshell::bound_actions::BoundOwnerActions;
 use graphshell::local_projection::ProjectionSession;
-use graphshell::projection_compile::ProjectionDataset;
 use graphshell_client::{Outcome, Progress, SessionCore};
 use sceno::{Footprint, InstanceId, ProjectedItem, Representation, Scene, Size2, Transform2};
 use scenograph::RuntimeSourceBinding;
+use scenomise::projection::ProjectionDataset;
 use scenotime::SceneSnapshot;
 
 const SOURCE: &str = include_str!("../web/fixtures/woodshed-stage.json");

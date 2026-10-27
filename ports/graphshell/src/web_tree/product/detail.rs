@@ -1,4 +1,7 @@
 // Copyright 2026 Mark Alan Boykin
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 
 //! Bind the local owner's detail operations to shared Cambium controls.
@@ -195,7 +198,7 @@ impl SavedProduct {
         let handler = HANDLERS[self.detail.handler.selected.min(HANDLERS.len() - 1)].0;
         self.detail.actions = self.detail.actions.saturating_add(1);
         self.status = match app.open_address(&data.address, handler) {
-            Ok(graphshell::protocol::IntentResult::Accepted) => "Accepted".into(),
+            Ok(chirograph::IntentResult::Accepted) => "Accepted".into(),
             Ok(result) => format!("{result:?}"),
             Err(error) => format!("Open failed: {error}"),
         };

@@ -30,11 +30,12 @@ use scenomise::host_dataset::HostDatasetV1;
 pub use scenomise::host_dataset::folds::FoldViewState;
 use uuid::Uuid;
 
-use crate::projection_compile::{ProjectionDataset, practice_compiler};
+use crate::projection_compile::practice_compiler;
 use scenograph::{
     Appearance, Arrangement, Channel, Encoding, Interaction, PROJECTION_DEFINITION_VERSION,
     ProjectionDefinition, Provenance, Reading, RevisionEvidence, SelectionMode,
 };
+use scenomise::projection::ProjectionDataset;
 
 /// The viewer's recipe id.
 pub const VIEWER_DEFINITION_ID: &str = "host-dataset-viewer";

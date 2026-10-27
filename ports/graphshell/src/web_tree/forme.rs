@@ -6,15 +6,13 @@
 
 //! Workbench reading tiles and their scoped Forme draft in the retained page.
 use super::*;
-use cambium::{Slot, button, frisket_with};
-use graphshell::{
-    forme_session::{
-        DropEffect, FormeLoadGate, FormeLoadTicket, FormeSession, FormeWriteFence, PreparedSave,
-        SaveKind,
-    },
-    forme_workspace::FormeWorkspace,
+use cambium::{Slot, button, frisket_with, lens};
+use graphshell::forme_workspace::{
+    self, FormeWorkspace, GraphshellFormeSession as FormeSession,
+    GraphshellPreparedSave as PreparedSave, GraphshellSaveKind as SaveKind,
 };
-use muniment::IndexedDbBackend;
+use muniment::{Backend, IndexedDbBackend};
+use platen::workspace::{DropEffect, FormeLoadGate, FormeLoadTicket, FormeWriteFence};
 use uuid::Uuid;
 use workbench::{ContentSource, SplitAxis, Tile, TileEvent};
 
@@ -25,7 +23,7 @@ pub(super) struct Pane {
     pending: Option<PreparedSave>,
     pub(super) retry: Option<SaveKind>,
     pub(super) saving: bool,
-    pub(super) pending_read_commands: std::collections::VecDeque<(Uuid,cambium::ReadCommand)>,
+    pub(super) pending_read_commands: std::collections::VecDeque<(Uuid, cambium::ReadCommand)>,
     pub(super) status: String,
     pub(super) workbench: bool,
     moving: Option<Uuid>,
@@ -34,15 +32,20 @@ pub(super) struct Pane {
     drag: Option<(Uuid, (f32, f32), bool)>,
     cancelled_drag: bool,
     pub(super) reading_ui: std::collections::BTreeMap<Uuid, cambium::ReadFind>,
+    controls: mere_view::workbench_editor::WorkbenchEditor,
 }
 impl Pane {
     pub(super) async fn open(product: &product::SavedProduct) -> Result<Self, String> {
         let (backend, session) = product.forme_source().ok_or("workspace store is busy")?;
-        let session = FormeSession::load(backend.clone(), session, &product.graph()).await?;
+        let bytes = backend
+            .get(&forme_workspace::slot(session))
+            .await
+            .map_err(|e| e.to_string())?;
+        let session = FormeSession::from_bytes(bytes.as_deref(), session, &product.graph())?;
         Ok(Self::from_session(backend, session))
     }
     fn from_session(backend: IndexedDbBackend, session: FormeSession) -> Self {
-        Self {
+        let mut pane = Self {
             session,
             backend,
             completed: Rc::new(RefCell::new(None)),
@@ -58,10 +61,10 @@ impl Pane {
             drag: None,
             cancelled_drag: false,
             reading_ui: Default::default(),
-        }
-    }
-    pub(super) fn projected_model(&self) -> &FormeWorkspace {
-        self.candidate.as_ref().unwrap_or_else(|| self.model())
+            controls: Default::default(),
+        };
+        pane.refresh_controls();
+        pane
     }
     pub(super) fn model(&self) -> &FormeWorkspace {
         self.session.view()
@@ -73,7 +76,7 @@ impl Pane {
         self.project(canvas, self.model().document.graph_id)
     }
     fn project(&self, canvas: &mut Canvas, owner: Uuid) -> Result<(), String> {
-        let region = self.current().project_region(owner, canvas.graph())?;
+        let region = forme_workspace::project_region(self.current(), owner, canvas.graph())?;
         canvas.set_forme_region(region)
     }
     pub(super) fn save(&mut self, kind: SaveKind) {
@@ -84,6 +87,7 @@ impl Pane {
             Ok(proposal) => proposal,
             Err(error) => {
                 self.status = error;
+                self.refresh_controls();
                 return;
             },
         };
@@ -92,10 +96,24 @@ impl Pane {
         self.retry = Some(kind);
         self.pending = Some(proposal.clone());
         let backend = self.backend.clone();
+        let key = forme_workspace::slot(self.model().document.graph_id);
+        let bytes = match proposal.bytes() {
+            Ok(bytes) => bytes,
+            Err(error) => {
+                self.saving = false;
+                self.pending = None;
+                let _ = self.session.finish_save(proposal, Err(error.clone()));
+                self.status = error;
+                self.refresh_controls();
+                return;
+            },
+        };
         let completed = self.completed.clone();
         wasm_bindgen_futures::spawn_local(async move {
-            *completed.borrow_mut() = Some(proposal.save(backend).await);
+            *completed.borrow_mut() =
+                Some(backend.put(&key, &bytes).await.map_err(|e| e.to_string()));
         });
+        self.refresh_controls();
     }
     pub(super) fn previewing(&self) -> bool {
         self.candidate.is_some()
@@ -104,11 +122,11 @@ impl Pane {
         self.feedback.map_or("none", |(effect, _)| effect.label())
     }
     pub(super) fn ready(&self) -> bool {
-        self.completed.borrow().is_some()
+        self.completed.borrow().is_some() || self.controls.has_effects()
     }
-    fn poll(&mut self) {
+    fn poll(&mut self) -> bool {
         let Some(result) = self.completed.borrow_mut().take() else {
-            return;
+            return false;
         };
         self.saving = false;
         if let Some(proposal) = self.pending.take() {
@@ -120,6 +138,20 @@ impl Pane {
                 Err(error) => format!("Save failed · {error} · Draft retained; retry the save"),
             };
         }
+        self.refresh_controls();
+        true
+    }
+    fn refresh_controls(&mut self) {
+        self.controls
+            .set_snapshot(mere_view::workbench_editor::Snapshot {
+                editing: self.session.editing(),
+                dirty: self.session.dirty(),
+                busy: self.session.busy() || self.saving,
+                can_undo: self.session.can_undo(),
+                can_redo: self.session.can_redo(),
+                visible: self.model().visible,
+                notice: self.status.clone(),
+            });
     }
 }
 
@@ -198,7 +230,12 @@ pub(super) fn after_graph_change(page: &mut TreePage) {
     if new_owner.is_some() || same_owner.is_some() {
         // Durable anchors may survive a graph reopen. An unfinished click is
         // only valid for the exact live canvas that received its first press.
-        page.instrument.scope.gesture_epoch=page.instrument.scope.gesture_epoch.checked_add(1).expect("Gesture epoch exhausted");
+        page.instrument.scope.gesture_epoch = page
+            .instrument
+            .scope
+            .gesture_epoch
+            .checked_add(1)
+            .expect("Gesture epoch exhausted");
         page.instrument.scope.activation.cancel();
     }
     if let Some(owner) = new_owner {
@@ -280,12 +317,14 @@ pub(super) fn poll_owner(page: &mut TreePage) {
         let fence = page.forme_owner.writes.clone();
         page.forme_owner.loading = Some(Loading { ticket, completed });
         wasm_bindgen_futures::spawn_local(async move {
-            *returned.borrow_mut() =
-                Some(match fence.load(load_backend, ticket.owner, &graph).await {
-                    Ok(Some(session)) => Ok(session),
-                    Ok(None) => Err("Workbench owner still has an earlier pending write".into()),
-                    Err(error) => Err(error),
-                });
+            *returned.borrow_mut() = Some(if fence.blocks(ticket.owner) {
+                Err("Workbench owner still has an earlier pending write".into())
+            } else {
+                match load_backend.get(&forme_workspace::slot(ticket.owner)).await {
+                    Ok(bytes) => FormeSession::from_bytes(bytes.as_deref(), ticket.owner, &graph),
+                    Err(error) => Err(error.to_string()),
+                }
+            });
         });
     }
     let finished = page.forme_owner.loading.as_ref().and_then(|loading| {
@@ -338,12 +377,59 @@ fn now() -> u64 {
     js_sys::Date::now() as u64
 }
 pub(super) fn poll(page: &mut TreePage) {
-    if let Some(pane) = &mut page.forme {
-        pane.poll();
+    let effect = page
+        .forme
+        .as_mut()
+        .and_then(|pane| pane.controls.take_effect());
+    let dispatched_effect = effect.is_some();
+    match effect {
+        Some(mere_view::workbench_editor::Effect::Unlock) => {
+            if page
+                .forme
+                .as_ref()
+                .is_some_and(|pane| !pane.session.editing())
+            {
+                unlock_or_apply(page);
+            }
+        },
+        Some(mere_view::workbench_editor::Effect::Apply) => {
+            if page
+                .forme
+                .as_ref()
+                .is_some_and(|pane| pane.session.editing())
+            {
+                unlock_or_apply(page);
+            }
+        },
+        Some(mere_view::workbench_editor::Effect::Discard) => discard(page),
+        Some(mere_view::workbench_editor::Effect::Undo) => undo(page, false),
+        Some(mere_view::workbench_editor::Effect::Redo) => undo(page, true),
+        Some(mere_view::workbench_editor::Effect::ToggleVisibility) => {
+            if let Some(pane) = &mut page.forme {
+                pane.save(SaveKind::Visibility);
+            }
+        },
+        None => {},
     }
-    let command=page.forme.as_mut().filter(|pane|!pane.saving).and_then(|pane|pane.pending_read_commands.pop_front());
-    if let Some((member,command))=command {super::reading::read_command(page,member,command);}
-    changed(page);
+    let completed = page.forme.as_mut().is_some_and(Pane::poll);
+    if completed {
+        changed(page);
+    } else if dispatched_effect {
+        // Consuming a refused action should refresh the status/buttons without
+        // clearing an in-progress tile preview or drag candidate.
+        if let Some(pane) = &mut page.forme {
+            pane.refresh_controls();
+        }
+        page.shared.dirty.set(true);
+    }
+    let command = page
+        .forme
+        .as_mut()
+        .filter(|pane| !pane.saving)
+        .and_then(|pane| pane.pending_read_commands.pop_front());
+    if let Some((member, command)) = command {
+        super::reading::read_command(page, member, command);
+    }
 }
 fn changed(page: &mut TreePage) {
     if let Some(pane) = &mut page.forme {
@@ -351,8 +437,10 @@ fn changed(page: &mut TreePage) {
         pane.feedback = None;
         pane.moving = None;
         pane.drag = None;
+        pane.refresh_controls();
         if let Err(error) = pane.install(&mut page.shared.canvas.borrow_mut()) {
             pane.status = error;
+            pane.refresh_controls();
         }
     }
     page.shared.dirty.set(true);
@@ -415,18 +503,29 @@ pub(super) fn open_selected(page: &mut TreePage) {
     if let Some(pane) = &mut page.forme {
         pane.workbench = true;
     }
-    if let Some(member)=page.forme.as_ref().and_then(|p|p.current().focused_reading) {super::scope_navigation::record_reading(page,member);}
+    if let Some(member) = page
+        .forme
+        .as_ref()
+        .and_then(|p| p.current().preferences.focused_reading)
+    {
+        super::scope_navigation::record_reading(page, member);
+    }
 }
 /// Switch projections of the same graph and saved Forme arrangement. Only a
 /// first Read with an empty arrangement admits the already-selected members.
 pub(super) fn show_projection(page: &mut TreePage, map: bool) {
     if map {
-        super::scope_navigation::command(page,graphshell::scope_policy::ScopeCommand::To(graphshell::scope_policy::ScopeLevel::Graph.into()));
+        super::scope_navigation::command(
+            page,
+            graphshell::scope_policy::ScopeCommand::To(
+                graphshell::scope_policy::ScopeLevel::Graph.into(),
+            ),
+        );
     } else {
         let member = page.shared.canvas.borrow().focused_member().or_else(|| {
             page.forme
                 .as_ref()
-                .and_then(|p| p.current().focused_reading)
+                .and_then(|p| p.current().preferences.focused_reading)
         });
         if let Some(member) = member {
             read_related(page, member);
@@ -438,32 +537,45 @@ pub(super) fn show_projection(page: &mut TreePage, map: bool) {
 }
 pub(super) fn open_retained(page: &mut TreePage, member: Uuid) {
     super::scope_navigation::capture_origin(page);
-    let (anchors,trail)=super::reading::capture_progress(page);
+    let (anchors, trail) = super::reading::capture_progress(page);
     edit(page, None, true, move |workspace, graph| {
-        workspace.reading_anchors=anchors; workspace.reading_trail=trail;
+        workspace.preferences.reading_anchors = anchors;
+        workspace.preferences.reading_trail = trail;
         workspace.open(member, graph)
     });
     if let Some(pane) = &mut page.forme {
         pane.workbench = true;
     }
-    super::scope_navigation::record_reading(page,member);
+    super::scope_navigation::record_reading(page, member);
 }
 
-pub(super) fn read_related(page:&mut TreePage,member:Uuid) {
+pub(super) fn read_related(page: &mut TreePage, member: Uuid) {
     super::scope_navigation::capture_origin(page);
-    let (anchors,trail)=super::reading::capture_progress(page);
-    edit(page,None,true,move |workspace,graph| {
-        workspace.reading_anchors=anchors;workspace.reading_trail=trail;workspace.read(member,graph)
+    let (anchors, trail) = super::reading::capture_progress(page);
+    edit(page, None, true, move |workspace, graph| {
+        workspace.preferences.reading_anchors = anchors;
+        workspace.preferences.reading_trail = trail;
+        workspace.read(member, graph)
     });
-    if let Some(pane)=&mut page.forme {pane.workbench=true;}
-    super::scope_navigation::record_reading(page,member);
+    if let Some(pane) = &mut page.forme {
+        pane.workbench = true;
+    }
+    super::scope_navigation::record_reading(page, member);
     page.shared.dirty.set(true);
 }
 
-pub(super) fn bind_inspector(page: &mut TreePage, source: graphshell::pane_source::InspectorSource) {
+pub(super) fn bind_inspector(
+    page: &mut TreePage,
+    source: graphshell::pane_source::InspectorSource,
+) {
     if let Some(pane) = &mut page.forme {
-        if pane.saving { return; }
-        pane.save(SaveKind::InspectorSource(source));
+        if pane.saving {
+            return;
+        }
+        let update = pane.session.preferences_update(false, move |preferences| {
+            preferences.inspector_source = source.clone();
+        });
+        pane.save(update);
     }
     page.shared.dirty.set(true);
 }
@@ -535,14 +647,20 @@ pub(super) fn close_reading(page: &mut TreePage, member: Uuid) {
     let Some(tile) = pane.current().tile_for_member(member) else {
         return;
     };
-    let stack=pane.current().layout().slot_views().find(|slot|slot.members.contains(&member)).map(|slot|slot.members.to_vec()).unwrap_or_default();
+    let stack = pane
+        .current()
+        .layout()
+        .slot_views()
+        .find(|slot| slot.members.contains(&member))
+        .map(|slot| slot.members.to_vec())
+        .unwrap_or_default();
     let next = cambium::scope_navigation::reading_after_close_in_stack(
         &pane.current().members(),
         &stack,
-        pane.current().focused_reading.as_ref(),
+        pane.current().preferences.focused_reading.as_ref(),
         &member,
     );
-    let current = pane.current().focused_reading;
+    let current = pane.current().preferences.focused_reading;
     let reading = pane.workbench;
     super::scope_navigation::capture_origin(page);
     let (anchors, trail) = super::reading::capture_progress(page);
@@ -550,12 +668,13 @@ pub(super) fn close_reading(page: &mut TreePage, member: Uuid) {
         super::scope_navigation::command(
             page,
             graphshell::scope_policy::ScopeCommand::To(
-                graphshell::scope_policy::ScopeLevel::Neighborhood.into()),
+                graphshell::scope_policy::ScopeLevel::Neighborhood.into(),
+            ),
         );
     }
     edit(page, None, true, move |workspace, graph| {
-        workspace.reading_anchors = anchors;
-        workspace.reading_trail = trail;
+        workspace.preferences.reading_anchors = anchors;
+        workspace.preferences.reading_trail = trail;
         workspace.event(TileEvent::Closed(tile), graph)
     });
     if current == Some(member)
@@ -611,12 +730,12 @@ fn preview(page: &mut TreePage, target: Uuid, edge: workbench::Edge) {
     let Some(moving) = pane.moving else {
         return;
     };
-    let result = pane.session.install_edge_preview(
+    let result = pane.session.edge_preview_candidate(
         owner,
         moving,
         target,
         edge,
-        &mut page.shared.canvas.borrow_mut(),
+        page.shared.canvas.borrow().graph(),
     );
     match result {
         Ok(candidate) => {
@@ -627,6 +746,13 @@ fn preview(page: &mut TreePage, target: Uuid, edge: workbench::Edge) {
                 .find(|cell| cell.member == target)
                 .map(|cell| (DropEffect::Split(edge), region.cell_world_bounds(cell)));
             pane.candidate = Some(candidate);
+            if let Ok(region) = forme_workspace::project_region(
+                pane.current(),
+                owner,
+                page.shared.canvas.borrow().graph(),
+            ) {
+                let _ = page.shared.canvas.borrow_mut().set_forme_region(region);
+            }
             pane.status = "Preview ready · Apply move or cancel".into();
         },
         Err(error) => {
@@ -722,13 +848,27 @@ pub(super) fn shortcut(page: &mut TreePage, event: &cambium::KeyEvent) -> bool {
         finish_preview(page, false);
         return true;
     }
-    if let Some(member) = page.forme.as_ref().filter(|pane|pane.workbench).and_then(|pane|pane.model().focused_reading) {
-        let find_open = page.forme.as_ref().and_then(|pane|pane.reading_ui.get(&member)).is_some_and(|ui|ui.open);
+    if let Some(member) = page
+        .forme
+        .as_ref()
+        .filter(|pane| pane.workbench)
+        .and_then(|pane| pane.model().preferences.focused_reading)
+    {
+        let find_open = page
+            .forme
+            .as_ref()
+            .and_then(|pane| pane.reading_ui.get(&member))
+            .is_some_and(|ui| ui.open);
         if matches!(event.key, Key::Named(NamedKey::Escape)) && find_open {
-            super::reading::read_command(page,member,cambium::ReadCommand::CloseFind); return true;
+            super::reading::read_command(page, member, cambium::ReadCommand::CloseFind);
+            return true;
         }
-        if (event.mods.ctrl || event.mods.meta) && !event.mods.alt && matches!(&event.key, Key::Character(key) if key.eq_ignore_ascii_case("f")) {
-            super::reading::read_command(page,member,cambium::ReadCommand::Find); return true;
+        if (event.mods.ctrl || event.mods.meta)
+            && !event.mods.alt
+            && matches!(&event.key, Key::Character(key) if key.eq_ignore_ascii_case("f"))
+        {
+            super::reading::read_command(page, member, cambium::ReadCommand::Find);
+            return true;
         }
     }
     if (event.mods.ctrl || event.mods.meta)
@@ -993,6 +1133,12 @@ pub(super) fn section(page: &TreePage) -> Child {
     }
     if let Some(pane) = &page.forme {
         let forme_start = children.len();
+        children.push(Box::new(lens(
+            |editor: &mut mere_view::workbench_editor::WorkbenchEditor| {
+                mere_view::workbench_editor::view(editor)
+            },
+            |page: &mut TreePage| &mut page.forme.as_mut().expect("Forme pane mounted").controls,
+        )));
         children.push(Box::new(el(
             "p",
             format!(
@@ -1021,75 +1167,6 @@ pub(super) fn section(page: &TreePage) -> Child {
                 format!("{pins} position-pinned accesses keep their own positions."),
             )));
         }
-        children.push(Box::new(button(
-            if pane.session.editing() {
-                "Lock and apply"
-            } else {
-                "Unlock forme"
-            },
-            |p: &mut TreePage, _| unlock_or_apply(p),
-        )));
-        if pane.session.editing() {
-            children.push(Box::new(
-                status_note("", if pane.session.dirty() {
-                        "Pending Forme changes"
-                    } else {
-                        "Forme draft matches saved arrangement"
-                    }),
-            ));
-            children.push(Box::new(button(
-                "Discard changes",
-                |p: &mut TreePage, _| discard(p),
-            )));
-        }
-        for (label, redo, enabled) in [
-            (
-                if pane.session.editing() {
-                    "Undo forme draft"
-                } else {
-                    "Undo saved forme change"
-                },
-                false,
-                pane.session.can_undo(),
-            ),
-            (
-                if pane.session.editing() {
-                    "Redo forme draft"
-                } else {
-                    "Redo saved forme change"
-                },
-                true,
-                pane.session.can_redo(),
-            ),
-        ] {
-            children.push(Box::new(
-                cambium::focusable_if(
-                    cambium::on_click(el("button", label), move |p: &mut TreePage, _| {
-                        if enabled {
-                            undo(p, redo);
-                        }
-                    }),
-                    enabled,
-                )
-                .attr("aria-disabled", (!enabled).to_string()),
-            ));
-        }
-        children.push(Box::new(button(
-            if pane.model().visible {
-                "Hide forme boundary"
-            } else {
-                "Show forme boundary"
-            },
-            |p: &mut TreePage, _| {
-                if let Some(f) = &mut p.forme {
-                    if f.saving {
-                        return;
-                    }
-                    f.save(SaveKind::Visibility);
-                }
-                p.shared.dirty.set(true);
-            },
-        )));
         children.push(Box::new(button(
             "Select forme members",
             |p: &mut TreePage, _| {
@@ -1155,9 +1232,7 @@ pub(super) fn section(page: &TreePage) -> Child {
             },
         )));
         if !pane.status.is_empty() {
-            children.push(Box::new(
-                status_note("", pane.status.clone()),
-            ));
+            children.push(Box::new(status_note("", pane.status.clone())));
         }
         let forme_controls = children.split_off(forme_start);
         children.push(Box::new(cambium::on_key(
@@ -1224,8 +1299,8 @@ fn offer_links(page: &TreePage, member: Uuid, address: &str, media_type: Option<
 pub(super) fn workbench(page: &TreePage) -> Option<Child> {
     let pane = page.forme.as_ref().filter(|p| p.workbench)?;
     let graph = page.shared.canvas.borrow().graph().clone();
-    let displayed=pane.candidate.as_ref().unwrap_or_else(||pane.model());
-    let tree=displayed.tile_tree(&graph);
+    let displayed = pane.candidate.as_ref().unwrap_or_else(|| pane.model());
+    let tree = displayed.tile_tree(&graph);
     Some(match tree {
         None => Box::new(el(
             "p",
@@ -1285,9 +1360,25 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
                 }
             }
             super::reading::prepare(page);
-            let reading_toolbars: std::collections::BTreeMap<_, _> = pane.model().members().iter().map(|member| (*member, super::reading::toolbar_snapshot(page, *member))).collect();
-            let tab_visibility:std::collections::BTreeMap<_,_>=displayed.layout().slot_views()
-                .flat_map(|stack| {let visible=cambium::TabStripPolicy::Multiple.visible(stack.members.len());stack.members.iter().copied().map(move |member|(member,visible)).collect::<Vec<_>>()}).collect();
+            let reading_toolbars: std::collections::BTreeMap<_, _> = pane
+                .model()
+                .members()
+                .iter()
+                .map(|member| (*member, super::reading::toolbar_snapshot(page, *member)))
+                .collect();
+            let tab_visibility: std::collections::BTreeMap<_, _> = displayed
+                .layout()
+                .slot_views()
+                .flat_map(|stack| {
+                    let visible = cambium::TabStripPolicy::Multiple.visible(stack.members.len());
+                    stack
+                        .members
+                        .iter()
+                        .copied()
+                        .map(move |member| (member, visible))
+                        .collect::<Vec<_>>()
+                })
+                .collect();
             let reading = move |tile: &Tile| -> Slot<TreePage, ()> {
                 let ContentSource::Open { id, .. } = &tile.content else {
                     return Slot::Hole;
@@ -1309,9 +1400,15 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
                     .collect();
                 tags.sort();
                 if !tags.is_empty() {
-                    controls.push(Box::new(el("p", tags.join(" · ")).attr("class", "shell-reading-status")));
+                    controls.push(Box::new(
+                        el("p", tags.join(" · ")).attr("class", "shell-reading-status"),
+                    ));
                 }
-                controls.push(super::reading::toolbar(member, reading_toolbars[&member].clone(), tab_visibility.get(&member).copied().unwrap_or(false)));
+                controls.push(super::reading::toolbar(
+                    member,
+                    reading_toolbars[&member].clone(),
+                    tab_visibility.get(&member).copied().unwrap_or(false),
+                ));
                 if let Some(snapshot) = query_appearances.get(&member) {
                     controls.push(super::query_view::render(snapshot.clone()));
                 }
@@ -1367,7 +1464,17 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
             };
             Box::new(
                 cambium::on_key(
-                    el("div", cambium::frisket_with_tab_policy(&tree, None, &|_|None, cambium::TabStripPolicy::Multiple, tile_event, reading)),
+                    el(
+                        "div",
+                        cambium::frisket_with_tab_policy(
+                            &tree,
+                            None,
+                            &|_| None,
+                            cambium::TabStripPolicy::Multiple,
+                            tile_event,
+                            reading,
+                        ),
+                    ),
                     |p: &mut TreePage, event| {
                         if shortcut(p, &event) {
                             event.prevent_default();
@@ -1407,6 +1514,6 @@ pub(super) fn activate_from_rail(page: &mut TreePage, member: Uuid) {
     }
     page.shared.canvas.borrow_mut().select_member(member);
     selection_changed(page);
-    super::scope_navigation::record_reading(page,member);
+    super::scope_navigation::record_reading(page, member);
     page.shared.dirty.set(true);
 }
