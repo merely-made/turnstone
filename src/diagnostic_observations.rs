@@ -5,7 +5,7 @@
 //! replaces Trail nor provides operation correlation absent from AppEvent.
 
 use crate::observe::AppEvent;
-use apparatus::{
+use apparatus_core::{
     Batch, Cursor, Inspection, InspectionLimits, ObservationMetadata, ObservationStore,
     RetentionLimits, RunId, SourceId, StoreStats, inspect_batch,
 };
@@ -171,14 +171,14 @@ impl DiagnosticObservations {
     pub fn cursor(&self) -> Cursor {
         self.store.cursor()
     }
-    pub fn stats(&mut self) -> Result<StoreStats, apparatus::StoreError> {
+    pub fn stats(&mut self) -> Result<StoreStats, apparatus_core::StoreError> {
         self.store.expire(self.started.elapsed())
     }
     pub fn read(
         &mut self,
         cursor: &mut Cursor,
         max_records: usize,
-    ) -> Result<Batch<EventCategory>, apparatus::StoreError> {
+    ) -> Result<Batch<EventCategory>, apparatus_core::StoreError> {
         self.store.read(cursor, self.started.elapsed(), max_records)
     }
 

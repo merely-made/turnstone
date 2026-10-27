@@ -155,10 +155,14 @@ impl App {
             return vec![];
         };
         if command == CanvasCommand::ToggleTerritory {
-            self.with_graph_pane(pane, |canvas| {
+            // Territory is a graph-wide overlay. Installing a pane's saved
+            // selection here can reconcile layout and move an unrelated node.
+            if let Some(graph) = self.graph_for_pane(pane)
+                && let Some(canvas) = self.graph_runtimes.canvas_mut(graph)
+            {
                 let viewport = canvas.view_size();
                 command.apply(canvas, viewport);
-            });
+            }
             return vec![Effect::Redraw];
         }
         if let Some(runtime) = self

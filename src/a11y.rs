@@ -804,8 +804,8 @@ mod bridge_integrity {
             .iter_leaves()
             .find_map(|(pane, content, _)| matches!(content, PaneContent::Gloss(_)).then_some(pane))
             .unwrap();
-        app.diagnostic_inspection = Some(Ok(apparatus::Inspection {
-            lines: vec![apparatus::InspectionLine {
+        app.diagnostic_inspection = Some(Ok(apparatus_core::Inspection {
+            lines: vec![apparatus_core::InspectionLine {
                 id: "apparatus/fixture/record/1".into(),
                 text: "Loss evicted: 2".into(),
             }],

@@ -14,7 +14,9 @@
 //! handler code. Composed sections come from the pane's own leaf, not the
 //! preset: the swatch is the preset, the sections are per-pane config.
 
+mod inspection;
 mod presets;
+use inspection::project_inspection;
 use presets::state_color;
 pub use presets::{GLOSS_MINIMAP, OVERMAP_LINEAGE, ProjectionPreset};
 
@@ -601,7 +603,7 @@ impl SwatchPane {
             };
             let id = format!("turnstone/gloss/{}/{}", pane.0, identity);
             bounds.insert(uxtree::node_id_for_path(&id), window_rect);
-            lines.push(apparatus::InspectionLine {
+            lines.push(apparatus_core::InspectionLine {
                 id,
                 text: (*text).to_owned(),
             });
@@ -615,7 +617,7 @@ impl SwatchPane {
                     .is_some_and(|id| line.id == format!("turnstone/gloss/{}/{}", pane.0, id))
             })
         });
-        let mut tree = apparatus::project_inspection(&apparatus::Inspection { lines });
+        let mut tree = project_inspection(&apparatus_core::Inspection { lines });
         let previous_root = tree.root;
         tree.root = uxtree::node_id_for_path(&format!("turnstone/gloss/{}/diagnostics", pane.0));
         for (id, semantic) in &mut tree.nodes {
@@ -719,9 +721,9 @@ mod tests {
 
     fn diagnostic_fixture() -> (SwatchPane, App) {
         let mut app = App::test_stub();
-        app.diagnostic_inspection = Some(Ok(apparatus::Inspection {
+        app.diagnostic_inspection = Some(Ok(apparatus_core::Inspection {
             lines: (0..30)
-                .map(|index| apparatus::InspectionLine {
+                .map(|index| apparatus_core::InspectionLine {
                     id: format!("apparatus/fixture/record/{index}"),
                     text: format!("Diagnostic record {index}"),
                 })
@@ -795,7 +797,7 @@ mod tests {
         inspection.lines[0].text = "Diagnostic record updated".into();
         inspection.lines.insert(
             0,
-            apparatus::InspectionLine {
+            apparatus_core::InspectionLine {
                 id: "apparatus/fixture/new".into(),
                 text: "New earlier row".into(),
             },
