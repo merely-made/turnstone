@@ -14,7 +14,7 @@ use graphshell::forme_workspace::{
 use muniment::{Backend, IndexedDbBackend};
 use platen::workspace::{DropEffect, FormeLoadGate, FormeLoadTicket, FormeWriteFence};
 use uuid::Uuid;
-use workbench::{ContentSource, SplitAxis, Tile, TileEvent};
+use workbench::{ContentSource, SplitAxis, Tile, TileEvent, TileTree};
 
 pub(super) struct Pane {
     pub(super) session: FormeSession,
@@ -486,8 +486,17 @@ pub(super) fn edit(
     changed(page);
 }
 pub(super) fn open_selected(page: &mut TreePage) {
-    super::scope_navigation::capture_origin(page);
     let selected = page.shared.canvas.borrow().selected_members();
+    // A node naming a correspondent opens Comms, not a tile.
+    let tiles: Vec<_> = selected
+        .iter()
+        .copied()
+        .filter(|&member| !super::comms_pane::open_correspondent(page, member))
+        .collect();
+    if tiles.is_empty() && !selected.is_empty() {
+        return;
+    }
+    super::scope_navigation::capture_origin(page);
     if selected.is_empty() {
         if let Some(pane) = &mut page.forme {
             pane.status = "Select a node to open it in the workbench".into();
@@ -495,7 +504,7 @@ pub(super) fn open_selected(page: &mut TreePage) {
         return;
     }
     edit(page, None, true, |workspace, graph| {
-        for member in selected {
+        for member in tiles {
             workspace.open(member, graph)?;
         }
         Ok(())
@@ -536,6 +545,9 @@ pub(super) fn show_projection(page: &mut TreePage, map: bool) {
     page.shared.dirty.set(true);
 }
 pub(super) fn open_retained(page: &mut TreePage, member: Uuid) {
+    if super::comms_pane::open_correspondent(page, member) {
+        return;
+    }
     super::scope_navigation::capture_origin(page);
     let (anchors, trail) = super::reading::capture_progress(page);
     edit(page, None, true, move |workspace, graph| {
@@ -550,6 +562,9 @@ pub(super) fn open_retained(page: &mut TreePage, member: Uuid) {
 }
 
 pub(super) fn read_related(page: &mut TreePage, member: Uuid) {
+    if super::comms_pane::open_correspondent(page, member) {
+        return;
+    }
     super::scope_navigation::capture_origin(page);
     let (anchors, trail) = super::reading::capture_progress(page);
     edit(page, None, true, move |workspace, graph| {
@@ -1282,25 +1297,75 @@ pub(super) fn section(page: &TreePage) -> Child {
 
 /// Offer an opened page's unvisited links as suggestions, once per page and
 /// only while suggestions are on (`link_suggestions.rs` in pictograph).
-fn offer_links(page: &TreePage, member: Uuid, address: &str, media_type: Option<&str>, body: &str) {
+fn offer_link_values(page: &TreePage, member: Uuid, links: Vec<String>) {
     let Ok(mut canvas) = page.shared.canvas.try_borrow_mut() else {
         return;
     };
     if !canvas.suggestion_settings().on || canvas.has_offered_links(member) {
         return;
     }
-    canvas.offer_page_links(
-        member,
-        fleece::page_links::html_links(address, media_type, body),
-    );
+    canvas.offer_page_links(member, links);
     page.shared.dirty.set(true);
+}
+
+struct ReadingTile {
+    address: String,
+    title: String,
+    tags: Vec<String>,
+}
+
+fn tile_members(tree: &TileTree, out: &mut Vec<Uuid>) {
+    match tree {
+        TileTree::Stack(stack) => {
+            for tile in &stack.tabs {
+                if let ContentSource::Open { id, .. } = &tile.content
+                    && let Ok(id) = id.parse()
+                {
+                    out.push(id);
+                }
+            }
+        },
+        TileTree::Split { children, .. } => {
+            for child in children {
+                tile_members(&child.tree, out);
+            }
+        },
+    }
 }
 
 pub(super) fn workbench(page: &TreePage) -> Option<Child> {
     let pane = page.forme.as_ref().filter(|p| p.workbench)?;
-    let graph = page.shared.canvas.borrow().graph().clone();
     let displayed = pane.candidate.as_ref().unwrap_or_else(|| pane.model());
-    let tree = displayed.tile_tree(&graph);
+    let (tree, tile_metadata) = {
+        let canvas = page.shared.canvas.borrow();
+        let graph = canvas.graph();
+        let tree = displayed.tile_tree(graph);
+        let mut metadata = std::collections::BTreeMap::new();
+        if let Some(tree) = &tree {
+            let mut members = Vec::new();
+            tile_members(tree, &mut members);
+            for member in members {
+                let Some((key, node)) = graph.get_node_by_id(member) else {
+                    continue;
+                };
+                let mut tags: Vec<_> = graph
+                    .node_content_tags(key)
+                    .unwrap_or_default()
+                    .into_iter()
+                    .collect();
+                tags.sort();
+                metadata.insert(
+                    member,
+                    ReadingTile {
+                        address: node.url().to_owned(),
+                        title: node.title.clone(),
+                        tags,
+                    },
+                );
+            }
+        }
+        (tree, metadata)
+    };
     Some(match tree {
         None => Box::new(el(
             "p",
@@ -1313,15 +1378,23 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
             let reading_store = page.product.as_ref().and_then(|p| p.retained_store());
             let mut query_appearances = std::collections::BTreeMap::new();
             let mut appearances = std::collections::BTreeMap::new();
+            // Seed the portable owner/access leases before a clip tile can
+            // start its first asynchronous read during this initial render.
+            super::reading::prepare(page);
             for member in super::reading::active_members(&tree) {
                 if let Some(snapshot) = super::query_view::appearance(page, member) {
                     query_appearances.insert(member, snapshot);
                     continue;
                 }
-                if let Some((_, node)) = graph.get_node_by_id(member) {
-                    let address = node.url().to_string();
+                let (appearance, links) = {
+                    let canvas = page.shared.canvas.borrow();
+                    let graph = canvas.graph();
+                    let Some((_, node)) = graph.get_node_by_id(member) else {
+                        continue;
+                    };
+                    let address = node.url();
                     let appearance = if matches!(
-                        mere_document_lanes::retained_clip::request(&address),
+                        mere_document_lanes::retained_clip::request(address),
                         Ok(Some(mere_document_lanes::retained_clip::ClipRequest::Read(
                             _
                         )))
@@ -1329,37 +1402,42 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
                         Some(super::reading::clip_appearance(
                             &reading_shared,
                             member,
-                            &address,
+                            address,
                             reading_store.clone(),
                         ))
                     } else {
-                        if let Some(body) = &node.body {
-                            offer_links(page, member, &address, node.media_type.as_deref(), body);
-                        }
-                        node.body.as_ref().map(|body| {
-                            super::reading::appearance(
+                        node.body.as_deref().map(|body| {
+                            super::reading::appearance_parts(
                                 &reading_shared,
                                 member,
-                                graphshell::retained_content::HeldContent {
-                                    address,
-                                    title: node.title.clone(),
-                                    media_type: node
-                                        .media_type
-                                        .clone()
-                                        .unwrap_or_else(|| "text/plain".into()),
-                                    bytes: body.as_bytes().to_vec(),
-                                    engine: None,
-                                    media: None,
-                                },
+                                address,
+                                &node.title,
+                                node.media_type.as_deref().unwrap_or("text/plain"),
+                                body,
                             )
                         })
                     };
-                    if let Some(appearance) = appearance {
-                        appearances.insert(member, appearance);
-                    }
+                    let links =
+                        if canvas.suggestion_settings().on && !canvas.has_offered_links(member) {
+                            node.body.as_deref().map(|body| {
+                                fleece::page_links::html_links(
+                                    address,
+                                    node.media_type.as_deref(),
+                                    body,
+                                )
+                            })
+                        } else {
+                            None
+                        };
+                    (appearance, links)
+                };
+                if let Some(links) = links {
+                    offer_link_values(page, member, links);
+                }
+                if let Some(appearance) = appearance {
+                    appearances.insert(member, appearance);
                 }
             }
-            super::reading::prepare(page);
             let reading_toolbars: std::collections::BTreeMap<_, _> = pane
                 .model()
                 .members()
@@ -1379,29 +1457,29 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
                         .collect::<Vec<_>>()
                 })
                 .collect();
+            // Frisket clones its fill closure for retained slots. Share these
+            // immutable render snapshots instead of copying every tile's map.
+            let tile_metadata = Rc::new(tile_metadata);
+            let query_appearances = Rc::new(query_appearances);
+            let appearances = Rc::new(appearances);
+            let reading_toolbars = Rc::new(reading_toolbars);
+            let tab_visibility = Rc::new(tab_visibility);
             let reading = move |tile: &Tile| -> Slot<TreePage, ()> {
                 let ContentSource::Open { id, .. } = &tile.content else {
                     return Slot::Hole;
                 };
-                let node = id
-                    .parse::<Uuid>()
-                    .ok()
-                    .and_then(|id| graph.get_node_by_id(id));
-                let Some((key, node)) = node else {
+                let Some(member) = id.parse::<Uuid>().ok() else {
                     return Slot::View(Box::new(el("p", "This access is no longer present")));
                 };
-                let member = node.id;
-                let title = node.title.clone();
+                let Some(metadata) = tile_metadata.get(&member) else {
+                    return Slot::View(Box::new(el("p", "This access is no longer present")));
+                };
+                let title = metadata.title.clone();
+                let address = metadata.address.clone();
                 let mut controls: Vec<Child> = Vec::new();
-                let mut tags: Vec<_> = graph
-                    .node_content_tags(key)
-                    .unwrap_or_default()
-                    .into_iter()
-                    .collect();
-                tags.sort();
-                if !tags.is_empty() {
+                if !metadata.tags.is_empty() {
                     controls.push(Box::new(
-                        el("p", tags.join(" · ")).attr("class", "shell-reading-status"),
+                        el("p", metadata.tags.join(" · ")).attr("class", "shell-reading-status"),
                     ));
                 }
                 controls.push(super::reading::toolbar(
@@ -1423,7 +1501,7 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
                         .attr("data-forme-move", "true")
                         .attr(
                             "data-forme-control",
-                            json!([node.url(), "move"]).to_string(),
+                            json!([address.as_str(), "move"]).to_string(),
                         )
                         .attr("aria-label", format!("Move tile: {title}")),
                     ));
@@ -1439,8 +1517,11 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
                                     .attr("data-forme-preview", format!("{edge:?}").to_lowercase())
                                     .attr(
                                         "data-forme-control",
-                                        json!([node.url(), format!("{edge:?}").to_lowercase()])
-                                            .to_string(),
+                                        json!([
+                                            address.as_str(),
+                                            format!("{edge:?}").to_lowercase()
+                                        ])
+                                        .to_string(),
                                     )
                                     .attr("aria-label", format!("{label}: {title}")),
                             ));
@@ -1459,7 +1540,7 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
                         )
                         .attr("aria-label", format!("Reading access {title}"))
                         .attr("data-forme-access", member.to_string())
-                        .attr("data-forme-address", node.url().to_string()),
+                        .attr("data-forme-address", address),
                 ))
             };
             Box::new(

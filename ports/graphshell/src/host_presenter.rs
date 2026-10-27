@@ -8,7 +8,7 @@
 //! The selection outlives a visible Fold projection, but never changes source facts.
 use std::collections::{BTreeMap, BTreeSet};
 
-use crate::presentation_editor::presentation::{
+use scenograph::presentation::{
     Condition, Context, Effect, PRESENTATION_RULE_VERSION, PrimitiveKind, Property, Resolution,
     Rule, RuleSet, Scalar, Target, ViewState,
 };

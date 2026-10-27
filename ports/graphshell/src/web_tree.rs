@@ -514,6 +514,9 @@ pub(crate) struct TreePage {
     dynamics_inspector: dynamics_inspection::Pane,
     #[cfg(feature = "product")]
     node_presentation: node_presentation::Pane,
+    /// The Comms pane a node naming a correspondent opens.
+    #[cfg(feature = "product")]
+    comms: comms_pane::Pane,
     #[cfg(feature = "applets")]
     applet_seen: u64,
     #[cfg(feature = "applets")]
@@ -1170,6 +1173,8 @@ fn tools_region(page: &TreePage) -> Child {
     children.push(promoted_links::section(page));
     #[cfg(feature = "product")]
     children.push(node_presentation::section(page));
+    #[cfg(feature = "product")]
+    children.push(comms_pane::section(page));
     #[cfg(feature = "product")]
     children.push(forme::section(page));
     #[cfg(feature = "remote")]
@@ -1847,6 +1852,8 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
                 dynamics_inspector: dynamics_inspection::Pane::default(),
                 #[cfg(feature = "product")]
                 node_presentation: node_presentation::Pane::default(),
+                #[cfg(feature = "product")]
+                comms: comms_pane::Pane::default(),
                 #[cfg(feature = "applets")]
                 applet_seen: 0,
                 #[cfg(feature = "applets")]
@@ -2132,7 +2139,9 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
             #[cfg(feature = "product")]
             owner_waypoint::ready(ctx.runner.state());
             #[cfg(feature = "product")]
-            if ctx.runner.state().presentation.ready() {
+            if ctx.runner.state().presentation.ready()
+                || ctx.runner.state().presentation.owner_changed(ctx.runner.state().product.as_ref())
+            {
                 ctx.runner.update(presentation::poll);
             }
             #[cfg(feature = "product")]
@@ -2217,11 +2226,11 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
                 if location::needs_poll(ctx.runner.state()) {
                     ctx.runner.update(location::poll);
                 }
+                scope_navigation::refresh(ctx.runner.state());
+                reading::prepare(ctx.runner.state());
                 if reading::needs_progress_save(ctx.runner.state()) {
                     ctx.runner.update(reading::persist_progress);
                 }
-                scope_navigation::refresh(ctx.runner.state());
-                reading::prepare(ctx.runner.state());
                 focus_card::register(ctx);
                 backdrop::register(ctx);
                 blocks::register(ctx);
@@ -2538,6 +2547,8 @@ mod backdrop;
 #[cfg(feature = "product")]
 mod blocks;
 mod commands;
+#[cfg(feature = "product")]
+mod comms_pane;
 mod controls;
 #[cfg(feature = "product")]
 mod coupling;

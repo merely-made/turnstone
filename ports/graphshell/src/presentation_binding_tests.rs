@@ -4,12 +4,12 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 use super::*;
-use crate::presentation_editor::presentation::{Rule, Target};
 use mere::kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta};
 use mere::kernel::graph::{
     Field, ScalarField, SemanticStatementSpec, SemanticSubKind, predicate_iri,
 };
 use mere::kernel::types::GraphScope;
+use scenograph::presentation::{Condition, Resolution, Rule, RuleSet, Target};
 fn fixture() -> (Graph, [Uuid; 4]) {
     let mut graph = Graph::new();
     let ids = [1, 2, 3, 4].map(Uuid::from_u128);
@@ -48,6 +48,12 @@ fn forme() -> FormeFacts {
         visible: true,
         members: 2,
     }
+}
+fn resolve(
+    bound: &BoundContext,
+    rules: &RuleSet,
+) -> Result<Resolution, Vec<scenograph::presentation::Issue>> {
+    rules.resolve_with_availability(&bound.context, &bound.availability())
 }
 #[test]
 fn equal_addresses_share_resource_facts_but_not_occurrences_or_states() {
@@ -239,13 +245,15 @@ fn unknown_negated_state_and_measurement_never_match() {
             ],
         },
     ] {
-        let result = bound
-            .resolve(&rules(
+        let result = resolve(
+            &bound,
+            &rules(
                 PrimitiveKind::Node,
                 condition,
                 Effect::Details { visible: true },
-            ))
-            .unwrap();
+            ),
+        )
+        .unwrap();
         assert!(result.winners.is_empty());
         assert!(result.traces[0].reason.contains("unavailable"));
     }
@@ -255,15 +263,17 @@ fn unknown_negated_state_and_measurement_never_match() {
         }),
     };
     assert!(
-        !bound
-            .resolve(&rules(
+        !resolve(
+            &bound,
+            &rules(
                 PrimitiveKind::Node,
                 known_false,
                 Effect::Details { visible: true }
-            ))
-            .unwrap()
-            .winners
-            .is_empty()
+            ),
+        )
+        .unwrap()
+        .winners
+        .is_empty()
     );
 }
 #[test]
@@ -297,9 +307,9 @@ fn form_owner_keeps_numen_identity_and_supported_effects_separate() {
         Condition::Always,
         Effect::RegionGuides { visible: false },
     );
-    assert_eq!(field.guides(&field.resolve(&rules).unwrap()), None);
+    assert_eq!(field.guides(&resolve(&field, &rules).unwrap()), None);
     assert_eq!(
-        bound.guides(&bound.resolve(&rules).unwrap()),
+        bound.guides(&resolve(&bound, &rules).unwrap()),
         Some((forme.id, false))
     );
     assert!(!bound.supports(Property::DropPreviews));
@@ -338,7 +348,7 @@ fn live_forme_unlock_and_hover_inputs_use_current_view() {
         Some(&forme),
     )
     .unwrap();
-    assert!(locked.resolve(&rules).unwrap().winners.is_empty());
+    assert!(resolve(&locked, &rules).unwrap().winners.is_empty());
     forme.locked = false;
     let unlocked = bind(
         &graph,
@@ -351,7 +361,7 @@ fn live_forme_unlock_and_hover_inputs_use_current_view() {
     )
     .unwrap();
     assert_eq!(
-        unlocked.guides(&unlocked.resolve(&rules).unwrap()),
+        unlocked.guides(&resolve(&unlocked, &rules).unwrap()),
         Some((forme.id, true))
     );
     assert_eq!(unlocked.context.facts["hovered"], Scalar::Bool(true));
@@ -377,7 +387,7 @@ fn invalid_rule_is_not_hidden_by_unavailable_input_filter() {
     rules.rules[0]
         .effects
         .push(Effect::RegionGuides { visible: true });
-    assert!(bound.resolve(&rules).is_err());
+    assert!(resolve(&bound, &rules).is_err());
 }
 #[test]
 fn attention_binds_as_states_only_when_supplied() {

@@ -7,11 +7,10 @@
 //! Exact held occurrences and disclosed view inputs for presentation decisions.
 //! No source writes, field evaluation, URL identity or synthetic assertions.
 use crate::link_inspection::{LinkTarget, inspect_link_with_source};
-use crate::presentation_editor::presentation::{
-    Condition, Context, Effect, Issue, PrimitiveKind, Property, Resolution, RuleSet, Scalar,
-    ViewState,
-};
 use mere::kernel::graph::{FieldDefinition, FieldExtent, FieldId, Graph};
+use scenograph::presentation::{
+    Context, Effect, InputAvailability, PrimitiveKind, Property, Resolution, Scalar, ViewState,
+};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
 use uuid::Uuid;
@@ -276,46 +275,12 @@ pub fn bind_with_source(
     state(&mut bound, ViewState::Inspected, Some(view.inspected));
     Ok(bound)
 }
-fn unavailable(condition: &Condition, bound: &BoundContext) -> Option<String> {
-    match condition {
-        Condition::State { state } if !bound.available_states.contains(state) => {
-            Some(format!("view state {state:?} is unavailable"))
-        },
-        Condition::ScreenSize { .. } if bound.context.screen_size.is_none() => {
-            Some("screen measurement is unavailable".into())
-        },
-        Condition::All { conditions } | Condition::Any { conditions } => conditions
-            .iter()
-            .find_map(|condition| unavailable(condition, bound)),
-        Condition::Not { condition } => unavailable(condition, bound),
-        _ => None,
-    }
-}
 impl BoundContext {
-    /// Unknown inputs suppress the entire rule, including under Not/Any.
-    /// Validate the original set before filtering; never silently repair bad rules.
-    pub fn resolve(&self, rules: &RuleSet) -> Result<Resolution, Vec<Issue>> {
-        rules.validate()?;
-        let mut adapted = rules.clone();
-        let mut suppressed = BTreeMap::new();
-        for rule in &mut adapted.rules {
-            if rule.enabled
-                && rule.target.kind == self.context.kind
-                && (rule.target.ids.is_empty() || rule.target.ids.contains(&self.context.id))
-            {
-                if let Some(reason) = unavailable(&rule.condition, self) {
-                    suppressed.insert(rule.id.clone(), reason);
-                    rule.enabled = false;
-                }
-            }
+    pub fn availability(&self) -> InputAvailability {
+        InputAvailability {
+            states: self.available_states.clone(),
+            screen_size: self.context.screen_size.is_some(),
         }
-        let mut resolution = adapted.resolve(&self.context)?;
-        for trace in &mut resolution.traces {
-            if let Some(reason) = suppressed.get(&trace.rule_id) {
-                trace.reason = format!("Host input unavailable: {reason}; rule skipped");
-            }
-        }
-        Ok(resolution)
     }
     pub fn supports(&self, property: Property) -> bool {
         matches!(

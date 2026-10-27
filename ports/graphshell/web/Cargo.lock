@@ -1191,7 +1191,7 @@ dependencies = [
 [[package]]
 name = "chartulary"
 version = "0.2.2"
-source = "git+https://www.github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+source = "git+https://www.github.com/merely-made/eidetic.git?rev=e7eef1e622c8af7ea2a04e85ef7485aac0763433#e7eef1e622c8af7ea2a04e85ef7485aac0763433"
 dependencies = [
  "muniment",
  "petgraph 0.8.3",
@@ -2632,7 +2632,7 @@ dependencies = [
 [[package]]
 name = "eidetic"
 version = "0.0.2"
-source = "git+https://www.github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+source = "git+https://www.github.com/merely-made/eidetic.git?rev=e7eef1e622c8af7ea2a04e85ef7485aac0763433#e7eef1e622c8af7ea2a04e85ef7485aac0763433"
 dependencies = [
  "async-trait",
  "blake3",
@@ -3770,7 +3770,6 @@ name = "graphshell"
 version = "0.0.2"
 dependencies = [
  "async-trait",
- "backstep",
  "base64 0.22.1",
  "cambium",
  "cambium-rootstock",
@@ -3790,6 +3789,7 @@ dependencies = [
  "insigne",
  "knot-editor-host",
  "mere",
+ "mere-comms",
  "mere-fleece",
  "mere-lanes",
  "mere-moot",
@@ -5597,7 +5597,7 @@ checksum = "4050469837a6ff301cd14c1f8f24f88549e6d548f24f64e2148eb0f72cebc51f"
 [[package]]
 name = "luggage"
 version = "0.1.0"
-source = "git+https://www.github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+source = "git+https://www.github.com/merely-made/eidetic.git?rev=e7eef1e622c8af7ea2a04e85ef7485aac0763433#e7eef1e622c8af7ea2a04e85ef7485aac0763433"
 dependencies = [
  "semver",
  "serde",
@@ -5804,6 +5804,7 @@ dependencies = [
  "tabard",
  "tempfile",
  "url",
+ "uuid",
 ]
 
 [[package]]
@@ -5874,7 +5875,7 @@ version = "0.0.1"
 [[package]]
 name = "mere-proofs"
 version = "0.1.0"
-source = "git+https://www.github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+source = "git+https://www.github.com/merely-made/eidetic.git?rev=e7eef1e622c8af7ea2a04e85ef7485aac0763433#e7eef1e622c8af7ea2a04e85ef7485aac0763433"
 dependencies = [
  "blake3",
  "serde",
@@ -6086,7 +6087,7 @@ dependencies = [
 [[package]]
 name = "muniment"
 version = "0.2.0"
-source = "git+https://www.github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+source = "git+https://www.github.com/merely-made/eidetic.git?rev=e7eef1e622c8af7ea2a04e85ef7485aac0763433#e7eef1e622c8af7ea2a04e85ef7485aac0763433"
 dependencies = [
  "async-trait",
  "blake3",
@@ -9125,6 +9126,7 @@ dependencies = [
 name = "scenograph"
 version = "0.0.5"
 dependencies = [
+ "backstep",
  "mere-curation",
  "sceno",
  "serde",
@@ -9343,7 +9345,7 @@ dependencies = [
 [[package]]
 name = "servitor"
 version = "0.0.2"
-source = "git+https://www.github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+source = "git+https://www.github.com/merely-made/eidetic.git?rev=e7eef1e622c8af7ea2a04e85ef7485aac0763433#e7eef1e622c8af7ea2a04e85ef7485aac0763433"
 dependencies = [
  "chartulary",
  "insigne",
@@ -9789,7 +9791,7 @@ checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 [[package]]
 name = "stickleback"
 version = "0.1.1"
-source = "git+https://www.github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+source = "git+https://www.github.com/merely-made/eidetic.git?rev=e7eef1e622c8af7ea2a04e85ef7485aac0763433#e7eef1e622c8af7ea2a04e85ef7485aac0763433"
 dependencies = [
  "blake3",
  "futures-util",
@@ -12479,37 +12481,37 @@ source = "git+https://github.com/merely-made/armillary.git?rev=864f107d44bf75911
 [[patch.unused]]
 name = "chartulary"
 version = "0.2.2"
-source = "git+https://github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+source = "git+https://github.com/merely-made/eidetic.git?rev=e7eef1e622c8af7ea2a04e85ef7485aac0763433#e7eef1e622c8af7ea2a04e85ef7485aac0763433"
 
 [[patch.unused]]
 name = "eidetic"
 version = "0.0.2"
-source = "git+https://github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+source = "git+https://github.com/merely-made/eidetic.git?rev=e7eef1e622c8af7ea2a04e85ef7485aac0763433#e7eef1e622c8af7ea2a04e85ef7485aac0763433"
 
 [[patch.unused]]
 name = "luggage"
 version = "0.1.0"
-source = "git+https://github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+source = "git+https://github.com/merely-made/eidetic.git?rev=e7eef1e622c8af7ea2a04e85ef7485aac0763433#e7eef1e622c8af7ea2a04e85ef7485aac0763433"
 
 [[patch.unused]]
 name = "mere-proofs"
 version = "0.1.0"
-source = "git+https://github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+source = "git+https://github.com/merely-made/eidetic.git?rev=e7eef1e622c8af7ea2a04e85ef7485aac0763433#e7eef1e622c8af7ea2a04e85ef7485aac0763433"
 
 [[patch.unused]]
 name = "muniment"
 version = "0.2.0"
-source = "git+https://github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+source = "git+https://github.com/merely-made/eidetic.git?rev=e7eef1e622c8af7ea2a04e85ef7485aac0763433#e7eef1e622c8af7ea2a04e85ef7485aac0763433"
 
 [[patch.unused]]
 name = "servitor"
 version = "0.0.2"
-source = "git+https://github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+source = "git+https://github.com/merely-made/eidetic.git?rev=e7eef1e622c8af7ea2a04e85ef7485aac0763433#e7eef1e622c8af7ea2a04e85ef7485aac0763433"
 
 [[patch.unused]]
 name = "stickleback"
 version = "0.1.1"
-source = "git+https://github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+source = "git+https://github.com/merely-made/eidetic.git?rev=e7eef1e622c8af7ea2a04e85ef7485aac0763433#e7eef1e622c8af7ea2a04e85ef7485aac0763433"
 
 [[patch.unused]]
 name = "armillary"
@@ -12519,37 +12521,37 @@ source = "git+https://github.com/merely-made/armillary.git?rev=864f107d44bf75911
 [[patch.unused]]
 name = "chartulary"
 version = "0.2.2"
-source = "git+https://github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+source = "git+https://github.com/merely-made/eidetic.git?rev=e7eef1e622c8af7ea2a04e85ef7485aac0763433#e7eef1e622c8af7ea2a04e85ef7485aac0763433"
 
 [[patch.unused]]
 name = "eidetic"
 version = "0.0.2"
-source = "git+https://github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+source = "git+https://github.com/merely-made/eidetic.git?rev=e7eef1e622c8af7ea2a04e85ef7485aac0763433#e7eef1e622c8af7ea2a04e85ef7485aac0763433"
 
 [[patch.unused]]
 name = "luggage"
 version = "0.1.0"
-source = "git+https://github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+source = "git+https://github.com/merely-made/eidetic.git?rev=e7eef1e622c8af7ea2a04e85ef7485aac0763433#e7eef1e622c8af7ea2a04e85ef7485aac0763433"
 
 [[patch.unused]]
 name = "mere-proofs"
 version = "0.1.0"
-source = "git+https://github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+source = "git+https://github.com/merely-made/eidetic.git?rev=e7eef1e622c8af7ea2a04e85ef7485aac0763433#e7eef1e622c8af7ea2a04e85ef7485aac0763433"
 
 [[patch.unused]]
 name = "muniment"
 version = "0.2.0"
-source = "git+https://github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+source = "git+https://github.com/merely-made/eidetic.git?rev=e7eef1e622c8af7ea2a04e85ef7485aac0763433#e7eef1e622c8af7ea2a04e85ef7485aac0763433"
 
 [[patch.unused]]
 name = "servitor"
 version = "0.0.2"
-source = "git+https://github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+source = "git+https://github.com/merely-made/eidetic.git?rev=e7eef1e622c8af7ea2a04e85ef7485aac0763433#e7eef1e622c8af7ea2a04e85ef7485aac0763433"
 
 [[patch.unused]]
 name = "stickleback"
 version = "0.1.1"
-source = "git+https://github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+source = "git+https://github.com/merely-made/eidetic.git?rev=e7eef1e622c8af7ea2a04e85ef7485aac0763433#e7eef1e622c8af7ea2a04e85ef7485aac0763433"
 
 [[patch.unused]]
 name = "armillary"
@@ -12559,34 +12561,34 @@ source = "git+https://github.com/merely-made/armillary.git?rev=864f107d44bf75911
 [[patch.unused]]
 name = "chartulary"
 version = "0.2.2"
-source = "git+https://github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+source = "git+https://github.com/merely-made/eidetic.git?rev=e7eef1e622c8af7ea2a04e85ef7485aac0763433#e7eef1e622c8af7ea2a04e85ef7485aac0763433"
 
 [[patch.unused]]
 name = "eidetic"
 version = "0.0.2"
-source = "git+https://github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+source = "git+https://github.com/merely-made/eidetic.git?rev=e7eef1e622c8af7ea2a04e85ef7485aac0763433#e7eef1e622c8af7ea2a04e85ef7485aac0763433"
 
 [[patch.unused]]
 name = "luggage"
 version = "0.1.0"
-source = "git+https://github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+source = "git+https://github.com/merely-made/eidetic.git?rev=e7eef1e622c8af7ea2a04e85ef7485aac0763433#e7eef1e622c8af7ea2a04e85ef7485aac0763433"
 
 [[patch.unused]]
 name = "mere-proofs"
 version = "0.1.0"
-source = "git+https://github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+source = "git+https://github.com/merely-made/eidetic.git?rev=e7eef1e622c8af7ea2a04e85ef7485aac0763433#e7eef1e622c8af7ea2a04e85ef7485aac0763433"
 
 [[patch.unused]]
 name = "muniment"
 version = "0.2.0"
-source = "git+https://github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+source = "git+https://github.com/merely-made/eidetic.git?rev=e7eef1e622c8af7ea2a04e85ef7485aac0763433#e7eef1e622c8af7ea2a04e85ef7485aac0763433"
 
 [[patch.unused]]
 name = "servitor"
 version = "0.0.2"
-source = "git+https://github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+source = "git+https://github.com/merely-made/eidetic.git?rev=e7eef1e622c8af7ea2a04e85ef7485aac0763433#e7eef1e622c8af7ea2a04e85ef7485aac0763433"
 
 [[patch.unused]]
 name = "stickleback"
 version = "0.1.1"
-source = "git+https://github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3"
+source = "git+https://github.com/merely-made/eidetic.git?rev=e7eef1e622c8af7ea2a04e85ef7485aac0763433#e7eef1e622c8af7ea2a04e85ef7485aac0763433"
