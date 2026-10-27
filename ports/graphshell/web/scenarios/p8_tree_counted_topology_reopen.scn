@@ -9,6 +9,9 @@ assert snap link-rest-ready == true
 assert snap link-rest-hidden-assertion-count == 0
 assert snap link-rest-source-assertion-ids ~ fixture:p7:collection-primary
 assert snap promoted-link-count == 1
+# The current shell starts with its inspector closed; an ordinary link hit opens it.
+click-link-rest a1-b1 surface
+settle 2
 reveal role:button Open promoted link 1
 click role:button Open promoted link 1
 settle 2
