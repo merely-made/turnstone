@@ -1442,6 +1442,13 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
                         .collect::<Vec<_>>()
                 })
                 .collect();
+            // Frisket clones its fill closure for retained slots. Share these
+            // immutable render snapshots instead of copying every tile's map.
+            let tile_metadata = Rc::new(tile_metadata);
+            let query_appearances = Rc::new(query_appearances);
+            let appearances = Rc::new(appearances);
+            let reading_toolbars = Rc::new(reading_toolbars);
+            let tab_visibility = Rc::new(tab_visibility);
             let reading = move |tile: &Tile| -> Slot<TreePage, ()> {
                 let ContentSource::Open { id, .. } = &tile.content else {
                     return Slot::Hole;
