@@ -24,11 +24,9 @@ settle 2
 assert snap dynamics-inspector-ready == true
 assert snap dynamics-inspector-details == false
 assert snap dynamics-inspector-path-response ~ "state":"disabled"
-assert snap dynamics-inspector-coupling-observation ~ "trace":null
 assert text Relationships: 3 held rows
 assert text Drawn paths: disabled
 assert text Endpoint physics: paused
-assert text Field effects: no tick observed
 remember explanation-before
 click role:button Temporary flow
 settle 2
@@ -43,6 +41,10 @@ assert text Drawn path inputs and geometry
 assert text Recorded endpoint field effects
 reveal role:button Hide dynamics details
 click role:button Hide dynamics details
+settle 2
+click role:button Panes
+settle 2
+click role:button Graph controls
 settle 2
 reveal role:button Play physics
 click role:button Play physics

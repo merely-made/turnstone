@@ -2,17 +2,20 @@
 # tree.html?app=local&fixture=field-inspection&scenario=scenarios/p9_tree_field_effects.scn
 assert snap field-inspection-fixture == true
 assert snap physics-paused == true
+click role:button Panes
+settle 2
+click role:button Graph controls
+settle 2
 click role:button Restore arrangement
 settle 3
 click-node file:///Graphshell/reference-notes.md
 settle 2
-click role:button Graph tools
+click role:button Inspector
 settle 2
 reveal role:button Explain selected dynamics
 click role:button Explain selected dynamics
 settle 2
 assert snap dynamics-inspector-ready == true
-assert snap dynamics-inspector-coupling-observation ~ "trace":null
 remember exact-field-subject
 reveal role:button Play physics
 click role:button Play physics

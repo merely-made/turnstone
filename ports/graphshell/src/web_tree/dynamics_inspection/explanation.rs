@@ -67,7 +67,8 @@ pub(super) fn summary(report: &DynamicsInspection) -> Vec<Child> {
         lines.push("Field effects: no tick observed for the current bindings yet. Opening this inspector does not advance physics.".into());
     } else {
         let rows = trace["rows"].as_array().map_or(0, Vec::len);
-        lines.push(format!("Field effects: {rows} matching endpoint calls recorded at step {}, simulation time {}. This is the latest recorded tick before integration, with {} cohort rows omitted by the capture limit. It does not explain net motion or assign a force to a relationship.", trace["step"], trace["sample_time"], trace["cohort_omitted"]));
+        let time = trace["sample_time"].as_f64().unwrap_or_default();
+        lines.push(format!("Field effects: {rows} matching endpoint calls recorded at step {}, simulation time {time:.3} seconds. This is the latest recorded tick before integration, with {} cohort rows omitted by the capture limit. It does not explain net motion or assign a force to a relationship.", trace["step"], trace["cohort_omitted"]));
     }
     lines
         .into_iter()

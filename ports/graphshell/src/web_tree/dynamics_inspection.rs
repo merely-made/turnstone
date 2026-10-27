@@ -88,7 +88,9 @@ pub(super) fn section(page: &TreePage) -> Child {
                 page.dynamics_inspector = Pane::default();
             },
         )));
-        children.push(Box::new(el("p", format!("Exact target {}", json(&target)))));
+        if pane.details {
+            children.push(Box::new(el("p", format!("Exact target {}", json(&target)))));
+        }
         match &pane.report {
             Some(Err(error)) => children.push(Box::new(status_note("", error.clone()))),
             Some(Ok(report)) => {
@@ -254,9 +256,10 @@ pub(super) fn section(page: &TreePage) -> Child {
                     children.extend(explanation::details(report));
                 }
                 for member in &report.members {
+                    let title = member.title.clone();
                     let member = member.member;
                     children.push(Box::new(button(
-                        format!("Preview appearance of {member}"),
+                        format!("Preview appearance · {title}"),
                         move |page: &mut TreePage, _| {
                             presentation::choose(
                                 page,

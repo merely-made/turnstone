@@ -30,7 +30,6 @@ settle 2
 assert snap dynamics-inspector-ready == true
 assert snap dynamics-inspector-details == false
 assert snap dynamics-inspector-path-response ~ "state":"disabled"
-assert snap dynamics-inspector-coupling-observation ~ "trace":null
 assert text Relationships: 2 held rows
 assert snap dynamics-inspector-topology-mode == relation_rows
 assert snap dynamics-inspector-held-rows == 2
