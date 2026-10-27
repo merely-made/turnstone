@@ -11,7 +11,7 @@
 //! model's form until their button applies them, and follow the canvas when
 //! what it authored changes, not on every frame.
 
-use mere::canvas::physics_form::{Command, Control, Field, FieldId, Readback, Section};
+use mere::canvas::physics_form::{Command, Control, Field, FieldId, FormAction, Readback, Section};
 use mere_surface_api::settings::{SettingControl, SettingValue};
 
 use super::{
@@ -46,12 +46,21 @@ fn options_of(options: &[(&'static str, &'static str)]) -> Vec<(String, String)>
 }
 
 /// A field whose pick applies at once, as `intent` lowers it.
-fn live_choice(field: Field, intent: fn(String) -> ArrangeIntent) -> ArrangeView {
+pub(super) fn live_choice(field: Field, intent: fn(String) -> ArrangeIntent) -> ArrangeView {
+    let key = field.id.key();
+    live_choice_with_key(field, &key, intent)
+}
+
+pub(super) fn live_choice_with_key(
+    field: Field,
+    key: &str,
+    intent: fn(String) -> ArrangeIntent,
+) -> ArrangeView {
     let Control::Choice { options, current } = field.control else {
         unreachable!("{} is a choice", field.label)
     };
     let spec = spec(
-        &field.id.key(),
+        key,
         &field.label,
         choice_control(options_of(&options)),
         SettingValue::Text(current.to_string()),
@@ -61,6 +70,39 @@ fn live_choice(field: Field, intent: fn(String) -> ArrangeIntent) -> ArrangeView
         &field.label,
         move |_state: &mut ArrangeState, value: SettingValue| match value {
             SettingValue::Text(id) => Some(intent(id)),
+            _ => None,
+        },
+    ))
+}
+
+/// A toggle field whose accepted change applies immediately.
+pub(super) fn live_toggle(
+    field: Field,
+    intent: impl Fn(bool) -> ArrangeIntent + 'static,
+) -> ArrangeView {
+    let key = field.id.key();
+    live_toggle_with_key(field, &key, intent)
+}
+
+pub(super) fn live_toggle_with_key(
+    field: Field,
+    key: &str,
+    intent: impl Fn(bool) -> ArrangeIntent + 'static,
+) -> ArrangeView {
+    let Control::Toggle(current) = field.control else {
+        unreachable!("{} is a toggle", field.label)
+    };
+    let spec = spec(
+        key,
+        &field.label,
+        SettingControl::Toggle,
+        SettingValue::Boolean(current),
+    );
+    Box::new(setting_row(
+        &spec,
+        &field.label,
+        move |_state: &mut ArrangeState, value: SettingValue| match value {
+            SettingValue::Boolean(on) => Some(intent(on)),
             _ => None,
         },
     ))
@@ -104,15 +146,15 @@ fn draft_field(field: Field) -> ArrangeView {
 /// A button whose press asks the model for the request, or says why not.
 fn command_button(command: Command) -> ArrangeView {
     apply_button(command.label(), move |state| {
-        let intent = match command {
-            Command::ApplyMix => state.form.mix().map(ArrangeIntent::ApplyMix),
-            Command::ApplyGrouping => state.form.grouping().map(ArrangeIntent::ApplyGrouping),
-            Command::ApplySchedule => state.form.schedule().map(ArrangeIntent::ApplySchedule),
-            Command::UseSingleLaw => Ok(ArrangeIntent::UseSingleLaw),
-            Command::ApplyRole | Command::ApplyRoleGroups => {
-                unreachable!("role fields apply when picked")
+        let intent = state.form.action(command).map(|action| match action {
+            FormAction::Mix(mix) => ArrangeIntent::ApplyMix(mix),
+            FormAction::Grouping(grouping) => ArrangeIntent::ApplyGrouping(grouping),
+            FormAction::Schedule(schedule) => ArrangeIntent::ApplySchedule(schedule),
+            FormAction::SingleLaw(_) => ArrangeIntent::UseSingleLaw,
+            FormAction::Role(_) | FormAction::RoleGroups(_) | FormAction::Speed(_) => {
+                unreachable!("these form actions apply when picked")
             },
-        };
+        });
         state.form_note = intent.as_ref().err().cloned().unwrap_or_default();
         intent.ok()
     })
@@ -124,7 +166,10 @@ pub(super) fn views(state: &ArrangeState) -> Vec<ArrangeView> {
     let mut views: Vec<ArrangeView> = vec![
         section("Roles"),
         live_choice(form.field(FieldId::Role), ArrangeIntent::SetRole),
-        live_choice(form.field(FieldId::RoleGroups), ArrangeIntent::SetRoleGroups),
+        live_choice(
+            form.field(FieldId::RoleGroups),
+            ArrangeIntent::SetRoleGroups,
+        ),
     ];
     for part in Section::ALL {
         views.push(section(part.title()));
@@ -140,7 +185,10 @@ pub(super) fn views(state: &ArrangeState) -> Vec<ArrangeView> {
         views.extend(part.commands().iter().copied().map(command_button));
     }
     views.push(section("Speed"));
-    views.push(live_choice(form.field(FieldId::Speed), ArrangeIntent::SetSpeed));
+    views.push(live_choice(
+        form.field(FieldId::Speed),
+        ArrangeIntent::SetSpeed,
+    ));
     if !state.form_note.is_empty() {
         views.push(Box::new(
             el::<_, ArrangeState, ArrangeIntent>("div", state.form_note.clone())

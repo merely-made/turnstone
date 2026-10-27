@@ -3,6 +3,8 @@
 
 use super::*;
 use mere::canvas::controls::CanvasCommand;
+use mere::canvas::physics_form::{FieldId, PhysicsForm};
+use mere::canvas::{PhysicsChoice, PhysicsOverlay};
 
 impl App {
     /// Arrange controls prefer a graph pane in their own window. A sole
@@ -88,42 +90,47 @@ impl App {
                 canvas.toggle_physics_paused();
                 return Ok(());
             }
-            GraphRuntimePool::edit_canvas_physics(canvas, |choice| match action {
-                Action::SetPhysicsLaw(id) => {
-                    if let Some(law) = mere::canvas::PhysicsLaw::parse(id) {
-                        choice.law = law;
-                    }
-                },
-                Action::SetPhysicsOverlay(id, on) => {
-                    if let Some(overlay) = mere::canvas::PhysicsOverlay::parse(id) {
-                        choice.overlays.retain(|o| *o != overlay);
-                        if on {
-                            choice.overlays.push(overlay);
-                        }
-                    }
-                },
-                Action::SetPhysicsKindSource(id) => {
-                    if let Some(source) = mere::canvas::PhysicsKindSource::parse(id) {
-                        choice.kind = source;
-                    }
-                },
-                Action::SetPhysicsMassSource(id) => {
-                    if let Some(source) = mere::canvas::PhysicsMassSource::parse(id) {
-                        choice.mass = source;
-                    }
-                },
-                Action::SetPhysicsDepthSource(id) => {
-                    if let Some(source) = mere::canvas::PhysicsDepthSource::parse(id) {
-                        choice.depth = source;
-                    }
-                },
-                Action::ApplyPhysicsProfile(id) => {
-                    if let Some(profile) = choice.clone().with_profile(id) {
-                        *choice = profile;
-                    }
-                },
-                _ => {},
-            })
+
+            let mut form = PhysicsForm::new(canvas);
+            let original_overlays = PhysicsChoice::live(canvas).overlays;
+            let overlay_toggle = match &action {
+                Action::SetPhysicsOverlay(id, on) => PhysicsOverlay::ALL
+                    .into_iter()
+                    .find(|overlay| overlay.id() == *id)
+                    .map(|overlay| (overlay, *on)),
+                _ => None,
+            };
+            let changed = match &action {
+                Action::SetPhysicsLaw(id) => form.choose(FieldId::PhysicsLaw, id),
+                Action::SetPhysicsOverlay(id, on) => PhysicsOverlay::ALL
+                    .iter()
+                    .find(|overlay| overlay.id() == *id)
+                    .is_some_and(|overlay| form.tick(FieldId::PhysicsOverlay(*overlay), *on)),
+                Action::SetPhysicsKindSource(id) => form.choose(FieldId::PhysicsKind, id),
+                Action::SetPhysicsMassSource(id) => form.choose(FieldId::PhysicsMass, id),
+                Action::SetPhysicsDepthSource(id) => form.choose(FieldId::PhysicsDepth, id),
+                Action::ApplyPhysicsProfile(id) if *id == "custom" => false,
+                Action::ApplyPhysicsProfile(id) => form.choose(FieldId::PhysicsProfile, id),
+                _ => false,
+            };
+            if !changed {
+                return Ok(());
+            }
+            let mut selected = form.physics_choice();
+            if let Some((overlay, on)) = overlay_toggle {
+                // Preserve the existing remove-then-append order policy for
+                // an explicit toggle while the form validates the field.
+                selected.overlays = original_overlays;
+                selected.overlays.retain(|known| *known != overlay);
+                if on {
+                    selected.overlays.push(overlay);
+                }
+            } else if !matches!(&action, Action::ApplyPhysicsProfile(_)) {
+                // A source or law pick carries authored overlay order
+                // unchanged; write_into uses that identity to retain roots.
+                selected.overlays = original_overlays;
+            }
+            GraphRuntimePool::edit_canvas_physics(canvas, |choice| *choice = selected)
         });
         if let Some(result) = result {
             self.record_physics_result(result);

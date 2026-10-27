@@ -41,13 +41,8 @@ use genet_scripted_dom::ScriptedDom;
 use layout_dom_api::LayoutDom;
 use mere::canvas::controls::CanvasCommand;
 use mere::canvas::physics_controls::{SPEED_PRESETS, TwoLawGrouping, TwoLawMix, TwoStageSchedule};
-use mere::canvas::physics_form::{PhysicsForm, Readback};
-use mere::canvas::{
-    CANVAS_LAYOUT_STRATEGIES, CANVAS_PHYSICS_DEPTH_SOURCES, CANVAS_PHYSICS_KIND_SOURCES,
-    CANVAS_PHYSICS_LAWS, CANVAS_PHYSICS_MASS_SOURCES, CANVAS_PHYSICS_OVERLAYS,
-    CANVAS_PHYSICS_PROFILES, PhysicsDepthSource, PhysicsKindSource, PhysicsLaw, PhysicsMassSource,
-    PhysicsOverlay, Role,
-};
+use mere::canvas::physics_form::{Control, FieldId, PhysicsForm, Readback};
+use mere::canvas::{CANVAS_LAYOUT_STRATEGIES, PhysicsOverlay};
 use mere_surface_api::settings::{
     SettingControl, SettingMovement, SettingMutability, SettingOption, SettingScope,
     SettingSecurity, SettingSpec, SettingValue,
@@ -58,8 +53,6 @@ use crate::app::App;
 
 /// The arrangement choice's id for "no analytic arrangement": physics alone.
 pub const FREE_LAYOUT_ID: &str = "free";
-/// The profile choice's value when no profile names the live pair.
-const CUSTOM_PROFILE_ID: &str = "custom";
 
 /// The canvas verbs the pane offers as buttons, in the order it shows them.
 const VERBS: [CanvasCommand; 8] = [
@@ -109,13 +102,11 @@ impl ArrangeIntent {
     pub fn into_action(self) -> Option<Action> {
         match self {
             Self::Verb(verb) => Action::from_canvas_verb(verb),
-            Self::SetRole(id) => Role::parse(&id).map(|role| Action::SetPhysicsRole(role.id())),
-            Self::SetRoleGroups(id) => PhysicsKindSource::parse(&id)
-                .map(|source| Action::SetPhysicsRoleGroups(source.id())),
-            Self::SetSpeed(id) => SPEED_PRESETS
-                .iter()
-                .find(|(known, _)| *known == id)
-                .map(|(known, _)| Action::SetPhysicsSpeed(known)),
+            Self::SetRole(id) => field_option(FieldId::Role, &id).map(Action::SetPhysicsRole),
+            Self::SetRoleGroups(id) => {
+                field_option(FieldId::RoleGroups, &id).map(Action::SetPhysicsRoleGroups)
+            },
+            Self::SetSpeed(id) => field_option(FieldId::Speed, &id).map(Action::SetPhysicsSpeed),
             Self::ApplyMix(mix) => Some(Action::ApplyPhysicsMix(mix)),
             Self::ApplyGrouping(grouping) => Some(Action::ApplyPhysicsGrouping(grouping)),
             Self::ApplySchedule(schedule) => Some(Action::ApplyPhysicsSchedule(schedule)),
@@ -128,21 +119,49 @@ impl ArrangeIntent {
                 .find(|(known, _)| *known == id)
                 .map(|(known, _)| Action::SetLayoutStrategy(Some(known))),
             ArrangeIntent::SetLaw(id) => {
-                PhysicsLaw::parse(&id).map(|law| Action::SetPhysicsLaw(law.id()))
+                field_option(FieldId::PhysicsLaw, &id).map(Action::SetPhysicsLaw)
             },
-            ArrangeIntent::SetOverlay { id, on } => PhysicsOverlay::parse(&id)
-                .map(|overlay| Action::SetPhysicsOverlay(overlay.id(), on)),
-            ArrangeIntent::SetKindSource(id) => PhysicsKindSource::parse(&id)
-                .map(|source| Action::SetPhysicsKindSource(source.id())),
-            ArrangeIntent::SetMassSource(id) => PhysicsMassSource::parse(&id)
-                .map(|source| Action::SetPhysicsMassSource(source.id())),
-            ArrangeIntent::SetDepthSource(id) => PhysicsDepthSource::parse(&id)
-                .map(|source| Action::SetPhysicsDepthSource(source.id())),
-            ArrangeIntent::ApplyProfile(id) => CANVAS_PHYSICS_PROFILES
+            ArrangeIntent::SetOverlay { id, on } => PhysicsOverlay::ALL
                 .iter()
-                .find(|profile| profile.id == id)
-                .map(|profile| Action::ApplyPhysicsProfile(profile.id)),
+                .find(|overlay| overlay.id() == id)
+                .map(|overlay| Action::SetPhysicsOverlay(overlay.id(), on)),
+            ArrangeIntent::SetKindSource(id) => {
+                field_option(FieldId::PhysicsKind, &id).map(Action::SetPhysicsKindSource)
+            },
+            ArrangeIntent::SetMassSource(id) => {
+                field_option(FieldId::PhysicsMass, &id).map(Action::SetPhysicsMassSource)
+            },
+            ArrangeIntent::SetDepthSource(id) => {
+                field_option(FieldId::PhysicsDepth, &id).map(Action::SetPhysicsDepthSource)
+            },
+            ArrangeIntent::ApplyProfile(id) => field_option(FieldId::PhysicsProfile, &id)
+                .filter(|profile| *profile != "custom")
+                .map(Action::ApplyPhysicsProfile),
         }
+    }
+}
+
+fn field_option(field_id: FieldId, id: &str) -> Option<&'static str> {
+    let Control::Choice { options, .. } = PhysicsForm::default().field(field_id).control else {
+        return None;
+    };
+    options
+        .into_iter()
+        .map(|(known, _)| known)
+        .find(|known| *known == id)
+}
+
+fn field_label(field_id: FieldId, id: &str) -> String {
+    if field_id == FieldId::PhysicsProfile && id == "custom" {
+        return "custom".to_string();
+    }
+    match PhysicsForm::default().field(field_id).control {
+        Control::Choice { options, .. } => options
+            .into_iter()
+            .find(|(known, _)| *known == id)
+            .map(|(_, label)| label.to_string())
+            .unwrap_or_else(|| id.to_string()),
+        _ => id.to_string(),
     }
 }
 
@@ -150,12 +169,6 @@ impl ArrangeIntent {
 #[derive(Clone, Debug, PartialEq)]
 struct Choice {
     layout: String,
-    law: String,
-    overlays: Vec<String>,
-    kind: String,
-    mass: String,
-    depth: String,
-    profile: String,
     /// What the canvas authored for the composing fields: the roles, the
     /// speed and the mix, grouping and schedule.
     readback: Readback,
@@ -178,26 +191,13 @@ impl Choice {
         let canvas = graph
             .and_then(|graph| app.graph_runtimes.canvas(graph))
             .unwrap_or(&app.graph_runtimes);
-        let physics = mere::canvas::PhysicsChoice::live(canvas);
+        let readback = Readback::of(canvas);
         Self {
             layout: canvas
                 .layout_strategy()
                 .map(str::to_string)
                 .unwrap_or_else(|| FREE_LAYOUT_ID.to_string()),
-            law: physics.law.id().to_string(),
-            overlays: physics
-                .overlays
-                .iter()
-                .map(|overlay| overlay.id().to_string())
-                .collect(),
-            kind: physics.kind.id().to_string(),
-            mass: physics.mass.id().to_string(),
-            depth: physics.depth.id().to_string(),
-            profile: physics
-                .profile_id()
-                .unwrap_or(CUSTOM_PROFILE_ID)
-                .to_string(),
-            readback: Readback::of(canvas),
+            readback,
             status: graph
                 .and_then(|graph| app.graph_runtimes.get(graph))
                 .and_then(|runtime| runtime.physics_status.clone()),
@@ -224,21 +224,17 @@ pub fn arrange_rows(app: &App) -> Vec<String> {
     } else {
         label(CANVAS_LAYOUT_STRATEGIES, &choice.layout)
     };
-    let overlays = if choice.overlays.is_empty() {
+    let physics = &choice.readback.physics;
+    let overlays = if physics.overlays.is_empty() {
         "none".to_string()
     } else {
-        choice
+        physics
             .overlays
             .iter()
-            .map(|id| label(CANVAS_PHYSICS_OVERLAYS, id))
+            .map(|overlay| overlay.label().to_string())
             .collect::<Vec<_>>()
             .join(", ")
     };
-    let profile = CANVAS_PHYSICS_PROFILES
-        .iter()
-        .find(|profile| profile.id == choice.profile)
-        .map(|profile| profile.label.to_string())
-        .unwrap_or_else(|| CUSTOM_PROFILE_ID.to_string());
     let mut rows = vec![
         format!("Arrangement: {layout}"),
         format!(
@@ -246,18 +242,27 @@ pub fn arrange_rows(app: &App) -> Vec<String> {
             if choice.saved_seed { "saved" } else { "recipe" }
         ),
         format!("Regions: {}", choice.regions),
-        format!("Physics: {}", label(CANVAS_PHYSICS_LAWS, &choice.law)),
+        format!(
+            "Physics: {}",
+            field_label(FieldId::PhysicsLaw, physics.law.id())
+        ),
         format!("Overlays: {overlays}"),
         format!(
             "Kinds: {}",
-            label(CANVAS_PHYSICS_KIND_SOURCES, &choice.kind)
+            field_label(FieldId::PhysicsKind, physics.kind.id())
         ),
-        format!("Mass: {}", label(CANVAS_PHYSICS_MASS_SOURCES, &choice.mass)),
+        format!(
+            "Mass: {}",
+            field_label(FieldId::PhysicsMass, physics.mass.id())
+        ),
         format!(
             "Depth: {}",
-            label(CANVAS_PHYSICS_DEPTH_SOURCES, &choice.depth)
+            field_label(FieldId::PhysicsDepth, physics.depth.id())
         ),
-        format!("Profile: {profile}"),
+        format!(
+            "Profile: {}",
+            field_label(FieldId::PhysicsProfile, choice.readback.physics_profile)
+        ),
         format!("Role: {}", choice.readback.role.label()),
         format!("Role groups: {}", choice.readback.role_groups.label()),
         format!("Speed: {}", SPEED_PRESETS[choice.readback.speed].1),
@@ -339,26 +344,6 @@ fn choice_row(
     ))
 }
 
-fn overlay_row(overlay: PhysicsOverlay, on: bool) -> ArrangeView {
-    let spec = spec(
-        &format!("overlay.{}", overlay.id()),
-        overlay.label(),
-        SettingControl::Toggle,
-        SettingValue::Boolean(on),
-    );
-    Box::new(setting_row(
-        &spec,
-        overlay.label(),
-        move |_state: &mut ArrangeState, value: SettingValue| match value {
-            SettingValue::Boolean(on) => Some(ArrangeIntent::SetOverlay {
-                id: overlay.id().to_string(),
-                on,
-            }),
-            _ => None,
-        },
-    ))
-}
-
 fn section(title: &str) -> ArrangeView {
     Box::new(
         el::<_, ArrangeState, ArrangeIntent>("div", title.to_string())
@@ -390,18 +375,38 @@ fn arrange_view(state: &ArrangeState) -> ArrangeView {
         "Free (physics alone)".to_string(),
     )];
     layouts.extend(catalog_options(CANVAS_LAYOUT_STRATEGIES));
-    let mut profiles = vec![(CUSTOM_PROFILE_ID.to_string(), "Custom".to_string())];
-    profiles.extend(
-        CANVAS_PHYSICS_PROFILES
-            .iter()
-            .map(|profile| (profile.id.to_string(), profile.label.to_string())),
-    );
+    let profile_field = state.form.field(FieldId::PhysicsProfile);
+    let Control::Choice {
+        options,
+        current: profile,
+    } = profile_field.control
+    else {
+        unreachable!("PhysicsProfile is a choice")
+    };
+    let profiles = options
+        .into_iter()
+        .map(|(id, label)| {
+            (
+                id.to_string(),
+                if id == "custom" {
+                    "Custom".to_string()
+                } else {
+                    label.to_string()
+                },
+            )
+        })
+        .collect();
     let overlay_rows = PhysicsOverlay::ALL
         .iter()
         .map(|overlay| {
-            overlay_row(
-                *overlay,
-                choice.overlays.iter().any(|id| id == overlay.id()),
+            let overlay = *overlay;
+            compose::live_toggle_with_key(
+                state.form.field(FieldId::PhysicsOverlay(overlay)),
+                &format!("overlay.{}", overlay.id()),
+                move |on| ArrangeIntent::SetOverlay {
+                    id: overlay.id().to_string(),
+                    on,
+                },
             )
         })
         .collect::<Vec<_>>();
@@ -439,42 +444,34 @@ fn arrange_view(state: &ArrangeState) -> ArrangeView {
                 )
                 .attr("role", "status")
                 .attr("aria-live", "polite"),
-                choice_row(
+                compose::live_choice_with_key(
+                    state.form.field(FieldId::PhysicsLaw),
                     "physics.law",
-                    "Law",
-                    catalog_options(CANVAS_PHYSICS_LAWS),
-                    &choice.law,
                     ArrangeIntent::SetLaw,
                 ),
                 choice_row(
                     "physics.profile",
                     "Profile",
                     profiles,
-                    &choice.profile,
+                    profile,
                     ArrangeIntent::ApplyProfile,
                 ),
                 section("Overlays"),
                 overlay_rows,
                 section("Sources"),
-                choice_row(
+                compose::live_choice_with_key(
+                    state.form.field(FieldId::PhysicsKind),
                     "physics.kind-source",
-                    "Kinds",
-                    catalog_options(CANVAS_PHYSICS_KIND_SOURCES),
-                    &choice.kind,
                     ArrangeIntent::SetKindSource,
                 ),
-                choice_row(
+                compose::live_choice_with_key(
+                    state.form.field(FieldId::PhysicsMass),
                     "physics.mass-source",
-                    "Mass",
-                    catalog_options(CANVAS_PHYSICS_MASS_SOURCES),
-                    &choice.mass,
                     ArrangeIntent::SetMassSource,
                 ),
-                choice_row(
+                compose::live_choice_with_key(
+                    state.form.field(FieldId::PhysicsDepth),
                     "physics.depth-source",
-                    "Depth",
-                    catalog_options(CANVAS_PHYSICS_DEPTH_SOURCES),
-                    &choice.depth,
                     ArrangeIntent::SetDepthSource,
                 ),
                 compose::views(state),
@@ -552,12 +549,6 @@ impl ArrangePane {
         let state = ArrangeState {
             choice: Choice {
                 layout: FREE_LAYOUT_ID.to_string(),
-                law: PhysicsLaw::Springs.id().to_string(),
-                overlays: Vec::new(),
-                kind: PhysicsKindSource::Site.id().to_string(),
-                mass: PhysicsMassSource::Degree.id().to_string(),
-                depth: PhysicsDepthSource::Roots.id().to_string(),
-                profile: CUSTOM_PROFILE_ID.to_string(),
                 readback: Readback::default(),
                 status: None,
                 refusal: None,
@@ -659,6 +650,7 @@ impl ArrangePane {
             }
             state.form.follow_roles(&choice.readback);
             state.form.follow_speed(&choice.readback);
+            state.form.follow_physics(&choice.readback);
             state.choice = choice;
             state.viewport_w = pane_w;
             state.viewport_h = pane_h;
@@ -715,6 +707,7 @@ impl ArrangePane {
 mod tests {
     use super::*;
     use mere::canvas::physics_controls::{read_two_law_mix, speed_preset};
+    use mere::canvas::{PhysicsLaw, Role};
 
     #[test]
     fn refused_overlays_are_visible_and_keep_the_applied_law() {
@@ -858,6 +851,10 @@ mod tests {
             Some(Action::ApplyPhysicsProfile("crystal"))
         );
         assert_eq!(ArrangeIntent::SetLaw("plasma".into()).into_action(), None);
+        assert_eq!(
+            ArrangeIntent::ApplyProfile("custom".into()).into_action(),
+            None
+        );
     }
 
     #[test]
@@ -882,9 +879,15 @@ mod tests {
         assert_eq!(read_two_law_mix(canvas), Ok(Some(mix)));
         let rows = arrange_rows(&app);
         for expected in ["Role: Pinned", "Speed: 5x", "Mix: Charge 0.5 + Springs 2"] {
-            assert!(rows.iter().any(|row| row.starts_with(expected)), "{expected}: {rows:?}");
+            assert!(
+                rows.iter().any(|row| row.starts_with(expected)),
+                "{expected}: {rows:?}"
+            );
         }
-        assert!(rows.iter().any(|row| row.starts_with("Physics status: Physics mix set")));
+        assert!(
+            rows.iter()
+                .any(|row| row.starts_with("Physics status: Physics mix set"))
+        );
         app.update(ArrangeIntent::UseSingleLaw.into_action().unwrap());
         assert_eq!(read_two_law_mix(&app.graph_runtimes), Ok(None));
         assert_eq!(ArrangeIntent::SetRole("boss".into()).into_action(), None);
@@ -892,9 +895,62 @@ mod tests {
     }
 
     #[test]
+    fn flat_and_composed_profiles_follow_shared_root_aware_readback() {
+        use mere::canvas::StageStop;
+        use mere::canvas::physics_controls::{
+            StageDraft, TwoLawGrouping, TwoLawMix, TwoStageSchedule,
+        };
+
+        let mut flat = App::test_stub();
+        for overlay in PhysicsOverlay::ALL {
+            flat.update(Action::SetPhysicsOverlay(overlay.id(), false));
+        }
+        flat.update(Action::SetPhysicsLaw(PhysicsLaw::Charge.id()));
+        assert!(arrange_rows(&flat).contains(&"Profile: Gas".to_string()));
+
+        let mix = TwoLawMix {
+            first: PhysicsLaw::Charge,
+            second: PhysicsLaw::Springs,
+            first_share: 1.0,
+            second_share: 1.0,
+        };
+        let grouping = TwoLawGrouping {
+            partition: mere::canvas::PhysicsKindSource::Component,
+            outer: PhysicsLaw::Charge,
+            inner: PhysicsLaw::Springs,
+            outer_share: 1.0,
+        };
+        let schedule = TwoStageSchedule {
+            first: StageDraft {
+                law: PhysicsLaw::Charge,
+                stop: StageStop::Frames(60),
+                capture: None,
+            },
+            second: StageDraft {
+                law: PhysicsLaw::Springs,
+                stop: StageStop::LawDone,
+                capture: None,
+            },
+            overlays: Vec::new(),
+        };
+        for composition in [
+            Action::ApplyPhysicsMix(mix),
+            Action::ApplyPhysicsGrouping(grouping),
+            Action::ApplyPhysicsSchedule(schedule),
+        ] {
+            let mut app = App::test_stub();
+            app.update(composition);
+            let rows = arrange_rows(&app);
+            assert!(rows.contains(&"Physics: Charge".to_string()), "{rows:?}");
+            assert!(rows.contains(&"Profile: custom".to_string()), "{rows:?}");
+        }
+    }
+
+    #[test]
     fn canvas_verbs_share_one_label_with_the_catalogue_and_the_palette() {
         for verb in VERBS {
-            let action = Action::from_canvas_verb(verb).expect("the pane offers what the shell has");
+            let action =
+                Action::from_canvas_verb(verb).expect("the pane offers what the shell has");
             assert_eq!(action.canvas_verb(), Some(verb));
             let id = crate::action::shared_command_id(&action).expect("a shared id");
             assert_eq!(cambium::catalogue::label(id), Some(verb.label()), "{id}");
