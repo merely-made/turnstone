@@ -13,7 +13,7 @@ use chirograph::{PortableCardV1, Sha256NamedInformation};
 use mere::canvas::saved_scene::{self, SceneReadError};
 use mere::kernel::geometry::PortablePoint;
 use mere::kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta, assert_relation};
-use mere::kernel::graph::capture::{CapturedDelta, replay_captured_deltas_onto};
+use mere::kernel::graph::capture::{CapturedDelta, replay_captured_deltas_onto_checked};
 use mere::kernel::graph::node_facets::SEMANTIC_PROPERTIES;
 use mere::kernel::graph::predicate_declarations::PREDICATE_DECLARATIONS_FACET;
 use mere::kernel::graph::resource::TAGGED_WITH_IRI;
@@ -801,20 +801,19 @@ pub(crate) fn product_import_edits(
         }
     }
 
-    // Replay setters can refuse input without an error result; prove the whole batch first.
+    // Prove the whole import on a detached graph before changing the live session.
     let mut scratch = live.clone();
     if edits.iter().any(|edit| edit.replay_delta().is_none()) {
         return Err(ProductError::InvalidCodicil(
             "an import edit cannot be replayed".into(),
         ));
     }
-    replay_captured_deltas_onto(&mut scratch, edits.clone());
+    replay_captured_deltas_onto_checked(&mut scratch, edits.clone())
+        .map_err(|error| ProductError::InvalidCodicil(error.to_string()))?;
     scratch
         .validate_active_resource_assertion_handles()
         .map_err(|error| ProductError::InvalidCodicil(error.to_string()))?;
-    // Kernel replay refuses colliding surface sidecars without a fallible apply
-    // result. Prove every incoming facet survived preflight before admitting the
-    // batch, or the importer could report success after silently dropping it.
+    // Confirm the entire requested overlay survived replay before admitting the batch.
     for (node_id, incoming_facets) in surfaces.facets().iter() {
         for (facet, expected) in incoming_facets.iter() {
             if scratch.facets().get(node_id, facet) != Some(expected) {
