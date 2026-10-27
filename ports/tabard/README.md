@@ -1,12 +1,12 @@
 # Tabard appearance workshop
 
 Tabard is the standalone appearance workshop. [`desktop`](desktop) mounts the
-shared [`tabard-workshop`](../../crates/cambium/tabard-workshop) surface in a
-native window. Its retained authoring state, controls, specimens, tests and
-fixtures live in that Cambium package, so other applications can embed the
-same workshop. The shared theme, draft and file-library APIs live in
+shared [`tabard-workshop`](workshop) surface in a native window. Its retained
+authoring state, controls, specimens, tests and fixtures live in that package,
+beside this host since 2026-10-26, so other applications can embed the same
+workshop by workspace path. The shared theme, draft and file-library APIs live in
 [`crates/system/tabard`](../../crates/system/tabard). See the
-[embedding guide](../../crates/cambium/tabard-workshop/README.md) for host seams.
+[embedding guide](workshop/README.md) for host seams.
 
 The workshop edits an isolated user draft. Pick a primary, secondary, tertiary
 or neutral seed, adjust its hue/saturation/lightness, or enter a six-digit RGB
