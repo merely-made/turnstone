@@ -25,8 +25,8 @@ path = "src/main.rs"
 
 [dependencies]
 curation = { package = "mere-curation", git = "https://github.com/merely-made/mere.git", branch = "main" }
-# Product-redacted, bounded observations; no renderer dependency in the store.
-apparatus = { package = "mere-apparatus", git = "https://github.com/merely-made/mere.git", branch = "main", default-features = false, features = ["serde", "projection"] }
+# Product-redacted, bounded observations; the portable values live in Armillary.
+apparatus-core = { version = "0.1.0", git = "https://github.com/merely-made/armillary.git", rev = "06340b08327b29c3485ecb0089bb5cafed20fd80", default-features = false, features = ["serde"] }
 # Presentable proof data/checks; Personae retains keys and issuing. The
 # identity tier lives in merely-made/dramatis (dramatis repo plan, DR-D); every
 # dramatis pin names the revision mere's workspace names, or personae splits.
@@ -166,7 +166,7 @@ eidetic = { git = "https://github.com/merely-made/eidetic.git", rev = "f599ffe93
 # The omnibar's recall lane (mere's search surface wiring plan, W2): BM25 over
 # the BrowsingTrace corpus the trail actor captures. Derived state — the index
 # is re-minted from the corpus, never repaired.
-eidetic-search = { git = "https://github.com/merely-made/mere.git", branch = "main" }
+eidetic-search = { git = "https://github.com/merely-made/eidetic.git", rev = "354ab71c08459355278aa3ff32ef8e3493e85653" }
 pollster = "0.4"
 # The per-user data root (`<data_dir>/turnstone`), TURNSTONE_ROOT-overridable for
 # scratch profiles (the meerkat MERE_ROOT convention).

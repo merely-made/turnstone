@@ -200,7 +200,7 @@ pub struct App {
     pub(crate) map_theme: crate::map_theme::MapThemeCache,
     /// Read-only diagnostic view, refreshed by its Shell owner. This is neither
     /// the observation store nor durable graph/session data.
-    pub diagnostic_inspection: Option<Result<apparatus::Inspection, String>>,
+    pub diagnostic_inspection: Option<Result<apparatus_core::Inspection, String>>,
     /// Shell-owned services projected by chrome: provider registration,
     /// interaction transcript, and configurable chrome policy. It carries no
     /// `Canvas` or platform handle. A2 replaces the fallback context supplied

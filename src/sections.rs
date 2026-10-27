@@ -247,8 +247,8 @@ mod tests {
             (DIAGNOSTICS_SECTION.gather)(&app)[0].text,
             "Diagnostics not sampled yet"
         );
-        app.diagnostic_inspection = Some(Ok(apparatus::Inspection {
-            lines: vec![apparatus::InspectionLine {
+        app.diagnostic_inspection = Some(Ok(apparatus_core::Inspection {
+            lines: vec![apparatus_core::InspectionLine {
                 id: "record/1".into(),
                 text: "Operation: unavailable; cause: unavailable".into(),
             }],
