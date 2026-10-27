@@ -39,3 +39,18 @@ settle 2
 assert text Recorded endpoint field effects
 reveal .tree-dynamics
 capture p9_authored_endpoint_effects
+
+# An explicit re-selection starts a new bounded observation window while paused.
+reveal role:button Explain selected dynamics
+click role:button Explain selected dynamics
+settle 2
+assert snap dynamics-inspector-coupling-observation ~ "trace":null
+assert text Field effects: no tick observed
+reveal role:button Play physics
+click role:button Play physics
+settle 6
+assert snap dynamics-inspector-coupling-observation ~ "coupling_index":
+reveal role:button Pause physics
+click role:button Pause physics
+settle 2
+assert snap dynamics-inspector-paused == true

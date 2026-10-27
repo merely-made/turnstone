@@ -37,12 +37,12 @@ pub(super) fn update(page: &mut TreePage, report: Result<DynamicsInspection, Str
     page.dynamics_inspector.report = Some(report);
 }
 pub(super) fn choose(page: &mut TreePage, target: DynamicsTarget) {
-    if page.dynamics_inspector.target.is_none() {
-        page.shared
-            .canvas
-            .borrow_mut()
-            .set_coupling_trace_limit(std::num::NonZeroUsize::new(128));
-    }
+    // Re-arm on every explicit choice, including after Canvas replacement.
+    // Starting a new observation window clears old evidence without ticking.
+    page.shared
+        .canvas
+        .borrow_mut()
+        .set_coupling_trace_limit(std::num::NonZeroUsize::new(128));
     page.dynamics_inspector.subject = page
         .shared
         .canvas
