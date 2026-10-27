@@ -623,14 +623,20 @@ mod owner_bound_statement_tests {
         (graph, ids[0], ids[1], ids[2])
     }
 
-    fn edge(from: Uuid, to: Uuid, predicate: &str, withdrawn: bool) -> PersistedEdge {
+    fn edge(
+        statement_id: &str,
+        from: Uuid,
+        to: Uuid,
+        predicate: &str,
+        withdrawn: bool,
+    ) -> PersistedEdge {
         PersistedEdge {
             from_node_id: from.to_string(),
             to_node_id: to.to_string(),
             families: vec![PersistedEdgeFamily::Semantic],
             semantic: None,
             assertions: Some(vec![PersistedSemanticStatement {
-                statement_id: "urn:assertion:shared".into(),
+                statement_id: statement_id.into(),
                 predicate: predicate.into(),
                 recognized_sub_kind: None,
                 label: Some(format!("note for {predicate}")),
@@ -652,7 +658,12 @@ mod owner_bound_statement_tests {
         }
     }
 
-    fn set_surface_edges(graph: &mut Graph, from: Uuid, to: Uuid, edges: Vec<PersistedEdge>) {
+    fn set_surface_edges(
+        graph: &mut Graph,
+        from: Uuid,
+        to: Uuid,
+        edges: Vec<PersistedEdge>,
+    ) -> mere::kernel::graph::apply::GraphDeltaResult {
         apply_graph_delta(
             graph,
             GraphDelta::ReplaySetEdgesByIds {
@@ -660,31 +671,31 @@ mod owner_bound_statement_tests {
                 to_id: to,
                 edges,
             },
-        );
+        )
     }
 
     #[test]
-    fn same_id_in_antiparallel_buckets_resolves_by_exact_owner_without_mutation() {
+    fn distinct_handles_in_antiparallel_buckets_resolve_by_exact_owner_without_mutation() {
         let (mut graph, a, b, _) = graph();
         set_surface_edges(
             &mut graph,
             a,
             b,
-            vec![edge(a, b, "urn:predicate:forward", false)],
+            vec![edge("urn:assertion:forward", a, b, "urn:predicate:forward", false)],
         );
         set_surface_edges(
             &mut graph,
             b,
             a,
-            vec![edge(b, a, "urn:predicate:reverse", false)],
+            vec![edge("urn:assertion:reverse", b, a, "urn:predicate:reverse", false)],
         );
         let before = serde_json::to_value(graph.to_snapshot()).unwrap();
 
         let forward =
-            inspect_statement_at_owner(&graph, "urn:assertion:shared", GraphStratum::Surface, a, b)
+            inspect_statement_at_owner(&graph, "urn:assertion:forward", GraphStratum::Surface, a, b)
                 .unwrap();
         let reverse =
-            inspect_statement_at_owner(&graph, "urn:assertion:shared", GraphStratum::Surface, b, a)
+            inspect_statement_at_owner(&graph, "urn:assertion:reverse", GraphStratum::Surface, b, a)
                 .unwrap();
 
         assert_eq!((forward.owner.from.id, forward.owner.to.id), (a, b));
@@ -695,23 +706,24 @@ mod owner_bound_statement_tests {
     }
 
     #[test]
-    fn owner_bound_lookup_rejects_wrong_owner_withdrawn_and_conflicting_copies() {
+    fn owner_bound_lookup_rejects_wrong_owner_and_withdrawn_without_mutation() {
         let (mut graph, a, b, c) = graph();
         set_surface_edges(
             &mut graph,
             a,
             b,
-            vec![edge(a, b, "urn:predicate:forward", false)],
+            vec![edge("urn:assertion:forward", a, b, "urn:predicate:forward", false)],
         );
         set_surface_edges(
             &mut graph,
             b,
             a,
-            vec![edge(b, a, "urn:predicate:reverse", true)],
+            vec![edge("urn:assertion:reverse", b, a, "urn:predicate:reverse", true)],
         );
+        let before_lookup = serde_json::to_value(graph.to_snapshot()).unwrap();
         assert!(inspect_statement_at_owner(
             &graph,
-            "urn:assertion:shared",
+            "urn:assertion:forward",
             GraphStratum::Surface,
             c,
             b,
@@ -719,29 +731,43 @@ mod owner_bound_statement_tests {
         .is_err());
         assert!(inspect_statement_at_owner(
             &graph,
-            "urn:assertion:shared",
+            "urn:assertion:reverse",
             GraphStratum::Surface,
             b,
             a,
         )
         .is_err());
+        assert_eq!(serde_json::to_value(graph.to_snapshot()).unwrap(), before_lookup);
 
-        set_surface_edges(
-            &mut graph,
-            a,
-            b,
-            vec![
-                edge(a, b, "urn:predicate:forward", false),
-                edge(a, b, "urn:predicate:conflict", false),
-            ],
+        let before_collision = serde_json::to_value(graph.to_snapshot()).unwrap();
+        assert!(matches!(
+            set_surface_edges(
+                &mut graph,
+                b,
+                a,
+                vec![edge(
+                    "urn:assertion:forward",
+                    b,
+                    a,
+                    "urn:predicate:collision",
+                    false,
+                )],
+            ),
+            mere::kernel::graph::apply::GraphDeltaResult::Refused(_)
+        ));
+        assert_eq!(serde_json::to_value(graph.to_snapshot()).unwrap(), before_collision);
+        assert_eq!(
+            inspect_statement_at_owner(
+                &graph,
+                "urn:assertion:forward",
+                GraphStratum::Surface,
+                a,
+                b,
+            )
+            .unwrap()
+            .statement
+            .predicate,
+            "urn:predicate:forward"
         );
-        assert!(inspect_statement_at_owner(
-            &graph,
-            "urn:assertion:shared",
-            GraphStratum::Surface,
-            a,
-            b,
-        )
-        .is_err());
     }
 }
