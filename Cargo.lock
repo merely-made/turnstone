@@ -3841,39 +3841,18 @@ dependencies = [
 [[package]]
 name = "errand"
 version = "0.4.0"
-source = "git+https://github.com/merely-made/errand.git?rev=1155897e6debc61102ea219cced245d0abccb658#1155897e6debc61102ea219cced245d0abccb658"
-dependencies = [
- "finger-protocol 0.1.1 (git+https://github.com/merely-made/errand.git?rev=1155897e6debc61102ea219cced245d0abccb658)",
- "gemini-protocol 0.1.7 (git+https://github.com/merely-made/errand.git?rev=1155897e6debc61102ea219cced245d0abccb658)",
- "gopher-protocol 0.2.0 (git+https://github.com/merely-made/errand.git?rev=1155897e6debc61102ea219cced245d0abccb658)",
- "guppy-protocol 0.1.1 (git+https://github.com/merely-made/errand.git?rev=1155897e6debc61102ea219cced245d0abccb658)",
- "misfin 0.0.4 (git+https://github.com/merely-made/errand.git?rev=1155897e6debc61102ea219cced245d0abccb658)",
- "nex-protocol 0.1.1 (git+https://github.com/merely-made/errand.git?rev=1155897e6debc61102ea219cced245d0abccb658)",
- "quick-xml 0.39.4",
- "rustls",
- "scroll-protocol 0.1.0 (git+https://github.com/merely-made/errand.git?rev=1155897e6debc61102ea219cced245d0abccb658)",
- "spartan-protocol 0.1.1 (git+https://github.com/merely-made/errand.git?rev=1155897e6debc61102ea219cced245d0abccb658)",
- "tokio",
- "tokio-rustls",
- "tracing",
- "url",
-]
-
-[[package]]
-name = "errand"
-version = "0.4.0"
 source = "git+https://github.com/merely-made/errand.git?rev=897fb963d184f0e379ab9041d68e17e726cb7763#897fb963d184f0e379ab9041d68e17e726cb7763"
 dependencies = [
- "finger-protocol 0.1.1 (git+https://github.com/merely-made/errand.git?rev=897fb963d184f0e379ab9041d68e17e726cb7763)",
- "gemini-protocol 0.1.7 (git+https://github.com/merely-made/errand.git?rev=897fb963d184f0e379ab9041d68e17e726cb7763)",
- "gopher-protocol 0.2.0 (git+https://github.com/merely-made/errand.git?rev=897fb963d184f0e379ab9041d68e17e726cb7763)",
- "guppy-protocol 0.1.1 (git+https://github.com/merely-made/errand.git?rev=897fb963d184f0e379ab9041d68e17e726cb7763)",
- "misfin 0.0.4 (git+https://github.com/merely-made/errand.git?rev=897fb963d184f0e379ab9041d68e17e726cb7763)",
- "nex-protocol 0.1.1 (git+https://github.com/merely-made/errand.git?rev=897fb963d184f0e379ab9041d68e17e726cb7763)",
+ "finger-protocol",
+ "gemini-protocol",
+ "gopher-protocol",
+ "guppy-protocol",
+ "misfin",
+ "nex-protocol",
  "quick-xml 0.39.4",
  "rustls",
- "scroll-protocol 0.1.0 (git+https://github.com/merely-made/errand.git?rev=897fb963d184f0e379ab9041d68e17e726cb7763)",
- "spartan-protocol 0.1.1 (git+https://github.com/merely-made/errand.git?rev=897fb963d184f0e379ab9041d68e17e726cb7763)",
+ "scroll-protocol",
+ "spartan-protocol",
  "tokio",
  "tokio-rustls",
  "tracing",
@@ -4067,15 +4046,6 @@ name = "find-msvc-tools"
 version = "0.1.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "aedcfb3409746eddb02b9e19ebda1c3394f759a152e48ee875a0844d1b955484"
-
-[[package]]
-name = "finger-protocol"
-version = "0.1.1"
-source = "git+https://github.com/merely-made/errand.git?rev=1155897e6debc61102ea219cced245d0abccb658#1155897e6debc61102ea219cced245d0abccb658"
-dependencies = [
- "tokio",
- "url",
-]
 
 [[package]]
 name = "finger-protocol"
@@ -4663,18 +4633,6 @@ dependencies = [
 [[package]]
 name = "gemini-protocol"
 version = "0.1.7"
-source = "git+https://github.com/merely-made/errand.git?rev=1155897e6debc61102ea219cced245d0abccb658#1155897e6debc61102ea219cced245d0abccb658"
-dependencies = [
- "ring",
- "rustls",
- "tokio",
- "tokio-rustls",
- "url",
-]
-
-[[package]]
-name = "gemini-protocol"
-version = "0.1.7"
 source = "git+https://github.com/merely-made/errand.git?rev=897fb963d184f0e379ab9041d68e17e726cb7763#897fb963d184f0e379ab9041d68e17e726cb7763"
 dependencies = [
  "ring",
@@ -5227,15 +5185,6 @@ dependencies = [
 [[package]]
 name = "gopher-protocol"
 version = "0.2.0"
-source = "git+https://github.com/merely-made/errand.git?rev=1155897e6debc61102ea219cced245d0abccb658#1155897e6debc61102ea219cced245d0abccb658"
-dependencies = [
- "tokio",
- "url",
-]
-
-[[package]]
-name = "gopher-protocol"
-version = "0.2.0"
 source = "git+https://github.com/merely-made/errand.git?rev=897fb963d184f0e379ab9041d68e17e726cb7763#897fb963d184f0e379ab9041d68e17e726cb7763"
 dependencies = [
  "tokio",
@@ -5419,17 +5368,6 @@ checksum = "6b17e70c989c36bad147b27a58d148c0741c51448aa5653436547323e524d0ab"
 dependencies = [
  "euclid",
  "svg_fmt",
-]
-
-[[package]]
-name = "guppy-protocol"
-version = "0.1.1"
-source = "git+https://github.com/merely-made/errand.git?rev=1155897e6debc61102ea219cced245d0abccb658#1155897e6debc61102ea219cced245d0abccb658"
-dependencies = [
- "log",
- "percent-encoding",
- "tokio",
- "url",
 ]
 
 [[package]]
@@ -8299,7 +8237,7 @@ dependencies = [
  "async-trait",
  "bytes",
  "eidetic",
- "errand 0.4.0 (git+https://github.com/merely-made/errand.git?rev=897fb963d184f0e379ab9041d68e17e726cb7763)",
+ "errand",
  "futures-util",
  "genet-host-api",
  "inker",
@@ -8380,7 +8318,7 @@ dependencies = [
  "document-canvas",
  "document-session-api",
  "eidetic",
- "errand 0.4.0 (git+https://github.com/merely-made/errand.git?rev=897fb963d184f0e379ab9041d68e17e726cb7763)",
+ "errand",
  "genet-host-api",
  "genet-static-dom",
  "image",
@@ -8617,23 +8555,6 @@ dependencies = [
  "log",
  "wasi",
  "windows-sys 0.61.2",
-]
-
-[[package]]
-name = "misfin"
-version = "0.0.4"
-source = "git+https://github.com/merely-made/errand.git?rev=1155897e6debc61102ea219cced245d0abccb658#1155897e6debc61102ea219cced245d0abccb658"
-dependencies = [
- "log",
- "rcgen 0.13.2",
- "rustls",
- "rustls-pki-types",
- "serde",
- "serde_json",
- "sha2 0.11.0",
- "tokio",
- "tokio-rustls",
- "url",
 ]
 
 [[package]]
@@ -9155,7 +9076,7 @@ name = "nematic"
 version = "0.1.1"
 source = "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a"
 dependencies = [
- "errand 0.4.0 (git+https://github.com/merely-made/errand.git?rev=897fb963d184f0e379ab9041d68e17e726cb7763)",
+ "errand",
  "genet-static-dom",
  "inker",
  "jotdown",
@@ -9422,17 +9343,6 @@ name = "new_debug_unreachable"
 version = "1.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "650eef8c711430f1a879fdd01d4745a7deea475becfb90269c06775983bbf086"
-
-[[package]]
-name = "nex-protocol"
-version = "0.1.1"
-source = "git+https://github.com/merely-made/errand.git?rev=1155897e6debc61102ea219cced245d0abccb658#1155897e6debc61102ea219cced245d0abccb658"
-dependencies = [
- "log",
- "percent-encoding",
- "tokio",
- "url",
-]
 
 [[package]]
 name = "nex-protocol"
@@ -12999,19 +12909,9 @@ dependencies = [
 [[package]]
 name = "scroll-protocol"
 version = "0.1.0"
-source = "git+https://github.com/merely-made/errand.git?rev=1155897e6debc61102ea219cced245d0abccb658#1155897e6debc61102ea219cced245d0abccb658"
-dependencies = [
- "gemini-protocol 0.1.7 (git+https://github.com/merely-made/errand.git?rev=1155897e6debc61102ea219cced245d0abccb658)",
- "tokio",
- "url",
-]
-
-[[package]]
-name = "scroll-protocol"
-version = "0.1.0"
 source = "git+https://github.com/merely-made/errand.git?rev=897fb963d184f0e379ab9041d68e17e726cb7763#897fb963d184f0e379ab9041d68e17e726cb7763"
 dependencies = [
- "gemini-protocol 0.1.7 (git+https://github.com/merely-made/errand.git?rev=897fb963d184f0e379ab9041d68e17e726cb7763)",
+ "gemini-protocol",
  "tokio",
  "url",
 ]
@@ -15103,18 +15003,6 @@ dependencies = [
 [[package]]
 name = "spartan-protocol"
 version = "0.1.1"
-source = "git+https://github.com/merely-made/errand.git?rev=1155897e6debc61102ea219cced245d0abccb658#1155897e6debc61102ea219cced245d0abccb658"
-dependencies = [
- "idna",
- "log",
- "percent-encoding",
- "tokio",
- "url",
-]
-
-[[package]]
-name = "spartan-protocol"
-version = "0.1.1"
 source = "git+https://github.com/merely-made/errand.git?rev=897fb963d184f0e379ab9041d68e17e726cb7763#897fb963d184f0e379ab9041d68e17e726cb7763"
 dependencies = [
  "idna",
@@ -16588,7 +16476,7 @@ dependencies = [
  "document-session-api",
  "eidetic",
  "eidetic-search",
- "errand 0.4.0 (git+https://github.com/merely-made/errand.git?rev=1155897e6debc61102ea219cced245d0abccb658)",
+ "errand",
  "gemot",
  "genet-clipboard",
  "genet-didge",
