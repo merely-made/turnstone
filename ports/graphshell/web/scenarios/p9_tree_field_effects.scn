@@ -1,0 +1,49 @@
+# Ordinary link cohort, one authored global flow, separate fixture store.
+# tree.html?app=local&fixture=link-effects&scenario=scenarios/p9_tree_field_effects.scn
+click role:button Fit graph
+settle 2
+assert snap link-rest-ready == true
+click-link-rest a1-b1 surface
+settle 2
+click role:button Explain pair dynamics
+settle 2
+assert snap dynamics-inspector-ready == true
+assert snap dynamics-inspector-held-rows == 3
+click role:button Panes
+settle 2
+click role:button Graph controls
+settle 2
+reveal role:button Play physics
+click role:button Play physics
+settle 6
+assert snap dynamics-inspector-paused == false
+assert snap dynamics-inspector-coupling-observation ~ "coupling_index":
+assert snap dynamics-inspector-coupling-observation ~ "field":"00000000-0000-0000-0000-000000000900"
+assert snap dynamics-inspector-coupling-observation ~ "coupling":"00000000-0000-0000-0000-000000000901"
+assert snap dynamics-inspector-coupling-observation ~ Displace
+assert snap dynamics-inspector-coupling-observation ~ Write
+reveal role:button Pause physics
+click role:button Pause physics
+settle 3
+assert snap dynamics-inspector-paused == true
+remember field-effects-paused
+settle 3
+same field-effects-paused dynamics-inspector-coupling-observation
+reveal .tree-dynamics
+capture p9_authored_endpoint_effects
+
+# Choosing again starts a new bounded observation window without ticking.
+reveal role:button Explain pair dynamics
+click role:button Explain pair dynamics
+settle 2
+assert snap dynamics-inspector-coupling-observation ~ "trace":null
+assert text Field effects: no tick observed
+reveal role:button Play physics
+click role:button Play physics
+settle 6
+assert snap dynamics-inspector-coupling-observation ~ "coupling_index":
+reveal role:button Pause physics
+click role:button Pause physics
+settle 2
+assert snap dynamics-inspector-paused == true
+log Authored global flow calls match the inspected pair; paused re-selection clears evidence and resume records a new tick

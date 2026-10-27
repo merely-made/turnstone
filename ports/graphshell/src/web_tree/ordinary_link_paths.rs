@@ -424,19 +424,6 @@ pub(super) fn fields(page: &TreePage, snapshot: ProbeSnapshot) -> ProbeSnapshot 
 fn max_bend(paths: &[mere::canvas::responsive_links::EvaluatedLinkPath]) -> f32 {
     paths
         .iter()
-        .map(|path| path_bend(&path.points))
-        .fold(0.0_f32, f32::max)
-}
-
-fn path_bend(points: &[(f32, f32)]) -> f32 {
-    let (Some(first), Some(last)) = (points.first(), points.last()) else {
-        return 0.0;
-    };
-    let dx = last.0 - first.0;
-    let dy = last.1 - first.1;
-    let length = dx.hypot(dy).max(f32::EPSILON);
-    points
-        .iter()
-        .map(|point| ((dx * (first.1 - point.1) - (first.0 - point.0) * dy).abs()) / length)
+        .map(|path| path.max_bend())
         .fold(0.0_f32, f32::max)
 }

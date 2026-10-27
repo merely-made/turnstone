@@ -1,3 +1,4 @@
+# Extended to join path readback and endpoint execution in the existing inspector.
 # Dedicated retained origin/profile using the P7 promoted-link fixture.
 # tree.html?app=local&fixture=promoted-link&scenario=scenarios/p8_tree_counted_topology.scn
 click role:button Fit graph
@@ -21,6 +22,43 @@ assert text Independent collection membership
 click role:button Explain pair dynamics
 settle 2
 assert snap dynamics-inspector-ready == true
+assert snap dynamics-inspector-details == false
+assert snap dynamics-inspector-path-response ~ "state":"disabled"
+assert text Relationships: 3 held rows
+assert text Drawn paths: disabled
+assert text Endpoint physics: paused
+remember explanation-before
+click role:button Temporary flow
+settle 2
+assert snap dynamics-inspector-path-response ~ "state":"applied"
+assert snap dynamics-inspector-path-response ~ "responsive":true
+same explanation-before link-rest-source-facts link-rest-graph-revision
+reveal role:button Show dynamics details
+click role:button Show dynamics details
+settle 2
+assert snap dynamics-inspector-details == true
+assert text Drawn path inputs and geometry
+assert text Recorded endpoint field effects
+reveal role:button Hide dynamics details
+click role:button Hide dynamics details
+settle 2
+click role:button Panes
+settle 2
+click role:button Graph controls
+settle 2
+reveal role:button Play physics
+click role:button Play physics
+settle 6
+assert snap dynamics-inspector-paused == false
+assert snap dynamics-inspector-coupling-observation ~ "rows":[]
+assert text latest recorded tick before integration
+reveal role:button Pause physics
+click role:button Pause physics
+settle 2
+assert snap dynamics-inspector-paused == true
+remember paused-observation
+settle 3
+same paused-observation dynamics-inspector-coupling-observation
 assert snap dynamics-inspector-topology-mode == relation_rows
 assert snap dynamics-inspector-held-rows == 3
 assert snap dynamics-inspector-visible-rows == 3
@@ -94,4 +132,9 @@ reveal .promoted-link-current
 capture p8_promoted_copy_after_withdrawal
 reveal .tree-dynamics
 capture p8_pair_topology_after_withdrawal
-log P8 exact view hide and authorized withdrawal independently update shared counted pair topology while preserving source and promoted-copy invariants
+log Integrated explanation: exact view hide and authorized withdrawal independently update shared counted pair topology while preserving source and promoted-copy invariants
+
+reveal role:button Close dynamics inspection
+click role:button Close dynamics inspection
+settle 2
+assert snap dynamics-inspector-open == false

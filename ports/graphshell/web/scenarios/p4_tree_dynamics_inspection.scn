@@ -19,6 +19,9 @@ assert snap dynamics-inspector-ready == true
 assert snap dynamics-inspector-paused == true
 assert snap dynamics-inspector-explicit-pins == 0
 remember exact-access
+reveal role:button Show dynamics details
+click role:button Show dynamics details
+settle 2
 reveal .detail-key Forme hold
 settle 2
 capture dynamics_exact_access
