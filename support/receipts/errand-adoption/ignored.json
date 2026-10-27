@@ -1,0 +1,26 @@
+{
+  "listed_ignored_tests": [
+    "app::tests::dr_c_turnstone_identity_stays_pending",
+    "inference_service::tests::admitted_research_route_refuses_wrong_owner",
+    "knot_authoring::tests::inspector_clip_crosses_the_typed_endpoint_action",
+    "knot_authoring::tests::inspector_clip_retains_livery_source_evidence_end_to_end",
+    "knot_authoring::tests::real_knot_consumer_saves_rejects_stale_and_reopens",
+    "knot_authoring::tests::received_communal_auto_run_waits_for_explicit_confirmation",
+    "knot_authoring::tests::resolve_and_run_cross_the_consented_authoring_path",
+    "redshank_host::tests::embedded_text_retention_process_fixture",
+    "retained_clip::custody_tests::custody_process_roundtrip_fixture",
+    "shell::cue_content::tests::input_during_a_pending_frame_gets_a_final_blue_frame_and_unadmitted_geometry_skips",
+    "shell::effects::nomadnet_receiving_tests::governed_djinn_native_page_reaches_product_controller",
+    "trail_memory::evaluation::captured_trail_frecency_receipt",
+    "trail_memory::evaluation::captured_trail_mint_receipt",
+    "trail_memory::evaluation::firefox_history_corpus_receipt",
+    "trail_memory::research_owner_tests::independently_inspect_exited_research_notes",
+    "trail_memory::research_owner_tests::independently_inspect_exited_research_profile",
+    "trail_memory::tests::mint_receipt_scale_ladder"
+  ],
+  "ignored_in_selected_gates": [
+    "shell::cue_content::tests::input_during_a_pending_frame_gets_a_final_blue_frame_and_unadmitted_geometry_skips",
+    "shell::effects::nomadnet_receiving_tests::governed_djinn_native_page_reaches_product_controller"
+  ],
+  "new_ignored_tests_added": false
+}

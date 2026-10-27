@@ -1,7 +1,10 @@
 # Unusual-protocols browser plan
 
 **Date:** 2026-10-06
-**Status (2026-10-22): in progress.** The native receiving continuation below is
+**Status (2026-10-26): in progress.** Errand adoption below is qualified on
+refreshed main `fbae4ea7`, with 172 native receiving/session passes, the locked
+all-target check, production Clippy and portable metadata verification.
+The earlier native receiving continuation is
 qualified on current upstream `8eebb5a3` plus receiving source/lock `a622c960`:
 70 focused native tests and the governed-host process probe pass. The earlier
 `9c842`/`cab743c1` checkpoint remains historical evidence, separate from this
@@ -12,6 +15,52 @@ public mounts and SC6 retained content retain their existing continuations and
 source owners. The U1–U17 and AC1–AC6
 rulings remain recorded in §7; S8's physical assistive-technology receipts
 remain separate gates.
+
+## Errand adoption (2026-10-26)
+
+**Status: qualified.** Turnstone starts from refreshed main `fbae4ea7`.
+Its previous lock contained nine Errand-family records at each of `1155897e`
+and `897fb963`. The direct dependency and active patch catalogs now select
+qualified `897fb963`, preserving every registry version and other supplier.
+The current Mere, Genet, Murm and Armillary cohorts remain independently pinned.
+Portable Cargo uses the committed lock and redirect-free configuration; the
+optional `config.local.toml` is not loaded.
+
+Done when the locked consumer graph has one Errand family and the existing
+receiving, launch-limit, native MIME/replacement, explicit Submit, fetch request
+correlation, Stop/Reload, input/certificate/trust and session-persistence controls
+pass. Run the ordinary all-target compile check and scoped production Clippy;
+record any unchanged baseline failures without broadening this adoption.
+Browser actions, session identity/lifetime, persona/capsule trust, outer request
+budgets and native Micron endpoint draining remain product-owned and unchanged.
+Headed UI, live certificate decision flows, actor cancellation, physical radio
+and independent-machine qualification retain their separate acceptance gates.
+
+Work directly on clean main with the stable Turnstone Cargo target and build
+directory under `C:/t/cargo-targets/turnstone`. Required receipts are exact
+source/lock identities, the dependency delta audit, compact command results and
+consumer executable identity, under a total 100 MB retained-byte cap across
+repositories. Preserve previous receipts.
+
+**Findings and progress (2026-10-26):** the nine superseded package records
+are removed, leaving one Errand family. All 1,385 registry records and 263
+other Git records, including normalized dependency tables, remain unchanged.
+All browser/session source and scenarios are unchanged. The locked all-target
+check and NomadNet-enabled native test build pass without compatibility repairs.
+The exact test executable passes 172 selected cases across 38 filters, covering
+receiving MIME/replacement, native Micron budgets and draining, explicit Submit,
+feeds, fetch correlation, sensitive input, trust/identity decisions, streaming,
+Stop/Reload, reading/accessibility and session save/reopen. Two existing cases
+remain ignored: the governed-host handoff and pending-frame Cue prerequisite.
+No new ignore or product behavior is introduced.
+
+Production Clippy completes with 278 warnings in unchanged source; this is not
+a warnings-as-errors qualification. Portable metadata verification passes
+offline with the committed lock unchanged. Native/headed, live TLS certificate
+decision flows, general actor cancellation/concurrency and physical radio keep
+their separate gates. The [qualification record](../support/receipts/errand-adoption/qualification.json)
+names the precise source, executable, commands, dependency audit and repo-refresh
+boundaries. Earlier receiving/process receipts retain their original scope.
 
 ## The bar
 

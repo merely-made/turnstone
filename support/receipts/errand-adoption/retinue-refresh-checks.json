@@ -1,0 +1,34 @@
+[
+  {
+    "command": "cargo test --locked --offline -p truchman -j 1 --quiet",
+    "exit_code": 0,
+    "seconds": 37.45,
+    "stdout": "\nrunning 14 tests\n..............\ntest result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 7 tests\n.......\ntest result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s\n\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n",
+    "stderr_tail": "",
+    "warning_headers": 0
+  },
+  {
+    "command": "cargo check --locked --offline -p truchman --no-default-features -j 1 --quiet",
+    "exit_code": 0,
+    "seconds": 2.2,
+    "stdout": "",
+    "stderr_tail": "",
+    "warning_headers": 0
+  },
+  {
+    "command": "cargo check --locked --offline -p retinue --features i2p --lib -j 1 --quiet",
+    "exit_code": 0,
+    "seconds": 8.09,
+    "stdout": "",
+    "stderr_tail": "",
+    "warning_headers": 0
+  },
+  {
+    "command": "cargo check --locked --offline --manifest-path native/Cargo.toml -p murm-i2p -j 1 --quiet",
+    "exit_code": 0,
+    "seconds": 203.81,
+    "stdout": "",
+    "stderr_tail": "",
+    "warning_headers": 0
+  }
+]

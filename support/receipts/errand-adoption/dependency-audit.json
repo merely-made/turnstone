@@ -1,0 +1,120 @@
+{
+  "schema": "turnstone.errand-dependency-audit.v1",
+  "date": "2026-10-26",
+  "base": "fbae4ea7ca202415cd8617fd880273742654cf29",
+  "errand_before": [
+    "1155897e6debc61102ea219cced245d0abccb658",
+    "897fb963d184f0e379ab9041d68e17e726cb7763"
+  ],
+  "errand_after": "897fb963d184f0e379ab9041d68e17e726cb7763",
+  "packages_before": 1670,
+  "packages_after": 1661,
+  "registry_records_unchanged": 1385,
+  "non_errand_git_records_unchanged": 263,
+  "normalized_package_tables_and_dependency_edges_unchanged": true,
+  "manifest_only_changes": {
+    "old_revision_replaced_by_new": 12
+  },
+  "src_and_scenarios_unchanged": true,
+  "normalization": "Canonicalize Errand revisions and redundant qualified Errand dependency labels only, then compare complete parsed package records as sets. Remove the nine superseded duplicate records, retaining the existing qualified supplier records. Registry checksums/versions, non-Errand sources and every other field remain identical.",
+  "inputs": {
+    "Cargo.toml": {
+      "sha256_native_bytes": "cd5d6e824b5cd85dfcf4dcf391dd3fc4b4e1c7d510afca6a1bf98f8e7243f5cf",
+      "base_git_blob": "250faf8f85869094a8f2ee4dbded17c53111175f"
+    },
+    "Cargo.lock": {
+      "sha256_native_bytes": "5e4d5e03db15f163931b829cfce05fa7bf6acfbeb252cd92537d10ba975dd7f1",
+      "base_git_blob": "30f8221f1181e30e27a9e734068721d6dbd484cb"
+    },
+    ".cargo/config.toml": {
+      "sha256_native_bytes": "520d074f2ae865a3a2146e4f31cb1229f97c58b4e2a2e17a0e2eea5c634ec3f3",
+      "base_git_blob": "b71f8f7bef5415df1b350b2acb38c45ab8ff9b43"
+    },
+    "src/browse.rs": {
+      "sha256_native_bytes": "75dae40befb7b037bf6dc47f636c7f2a965760136214e27c6837dbb74068c7d9",
+      "base_git_blob": "2d21dbb432b3e52ac45e99818268ab39886f67b5"
+    },
+    "src/content.rs": {
+      "sha256_native_bytes": "c2f5b37a184da88264e6b9b5b0502341647aa86ef073b9e2b405f01188ccfa01",
+      "base_git_blob": "b97cb4b3f62490ab67df767917f48e3779454b06"
+    },
+    "src/feed.rs": {
+      "sha256_native_bytes": "65300ab3020e82207249a27a984ea375e054cc91bee067bfeb588eac2b8d07d2",
+      "base_git_blob": "dc2bd906f70b75dcafabe85bbebd428a4481aa76"
+    },
+    "src/client_limits.rs": {
+      "sha256_native_bytes": "4b76e85f3751cb21c2fd38cd484c23302390b56b15f5b9316297cbec5aa73b45",
+      "base_git_blob": "d1646064cdd699dcf30710545a4aa71f794dcf74"
+    },
+    "src/gemini_identity.rs": {
+      "sha256_native_bytes": "505e384b6a8263fdf7c3afbe0ca33095f839e8114b46d6785c914e8a28e09ee3",
+      "base_git_blob": "c77dea5d7ab1ac29f106505374847fd838453863"
+    },
+    "src/gemini_trust.rs": {
+      "sha256_native_bytes": "a350520044ebbc74a9b76f8cc1f6d67c3ec94138bdee31dc4ba778c122916f70",
+      "base_git_blob": "6804914125e65ad3a32344feb150e8f2e209e97d"
+    },
+    "src/session.rs": {
+      "sha256_native_bytes": "70e99f17d1c597c122783fb4daa67f54545caafff3b8650439564f804729bdca",
+      "base_git_blob": "13c6249735ed404460771e2651e793586a996cf8"
+    },
+    "src/session_persistence.rs": {
+      "sha256_native_bytes": "d8e5f2d41d27bf29cf9cbbfa30ff5ffea1263ab7ce9667b007adea7b0aaed032",
+      "base_git_blob": "b02305fb12d01a0d880af76872332eb48a441722"
+    },
+    "src/app/session_lifecycle.rs": {
+      "sha256_native_bytes": "5809b671ec7d725bd76f1da2caf06a4a02e45d429c989d64ab484f309b724a66",
+      "base_git_blob": "4cad90520d76585bbf3dd3b3575ec8067e63b8ce"
+    },
+    "src/app/session_persistence_tests.rs": {
+      "sha256_native_bytes": "c3dfa889dafc1667dfdb94381e3be943c4936f7ed3445c42595424c1a5c529b7",
+      "base_git_blob": "2a34ea50811e92bab36a76e104e6754ac860ccbc"
+    },
+    "src/shell/mod.rs": {
+      "sha256_native_bytes": "074fadc0092bc82197366d5fa92903e98fb3aa196e225b3ec155da09279b51b3",
+      "base_git_blob": "12ae8da40f47d68d87f10cd92934646d569c4090"
+    },
+    "src/shell/effects.rs": {
+      "sha256_native_bytes": "66c590ddfa331f3fd94e55bd6388191ceabbc9bf967869e339bf5d3936b1011f",
+      "base_git_blob": "e7eb92afeec649fc8de33e595cd839cb50a00983"
+    },
+    "src/shell/smolweb_receiving_tests.rs": {
+      "sha256_native_bytes": "5c4c5675eb4fe32c6dfefe738b82bbd8208ae1f9a051ae8e2e8281a18edbe443",
+      "base_git_blob": "6ee9ee4a7f6d4947b7ffdb7a792d067f979481a2"
+    },
+    "src/nomadnet.rs": {
+      "sha256_native_bytes": "82c95cfce8c37da9028dc10d7feaecca4581d996e9ed0db57486021fc51ea042",
+      "base_git_blob": "3637533b0a81160365626d3ea80315e69796aead"
+    },
+    "src/nomadnet_client_limits_tests.rs": {
+      "sha256_native_bytes": "56a3c599d742bf239c66fcfdc940c3e10d1c6183f3c318ba8813aebc18e155e1",
+      "base_git_blob": "28b671a5c02a881de6b783271a476e147d1523ea"
+    }
+  },
+  "other_git_sources": {
+    "git+https://github.com/merely-made/mere.git?branch=main#5fb0e01f3e913b063d4a8da1f4cbb3c8827cc29a": 64,
+    "git+https://www.github.com/merely-made/armillary.git?rev=06340b08327b29c3485ecb0089bb5cafed20fd80#06340b08327b29c3485ecb0089bb5cafed20fd80": 1,
+    "git+https://github.com/mark-ik/arboard.git?branch=custom-formats#bec2dcd179deff24720e64107a0993bb36453df4": 1,
+    "git+https://www.github.com/merely-made/armillary.git?rev=864f107d44bf759111ad2ea3c9036b2cfbf03f4c#864f107d44bf759111ad2ea3c9036b2cfbf03f4c": 1,
+    "git+https://github.com/merely-made/woodshed.git?branch=main#a0da751cf1188c77eb3b25798517e8dd6f0ef557": 6,
+    "git+https://github.com/merely-made/genet.git?branch=main#01d3f528a8ff3f7c69201a736cdfdf296acccea3": 33,
+    "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de": 46,
+    "git+https://www.github.com/merely-made/eidetic.git?rev=f599ffe93298025bf6d65ae310a7cb4270ea52e3#f599ffe93298025bf6d65ae310a7cb4270ea52e3": 7,
+    "git+https://github.com/merely-made/dramatis.git?branch=main#dc593a343258cdabd9743a5a57ba49e8b103a876": 6,
+    "git+https://www.github.com/merely-made/gemot.git?rev=998133bc17b8636152e9c4f7605eb475498213c8#998133bc17b8636152e9c4f7605eb475498213c8": 4,
+    "git+https://github.com/merely-made/wgpu-cue.git?rev=b5b70c2c9c40748abedc0c18d2b6ec5373e48958#b5b70c2c9c40748abedc0c18d2b6ec5373e48958": 1,
+    "git+https://www.github.com/merely-made/esp.git?rev=bd0468c5c44c0b098494d30b3cfd0aa283cecf48#bd0468c5c44c0b098494d30b3cfd0aa283cecf48": 1,
+    "git+https://github.com/mark-ik/firewheel.git?rev=2b03846d2e0dcc6ded2a85367bb8c5071ae99cdc#2b03846d2e0dcc6ded2a85367bb8c5071ae99cdc": 8,
+    "git+https://github.com/kyren/gc-arena?rev=5a7534b883b703f23cfb8c3cfdf033460aa77ea9#5a7534b883b703f23cfb8c3cfdf033460aa77ea9": 2,
+    "git+https://github.com/merely-made/wgpu-graft.git?rev=9f410f193eb82a9a70ff704674bba7df3eed981b#9f410f193eb82a9a70ff704674bba7df3eed981b": 2,
+    "git+https://github.com/merely-made/knot-editor.git?branch=main#3e2251698bada90d20cc0eb19551841339376f9a": 5,
+    "git+https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5-upstream-20261013#1f69c9bcb9f2a9d798b1c25b2ec2f47c0416bd65": 7,
+    "git+https://github.com/merely-made/murm.git?branch=main#4ba804b3a52af2de43b659aa16d9ed99c16a94d9": 4,
+    "git+https://github.com/merely-made/netrender.git?branch=main#66b2f72e9e0785819139739cc4503bf1e8766de9": 4,
+    "git+https://github.com/mark-ik/vello?rev=276b46648c08f3d2062e70559afa999842e1873c#276b46648c08f3d2062e70559afa999842e1873c": 3,
+    "git+https://github.com/merely-made/didgeridoo?rev=e77309c648b91d59c1ded9b20e54999ae8b19741#e77309c648b91d59c1ded9b20e54999ae8b19741": 1,
+    "git+https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f31a259f04a574f5ec4e959c943ad7cc7": 55,
+    "git+https://github.com/merely-made/turquet.git?rev=bc3c454f755d0bfd70ab48bd9556a1cda2213d41#bc3c454f755d0bfd70ab48bd9556a1cda2213d41": 1
+  },
+  "portable_config": "Committed .cargo/config.toml only sets build-dir; ancestor and Cargo-home configs verified redirect-free by scripts/cargo_mode.py portable_config. config.local.toml is never passed. Both target/build environment variables explicitly select stable cache."
+}
