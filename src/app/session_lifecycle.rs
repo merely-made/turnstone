@@ -1054,9 +1054,7 @@ impl App {
                 Err(error) => {
                     let error = format!("session writer lease refused: {error}");
                     tracing::warn!(%error, "refusing session adoption; disk state remains protected");
-                    self.graph_runtimes.adopt_graph(mere::kernel::graph::Graph::new(),
-                        crate::session_persistence::SessionPersistence::refused(sdir, error.clone()));
-                    self.events.push(AppEvent::SessionLoadRefused { error });
+                    self.refuse_session_adoption(graph, sdir, error);
                     return vec![Effect::Redraw];
                 }
             };
@@ -1070,19 +1068,7 @@ impl App {
                 }
                 Err(error) => {
                     tracing::warn!(%error, "refusing session adoption; disk state remains protected");
-                    self.graph_runtimes.adopt_graph(mere::kernel::graph::Graph::new(),
-                        crate::session_persistence::SessionPersistence::refused(sdir, error.clone()));
-                    self.next_place_generation = self.next_place_generation.wrapping_add(1);
-                    self.place = crate::place::PlaceState::Failed { error: error.clone() };
-                    self.feeds = Default::default();
-                    self.redshank = self.redshank.suspended();
-                    self.redshank_members.clear();
-                    self.browser = Default::default();
-                    self.content = ContentStates::default();
-                    self.removed.clear();
-                    self.resident_runs = Default::default();
-                    self.resident_run_error = Some(error.clone());
-                    self.events.push(AppEvent::SessionLoadRefused { error });
+                    self.refuse_session_adoption(graph, sdir, error);
                     return vec![Effect::Redraw];
                 }
             }
@@ -1449,6 +1435,27 @@ impl App {
 
     pub(crate) fn session_load_refused(&self) -> bool {
         matches!(self.graph_runtimes.active_persistence(), crate::session_persistence::SessionPersistence::Refused { .. })
+    }
+
+    fn refuse_session_adoption(&mut self, graph: GraphId, directory: PathBuf, error: String) {
+        self.graph_runtimes.adopt_graph(
+            mere::kernel::graph::Graph::new(),
+            crate::session_persistence::SessionPersistence::refused(directory, error.clone()),
+        );
+        self.next_place_generation = self.next_place_generation.wrapping_add(1);
+        self.place = crate::place::PlaceState::Failed {
+            error: error.clone(),
+        };
+        self.feeds = Default::default();
+        self.redshank = self.redshank.suspended();
+        self.redshank_members.clear();
+        self.browser = Default::default();
+        self.content = ContentStates::default();
+        self.removed.clear();
+        self.resident_runs = Default::default();
+        self.resident_run_error = Some(error.clone());
+        self.events.push(AppEvent::SessionLoadRefused { error });
+        self.graph_runtimes.suspend_recording(graph);
     }
 
     pub(crate) fn persist_session_graph(&mut self) -> std::io::Result<()> {

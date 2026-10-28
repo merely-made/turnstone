@@ -234,17 +234,42 @@ impl Shell {
             SurfaceAction::LoadExample => self.load_alembic_examples(),
             SurfaceAction::Run => self.run_alembic(),
             SurfaceAction::Control(control) => self.control_alembic(control),
-            SurfaceAction::OpenSource { source, .. } => {
-                let graph = self.app.graph_runtimes.graph();
-                match crate::alembic_workshop::read_public_fixture(graph, &source) {
+            SurfaceAction::OpenSource { proposal, source } => {
+                let reading = if let Some(window) = self.alembic_workshop.as_mut() {
+                    let owner = window.owner.clone();
+                    let graph_id = self.app.graph_runtimes.active_graph();
+                    if owner.session != self.app.session_id.as_uuid().to_string()
+                        || owner.workspace != graph_id.as_uuid().to_string()
+                    {
+                        Err(
+                            "The workshop owner changed; reopen it before opening a citation."
+                                .into(),
+                        )
+                    } else if let Some(driver) = window.driver.as_ref() {
+                        match pollster::block_on(driver.refresh()) {
+                            Ok(view) => crate::alembic_workshop::proposal_reading(
+                                &owner, &view, proposal, &source,
+                            ),
+                            Err(error) => {
+                                Err(format!("The saved proposal could not be reopened: {error}"))
+                            },
+                        }
+                    } else {
+                        Err("The saved proposal is unavailable.".into())
+                    }
+                } else {
+                    Err("The evidence brief workshop is closed.".into())
+                };
+                match reading {
                     Ok(reading) => {
                         if let Some(window) = self.alembic_workshop.as_mut() {
                             window.update(|state| state.reading = Some(reading));
                         }
                     },
-                    Err(error) => {
-                        self.status_alembic("The cited source could not be reopened.", Some(error))
-                    },
+                    Err(error) => self.status_alembic(
+                        "The cited retained passage could not be opened.",
+                        Some(error),
+                    ),
                 }
             },
             SurfaceAction::OpenResult(resource) => {

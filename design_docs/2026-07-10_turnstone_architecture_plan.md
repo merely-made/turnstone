@@ -1044,8 +1044,14 @@ remote peers or the common plan's full per-host failure matrix.
 - Public source admission is an exact current URL/title/body/Resource check
   (`src/alembic_workshop.rs`). A same-title source or a changed example cannot
   silently replace the captured version.
+- Citation reading authenticates the exact persisted proposal and owner and
+  reads its saved Passage bytes. Live source edits can refuse a new acceptance
+  while the historical cited version remains readable. Lease refusal and graph
+  load refusal share the same session-state cleanup.
 
 **Progress (2026-10-28):** added the action/window adapter, shared surface,
 source gates, existing-writer acceptance path and session lease. Receiving
 checks, the lease-refusal regression and final native/cold qualification remain
 unexecuted here; Mere's successful gates do not substitute for them.
+Run receipts and the current receiving boundary are kept with the common plan
+at `mere/design_docs/archive_docs/2026-10-28/2026-10-28_alembic_implementation_plan_receipts.md`.
