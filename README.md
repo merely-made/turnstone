@@ -144,12 +144,14 @@ founding brief is `design_docs/2026-07-08_turnstone_founding.md`.
 </p>
 
 <p align="center">
-  <img src="assets/screenshots/workbench-split.png" alt="Turnstone Workbench with two graph nodes rendered as tiled web documents" width="900"><br>
-  <sub>The Workbench tiles graph nodes into live document surfaces beside the canvas (captured 2026-10-06 on Windows, before the current chrome).</sub>
+  <img src="assets/screenshots/workbench-split.png" alt="Turnstone Workbench with two tiles: the IANA web page on a white canvas, and the Project Gemini capsule in a warm palette derived from its host" width="900"><br>
+  <sub>The Workbench tiles graph nodes as live documents: a web page beside a Gemini capsule, which takes a palette derived from its host.</sub>
 </p>
 
-The canvas and Overview images come from `scenarios/readme_screenshots.scn`;
-run it with `TURNSTONE_SCENARIO` set to that file and a fresh `TURNSTONE_ROOT`.
+The canvas and Overview images come from `scenarios/readme_screenshots.scn`,
+which runs offline; the Workbench image comes from
+`scenarios/readme_live_screenshots.scn`, which needs the network. Run either with
+`TURNSTONE_SCENARIO` set to the file and a fresh `TURNSTONE_ROOT`.
 
 ## Retained answers
 
