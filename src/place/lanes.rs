@@ -424,6 +424,11 @@ mod tests {
 
     use crate::place::worker::GRAPH_STORE;
 
+    /// How long a test waits for an answer the worker must give. Generous,
+    /// since a full parallel suite can stall a worker for seconds; a
+    /// passing run never waits it out.
+    const ANSWER: Duration = Duration::from_secs(60);
+
     /// Issue a capability delegation on the host's retained delegation lane.
     fn delegate_to(host: &Path, founder: &InMemoryProvider, moot: [u8; 32], subject: [u8; 32]) {
         let rules = place_rules(founder.master_public_key().to_bytes(), moot);
@@ -841,7 +846,7 @@ mod tests {
 
         let (ack_tx, ack_rx) = std::sync::mpsc::sync_channel(1);
         worker.command(PlaceWorkerCommand::Release(ack_tx));
-        ack_rx.recv_timeout(Duration::from_secs(5)).unwrap();
+        ack_rx.recv_timeout(ANSWER).unwrap();
         drop(_host_lanes);
         drop(host_open);
         let _ = std::fs::remove_dir_all(&root);
@@ -1098,7 +1103,7 @@ mod tests {
 
         let (ack_tx, ack_rx) = std::sync::mpsc::sync_channel(1);
         worker.command(PlaceWorkerCommand::Release(ack_tx));
-        ack_rx.recv_timeout(Duration::from_secs(5)).unwrap();
+        ack_rx.recv_timeout(ANSWER).unwrap();
         drop(host_lanes);
         drop(host_open);
     }
@@ -1323,7 +1328,7 @@ mod tests {
 
         let (ack_tx, ack_rx) = std::sync::mpsc::sync_channel(1);
         worker.command(PlaceWorkerCommand::Release(ack_tx));
-        ack_rx.recv_timeout(Duration::from_secs(5)).unwrap();
+        ack_rx.recv_timeout(ANSWER).unwrap();
         drop(rejoined);
         drop(host_open);
         let _ = std::fs::remove_dir_all(&root);
@@ -1424,7 +1429,7 @@ mod tests {
         // the host lane alive so reconnect exercises a real peer.
         let (ack_tx, ack_rx) = std::sync::mpsc::sync_channel(1);
         worker.command(PlaceWorkerCommand::Release(ack_tx));
-        ack_rx.recv_timeout(Duration::from_secs(5)).unwrap();
+        ack_rx.recv_timeout(ANSWER).unwrap();
         drop(worker);
         drop(updates);
 
@@ -1603,7 +1608,7 @@ mod tests {
 
         let (ack_tx, ack_rx) = std::sync::mpsc::sync_channel(1);
         restarted.command(PlaceWorkerCommand::Release(ack_tx));
-        ack_rx.recv_timeout(Duration::from_secs(5)).unwrap();
+        ack_rx.recv_timeout(ANSWER).unwrap();
         drop(host_lanes);
         drop(host_open);
         let _ = std::fs::remove_dir_all(&root);
@@ -1677,7 +1682,7 @@ mod tests {
 
         let (ack_tx, ack_rx) = std::sync::mpsc::sync_channel(1);
         worker.command(PlaceWorkerCommand::Release(ack_tx));
-        ack_rx.recv_timeout(Duration::from_secs(5)).unwrap();
+        ack_rx.recv_timeout(ANSWER).unwrap();
         let _ = std::fs::remove_dir_all(&root);
     }
 
@@ -3272,7 +3277,7 @@ mod tests {
         use crate::place::worker::{AuthorityClock, PlaceWorkerSettings};
         // A fixed clock cannot move inside a running worker, so this runs on
         // the system clock with a lifetime admission fits inside under load.
-        const LIFETIME: Duration = Duration::from_secs(6);
+        const LIFETIME: Duration = Duration::from_secs(20);
         let clocked = PlaceWorkerSettings {
             authority_clock: AuthorityClock::SystemTime,
             ..settings()

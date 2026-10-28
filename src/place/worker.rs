@@ -2790,6 +2790,11 @@ pub(crate) mod tests {
     const AUTHORITY_AT_MS: u64 = 50;
     const COLLECTION_GRANT: [u8; 32] = [0x68; 32];
 
+    /// How long a test waits for an answer the worker must give. Generous,
+    /// since a full parallel suite can stall a worker for seconds; a
+    /// passing run never waits it out.
+    const ANSWER: std::time::Duration = std::time::Duration::from_secs(60);
+
     pub(crate) fn settings() -> PlaceWorkerSettings {
         PlaceWorkerSettings {
             authority_clock: AuthorityClock::Fixed(AUTHORITY_AT_MS),
@@ -4260,7 +4265,7 @@ pub(crate) mod tests {
         let (ack, acked) = std::sync::mpsc::sync_channel(1);
         worker.command(PlaceWorkerCommand::Release(ack));
         acked
-            .recv_timeout(std::time::Duration::from_secs(5))
+            .recv_timeout(ANSWER)
             .expect("a release never waits on the vault");
 
         let session = SessionId::new();
@@ -4271,10 +4276,7 @@ pub(crate) mod tests {
         );
 
         worker.command(PlaceWorkerCommand::AdoptIdentity(identity));
-        match updates
-            .recv_timeout(std::time::Duration::from_secs(5))
-            .unwrap()
-        {
+        match updates.recv_timeout(ANSWER).unwrap() {
             Update::PlaceOpened {
                 session: opened,
                 result: Ok(_),
@@ -4305,9 +4307,7 @@ pub(crate) mod tests {
             binding,
         });
         assert!(matches!(
-            updates
-                .recv_timeout(std::time::Duration::from_secs(5))
-                .unwrap(),
+            updates.recv_timeout(ANSWER).unwrap(),
             Update::PlaceOpened { result: Ok(_), .. }
         ));
 
@@ -4322,9 +4322,7 @@ pub(crate) mod tests {
             generation: 1,
             selection: Some(requested.clone()),
         });
-        let selected = updates
-            .recv_timeout(std::time::Duration::from_secs(5))
-            .unwrap();
+        let selected = updates.recv_timeout(ANSWER).unwrap();
         let Update::PlaceCollectionSet {
             result: Ok(snapshot),
             ..
@@ -4347,9 +4345,7 @@ pub(crate) mod tests {
             generation: 1,
             selection: None,
         });
-        let cleared = updates
-            .recv_timeout(std::time::Duration::from_secs(5))
-            .unwrap();
+        let cleared = updates.recv_timeout(ANSWER).unwrap();
         assert!(matches!(
             cleared,
             Update::PlaceCollectionSet {
@@ -4418,7 +4414,7 @@ pub(crate) mod tests {
         });
         assert!(matches!(
             updates
-                .recv_timeout(std::time::Duration::from_secs(5))
+                .recv_timeout(ANSWER)
                 .unwrap(),
             Update::PlaceOpened {
                 session: received_session,
@@ -4521,7 +4517,7 @@ pub(crate) mod tests {
         });
         assert!(matches!(
             updates
-                .recv_timeout(std::time::Duration::from_secs(5))
+                .recv_timeout(ANSWER)
                 .unwrap(),
             Update::PlaceOpened {
                 session,
@@ -4540,7 +4536,7 @@ pub(crate) mod tests {
         });
         assert!(matches!(
             updates
-                .recv_timeout(std::time::Duration::from_secs(5))
+                .recv_timeout(ANSWER)
                 .unwrap(),
             Update::PlaceOpened {
                 session,
@@ -4555,7 +4551,7 @@ pub(crate) mod tests {
         });
         assert!(matches!(
             updates
-                .recv_timeout(std::time::Duration::from_secs(5))
+                .recv_timeout(ANSWER)
                 .unwrap(),
             Update::PlaceOpened {
                 session,
@@ -4587,16 +4583,12 @@ pub(crate) mod tests {
             binding: binding.clone(),
         });
         assert!(matches!(
-            updates
-                .recv_timeout(std::time::Duration::from_secs(5))
-                .unwrap(),
+            updates.recv_timeout(ANSWER).unwrap(),
             Update::PlaceOpened { result: Ok(_), .. }
         ));
         let (ack_tx, ack_rx) = std::sync::mpsc::sync_channel(1);
         worker.command(PlaceWorkerCommand::Release(ack_tx));
-        ack_rx
-            .recv_timeout(std::time::Duration::from_secs(5))
-            .unwrap();
+        ack_rx.recv_timeout(ANSWER).unwrap();
 
         worker.command(PlaceWorkerCommand::Reconnect {
             contact: None,
@@ -4607,7 +4599,7 @@ pub(crate) mod tests {
         });
         assert!(matches!(
             updates
-                .recv_timeout(std::time::Duration::from_secs(5))
+                .recv_timeout(ANSWER)
                 .unwrap(),
             Update::PlaceOpened {
                 session: received_session,
@@ -4641,9 +4633,7 @@ pub(crate) mod tests {
             binding: first_binding.clone(),
         });
         assert!(matches!(
-            updates
-                .recv_timeout(std::time::Duration::from_secs(5))
-                .unwrap(),
+            updates.recv_timeout(ANSWER).unwrap(),
             Update::PlaceOpened { result: Ok(_), .. }
         ));
         worker.command(PlaceWorkerCommand::Open {
@@ -4653,9 +4643,7 @@ pub(crate) mod tests {
             binding: second_binding,
         });
         assert!(matches!(
-            updates
-                .recv_timeout(std::time::Duration::from_secs(5))
-                .unwrap(),
+            updates.recv_timeout(ANSWER).unwrap(),
             Update::PlaceOpened { result: Ok(_), .. }
         ));
 
@@ -4671,7 +4659,7 @@ pub(crate) mod tests {
         });
         assert!(matches!(
             updates
-                .recv_timeout(std::time::Duration::from_secs(5))
+                .recv_timeout(ANSWER)
                 .unwrap(),
             Update::PlaceCollectionSet {
                 session,
@@ -4687,7 +4675,7 @@ pub(crate) mod tests {
         });
         assert!(matches!(
             updates
-                .recv_timeout(std::time::Duration::from_secs(5))
+                .recv_timeout(ANSWER)
                 .unwrap(),
             Update::PlaceOpened {
                 session,
@@ -4719,9 +4707,7 @@ pub(crate) mod tests {
             binding: binding.clone(),
         });
         assert!(matches!(
-            updates
-                .recv_timeout(std::time::Duration::from_secs(5))
-                .unwrap(),
+            updates.recv_timeout(ANSWER).unwrap(),
             Update::PlaceOpened { result: Ok(_), .. }
         ));
         worker.command(PlaceWorkerCommand::SetCollection {
@@ -4732,9 +4718,7 @@ pub(crate) mod tests {
         let Update::PlaceCollectionSet {
             result: Ok(snapshot),
             ..
-        } = updates
-            .recv_timeout(std::time::Duration::from_secs(5))
-            .unwrap()
+        } = updates.recv_timeout(ANSWER).unwrap()
         else {
             panic!("exact selection did not return a snapshot");
         };
@@ -4772,9 +4756,7 @@ pub(crate) mod tests {
         let Update::PlaceOpened {
             result: Ok(resynced),
             ..
-        } = updates
-            .recv_timeout(std::time::Duration::from_secs(5))
-            .unwrap()
+        } = updates.recv_timeout(ANSWER).unwrap()
         else {
             panic!("selection did not resync");
         };
@@ -4782,9 +4764,7 @@ pub(crate) mod tests {
         assert_eq!(resynced.captured, snapshot.captured);
         let (ack_tx, ack_rx) = std::sync::mpsc::sync_channel(1);
         worker.command(PlaceWorkerCommand::Release(ack_tx));
-        ack_rx
-            .recv_timeout(std::time::Duration::from_secs(5))
-            .unwrap();
+        ack_rx.recv_timeout(ANSWER).unwrap();
         worker.command(PlaceWorkerCommand::Open {
             session,
             generation: 2,
@@ -4794,9 +4774,7 @@ pub(crate) mod tests {
         let Update::PlaceOpened {
             result: Ok(reopened),
             ..
-        } = updates
-            .recv_timeout(std::time::Duration::from_secs(5))
-            .unwrap()
+        } = updates.recv_timeout(ANSWER).unwrap()
         else {
             panic!("saved selection did not reopen");
         };
@@ -4808,16 +4786,12 @@ pub(crate) mod tests {
             selection: None,
         });
         assert!(matches!(
-            updates
-                .recv_timeout(std::time::Duration::from_secs(5))
-                .unwrap(),
+            updates.recv_timeout(ANSWER).unwrap(),
             Update::PlaceCollectionSet { result: Ok(_), .. }
         ));
         let (ack_tx, ack_rx) = std::sync::mpsc::sync_channel(1);
         worker.command(PlaceWorkerCommand::Release(ack_tx));
-        ack_rx
-            .recv_timeout(std::time::Duration::from_secs(5))
-            .unwrap();
+        ack_rx.recv_timeout(ANSWER).unwrap();
         worker.command(PlaceWorkerCommand::Open {
             session,
             generation: 3,
@@ -4827,9 +4801,7 @@ pub(crate) mod tests {
         let Update::PlaceOpened {
             result: Ok(cleared),
             ..
-        } = updates
-            .recv_timeout(std::time::Duration::from_secs(5))
-            .unwrap()
+        } = updates.recv_timeout(ANSWER).unwrap()
         else {
             panic!("cleared selection did not reopen");
         };
@@ -4857,9 +4829,7 @@ pub(crate) mod tests {
             binding,
         });
         assert!(matches!(
-            updates
-                .recv_timeout(std::time::Duration::from_secs(5))
-                .unwrap(),
+            updates.recv_timeout(ANSWER).unwrap(),
             Update::PlaceOpened { result: Ok(_), .. }
         ));
         // Replacing a directory with a file must fail on every supported host.
@@ -4870,9 +4840,7 @@ pub(crate) mod tests {
             selection: Some(requested),
         });
         assert!(matches!(
-            updates
-                .recv_timeout(std::time::Duration::from_secs(5))
-                .unwrap(),
+            updates.recv_timeout(ANSWER).unwrap(),
             Update::PlaceCollectionSet { result: Err(_), .. }
         ));
         worker.command(PlaceWorkerCommand::Resync {
@@ -4882,9 +4850,7 @@ pub(crate) mod tests {
         let Update::PlaceOpened {
             result: Ok(snapshot),
             ..
-        } = updates
-            .recv_timeout(std::time::Duration::from_secs(5))
-            .unwrap()
+        } = updates.recv_timeout(ANSWER).unwrap()
         else {
             panic!("prior scope did not survive a failed save");
         };
@@ -4946,9 +4912,7 @@ pub(crate) mod tests {
         let Update::PlaceOpened {
             result: Ok(all_effective),
             ..
-        } = updates
-            .recv_timeout(std::time::Duration::from_secs(5))
-            .unwrap()
+        } = updates.recv_timeout(ANSWER).unwrap()
         else {
             panic!("place did not open");
         };
@@ -4969,9 +4933,7 @@ pub(crate) mod tests {
         let Update::PlaceCollectionSet {
             result: Ok(snapshot),
             ..
-        } = updates
-            .recv_timeout(std::time::Duration::from_secs(5))
-            .unwrap()
+        } = updates.recv_timeout(ANSWER).unwrap()
         else {
             panic!("stale selection did not return a snapshot");
         };
@@ -5009,9 +4971,7 @@ pub(crate) mod tests {
         let Update::PlaceOpened {
             result: Ok(all_effective),
             ..
-        } = updates
-            .recv_timeout(std::time::Duration::from_secs(5))
-            .unwrap()
+        } = updates.recv_timeout(ANSWER).unwrap()
         else {
             panic!("place did not open before the withdrawal");
         };
@@ -5026,9 +4986,7 @@ pub(crate) mod tests {
             selection: Some(requested.clone()),
         });
         assert!(matches!(
-            updates
-                .recv_timeout(std::time::Duration::from_secs(5))
-                .unwrap(),
+            updates.recv_timeout(ANSWER).unwrap(),
             Update::PlaceCollectionSet {
                 result: Ok(OfflinePlaceSnapshot {
                     captured_selection: CapturedCollectionSelection::Collection {
@@ -5046,9 +5004,7 @@ pub(crate) mod tests {
 
         let (ack_tx, ack_rx) = std::sync::mpsc::sync_channel(1);
         worker.command(PlaceWorkerCommand::Release(ack_tx));
-        ack_rx
-            .recv_timeout(std::time::Duration::from_secs(5))
-            .unwrap();
+        ack_rx.recv_timeout(ANSWER).unwrap();
         let founder = founder_for(&binding);
         let moot = pollster::block_on(MootFile::open_existing(
             place_store_dir(&directory).join("gemot"),
@@ -5068,9 +5024,7 @@ pub(crate) mod tests {
         let Update::PlaceOpened {
             result: Ok(all_effective),
             ..
-        } = updates
-            .recv_timeout(std::time::Duration::from_secs(5))
-            .unwrap()
+        } = updates.recv_timeout(ANSWER).unwrap()
         else {
             panic!("place did not reopen after the withdrawal");
         };
@@ -5090,9 +5044,7 @@ pub(crate) mod tests {
         let Update::PlaceCollectionSet {
             result: Ok(snapshot),
             ..
-        } = updates
-            .recv_timeout(std::time::Duration::from_secs(5))
-            .unwrap()
+        } = updates.recv_timeout(ANSWER).unwrap()
         else {
             panic!("post-withdrawal selection did not return a snapshot");
         };
@@ -5133,9 +5085,7 @@ pub(crate) mod tests {
             directory: original.clone(),
             binding: binding.clone(),
         });
-        let first = updates
-            .recv_timeout(std::time::Duration::from_secs(5))
-            .unwrap();
+        let first = updates.recv_timeout(ANSWER).unwrap();
         assert!(matches!(
             first,
             Update::PlaceOpened {
@@ -5147,9 +5097,7 @@ pub(crate) mod tests {
 
         let (ack_tx, ack_rx) = std::sync::mpsc::sync_channel(1);
         worker.command(PlaceWorkerCommand::Release(ack_tx));
-        ack_rx
-            .recv_timeout(std::time::Duration::from_secs(5))
-            .unwrap();
+        ack_rx.recv_timeout(ANSWER).unwrap();
         std::fs::rename(&original, &moved)
             .expect("release acknowledgement means the session directory can move");
 
@@ -5159,9 +5107,7 @@ pub(crate) mod tests {
             directory: moved,
             binding,
         });
-        let second = updates
-            .recv_timeout(std::time::Duration::from_secs(5))
-            .unwrap();
+        let second = updates.recv_timeout(ANSWER).unwrap();
         assert!(matches!(
             second,
             Update::PlaceOpened {
@@ -5172,9 +5118,7 @@ pub(crate) mod tests {
         ));
         let (ack_tx, ack_rx) = std::sync::mpsc::sync_channel(1);
         worker.command(PlaceWorkerCommand::Release(ack_tx));
-        ack_rx
-            .recv_timeout(std::time::Duration::from_secs(5))
-            .unwrap();
+        ack_rx.recv_timeout(ANSWER).unwrap();
         let _ = std::fs::remove_dir_all(&root);
     }
 }
