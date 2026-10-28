@@ -5,7 +5,7 @@
 pandect session in IndexedDB, reopens that session on the next load, and reads
 a store from before sessions once into a new session without touching the old
 slot. Reservoir plan step 4
-(`design_docs/mere_docs/implementation_strategy/2026-09-23_reservoir_plan.md`,
+(`design_docs/archive_docs/2026-10-28/2026-09-23_reservoir_plan.md`,
 §7 items 23 to 29).
 
 ## Cut

@@ -5,9 +5,9 @@ admitted Graphshell route. An agent harness (Claude Code, Codex) launches it as 
 subprocess and reads and writes a mere through it, as a granted participant.
 
 It is the optional MCP adapter the
-[Graphshell reference host plan](../../../design_docs/mere_docs/implementation_strategy/2026-07-27_graphshell_reference_host_plan.md)
+[Graphshell reference host plan](../../../design_docs/archive_docs/2026-10-28/2026-07-27_graphshell_reference_host_plan.md)
 (H9) and the
-[djinn family resident services plan](../../../design_docs/mere_docs/implementation_strategy/2026-08-22_djinn_family_resident_services_plan.md)
+[djinn family resident services plan](../../../design_docs/archive_docs/2026-10-28/2026-08-22_djinn_family_resident_services_plan.md)
 (F2) schedule, over the same projection and intent grammar every Graphshell
 client uses. It is not a domain model and adds no authority.
 
