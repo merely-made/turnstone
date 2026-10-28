@@ -16492,6 +16492,7 @@ dependencies = [
  "knot-editor",
  "knot-editor-host",
  "layout-dom-api",
+ "libc",
  "mere",
  "mere-athanor",
  "mere-cartography",

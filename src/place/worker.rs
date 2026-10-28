@@ -2795,11 +2795,36 @@ pub(crate) mod tests {
     /// passing run never waits it out.
     const ANSWER: std::time::Duration = std::time::Duration::from_secs(60);
 
+    /// Every place test builds its worker settings here, so this is where
+    /// the suite claims room for its sockets and stores: run in parallel, it
+    /// holds more than the 1024 open files Linux gives a process by default.
     pub(crate) fn settings() -> PlaceWorkerSettings {
+        open_file_room();
         PlaceWorkerSettings {
             authority_clock: AuthorityClock::Fixed(AUTHORITY_AT_MS),
             ..PlaceWorkerSettings::default()
         }
+    }
+
+    /// Raise this process's soft open-file limit toward its hard limit, once.
+    /// A refusal leaves the limit as it was.
+    fn open_file_room() {
+        static ROOM: std::sync::Once = std::sync::Once::new();
+        ROOM.call_once(|| {
+            #[cfg(unix)]
+            // SAFETY: `rlimit` is plain data, and both calls only read or
+            // write the struct passed to them.
+            unsafe {
+                let mut limit: libc::rlimit = std::mem::zeroed();
+                if libc::getrlimit(libc::RLIMIT_NOFILE, &mut limit) == 0 {
+                    let wanted = limit.rlim_max.min(65_536);
+                    if limit.rlim_cur < wanted {
+                        limit.rlim_cur = wanted;
+                        libc::setrlimit(libc::RLIMIT_NOFILE, &limit);
+                    }
+                }
+            }
+        });
     }
 
     fn founder_for(binding: &PlaceBindingV1) -> InMemoryProvider {

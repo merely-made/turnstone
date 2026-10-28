@@ -335,6 +335,11 @@ transport = { package = "mere-transport", git = "https://github.com/merely-made/
 # every other genet.git row here, so it adds no package to the graph.
 netfetcher = { git = "https://github.com/merely-made/genet.git", branch = "main" }
 
+# A parallel place suite outgrows the 1024 open files Linux allows by
+# default; the tests raise their own soft limit. Already in the graph.
+[target.'cfg(unix)'.dev-dependencies]
+libc = "=0.2.189"
+
 [features]
 default = []
 # NomadNet page and form requests over a Reticulum TCP interface. Off by
