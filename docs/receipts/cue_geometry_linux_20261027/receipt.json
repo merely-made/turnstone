@@ -1,0 +1,57 @@
+{
+  "qualification_date": "2026-10-27",
+  "timezone": "America/New_York",
+  "qualified": true,
+  "scope": "Programmatic native Livery Genet text-input geometry on hardware Vulkan and delivery to Wayland primary/lens windows",
+  "turnstone_source": "9245819129dffc65a85b9dc35ca4d9d2c1081631",
+  "wgpu_cue_source": "ba92bded17bb3b2891e7d104edc3d687035dc00f",
+  "consumer_base": "04b2a68bc1a1dc06d29149b05cd69860cd3c1b16",
+  "runtime_geometry_and_dependency_files_changed": false,
+  "source_changes_for_test_driver": [
+    "src/scenario.rs",
+    "src/shell/drive.rs"
+  ],
+  "hardware": {
+    "gpu": "AMD Radeon Graphics (RADV RENOIR)",
+    "backend": "Vulkan",
+    "driver": "Mesa 26.2.5",
+    "type": "IntegratedGpu"
+  },
+  "headed_executable_sha256": "eb16e6b355eabcca53b27e0c08bd13bb41eef20022f88532690ff4e0ce4cb8fc",
+  "native_windows": [
+    0,
+    1
+  ],
+  "native_window_scale": 1.0,
+  "programmatic_scale_fixture": 2.0,
+  "window_rectangles_match_wayland": {
+    "0": true,
+    "1": true
+  },
+  "matching_tolerance_logical_pixels": 1.0,
+  "primary_observed_caret_heights": [
+    34.0,
+    37.4
+  ],
+  "lens_observed_caret_heights": [
+    37.4
+  ],
+  "focused_test_functions_passed": 5,
+  "preserved_rejected_runs": {
+    "headed-first": "Scenario passed but geometry checker rejected missing window 1 document focus.",
+    "headed-focused": "Both windows reached Wayland; scenario rejected an unscoped insert step in a lens."
+  },
+  "dns": "Initial GitHub lookup failed; subsequent system lookups and Git access succeeded. DNS settings were not changed.",
+  "ssh": "Mesh identity unlocked using the resident native prompt; authenticated persistent SSH restored.",
+  "prior_physical_receipt_tree": "0517c18c73e5a1ce3991a7ea8ced6d5d4209f7c4",
+  "prior_physical_receipt_unchanged": true,
+  "not_qualified": [
+    "Physical keyboard input or IME candidate popup placement",
+    "Physical CJK input methods",
+    "Human accessibility use",
+    "Servo IME",
+    "Native display scale 2",
+    "Password editing-offset to masked-glyph accuracy"
+  ],
+  "retention": "Original drivers, full raw logs, source checkouts and frozen executables remain in the retained cue-geometry-linux output lane. Published text redacts machine-specific home prefixes."
+}

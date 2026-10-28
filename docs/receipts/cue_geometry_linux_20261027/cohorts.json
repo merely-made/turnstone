@@ -1,0 +1,89 @@
+[
+  {
+    "repo": "turnstone",
+    "commit": "04b2a68bc1a1dc06d29149b05cd69860cd3c1b16",
+    "cargo_lock_sha256": "c1873d8949caa0b7735267496f6cc49cbe288838e8311af4123d4af570823afc",
+    "status": "",
+    "packages": [
+      {
+        "name": "cue-netrender",
+        "version": "0.1.2",
+        "source": "git+https://github.com/merely-made/wgpu-cue.git?rev=b5b70c2c9c40748abedc0c18d2b6ec5373e48958#b5b70c2c9c40748abedc0c18d2b6ec5373e48958"
+      },
+      {
+        "name": "document-session-api",
+        "version": "0.1.1",
+        "source": "git+https://github.com/merely-made/genet.git?branch=main#01d3f528a8ff3f7c69201a736cdfdf296acccea3"
+      },
+      {
+        "name": "genet-documents",
+        "version": "0.1.0",
+        "source": "git+https://github.com/merely-made/genet.git?branch=main#01d3f528a8ff3f7c69201a736cdfdf296acccea3"
+      },
+      {
+        "name": "genet-presenter",
+        "version": "0.2.0",
+        "source": "git+https://github.com/merely-made/genet.git?branch=main#01d3f528a8ff3f7c69201a736cdfdf296acccea3"
+      },
+      {
+        "name": "inker",
+        "version": "0.1.1",
+        "source": "git+https://github.com/merely-made/mere.git?branch=main#1184ece0dc5b982d755235dc16e623e8da018992"
+      },
+      {
+        "name": "pelt-core",
+        "version": "0.2.0",
+        "source": "git+https://github.com/merely-made/mere.git?branch=main#1184ece0dc5b982d755235dc16e623e8da018992"
+      },
+      {
+        "name": "webcue",
+        "version": "0.1.2",
+        "source": "registry+https://github.com/rust-lang/crates.io-index"
+      },
+      {
+        "name": "wgpu-cue",
+        "version": "0.1.3",
+        "source": "registry+https://github.com/rust-lang/crates.io-index"
+      }
+    ]
+  },
+  {
+    "repo": "wgpu-cue",
+    "commit": "ba92bded17bb3b2891e7d104edc3d687035dc00f",
+    "cargo_lock_sha256": "39b86c7fa152305fa5b3fde17b184873a4f1346d59865b9bace7576b7423c2b0",
+    "status": "",
+    "packages": [
+      {
+        "name": "cue-genet",
+        "version": "0.1.2"
+      },
+      {
+        "name": "cue-netrender",
+        "version": "0.1.2"
+      },
+      {
+        "name": "document-session-api",
+        "version": "0.1.1",
+        "source": "git+https://github.com/merely-made/genet.git?rev=ea18315d2274ebf3b4bc13475b7b2f2582d616ea#ea18315d2274ebf3b4bc13475b7b2f2582d616ea"
+      },
+      {
+        "name": "genet-documents",
+        "version": "0.1.0",
+        "source": "git+https://github.com/merely-made/genet.git?rev=ea18315d2274ebf3b4bc13475b7b2f2582d616ea#ea18315d2274ebf3b4bc13475b7b2f2582d616ea"
+      },
+      {
+        "name": "genet-presenter",
+        "version": "0.2.0",
+        "source": "git+https://github.com/merely-made/genet.git?rev=ea18315d2274ebf3b4bc13475b7b2f2582d616ea#ea18315d2274ebf3b4bc13475b7b2f2582d616ea"
+      },
+      {
+        "name": "webcue",
+        "version": "0.1.2"
+      },
+      {
+        "name": "wgpu-cue",
+        "version": "0.1.3"
+      }
+    ]
+  }
+]

@@ -24,6 +24,27 @@ succeeds the remaining-work portion of the historical
 [browser gap analysis](2026-08-17_smolweb_browser_gap_analysis.md); the analysis
 remains useful as research and acceptance evidence.
 
+## ThinkPad shared geometry receiving, 2026-10-27
+
+**Status: bounded native Wayland / hardware Vulkan receiving passes.** The
+[Linux geometry receipt](../docs/receipts/cue_geometry_linux_20261027/README.md)
+binds the frozen consumer and SDK cohorts, executable hashes, five focused tests,
+source rasters and actual Wayland cursor-rectangle messages. Both primary and
+lens window rectangles match the shared observation after placement and display
+scale conversion. Page zoom changes the primary caret height from 34 to 37.4
+pixels, and the lens receives the zoomed geometry. Native display scale 1 is
+exercised; scale 2 remains a programmatic fixture boundary.
+
+The scenario runner gains a window-scoped content click using the existing
+native routing helpers. The first two rejected observations remain in the
+receipt: missing lens document focus, then an unscoped insert step in a lens.
+The passing run uses explicit lens content focus and a window-targeted caret key.
+The caret mapping, producer publication and dependency lockfile are unchanged.
+SSH access is restored; an initial GitHub DNS failure resolved on retry without
+configuration changes. Physical CJK, human AT, Servo IME, physical candidate
+popup placement and native password masking/index projection retain their own
+bounds. The October 24 physical receipt remains unchanged.
+
 ## ThinkPad physical IME receiving, 2026-10-24
 
 **Status: bounded physical Typing Booster receiving is reviewed.** The operator
@@ -49,9 +70,10 @@ The Genet shared `TextInput` geometry publication gap is closed by the
 Genet publishes current native editor metadata, Pelt checks exact prepared
 appearance custody, and primary/lens windows map the current logical caret to
 physical candidate-area coordinates after frame preparation. The earlier
-physical receipt is unchanged. A new ThinkPad Linux/Vulkan rerun remains blocked
-on mesh SSH identity unlock. Physical CJK methods, Servo IME, human AT, X11 and
-physical device loss retain separate bounds.
+physical receipt is unchanged. The later
+[ThinkPad Linux/Vulkan geometry rerun](../docs/receipts/cue_geometry_linux_20261027/README.md)
+passes after mesh SSH identity unlock. Physical CJK methods, Servo IME, human AT,
+X11 and physical device loss retain separate bounds.
 
 ## Linux native Cue receiving, 2026-10-23
 

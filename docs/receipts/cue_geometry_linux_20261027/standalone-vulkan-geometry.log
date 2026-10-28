@@ -1,0 +1,6 @@
+running 1 test
+test shared_genet_text_input_geometry_without_semantic_publication ... text-input geometry adapter: AdapterInfo { name: "AMD Radeon Graphics (RADV RENOIR)", vendor: 4098, device: 5686, device_type: IntegratedGpu, device_pci_bus_id: "0000:06:00.0", driver: "radv", driver_info: "Mesa 26.2.5", backend: Vulkan, subgroup_min_size: 64, subgroup_max_size: 64, transient_saves_memory: Some(false), limit_bucket: None }
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.78s
+

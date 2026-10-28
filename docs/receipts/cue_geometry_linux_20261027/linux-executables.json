@@ -1,0 +1,20 @@
+[
+  {
+    "source": "$REMOTE_CODE/target/debug/turnstone",
+    "frozen": "$REMOTE_CODE/output/cue-geometry-linux/turnstone-linux",
+    "sha256": "4553a743e561d4912b16be41cb4b68920e84c9ce6288270830913ec494bdb09d",
+    "size": 530754864
+  },
+  {
+    "source": "$REMOTE_CODE/repos/turnstone/target/build/debug/deps/turnstone-d0b0639ce3ce5ce2",
+    "frozen": "$REMOTE_CODE/output/cue-geometry-linux/turnstone-unit-tests",
+    "sha256": "3747bd352dd9c9a2a50eb8ccd8fe82c56cc4c0ddea93edff7972b7368d5f607f",
+    "size": 516791856
+  },
+  {
+    "source": "$REMOTE_CODE/repos/turnstone/target/build/debug/deps/text_input-98f3bb95abd764a7",
+    "frozen": "$REMOTE_CODE/output/cue-geometry-linux/standalone-geometry-tests",
+    "sha256": "3fd2d51f01e3424bb89e551cf1e38226bf105ef792706ba383293676f619395f",
+    "size": 319276344
+  }
+]

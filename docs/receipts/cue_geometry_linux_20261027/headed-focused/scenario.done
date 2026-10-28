@@ -1,0 +1,10 @@
+RESULT fail
+waited 72 frames
+waited 0 frames
+captured 01_primary_geometry
+captured 02_primary_zoom
+FAIL: insert: no focused text editor
+Shared geometry native primary and lens receiving complete
+presentation frames=192 captures=2 blank=0
+capture $REMOTE_CODE/output/cue-geometry-linux/headed-focused/receiving/01_primary_geometry.png digest=d869dc6a55327d35 blank=false
+capture $REMOTE_CODE/output/cue-geometry-linux/headed-focused/receiving/02_primary_zoom.png digest=1af1dcbeb1830a6e blank=false

@@ -1,0 +1,36 @@
+# Programmatic native-window geometry receiving; no physical IME claim.
+settle 15
+key escape
+resize 1024 700
+open ${SERVO_FIXTURE_BASE}/geometry.html
+wait 240
+act Open node in Workbench
+wait 240
+act Maximize pane
+settle 15
+assert content-live
+assert snap browser-current-engine ~ genet
+assert snap host-cue-frames >= 1
+click-at 500 350
+insert geometry
+settle 15
+record-idle 01_primary_geometry
+capture 01_primary_geometry
+act Zoom in
+settle 15
+capture 02_primary_zoom
+act Float pane
+settle 5
+act Tear out pane
+settle 5
+act Dock pane
+settle 25
+assert windows == 2
+assert lens-surface content
+click-content-window 1 600 250
+insert lens
+key-window 1 left
+settle 15
+record-idle 03_lens_geometry
+capture-lens 03_lens_geometry
+log Shared geometry native primary and lens receiving complete

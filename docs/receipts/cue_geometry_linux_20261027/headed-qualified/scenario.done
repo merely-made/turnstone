@@ -1,0 +1,9 @@
+RESULT ok
+waited 73 frames
+waited 0 frames
+captured 01_primary_geometry
+captured 02_primary_zoom
+Shared geometry native primary and lens receiving complete
+presentation frames=200 captures=2 blank=0
+capture $REMOTE_CODE/output/cue-geometry-linux/headed-qualified/receiving/01_primary_geometry.png digest=eb3a8f1e5a08f859 blank=false
+capture $REMOTE_CODE/output/cue-geometry-linux/headed-qualified/receiving/02_primary_zoom.png digest=e497c3134e59146a blank=false

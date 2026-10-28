@@ -1,0 +1,22 @@
+{
+  "source": "9245819129dffc65a85b9dc35ca4d9d2c1081631",
+  "command": [
+    "nice",
+    "-n",
+    "10",
+    "cargo",
+    "+1.99.1",
+    "test",
+    "--locked",
+    "--offline",
+    "--lib",
+    "document_text_input_geometry",
+    "-j2",
+    "--",
+    "--nocapture"
+  ],
+  "cwd": "$REMOTE_CODE/worktrees/turnstone-cue-geometry-focus-20261027",
+  "started": 1793153801.1209948,
+  "exit": 0,
+  "elapsed_seconds": 75.678
+}
