@@ -357,12 +357,9 @@ impl<B: Backend + Clone> MereHost<B> {
                         materialize_snapshot(&saved.graph, saved.placement).map_err(|error| {
                             MereHostError::InvalidSnapshot(format!("{HOST_SLOT}: {error}"))
                         })?;
-                    graph.overlay_facets(saved.facets);
-                    graph
-                        .validate_active_resource_assertion_handles()
-                        .map_err(|error| {
-                            MereHostError::InvalidSnapshot(format!("{HOST_SLOT}: {error}"))
-                        })?;
+                    graph.overlay_facets(saved.facets).map_err(|error| {
+                        MereHostError::InvalidSnapshot(format!("{HOST_SLOT}: {error}"))
+                    })?;
                     let mut migrated = match saved.placement {
                         Some(PlacementProfile::RecordedStrataV1) => {
                             sessions.begin_recorded(author, Some(graph))
@@ -2127,7 +2124,7 @@ mod tests {
             let migrated = opened(&backend).await;
             assert!(migrated.was_reopened());
             let mut expected = Graph::from_snapshot(&document.graph);
-            expected.overlay_facets(document.facets.clone());
+            expected.overlay_facets(document.facets.clone()).unwrap();
             assert_eq!(
                 encoded(migrated.graph()),
                 encoded(&expected),

@@ -905,9 +905,8 @@ fn copied_product(
 ) -> Result<(ProfiledProductCodicil, Vec<TransferredIdV1>), TransferError> {
     let mut donor = materialize_snapshot(&source.graph, source.placement)
         .map_err(|error| TransferError::InvalidManifest(error.to_string()))?;
-    donor.overlay_facets(source.facets.clone());
     donor
-        .validate_active_resource_assertion_handles()
+        .overlay_facets(source.facets.clone())
         .map_err(|error| TransferError::InvalidManifest(error.to_string()))?;
     let mut copy = Graph::new();
     let mut id_map = Vec::with_capacity(source.graph.nodes.len());
