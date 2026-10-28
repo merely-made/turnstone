@@ -172,12 +172,12 @@ impl App {
         let Some(canvas) = self.graph_runtimes.canvas_mut(graph) else {
             return;
         };
-        if let Err(error) =
-            canvas
-                .facets_mut()
-                .set(member, FacetId::new(REDSHANK_PROGRESS_FACET), value, &validator)
-        {
-            tracing::warn!(?error, "the episode's progress field was refused");
+        match crate::graph_facets::edit_canvas_facets(canvas, |facets| {
+            facets.set(member, FacetId::new(REDSHANK_PROGRESS_FACET), value, &validator)
+        }) {
+            Ok(Ok(())) => {},
+            Ok(Err(error)) => tracing::warn!(?error, "the episode's progress field was refused"),
+            Err(error) => tracing::warn!(%error, "the episode's progress edit was refused"),
         }
     }
 
@@ -225,12 +225,12 @@ impl App {
             "annotation_id": id.0,
             "offset_ms": note.target.offset_ms,
         });
-        if let Err(error) =
-            canvas
-                .facets_mut()
-                .set(node, FacetId::new(REDSHANK_NOTE_FACET), value, &validator)
-        {
-            tracing::warn!(?error, "the note's anchor field was refused");
+        match crate::graph_facets::edit_canvas_facets(canvas, |facets| {
+            facets.set(node, FacetId::new(REDSHANK_NOTE_FACET), value, &validator)
+        }) {
+            Ok(Ok(())) => {},
+            Ok(Err(error)) => tracing::warn!(?error, "the note's anchor field was refused"),
+            Err(error) => tracing::warn!(%error, "the note's anchor edit was refused"),
         }
     }
 

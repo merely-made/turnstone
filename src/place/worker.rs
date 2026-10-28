@@ -262,6 +262,9 @@ pub enum PlaceWorkerCommand {
     /// The vault unlocked: the profile root a pending worker was started
     /// without. The commands it held run now, in the order they came.
     AdoptIdentity(Arc<RootIdentity>),
+    /// Permanently withdraw the current profile root from this worker and
+    /// release its open place before a fresh binding may be adopted.
+    RetireIdentity(std::sync::mpsc::SyncSender<()>),
     /// Stop serving the way a killed process stops: no close on the wire.
     /// Test-only, because nothing a person does to this app produces it.
     #[cfg(test)]
@@ -2204,6 +2207,17 @@ fn spawn_place_worker_with(
                         Err(_) => break,
                     },
                 };
+                let command = match command {
+                    PlaceWorkerCommand::RetireIdentity(ack) => {
+                        live = None;
+                        live_scope = None;
+                        waiting.clear();
+                        adopted = None;
+                        let _ = ack.send(());
+                        continue;
+                    },
+                    command => command,
+                };
                 let identity = match (command, &adopted) {
                     (PlaceWorkerCommand::AdoptIdentity(root), _) => {
                         adopted.get_or_insert(root);
@@ -2729,6 +2743,9 @@ fn spawn_place_worker_with(
                         let _ = ack.send(());
                     },
                     PlaceWorkerCommand::AdoptIdentity(_) => {},
+                    PlaceWorkerCommand::RetireIdentity(_) => {
+                        unreachable!("place identity retirement is handled before command routing")
+                    },
                     #[cfg(test)]
                     PlaceWorkerCommand::Abandon(ack) => {
                         if let Some(opened) = live.as_mut()

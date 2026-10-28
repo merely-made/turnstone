@@ -571,7 +571,13 @@ impl App {
     /// fork's facet-carry (both need the store to reflect the moment, not
     /// the last save).
     pub fn refresh_facets(&mut self) {
-        pandect::write_web_states(self.graph_runtimes.facets_mut(), &self.browser);
+        let browser = self.browser.clone();
+        if let Err(error) = self
+            .graph_runtimes
+            .edit_facets(|facets| pandect::write_web_states(facets, &browser))
+        {
+            tracing::warn!(%error, "could not project browser state facets");
+        }
         let graph = self.graph_runtimes.active_graph();
         let container = self.container_id().unwrap_or(*graph.as_uuid());
         if let Some(runtime) = self.graph_runtimes.get_mut(graph) {

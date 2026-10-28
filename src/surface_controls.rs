@@ -54,7 +54,13 @@ pub(crate) fn set(canvas: &mut Canvas, member: Uuid, control: Control, enabled: 
     if canvas.graph().get_node_by_id(member).is_none() {
         return false;
     }
-    set_facets(canvas.facets_mut(), member, control, enabled)
+    crate::graph_facets::edit_canvas_facets(canvas, |facets| {
+        set_facets(facets, member, control, enabled)
+    })
+    .unwrap_or_else(|error| {
+        tracing::warn!(%member, %error, "Surface control facet edit was refused");
+        false
+    })
 }
 /// Stage a control with other canonical facets before one owning save.
 pub(crate) fn set_facets(
@@ -137,12 +143,16 @@ pub(crate) fn preserve_recycle_labels(canvas: &mut Canvas, member: Uuid, tags: &
             .get(&member, &FacetId::new(RECYCLE_LABELS))
             .is_none()
     {
-        let _ = canvas.facets_mut().set(
-            member,
-            FacetId::new(RECYCLE_LABELS),
-            serde_json::json!(labels),
-            &AcceptAll,
-        );
+        if let Err(error) = crate::graph_facets::edit_canvas_facets(canvas, |facets| {
+            facets.set(
+                member,
+                FacetId::new(RECYCLE_LABELS),
+                serde_json::json!(labels),
+                &AcceptAll,
+            )
+        }) {
+            tracing::warn!(%member, %error, "recycle label projection was refused");
+        }
     }
 }
 #[cfg(test)]

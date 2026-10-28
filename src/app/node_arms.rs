@@ -288,12 +288,16 @@ impl App {
         // runtime so a recovered resident resides again.
         if let Some(serde_json::Value::Object(map)) = &record.facets {
             for (facet_id, value) in map {
-                let _ = self.graph_runtimes.facets_mut().set(
-                    member,
-                    chartulary::FacetId::new(facet_id.as_str()),
-                    value.clone(),
-                    &chartulary::AcceptAll,
-                );
+                if let Err(error) = self.graph_runtimes.edit_facets(|facets| {
+                    facets.set(
+                        member,
+                        chartulary::FacetId::new(facet_id.as_str()),
+                        value.clone(),
+                        &chartulary::AcceptAll,
+                    )
+                }) {
+                    tracing::warn!(%member, %error, "could not restore a retained node facet");
+                }
             }
         }
         if let Some(graph) = self.graph_runtimes.graph_containing_member(member)

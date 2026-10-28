@@ -183,14 +183,12 @@ fn gather_downloads(app: &App) -> Vec<SectionRow> {
 }
 
 fn gather_recent(app: &App) -> Vec<SectionRow> {
-    app.graph_runtimes
-        .graph()
-        .recent_visited(8)
+    crate::session::recent_visited_urls(app.graph_runtimes.graph(), 8)
         .into_iter()
-        .map(|rv| SectionRow {
+        .map(|url| SectionRow {
             id: None,
-            text: mere::trail::short_url(&rv.url),
-            activate: Some(SectionActivate::Open(rv.url)),
+            text: mere::trail::short_url(&url),
+            activate: Some(SectionActivate::Open(url)),
         })
         .collect()
 }

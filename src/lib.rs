@@ -28,6 +28,7 @@ pub mod chrome_layout;
 #[cfg(feature = "wasm")]
 mod component;
 mod content;
+mod custody_binding;
 mod content_classes;
 mod content_tags;
 mod  contributed_a11y;
@@ -39,6 +40,7 @@ mod device_receipts_pane;
 mod device_receipts_service;
 pub mod diagnostic_observations;
 pub mod client_limits;
+mod graph_facets;
 pub mod distillery_installed_surface;
 pub mod document_find;
 mod document_pump;
@@ -95,6 +97,7 @@ mod scenario;
 mod script;
 mod sections;
 mod session;
+mod session_graph_file;
 pub mod graph_scenes;
 mod scene_state;
 #[cfg(test)]

@@ -35,6 +35,14 @@ fn refused_session_lease_clears_the_departed_sessions_live_state() {
     app.content.note_requested(departed_node);
     app.place = crate::place::PlaceState::Joining { generation: 44 };
     app.resident_run_error = Some("departed session's unresolved receipt".into());
+    app.research.set_available(true);
+    app.research.project(crate::research::Context {
+        session: first,
+        generation: uuid::Uuid::new_v4(),
+        admissions: Vec::new(),
+        clips: Vec::new(),
+    });
+    assert_eq!(app.research.context().unwrap().session, first);
 
     let blocked = crate::panes::SessionId::new();
     let blocked_graph = crate::panes::GraphId::from_uuid(*blocked.as_uuid());
@@ -58,6 +66,11 @@ fn refused_session_lease_clears_the_departed_sessions_live_state() {
         .resident_run_error
         .as_deref()
         .is_some_and(|error| error.contains("session writer lease refused")));
+    assert!(app.research.is_available());
+    assert!(
+        app.research.context().is_err(),
+        "a refused session cannot leave the departed session's research context admitted"
+    );
     assert!(app.graph_runtimes.graph().get_node_by_id(departed_node).is_none());
 }
 
@@ -169,7 +182,7 @@ fn new_session_records_its_birth_and_reopens_same_site_relations_exactly() {
     app.persist_session_graph().unwrap();
     let directory = app.session_dir();
     let path = directory.join(pandect::session_graph_store::GRAPH_FILE);
-    let stored = pandect::session_graph_store::load_profiled_snapshot(&path)
+    let stored = crate::session_graph_file::load_profiled_snapshot(&path)
         .unwrap().unwrap();
     assert_eq!(stored.placement, Some(PlacementProfile::RecordedStrataV1));
     let bytes = std::fs::read(&path).unwrap();
@@ -185,7 +198,7 @@ fn new_session_records_its_birth_and_reopens_same_site_relations_exactly() {
     assert_eq!(std::fs::read(&path).unwrap(), bytes,
         "adoption does not rewrite the recorded graph");
     reopened.persist_session_graph().unwrap();
-    let saved = pandect::session_graph_store::load_profiled_snapshot(&path)
+    let saved = crate::session_graph_file::load_profiled_snapshot(&path)
         .unwrap().unwrap();
     assert_eq!(saved.placement, Some(PlacementProfile::RecordedStrataV1));
     let mut actual = saved.snapshot;
@@ -217,7 +230,7 @@ fn host_session_recorded_and_absent_ordinary_save_reopen_and_replacement() {
             SessionPersistence::writable(directory.clone(), placement).unwrap(),
         );
         app.persist_session_graph().unwrap();
-        let stored = pandect::session_graph_store::load_profiled_snapshot(
+        let stored = crate::session_graph_file::load_profiled_snapshot(
             &directory.join(pandect::session_graph_store::GRAPH_FILE),
         )
         .unwrap()
@@ -235,7 +248,7 @@ fn host_session_recorded_and_absent_ordinary_save_reopen_and_replacement() {
         }
         app.graph_runtimes.set_graph(Graph::new());
         app.persist_session_graph().unwrap();
-        let stored = pandect::session_graph_store::load_profiled_snapshot(
+        let stored = crate::session_graph_file::load_profiled_snapshot(
             &directory.join(pandect::session_graph_store::GRAPH_FILE),
         )
         .unwrap()
@@ -300,7 +313,7 @@ fn host_session_refusal_blocks_save_fork_background_and_survives_graph_replaceme
     assert!(app.fork_session_from(seed).is_empty());
     assert_eq!(app.sessions.len(), old_count);
     assert_eq!(std::fs::read(&file).unwrap(), b"{invalid session graph");
-    pandect::session_graph_store::save_profiled(&file, &Graph::new(), None).unwrap();
+    crate::session_graph_file::save_profiled(&file, &Graph::new(), None).unwrap();
     app.adopt_session(app.session_id);
     assert!(
         !app.session_load_refused(),

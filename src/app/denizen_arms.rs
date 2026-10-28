@@ -696,7 +696,15 @@ impl App {
             &self.time_watches,
             &self.deadbands,
         );
-        pandect::remove_denizen_binding(self.graph_runtimes.facets_mut(), member);
+        if let Err(error) = self
+            .graph_runtimes
+            .edit_facets(|facets| pandect::remove_denizen_binding(facets, member))
+        {
+            self.events.push(AppEvent::DenizenRefused(format!(
+                "cannot remove participant binding: {error}"
+            )));
+            return vec![Effect::Redraw];
+        }
         let hex = resident.subject.to_hex();
         // The certificates go with the residency: a later adopt must
         // not resurrect the authority we just revoked.

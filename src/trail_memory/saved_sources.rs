@@ -31,6 +31,63 @@ pub(super) fn load(store: &mut FjallStore, admissions: &[Admission]) -> Vec<Entr
         .collect()
 }
 
+/// Route tagged captures only through the separately owned sealed store.
+pub(super) fn load_with_sealed(
+    store: &mut FjallStore,
+    mut sealed: Option<&mut FjallStore>,
+    sealer: Option<&dyn eidetic::PayloadSealer>,
+    admissions: &[Admission],
+) -> Vec<Entry> {
+    admissions
+        .iter()
+        .map(|admission| {
+            let result = if admission.key.annotation_manifest.starts_with("sealed-v1:") {
+                match (sealed.as_deref_mut(), sealer) {
+                    (Some(store), Some(sealer)) => {
+                        super::sealed_capture::content(store, sealer, admission)
+                    }
+                    _ => Err("Unlock the profile to read this sealed source".into()),
+                }
+            } else {
+                load_content(store, admission)
+            };
+            match result {
+                Ok(content) => Entry {
+                    admission: admission.clone(),
+                    content: Some(content),
+                    error: None,
+                },
+                Err(error) => Entry {
+                    admission: admission.clone(),
+                    content: None,
+                    error: Some(error),
+                },
+            }
+        })
+        .collect()
+}
+
+pub(super) fn resolve_with_sealed(
+    store: &mut FjallStore,
+    sealed: Option<&mut FjallStore>,
+    sealer: Option<&dyn eidetic::PayloadSealer>,
+    admission: &Admission,
+    target: &Target,
+) -> Result<Content, String> {
+    if target.key != admission.key {
+        return Err("saved source target does not match the admitted node reference".into());
+    }
+    let content = if admission.key.annotation_manifest.starts_with("sealed-v1:") {
+        let store = sealed.ok_or("sealed source store unavailable")?;
+        let sealer = sealer.ok_or("unlock the profile to read this sealed source")?;
+        super::sealed_capture::content(store, sealer, admission)?
+    } else {
+        load_content(store, admission)?
+    };
+    crate::saved_sources::validate_selector(&content, target)?;
+    Ok(content)
+}
+
 /// Resolve one result against its exact admission and canonical-text version.
 /// A stale/wrong target is refused before it can produce a reader document.
 pub(super) fn resolve(
@@ -101,6 +158,41 @@ mod tests {
     use crate::panes::{GraphId, SessionId};
     use crate::saved_sources::{Key, Selector};
     use eidetic::Backend;
+
+    struct FixtureSealer;
+    impl eidetic::PayloadSealer for FixtureSealer {
+        fn seal(
+            &self,
+            _: &eidetic::Hash,
+            clear: &[u8],
+        ) -> eidetic::Result<(Vec<u8>, eidetic::SealedBlobRef)> {
+            Ok((
+                clear.to_vec(),
+                eidetic::SealedBlobRef {
+                    epoch: eidetic::SealEpochId([1; 16]),
+                    format: "actor-fixture".into(),
+                },
+            ))
+        }
+
+        fn unseal(
+            &self,
+            _: &eidetic::Hash,
+            _: &eidetic::SealedBlobRef,
+            ciphertext: &[u8],
+        ) -> eidetic::Result<Vec<u8>> {
+            Ok(ciphertext.to_vec())
+        }
+    }
+
+    fn fixture_custody() -> crate::trail_memory::SourceCustody {
+        let sealer: std::sync::Arc<dyn eidetic::PayloadSealer + Send + Sync> =
+            std::sync::Arc::new(FixtureSealer);
+        crate::trail_memory::SourceCustody {
+            sealer,
+            epoch: std::sync::Arc::new(|| Some(1)),
+        }
+    }
 
     fn fixture(label: &str) -> FetchedDocument {
         let body = format!(
@@ -277,6 +369,22 @@ mod tests {
             generation,
         );
 
+        let locked_request = uuid::Uuid::new_v4();
+        assert!(actor.command(TrailCommand::LoadSavedSources {
+            generation,
+            request: locked_request,
+            session,
+            admissions: vec![admitted.clone()],
+            directory: directory.clone(),
+        }));
+        match updates.recv_timeout(Duration::from_secs(5)).unwrap() {
+            crate::action::Update::SavedSourcesLoaded { result, .. } => {
+                assert!(result.unwrap_err().contains("Unlock the profile"));
+            }
+            _ => panic!("expected locked legacy-source refusal"),
+        }
+        assert!(actor.command(TrailCommand::SetCustody(Some(fixture_custody()))));
+
         let load_request = uuid::Uuid::new_v4();
         assert!(actor.command(TrailCommand::LoadSavedSources {
             generation,
@@ -298,7 +406,7 @@ mod tests {
                 assert_eq!(actual_session, session);
                 assert_eq!(admissions, vec![admitted.clone()]);
                 result.unwrap()
-            },
+            }
             _ => panic!("expected saved-source load result"),
         };
         let content = entries[0]
@@ -344,7 +452,7 @@ mod tests {
                 assert_eq!(url, reader_url);
                 assert_eq!(actual_target, target);
                 assert_eq!(result.unwrap(), content);
-            },
+            }
             _ => panic!("expected saved-source read result"),
         }
 
@@ -374,7 +482,7 @@ mod tests {
                             .contains("another session opening or store"),
                         "wrong {message} is refused"
                     );
-                },
+                }
                 _ => panic!("expected refused saved-source load"),
             }
         }
@@ -416,7 +524,7 @@ mod tests {
                             .contains("another session opening or attachment"),
                         "wrong read {message} is refused"
                     );
-                },
+                }
                 _ => panic!("expected refused saved-source read"),
             }
         }

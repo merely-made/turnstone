@@ -23,6 +23,24 @@ use mere::kernel::graph::Graph;
 use pandect::{GraphSessionManifest, ManifestStore, session_graph_store};
 use sceno::Score;
 
+/// Return retained graph URLs ordered by the kernel's visit-history facet.
+pub(crate) fn recent_visited_urls(graph: &Graph, limit: usize) -> Vec<String> {
+    let mut visited = graph
+        .nodes()
+        .filter_map(|(key, node)| {
+            graph
+                .node_last_visited(key)
+                .map(|at| (at, node.id, node.url().to_owned()))
+        })
+        .collect::<Vec<_>>();
+    visited.sort_by(|left, right| right.0.cmp(&left.0).then_with(|| left.1.cmp(&right.1)));
+    visited
+        .into_iter()
+        .take(limit)
+        .map(|(_, _, url)| url)
+        .collect()
+}
+
 /// Copy the displayed component across Surface and Resource relations. The
 /// supplier's older cross-graph helper walks only raw Surface edges. Fresh
 /// Surface identities retain copy provenance; Resource identities, records and
@@ -563,7 +581,7 @@ pub(crate) fn try_load_session_graph_locked(data_root: &Path) -> Result<Option<L
     let graph_file = data_root.join(session_graph_store::GRAPH_FILE);
     crate::session_persistence::require_complete_file(&graph_file)
         .map_err(|error| format!("session graph replacement is incomplete: {error}"))?;
-    let Some(mut input) = session_graph_store::load_profiled_snapshot(&graph_file)
+    let Some(mut input) = crate::session_graph_file::load_profiled_snapshot(&graph_file)
         .map_err(|error| format!("session graph could not be read: {error}"))? else {
         return Ok(None);
     };
@@ -587,7 +605,7 @@ pub(crate) fn try_load_session_graph_locked(data_root: &Path) -> Result<Option<L
             .map_err(|error| format!("migration facets could not be persisted: {error}"))?;
         athanor::workshop_destination::preserve_graph_operations(&before_migration, &graph)
             .map_err(|error| format!("operation ledger retention refused migration: {error}"))?;
-        session_graph_store::save_profiled(&graph_file, &graph, placement)
+        crate::session_graph_file::save_profiled(&graph_file, &graph, placement)
             .map_err(|error| format!("migrated graph could not be persisted: {error}"))?;
     }
     Ok(Some(LoadedSessionGraph { graph, placement }))
@@ -683,7 +701,7 @@ pub(crate) fn encode_rgba_png(rgba: &[u8], width: u32, height: u32) -> Option<Ve
 #[cfg(test)]
 pub(crate) fn save_session_graph(data_root: &Path, graph: &Graph) {
     let graph_file = data_root.join(session_graph_store::GRAPH_FILE);
-    if let Err(err) = session_graph_store::save(&graph_file, graph) {
+    if let Err(err) = crate::session_graph_file::save(&graph_file, graph) {
         tracing::warn!(%err, path = ?graph_file, "failed to persist the session graph");
     }
 }
@@ -977,7 +995,7 @@ mod tests {
         let input = try_load_session_graph(root.path()).unwrap().unwrap();
         let first = uuid::Uuid::parse_str(&snapshot.nodes[0].node_id).unwrap();
         assert!(crate::surface_controls::read(&input.graph, first, crate::surface_controls::Control::Keep));
-        let saved = session_graph_store::load_profiled_snapshot(&path).unwrap().unwrap();
+        let saved = crate::session_graph_file::load_profiled_snapshot(&path).unwrap().unwrap();
         assert_eq!(saved.placement, None);
         assert!(saved.snapshot.nodes.iter().all(|node| !node.tags.iter().any(|tag| tag == "keep")));
     }
@@ -990,9 +1008,9 @@ mod tests {
             let root = tempfile::tempdir().unwrap();
             let path = root.path().join(session_graph_store::GRAPH_FILE);
             let graph = recorded_session_fixture();
-            session_graph_store::save_profiled(&path, &graph,
+            crate::session_graph_file::save_profiled(&path, &graph,
                 Some(PlacementProfile::RecordedStrataV1)).unwrap();
-            let mut input = session_graph_store::load_profiled_snapshot(&path).unwrap().unwrap();
+            let mut input = crate::session_graph_file::load_profiled_snapshot(&path).unwrap().unwrap();
             let migrated_member = input.snapshot.nodes[0].node_id.clone();
             let bytes = if image_migration {
                 with_inline_thumbnail(serde_json::to_value(&input).unwrap())
@@ -1005,7 +1023,7 @@ mod tests {
             let restored_snapshot = restored.to_snapshot();
             assert!(restored_snapshot.edges.is_empty());
             assert!(restored_snapshot.resource_edges.is_empty());
-            let saved = session_graph_store::load_profiled_snapshot(&path).unwrap().unwrap();
+            let saved = crate::session_graph_file::load_profiled_snapshot(&path).unwrap().unwrap();
             assert_eq!(saved.placement, Some(PlacementProfile::RecordedStrataV1));
             assert_eq!(saved.snapshot.legacy_image_count(), 0);
             assert_eq!(saved.snapshot.legacy_node_facet_count(), 0);
@@ -1036,7 +1054,7 @@ mod tests {
         assert!(load_session_graph(root.path()).is_none(), "invalid explicit resource data is fallible");
         assert!(!root.path().join("images").exists(), "refused input deposits no migration blobs");
         assert_eq!(std::fs::read(&path).unwrap(), original);
-        session_graph_store::save_profiled(&path, &Graph::new(),
+        crate::session_graph_file::save_profiled(&path, &Graph::new(),
             Some(PlacementProfile::LegacySurfaceV1)).unwrap();
         let original = std::fs::read(&path).unwrap();
         assert!(load_session_graph(root.path()).is_none(), "declared legacy needs qualified replay");
@@ -1051,7 +1069,7 @@ mod tests {
         snapshot.nodes[0].is_pinned = true;
         std::fs::write(&path, serde_json::to_vec_pretty(&snapshot).unwrap()).unwrap();
         assert!(load_session_graph(root.path()).is_some());
-        let saved = session_graph_store::load_profiled_snapshot(&path).unwrap().unwrap();
+        let saved = crate::session_graph_file::load_profiled_snapshot(&path).unwrap().unwrap();
         assert_eq!(saved.placement, None);
         assert_eq!(saved.snapshot.legacy_node_facet_count(), 0);
     }
@@ -1323,7 +1341,7 @@ mod tests {
         save_session_graph(&root, canvas.graph());
 
         let graph_file = root.join(session_graph_store::GRAPH_FILE);
-        let mut snapshot = session_graph_store::load_snapshot(&graph_file)
+        let mut snapshot = crate::session_graph_file::load_snapshot(&graph_file)
             .unwrap()
             .unwrap();
         snapshot.nodes[0].is_pinned = true;
@@ -1352,7 +1370,7 @@ mod tests {
             "the canonical sidecar overlays the imported legacy value"
         );
 
-        let canonical = session_graph_store::load_snapshot(&graph_file)
+        let canonical = crate::session_graph_file::load_snapshot(&graph_file)
             .unwrap()
             .unwrap();
         assert!(!canonical.nodes[0].is_pinned);

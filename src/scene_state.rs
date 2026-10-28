@@ -272,7 +272,13 @@ pub(crate) fn stage_scene(canvas: &mut Canvas, container: Uuid, state: &ViewStat
         .unwrap_or(FREE_ARRANGEMENT)
         .to_owned();
     match canvas.capture_scene(WORKING_SCENE, &arrangement, "") {
-        Ok(scene) => pandect::write_saved_scene(canvas.facets_mut(), container, &scene),
+        Ok(scene) => {
+            if let Err(error) = crate::graph_facets::edit_canvas_facets(canvas, |facets| {
+                pandect::write_saved_scene(facets, container, &scene)
+            }) {
+                tracing::warn!(%error, "saved scene facet edit was refused");
+            }
+        },
         Err(error) => tracing::warn!(%error, "scene capture refused; the saved scene is unchanged"),
     }
 }
@@ -409,10 +415,14 @@ fn carry_legacy(
     if let Some(paused) = legacy.physics_paused {
         scene.physics_paused = paused;
     }
-    let facets = pool.facets_mut();
-    pandect::clear_arrangement(facets, container);
-    if let Some(container) = container {
-        pandect::clear_scene_facets(facets, container);
+    if let Err(error) = pool.edit_facets(|facets| {
+        pandect::clear_arrangement(facets, container);
+        if let Some(container) = container {
+            pandect::clear_scene_facets(facets, container);
+        }
+    }) {
+        tracing::warn!(%error, "saved scene facet carry was refused");
+        return None;
     }
     Some(scene)
 }

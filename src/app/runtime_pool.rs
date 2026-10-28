@@ -245,6 +245,16 @@ impl GraphRuntimePool {
         self.get_mut(graph).map(|runtime| &mut runtime.canvas)
     }
 
+    /// Edit the active graph's runtime facets through validated graph deltas.
+    pub(crate) fn edit_facets<R>(
+        &mut self,
+        edit: impl FnOnce(&mut mere::kernel::graph::NodeFacetStore) -> R,
+    ) -> Result<R, String> {
+        let active = self.active;
+        let runtime = self.get_mut(active).ok_or("active graph runtime is absent")?;
+        crate::graph_facets::edit_canvas_facets(&mut runtime.canvas, edit)
+    }
+
     pub fn active_canvas(&self) -> &Canvas {
         &self
             .runtimes

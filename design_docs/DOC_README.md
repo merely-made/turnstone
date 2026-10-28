@@ -48,6 +48,10 @@ set.
 - Match proof to the claim: focused unit tests for state and identity, real
   consumer tests for wiring, restart receipts for persistence, and headed
   interaction receipts for visible UI.
+- Private source protection includes raw, decoded and recovery copies plus
+  transient derived caches. LocalOnly is a distribution classification, not an
+  encryption receipt; custody continuity needs the live binding generation.
+  Legacy data retains its identity until an explicitly qualified migration.
 - Record sidequests, contradictions, unusual synergies, and still-open gates in
   the active plan. Do not let a successful focused check stand in for a green
   workspace gate.

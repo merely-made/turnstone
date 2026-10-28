@@ -72,6 +72,11 @@ impl Shell {
                         .app
                         .personae_root()
                         .ok_or_else(|| "Unlock the profile before opening Alembic.".to_string())?;
+                    let protection = self
+                        .custody_binding
+                        .as_ref()
+                        .map(|binding| binding.protection.clone())
+                        .ok_or_else(|| "Unlock the profile before opening Alembic.".to_string())?;
                     let directory = self.app.session_dir().join("alembic-workshop");
                     std::fs::create_dir_all(&directory).map_err(|e| e.to_string())?;
                     let backend = DirectoryBackend::open(&directory).map_err(|e| e.to_string())?;
@@ -104,7 +109,13 @@ impl Shell {
                     );
                     let mut window = WorkshopWindow {
                         host,
-                        driver: Some(Driver::new(backend, owner.clone(), install, wake)),
+                        driver: Some(Driver::new_sealed(
+                            backend,
+                            owner.clone(),
+                            install,
+                            wake,
+                            protection,
+                        )),
                         owner,
                         installation: install,
                         human,
@@ -127,13 +138,11 @@ impl Shell {
         let actions = if let Some(window) = self.alembic_workshop.as_mut() {
             window.host.wake_turn();
             idle = window.host.idle_turn();
-            window
-                .host
-                .s
-                .runner
-                .as_mut()
-                .map(|runner| runner.update(|s| s.take_actions()))
-                .unwrap_or_default()
+            let mut actions = Vec::new();
+            if let Some(runner) = window.host.s.runner.as_mut() {
+                runner.update(|state| actions = state.take_actions());
+            }
+            actions
         } else {
             Vec::new()
         };
@@ -274,59 +283,89 @@ impl Shell {
             },
             SurfaceAction::OpenResult(resource) => {
                 let result = self.alembic_workshop.as_ref().and_then(|window| {
-                    let view = window.state()?.view.as_ref()?;
-                    let Some(Review::Added { acceptance, receipt }) = view.review.as_ref() else {
-                        return None;
-                    };
-                    if receipt.resource != resource
-                        || receipt.operation != acceptance.operation
-                        || receipt.proposal != acceptance.proposal
-                        || receipt.destination != acceptance.destination
-                        || acceptance.destination.owner != window.owner
-                        || acceptance.destination.graph != window.owner.workspace
-                        || view.installation != acceptance.installation
-                        || view.run != Some(acceptance.run)
+                    if window.owner.session != self.app.session_id.as_uuid().to_string()
+                        || window.owner.workspace
+                            != self.app.graph_runtimes.active_graph().as_uuid().to_string()
                     {
-                        return Some(Err("The current owner receipt does not match this result."));
+                        return Some(Err(
+                            "The workshop owner changed; reopen it for the current session and graph."
+                                .to_owned(),
+                        ));
                     }
-                    let original = athanor::workshop_destination::result_surface(acceptance);
-                    let Some(runtime) = self
-                        .app
-                        .graph_runtimes
-                        .iter()
-                        .find(|runtime| runtime.session == Some(self.app.session_id))
-                    else {
-                        return Some(Err("The original evidence brief surface was removed; another surface cannot substitute."));
+                    let Some(runtime) = self.app.graph_runtimes.get(
+                        self.app.graph_runtimes.active_graph(),
+                    ) else {
+                        return Some(Err("The destination graph is unavailable.".to_owned()));
                     };
-                    if runtime.graph.as_uuid().to_string() != acceptance.destination.graph {
-                        return Some(Err("The original evidence brief surface was removed; another surface cannot substitute."));
-                    }
-                    let Some((key, node)) = runtime.canvas.graph().get_node_by_id(original) else {
-                        return Some(Err("The original evidence brief surface was removed; another surface cannot substitute."));
+                    let protection = self
+                        .custody_binding
+                        .as_ref()
+                        .map(|binding| binding.protection.clone());
+                    let Some(protection) = protection else {
+                        return Some(Err("Unlock the profile to open this retained brief.".to_owned()));
                     };
-                    let expected_resource = uuid::Uuid::parse_str(&resource).ok();
-                    if expected_resource.is_none()
-                        || runtime.canvas.graph().shown_resource_id(key) != expected_resource
-                    {
-                        return Some(Err("The original evidence brief surface was removed; another surface cannot substitute."));
+                    let Some(read_epoch) = protection.epoch() else {
+                        return Some(Err("Profile custody is unavailable.".to_owned()));
+                    };
+                    match athanor::workshop_sealed_destination::open_result_resource(
+                        runtime.canvas.graph(),
+                        &window.owner,
+                        &window.owner.workspace,
+                        &resource,
+                        protection.as_ref(),
+                    ) {
+                        Ok((_, text)) if protection.epoch() == Some(read_epoch) => {
+                            Some(Ok((true, text)))
+                        },
+                        Ok(_) => Some(Err(
+                            "Profile custody changed while opening the retained brief.".into(),
+                        )),
+                        Err(athanor::workshop::Error::Missing) => {
+                            let resource_id = uuid::Uuid::parse_str(&resource).ok();
+                            let address = resource_id.and_then(|expected| {
+                                runtime.canvas.graph().nodes().find_map(|(key, node)| {
+                                    (runtime.canvas.graph().shown_resource_id(key) == Some(expected)
+                                        && node.url().starts_with(
+                                            "https://mere.computer/notes/evidence-brief/",
+                                        ))
+                                    .then(|| node.url().to_owned())
+                                })
+                            });
+                            address
+                                .map(|address| Ok((false, address)))
+                                .or_else(|| {
+                                    Some(Err("No public or sealed retained brief matches this Resource.".into()))
+                                })
+                        },
+                        Err(error) => Some(Err(error.to_string())),
                     }
-                    Some(Ok(node.url.clone()))
                 });
                 match result {
-                    Some(Ok(address)) => {
-                        self.act(crate::action::Action::OpenAddress(address));
-                        self.status_alembic(
-                            "Opened the retained evidence brief in the owner graph.",
-                            None,
-                        );
+                    Some(Ok((private, value))) => {
+                        if private {
+                            if let Some(window) = self.alembic_workshop.as_mut() {
+                                window.update(|state| {
+                                    state.reading = Some(RetainedReading {
+                                        title: "Private evidence brief".into(),
+                                        version: resource.clone(),
+                                        text: value,
+                                    });
+                                });
+                            }
+                            self.status_alembic("Opened the retained evidence brief.", None);
+                        } else {
+                            self.act(crate::action::Action::OpenAddress(value));
+                            self.status_alembic(
+                                "Opened the retained public evidence brief in the owner graph.",
+                                None,
+                            );
+                        }
                     },
                     Some(Err(error)) => self
-                        .status_alembic("Could not open the retained result.", Some(error.into())),
+                        .status_alembic("Could not open the retained result.", Some(error)),
                     None => self.status_alembic(
-                        "No current Added receipt authorizes this result.",
-                        Some(
-                            "Reopen the workshop's current owner review before opening it.".into(),
-                        ),
+                        "No retained evidence brief was selected.",
+                        Some("The workshop did not provide a result resource.".into()),
                     ),
                 }
             },
@@ -395,7 +434,7 @@ impl Shell {
             &directory,
             &candidate,
             || pandect::save_node_facets(&directory, candidate.facets()),
-            |placement| pandect::session_graph_store::save_profiled(&path, &candidate, placement),
+            |placement| crate::session_graph_file::save_profiled(&path, &candidate, placement),
         );
         if let Err(error) = result {
             self.status_alembic(
@@ -431,7 +470,7 @@ impl Shell {
             })
             .collect::<Vec<_>>();
         self.status_alembic(
-            format!("Public examples retained in session {}.", session),
+            format!("Public examples retained in session {}.", session.as_uuid()),
             None,
         );
         if let Some(window) = self.alembic_workshop.as_mut() {
@@ -630,6 +669,17 @@ impl Shell {
         }
         let human = window.human;
         let installation = window.installation;
+        let Some(protection) = self
+            .custody_binding
+            .as_ref()
+            .map(|binding| binding.protection.clone())
+        else {
+            window.status(
+                "Unlock the profile before accepting this brief.",
+                Some("Private owner protection is unavailable.".into()),
+            );
+            return;
+        };
         let now_ms = crate::denizen::now_ms();
         let directory = self.app.session_dir();
         let live_graph = match self.app.graph_runtimes.get(graph_id) {
@@ -660,7 +710,7 @@ impl Shell {
             );
             return;
         }
-        let disk_graph = disk_graph.unwrap_or_else(|| live_graph.clone());
+        let authoritative_before = disk_graph.unwrap_or_else(|| live_graph.clone());
         if !reconcile {
             let live_revision = match athanor::workshop_destination::graph_revision(live_graph) {
                 Ok(revision) => revision,
@@ -672,7 +722,7 @@ impl Shell {
                     return;
                 },
             };
-            let disk_revision = match athanor::workshop_destination::graph_revision(&disk_graph) {
+            let disk_revision = match athanor::workshop_destination::graph_revision(&authoritative_before) {
                 Ok(revision) => revision,
                 Err(error) => {
                     window.status(
@@ -690,7 +740,7 @@ impl Shell {
                 return;
             }
         }
-        let mut candidate = disk_graph;
+        let mut candidate = authoritative_before.clone();
         candidate.set_recorder(None);
         let revision = match athanor::workshop_destination::graph_revision(&candidate) {
             Ok(revision) => revision,
@@ -762,22 +812,37 @@ impl Shell {
                         .await
                         .map_err(|e| e.to_string())?
                 };
+                let private_destination = proposal.sources.iter().any(|passage| !passage.public);
                 if reconcile {
-                    if let Some(receipt) = athanor::workshop_destination::query_graph(
-                        &candidate,
-                        &owner,
-                        &dest.graph,
-                        &acceptance,
-                        proposal,
-                    )
-                    .map_err(|e| e.to_string())?
-                    {
+                    let existing = if private_destination {
+                        athanor::workshop_sealed_destination::query_graph(
+                            &candidate,
+                            &owner,
+                            &dest.graph,
+                            &acceptance,
+                            proposal,
+                            protection.as_ref(),
+                        )
+                    } else {
+                        athanor::workshop_destination::query_graph(
+                            &candidate,
+                            &owner,
+                            &dest.graph,
+                            &acceptance,
+                            proposal,
+                        )
+                    }
+                    .map_err(|e| e.to_string())?;
+                    if let Some(receipt) = existing {
+                        let epoch = protection.epoch().ok_or_else(|| {
+                            "Profile custody is unavailable.".to_string()
+                        })?;
                         driver
                             .workshop
-                            .acknowledge(run, receipt)
+                            .acknowledge(run, receipt.clone())
                             .await
                             .map_err(|e| e.to_string())?;
-                        return Ok((receipt, false));
+                        return Ok((receipt, false, Some(epoch)));
                     }
                 }
                 if proposal.sources.iter().any(|passage| {
@@ -788,44 +853,93 @@ impl Shell {
                             .into(),
                     );
                 }
-                let revision = athanor::workshop_destination::graph_revision(&candidate)
-                    .map_err(|e| e.to_string())?;
-                let prepared = athanor::workshop_destination::prepare_graph(
-                    &candidate,
-                    &owner,
-                    &dest.graph,
-                    &revision,
-                    &acceptance,
-                    proposal,
-                    human,
-                    &authority,
-                    now_ms,
-                    true,
-                )
-                .map_err(|e| e.to_string())?;
-                let athanor::workshop_destination::GraphPreparation::New { deltas, receipt } =
-                    prepared
-                else {
-                    return Err(
-                        "The graph records the operation but the run receipt needs reconciliation."
-                            .into(),
-                    );
+                let prepared = if private_destination {
+                    match athanor::workshop_sealed_destination::prepare_graph(
+                        &candidate,
+                        &owner,
+                        &dest.graph,
+                        &acceptance,
+                        proposal,
+                        human,
+                        &authority,
+                        now_ms,
+                        protection.as_ref(),
+                    )
+                    .map_err(|e| e.to_string())?
+                    {
+                        athanor::workshop_sealed_destination::Preparation::Existing {
+                            receipt,
+                            epoch,
+                        } => (None, receipt, Some(epoch)),
+                        athanor::workshop_sealed_destination::Preparation::New {
+                            deltas,
+                            receipt,
+                            epoch,
+                        } => (Some(deltas), receipt, Some(epoch)),
+                    }
+                } else {
+                    let revision = athanor::workshop_destination::graph_revision(&candidate)
+                        .map_err(|e| e.to_string())?;
+                    match athanor::workshop_destination::prepare_graph(
+                        &candidate,
+                        &owner,
+                        &dest.graph,
+                        &revision,
+                        &acceptance,
+                        proposal,
+                        human,
+                        &authority,
+                        now_ms,
+                        true,
+                    )
+                    .map_err(|e| e.to_string())?
+                    {
+                        athanor::workshop_destination::GraphPreparation::Existing(receipt) => {
+                            (None, receipt, None)
+                        },
+                        athanor::workshop_destination::GraphPreparation::New { deltas, receipt } => {
+                            (Some(deltas), receipt, None)
+                        },
+                    }
                 };
-                for delta in deltas {
-                    mere::kernel::graph::apply::apply_graph_delta(&mut candidate, delta);
+                let (deltas, receipt, epoch) = prepared;
+                let should_persist = deltas.is_some();
+                if let Some(deltas) = deltas {
+                    for delta in deltas {
+                        if let mere::kernel::graph::apply::GraphDeltaResult::Refused(error) =
+                            mere::kernel::graph::apply::apply_graph_delta(&mut candidate, delta)
+                        {
+                            return Err(error.to_string());
+                        }
+                    }
                 }
-                athanor::workshop_destination::verify_graph_effect(
-                    &candidate,
-                    &owner,
-                    &dest.graph,
-                    &acceptance,
-                    proposal,
-                )
-                .map_err(|e| e.to_string())?;
-                Ok::<_, String>((receipt, true))
+                if should_persist && private_destination {
+                    athanor::workshop_sealed_destination::verify_graph_effect(
+                        &candidate,
+                        &owner,
+                        &dest.graph,
+                        &acceptance,
+                        proposal,
+                        protection.as_ref(),
+                    )
+                    .map_err(|e| e.to_string())?;
+                } else if should_persist {
+                    athanor::workshop_destination::verify_graph_effect(
+                        &candidate,
+                        &owner,
+                        &dest.graph,
+                        &acceptance,
+                        proposal,
+                    )
+                    .map_err(|e| e.to_string())?;
+                }
+                if epoch.is_some_and(|epoch| protection.epoch() != Some(epoch)) {
+                    return Err("Profile custody changed while preparing the retained brief.".into());
+                }
+                Ok::<_, String>((receipt, should_persist, epoch))
             })
         };
-        let (receipt, should_persist) = match result {
+        let (receipt, should_persist, prepared_epoch) = match result {
             Ok(result) => result,
             Err(error) => {
                 window.status("Destination write not acknowledged.", Some(error));
@@ -840,14 +954,29 @@ impl Shell {
             return;
         };
         if should_persist {
+            if prepared_epoch.is_some_and(|epoch| protection.epoch() != Some(epoch)) {
+                window.status(
+                    "Profile custody changed before the graph save.",
+                    Some("The prepared private brief was not saved.".into()),
+                );
+                return;
+            }
+            if let Err(error) = athanor::workshop_destination::preserve_graph_operations(
+                &authoritative_before,
+                &candidate,
+            ) {
+                window.status(
+                    "The retained operation ledger could not be preserved.",
+                    Some(error.to_string()),
+                );
+                return;
+            }
             let path = directory.join(pandect::session_graph_store::GRAPH_FILE);
             let saved = runtime.persistence.save_graph_with(
                 &directory,
                 &candidate,
                 || pandect::save_node_facets(&directory, candidate.facets()),
-                |placement| {
-                    pandect::session_graph_store::save_profiled(&path, &candidate, placement)
-                },
+                |placement| crate::session_graph_file::save_profiled(&path, &candidate, placement),
             );
             if let Err(error) = saved {
                 if let Some(driver) = window.driver.as_mut() {
@@ -876,16 +1005,43 @@ impl Shell {
         if let Err(error) = self.app.bind_behavior_journal() {
             self.app.refuse_behavior(error);
         }
-        match pollster::block_on(driver.workshop.acknowledge(run, receipt)) {
-            Ok(()) => match pollster::block_on(driver.refresh()) {
-                Ok(view) => window.update(|s| {
+        if should_persist
+            && prepared_epoch.is_some_and(|epoch| protection.epoch() != Some(epoch))
+        {
+            window.status(
+                "The graph was saved, but custody changed before acknowledgement.",
+                Some("Reconcile the durable operation after unlocking the same profile.".into()),
+            );
+            return;
+        }
+        let acknowledged = match window.driver.as_mut() {
+            Some(driver) => pollster::block_on(driver.workshop.acknowledge(run, receipt)),
+            None => {
+                window.status(
+                    "The graph was saved; the receipt must be recovered.",
+                    Some("The workshop driver is unavailable.".into()),
+                );
+                return;
+            },
+        };
+        match acknowledged {
+            Ok(()) => match window
+                .driver
+                .as_mut()
+                .map(|driver| pollster::block_on(driver.refresh()))
+            {
+                Some(Ok(view)) => window.update(|s| {
                     s.view = Some(view);
                     s.status = "The graph snapshot and destination receipt were saved.".into();
                     s.error = None;
                 }),
-                Err(error) => window.status(
+                Some(Err(error)) => window.status(
                     "The graph was saved; reload the workshop receipt.",
                     Some(error.to_string()),
+                ),
+                None => window.status(
+                    "The graph was saved; reload the workshop receipt.",
+                    Some("The workshop driver is unavailable.".into()),
                 ),
             },
             Err(error) => window.status(

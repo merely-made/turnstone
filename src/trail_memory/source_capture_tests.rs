@@ -18,6 +18,42 @@ fn document(label: &str) -> crate::content::FetchedDocument {
     }
 }
 
+struct ActorFixtureSealer;
+impl eidetic::PayloadSealer for ActorFixtureSealer {
+    fn seal(
+        &self,
+        _: &eidetic::Hash,
+        clear: &[u8],
+    ) -> eidetic::Result<(Vec<u8>, eidetic::SealedBlobRef)> {
+        Ok((
+            clear.iter().map(|byte| byte ^ 0x5a).collect(),
+            eidetic::SealedBlobRef {
+                epoch: eidetic::SealEpochId([3; 16]),
+                format: "actor-fixture".into(),
+            },
+        ))
+    }
+
+    fn unseal(
+        &self,
+        _: &eidetic::Hash,
+        marker: &eidetic::SealedBlobRef,
+        ciphertext: &[u8],
+    ) -> eidetic::Result<Vec<u8>> {
+        if marker.format != "actor-fixture" {
+            return Err(eidetic::Error::new("wrong fixture marker"));
+        }
+        Ok(ciphertext.iter().map(|byte| byte ^ 0x5a).collect())
+    }
+}
+
+fn actor_fixture_custody() -> crate::trail_memory::SourceCustody {
+    crate::trail_memory::SourceCustody {
+        sealer: std::sync::Arc::new(ActorFixtureSealer),
+        epoch: std::sync::Arc::new(|| Some(1)),
+    }
+}
+
 /// Fail immediately before or after one real write. The latter models a write
 /// that committed before its acknowledgement was lost. Real Fjall deposits
 /// remain behind for a fresh owner to reopen and retry.
@@ -912,6 +948,7 @@ fn same_directory_actor_reopen_rejects_old_opening_commands_before_writes() {
         directory: directory.clone(),
         capture_generation: current_generation,
     }));
+    assert!(handle.command(TrailCommand::SetCustody(Some(actor_fixture_custody()))));
 
     let stale_document = self::document("stale-opening-must-not-deposit");
     let stale_request = crate::source_capture::CaptureRequest {
@@ -1042,46 +1079,23 @@ fn same_directory_actor_reopen_rejects_old_opening_commands_before_writes() {
     assert!(handle.command(TrailCommand::Release(ack)));
     receive.recv_timeout(Duration::from_secs(5)).unwrap();
     let mut inspect = FjallStore::open(&directory).unwrap();
-    let inventory = recover_receipts(&mut inspect).unwrap();
+    assert!(recover_receipts(&mut inspect).unwrap().is_empty());
+    let stale_hash = eidetic::Hash::of(&stale_document.bytes);
+    assert!(pollster::block_on(inspect.get(&format!("blob:{}", stale_hash.to_hex()))).unwrap().is_none());
+    let foreign_hash = eidetic::Hash::of(&foreign_document.bytes);
+    assert!(pollster::block_on(inspect.get(&format!("blob:{}", foreign_hash.to_hex()))).unwrap().is_none());
+    drop(inspect);
+
+    let fixture_custody = actor_fixture_custody();
+    let mut inspect = FjallStore::open(super::sealed_memory_dir(&directory)).unwrap();
+    let inventory = super::sealed_capture::receipts(&mut inspect, fixture_custody.sealer.as_ref()).unwrap();
     assert_eq!(inventory.len(), 1);
     assert_eq!(inventory[0].request, request);
-    assert!(
-        !inventory[0].saved,
-        "wrong-generation ack cannot mark a valid receipt saved"
-    );
-    assert!(
-        pollster::block_on(inspect.get(&format!(
-            "turnstone/source-capture-request/v1/{}",
-            stale_request.id,
-        )))
-        .unwrap()
-        .is_none(),
-        "stale capture cannot even create its intent receipt"
-    );
-    let stale_hash = eidetic::Hash::of(&stale_document.bytes);
-    assert!(
-        pollster::block_on(inspect.get(&format!("blob:{}", stale_hash.to_hex())))
-            .unwrap()
-            .is_none(),
-        "stale capture cannot deposit raw/body bytes"
-    );
-    assert!(
-        pollster::block_on(inspect.get(&format!(
-            "turnstone/source-capture-request/v1/{}",
-            foreign_request.id,
-        )))
-        .unwrap()
-        .is_none(),
-        "foreign-session capture cannot create a request receipt"
-    );
-    let foreign_hash = eidetic::Hash::of(&foreign_document.bytes);
-    assert!(
-        pollster::block_on(inspect.get(&format!("blob:{}", foreign_hash.to_hex())))
-            .unwrap()
-            .is_none(),
-        "foreign-session capture cannot deposit raw/body bytes"
-    );
-    verify_source_document(&mut inspect, &stored).unwrap();
+    assert!(!inventory[0].saved, "wrong-generation ack cannot mark a valid receipt saved");
+    for hash in [stale_hash, foreign_hash] {
+        assert!(pollster::block_on(inspect.get(&format!("blob:{}", hash.to_hex()))).unwrap().is_none());
+    }
+    super::sealed_capture::verify(&mut inspect, fixture_custody.sealer.as_ref(), &request, &stored).unwrap();
     drop(inspect);
 
     let final_generation = uuid::Uuid::new_v4();
@@ -1122,12 +1136,13 @@ fn same_directory_actor_reopen_rejects_old_opening_commands_before_writes() {
     assert!(handle.command(TrailCommand::Release(ack)));
     receive.recv_timeout(Duration::from_secs(5)).unwrap();
     drop(handle);
-    let mut fresh = FjallStore::open(&directory).unwrap();
-    let inventory = recover_receipts(&mut fresh).unwrap();
+    let fixture_custody = actor_fixture_custody();
+    let mut fresh = FjallStore::open(super::sealed_memory_dir(&directory)).unwrap();
+    let inventory = super::sealed_capture::receipts(&mut fresh, fixture_custody.sealer.as_ref()).unwrap();
     assert_eq!(inventory.len(), 1);
     assert!(
         inventory[0].saved,
         "current-generation positive acknowledgement commits"
     );
-    verify_source_document(&mut fresh, &stored).unwrap();
+    super::sealed_capture::verify(&mut fresh, fixture_custody.sealer.as_ref(), &request, &stored).unwrap();
 }

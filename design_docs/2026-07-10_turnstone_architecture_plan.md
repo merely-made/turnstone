@@ -1004,8 +1004,10 @@ and their source/evidence proofs; the short-word/model boundary stays explicit.
 
 ### Alembic workshop receiving, 2026-10-28
 
-**Status:** in progress. Turnstone's adapter is implemented and remains in
-receiving qualification. Compiler admission refusals are not product evidence.
+**Status:** in progress. Private source and derived-state protection is
+prioritized before further workshop UI completion (Mark, 2026-10-28; common
+plan W0P). The adapter and new custody path remain in receiving qualification.
+Compiler admission refusals are not product evidence.
 The common composition, workflow and W1–W3 done-conditions live once in
 `mere/design_docs/mere_docs/implementation_strategy/2026-10-28_alembic_implementation_plan.md`.
 Servitor stays in Eidetic; Armillary supplies execution and cancellation.
@@ -1049,9 +1051,30 @@ remote peers or the common plan's full per-host failure matrix.
   while the historical cited version remains readable. Lease refusal and graph
   load refusal share the same session-state cleanup.
 
+- New captures use a separately tagged sealed store for raw bytes, decoded
+  body, annotation and request/recovery evidence (`src/trail_memory/sealed_capture.rs`).
+  Legacy LocalOnly captures retain their old identity and remain explicitly
+  unsealed; there is no automatic real-store migration or plaintext fallback.
+- A shared live custody predicate gates source replies, private reader caches,
+  retained clip access and the sealed workshop (`src/custody_binding.rs`).
+  Reconnection matches the expected profile/master and replaces the binding.
+  Missing authoritative resident epoch capability leaves private access pending.
+- Custody retirement clears fetched-source and captured Place projections,
+  invalidates Research Bridge context, and rejects stale library refill or
+  enable messages. Place identity retirement has a bounded acknowledgement
+  wait on the UI thread, so responsiveness is still unqualified.
+- The accepted private result uses the owner's Resource-only reader and can be
+  routed without the helper journal. Key retention and rewrapping are separate
+  gates; the current operation ledger protects its stored ciphertext bytes.
+- The receiving graph-file adapter retains the existing flattened snapshot and
+  placement-profile schema (`src/session_graph_file.rs`). Member facet edits
+  use the canonical Canvas/runtime recorder; graph-container sidecars use the
+  checked complete facet installation available on the selected supplier.
+
 **Progress (2026-10-28):** added the action/window adapter, shared surface,
 source gates, existing-writer acceptance path and session lease. Receiving
-checks, the lease-refusal regression and final native/cold qualification remain
-unexecuted here; Mere's successful gates do not substitute for them.
+compiler diagnostics have been repaired in source; the latest receiving
+repairs, lease/private-source regressions and final native/cold qualification
+remain unqualified. Mere's successful gates do not substitute for them.
 Run receipts and the current receiving boundary are kept with the common plan
 at `mere/design_docs/archive_docs/2026-10-28/2026-10-28_alembic_implementation_plan_receipts.md`.

@@ -354,7 +354,12 @@ impl App {
             );
             return vec![Effect::Redraw];
         }
-        *runtime.canvas.facets_mut() = facets;
+        if let Err(error) = crate::graph_facets::edit_canvas_facets(&mut runtime.canvas, |store| {
+            *store = facets;
+        }) {
+            self.capture_failed(request.id, format!("source facet update was refused: {error}"));
+            return vec![Effect::Redraw];
+        }
         if promoted {
             self.events.push(AppEvent::NodeKept(request.node));
         }
@@ -392,7 +397,7 @@ impl App {
                 runtime.canvas.graph(),
                 || pandect::save_node_facets(&directory, runtime.canvas.graph().facets()),
                 |placement| {
-                    pandect::session_graph_store::save_profiled(
+                    crate::session_graph_file::save_profiled(
                         &directory.join(pandect::session_graph_store::GRAPH_FILE),
                         runtime.canvas.graph(),
                         placement,
@@ -595,5 +600,49 @@ impl App {
             detail,
             stored: attempt.stored.clone(),
         });
+    }
+}
+
+impl App {
+    /// Drop private projections and invalidate every queued source reply before
+    /// the Shell drains its actors. Durable records remain for explicit reopen.
+    pub(crate) fn retire_private_custody(&mut self) -> Vec<Effect> {
+        self.source_capture_generation = uuid::Uuid::new_v4();
+        self.identity = None;
+        self.research.set_available(false);
+        self.saved_sources = Default::default();
+        self.source_captures.clear();
+        self.content.clear_source_documents();
+        if let crate::place::PlaceState::Offline { snapshot, .. } = &mut self.place {
+            snapshot.captured = Default::default();
+        }
+        self.events.retain(|event| {
+            !matches!(
+                event,
+                AppEvent::SourceDocumentCaptureProgress { .. }
+                    | AppEvent::SourceDocumentCaptured { .. }
+                    | AppEvent::SourceDocumentCaptureFailed { .. }
+                    | AppEvent::SourceDocumentCaptureUnattached { .. }
+            )
+        });
+        let reader_nodes: Vec<_> = self.saved_readers.keys().copied().collect();
+        self.saved_readers.clear();
+        let mut effects = self.cancel_smolweb_conversation();
+        for node in reader_nodes {
+            self.content.note_failed(
+                node,
+                "Unlock the profile to read this private source".into(),
+            );
+            effects.push(Effect::CloseContent { node });
+        }
+        if matches!(
+            self.omnibar.mode,
+            crate::ui::OmnibarMode::SavedSources | crate::ui::OmnibarMode::CapturedPages
+        ) {
+            self.omnibar.suggestions.clear();
+            self.omnibar.selected = 0;
+        }
+        effects.push(Effect::Redraw);
+        effects
     }
 }

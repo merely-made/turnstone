@@ -50,11 +50,7 @@ pub struct TrailRow {
 /// app's read-only graph.
 pub fn trail_rows(app: &App) -> Vec<TrailRow> {
     let graph = app.graph_runtimes.graph();
-    let recent: Vec<String> = graph
-        .recent_visited(8)
-        .into_iter()
-        .map(|rv| rv.url)
-        .collect();
+    let recent = crate::session::recent_visited_urls(graph, 8);
     let history: Vec<String> = app
         .graph_runtimes
         .focused_member()

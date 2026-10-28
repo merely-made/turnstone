@@ -181,7 +181,7 @@ pub(crate) fn reconcile(canvas: &mut mere::canvas::Canvas) -> Result<usize, Face
             })
         })
         .collect::<Vec<_>>();
-    let facets = canvas.facets_mut();
+    let edited = crate::graph_facets::try_edit_canvas_facets(canvas, |facets| {
     for (node_id, class, address, media_type) in assignments {
         let before = facets.facets_of(&node_id).cloned();
         match class {
@@ -258,6 +258,15 @@ pub(crate) fn reconcile(canvas: &mut mere::canvas::Canvas) -> Result<usize, Face
         }
     }
     Ok(changed)
+    });
+    match edited {
+        Ok(Ok(changed)) => Ok(changed),
+        Ok(Err(error)) => Err(error),
+        Err(error) => Err(FacetError {
+            facet: class_facet,
+            reason: error,
+        }),
+    }
 }
 
 pub(crate) struct DownloadFacetRecord<'a> {
@@ -297,21 +306,29 @@ pub(crate) fn set_download_record(
             value.insert(key.to_string(), json!(field));
         }
     }
-    let facets = canvas.facets_mut();
-    facets.set(
-        node,
-        FacetId::new(DOWNLOAD_FACET),
-        serde_json::Value::Object(value),
-        &builtins.validator,
-    )?;
-    facets.remove(&node, &FacetId::new(WEB_PAGE_FACET));
-    facets.remove(&node, &FacetId::new(NOTE_DOCUMENT_FACET));
-    facets.set(
-        node,
-        FacetId::new(CLASS_FACET),
-        json!(DOWNLOAD_CLASS),
-        &builtins.validator,
-    )
+    match crate::graph_facets::try_edit_canvas_facets(canvas, |facets| {
+        facets.set(
+            node,
+            FacetId::new(DOWNLOAD_FACET),
+            serde_json::Value::Object(value),
+            &builtins.validator,
+        )?;
+        facets.remove(&node, &FacetId::new(WEB_PAGE_FACET));
+        facets.remove(&node, &FacetId::new(NOTE_DOCUMENT_FACET));
+        facets.set(
+            node,
+            FacetId::new(CLASS_FACET),
+            json!(DOWNLOAD_CLASS),
+            &builtins.validator,
+        )?;
+        Ok(())
+    }) {
+        Ok(result) => result,
+        Err(error) => Err(FacetError {
+            facet: FacetId::new(DOWNLOAD_FACET),
+            reason: error,
+        }),
+    }
 }
 
 #[cfg(test)]

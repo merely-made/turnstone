@@ -426,7 +426,7 @@ fn app_adoption_reopens_saved_mosaic_seed_regions_and_pause_before_the_next_layo
     source.refresh_facets();
     let session_dir = source.session_dir();
     std::fs::create_dir_all(&session_dir).unwrap();
-    pandect::session_graph_store::save_profiled(
+    crate::session_graph_file::save_profiled(
         &session_dir.join(pandect::session_graph_store::GRAPH_FILE),
         source.graph_runtimes.graph(),
         Some(pandect::graph_placement::PlacementProfile::RecordedStrataV1),
@@ -1022,7 +1022,7 @@ fn role_and_composition_choices_reopen_from_the_saved_scene_into_the_form() {
         source.refresh_facets();
         let session_dir = source.session_dir();
         std::fs::create_dir_all(&session_dir).unwrap();
-        pandect::session_graph_store::save_profiled(
+        crate::session_graph_file::save_profiled(
             &session_dir.join(pandect::session_graph_store::GRAPH_FILE),
             source.graph_runtimes.graph(),
             Some(pandect::graph_placement::PlacementProfile::RecordedStrataV1),

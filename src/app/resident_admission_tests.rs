@@ -80,7 +80,9 @@ fn uninstall_persists_revocation_and_rebuild_rejects_lagging_binding() {
         revoked.get(member).unwrap().binding.lifecycle,
         Lifecycle::Revoked
     );
-    pandect::write_denizen_binding(app.graph_runtimes.facets_mut(), member, &binding);
+    app.graph_runtimes
+        .edit_facets(|facets| pandect::write_denizen_binding(facets, member, &binding))
+        .unwrap();
     let rebuilt = crate::denizen::rebuild(
         app.graph_runtimes.facets(),
         app.graph_runtimes.graph(),

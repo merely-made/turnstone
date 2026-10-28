@@ -22,6 +22,13 @@ pub struct Key {
     pub annotation_manifest: String,
 }
 
+impl Key {
+    /// The versioned store identity is distinct from legacy LocalOnly evidence.
+    pub fn is_sealed(&self) -> bool {
+        self.annotation_manifest.starts_with("sealed-v1:")
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Admission {
     pub key: Key,
@@ -192,7 +199,11 @@ pub fn validate_selector(content: &Content, target: &Target) -> Result<Option<St
 
 /// Build the internal saved-source address used as persisted graph-view intent.
 pub fn address(target: &Target) -> Result<String, String> {
-    let annotation = eidetic::Hash::parse(&target.key.annotation_manifest)
+    let (kind, annotation_id) = match target.key.annotation_manifest.strip_prefix("sealed-v1:") {
+        Some(id) => ("sealed-v1/", id),
+        None => ("", target.key.annotation_manifest.as_str()),
+    };
+    let annotation = eidetic::Hash::parse(annotation_id)
         .map_err(|_| "saved source annotation identity is malformed")?;
     if annotation.func() != eidetic::Hash::of(b"").func() {
         return Err("saved source annotation identity must use BLAKE3".into());
@@ -203,7 +214,7 @@ pub fn address(target: &Target) -> Result<String, String> {
         return Err("saved source text hash must use BLAKE3".into());
     }
     let base = format!(
-        "mere://saved-source/{}/{}/{}/{}/{}",
+        "mere://saved-source/{kind}{}/{}/{}/{}/{}",
         target.key.session.0,
         target.key.graph.0,
         target.key.node,
@@ -240,9 +251,13 @@ pub fn parse_address(value: &str) -> Result<Option<Target>, String> {
         .path_segments()
         .ok_or("saved source address has no path")?
         .collect();
-    if parts.len() != 5 {
+    let (sealed, parts) = if parts.len() == 6 && parts[0] == "sealed-v1" {
+        (true, &parts[1..])
+    } else if parts.len() == 5 {
+        (false, parts.as_slice())
+    } else {
         return Err("saved source address has the wrong path shape".into());
-    }
+    };
     let session = uuid::Uuid::parse_str(parts[0]).map_err(|_| "invalid saved session id")?;
     let graph = uuid::Uuid::parse_str(parts[1]).map_err(|_| "invalid saved graph id")?;
     let node = uuid::Uuid::parse_str(parts[2]).map_err(|_| "invalid saved node id")?;
@@ -282,7 +297,11 @@ pub fn parse_address(value: &str) -> Result<Option<Target>, String> {
             session: crate::panes::SessionId(session),
             graph: crate::panes::GraphId(graph),
             node,
-            annotation_manifest: annotation.to_string(),
+            annotation_manifest: if sealed {
+                format!("sealed-v1:{annotation}")
+            } else {
+                annotation.to_string()
+            },
         },
         text_hash: text_hash.to_string(),
         selector,
@@ -465,6 +484,22 @@ mod tests {
         );
         assert_eq!(hits[0].origin, "https://first.test");
         assert_eq!(hits[1].origin, "https://second.test");
+    }
+
+    #[test]
+    fn sealed_address_round_trips_without_legacy_namespace_alias() {
+        let node = uuid::Uuid::new_v4();
+        let annotation = eidetic::Hash::of(b"sealed annotation").to_string();
+        let target = Target {
+            key: key(node, &format!("sealed-v1:{annotation}")),
+            text_hash: eidetic::Hash::of(b"private text").to_string(),
+            selector: Some(Selector { start: 1, end: 3 }),
+        };
+        let address = address(&target).unwrap();
+        assert!(address.starts_with("mere://saved-source/sealed-v1/"));
+        assert_eq!(parse_address(&address).unwrap(), Some(target.clone()));
+        let legacy = address.replace("/sealed-v1/", "/");
+        assert_ne!(parse_address(&legacy).unwrap(), Some(target));
     }
 
     #[test]

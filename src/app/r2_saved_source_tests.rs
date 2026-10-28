@@ -31,28 +31,25 @@ fn visit(app: &mut App, url: &str) -> uuid::Uuid {
 }
 
 fn attach(app: &mut App, graph: crate::panes::GraphId, node: uuid::Uuid, manifest: &str) {
-    source_capture::append_reference(
-        app.graph_runtimes
-            .get_mut(graph)
-            .unwrap()
-            .canvas
-            .facets_mut(),
-        node,
-        manifest.to_owned(),
+    crate::graph_facets::edit_canvas_facets(
+        &mut app.graph_runtimes.get_mut(graph).unwrap().canvas,
+        |facets| source_capture::append_reference(facets, node, manifest.to_owned()),
     )
+    .unwrap()
     .unwrap();
 }
 
 fn remove_refs(app: &mut App, graph: crate::panes::GraphId, node: uuid::Uuid) {
-    app.graph_runtimes
-        .get_mut(graph)
-        .unwrap()
-        .canvas
-        .facets_mut()
-        .remove(
+    crate::graph_facets::edit_canvas_facets(
+        &mut app.graph_runtimes.get_mut(graph).unwrap().canvas,
+        |facets| {
+            facets.remove(
             &node,
             &FacetId::new(source_capture::SOURCE_CAPTURE_REFERENCES_FACET),
-        );
+            )
+        },
+    )
+    .unwrap();
 }
 
 fn target(key: Key, text: &str) -> (Target, Content) {

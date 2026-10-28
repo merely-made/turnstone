@@ -50,9 +50,11 @@ use eidetic::{
 };
 use eidetic_search::{CandidateIndex, FusedHit, IndexConfig, Ranking, TrailIndex, fuse_many};
 use muniment::FjallStore;
+use eidetic::Backend as _;
 
 use crate::action::{RecallHit, StoredSourceDocument, Update};
 mod saved_sources;
+mod sealed_capture;
 
 /// Traversals per stored trace segment. Segments are the flush granularity:
 /// small enough that a crash loses minutes, large enough that a stored trace
@@ -131,7 +133,67 @@ impl RecallSource {
 
 /// Commands the trail-memory actor takes (the shell sends these; ordering on
 /// the one channel is the consistency story, the bin actor's exact shape).
+/// The sealer is a short-lived capability tied to one host/profile generation.
+/// The callback must report the same epoch while that exact binding remains
+/// current; `None` or a different epoch withdraws publication rights.
+#[derive(Clone)]
+pub struct SourceCustody {
+    pub sealer: std::sync::Arc<dyn eidetic::PayloadSealer + Send + Sync>,
+    pub epoch: std::sync::Arc<dyn Fn() -> Option<u64> + Send + Sync>,
+}
+
+impl SourceCustody {
+    fn snapshot(&self) -> Option<u64> {
+        (self.epoch)()
+    }
+
+    fn remains_current(&self, epoch: Option<u64>) -> bool {
+        epoch.is_some() && self.snapshot() == epoch
+    }
+}
+
+#[cfg(test)]
+pub(crate) mod custody_test_fixture {
+    struct Sealer;
+    impl eidetic::PayloadSealer for Sealer {
+        fn seal(
+            &self,
+            _: &eidetic::Hash,
+            clear: &[u8],
+        ) -> eidetic::Result<(Vec<u8>, eidetic::SealedBlobRef)> {
+            Ok((
+                clear.to_vec(),
+                eidetic::SealedBlobRef {
+                    epoch: eidetic::SealEpochId([1; 16]),
+                    format: "test-fixture".into(),
+                },
+            ))
+        }
+
+        fn unseal(
+            &self,
+            _: &eidetic::Hash,
+            _: &eidetic::SealedBlobRef,
+            ciphertext: &[u8],
+        ) -> eidetic::Result<Vec<u8>> {
+            Ok(ciphertext.to_vec())
+        }
+    }
+
+    pub(crate) fn custody() -> super::SourceCustody {
+        super::SourceCustody {
+            sealer: std::sync::Arc::new(Sealer),
+            epoch: std::sync::Arc::new(|| Some(1)),
+        }
+    }
+}
+
 pub enum TrailCommand {
+    /// Ordered custody adoption or withdrawal; no key material is held here.
+    SetCustody(Option<SourceCustody>),
+    /// Acknowledge all prior custody work, including refreshing the shared
+    /// captured-source library, before another owner opens its projections.
+    CustodyReady(std::sync::mpsc::SyncSender<()>),
     LoadSavedSources {
         generation: uuid::Uuid,
         request: uuid::Uuid,
@@ -214,6 +276,12 @@ pub enum TrailCommand {
 /// One session's trail-memory directory (under its `sessions/<id>/` dir).
 pub fn memory_dir(session_dir: &Path) -> PathBuf {
     session_dir.join("memory")
+}
+
+fn sealed_memory_dir(memory: &Path) -> PathBuf {
+    let mut dir = memory.as_os_str().to_os_string();
+    dir.push(".sealed-sources-v1");
+    PathBuf::from(dir)
 }
 
 /// The lexical index beside a memory store, on eidetic-recall's `<db>.index`
@@ -1122,7 +1190,8 @@ pub(crate) fn spawn_trail_for_session(
                 .and_then(|dir| open_memory(dir, &capture_library));
             let mut current_dir = dir.unwrap_or_default();
             let mut current_capture_generation = capture_generation;
-            emit_capture_recovery(&mut state, &current_dir, current_capture_generation, &out);
+            let mut custody: Option<SourceCustody> = None;
+            let mut sealed_store: Option<FjallStore> = None;
             // The derived lexical/behavioural projection and whether the corpus has
             // moved since it was minted. Built on the first recall, not at
             // spawn: a session that never searches never pays for one.
@@ -1134,31 +1203,101 @@ pub(crate) fn spawn_trail_for_session(
             let mut last_to: HashMap<String, PageRef> = HashMap::new();
             while let Ok(command) = commands.recv() {
                 match command {
+                    TrailCommand::SetCustody(binding) => {
+                        drop(sealed_store.take());
+                        custody = binding;
+                        let custody_ready = custody
+                            .as_ref()
+                            .is_some_and(|binding| {
+                                capture_library.bind_custody(binding)
+                                    && binding.snapshot().is_some()
+                            });
+                        if !custody_ready {
+                            custody = None;
+                        }
+                        if custody_ready {
+                            if let Some((store, _)) = state.as_mut()
+                                && let Err(error) =
+                                    crate::place::captured_collection::refresh_local_capture_library(
+                                        store,
+                                        &current_dir,
+                                        &capture_library,
+                                    )
+                            {
+                                capture_library.unavailable(error);
+                            }
+                        } else {
+                            capture_library.retire_custody();
+                        }
+                        sealed_store = if custody.is_some() && state.is_some() {
+                            FjallStore::open(sealed_memory_dir(&current_dir)).ok()
+                        } else {
+                            None
+                        };
+                        if let Some(binding) = custody.as_ref() {
+                            emit_capture_recovery(
+                                &mut state,
+                                binding,
+                                &current_dir,
+                                current_capture_generation,
+                                &out,
+                            );
+                        }
+                        if let (Some(store), Some(binding)) =
+                            (sealed_store.as_mut(), custody.as_ref())
+                        {
+                            emit_sealed_capture_recovery(
+                                store,
+                                binding,
+                                &current_dir,
+                                current_capture_generation,
+                                &out,
+                            );
+                        }
+                    }
+                    TrailCommand::CustodyReady(ready) => {
+                        let _ = ready.send(());
+                    }
                     TrailCommand::LoadSavedSources { generation, request, session, admissions, directory } => {
+                        let custody_epoch = custody.as_ref().and_then(SourceCustody::snapshot);
                         let owner = current_dir.parent().and_then(Path::file_name).and_then(|name| name.to_str());
-                        let result = if generation != current_capture_generation || directory != current_dir
+                        let mut result = if generation != current_capture_generation || directory != current_dir
                             || owner != Some(session.as_uuid().to_string().as_str())
                             || admissions.iter().any(|admission| admission.key.session != session)
                         { Err("Saved source search belongs to another session opening or store".into()) }
+                        else if custody_epoch.is_none() { Err("Unlock the profile to read private saved sources".into()) }
                         else { match state.as_mut() {
-                            Some((store, _)) => Ok(saved_sources::load(store, &admissions)),
+                            Some((store, _)) => Ok(saved_sources::load_with_sealed(store, sealed_store.as_mut(), custody.as_ref().map(|v| v.sealer.as_ref() as &dyn eidetic::PayloadSealer), &admissions)),
                             None => Err("The session evidence store is unavailable".into()),
                         }};
+                        if custody_epoch.is_some()
+                            && !custody.as_ref().is_some_and(|binding| binding.remains_current(custody_epoch))
+                        {
+                            result = Err("Profile custody changed while loading private saved sources".into());
+                        }
                         out.emit(Update::SavedSourcesLoaded { generation, request, session, admissions, result });
                     },
                     TrailCommand::ReadSavedSource { generation, request, node, url, target, admission, directory } => {
+                        let custody_epoch = custody.as_ref().and_then(SourceCustody::snapshot);
                         let owner = current_dir.parent().and_then(Path::file_name).and_then(|name| name.to_str());
-                        let result = if generation != current_capture_generation || directory != current_dir
+                        let mut result = if generation != current_capture_generation || directory != current_dir
                             || owner != Some(target.key.session.as_uuid().to_string().as_str())
                             || admission.key != target.key
                         { Err("Saved source reading belongs to another session opening or attachment".into()) }
+                        else if custody_epoch.is_none() { Err("Unlock the profile to read private saved sources".into()) }
                         else { match state.as_mut() {
-                            Some((store, _)) => saved_sources::resolve(store, &admission, &target),
+                            Some((store, _)) => saved_sources::resolve_with_sealed(store, sealed_store.as_mut(), custody.as_ref().map(|v| v.sealer.as_ref() as &dyn eidetic::PayloadSealer), &admission, &target),
                             None => Err("The session evidence store is unavailable".into()),
                         }};
+                        if custody_epoch.is_some()
+                            && !custody.as_ref().is_some_and(|binding| binding.remains_current(custody_epoch))
+                        {
+                            result = Err("Profile custody changed while reading a private saved source".into());
+                        }
                         out.emit(Update::SavedSourceRead { generation, request, node, url, target, result });
                     },
                     TrailCommand::ResearchSnapshot { context, reply } => {
+                        let custody_epoch = custody.as_ref().and_then(SourceCustody::snapshot);
                         let valid = context.generation == current_capture_generation
                             && inference_owner(&current_dir).ok()
                                 == Some(format!("turnstone/{}", context.session.as_uuid()))
@@ -1166,14 +1305,21 @@ pub(crate) fn spawn_trail_for_session(
                                 .admissions
                                 .iter()
                                 .all(|a| a.key.session == context.session);
-                        let result = if !valid {
+                        let mut result = if !valid {
                             Err("The saved-source owner belongs to another session opening.".into())
+                        } else if custody_epoch.is_none() {
+                            Err("Unlock the profile to read private saved sources.".into())
                         } else {
                             state
                                 .as_mut()
-                                .map(|(store, _)| saved_sources::load(store, &context.admissions))
+                                .map(|(store, _)| saved_sources::load_with_sealed(store, sealed_store.as_mut(), custody.as_ref().map(|v| v.sealer.as_ref() as &dyn eidetic::PayloadSealer), &context.admissions))
                                 .ok_or_else(|| "The session evidence store is unavailable.".into())
                         };
+                        if custody_epoch.is_some()
+                            && !custody.as_ref().is_some_and(|binding| binding.remains_current(custody_epoch))
+                        {
+                            result = Err("Profile custody changed while loading private saved sources.".into());
+                        }
                         let _ = reply.send(result);
                     },
                     TrailCommand::ResearchSource {
@@ -1181,12 +1327,15 @@ pub(crate) fn spawn_trail_for_session(
                         target,
                         reply,
                     } => {
+                        let custody_epoch = custody.as_ref().and_then(SourceCustody::snapshot);
                         let valid = context.generation == current_capture_generation
                             && inference_owner(&current_dir).ok()
                                 == Some(format!("turnstone/{}", context.session.as_uuid()))
                             && target.key.session == context.session;
-                        let result = if !valid {
+                        let mut result = if !valid {
                             Err("The cited source belongs to another session opening.".into())
+                        } else if custody_epoch.is_none() {
+                            Err("Unlock the profile to read private saved sources.".into())
                         } else if let Some(admission) = context
                             .admissions
                             .iter()
@@ -1194,21 +1343,36 @@ pub(crate) fn spawn_trail_for_session(
                         {
                             match state.as_mut() {
                                 Some((store, _)) => {
-                                    saved_sources::resolve(store, admission, &target)
+                                    saved_sources::resolve_with_sealed(store, sealed_store.as_mut(), custody.as_ref().map(|v| v.sealer.as_ref() as &dyn eidetic::PayloadSealer), admission, &target)
                                 },
                                 None => Err("The session evidence store is unavailable.".into()),
                             }
                         } else {
                             Err("The cited saved source was withdrawn from this session.".into())
                         };
+                        if custody_epoch.is_some()
+                            && !custody.as_ref().is_some_and(|binding| binding.remains_current(custody_epoch))
+                        {
+                            result = Err("Profile custody changed while reading a private cited source.".into());
+                        }
                         let _ = reply.send(result);
                     },
                     TrailCommand::InferenceSnapshot { owner, reply } => {
-                        let result = inference_snapshot(
-                            state.as_ref().map(|(store, _)| store),
-                            &current_dir,
-                            &owner,
-                        );
+                        let custody_epoch = custody.as_ref().and_then(SourceCustody::snapshot);
+                        let mut result = if custody_epoch.is_some() {
+                            inference_snapshot(
+                                state.as_ref().map(|(store, _)| store),
+                                &current_dir,
+                                &owner,
+                            )
+                        } else {
+                            Err("Unlock the profile to read private retained sources".into())
+                        };
+                        if custody_epoch.is_some()
+                            && !custody.as_ref().is_some_and(|binding| binding.remains_current(custody_epoch))
+                        {
+                            result = Err("Profile custody changed while loading private retained sources".into());
+                        }
                         let _ = reply.send(result);
                     },
                     TrailCommand::InferenceSource {
@@ -1216,12 +1380,22 @@ pub(crate) fn spawn_trail_for_session(
                         version,
                         reply,
                     } => {
-                        let result = inference_source(
-                            state.as_ref().map(|(store, _)| store),
-                            &current_dir,
-                            &source,
-                            &version,
-                        );
+                        let custody_epoch = custody.as_ref().and_then(SourceCustody::snapshot);
+                        let mut result = if custody_epoch.is_some() {
+                            inference_source(
+                                state.as_ref().map(|(store, _)| store),
+                                &current_dir,
+                                &source,
+                                &version,
+                            )
+                        } else {
+                            Err("Unlock the profile to read a private retained source".into())
+                        };
+                        if custody_epoch.is_some()
+                            && !custody.as_ref().is_some_and(|binding| binding.remains_current(custody_epoch))
+                        {
+                            result = Err("Profile custody changed while reading a private retained source".into());
+                        }
                         let _ = reply.send(result);
                     },
                     TrailCommand::Record {
@@ -1286,41 +1460,119 @@ pub(crate) fn spawn_trail_for_session(
                             keep_page_text(store, &url, &text);
                         }
                     },
-                    TrailCommand::CaptureSourceDocument { capture_generation, request, directory, document } => {
-                        let admitted_session = current_dir.parent().and_then(Path::file_name).and_then(|name| name.to_str());
-                        let result = if directory != current_dir
+                    TrailCommand::CaptureSourceDocument {
+                        capture_generation,
+                        request,
+                        directory,
+                        document,
+                    } => {
+                        let custody_epoch = custody.as_ref().and_then(SourceCustody::snapshot);
+                        let admitted_session = current_dir
+                            .parent()
+                            .and_then(Path::file_name)
+                            .and_then(|name| name.to_str());
+                        let mut result = if directory != current_dir
                             || capture_generation != current_capture_generation
-                            || admitted_session != Some(request.session.as_uuid().to_string().as_str())
+                            || admitted_session
+                                != Some(request.session.as_uuid().to_string().as_str())
                         {
-                            Err("the capture actor belongs to another session opening or directory".into())
+                            Err(
+                                "the capture actor belongs to another session opening or directory"
+                                    .into(),
+                            )
+                        } else if custody_epoch.is_none() {
+                            Err("Unlock the profile to retain a private source".into())
                         } else {
-                            match state.as_mut() {
-                                Some((store, _)) => source_capture_receipts::capture_request(store, &request, document.as_ref()),
-                                None => Err("the session Eidetic store is not open".into()),
+                            let legacy_key = format!(
+                                "turnstone/source-capture-request/v1/{}", request.id
+                            );
+                            let legacy = state.as_ref().map(|(store, _)| {
+                                pollster::block_on(store.get(&legacy_key))
+                            });
+                            if matches!(legacy.as_ref(), Some(Ok(Some(_)))) {
+                                source_capture_receipts::completed_legacy(
+                                    &mut state.as_mut().expect("legacy store checked").0,
+                                    &request,
+                                )
+                            } else if !matches!(legacy.as_ref(), Some(Ok(None))) {
+                                Err("legacy capture store unavailable".into())
+                            } else {
+                                match (sealed_store.as_mut(), custody.as_ref()) {
+                                    (Some(store), Some(binding)) => sealed_capture::capture_request(
+                                        store, binding.sealer.as_ref(), &request, document.as_ref(),
+                                    ),
+                                    _ => Err("Unlock the profile to retain a private source".into()),
+                                }
                             }
                         };
-                        out.emit(Update::SourceDocumentCaptured { capture_generation, request, result });
-                    },
-                    TrailCommand::AcknowledgeSourceCapture { capture_generation, request, directory } => {
-                        let admitted_session = current_dir.parent().and_then(Path::file_name).and_then(|name| name.to_str());
-                        let result = if directory != current_dir
+                        if custody_epoch.is_some()
+                            && !custody.as_ref().is_some_and(|binding| binding.remains_current(custody_epoch))
+                        {
+                            result = Err("Profile custody changed while capturing a private source".into());
+                        }
+                        out.emit(Update::SourceDocumentCaptured {
+                            capture_generation,
+                            request,
+                            result,
+                        });
+                    }
+                    TrailCommand::AcknowledgeSourceCapture {
+                        capture_generation,
+                        request,
+                        directory,
+                    } => {
+                        let custody_epoch = custody.as_ref().and_then(SourceCustody::snapshot);
+                        let admitted_session = current_dir
+                            .parent()
+                            .and_then(Path::file_name)
+                            .and_then(|name| name.to_str());
+                        let mut result = if directory != current_dir
                             || capture_generation != current_capture_generation
-                            || admitted_session != Some(request.session.as_uuid().to_string().as_str())
+                            || admitted_session
+                                != Some(request.session.as_uuid().to_string().as_str())
                         {
                             Err("capture save acknowledgement belongs to another session opening or store".into())
+                        } else if custody_epoch.is_none() {
+                            Err("Unlock the profile to acknowledge a private source".into())
                         } else {
-                            match state.as_mut() {
-                                Some((store, _)) => source_capture_receipts::acknowledge_saved(store, &request),
-                                None => Err("the session Eidetic store is not open".into()),
+                            let legacy_key = format!("turnstone/source-capture-request/v1/{}", request.id);
+                            let legacy = state.as_ref().map(|(store, _)| pollster::block_on(store.get(&legacy_key)));
+                            if matches!(legacy.as_ref(), Some(Ok(Some(_)))) {
+                                source_capture_receipts::acknowledge_saved(
+                                    &mut state.as_mut().expect("legacy store checked").0, &request,
+                                )
+                            } else if !matches!(legacy.as_ref(), Some(Ok(None))) {
+                                Err("legacy capture store unavailable".into())
+                            } else {
+                                match (sealed_store.as_mut(), custody.as_ref()) {
+                                    (Some(store), Some(binding)) => sealed_capture::acknowledge(store, binding.sealer.as_ref(), &request),
+                                    _ => Err("Unlock the profile to acknowledge a private source".into()),
+                                }
                             }
                         };
+                        if custody_epoch.is_some()
+                            && !custody.as_ref().is_some_and(|binding| binding.remains_current(custody_epoch))
+                        {
+                            result = Err("Profile custody changed while acknowledging a private source".into());
+                        }
                         if result.is_ok() {
                             if let Some((store, _)) = state.as_mut()
-                                && let Err(error) = crate::place::captured_collection::refresh_local_capture_library(store, &current_dir, &capture_library)
-                            { capture_library.unavailable(error); }
+                                && let Err(error) =
+                                    crate::place::captured_collection::refresh_local_capture_library(
+                                        store,
+                                        &current_dir,
+                                        &capture_library,
+                                    )
+                            {
+                                capture_library.unavailable(error);
+                            }
                         }
-                        out.emit(Update::SourceCaptureSaved { capture_generation, request: request.id, result });
-                    },
+                        out.emit(Update::SourceCaptureSaved {
+                            capture_generation,
+                            request: request.id,
+                            result,
+                        });
+                    }
                     TrailCommand::Flush => {
                         if let Some((store, memory)) = state.as_mut() {
                             flush(store, memory);
@@ -1339,16 +1591,32 @@ pub(crate) fn spawn_trail_for_session(
                         // A warm reopen can target this same directory. Release
                         // its Fjall lock before evaluating the new open.
                         drop(state.take());
+                        drop(sealed_store.take());
                         state = open_memory(&dir, &capture_library);
                         current_dir = dir;
                         current_capture_generation = capture_generation;
-                        emit_capture_recovery(&mut state, &current_dir, current_capture_generation, &out);
+                        if state.is_some() && custody.is_some() {
+                            sealed_store = FjallStore::open(sealed_memory_dir(&current_dir)).ok();
+                        }
+                        if let Some(binding) = custody.as_ref() {
+                            emit_capture_recovery(
+                                &mut state,
+                                binding,
+                                &current_dir,
+                                current_capture_generation,
+                                &out,
+                            );
+                        }
+                        if let (Some(store), Some(binding)) = (sealed_store.as_mut(), custody.as_ref()) {
+                            emit_sealed_capture_recovery(store, binding, &current_dir, current_capture_generation, &out);
+                        }
                     },
                     TrailCommand::Release(ack) => {
                         if let Some((store, memory)) = state.as_mut() {
                             flush(store, memory);
                         }
                         state = None;
+                        sealed_store = None;
                         index = None;
                         index_stale = true;
                         indexed_sources.clear();
@@ -2022,6 +2290,9 @@ mod inference_owner_tests {
         )).unwrap();
         let (handle, _updates) =
             spawn_trail_for_session(std::sync::Arc::new(|| {}), Some(dir), Default::default(), uuid::Uuid::nil());
+        assert!(handle.command(TrailCommand::SetCustody(Some(
+            custody_test_fixture::custody(),
+        ))));
         let owner = TrailInferenceOwner(std::sync::Arc::new(handle));
         let namespace = format!("turnstone/{session}");
         let old = owner.snapshot(&namespace).unwrap().remove(0);
@@ -2053,32 +2324,150 @@ mod inference_owner_tests {
 mod source_capture_receipts;
 
 fn emit_capture_recovery(
-    state: &mut Option<(FjallStore, BrowsingMemory)>, directory: &Path, capture_generation: uuid::Uuid, out: &Emitter<Update>,
+    state: &mut Option<(FjallStore, BrowsingMemory)>,
+    custody: &SourceCustody,
+    directory: &Path,
+    capture_generation: uuid::Uuid,
+    out: &Emitter<Update>,
 ) {
+    let Some(custody_epoch) = custody.snapshot() else {
+        return;
+    };
     let Some((store, _)) = state.as_mut() else { return; };
+    let mut updates = Vec::new();
     match source_capture_receipts::recover_receipts(store) {
-        Ok(receipts) => for receipt in receipts {
-            // Directory admission comes from the live actor, not saved JSON.
-            let owner = directory.parent().and_then(Path::file_name).and_then(|name| name.to_str());
-            if owner != Some(receipt.request.session.as_uuid().to_string().as_str()) {
-                out.emit(Update::SourceCaptureRecoveryFailed { capture_generation, error: "capture receipt owner does not match the admitted session store".into() });
-                continue;
-            }
-            if receipt.saved {
-                if let Err(error) = source_capture_receipts::verify_receipt(store, &receipt) {
-                    let id = receipt.request.id;
-                    out.emit(Update::SourceCaptureRecovered { capture_generation, request: receipt.request, stored: receipt.stored });
-                    out.emit(Update::SourceCaptureRecoveryFailed { capture_generation, error: format!("capture request {id} verification failed: {error}") });
-                } else if let Some(stored) = receipt.stored {
-                    out.emit(Update::SourceCaptureRevalidated { capture_generation, request: receipt.request, stored });
-                } else {
-                    out.emit(Update::SourceCaptureRecoveryFailed { capture_generation, error: "saved capture receipt has no artifacts".into() });
+        Ok(receipts) => {
+            for receipt in receipts {
+                // Directory admission comes from the live actor, not saved JSON.
+                let owner = directory
+                    .parent()
+                    .and_then(Path::file_name)
+                    .and_then(|name| name.to_str());
+                if owner != Some(receipt.request.session.as_uuid().to_string().as_str()) {
+                    updates.push(Update::SourceCaptureRecoveryFailed {
+                        capture_generation,
+                        error: "capture receipt owner does not match the admitted session store"
+                            .into(),
+                    });
+                    continue;
                 }
-            } else {
-                out.emit(Update::SourceCaptureRecovered { capture_generation, request: receipt.request, stored: receipt.stored });
+                if receipt.saved {
+                    if let Err(error) = source_capture_receipts::verify_receipt(store, &receipt) {
+                        let id = receipt.request.id;
+                        updates.push(Update::SourceCaptureRecovered {
+                            capture_generation,
+                            request: receipt.request,
+                            stored: receipt.stored,
+                        });
+                        updates.push(Update::SourceCaptureRecoveryFailed {
+                            capture_generation,
+                            error: format!("capture request {id} verification failed: {error}"),
+                        });
+                    } else if let Some(stored) = receipt.stored {
+                        updates.push(Update::SourceCaptureRevalidated {
+                            capture_generation,
+                            request: receipt.request,
+                            stored,
+                        });
+                    } else {
+                        updates.push(Update::SourceCaptureRecoveryFailed {
+                            capture_generation,
+                            error: "saved capture receipt has no artifacts".into(),
+                        });
+                    }
+                } else {
+                    updates.push(Update::SourceCaptureRecovered {
+                        capture_generation,
+                        request: receipt.request,
+                        stored: receipt.stored,
+                    });
+                }
             }
-        },
-        Err(error) => out.emit(Update::SourceCaptureRecoveryFailed { capture_generation, error }),
+        }
+        Err(error) => updates.push(Update::SourceCaptureRecoveryFailed {
+            capture_generation,
+            error,
+        }),
+    }
+    for update in updates {
+        if !custody.remains_current(Some(custody_epoch)) {
+            break;
+        }
+        out.emit(update);
+    }
+}
+
+fn emit_sealed_capture_recovery(
+    store: &mut FjallStore,
+    custody: &SourceCustody,
+    directory: &Path,
+    capture_generation: uuid::Uuid,
+    out: &Emitter<Update>,
+) {
+    let Some(custody_epoch) = custody.snapshot() else {
+        return;
+    };
+    let mut updates = Vec::new();
+    match sealed_capture::receipts(store, custody.sealer.as_ref()) {
+        Ok(receipts) => {
+            for receipt in receipts {
+                let owner = directory
+                    .parent()
+                    .and_then(Path::file_name)
+                    .and_then(|name| name.to_str());
+                if owner != Some(receipt.request.session.as_uuid().to_string().as_str()) {
+                    updates.push(Update::SourceCaptureRecoveryFailed {
+                        capture_generation,
+                        error: "sealed capture owner differs from session".into(),
+                    });
+                    continue;
+                }
+                if receipt.saved {
+                    if let Some(stored) = receipt.stored {
+                        if sealed_capture::verify(
+                            store,
+                            custody.sealer.as_ref(),
+                            &receipt.request,
+                            &stored,
+                        )
+                        .is_ok()
+                        {
+                            updates.push(Update::SourceCaptureRevalidated {
+                                capture_generation,
+                                request: receipt.request,
+                                stored,
+                            });
+                        } else {
+                            updates.push(Update::SourceCaptureRecoveryFailed {
+                                capture_generation,
+                                error: "sealed capture verification refused".into(),
+                            });
+                        }
+                    } else {
+                        updates.push(Update::SourceCaptureRecoveryFailed {
+                            capture_generation,
+                            error: "sealed capture receipt missing deposit".into(),
+                        });
+                    }
+                } else {
+                    updates.push(Update::SourceCaptureRecovered {
+                        capture_generation,
+                        request: receipt.request,
+                        stored: receipt.stored,
+                    });
+                }
+            }
+        }
+        Err(error) => updates.push(Update::SourceCaptureRecoveryFailed {
+            capture_generation,
+            error,
+        }),
+    }
+    for update in updates {
+        if !custody.remains_current(Some(custody_epoch)) {
+            break;
+        }
+        out.emit(update);
     }
 }
 
@@ -2366,6 +2755,9 @@ mod research_owner_tests {
             Default::default(),
             generation,
         );
+        assert!(actor.command(TrailCommand::SetCustody(Some(
+            custody_test_fixture::custody(),
+        ))));
         let actor = std::sync::Arc::new(actor);
         let bridge = crate::research::Bridge::default();
         bridge.project(context.clone());

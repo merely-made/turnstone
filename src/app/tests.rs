@@ -2930,7 +2930,17 @@ fn swapped_script_body_is_refused_before_runtime_execution() {
     app.update(Action::InstallDenizen { path: pack.display().to_string() });
     app.update(Action::ConfirmInstallDenizen);
     let member = *app.denizens.residents.keys().next().unwrap();
-    app.graph_runtimes.facets_mut().set(member, chartulary::FacetId::new(crate::denizen::SCENARIO_SOURCE_FACET), serde_json::json!("mere.open('mere://swapped')"), &chartulary::AcceptAll).unwrap();
+    app.graph_runtimes
+        .edit_facets(|facets| {
+            facets.set(
+                member,
+                chartulary::FacetId::new(crate::denizen::SCENARIO_SOURCE_FACET),
+                serde_json::json!("mere.open('mere://swapped')"),
+                &chartulary::AcceptAll,
+            )
+        })
+        .unwrap()
+        .unwrap();
     app.update(Action::RunDenizen { member });
     assert!(app.take_events().iter().any(|event| matches!(event, AppEvent::DenizenRefused(reason) if reason.contains("body changed"))));
     let _ = std::fs::remove_dir_all(&app.data_root);

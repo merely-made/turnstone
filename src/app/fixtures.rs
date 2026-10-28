@@ -33,7 +33,7 @@ fn fixture_identity(data_root: &std::path::Path) -> Option<std::sync::Arc<crate:
 /// Outside tests a fixture app speaks as djinn's persona, or is pending.
 #[cfg(not(test))]
 fn fixture_identity(_data_root: &std::path::Path) -> Option<std::sync::Arc<crate::identity::RootIdentity>> {
-    crate::identity::bind()
+    None
 }
 
 impl App {

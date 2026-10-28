@@ -627,12 +627,14 @@ impl Shell {
 
     fn project_policy_summary(&mut self, node: uuid::Uuid) {
         let value = self.web_policy.facet_value(node);
-        if let Err(error) = self.app.graph_runtimes.facets_mut().set(
-            node,
-            chartulary::FacetId::new(crate::web_policy::USER_AGENT_POLICY_FACET),
-            value,
-            &chartulary::AcceptAll,
-        ) {
+        if let Err(error) = self.app.graph_runtimes.edit_facets(|facets| {
+            facets.set(
+                node,
+                chartulary::FacetId::new(crate::web_policy::USER_AGENT_POLICY_FACET),
+                value,
+                &chartulary::AcceptAll,
+            )
+        }) {
             tracing::warn!(%node, %error, "could not project user-agent policy summary facet");
         }
     }

@@ -67,7 +67,7 @@ impl App {
             .unwrap_or_else(GraphId::nil);
         // djinn holds the profile identity; pending (None) when it is absent
         // or Locked, with no fallback key (dramatis D12).
-        let identity = crate::identity::bind();
+        let identity: Option<std::sync::Arc<crate::identity::RootIdentity>> = None;
         let root = identity
             .as_deref()
             .map(|identity| identity::IdentityProvider::master_public_key(identity).to_bytes());
@@ -368,20 +368,24 @@ impl App {
         fork_graph.overlay_facets(fork_facets);
         let import_facet =
             chartulary::FacetId::new(mere::kernel::graph::node_facets::PROVENANCE_IMPORT);
-        for (_, minted) in &copy.id_remap {
-            fork_graph.facets_mut().remove(minted, &import_facet);
-            crate::source_capture::discard_copied_request_admission(fork_graph.facets_mut(), *minted);
-        }
-        for (minted, value) in copied_derivations {
-            fork_graph
-                .facets_mut()
-                .set(
-                    minted,
-                    derivation_facet.clone(),
-                    value,
-                    &chartulary::AcceptAll,
-                )
-                .expect("AcceptAll cannot reject copied derivation");
+        if let Err(error) = crate::graph_facets::edit_graph_facets(&mut fork_graph, |facets| {
+            for (_, minted) in &copy.id_remap {
+                facets.remove(minted, &import_facet);
+                crate::source_capture::discard_copied_request_admission(facets, *minted);
+            }
+            for (minted, value) in copied_derivations {
+                facets
+                    .set(
+                        minted,
+                        derivation_facet.clone(),
+                        value,
+                        &chartulary::AcceptAll,
+                    )
+                    .expect("AcceptAll cannot reject copied derivation");
+            }
+        }) {
+            tracing::warn!(%error, "fork facet edits were refused");
+            return vec![Effect::Redraw];
         }
 
         // Carry only admission records for members that actually crossed the
@@ -447,7 +451,7 @@ impl App {
         if let Err(error) = fork_state.save_graph_with(&fork_dir, &fork_graph,
             || pandect::save_node_facets(&fork_dir, fork_graph.facets()),
             |placement| {
-                pandect::session_graph_store::save_profiled(
+                crate::session_graph_file::save_profiled(
                 &fork_dir.join(pandect::session_graph_store::GRAPH_FILE), &fork_graph, placement)},
         ) {
             tracing::warn!(%error, "fork persistence failed before manifest publication");
@@ -502,8 +506,11 @@ impl App {
     /// you keep browsing.
     pub(crate) fn derive_session_name(&self) -> Option<String> {
         let graph = self.graph_runtimes.graph();
-        let recent = graph.recent_visited(1).into_iter().next()?;
-        let (key, _) = graph.get_node_by_url(&recent.url)?;
+        let key = graph
+            .nodes()
+            .filter_map(|(key, node)| graph.node_last_visited(key).map(|at| (at, key, node)))
+            .max_by_key(|(at, _, node)| (*at, node.id))
+            .map(|(_, key, _)| key)?;
         let label = graph.node_display_label(key);
         (!label.trim().is_empty()).then_some(label)
     }
@@ -1027,6 +1034,10 @@ impl App {
     /// (content respawns + lens-window reopens). Session-scoped view state
     /// (omnibar, active pane, maximize) resets.
     pub fn adopt_session(&mut self, id: crate::panes::SessionId) -> Vec<Effect> {
+        // Invalidate old retained-source admissions before any fallible owner
+        // open. Keep the healthy custody binding available for a successful
+        // session projection after its new admissions are loaded.
+        self.research.invalidate_projection();
         self.behavior_binding = None;
         self.session_id = id;
         self.await_source_capture_revalidation(id);
@@ -1213,13 +1224,12 @@ impl App {
             let nil = uuid::Uuid::nil();
             if container != nil && self.graph_runtimes.facets().facets_of(&nil).is_some() {
                 let donor = self.graph_runtimes.facets().clone();
-                pandect::copy_scene_facets(
-                    &donor,
-                    self.graph_runtimes.facets_mut(),
-                    nil,
-                    container,
-                );
-                self.graph_runtimes.facets_mut().remove_node(&nil);
+                if let Err(error) = self.graph_runtimes.edit_facets(|facets| {
+                    pandect::copy_scene_facets(&donor, facets, nil, container);
+                    facets.remove_node(&nil);
+                }) {
+                    tracing::warn!(%error, "nil-container scene facets could not be migrated");
+                }
             }
         }
         let mut present: std::collections::BTreeSet<uuid::Uuid> = self
@@ -1234,7 +1244,12 @@ impl App {
         if let Some(container) = self.container_id() {
             present.insert(container);
         }
-        pandect::retain_present_nodes(self.graph_runtimes.facets_mut(), &present);
+        if let Err(error) = self
+            .graph_runtimes
+            .edit_facets(|facets| pandect::retain_present_nodes(facets, &present))
+        {
+            tracing::warn!(%error, "orphaned graph facets could not be pruned");
+        }
         match crate::content_classes::reconcile(&mut self.graph_runtimes) {
             Ok(changed) if changed > 0 => {
                 tracing::info!(
@@ -1285,7 +1300,11 @@ impl App {
             if let Some(binding) =
                 pandect::read_denizen_binding(self.graph_runtimes.facets(), member)
             {
-                pandect::write_denizen_binding(self.graph_runtimes.facets_mut(), member, &binding);
+                if let Err(error) = self.graph_runtimes.edit_facets(|facets| {
+                    pandect::write_denizen_binding(facets, member, &binding)
+                }) {
+                    tracing::warn!(%error, %member, "participant binding could not be migrated");
+                }
             }
         }
         // Session-scoped view state resets.
@@ -1363,14 +1382,11 @@ impl App {
         // adopted session opens looking at its focus, not at whatever the
         // default origin happens to crop.
         if self.graph_runtimes.focused_member().is_none()
-            && let Some(last) = self
-                .graph_runtimes
-                .graph()
-                .recent_visited(1)
+            && let Some(last) = crate::session::recent_visited_urls(self.graph_runtimes.graph(), 1)
                 .into_iter()
                 .next()
         {
-            self.graph_runtimes.select_by_url(&last.url);
+            self.graph_runtimes.select_by_url(&last);
         }
         self.graph_runtimes.center_on_selected();
         // Seed the primary graph pane's published context after restore. Its
@@ -1476,7 +1492,7 @@ impl App {
         self.graph_runtimes.active_persistence().save_graph_with(&directory, graph,
             || pandect::save_node_facets(&directory, graph.facets()),
             |placement| {
-                pandect::session_graph_store::save_profiled(
+                crate::session_graph_file::save_profiled(
                 &directory.join(pandect::session_graph_store::GRAPH_FILE), graph, placement)},
         )
     }

@@ -193,7 +193,7 @@ impl<P: Copy> SessionPersistence<P> {
         }
         let graph_path = directory.join(pandect::session_graph_store::GRAPH_FILE);
         if require_complete_file(&graph_path)? {
-            let input = pandect::session_graph_store::load_profiled_snapshot(&graph_path)
+            let input = crate::session_graph_file::load_profiled_snapshot(&graph_path)
                 .map_err(io::Error::other)?
                 .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "session graph disappeared"))?;
             let mut before = pandect::graph_placement::materialize_snapshot(&input.snapshot, input.placement)

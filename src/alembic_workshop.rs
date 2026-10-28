@@ -92,7 +92,7 @@ pub(crate) fn example_seed_deltas(graph: &Graph) -> Vec<GraphDelta> {
                 .then(|| GraphDelta::AddNode {
                     id: Some(example.id),
                     url,
-                    position: euclid::point2(0.0, 0.0),
+                    position: Default::default(),
                 });
             std::iter::once(add).flatten().chain([
                 GraphDelta::ReplaySetNodeTitleById {
@@ -168,7 +168,7 @@ fn fixture_resource(graph: &Graph, surface: Uuid, resource: Uuid) -> bool {
         "turnstone://alembic-example/{}/{}",
         example.family, example.version
     );
-    node.url == expected_url
+    node.url() == expected_url
         && graph.shown_resource_id(key) == Some(resource)
         && graph.to_snapshot_at(0).nodes.iter().any(|persisted| {
             persisted.node_id == surface.to_string()
@@ -221,13 +221,20 @@ pub(crate) fn capture_public_examples(
 }
 
 pub(crate) fn passage_current(app: &crate::app::App, owner: &Owner, passage: &Passage) -> bool {
-    if passage.source.owner != *owner || !passage.public {
+    if passage.source.owner != *owner
+        || !passage.public
+        || owner.session != app.session_id.as_uuid().to_string()
+    {
         return false;
     }
+    let Ok(workspace) = Uuid::parse_str(&owner.workspace) else {
+        return false;
+    };
+    let graph = crate::panes::GraphId::from_uuid(workspace);
     let Some(runtime) = app
         .graph_runtimes
-        .iter()
-        .find(|runtime| runtime.session == Some(app.session_id))
+        .get(graph)
+        .filter(|runtime| runtime.session == Some(app.session_id))
     else {
         return false;
     };
@@ -529,5 +536,59 @@ mod tests {
         let mut wrong_source = source;
         wrong_source.version = "999".into();
         assert!(proposal_reading(&test_owner, &view, proposal.digest, &wrong_source).is_err());
+    }
+
+    #[test]
+    fn public_source_freshness_is_bound_to_exact_session_and_graph() {
+        let mut app = crate::app::App::test_stub();
+        let graph_id = app.graph_runtimes.active_graph();
+        app.graph_runtimes
+            .get_mut(graph_id)
+            .unwrap()
+            .canvas
+            .ingest_graph(|graph| {
+                for delta in example_seed_deltas(graph) {
+                    assert!(!matches!(
+                        apply_graph_delta(graph, delta),
+                        GraphDeltaResult::Refused(_)
+                    ));
+                }
+                true
+            });
+        let test_owner = owner(
+            "turnstone-public-example",
+            *graph_id.as_uuid(),
+            *app.session_id.as_uuid(),
+        );
+        let passages = capture_public_examples(
+            app.graph_runtimes.get(graph_id).unwrap().canvas.graph(),
+            &test_owner,
+            &[EXAMPLES[0].id.to_string()],
+        )
+        .unwrap();
+        let passage = &passages[0];
+        assert!(passage_current(&app, &test_owner, passage));
+
+        let wrong_session = owner(
+            &test_owner.host,
+            *graph_id.as_uuid(),
+            Uuid::new_v4(),
+        );
+        let mut wrong_session_passage = passage.clone();
+        wrong_session_passage.source.owner = wrong_session.clone();
+        assert!(!passage_current(
+            &app,
+            &wrong_session,
+            &wrong_session_passage
+        ));
+
+        let wrong_graph = owner(
+            &test_owner.host,
+            Uuid::new_v4(),
+            *app.session_id.as_uuid(),
+        );
+        let mut wrong_graph_passage = passage.clone();
+        wrong_graph_passage.source.owner = wrong_graph.clone();
+        assert!(!passage_current(&app, &wrong_graph, &wrong_graph_passage));
     }
 }

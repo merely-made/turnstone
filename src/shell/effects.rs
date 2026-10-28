@@ -506,12 +506,14 @@ fn project_reader_lineage_facet(
         "score": lineage.score,
         "block_count": lineage.block_count,
     });
-    if let Err(error) = app.graph_runtimes.facets_mut().set(
-        node,
-        chartulary::FacetId::new(crate::content::READER_LINEAGE_FACET),
-        value,
-        &chartulary::AcceptAll,
-    ) {
+    if let Err(error) = app.graph_runtimes.edit_facets(|facets| {
+        facets.set(
+            node,
+            chartulary::FacetId::new(crate::content::READER_LINEAGE_FACET),
+            value,
+            &chartulary::AcceptAll,
+        )
+    }) {
         tracing::warn!(%node, %error, "could not project reader extraction lineage facet");
     }
 }

@@ -914,21 +914,30 @@ pub fn install(app: &mut App, pending: PendingInstall) -> Result<Uuid, String> {
         .set_node_nested_for(member, Some(LogId::new(hex.clone())));
 
     // The binding + source + label facets: durable agency truth.
-    pandect::write_denizen_binding(
-        app.graph_runtimes.facets_mut(),
-        member,
-        &pandect::DenizenBinding::new(hex.clone(), pending.body.kind()),
-    );
+    app.graph_runtimes
+        .edit_facets(|facets| {
+            pandect::write_denizen_binding(
+                facets,
+                member,
+                &pandect::DenizenBinding::new(hex.clone(), pending.body.kind()),
+            );
+        })
+        .map_err(|error| format!("cannot store participant binding: {error}"))?;
     // The runnable: a script's source rides a facet; a component's bytes ride
     // the disk beside the worlds, with the facet as the pointer.
     match &pending.body {
         PackBody::Scenario(source) => {
-            let _ = app.graph_runtimes.facets_mut().set(
-                member,
-                chartulary::FacetId::new(SCENARIO_SOURCE_FACET),
-                serde_json::json!(source),
-                &chartulary::AcceptAll,
-            );
+            app.graph_runtimes
+                .edit_facets(|facets| {
+                    facets.set(
+                        member,
+                        chartulary::FacetId::new(SCENARIO_SOURCE_FACET),
+                        serde_json::json!(source),
+                        &chartulary::AcceptAll,
+                    )
+                })
+                .map_err(|error| format!("cannot store participant source: {error}"))?
+                .map_err(|error| format!("participant source facet refused: {error}"))?;
         }
         PackBody::Component(bytes) => {
             let file = format!("{hex}.wasm");
@@ -941,12 +950,17 @@ pub fn install(app: &mut App, pending: PendingInstall) -> Result<Uuid, String> {
             })();
             match written {
                 Ok(()) => {
-                    let _ = app.graph_runtimes.facets_mut().set(
-                        member,
-                        chartulary::FacetId::new(COMPONENT_FACET),
-                        serde_json::json!(file),
-                        &chartulary::AcceptAll,
-                    );
+                    app.graph_runtimes
+                        .edit_facets(|facets| {
+                            facets.set(
+                                member,
+                                chartulary::FacetId::new(COMPONENT_FACET),
+                                serde_json::json!(file),
+                                &chartulary::AcceptAll,
+                            )
+                        })
+                        .map_err(|error| format!("cannot store component reference: {error}"))?
+                        .map_err(|error| format!("component reference facet refused: {error}"))?;
                 }
                 Err(err) => {
                     tracing::warn!(%err, path = ?target, "failed to store the component");
@@ -954,12 +968,17 @@ pub fn install(app: &mut App, pending: PendingInstall) -> Result<Uuid, String> {
             }
         }
     }
-    let _ = app.graph_runtimes.facets_mut().set(
-        member,
-        chartulary::FacetId::new("scenario.label"),
-        serde_json::json!(pending.label),
-        &chartulary::AcceptAll,
-    );
+    app.graph_runtimes
+        .edit_facets(|facets| {
+            facets.set(
+                member,
+                chartulary::FacetId::new("scenario.label"),
+                serde_json::json!(pending.label),
+                &chartulary::AcceptAll,
+            )
+        })
+        .map_err(|error| format!("cannot store participant label: {error}"))?
+        .map_err(|error| format!("participant label facet refused: {error}"))?;
 
     // The nested world: fresh log, every granted path projected by the gate
     // (read-only, gate-authored — the browsable record authority derives

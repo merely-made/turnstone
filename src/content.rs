@@ -577,6 +577,16 @@ impl ContentStates {
             .filter(|document| document.effective_url.is_some() && document.acquired_at_ms != 0)
     }
 
+    /// Forget fetched source bodies and invalidate every outstanding fetch
+    /// admission. A terminal answer already queued for an older request then
+    /// fails `finish_fetch` and cannot repopulate this cache.
+    pub(crate) fn clear_source_documents(&mut self) {
+        for load in self.loads.values_mut() {
+            load.clear();
+        }
+        self.source_admissions.clear();
+    }
+
     /// Only a complete, settled source can be offered for a new capture.
     /// Fingerprints are computed at admission rather than on every UI frame.
     pub(crate) fn source_capture_admission(
@@ -752,6 +762,35 @@ mod tests {
                 .is_none(),
             "the request owner is never promoted to final-source evidence"
         );
+    }
+
+    #[test]
+    fn custody_retirement_clears_fetched_bodies_and_invalidates_late_answers() {
+        let node = Uuid::new_v4();
+        let mut states = ContentStates::default();
+        states.begin_fetch(node, 41);
+        states.note_fetched(
+            node,
+            "https://private.example/source".into(),
+            FetchedDocument {
+                bytes: b"private capture canary".to_vec(),
+                content_type: Some("text/html".into()),
+                body: "private capture canary".into(),
+                effective_url: Some("https://private.example/source".into()),
+                acquired_at_ms: 7,
+            },
+            22,
+        );
+        assert!(states
+            .source_capture_candidate(node, "https://private.example/source")
+            .is_some());
+
+        states.clear_source_documents();
+
+        assert!(states
+            .source_capture_candidate(node, "https://private.example/source")
+            .is_none());
+        assert!(!states.finish_fetch(node, 41), "late response must be stale");
     }
 
     #[test]

@@ -301,7 +301,9 @@ impl App {
         effects
     }
     pub(crate) fn sync_research_context(&self) {
-        self.research.access(self.identity.clone().map(|sealer| crate::research::ClipAccess { root: self.data_root.clone(), sealer }));
+        if !self.research.is_available() {
+            return;
+        }
         self.research.project(crate::research::Context {
             session: self.session_id,
             generation: self.source_capture_generation,
@@ -407,12 +409,16 @@ mod research_view_tests {
                 .graph_runtimes
                 .visit(&format!("https://gone.test/{name}"));
             let node = app.graph_runtimes.graph().get_node(key).unwrap().id;
-            crate::source_capture::append_reference(
-                app.graph_runtimes.facets_mut(),
-                node,
-                eidetic::ManifestId::of_blob(name.as_bytes()).to_string(),
-            )
-            .unwrap();
+            app.graph_runtimes
+                .edit_facets(|facets| {
+                    crate::source_capture::append_reference(
+                        facets,
+                        node,
+                        eidetic::ManifestId::of_blob(name.as_bytes()).to_string(),
+                    )
+                })
+                .unwrap()
+                .unwrap();
         }
         let chosen: Vec<_> = app
             .saved_source_admissions()
@@ -434,12 +440,18 @@ mod research_view_tests {
         };
         app.update(select(source(&app, pane), chosen.clone()));
         let both = source(&app, pane);
-        for target in &chosen {
-            app.graph_runtimes.facets_mut().remove(
-                &target.node(),
-                &chartulary::FacetId::new(crate::source_capture::SOURCE_CAPTURE_REFERENCES_FACET),
-            );
-        }
+        app.graph_runtimes
+            .edit_facets(|facets| {
+                for target in &chosen {
+                    facets.remove(
+                        &target.node(),
+                        &chartulary::FacetId::new(
+                            crate::source_capture::SOURCE_CAPTURE_REFERENCES_FACET,
+                        ),
+                    );
+                }
+            })
+            .unwrap();
         assert!(app.saved_source_admissions().is_empty());
         let effects = app.update(select(both.clone(), vec![chosen[1].clone()]));
         assert!(
@@ -473,12 +485,16 @@ mod research_view_tests {
         let mut app = App::test_stub();
         let key = app.graph_runtimes.visit("https://gone.test/A");
         let node = app.graph_runtimes.graph().get_node(key).unwrap().id;
-        crate::source_capture::append_reference(
-            app.graph_runtimes.facets_mut(),
-            node,
-            eidetic::ManifestId::of_blob(b"A1").to_string(),
-        )
-        .unwrap();
+        app.graph_runtimes
+            .edit_facets(|facets| {
+                crate::source_capture::append_reference(
+                    facets,
+                    node,
+                    eidetic::ManifestId::of_blob(b"A1").to_string(),
+                )
+            })
+            .unwrap()
+            .unwrap();
         app.update(Action::OpenAnswers);
         let pane = app.active_pane.unwrap();
         let initial = source(&app, pane);

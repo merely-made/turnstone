@@ -370,16 +370,16 @@ fn malformed_keep_facet_refuses_attachment_without_mutation() {
     let node = visit(&mut app, URL_A);
     admit(&mut app, node, URL_A);
     let keep_id = FacetId::new("turnstone.controls.v1.keep");
-    app.graph_runtimes
-        .active_canvas_mut()
-        .facets_mut()
-        .set(
+    crate::graph_facets::edit_canvas_facets(app.graph_runtimes.active_canvas_mut(), |facets| {
+        facets.set(
             node,
             keep_id.clone(),
             serde_json::json!("malformed"),
             &AcceptAll,
         )
-        .unwrap();
+    })
+    .unwrap()
+    .unwrap();
     let offer = target(&app, node);
     let request = begin(&mut app, offer);
     assert!(request.keep);

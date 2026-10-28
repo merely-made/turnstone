@@ -14,7 +14,10 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
-use std::sync::{Arc, RwLock};
+use std::sync::{
+    Arc, RwLock,
+    atomic::{AtomicU64, Ordering},
+};
 
 use fleece::FleeceAnnotationRecord;
 use moot_port::captured_web::{CapturedCollectionProjection, RejectedCaptureReason};
@@ -48,35 +51,197 @@ impl Default for CaptureLibraryState {
 
 /// Read-only bridge shared by the trail and place workers. The lock guards
 /// plain cloned records, never a database handle.
-#[derive(Clone, Debug, Default)]
-pub(crate) struct LocalCaptureLibrary(Arc<RwLock<CaptureLibraryState>>);
+#[derive(Clone)]
+pub(crate) struct LocalCaptureLibrary {
+    state: Arc<RwLock<CaptureLibraryState>>,
+    generation: Arc<AtomicU64>,
+    custody_epoch: Arc<RwLock<Option<Arc<dyn Fn() -> Option<u64> + Send + Sync>>>>,
+}
+
+impl std::fmt::Debug for LocalCaptureLibrary {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let state = self
+            .state
+            .read()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        let (available, record_count, invalid_count) = match &*state {
+            CaptureLibraryState::Ready { library, .. } => {
+                (true, library.records.len(), library.invalid.len())
+            },
+            CaptureLibraryState::Unavailable(_) => (false, 0, 0),
+        };
+        formatter
+            .debug_struct("LocalCaptureLibrary")
+            .field("available", &available)
+            .field("record_count", &record_count)
+            .field("invalid_count", &invalid_count)
+            .field("generation", &self.generation.load(Ordering::SeqCst))
+            .finish_non_exhaustive()
+    }
+}
+
+impl Default for LocalCaptureLibrary {
+    fn default() -> Self {
+        Self {
+            state: Arc::new(RwLock::new(CaptureLibraryState::default())),
+            generation: Arc::new(AtomicU64::new(1)),
+            custody_epoch: Arc::new(RwLock::new(None)),
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+struct CustodyTicket {
+    generation: u64,
+    source_epoch: u64,
+}
 
 impl LocalCaptureLibrary {
     pub(crate) fn unavailable(&self, reason: impl Into<String>) {
         let mut state = self
-            .0
+            .state
             .write()
             .unwrap_or_else(|poisoned| poisoned.into_inner());
         *state = CaptureLibraryState::Unavailable(reason.into());
     }
 
-    fn replace(&self, directory: impl Into<PathBuf>, library: ReadyCaptureLibrary) {
-        let mut state = self
-            .0
+    /// Install the live source-custody predicate itself. A stale actor message
+    /// cannot re-enable availability after the bound source retires because
+    /// every cache read and publication rechecks the source epoch.
+    pub(crate) fn bind_custody(&self, custody: &crate::trail_memory::SourceCustody) -> bool {
+        let callback = custody.epoch.clone();
+        let Some(source_epoch) = callback() else {
+            self.retire_custody();
+            return false;
+        };
+        let mut current = self
+            .custody_epoch
             .write()
             .unwrap_or_else(|poisoned| poisoned.into_inner());
+        if !self.advance_generation() {
+            *current = None;
+            return false;
+        }
+        *current = Some(callback.clone());
+        if callback() != Some(source_epoch) {
+            *current = None;
+            let _ = self.advance_generation();
+            return false;
+        }
+        true
+    }
+
+    pub(crate) fn retire_custody(&self) {
+        let mut current = self
+            .custody_epoch
+            .write()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        *current = None;
+        self.advance_generation();
+        drop(current);
+        self.unavailable("profile custody is unavailable");
+    }
+
+    fn advance_generation(&self) -> bool {
+        if self
+            .generation
+            .fetch_update(Ordering::SeqCst, Ordering::SeqCst, |epoch| epoch.checked_add(1))
+            .is_ok()
+        {
+            true
+        } else {
+            false
+        }
+    }
+
+    fn ticket(&self) -> Result<CustodyTicket, String> {
+        let current = self
+            .custody_epoch
+            .read()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        let callback = current
+            .as_ref()
+            .ok_or_else(|| "profile custody is unavailable".to_string())?;
+        let source_epoch = callback().ok_or_else(|| "profile custody is unavailable".to_string())?;
+        let generation = self.generation.load(Ordering::SeqCst);
+        if generation == 0 || callback() != Some(source_epoch) {
+            return Err("capture custody generation changed".into());
+        }
+        Ok(CustodyTicket {
+            generation,
+            source_epoch,
+        })
+    }
+
+    fn is_current(&self, ticket: CustodyTicket) -> bool {
+        let current = self
+            .custody_epoch
+            .read()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        current.as_ref().is_some_and(|callback| {
+            self.generation.load(Ordering::SeqCst) == ticket.generation
+                && callback() == Some(ticket.source_epoch)
+        })
+    }
+
+    fn replace_if_current(
+        &self,
+        ticket: CustodyTicket,
+        directory: impl Into<PathBuf>,
+        library: ReadyCaptureLibrary,
+    ) -> bool {
+        // Hold the gate read lock through cache installation. Retirement takes
+        // its write lock first, then clears this projection under the same
+        // lock order.
+        let current = self
+            .custody_epoch
+            .read()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        if !current.as_ref().is_some_and(|callback| {
+            self.generation.load(Ordering::SeqCst) == ticket.generation
+                && callback() == Some(ticket.source_epoch)
+        }) {
+            return false;
+        }
+        let mut state = self
+            .state
+            .write()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        if !current.as_ref().is_some_and(|callback| {
+            self.generation.load(Ordering::SeqCst) == ticket.generation
+                && callback() == Some(ticket.source_epoch)
+        }) {
+            return false;
+        }
         *state = CaptureLibraryState::Ready {
             directory: directory.into(),
             library,
         };
+        true
     }
 
-    fn snapshot_for(&self, directory: &Path) -> CaptureLibraryState {
+    fn snapshot_for(&self, directory: &Path, ticket: CustodyTicket) -> CaptureLibraryState {
+        let current = self
+            .custody_epoch
+            .read()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        if !current.as_ref().is_some_and(|callback| {
+            self.generation.load(Ordering::SeqCst) == ticket.generation
+                && callback() == Some(ticket.source_epoch)
+        }) {
+            return CaptureLibraryState::Unavailable("profile custody is unavailable".into());
+        }
         let state = self
-            .0
+            .state
             .read()
             .unwrap_or_else(|poisoned| poisoned.into_inner())
             .clone();
+        if !current.as_ref().is_some_and(|callback| {
+            self.generation.load(Ordering::SeqCst) == ticket.generation
+                && callback() == Some(ticket.source_epoch)
+        }) {
+            return CaptureLibraryState::Unavailable("profile custody changed while reading".into());
+        }
         match state {
             CaptureLibraryState::Ready {
                 directory: current,
@@ -106,6 +271,7 @@ pub(crate) fn refresh_local_capture_library(
     directory: &Path,
     library: &LocalCaptureLibrary,
 ) -> Result<(), String> {
+    let ticket = library.ticket()?;
     let manifests = pollster::block_on(eidetic::list_typed::<FleeceAnnotationRecord>(store))
         .map_err(|error| format!("list local Fleece annotations: {error}"))?;
     let mut ready = ReadyCaptureLibrary::default();
@@ -127,7 +293,9 @@ pub(crate) fn refresh_local_capture_library(
             },
         }
     }
-    library.replace(directory, ready);
+    if !library.replace_if_current(ticket, directory, ready) {
+        return Err("profile custody changed while loading captured sources".into());
+    }
     Ok(())
 }
 
@@ -153,8 +321,12 @@ pub(crate) fn remint(
     capture_directory: &Path,
     library: &LocalCaptureLibrary,
 ) -> CapturedCollectionCache {
-    let library = library.snapshot_for(capture_directory);
-    let (records, invalid) = match library {
+    let ticket = match library.ticket() {
+        Ok(ticket) => ticket,
+        Err(_) => return CapturedCollectionCache::default(),
+    };
+    let snapshot = library.snapshot_for(capture_directory, ticket);
+    let (records, invalid) = match snapshot {
         CaptureLibraryState::Unavailable(error) => {
             let mut rejected = Vec::new();
             for share in roster.authorized_fauna(authority) {
@@ -226,6 +398,9 @@ pub(crate) fn remint(
         status(&item.share, reason)
     }));
     rejected.sort_by_key(|item| item.share_operation);
+    if !library.is_current(ticket) {
+        return CapturedCollectionCache::default();
+    }
     CapturedCollectionCache { groups, rejected }
 }
 
@@ -255,6 +430,84 @@ mod tests {
     use servitor::{Cap, Mode, Subject};
 
     struct Allowed;
+
+    fn library_with_test_custody() -> LocalCaptureLibrary {
+        let library = LocalCaptureLibrary::default();
+        let custody = crate::trail_memory::custody_test_fixture::custody();
+        assert!(library.bind_custody(&custody));
+        library
+    }
+
+    fn install_ready_for_test(
+        library: &LocalCaptureLibrary,
+        directory: &Path,
+        ready: ReadyCaptureLibrary,
+    ) {
+        let ticket = library.ticket().unwrap();
+        assert!(library.replace_if_current(ticket, directory, ready));
+    }
+
+    #[test]
+    fn custody_retirement_rejects_a_queued_captured_library_refill() {
+        let library = library_with_test_custody();
+        let refresh_ticket = library.ticket().unwrap();
+
+        library.retire_custody();
+
+        assert!(
+            !library.replace_if_current(
+                refresh_ticket,
+                "/synthetic/session",
+                ReadyCaptureLibrary::default(),
+            ),
+            "a refresh started before lock cannot repopulate the shared cache"
+        );
+        assert!(matches!(
+            library.snapshot_for(Path::new("/synthetic/session"), refresh_ticket),
+            CaptureLibraryState::Unavailable(_)
+        ));
+    }
+
+    #[test]
+    fn retired_source_custody_cannot_be_reenabled_by_stale_adoption() {
+        let library = library_with_test_custody();
+        let source_epoch = Arc::new(AtomicU64::new(7));
+        let callback_epoch = source_epoch.clone();
+        let mut custody = crate::trail_memory::custody_test_fixture::custody();
+        custody.epoch = Arc::new(move || match callback_epoch.load(Ordering::SeqCst) {
+            0 => None,
+            epoch => Some(epoch),
+        });
+
+        // The shell's initial SetCustody snapshot succeeds, then lock occurs
+        // before the actor installs its library admission.
+        assert_eq!(custody.epoch(), Some(7));
+        source_epoch.store(0, Ordering::SeqCst);
+        library.retire_custody();
+        assert!(!library.bind_custody(&custody));
+        assert!(library.ticket().is_err());
+        assert!(matches!(
+            library.snapshot_for(
+                Path::new("/synthetic/session"),
+                CustodyTicket {
+                    generation: 1,
+                    source_epoch: 7,
+                },
+            ),
+            CaptureLibraryState::Unavailable(_)
+        ));
+    }
+
+    #[test]
+    fn debug_output_never_includes_capture_library_contents_or_status_text() {
+        let library = LocalCaptureLibrary::default();
+        library.unavailable("PRIVATE_CANARY_CAPTURE_TEXT");
+
+        let debug = format!("{library:?}");
+
+        assert!(!debug.contains("PRIVATE_CANARY_CAPTURE_TEXT"));
+        assert!(debug.contains("available: false"));
+    }
 
     impl AuthorityProvider for Allowed {
         fn covers(&self, _: Subject, _: &Cap, mode: Mode) -> bool {
@@ -314,7 +567,7 @@ mod tests {
         };
         let roster = empty_roster(vec![share(first_id, 1, 10), share(second_id, 2, 20)]);
 
-        let library = LocalCaptureLibrary::default();
+        let library = library_with_test_custody();
         {
             let mut reopened = FjallStore::open(dir.path()).unwrap();
             refresh_local_capture_library(&mut reopened, dir.path(), &library).unwrap();
@@ -343,9 +596,10 @@ mod tests {
             at_ms: 30,
             op_hash: [3; 32],
         });
-        let library = LocalCaptureLibrary::default();
+        let library = library_with_test_custody();
         let scope = Path::new("test-capture-library");
-        library.replace(
+        install_ready_for_test(
+            &library,
             scope,
             ReadyCaptureLibrary {
                 records: [(kept.manifest_id, first), (removed.manifest_id, second)]
@@ -369,9 +623,10 @@ mod tests {
         let missing = share(ManifestId::of_blob(b"missing"), 4, 40);
         let invalid = share(ManifestId::of_blob(b"invalid"), 5, 50);
         let roster = empty_roster(vec![missing.clone(), invalid.clone()]);
-        let ready = LocalCaptureLibrary::default();
+        let ready = library_with_test_custody();
         let scope = Path::new("test-capture-library");
-        ready.replace(
+        install_ready_for_test(
+            &ready,
             scope,
             ReadyCaptureLibrary {
                 records: BTreeMap::new(),
@@ -404,7 +659,7 @@ mod tests {
             CapturedRejectionReason::LibraryUnavailable(_)
         ));
 
-        let unavailable = LocalCaptureLibrary::default();
+        let unavailable = library_with_test_custody();
         unavailable.unavailable("capture storage is offline");
         let unavailable_view = remint(&roster, &Allowed, scope, &unavailable);
         assert!(unavailable_view.groups.is_empty());

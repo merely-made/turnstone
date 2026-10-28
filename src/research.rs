@@ -77,6 +77,20 @@ impl From<crate::saved_sources::Target> for Target {
 pub(crate) struct ClipAccess {
     pub root: std::path::PathBuf,
     pub sealer: Arc<dyn eidetic::PayloadSealer + Send + Sync>,
+    pub epoch: Arc<dyn Fn() -> Option<u64> + Send + Sync>,
+}
+impl ClipAccess {
+    pub(crate) fn from_bound(
+        root: std::path::PathBuf,
+        bound: Arc<crate::custody_binding::BoundSealer>,
+    ) -> Self {
+        let epoch_bound = bound.clone();
+        Self {
+            root,
+            sealer: bound,
+            epoch: Arc::new(move || epoch_bound.epoch()),
+        }
+    }
 }
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize)]
 pub(crate) struct Choice {
@@ -105,6 +119,7 @@ pub(crate) enum Intent {
 }
 #[derive(Default)]
 struct State {
+    available: bool,
     context: Option<Context>,
     choices: Vec<Choice>,
     intents: Vec<Intent>,
@@ -113,19 +128,47 @@ struct State {
 #[derive(Clone, Default)]
 pub(crate) struct Bridge(Arc<Mutex<State>>);
 impl Bridge {
+    /// Invalidate session-scoped projections while preserving the live custody
+    /// connection. The next session can publish a fresh context after its
+    /// admissions have been loaded.
+    pub fn invalidate_projection(&self) {
+        let mut state = self.0.lock().unwrap();
+        state.context = None;
+        state.choices.clear();
+        state.intents.clear();
+    }
+
+    pub fn set_available(&self, available: bool) {
+        let mut state = self.0.lock().unwrap();
+        state.available = available;
+        if !available {
+            state.context = None;
+            state.choices.clear();
+            state.intents.clear();
+            state.clip_access = None;
+        }
+    }
+    pub fn is_available(&self) -> bool {
+        self.0.lock().unwrap().available
+    }
     pub fn access(&self, access: Option<ClipAccess>) {
         self.0.lock().unwrap().clip_access = access;
     }
     pub fn clip_access(&self) -> Result<ClipAccess, String> {
-        self.0
-            .lock()
-            .unwrap()
+        let state = self.0.lock().unwrap();
+        if !state.available {
+            return Err(crate::identity::PENDING.into());
+        }
+        state
             .clip_access
             .clone()
             .ok_or_else(|| crate::identity::PENDING.into())
     }
     pub fn project(&self, context: Context) {
         let mut state = self.0.lock().unwrap();
+        if !state.available {
+            return;
+        }
         if state.context.as_ref() != Some(&context) {
             state.choices.clear();
             state.context = Some(context);
@@ -143,7 +186,10 @@ impl Bridge {
         self.0.lock().unwrap().choices.clone()
     }
     pub fn send(&self, intent: Intent) {
-        self.0.lock().unwrap().intents.push(intent);
+        let mut state = self.0.lock().unwrap();
+        if state.available {
+            state.intents.push(intent);
+        }
     }
     pub fn drain(&self) -> Vec<Intent> {
         std::mem::take(&mut self.0.lock().unwrap().intents)
@@ -209,12 +255,20 @@ impl Bridge {
             return Err("The retained clip was withdrawn from this session.".into());
         }
         let access = self.clip_access()?;
-        let view = crate::retained_clip::read_sealed(
+        let custody_epoch = (access.epoch)()
+            .ok_or_else(|| crate::identity::PENDING.to_string())?;
+        let mut view = crate::retained_clip::read_sealed(
             &access.root,
             admission.manifest,
             crate::retained_clip::limits()?,
             &*access.sealer,
         )?;
+        if (access.epoch)() != Some(custody_epoch) {
+            if let crate::retained_clip::ClipBody::Text(text) = &mut view.body {
+                text.clear();
+            }
+            return Err("Profile custody changed while reading the retained clip.".into());
+        }
         let crate::retained_clip::ClipBody::Text(text) = view.body else {
             return Err("This retained clip has no recallable text body.".into());
         };
@@ -518,10 +572,12 @@ mod tests {
             clips: clips.clone(),
         };
         let bridge = Bridge::default();
+        bridge.set_available(true);
         bridge.project(context.clone());
         bridge.access(Some(ClipAccess {
             root: root.path().into(),
             sealer: sealer.clone(),
+            epoch: Arc::new(|| Some(1)),
         }));
         for _ in 0..2 {
             assert_eq!(bridge.clip_text(&context, &clips[0]).unwrap().1, text);
@@ -571,6 +627,7 @@ mod tests {
         bridge.access(Some(ClipAccess {
             root: root.path().into(),
             sealer,
+            epoch: Arc::new(|| Some(1)),
         }));
         bridge.project(Context {
             clips: vec![],
@@ -600,6 +657,7 @@ mod tests {
             clips: vec![],
         };
         let bridge = Bridge::default();
+        bridge.set_available(true);
         bridge.project(context.clone());
         bridge
             .loaded(

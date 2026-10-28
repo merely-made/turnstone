@@ -12,6 +12,66 @@ use crate::source_capture::{CapturePhase, CaptureRequest};
 use crate::{session, source_capture};
 use std::path::Path;
 
+#[test]
+fn custody_retirement_clears_fetched_sources_and_rejects_their_late_answer() {
+    let mut app = App::test_stub();
+    let node = uuid::Uuid::new_v4();
+    let old_generation = app.source_capture_generation;
+    let binding = crate::place::PlaceBindingV1::new(
+        crate::place::PlaceId([1; 32]),
+        crate::place::SharedContainerId([2; 32]),
+        crate::place::ChatSpaceId([3; 32]),
+        "hall",
+    )
+    .unwrap();
+    let private_group = crate::place::CapturedContentGroup {
+        extraction_schema: "fixture-schema".into(),
+        normalization: "fixture-normalization".into(),
+        reader_profile: "fixture-reader".into(),
+        canonical_text_hash: "fixture-hash".into(),
+        canonical_text_iri: "urn:fixture:private-capture".into(),
+        canonical_text: "private capture canary".into(),
+        contributions: Vec::new(),
+    };
+    let mut snapshot = crate::place::OfflinePlaceSnapshot::default();
+    snapshot.captured.groups.push(private_group);
+    app.place = crate::place::PlaceState::Offline {
+        binding,
+        generation: 3,
+        snapshot,
+    };
+    app.content.begin_fetch(node, 41);
+    app.content.note_fetched(
+        node,
+        "https://private.example/source".into(),
+        crate::content::FetchedDocument {
+            bytes: b"private capture canary".to_vec(),
+            content_type: Some("text/html".into()),
+            body: "private capture canary".into(),
+            effective_url: Some("https://private.example/source".into()),
+            acquired_at_ms: 7,
+        },
+        22,
+    );
+    assert!(app
+        .content
+        .source_capture_candidate(node, "https://private.example/source")
+        .is_some());
+
+    app.retire_private_custody();
+
+    assert_ne!(app.source_capture_generation, old_generation);
+    let crate::place::PlaceState::Offline { snapshot, .. } = &app.place else {
+        panic!("App custody retirement leaves the host place lifecycle to Shell");
+    };
+    assert_eq!(snapshot.captured, Default::default());
+    assert!(app
+        .content
+        .source_capture_candidate(node, "https://private.example/source")
+        .is_none());
+    assert!(!app.content.finish_fetch(node, 41));
+}
+
 fn app_at(root: &Path) -> App {
     let mut app = App::test_stub_at(root.to_path_buf());
     app.sessions = pandect::ManifestStore::with_root(session::sessions_root(root));
@@ -491,18 +551,17 @@ fn overwrite_capture_facet(
     facet: &str,
     value: serde_json::Value,
 ) {
-    app.graph_runtimes
-        .get_mut(request.graph)
-        .unwrap()
-        .canvas
-        .facets_mut()
-        .set(
+    crate::graph_facets::edit_canvas_facets(
+        &mut app.graph_runtimes.get_mut(request.graph).unwrap().canvas,
+        |facets| facets.set(
             request.node,
             chartulary::FacetId::new(facet),
             value,
             &chartulary::AcceptAll,
-        )
-        .unwrap();
+        ),
+    )
+    .unwrap()
+    .unwrap();
 }
 
 fn request_ledger(app: &App, request: &CaptureRequest) -> serde_json::Value {

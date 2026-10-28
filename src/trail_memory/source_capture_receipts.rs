@@ -199,6 +199,26 @@ pub(super) fn capture_request(
     Ok(stored)
 }
 
+/// Return an already completed legacy capture without depositing new plaintext.
+/// An unfinished legacy request requires explicit recovery; it is never
+/// continued through the sealed capture path.
+pub(super) fn completed_legacy(
+    store: &mut dyn eidetic::Store,
+    request: &CaptureRequest,
+) -> Result<StoredSourceDocument, String> {
+    let receipt_key = key(request);
+    let bytes = pollster::block_on(store.get(&receipt_key))
+        .map_err(|_| "legacy capture receipt unavailable")?
+        .ok_or("legacy capture receipt missing")?;
+    let receipt = decode(&receipt_key, &bytes)?;
+    if receipt.request != *request {
+        return Err("legacy capture request identity conflict".into());
+    }
+    let stored = receipt.stored.ok_or("unfinished legacy capture needs explicit recovery")?;
+    verify_request(store, request, &stored)?;
+    Ok(stored)
+}
+
 /// Revalidate one completed receipt independently, so one damaged artifact
 /// does not hide other decoded requests in recovery inventory. The caller
 /// reports this request's error and offers explicit recovery rather than

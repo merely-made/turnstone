@@ -116,21 +116,27 @@ impl App {
         for graph in graphs {
             let canvas = self.graph_runtimes.canvas_mut(graph).unwrap();
             let members: Vec<_> = canvas.graph().nodes().map(|(_, n)| n.id).collect();
-            for member in members {
-                canvas
-                    .facets_mut()
-                    .remove(&member, &chartulary::FacetId::new(NOTE_FACET));
+            if let Err(error) = crate::graph_facets::edit_canvas_facets(canvas, |facets| {
+                for member in members {
+                    facets.remove(&member, &chartulary::FacetId::new(NOTE_FACET));
+                }
+            }) {
+                return self.saved_source_refusal(format!(
+                    "Research note choice failed: {error}"
+                ));
             }
         }
         let Some(canvas) = self.graph_runtimes.canvas_mut(choice.graph) else {
             return vec![];
         };
-        if let Err(error) = canvas.facets_mut().set(
-            choice.member,
-            chartulary::FacetId::new(NOTE_FACET),
-            serde_json::Value::String(choice.address.clone()),
-            &chartulary::AcceptAll,
-        ) {
+        if let Err(error) = crate::graph_facets::edit_canvas_facets(canvas, |facets| {
+            facets.set(
+                choice.member,
+                chartulary::FacetId::new(NOTE_FACET),
+                serde_json::Value::String(choice.address.clone()),
+                &chartulary::AcceptAll,
+            )
+        }) {
             return self.saved_source_refusal(format!("Research note choice failed: {error}"));
         }
         self.keep_node(choice.member);
@@ -218,15 +224,16 @@ mod tests {
         app.commit_research_note(stale);
         assert_eq!(app.research_note().unwrap().unwrap().member, b.member);
         let graph = app.graph_runtimes.canvas_mut(b.graph).unwrap();
-        graph
-            .facets_mut()
-            .set(
+        crate::graph_facets::edit_canvas_facets(graph, |facets| {
+            facets.set(
                 b.member,
                 chartulary::FacetId::new(NOTE_FACET),
                 serde_json::Value::String(a.address.clone()),
                 &chartulary::AcceptAll,
             )
-            .unwrap();
+        })
+        .unwrap()
+        .unwrap();
         assert!(
             app.research_note().is_err(),
             "retargeting the chosen member cannot redirect future clips"

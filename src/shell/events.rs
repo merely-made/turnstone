@@ -77,6 +77,7 @@ impl ApplicationHandler for Shell {
     }
 
     fn about_to_wait(&mut self, event_loop: &ActiveEventLoop) {
+        self.service_private_custody();
         // Clear before draining: any later proxy callback admits another turn.
         // Semantic publication remains independent of successful presentation.
         if std::mem::take(&mut self.actor_wake_pending) {
@@ -269,6 +270,7 @@ impl ApplicationHandler for Shell {
         window_id: WindowId,
         event: WindowEvent,
     ) {
+        self.service_private_custody();
         if self.theme_editor_event(window_id, &event) {
             return;
         }
@@ -471,6 +473,7 @@ impl ApplicationHandler for Shell {
 
 impl Shell {
     fn drain_actor_updates(&mut self, event_loop: &ActiveEventLoop) {
+        self.service_private_custody();
         let started = std::time::Instant::now();
         while let Ok(raw) = self
             .fetch_rx
@@ -518,12 +521,25 @@ impl Shell {
         }
         while let Ok(update) = self.trail_rx.try_recv() {
             // Recall answers (RecallHits / RecallFailed), already app-owned.
+            self.service_private_custody();
+            let private_success = match &update {
+                crate::action::Update::SavedSourcesLoaded {
+                    result: Ok(entries),
+                    ..
+                } => entries.iter().any(|entry| entry.content.is_some()),
+                crate::action::Update::SavedSourceRead { result: Ok(_), .. }
+                | crate::action::Update::SourceDocumentCaptured { result: Ok(_), .. }
+                | crate::action::Update::SourceCaptureSaved { result: Ok(()), .. }
+                | crate::action::Update::SourceCaptureRecovered { .. }
+                | crate::action::Update::SourceCaptureRevalidated { .. } => true,
+                _ => false,
+            };
             let effects = self.app.apply_update(update);
-            self.run_effects(effects);
+            self.service_private_custody();
+            if !private_success || self.app.research.is_available() {
+                self.run_effects(effects);
+            }
         }
-        // The vault unlocked: adopt the root before the place worker's
-        // answers, which may be the commands it held until now.
-        self.adopt_unlocked_root();
         while let Ok(update) = self.place_rx.try_recv() {
             // One place answer the app never sees: a prepared dial is a
             // shell-owned thing. The app learns of a refusal as an event and
