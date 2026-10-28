@@ -231,6 +231,10 @@ mod resident_presentation;
 #[path = "mere_host_resident.rs"]
 mod resident_transaction;
 
+#[cfg(feature = "alembic-workshop")]
+#[path = "mere_host_alembic.rs"]
+mod alembic_owner;
+
 /// Changes not yet stored, taken as one batch: what [`MereHost::stage`] put
 /// in a batch, or what [`MereHost::prepare_store`] took for its caller to
 /// write. Mark it stored once it commits.
