@@ -1,0 +1,22 @@
+# README screenshots: the graph canvas over the three offline sample meres,
+# then the same canvas beside the Overview pane. Offline; run on a fresh
+# TURNSTONE_ROOT. The window is sized in logical pixels, so a 2x display
+# captures 2400x1440; the README copies are scaled to 1600 wide.
+resize 1200 720
+settle 30
+key escape
+open mere://alpha
+settle 10
+open mere://beta
+settle 10
+open mere://gamma
+settle 120
+act Fit to view
+settle 30
+assert nodes >= 15
+capture 01_canvas
+act Open Gloss pane
+settle 20
+assert pane gloss
+capture 02_overview
+log README screenshots complete
