@@ -38,6 +38,10 @@ name = "command_declarations"
 required-features = ["web"]
 
 [[test]]
+name = "capture_conflict_fixture"
+required-features = ["web"]
+
+[[test]]
 name = "moot_resources_reopen"
 required-features = ["moot-resources"]
 

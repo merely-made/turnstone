@@ -197,22 +197,40 @@
       : `${visit.source}\u0000${visit.url}\u0000${visit.at_ms}\u0000${visit.transition}`;
   }
 
+  // The ledger's `same_source_facts` (eidetic import/encounters.rs): a visit
+  // is a replay of its identity when these agree. Titles may differ. A visit
+  // or outside-range parent with the same visit id is one parent.
+  function parentKey(parent) {
+    return ["visit", "outside_range"].includes(parent?.kind)
+      ? `visit:${parent.visit_id}` : parent?.kind ?? "unknown";
+  }
+
+  function sameSourceFacts(left, right) {
+    return left.url === right.url && left.at_ms === right.at_ms
+      && left.transition === right.transition
+      && parentKey(left.parent) === parentKey(right.parent)
+      && (left.original_unix_micros ?? null) === (right.original_unix_micros ?? null)
+      && (left.source_is_local ?? null) === (right.source_is_local ?? null);
+  }
+
+  // The first visit for an identity wins; a later visit with other source
+  // facts is refused alone and returned, never thrown over the whole batch.
   function mergeQueue(existing, incoming, limit = DEFAULT_QUEUE_LIMIT) {
     const merged = new Map();
+    const refused = [];
     for (const visit of [...existing, ...incoming]) {
       const key = queueKey(visit);
       const prior = merged.get(key);
-      const parentKey = (parent) => ["visit", "outside_range"].includes(parent?.kind)
-        ? `visit:${parent.visit_id}` : parent?.kind ?? "unknown";
-      if (prior && (prior.url !== visit.url || prior.at_ms !== visit.at_ms
-        || prior.transition !== visit.transition || parentKey(prior.parent) !== parentKey(visit.parent))) {
-        throw new Error("Conflicting browser visit source facts");
+      if (!prior) {
+        merged.set(key, visit);
+      } else if (!sameSourceFacts(prior, visit)) {
+        refused.push(visit);
       }
-      merged.set(key, prior ?? visit);
     }
-    return [...merged.values()]
+    const queue = [...merged.values()]
       .sort((left, right) => left.at_ms - right.at_ms)
       .slice(-boundedInteger(limit, DEFAULT_QUEUE_LIMIT, 1, 100_000));
+    return { queue, refused };
   }
 
   globalThis.GraphshellCaptureModel = Object.freeze({

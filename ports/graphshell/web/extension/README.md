@@ -11,13 +11,14 @@ resident device host.
 | `manifest.chromium.json` | MV3 manifest: `background.js` service worker, fixed public `key` |
 | `manifest.firefox.json` | MV3 manifest: `capture-model.js` + `background.js` background scripts, add-on id |
 | `background.js` | Browser action opens `graph.html`; history and permission listeners; the bounded `storage.local` capture queue |
-| `capture-model.js` | `GraphshellCaptureModel`: default policy, visit sanitization, queue bounds |
+| `capture-model.js` | `GraphshellCaptureModel`: default policy, visit sanitization, queue bounds, the ledger's conflict rule |
 | `action-form.js` | `GraphshellActionForm`: builds an intent payload from an advertised `input_form` |
 | `bridge.html`, `bridge.css`, `bridge.js`, `resource-chunk.js` | The native surface: connects `org.mere.graphshell`, pulls bounded resource chunks, renders identity cards and advertised actions |
 | `prepare-extension.ps1`, `prepare-extension.sh` | Assemble one unpacked extension directory |
 | `install-native-host.ps1`, `install-native-host.sh` | Register the native host for the current user |
 | `native-host.chromium.json.in`, `native-host.firefox.json.in` | Native-host manifest templates; `__GRAPHSHELL_NATIVE_HOST__` is replaced with the binary path |
-| `smoke-action-form.mjs`, `smoke-capture-model.mjs`, `smoke-capture-background.mjs`, `smoke-native-host.mjs`, `smoke-transfer-accept.mjs`, `smoke-resource-chunk.mjs` | Node smoke tests |
+| `fixtures/capture-conflicts.json` | Visit pairs with the encounter ledger's verdicts, written by `tests/capture_conflict_fixture.rs` |
+| `smoke-action-form.mjs`, `smoke-capture-model.mjs`, `smoke-capture-background.mjs`, `smoke-capture-ack.mjs`, `smoke-native-host.mjs`, `smoke-transfer-accept.mjs`, `smoke-resource-chunk.mjs` | Node smoke tests |
 
 `prepare-extension` also copies `index.html` (as `graph.html`), `styles.css`,
 `loader.js`, `mount.js`, `extension-profile.js`, the fonts and their notices
@@ -45,9 +46,25 @@ release ids can replace the defaults through the installer.
 and `webNavigation` are optional; the portal's **Enable capture** control
 requests `history`. The default policy in `capture-model.js` has `enabled:
 false`. Visits are sanitized against the query-string and origin-exclusion
-settings before they enter the `storage.local` queue, and the Wasm host
-acknowledges them after one Muniment batch persists the graph document, the
-`LocalOnly` AccessRecords, and the Eidetic browsing traces.
+settings before they enter the `storage.local` queue.
+
+Every write to the policy, queue, visit map and observation floor runs in one
+serialized order, so a configure or a permission removal cannot overwrite a
+visit queued meanwhile. The queue keeps the first visit for each source
+identity. A later visit whose source facts differ (address, time, transition,
+parent, original microseconds or locality; a title may differ) is refused alone
+by the encounter ledger's own rule and counted in `coverage.refused_conflicts`,
+never failing the batch. `tests/capture_conflict_fixture.rs` judges visit pairs
+with the ledger and holds `fixtures/capture-conflicts.json` equal to its
+verdicts; `smoke-capture-model.mjs` replays them through `mergeQueue`.
+
+The Wasm host commits one Muniment batch (the graph document, the `LocalOnly`
+AccessRecords, the Eidetic browsing traces and the encounter ledger). Only then
+does it write the accepted, dropped and buffered counts to `data-capture-*` on
+the Graphshell root and dispatch `graphshell-capture-complete` on the document.
+The extension page acknowledges the visits it pulled when that event arrives and
+the queue drains. A failed batch dispatches nothing, so its visits stay queued;
+redelivery is absorbed as duplicates by the ledger.
 
 Capture attribution comes from the `SelectedPersonaRef` and device reference
 injected by the composing host, not from the selected vault profile or a
