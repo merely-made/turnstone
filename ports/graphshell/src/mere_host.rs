@@ -1334,7 +1334,7 @@ pub(crate) fn placement_test_graph() -> Graph {
         provenance: None,
     }];
     let mut result = Graph::try_from_recorded_snapshot(&snapshot).unwrap();
-    *result.facets_mut() = graph.facets().clone();
+    result.install_facets(graph.facets().clone()).unwrap();
     result
 }
 
@@ -1533,6 +1533,7 @@ pub fn fixture_handlers() -> HandlerRegistry {
 
 #[cfg(test)]
 mod tests {
+    use kernel::graph::fixtures::GraphFixtures;
     use muniment::MemoryBackend;
 
     use super::*;

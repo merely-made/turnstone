@@ -411,6 +411,7 @@ fn canvas_metadata_refresh_preserves_geometry_camera_selection_and_play_state() 
 
 #[test]
 fn hosted_canvas_metadata_keeps_exact_tag_claims_peer_sources_and_navigation_resources() {
+    use kernel::graph::fixtures::GraphFixtures;
     use mere::kernel::graph::apply::{GraphDelta, apply_graph_delta};
     use mere::kernel::graph::resource::TAGGED_WITH_IRI;
     use mere::kernel::graph::{Author, CapturedDelta};

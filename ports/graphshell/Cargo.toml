@@ -373,6 +373,8 @@ tokio = { version = "1", features = [
 # These fixtures lower into the native AccessKit host, not the browser mirror.
 # Cargo's browser cone includes dev dependencies, so keep this lane scoped.
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
+# Raw facet-store access for tests that build a graph checked open would refuse.
+kernel = { workspace = true, features = ["fixtures"] }
 muniment = { workspace = true, features = ["redb"] }
 servitor.workspace = true
 proofs.workspace = true

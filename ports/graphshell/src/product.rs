@@ -719,9 +719,8 @@ fn profiled_codicil_graph(
 ) -> Result<Graph, ProductError> {
     let mut graph = materialize_snapshot(&snapshot, placement)
         .map_err(|error| ProductError::InvalidCodicil(error.to_string()))?;
-    *graph.facets_mut() = facets;
     graph
-        .validate_active_resource_assertion_handles()
+        .install_facets(facets)
         .map_err(|error| ProductError::InvalidCodicil(error.to_string()))?;
     Ok(graph)
 }
