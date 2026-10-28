@@ -162,6 +162,9 @@ pub enum Step {
     /// Drives the same surface-routed path winit does; a click on content
     /// resolves links, a click on the canvas is a canvas gesture.
     Click(f32, f32),
+    /// Click admitted document content in one focused native window. Header,
+    /// graph and pane hits are refused rather than borrowing another window.
+    ClickContentWindow(usize, f32, f32),
     Press(f32, f32),
     Release(f32, f32),
     /// A pointer move at window pixel coordinates. This is separately
@@ -549,6 +552,20 @@ pub fn parse(body: &str) -> Result<Vec<Step>, String> {
                     format!("line {}: click-at wants '<x> <y>': '{line}'", i + 1)
                 })?;
                 Step::Click(x, y)
+            }
+            "click-content-window" => {
+                let values: Vec<_> = rest.split_whitespace().collect();
+                if values.len() != 3 {
+                    return err("click-content-window wants '<window> <x> <y>'");
+                }
+                let window = values[0].parse::<usize>();
+                let x = values[1].parse::<f32>();
+                let y = values[2].parse::<f32>();
+                match (window, x, y) {
+                    (Ok(window), Ok(x), Ok(y)) if x.is_finite() && y.is_finite() =>
+                        Step::ClickContentWindow(window, x, y),
+                    _ => return err("click-content-window wants a window index and finite coordinates"),
+                }
             }
             "press-at" => {
                 let (x, y) = parse_xy(rest).ok_or_else(|| {
@@ -1116,6 +1133,14 @@ drop-file 350 280 receipt.txt",
             parse("key-window 1 ctrl+f6").unwrap().as_slice(),
             [Step::KeyWindow(1, EditKey::FrameFocus)]
         ));
+        assert!(matches!(
+            parse("click-content-window 1 600 250").unwrap().as_slice(),
+            [Step::ClickContentWindow(1, x, y)] if *x == 600.0 && *y == 250.0
+        ));
+        for invalid in ["click-content-window 1 NaN 2", "click-content-window -1 2 3",
+                        "click-content-window 1 2 3 extra", "click-content-window 1 2"] {
+            assert!(parse(invalid).is_err(), "{invalid}");
+        }
         crate::frame_a11y::fixture_body_request("1 click tab Links").unwrap();
         assert!(crate::frame_a11y::fixture_body_request("1 replace tab Links").is_err());
     }

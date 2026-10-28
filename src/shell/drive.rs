@@ -332,6 +332,44 @@ impl Shell {
         })
     }
 
+    fn scenario_click_content_window(&mut self, window: usize, x: f32, y: f32) -> Result<(), String> {
+        let focused = if window == 0 {
+            self.primary_focused
+        } else {
+            self.lens_windows.values().find(|lens| lens.ordinal + 1 == window)
+                .ok_or("click-content-window target is absent")?.focused
+        };
+        if !focused || self.app.omnibar.open || self.app.document_find.open
+            || self.app.user_agent_decision.is_open()
+        {
+            return Err("click-content-window requires the focused native window and no host editor".into());
+        }
+        self.sync_content_placements();
+        let plan = self.input_plan(window as u64);
+        let position = inker::PhysicalPosition { x, y };
+        let hit = super::lens::lens_press_hit(&self.content_sessions.pool, window as u64,
+            &plan, self.app.focus, position).ok_or("click-content-window misses content")?;
+        if !matches!(hit.kind, crate::surface::SurfaceKind::Content(_)) {
+            return Err("click-content-window hit is not document content".into());
+        }
+        // The same native mouse prelude, focus admission and content dispatch
+        // used by a lens press. Release keeps its exact captured appearance.
+        self.input_window = window as u64;
+        self.window_mouse_input(window as u64, None, (x, y), inker::PointerPhase::Down,
+            Some(inker::MouseButton::Left));
+        let hit = super::window_input::content_press_target(&mut self.app.focus,
+            &self.content_sessions.pool, window as u64, position, hit);
+        self.pointer_capture = Some(hit.kind);
+        self.content_mouse(hit.id, hit.local, inker::PointerPhase::Down,
+            Some(inker::MouseButton::Left));
+        self.window_mouse_input(window as u64, Some(hit.id), (x, y), inker::PointerPhase::Up,
+            Some(inker::MouseButton::Left));
+        self.pointer_capture = None;
+        self.sync_ime_allowed();
+        self.request_redraw();
+        Ok(())
+    }
+
     fn scenario_key_in_window(
         &mut self,
         window: usize,
@@ -1667,6 +1705,7 @@ impl Shell {
                 self.deliver_press(*x, *y, MouseButton::Left);
                 self.deliver_release(*x, *y, MouseButton::Left);
             },
+            Step::ClickContentWindow(window, x, y) => self.scenario_click_content_window(*window, *x, *y)?,
             Step::Press(x, y) => self.deliver_press(*x, *y, MouseButton::Left),
             Step::Release(x, y) => self.deliver_release(*x, *y, MouseButton::Left),
             Step::Move(x, y) => self.deliver_move(*x, *y),
