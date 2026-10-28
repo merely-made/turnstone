@@ -10,6 +10,7 @@
 //! remote projection adapter. Platform handles remain in [`shell`].
 
 pub mod a11y;
+pub mod alembic_workshop;
 pub mod action;
 pub mod reading_view;
 pub mod focus_card;

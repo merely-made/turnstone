@@ -1001,3 +1001,51 @@ both selected producer bodies with twenty reviewed captures, compatible index
 reuse and exact local citations/export. Native/libtest builds and all 43 focused
 Turnstone cases pass on Rust 1.99.1. The receiver plan links both frozen cuts
 and their source/evidence proofs; the short-word/model boundary stays explicit.
+
+### Alembic workshop receiving, 2026-10-28
+
+**Status:** in progress. Turnstone's adapter is implemented and remains in
+receiving qualification. Compiler admission refusals are not product evidence.
+The common composition, workflow and W1–W3 done-conditions live once in
+`mere/design_docs/mere_docs/implementation_strategy/2026-10-28_alembic_implementation_plan.md`.
+Servitor stays in Eidetic; Armillary supplies execution and cancellation.
+
+The named **Evidence brief workshop** action opens Alembic's shared native
+surface. Its first corpus is the same authored public example as Graphshell's,
+with independent owner, installation, subject, run and acceptance identities.
+Saved private sources are unavailable to this workflow. The deterministic body
+proposes a brief; the accepting human and proposing run remain distinct.
+
+Turnstone's canonical Canvas/runtime writer stages and saves an accepted note.
+It does not open a second GraphSession to apply the result. The operation ledger
+and note share the atomic graph snapshot, with operation evidence retained on
+every subsequent save, including undo and note removal. Reconciliation reloads
+the complete durable snapshot and acknowledges only the matching operation.
+
+The receiving phase is done when the published supplier cohort checks, the
+lease/source/acceptance regressions execute, and the native controls plus an
+independent process prove the accepted result and exact citations survive.
+This bounded public flow does not close private custody, production identity,
+remote peers or the common plan's full per-host failure matrix.
+
+**Findings (2026-10-28):**
+
+- `SessionPersistence` acquires an exclusive session writer lease before load
+  and retains it through graph replacement. Same-session adoption reuses the
+  owning runtime so it keeps the lease and unsaved graph.
+- `Shell::drop` drops the workshop before App fields and their writer leases.
+  Shared Driver drop cancels and joins the worker without persisting during
+  unwind; normal window close retains the separate fallible shutdown path.
+- Shared helper computation runs off the UI thread, but the current adapter's
+  journal I/O and graph snapshot replacement remain synchronous UI service
+  calls (`src/shell/alembic_workshop.rs`). Moving them off-thread requires a
+  canonical owner queue or transaction gate; detached asynchronous saves could
+  overwrite intervening edits. W1 responsiveness remains open.
+- Public source admission is an exact current URL/title/body/Resource check
+  (`src/alembic_workshop.rs`). A same-title source or a changed example cannot
+  silently replace the captured version.
+
+**Progress (2026-10-28):** added the action/window adapter, shared surface,
+source gates, existing-writer acceptance path and session lease. Receiving
+checks, the lease-refusal regression and final native/cold qualification remain
+unexecuted here; Mere's successful gates do not substitute for them.

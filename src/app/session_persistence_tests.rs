@@ -9,6 +9,101 @@ use mere::kernel::graph::{Graph, apply::add_node};
 use pandect::graph_placement::PlacementProfile;
 
 #[test]
+fn refused_session_lease_clears_the_departed_sessions_live_state() {
+    let root = tempfile::tempdir().unwrap();
+    let mut app = App::test_stub_at(root.path().to_path_buf());
+    let first = app.session_id;
+    let first_graph = crate::panes::GraphId::from_uuid(*first.as_uuid());
+    app.sessions
+        .insert(pandect::GraphSessionManifest::new(first, first_graph));
+    app.adopt_session(first);
+
+    let departed_node = uuid::Uuid::new_v4();
+    app.graph_runtimes
+        .get_mut(first_graph)
+        .unwrap()
+        .canvas
+        .ingest_graph(|graph| {
+            add_node(
+                graph,
+                Some(departed_node),
+                "turnstone://departed-session".into(),
+                Default::default(),
+            );
+            true
+        });
+    app.content.note_requested(departed_node);
+    app.place = crate::place::PlaceState::Joining { generation: 44 };
+    app.resident_run_error = Some("departed session's unresolved receipt".into());
+
+    let blocked = crate::panes::SessionId::new();
+    let blocked_graph = crate::panes::GraphId::from_uuid(*blocked.as_uuid());
+    app.sessions
+        .insert(pandect::GraphSessionManifest::new(blocked, blocked_graph));
+    let blocked_dir = session::session_dir(root.path(), blocked);
+    let _other_writer = crate::session_persistence::SessionWriteLease::acquire(&blocked_dir)
+        .expect("another owner holds the target session lease");
+
+    let effects = app.adopt_session(blocked);
+
+    assert!(effects.iter().any(|effect| matches!(effect, Effect::Redraw)));
+    assert!(app.session_load_refused());
+    assert!(matches!(
+        app.place,
+        crate::place::PlaceState::Failed { ref error }
+            if error.contains("session writer lease refused")
+    ));
+    assert_eq!(app.content.get(departed_node), None);
+    assert!(app
+        .resident_run_error
+        .as_deref()
+        .is_some_and(|error| error.contains("session writer lease refused")));
+    assert!(app.graph_runtimes.graph().get_node_by_id(departed_node).is_none());
+}
+
+#[test]
+fn writer_lease_survives_same_session_readoption_and_switch_back() {
+    let root = tempfile::tempdir().unwrap();
+    let mut app = App::test_stub_at(root.path().to_path_buf());
+    let first = app.session_id;
+    let first_graph = crate::panes::GraphId::from_uuid(*first.as_uuid());
+    app.sessions
+        .insert(pandect::GraphSessionManifest::new(first, first_graph));
+    app.adopt_session(first);
+    let member = uuid::Uuid::new_v4();
+    app.graph_runtimes
+        .get_mut(first_graph)
+        .unwrap()
+        .canvas
+        .ingest_graph(|graph| {
+            add_node(
+                graph,
+                Some(member),
+                "turnstone://lease-retention".into(),
+                Default::default(),
+            );
+            true
+        });
+    app.adopt_session(first);
+    assert!(
+        app.graph_runtimes.graph().get_node_by_id(member).is_some(),
+        "same-session adoption keeps unsaved live graph state"
+    );
+
+    let second = crate::panes::SessionId::new();
+    let second_graph = crate::panes::GraphId::from_uuid(*second.as_uuid());
+    app.sessions
+        .insert(pandect::GraphSessionManifest::new(second, second_graph));
+    app.adopt_session(second);
+    app.adopt_session(first);
+    assert!(
+        app.graph_runtimes.graph().get_node_by_id(member).is_some(),
+        "switch-back reuses the graph and its held writer lease"
+    );
+    assert!(app.persist_owned_graph().is_ok());
+}
+
+#[test]
 fn host_session_fork_preserves_resource_records_and_tag_assertions() {
     use mere::kernel::graph::{Author, resource_tags::{TagConcept, tag_concept_iri}};
     let root = tempfile::tempdir().unwrap();
@@ -24,12 +119,13 @@ fn host_session_fork_preserves_resource_records_and_tag_assertions() {
             TagConcept { owner_iri: owner, label: "Paper".into() }).unwrap();
     });
     let original = graph.to_snapshot();
-    app.graph_runtimes.adopt_graph(graph, SessionPersistence::writable(app.session_dir(), None));
+    app.graph_runtimes.adopt_graph(Graph::new(), SessionPersistence::Unbound);
+    app.graph_runtimes.adopt_graph(graph, SessionPersistence::writable(app.session_dir(), None).unwrap());
     let effects = app.fork_session_from(member);
     let child = effects.iter().find_map(|effect| match effect { Effect::SwitchSession { id } => Some(*id), _ => None }).unwrap();
     let name = app.sessions.get(child).and_then(|m| m.display_name.clone()).unwrap();
     assert!(name.contains(" (picked from "), "a torn-out session is named as a picked-off part: {name}");
-    let loaded = session::try_load_session_graph(&session::session_dir(root.path(), child)).unwrap().unwrap().graph;
+    let loaded = session::try_load_session_graph_locked(&session::session_dir(root.path(), child)).unwrap().unwrap().graph;
     let (copied, node) = loaded.get_node_by_url("https://fork-content.test/page").unwrap();
     assert_ne!(node.id, member);
     assert!(crate::content_tags::content_tags(&loaded, copied).contains("Paper"));
@@ -104,6 +200,7 @@ fn host_session_recorded_and_absent_ordinary_save_reopen_and_replacement() {
     for placement in [Some(PlacementProfile::RecordedStrataV1), None] {
         let mut app = App::test_stub();
         let directory = app.session_dir();
+        app.graph_runtimes.adopt_graph(Graph::new(), SessionPersistence::Unbound);
         let mut graph = Graph::new();
         for url in [
             "https://host-placement.test/dir/page",
@@ -117,7 +214,7 @@ fn host_session_recorded_and_absent_ordinary_save_reopen_and_replacement() {
         let graph = Graph::try_from_recorded_snapshot(&snapshot).unwrap();
         app.graph_runtimes.adopt_graph(
             graph,
-            SessionPersistence::writable(directory.clone(), placement),
+            SessionPersistence::writable(directory.clone(), placement).unwrap(),
         );
         app.persist_session_graph().unwrap();
         let stored = pandect::session_graph_store::load_profiled_snapshot(
@@ -126,7 +223,7 @@ fn host_session_recorded_and_absent_ordinary_save_reopen_and_replacement() {
         .unwrap()
         .unwrap();
         assert_eq!(stored.placement, placement);
-        let loaded = session::try_load_session_graph(&directory)
+        let loaded = session::try_load_session_graph_locked(&directory)
             .unwrap()
             .unwrap();
         assert_eq!(loaded.placement, placement);

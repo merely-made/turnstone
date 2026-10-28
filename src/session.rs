@@ -547,6 +547,12 @@ pub(crate) struct LoadedSessionGraph {
 /// Missing inputs are fresh; corrupt or unreadable inputs refuse persistence.
 /// Read canonical facets before any migration write or image deposition.
 pub(crate) fn try_load_session_graph(data_root: &Path) -> Result<Option<LoadedSessionGraph>, String> {
+    let _writer = crate::session_persistence::SessionWriteLease::acquire(data_root)
+        .map_err(|error| format!("session writer lease refused: {error}"))?;
+    try_load_session_graph_locked(data_root)
+}
+
+pub(crate) fn try_load_session_graph_locked(data_root: &Path) -> Result<Option<LoadedSessionGraph>, String> {
     // Pandect's compatibility reader uses exists(); distinguish inspection
     // failure here before it can silently treat an unreadable path as absent.
     crate::session_persistence::require_complete_file(&pandect::node_facets_path(data_root))
@@ -573,11 +579,14 @@ pub(crate) fn try_load_session_graph(data_root: &Path) -> Result<Option<LoadedSe
     let mut graph = pandect::graph_placement::materialize_snapshot(snapshot, placement)?;
     graph.overlay_facets(legacy_controls);
     graph.overlay_facets(canonical);
+    let before_migration = graph.clone();
     if legacy_node_facets > 0 || controls_migrated || migrated > 0 {
         // Evidence first, and propagate failure so the display runtime cannot
         // overwrite the source later through an automatic ordinary save.
         pandect::save_node_facets(data_root, graph.facets())
             .map_err(|error| format!("migration facets could not be persisted: {error}"))?;
+        athanor::workshop_destination::preserve_graph_operations(&before_migration, &graph)
+            .map_err(|error| format!("operation ledger retention refused migration: {error}"))?;
         session_graph_store::save_profiled(&graph_file, &graph, placement)
             .map_err(|error| format!("migrated graph could not be persisted: {error}"))?;
     }
@@ -671,7 +680,8 @@ pub(crate) fn encode_rgba_png(rgba: &[u8], width: u32, height: u32) -> Option<Ve
 /// Persist the session graph at the flat `graph.json`. Best-effort: a write
 /// failure is logged, not fatal. Run after each enrichment (so a crash loses
 /// nothing) and on close.
-pub fn save_session_graph(data_root: &Path, graph: &Graph) {
+#[cfg(test)]
+pub(crate) fn save_session_graph(data_root: &Path, graph: &Graph) {
     let graph_file = data_root.join(session_graph_store::GRAPH_FILE);
     if let Err(err) = session_graph_store::save(&graph_file, graph) {
         tracing::warn!(%err, path = ?graph_file, "failed to persist the session graph");

@@ -54,7 +54,7 @@ impl App {
         graph_runtimes.adopt_graph(mere::kernel::graph::Graph::new(),
             crate::session_persistence::SessionPersistence::writable(
                 crate::session::session_dir(&data_root, session_id), None,
-            ),
+            ).expect("isolated fixture owns its session writer"),
         );
         let behavior_binding = graph_runtimes
             .get(graph_id)

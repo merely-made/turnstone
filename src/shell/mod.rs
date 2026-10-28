@@ -11,6 +11,7 @@
 //! learns flows back through the spine.
 
 mod appearance_editor;
+mod alembic_workshop;
 mod appearance_receipt;
 mod content_pool;
 mod cue_content;
@@ -1447,6 +1448,18 @@ pub struct Shell {
     theme_editor: Option<appearance_editor::EditorWindow>,
     theme_editor_requested: bool,
     close_after_theme_editor: bool,
+    alembic_workshop: Option<alembic_workshop::WorkshopWindow>,
+    alembic_workshop_requested: bool,
+    close_after_alembic_workshop: bool,
+}
+
+impl Drop for Shell {
+    fn drop(&mut self) {
+        // Driver drop cancels and joins its worker. Keep App's session writer
+        // leases alive until that join completes, including unwind paths;
+        // normal window close persists shutdown before removing the window.
+        drop(self.alembic_workshop.take());
+    }
 }
 
 impl Shell {
@@ -1820,6 +1833,9 @@ impl Shell {
             theme_editor: None,
             theme_editor_requested: false,
             close_after_theme_editor: false,
+            alembic_workshop: None,
+            alembic_workshop_requested: false,
+            close_after_alembic_workshop: false,
         };
         shell.publish_engine_inventory();
         shell.run_effects(boot_effects);

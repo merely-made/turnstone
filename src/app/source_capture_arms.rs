@@ -387,8 +387,9 @@ impl App {
         let directory = crate::session::session_dir(&self.data_root, request.session);
         runtime
             .persistence
-            .save_with(
+            .save_graph_with(
                 &directory,
+                runtime.canvas.graph(),
                 || pandect::save_node_facets(&directory, runtime.canvas.graph().facets()),
                 |placement| {
                     pandect::session_graph_store::save_profiled(

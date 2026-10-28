@@ -798,7 +798,7 @@ fn session_fork_carries_evidence_and_foreign_facets_without_copying_capture_oper
         "forking must not remove the donor's operation admission"
     );
     let child_directory = session::session_dir(root.path(), child_session);
-    let child = session::try_load_session_graph(&child_directory)
+    let child = session::try_load_session_graph_locked(&child_directory)
         .unwrap()
         .unwrap()
         .graph;
@@ -864,7 +864,7 @@ fn session_fork_carries_evidence_and_foreign_facets_without_copying_capture_oper
     );
 
     let donor =
-        session::try_load_session_graph(&session::session_dir(root.path(), donor_request.session))
+        session::try_load_session_graph_locked(&session::session_dir(root.path(), donor_request.session))
             .unwrap()
             .unwrap()
             .graph;

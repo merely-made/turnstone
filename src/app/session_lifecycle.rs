@@ -410,6 +410,10 @@ impl App {
         fork_graph.overlay_facets(fork_facets);
         let fork_id = crate::panes::SessionId::new();
         let fork_dir = session::session_dir(&self.data_root, fork_id);
+        let fork_writer = match crate::session_persistence::SessionWriteLease::acquire(&fork_dir) {
+            Ok(writer) => writer,
+            Err(error) => { tracing::warn!(%error, "refusing fork because its writer lease could not be acquired"); return Vec::new(); }
+        };
         if let Some(admissions) = &fork_admissions
             && let Err(error) = crate::resident_admission::save(&fork_dir, admissions)
         {
@@ -437,8 +441,10 @@ impl App {
             .and_then(|m| m.display_name.clone())
             .or_else(|| self.derive_session_name());
         manifest.display_name = Some(pandect::picked_session_name(donor_name.as_deref()));
-        let fork_state = crate::session_persistence::SessionPersistence::writable(fork_dir.clone(), fork_placement);
-        if let Err(error) = fork_state.save_with(&fork_dir,
+        let fork_state = crate::session_persistence::SessionPersistence::writable_with_lease(
+            fork_dir.clone(), fork_placement, fork_writer,
+        );
+        if let Err(error) = fork_state.save_graph_with(&fork_dir, &fork_graph,
             || pandect::save_node_facets(&fork_dir, fork_graph.facets()),
             |placement| {
                 pandect::session_graph_store::save_profiled(
@@ -1032,40 +1038,53 @@ impl App {
             .get(id)
             .map(|manifest| manifest.root_graph_id)
             .unwrap_or_else(GraphId::nil);
-        self.graph_runtimes
-            .activate_or_insert(graph, Some(id), Canvas::new());
-        self.graph_runtimes.suspend_recording(graph);
         let sdir = self.session_dir();
-        match session::try_load_session_graph(&sdir) {
-            Ok(input) => {
-                let (graph, placement) = input.map(|input| (input.graph, input.placement))
-                    .unwrap_or_else(|| {
-                        // This graph is born here, with no persisted input to
-                        // qualify. Record that known construction so reopening
-                        // cannot add legacy URL-derived Surface relations.
-                        // Existing unprofiled inputs retain their None above.
-                        (mere::kernel::graph::Graph::new(),
-                            Some(pandect::graph_placement::PlacementProfile::RecordedStrataV1))
-                    });
-                self.graph_runtimes.adopt_graph(graph,
-                    crate::session_persistence::SessionPersistence::writable(sdir.clone(), placement));
-            }
-            Err(error) => {
-                tracing::warn!(%error, "refusing session adoption; disk state remains protected");
-                self.graph_runtimes.adopt_graph(mere::kernel::graph::Graph::new(),
-                    crate::session_persistence::SessionPersistence::refused(sdir, error.clone()));
-                self.next_place_generation = self.next_place_generation.wrapping_add(1);
-                self.place = crate::place::PlaceState::Failed { error: error.clone() };
-                self.feeds = Default::default();
-                self.redshank = self.redshank.suspended();
-                self.redshank_members.clear();
-                self.browser = Default::default();
-                self.content = ContentStates::default();
-                self.removed.clear();
-                self.resident_runs = Default::default();
-                self.resident_run_error = Some(error.clone());
-                self.events.push(AppEvent::SessionLoadRefused { error });
-                return vec![Effect::Redraw];
+        let already_open = self.graph_runtimes.get(graph).is_some_and(|runtime| {
+            runtime.session == Some(id) && runtime.persistence.owns_directory(&sdir)
+        });
+        if already_open {
+            // Preserve the canonical in-memory graph and its lease on a
+            // same-session re-adoption or switch-back.
+            self.graph_runtimes.activate(graph);
+        } else {
+            self.graph_runtimes.activate_or_insert(graph, Some(id), Canvas::new());
+            self.graph_runtimes.suspend_recording(graph);
+            let writer = match crate::session_persistence::SessionWriteLease::acquire(&sdir) {
+                Ok(writer) => writer,
+                Err(error) => {
+                    let error = format!("session writer lease refused: {error}");
+                    tracing::warn!(%error, "refusing session adoption; disk state remains protected");
+                    self.graph_runtimes.adopt_graph(mere::kernel::graph::Graph::new(),
+                        crate::session_persistence::SessionPersistence::refused(sdir, error.clone()));
+                    self.events.push(AppEvent::SessionLoadRefused { error });
+                    return vec![Effect::Redraw];
+                }
+            };
+            match session::try_load_session_graph_locked(&sdir) {
+                Ok(input) => {
+                    let (graph, placement) = input.map(|input| (input.graph, input.placement))
+                        .unwrap_or_else(|| (mere::kernel::graph::Graph::new(),
+                            Some(pandect::graph_placement::PlacementProfile::RecordedStrataV1)));
+                    self.graph_runtimes.adopt_graph(graph,
+                        crate::session_persistence::SessionPersistence::writable_with_lease(sdir.clone(), placement, writer));
+                }
+                Err(error) => {
+                    tracing::warn!(%error, "refusing session adoption; disk state remains protected");
+                    self.graph_runtimes.adopt_graph(mere::kernel::graph::Graph::new(),
+                        crate::session_persistence::SessionPersistence::refused(sdir, error.clone()));
+                    self.next_place_generation = self.next_place_generation.wrapping_add(1);
+                    self.place = crate::place::PlaceState::Failed { error: error.clone() };
+                    self.feeds = Default::default();
+                    self.redshank = self.redshank.suspended();
+                    self.redshank_members.clear();
+                    self.browser = Default::default();
+                    self.content = ContentStates::default();
+                    self.removed.clear();
+                    self.resident_runs = Default::default();
+                    self.resident_run_error = Some(error.clone());
+                    self.events.push(AppEvent::SessionLoadRefused { error });
+                    return vec![Effect::Redraw];
+                }
             }
         }
         self.graph_runtimes.suspend_recording(graph);
@@ -1441,8 +1460,13 @@ impl App {
         // Persist the sidecar's read status before its Surface projection. An
         // error is observable and stops this save rather than reporting success.
         self.feeds.save(&directory)?;
+        self.persist_owned_graph()
+    }
+
+    pub(crate) fn persist_owned_graph(&self) -> std::io::Result<()> {
+        let directory = self.session_dir();
         let graph = self.graph_runtimes.graph();
-        self.graph_runtimes.active_persistence().save_with(&directory,
+        self.graph_runtimes.active_persistence().save_graph_with(&directory, graph,
             || pandect::save_node_facets(&directory, graph.facets()),
             |placement| {
                 pandect::session_graph_store::save_profiled(

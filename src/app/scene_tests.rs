@@ -623,7 +623,7 @@ fn graph_scene_persistence_writes_the_explicit_owner_and_preserves_the_active_se
     app.graph_runtimes
         .activate_or_insert(owner, Some(owner_session), canvas);
     app.graph_runtimes.get_mut(owner).unwrap().persistence =
-        crate::session_persistence::SessionPersistence::writable(owner_dir.clone(), None);
+        crate::session_persistence::SessionPersistence::writable(owner_dir.clone(), None).unwrap();
     app.graph_runtimes.activate(active);
     app.persist_graph_scene(owner).unwrap();
     assert_eq!(app.graph_runtimes.active_graph(), active);

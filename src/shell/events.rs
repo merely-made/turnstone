@@ -98,6 +98,7 @@ impl ApplicationHandler for Shell {
         }
         let effects = self.app.tick(crate::denizen::now_ms());
         self.run_effects(effects);
+        let alembic_idle = self.service_alembic_workshop(event_loop);
         self.pump_redshank();
         self.pump_research();
         #[cfg(all(feature = "servo", any(windows, target_os = "macos", target_os = "linux")))]
@@ -116,6 +117,11 @@ impl ApplicationHandler for Shell {
             .min()
             .unwrap_or_else(|| now + std::time::Duration::from_secs(60));
         let editor_idle = self.service_theme_editor(event_loop);
+        let editor_idle = if matches!(alembic_idle, cambium_rootstock::IdlePolicy::A11yWake) {
+            cambium_rootstock::IdlePolicy::A11yWake
+        } else {
+            editor_idle
+        };
         event_loop.set_control_flow(super::appearance_editor::editor_deadline(
             deadline,
             now,
@@ -266,6 +272,9 @@ impl ApplicationHandler for Shell {
         if self.theme_editor_event(window_id, &event) {
             return;
         }
+        if self.alembic_workshop_event(window_id, &event) {
+            return;
+        }
         if self.titlebar_event(window_id, &event) {
             return;
         }
@@ -311,6 +320,9 @@ impl ApplicationHandler for Shell {
             },
             WindowEvent::CloseRequested => {
                 self.cancel_content_pointer();
+                if self.request_close_with_alembic_workshop() {
+                    return;
+                }
                 if self.request_close_with_theme_editor() {
                     return;
                 }

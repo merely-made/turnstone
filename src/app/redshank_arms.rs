@@ -459,7 +459,9 @@ mod tests {
         );
 
         // Restart: the session graph and the listening model are both durable.
-        crate::session::save_session_graph(&sdir, app.graph_runtimes.graph());
+        if let Err(error) = app.persist_owned_graph() {
+            tracing::warn!(%error, "listening graph checkpoint was refused");
+        }
         app.feeds.save(&sdir).unwrap();
         drop(app);
 

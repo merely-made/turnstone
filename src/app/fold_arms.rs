@@ -208,7 +208,9 @@ mod tests {
         ));
         let session_dir = app.session_dir();
         std::fs::create_dir_all(&session_dir).unwrap();
-        crate::session::save_session_graph(&session_dir, app.graph_runtimes.graph());
+        if let Err(error) = app.persist_owned_graph() {
+            tracing::warn!(%error, "fold graph checkpoint was refused");
+        }
         app.graph_runtimes.set_physics_paused(true);
         app.refresh_facets();
         crate::session::save_node_facets(&session_dir, app.graph_runtimes.facets());

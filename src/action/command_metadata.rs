@@ -81,6 +81,7 @@ pub(crate) fn command_metadata(action: &Action) -> (EffectClass, bool) {
         | Action::UninstallDenizen { .. }
         | Action::RunDenizen { .. } => EffectClass::ExternalEffect,
         Action::OpenThemeWorkshop
+        | Action::OpenAlembicWorkshop
         | Action::ComposeFocusedSmolwebSubmission
         | Action::ComposeFocusedMicronForm
         | Action::BeginSmolwebSubmission { .. }

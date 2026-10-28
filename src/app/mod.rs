@@ -1268,6 +1268,7 @@ impl App {
         match action {
             Action::Reading(action) => self.read_action(action),
             Action::OpenThemeWorkshop => vec![Effect::OpenThemeWorkshop],
+            Action::OpenAlembicWorkshop => vec![Effect::OpenAlembicWorkshop],
             Action::OpenAddress(url) => self.open_address(url),
             Action::RetainProducerSelection { choice, selection } => {
                 self.retain_producer_selection(choice, selection)

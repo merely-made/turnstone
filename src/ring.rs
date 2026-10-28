@@ -281,6 +281,7 @@ pub fn ring_of(action: &Action) -> Ring {
         // Personal theme authoring is a local settings gesture, with no
         // participant grant to open or alter the user's shared library.
         | OpenThemeWorkshop
+        | OpenAlembicWorkshop
         // A web page may ask, but only a literal local interaction may grant,
         // deny, or supply credentials to its exact pending callback. Keeping
         // these controls host-only also prevents a participant from typing into a
@@ -370,6 +371,7 @@ pub fn emit_allowed(
         // would behave the same. Split the ring only if the policies diverge.
         let what = match action {
             Action::OpenThemeWorkshop => "personal theme authoring",
+            Action::OpenAlembicWorkshop => "public example evidence workshop",
             Action::JoinPlace(_) | Action::JoinPlaceFile { .. } | Action::BeginJoinPlaceFile => {
                 "joining a place"
             },
@@ -626,6 +628,7 @@ mod tests {
             Action::ShowPlaceStatus,
             Action::ConfirmInstallDenizen,
             Action::OpenThemeWorkshop,
+            Action::OpenAlembicWorkshop,
             Action::CancelInstallDenizen,
             Action::InstallDenizen {
                 path: "x.lua".into(),

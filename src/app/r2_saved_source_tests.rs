@@ -89,11 +89,8 @@ fn admissions_follow_live_session_graph_facets_and_preserve_occurrences() {
     let same_session_graph = crate::panes::GraphId::new();
     app.graph_runtimes
         .activate_or_insert(same_session_graph, Some(app.session_id), Canvas::new());
-    app.graph_runtimes
-        .get_mut(same_session_graph)
-        .unwrap()
-        .persistence =
-        crate::session_persistence::SessionPersistence::writable(app.session_dir(), None);
+    // This auxiliary in-memory graph shares the SessionId for admission
+    // filtering, but does not own the session's one durable graph writer.
     let second_graph_node = visit(&mut app, "https://saved-source.test/second-graph");
     attach(
         &mut app,

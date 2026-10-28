@@ -3,6 +3,33 @@
 //! Host-owned session write authority, independent of graph contents.
 use std::io;
 use std::path::{Path, PathBuf};
+use std::fs::{File, OpenOptions};
+use std::sync::Arc;
+use mere::kernel::graph::Graph;
+
+/// Process-shared capability for writing one session directory.
+#[derive(Clone, Debug)]
+pub(crate) struct SessionWriteLease(Arc<File>);
+
+impl SessionWriteLease {
+    pub(crate) fn acquire(directory: &Path) -> io::Result<Self> {
+        std::fs::create_dir_all(directory)?;
+        let file = OpenOptions::new()
+            .create(true)
+            .truncate(false)
+            .read(true)
+            .write(true)
+            .open(directory.join(".turnstone-session-writer.lock"))?;
+        file.try_lock().map_err(|error| match error {
+            std::fs::TryLockError::WouldBlock => io::Error::new(
+                io::ErrorKind::WouldBlock,
+                "another process owns this session writer",
+            ),
+            std::fs::TryLockError::Error(error) => error,
+        })?;
+        Ok(Self(Arc::new(file)))
+    }
+}
 
 /// Missing targets with replacement evidence are interrupted saves, not fresh
 /// sessions. Preserve those bytes until an explicit recovery resolves them.
@@ -63,6 +90,7 @@ pub(crate) enum SessionPersistence<P> {
     Writable {
         directory: PathBuf,
         placement: Option<P>,
+        _lease: Option<SessionWriteLease>,
     },
     Refused {
         directory: PathBuf,
@@ -71,15 +99,30 @@ pub(crate) enum SessionPersistence<P> {
 }
 
 impl<P: Copy> SessionPersistence<P> {
-    pub(crate) fn writable(directory: PathBuf, placement: Option<P>) -> Self {
+    pub(crate) fn writable(directory: PathBuf, placement: Option<P>) -> io::Result<Self> {
+        let lease = SessionWriteLease::acquire(&directory)?;
+        Ok(Self::writable_with_lease(directory, placement, lease))
+    }
+
+    pub(crate) fn writable_with_lease(directory: PathBuf, placement: Option<P>, lease: SessionWriteLease) -> Self {
         Self::Writable {
             directory,
             placement,
+            _lease: Some(lease),
         }
+    }
+
+    #[cfg(test)]
+    fn test_writable(directory: PathBuf, placement: Option<P>) -> Self {
+        Self::Writable { directory, placement, _lease: None }
     }
 
     pub(crate) fn refused(directory: PathBuf, reason: String) -> Self {
         Self::Refused { directory, reason }
+    }
+
+    pub(crate) fn owns_directory(&self, directory: &Path) -> bool {
+        matches!(self, Self::Writable { directory: owner, _lease: Some(_), .. } if owner == directory)
     }
 
     pub(crate) fn placement_for(&self, directory: &Path) -> io::Result<Option<P>> {
@@ -87,6 +130,7 @@ impl<P: Copy> SessionPersistence<P> {
             Self::Writable {
                 directory: owner,
                 placement,
+                _lease: _,
             } if owner == directory => Ok(*placement),
             Self::Writable { .. } => Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
@@ -115,7 +159,7 @@ impl<P: Copy> SessionPersistence<P> {
 
     /// The facet sidecar holds migration evidence. Do not replace the graph
     /// if those facets could not be persisted, and propagate every error.
-    pub(crate) fn save_with(
+    fn save_with_unchecked(
         &self,
         directory: &Path,
         save_facets: impl FnOnce() -> io::Result<()>,
@@ -124,6 +168,42 @@ impl<P: Copy> SessionPersistence<P> {
         let placement = self.placement_for(directory)?;
         save_facets()?;
         save_graph(placement)
+    }
+
+    #[cfg(test)]
+    fn save_with(
+        &self,
+        directory: &Path,
+        save_facets: impl FnOnce() -> io::Result<()>,
+        save_graph: impl FnOnce(Option<P>) -> io::Result<()>,
+    ) -> io::Result<()> {
+        self.save_with_unchecked(directory, save_facets, save_graph)
+    }
+
+    pub(crate) fn save_graph_with(
+        &self,
+        directory: &Path,
+        candidate: &Graph,
+        save_facets: impl FnOnce() -> io::Result<()>,
+        save_graph: impl FnOnce(Option<P>) -> io::Result<()>,
+    ) -> io::Result<()> {
+        self.placement_for(directory)?;
+        if !matches!(self, Self::Writable { _lease: Some(_), .. }) {
+            return Err(io::Error::new(io::ErrorKind::PermissionDenied, "session writer lease is absent"));
+        }
+        let graph_path = directory.join(pandect::session_graph_store::GRAPH_FILE);
+        if require_complete_file(&graph_path)? {
+            let input = pandect::session_graph_store::load_profiled_snapshot(&graph_path)
+                .map_err(io::Error::other)?
+                .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "session graph disappeared"))?;
+            let mut before = pandect::graph_placement::materialize_snapshot(&input.snapshot, input.placement)
+                .map_err(io::Error::other)?;
+            let facets = pandect::load_node_facets(directory).map_err(io::Error::other)?.unwrap_or_default();
+            before.overlay_facets(facets);
+            athanor::workshop_destination::preserve_graph_operations(&before, candidate)
+                .map_err(io::Error::other)?;
+        }
+        self.save_with_unchecked(directory, save_facets, save_graph)
     }
 }
 
@@ -134,9 +214,21 @@ mod tests {
     use std::path::{Path, PathBuf};
 
     #[test]
+    fn session_writer_lease_is_exclusive_and_clone_scoped() {
+        let root = tempfile::tempdir().unwrap();
+        let lease = SessionWriteLease::acquire(root.path()).unwrap();
+        assert!(SessionWriteLease::acquire(root.path()).is_err());
+        let shared = lease.clone();
+        drop(lease);
+        assert!(SessionWriteLease::acquire(root.path()).is_err());
+        drop(shared);
+        assert!(SessionWriteLease::acquire(root.path()).is_ok());
+    }
+
+    #[test]
     fn ordinary_save_keeps_optional_placement_and_writes_facets_first() {
         for profile in [Some(7u8), None] {
-            let state = SessionPersistence::writable(PathBuf::from("session-a"), profile);
+            let state = SessionPersistence::test_writable(PathBuf::from("session-a"), profile);
             let steps = RefCell::new(Vec::new());
             state
                 .save_with(
@@ -161,7 +253,7 @@ mod tests {
         for state in [
             SessionPersistence::refused(PathBuf::from("session-a"), "invalid input".into()),
             SessionPersistence::Unbound,
-            SessionPersistence::writable(PathBuf::from("session-b"), Some(7u8)),
+            SessionPersistence::test_writable(PathBuf::from("session-b"), Some(7u8)),
         ] {
             assert!(
                 state
@@ -177,7 +269,7 @@ mod tests {
 
     #[test]
     fn failed_facets_prevent_graph_write_and_graph_failure_is_returned() {
-        let state = SessionPersistence::writable(PathBuf::from("session-a"), Some(7u8));
+        let state = SessionPersistence::test_writable(PathBuf::from("session-a"), Some(7u8));
         let err = state
             .save_with(
                 Path::new("session-a"),
@@ -198,7 +290,7 @@ mod tests {
 
     #[test]
     fn graph_replacement_clears_qualification_but_cannot_clear_refusal() {
-        let mut state = SessionPersistence::writable(PathBuf::from("session-a"), Some(7u8));
+        let mut state = SessionPersistence::test_writable(PathBuf::from("session-a"), Some(7u8));
         state.clear_placement();
         state
             .save_with(
@@ -223,7 +315,7 @@ mod tests {
         );
         // Successful explicit reload replaces the refusal, rather than a
         // display-graph edit or focus change doing so accidentally.
-        state = SessionPersistence::writable(PathBuf::from("session-a"), None);
+        state = SessionPersistence::test_writable(PathBuf::from("session-a"), None);
         state
             .save_with(Path::new("session-a"), || Ok(()), |_| Ok(()))
             .unwrap();
@@ -243,7 +335,7 @@ mod tests {
         let facet_tmp = root.join("facets.json.tmp");
         std::fs::write(&graph, b"original graph with old labels").unwrap();
         std::fs::create_dir(&facet_tmp).unwrap();
-        let state = SessionPersistence::writable(root.clone(), Some(7u8));
+        let state = SessionPersistence::test_writable(root.clone(), Some(7u8));
         assert!(
             state
                 .save_with(
