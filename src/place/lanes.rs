@@ -800,9 +800,15 @@ mod tests {
                 body: "from the joiner".into(),
             },
         });
-        let authored = updates
-            .recv_timeout(Duration::from_secs(30))
-            .expect("author answers");
+        let deadline = Instant::now() + Duration::from_secs(30);
+        let authored = loop {
+            let left = deadline.saturating_duration_since(Instant::now());
+            match updates.recv_timeout(left).expect("author answers") {
+                // A resync the catch-up asked for can still answer first.
+                Update::PlaceLanesAdvanced { .. } | Update::PlaceOpened { .. } => continue,
+                authored => break authored,
+            }
+        };
         match authored {
             Update::PlaceCommandDone {
                 request: 1,
