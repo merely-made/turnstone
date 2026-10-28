@@ -28,6 +28,7 @@ use muniment::{Backend, JsonSlots, StoreError};
 /// The view types a host writes through [`MereHost::set_view_now`].
 pub use pandect::ViewIntent as SessionViewIntent;
 use pandect::graph_placement::{PlacementProfile, materialize_snapshot};
+use pandect::graph_session::LegacyTransactionBackend;
 use pandect::{
     GraphSession, MereSessions, Pending, Reverted, SessionError, SessionId, ViewIntent, ViewKey,
 };
@@ -366,7 +367,10 @@ impl<B: Backend + Clone> MereHost<B> {
                         },
                         _ => sessions.begin(author, Some(graph)),
                     };
-                    migrated.flush(wall_clock_now()).await?;
+                    // A session nobody else holds has nothing to recheck.
+                    let pending = migrated.pending(wall_clock_now())?;
+                    backend.apply(pending.ops()).await?;
+                    migrated.stored(pending);
                     (migrated, saved.projection_epoch, true)
                 },
                 None => (sessions.begin(author, None), 0, false),
@@ -481,7 +485,11 @@ impl<B: Backend> MereHost<B> {
             .placement()
             .map(|_| PlacementProfile::RecordedStrataV1)
     }
-    /// Store every change not yet stored.
+}
+
+impl<B: LegacyTransactionBackend> MereHost<B> {
+    /// Store every change not yet stored. Each session commits in one
+    /// transaction that a competing writer to it refuses.
     ///
     /// The clock is injected so tests and importing hosts stamp stable times.
     pub async fn persist(&mut self, saved_at_secs: u64) -> Result<(), MereHostError> {
@@ -497,7 +505,9 @@ impl<B: Backend> MereHost<B> {
         }
         Ok(())
     }
+}
 
+impl<B: Backend> MereHost<B> {
     /// Put every change not yet stored into `batch`: capture's write buffer,
     /// so the graph, access records and browsing traces land in one outer
     /// `Backend::apply`. Hand the result to [`staged`](Self::staged) once the
