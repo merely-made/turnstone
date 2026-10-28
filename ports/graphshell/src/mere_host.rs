@@ -203,6 +203,9 @@ pub struct MereHost<B> {
     resources: BTreeMap<ContentHash, Vec<u8>>,
     instance_targets: Vec<NodeKey>,
     reopened: bool,
+    /// The launch number navigations stamp on their nodes; `0` until the
+    /// boot owner installs one. A replacement session takes it too.
+    launch: u64,
     projection_session: ProjectionSession,
     /// Whether the graph projection shows the session item (§7 item 31).
     session_item: bool,
@@ -291,6 +294,7 @@ impl<B: Backend + Clone> MereHost<B> {
             resources: BTreeMap::new(),
             instance_targets: Vec::new(),
             reopened,
+            launch: 0,
             projection_session: ProjectionSession(LOCAL_SESSION.to_string()),
             session_item: false,
             resident_publication: false,
@@ -444,7 +448,7 @@ impl<B: Backend + Clone> MereHost<B> {
         graph
             .validate_active_resource_assertion_handles()
             .map_err(|error| MereHostError::InvalidSnapshot(error.to_string()))?;
-        let next = match placement {
+        let mut next = match placement {
             Some(PlacementProfile::LegacySurfaceV1) => {
                 return Err(MereHostError::InvalidSnapshot(
                     "legacy graph placement requires qualified durable replay".into(),
@@ -455,6 +459,7 @@ impl<B: Backend + Clone> MereHost<B> {
             },
             None => self.sessions.begin(self.author(), Some(graph)),
         };
+        next.set_current_session(self.launch);
         self.retired
             .push(std::mem::replace(&mut self.graph_session, next));
         // One registry serves one graph.
@@ -615,6 +620,16 @@ impl<B: Backend> MereHost<B> {
     /// [`LOCAL_SESSION`]: a resident names the projections it serves.
     pub fn with_projection_session(mut self, session: ProjectionSession) -> Self {
         self.projection_session = session;
+        self
+    }
+
+    /// This host, stamping `launch` on every node navigated from now on: the
+    /// number the persona's boot owner recorded for this process
+    /// ([`pandect::record_launch`]). Sessions this host begins later take it
+    /// too.
+    pub fn with_launch(mut self, launch: u64) -> Self {
+        self.launch = launch;
+        self.graph_session.set_current_session(launch);
         self
     }
 
@@ -1974,6 +1989,63 @@ mod tests {
         )
         .await
         .expect("open")
+    }
+
+    #[test]
+    fn a_navigation_in_launch_n_stamps_n() {
+        fn navigate(host: &mut MereHost<MemoryBackend>, id: uuid::Uuid, url: &str) {
+            let key = host.graph().get_node_key_by_id(id).unwrap();
+            host.mutate_product_graph(|graph| {
+                apply_graph_delta(
+                    graph,
+                    GraphDelta::NavigateNode {
+                        key,
+                        url: url.into(),
+                    },
+                )
+            })
+            .unwrap();
+        }
+        fn stamp(host: &MereHost<MemoryBackend>, id: uuid::Uuid) -> Option<u64> {
+            let key = host.graph().get_node_key_by_id(id).unwrap();
+            host.graph().node_last_session_visited(key)
+        }
+        pollster::block_on(async {
+            let backend = MemoryBackend::new();
+            let mut host = MereHost::empty(
+                backend.clone(),
+                selected_persona(),
+                fixture_handlers(),
+                access_context(),
+            )
+            .with_launch(5);
+            let first = host.create_address("https://launch.test/a", "a").unwrap();
+            assert_eq!(stamp(&host, first), Some(0), "creating is not navigating");
+            navigate(&mut host, first, "https://launch.test/a/next");
+            assert_eq!(stamp(&host, first), Some(5));
+
+            // A session begun later takes the launch from the host.
+            host.begin_session(Graph::new());
+            let second = host.create_address("https://launch.test/b", "b").unwrap();
+            navigate(&mut host, second, "https://launch.test/b/next");
+            assert_eq!(stamp(&host, second), Some(5));
+            host.persist(1_800_000_000).await.unwrap();
+
+            // The stamp is stored with the journal; the next launch stamps its own.
+            let mut next = MereHost::open_session(
+                backend.clone(),
+                host.graph_session().id(),
+                selected_persona(),
+                fixture_handlers(),
+                access_context(),
+            )
+            .await
+            .unwrap()
+            .with_launch(6);
+            assert_eq!(stamp(&next, second), Some(5));
+            navigate(&mut next, second, "https://launch.test/b/again");
+            assert_eq!(stamp(&next, second), Some(6));
+        });
     }
 
     #[test]
