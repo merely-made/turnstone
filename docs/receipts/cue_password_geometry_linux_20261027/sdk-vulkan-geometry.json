@@ -1,0 +1,24 @@
+{
+  "command": [
+    "nice",
+    "-n",
+    "10",
+    "cargo",
+    "+1.99.1",
+    "test",
+    "--locked",
+    "--offline",
+    "-p",
+    "cue-genet",
+    "--test",
+    "text_input",
+    "-j2",
+    "--",
+    "--ignored",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "started": 1793156810.5344863,
+  "exit": 0,
+  "elapsed_seconds": 23.765
+}

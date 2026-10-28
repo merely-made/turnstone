@@ -1,0 +1,51 @@
+{
+  "executed_test_counts": {
+    "baseline-red": [
+      0,
+      2,
+      0
+    ],
+    "password-projection-fixed": [
+      3,
+      0,
+      0
+    ],
+    "retained-layout-suite": [
+      359,
+      0,
+      2
+    ],
+    "shared-static-scripted-geometry": [
+      5,
+      0,
+      0
+    ],
+    "sdk-vulkan-geometry": [
+      2,
+      0,
+      0
+    ],
+    "turnstone-primary-lens-geometry": [
+      1,
+      0,
+      0
+    ],
+    "turnstone-ime-admission": [
+      1,
+      0,
+      0
+    ],
+    "turnstone-vulkan-frame-custody": [
+      1,
+      0,
+      0
+    ]
+  },
+  "headed_scenario_and_wayland_rectangles_pass": true,
+  "raw_headed_input_hashes_match": true,
+  "binary_manifest_matches_headed_run": true,
+  "prior_receipt_trees_unchanged": true,
+  "sdk_non_genet_lock_records_preserved": true,
+  "sdk_added_removed_keys_only_genet": true,
+  "source_file_identity": "All modified Genet/SDK files and Turnstone source/lock verified against local published/candidate files before receipt creation."
+}

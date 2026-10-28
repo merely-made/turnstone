@@ -1,0 +1,9 @@
+RESULT ok
+waited 72 frames
+waited 0 frames
+captured 01_primary_geometry
+captured 02_primary_zoom
+Shared geometry native primary and lens receiving complete
+presentation frames=199 captures=2 blank=0
+capture <home>/Code/output/genet-password-caret/headed-qualified/receiving/01_primary_geometry.png digest=634200d7f24ec0ca blank=false
+capture <home>/Code/output/genet-password-caret/headed-qualified/receiving/02_primary_zoom.png digest=4222f6d46ba226f5 blank=false

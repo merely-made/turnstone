@@ -24,6 +24,27 @@ succeeds the remaining-work portion of the historical
 [browser gap analysis](2026-08-17_smolweb_browser_gap_analysis.md); the analysis
 remains useful as research and acceptance evidence.
 
+## Genet password geometry receiving, 2026-10-27
+
+**Status: native password projection is repaired; bounded ThinkPad receiving
+passes.** The [password geometry receipt](../docs/receipts/cue_password_geometry_linux_20261027/README.md)
+binds Genet `a732a7d4`, the shared producer's native regression and Turnstone's
+Genet-only lock update. Native text queries map editing-value bytes to the
+actual grapheme-counted bullet string and map hit tests back. Retained state
+keeps numeric boundaries and masked text. Same-mask edits refresh the mapping;
+partial-grapheme selections cover the touched bullet.
+
+The original layout implementation fails both new regression tests. The fixed
+layout suite passes 359 tests with two ignored; five focused static/scripted
+geometry tests, two hardware Vulkan producer tests and three host tests pass.
+A native Wayland password-field scenario passes for primary and lens windows,
+with both windows' shared rectangles matching actual Wayland cursor-rectangle
+messages. At 110% zoom the 33-pixel caret becomes 36.3 pixels and the lens receives
+that geometry. Native display scale is 1; scale 2 remains a producer fixture.
+This closes the password-offset caveat below. Earlier physical and ordinary-field
+receipts remain unchanged; physical candidate-popup/CJK/human AT, native high-DPI,
+X11 and Servo IME retain their separate bounds.
+
 ## ThinkPad shared geometry receiving, 2026-10-27
 
 **Status: bounded native Wayland / hardware Vulkan receiving passes.** The
@@ -42,8 +63,9 @@ The passing run uses explicit lens content focus and a window-targeted caret key
 The caret mapping, producer publication and dependency lockfile are unchanged.
 SSH access is restored; an initial GitHub DNS failure resolved on retry without
 configuration changes. Physical CJK, human AT, Servo IME, physical candidate
-popup placement and native password masking/index projection retain their own
-bounds. The October 24 physical receipt remains unchanged.
+popup placement retain their own bounds. Native password masking/index
+projection is closed by the later password receipt above. The October 24
+physical receipt remains unchanged.
 
 ## ThinkPad physical IME receiving, 2026-10-24
 

@@ -1,0 +1,239 @@
+   Compiling unicode-ident v1.0.24
+   Compiling cfg-if v1.0.4
+   Compiling smallvec v1.15.2
+   Compiling proc-macro2 v1.0.107
+   Compiling libc v0.2.189
+   Compiling quote v1.0.47
+   Compiling syn v2.0.119
+   Compiling syn v3.0.8
+   Compiling serde_derive v1.0.229
+   Compiling log v0.4.33
+   Compiling bytemuck_derive v1.11.0
+   Compiling thiserror v2.0.21
+   Compiling bytemuck v1.25.2
+   Compiling thiserror-impl v2.0.21
+   Compiling serde v1.0.229
+   Compiling equivalent v1.0.2
+   Compiling foldhash v0.2.0
+   Compiling synstructure v0.13.2
+   Compiling bitflags v2.13.1
+   Compiling siphasher v1.0.3
+   Compiling phf_shared v0.14.0
+   Compiling zerofrom-derive v0.1.7
+   Compiling parking_lot_core v0.9.12
+   Compiling parking_lot v0.12.5
+   Compiling yoke-derive v0.8.2
+   Compiling zerofrom v0.1.8
+   Compiling zerocopy v0.8.55
+   Compiling phf_generator v0.14.0
+   Compiling hashbrown v0.17.1
+   Compiling yoke v0.8.3
+   Compiling zerocopy-derive v0.8.55
+   Compiling zerovec-derive v0.11.6
+   Compiling zerovec v0.11.8
+   Compiling displaydoc v0.2.6
+   Compiling jobserver v0.1.35
+   Compiling libloading v0.8.9
+   Compiling find-msvc-tools v0.1.9
+   Compiling cc v1.3.0
+   Compiling euclid v0.22.14
+   Compiling tinystr v0.8.4
+   Compiling indexmap v2.14.0
+   Compiling phf_macros v0.14.0
+   Compiling font-types v0.12.3
+   Compiling litemap v0.8.2
+   Compiling hashbrown v0.16.1
+   Compiling icu_locale_core v2.3.0
+   Compiling phf v0.14.0
+   Compiling read-fonts v0.41.0
+   Compiling naga-types v30.0.0
+   Compiling potential_utf v0.1.5
+   Compiling zerotrie v0.2.5
+   Compiling naga v30.0.1
+   Compiling icu_provider v2.3.1
+   Compiling half v2.7.1
+   Compiling phf_codegen v0.14.0
+   Compiling string_cache_codegen v0.11.2
+   Compiling spirv v0.4.0+sdk-1.4.341.0
+   Compiling wgpu-types v30.0.0
+   Compiling icu_collections v2.3.0
+   Compiling kurbo v0.13.1
+   Compiling web_atoms v0.3.0
+   Compiling ash v0.38.0+1.3.281
+   Compiling wgpu-hal v30.0.0
+   Compiling color v0.3.3
+   Compiling icu_properties_data v2.3.0
+   Compiling guillotiere v0.7.0
+   Compiling string_cache v0.11.0
+   Compiling gpu-allocator v0.28.0 (<home>/Code/worktrees/genet-password-caret-20261027/support/patches/gpu-allocator)
+   Compiling peniko v0.6.1
+   Compiling wgpu-naga-bridge v30.0.0
+   Compiling skrifa v0.44.0
+   Compiling ordered-float v5.3.0
+   Compiling crc32fast v1.5.0
+   Compiling icu_normalizer_data v2.3.0
+   Compiling wgpu-core v30.0.0
+   Compiling crossbeam-utils v0.8.22
+   Compiling litrs v1.0.0
+   Compiling document-features v0.2.12
+   Compiling markup5ever v0.40.0
+   Compiling icu_properties v2.3.0
+   Compiling wgpu-core-deps-windows-linux-android v30.0.0
+   Compiling wgpu v30.0.1
+   Compiling crossbeam-epoch v0.9.20
+   Compiling vello_shaders v0.11.0 (https://github.com/mark-ik/vello?rev=276b46648c08f3d2062e70559afa999842e1873c#276b4664)
+   Compiling icu_normalizer v2.3.0
+   Compiling flate2 v1.1.9
+   Compiling fearless_simd v0.7.0
+   Compiling crossbeam-deque v0.8.7
+   Compiling icu_locale_fallback_data v2.3.0
+   Compiling semver v1.0.28
+   Compiling rustc_version v0.4.1
+   Compiling libz-sys v1.1.29
+   Compiling vello_common v0.3.0 (https://github.com/mark-ik/vello?rev=276b46648c08f3d2062e70559afa999842e1873c#276b4664)
+   Compiling toml_parser v1.1.2+spec-1.1.0
+   Compiling png v0.18.1
+   Compiling psm v0.1.32
+   Compiling serde_spanned v1.1.1
+   Compiling toml_datetime v1.1.1+spec-1.1.0
+   Compiling vello_encoding v0.11.0 (https://github.com/mark-ik/vello?rev=276b46648c08f3d2062e70559afa999842e1873c#276b4664)
+   Compiling icu_segmenter_data v2.3.0
+   Compiling futures-core v0.3.33
+   Compiling rayon-core v1.13.0
+   Compiling toml_writer v1.1.2+spec-1.1.0
+   Compiling toml v1.1.3+spec-1.1.0
+   Compiling futures-intrusive v0.5.0
+   Compiling glifo v0.4.0 (https://github.com/mark-ik/vello?rev=276b46648c08f3d2062e70559afa999842e1873c#276b4664)
+   Compiling heapless v0.7.17
+   Compiling idna_adapter v1.2.2
+   Compiling layout-dom-api v0.1.1 (<home>/Code/worktrees/genet-password-caret-20261027/components/shared/layout-dom)
+   Compiling stacker v0.1.25
+   Compiling dlib v0.5.3
+   Compiling app_units v0.7.8
+   Compiling tracing-attributes v0.1.31
+   Compiling cssparser-macros v0.7.0
+   Compiling byteorder v1.5.0
+   Compiling cssparser v0.38.0
+   Compiling tracing v0.1.44
+   Compiling fontsan v0.7.0
+   Compiling hash32 v0.2.1
+   Compiling netrender_device v0.1.2 (https://github.com/merely-made/netrender.git?branch=main#66b2f72e)
+   Compiling genet-paint-types v0.2.0 (<home>/Code/worktrees/genet-password-caret-20261027/components/shared/paint-types)
+   Compiling yeslogic-fontconfig-sys v6.0.1
+   Compiling idna v1.1.0
+   Compiling icu_locale_fallback v2.3.0
+   Compiling livery v0.0.5 (<home>/Code/worktrees/genet-password-caret-20261027/components/livery)
+   Compiling vello_cpu v0.3.0 (https://github.com/mark-ik/vello?rev=276b46648c08f3d2062e70559afa999842e1873c#276b4664)
+   Compiling netrender-vello v0.11.0 (https://github.com/mark-ik/vello?rev=276b46648c08f3d2062e70559afa999842e1873c#276b4664)
+   Compiling html5ever v0.40.1
+   Compiling xml5ever v0.40.0
+   Compiling spin v0.9.9
+   Compiling memmap2 v0.9.11
+   Compiling weezl v0.1.12
+   Compiling parlance v0.1.0
+   Compiling quick-error v2.0.1
+   Compiling genet-flow v0.1.0 (<home>/Code/worktrees/genet-password-caret-20261027/components/shared/css-flow)
+   Compiling byteorder-lite v0.1.0
+   Compiling either v1.16.0
+   Compiling pxfm v0.1.30
+   Compiling zune-core v0.5.1
+   Compiling color_quant v1.1.0
+   Compiling gif v0.14.2
+   Compiling zune-jpeg v0.5.15
+   Compiling moxcms v0.8.1
+   Compiling rayon v1.12.0
+   Compiling image-webp v0.2.4
+   Compiling genet-text v0.1.0 (<home>/Code/worktrees/genet-password-caret-20261027/components/genet-text)
+   Compiling genet-fontique v0.10.0 (<home>/Code/worktrees/genet-password-caret-20261027/support/patches/fontique)
+   Compiling genet-static-dom v0.1.1 (<home>/Code/worktrees/genet-password-caret-20261027/components/genet-static-dom)
+   Compiling icu_segmenter v2.3.0
+   Compiling netrender v0.1.2 (https://github.com/merely-made/netrender.git?branch=main#66b2f72e)
+   Compiling url v2.5.8
+   Compiling engine-observables-api v0.2.0 (<home>/Code/worktrees/genet-password-caret-20261027/components/shared/engine-observables-api)
+   Compiling cadency v0.0.1 (<home>/Code/worktrees/genet-password-caret-20261027/components/cadency)
+   Compiling regress v0.11.1 (<home>/Code/worktrees/genet-password-caret-20261027/support/patches/regress-0.11.1)
+   Compiling parley_data v0.10.0
+   Compiling harfrust v0.12.0
+   Compiling paint_list_api v0.1.2 (https://github.com/merely-made/netrender.git?branch=main#66b2f72e)
+   Compiling cobs v0.3.0
+   Compiling genet-taffy v0.14.0 (<home>/Code/worktrees/genet-password-caret-20261027/support/patches/taffy)
+   Compiling genet-host-api v0.2.0 (<home>/Code/worktrees/genet-password-caret-20261027/components/genet-host-api)
+   Compiling encoding_rs v0.8.35
+   Compiling genet-scripted-dom v0.1.2 (<home>/Code/worktrees/genet-password-caret-20261027/components/genet-scripted-dom)
+warning: use of deprecated method `std::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency
+  --> components/genet-scripted-dom/forms_submission.rs:98:14
+   |
+98 |             .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |next| {
+   |              ^^^^^^^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+help: replace the use of the deprecated method
+   |
+98 -             .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |next| {
+98 +             .try_update(Ordering::Relaxed, Ordering::Relaxed, |next| {
+   |
+
+warning: use of deprecated method `std::sync::atomic::Atomic::<u32>::fetch_update`: renamed to `try_update` for consistency
+   --> components/genet-scripted-dom/lib.rs:166:10
+    |
+166 |         .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |next| {
+    |          ^^^^^^^^^^^^
+    |
+help: replace the use of the deprecated method
+    |
+166 -         .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |next| {
+166 +         .try_update(Ordering::Relaxed, Ordering::Relaxed, |next| {
+    |
+
+warning: `genet-scripted-dom` (lib) generated 2 warnings (run `cargo fix --lib -p genet-scripted-dom` to apply 2 suggestions)
+   Compiling genet-document-resources v0.2.1 (<home>/Code/worktrees/genet-password-caret-20261027/components/genet-document-resources)
+   Compiling buckram v0.0.3 (<home>/Code/worktrees/genet-password-caret-20261027/components/buckram)
+   Compiling postcard v1.1.3
+   Compiling paint_list_render v0.1.2 (https://github.com/merely-made/netrender.git?branch=main#66b2f72e)
+   Compiling genet-parley v0.10.0 (<home>/Code/worktrees/genet-password-caret-20261027/support/patches/parley)
+warning: use of deprecated method `icu_properties::props::BidiClass::to_icu4c_value`: please comment on https://github.com/unicode-org/icu4x/issues/6067 if you need this
+   --> support/patches/parley/src/bidi.rs:893:13
+    |
+893 |     1 << (t.to_icu4c_value() as u32)
+    |             ^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(deprecated)]` on by default
+
+warning: `genet-parley` (lib) generated 1 warning
+   Compiling image v0.25.10
+   Compiling base64 v0.22.1
+   Compiling genet-livery v0.0.4 (<home>/Code/worktrees/genet-password-caret-20261027/components/genet-livery)
+warning: variable does not need to be mutable
+    --> components/genet-livery/src/document/tests.rs:4580:9
+     |
+4580 |     let mut dom = ScriptedDom::from_serialized_document(
+     |         ----^^^
+     |         |
+     |         help: remove this `mut`
+     |
+     = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: `genet-livery` (lib test) generated 1 warning (run `cargo fix --lib -p genet-livery --tests` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2m 07s
+     Running unittests src/lib.rs (<home>/Code/repos/turnstone/target/build/debug/deps/genet_livery-9727098fd3ba3782)
+
+running 2 tests
+
+thread 'document::tests::password_caret_projection_matches_masked_glyphs_and_hit_testing' (294460) panicked at components/genet-livery/src/document/tests.rs:4560:13:
+password boundary 1: source byte 1 must reach its masked glyph edge
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test document::tests::password_caret_projection_matches_masked_glyphs_and_hit_testing ... FAILED
+
+thread 'document::tests::password_caret_projection_refreshes_same_mask_and_covers_partial_graphemes' (294461) panicked at components/genet-livery/src/document/tests.rs:4599:5:
+unchanged mask retains its shaped width
+test document::tests::password_caret_projection_refreshes_same_mask_and_covers_partial_graphemes ... FAILED
+
+failures:
+
+failures:
+    document::tests::password_caret_projection_matches_masked_glyphs_and_hit_testing
+    document::tests::password_caret_projection_refreshes_same_mask_and_covers_partial_graphemes
+
+test result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 359 filtered out; finished in 0.07s
+
+error: test failed, to rerun pass `-p genet-livery --lib`

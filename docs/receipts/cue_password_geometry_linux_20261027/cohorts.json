@@ -1,0 +1,10 @@
+{
+  "genet_fix": "a732a7d466bfef88ba2edd1a20be64cb39b80dd8",
+  "sdk_committed_tested_files": "bd658c044e8f68fc0eb21ff2b892d66b497d8d0a",
+  "turnstone_executed_source": "2a42f7e6c65cbc64eca088224b86d3811e557716",
+  "mere_base_after_upstream_ff": "b3c8ab1ddb4a5a576b32046517907b4039c5eb7f",
+  "turnstone_mere_supplier": "1184ece0",
+  "prior_physical_receipt_tree": "0517c18c73e5a1ce3991a7ea8ced6d5d4209f7c4",
+  "prior_geometry_receipt_tree": "76ddeab137e66d32f9af1ef4dff591495989eb0f",
+  "source_identity": "All three modified Genet files, and all four modified SDK files including its final lock, were SHA-256 compared against the published commits. Turnstone executed a clean candidate commit. Source-verification records retain the actual base-plus-patch checkout state for the owner and SDK tests."
+}

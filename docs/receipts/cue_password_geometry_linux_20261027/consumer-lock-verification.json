@@ -1,0 +1,26 @@
+[
+  {
+    "repo": "turnstone",
+    "path": "Cargo.lock",
+    "before": "c1873d8949caa0b7735267496f6cc49cbe288838e8311af4123d4af570823afc",
+    "after": "9c6df856d15edc72e46f4bd0e02476ccd0c4ef14cbda83f0cf52c29ba5c5dcba",
+    "genet_sha_replacements": 33,
+    "only_genet_revisions_changed": true
+  },
+  {
+    "repo": "mere",
+    "path": "Cargo.lock",
+    "before": "8ec4c8521960c6aeac0873283c107009305254af4d785fb7ca6041a18ad8fc5e",
+    "after": "5b1291f696cf50e24ab9061d08efa233095b221a3752b7af35caf7759fe0378a",
+    "genet_sha_replacements": 36,
+    "only_genet_revisions_changed": true
+  },
+  {
+    "repo": "mere",
+    "path": "ports/graphshell/web/Cargo.lock",
+    "before": "26fadbe2c8101eda7bc014d8af141a094f0e4fb862d351705a13b1512172df64",
+    "after": "081c7f6d3b880a6d3beebe2d28326d12b3a5e157ef6a72d9f8ae5ad2082789d7",
+    "genet_sha_replacements": 24,
+    "only_genet_revisions_changed": true
+  }
+]

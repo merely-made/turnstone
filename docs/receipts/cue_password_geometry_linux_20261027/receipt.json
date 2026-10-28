@@ -1,0 +1,47 @@
+{
+  "date": "2026-10-27",
+  "qualified": true,
+  "platform": "Fedora 44, GNOME Wayland, RADV Renoir hardware Vulkan",
+  "physical_input": false,
+  "binary_sha256": "e7b2f8bed5215b6e7a2fce8abf0c73ccc3dca778a4a914b715125f7fec385576",
+  "tests": {
+    "red_baseline": {
+      "passed": 0,
+      "failed": 2
+    },
+    "fixed_password_subset": {
+      "passed": 3
+    },
+    "retained_layout_full": {
+      "passed": 359,
+      "ignored": 2
+    },
+    "static_scripted_shared_geometry": {
+      "passed": 5
+    },
+    "sdk_hardware_vulkan": {
+      "passed": 2
+    },
+    "turnstone_focused": {
+      "passed": 3
+    }
+  },
+  "native_caret_heights": {
+    "primary_before_zoom": 33,
+    "primary_after_110_percent_zoom": 36.3,
+    "lens": 36.3
+  },
+  "native_display_scale": 1,
+  "fixture_scale_2": true,
+  "windows_match_wayland": {
+    "0": true,
+    "1": true
+  },
+  "bounds": [
+    "Programmatic native geometry and synthetic input only; no new physical IME, OS candidate-popup, CJK or human AT qualification.",
+    "Native high DPI, X11 and Servo IME remain outside this run.",
+    "Mere root/web receive a locked metadata check, not a new Graphshell executable build.",
+    "Root metadata emits one pre-existing unrelated netrender_device source discrepancy; its original lock record is preserved and both identities are documented."
+  ],
+  "evidence_retention": "Raw originals, metadata, source checkouts and frozen binary remain under Code/output/genet-password-caret. Published text redacts home prefixes; original-evidence-sha256.json records hashes before redaction."
+}

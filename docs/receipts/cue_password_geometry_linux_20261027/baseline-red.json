@@ -1,0 +1,22 @@
+{
+  "command": [
+    "nice",
+    "-n",
+    "10",
+    "cargo",
+    "+1.99.1",
+    "test",
+    "--locked",
+    "--offline",
+    "-p",
+    "genet-livery",
+    "--lib",
+    "password_caret_projection",
+    "-j2",
+    "--",
+    "--nocapture"
+  ],
+  "started": 1793155922.602425,
+  "exit": 101,
+  "elapsed_seconds": 127.864
+}

@@ -1,0 +1,9 @@
+{
+  "packages": 1062,
+  "lock_records": 1660,
+  "resolved_records_match_lock": true,
+  "genet_sources": [
+    "git+https://github.com/merely-made/genet.git?branch=main#a732a7d466bfef88ba2edd1a20be64cb39b80dd8"
+  ],
+  "lock_sha256": "9c6df856d15edc72e46f4bd0e02476ccd0c4ef14cbda83f0cf52c29ba5c5dcba"
+}

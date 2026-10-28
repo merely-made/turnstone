@@ -1,0 +1,19 @@
+{
+  "command": [
+    "nice",
+    "-n",
+    "10",
+    "cargo",
+    "+1.99.1",
+    "build",
+    "--locked",
+    "--offline",
+    "--bin",
+    "turnstone",
+    "-j2"
+  ],
+  "source": "2a42f7e6c65cbc64eca088224b86d3811e557716",
+  "started": 1793157477.310315,
+  "exit": 0,
+  "elapsed_seconds": 75.518
+}

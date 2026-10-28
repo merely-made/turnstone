@@ -1,0 +1,22 @@
+{
+  "command": [
+    "nice",
+    "-n",
+    "10",
+    "cargo",
+    "+1.99.1",
+    "test",
+    "--locked",
+    "--offline",
+    "--lib",
+    "document_text_input_geometry",
+    "-j2",
+    "--",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "source": "2a42f7e6c65cbc64eca088224b86d3811e557716",
+  "started": 1793157350.895686,
+  "exit": 0,
+  "elapsed_seconds": 122.287
+}

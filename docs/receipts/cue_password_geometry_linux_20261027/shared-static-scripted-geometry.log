@@ -1,0 +1,353 @@
+   Compiling syn v3.0.8
+   Compiling num-traits v0.2.19
+   Compiling zerofrom v0.1.8
+   Compiling yoke v0.8.3
+   Compiling arrayvec v0.7.8
+   Compiling writeable v0.6.4
+   Compiling hashbrown v0.17.1
+   Compiling zerotrie v0.2.5
+   Compiling indexmap v2.14.0
+   Compiling hashbrown v0.16.1
+   Compiling serde_derive v1.0.229
+   Compiling zerovec-derive v0.11.6
+   Compiling zerovec v0.11.8
+   Compiling thiserror-impl v2.0.21
+   Compiling serde v1.0.229
+   Compiling tinystr v0.8.4
+   Compiling icu_locale_core v2.3.0
+   Compiling thiserror v2.0.21
+   Compiling potential_utf v0.1.5
+   Compiling icu_collections v2.3.0
+   Compiling euclid v0.22.14
+   Compiling icu_provider v2.3.1
+   Compiling winnow v1.0.4
+   Compiling icu_properties v2.3.0
+   Compiling toml_parser v1.1.2+spec-1.1.0
+   Compiling toml_datetime v1.1.1+spec-1.1.0
+   Compiling write16 v1.0.0
+   Compiling utf16_iter v1.0.5
+   Compiling naga-types v30.0.0
+   Compiling icu_normalizer v2.3.0
+   Compiling read-fonts v0.41.0
+   Compiling half v2.7.1
+   Compiling wgpu-types v30.0.0
+   Compiling naga v30.0.1
+   Compiling gpu-allocator v0.28.0 (<home>/Code/worktrees/genet-password-caret-20261027/support/patches/gpu-allocator)
+   Compiling ordered-float v5.3.0
+   Compiling wgpu-naga-bridge v30.0.0
+   Compiling cmov v0.5.4
+   Compiling wgpu-hal v30.0.0
+   Compiling ctutils v0.4.5
+   Compiling icu_locale_fallback v2.3.0
+   Compiling skrifa v0.44.0
+   Compiling layout-dom-api v0.1.1 (<home>/Code/worktrees/genet-password-caret-20261027/components/shared/layout-dom)
+   Compiling polycool v0.4.0
+   Compiling cpufeatures v0.3.0
+   Compiling digest v0.11.3
+   Compiling kurbo v0.13.1
+   Compiling wgpu-core-deps-windows-linux-android v30.0.0
+   Compiling idna_adapter v1.2.2
+   Compiling guillotiere v0.7.0
+   Compiling toml v1.1.3+spec-1.1.0
+   Compiling peniko v0.6.1
+   Compiling idna v1.1.0
+   Compiling wgpu-core v30.0.0
+   Compiling vello_shaders v0.11.0 (https://github.com/mark-ik/vello?rev=276b46648c08f3d2062e70559afa999842e1873c#276b4664)
+   Compiling app_units v0.7.8
+   Compiling synstructure v0.14.0
+   Compiling pastey v0.2.3
+   Compiling rand_core v0.10.1
+   Compiling ryu-js v1.0.3
+   Compiling getrandom v0.4.3
+   Compiling parking v2.2.1
+   Compiling rustc-hash v2.1.3
+   Compiling cow-utils v0.1.3
+   Compiling fast-float2 v0.2.4
+   Compiling boa_string v1.0.0-dev (https://github.com/merely-made/bole.git?rev=ddf4e31b0d6cf86c11ea8907b0d07e4799d62368#ddf4e31b)
+   Compiling boa_macros v1.0.0-dev (https://github.com/merely-made/bole.git?rev=ddf4e31b0d6cf86c11ea8907b0d07e4799d62368#ddf4e31b)
+   Compiling wgpu v30.0.1
+   Compiling cssparser v0.38.0
+   Compiling genet-paint-types v0.2.0 (<home>/Code/worktrees/genet-password-caret-20261027/components/shared/paint-types)
+   Compiling livery v0.0.5 (<home>/Code/worktrees/genet-password-caret-20261027/components/livery)
+   Compiling url v2.5.8
+   Compiling vello_encoding v0.11.0 (https://github.com/mark-ik/vello?rev=276b46648c08f3d2062e70559afa999842e1873c#276b4664)
+   Compiling heck v0.5.0
+   Compiling thin-vec v0.2.21
+   Compiling serde_json v1.0.151
+   Compiling icu_calendar_data v2.3.0
+   Compiling boa_gc v1.0.0-dev (https://github.com/merely-made/bole.git?rev=ddf4e31b0d6cf86c11ea8907b0d07e4799d62368#ddf4e31b)
+   Compiling strum_macros v0.28.0
+   Compiling genet-static-dom v0.1.1 (<home>/Code/worktrees/genet-password-caret-20261027/components/genet-static-dom)
+   Compiling engine-observables-api v0.2.0 (<home>/Code/worktrees/genet-password-caret-20261027/components/shared/engine-observables-api)
+   Compiling cadency v0.0.1 (<home>/Code/worktrees/genet-password-caret-20261027/components/cadency)
+   Compiling regress v0.11.1 (<home>/Code/worktrees/genet-password-caret-20261027/support/patches/regress-0.11.1)
+   Compiling toml_edit v0.25.13+spec-1.1.0
+   Compiling encoding_rs v0.8.35
+   Compiling genet-host-api v0.2.0 (<home>/Code/worktrees/genet-password-caret-20261027/components/genet-host-api)
+   Compiling concurrent-queue v2.5.0
+   Compiling num-integer v0.1.47
+   Compiling core_maths v0.1.1
+   Compiling netrender_device v0.1.2 (https://github.com/merely-made/netrender.git?branch=main#66b2f72e)
+   Compiling genet-fontique v0.10.0 (<home>/Code/worktrees/genet-password-caret-20261027/support/patches/fontique)
+   Compiling moxcms v0.8.1
+   Compiling calendrical_calculations v0.2.4
+   Compiling num-bigint v0.5.1
+   Compiling event-listener v5.4.1
+   Compiling genet-scripted-dom v0.1.2 (<home>/Code/worktrees/genet-password-caret-20261027/components/genet-scripted-dom)
+warning: use of deprecated method `std::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency
+  --> components/genet-scripted-dom/forms_submission.rs:98:14
+   |
+98 |             .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |next| {
+   |              ^^^^^^^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+help: replace the use of the deprecated method
+   |
+98 -             .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |next| {
+98 +             .try_update(Ordering::Relaxed, Ordering::Relaxed, |next| {
+   |
+
+warning: use of deprecated method `std::sync::atomic::Atomic::<u32>::fetch_update`: renamed to `try_update` for consistency
+   --> components/genet-scripted-dom/lib.rs:166:10
+    |
+166 |         .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |next| {
+    |          ^^^^^^^^^^^^
+    |
+help: replace the use of the deprecated method
+    |
+166 -         .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |next| {
+166 +         .try_update(Ordering::Relaxed, Ordering::Relaxed, |next| {
+    |
+
+warning: `genet-scripted-dom` (lib) generated 2 warnings (run `cargo fix --lib -p genet-scripted-dom` to apply 2 suggestions)
+   Compiling proc-macro-crate v3.5.0
+   Compiling netrender-vello v0.11.0 (https://github.com/mark-ik/vello?rev=276b46648c08f3d2062e70559afa999842e1873c#276b4664)
+   Compiling icu_segmenter v2.3.0
+   Compiling strum v0.28.0
+   Compiling float16 v0.1.7
+   Compiling boa_interner v1.0.0-dev (https://github.com/merely-made/bole.git?rev=ddf4e31b0d6cf86c11ea8907b0d07e4799d62368#ddf4e31b)
+   Compiling hmac v0.13.0
+   Compiling harfrust v0.12.0
+   Compiling parley_data v0.10.0
+   Compiling paint_list_api v0.1.2 (https://github.com/merely-made/netrender.git?branch=main#66b2f72e)
+   Compiling genet-taffy v0.14.0 (<home>/Code/worktrees/genet-password-caret-20261027/support/patches/taffy)
+   Compiling uuid v1.24.0
+   Compiling equator-macro v0.4.2
+   Compiling pin-project-internal v1.1.13
+   Compiling enumn v0.1.14
+   Compiling portable-atomic v1.15.0
+   Compiling fastrand v2.5.0
+   Compiling num-conv v0.2.2
+   Compiling futures-io v0.3.33
+   Compiling time-core v0.1.9
+   Compiling futures-lite v2.6.1
+   Compiling time-macros v0.2.32
+   Compiling pin-project v1.1.13
+   Compiling accesskit v0.25.1
+   Compiling equator v0.4.2
+   Compiling buckram v0.0.3 (<home>/Code/worktrees/genet-password-caret-20261027/components/buckram)
+   Compiling genet-parley v0.10.0 (<home>/Code/worktrees/genet-password-caret-20261027/support/patches/parley)
+warning: use of deprecated method `icu_properties::props::BidiClass::to_icu4c_value`: please comment on https://github.com/unicode-org/icu4x/issues/6067 if you need this
+   --> support/patches/parley/src/bidi.rs:893:13
+    |
+893 |     1 << (t.to_icu4c_value() as u32)
+    |             ^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(deprecated)]` on by default
+
+warning: `genet-parley` (lib) generated 1 warning
+   Compiling icu_calendar v2.3.0
+   Compiling boa_ast v1.0.0-dev (https://github.com/merely-made/bole.git?rev=ddf4e31b0d6cf86c11ea8907b0d07e4799d62368#ddf4e31b)
+   Compiling image v0.25.10
+   Compiling netrender v0.1.2 (https://github.com/merely-made/netrender.git?branch=main#66b2f72e)
+   Compiling num_enum_derive v0.7.6
+   Compiling event-listener-strategy v0.5.4
+   Compiling genet-document-resources v0.2.1 (<home>/Code/worktrees/genet-password-caret-20261027/components/genet-document-resources)
+   Compiling chacha20 v0.10.1
+   Compiling sha2 v0.11.1
+   Compiling regress v0.12.0
+   Compiling timezone_provider v0.2.6
+   Compiling dynify-macros v0.1.2
+   Compiling script-engine-api v0.1.1 (<home>/Code/worktrees/genet-password-caret-20261027/components/script-engine-api)
+   Compiling powerfmt v0.2.0
+   Compiling fixedbitset v0.5.7
+   Compiling hashbrown v0.14.5
+   Compiling ixdtf v0.6.6
+   Compiling num_threads v0.1.7
+   Compiling deranged v0.5.8
+   Compiling genet-livery v0.0.4 (<home>/Code/worktrees/genet-password-caret-20261027/components/genet-livery)
+   Compiling time v0.3.55
+   Compiling temporal_rs v0.2.6
+   Compiling dashmap v6.2.1
+   Compiling futures-concurrency v7.7.1
+   Compiling dynify v0.1.2
+   Compiling boa_parser v1.0.0-dev (https://github.com/merely-made/bole.git?rev=ddf4e31b0d6cf86c11ea8907b0d07e4799d62368#ddf4e31b)
+   Compiling rand v0.10.3
+   Compiling num_enum v0.7.6
+   Compiling async-channel v2.5.0
+   Compiling paint_list_render v0.1.2 (https://github.com/merely-made/netrender.git?branch=main#66b2f72e)
+   Compiling document-session-api v0.1.1 (<home>/Code/worktrees/genet-password-caret-20261027/components/shared/document-session-api)
+   Compiling aligned-vec v0.6.4
+   Compiling pbkdf2 v0.13.0
+   Compiling hkdf v0.13.0
+   Compiling genet-events v0.0.0 (<home>/Code/worktrees/genet-password-caret-20261027/components/genet-events)
+   Compiling genet-browsing v0.1.0 (<home>/Code/worktrees/genet-password-caret-20261027/components/shared/browsing-context)
+   Compiling itertools v0.15.0
+   Compiling sha1 v0.11.0
+   Compiling servo-xpath v0.2.0 (<home>/Code/worktrees/genet-password-caret-20261027/components/xpath)
+   Compiling cobs v0.3.0
+   Compiling small_btree v0.1.0 (https://github.com/merely-made/bole.git?rev=ddf4e31b0d6cf86c11ea8907b0d07e4799d62368#ddf4e31b)
+   Compiling intrusive-collections v0.10.3
+   Compiling tag_ptr v0.1.0 (https://github.com/merely-made/bole.git?rev=ddf4e31b0d6cf86c11ea8907b0d07e4799d62368#ddf4e31b)
+   Compiling zeroize v1.9.0
+   Compiling xsum v0.1.6
+   Compiling oneshot v0.2.1
+   Compiling tap v1.0.1
+   Compiling genet-runtime v0.0.0 (<home>/Code/worktrees/genet-password-caret-20261027/components/script-runtime-api)
+   Compiling boa_engine v1.0.0-dev (https://github.com/merely-made/bole.git?rev=ddf4e31b0d6cf86c11ea8907b0d07e4799d62368#ddf4e31b)
+warning: use of deprecated method `std::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency
+  --> components/script-runtime-api/text_encoding.rs:22:10
+   |
+22 |         .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |id| id.checked_add(1))
+   |          ^^^^^^^^^^^^
+   |
+   = note: `#[warn(deprecated)]` on by default
+help: replace the use of the deprecated method
+   |
+22 -         .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |id| id.checked_add(1))
+22 +         .try_update(Ordering::Relaxed, Ordering::Relaxed, |id| id.checked_add(1))
+   |
+
+warning: unused import: `crate::OwnerResolvedCx`
+ --> components/script-runtime-api/dom/xpath_eval.rs:9:5
+  |
+9 | use crate::OwnerResolvedCx as _;
+  |     ^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `crate::OwnerResolvedCx`
+  --> components/script-runtime-api/dom/shadow.rs:14:5
+   |
+14 | use crate::OwnerResolvedCx as _;
+   |     ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::OwnerResolvedCx`
+  --> components/script-runtime-api/dom/markup_insertion.rs:37:5
+   |
+37 | use crate::OwnerResolvedCx as _;
+   |     ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `genet-runtime` (lib) generated 4 warnings (run `cargo fix --lib -p genet-runtime` to apply 1 suggestion)
+   Compiling fleece v0.5.0 (<home>/Code/worktrees/genet-password-caret-20261027/components/fleece)
+   Compiling postcard v1.1.3
+   Compiling genet-render v0.2.0 (<home>/Code/worktrees/genet-password-caret-20261027/components/genet-render)
+   Compiling genet-scripted v0.2.0 (<home>/Code/worktrees/genet-password-caret-20261027/components/genet-scripted)
+warning: enum `ReplayError` is never used
+   --> components/genet-scripted/capture.rs:281:17
+    |
+281 | pub(crate) enum ReplayError {
+    |                 ^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: associated items `translate`, `replay_node`, and `replay_ids` are never used
+   --> components/genet-scripted/capture.rs:311:8
+    |
+307 | impl RecordedMutation {
+    | --------------------- associated items in this implementation
+...
+311 |     fn translate(dom: &ScriptedDom, captured: CapturedNodeId) -> Result<NodeId, ReplayError> {
+    |        ^^^^^^^^^
+...
+320 |     pub(crate) fn replay_node(&self, dom: &ScriptedDom) -> Result<NodeId, ReplayError> {
+    |                   ^^^^^^^^^^^
+...
+339 |     pub(crate) fn replay_ids(&self, dom: &ScriptedDom) -> Result<Vec<NodeId>, ReplayError> {
+    |                   ^^^^^^^^^^
+
+warning: `genet-scripted` (lib) generated 2 warnings
+   Compiling genet-bole v0.0.0 (<home>/Code/worktrees/genet-password-caret-20261027/components/script-engine-boa)
+   Compiling genet-documents v0.1.0 (<home>/Code/worktrees/genet-password-caret-20261027/components/genet-documents)
+warning: unused import: `std::any::Any`
+  --> components/genet-documents/src/engines/tests.rs:13:5
+   |
+13 | use std::any::Any;
+   |     ^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused imports: `DocumentClipArtifact`, `DocumentClip`, `DocumentFindMatch`, `DocumentZoomState`, and `SessionLink`
+  --> components/genet-documents/src/engines/tests.rs:17:5
+   |
+17 |     DocumentClip, DocumentClipArtifact, DocumentClipArtifactRole, DocumentFindDirection,
+   |     ^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^
+18 |     DocumentFindMatch, DocumentFindQuery, DocumentFindReveal, DocumentFindState, DocumentSession,
+   |     ^^^^^^^^^^^^^^^^^
+19 |     DocumentZoomState, SessionButtonState, SessionClick, SessionCursor, SessionEffect,
+   |     ^^^^^^^^^^^^^^^^^
+20 |     SessionEngine, SessionError, SessionFocusDirection, SessionFormMethod, SessionFormSubmission,
+21 |     SessionIme, SessionKey, SessionLink, SessionModifiers, SessionScrollKey, SessionSpawnRequest,
+   |                             ^^^^^^^^^^^
+
+warning: unused import: `DocumentCapabilities`
+  --> components/genet-documents/src/engines/tests.rs:28:28
+   |
+28 | use document_session_api::{DocumentCapabilities, DocumentCapabilityStatus};
+   |                            ^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `NodeKind`
+  --> components/genet-documents/src/engines/tests.rs:36:58
+   |
+36 | use layout_dom_api::{LayoutDomMut, LocalName, Namespace, NodeKind, QualName};
+   |                                                          ^^^^^^^^
+
+warning: unused variable: `state`
+    --> components/genet-documents/src/engines/livery.rs:1185:18
+     |
+1185 |         let Some(state) = self.control_state(node) else {
+     |                  ^^^^^ help: if this is intentional, prefix it with an underscore: `_state`
+     |
+     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `unmodified`
+    --> components/genet-documents/src/engines/livery.rs:2046:13
+     |
+2046 |         let unmodified = !modifiers.control && !modifiers.meta && !modifiers.alt;
+     |             ^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_unmodified`
+
+warning: value assigned to `s` is never read
+    --> components/genet-documents/src/engines/tests.rs:3777:10
+     |
+3777 |     let (mut s,mut fetch)=t5_script_session::<E>("<form action='/send' method='post'><button id='b'>send</button></form><p>OLD</p>");
+     |          ^^^^^ this value is reassigned later and never used
+...
+3782 |     s=engine.spawn(&SessionSpawnRequest::new("https://forms.test/source#initiator").with_body(&fetch.initial).with_viewport(480,48...
+     |     - `s` is overwritten here before the previous value is read
+     |
+     = note: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default
+
+warning: field `address` is never read
+   --> components/genet-documents/src/engines/scripted.rs:159:5
+    |
+157 | pub struct ScriptedDocumentSession<E: script_engine_api::ScriptEngine> {
+    |            ----------------------- field in this struct
+158 |     doc: genet_scripted::LiveryScriptedDocument<E>,
+159 |     address: String,
+    |     ^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `genet-documents` (lib test) generated 8 warnings (run `cargo fix --lib -p genet-documents --tests` to apply 6 suggestions)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2m 09s
+     Running unittests src/lib.rs (<home>/Code/repos/turnstone/target/build/debug/deps/genet_documents-e0c26be8fc322e7c)
+
+running 5 tests
+test engines::tests::text_input_tests::livery_text_input_geometry_handles_empty_password_blur_and_detach ... ok
+test engines::tests::text_input_tests::livery_text_input_geometry_tracks_selection_scroll_zoom_and_invalidation ... ok
+test engines::tests::text_input_tests::password_caret_projection_reaches_scripted_shared_geometry ... ok
+test engines::tests::text_input_tests::password_caret_projection_reaches_static_shared_geometry ... ok
+test engines::tests::text_input_tests::scripted_text_input_geometry_uses_live_utf16_selection_and_rejects_stale_layout ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 127 filtered out; finished in 23.25s
+

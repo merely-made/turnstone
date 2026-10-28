@@ -1,0 +1,33 @@
+{
+  "genet": {
+    "head": "01d3f528a8ff3f7c69201a736cdfdf296acccea3",
+    "status": " M components/genet-documents/src/engines/tests/text_input.rs\n M components/genet-livery/src/document/tests.rs\n M components/genet-livery/src/text.rs\n",
+    "files": {
+      "components/genet-livery/src/text.rs": "45a43e461cd48debf0e14e74f4a3c91f18a0f6e4b4fba997abe9537ce079d2e1",
+      "components/genet-livery/src/document/tests.rs": "7ba9cce614d4fae21c7e0ec3eac517dde52d23c6f90b8db5c1a9b01c36e92c1f",
+      "components/genet-documents/src/engines/tests/text_input.rs": "d1badf22d4b5744bbe406d404b7acffd7f456c1d9902a79eb7d343010c7cb80d",
+      "Cargo.lock": "e306014c70a913ae546d9fe1ad13d388c3adc1ee11a72fd5e759a14ab60950cc"
+    }
+  },
+  "wgpu-cue": {
+    "head": "ba92bded17bb3b2891e7d104edc3d687035dc00f",
+    "status": " M Cargo.lock\n M Cargo.toml\n M adapters/genet/Cargo.toml\n M adapters/genet/tests/text_input.rs\n",
+    "files": {
+      "Cargo.toml": "39b1cf86c64d86d7218a1465c616d2f84fd486f5e0d32fbc59f965f811d14956",
+      "Cargo.lock": "9836bd3b2936504d754bf280b4efa12fd6e14ddf4edba59ab3fa65875c3eb4ab",
+      "adapters/genet/Cargo.toml": "65493113ac5ba6cbc1dab72398a2810c489314452605994a0acfa03dbb276eec",
+      "adapters/genet/tests/text_input.rs": "64c604b52bb8ca77663fe8e8257287c0b1a371d85f7002f6ed750aaafdced815"
+    }
+  },
+  "turnstone": {
+    "head": "2a42f7e6c65cbc64eca088224b86d3811e557716",
+    "status": "",
+    "files": {
+      "Cargo.toml": "c989f9c226dd53687e9c7c34401c0b11c4ebc3a312ed184915d5d8cc65abcbf4",
+      "Cargo.lock": "9c6df856d15edc72e46f4bd0e02476ccd0c4ef14cbda83f0cf52c29ba5c5dcba",
+      "src/shell/window_input.rs": "4c3d998e49cfc4e4d5737e0c1ffb9ae5a4bf5285738174bac062e1566afc2656",
+      "src/scenario.rs": "152a904c0308d33b3a0a3659ecb209c59f7252d03361d9d3a157b5173f578b46",
+      "src/shell/drive.rs": "38ba0fdde7d102c9ca6f8a92f8979132298839ab2078d4b48763143151ec81ff"
+    }
+  }
+}
