@@ -210,6 +210,79 @@ assert.equal(saturated.coverage.candidate_limit_reached, true);
 assert.ok(saturated.coverage.omitted_queue > 0);
 assert.equal((await send({ type: "capture.pull" }, lastMessage)).visits.length, 2048);
 
+// Policy, queue, visit map and live-from share one writer order. A write held
+// mid-flight is never overwritten by another writer's earlier read.
+const POLICY_KEY = "graphshell.capture.policy.v1";
+const settle = async () => { for (let turn = 0; turn < 20; turn++) await new Promise(setImmediate); };
+function holdNextPolicyWrite() {
+  const write = chrome.storage.local.set;
+  let release;
+  let entered;
+  const reached = new Promise((resolve) => { entered = resolve; });
+  const gate = new Promise((resolve) => { release = resolve; });
+  chrome.storage.local.set = async (values) => {
+    if (POLICY_KEY in values) {
+      chrome.storage.local.set = write;
+      entered();
+      await gate;
+    }
+    return write(values);
+  };
+  return { reached, release };
+}
+async function pulledVisit(id) {
+  for (let attempt = 0; attempt < 20; attempt++) {
+    const pulled = await send({ type: "capture.pull" }, lastMessage);
+    const found = pulled.visits.find((visit) => visit.visit_id === id);
+    if (found) return found;
+    await new Promise(setImmediate);
+  }
+  return undefined;
+}
+const raceAt = Date.now() + 100;
+const observed = { id: "page-1", url: "https://example.net/to?token=secret", title: "Destination" };
+const visitsBeforeRaces = chrome.history.getVisits;
+chrome.history.getVisits = async () => [
+  { visitId: "race-1", referringVisitId: "0", transition: "link", visitTime: raceAt },
+];
+
+const racingPolicy = (await send({ type: "capture.status" }, lastMessage)).policy;
+const configureHeld = holdNextPolicyWrite();
+const configuring = send({ type: "capture.configure", policy: { ...racingPolicy, segment_size: 2 } }, lastMessage);
+await configureHeld.reached;
+historyVisited.listeners.at(-1)(observed);
+await settle();
+configureHeld.release();
+await configuring;
+assert.equal((await pulledVisit("race-1"))?.visit_id, "race-1", "a configure racing a queued visit keeps the visit");
+assert.equal((await send({ type: "capture.status" }, lastMessage)).policy.segment_size, 2);
+
+// A conflicting redelivery is refused alone and counted; the batch around it queues.
+chrome.history.getVisits = async () => [
+  { visitId: "race-1", referringVisitId: "0", transition: "reload", visitTime: raceAt },
+  { visitId: "race-2", referringVisitId: "0", transition: "link", visitTime: raceAt + 1 },
+];
+historyVisited.listeners.at(-1)(observed);
+assert.equal((await pulledVisit("race-2"))?.visit_id, "race-2", "the rest of the batch queues");
+assert.equal((await pulledVisit("race-1")).transition, "link", "the first visit for an identity wins");
+assert.equal((await send({ type: "capture.status" }, lastMessage)).coverage.refused_conflicts, 1);
+chrome.history.getVisits = visitsBeforeRaces;
+
+// A permission removal waits for the configure in flight and disables on top of it.
+const removalHeld = holdNextPolicyWrite();
+const reconfiguring = send({
+  type: "capture.configure", policy: { ...racingPolicy, excluded_origins: ["https://blocked.example"] },
+}, lastMessage);
+await removalHeld.reached;
+permissionRemoved.listeners.at(-1)({ permissions: ["history"] });
+await settle();
+removalHeld.release();
+await reconfiguring;
+await settle();
+const afterRemoval = (await send({ type: "capture.status" }, lastMessage)).policy;
+assert.equal(afterRemoval.enabled, false, "the removal is not overwritten by the configure it raced");
+assert.deepEqual(Array.from(afterRemoval.excluded_origins), ["https://blocked.example"], "the removal keeps the configure's policy");
+
 // The Firefox browser namespace runs the same production adapters with an
 // independent profile store. This is API simulation, not a headed receipt.
 const firefoxStored = {};

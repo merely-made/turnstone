@@ -1,0 +1,720 @@
+[
+  {
+    "name": "identical_replay",
+    "first": {
+      "source": "firefox",
+      "visit_id": "visit-1",
+      "source_scope": {
+        "product": "firefox",
+        "profile": "fixture-profile",
+        "generation": "fixture-generation"
+      },
+      "parent": {
+        "kind": "visit",
+        "visit_id": "parent-1"
+      },
+      "original_unix_micros": 1000000,
+      "source_is_local": true,
+      "url": "https://example.net/page",
+      "title": "Page",
+      "favicon_url": null,
+      "referrer_url": null,
+      "transition": "link",
+      "at_ms": 1000,
+      "private": false
+    },
+    "second": {
+      "source": "firefox",
+      "visit_id": "visit-1",
+      "source_scope": {
+        "product": "firefox",
+        "profile": "fixture-profile",
+        "generation": "fixture-generation"
+      },
+      "parent": {
+        "kind": "visit",
+        "visit_id": "parent-1"
+      },
+      "original_unix_micros": 1000000,
+      "source_is_local": true,
+      "url": "https://example.net/page",
+      "title": "Page",
+      "favicon_url": null,
+      "referrer_url": null,
+      "transition": "link",
+      "at_ms": 1000,
+      "private": false
+    },
+    "verdict": "duplicate"
+  },
+  {
+    "name": "title_differs",
+    "first": {
+      "source": "firefox",
+      "visit_id": "visit-1",
+      "source_scope": {
+        "product": "firefox",
+        "profile": "fixture-profile",
+        "generation": "fixture-generation"
+      },
+      "parent": {
+        "kind": "visit",
+        "visit_id": "parent-1"
+      },
+      "original_unix_micros": 1000000,
+      "source_is_local": true,
+      "url": "https://example.net/page",
+      "title": "Page",
+      "favicon_url": null,
+      "referrer_url": null,
+      "transition": "link",
+      "at_ms": 1000,
+      "private": false
+    },
+    "second": {
+      "source": "firefox",
+      "visit_id": "visit-1",
+      "source_scope": {
+        "product": "firefox",
+        "profile": "fixture-profile",
+        "generation": "fixture-generation"
+      },
+      "parent": {
+        "kind": "visit",
+        "visit_id": "parent-1"
+      },
+      "original_unix_micros": 1000000,
+      "source_is_local": true,
+      "url": "https://example.net/page",
+      "title": "Another title",
+      "favicon_url": null,
+      "referrer_url": null,
+      "transition": "link",
+      "at_ms": 1000,
+      "private": false
+    },
+    "verdict": "duplicate"
+  },
+  {
+    "name": "title_absent",
+    "first": {
+      "source": "firefox",
+      "visit_id": "visit-1",
+      "source_scope": {
+        "product": "firefox",
+        "profile": "fixture-profile",
+        "generation": "fixture-generation"
+      },
+      "parent": {
+        "kind": "visit",
+        "visit_id": "parent-1"
+      },
+      "original_unix_micros": 1000000,
+      "source_is_local": true,
+      "url": "https://example.net/page",
+      "title": "Page",
+      "favicon_url": null,
+      "referrer_url": null,
+      "transition": "link",
+      "at_ms": 1000,
+      "private": false
+    },
+    "second": {
+      "source": "firefox",
+      "visit_id": "visit-1",
+      "source_scope": {
+        "product": "firefox",
+        "profile": "fixture-profile",
+        "generation": "fixture-generation"
+      },
+      "parent": {
+        "kind": "visit",
+        "visit_id": "parent-1"
+      },
+      "original_unix_micros": 1000000,
+      "source_is_local": true,
+      "url": "https://example.net/page",
+      "title": null,
+      "favicon_url": null,
+      "referrer_url": null,
+      "transition": "link",
+      "at_ms": 1000,
+      "private": false
+    },
+    "verdict": "duplicate"
+  },
+  {
+    "name": "url_differs",
+    "first": {
+      "source": "firefox",
+      "visit_id": "visit-1",
+      "source_scope": {
+        "product": "firefox",
+        "profile": "fixture-profile",
+        "generation": "fixture-generation"
+      },
+      "parent": {
+        "kind": "visit",
+        "visit_id": "parent-1"
+      },
+      "original_unix_micros": 1000000,
+      "source_is_local": true,
+      "url": "https://example.net/page",
+      "title": "Page",
+      "favicon_url": null,
+      "referrer_url": null,
+      "transition": "link",
+      "at_ms": 1000,
+      "private": false
+    },
+    "second": {
+      "source": "firefox",
+      "visit_id": "visit-1",
+      "source_scope": {
+        "product": "firefox",
+        "profile": "fixture-profile",
+        "generation": "fixture-generation"
+      },
+      "parent": {
+        "kind": "visit",
+        "visit_id": "parent-1"
+      },
+      "original_unix_micros": 1000000,
+      "source_is_local": true,
+      "url": "https://example.net/other",
+      "title": "Page",
+      "favicon_url": null,
+      "referrer_url": null,
+      "transition": "link",
+      "at_ms": 1000,
+      "private": false
+    },
+    "verdict": "conflict"
+  },
+  {
+    "name": "at_ms_differs",
+    "first": {
+      "source": "firefox",
+      "visit_id": "visit-1",
+      "source_scope": {
+        "product": "firefox",
+        "profile": "fixture-profile",
+        "generation": "fixture-generation"
+      },
+      "parent": {
+        "kind": "visit",
+        "visit_id": "parent-1"
+      },
+      "original_unix_micros": 1000000,
+      "source_is_local": true,
+      "url": "https://example.net/page",
+      "title": "Page",
+      "favicon_url": null,
+      "referrer_url": null,
+      "transition": "link",
+      "at_ms": 1000,
+      "private": false
+    },
+    "second": {
+      "source": "firefox",
+      "visit_id": "visit-1",
+      "source_scope": {
+        "product": "firefox",
+        "profile": "fixture-profile",
+        "generation": "fixture-generation"
+      },
+      "parent": {
+        "kind": "visit",
+        "visit_id": "parent-1"
+      },
+      "original_unix_micros": 1000000,
+      "source_is_local": true,
+      "url": "https://example.net/page",
+      "title": "Page",
+      "favicon_url": null,
+      "referrer_url": null,
+      "transition": "link",
+      "at_ms": 1001,
+      "private": false
+    },
+    "verdict": "conflict"
+  },
+  {
+    "name": "raw_transition_differs",
+    "first": {
+      "source": "firefox",
+      "visit_id": "visit-1",
+      "source_scope": {
+        "product": "firefox",
+        "profile": "fixture-profile",
+        "generation": "fixture-generation"
+      },
+      "parent": {
+        "kind": "visit",
+        "visit_id": "parent-1"
+      },
+      "original_unix_micros": 1000000,
+      "source_is_local": true,
+      "url": "https://example.net/page",
+      "title": "Page",
+      "favicon_url": null,
+      "referrer_url": null,
+      "transition": "link",
+      "at_ms": 1000,
+      "private": false
+    },
+    "second": {
+      "source": "firefox",
+      "visit_id": "visit-1",
+      "source_scope": {
+        "product": "firefox",
+        "profile": "fixture-profile",
+        "generation": "fixture-generation"
+      },
+      "parent": {
+        "kind": "visit",
+        "visit_id": "parent-1"
+      },
+      "original_unix_micros": 1000000,
+      "source_is_local": true,
+      "url": "https://example.net/page",
+      "title": "Page",
+      "favicon_url": null,
+      "referrer_url": null,
+      "transition": "reload",
+      "at_ms": 1000,
+      "private": false
+    },
+    "verdict": "conflict"
+  },
+  {
+    "name": "parent_visit_id_differs",
+    "first": {
+      "source": "firefox",
+      "visit_id": "visit-1",
+      "source_scope": {
+        "product": "firefox",
+        "profile": "fixture-profile",
+        "generation": "fixture-generation"
+      },
+      "parent": {
+        "kind": "visit",
+        "visit_id": "parent-1"
+      },
+      "original_unix_micros": 1000000,
+      "source_is_local": true,
+      "url": "https://example.net/page",
+      "title": "Page",
+      "favicon_url": null,
+      "referrer_url": null,
+      "transition": "link",
+      "at_ms": 1000,
+      "private": false
+    },
+    "second": {
+      "source": "firefox",
+      "visit_id": "visit-1",
+      "source_scope": {
+        "product": "firefox",
+        "profile": "fixture-profile",
+        "generation": "fixture-generation"
+      },
+      "parent": {
+        "kind": "visit",
+        "visit_id": "parent-2"
+      },
+      "original_unix_micros": 1000000,
+      "source_is_local": true,
+      "url": "https://example.net/page",
+      "title": "Page",
+      "favicon_url": null,
+      "referrer_url": null,
+      "transition": "link",
+      "at_ms": 1000,
+      "private": false
+    },
+    "verdict": "conflict"
+  },
+  {
+    "name": "parent_outside_range_with_same_visit_id",
+    "first": {
+      "source": "firefox",
+      "visit_id": "visit-1",
+      "source_scope": {
+        "product": "firefox",
+        "profile": "fixture-profile",
+        "generation": "fixture-generation"
+      },
+      "parent": {
+        "kind": "visit",
+        "visit_id": "parent-1"
+      },
+      "original_unix_micros": 1000000,
+      "source_is_local": true,
+      "url": "https://example.net/page",
+      "title": "Page",
+      "favicon_url": null,
+      "referrer_url": null,
+      "transition": "link",
+      "at_ms": 1000,
+      "private": false
+    },
+    "second": {
+      "source": "firefox",
+      "visit_id": "visit-1",
+      "source_scope": {
+        "product": "firefox",
+        "profile": "fixture-profile",
+        "generation": "fixture-generation"
+      },
+      "parent": {
+        "kind": "outside_range",
+        "visit_id": "parent-1"
+      },
+      "original_unix_micros": 1000000,
+      "source_is_local": true,
+      "url": "https://example.net/page",
+      "title": "Page",
+      "favicon_url": null,
+      "referrer_url": null,
+      "transition": "link",
+      "at_ms": 1000,
+      "private": false
+    },
+    "verdict": "duplicate"
+  },
+  {
+    "name": "parent_unknown_for_visit",
+    "first": {
+      "source": "firefox",
+      "visit_id": "visit-1",
+      "source_scope": {
+        "product": "firefox",
+        "profile": "fixture-profile",
+        "generation": "fixture-generation"
+      },
+      "parent": {
+        "kind": "visit",
+        "visit_id": "parent-1"
+      },
+      "original_unix_micros": 1000000,
+      "source_is_local": true,
+      "url": "https://example.net/page",
+      "title": "Page",
+      "favicon_url": null,
+      "referrer_url": null,
+      "transition": "link",
+      "at_ms": 1000,
+      "private": false
+    },
+    "second": {
+      "source": "firefox",
+      "visit_id": "visit-1",
+      "source_scope": {
+        "product": "firefox",
+        "profile": "fixture-profile",
+        "generation": "fixture-generation"
+      },
+      "parent": {
+        "kind": "unknown"
+      },
+      "original_unix_micros": 1000000,
+      "source_is_local": true,
+      "url": "https://example.net/page",
+      "title": "Page",
+      "favicon_url": null,
+      "referrer_url": null,
+      "transition": "link",
+      "at_ms": 1000,
+      "private": false
+    },
+    "verdict": "conflict"
+  },
+  {
+    "name": "parent_root_for_visit",
+    "first": {
+      "source": "firefox",
+      "visit_id": "visit-1",
+      "source_scope": {
+        "product": "firefox",
+        "profile": "fixture-profile",
+        "generation": "fixture-generation"
+      },
+      "parent": {
+        "kind": "visit",
+        "visit_id": "parent-1"
+      },
+      "original_unix_micros": 1000000,
+      "source_is_local": true,
+      "url": "https://example.net/page",
+      "title": "Page",
+      "favicon_url": null,
+      "referrer_url": null,
+      "transition": "link",
+      "at_ms": 1000,
+      "private": false
+    },
+    "second": {
+      "source": "firefox",
+      "visit_id": "visit-1",
+      "source_scope": {
+        "product": "firefox",
+        "profile": "fixture-profile",
+        "generation": "fixture-generation"
+      },
+      "parent": {
+        "kind": "root"
+      },
+      "original_unix_micros": 1000000,
+      "source_is_local": true,
+      "url": "https://example.net/page",
+      "title": "Page",
+      "favicon_url": null,
+      "referrer_url": null,
+      "transition": "link",
+      "at_ms": 1000,
+      "private": false
+    },
+    "verdict": "conflict"
+  },
+  {
+    "name": "original_unix_micros_differs",
+    "first": {
+      "source": "firefox",
+      "visit_id": "visit-1",
+      "source_scope": {
+        "product": "firefox",
+        "profile": "fixture-profile",
+        "generation": "fixture-generation"
+      },
+      "parent": {
+        "kind": "visit",
+        "visit_id": "parent-1"
+      },
+      "original_unix_micros": 1000000,
+      "source_is_local": true,
+      "url": "https://example.net/page",
+      "title": "Page",
+      "favicon_url": null,
+      "referrer_url": null,
+      "transition": "link",
+      "at_ms": 1000,
+      "private": false
+    },
+    "second": {
+      "source": "firefox",
+      "visit_id": "visit-1",
+      "source_scope": {
+        "product": "firefox",
+        "profile": "fixture-profile",
+        "generation": "fixture-generation"
+      },
+      "parent": {
+        "kind": "visit",
+        "visit_id": "parent-1"
+      },
+      "original_unix_micros": 1000001,
+      "source_is_local": true,
+      "url": "https://example.net/page",
+      "title": "Page",
+      "favicon_url": null,
+      "referrer_url": null,
+      "transition": "link",
+      "at_ms": 1000,
+      "private": false
+    },
+    "verdict": "conflict"
+  },
+  {
+    "name": "original_unix_micros_absent",
+    "first": {
+      "source": "firefox",
+      "visit_id": "visit-1",
+      "source_scope": {
+        "product": "firefox",
+        "profile": "fixture-profile",
+        "generation": "fixture-generation"
+      },
+      "parent": {
+        "kind": "visit",
+        "visit_id": "parent-1"
+      },
+      "original_unix_micros": 1000000,
+      "source_is_local": true,
+      "url": "https://example.net/page",
+      "title": "Page",
+      "favicon_url": null,
+      "referrer_url": null,
+      "transition": "link",
+      "at_ms": 1000,
+      "private": false
+    },
+    "second": {
+      "source": "firefox",
+      "visit_id": "visit-1",
+      "source_scope": {
+        "product": "firefox",
+        "profile": "fixture-profile",
+        "generation": "fixture-generation"
+      },
+      "parent": {
+        "kind": "visit",
+        "visit_id": "parent-1"
+      },
+      "original_unix_micros": null,
+      "source_is_local": true,
+      "url": "https://example.net/page",
+      "title": "Page",
+      "favicon_url": null,
+      "referrer_url": null,
+      "transition": "link",
+      "at_ms": 1000,
+      "private": false
+    },
+    "verdict": "conflict"
+  },
+  {
+    "name": "source_is_local_differs",
+    "first": {
+      "source": "firefox",
+      "visit_id": "visit-1",
+      "source_scope": {
+        "product": "firefox",
+        "profile": "fixture-profile",
+        "generation": "fixture-generation"
+      },
+      "parent": {
+        "kind": "visit",
+        "visit_id": "parent-1"
+      },
+      "original_unix_micros": 1000000,
+      "source_is_local": true,
+      "url": "https://example.net/page",
+      "title": "Page",
+      "favicon_url": null,
+      "referrer_url": null,
+      "transition": "link",
+      "at_ms": 1000,
+      "private": false
+    },
+    "second": {
+      "source": "firefox",
+      "visit_id": "visit-1",
+      "source_scope": {
+        "product": "firefox",
+        "profile": "fixture-profile",
+        "generation": "fixture-generation"
+      },
+      "parent": {
+        "kind": "visit",
+        "visit_id": "parent-1"
+      },
+      "original_unix_micros": 1000000,
+      "source_is_local": false,
+      "url": "https://example.net/page",
+      "title": "Page",
+      "favicon_url": null,
+      "referrer_url": null,
+      "transition": "link",
+      "at_ms": 1000,
+      "private": false
+    },
+    "verdict": "conflict"
+  },
+  {
+    "name": "source_is_local_unknown",
+    "first": {
+      "source": "firefox",
+      "visit_id": "visit-1",
+      "source_scope": {
+        "product": "firefox",
+        "profile": "fixture-profile",
+        "generation": "fixture-generation"
+      },
+      "parent": {
+        "kind": "visit",
+        "visit_id": "parent-1"
+      },
+      "original_unix_micros": 1000000,
+      "source_is_local": true,
+      "url": "https://example.net/page",
+      "title": "Page",
+      "favicon_url": null,
+      "referrer_url": null,
+      "transition": "link",
+      "at_ms": 1000,
+      "private": false
+    },
+    "second": {
+      "source": "firefox",
+      "visit_id": "visit-1",
+      "source_scope": {
+        "product": "firefox",
+        "profile": "fixture-profile",
+        "generation": "fixture-generation"
+      },
+      "parent": {
+        "kind": "visit",
+        "visit_id": "parent-1"
+      },
+      "original_unix_micros": 1000000,
+      "source_is_local": null,
+      "url": "https://example.net/page",
+      "title": "Page",
+      "favicon_url": null,
+      "referrer_url": null,
+      "transition": "link",
+      "at_ms": 1000,
+      "private": false
+    },
+    "verdict": "conflict"
+  },
+  {
+    "name": "other_visit_id_is_a_new_encounter",
+    "first": {
+      "source": "firefox",
+      "visit_id": "visit-1",
+      "source_scope": {
+        "product": "firefox",
+        "profile": "fixture-profile",
+        "generation": "fixture-generation"
+      },
+      "parent": {
+        "kind": "visit",
+        "visit_id": "parent-1"
+      },
+      "original_unix_micros": 1000000,
+      "source_is_local": true,
+      "url": "https://example.net/page",
+      "title": "Page",
+      "favicon_url": null,
+      "referrer_url": null,
+      "transition": "link",
+      "at_ms": 1000,
+      "private": false
+    },
+    "second": {
+      "source": "firefox",
+      "visit_id": "visit-2",
+      "source_scope": {
+        "product": "firefox",
+        "profile": "fixture-profile",
+        "generation": "fixture-generation"
+      },
+      "parent": {
+        "kind": "visit",
+        "visit_id": "parent-1"
+      },
+      "original_unix_micros": 1000000,
+      "source_is_local": true,
+      "url": "https://example.net/page",
+      "title": "Page",
+      "favicon_url": null,
+      "referrer_url": null,
+      "transition": "link",
+      "at_ms": 1000,
+      "private": false
+    },
+    "verdict": "new"
+  }
+]
