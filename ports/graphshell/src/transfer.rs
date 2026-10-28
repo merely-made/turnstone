@@ -444,7 +444,7 @@ pub async fn apply_transfer<HB, SB, DB, AB>(
     context: &ApplyTransferContext,
 ) -> Result<TransferReceiptV1, TransferError>
 where
-    HB: Backend,
+    HB: pandect::graph_session::LegacyTransactionBackend,
     SB: Backend,
     DB: Backend,
     AB: Backend,
