@@ -28,7 +28,7 @@ use muniment::{Backend, JsonSlots, StoreError};
 /// The view types a host writes through [`MereHost::set_view_now`].
 pub use pandect::ViewIntent as SessionViewIntent;
 use pandect::graph_placement::{PlacementProfile, materialize_snapshot};
-use pandect::graph_session::LegacyTransactionBackend;
+use pandect::graph_session::{CommitExtra, LegacyTransactionBackend};
 use pandect::{
     GraphSession, MereSessions, Pending, Reverted, SessionError, SessionId, ViewIntent, ViewKey,
 };
@@ -232,9 +232,8 @@ mod resident_presentation;
 #[path = "mere_host_resident.rs"]
 mod resident_transaction;
 
-/// Changes not yet stored, taken as one batch: what [`MereHost::stage`] put
-/// in a batch, or what [`MereHost::prepare_store`] took for its caller to
-/// write. Mark it stored once it commits.
+/// Changes not yet stored, taken as one batch by [`MereHost::prepare_store`]
+/// for its caller to write. Mark it stored once it commits.
 pub struct Staged {
     current: Pending,
     retired: Vec<Pending>,
@@ -260,6 +259,13 @@ impl Staged {
         }
         Ok(())
     }
+}
+
+/// A detached copy of the host's session with edits made on it, not yet
+/// committed.
+pub(crate) struct Candidate<B> {
+    session: GraphSession<B>,
+    projection_revision: u64,
 }
 
 fn saved_at(saved_at_secs: u64) -> SystemTime {
@@ -507,21 +513,57 @@ impl<B: LegacyTransactionBackend> MereHost<B> {
     }
 }
 
-impl<B: Backend> MereHost<B> {
-    /// Put every change not yet stored into `batch`: capture's write buffer,
-    /// so the graph, access records and browsing traces land in one outer
-    /// `Backend::apply`. Hand the result to [`staged`](Self::staged) once the
-    /// batch commits; until then the changes stay pending.
-    pub(crate) async fn stage<T: Backend>(
-        &self,
-        batch: &T,
-        saved_at_secs: u64,
-    ) -> Result<Staged, MereHostError> {
-        let staged = self.prepare_store(saved_at_secs)?;
-        staged.write(batch).await?;
-        Ok(staged)
+impl<B: LegacyTransactionBackend + Clone> MereHost<B> {
+    /// Run `change` on this host with its session swapped for a detached
+    /// candidate, so every edit it makes (the host's own, through
+    /// `edit_now`) lands on the candidate and nothing live moves. Hand the
+    /// candidate to [`commit_candidate`](Self::commit_candidate); dropping it
+    /// discards the edits.
+    pub(crate) fn edit_candidate<R, E>(
+        &mut self,
+        change: impl FnOnce(&mut Self) -> Result<R, E>,
+    ) -> Result<(Candidate<B>, R), E> {
+        let cut = self.graph_session.detached_candidate();
+        let live = std::mem::replace(&mut self.graph_session, cut);
+        let revision = self.projection_revision;
+        let result = change(self);
+        let session = std::mem::replace(&mut self.graph_session, live);
+        let projection_revision = std::mem::replace(&mut self.projection_revision, revision);
+        result.map(|value| {
+            (
+                Candidate {
+                    session,
+                    projection_revision,
+                },
+                value,
+            )
+        })
     }
 
+    /// Commit `candidate` with `extra`, the caller's own writes and the keys
+    /// they depend on, in one transaction, and install it. Sessions switched
+    /// away from are stored first. A refusal leaves the live session, with
+    /// whatever it had pending, as it was.
+    pub(crate) async fn commit_candidate(
+        &mut self,
+        candidate: Candidate<B>,
+        saved_at_secs: u64,
+        extra: CommitExtra,
+    ) -> Result<(), MereHostError> {
+        let at = saved_at(saved_at_secs);
+        for session in &mut self.retired {
+            session.flush(at).await?;
+        }
+        self.retired.clear();
+        self.graph_session
+            .commit_candidate(candidate.session, at, false, extra)
+            .await?;
+        self.projection_revision = candidate.projection_revision;
+        Ok(())
+    }
+}
+
+impl<B: Backend> MereHost<B> {
     /// Take every change not yet stored as one batch, without writing it. The
     /// caller writes it ([`Staged::write`]) through [`store`](Self::store),
     /// then hands it to [`staged`](Self::staged). Changes made in between stay
