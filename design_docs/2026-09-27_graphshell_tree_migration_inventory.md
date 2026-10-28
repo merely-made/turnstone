@@ -5,7 +5,7 @@
 address/file intake have native and browser reopening receipts at `da466027a`,
 based on `79fbbeb75` with Genet `15713014`. Remaining product migration and
 large-graph responsiveness are open.
-**Parent:** [Graphshell on one Cambium tree](2026-09-25_graphshell_one_tree_plan.md).
+**Parent:** [Graphshell on one Cambium tree](../../archive_docs/2026-10-28/2026-09-25_graphshell_one_tree_plan.md).
 
 *Annotation, 2026-10-06 (S14 pass):* this inventory predates the physics
 panel and the remote session on the tree. The Graph tools physics panel
