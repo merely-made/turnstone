@@ -144,8 +144,8 @@ founding brief is `design_docs/2026-07-08_turnstone_founding.md`.
 </p>
 
 <p align="center">
-  <img src="assets/screenshots/workbench-split.png" alt="Turnstone Workbench with two tiles: the IANA web page on a white canvas, and the Project Gemini capsule in a warm palette derived from its host" width="900"><br>
-  <sub>The Workbench tiles graph nodes as live documents: a web page beside a Gemini capsule, which takes a palette derived from its host.</sub>
+  <img src="assets/screenshots/workbench-split.png" alt="Turnstone Workbench with two tiles: the IANA web page on a white canvas, and the Project Gemini capsule in a dark palette derived from its host" width="900"><br>
+  <sub>The Workbench tiles graph nodes as live documents: a web page beside a Gemini capsule, which takes a palette derived from its host in the app's light or dark mode.</sub>
 </p>
 
 The canvas and Overview images come from `scenarios/readme_screenshots.scn`,
