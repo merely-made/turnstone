@@ -86,7 +86,7 @@ pub fn create_file<B: Backend>(
 /// Refresh the portable projection before writing, so a projection failure
 /// cannot be reported as a save failure after storage has acknowledged it.
 /// This also serves a retry over the same pending member.
-pub async fn persist_intake<B: Backend>(
+pub async fn persist_intake<B: pandect::graph_session::LegacyTransactionBackend>(
     app: &mut GraphshellApp<B>,
     member: Uuid,
     saved_at_secs: u64,

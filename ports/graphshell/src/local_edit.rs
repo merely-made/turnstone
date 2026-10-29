@@ -48,7 +48,7 @@ pub fn relation_target<B: Backend>(
 /// Validate and apply through the existing product owner, then acknowledge its
 /// durable write. After an I/O refusal the caller retries persistence of the
 /// pending owner state rather than asserting the relation a second time.
-pub async fn save_detail_action<B: Backend>(
+pub async fn save_detail_action<B: pandect::graph_session::LegacyTransactionBackend>(
     app: &mut GraphshellApp<B>,
     member: Uuid,
     action: DetailAction,
@@ -107,7 +107,7 @@ pub fn metadata<B: Backend>(app: &GraphshellApp<B>, member: Uuid) -> Result<Node
 
 /// Save the selected object's metadata. Errors leave pending in-memory edits
 /// available for retry; callers must not describe a failed write as saved.
-pub async fn save_metadata<B: Backend>(
+pub async fn save_metadata<B: pandect::graph_session::LegacyTransactionBackend>(
     app: &mut GraphshellApp<B>,
     member: Uuid,
     title: &str,

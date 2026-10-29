@@ -234,7 +234,9 @@ mod tests {
 }
 
 /// Explicit acceptance fixture; ordinary saved graphs never call this path.
-pub async fn seed_fixture<B: Backend + Clone>(app: &mut GraphshellApp<B>) -> Result<(), String> {
+pub async fn seed_fixture<B: pandect::graph_session::LegacyTransactionBackend + Clone>(
+    app: &mut GraphshellApp<B>,
+) -> Result<(), String> {
     let a = app
         .host
         .create_address("https://query.example/source", "Query source")
