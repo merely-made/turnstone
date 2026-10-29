@@ -175,15 +175,10 @@ web-sys = { version = "0.3", features = [
 ] }
 
 # Standalone manifests do not inherit Mere's root patch table, so the ones
-# that matter are restated here (see the note at the top). Keep every rev in
-# step with the genet pins above. Taffy is a Genet fork published under the same
-# version number as the crate it replaces, so missing it is invisible while
-# genet-livery resolves from crates.io and a compile error the moment it resolves
-# the working copy: buckram names `genet-taffy` outright. Parley needs no row â€”
-# as of genet 5ae30cad the fork is published as `genet-parley` (and its sibling
-# as `genet-fontique`), so no package in genet answers to the name `parley` and
-# a patch row would match nothing and fail resolution; genet-livery reaches the
-# fork by path inside the git checkout.
+# that matter are restated here (see the note at the top). Keep every Genet
+# source in step with the supplier cohort above. Buckram names the published
+# genet-taffy fork directly; it needs no Git patch. Parley and Fontique also
+# use their published Genet package names.
 # layout-dom-api (0.1.1) and genet-scripted-dom (0.1.2) are pinned to the same
 # rev so no crates.io copy can enter the graph beside the git one. vello is the
 # maintained Classic 0.11 renderer fork. These are remote revision patches, never
@@ -244,7 +239,6 @@ stickleback = { git = "https://github.com/merely-made/eidetic.git", rev = "e7eef
 # Dramatis uses published muniment; the viewer and its applets share Mere's
 # own package, as the root workspace does after DR-D.
 muniment = { git = "https://github.com/merely-made/eidetic.git", rev = "e7eef1e622c8af7ea2a04e85ef7485aac0763433" }
-taffy = { package = "genet-taffy", version = "=0.14.0", git = "https://github.com/merely-made/genet.git", branch = "main" }
 layout-dom-api = { git = "https://github.com/merely-made/genet.git", branch = "main", version = "=0.1.1" }
 genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", branch = "main", version = "=0.1.2" }
 # Registry Webcue and Genet sessions share one input vocabulary, as at the root.
