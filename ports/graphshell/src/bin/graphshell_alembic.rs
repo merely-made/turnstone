@@ -105,6 +105,22 @@ enum Update {
     Closed(Result<(), String>),
 }
 
+/// Healthy stale replies cannot replace a newer request. Terminal custody loss
+/// takes precedence over request order; SurfaceState makes retirement one-way.
+/// The callback owns the actual native Surface merge.
+fn deliver_surface_update(
+    state: SurfaceState,
+    handled: u64,
+    sent: u64,
+    apply: impl FnOnce(SurfaceState),
+) -> bool {
+    if !state.owner_retired && handled < sent {
+        return false;
+    }
+    apply(state);
+    true
+}
+
 fn owner_service(
     root: PathBuf,
     mode: OwnerMode,
@@ -309,12 +325,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         while let Ok(update) = receive_updates.try_recv() {
             match update {
                 Update::Surface { state, handled } => {
-                    // Ignore an earlier response while a newer request awaits
-                    // its owner; otherwise it could re-enable stale controls.
-                    if handled >= sent.get() {
+                    deliver_surface_update(state, handled, sent.get(), |state| {
                         ctx.runner
                             .update(|current| current.apply_owner_update(state));
-                    }
+                    });
                 },
                 Update::Closed(Ok(())) => {
                     *ctx.close = true;
@@ -430,6 +444,110 @@ fn probe(root: PathBuf, stage: &str) -> Result<(), Box<dyn std::error::Error>> {
 mod tests {
     use super::*;
     use std::time::Duration;
+
+    fn private_surface(status: &str) -> SurfaceState {
+        let mut state = SurfaceState::new();
+        state.status = status.into();
+        state.reading = Some(alembic::workshop_surface::RetainedReading {
+            title: "Private retained source".into(),
+            version: "immutable-1".into(),
+            text: "PRIVATE-QUEUED-SOURCE-CANARY café".into(),
+        });
+        state.choices = vec![alembic::workshop_surface::SourceChoice {
+            key: "retained-private-source".into(),
+            title: "PRIVATE-QUEUED-SOURCE-TITLE".into(),
+            version: "immutable-1".into(),
+            selected: true,
+            available: true,
+            refusal: None,
+        }];
+        state
+    }
+    fn private_citation() -> SurfaceAction {
+        SurfaceAction::OpenSource {
+            proposal: [8; 32],
+            source: alembic::workshop::Source {
+                owner: alembic::workshop::Owner {
+                    host: "graphshell".into(),
+                    workspace: "graph".into(),
+                    session: "session".into(),
+                },
+                resource: "retained-private-resource".into(),
+                version: "immutable-1".into(),
+                content_digest: [9; 32],
+                start: 0,
+                end: 34,
+                title: "PRIVATE-QUEUED-SOURCE-TITLE".into(),
+            },
+        }
+    }
+
+    #[test]
+    fn terminal_owner_retirement_precedes_a_newer_queued_request() {
+        let mut current = private_surface("New request pending");
+        current.busy = true;
+        current.request(private_citation());
+        // Request 2 has left the UI while the owner observes custody loss
+        // after request 1. This is the actual native receiving/merging seam.
+        let mut terminal = SurfaceState::new();
+        terminal.owner_retired = true;
+        terminal.status = "Custody binding retired".into();
+        let delivered =
+            deliver_surface_update(terminal, 1, 2, |update| current.apply_owner_update(update));
+        assert!(
+            delivered,
+            "terminal custody loss was suppressed by a newer UI request"
+        );
+        assert!(current.owner_retired);
+        assert!(current.busy);
+        assert!(
+            current.reading.is_none(),
+            "private reading survived observed retirement"
+        );
+        assert!(current.view.is_none());
+        assert!(current.choices.is_empty());
+        assert!(
+            current.take_actions().is_empty(),
+            "private source action survived retirement"
+        );
+        // Even a later response satisfying the normal serial condition cannot
+        // revive this owner/window, nor can another local source activation.
+        let healthy = private_surface("Delayed healthy response");
+        assert!(deliver_surface_update(healthy, 3, 3, |update| current.apply_owner_update(update)));
+        current.request(private_citation());
+        assert!(current.owner_retired);
+        assert!(current.reading.is_none());
+        assert_eq!(current.status, "Custody binding retired");
+        assert!(current.take_actions().is_empty());
+    }
+
+    #[test]
+    fn healthy_stale_owner_update_preserves_the_newer_private_request() {
+        let mut current = private_surface("New request pending");
+        current.busy = true;
+        current.request(private_citation());
+        let before = current.reading.clone();
+        assert!(!deliver_surface_update(
+            private_surface("Stale healthy response"),
+            1,
+            2,
+            |update| current.apply_owner_update(update)
+        ));
+        assert_eq!(current.status, "New request pending");
+        assert!(
+            current.busy,
+            "stale response reenabled controls for a pending request"
+        );
+        assert_eq!(current.reading, before);
+        assert_eq!(current.take_actions(), vec![private_citation()]);
+        assert!(deliver_surface_update(
+            private_surface("Current response"),
+            2,
+            2,
+            |update| current.apply_owner_update(update)
+        ));
+        assert_eq!(current.status, "Current response");
+    }
 
     #[test]
     fn workshop_native_failed_owner_disables_actions_and_shutdown_joins() {
