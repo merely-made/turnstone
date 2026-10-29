@@ -110,6 +110,7 @@ impl<'a, B: Backend> CaptureBatch<'a, B> {
         CommitExtra {
             ops: staged.ops,
             expect,
+            decide: None,
         }
     }
 
