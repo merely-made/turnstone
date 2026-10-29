@@ -16,6 +16,7 @@ use graphshell::projection_compile::initial_projection_draft;
 use graphshell::projection_dynamics_compare::{
     DynamicsComparison, compare_arrangements_dynamics, compare_dynamics,
 };
+use graphshell::projection_save::{PendingSave, SaveAck};
 use mere::canvas::PhysicsLaw;
 use mere::canvas::dynamics_recipe::preset_slot;
 use mere::canvas::projection_dynamics::ProjectionDynamics;
@@ -99,7 +100,9 @@ pub(super) struct ProjectionControls {
     solves: u64,
     reuses: u64,
     saves: u64,
-    pending_save: bool,
+    /// Counts editors installed, so a save names the one it was sent from.
+    generation: u64,
+    pending_save: Option<PendingSave>,
     pub(super) options: Vec<options::OptionRow>,
     options_kind: String,
     comparing: bool,
@@ -126,7 +129,8 @@ impl Default for ProjectionControls {
             solves: 0,
             reuses: 0,
             saves: 0,
-            pending_save: false,
+            generation: 0,
+            pending_save: None,
             options: Vec::new(),
             options_kind: String::new(),
             comparing: false,
@@ -368,17 +372,29 @@ impl ProjectionControls {
                 );
         }
     }
+    fn replace_editor(&mut self, editor: ProjectionEditor) {
+        self.editor = editor;
+        self.generation += 1;
+    }
+    /// The host stored a save. Only the editor the save was sent from becomes
+    /// clean; one that replaced it meanwhile keeps its own state.
     pub(super) fn saved(&mut self) {
-        if self.pending_save {
-            self.pending_save = false;
-            self.editor.mark_saved();
-            self.saves += 1;
-            self.status = if self.dataset.is_some() {
-                "Saved executable projection".into()
-            } else {
-                "Saved projection".into()
-            };
-        }
+        let Some(pending) = self.pending_save.take() else {
+            return;
+        };
+        self.status = match pending.acknowledge(self.dataset.as_ref(), self.generation) {
+            SaveAck::Current => {
+                self.editor.mark_saved();
+                self.saves += 1;
+                if self.dataset.is_some() {
+                    "Saved executable projection".into()
+                } else {
+                    "Saved projection".into()
+                }
+            },
+            SaveAck::EarlierDataset => "Saved projection was for an earlier dataset".into(),
+            SaveAck::EarlierDraft => "Saved projection was for an earlier draft".into(),
+        };
     }
 }
 impl SavedProduct {
@@ -410,7 +426,7 @@ impl SavedProduct {
         match result {
             Ok((dataset, editor, compiled, dynamics)) => {
                 let p = &mut self.projection;
-                p.editor = editor;
+                p.replace_editor(editor);
                 p.dataset = Some(dataset);
                 p.compiled = Some(compiled);
                 p.dynamics = dynamics;
@@ -530,8 +546,9 @@ impl SavedProduct {
             "load" => {
                 let dataset: ProjectionDataset =
                     serde_json::from_str(PRACTICE).map_err(|e| e.to_string())?;
-                p.editor =
-                    ProjectionEditor::new(draft_from_definition(&default_definition(&dataset)));
+                p.replace_editor(ProjectionEditor::new(draft_from_definition(
+                    &default_definition(&dataset),
+                )));
                 p.editor.reduce(
                     EditorAction::SelectPanel(ProjectionPanel::Preview),
                     js_sys::Date::now() as u64,
@@ -674,7 +691,7 @@ impl SavedProduct {
                     .host
                     .save_projection(&snapshot)
                     .map_err(|e| e.to_string())?;
-                p.pending_save = true;
+                p.pending_save = Some(PendingSave::sent(p.dataset.as_ref(), p.generation));
                 self.persist_operation();
             },
             "reopen" => {
