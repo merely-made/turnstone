@@ -42,7 +42,10 @@ name = "moot_resources_reopen"
 required-features = ["moot-resources"]
 
 [features]
-alembic-workshop = ["web", "dep:athanor", "athanor/workshop-destination", "athanor/workshop-worker", "dep:alembic", "alembic/workshop-native", "muniment/directory", "dep:pollster", "dep:cambium-desktop", "dep:servitor", "dep:blake3"]
+alembic-workshop = ["web", "dep:athanor", "athanor/workshop-destination", "athanor/workshop-worker", "athanor/workshop-sealed", "dep:alembic", "alembic/workshop-native", "muniment/directory", "dep:pollster", "dep:cambium-desktop", "dep:servitor", "dep:blake3"]
+# Explicit synthetic/private receiving mode; normal public workshop startup does
+# not connect to custody or automatically admit a real user's retained sources.
+alembic-workshop-private = ["alembic-workshop", "graphshell-endpoint/door", "dep:eidetic"]
 # One holder-owned graph with an explicitly invited guest.
 coop = ["native", "web", "muniment/redb", "dep:pollster", "graphshell-client/pump"]
 coop-window = ["coop", "dep:cambium-desktop", "dep:mien", "dep:genet-scripted-dom", "dep:layout_dom_api", "dep:image"]
@@ -346,6 +349,7 @@ path = "src/bin/receipt_ingest.rs"
 # of which arrive with personal-sync.
 required-features = ["personal-sync"]
 [dev-dependencies]
+chacha20poly1305 = "=0.10.1"
 scenograph = { workspace = true, features = ["editor"] }
 # The real Rhai request batch is received by the same viewer adapter as Mesquite.
 script-rhai = { workspace = true }

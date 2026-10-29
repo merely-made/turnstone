@@ -147,6 +147,147 @@ impl<B: pandect::graph_session::LegacyTransactionBackend + Clone> MereHost<B> {
         Ok(receipt)
     }
 
+    /// The independent GraphSession ledger stores a content commitment, never
+    /// the private proposal. The encrypted request facet and note share its
+    /// journal/publication transaction. This owner holds the writer lease.
+    pub async fn workshop_reconcile_sealed(
+        &mut self,
+        acceptance: &Acceptance,
+        proposed: &Proposal,
+        protection: &dyn athanor::workshop_seal::Protection,
+    ) -> Result<Option<Receipt>, athanor::workshop::Error> {
+        use athanor::workshop::Error;
+        let epoch = protection.epoch().ok_or(Error::Unauthorized)?;
+        let Some(record) = self
+            .graph_session
+            .operation_receipt(acceptance.operation)
+            .await
+            .map_err(|e| Error::Store(e.to_string()))?
+        else {
+            return Ok(None);
+        };
+        let expected = sealed_operation_commitment(acceptance, proposed)?;
+        if record.session != self.workshop_owner().session || record.request != expected {
+            return Err(Error::Conflict);
+        }
+        // Reload the authoritative complete graph even when the first save
+        // committed but the caller never installed its acknowledgement.
+        let Some((_, generation)) = self
+            .graph_session
+            .reconcile_operation(acceptance.operation)
+            .await
+            .map_err(|e| Error::Store(e.to_string()))?
+        else {
+            return Err(Error::Conflict);
+        };
+        self.resident_generation = Some(generation);
+        self.projection_revision = self.projection_revision.wrapping_add(1);
+        let owner = self.workshop_owner();
+        let receipt = athanor::workshop_sealed_destination::query_graph(
+            self.graph(),
+            &owner,
+            &owner.workspace,
+            acceptance,
+            proposed,
+            protection,
+        )?
+        .ok_or(Error::Conflict)?;
+        if record.result != receipt.resource.as_bytes() || protection.epoch() != Some(epoch) {
+            return Err(Error::Conflict);
+        }
+        Ok(Some(receipt))
+    }
+
+    pub async fn workshop_commit_sealed(
+        &mut self,
+        acceptance: &Acceptance,
+        proposed: &Proposal,
+        human: [u8; 32],
+        authority: &impl AuthorityProvider,
+        now_ms: u64,
+        protection: std::sync::Arc<dyn athanor::workshop_seal::Protection>,
+    ) -> Result<Receipt, athanor::workshop::Error> {
+        use athanor::{workshop::Error, workshop_sealed_destination as sealed};
+        if !self.resident_publication || human != acceptance.human {
+            return Err(Error::Unauthorized);
+        }
+        let epoch = protection.epoch().ok_or(Error::Unauthorized)?;
+        if self
+            .graph_session
+            .operation_receipt(acceptance.operation)
+            .await
+            .map_err(|e| Error::Store(e.to_string()))?
+            .is_some()
+        {
+            return self
+                .workshop_reconcile_sealed(acceptance, proposed, protection.as_ref())
+                .await?
+                .ok_or(Error::Conflict);
+        }
+        let owner = self.workshop_owner();
+        let sealed::Preparation::New {
+            deltas,
+            receipt,
+            epoch: prepared_epoch,
+        } = sealed::prepare_graph(
+            self.graph(),
+            &owner,
+            &owner.workspace,
+            acceptance,
+            proposed,
+            human,
+            authority,
+            now_ms,
+            protection.as_ref(),
+        )?
+        else {
+            return Err(Error::Conflict);
+        };
+        if epoch != prepared_epoch || protection.epoch() != Some(epoch) {
+            return Err(Error::Unauthorized);
+        }
+        let commitment = sealed_operation_commitment(acceptance, proposed)?;
+        let verify_owner = owner.clone();
+        let verify_acceptance = acceptance.clone();
+        let verify_proposed = proposed.clone();
+        let verify_protection = protection.clone();
+        let record = self
+            .graph_session
+            .transact_operation_published_checked(
+                acceptance.operation,
+                commitment,
+                receipt.resource.as_bytes().to_vec(),
+                Author::person(human.iter().map(|b| format!("{b:02x}")).collect::<String>())
+                    .via("alembic"),
+                deltas,
+                wall_clock_now(),
+                move |graph| {
+                    if verify_protection.epoch() != Some(epoch) {
+                        return Err("Private custody changed".into());
+                    }
+                    sealed::verify_graph_effect(
+                        graph,
+                        &verify_owner,
+                        &verify_owner.workspace,
+                        &verify_acceptance,
+                        &verify_proposed,
+                        verify_protection.as_ref(),
+                    )
+                    .map_err(|e| e.to_string())
+                },
+            )
+            .await
+            .map_err(|e| Error::Store(e.to_string()))?;
+        // Install the saved generation before checking custody again. A write
+        // admitted before lock may be durable and must not be overwritten.
+        self.resident_generation = Some(record.generation);
+        self.projection_revision = self.projection_revision.wrapping_add(1);
+        if protection.epoch() != Some(epoch) {
+            return Err(Error::Unauthorized);
+        }
+        Ok(receipt)
+    }
+
     pub async fn workshop_seed(&mut self, deltas: Vec<GraphDelta>) -> Result<(), MereHostError> {
         if !self.resident_publication {
             return Err(MereHostError::OwnershipUnproven);
@@ -160,6 +301,15 @@ impl<B: pandect::graph_session::LegacyTransactionBackend + Clone> MereHost<B> {
         self.projection_revision = self.projection_revision.wrapping_add(1);
         Ok(())
     }
+}
+
+fn sealed_operation_commitment(
+    acceptance: &Acceptance,
+    proposed: &Proposal,
+) -> Result<Vec<u8>, athanor::workshop::Error> {
+    let encoded = serde_json::to_vec(&("graphshell-private-operation-v1", acceptance, proposed))
+        .map_err(|_| athanor::workshop::Error::Invalid("private operation identity"))?;
+    Ok(blake3::hash(&encoded).as_bytes().to_vec())
 }
 
 #[cfg(test)]

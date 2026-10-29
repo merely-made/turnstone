@@ -1,8 +1,8 @@
 // Copyright 2026 Mark Alan Boykin
 // SPDX-License-Identifier: MPL-2.0
 
-//! Graphshell's public evidence-brief embedding. The existing MereHost is its
-//! sole graph writer. Example principals are synthetic and grant no private data.
+//! Graphshell's evidence-brief embedding through its sole MereHost graph writer.
+//! Private receiving is explicit, sealed, and bound to one live custody epoch.
 
 use crate::{
     access::AccessContext,
@@ -23,6 +23,12 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 use uuid::Uuid;
+
+mod private_sources;
+#[cfg(test)]
+mod private_tests;
+
+use athanor::workshop_seal::Protection;
 
 type Store = DirectoryBackend;
 
@@ -84,6 +90,9 @@ pub struct GraphshellWorkshop {
     helper: [u8; 32],
     human: [u8; 32],
     authority: GrantTable,
+    protection: Option<Arc<dyn Protection>>,
+    bound_epoch: Option<u64>,
+    retired: bool,
     // The owner lease is acquired before reading either journal. An abandoned
     // process releases it through the OS; its old worker cannot still be live.
     _writer_lease: File,
@@ -91,6 +100,36 @@ pub struct GraphshellWorkshop {
 
 impl GraphshellWorkshop {
     pub async fn open(root: &Path, wake: Arc<dyn Fn() + Send + Sync>) -> Result<Self, String> {
+        Self::open_bound(root, wake, None).await
+    }
+    /// The caller admits the principal and supplies a live, authenticated
+    /// protection route. This never enumerates another product's source store.
+    pub async fn open_sealed(
+        root: &Path,
+        wake: Arc<dyn Fn() + Send + Sync>,
+        protection: Arc<dyn Protection>,
+        human: [u8; 32],
+        profile: String,
+    ) -> Result<Self, String> {
+        Self::open_bound(root, wake, Some((protection, human, profile))).await
+    }
+    async fn open_bound(
+        root: &Path,
+        wake: Arc<dyn Fn() + Send + Sync>,
+        private: Option<(Arc<dyn Protection>, [u8; 32], String)>,
+    ) -> Result<Self, String> {
+        let bound_epoch = private
+            .as_ref()
+            .map(|(p, _, _)| p.epoch().ok_or("Private custody unavailable"))
+            .transpose()?;
+        let persona = private
+            .as_ref()
+            .map(|(_, human, _)| human.iter().map(|b| format!("{b:02x}")).collect::<String>())
+            .unwrap_or_else(|| "public-example".into());
+        let profile = private
+            .as_ref()
+            .map(|(_, _, profile)| profile.clone())
+            .unwrap_or_else(|| "alembic".into());
         std::fs::create_dir_all(root).map_err(failure)?;
         let writer_lease = OpenOptions::new()
             .read(true)
@@ -106,12 +145,12 @@ impl GraphshellWorkshop {
         let mut host = MereHost::open(
             backend,
             SelectedPersonaRef {
-                persona: "public-example".into(),
-                profile: "alembic".into(),
+                persona: persona.clone(),
+                profile,
             },
             fixture_handlers(),
             AccessContext {
-                persona: "public-example".into(),
+                persona,
                 device: "local-example".into(),
                 at_ms: now_ms(),
             },
@@ -119,19 +158,34 @@ impl GraphshellWorkshop {
         .await
         .map_err(failure)?;
         host.workshop_initialize_recorded().await.map_err(failure)?;
-        let mut host = host.with_resident_publication();
+        let mut host = host
+            .with_resident_publication()
+            .with_graph_admission_validator(Arc::new(|before, after| {
+                athanor::workshop_destination::preserve_graph_operations(before, after)
+                    .map_err(|error| error.to_string())
+            }));
         host.persist(now_ms() / 1000).await.map_err(failure)?;
         let owner = host.workshop_owner();
         let seed = encoded_owner(&owner);
         let helper = *blake3::hash(&[seed.as_slice(), b"/public-helper"].concat()).as_bytes();
-        let human = *blake3::hash(&[seed.as_slice(), b"/synthetic-reviewer"].concat()).as_bytes();
+        let human = private
+            .as_ref()
+            .map(|(_, human, _)| *human)
+            .unwrap_or_else(|| {
+                *blake3::hash(&[seed.as_slice(), b"/synthetic-reviewer"].concat()).as_bytes()
+            });
         let installation = *Uuid::new_v5(
             &Uuid::NAMESPACE_URL,
             &[seed.as_slice(), b"/installation"].concat(),
         )
         .as_bytes();
         let store = DirectoryBackend::open(root.join("workshop")).map_err(failure)?;
-        let driver = Driver::new(store, owner.clone(), installation, wake);
+        let protection = private.map(|(protection, _, _)| protection);
+        let driver = if let Some(protection) = &protection {
+            Driver::new_sealed(store, owner.clone(), installation, wake, protection.clone())
+        } else {
+            Driver::new(store, owner.clone(), installation, wake)
+        };
         driver.open(helper).await.map_err(failure)?;
         let mut this = Self {
             host,
@@ -141,6 +195,9 @@ impl GraphshellWorkshop {
             helper,
             human,
             authority: GrantTable::new(),
+            protection,
+            bound_epoch,
+            retired: false,
             _writer_lease: writer_lease,
         };
         let view = this.driver.refresh().await.map_err(failure)?;
@@ -164,18 +221,96 @@ impl GraphshellWorkshop {
         self.driver.busy()
     }
 
+    fn custody_current(&self) -> bool {
+        !self.retired
+            && self
+                .protection
+                .as_ref()
+                .is_none_or(|p| p.epoch().is_some() && p.epoch() == self.bound_epoch)
+    }
+    fn clear_private_surface(state: &mut SurfaceState) {
+        state.take_actions();
+        state.view = None;
+        state.reading = None;
+        state.choices.clear();
+        state.busy = true;
+        state.owner_retired = true;
+        state.error = None;
+        state.status =
+            "Private custody changed. Close and reopen the workshop with a fresh binding.".into();
+    }
+    /// Called on the owning service turn, including idle custody wakes. A
+    /// retired binding can never resume, even if its epoch callback revives.
+    pub fn observe_custody(&mut self, state: &mut SurfaceState) -> bool {
+        if self.custody_current() {
+            return false;
+        }
+        let changed = !self.retired;
+        self.retired = true;
+        let joined = self.driver.stop();
+        self.authority = GrantTable::new();
+        Self::clear_private_surface(state);
+        if let Err(error) = joined {
+            state.error = Some(error.to_string());
+        }
+        changed
+    }
+    pub async fn retain_private_source(
+        &mut self,
+        surface: Uuid,
+        title: String,
+        text: String,
+        start: u64,
+        end: u64,
+    ) -> Result<(), String> {
+        if !self.custody_current() {
+            return Err("Private custody changed".into());
+        }
+        let protection = self
+            .protection
+            .as_ref()
+            .ok_or("This owner has no private protection")?;
+        let (deltas, epoch) = private_sources::prepare(
+            self.host.graph(),
+            &self.owner,
+            surface,
+            title,
+            text,
+            start,
+            end,
+            protection.as_ref(),
+        )
+        .map_err(failure)?;
+        if protection.epoch() != Some(epoch) {
+            return Err("Private custody changed".into());
+        }
+        self.host.workshop_seed(deltas).await.map_err(failure)?;
+        if protection.epoch() != Some(epoch) {
+            return Err("Private source save requires reconciliation after custody loss".into());
+        }
+        Ok(())
+    }
     fn destination(&self) -> Result<Destination, String> {
+        self.destination_for(false)
+    }
+    fn destination_for(&self, private: bool) -> Result<Destination, String> {
         Ok(Destination {
             owner: self.owner.clone(),
             graph: self.owner.workspace.clone(),
-            revision: self.host.workshop_revision().map_err(failure)?,
+            revision: if private {
+                athanor::workshop_destination::graph_revision(self.host.graph()).map_err(failure)?
+            } else {
+                self.host.workshop_revision().map_err(failure)?
+            },
         })
     }
     fn grant(&mut self, inputs: &[Passage]) -> Result<(), String> {
         let mut authority = GrantTable::new();
         for input in inputs {
-            if !public_passage(&self.owner, input) {
-                return Err("This helper supports the authored public example only; private sources remain unavailable.".into());
+            if !public_passage(&self.owner, input)
+                && !(self.protection.is_some() && !input.public && input.source.owner == self.owner)
+            {
+                return Err("This source has no admission from the current graph owner.".into());
             }
             authority = authority.with_grant(Grant::new(
                 Subject(self.helper),
@@ -190,14 +325,28 @@ impl GraphshellWorkshop {
         ));
         authority = authority.with_grant(Grant::new(
             Subject(self.human),
-            workshop::destination_cap(&self.destination()?),
+            workshop::destination_cap(&self.destination_for(inputs.iter().any(|p| !p.public))?),
             Mode::Write,
         ));
         self.authority = authority;
         Ok(())
     }
     fn capture(&self, key: &str) -> Result<Passage, String> {
+        if !self.custody_current() {
+            return Err("Private custody changed".into());
+        }
         let id = Uuid::parse_str(key).map_err(failure)?;
+        if let Some(protection) = &self.protection {
+            if private_sources::surfaces(self.host.graph()).contains(&id) {
+                return private_sources::capture(
+                    self.host.graph(),
+                    &self.owner,
+                    id,
+                    protection.as_ref(),
+                )
+                .map_err(failure);
+            }
+        }
         let index = (0..3)
             .find(|i| surface_id(&self.owner, *i) == id)
             .ok_or("Source is outside the public example")?;
@@ -226,12 +375,20 @@ impl GraphshellWorkshop {
     // awaits the local backend. Re-capture every version for each driver turn;
     // citation opening separately permits the exact admitted retained old copy.
     fn current_passages(&self) -> Vec<Passage> {
-        (0..3)
+        let mut current = (0..3)
             .filter_map(|i| self.capture(&surface_id(&self.owner, i).to_string()).ok())
-            .collect()
+            .collect::<Vec<_>>();
+        if self.protection.is_some() {
+            current.extend(
+                private_sources::surfaces(self.host.graph())
+                    .iter()
+                    .filter_map(|id| self.capture(&id.to_string()).ok()),
+            );
+        }
+        current
     }
     fn choices(&self) -> Vec<SourceChoice> {
-        (0..3)
+        let mut choices: Vec<_> = (0..3)
             .filter_map(|i| {
                 let id = surface_id(&self.owner, i).to_string();
                 if self
@@ -255,7 +412,31 @@ impl GraphshellWorkshop {
                     refusal: captured.err(),
                 })
             })
-            .collect()
+            .collect();
+        if self.protection.is_some() {
+            choices.extend(
+                private_sources::surfaces(self.host.graph())
+                    .iter()
+                    .map(|id| {
+                        let captured = self.capture(&id.to_string());
+                        SourceChoice {
+                            key: id.to_string(),
+                            title: captured
+                                .as_ref()
+                                .map(|p| p.source.title.clone())
+                                .unwrap_or_else(|_| "Private retained passage".into()),
+                            version: captured
+                                .as_ref()
+                                .map(|p| p.source.version.clone())
+                                .unwrap_or_default(),
+                            selected: false,
+                            available: captured.is_ok(),
+                            refusal: captured.err(),
+                        }
+                    }),
+            );
+        }
+        choices
     }
     async fn load_example(&mut self, state: &mut SurfaceState) -> Result<(), String> {
         let mut deltas = vec![];
@@ -331,25 +512,41 @@ impl GraphshellWorkshop {
                     .workshop
                     .accept(
                         id,
-                        self.destination()?,
+                        self.destination_for(proposal.sources.iter().any(|p| !p.public))?,
                         self.human,
                         &self.authority,
                         now_ms(),
                     )
                     .await
                     .map_err(failure)?;
-                match self
-                    .host
-                    .workshop_commit(
-                        &intent,
-                        &proposal,
-                        self.human,
-                        &self.authority,
-                        now_ms(),
-                        true,
-                    )
-                    .await
-                {
+                let committed = if proposal.sources.iter().any(|p| !p.public) {
+                    let protection = self
+                        .protection
+                        .as_ref()
+                        .ok_or("Private custody unavailable")?;
+                    self.host
+                        .workshop_commit_sealed(
+                            &intent,
+                            &proposal,
+                            self.human,
+                            &self.authority,
+                            now_ms(),
+                            protection.clone(),
+                        )
+                        .await
+                } else {
+                    self.host
+                        .workshop_commit(
+                            &intent,
+                            &proposal,
+                            self.human,
+                            &self.authority,
+                            now_ms(),
+                            true,
+                        )
+                        .await
+                };
+                match committed {
                     Ok(receipt) => {
                         self.driver
                             .workshop
@@ -387,12 +584,18 @@ impl GraphshellWorkshop {
                     ) => a,
                     _ => return Err("No pending destination operation".into()),
                 };
-                match self
-                    .host
-                    .workshop_reconcile(&intent, &proposal)
-                    .await
-                    .map_err(failure)?
-                {
+                let recovered = if proposal.sources.iter().any(|p| !p.public) {
+                    let protection = self
+                        .protection
+                        .as_ref()
+                        .ok_or("Private custody unavailable")?;
+                    self.host
+                        .workshop_reconcile_sealed(&intent, &proposal, protection.as_ref())
+                        .await
+                } else {
+                    self.host.workshop_reconcile(&intent, &proposal).await
+                };
+                match recovered.map_err(failure)? {
                     Some(receipt) => {
                         self.driver
                             .workshop
@@ -423,7 +626,12 @@ impl GraphshellWorkshop {
                 let passage = held
                     .sources
                     .iter()
-                    .find(|p| p.source == source && public_passage(&self.owner, p))
+                    .find(|p| {
+                        p.source == source
+                            && p.source.owner == self.owner
+                            && (public_passage(&self.owner, p)
+                                || (self.protection.is_some() && !p.public))
+                    })
                     .ok_or("That source version is unavailable")?;
                 state.reading = Some(RetainedReading {
                     title: passage.source.title.clone(),
@@ -435,6 +643,24 @@ impl GraphshellWorkshop {
                 });
             },
             SurfaceAction::OpenResult(resource) => {
+                if let Some(protection) = &self.protection {
+                    if let Ok((receipt, text)) =
+                        athanor::workshop_sealed_destination::open_result_resource(
+                            self.host.graph(),
+                            &self.owner,
+                            &self.owner.workspace,
+                            &resource,
+                            protection.as_ref(),
+                        )
+                    {
+                        state.reading = Some(RetainedReading {
+                            title: "Private evidence brief".into(),
+                            version: receipt.storage_witness,
+                            text,
+                        });
+                        return Ok(());
+                    }
+                }
                 let view = self.driver.refresh().await.map_err(failure)?;
                 let Some(Review::Added {
                     acceptance,
@@ -484,20 +710,40 @@ impl GraphshellWorkshop {
     }
 
     pub async fn refresh_surface(&self, state: &mut SurfaceState) -> Result<(), String> {
-        if state.choices.is_empty() {
-            state.choices = self.choices();
+        if !self.custody_current() {
+            Self::clear_private_surface(state);
+            return Err("Private custody changed".into());
         }
-        state.view = Some(self.driver.refresh().await.map_err(failure)?);
+        let mut choices = self.choices();
+        for choice in &mut choices {
+            if let Some(prior) = state.choices.iter().find(|prior| prior.key == choice.key) {
+                choice.selected =
+                    prior.selected && prior.version == choice.version && choice.available;
+            }
+        }
+        state.choices = choices;
+        let view = self.driver.refresh().await.map_err(failure)?;
+        if !self.custody_current() {
+            Self::clear_private_surface(state);
+            return Err("Private custody changed".into());
+        }
+        state.view = Some(view);
         state.busy = self.driver.busy();
         Ok(())
     }
     /// Native hosts call this on normal UI dispatch and worker wake. The worker
     /// receive is nonblocking; source/current authority are supplied each time.
     pub fn service(&mut self, state: &mut SurfaceState) -> bool {
-        pollster::block_on(async {
+        if self.observe_custody(state) || self.retired {
+            return true;
+        }
+        let changed = pollster::block_on(async {
             let actions = state.take_actions();
             let mut changed = !actions.is_empty();
             for action in actions {
+                if !self.custody_current() {
+                    break;
+                }
                 state.error = None;
                 if let Err(error) = self.handle(action, state).await {
                     state.error = Some(error);
@@ -533,9 +779,13 @@ impl GraphshellWorkshop {
                 }
             }
             changed
-        })
+        });
+        self.observe_custody(state) || changed
     }
     pub fn close(&mut self) -> Result<(), String> {
+        if !self.custody_current() {
+            return self.driver.stop().map_err(failure);
+        }
         pollster::block_on(self.driver.shutdown(&self.authority, &now_ms)).map_err(failure)
     }
 }
