@@ -1004,10 +1004,10 @@ and their source/evidence proofs; the short-word/model boundary stays explicit.
 
 ### Alembic workshop receiving, 2026-10-28
 
-**Status:** in progress. Private source and derived-state protection is
+**Status:** bounded local private receiving qualified on the selected published
+custody and renderer cohort. Private source and derived-state protection was
 prioritized before further workshop UI completion (Mark, 2026-10-28; common
-plan W0P). The adapter and new custody path remain in receiving qualification.
-Compiler admission refusals are not product evidence.
+plan W0P). The complete W3 failure matrix and production custody remain open.
 The common composition, workflow and W1–W3 done-conditions live once in
 `mere/design_docs/mere_docs/implementation_strategy/2026-10-28_alembic_implementation_plan.md`.
 Servitor stays in Eidetic; Armillary supplies execution and cancellation.
@@ -1043,8 +1043,8 @@ The receiving phase is done when the selected published supplier cohort checks,
 the lease/source/custody/acceptance regressions execute, and native controls
 plus an independent process prove accepted public and sealed results and exact
 citations survive. Private selection, mixed-source proposals and result reading
-are implemented but remain unqualified until those checks execute. Production
-identity, remote peers and the common plan's full per-host failure matrix remain
+have focused coverage; native private receiving is qualified within the paused
+local workflow below. Production identity, remote peers and the common plan's full per-host failure matrix remain
 outside this bounded local flow.
 
 **Findings (2026-10-28):**
@@ -1123,8 +1123,11 @@ cut. The initial native pass exposed revision reconstruction and auxiliary
 redraw gaps; both source repairs are applied. A paused-scene native workflow
 qualifies sealed-source admission, private acceptance, origin-absent cold
 result reading after helper dissolution, live lock and custodian-loss
-retirement. Playing-scene inspection still times out; the original restored
-multi-Read layout, supplier integration and the full failure matrix remain
-open. Production custody and external-principal gates remain separate.
+retirement. The approved custody and renderer cohort is integrated and the
+bounded native workflow requalified. Pausing through the ordinary action and
+saving through the normal session writer preserves the original multi-Read
+layout across an offline restart. Playing-scene responsiveness and the full
+failure matrix remain open. Production custody and external-principal gates
+remain separate.
 Run receipts and the current receiving boundary are kept with the common plan
 at `mere/design_docs/archive_docs/2026-10-28/2026-10-28_alembic_implementation_plan_receipts.md`.
