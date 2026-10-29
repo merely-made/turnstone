@@ -126,6 +126,15 @@ impl App {
             ..OmnibarState::default()
         };
         self.focus = crate::surface::FocusTarget::Chrome;
+        effects.push(self.begin_saved_source_load());
+        self.recompute_omnibar_suggestions();
+        effects.push(Effect::Redraw);
+        effects
+    }
+
+    /// Queue the same owner-checked source actor request for a product surface
+    /// that needs private source choices without taking over the omnibar.
+    pub(crate) fn begin_saved_source_load(&mut self) -> Effect {
         let admissions = self.saved_source_admissions();
         let request = uuid::Uuid::new_v4();
         self.saved_sources = SavedSourcesState {
@@ -134,15 +143,12 @@ impl App {
             entries: Vec::new(),
             status: "Loading".into(),
         };
-        self.recompute_omnibar_suggestions();
-        effects.push(Effect::LoadSavedSources {
+        Effect::LoadSavedSources {
             generation: self.source_capture_generation,
             request,
             session: self.session_id,
             admissions,
-        });
-        effects.push(Effect::Redraw);
-        effects
+        }
     }
 
     pub(crate) fn recompute_saved_source_suggestions(&mut self, row_limit: usize) {

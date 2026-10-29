@@ -1013,10 +1013,25 @@ The common composition, workflow and W1–W3 done-conditions live once in
 Servitor stays in Eidetic; Armillary supplies execution and cancellation.
 
 The named **Evidence brief workshop** action opens Alembic's shared native
-surface. Its first corpus is the same authored public example as Graphshell's,
-with independent owner, installation, subject, run and acceptance identities.
-Saved private sources are unavailable to this workflow. The deterministic body
-proposes a brief; the accepting human and proposing run remain distinct.
+surface. Its synthetic public corpus is the same authored example set as
+Graphshell's, with independent owner, installation, subject, run and acceptance
+identities. Opening the workshop also requests saved-source admissions through
+the existing owner actor, without opening or switching the omnibar. The current
+owner may select sealed saved-source versions from its exact session and graph;
+legacy unsealed, stale, foreign, incomplete or hash-mismatched entries stay
+unavailable. The first private slice admits only the complete retained text,
+from byte zero to its UTF-8 byte length, up to 2,048 bytes. Longer sources are
+refused rather than truncated or assigned an invented range. Public examples
+and sealed private sources may appear together in one ordered proposal.
+
+The bounded private path uses a local owner-scoped GrantTable: the app owner
+admits the selected immutable source and proposal caps and owns the local worker;
+the human root separately authorizes note acceptance. The helper subject is an
+installation and correlation identity, not an authenticated external
+participant. This does not qualify production resident, MCP/A2A, remote-peer or
+fleet principals, and does not raise those consumer qualification flags. The
+deterministic body proposes a brief; the accepting human and proposing run
+remain distinct.
 
 Turnstone's canonical Canvas/runtime writer stages and saves an accepted note.
 It does not open a second GraphSession to apply the result. The operation ledger
@@ -1024,11 +1039,13 @@ and note share the atomic graph snapshot, with operation evidence retained on
 every subsequent save, including undo and note removal. Reconciliation reloads
 the complete durable snapshot and acknowledges only the matching operation.
 
-The receiving phase is done when the published supplier cohort checks, the
-lease/source/acceptance regressions execute, and the native controls plus an
-independent process prove the accepted result and exact citations survive.
-This bounded public flow does not close private custody, production identity,
-remote peers or the common plan's full per-host failure matrix.
+The receiving phase is done when the selected published supplier cohort checks,
+the lease/source/custody/acceptance regressions execute, and native controls
+plus an independent process prove accepted public and sealed results and exact
+citations survive. Private selection, mixed-source proposals and result reading
+are implemented but remain unqualified until those checks execute. Production
+identity, remote peers and the common plan's full per-host failure matrix remain
+outside this bounded local flow.
 
 **Findings (2026-10-28):**
 
@@ -1066,15 +1083,45 @@ remote peers or the common plan's full per-host failure matrix.
 - The accepted private result uses the owner's Resource-only reader and can be
   routed without the helper journal. Key retention and rewrapping are separate
   gates; the current operation ledger protects its stored ciphertext bytes.
+
+**Findings (2026-10-29):**
+
+- Private source admission checks the current saved-source owner, session,
+  graph, sealed identity, content hash and custody epoch
+  (`src/alembic_workshop.rs`). Private citations read the immutable proposal
+  passage only after exact proposal, source, owner and live-custody checks;
+  mixed public/private proposals validate as one private proposal.
+- The local scope above relies on the app owner as source-admission authority
+  and worker owner, with human-root acceptance. It does not establish an
+  external servitor principal or production participant route. Full private
+  saved-source text is an explicit Taproot scenario export: when
+  `TURNSTONE_SCENARIO` is set, `saved-reader-text`/`saved-reader-quote` fields
+  are available to scenario snapshots, and the explicit `record-saved-sources`
+  step writes entries and reader bodies to its named output. This material is
+  outside ordinary-log/storage protection; private workshop qualification must
+  avoid those plaintext scenario exports.
 - The receiving graph-file adapter retains the existing flattened snapshot and
   placement-profile schema (`src/session_graph_file.rs`). Member facet edits
   use the canonical Canvas/runtime recorder; graph-container sidecars use the
   checked complete facet installation available on the selected supplier.
 
-**Progress (2026-10-28):** added the action/window adapter, shared surface,
-source gates, existing-writer acceptance path and session lease. Receiving
-compiler diagnostics have been repaired in source; the latest receiving
-repairs, lease/private-source regressions and final native/cold qualification
-remain unqualified. Mere's successful gates do not substitute for them.
+- Reconciliation installs the authoritative destination graph before helper
+  acknowledgement (`src/shell/alembic_workshop.rs`). A helper journal commit
+  whose reply is lost must not leave an Added result absent from the live owner.
+- For a modern graph with an existing canonical facet file, loading installs
+  its exact facet store, including absence (`src/session.rs`). Overlaying it on
+  reconstruction defaults invents a different destination revision. Genuine
+  legacy columns retain their evidence-first migration and canonical precedence.
+- An asynchronous workshop owner update requests a redraw of its own native
+  window. The primary/lens redraw fanout does not cover that auxiliary window.
+
+**Progress (2026-10-29):** added the action/window adapter, shared surface,
+public and sealed-source gates, quiet saved-source loading, existing-writer
+acceptance path and session lease. Receiving source/API issues and focused
+lease/source/custody/recovery regressions are qualified on the selected supplier
+cut. The initial native pass exposed revision reconstruction and auxiliary
+redraw gaps; both source repairs are applied. Complete native acceptance,
+cold-result reading and live-lock qualification remain open. Mere's successful
+gates do not substitute for them.
 Run receipts and the current receiving boundary are kept with the common plan
 at `mere/design_docs/archive_docs/2026-10-28/2026-10-28_alembic_implementation_plan_receipts.md`.

@@ -365,7 +365,10 @@ impl App {
                     .map(|value| (*minted, value))
             })
             .collect::<Vec<_>>();
-        fork_graph.overlay_facets(fork_facets);
+        if let Err(error) = fork_graph.overlay_facets(fork_facets) {
+            tracing::warn!(%error, "forked component facets could not be installed");
+            return vec![Effect::Redraw];
+        }
         let import_facet =
             chartulary::FacetId::new(mere::kernel::graph::node_facets::PROVENANCE_IMPORT);
         if let Err(error) = crate::graph_facets::edit_graph_facets(&mut fork_graph, |facets| {
@@ -411,7 +414,10 @@ impl App {
             Ok(graph) => graph,
             Err(error) => { tracing::warn!(%error, "assembled fork graph refused"); return Vec::new(); }
         };
-        fork_graph.overlay_facets(fork_facets);
+        if let Err(error) = fork_graph.overlay_facets(fork_facets) {
+            tracing::warn!(%error, "fork graph facets could not be restored after placement");
+            return vec![Effect::Redraw];
+        }
         let fork_id = crate::panes::SessionId::new();
         let fork_dir = session::session_dir(&self.data_root, fork_id);
         let fork_writer = match crate::session_persistence::SessionWriteLease::acquire(&fork_dir) {

@@ -48,6 +48,20 @@ set.
 - Match proof to the claim: focused unit tests for state and identity, real
   consumer tests for wiring, restart receipts for persistence, and headed
   interaction receipts for visible UI.
+- For Turnstone native verification, launch the application only with an
+  explicit isolated `TURNSTONE_ROOT`; flags such as `--list` may reach the app
+  entrypoint instead of selecting an inspection mode. Choose a test executable
+  from Cargo's `compiler-artifact` metadata for the exact target/profile, never
+  from a filesystem glob or by probing executables with `--list`.
+- When restoring source snapshots, ensure the compiler sees the restored bytes
+  as newer than prior outputs (or otherwise force a fresh compile) before
+  claiming a repaired binary; byte-identical file copies can preserve stale
+  timestamps and let Cargo reuse the prior artifact.
+- Treat a modern canonical facet file as complete authority, including absent
+  fields. Snapshot reconstruction defaults belong to legacy migration and must
+  not silently change an owner's saved revision token.
+- Auxiliary native owner windows request their own redraw after asynchronous
+  state updates; the primary/lens redraw fanout does not cover them.
 - Private source protection includes raw, decoded and recovery copies plus
   transient derived caches. LocalOnly is a distribution classification, not an
   encryption receipt; custody continuity needs the live binding generation.

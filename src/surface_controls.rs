@@ -202,7 +202,7 @@ mod tests {
         assert!(facets.facets_of(&second).is_none());
         assert!(extract_legacy(&mut snapshot).is_empty());
         let mut graph = Graph::from_snapshot(&snapshot);
-        graph.overlay_facets(facets);
+        graph.overlay_facets(facets).unwrap();
         assert!(read(&graph, first, Control::Keep));
         assert!(!read(&graph, second, Control::Keep));
         let mut canonical = NodeFacetStore::new();
@@ -214,7 +214,7 @@ mod tests {
                 &AcceptAll,
             )
             .unwrap();
-        graph.overlay_facets(canonical);
+        graph.overlay_facets(canonical).unwrap();
         assert!(!read(&graph, first, Control::Keep));
     }
 }

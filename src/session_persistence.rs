@@ -199,7 +199,7 @@ impl<P: Copy> SessionPersistence<P> {
             let mut before = pandect::graph_placement::materialize_snapshot(&input.snapshot, input.placement)
                 .map_err(io::Error::other)?;
             let facets = pandect::load_node_facets(directory).map_err(io::Error::other)?.unwrap_or_default();
-            before.overlay_facets(facets);
+            before.overlay_facets(facets).map_err(io::Error::other)?;
             athanor::workshop_destination::preserve_graph_operations(&before, candidate)
                 .map_err(io::Error::other)?;
         }
@@ -362,6 +362,24 @@ mod tests {
         std::fs::remove_dir_all(root).unwrap();
     }
     #[test]
+    fn replacement_fault_preserves_existing_target_and_backup_on_restore_and_drop() {
+        for explicit_restore in [false, true] {
+            let root = tempfile::tempdir().unwrap();
+            let target = root.path().join("graph.json");
+            let backup = root.path().join("graph.json.previous");
+            std::fs::write(&target, b"current committed graph").unwrap();
+            std::fs::write(&backup, b"earlier committed graph").unwrap();
+            let fault = BlockedReplacement::new(&target);
+            assert!(target.is_dir());
+            assert!(backup.is_dir());
+            assert_eq!(fault.read_preserved(&target).unwrap(), b"current committed graph");
+            if explicit_restore { fault.restore(); } else { drop(fault); }
+            assert_eq!(std::fs::read(&target).unwrap(), b"current committed graph");
+            assert_eq!(std::fs::read(&backup).unwrap(), b"earlier committed graph");
+        }
+    }
+
+    #[test]
     fn interrupted_replacement_is_not_a_fresh_writable_session() {
         let root = std::env::temp_dir().join(format!(
             "turnstone-replacement-{}-{}",
@@ -395,6 +413,8 @@ pub(crate) struct BlockedReplacement {
     target: PathBuf,
     held: PathBuf,
     backup: PathBuf,
+    held_backup: PathBuf,
+    had_backup: bool,
     had_original: bool,
     active: bool,
 }
@@ -407,10 +427,16 @@ impl BlockedReplacement {
             "{}.previous",
             target.extension().unwrap().to_string_lossy()
         ));
+        let held_backup = target.with_extension("fixture-held-backup");
         assert!(
-            !held.exists() && !backup.exists(),
+            !held.exists() && !held_backup.exists(),
             "fault fixture must own fresh paths"
         );
+        let had_backup = backup.exists();
+        if had_backup {
+            assert!(backup.is_file(), "existing backup must be a regular test file");
+            std::fs::rename(&backup, &held_backup).unwrap();
+        }
         let had_original = target.exists();
         if had_original {
             std::fs::rename(target, &held).unwrap();
@@ -423,6 +449,8 @@ impl BlockedReplacement {
             target: target.into(),
             held,
             backup,
+            held_backup,
+            had_backup,
             had_original,
             active: true,
         }
@@ -447,6 +475,9 @@ impl BlockedReplacement {
             std::fs::remove_file(&self.target)?;
         }
         std::fs::remove_dir(&self.backup)?;
+        if self.had_backup {
+            std::fs::rename(&self.held_backup, &self.backup)?;
+        }
         if self.had_original {
             std::fs::rename(&self.held, &self.target)?;
         }

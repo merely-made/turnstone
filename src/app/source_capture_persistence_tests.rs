@@ -317,6 +317,13 @@ fn recovered_receipt_retries_partial_facet_graph_write_without_duplicate_attachm
         let blocked = if fail_facets {
             pandect::node_facets_path(&directory)
         } else {
+            // Exercise the real interruption boundary directly: the exact
+            // candidate facet sidecar has reached disk, but its matching graph
+            // envelope has not. Current admission validates the existing graph
+            // before writing facets, so a blocked graph target must not be used
+            // to pretend the writer can newly produce this partial state.
+            let candidate = app.graph_runtimes.facets().clone();
+            pandect::save_node_facets(&directory, &candidate).unwrap();
             directory.join(pandect::session_graph_store::GRAPH_FILE)
         }
         .to_path_buf();
@@ -1369,6 +1376,12 @@ fn source_capture_save_process_boundary_worker() {
                 .session_dir()
                 .join(pandect::session_graph_store::GRAPH_FILE)
                 .to_path_buf();
+            // Model a process exit after the exact candidate sidecar became
+            // durable but before the matching graph envelope. The current
+            // writer validates the existing graph before starting that pair,
+            // so this crash boundary must be seeded explicitly in the fixture.
+            let candidate = app.graph_runtimes.facets().clone();
+            pandect::save_node_facets(&app.session_dir(), &candidate).unwrap();
             let blocked = crate::session_persistence::BlockedReplacement::new(&blocked);
             let result = app.persist_source_capture(request.id);
             assert!(result.is_err());
@@ -1589,6 +1602,16 @@ fn source_capture_real_stack_process_worker() {
         Default::default(),
         app.source_capture_generation,
     );
+    assert!(
+        actor.command(crate::trail_memory::TrailCommand::SetCustody(Some(
+            crate::trail_memory::custody_test_fixture::custody()
+        )))
+    );
+    let (ready, ready_rx) = std::sync::mpsc::sync_channel(1);
+    assert!(actor.command(crate::trail_memory::TrailCommand::CustodyReady(ready)));
+    ready_rx
+        .recv_timeout(std::time::Duration::from_secs(5))
+        .expect("test custody must be installed before recovery or capture");
     if stage == "verify-reopen" {
         let expected = original_stored.as_ref().unwrap();
         let deadline = std::time::Instant::now() + std::time::Duration::from_secs(15);
@@ -1692,6 +1715,13 @@ fn source_capture_real_stack_process_worker() {
             let target = if stage == "fail-facets" {
                 pandect::node_facets_path(&app.session_dir())
             } else {
+                // The following fresh process must recover the exact sidecar
+                // that would have committed before a graph replacement was
+                // interrupted. Seed that post-facet/pre-graph boundary here;
+                // the writer now rejects a blocked graph before starting the
+                // pair and cannot itself create this state under this fault.
+                let candidate = app.graph_runtimes.facets().clone();
+                pandect::save_node_facets(&app.session_dir(), &candidate).unwrap();
                 graph.clone()
             };
             let blocked = target.to_path_buf();

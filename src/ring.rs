@@ -371,7 +371,7 @@ pub fn emit_allowed(
         // would behave the same. Split the ring only if the policies diverge.
         let what = match action {
             Action::OpenThemeWorkshop => "personal theme authoring",
-            Action::OpenAlembicWorkshop => "public example evidence workshop",
+            Action::OpenAlembicWorkshop => "retained-passage evidence workshop",
             Action::JoinPlace(_) | Action::JoinPlaceFile { .. } | Action::BeginJoinPlaceFile => {
                 "joining a place"
             },

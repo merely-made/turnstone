@@ -135,6 +135,31 @@ fn admissions_follow_live_session_graph_facets_and_preserve_occurrences() {
 }
 
 #[test]
+fn quiet_saved_source_load_keeps_the_omnibar_closed_for_workshop_choices() {
+    let root = tempfile::tempdir().unwrap();
+    let mut app = app_at(root.path());
+    assert!(!app.omnibar.open);
+
+    let effect = app.begin_saved_source_load();
+
+    let (generation, request, session, admissions) = match effect {
+        Effect::LoadSavedSources {
+            generation,
+            request,
+            session,
+            admissions,
+        } => (generation, request, session, admissions),
+        _ => panic!("quiet saved source load did not produce LoadSavedSources"),
+    };
+    assert!(!app.omnibar.open);
+    assert_eq!(session, app.session_id);
+    assert_eq!(generation, app.source_capture_generation);
+    assert_eq!(app.saved_sources.request, Some(request));
+    assert_eq!(app.saved_sources.admissions, admissions);
+    assert_eq!(app.saved_sources.status, "Loading");
+}
+
+#[test]
 fn asynchronous_corpus_answers_are_rejected_after_generation_or_facets_change() {
     let root = tempfile::tempdir().unwrap();
     let mut app = app_at(root.path());

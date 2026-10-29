@@ -102,7 +102,9 @@ pub(crate) fn copy_session_component(
     }).collect();
     let facets = graph.facets().clone();
     let mut graph = Graph::try_from_recorded_snapshot(&snapshot).map_err(|error| error.to_string())?;
-    graph.overlay_facets(facets);
+    graph
+        .overlay_facets(facets)
+        .map_err(|error| error.to_string())?;
     Ok((graph, copy))
 }
 
@@ -576,8 +578,7 @@ pub(crate) fn try_load_session_graph_locked(data_root: &Path) -> Result<Option<L
     crate::session_persistence::require_complete_file(&pandect::node_facets_path(data_root))
         .map_err(|error| format!("canonical facets could not be inspected: {error}"))?;
     let canonical = pandect::load_node_facets(data_root)
-        .map_err(|error| format!("canonical facets could not be read: {error}"))?
-        .unwrap_or_default();
+        .map_err(|error| format!("canonical facets could not be read: {error}"))?;
     let graph_file = data_root.join(session_graph_store::GRAPH_FILE);
     crate::session_persistence::require_complete_file(&graph_file)
         .map_err(|error| format!("session graph replacement is incomplete: {error}"))?;
@@ -595,8 +596,27 @@ pub(crate) fn try_load_session_graph_locked(data_root: &Path) -> Result<Option<L
     let migrated = externalize_legacy_images(snapshot, data_root)
         .map_err(|error| format!("session imagery could not be migrated: {error}"))?;
     let mut graph = pandect::graph_placement::materialize_snapshot(snapshot, placement)?;
-    graph.overlay_facets(legacy_controls);
-    graph.overlay_facets(canonical);
+    match canonical {
+        Some(canonical) if legacy_node_facets == 0 => {
+            // A modern sidecar is the complete authority, including absent
+            // facets. Reconstruction defaults must not invent a new revision.
+            // Explicit old control labels still migrate; canonical false wins.
+            let mut facets = legacy_controls;
+            facets.overlay(canonical);
+            graph.install_facets(facets)
+                .map_err(|error| format!("canonical graph facets could not be restored: {error}"))?;
+        },
+        canonical => {
+            // Genuine legacy columns and missing-sidecar inputs retain their
+            // imported metadata until the existing migration persists it.
+            graph.overlay_facets(legacy_controls)
+                .map_err(|error| format!("legacy surface controls could not be restored: {error}"))?;
+            if let Some(canonical) = canonical {
+                graph.overlay_facets(canonical)
+                    .map_err(|error| format!("canonical graph facets could not be restored: {error}"))?;
+            }
+        },
+    }
     let before_migration = graph.clone();
     if legacy_node_facets > 0 || controls_migrated || migrated > 0 {
         // Evidence first, and propagate failure so the display runtime cannot

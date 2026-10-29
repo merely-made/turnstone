@@ -75,6 +75,60 @@ fn refused_session_lease_clears_the_departed_sessions_live_state() {
 }
 
 #[test]
+fn canonical_facet_roundtrip_preserves_destination_revision_and_absent_defaults() {
+    for absent_defaults in [false, true] {
+        let root = tempfile::tempdir().unwrap();
+        let mut graph = Graph::new();
+        let member = uuid::Uuid::new_v4();
+        add_node(&mut graph, Some(member), "https://owner-roundtrip.test/page".into(), Default::default());
+        if absent_defaults {
+            graph.install_facets(Default::default()).unwrap();
+        }
+        crate::graph_facets::edit_graph_facets(&mut graph, |facets| {
+            facets.set(member, chartulary::FacetId::new("foreign.roundtrip"),
+                serde_json::json!({"retained": true}), &chartulary::AcceptAll).unwrap();
+            crate::surface_controls::set_facets(facets, member,
+                crate::surface_controls::Control::Keep, false);
+        }).unwrap();
+        let expected = athanor::workshop_destination::graph_revision(&graph).unwrap();
+        let path = root.path().join(pandect::session_graph_store::GRAPH_FILE);
+        crate::session_graph_file::save_profiled(&path, &graph,
+            Some(PlacementProfile::RecordedStrataV1)).unwrap();
+        pandect::save_node_facets(root.path(), graph.facets()).unwrap();
+        let bytes = std::fs::read(&path).unwrap();
+        let loaded = session::try_load_session_graph(root.path()).unwrap().unwrap();
+        assert_eq!(athanor::workshop_destination::graph_revision(&loaded.graph).unwrap(), expected,
+            "a save/load with the same authoritative facet file cannot invent a foreign revision; absent_defaults={absent_defaults}");
+        assert_eq!(loaded.graph.facets(), graph.facets(), "absence is part of authoritative facet state");
+        assert_eq!(std::fs::read(&path).unwrap(), bytes, "modern load does not migrate or rewrite the graph");
+    }
+}
+
+#[test]
+fn canonical_false_control_survives_legacy_label_migration_without_default_facets() {
+    let root = tempfile::tempdir().unwrap();
+    let mut graph = Graph::new();
+    let member = uuid::Uuid::new_v4();
+    add_node(&mut graph, Some(member), "https://owner-controls.test/page".into(), Default::default());
+    let mut snapshot = graph.to_snapshot();
+    snapshot.nodes[0].tags = vec!["keep".into()];
+    let path = root.path().join(pandect::session_graph_store::GRAPH_FILE);
+    std::fs::write(&path, serde_json::to_vec(&snapshot).unwrap()).unwrap();
+    let mut canonical = mere::kernel::graph::NodeFacetStore::new();
+    crate::surface_controls::set_facets(&mut canonical, member,
+        crate::surface_controls::Control::Keep, false);
+    pandect::save_node_facets(root.path(), &canonical).unwrap();
+    let loaded = session::try_load_session_graph(root.path()).unwrap().unwrap();
+    assert!(!crate::surface_controls::read(&loaded.graph, member, crate::surface_controls::Control::Keep));
+    assert!(loaded.graph.facets().get(&member,
+        &chartulary::FacetId::new(mere::kernel::graph::node_facets::VISIT_HISTORY)).is_none(),
+        "migration cannot invent a visit absent from the authoritative sidecar");
+    let reloaded = session::try_load_session_graph(root.path()).unwrap().unwrap();
+    assert_eq!(athanor::workshop_destination::graph_revision(&loaded.graph).unwrap(),
+        athanor::workshop_destination::graph_revision(&reloaded.graph).unwrap());
+}
+
+#[test]
 fn writer_lease_survives_same_session_readoption_and_switch_back() {
     let root = tempfile::tempdir().unwrap();
     let mut app = App::test_stub_at(root.path().to_path_buf());
@@ -186,6 +240,7 @@ fn new_session_records_its_birth_and_reopens_same_site_relations_exactly() {
         .unwrap().unwrap();
     assert_eq!(stored.placement, Some(PlacementProfile::RecordedStrataV1));
     let bytes = std::fs::read(&path).unwrap();
+    drop(app); // A cold owner acquires the lease after the old owner exits.
 
     let mut reopened = App::test_stub_at(root.path().to_path_buf());
     reopened.sessions.load_from_disk(session::sessions_root(root.path())).unwrap();
@@ -262,13 +317,17 @@ fn host_session_recorded_and_absent_ordinary_save_reopen_and_replacement() {
 
 #[test]
 fn host_session_refusal_blocks_save_fork_background_and_survives_graph_replacement() {
-    let mut app = App::test_stub();
+    let root = tempfile::tempdir().unwrap();
+    let app = App::test_stub_at(root.path().to_path_buf());
     let directory = app.session_dir();
     std::fs::create_dir_all(&directory).unwrap();
     let file = directory.join(pandect::session_graph_store::GRAPH_FILE);
     std::fs::write(&file, b"{invalid session graph").unwrap();
+    let id = app.session_id;
+    drop(app);
+    let mut app = App::test_stub_at(root.path().to_path_buf());
     let old_count = app.sessions.len();
-    let adopted = app.adopt_session(app.session_id);
+    let adopted = app.adopt_session(id);
     assert!(
         adopted
             .iter()
@@ -377,6 +436,8 @@ fn host_session_fork_manifest_failure_never_publishes_or_switches() {
     let children: Vec<_> = std::fs::read_dir(app.data_root.join("sessions"))
         .unwrap()
         .map(|entry| entry.unwrap().path())
+        // The donor already has a directory for its held writer lease.
+        .filter(|directory| *directory != app.session_dir())
         .collect();
     assert_eq!(children.len(), 1);
     assert!(

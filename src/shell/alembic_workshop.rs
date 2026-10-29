@@ -23,6 +23,32 @@ pub(super) struct WorkshopWindow {
     subject: [u8; 32],
 }
 
+fn workshop_passage_current(
+    app: &crate::app::App,
+    owner: &Owner,
+    protection: Option<&dyn athanor::workshop_seal::Protection>,
+    passage: &alembic::workshop::Passage,
+) -> bool {
+    if passage.public {
+        crate::alembic_workshop::passage_current(app, owner, passage)
+    } else {
+        protection.is_some_and(|protection| {
+            crate::alembic_workshop::private_passage_current(app, owner, protection, passage)
+        })
+    }
+}
+
+// Owner publication and helper acknowledgement are separate durability domains.
+// Keep their actual ordering in one seam so an uncertain journal reply cannot
+// hide a destination graph that has already been recovered from storage.
+fn install_destination_then_acknowledge<T, E>(
+    install: impl FnOnce(),
+    acknowledge: impl FnOnce() -> Result<T, E>,
+) -> Result<T, E> {
+    install();
+    acknowledge()
+}
+
 fn subject(owner: &Owner) -> [u8; 32] {
     *blake3::hash(format!("turnstone-public-example-helper-v1/{owner:?}").as_bytes()).as_bytes()
 }
@@ -41,6 +67,12 @@ impl WorkshopWindow {
     fn update(&mut self, f: impl FnOnce(&mut SurfaceState)) {
         if let Some(runner) = self.host.s.runner.as_mut() {
             runner.update(f);
+            // This auxiliary window is outside Shell::request_redraw's main
+            // and lens fanout. Runner state mutation alone does not guarantee
+            // another native RedrawRequested event while the host is idle.
+            if let Some(native) = self.host.native_window() {
+                native.request_redraw();
+            }
         }
     }
     fn status(&mut self, status: impl Into<String>, error: Option<String>) {
@@ -83,14 +115,7 @@ impl Shell {
                     let install = installation(&owner);
                     let subject = subject(&owner);
                     let mut state = SurfaceState::new();
-                    state.choices =
-                        crate::alembic_workshop::example_choices(self.app.graph_runtimes.graph());
-                    state.choices.extend(self.app.saved_sources.entries.iter().enumerate().map(|(index, _entry)| SourceChoice {
-                        key: format!("private-not-admitted:{index}"),
-                        title: "Private saved source".into(), version: String::new(),
-                        selected: false, available: false,
-                        refusal: Some("Private saved sources are not admitted by this public example workflow.".into()),
-                    }));
+                    state.choices = self.alembic_workshop_choices(&owner);
                     let wake_proxy = self.proxy.clone();
                     let wake: armillary::Wake = Arc::new(move || {
                         let _ = wake_proxy.send_event(());
@@ -125,7 +150,13 @@ impl Shell {
                     Ok::<_, String>(window)
                 })();
                 match result {
-                    Ok(window) => self.alembic_workshop = Some(window),
+                    Ok(window) => {
+                        self.alembic_workshop = Some(window);
+                        self.open_recover_alembic_workshop();
+                        let load = self.app.begin_saved_source_load();
+                        self.run_effects(vec![load]);
+                        self.refresh_alembic_workshop_sources();
+                    },
                     Err(error) => {
                         tracing::warn!(%error, "could not open Alembic workshop");
                     },
@@ -170,8 +201,12 @@ impl Shell {
                         crate::denizen::now_ms(),
                     );
                     let now = || crate::denizen::now_ms();
+                    let protection = self
+                        .custody_binding
+                        .as_ref()
+                        .map(|binding| binding.protection.clone());
                     let source_gate = |passage: &alembic::workshop::Passage| {
-                        crate::alembic_workshop::passage_current(&self.app, &owner, passage)
+                        workshop_passage_current(&self.app, &owner, protection.as_deref(), passage)
                     };
                     let result = pollster::block_on(driver.poll(&authority, &now, &source_gate));
                     Some((result, driver.busy()))
@@ -238,6 +273,139 @@ impl Shell {
         idle
     }
 
+    fn alembic_workshop_choices(&self, owner: &alembic::workshop::Owner) -> Vec<SourceChoice> {
+        if owner.session != self.app.session_id.as_uuid().to_string()
+            || owner.workspace != self.app.graph_runtimes.active_graph().as_uuid().to_string()
+        {
+            return Vec::new();
+        }
+        let mut choices = crate::alembic_workshop::example_choices(self.app.graph_runtimes.graph());
+        let current_admissions = self.app.saved_source_admissions();
+        let custody_open = self
+            .custody_binding
+            .as_ref()
+            .is_some_and(|binding| binding.protection.epoch().is_some());
+        let mut private = crate::alembic_workshop::private_source_choices(
+            owner,
+            &self.app.saved_sources.entries,
+            &current_admissions,
+            custody_open,
+        );
+        if private.is_empty() {
+            let (version, refusal) = match self.app.saved_sources.status.as_str() {
+                "Loading" => (
+                    "loading",
+                    "Loading sealed saved sources attached to this graph.".to_string(),
+                ),
+                "Ready" => (
+                    "empty",
+                    "No saved sources are attached to this graph yet.".to_string(),
+                ),
+                status if status.starts_with("Unavailable:") => (
+                    "unavailable",
+                    "Saved source versions could not be loaded. Try searching again.".to_string(),
+                ),
+                _ => (
+                    "pending",
+                    "Saved source versions will load when the workshop opens.".to_string(),
+                ),
+            };
+            private.push(SourceChoice {
+                key: format!("private-sources-{version}"),
+                title: "Sealed saved sources".into(),
+                version: version.into(),
+                selected: false,
+                available: false,
+                refusal: Some(refusal),
+            });
+        }
+        choices.extend(private);
+        choices
+    }
+
+    pub(super) fn refresh_alembic_workshop_sources(&mut self) {
+        let Some(owner) = self
+            .alembic_workshop
+            .as_ref()
+            .map(|window| window.owner.clone())
+        else {
+            return;
+        };
+        let choices = self.alembic_workshop_choices(&owner);
+        let source_status = self.app.saved_sources.status.clone();
+        if let Some(window) = self.alembic_workshop.as_mut() {
+            window.update(|state| {
+                let mut update = state.clone();
+                update.choices = choices;
+                if !state.busy && state.view.is_none() {
+                    match source_status.as_str() {
+                        "Loading" => {
+                            update.status = "Loading sealed saved sources.".into();
+                            update.error = None;
+                        },
+                        "Ready" => {
+                            update.status =
+                                "Saved source choices are current for this graph.".into();
+                            update.error = None;
+                        },
+                        status if status.starts_with("Unavailable:") => {
+                            update.status = "Saved source choices are unavailable.".into();
+                            update.error = Some(status.to_owned());
+                        },
+                        _ => {},
+                    }
+                }
+                state.apply_owner_update(update);
+            });
+        }
+        self.request_redraw();
+    }
+
+    fn open_recover_alembic_workshop(&mut self) {
+        let Some(window) = self.alembic_workshop.as_mut() else {
+            return;
+        };
+        let owner = window.owner.clone();
+        let installation = window.installation;
+        let human = window.human;
+        let subject = window.subject;
+        let recovered = if let Some(driver) = window.driver.as_mut() {
+            match pollster::block_on(driver.open(subject)) {
+                Ok(view) => {
+                    let run = view.run;
+                    let inputs = run
+                        .and_then(|id| pollster::block_on(driver.workshop.run_inputs(id)).ok())
+                        .unwrap_or_default();
+                    let authority = crate::alembic_workshop::authority(
+                        &owner,
+                        installation,
+                        human,
+                        &inputs,
+                        crate::denizen::now_ms(),
+                    );
+                    let now = || crate::denizen::now_ms();
+                    pollster::block_on(driver.recover(&authority, &now)).map_err(|error| {
+                        (
+                            "Prior helper state could not be recovered.",
+                            error.to_string(),
+                        )
+                    })
+                },
+                Err(error) => Err((
+                    "Could not load the retained helper state.",
+                    error.to_string(),
+                )),
+            }
+        } else {
+            return;
+        };
+        match recovered {
+            Ok(view) => window.update(|state| state.view = Some(view)),
+            Err((message, error)) => window.status(message, Some(error)),
+        }
+        self.request_redraw();
+    }
+
     fn handle_alembic_action(&mut self, action: SurfaceAction) {
         match action {
             SurfaceAction::LoadExample => self.load_alembic_examples(),
@@ -255,9 +423,17 @@ impl Shell {
                                 .into(),
                         )
                     } else if let Some(driver) = window.driver.as_ref() {
+                        let protection = self
+                            .custody_binding
+                            .as_ref()
+                            .map(|binding| binding.protection.clone());
                         match pollster::block_on(driver.refresh()) {
                             Ok(view) => crate::alembic_workshop::proposal_reading(
-                                &owner, &view, proposal, &source,
+                                &owner,
+                                &view,
+                                proposal,
+                                &source,
+                                protection.as_deref(),
                             ),
                             Err(error) => {
                                 Err(format!("The saved proposal could not be reopened: {error}"))
@@ -361,8 +537,9 @@ impl Shell {
                             );
                         }
                     },
-                    Some(Err(error)) => self
-                        .status_alembic("Could not open the retained result.", Some(error)),
+                    Some(Err(error)) => {
+                        self.status_alembic("Could not open the retained result.", Some(error))
+                    },
                     None => self.status_alembic(
                         "No retained evidence brief was selected.",
                         Some("The workshop did not provide a result resource.".into()),
@@ -450,73 +627,23 @@ impl Shell {
         if let Err(error) = self.app.bind_behavior_journal() {
             self.app.refuse_behavior(error);
         }
-        let choices = crate::alembic_workshop::example_choices(self.app.graph_runtimes.graph());
-        let saved_private = self
-            .app
-            .saved_sources
-            .entries
-            .iter()
-            .enumerate()
-            .map(|(index, _entry)| SourceChoice {
-                key: format!("private-not-admitted:{index}"),
-                title: "Private saved source".into(),
-                version: String::new(),
-                selected: false,
-                available: false,
-                refusal: Some(
-                    "Private saved sources are not admitted by this public example workflow."
-                        .into(),
-                ),
-            })
-            .collect::<Vec<_>>();
+        let owner = self
+            .alembic_workshop
+            .as_ref()
+            .map(|window| window.owner.clone());
+        let choices = owner
+            .as_ref()
+            .map(|owner| self.alembic_workshop_choices(owner))
+            .unwrap_or_default();
         self.status_alembic(
             format!("Public examples retained in session {}.", session.as_uuid()),
             None,
         );
         if let Some(window) = self.alembic_workshop.as_mut() {
             window.update(|state| {
-                state.choices = choices.into_iter().chain(saved_private).collect();
+                state.choices = choices;
                 state.busy = false;
             });
-            let owner = window.owner.clone();
-            let installation = window.installation;
-            let human = window.human;
-            let subject = window.subject;
-            let recovered = if let Some(driver) = window.driver.as_mut() {
-                match pollster::block_on(driver.open(subject)) {
-                    Ok(_) => {
-                        let current = pollster::block_on(driver.refresh()).ok();
-                        let inputs = current
-                            .and_then(|view| view.run)
-                            .and_then(|id| pollster::block_on(driver.workshop.run_inputs(id)).ok())
-                            .unwrap_or_default();
-                        let authority = crate::alembic_workshop::authority(
-                            &owner,
-                            installation,
-                            human,
-                            &inputs,
-                            crate::denizen::now_ms(),
-                        );
-                        let now = || crate::denizen::now_ms();
-                        pollster::block_on(driver.recover(&authority, &now)).map_err(|error| {
-                            (
-                                "Prior helper state could not be recovered.",
-                                error.to_string(),
-                            )
-                        })
-                    },
-                    Err(error) => Err((
-                        "Could not load the retained helper state.",
-                        error.to_string(),
-                    )),
-                }
-            } else {
-                return;
-            };
-            match recovered {
-                Ok(view) => window.update(|state| state.view = Some(view)),
-                Err((message, error)) => window.status(message, Some(error)),
-            }
         }
         self.request_redraw();
     }
@@ -531,6 +658,25 @@ impl Shell {
         let owner = window.owner.clone();
         let installation = window.installation;
         let human = window.human;
+        if owner.session != self.app.session_id.as_uuid().to_string()
+            || owner.workspace != self.app.graph_runtimes.active_graph().as_uuid().to_string()
+        {
+            window.status(
+                "The current session or graph changed.",
+                Some("Reopen the workshop for the current owner.".into()),
+            );
+            return;
+        }
+        let entries = self.app.saved_sources.entries.clone();
+        let current_admissions = self.app.saved_source_admissions();
+        let protection = self
+            .custody_binding
+            .as_ref()
+            .map(|binding| binding.protection.clone());
+        let Some(protection) = protection else {
+            window.status("Profile custody is unavailable.", None);
+            return;
+        };
         let Some(graph) = self
             .app
             .graph_runtimes
@@ -539,14 +685,23 @@ impl Shell {
         else {
             return;
         };
-        let passages =
-            match crate::alembic_workshop::capture_public_examples(graph, &owner, &selected) {
-                Ok(passages) => passages,
-                Err(error) => {
-                    window.status("Choose two to four retained public examples.", Some(error));
-                    return;
-                },
-            };
+        let passages = match crate::alembic_workshop::capture_selected_sources(
+            graph,
+            &owner,
+            &selected,
+            &entries,
+            &current_admissions,
+            protection.as_ref(),
+        ) {
+            Ok(passages) => passages,
+            Err(error) => {
+                window.status(
+                    "The selected retained sources could not be admitted.",
+                    Some(error),
+                );
+                return;
+            },
+        };
         let authority = crate::alembic_workshop::authority(
             &owner,
             installation,
@@ -555,8 +710,9 @@ impl Shell {
             crate::denizen::now_ms(),
         );
         let now = || crate::denizen::now_ms();
+        let app = &self.app;
         let source_gate = |passage: &alembic::workshop::Passage| {
-            crate::alembic_workshop::passage_current(&self.app, &owner, passage)
+            workshop_passage_current(app, &owner, Some(protection.as_ref()), passage)
         };
         let (started, busy) = if let Some(driver) = window.driver.as_mut() {
             let started =
@@ -569,7 +725,7 @@ impl Shell {
             Ok(view) => window.update(|state| {
                 state.view = Some(view);
                 state.busy = busy;
-                state.status = "Generating from the selected public retained passages.".into();
+                state.status = "Generating from the selected retained passages.".into();
                 state.error = None;
             }),
             Err(error) => window.status(
@@ -615,7 +771,14 @@ impl Shell {
                     crate::denizen::now_ms(),
                 );
                 let gate = |p: &alembic::workshop::Passage| {
-                    crate::alembic_workshop::passage_current(&self.app, &owner, p)
+                    workshop_passage_current(
+                        &self.app,
+                        &owner,
+                        self.custody_binding
+                            .as_ref()
+                            .map(|binding| binding.protection.as_ref()),
+                        p,
+                    )
                 };
                 pollster::block_on(driver.control(control, &authority, &now, &gate))
                     .map(|view| Some((view, driver.busy())))
@@ -722,16 +885,17 @@ impl Shell {
                     return;
                 },
             };
-            let disk_revision = match athanor::workshop_destination::graph_revision(&authoritative_before) {
-                Ok(revision) => revision,
-                Err(error) => {
-                    window.status(
-                        "Saved graph cannot be fingerprinted.",
-                        Some(error.to_string()),
-                    );
-                    return;
-                },
-            };
+            let disk_revision =
+                match athanor::workshop_destination::graph_revision(&authoritative_before) {
+                    Ok(revision) => revision,
+                    Err(error) => {
+                        window.status(
+                            "Saved graph cannot be fingerprinted.",
+                            Some(error.to_string()),
+                        );
+                        return;
+                    },
+                };
             if live_revision != disk_revision {
                 window.status(
                     "The saved graph changed outside this owner.",
@@ -799,7 +963,12 @@ impl Shell {
                     }
                 } else {
                     if proposal.sources.iter().any(|passage| {
-                        !crate::alembic_workshop::passage_current(&self.app, &owner, passage)
+                        !workshop_passage_current(
+                            &self.app,
+                            &owner,
+                            Some(protection.as_ref()),
+                            passage,
+                        )
                     }) {
                         return Err(
                             "A cited public source version changed; review or generate again."
@@ -834,19 +1003,14 @@ impl Shell {
                     }
                     .map_err(|e| e.to_string())?;
                     if let Some(receipt) = existing {
-                        let epoch = protection.epoch().ok_or_else(|| {
-                            "Profile custody is unavailable.".to_string()
-                        })?;
-                        driver
-                            .workshop
-                            .acknowledge(run, receipt.clone())
-                            .await
-                            .map_err(|e| e.to_string())?;
+                        let epoch = protection
+                            .epoch()
+                            .ok_or_else(|| "Profile custody is unavailable.".to_string())?;
                         return Ok((receipt, false, Some(epoch)));
                     }
                 }
                 if proposal.sources.iter().any(|passage| {
-                    !crate::alembic_workshop::passage_current(&self.app, &owner, passage)
+                    !workshop_passage_current(&self.app, &owner, Some(protection.as_ref()), passage)
                 }) {
                     return Err(
                         "A cited public source version changed; the destination was not reapplied."
@@ -897,9 +1061,10 @@ impl Shell {
                         athanor::workshop_destination::GraphPreparation::Existing(receipt) => {
                             (None, receipt, None)
                         },
-                        athanor::workshop_destination::GraphPreparation::New { deltas, receipt } => {
-                            (Some(deltas), receipt, None)
-                        },
+                        athanor::workshop_destination::GraphPreparation::New {
+                            deltas,
+                            receipt,
+                        } => (Some(deltas), receipt, None),
                     }
                 };
                 let (deltas, receipt, epoch) = prepared;
@@ -934,7 +1099,9 @@ impl Shell {
                     .map_err(|e| e.to_string())?;
                 }
                 if epoch.is_some_and(|epoch| protection.epoch() != Some(epoch)) {
-                    return Err("Profile custody changed while preparing the retained brief.".into());
+                    return Err(
+                        "Profile custody changed while preparing the retained brief.".into(),
+                    );
                 }
                 Ok::<_, String>((receipt, should_persist, epoch))
             })
@@ -996,34 +1163,32 @@ impl Shell {
                 return;
             }
         }
-        self.app
-            .graph_runtimes
-            .get_mut(graph_id)
-            .unwrap()
-            .canvas
-            .set_graph(candidate);
-        if let Err(error) = self.app.bind_behavior_journal() {
-            self.app.refuse_behavior(error);
-        }
-        if should_persist
-            && prepared_epoch.is_some_and(|epoch| protection.epoch() != Some(epoch))
-        {
-            window.status(
-                "The graph was saved, but custody changed before acknowledgement.",
-                Some("Reconcile the durable operation after unlocking the same profile.".into()),
-            );
-            return;
-        }
-        let acknowledged = match window.driver.as_mut() {
-            Some(driver) => pollster::block_on(driver.workshop.acknowledge(run, receipt)),
-            None => {
-                window.status(
-                    "The graph was saved; the receipt must be recovered.",
-                    Some("The workshop driver is unavailable.".into()),
-                );
-                return;
+        let acknowledged = install_destination_then_acknowledge(
+            || {
+                self.app
+                    .graph_runtimes
+                    .get_mut(graph_id)
+                    .unwrap()
+                    .canvas
+                    .set_graph(candidate);
+                if let Err(error) = self.app.bind_behavior_journal() {
+                    self.app.refuse_behavior(error);
+                }
             },
-        };
+            || {
+                if should_persist
+                    && prepared_epoch.is_some_and(|epoch| protection.epoch() != Some(epoch))
+                {
+                    return Err("The graph was saved, but custody changed before acknowledgement. Reconcile the durable operation after unlocking the same profile.".to_string());
+                }
+                let driver = window
+                    .driver
+                    .as_mut()
+                    .ok_or_else(|| "The workshop driver is unavailable.".to_string())?;
+                pollster::block_on(driver.workshop.acknowledge(run, receipt.clone()))
+                    .map_err(|error| error.to_string())
+            },
+        );
         match acknowledged {
             Ok(()) => match window
                 .driver
@@ -1077,5 +1242,192 @@ impl Shell {
             native.request_redraw();
         }
         true
+    }
+}
+
+#[cfg(test)]
+mod reconcile_completion_tests {
+    use super::*;
+    use alembic::workshop::{Destination, Review};
+    use athanor::{
+        workshop::{Workshop, evaluate},
+        workshop_destination as destination,
+    };
+    use mere::kernel::graph::{
+        Graph,
+        apply::{GraphDeltaResult, apply_graph_delta},
+    };
+    use muniment::{Backend, MemoryBackend, StoreError, TransactFn, WriteOp};
+    use servitor::{AuthorityProvider, Cap, Mode, Subject};
+    use std::{
+        cell::RefCell,
+        sync::atomic::{AtomicBool, Ordering},
+    };
+
+    #[derive(Clone)]
+    struct LostAckStore {
+        inner: MemoryBackend,
+        fail_after_commit: Arc<AtomicBool>,
+    }
+    #[async_trait::async_trait]
+    impl Backend for LostAckStore {
+        async fn get(&self, key: &str) -> Result<Option<Vec<u8>>, StoreError> {
+            self.inner.get(key).await
+        }
+        async fn put(&self, key: &str, value: &[u8]) -> Result<(), StoreError> {
+            self.inner.put(key, value).await
+        }
+        async fn delete(&self, key: &str) -> Result<(), StoreError> {
+            self.inner.delete(key).await
+        }
+        async fn list(&self, prefix: &str) -> Result<Vec<String>, StoreError> {
+            self.inner.list(prefix).await
+        }
+        async fn scan(&self, start: &str, end: &str) -> Result<Vec<String>, StoreError> {
+            self.inner.scan(start, end).await
+        }
+        async fn apply(&self, ops: &[WriteOp]) -> Result<(), StoreError> {
+            self.inner.apply(ops).await
+        }
+        async fn transact(&self, transaction: TransactFn) -> Result<(), StoreError> {
+            self.inner.transact(transaction).await?;
+            if self.fail_after_commit.swap(false, Ordering::SeqCst) {
+                return Err(StoreError::NotTransactional);
+            }
+            Ok(())
+        }
+    }
+    struct Granted;
+    impl AuthorityProvider for Granted {
+        fn covers(&self, _: Subject, _: &Cap, _: Mode) -> bool {
+            true
+        }
+    }
+
+    #[test]
+    fn reconciled_note_is_live_even_when_helper_ack_commits_then_errors() {
+        pollster::block_on(async {
+            let owner = Owner {
+                host: "turnstone-recovery-test".into(),
+                workspace: uuid::Uuid::new_v4().to_string(),
+                session: uuid::Uuid::new_v4().to_string(),
+            };
+            let mut original = Graph::default();
+            for delta in crate::alembic_workshop::example_seed_deltas(&original) {
+                assert!(!matches!(
+                    apply_graph_delta(&mut original, delta),
+                    GraphDeltaResult::Refused(_)
+                ));
+            }
+            let selected = crate::alembic_workshop::example_choices(&original)
+                .into_iter()
+                .map(|choice| choice.key)
+                .collect::<Vec<_>>();
+            let inputs =
+                crate::alembic_workshop::capture_public_examples(&original, &owner, &selected)
+                    .unwrap();
+            let store = LostAckStore {
+                inner: MemoryBackend::new(),
+                fail_after_commit: Arc::new(AtomicBool::new(false)),
+            };
+            let workshop = Workshop::new(store.clone(), owner.clone(), [3; 16]);
+            workshop.install([1; 32]).await.unwrap();
+            workshop.begin(1, inputs, &Granted, 1).await.unwrap();
+            for step in 0..3 {
+                let dispatch = workshop.dispatch(1, &Granted, 2 + step * 2).await.unwrap();
+                workshop
+                    .observe(evaluate(dispatch).unwrap(), &Granted, 3 + step * 2)
+                    .await
+                    .unwrap();
+            }
+            let proposal = workshop.view(Some(1)).await.unwrap().proposal.unwrap();
+            let acceptance = workshop
+                .accept(
+                    1,
+                    Destination {
+                        owner: owner.clone(),
+                        graph: owner.workspace.clone(),
+                        revision: destination::graph_revision(&original).unwrap(),
+                    },
+                    [2; 32],
+                    &Granted,
+                    10,
+                )
+                .await
+                .unwrap();
+            let destination::GraphPreparation::New { deltas, receipt } =
+                destination::prepare_graph(
+                    &original,
+                    &owner,
+                    &owner.workspace,
+                    &destination::graph_revision(&original).unwrap(),
+                    &acceptance,
+                    &proposal,
+                    [2; 32],
+                    &Granted,
+                    10,
+                    true,
+                )
+                .unwrap()
+            else {
+                panic!("new destination expected")
+            };
+            let mut saved = original.clone();
+            for delta in deltas {
+                assert!(!matches!(
+                    apply_graph_delta(&mut saved, delta),
+                    GraphDeltaResult::Refused(_)
+                ));
+            }
+            // The destination committed but its caller has not installed that
+            // graph or recorded the helper acknowledgement yet.
+            let directory = tempfile::tempdir().unwrap();
+            let path = directory.path().join("graph.json");
+            std::fs::write(&path, serde_json::to_vec(&saved.to_snapshot_at(0)).unwrap()).unwrap();
+            let snapshot = serde_json::from_slice(&std::fs::read(&path).unwrap()).unwrap();
+            let recovered = Graph::try_from_recorded_snapshot(&snapshot).unwrap();
+            assert_eq!(
+                destination::query_graph(
+                    &recovered,
+                    &owner,
+                    &owner.workspace,
+                    &acceptance,
+                    &proposal
+                )
+                .unwrap(),
+                Some(receipt.clone())
+            );
+            let live = RefCell::new(original);
+            store.fail_after_commit.store(true, Ordering::SeqCst);
+            let result = install_destination_then_acknowledge(
+                || {
+                    *live.borrow_mut() = recovered;
+                },
+                || pollster::block_on(workshop.acknowledge(1, receipt.clone())),
+            );
+            assert!(
+                result.is_err(),
+                "fault must occur after the actual journal commit"
+            );
+            assert!(
+                matches!(
+                    workshop.view(Some(1)).await.unwrap().review,
+                    Some(Review::Added { .. })
+                ),
+                "acknowledgement actually committed before its reply failed"
+            );
+            let note = destination::result_surface(&acceptance);
+            assert!(
+                live.borrow().get_node_by_id(note).is_some(),
+                "a proven durable note disappeared from the live owner after a lost helper acknowledgement"
+            );
+            // A fresh journal owner and the cold destination still agree on
+            // the one operation, so retry never requires adding a second note.
+            let reopened = Workshop::new(store, owner.clone(), [3; 16]);
+            assert!(
+                matches!(reopened.view(Some(1)).await.unwrap().review, Some(Review::Added { receipt: held, .. }) if held == receipt)
+            );
+            assert_eq!(live.borrow().node_count(), saved.node_count());
+        });
     }
 }

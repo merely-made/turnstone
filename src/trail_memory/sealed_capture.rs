@@ -499,6 +499,7 @@ pub(super) fn receipts(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::trail_memory::sealed_memory_dir;
     use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 
     struct TestSealer(AtomicBool);

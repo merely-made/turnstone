@@ -522,6 +522,17 @@ impl Shell {
         while let Ok(update) = self.trail_rx.try_recv() {
             // Recall answers (RecallHits / RecallFailed), already app-owned.
             self.service_private_custody();
+            let refresh_workshop_sources = matches!(
+                &update,
+                crate::action::Update::SavedSourcesLoaded {
+                    generation,
+                    request,
+                    session,
+                    ..
+                } if *generation == self.app.source_capture_generation
+                    && *session == self.app.session_id
+                    && self.app.saved_sources.request == Some(*request)
+            );
             let private_success = match &update {
                 crate::action::Update::SavedSourcesLoaded {
                     result: Ok(entries),
@@ -536,6 +547,9 @@ impl Shell {
             };
             let effects = self.app.apply_update(update);
             self.service_private_custody();
+            if refresh_workshop_sources {
+                self.refresh_alembic_workshop_sources();
+            }
             if !private_success || self.app.research.is_available() {
                 self.run_effects(effects);
             }

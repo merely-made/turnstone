@@ -1015,7 +1015,10 @@ mod tests {
             to_resource_id: concept.to_string(),
             edges: Vec::new(),
         };
-        apply_graph_delta(&mut graph, delta.replay_delta().unwrap());
+        let mere::kernel::graph::capture::Replay::Apply(replay) = delta.replay() else {
+            panic!("resource pair replay record must produce a graph delta");
+        };
+        apply_graph_delta(&mut graph, replay);
         assert!(
             graph
                 .resource_edges()
@@ -1050,7 +1053,10 @@ mod tests {
             surface_id: a_id.to_string(),
             resource_id: None,
         };
-        apply_graph_delta(&mut graph, detach.replay_delta().unwrap());
+        let mere::kernel::graph::capture::Replay::Apply(replay) = detach.replay() else {
+            panic!("detach replay record must produce a graph delta");
+        };
+        apply_graph_delta(&mut graph, replay);
         assert_eq!(
             touched_surface_ids(&graph, &record),
             surface_names(&graph, &[b]),

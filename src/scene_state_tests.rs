@@ -80,7 +80,7 @@ fn reopen(source: &mut Canvas, container: Uuid) -> Canvas {
     assert!(pandect::node_facets_path(dir.path()).is_file());
     let loaded = pandect::load_node_facets(dir.path()).unwrap().unwrap();
     let mut reopened = fresh_canvas(source);
-    reopened.overlay_facets(loaded);
+    reopened.overlay_facets(loaded).unwrap();
     let scene = scene_state::read_scene(reopened.facets(), container)
         .expect("the scene is on the container")
         .expect("and reads");

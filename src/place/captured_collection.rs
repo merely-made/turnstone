@@ -481,7 +481,7 @@ mod tests {
 
         // The shell's initial SetCustody snapshot succeeds, then lock occurs
         // before the actor installs its library admission.
-        assert_eq!(custody.epoch(), Some(7));
+        assert_eq!((custody.epoch)(), Some(7));
         source_epoch.store(0, Ordering::SeqCst);
         library.retire_custody();
         assert!(!library.bind_custody(&custody));
