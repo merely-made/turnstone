@@ -33,6 +33,8 @@ use sceno::SourceRef;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+use crate::access::ACCESS_HISTORY_FACET;
+use crate::local_locations;
 use crate::mere_host::{MereHost, MereHostError};
 use scenomise::projection::ProjectionSnapshot;
 
@@ -630,7 +632,10 @@ impl<B: Backend> MereHost<B> {
         if members.is_empty() {
             return Err(ProductError::EmptySelection);
         }
-        let graph = filtered_snapshot(self.graph(), &members, request.exported_at_ms);
+        let mut graph = filtered_snapshot(self.graph(), &members, request.exported_at_ms);
+        if !request.include_local_file_locations {
+            local_locations::withhold_snapshot_locations(&mut graph);
+        }
         let facets = filtered_facets(
             self.graph().facets(),
             &members,
@@ -1039,11 +1044,20 @@ fn filtered_facets(
             continue;
         }
         for (facet, value) in node_facets.iter() {
-            if !include_local_file_locations && facet.as_str() == LOCAL_FILE_FACET {
-                continue;
+            let mut value = value.clone();
+            if !include_local_file_locations {
+                if facet.as_str() == LOCAL_FILE_FACET {
+                    continue;
+                }
+                if facet.as_str() == ACCESS_HISTORY_FACET {
+                    match local_locations::withhold_access_history(&value) {
+                        Some(kept) => value = kept,
+                        None => continue,
+                    }
+                }
             }
             facets
-                .set(node.to_owned(), facet.clone(), value.clone(), &AcceptAll)
+                .set(node.to_owned(), facet.clone(), value, &AcceptAll)
                 .expect("AcceptAll cannot reject an exported facet");
         }
     }
@@ -1317,6 +1331,166 @@ mod tests {
                 "{summary}"
             );
         });
+    }
+
+    #[test]
+    fn exporting_without_local_file_locations_strips_a_file_address_from_the_node_its_url_and_its_access_history()
+     {
+        use crate::access::{
+            AccessAction, AccessHistory, AccessObservation, AccessTransition, record_observation,
+        };
+        const LOCAL: &str = "file:///Users/mark/private/notes.md";
+        const FOLDER: &str = "file:///Users/mark/private/";
+        const WEB: &str = "https://example.test/page";
+        const OTHER: &str = "https://example.test/other";
+        let context = || AccessContext {
+            persona: FIXTURE_PERSONA_ADDRESS.to_string(),
+            device: FIXTURE_DEVICE_TWO_ADDRESS.to_string(),
+            at_ms: 100,
+        };
+        let mut host = MereHost::empty(
+            MemoryBackend::new(),
+            selected_persona(),
+            fixture_handlers(),
+            context(),
+        );
+        let file = host.create_address(LOCAL, "Notes").unwrap();
+        let folder = host.create_address(FOLDER, "Private").unwrap();
+        let page = host.create_address(WEB, "Page").unwrap();
+        host.assert_product_relation(page, file, EditableRelation::Cites)
+            .unwrap();
+        let file_key = host.graph().get_node_key_by_id(file).unwrap();
+        let page_key = host.graph().get_node_key_by_id(page).unwrap();
+        host.set_facet(
+            file_key,
+            LOCAL_FILE_FACET,
+            serde_json::json!({ "name": "notes.md" }),
+        )
+        .unwrap();
+        let observation = |record: u128, referrer: Option<(Uuid, &str)>| AccessObservation {
+            record_id: Uuid::from_u128(record),
+            action: AccessAction::Open,
+            persona: FIXTURE_PERSONA_ADDRESS.to_string(),
+            device: FIXTURE_DEVICE_TWO_ADDRESS.to_string(),
+            application: "graphshell".to_string(),
+            handler: "system.default".to_string(),
+            at_ms: record as u64,
+            dwell_ms: None,
+            referring_container_id: referrer.map(|(id, _)| id),
+            referring_address: referrer.map(|(_, address)| address.to_string()),
+            transition: AccessTransition::LinkClick,
+            capture_source: "graphshell.test".to_string(),
+            source_event_id: None,
+            privacy: eidetic::PrivacyClass::LocalOnly,
+        };
+        for (key, record) in [
+            (file_key, observation(1, None)),
+            (page_key, observation(2, Some((file, LOCAL)))),
+            (page_key, observation(3, Some((page, OTHER)))),
+        ] {
+            host.mutate_product_graph(|graph| record_observation(graph, key, &record))
+                .unwrap()
+                .unwrap();
+        }
+        let export = |include_local_file_locations| {
+            let bytes = host
+                .export_product_codicil(ExportRequest {
+                    focused: file,
+                    selected: vec![file, folder, page],
+                    scope: TransferScope::SelectedSubgraph,
+                    exported_at_ms: 1_700_000_000_000,
+                    include_local_file_locations,
+                    scene: None,
+                })
+                .unwrap();
+            let json = String::from_utf8(bytes.clone()).unwrap();
+            (json, decode_codicil(&bytes).unwrap())
+        };
+        let node = |codicil: &ProductCodicilV3, id: Uuid| {
+            let id = id.to_string();
+            codicil
+                .graph
+                .nodes
+                .iter()
+                .find(|node| node.node_id == id)
+                .cloned()
+                .unwrap()
+        };
+        let history = |codicil: &ProductCodicilV3, id: Uuid| {
+            codicil
+                .facets
+                .get(&id, &chartulary::FacetId::new(ACCESS_HISTORY_FACET))
+                .map(|value| {
+                    serde_json::from_value::<AccessHistory>(value.clone())
+                        .unwrap()
+                        .records
+                })
+        };
+        let local_facet = |codicil: &ProductCodicilV3| {
+            codicil
+                .facets
+                .get(&file, &chartulary::FacetId::new(LOCAL_FILE_FACET))
+                .is_some()
+        };
+
+        let (json, unchecked) = export(false);
+        assert!(!json.contains("file://"), "a file location survived");
+        for (id, title) in [(file, "Notes"), (folder, "Private")] {
+            let stripped = node(&unchecked, id);
+            assert_eq!(stripped.address.as_url_str(), "");
+            assert_eq!(stripped.url, "");
+            assert_eq!(stripped.title, title, "the node keeps its identity");
+        }
+        assert!(
+            unchecked.graph.resource_edges.is_empty(),
+            "a relation through a withheld resource goes with it"
+        );
+        assert_eq!(node(&unchecked, page).url, WEB);
+        assert!(!local_facet(&unchecked));
+        assert!(
+            history(&unchecked, file).is_none(),
+            "its only record was of the file"
+        );
+        let kept = history(&unchecked, page).unwrap();
+        assert_eq!(
+            kept.iter()
+                .map(|record| (record.record_id, record.referring_address.as_deref()))
+                .collect::<Vec<_>>(),
+            [
+                (Uuid::from_u128(2), None),
+                (Uuid::from_u128(3), Some(OTHER))
+            ]
+        );
+        assert_eq!(kept[0].referring_container_id, Some(file));
+        let mut elsewhere = MereHost::empty(
+            MemoryBackend::new(),
+            selected_persona(),
+            fixture_handlers(),
+            context(),
+        );
+        elsewhere
+            .import_product_codicil(json.as_bytes())
+            .expect("a codicil without the file location imports");
+        assert_eq!(elsewhere.graph().node_count(), 3);
+        assert_eq!(elsewhere.graph().get_node_by_id(file).unwrap().1.url(), "");
+
+        let (json, checked) = export(true);
+        assert!(json.contains(LOCAL));
+        let held = node(&checked, file);
+        assert_eq!(
+            (held.address.as_url_str(), held.url.as_str()),
+            (LOCAL, LOCAL)
+        );
+        assert_eq!(node(&checked, folder).url, FOLDER);
+        assert_eq!(checked.graph.resource_edges.len(), 1);
+        assert!(local_facet(&checked));
+        assert_eq!(history(&checked, file).unwrap().len(), 1);
+        assert_eq!(
+            history(&checked, page).unwrap()[0]
+                .referring_address
+                .as_deref(),
+            Some(LOCAL)
+        );
     }
 
     #[test]
