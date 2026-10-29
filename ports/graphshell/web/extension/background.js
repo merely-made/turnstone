@@ -56,15 +56,22 @@ async function storedCaptureState() {
       stored[VISIT_MAP_KEY] && typeof stored[VISIT_MAP_KEY] === "object"
         ? stored[VISIT_MAP_KEY]
         : {},
-    coverage: stored[COVERAGE_KEY] ?? { omitted_queue: 0, candidate_limit_reached: false },
+    coverage: stored[COVERAGE_KEY]
+      ?? { omitted_queue: 0, refused_conflicts: 0, candidate_limit_reached: false },
     liveFrom: stored[LIVE_FROM_KEY] ?? null,
   };
 }
 
+// The one writer order for the policy, queue, visit map, coverage and
+// live-from: every write to them runs here, after reading the state it changes.
 function serializedQueueMutation(operation) {
   const next = queueMutation.then(operation, operation);
   queueMutation = next.catch(() => {});
   return next;
+}
+
+function withRefused(coverage, refused) {
+  return { ...coverage, refused_conflicts: (coverage.refused_conflicts ?? 0) + refused.length };
 }
 
 async function queueVisits(rawVisits) {
@@ -76,11 +83,12 @@ async function queueVisits(rawVisits) {
     const visits = rawVisits
       .map((visit) => model.sanitizeVisit(visit, state.policy))
       .filter(Boolean);
-    const queue = model.mergeQueue(state.queue, visits);
-    const identities = new Set([...state.queue, ...visits].map(model.queueKey));
+    const { queue, refused } = model.mergeQueue(state.queue, visits);
+    const admitted = visits.filter((visit) => !refused.includes(visit));
+    const identities = new Set([...state.queue, ...admitted].map(model.queueKey));
     const omitted = Math.max(0, identities.size - queue.length);
     const visitMap = { ...state.visitMap };
-    for (const visit of visits) {
+    for (const visit of admitted) {
       if (visit.visit_id) {
         visitMap[visit.visit_id] = { url: visit.url, at_ms: visit.at_ms };
       }
@@ -93,9 +101,12 @@ async function queueVisits(rawVisits) {
     await extensionApi.storage.local.set({
       [QUEUE_KEY]: queue,
       [VISIT_MAP_KEY]: retainedVisitMap,
-      [COVERAGE_KEY]: { ...state.coverage, omitted_queue: state.coverage.omitted_queue + omitted },
+      [COVERAGE_KEY]: {
+        ...withRefused(state.coverage, refused),
+        omitted_queue: state.coverage.omitted_queue + omitted,
+      },
     });
-    return visits.length;
+    return admitted.length;
   });
 }
 
@@ -194,6 +205,29 @@ async function importHistory(days, range = {}) {
   });
 }
 
+function configureCapture(requested) {
+  return serializedQueueMutation(async () => {
+    const policy = model.normalizePolicy(requested);
+    const state = await storedCaptureState();
+    const retained = state.queue
+      .map((visit) => model.sanitizeVisit(visit, { ...policy, enabled: true }))
+      .filter(Boolean);
+    const { queue, refused } = model.mergeQueue([], retained);
+    const visitMap = Object.fromEntries(Object.entries(state.visitMap).flatMap(([id, value]) => {
+      const accepted = model.sanitizeVisit({ ...value, private: false }, { ...policy, enabled: true });
+      return accepted ? [[id, { url: accepted.url, at_ms: value.at_ms }]] : [];
+    }));
+    await extensionApi.storage.local.set({
+      [POLICY_KEY]: policy,
+      [LIVE_FROM_KEY]: policy.enabled ? (state.policy.enabled ? state.liveFrom ?? Date.now() : Date.now()) : null,
+      [QUEUE_KEY]: queue,
+      [VISIT_MAP_KEY]: visitMap,
+      ...(refused.length ? { [COVERAGE_KEY]: withRefused(state.coverage, refused) } : {}),
+    });
+    return { policy };
+  });
+}
+
 async function handleMessage(message) {
   if (message?.type === "capture.status") {
     const state = await storedCaptureState();
@@ -208,27 +242,7 @@ async function handleMessage(message) {
     };
   }
   if (message?.type === "capture.configure") {
-    const policy = model.normalizePolicy(message.policy);
-    const state = await storedCaptureState();
-    const queue = state.queue
-      .map((visit) =>
-        model.sanitizeVisit(visit, {
-          ...policy,
-          enabled: true,
-        }),
-      )
-      .filter(Boolean);
-    const visitMap = Object.fromEntries(Object.entries(state.visitMap).flatMap(([id, value]) => {
-      const accepted = model.sanitizeVisit({ ...value, private: false }, { ...policy, enabled: true });
-      return accepted ? [[id, { url: accepted.url, at_ms: value.at_ms }]] : [];
-    }));
-    await extensionApi.storage.local.set({
-      [POLICY_KEY]: policy,
-      [LIVE_FROM_KEY]: policy.enabled ? (state.policy.enabled ? state.liveFrom ?? Date.now() : Date.now()) : null,
-      [QUEUE_KEY]: model.mergeQueue([], queue),
-      [VISIT_MAP_KEY]: visitMap,
-    });
-    return { policy };
+    return configureCapture(message.policy);
   }
   if (message?.type === "capture.import") {
     return await importHistory(Number(message.days) || 1, message);
@@ -288,11 +302,8 @@ extensionApi.permissions.onRemoved.addListener((removed) => {
   if (!removed.permissions?.includes("history")) {
     return;
   }
-  storedCaptureState()
-    .then((state) =>
-      extensionApi.storage.local.set({
-        [POLICY_KEY]: { ...state.policy, enabled: false },
-      }),
-    )
-    .catch((error) => console.error("Graphshell permission removal", error));
+  serializedQueueMutation(async () => {
+    const state = await storedCaptureState();
+    await extensionApi.storage.local.set({ [POLICY_KEY]: { ...state.policy, enabled: false } });
+  }).catch((error) => console.error("Graphshell permission removal", error));
 });

@@ -26,6 +26,7 @@ use eidetic::{NoFetcher, PrivacyClass, list_typed, load_typed, manifest::delete_
 use mere::kernel::graph::apply::{GraphDelta, apply_graph_delta};
 use mere::kernel::graph::{EdgeFamily, NavigationTrigger, RelationKind, RelationSelector};
 use muniment::{Backend, StoreError, WriteOp};
+use pandect::graph_session::{CommitExtra, LegacyTransactionBackend};
 use serde::{Deserialize, Serialize};
 use url::Url;
 use uuid::Uuid;
@@ -45,15 +46,10 @@ fn default_encounter_limit() -> usize {
     100_000
 }
 
-#[cfg(not(target_arch = "wasm32"))]
-pub trait CaptureBackend: Backend + Sync {}
-#[cfg(not(target_arch = "wasm32"))]
-impl<T: Backend + Sync> CaptureBackend for T {}
-
-#[cfg(target_arch = "wasm32")]
-pub trait CaptureBackend: Backend {}
-#[cfg(target_arch = "wasm32")]
-impl<T: Backend> CaptureBackend for T {}
+/// What one capture needs of its store: a backend that transacts, so a
+/// delivery lands in one atomic commit with the host's graph.
+pub trait CaptureBackend: LegacyTransactionBackend + Clone {}
+impl<T: LegacyTransactionBackend + Clone> CaptureBackend for T {}
 
 /// Buffered writes for one capture transaction, plus where each key's most
 /// recent write sits in them.
@@ -79,10 +75,15 @@ impl StagedWrites {
     }
 }
 
-/// Read-through, write-buffer backend for one capture transaction.
+/// Read-through, write-buffer store for one capture transaction. It is only
+/// the `Backend` that eidetic's helpers read and write through: the buffered
+/// writes and what was read from `base` go to the host's commit
+/// ([`into_extra`](Self::into_extra)), which is the only thing that writes.
 struct CaptureBatch<'a, B> {
     base: &'a B,
     staged: Mutex<StagedWrites>,
+    /// The first base read of each key: what a write to it was decided against.
+    read: Mutex<HashMap<String, Option<Vec<u8>>>>,
 }
 
 impl<'a, B: Backend> CaptureBatch<'a, B> {
@@ -90,15 +91,27 @@ impl<'a, B: Backend> CaptureBatch<'a, B> {
         Self {
             base,
             staged: Mutex::new(StagedWrites::default()),
+            read: Mutex::new(HashMap::new()),
         }
     }
 
-    /// Drain the buffer into the base backend. One transaction commits once
-    /// and both callers drop the batch afterwards, so taking the buffer under
-    /// the lock is cheaper than copying it and leaves no stale overlay behind.
-    async fn commit(&self) -> Result<(), StoreError> {
-        let staged = std::mem::take(&mut *self.staged.lock().unwrap());
-        self.base.apply(&staged.ops).await
+    /// The buffered writes, with the bytes read of every key they write (and
+    /// `held`, a key read outside the batch), for the commit to recheck.
+    fn into_extra(self, held: (String, Option<Vec<u8>>)) -> CommitExtra {
+        let staged = self.staged.into_inner().unwrap();
+        let read = self.read.into_inner().unwrap();
+        let mut expect = vec![held];
+        expect.extend(
+            staged
+                .latest
+                .keys()
+                .filter_map(|key| Some((key.clone(), read.get(key)?.clone()))),
+        );
+        CommitExtra {
+            ops: staged.ops,
+            expect,
+            decide: None,
+        }
     }
 
     fn overlay(&self, key: &str) -> Option<Option<Vec<u8>>> {
@@ -138,10 +151,16 @@ impl<'a, B: Backend> CaptureBatch<'a, B> {
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 impl<'a, B: CaptureBackend> Backend for CaptureBatch<'a, B> {
     async fn get(&self, key: &str) -> Result<Option<Vec<u8>>, StoreError> {
-        match self.overlay(key) {
-            Some(value) => Ok(value),
-            None => self.base.get(key).await,
+        if let Some(value) = self.overlay(key) {
+            return Ok(value);
         }
+        let value = self.base.get(key).await?;
+        self.read
+            .lock()
+            .unwrap()
+            .entry(key.to_string())
+            .or_insert_with(|| value.clone());
+        Ok(value)
     }
 
     async fn put(&self, key: &str, bytes: &[u8]) -> Result<(), StoreError> {
@@ -475,13 +494,23 @@ pub async fn browser_encounters<B: Backend>(
     host: &MereHost<B>,
     store: &B,
 ) -> Result<BrowserEncounterLedger, CaptureError> {
+    read_ledger(host, store).await.map(|(ledger, _)| ledger)
+}
+
+/// The ledger with the bytes it was read from (`None`: none stored yet), which
+/// the commit that replaces it rechecks.
+async fn read_ledger<B: Backend>(
+    host: &MereHost<B>,
+    store: &B,
+) -> Result<(BrowserEncounterLedger, Option<Vec<u8>>), CaptureError> {
     let bytes = store
         .get(&encounter_key(host))
         .await
         .map_err(|error| CaptureError::Store(error.to_string()))?;
     let ledger: BrowserEncounterLedger = bytes
+        .as_deref()
         .map(|bytes| {
-            serde_json::from_slice(&bytes)
+            serde_json::from_slice(bytes)
                 .map_err(|error| CaptureError::InvalidFacet(error.to_string()))
         })
         .transpose()?
@@ -489,7 +518,7 @@ pub async fn browser_encounters<B: Backend>(
     ledger
         .validate()
         .map_err(|error| CaptureError::InvalidFacet(error.into()))?;
-    Ok(ledger)
+    Ok((ledger, bytes))
 }
 
 fn source_key(source: &str, scope: Option<&BrowserSourceScope>) -> String {
@@ -625,6 +654,12 @@ impl BrowserHistoryCapture {
     /// Project one service-worker delivery as one durable batch. Every
     /// accepted event is flushed before return, so worker suspension cannot
     /// strand an in-memory partial segment.
+    ///
+    /// The graph edits are made on a detached candidate of the host's session
+    /// and land with the ledger, access records and browsing traces in one
+    /// backend transaction, rechecked against what the delivery read. A
+    /// refusal leaves the host, the store and this capture's memory as they
+    /// were.
     pub async fn ingest_batch<B: CaptureBackend>(
         &mut self,
         host: &mut MereHost<B>,
@@ -635,147 +670,32 @@ impl BrowserHistoryCapture {
         saved_at_secs: u64,
     ) -> Result<Vec<CaptureOutcome>, CaptureError> {
         let memory_before = self.memory.clone();
-        let mut ledger = browser_encounters(host, store).await?;
+        let (mut ledger, ledger_read) = read_ledger(host, store).await?;
+        let (candidate, projection) = host.edit_candidate(|host| {
+            self.project_visits(host, &mut ledger, visits, persona, device, saved_at_secs)
+        })?;
+        let Projection {
+            outcomes,
+            seen,
+            last,
+            records,
+            traversals,
+        } = projection;
         let mut batch = CaptureBatch::new(&*store);
-        let staged = async {
-            let mut outcomes = Vec::new();
-            let mut pending_seen = HashSet::new();
-            let mut pending_last = self.last_accepted.clone();
-            let mut scoped_outcomes = Vec::new();
-            for visit in visits {
-                let normalized =
-                    match self.normalize_against(visit, &pending_seen, pending_last.as_ref()) {
-                        Ok(visit) => visit,
-                        Err(reason) => {
-                            outcomes.push(CaptureOutcome::Dropped(reason));
-                            continue;
-                        },
-                    };
-                if let (Some(scope), Some(visit_id)) =
-                    (&normalized.source_scope, &normalized.visit_id)
-                {
-                    let encounter = BrowserEncounter {
-                        identity: BrowserEncounterRef {
-                            scope: scope.clone(),
-                            visit_id: visit_id.clone(),
-                        },
-                        parent: normalized.parent.clone(),
-                        url: normalized.url.clone(),
-                        title: normalized.title.clone(),
-                        raw_transition: normalized.raw_transition.clone(),
-                        at_ms: normalized.at_ms,
-                        original_unix_micros: normalized.original_unix_micros,
-                        source_is_local: normalized.source_is_local,
-                        persona: persona.to_string(),
-                        acquisition_device: device.to_string(),
-                        intake_at_ms: saved_at_secs.saturating_mul(1_000),
-                    };
-                    let identity = encounter.identity.clone();
-                    let received = ledger
-                        .receive(encounter, self.policy.encounter_limit)
-                        .map_err(|error| CaptureError::InvalidFacet(error.to_string()))?;
-                    if !received {
-                        outcomes.push(CaptureOutcome::Dropped(CaptureDropReason::Duplicate));
-                        continue;
-                    }
-                    scoped_outcomes.push((identity.clone(), outcomes.len()));
-                    outcomes.push(CaptureOutcome::Buffered { identity });
-                    continue;
-                }
-                let projected = host.project_browser_visit(&normalized, persona, device, None)?;
-                save_access_record(&mut batch, &projected.record)
+        let key = encounter_key(host);
+        let landed = async {
+            for record in &records {
+                save_access_record(&mut batch, record)
                     .await
                     .map_err(|error| CaptureError::Store(error.to_string()))?;
-                self.memory.record_traversal(
-                    persona,
-                    TraceEvent {
-                        from: normalized.referrer_url.as_ref().map(|url| PageRef {
-                            url: url.clone(),
-                            title: None,
-                        }),
-                        to: PageRef {
-                            url: normalized.url.clone(),
-                            title: normalized.title.clone(),
-                        },
-                        transition: normalized.trace(),
-                        at_ms: normalized.at_ms,
-                        dwell_ms: None,
-                        candidates: Vec::new(),
-                    },
-                );
-                if let Some(visit_id) = &normalized.visit_id {
-                    pending_seen.insert((normalized.source.clone(), visit_id.clone()));
-                }
-                pending_last = Some((normalized.url.clone(), normalized.at_ms));
-                outcomes.push(CaptureOutcome::Accepted {
-                    node: projected.node,
-                });
             }
-            for encounter in ledger.resolve() {
-                let parent = match &encounter.parent {
-                    BrowserParent::Visit { visit_id }
-                    | BrowserParent::OutsideRange { visit_id } => {
-                        ledger.encounter(&BrowserEncounterRef {
-                            scope: encounter.identity.scope.clone(),
-                            visit_id: visit_id.clone(),
-                        })
-                    },
-                    _ => None,
-                };
-                let normalized = NormalizedVisit::from_encounter(&encounter, parent);
-                let relation = parent.map(|parent| BrowserDocumentRelation {
-                    kind: match normalized.transition {
-                        CaptureTransition::LinkClick => BrowserRelationKind::FollowedLink,
-                        CaptureTransition::Redirect => BrowserRelationKind::Redirect,
-                        CaptureTransition::Reload => BrowserRelationKind::Reload,
-                        _ => BrowserRelationKind::BrowserReferrer,
-                    },
-                    parent: parent.identity.clone(),
-                    child: encounter.identity.clone(),
-                    from_url: parent.url.clone(),
-                    to_url: encounter.url.clone(),
-                    raw_transition: encounter.raw_transition.clone(),
-                    at_ms: encounter.at_ms,
-                });
-                let projected = host.project_browser_visit(
-                    &normalized,
-                    &encounter.persona,
-                    &encounter.acquisition_device,
-                    relation.as_ref(),
-                )?;
-                if let Some((_, index)) = scoped_outcomes
-                    .iter()
-                    .find(|(id, _)| *id == encounter.identity)
-                {
-                    outcomes[*index] = CaptureOutcome::Accepted {
-                        node: projected.node,
-                    };
-                }
-                save_access_record(&mut batch, &projected.record)
-                    .await
-                    .map_err(|error| CaptureError::Store(error.to_string()))?;
-                self.memory.record_traversal(
-                    &encounter.persona,
-                    TraceEvent {
-                        from: normalized
-                            .referrer_url
-                            .clone()
-                            .map(|url| PageRef { url, title: None }),
-                        to: PageRef {
-                            url: encounter.url,
-                            title: encounter.title,
-                        },
-                        transition: normalized.trace(),
-                        at_ms: encounter.at_ms,
-                        dwell_ms: None,
-                        candidates: Vec::new(),
-                    },
-                );
+            for (owner, event) in traversals {
+                self.memory.record_traversal(&owner, event);
             }
             let ledger_bytes = serde_json::to_vec(&ledger)
                 .map_err(|error| CaptureError::InvalidFacet(error.to_string()))?;
             batch
-                .put(&encounter_key(host), &ledger_bytes)
+                .put(&key, &ledger_bytes)
                 .await
                 .map_err(|error| CaptureError::Store(error.to_string()))?;
             self.memory
@@ -786,27 +706,177 @@ impl BrowserHistoryCapture {
                 .apply_quota(&mut batch, self.policy.retention_traces)
                 .await
                 .map_err(|error| CaptureError::Store(error.to_string()))?;
-            let written = host.stage(&batch, saved_at_secs).await?;
-            Ok::<_, CaptureError>((outcomes, pending_seen, pending_last, written))
+            let extra = batch.into_extra((key, ledger_read));
+            host.commit_candidate(candidate, saved_at_secs, extra)
+                .await
+                .map_err(CaptureError::from)
         }
         .await;
-        let (outcomes, pending_seen, pending_last, written) = match staged {
-            Ok(staged) => staged,
-            Err(error) => {
-                self.memory = memory_before;
-                return Err(error);
-            },
-        };
-        if let Err(error) = batch.commit().await {
+        if let Err(error) = landed {
             self.memory = memory_before;
-            return Err(CaptureError::Store(error.to_string()));
+            return Err(error);
         }
-        host.staged(written);
-        self.seen_visit_ids.extend(pending_seen);
-        self.last_accepted = pending_last;
+        self.seen_visit_ids.extend(seen);
+        self.last_accepted = last;
         Ok(outcomes)
     }
 
+    /// Project `visits` onto `host`, which is a candidate of the live host:
+    /// the graph edits and what each visit must write, without writing any of
+    /// it.
+    fn project_visits<B: Backend>(
+        &self,
+        host: &mut MereHost<B>,
+        ledger: &mut BrowserEncounterLedger,
+        visits: impl IntoIterator<Item = BrowserVisit>,
+        persona: &str,
+        device: &str,
+        saved_at_secs: u64,
+    ) -> Result<Projection, CaptureError> {
+        let mut projection = Projection {
+            outcomes: Vec::new(),
+            seen: HashSet::new(),
+            last: self.last_accepted.clone(),
+            records: Vec::new(),
+            traversals: Vec::new(),
+        };
+        let mut scoped_outcomes = Vec::new();
+        for visit in visits {
+            let normalized =
+                match self.normalize_against(visit, &projection.seen, projection.last.as_ref()) {
+                    Ok(visit) => visit,
+                    Err(reason) => {
+                        projection.outcomes.push(CaptureOutcome::Dropped(reason));
+                        continue;
+                    },
+                };
+            if let (Some(scope), Some(visit_id)) = (&normalized.source_scope, &normalized.visit_id)
+            {
+                let encounter = BrowserEncounter {
+                    identity: BrowserEncounterRef {
+                        scope: scope.clone(),
+                        visit_id: visit_id.clone(),
+                    },
+                    parent: normalized.parent.clone(),
+                    url: normalized.url.clone(),
+                    title: normalized.title.clone(),
+                    raw_transition: normalized.raw_transition.clone(),
+                    at_ms: normalized.at_ms,
+                    original_unix_micros: normalized.original_unix_micros,
+                    source_is_local: normalized.source_is_local,
+                    persona: persona.to_string(),
+                    acquisition_device: device.to_string(),
+                    intake_at_ms: saved_at_secs.saturating_mul(1_000),
+                };
+                let identity = encounter.identity.clone();
+                let received = ledger
+                    .receive(encounter, self.policy.encounter_limit)
+                    .map_err(|error| CaptureError::InvalidFacet(error.to_string()))?;
+                if !received {
+                    projection
+                        .outcomes
+                        .push(CaptureOutcome::Dropped(CaptureDropReason::Duplicate));
+                    continue;
+                }
+                scoped_outcomes.push((identity.clone(), projection.outcomes.len()));
+                projection
+                    .outcomes
+                    .push(CaptureOutcome::Buffered { identity });
+                continue;
+            }
+            let projected = host.project_browser_visit(&normalized, persona, device, None)?;
+            projection.records.push(projected.record);
+            projection.traversals.push((
+                persona.to_string(),
+                TraceEvent {
+                    from: normalized.referrer_url.as_ref().map(|url| PageRef {
+                        url: url.clone(),
+                        title: None,
+                    }),
+                    to: PageRef {
+                        url: normalized.url.clone(),
+                        title: normalized.title.clone(),
+                    },
+                    transition: normalized.trace(),
+                    at_ms: normalized.at_ms,
+                    dwell_ms: None,
+                    candidates: Vec::new(),
+                },
+            ));
+            if let Some(visit_id) = &normalized.visit_id {
+                projection
+                    .seen
+                    .insert((normalized.source.clone(), visit_id.clone()));
+            }
+            projection.last = Some((normalized.url.clone(), normalized.at_ms));
+            projection.outcomes.push(CaptureOutcome::Accepted {
+                node: projected.node,
+            });
+        }
+        for encounter in ledger.resolve() {
+            let parent = match &encounter.parent {
+                BrowserParent::Visit { visit_id } | BrowserParent::OutsideRange { visit_id } => {
+                    ledger.encounter(&BrowserEncounterRef {
+                        scope: encounter.identity.scope.clone(),
+                        visit_id: visit_id.clone(),
+                    })
+                },
+                _ => None,
+            };
+            let normalized = NormalizedVisit::from_encounter(&encounter, parent);
+            let relation = parent.map(|parent| BrowserDocumentRelation {
+                kind: match normalized.transition {
+                    CaptureTransition::LinkClick => BrowserRelationKind::FollowedLink,
+                    CaptureTransition::Redirect => BrowserRelationKind::Redirect,
+                    CaptureTransition::Reload => BrowserRelationKind::Reload,
+                    _ => BrowserRelationKind::BrowserReferrer,
+                },
+                parent: parent.identity.clone(),
+                child: encounter.identity.clone(),
+                from_url: parent.url.clone(),
+                to_url: encounter.url.clone(),
+                raw_transition: encounter.raw_transition.clone(),
+                at_ms: encounter.at_ms,
+            });
+            let projected = host.project_browser_visit(
+                &normalized,
+                &encounter.persona,
+                &encounter.acquisition_device,
+                relation.as_ref(),
+            )?;
+            if let Some((_, index)) = scoped_outcomes
+                .iter()
+                .find(|(id, _)| *id == encounter.identity)
+            {
+                projection.outcomes[*index] = CaptureOutcome::Accepted {
+                    node: projected.node,
+                };
+            }
+            projection.records.push(projected.record);
+            projection.traversals.push((
+                encounter.persona,
+                TraceEvent {
+                    from: normalized
+                        .referrer_url
+                        .clone()
+                        .map(|url| PageRef { url, title: None }),
+                    to: PageRef {
+                        url: encounter.url,
+                        title: encounter.title,
+                    },
+                    transition: normalized.trace(),
+                    at_ms: encounter.at_ms,
+                    dwell_ms: None,
+                    candidates: Vec::new(),
+                },
+            ));
+        }
+        Ok(projection)
+    }
+
+    /// Forget `url`: the graph edits are made on a detached candidate and
+    /// land with the deleted manifests, trace deletions and ledger in one
+    /// transaction, so a refusal forgets nothing anywhere.
     pub async fn forget_url<B: CaptureBackend>(
         &mut self,
         host: &mut MereHost<B>,
@@ -822,10 +892,15 @@ impl BrowserHistoryCapture {
         let canonical =
             canonical_url(url, &forget_policy).map_err(CaptureError::RejectedAddress)?;
         let memory_before = self.memory.clone();
-        let mut ledger = browser_encounters(host, store).await?;
+        let (mut ledger, ledger_read) = read_ledger(host, store).await?;
         ledger.forget_url(&canonical);
+        let (candidate, ()) = host.edit_candidate(|host| {
+            host.forget_browser_history(&canonical, mode)?;
+            host.forget_related_browser_evidence(&canonical)
+        })?;
         let mut batch = CaptureBatch::new(&*store);
-        let staged = async {
+        let key = encounter_key(host);
+        let landed = async {
             let forgotten = self
                 .memory
                 .forget_url(&mut batch, &canonical)
@@ -856,32 +931,27 @@ impl BrowserHistoryCapture {
                     .await
                     .map_err(|error| CaptureError::Store(error.to_string()))?;
             }
-            host.forget_browser_history(&canonical, mode)?;
-            host.forget_related_browser_evidence(&canonical)?;
             batch
                 .put(
-                    &encounter_key(host),
+                    &key,
                     &serde_json::to_vec(&ledger)
                         .map_err(|error| CaptureError::InvalidFacet(error.to_string()))?,
                 )
                 .await
                 .map_err(|error| CaptureError::Store(error.to_string()))?;
-            let written = host.stage(&batch, saved_at_secs).await?;
-            Ok::<_, CaptureError>((forgotten, forgotten_source_events, written))
+            let extra = batch.into_extra((key, ledger_read));
+            host.commit_candidate(candidate, saved_at_secs, extra)
+                .await?;
+            Ok::<_, CaptureError>((forgotten, forgotten_source_events))
         }
         .await;
-        let (forgotten, forgotten_source_events, written) = match staged {
-            Ok(staged) => staged,
+        let (forgotten, forgotten_source_events) = match landed {
+            Ok(landed) => landed,
             Err(error) => {
                 self.memory = memory_before;
                 return Err(error);
             },
         };
-        if let Err(error) = batch.commit().await {
-            self.memory = memory_before;
-            return Err(CaptureError::Store(error.to_string()));
-        }
-        host.staged(written);
         self.seen_visit_ids
             .retain(|key| !forgotten_source_events.contains(key));
         Ok(forgotten)
@@ -1260,6 +1330,16 @@ impl<B: Backend> MereHost<B> {
 struct ProjectedVisit {
     node: Uuid,
     record: AccessRecord,
+}
+
+/// What one delivery's visits project to: the outcomes, the dedupe state they
+/// leave, and the access records and browsing traces still to be written.
+struct Projection {
+    outcomes: Vec<CaptureOutcome>,
+    seen: HashSet<(String, String)>,
+    last: Option<(String, u64)>,
+    records: Vec<AccessRecord>,
+    traversals: Vec<(String, TraceEvent)>,
 }
 
 #[cfg(test)]
@@ -1975,6 +2055,95 @@ mod tests {
         });
     }
 
+    #[test]
+    fn a_refused_capture_leaves_no_graph_edits_pending_and_a_later_delivery_carries_only_its_own_records()
+     {
+        pollster::block_on(async {
+            let backend = RejectingApplyBackend::new();
+            let mut store = backend.clone();
+            let mut host = MereHost::fixture(
+                backend.clone(),
+                selected(),
+                crate::mere_host::fixture_handlers(),
+            )
+            .unwrap();
+            host.persist(1).await.unwrap();
+            let mut capture =
+                BrowserHistoryCapture::load(&mut store, HistoryCapturePolicy::consented())
+                    .await
+                    .unwrap();
+            let refused = "https://refused.example/a";
+            let later = "https://later.example/b";
+            let delivery = |id: &str, url: &str| {
+                [scoped(visit(id, url, None, 1000), "p", BrowserParent::Root)]
+            };
+
+            backend.reject.store(true, Ordering::SeqCst);
+            assert!(
+                capture
+                    .ingest_batch(
+                        &mut host,
+                        &mut store,
+                        delivery("a", refused),
+                        PERSONA,
+                        DEVICE,
+                        2
+                    )
+                    .await
+                    .is_err()
+            );
+            assert!(!host.has_unstored());
+            assert!(host.graph().get_node_by_url(refused).is_none());
+            assert!(capture.memory().recent_corridor(10).is_empty());
+
+            backend.reject.store(false, Ordering::SeqCst);
+            capture
+                .ingest_batch(
+                    &mut host,
+                    &mut store,
+                    delivery("b", later),
+                    PERSONA,
+                    DEVICE,
+                    3,
+                )
+                .await
+                .unwrap();
+            assert!(!host.has_unstored());
+
+            let ledger = browser_encounters(&host, &store).await.unwrap();
+            assert_eq!(ledger.snapshot.visits.len(), 1);
+            assert_eq!(ledger.snapshot.visits[0].context.url, later);
+            let mut fetcher = NoFetcher;
+            let manifests = list_typed::<AccessRecord>(&mut store).await.unwrap();
+            assert_eq!(manifests.len(), 1);
+            let record = load_typed::<AccessRecord>(&mut store, &mut fetcher, manifests[0].id)
+                .await
+                .unwrap()
+                .unwrap();
+            assert_eq!(record.address, later);
+            let corridor = capture.memory().recent_corridor(10);
+            assert_eq!(corridor.len(), 1);
+            assert_eq!(corridor[0].to.url, later);
+            let stored = BrowsingMemory::load(&mut store, 64).await.unwrap();
+            assert_eq!(stored.recent_corridor(10).len(), 1);
+
+            let reopened = MereHost::open(
+                backend.clone(),
+                selected(),
+                crate::mere_host::fixture_handlers(),
+                crate::access::AccessContext {
+                    persona: PERSONA.into(),
+                    device: DEVICE.into(),
+                    at_ms: 4000,
+                },
+            )
+            .await
+            .unwrap();
+            assert!(reopened.graph().get_node_by_url(refused).is_none());
+            assert!(reopened.facet_value(later, BROWSER_HISTORY_FACET).is_some());
+        });
+    }
+
     #[derive(Clone)]
     struct RejectingApplyBackend {
         inner: MemoryBackend,
@@ -2019,6 +2188,15 @@ mod tests {
                 ));
             }
             self.inner.apply(ops).await
+        }
+
+        async fn transact(&self, transaction: muniment::TransactFn) -> Result<(), StoreError> {
+            if self.reject.load(Ordering::SeqCst) {
+                return Err(StoreError::Backend(
+                    "capture transaction rejected".to_string(),
+                ));
+            }
+            self.inner.transact(transaction).await
         }
     }
 

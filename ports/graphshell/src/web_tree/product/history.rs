@@ -7,8 +7,8 @@
 //! Capture and history controls over the durable access authority.
 use super::*;
 use crate::web_capture::{
-    HistoryControlSummary, HistoryForgetInput, InitialCaptureSummary, apply_history_controls,
-    apply_history_request, apply_initial_capture, initial_capture_input,
+    HistoryControlSummary, HistoryForgetInput, InitialCaptureSummary, announce_capture,
+    apply_history_controls, apply_history_request, apply_initial_capture, initial_capture_input,
 };
 use cambium::{button, checkbox, el, lens, text_field_typed};
 use graphshell::access::AccessRecordFilter;
@@ -41,6 +41,8 @@ impl HistoryControls {
         let capture =
             apply_initial_capture(app, &mut store, input, FIXTURE_PERSONA_ADDRESS, now_secs())
                 .await?;
+        // The batch has committed; only now may the extension drop what it pulled.
+        announce_capture(capture)?;
         let summary = apply_history_controls(app, &mut store, policy.clone(), now_secs()).await;
         Ok(Self {
             open: false,
@@ -83,6 +85,10 @@ impl SavedProduct {
                 self.history.capture.accepted.to_string(),
             )
             .with_field("capture-dropped", self.history.capture.dropped.to_string())
+            .with_field(
+                "capture-buffered",
+                self.history.capture.buffered.to_string(),
+            )
     }
     fn history_action(&mut self, forget: bool) -> Result<(), String> {
         if self.selection_locked() {

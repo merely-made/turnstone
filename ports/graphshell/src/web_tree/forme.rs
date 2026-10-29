@@ -12,14 +12,20 @@ use graphshell::forme_workspace::{
     GraphshellPreparedSave as PreparedSave, GraphshellSaveKind as SaveKind,
 };
 use muniment::{Backend, IndexedDbBackend};
+use pandect::slot_guard::{self, Outcome};
 use platen::workspace::{DropEffect, FormeLoadGate, FormeLoadTicket, FormeWriteFence};
 use uuid::Uuid;
 use workbench::{ContentSource, SplitAxis, Tile, TileEvent, TileTree};
 
+type WriteDone = Rc<RefCell<Option<Result<Outcome, String>>>>;
+
+/// The reading pane's Forme session and its slot. `slot_guard::replace` is the
+/// only writer of that slot: a save carries the bytes the session loaded or
+/// last wrote, and a changed slot refuses it with the draft kept.
 pub(super) struct Pane {
     pub(super) session: FormeSession,
     backend: IndexedDbBackend,
-    completed: Rc<RefCell<Option<Result<(), String>>>>,
+    completed: WriteDone,
     pending: Option<PreparedSave>,
     pub(super) retry: Option<SaveKind>,
     pub(super) saving: bool,
@@ -108,10 +114,11 @@ impl Pane {
                 return;
             },
         };
+        let baseline = proposal.baseline().map(<[u8]>::to_vec);
         let completed = self.completed.clone();
         wasm_bindgen_futures::spawn_local(async move {
-            *completed.borrow_mut() =
-                Some(backend.put(&key, &bytes).await.map_err(|e| e.to_string()));
+            let outcome = slot_guard::replace(&backend, &key, baseline.as_deref(), &bytes).await;
+            *completed.borrow_mut() = Some(outcome.map_err(|e| e.to_string()));
         });
         self.refresh_controls();
     }
@@ -130,10 +137,22 @@ impl Pane {
         };
         self.saving = false;
         if let Some(proposal) = self.pending.take() {
+            let refused = matches!(result, Ok(Outcome::Conflict));
+            let result = match result {
+                Ok(Outcome::Replaced) => Ok(()),
+                Ok(Outcome::Conflict) => Err("Saved workbench changed elsewhere".to_string()),
+                Err(error) => Err(error),
+            };
             self.status = match self.session.finish_save(proposal, result) {
                 Ok(()) => {
                     self.retry = None;
                     "Workbench saved".into()
+                },
+                // The slot differs from the loaded baseline until the page
+                // reloads, so a retry would be refused again.
+                Err(error) if refused => {
+                    self.retry = None;
+                    format!("Save refused · {error} · Draft retained; reload to review it")
                 },
                 Err(error) => format!("Save failed · {error} · Draft retained; retry the save"),
             };
@@ -157,7 +176,7 @@ impl Pane {
 
 struct RetiredWrite {
     ticket: u64,
-    completed: Rc<RefCell<Option<Result<(), String>>>>,
+    completed: WriteDone,
 }
 struct Loading {
     ticket: FormeLoadTicket,

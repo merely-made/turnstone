@@ -3,19 +3,10 @@
 
 //! Compare-and-swap persistence for an editable document declaration.
 
-use muniment::{Backend, WriteOp};
+use pandect::slot_guard::{self, Outcome};
 use serde::{Deserialize, Serialize};
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Arc, Mutex};
 
-#[cfg(not(target_arch = "wasm32"))]
-pub trait DocumentStore: Backend + Sync {}
-#[cfg(not(target_arch = "wasm32"))]
-impl<B: Backend + Sync> DocumentStore for B {}
-#[cfg(target_arch = "wasm32")]
-pub trait DocumentStore: Backend {}
-#[cfg(target_arch = "wasm32")]
-impl<B: Backend> DocumentStore for B {}
+pub use slot_guard::SlotBackend as DocumentStore;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -79,46 +70,17 @@ pub async fn save<B: DocumentStore>(
         return Err("Serialized document exceeds one MiB".into());
     }
 
-    let accepted = Arc::new(AtomicBool::new(false));
-    let accepted_in_tx = accepted.clone();
-    let read_error = Arc::new(Mutex::new(None));
-    let read_error_in_tx = read_error.clone();
-    let value = bytes.clone();
-    let key = key.to_owned();
-    let transaction = backend
-        .transact(Box::new(move |reader| match reader.get(&key) {
-            Err(error) => {
-                *read_error_in_tx
-                    .lock()
-                    .expect("transaction read error lock") = Some(error.to_string());
-                Vec::new()
-            },
-            Ok(current) if current == expected => {
-                accepted_in_tx.store(true, Ordering::Release);
-                vec![WriteOp::Put { key, value }]
-            },
-            Ok(_) => Vec::new(),
-        }))
-        .await;
-
-    if let Some(error) = read_error
-        .lock()
-        .expect("transaction read error lock")
-        .take()
-    {
-        return Err(format!("Cannot inspect stored document: {error}"));
+    match slot_guard::replace(backend, key, expected.as_deref(), &bytes).await {
+        Ok(Outcome::Replaced) => Ok(bytes),
+        Ok(Outcome::Conflict) => Err("The stored document changed; reopen it before saving".into()),
+        Err(error) => Err(error.to_string()),
     }
-    transaction.map_err(|error| error.to_string())?;
-    if !accepted.load(Ordering::Acquire) {
-        return Err("The stored document changed; reopen it before saving".into());
-    }
-    Ok(bytes)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use muniment::MemoryBackend;
+    use muniment::{Backend, MemoryBackend};
 
     fn document(id: &str, source: &str) -> StoredDocument {
         StoredDocument {

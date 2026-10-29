@@ -34,15 +34,16 @@ pub fn create_address<B: Backend>(
 }
 
 /// Add a link kept from `origin`'s page, with its hyperlink from that page
-/// when the page is the person's own object.
+/// when a page is named and is the person's own object.
 pub fn create_link<B: Backend>(
     app: &mut GraphshellApp<B>,
-    origin: Uuid,
+    origin: Option<Uuid>,
     address: &str,
 ) -> Result<Uuid, String> {
-    if app.host.graph().get_node_by_id(origin).is_none() {
+    let Some(origin) = origin.filter(|page| app.host.graph().get_node_by_id(*page).is_some())
+    else {
         return create_address(app, address, address);
-    }
+    };
     app.host
         .create_linked_address(origin, address.trim(), address.trim())
         .map_err(|error| error.to_string())
@@ -85,7 +86,7 @@ pub fn create_file<B: Backend>(
 /// Refresh the portable projection before writing, so a projection failure
 /// cannot be reported as a save failure after storage has acknowledged it.
 /// This also serves a retry over the same pending member.
-pub async fn persist_intake<B: Backend>(
+pub async fn persist_intake<B: pandect::graph_session::LegacyTransactionBackend>(
     app: &mut GraphshellApp<B>,
     member: Uuid,
     saved_at_secs: u64,

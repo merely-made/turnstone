@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 import assert from "node:assert/strict";
+import fs from "node:fs";
 import "../extension/capture-model.js";
 
 const model = globalThis.GraphshellCaptureModel;
@@ -45,8 +46,36 @@ assert.equal(
 assert.equal(model.sanitizeVisit({ ...accepted, private: true }, policy), null);
 assert.deepEqual(
   model.mergeQueue([accepted], [{ ...accepted, title: "Updated" }]),
-  [accepted],
+  { queue: [accepted], refused: [] },
+  "a replay with another title is a duplicate",
 );
+
+// A visit whose source facts conflict with its identity's first visit is
+// refused alone; the rest of the batch still merges.
+const visit = (id, change = {}) => ({ ...accepted, visit_id: id, at_ms: 100, ...change });
+const first = visit("a");
+const conflicting = visit("a", { url: "https://example.net/other" });
+const fresh = [visit("b", { at_ms: 200 }), visit("c", { at_ms: 300 })];
+const batch = model.mergeQueue([first], [fresh[0], conflicting, fresh[1]]);
+assert.deepEqual(batch.refused, [conflicting], "only the conflicting visit is refused");
+assert.deepEqual(batch.queue, [first, ...fresh], "the first visit stays and the rest of the batch merges");
+const twice = model.mergeQueue([], [first, conflicting]);
+assert.deepEqual(twice, { queue: [first], refused: [conflicting] }, "the earlier visit of a batch wins");
+
+// The conflict rule is the encounter ledger's: the fixture holds visit pairs
+// with the verdict `BrowserEncounterLedger::receive` gave them
+// (tests/capture_conflict_fixture.rs writes and checks it).
+const fixture = JSON.parse(fs.readFileSync(new URL("./fixtures/capture-conflicts.json", import.meta.url), "utf8"));
+assert.ok(fixture.length >= 10, "the fixture covers each source fact");
+for (const { name, first: prior, second, verdict } of fixture) {
+  assert.deepEqual(model.sanitizeVisit(prior, policy), prior, `${name}: first is a queued visit`);
+  assert.deepEqual(model.sanitizeVisit(second, policy), second, `${name}: second is a queued visit`);
+  const merged = model.mergeQueue([prior], [second]);
+  const reached = merged.refused.length ? "conflict" : merged.queue.length > 1 ? "new" : "duplicate";
+  assert.equal(reached, verdict, `${name}: mergeQueue and the ledger agree`);
+  assert.deepEqual(merged.queue[0], prior, `${name}: the first visit is kept`);
+  if (verdict === "conflict") assert.deepEqual(merged.refused, [second], `${name}: the second is refused`);
+}
 assert.deepEqual(
   model.historyFilterFromControls(7, " persona:a ", " device:b ", 700_000_000),
   {

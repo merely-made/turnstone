@@ -19,6 +19,9 @@ const CAPTURE_POLICY_GLOBAL: &str = "graphshellCapturePolicyJson";
 const CAPTURE_VISITS_GLOBAL: &str = "graphshellInitialVisitsJson";
 const HISTORY_FILTER_GLOBAL: &str = "graphshellHistoryFilterJson";
 const HISTORY_FORGET_GLOBAL: &str = "graphshellHistoryForgetJson";
+// The element `loader.js` reads the page's receipts from.
+const GRAPHSHELL_ROOT: &str = "graphshell-view, graphshell-tree";
+const CAPTURE_COMPLETE_EVENT: &str = "graphshell-capture-complete";
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub(crate) struct InitialCaptureSummary {
@@ -131,6 +134,34 @@ pub(crate) async fn apply_initial_capture(
             .filter(|outcome| matches!(outcome, CaptureOutcome::Buffered { .. }))
             .count(),
     })
+}
+
+/// Expose a landed batch's counters on the Graphshell root, then announce it on
+/// the document so the extension acknowledges the visits it pulled. Call it only
+/// after `apply_initial_capture` returned Ok: a failed batch must stay queued.
+pub(crate) fn announce_capture(summary: InitialCaptureSummary) -> Result<(), String> {
+    if !summary.active {
+        return Ok(());
+    }
+    let document = crate::document()?;
+    let root = document
+        .query_selector(GRAPHSHELL_ROOT)
+        .map_err(|_| "could not look up the Graphshell root".to_string())?
+        .ok_or("the Graphshell root is not in the page")?;
+    for (name, count) in [
+        ("data-capture-accepted", summary.accepted),
+        ("data-capture-dropped", summary.dropped),
+        ("data-capture-buffered", summary.buffered),
+    ] {
+        root.set_attribute(name, &count.to_string())
+            .map_err(|_| format!("could not expose {name}"))?;
+    }
+    let event = web_sys::Event::new(CAPTURE_COMPLETE_EVENT)
+        .map_err(|_| "could not create the capture completion event".to_string())?;
+    document
+        .dispatch_event(&event)
+        .map_err(|_| "could not announce the capture completion".to_string())?;
+    Ok(())
 }
 
 pub(crate) fn history_control_input(

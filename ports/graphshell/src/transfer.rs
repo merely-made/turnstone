@@ -39,6 +39,7 @@ use crate::access::{
     AccessTransition, access_history, bootstrap_access_record_schema, query_access_records,
     record_observation, save_access_record,
 };
+use crate::local_locations;
 use crate::mere_host::MereHost;
 use crate::product::{
     CONTENT_FACET, ExportRequest, ProductCodicilV3, ProductError, ProfiledProductCodicil,
@@ -320,7 +321,8 @@ impl From<eidetic::Error> for TransferError {
 }
 
 /// Build a carrier-ready manifest and stage its external blobs in the source
-/// blob store. Local file locations are always removed from the selection.
+/// blob store. Local file locations are always removed from the selection and
+/// from the source access records, by the export's one rule.
 pub async fn prepare_transfer<HB: Backend, AB: Backend, BB: Backend>(
     host: &MereHost<HB>,
     source_authority: &mut AB,
@@ -392,6 +394,7 @@ pub async fn prepare_transfer<HB: Backend, AB: Backend, BB: Backend>(
                 .await?
                 .into_iter()
                 .filter(|record| selected_ids.contains(&record.container_id))
+                .filter_map(local_locations::withhold_access_record)
                 .collect()
         },
     };
@@ -444,7 +447,7 @@ pub async fn apply_transfer<HB, SB, DB, AB>(
     context: &ApplyTransferContext,
 ) -> Result<TransferReceiptV1, TransferError>
 where
-    HB: Backend,
+    HB: pandect::graph_session::LegacyTransactionBackend,
     SB: Backend,
     DB: Backend,
     AB: Backend,
@@ -563,7 +566,10 @@ where
                     mapping.destination
                 ))
             })?;
-        let source_address = source_addresses.get(&mapping.source).cloned();
+        let source_address = source_addresses
+            .get(&mapping.source)
+            .filter(|address| !address.is_empty())
+            .cloned();
         let record_id = Uuid::new_v5(
             &manifest.transfer_id,
             format!("import:{}:{}", mapping.source, mapping.destination).as_bytes(),
@@ -1307,6 +1313,96 @@ mod tests {
             payload.semantic_statements()[0].graph_scope,
             mere::kernel::types::GraphScope::Default
         );
+    }
+
+    #[test]
+    fn a_transfer_withholds_a_file_address_from_its_selection_and_source_access_records() {
+        pollster::block_on(async {
+            const LOCAL: &str = "file:///Users/mark/private/notes.md";
+            let mut source = source_fixture().await;
+            let local = source.host.create_address(LOCAL, "Private notes").unwrap();
+            let mut authority = source.backend.clone();
+            for (node, referrer) in [
+                (local, None),
+                (source.url, Some((local, LOCAL.to_string()))),
+            ] {
+                let key = source.host.graph().get_node_key_by_id(node).unwrap();
+                let observation = AccessObservation {
+                    record_id: Uuid::new_v4(),
+                    action: AccessAction::Open,
+                    persona: FIXTURE_PERSONA_ADDRESS.to_string(),
+                    device: FIXTURE_DEVICE_ONE_ADDRESS.to_string(),
+                    application: "graphshell".to_string(),
+                    handler: "system.default".to_string(),
+                    at_ms: 1_700_000_000_200,
+                    dwell_ms: None,
+                    referring_container_id: referrer.as_ref().map(|(id, _)| *id),
+                    referring_address: referrer.map(|(_, address)| address),
+                    transition: AccessTransition::LinkClick,
+                    capture_source: "graphshell.test".to_string(),
+                    source_event_id: None,
+                    privacy: PrivacyClass::LocalOnly,
+                };
+                let (record, _) = source
+                    .host
+                    .mutate_product_graph(|graph| record_observation(graph, key, &observation))
+                    .unwrap()
+                    .unwrap();
+                save_access_record(&mut authority, &record).await.unwrap();
+            }
+            let blobs = BlobStore::new(source.backend.clone());
+            let manifest = prepare_transfer(
+                &source.host,
+                &mut authority,
+                &blobs,
+                TransferRequest {
+                    transfer_id: Uuid::new_v4(),
+                    operation: TransferOperation::Replicate,
+                    source: endpoint(
+                        "graph:source",
+                        FIXTURE_PERSONA_ADDRESS,
+                        FIXTURE_DEVICE_ONE_ADDRESS,
+                    ),
+                    destination: endpoint(
+                        "graph:destination",
+                        FIXTURE_PERSONA_ADDRESS,
+                        FIXTURE_DEVICE_TWO_ADDRESS,
+                    ),
+                    route: TransferRouteV1 {
+                        carrier: "local.two-store".to_string(),
+                        peer: "device:destination".to_string(),
+                    },
+                    selection: ExportRequest {
+                        focused: local,
+                        selected: vec![local, source.url],
+                        scope: TransferScope::SelectedSubgraph,
+                        exported_at_ms: 1_700_000_000_500,
+                        include_local_file_locations: true,
+                        scene: None,
+                    },
+                    access_policy: AccessTransferPolicy::IncludeSourceHistory,
+                    privacy: PrivacyClass::TrustedPeersOnly,
+                },
+                Vec::new(),
+            )
+            .await
+            .unwrap();
+            let payload = String::from_utf8(manifest.selection.payload.clone()).unwrap();
+            assert!(!payload.contains("file://"), "the selection names a file");
+            let records = &manifest.access_records;
+            assert_eq!(records.len(), 2, "the file's own record is withheld");
+            assert!(
+                records
+                    .iter()
+                    .all(|record| !local_locations::is_local_file_location(&record.address))
+            );
+            let referred = records
+                .iter()
+                .find(|record| record.referring_container_id == Some(local))
+                .expect("the page's record stays");
+            assert_eq!(referred.referring_address, None);
+            verify_manifest(&manifest).unwrap();
+        });
     }
 
     #[test]

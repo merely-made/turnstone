@@ -28,6 +28,7 @@ let pulledIds = [];
 let currentPolicy = model.defaultPolicy();
 
 function setStatus(message, state = "ready") {
+  if (!statusNode) return;
   statusNode.textContent = message;
   statusNode.dataset.state = state;
 }
@@ -76,6 +77,7 @@ function historyFilterState() {
 }
 
 function showHistoryFilter(state) {
+  if (!historyRangeNode) return;
   historyRangeNode.value = String(state.days);
   historyPersonaNode.value = state.persona;
   historyDeviceNode.value = state.device;
@@ -158,6 +160,7 @@ function finishHistoryControls() {
 async function refreshStatus() {
   const status = await send({ type: "capture.status" });
   currentPolicy = status.policy;
+  if (!panel) return status;
   showPolicy(status.policy);
   enableButton.disabled = status.permission && status.policy.enabled;
   disableButton.disabled = !status.permission && !status.policy.enabled;
@@ -165,6 +168,7 @@ async function refreshStatus() {
     status.permission && status.policy.enabled
       ? `Capture enabled · ${status.queued} visit(s) waiting for Graphshell`
         + (status.coverage?.omitted_queue ? ` · ${status.coverage.omitted_queue} omitted by queue limit` : "")
+        + (status.coverage?.refused_conflicts ? ` · ${status.coverage.refused_conflicts} refused as conflicting` : "")
         + (status.coverage?.candidate_limit_reached ? " · history candidate limit reached" : "")
       : "Capture is off. Graphshell has not requested browser history access.",
   );
@@ -217,19 +221,25 @@ async function disableCapture() {
   await refreshStatus();
 }
 
+// The Graphshell root carries the host's capture counters, as `graphshellReceipt` reads them.
+const graphshellRoot = () => document.querySelector("graphshell-view, graphshell-tree");
+
 async function prepareCapture() {
-  panel.hidden = false;
-  historyFilterButton.addEventListener("click", applyHistoryFilter);
-  historyForgetButton.addEventListener("click", forgetHistory);
-  enableButton.addEventListener("click", () => {
-    enableCapture().catch((error) => setStatus(String(error), "failed"));
-  });
-  saveButton.addEventListener("click", () => {
-    savePolicy().catch((error) => setStatus(String(error), "failed"));
-  });
-  disableButton.addEventListener("click", () => {
-    disableCapture().catch((error) => setStatus(String(error), "failed"));
-  });
+  // The controls are optional: without them the queue is still pulled and acknowledged.
+  if (panel) {
+    panel.hidden = false;
+    historyFilterButton.addEventListener("click", applyHistoryFilter);
+    historyForgetButton.addEventListener("click", forgetHistory);
+    enableButton.addEventListener("click", () => {
+      enableCapture().catch((error) => setStatus(String(error), "failed"));
+    });
+    saveButton.addEventListener("click", () => {
+      savePolicy().catch((error) => setStatus(String(error), "failed"));
+    });
+    disableButton.addEventListener("click", () => {
+      disableCapture().catch((error) => setStatus(String(error), "failed"));
+    });
+  }
 
   const status = await refreshStatus();
   const pulled =
@@ -249,9 +259,10 @@ async function prepareCapture() {
         await send({ type: "capture.ack", ids: pulledIds });
         pulledIds = [];
       }
-      const accepted = Number(document.body.dataset.captureAccepted || 0);
-      const dropped = Number(document.body.dataset.captureDropped || 0);
-      const buffered = Number(document.body.dataset.captureBuffered || 0);
+      const counts = graphshellRoot()?.dataset ?? {};
+      const accepted = Number(counts.captureAccepted || 0);
+      const dropped = Number(counts.captureDropped || 0);
+      const buffered = Number(counts.captureBuffered || 0);
       setStatus(`Graph updated · ${accepted} visits · ${buffered} awaiting parents · ${dropped} filtered`);
     },
     { once: true },

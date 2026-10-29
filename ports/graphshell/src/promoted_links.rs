@@ -6,7 +6,10 @@
 
 //! Promoted link Resources: journaled captures and read-only live comparison.
 use crate::app::GraphshellApp;
-use mere::kernel::graph::{Author, FrozenLink, FrozenLinkSource, Graph, GraphStratum};
+use crate::mere_host::SelectedPersonaRef;
+use mere::kernel::graph::{
+    Author, FrozenLink, FrozenLinkSource, Graph, GraphStratum, SemanticStatement,
+};
 use mere::kernel::persistence::PersistedSemanticStatement;
 use mere::kernel::types::{GraphScope, NodeProperty};
 use muniment::Backend;
@@ -297,6 +300,23 @@ pub fn comment<B: Backend + Clone>(
     Ok(())
 }
 
+/// The statement half of [`can_withdraw`], shared with the canvas's pair
+/// gesture: a statement the persona `actor` asserted itself, in its own scope
+/// (the unnamed graph a canvas gesture writes into, or `User`), inferred by no
+/// method. Imported, agent and method-backed statements stay.
+pub fn own_statement(actor: &str, claim: &SemanticStatement) -> bool {
+    claim.provenance_iri.as_deref() == Some(actor)
+        && matches!(claim.graph_scope, GraphScope::Default | GraphScope::User)
+        && claim.basis.method.is_none()
+}
+
+/// The pair gesture's withdraw rule for `persona`: it withdraws only what
+/// [`can_withdraw`] allows at the statement and reports what it left.
+pub fn withdraw_policy(persona: &SelectedPersonaRef) -> mere::canvas::WithdrawPolicy {
+    let actor = Author::person(persona.persona.clone()).asserter_iri();
+    Box::new(move |claim| own_statement(&actor, claim))
+}
+
 pub fn can_withdraw<B: Backend + Clone>(
     app: &GraphshellApp<B>,
     target: &cambium::LinkMemberTarget,
@@ -309,10 +329,7 @@ pub fn can_withdraw<B: Backend + Clone>(
         return false;
     };
     let actor = Author::person(app.host.selected_persona().persona.clone()).asserter_iri();
-    if claim.provenance_iri.as_deref() != Some(actor.as_str())
-        || claim.graph_scope != GraphScope::User
-        || claim.basis.method.is_some()
-    {
+    if !own_statement(&actor, claim) {
         return false;
     }
     let Ok((stratum, a, b)) = resolve(graph, &target.link) else {

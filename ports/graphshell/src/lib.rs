@@ -74,6 +74,8 @@ pub mod link_inspection;
 pub mod local_edit;
 #[cfg(feature = "web")]
 pub mod local_intake;
+#[cfg(feature = "web")]
+pub mod local_locations;
 #[cfg(any(feature = "native", feature = "web"))]
 pub mod local_projection;
 #[cfg(feature = "web")]
@@ -123,6 +125,8 @@ pub mod projection_compile;
 pub mod projection_dynamics_compare;
 #[cfg(feature = "web")]
 pub mod projection_dynamics_receipt;
+#[cfg(any(feature = "native", feature = "web"))]
+pub mod projection_save;
 /// Receipt ingest: a scenario-receipt directory becomes personal-graph facts.
 #[cfg(all(feature = "personal-sync", not(target_arch = "wasm32")))]
 pub mod receipts;
