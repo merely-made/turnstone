@@ -31,6 +31,9 @@ pub(super) struct HostPlacement {
     pub scale_factor: f32,
     pub reading_preferences: tabard::ReadingPreferences,
     pub reading_anchor: Option<tabard::ReadingAnchor>,
+    /// The app theme's mode, under which themed smolweb and Reader
+    /// appearances derive their colours.
+    pub color_mode: mere_document_lanes::ModeProfile,
 }
 
 impl HostPlacement {
@@ -59,6 +62,7 @@ impl HostPlacement {
             scale_factor: crate::ui::clean_scale(scale as f32),
             reading_preferences: Default::default(),
             reading_anchor: None,
+            color_mode: mere_document_lanes::ModeProfile::LIGHT,
         }
     }
 }
@@ -206,18 +210,25 @@ impl NodeDocuments {
                     }
                 }
             }
-            let preferences_changed = self.pool.content(&key).and_then(PeltContent::document).is_some_and(|controller| {
+            let stale = self.pool.content(&key).and_then(PeltContent::document).is_some_and(|controller| {
                 let session = controller.session().as_any_ref();
-                session.downcast_ref::<mere_document_lanes::ReaderDocumentSession>().is_some_and(|reader| reader.reading_preferences() != host.reading_preferences)
-                    || session.downcast_ref::<mere_document_lanes::SmolwebDocumentSession>().is_some_and(|document| document.document().reading_preferences() != host.reading_preferences)
+                session.downcast_ref::<mere_document_lanes::ReaderDocumentSession>().is_some_and(|reader| {
+                    reader.reading_preferences() != host.reading_preferences || reader.color_mode() != host.color_mode
+                }) || session.downcast_ref::<mere_document_lanes::SmolwebDocumentSession>().is_some_and(|document| {
+                    let document = document.document();
+                    document.reading_preferences() != host.reading_preferences || document.color_mode() != host.color_mode
+                })
             });
-            if preferences_changed {
+            if stale {
                 if let Some(controller) = self.pool.content_mut(&key).and_then(PeltContent::document_mut) {
                     let session = controller.session_mut();
                     if let Some(reader) = session.as_any().downcast_mut::<mere_document_lanes::ReaderDocumentSession>() {
                         let _ = reader.set_reading_preferences(host.reading_preferences);
+                        reader.set_color_mode(host.color_mode);
                     } else if let Some(document) = session.as_any().downcast_mut::<mere_document_lanes::SmolwebDocumentSession>() {
-                        let _ = document.document_mut().set_reading_preferences(host.reading_preferences);
+                        let document = document.document_mut();
+                        let _ = document.set_reading_preferences(host.reading_preferences);
+                        document.set_color_mode(host.color_mode);
                     }
                 }
             }
@@ -928,6 +939,7 @@ mod tests {
                     scale_factor: 2.,
                     reading_preferences: Default::default(),
             reading_anchor: None,
+                    color_mode: mere_document_lanes::ModeProfile::LIGHT,
                 },
                 HostPlacement {
                     surface: Surface {
@@ -940,6 +952,7 @@ mod tests {
                     scale_factor: 1.,
                     reading_preferences: tabard::ReadingPreferences {text_size:20,column_em:32},
                     reading_anchor: None,
+                    color_mode: mere_document_lanes::ModeProfile::DARK,
                 },
             ]
         };
@@ -991,6 +1004,12 @@ mod tests {
         assert_eq!(reader(&contents, &first).reading_preferences(),Default::default());
         assert_eq!(reader(&contents, &second).reading_preferences(),tabard::ReadingPreferences{text_size:20,column_em:32});
         assert_eq!(reader(&contents, &second).viewport(), (640, 300));
+        assert_eq!(reader(&contents, &first).color_mode(), mere_document_lanes::ModeProfile::LIGHT);
+        assert_eq!(
+            reader(&contents, &second).color_mode(),
+            mere_document_lanes::ModeProfile::DARK,
+            "each appearance derives its colours under its placement's theme mode"
+        );
         let first_projection = contents
             .pool
             .accessibility_projection(&SurfaceId(11))

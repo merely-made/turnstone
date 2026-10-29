@@ -2501,10 +2501,12 @@ impl Shell {
         use content_pool::HostPlacement;
         self.retain_reading_positions();
         let focus = self.app.focus;
+        let color_mode = self.app.shell_chrome_config().appearance.tabard_mode().profile();
         // Surface plans and native pointer positions are physical pixels; the
         // pool places content in layout pixels at its window's scale.
         let placement = |surface: crate::surface::Surface, window, active, scale| {
             let mut host = HostPlacement::for_focus(surface, window, active, focus, scale);
+            host.color_mode = color_mode;
             host.reading_preferences = self.app.reading.for_surface(surface, window);
             host.reading_anchor = self.app.reading.anchors.iter().find_map(|(target,anchor)|(target.appearance(window)==surface.id).then(||anchor.clone()));
             host
