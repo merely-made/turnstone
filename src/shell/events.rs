@@ -181,6 +181,7 @@ impl ApplicationHandler for Shell {
                 .expect("failed to create the turnstone window"),
         );
         self.publish_titlebar_insets(0, &window);
+        self.publish_system_theme(window.theme());
         self.a11y_adapter = Some(crate::shell::a11y_bridge::install(
             &window,
             self.a11y_actions.clone(),
@@ -312,6 +313,7 @@ impl ApplicationHandler for Shell {
                 self.native_input_focus(0, focused);
                 self.push_a11y_tree();
             },
+            WindowEvent::ThemeChanged(theme) => self.publish_system_theme(Some(theme)),
             WindowEvent::Occluded(false) => {
                 // Acquisition can skip an occluded surface without another
                 // frame. Repaint on the actual platform visibility transition.

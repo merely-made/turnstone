@@ -45,6 +45,21 @@ impl Shell {
         window.request_redraw();
     }
 
+    /// Record the OS light/dark preference that the `System` theme follows.
+    pub(super) fn publish_system_theme(&mut self, theme: Option<winit::window::Theme>) {
+        let Some(theme) = theme else { return };
+        let dark = theme == winit::window::Theme::Dark;
+        let mut chrome = self.app.shell_chrome_config().clone();
+        if chrome.appearance.system_dark == dark {
+            return;
+        }
+        chrome.appearance.system_dark = dark;
+        self.app.set_shell_chrome_config(chrome);
+        // A `System` theme's stored palette is chosen per OS preference.
+        self.poll_live_settings();
+        self.request_redraw();
+    }
+
     /// Run before content delivery. The drag decision is read from the same
     /// retained chrome cascade and hit target that paint uses, including any
     /// authored no-drag descendants.

@@ -150,8 +150,7 @@ impl Default for ShellbarConfig {
 }
 
 /// The base color family selected for host-owned chrome and Cambium panes.
-/// `System` deliberately resolves to Turnstone's established dark presentation
-/// until the platform adapter exposes a live system-color preference.
+/// `System` follows the OS light/dark preference the shell observes.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub enum ThemeMode {
     #[default]
@@ -179,11 +178,11 @@ impl ThemeMode {
         }
     }
 
-    /// The Tabard mode this selects; `System` has no live preference yet and
-    /// reads as dark, as the host palettes do.
-    pub fn tabard(&self) -> tabard::theme::registry::Mode {
+    /// The Tabard mode this selects; `System` takes the OS preference.
+    pub fn tabard(&self, system_dark: bool) -> tabard::theme::registry::Mode {
         use tabard::theme::registry::Mode;
         match self {
+            Self::System if !system_dark => Mode::Light,
             Self::Light => Mode::Light,
             Self::System | Self::Dark => Mode::Dark,
             Self::HcLight => Mode::HcLight,
@@ -212,6 +211,9 @@ pub struct AppearanceConfig {
     pub theme_typography: tabard::Typography,
     /// Host-resolved Interface family requests; availability is never persisted.
     pub interface_font_properties: String,
+    /// The OS light/dark preference `System` follows. A host observation,
+    /// never persisted; dark until the first window reports one.
+    pub system_dark: bool,
 }
 
 impl Default for AppearanceConfig {
@@ -223,11 +225,17 @@ impl Default for AppearanceConfig {
             theme_presentation: None,
             theme_typography: Default::default(),
             interface_font_properties: String::new(),
+            system_dark: true,
         }
     }
 }
 
 impl AppearanceConfig {
+    /// The Tabard mode host surfaces wear, with `System` resolved.
+    pub fn tabard_mode(&self) -> tabard::theme::registry::Mode {
+        self.theme_mode.tabard(self.system_dark)
+    }
+
     /// A finite, user-setting-safe scale for layout and paint consumers.
     pub fn zoom(&self) -> f32 {
         self.ui_zoom.clamp(0.5, 3.0)
@@ -696,5 +704,18 @@ mod tests {
         );
         services.providers_mut().unregister(&commands);
         assert!(services.providers().get(&commands).is_none());
+    }
+
+    #[test]
+    fn system_follows_the_os_preference_and_chosen_modes_do_not() {
+        use tabard::theme::registry::Mode;
+        let mut appearance = AppearanceConfig::default();
+        assert_eq!(appearance.tabard_mode(), Mode::Dark, "dark until observed");
+        appearance.system_dark = false;
+        assert_eq!(appearance.tabard_mode(), Mode::Light);
+        appearance.theme_mode = ThemeMode::Dark;
+        assert_eq!(appearance.tabard_mode(), Mode::Dark);
+        appearance.theme_mode = ThemeMode::HcDark;
+        assert_eq!(appearance.tabard_mode(), Mode::HcDark);
     }
 }

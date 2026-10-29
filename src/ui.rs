@@ -968,7 +968,7 @@ fn themed_sheet(appearance: &crate::shell_services::AppearanceConfig, roles: Str
     let builtin = tabard::ThemePresentation::AuthoredStylesheet(Vec::new());
     tabard::presentation_stylesheet(
         appearance.theme_presentation.as_ref().unwrap_or(&builtin),
-        &appearance.theme_mode.tabard(),
+        &appearance.tabard_mode(),
         tabard::theme::registry::THEME_ID_DEFAULT,
         &roles,
     )

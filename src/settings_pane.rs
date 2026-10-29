@@ -34,6 +34,9 @@ pub struct ChromeSettings {
     theme_id: Option<String>,
     theme_mode: Option<String>,
     presentation: Option<tabard::ThemePresentation>,
+    /// Under `System`, `presentation` is the dark reading and this the light
+    /// one; the shell picks between them by the OS preference.
+    light_presentation: Option<tabard::ThemePresentation>,
     typography: tabard::Typography,
     interface_font_properties: String,
     ui_zoom: f32,
@@ -61,10 +64,24 @@ impl ChromeSettings {
         settings: &ApplicationSettings,
         catalog: &crate::appearance::ThemeCatalog,
     ) -> Self {
-        let resolved = settings
+        let resolve = |mode: Option<tabard::theme::registry::Mode>| {
+            let choice = settings.theme.as_ref()?;
+            let choice = tabard::theme::choice::ThemeChoice {
+                theme_mode: mode.or_else(|| choice.theme_mode.clone()),
+                ..choice.clone()
+            };
+            catalog.resolve(&choice).ok()
+        };
+        let system = settings
             .theme
             .as_ref()
-            .and_then(|choice| catalog.resolve(choice).ok());
+            .is_some_and(|choice| choice.theme_mode.is_none());
+        let (resolved, light) = if system {
+            use tabard::theme::registry::Mode;
+            (resolve(Some(Mode::Dark)), resolve(Some(Mode::Light)))
+        } else {
+            (resolve(None), None)
+        };
         Self {
             theme_id: settings
                 .theme
@@ -86,6 +103,7 @@ impl ChromeSettings {
                 .map(|choice| catalog.interface_font_properties(&choice.fonts))
                 .unwrap_or_default(),
             presentation: resolved.map(|r| r.presentation),
+            light_presentation: light.map(|r| r.presentation),
             ui_zoom: settings.ui_zoom,
             shellbar_edge: settings.shellbar_edge,
             shellbar_hidden: settings.shellbar_hidden,
@@ -136,7 +154,10 @@ impl ChromeSettings {
         chrome.appearance.theme_id = self.theme_id.clone();
         chrome.appearance.theme_mode = ThemeMode::from_setting(self.theme_mode());
         chrome.appearance.ui_zoom = self.ui_zoom();
-        chrome.appearance.theme_presentation = self.presentation.clone();
+        chrome.appearance.theme_presentation = match &self.light_presentation {
+            Some(light) if !chrome.appearance.system_dark => Some(light.clone()),
+            _ => self.presentation.clone(),
+        };
         chrome.appearance.theme_typography = self.typography.clone();
         chrome.appearance.interface_font_properties = self.interface_font_properties.clone();
     }
@@ -200,6 +221,7 @@ impl LiveSettingsHandle {
             next.theme_id = state.snapshot.theme_id.clone();
             next.theme_mode = state.snapshot.theme_mode.clone();
             next.presentation = state.snapshot.presentation.clone();
+            next.light_presentation = state.snapshot.light_presentation.clone();
             next.typography = state.snapshot.typography.clone();
             next.interface_font_properties = state.snapshot.interface_font_properties.clone();
         }
@@ -1055,5 +1077,30 @@ mod tests {
         assert!(pane.runner.focus().is_some());
         pane.blur();
         assert!(pane.runner.focus().is_none());
+    }
+
+    #[test]
+    fn a_saved_system_theme_wears_the_os_preference() {
+        use tabard::theme::{choice::ThemeChoice, registry::THEME_ID_DEFAULT};
+        let settings = ApplicationSettings {
+            theme: Some(ThemeChoice::new(THEME_ID_DEFAULT, None)),
+            ..ApplicationSettings::default()
+        };
+        let snapshot = ChromeSettings::from(&settings);
+        let ground = |system_dark: bool| {
+            let mut chrome = ShellChromeConfig::default();
+            chrome.appearance.system_dark = system_dark;
+            snapshot.apply_to(&mut chrome);
+            let appearance = &chrome.appearance;
+            let bg = tabard::presentation_palette(
+                appearance.theme_presentation.as_ref().unwrap(),
+                &appearance.tabard_mode(),
+                THEME_ID_DEFAULT,
+            )
+            .palette
+            .bg;
+            u32::from(bg.r) + u32::from(bg.g) + u32::from(bg.b)
+        };
+        assert!(ground(false) > ground(true) + 300, "light OS, light ground");
     }
 }
