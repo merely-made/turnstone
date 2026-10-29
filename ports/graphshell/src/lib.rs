@@ -74,6 +74,8 @@ pub mod link_inspection;
 pub mod local_edit;
 #[cfg(feature = "web")]
 pub mod local_intake;
+#[cfg(feature = "web")]
+pub mod local_locations;
 #[cfg(any(feature = "native", feature = "web"))]
 pub mod local_projection;
 #[cfg(feature = "web")]
