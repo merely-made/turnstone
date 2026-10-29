@@ -1120,8 +1120,11 @@ public and sealed-source gates, quiet saved-source loading, existing-writer
 acceptance path and session lease. Receiving source/API issues and focused
 lease/source/custody/recovery regressions are qualified on the selected supplier
 cut. The initial native pass exposed revision reconstruction and auxiliary
-redraw gaps; both source repairs are applied. Complete native acceptance,
-cold-result reading and live-lock qualification remain open. Mere's successful
-gates do not substitute for them.
+redraw gaps; both source repairs are applied. A paused-scene native workflow
+qualifies sealed-source admission, private acceptance, origin-absent cold
+result reading after helper dissolution, live lock and custodian-loss
+retirement. Playing-scene inspection still times out; the original restored
+multi-Read layout, supplier integration and the full failure matrix remain
+open. Production custody and external-principal gates remain separate.
 Run receipts and the current receiving boundary are kept with the common plan
 at `mere/design_docs/archive_docs/2026-10-28/2026-10-28_alembic_implementation_plan_receipts.md`.
