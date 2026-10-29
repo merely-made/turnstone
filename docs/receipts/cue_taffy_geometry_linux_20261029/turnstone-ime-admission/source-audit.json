@@ -1,0 +1,36 @@
+{
+  "resolved_package_identities": 962,
+  "lock_records": 1660,
+  "missing_source_aware_records": [],
+  "git_checkout_heads": {
+    "<home>/.cargo/git/checkouts/mere-9d8e871c24d9ba76/1184ece": "1184ece0dc5b982d755235dc16e623e8da018992",
+    "<home>/.cargo/git/checkouts/eidetic-52ab114568dd1263/f599ffe": "f599ffe93298025bf6d65ae310a7cb4270ea52e3",
+    "<home>/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/565458e": "565458ea3ab816940484079330eb165a878a22e0",
+    "<home>/.cargo/git/checkouts/vello-79c0d0e9216b3668/276b466": "276b46648c08f3d2062e70559afa999842e1873c",
+    "<home>/.cargo/git/checkouts/dramatis-c1632f2f3bdc2597/dc593a3": "dc593a343258cdabd9743a5a57ba49e8b103a876",
+    "<home>/.cargo/git/checkouts/netrender-a79f0762881dec01/66b2f72": "66b2f72e9e0785819139739cc4503bf1e8766de9",
+    "<home>/.cargo/git/checkouts/p2panda-d3fc8d2ceee505e1/1f69c9b": "1f69c9bcb9f2a9d798b1c25b2ec2f47c0416bd65",
+    "<home>/.cargo/git/checkouts/errand-22a5c66f8a0a2658/897fb96": "897fb963d184f0e379ab9041d68e17e726cb7763",
+    "<home>/.cargo/git/checkouts/armillary-e679513f2dd65b22/864f107": "864f107d44bf759111ad2ea3c9036b2cfbf03f4c",
+    "<home>/.cargo/git/checkouts/murm-ebfa134ea22785bd/4ba804b": "4ba804b3a52af2de43b659aa16d9ed99c16a94d9",
+    "<home>/.cargo/git/checkouts/firewheel-920f8d5d0624d8ed/2b03846": "2b03846d2e0dcc6ded2a85367bb8c5071ae99cdc",
+    "<home>/.cargo/git/checkouts/wgpu-graft-c53eab123f092d6e/9f410f1": "9f410f193eb82a9a70ff704674bba7df3eed981b",
+    "<home>/.cargo/git/checkouts/esp-fee4926440a1bad1/bd0468c": "bd0468c5c44c0b098494d30b3cfd0aa283cecf48",
+    "<home>/.cargo/git/checkouts/knot-editor-87fc402d91cabea0/3e22516": "3e2251698bada90d20cc0eb19551841339376f9a",
+    "<home>/.cargo/git/checkouts/gemot-cfbf2db31ccfa900/998133b": "998133bc17b8636152e9c4f7605eb475498213c8",
+    "<home>/.cargo/git/checkouts/woodshed-b9974f59ddc43cf9/a0da751": "a0da751cf1188c77eb3b25798517e8dd6f0ef557",
+    "<home>/.cargo/git/checkouts/wgpu-cue-f36cb044abc37f42/b5b70c2": "b5b70c2c9c40748abedc0c18d2b6ec5373e48958",
+    "<home>/.cargo/git/checkouts/arboard-ad4239ae8a8bf149/bec2dcd": "bec2dcd179deff24720e64107a0993bb36453df4",
+    "<home>/.cargo/git/checkouts/eidetic-da5f5f1bff0a3046/354ab71": "354ab71c08459355278aa3ff32ef8e3493e85653",
+    "<home>/.cargo/git/checkouts/armillary-e679513f2dd65b22/06340b0": "06340b08327b29c3485ecb0089bb5cafed20fd80",
+    "<home>/.cargo/git/checkouts/turquet-b11669ab490b8380/bc3c454": "bc3c454f755d0bfd70ab48bd9556a1cda2213d41"
+  },
+  "fork": [
+    {
+      "version": "0.16.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "all_published_source_files_match": true,
+      "source_files": 52
+    }
+  ]
+}

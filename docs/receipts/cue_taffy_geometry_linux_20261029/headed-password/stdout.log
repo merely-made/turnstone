@@ -1,0 +1,262 @@
+2026-10-29T06:13:52.104831Z  INFO turnstone::launch: turnstone starting
+2026-10-29T06:13:52.112986Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=the identity is locked
+2026-10-29T06:13:52.221603Z  INFO turnstone::app::session_lifecycle: no session graph; starting on the sample graph
+2026-10-29T06:13:52.343790Z  WARN turnstone::shell: the system clipboard is unavailable error=clipboard unavailable: Unknown error while interacting with the clipboard: X11 server connection timed out because it was unreachable
+2026-10-29T06:13:52.374480Z  INFO turnstone::shell::a11y_bridge: a11y_bridge: installed
+2026-10-29T06:13:53.088199Z DEBUG turnstone::ime: native IME event window=0 kind="enabled" utf8_bytes=0 selection=None
+2026-10-29T06:13:53.181366Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:13:53.259559Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:13:53.333834Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=the identity is locked
+2026-10-29T06:13:53.336382Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:13:53.415256Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:13:53.493563Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:13:53.571513Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:13:53.647972Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:13:53.726814Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:13:53.803810Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:13:53.880895Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:13:53.958026Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:13:54.034894Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:13:54.118684Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:13:54.196638Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:13:54.275394Z DEBUG turnstone::ime: native IME event window=0 kind="disabled" utf8_bytes=0 selection=None
+2026-10-29T06:13:54.276722Z DEBUG turnstone::ime: IME delivery window=0 handled=false
+2026-10-29T06:13:54.276791Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:13:54.278330Z DEBUG turnstone::ime: IME delivery window=0 handled=false
+2026-10-29T06:13:54.335740Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=the identity is locked
+2026-10-29T06:13:54.423601Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:13:54.425039Z DEBUG turnstone::ime: IME delivery window=0 handled=false
+2026-10-29T06:13:54.701762Z  INFO turnstone::browse: page fetched url=http://127.0.0.1:45559/geometry.html content_type=Some("text/html") bytes=357
+2026-10-29T06:13:54.733859Z  INFO turnstone::browse: node title enriched from the page url=http://127.0.0.1:45559/geometry.html title=Password geometry synthetic fixture
+2026-10-29T06:13:55.337437Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=the identity is locked
+2026-10-29T06:13:56.339536Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=the identity is locked
+2026-10-29T06:13:57.341570Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=the identity is locked
+2026-10-29T06:13:58.343920Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=the identity is locked
+2026-10-29T06:13:59.346034Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=the identity is locked
+2026-10-29T06:14:00.347944Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=the identity is locked
+2026-10-29T06:14:00.721120Z  INFO turnstone::shell::effects: content session live node=7a5c101f-72a0-45cf-8d4f-155f8233ad32 url=http://127.0.0.1:45559/geometry.html engine=genet.livery
+2026-10-29T06:14:01.350185Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=the identity is locked
+2026-10-29T06:14:02.352242Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=the identity is locked
+2026-10-29T06:14:03.354732Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=the identity is locked
+2026-10-29T06:14:03.471197Z DEBUG turnstone::ime: native IME event window=0 kind="enabled" utf8_bytes=0 selection=None
+2026-10-29T06:14:03.477560Z DEBUG turnstone::ime: IME delivery window=0 handled=true
+2026-10-29T06:14:03.507995Z DEBUG turnstone::ime: shared document caret geometry window=0 x=32.0 y=105.5999984741211 width=1.0 height=33.0
+2026-10-29T06:14:03.576356Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:03.584734Z DEBUG turnstone::ime: IME delivery window=0 handled=true
+2026-10-29T06:14:03.611228Z DEBUG turnstone::ime: shared document caret geometry window=0 x=104.19200897216797 y=105.5999984741211 width=1.0 height=33.0
+2026-10-29T06:14:03.673425Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:03.679722Z DEBUG turnstone::ime: IME delivery window=0 handled=true
+2026-10-29T06:14:03.710405Z DEBUG turnstone::ime: shared document caret geometry window=0 x=104.19200897216797 y=105.5999984741211 width=1.0 height=33.0
+2026-10-29T06:14:03.774024Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:03.780485Z DEBUG turnstone::ime: IME delivery window=0 handled=true
+2026-10-29T06:14:03.806606Z DEBUG turnstone::ime: shared document caret geometry window=0 x=104.19200897216797 y=105.5999984741211 width=1.0 height=33.0
+2026-10-29T06:14:03.868795Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:03.875120Z DEBUG turnstone::ime: IME delivery window=0 handled=true
+2026-10-29T06:14:03.905797Z DEBUG turnstone::ime: shared document caret geometry window=0 x=104.19200897216797 y=105.5999984741211 width=1.0 height=33.0
+2026-10-29T06:14:03.969530Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:03.975898Z DEBUG turnstone::ime: IME delivery window=0 handled=true
+2026-10-29T06:14:04.002040Z DEBUG turnstone::ime: shared document caret geometry window=0 x=104.19200897216797 y=105.5999984741211 width=1.0 height=33.0
+2026-10-29T06:14:04.064121Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:04.070416Z DEBUG turnstone::ime: IME delivery window=0 handled=true
+2026-10-29T06:14:04.101227Z DEBUG turnstone::ime: shared document caret geometry window=0 x=104.19200897216797 y=105.5999984741211 width=1.0 height=33.0
+2026-10-29T06:14:04.163656Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:04.170026Z DEBUG turnstone::ime: IME delivery window=0 handled=true
+2026-10-29T06:14:04.196282Z DEBUG turnstone::ime: shared document caret geometry window=0 x=104.19200897216797 y=105.5999984741211 width=1.0 height=33.0
+2026-10-29T06:14:04.258565Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:04.264829Z DEBUG turnstone::ime: IME delivery window=0 handled=true
+2026-10-29T06:14:04.295605Z DEBUG turnstone::ime: shared document caret geometry window=0 x=104.19200897216797 y=105.5999984741211 width=1.0 height=33.0
+2026-10-29T06:14:04.357059Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=the identity is locked
+2026-10-29T06:14:04.359195Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:04.365535Z DEBUG turnstone::ime: IME delivery window=0 handled=true
+2026-10-29T06:14:04.392149Z DEBUG turnstone::ime: shared document caret geometry window=0 x=104.19200897216797 y=105.5999984741211 width=1.0 height=33.0
+2026-10-29T06:14:04.454301Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:04.460586Z DEBUG turnstone::ime: IME delivery window=0 handled=true
+2026-10-29T06:14:04.491107Z DEBUG turnstone::ime: shared document caret geometry window=0 x=104.19200897216797 y=105.5999984741211 width=1.0 height=33.0
+2026-10-29T06:14:04.553781Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:04.560236Z DEBUG turnstone::ime: IME delivery window=0 handled=true
+2026-10-29T06:14:04.586218Z DEBUG turnstone::ime: shared document caret geometry window=0 x=104.19200897216797 y=105.5999984741211 width=1.0 height=33.0
+2026-10-29T06:14:04.647932Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:04.654255Z DEBUG turnstone::ime: IME delivery window=0 handled=true
+2026-10-29T06:14:04.684921Z DEBUG turnstone::ime: shared document caret geometry window=0 x=104.19200897216797 y=105.5999984741211 width=1.0 height=33.0
+2026-10-29T06:14:04.747691Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:04.754229Z DEBUG turnstone::ime: IME delivery window=0 handled=true
+2026-10-29T06:14:04.780575Z DEBUG turnstone::ime: shared document caret geometry window=0 x=104.19200897216797 y=105.5999984741211 width=1.0 height=33.0
+2026-10-29T06:14:04.842700Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:04.848982Z DEBUG turnstone::ime: IME delivery window=0 handled=true
+2026-10-29T06:14:04.880190Z DEBUG turnstone::ime: shared document caret geometry window=0 x=104.19200897216797 y=105.5999984741211 width=1.0 height=33.0
+2026-10-29T06:14:04.943560Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:04.949870Z DEBUG turnstone::ime: IME delivery window=0 handled=true
+2026-10-29T06:14:04.976215Z DEBUG turnstone::ime: shared document caret geometry window=0 x=104.19200897216797 y=105.5999984741211 width=1.0 height=33.0
+2026-10-29T06:14:05.039642Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:05.046048Z DEBUG turnstone::ime: IME delivery window=0 handled=true
+2026-10-29T06:14:05.076854Z DEBUG turnstone::ime: shared document caret geometry window=0 x=104.19200897216797 y=105.5999984741211 width=1.0 height=33.0
+2026-10-29T06:14:05.140767Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:05.147111Z DEBUG turnstone::ime: IME delivery window=0 handled=true
+2026-10-29T06:14:05.173287Z DEBUG turnstone::ime: shared document caret geometry window=0 x=104.19200897216797 y=105.5999984741211 width=1.0 height=33.0
+2026-10-29T06:14:05.239460Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:05.245895Z DEBUG turnstone::ime: IME delivery window=0 handled=true
+2026-10-29T06:14:05.276535Z DEBUG turnstone::ime: shared document caret geometry window=0 x=104.19200897216797 y=105.5999984741211 width=1.0 height=33.0
+2026-10-29T06:14:05.339439Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:05.345858Z DEBUG turnstone::ime: IME delivery window=0 handled=true
+2026-10-29T06:14:05.359088Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=the identity is locked
+2026-10-29T06:14:05.372681Z DEBUG turnstone::ime: shared document caret geometry window=0 x=104.19200897216797 y=105.5999984741211 width=1.0 height=33.0
+2026-10-29T06:14:05.547422Z  INFO turnstone::shell::render: capture state open=false text= suggestions=0 surfaces=2 chrome=true nodes=13
+2026-10-29T06:14:05.581377Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:05.587747Z DEBUG turnstone::ime: IME delivery window=0 handled=true
+2026-10-29T06:14:05.784626Z DEBUG turnstone::ime: shared document caret geometry window=0 x=104.19200897216797 y=105.5999984741211 width=1.0 height=33.0
+2026-10-29T06:14:05.903104Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:05.912377Z DEBUG turnstone::ime: IME delivery window=0 handled=true
+2026-10-29T06:14:05.938431Z DEBUG turnstone::ime: shared document caret geometry window=0 x=114.61121368408203 y=108.80000305175781 width=1.100000023841858 height=36.29999923706055
+2026-10-29T06:14:06.000932Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:06.007528Z DEBUG turnstone::ime: IME delivery window=0 handled=true
+2026-10-29T06:14:06.038968Z DEBUG turnstone::ime: shared document caret geometry window=0 x=114.61121368408203 y=108.80000305175781 width=1.100000023841858 height=36.29999923706055
+2026-10-29T06:14:06.102462Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:06.108806Z DEBUG turnstone::ime: IME delivery window=0 handled=true
+2026-10-29T06:14:06.134889Z DEBUG turnstone::ime: shared document caret geometry window=0 x=114.61121368408203 y=108.80000305175781 width=1.100000023841858 height=36.29999923706055
+2026-10-29T06:14:06.200915Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:06.207742Z DEBUG turnstone::ime: IME delivery window=0 handled=true
+2026-10-29T06:14:06.238429Z DEBUG turnstone::ime: shared document caret geometry window=0 x=114.61121368408203 y=108.80000305175781 width=1.100000023841858 height=36.29999923706055
+2026-10-29T06:14:06.302029Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:06.308361Z DEBUG turnstone::ime: IME delivery window=0 handled=true
+2026-10-29T06:14:06.334297Z DEBUG turnstone::ime: shared document caret geometry window=0 x=114.61121368408203 y=108.80000305175781 width=1.100000023841858 height=36.29999923706055
+2026-10-29T06:14:06.361571Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=the identity is locked
+2026-10-29T06:14:06.397152Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:06.403479Z DEBUG turnstone::ime: IME delivery window=0 handled=true
+2026-10-29T06:14:06.434113Z DEBUG turnstone::ime: shared document caret geometry window=0 x=114.61121368408203 y=108.80000305175781 width=1.100000023841858 height=36.29999923706055
+2026-10-29T06:14:06.497666Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:06.504050Z DEBUG turnstone::ime: IME delivery window=0 handled=true
+2026-10-29T06:14:06.530384Z DEBUG turnstone::ime: shared document caret geometry window=0 x=114.61121368408203 y=108.80000305175781 width=1.100000023841858 height=36.29999923706055
+2026-10-29T06:14:06.593091Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:06.599325Z DEBUG turnstone::ime: IME delivery window=0 handled=true
+2026-10-29T06:14:06.632998Z DEBUG turnstone::ime: shared document caret geometry window=0 x=114.61121368408203 y=108.80000305175781 width=1.100000023841858 height=36.29999923706055
+2026-10-29T06:14:06.696119Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:06.702511Z DEBUG turnstone::ime: IME delivery window=0 handled=true
+2026-10-29T06:14:06.728643Z DEBUG turnstone::ime: shared document caret geometry window=0 x=114.61121368408203 y=108.80000305175781 width=1.100000023841858 height=36.29999923706055
+2026-10-29T06:14:06.790772Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:06.797047Z DEBUG turnstone::ime: IME delivery window=0 handled=true
+2026-10-29T06:14:06.828682Z DEBUG turnstone::ime: shared document caret geometry window=0 x=114.61121368408203 y=108.80000305175781 width=1.100000023841858 height=36.29999923706055
+2026-10-29T06:14:06.891279Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:06.897589Z DEBUG turnstone::ime: IME delivery window=0 handled=true
+2026-10-29T06:14:06.923885Z DEBUG turnstone::ime: shared document caret geometry window=0 x=114.61121368408203 y=108.80000305175781 width=1.100000023841858 height=36.29999923706055
+2026-10-29T06:14:06.985926Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:06.992277Z DEBUG turnstone::ime: IME delivery window=0 handled=true
+2026-10-29T06:14:07.023143Z DEBUG turnstone::ime: shared document caret geometry window=0 x=114.61121368408203 y=108.80000305175781 width=1.100000023841858 height=36.29999923706055
+2026-10-29T06:14:07.086260Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:07.092663Z DEBUG turnstone::ime: IME delivery window=0 handled=true
+2026-10-29T06:14:07.119071Z DEBUG turnstone::ime: shared document caret geometry window=0 x=114.61121368408203 y=108.80000305175781 width=1.100000023841858 height=36.29999923706055
+2026-10-29T06:14:07.180017Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:07.186692Z DEBUG turnstone::ime: IME delivery window=0 handled=true
+2026-10-29T06:14:07.217342Z DEBUG turnstone::ime: shared document caret geometry window=0 x=114.61121368408203 y=108.80000305175781 width=1.100000023841858 height=36.29999923706055
+2026-10-29T06:14:07.279697Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:07.286013Z DEBUG turnstone::ime: IME delivery window=0 handled=true
+2026-10-29T06:14:07.312288Z DEBUG turnstone::ime: shared document caret geometry window=0 x=114.61121368408203 y=108.80000305175781 width=1.100000023841858 height=36.29999923706055
+2026-10-29T06:14:07.363776Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=the identity is locked
+2026-10-29T06:14:07.374201Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:07.380461Z DEBUG turnstone::ime: IME delivery window=0 handled=true
+2026-10-29T06:14:07.411300Z DEBUG turnstone::ime: shared document caret geometry window=0 x=114.61121368408203 y=108.80000305175781 width=1.100000023841858 height=36.29999923706055
+2026-10-29T06:14:07.475134Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:07.481417Z DEBUG turnstone::ime: IME delivery window=0 handled=true
+2026-10-29T06:14:07.507701Z DEBUG turnstone::ime: shared document caret geometry window=0 x=114.61121368408203 y=108.80000305175781 width=1.100000023841858 height=36.29999923706055
+2026-10-29T06:14:07.570523Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:07.576794Z DEBUG turnstone::ime: IME delivery window=0 handled=true
+2026-10-29T06:14:07.607586Z DEBUG turnstone::ime: shared document caret geometry window=0 x=114.61121368408203 y=108.80000305175781 width=1.100000023841858 height=36.29999923706055
+2026-10-29T06:14:07.780589Z  INFO turnstone::shell::render: capture state open=false text= suggestions=0 surfaces=2 chrome=true nodes=13
+2026-10-29T06:14:07.807968Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:07.814255Z DEBUG turnstone::ime: IME delivery window=0 handled=true
+2026-10-29T06:14:08.003774Z DEBUG turnstone::ime: shared document caret geometry window=0 x=114.61121368408203 y=108.80000305175781 width=1.100000023841858 height=36.29999923706055
+2026-10-29T06:14:08.085097Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:08.138634Z DEBUG turnstone::ime: IME delivery window=0 handled=true
+2026-10-29T06:14:08.365561Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=the identity is locked
+2026-10-29T06:14:08.550553Z DEBUG turnstone::ime: shared document caret geometry window=0 x=667.5712280273438 y=205.99996948242188 width=1.100000023841858 height=36.29999923706055
+2026-10-29T06:14:08.644579Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:08.652375Z DEBUG turnstone::ime: IME delivery window=0 handled=true
+2026-10-29T06:14:08.904201Z DEBUG turnstone::ime: shared document caret geometry window=0 x=667.5712280273438 y=205.99996948242188 width=1.100000023841858 height=36.29999923706055
+2026-10-29T06:14:09.059354Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:09.070540Z DEBUG turnstone::ime: IME delivery window=0 handled=true
+2026-10-29T06:14:09.321094Z DEBUG turnstone::ime: shared document caret geometry window=0 x=667.5712280273438 y=205.99996948242188 width=1.100000023841858 height=36.29999923706055
+2026-10-29T06:14:09.367607Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=the identity is locked
+2026-10-29T06:14:09.449149Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:09.456924Z DEBUG turnstone::ime: IME delivery window=0 handled=true
+2026-10-29T06:14:09.699761Z DEBUG turnstone::ime: shared document caret geometry window=0 x=667.5712280273438 y=205.99996948242188 width=1.100000023841858 height=36.29999923706055
+2026-10-29T06:14:09.851101Z  INFO turnstone::shell::a11y_bridge: a11y_bridge: installed
+2026-10-29T06:14:10.051123Z DEBUG turnstone::ime: native IME event window=0 kind="disabled" utf8_bytes=0 selection=None
+2026-10-29T06:14:10.053643Z DEBUG turnstone::ime: IME delivery window=0 handled=false
+2026-10-29T06:14:10.053704Z DEBUG turnstone::ime: native IME event window=0 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:10.054906Z DEBUG turnstone::ime: IME delivery window=0 handled=false
+2026-10-29T06:14:10.369714Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=the identity is locked
+2026-10-29T06:14:10.918135Z DEBUG turnstone::ime: native IME event window=0 kind="disabled" utf8_bytes=0 selection=None
+2026-10-29T06:14:11.371862Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=the identity is locked
+2026-10-29T06:14:12.374119Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=the identity is locked
+2026-10-29T06:14:13.376103Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=the identity is locked
+2026-10-29T06:14:14.378282Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=the identity is locked
+2026-10-29T06:14:15.380219Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=the identity is locked
+2026-10-29T06:14:16.382464Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=the identity is locked
+2026-10-29T06:14:16.985815Z DEBUG turnstone::ime: native IME event window=1 kind="enabled" utf8_bytes=0 selection=None
+2026-10-29T06:14:16.996018Z DEBUG turnstone::ime: IME delivery window=1 handled=true
+2026-10-29T06:14:17.048834Z DEBUG turnstone::ime: shared document caret geometry window=1 x=515.6112060546875 y=141.8000030517578 width=1.100000023841858 height=36.29999923706055
+2026-10-29T06:14:17.324476Z DEBUG turnstone::ime: native IME event window=1 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:17.334075Z DEBUG turnstone::ime: IME delivery window=1 handled=true
+2026-10-29T06:14:17.334171Z DEBUG turnstone::ime: native IME event window=1 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:17.343937Z DEBUG turnstone::ime: IME delivery window=1 handled=true
+2026-10-29T06:14:17.384660Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=the identity is locked
+2026-10-29T06:14:17.392522Z DEBUG turnstone::ime: shared document caret geometry window=1 x=515.6112060546875 y=141.8000030517578 width=1.100000023841858 height=36.29999923706055
+2026-10-29T06:14:17.665621Z DEBUG turnstone::ime: native IME event window=1 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:17.675297Z DEBUG turnstone::ime: IME delivery window=1 handled=true
+2026-10-29T06:14:17.727989Z DEBUG turnstone::ime: shared document caret geometry window=1 x=515.6112060546875 y=141.8000030517578 width=1.100000023841858 height=36.29999923706055
+2026-10-29T06:14:18.003606Z DEBUG turnstone::ime: native IME event window=1 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:18.013237Z DEBUG turnstone::ime: IME delivery window=1 handled=true
+2026-10-29T06:14:18.061094Z DEBUG turnstone::ime: shared document caret geometry window=1 x=515.6112060546875 y=141.8000030517578 width=1.100000023841858 height=36.29999923706055
+2026-10-29T06:14:18.337649Z DEBUG turnstone::ime: native IME event window=1 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:18.347454Z DEBUG turnstone::ime: IME delivery window=1 handled=true
+2026-10-29T06:14:18.386877Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=the identity is locked
+2026-10-29T06:14:18.401104Z DEBUG turnstone::ime: shared document caret geometry window=1 x=515.6112060546875 y=141.8000030517578 width=1.100000023841858 height=36.29999923706055
+2026-10-29T06:14:18.678334Z DEBUG turnstone::ime: native IME event window=1 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:18.687980Z DEBUG turnstone::ime: IME delivery window=1 handled=true
+2026-10-29T06:14:18.735985Z DEBUG turnstone::ime: shared document caret geometry window=1 x=515.6112060546875 y=141.8000030517578 width=1.100000023841858 height=36.29999923706055
+2026-10-29T06:14:19.009224Z DEBUG turnstone::ime: native IME event window=1 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:19.018839Z DEBUG turnstone::ime: IME delivery window=1 handled=true
+2026-10-29T06:14:19.071893Z DEBUG turnstone::ime: shared document caret geometry window=1 x=515.6112060546875 y=141.8000030517578 width=1.100000023841858 height=36.29999923706055
+2026-10-29T06:14:19.346570Z DEBUG turnstone::ime: native IME event window=1 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:19.356278Z DEBUG turnstone::ime: IME delivery window=1 handled=true
+2026-10-29T06:14:19.388935Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=the identity is locked
+2026-10-29T06:14:19.404993Z DEBUG turnstone::ime: shared document caret geometry window=1 x=515.6112060546875 y=141.8000030517578 width=1.100000023841858 height=36.29999923706055
+2026-10-29T06:14:19.679182Z DEBUG turnstone::ime: native IME event window=1 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:19.688875Z DEBUG turnstone::ime: IME delivery window=1 handled=true
+2026-10-29T06:14:19.741568Z DEBUG turnstone::ime: shared document caret geometry window=1 x=515.6112060546875 y=141.8000030517578 width=1.100000023841858 height=36.29999923706055
+2026-10-29T06:14:20.028614Z DEBUG turnstone::ime: native IME event window=1 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:20.038334Z DEBUG turnstone::ime: IME delivery window=1 handled=true
+2026-10-29T06:14:20.087872Z DEBUG turnstone::ime: shared document caret geometry window=1 x=505.684814453125 y=141.8000030517578 width=1.100000023841858 height=36.29999923706055
+2026-10-29T06:14:20.360418Z DEBUG turnstone::ime: native IME event window=1 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:20.370088Z DEBUG turnstone::ime: IME delivery window=1 handled=true
+2026-10-29T06:14:20.391037Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=the identity is locked
+2026-10-29T06:14:20.423481Z DEBUG turnstone::ime: shared document caret geometry window=1 x=505.684814453125 y=141.8000030517578 width=1.100000023841858 height=36.29999923706055
+2026-10-29T06:14:20.699663Z DEBUG turnstone::ime: native IME event window=1 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:20.709298Z DEBUG turnstone::ime: IME delivery window=1 handled=true
+2026-10-29T06:14:20.757497Z DEBUG turnstone::ime: shared document caret geometry window=1 x=505.684814453125 y=141.8000030517578 width=1.100000023841858 height=36.29999923706055
+2026-10-29T06:14:21.032070Z DEBUG turnstone::ime: native IME event window=1 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:21.041787Z DEBUG turnstone::ime: IME delivery window=1 handled=true
+2026-10-29T06:14:21.094797Z DEBUG turnstone::ime: shared document caret geometry window=1 x=505.684814453125 y=141.8000030517578 width=1.100000023841858 height=36.29999923706055
+2026-10-29T06:14:21.370718Z DEBUG turnstone::ime: native IME event window=1 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:21.380408Z DEBUG turnstone::ime: IME delivery window=1 handled=true
+2026-10-29T06:14:21.392988Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=the identity is locked
+2026-10-29T06:14:21.429262Z DEBUG turnstone::ime: shared document caret geometry window=1 x=505.684814453125 y=141.8000030517578 width=1.100000023841858 height=36.29999923706055
+2026-10-29T06:14:21.703213Z DEBUG turnstone::ime: native IME event window=1 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:21.714758Z DEBUG turnstone::ime: IME delivery window=1 handled=true
+2026-10-29T06:14:21.767554Z DEBUG turnstone::ime: shared document caret geometry window=1 x=505.684814453125 y=141.8000030517578 width=1.100000023841858 height=36.29999923706055
+2026-10-29T06:14:22.049870Z DEBUG turnstone::ime: native IME event window=1 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:22.059611Z DEBUG turnstone::ime: IME delivery window=1 handled=true
+2026-10-29T06:14:22.108323Z DEBUG turnstone::ime: shared document caret geometry window=1 x=505.684814453125 y=141.8000030517578 width=1.100000023841858 height=36.29999923706055
+2026-10-29T06:14:22.386047Z DEBUG turnstone::ime: native IME event window=1 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:22.395140Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=the identity is locked
+2026-10-29T06:14:22.396146Z DEBUG turnstone::ime: IME delivery window=1 handled=true
+2026-10-29T06:14:22.449428Z DEBUG turnstone::ime: shared document caret geometry window=1 x=505.684814453125 y=141.8000030517578 width=1.100000023841858 height=36.29999923706055
+2026-10-29T06:14:22.731434Z DEBUG turnstone::ime: native IME event window=1 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:22.741136Z DEBUG turnstone::ime: IME delivery window=1 handled=true
+2026-10-29T06:14:22.790611Z DEBUG turnstone::ime: shared document caret geometry window=1 x=505.684814453125 y=141.8000030517578 width=1.100000023841858 height=36.29999923706055
+2026-10-29T06:14:23.067721Z DEBUG turnstone::ime: native IME event window=1 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:23.077617Z DEBUG turnstone::ime: IME delivery window=1 handled=true
+2026-10-29T06:14:23.130909Z DEBUG turnstone::ime: shared document caret geometry window=1 x=505.684814453125 y=141.8000030517578 width=1.100000023841858 height=36.29999923706055
+2026-10-29T06:14:23.397229Z  WARN turnstone::identity: profile identity pending: djinn is absent or locked error=the identity is locked
+2026-10-29T06:14:23.764555Z DEBUG turnstone::ime: native IME event window=1 kind="preedit" utf8_bytes=0 selection=None
+2026-10-29T06:14:23.774232Z DEBUG turnstone::ime: IME delivery window=1 handled=true
+2026-10-29T06:14:23.822718Z DEBUG turnstone::ime: shared document caret geometry window=1 x=505.684814453125 y=141.8000030517578 width=1.100000023841858 height=36.29999923706055

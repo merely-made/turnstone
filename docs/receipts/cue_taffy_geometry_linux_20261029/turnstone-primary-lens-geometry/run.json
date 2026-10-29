@@ -1,0 +1,33 @@
+{
+  "command": [
+    "nice",
+    "-n",
+    "10",
+    "<home>/.cargo/bin/cargo",
+    "+1.99.1",
+    "test",
+    "--locked",
+    "--offline",
+    "--lib",
+    "document_text_input_geometry",
+    "-j2",
+    "--message-format",
+    "json-render-diagnostics",
+    "--",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "cwd": "<Code>/worktrees/turnstone-taffy-geometry-20261029",
+  "source": "299d6ff7fb6f41cf109be93eb7384add2380436c",
+  "lock_sha256": "caecb4bd9e92e807331b5d17effd802bcf015dd0aba693e7ab0bb89489302cf2",
+  "started": 1793253965.5200996,
+  "exit": 0,
+  "elapsed_seconds": 187.765,
+  "test_counts": [
+    [
+      1,
+      0,
+      0
+    ]
+  ]
+}

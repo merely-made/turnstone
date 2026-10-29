@@ -1,0 +1,22 @@
+{
+  "command": [
+    "nice",
+    "-n",
+    "10",
+    "<home>/.cargo/bin/cargo",
+    "+1.99.1",
+    "metadata",
+    "--locked",
+    "--offline",
+    "--format-version",
+    "1",
+    "--filter-platform",
+    "x86_64-unknown-linux-gnu"
+  ],
+  "cwd": "<Code>/worktrees/wgpu-cue-taffy-geometry-20261029",
+  "source": "c314b7e3a2b2df4da2d9b0387b0c64c93b6b0e4d",
+  "lock_sha256": "dd1cbf80f2f4362d74f5c34a3f048ff5c9363a7d77326127eea913342644a67b",
+  "started": 1793253921.1937234,
+  "exit": 0,
+  "elapsed_seconds": 0.459
+}
