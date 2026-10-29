@@ -1,0 +1,15 @@
+{
+  "kernel": "Linux T-PC 7.2.11-200.fc44.x86_64 #1 SMP PREEMPT_DYNAMIC Thu Oct 15 15:58:58 UTC 2026 x86_64 GNU/Linux",
+  "rustc": "rustc 1.99.1 (58cf8f9c3 2026-10-13)",
+  "cargo": "cargo 1.99.1 (5f94df478 2026-08-27)",
+  "gnome": "GNOME Shell 50.6",
+  "disk": "Filesystem      Size  Used Avail Use% Mounted on\n/dev/nvme0n1p3  929G  572G  354G  62% /home",
+  "environment": {
+    "XDG_RUNTIME_DIR": "/run/user/1000",
+    "WAYLAND_DISPLAY": "wayland-0",
+    "XDG_SESSION_TYPE": "wayland",
+    "WGPU_BACKEND": "vulkan",
+    "VK_DRIVER_FILES": "/usr/share/vulkan/icd.d/radeon_icd.x86_64.json",
+    "DISPLAY": null
+  }
+}

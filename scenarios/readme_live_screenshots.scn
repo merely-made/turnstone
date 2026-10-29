@@ -1,0 +1,18 @@
+# README Workbench screenshot: a web page tiled beside a Gemini capsule drawn
+# in its per-site palette. Needs the network; run on a fresh TURNSTONE_ROOT.
+# The window is sized in logical pixels, so a 2x display captures 2400x1440;
+# the README copy is scaled to 1600 wide.
+resize 1200 720
+settle 30
+key escape
+open https://www.iana.org/
+settle 40
+act Open node in Workbench
+settle 40
+open gemini://geminiprotocol.net/
+settle 40
+act Open node in Workbench
+settle 80
+assert wb-cells == 2
+capture 03_workbench
+log README live screenshots complete

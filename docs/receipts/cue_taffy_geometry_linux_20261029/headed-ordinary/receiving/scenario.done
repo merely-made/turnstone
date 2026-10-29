@@ -1,0 +1,9 @@
+RESULT ok
+waited 66 frames
+waited 0 frames
+captured 01_primary_geometry
+captured 02_primary_zoom
+Shared geometry native primary and lens receiving complete
+presentation frames=193 captures=2 blank=0
+capture <Code>/output/cue-taffy-geometry-linux-20261029/headed-ordinary/receiving/01_primary_geometry.png digest=21ae8d10fd200722 blank=false
+capture <Code>/output/cue-taffy-geometry-linux-20261029/headed-ordinary/receiving/02_primary_zoom.png digest=3cbdb18e46ef491d blank=false
