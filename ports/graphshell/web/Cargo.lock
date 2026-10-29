@@ -2853,7 +2853,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
 dependencies = [
  "libc",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -4672,7 +4672,7 @@ dependencies = [
 [[package]]
 name = "insigne"
 version = "0.0.2"
-source = "git+https://github.com/merely-made/dramatis.git?branch=main#dc593a343258cdabd9743a5a57ba49e8b103a876"
+source = "git+https://github.com/merely-made/dramatis.git?branch=main#6711105e0284adb3e881fc9aebcc56f25000c1ca"
 dependencies = [
  "blake3",
  "ed25519-dalek",
@@ -6655,7 +6655,7 @@ dependencies = [
 [[package]]
 name = "notochord"
 version = "0.1.1"
-source = "git+https://github.com/merely-made/dramatis.git?branch=main#dc593a343258cdabd9743a5a57ba49e8b103a876"
+source = "git+https://github.com/merely-made/dramatis.git?branch=main#6711105e0284adb3e881fc9aebcc56f25000c1ca"
 dependencies = [
  "blake3",
  "insigne",
@@ -7707,7 +7707,7 @@ checksum = "9b4f627cb1b25917193a259e49bdad08f671f8d9708acfd5fe0a8c1455d87220"
 [[package]]
 name = "personae"
 version = "0.3.0"
-source = "git+https://github.com/merely-made/dramatis.git?branch=main#dc593a343258cdabd9743a5a57ba49e8b103a876"
+source = "git+https://github.com/merely-made/dramatis.git?branch=main#6711105e0284adb3e881fc9aebcc56f25000c1ca"
 dependencies = [
  "blake3",
  "chacha20poly1305 0.11.0",
@@ -9006,7 +9006,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys 0.12.1",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -9064,7 +9064,7 @@ dependencies = [
  "security-framework",
  "security-framework-sys",
  "webpki-root-certs",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -9682,7 +9682,7 @@ dependencies = [
  "regex",
  "rustc-hash 2.1.3",
  "sha1",
- "sha2 0.11.0",
+ "sha2 0.10.9",
  "sparesults",
  "spargebra",
  "sparopt",
@@ -10089,7 +10089,7 @@ dependencies = [
  "getrandom 0.4.3",
  "once_cell",
  "rustix 1.1.5",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -11675,7 +11675,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.61.2",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]
