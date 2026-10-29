@@ -1364,11 +1364,11 @@ fn owner_lifecycle_actual_history_forget_completion_updates_canvas_before_projec
             canvas.graph().get_node_by_id(captured).is_some(),
             "the real async request returns before completion installs its owner"
         );
-        crate::local_scene::reconcile_completed_graph(
+        crate::local_scene::adopt_host_graph(
             &mut canvas,
             Some(owner),
             app.host.graph_session().id().0,
-            app.host.graph(),
+            &app.host,
         );
         assert!(canvas.graph().get_node_by_id(captured).is_none());
         canvas
@@ -1400,7 +1400,7 @@ fn owner_lifecycle_async_completion_new_actual_owner_releases_old_region() {
     let bytes = codicil(&app, member);
     app.host.replace_with_product_codicil(&bytes).unwrap();
     let b = app.host.graph_session().id().0;
-    crate::local_scene::reconcile_completed_graph(&mut canvas, Some(a), b, app.host.graph());
+    crate::local_scene::adopt_host_graph(&mut canvas, Some(a), b, &app.host);
     assert_ne!(a, b);
     assert!(canvas.forme_region().is_none());
     assert_eq!(
@@ -1505,11 +1505,11 @@ fn owner_lifecycle_failed_real_intake_persistence_still_reconciles_returned_app(
             "failed persistence retains the real admitted in-memory edit"
         );
         assert!(canvas.graph().get_node_by_id(added).is_none());
-        crate::local_scene::reconcile_completed_graph(
+        crate::local_scene::adopt_host_graph(
             &mut canvas,
             Some(owner),
             app.host.graph_session().id().0,
-            app.host.graph(),
+            &app.host,
         );
         assert!(canvas.graph().get_node_by_id(added).is_some());
         canvas
@@ -1576,11 +1576,11 @@ fn owner_lifecycle_failed_real_detail_persistence_reconciles_facet_and_preserves
             Some(&serde_json::json!({"reviewed":true}))
         );
         assert!(canvas.graph().facets().get(&member, &facet).is_none());
-        crate::local_scene::reconcile_completed_graph(
+        crate::local_scene::adopt_host_graph(
             &mut canvas,
             Some(owner),
             app.host.graph_session().id().0,
-            app.host.graph(),
+            &app.host,
         );
         assert_eq!(
             canvas.graph().facets().get(&member, &facet),
@@ -1644,11 +1644,11 @@ fn owner_lifecycle_successful_actual_metadata_completion_keeps_unpaused_physics_
             crate::local_edit::save_metadata(&mut app, member, "Retained title", "reviewed", 5)
                 .await
                 .unwrap();
-        crate::local_scene::reconcile_completed_graph(
+        crate::local_scene::adopt_host_graph(
             &mut canvas,
             Some(owner),
             app.host.graph_session().id().0,
-            app.host.graph(),
+            &app.host,
         );
         assert!(!canvas.physics_paused());
         assert!(
@@ -1694,11 +1694,11 @@ fn owner_lifecycle_failed_actual_facet_completion_keeps_unpaused_physics_parked(
             .await
             .is_err()
         );
-        crate::local_scene::reconcile_completed_graph(
+        crate::local_scene::adopt_host_graph(
             &mut canvas,
             Some(owner),
             app.host.graph_session().id().0,
-            app.host.graph(),
+            &app.host,
         );
         assert!(!canvas.physics_paused());
         assert!(
@@ -1736,11 +1736,11 @@ fn owner_lifecycle_actual_structural_completion_still_ingests_addition_and_remov
         canvas.graph().get_node_by_id(added).is_none(),
         "refused metadata refresh is atomic"
     );
-    crate::local_scene::reconcile_completed_graph(
+    crate::local_scene::adopt_host_graph(
         &mut canvas,
         Some(owner),
         app.host.graph_session().id().0,
-        app.host.graph(),
+        &app.host,
     );
     let key = canvas.graph().get_node_key_by_id(added).unwrap();
     assert!(
@@ -1760,11 +1760,11 @@ fn owner_lifecycle_actual_structural_completion_still_ingests_addition_and_remov
             .is_err()
     );
     assert!(canvas.graph().get_node_by_id(added).is_some());
-    crate::local_scene::reconcile_completed_graph(
+    crate::local_scene::adopt_host_graph(
         &mut canvas,
         Some(owner),
         app.host.graph_session().id().0,
-        app.host.graph(),
+        &app.host,
     );
     assert!(canvas.graph().get_node_by_id(added).is_none());
     assert!(canvas.is_settling());

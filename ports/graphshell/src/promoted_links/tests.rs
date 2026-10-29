@@ -378,3 +378,53 @@ fn drift_distinguishes_added_changed_missing_and_receiver_coverage() {
         "missing endpoints are not reported as no current assertions"
     );
 }
+
+/// The pair gesture and the link inspector apply one rule: the persona's own
+/// statement in its own scope with no method goes; a foreign, imported or
+/// method-backed one stays.
+#[test]
+fn the_pair_gesture_withdraws_only_what_the_link_rule_allows() {
+    let persona = selected_persona();
+    let actor = Author::person(persona.persona.clone()).asserter_iri();
+    let statement = |scope: GraphScope, method: Option<AssertionMethod>| {
+        mere::kernel::graph::SemanticStatement {
+            statement_id: "urn:uuid:00000000-0000-0000-0000-000000000001".into(),
+            predicate: "https://mere.computer/ns/rel#cites".into(),
+            recognized_sub_kind: None,
+            label: None,
+            basis: AssertionBasis {
+                method,
+                ..AssertionBasis::default()
+            },
+            graph_scope: scope,
+            provenance_iri: Some(actor.clone()),
+            first_asserted_ms: None,
+            asserted_at_ms: None,
+            withdrawn: None,
+        }
+    };
+    let allow = withdraw_policy(&persona);
+    assert!(
+        allow(&statement(GraphScope::Default, None)),
+        "a gesture-drawn relation"
+    );
+    assert!(
+        allow(&statement(GraphScope::User, None)),
+        "a personal assertion"
+    );
+    assert!(
+        !allow(&statement(GraphScope::Source, None)),
+        "an imported statement stays"
+    );
+    let inferred = AssertionMethod {
+        iri: "https://example.test/method".into(),
+        version: None,
+    };
+    assert!(
+        !allow(&statement(GraphScope::User, Some(inferred))),
+        "a method-backed one stays"
+    );
+    let mut foreign = statement(GraphScope::User, None);
+    foreign.provenance_iri = Some("https://example.test/someone-else".into());
+    assert!(!allow(&foreign), "another asserter's statement stays");
+}

@@ -9,6 +9,9 @@
 //! G1 adds a native semantic view over the portable client state. Networking,
 //! product models, and source authority remain injected at the edge.
 
+#[cfg(all(feature = "alembic-workshop", not(target_arch = "wasm32")))]
+pub mod alembic_workshop;
+
 #[cfg(feature = "editable-blocks")]
 pub mod block_editing;
 pub mod bound_actions;

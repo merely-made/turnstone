@@ -8,6 +8,11 @@ repository.workspace = true
 description = "Graphshell presentation host and loopback acceptance view."
 autobins = false
 
+[[bin]]
+name = "graphshell-alembic"
+path = "src/bin/graphshell_alembic.rs"
+required-features = ["alembic-workshop"]
+
 [[example]]
 name = "retained_content_fixture"
 required-features = ["retained-content"]
@@ -19,6 +24,10 @@ required-features = ["caller-owned-toolkit-bench"]
 [[example]]
 name = "projection_dynamics_receipt"
 required-features = ["web"]
+
+[[test]]
+name = "alembic_workshop_process"
+required-features = ["alembic-workshop"]
 
 [[test]]
 name = "moot_resources"
@@ -33,6 +42,7 @@ name = "moot_resources_reopen"
 required-features = ["moot-resources"]
 
 [features]
+alembic-workshop = ["web", "dep:athanor", "athanor/workshop-destination", "athanor/workshop-worker", "dep:alembic", "alembic/workshop-native", "muniment/directory", "dep:pollster", "dep:cambium-desktop", "dep:servitor", "dep:blake3"]
 # One holder-owned graph with an explicitly invited guest.
 coop = ["native", "web", "muniment/redb", "dep:pollster", "graphshell-client/pump"]
 coop-window = ["coop", "dep:cambium-desktop", "dep:mien", "dep:genet-scripted-dom", "dep:layout_dom_api", "dep:image"]
@@ -173,6 +183,8 @@ personal-sync = [
 ]
 
 [dependencies]
+athanor = { package = "mere-athanor", path = "../distillery/athanor", default-features = false, optional = true }
+alembic = { workspace = true, optional = true }
 wgpu-cue = { workspace = true, optional = true }
 cue-netrender = { workspace = true, optional = true }
 knot-editor-host = { workspace = true, optional = true }

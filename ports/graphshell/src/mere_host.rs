@@ -232,6 +232,10 @@ mod resident_presentation;
 #[path = "mere_host_resident.rs"]
 mod resident_transaction;
 
+#[cfg(feature = "alembic-workshop")]
+#[path = "mere_host_alembic.rs"]
+mod alembic_owner;
+
 /// Changes not yet stored, taken as one batch by [`MereHost::prepare_store`]
 /// for its caller to write. Mark it stored once it commits.
 pub struct Staged {

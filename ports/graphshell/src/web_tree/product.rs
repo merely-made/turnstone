@@ -1227,11 +1227,11 @@ impl SavedProduct {
                     .is_some_and(|coupling| {
                         !canvas.graph().couplings().any(|held| held == coupling)
                     });
-            graphshell::local_scene::reconcile_completed_graph(
+            graphshell::local_scene::adopt_host_graph(
                 canvas,
                 previous_owner,
                 owner,
-                app.host.graph(),
+                &app.host,
             );
             if coupling_changed {
                 // The graph is already coherent; retain the coupling editor's
@@ -1358,11 +1358,11 @@ impl SavedProduct {
         if let Some((app, pending_operation, result)) = operation {
             let owner = app.host.graph_session().id().0;
             let owner_changed = self.session.parse().ok() != Some(owner);
-            graphshell::local_scene::reconcile_completed_graph(
+            graphshell::local_scene::adopt_host_graph(
                 canvas,
                 self.session.parse().ok(),
                 owner,
-                app.host.graph(),
+                &app.host,
             );
             self.session = owner.to_string();
             if owner_changed || self.operation_reconciles_graph {
@@ -1406,11 +1406,11 @@ impl SavedProduct {
         };
         let owner = app.host.graph_session().id().0;
         let owner_changed = self.session.parse().ok() != Some(owner);
-        graphshell::local_scene::reconcile_completed_graph(
+        graphshell::local_scene::adopt_host_graph(
             canvas,
             self.session.parse().ok(),
             owner,
-            app.host.graph(),
+            &app.host,
         );
         self.session = owner.to_string();
         self.forme_reconcile_session = Some(owner);
