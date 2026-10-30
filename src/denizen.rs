@@ -38,8 +38,8 @@ use identity::IdentityProvider;
 use insigne::delegation::SignedDelegationCertificate;
 use muniment::{Journal, LogId};
 use servitor::delegation::{DelegationTable, root_certificate};
-use servitor::{Cap, Gate, Grant, Mode, Subject};
 use servitor::resident::{BodyRevision, Lifecycle, ResidentBinding};
+use servitor::{Cap, Gate, Grant, Mode, Subject};
 use uuid::Uuid;
 
 use crate::app::App;
@@ -52,20 +52,6 @@ pub const SCENARIO_SOURCE_FACET: &str = "scenario.source";
 /// session's `denizens/` dir. The bytes live on disk (never in a facet); the
 /// facet is the pointer, exactly like the world's log id is a pointer.
 pub const COMPONENT_FACET: &str = "component.file";
-
-/// The capability covering the app's READ face (the observe tier). Not an
-/// emission ring, since nothing is dispatched by reading, so every resident
-/// gets it and the rings are what the review actually asks for.
-pub fn read_cap() -> Cap {
-    Cap::Power("read".to_string())
-}
-
-/// The capability a resident holds over its OWN nested world: a scope, not a
-/// power, because a world is a place with an unbounded interior and prefix
-/// containment is exactly what is wanted there.
-pub fn world_cap() -> Cap {
-    Cap::Scope(servitor::ScopePath::parse(SCENARIO_SCOPE).expect("a valid scope"))
-}
 
 /// The capability path a rung-1 scenario participant is granted over its own
 /// nested world (`Mode::Write`). The visible review names it.
@@ -84,26 +70,6 @@ pub enum PackBody {
     Scenario(String),
     /// An `app-core` wasm component (`.wasm`).
     Component(Vec<u8>),
-}
-
-impl PackBody {
-    /// The participant kind this body resides as.
-    pub fn kind(&self) -> pandect::DenizenKind {
-        match self {
-            PackBody::Scenario(_) => pandect::DenizenKind::Scenario,
-            PackBody::Component(_) => pandect::DenizenKind::Pack,
-        }
-    }
-
-    /// How the review names the runnable. Short on purpose: the whole ask
-    /// has to fit one palette row without clipping, and what matters in it
-    /// is the RINGS.
-    pub fn noun(&self) -> &'static str {
-        match self {
-            PackBody::Scenario(_) => "lua",
-            PackBody::Component(_) => "wasm",
-        }
-    }
 }
 
 /// A staged install awaiting the VISIBLE grant review: nothing is minted, no
@@ -134,66 +100,6 @@ pub struct PendingInstall {
     /// Actuation stability declared by `-- @deadband <change> <interval-ms>`.
     /// The script must pair it with `mere.output(value)` on every run.
     pub deadband: Option<servitor::Deadband>,
-}
-
-/// The address a pack asks to wake on: the first `-- @watch <url>` line.
-///
-/// A comment so an undeclared pack is still ordinary Lua, and a header so it
-/// is visible in the first screenful of the file a reviewer reads.
-pub fn parse_watch(source: &str) -> Option<String> {
-    source.lines().find_map(|line| {
-        let rest = line
-            .trim()
-            .strip_prefix("--")?
-            .trim()
-            .strip_prefix("@watch")?;
-        let url = rest.trim();
-        (!url.is_empty()).then(|| url.to_string())
-    })
-}
-
-/// Parse a behavior's actuation deadband.
-///
-/// Both numbers are positive integers. A malformed declaration refuses the
-/// install instead of silently admitting the behavior without the bound it
-/// claimed to carry.
-pub fn parse_deadband(source: &str) -> Result<Option<servitor::Deadband>, String> {
-    let Some(raw) = source.lines().find_map(|line| {
-        line.trim()
-            .strip_prefix("--")?
-            .trim()
-            .strip_prefix("@deadband")
-            .map(str::trim)
-    }) else {
-        return Ok(None);
-    };
-    let mut parts = raw.split_whitespace();
-    let minimum_change: u64 = parts
-        .next()
-        .ok_or_else(|| "@deadband requires <minimum-change> <minimum-interval-ms>".to_string())?
-        .parse()
-        .map_err(|_| "@deadband minimum change must be a positive integer".to_string())?;
-    let minimum_interval_ms: u64 = parts
-        .next()
-        .ok_or_else(|| "@deadband requires <minimum-change> <minimum-interval-ms>".to_string())?
-        .parse()
-        .map_err(|_| "@deadband minimum interval must be a positive integer".to_string())?;
-    if parts.next().is_some() {
-        return Err("@deadband takes exactly two integers".to_string());
-    }
-    servitor::Deadband::new(minimum_change, minimum_interval_ms)
-        .map(Some)
-        .map_err(|err| format!("invalid @deadband: {err}"))
-}
-
-/// The default ring profile a staged pack arrives with. Control rings
-/// (navigate / panes / dispatch) are what a helper needs to be useful; the
-/// session ring (fork / close / delete / recover) is destructive, so it is
-/// never preselected — a pack that wants it must be granted it deliberately.
-/// Host-only is not a profile choice at all: no grant can cover it.
-pub fn default_rings() -> Vec<crate::ring::Ring> {
-    use crate::ring::Ring;
-    vec![Ring::Navigate, Ring::Panes, Ring::Dispatch]
 }
 
 /// One resident participant's live half: its subject and its nested world,
@@ -232,1070 +138,114 @@ pub struct Denizens {
     pub admission_error: Option<String>,
 }
 
-impl Denizens {
-    /// A runtime whose delegation chains must root at `root` — the profile
-    /// identity's master key. A table rooted anywhere else verifies nothing,
-    /// so this is set at construction, never after certificates arrive.
-    pub fn new(root: [u8; 32]) -> Self {
-        Self {
-            authority: DelegationTable::new(root),
-            ..Self::default()
-        }
-    }
-
-    /// A runtime with no profile root yet: the vault is locked, so it holds
-    /// no certificate and covers nothing (vault lock ruling 35). The adopt
-    /// path rebuilds it under the root once the vault unlocks.
-    pub fn pending() -> Self {
-        Self::default()
-    }
-
-    /// Whether any participant resides in the session.
-    pub fn is_empty(&self) -> bool {
-        self.residents.is_empty()
-    }
-}
-
-/// Stage a `.lua` file as a pending install: read it, derive the subject,
-/// and surface the review. `Err` is a human-readable refusal (unreadable
-/// file, empty source).
-pub fn stage_install(path: &Path) -> Result<PendingInstall, String> {
-    let bytes = std::fs::read(path).map_err(|err| format!("unreadable pack: {err}"))?;
-    if bytes.is_empty() {
-        return Err("the pack is empty".to_string());
-    }
-    // The subject is the bytes' blake3 either way: the same pack is the same
-    // participant whichever lane runs it, and an edited pack faces a fresh review.
-    let subject = Subject::new(*blake3::hash(&bytes).as_bytes());
-    let is_component = path
-        .extension()
-        .and_then(|e| e.to_str())
-        .is_some_and(|e| e.eq_ignore_ascii_case("wasm"));
-    let body = if is_component {
-        PackBody::Component(bytes)
-    } else {
-        let source = String::from_utf8(bytes).map_err(|_| {
-            "the pack is not valid UTF-8 (a component must end in .wasm)".to_string()
-        })?;
-        if source.trim().is_empty() {
-            return Err("the pack is empty".to_string());
-        }
-        PackBody::Scenario(source)
-    };
-    let (watch_url, deadband) = match &body {
-        PackBody::Scenario(source) => (parse_watch(source), parse_deadband(source)?),
-        // A component declares no watch yet: its bytes carry no comment lane.
-        PackBody::Component(_) => (None, None),
-    };
-    let label = path
-        .file_stem()
-        .and_then(|s| s.to_str())
-        .unwrap_or("participant")
-        .to_string();
-    Ok(PendingInstall {
-        path: path.to_path_buf(),
-        label,
-        body,
-        subject,
-        rings: default_rings(),
-        watch_url,
-        deadband,
-    })
-}
-
-/// Where a component participant's `.wasm` lives: `sessions/<id>/denizens/<subject>.wasm`
-/// (beside the worlds — a resident's whole substance in one place).
-pub fn component_path(session_dir: &Path, file: &str) -> PathBuf {
-    session_dir.join("denizens").join(file)
-}
-
-/// The review line the palette shows on the Confirm row — the ASK, visible
-/// before any grant exists.
-pub fn review_line(pending: &PendingInstall) -> String {
-    let rings = pending
-        .rings
-        .iter()
-        .map(|r| r.name())
-        .collect::<Vec<_>>()
-        .join(", ");
-    // One row, no clipping: the label, the lane, and the RINGS this install
-    // would grant. `own world` stands for the `scenario/` scope every
-    // resident gets over its own nested graph.
-    // The watch is part of the ask: a reviewer is owed *when this runs* beside
-    // *what it may touch*, before either is granted.
-    let wakes = match &pending.watch_url {
-        Some(url) => match url.strip_prefix("every/") {
-            // A schedule reads as a period, not as a path: "wakes on: every
-            // hour" is the sentence a reviewer is being asked to grant.
-            Some(period) => format!(" — wakes on: every {period}"),
-            None => format!(" — wakes on: {url}"),
-        },
-        None => String::new(),
-    };
-    let deadband = pending.deadband.map_or_else(String::new, |band| {
-        format!(
-            " — deadband: change >= {}, interval >= {} ms",
-            band.minimum_change(),
-            band.minimum_interval_ms()
-        )
-    });
-    format!(
-        "Install {} ({}) — grants: {}, own world{}{} — Confirm",
-        pending.label,
-        pending.body.noun(),
-        rings,
-        wakes,
-        deadband
-    )
-}
-
-/// The participant node's address: subject-derived, so the same pack is the same
-/// node identity-wise across installs.
-pub fn denizen_url(subject: Subject) -> String {
-    format!("mere://denizen/{}", &subject.to_hex()[..16])
-}
-
-/// Where a participant's nested log persists, beside the session's other state:
-/// `sessions/<id>/denizens/<log-id>.json`.
-pub fn nested_log_path(session_dir: &Path, log_id: &str) -> PathBuf {
-    session_dir.join("denizens").join(format!("{log_id}.json"))
-}
-
-/// Where an ARCHIVED world sits while its bearer is in the recycle bin:
-/// `sessions/<id>/denizens/archive/<log-id>.json` (the file-level echo of
-/// chartulary's `archive/nested/...` slot convention).
-pub fn archived_world_path(session_dir: &Path, log_id: &str) -> PathBuf {
-    session_dir
-        .join("denizens")
-        .join("archive")
-        .join(format!("{log_id}.json"))
-}
-
-/// Archive a world: move its live file to the archive slot (archive-never-
-/// orphan — the move happens BEFORE the bearing node leaves the graph, and a
-/// failure aborts the delete). A world with no live file is fine: there is
-/// nothing to move, recovery starts it empty as always.
-pub fn archive_world(session_dir: &Path, log_id: &str) -> std::io::Result<()> {
-    let live = nested_log_path(session_dir, log_id);
-    if !live.is_file() {
-        return Ok(());
-    }
-    let archived = archived_world_path(session_dir, log_id);
-    if let Some(parent) = archived.parent() {
-        std::fs::create_dir_all(parent)?;
-    }
-    std::fs::rename(&live, &archived)
-}
-
-/// Recover a world: move its archived file back to the live slot. A missing
-/// archive is fine (the world had no file, or an older build deleted without
-/// archiving) — the resident rebuilds on an empty world.
-pub fn unarchive_world(session_dir: &Path, log_id: &str) -> std::io::Result<()> {
-    let archived = archived_world_path(session_dir, log_id);
-    if !archived.is_file() {
-        return Ok(());
-    }
-    let live = nested_log_path(session_dir, log_id);
-    if let Some(parent) = live.parent() {
-        std::fs::create_dir_all(parent)?;
-    }
-    std::fs::rename(&archived, &live)
-}
-
-/// Complete a forget: remove the archived world of a purged tombstone
-/// (emptying the bin, or athanor's retirement pass). Best-effort — the
-/// tombstone is already gone; a leftover file is litter, not data loss.
-pub fn purge_archived_world(session_dir: &Path, log_id: &str) {
-    let archived = archived_world_path(session_dir, log_id);
-    if archived.is_file()
-        && let Err(err) = std::fs::remove_file(&archived)
-    {
-        tracing::warn!(%err, log_id, "failed to purge an archived participant world");
-    }
-}
-
-/// Persist a resident's nested log (whole-log JSON; the log IS the graph).
-/// Best-effort like every sidecar: a failed save warns, never panics.
-pub fn save_nested(session_dir: &Path, log_id: &str, nested: &GraphLog<Container, Relation>) {
-    let target = nested_log_path(session_dir, log_id);
-    let result = (|| -> std::io::Result<()> {
-        if let Some(parent) = target.parent() {
-            std::fs::create_dir_all(parent)?;
-        }
-        let json = serde_json::to_string_pretty(nested.log()).map_err(std::io::Error::other)?;
-        std::fs::write(&target, json)
-    })();
-    if let Err(err) = result {
-        tracing::warn!(%err, path = ?target, "failed to persist a participant's nested log");
-    }
-}
-
-/// Load a resident's nested log; `None` when absent or unreadable (the
-/// participant then starts on an empty world — its binding still stands).
-pub fn load_nested(session_dir: &Path, log_id: &str) -> Option<GraphLog<Container, Relation>> {
-    let path = nested_log_path(session_dir, log_id);
-    let text = std::fs::read_to_string(&path).ok()?;
-    match serde_json::from_str::<Journal<chartulary::Batch<Container, Relation>>>(&text) {
-        Ok(log) => Some(GraphLog::replay(log)),
-        Err(err) => {
-            tracing::warn!(%err, path = ?path, "failed to parse a participant's nested log");
-            None
-        }
-    }
-}
-
-/// Rebuild the participant runtime from durable truth on adopt: every
-/// `denizen.binding` facet names a resident; the graph node's `nested` field
-/// names its borne world (structure), whose log loads from disk (or starts
-/// empty), and its authority derives from the **grant projections** in that
-/// log — the projection is the readable record, the provider the derived
-/// index, so authority is never stored twice.
-///
-/// A binding written before the containment ruling named the world itself
-/// (`legacy_nested_log`); such a resident still rebuilds, and the member goes
-/// on [`Denizens::legacy_heals`] so the adopt path can move the pointer onto
-/// the node and rewrite the facet without it.
-///
-/// `root` is the profile root's public key, or `None` while the identity is
-/// pending (the vault is locked). A pending rebuild adopts no certificate, so
-/// every resident fails closed, and it writes nothing: it never imports
-/// admission state, which needs a verified chain.
-pub fn rebuild(
-    app_facets: &pandect::NodeFacetStore,
-    graph: &mere::kernel::graph::Graph,
-    session_dir: &Path,
-    root: Option<[u8; 32]>,
-) -> Denizens {
-    let mut denizens = root.map_or_else(Denizens::pending, Denizens::new);
-    denizens.authority.set_now(now_ms());
-    let admission_path = crate::resident_admission::path(session_dir);
-    let missing_admission_state = match admission_path.try_exists() {
-        Ok(missing) => !missing,
-        Err(err) => {
-            denizens.admission_error = Some(format!("cannot inspect resident admission state: {err}"));
-            false
-        }
-    };
-    let mut imported_admission_state = false;
-    if !missing_admission_state {
-        match crate::resident_admission::load(session_dir) {
-            Ok(state) => denizens.admissions = state,
-            Err(err) => {
-                denizens.admission_error = Some(err.clone());
-                tracing::warn!(%err, "participant admission state is corrupt; all residents fail closed");
-            }
-        }
-    }
-    for (member, binding) in pandect::read_denizen_bindings(app_facets) {
-        let Ok(raw) = hex_to_bytes(&binding.subject) else {
-            tracing::warn!(member = %member, "participant binding with unparseable subject; skipped");
-            continue;
-        };
-        let subject = Subject::new(raw);
-        let borne = graph
-            .get_node_key_by_id(member)
-            .and_then(|key| graph.get_node(key))
-            .and_then(|node| node.nested.as_ref())
-            .map(|log| log.as_str().to_string());
-        let log_id = match borne {
-            Some(id) => id,
-            None if !binding.legacy_nested_log.is_empty() => {
-                denizens
-                    .legacy_heals
-                    .push((member, binding.legacy_nested_log.clone()));
-                binding.legacy_nested_log.clone()
-            }
-            None => {
-                tracing::warn!(member = %member, "participant binding on a node bearing no world; skipped");
-                continue;
-            }
-        };
-        let nested = load_nested(session_dir, &log_id)
-            .unwrap_or_else(|| GraphLog::with_id(LogId::new(log_id.clone())));
-        // The AUTHORITY is the signed certificate chain (C4). Adopt what was
-        // persisted; validity is re-verified on every read, never trusted
-        // because it was stored.
-        //
-        // A projection is an audit record, never authority that can mint a
-        // replacement certificate. Missing, malformed, or re-rooted chains
-        // therefore stay refused until an owner explicitly installs again.
-        let stored = load_certs(session_dir, &subject.to_hex());
-        let verifies = root.is_some_and(|root| {
-            let mut probe = servitor::delegation::DelegationTable::new(root);
-            for cert in &stored {
-                probe.adopt(cert.clone());
-            }
-            stored.iter().any(|cert| probe.verify_chain(cert).is_ok())
-        });
-        for cert in stored.into_iter().filter(|_| verifies) {
-            denizens.authority.adopt(cert);
-        }
-        let label = app_facets
-            .get(&member, &chartulary::FacetId::new("scenario.label"))
-            .and_then(|v| v.as_str().map(str::to_string))
-            .unwrap_or_else(|| log_id[..8.min(log_id.len())].to_string());
-        let body = resident_body(app_facets, member, session_dir);
-        let revision = body.as_deref().map(crate::resident_admission::body_revision);
-        // Content-derived legacy bindings must agree with the body that is
-        // actually present. A different body never inherits the old grant.
-        let body_matches_subject = revision.is_some_and(|revision| revision.0 == raw);
-        let binding = match (denizens.admissions.get(member), revision, verifies && body_matches_subject) {
-            (Some(record), Some(revision), _) if record.binding.id == crate::resident_admission::resident_id(member)
-                && record.binding.subject == subject && record.binding.revision == revision => record.binding.clone(),
-            (None, Some(revision), true) if missing_admission_state => {
-                imported_admission_state = true;
-                let record = crate::resident_admission::ResidentAdmissions::active(member, subject, revision);
-                let binding = record.binding.clone();
-                denizens.admissions.insert(member, record);
-                binding
-            }
-            (_, Some(revision), _) => crate::resident_admission::ResidentAdmissions::revoked(member, subject, revision).binding,
-            (_, None, _) => crate::resident_admission::ResidentAdmissions::revoked(member, subject, BodyRevision([0; 32])).binding,
-        };
-        if !body_matches_subject {
-            tracing::warn!(member = %member, "participant body does not match its content-derived subject; refused");
-        }
-        denizens.residents.insert(
-            member,
-            Resident {
-                subject,
-                label,
-                nested,
-                binding,
-            },
-        );
-    }
-    if imported_admission_state
-        && let Err(err) = crate::resident_admission::save(session_dir, &denizens.admissions)
-    {
-        tracing::warn!(%err, "cannot persist imported participant admission state; refusing imported residents");
-        for resident in denizens.residents.values_mut() {
-            resident.binding.lifecycle = Lifecycle::Revoked;
-        }
-    }
-    denizens
-}
-
-fn resident_body(
-    facets: &pandect::NodeFacetStore,
-    member: Uuid,
-    session_dir: &Path,
-) -> Option<Vec<u8>> {
-    let source = facets
-        .get(&member, &chartulary::FacetId::new(SCENARIO_SOURCE_FACET))
-        .and_then(|value| value.as_str())
-        .map(|source| source.as_bytes().to_vec());
-    if source.is_some() { return source; }
-    let component = facets
-        .get(&member, &chartulary::FacetId::new(COMPONENT_FACET))
-        .and_then(|value| value.as_str())?;
-    std::fs::read(component_path(session_dir, component)).ok()
-}
-
-fn hex_to_bytes(hex: &str) -> Result<[u8; 32], ()> {
-    if hex.len() != 64 {
-        return Err(());
-    }
-    let mut out = [0u8; 32];
-    for (i, chunk) in hex.as_bytes().chunks(2).enumerate() {
-        let s = std::str::from_utf8(chunk).map_err(|_| ())?;
-        out[i] = u8::from_str_radix(s, 16).map_err(|_| ())?;
-    }
-    Ok(out)
-}
-
-/// Where a participant's signed delegation certificates persist:
-/// `sessions/<id>/denizens/<subject>.certs.json`. The certificate is a signed
-/// blob, so it lives beside the world rather than inside the browsable graph;
-/// the grant projection stays the human-readable audit record of the same
-/// grant.
-/// Where a session's standing subscriptions live, beside the bindings and
-/// certificates.
-///
-/// One file rather than one per subject, unlike certificates: a watch table is
-/// read and written whole (its cursors advance together at each drain), so
-/// splitting it would mean a directory scan to answer one question.
-pub fn watches_path(session_dir: &Path) -> PathBuf {
-    session_dir.join("denizens").join("watches.txt")
-}
-
-/// Persist the three watch tables and the actuation deadband table.
-///
-/// **Persisted rather than re-derived from the pack sources**, which would
-/// also have worked and would have kept one source of truth. The reason is
-/// what re-deriving loses: a rebuilt graph watch restarts its cursor at zero
-/// and would re-wake on the whole journal it had already considered, and a
-/// rebuilt schedule restarts its period, so a daily behavior reinstalled by a
-/// restart never fires for anyone who reopens their session each morning.
-/// Cursors and phase are state, not declaration.
-///
-/// Tagged lines, because the four tables share one file and their records are
-/// not distinguishable by shape alone.
-pub fn save_watches(
-    session_dir: &Path,
-    graph: &servitor::WatchTable,
-    app: &servitor::WatchTable,
-    time: &servitor::TimeWatchTable,
-    deadbands: &servitor::DeadbandTable,
-) {
-    let mut lines: Vec<String> = Vec::new();
-    lines.extend(
-        graph
-            .to_wire_lines()
-            .into_iter()
-            .map(|l| format!("graph {l}")),
-    );
-    lines.extend(app.to_wire_lines().into_iter().map(|l| format!("app {l}")));
-    lines.extend(
-        time.to_wire_lines()
-            .into_iter()
-            .map(|l| format!("time {l}")),
-    );
-    lines.extend(
-        deadbands
-            .to_wire_lines()
-            .into_iter()
-            .map(|l| format!("deadband {l}")),
-    );
-    let target = watches_path(session_dir);
-    let result = (|| -> std::io::Result<()> {
-        if let Some(parent) = target.parent() {
-            std::fs::create_dir_all(parent)?;
-        }
-        std::fs::write(
-            &target,
-            lines.join(
-                "
-",
-            ),
-        )
-    })();
-    if let Err(err) = result {
-        tracing::warn!(%err, path = ?target, "failed to persist participant watches");
-    }
-}
-
-/// Read back [`save_watches`]. Absent or malformed yields empty tables and
-/// says so: behaviors that stop waking are worth a line in the log, and an
-/// unreadable file should not stop a session opening.
-pub fn load_watches(
-    session_dir: &Path,
-) -> (
-    servitor::WatchTable,
-    servitor::WatchTable,
-    servitor::TimeWatchTable,
-    servitor::DeadbandTable,
-) {
-    let empty = || {
-        (
-            servitor::WatchTable::new(),
-            servitor::WatchTable::new(),
-            servitor::TimeWatchTable::new(),
-            servitor::DeadbandTable::new(),
-        )
-    };
-    let target = watches_path(session_dir);
-    let Ok(text) = std::fs::read_to_string(&target) else {
-        return empty();
-    };
-    let mut graph_lines = Vec::new();
-    let mut app_lines = Vec::new();
-    let mut time_lines = Vec::new();
-    let mut deadband_lines = Vec::new();
-    for line in text.lines() {
-        match line.split_once(' ') {
-            Some(("graph", rest)) => graph_lines.push(rest.to_string()),
-            Some(("app", rest)) => app_lines.push(rest.to_string()),
-            Some(("time", rest)) => time_lines.push(rest.to_string()),
-            Some(("deadband", rest)) => deadband_lines.push(rest.to_string()),
-            _ if line.trim().is_empty() => {}
-            _ => {
-                tracing::warn!(path = ?target, "unreadable watch record; watches not restored");
-                return empty();
-            }
-        }
-    }
-    let graph = servitor::WatchTable::from_wire_lines(graph_lines.iter().map(String::as_str));
-    let app = servitor::WatchTable::from_wire_lines(app_lines.iter().map(String::as_str));
-    let time = servitor::TimeWatchTable::from_wire_lines(time_lines.iter().map(String::as_str));
-    let deadbands =
-        servitor::DeadbandTable::from_wire_lines(deadband_lines.iter().map(String::as_str));
-    match (graph, app, time, deadbands) {
-        (Ok(graph), Ok(app), Some(time), Some(deadbands)) => (graph, app, time, deadbands),
-        _ => {
-            tracing::warn!(path = ?target, "malformed watch table; watches not restored");
-            empty()
-        }
-    }
-}
-
-pub fn certs_path(session_dir: &Path, subject_hex: &str) -> PathBuf {
-    session_dir
-        .join("denizens")
-        .join(format!("{subject_hex}.certs.json"))
-}
-
-/// Persist a participant's certificates. Best-effort like every sidecar; a failed
-/// save warns, and the participant loses authority on the next adopt rather than
-/// silently keeping it.
-pub fn save_certs(session_dir: &Path, subject_hex: &str, certs: &[SignedDelegationCertificate]) {
-    let target = certs_path(session_dir, subject_hex);
-    let result = (|| -> std::io::Result<()> {
-        if let Some(parent) = target.parent() {
-            std::fs::create_dir_all(parent)?;
-        }
-        let json = serde_json::to_string_pretty(certs).map_err(std::io::Error::other)?;
-        std::fs::write(&target, json)
-    })();
-    if let Err(err) = result {
-        tracing::warn!(%err, path = ?target, "failed to persist a participant's certificates");
-    }
-}
-
-/// Load a participant's certificates; empty when absent or unreadable.
-pub fn load_certs(session_dir: &Path, subject_hex: &str) -> Vec<SignedDelegationCertificate> {
-    let path = certs_path(session_dir, subject_hex);
-    let Ok(text) = std::fs::read_to_string(&path) else {
-        return Vec::new();
-    };
-    match serde_json::from_str(&text) {
-        Ok(certs) => certs,
-        Err(err) => {
-            tracing::warn!(%err, path = ?path, "failed to parse a participant's certificates");
-            Vec::new()
-        }
-    }
-}
-
-/// The governed space a participant's capabilities name: its own residency. Stable
-/// across a fork (which carries the same subject and world), and unique per
-/// participant, so one helper's certificate can never be read as another's.
-pub fn residency_resource(subject_hex: &str) -> Vec<u8> {
-    format!("denizen:{subject_hex}").into_bytes()
-}
-
-/// A deterministic per-(participant, capability) nonce, so re-issuing the same
-/// grant yields the same certificate id rather than an ever-growing pile.
-fn cert_nonce(subject_hex: &str, cap: &Cap, generation: u64) -> [u8; 32] {
-    *blake3::hash(format!("{subject_hex}/{generation}/{}", cap.to_wire()).as_bytes()).as_bytes()
-}
-
-/// Wall-clock milliseconds. The HOST owns time; servitor and personae both
-/// take it as input.
-pub fn now_ms() -> u64 {
-    std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .map(|d| d.as_millis() as u64)
-        .unwrap_or(0)
-}
-
-/// Issue the root delegation certificates for one participant: the user's identity
-/// conferring each reviewed capability directly. `depth` is 0, so an installed
-/// helper may act but never sub-delegate.
-pub fn issue_install_certificates(
-    provider: &crate::identity::RootIdentity,
-    subject: Subject,
-    caps: &[(Cap, Mode)],
-    issued_at_ms: u64,
-) -> Vec<SignedDelegationCertificate> {
-    issue_install_certificates_for_generation(provider, subject, caps, issued_at_ms, 0)
-}
-
-fn save_certs_strict(
-    session_dir: &Path,
-    subject_hex: &str,
-    certs: &[SignedDelegationCertificate],
-) -> Result<(), String> {
-    let target = certs_path(session_dir, subject_hex);
-    let parent = target.parent().ok_or_else(|| "certificate path has no parent".to_string())?;
-    std::fs::create_dir_all(parent).map_err(|err| format!("cannot create certificate directory: {err}"))?;
-    let json = serde_json::to_vec_pretty(certs).map_err(|err| format!("cannot encode certificates: {err}"))?;
-    std::fs::write(&target, json).map_err(|err| format!("cannot persist certificates: {err}"))
-}
-
-/// Issue an explicitly re-installed resident's certificates. The generation
-/// joins the nonce so a revoked earlier installation cannot make a reviewed
-/// owner re-install deterministically reissue the revoked certificate.
-pub fn issue_install_certificates_for_generation(
-    provider: &crate::identity::RootIdentity,
-    subject: Subject,
-    caps: &[(Cap, Mode)],
-    issued_at_ms: u64,
-    generation: u64,
-) -> Vec<SignedDelegationCertificate> {
-    let issuer = provider.master_public_key().to_bytes();
-    let hex = subject.to_hex();
-    let resource = residency_resource(&hex);
-    let mut signed = Vec::new();
-    for (cap, mode) in caps {
-        let certificate = root_certificate(
-            issuer,
-            subject,
-            cap,
-            *mode,
-            resource.clone(),
-            issued_at_ms,
-            None,
-            0,
-            cert_nonce(&hex, cap, generation),
-        );
-        // Signed inside djinn: the residency scope's key never leaves it (D11).
-        match provider.issue_certificate(certificate) {
-            Ok(cert) => signed.push(cert),
-            Err(err) => tracing::warn!(?err, cap = %cap, "failed to sign an install certificate"),
-        }
-    }
-    signed
-}
-
-/// The capabilities an install confers: the participant's own world, the read
-/// face, and one per REVIEWED ring. No blanket grant — an unnamed ring is an
-/// ungranted ring.
-pub fn install_caps(rings: &[crate::ring::Ring], watched: Option<&Cap>) -> Vec<(Cap, Mode)> {
-    let mut caps = vec![(world_cap(), Mode::Write), (read_cap(), Mode::Write)];
-    // The watched region is granted as a READ scope, which is what makes the
-    // containment law (watch inside read inside grant) hold by construction
-    // rather than by hope: the install that promised the wake also granted
-    // the reading it implies, and `WatchTable::register` checks exactly that.
-    if let Some(cap) = watched {
-        caps.push((cap.clone(), Mode::Read));
-    }
-    caps.extend(
-        rings
-            .iter()
-            .filter_map(|ring| ring.cap())
-            .map(|cap| (cap, Mode::Write)),
-    );
-    caps
-}
-
 /// Why a gesture that speaks as the profile refuses while the identity is
 /// pending (djinn absent or Locked, dramatis D12).
 pub const PENDING_IDENTITY: &str = crate::identity::PENDING;
 
-/// Mint the confirmed participant into the session: the graph node, the binding +
-/// source facets, the nested world with its gate-projected grant, and the
-/// runtime entry. Returns the member id. (The caller persists: facets ride
-/// the ordinary save; the nested log saves here, once, at its birth.)
-pub fn install(app: &mut App, pending: PendingInstall) -> Result<Uuid, String> {
-    // Install is a delegation signed by the profile root; with the vault
-    // locked there is none to sign with, and no fallback stands in for it.
-    let Some(root) = app.identity.clone() else {
-        return Err(PENDING_IDENTITY.to_string());
-    };
-    if let Some(error) = &app.denizens.admission_error {
-        return Err(format!("resident admission state needs owner repair before install: {error}"));
-    }
-    let persisted_admission = crate::resident_admission::path(&app.session_dir());
-    match persisted_admission.try_exists() {
-        Ok(true) => { crate::resident_admission::load(&app.session_dir())?; }
-        Ok(false) => {}
-        Err(err) => return Err(format!("cannot inspect resident admission state before install: {err}")),
-    }
-    let subject = pending.subject;
-    let deadband = pending.deadband;
-    let hex = subject.to_hex();
-
-    // The graph node — minted through the ordinary spine (visit selects it).
-    let key = app.graph_runtimes.visit(&denizen_url(subject));
-    let member = app
-        .graph_runtimes
-        .graph()
-        .get_node(key)
-        .map(|n| n.id)
-        .expect("the just-visited node exists");
-    let _ = app
-        .graph_runtimes
-        .set_node_title_for(member, pending.label.clone());
-    // The borne world is STRUCTURE: it hangs on the node itself
-    // (`Node.nested`, journaled through the delta spine), not on the facet.
-    let _ = app
-        .graph_runtimes
-        .set_node_nested_for(member, Some(LogId::new(hex.clone())));
-
-    // The binding + source + label facets: durable agency truth.
-    app.graph_runtimes
-        .edit_facets(|facets| {
-            pandect::write_denizen_binding(
-                facets,
-                member,
-                &pandect::DenizenBinding::new(hex.clone(), pending.body.kind()),
-            );
-        })
-        .map_err(|error| format!("cannot store participant binding: {error}"))?;
-    // The runnable: a script's source rides a facet; a component's bytes ride
-    // the disk beside the worlds, with the facet as the pointer.
-    match &pending.body {
-        PackBody::Scenario(source) => {
-            app.graph_runtimes
-                .edit_facets(|facets| {
-                    facets.set(
-                        member,
-                        chartulary::FacetId::new(SCENARIO_SOURCE_FACET),
-                        serde_json::json!(source),
-                        &chartulary::AcceptAll,
-                    )
-                })
-                .map_err(|error| format!("cannot store participant source: {error}"))?
-                .map_err(|error| format!("participant source facet refused: {error}"))?;
-        }
-        PackBody::Component(bytes) => {
-            let file = format!("{hex}.wasm");
-            let target = component_path(&app.session_dir(), &file);
-            let written = (|| -> std::io::Result<()> {
-                if let Some(parent) = target.parent() {
-                    std::fs::create_dir_all(parent)?;
-                }
-                std::fs::write(&target, bytes)
-            })();
-            match written {
-                Ok(()) => {
-                    app.graph_runtimes
-                        .edit_facets(|facets| {
-                            facets.set(
-                                member,
-                                chartulary::FacetId::new(COMPONENT_FACET),
-                                serde_json::json!(file),
-                                &chartulary::AcceptAll,
-                            )
-                        })
-                        .map_err(|error| format!("cannot store component reference: {error}"))?
-                        .map_err(|error| format!("component reference facet refused: {error}"))?;
-                }
-                Err(err) => {
-                    tracing::warn!(%err, path = ?target, "failed to store the component");
-                }
-            }
-        }
-    }
-    app.graph_runtimes
-        .edit_facets(|facets| {
-            facets.set(
-                member,
-                chartulary::FacetId::new("scenario.label"),
-                serde_json::json!(pending.label),
-                &chartulary::AcceptAll,
-            )
-        })
-        .map_err(|error| format!("cannot store participant label: {error}"))?
-        .map_err(|error| format!("participant label facet refused: {error}"))?;
-
-    // The nested world: fresh log, every granted path projected by the gate
-    // (read-only, gate-authored — the browsable record authority derives
-    // from). What is granted is exactly what the review named: the participant's
-    // own world, the read face, and ONE PATH PER PRESELECTED RING. No blanket
-    // `app/` grant — an unnamed ring is an ungranted ring, and the session
-    // ring only appears here if the review asked for it.
-    // Resolve the declared watch to a concrete region. `visit` mints the
-    // target if it is not there yet, so watching a folder before it exists is
-    // ordinary rather than a failure: the folder appears, and the watch is
-    // real from the first frame.
-    // An `app/...` declaration is an event scope, not an address: nothing to
-    // resolve and nothing to mint. The prefix is the whole distinction, which
-    // is why graph scopes are UUID paths and this one is a reserved word.
-    // `every/<period>` is a schedule: no scope, no address, nothing to
-    // resolve. It needs no capability either, and that asymmetry is
-    // deliberate: being woken by a region reveals that the region changed,
-    // while being woken by the clock reveals nothing. What a schedule costs is
-    // resource, and the gate for that is the review naming the period.
-    let schedule: Option<servitor::Period> = pending
-        .watch_url
-        .as_ref()
-        .and_then(|value| value.strip_prefix("every/"))
-        .and_then(servitor::Period::parse);
-
-    let app_watch: Option<servitor::ScopePath> = pending
-        .watch_url
-        .as_ref()
-        .filter(|_| schedule.is_none())
-        .filter(|value| {
-            *value == crate::behaviors::APP_SCOPE_ROOT
-                || value.starts_with(&format!("{}/", crate::behaviors::APP_SCOPE_ROOT))
-        })
-        .and_then(|value| servitor::ScopePath::parse(value).ok());
-
-    let watched: Option<(Cap, servitor::ScopePath)> = pending
-        .watch_url
-        .as_ref()
-        .filter(|_| app_watch.is_none() && schedule.is_none())
-        .map(|url| {
-            let key = app.graph_runtimes.visit(url);
-            let id = app
-                .graph_runtimes
-                .graph()
-                .get_node(key)
-                .map(|node| node.id.to_string())
-                .unwrap_or_else(|| url.clone());
-            let scope =
-                servitor::ScopePath::parse(&id).unwrap_or_else(|_| servitor::ScopePath::root());
-            (Cap::Scope(scope.clone()), scope)
-        });
-
-    let mut nested = GraphLog::with_id(LogId::new(hex.clone()));
-    let app_cap = app_watch.clone().map(Cap::Scope);
-    let caps = install_caps(
-        &pending.rings,
-        watched.as_ref().map(|(cap, _)| cap).or(app_cap.as_ref()),
-    );
-    for (cap, mode) in &caps {
-        let grant = Grant::new(subject, cap.clone(), *mode);
-        if let Err(err) = app.denizens.gate.project_grant(&mut nested, &grant) {
-            tracing::warn!(?err, "failed to project an install grant");
-        }
-    }
-    save_nested(&app.session_dir(), &hex, &nested);
-
-    // The AUTHORITY: root delegation certificates signed by the profile
-    // identity (capability-model C4). Install is an attenuating delegation
-    // from the user, so uninstall is revoking it and nothing else.
-    let previous = app.denizens.admissions.get(member).cloned();
-    let generation = if let Some(previous) = &previous {
-        let previous_generation = previous.binding.generation;
-        previous_generation.checked_add(1)
-            .ok_or_else(|| "participant lifecycle generation exhausted".to_string())?
-    } else {
-        0
-    };
-    let revision = match &pending.body {
-        PackBody::Scenario(source) => crate::resident_admission::body_revision(source.as_bytes()),
-        PackBody::Component(bytes) => crate::resident_admission::body_revision(bytes),
-    };
-    let issued_at = now_ms();
-    let certs = issue_install_certificates_for_generation(
-        root.as_ref(), subject, &caps, issued_at, generation,
-    );
-    let mut probe = DelegationTable::new(root.master_public_key().to_bytes());
-    probe.set_now(issued_at);
-    for cert in certs.iter().cloned() { probe.adopt(cert); }
-    if caps.iter().any(|(cap, mode)| !servitor::AuthorityProvider::covers(&probe, subject, cap, *mode)) {
-        return Err("new participant certificates did not verify under the current profile".into());
-    }
-    let mut admissions = app.denizens.admissions.clone();
-    let mut record = crate::resident_admission::ResidentAdmissions::active(member, subject, revision);
-    record.binding.generation = generation;
-    // A rebind first records denial under the new generation. This closes the
-    // old body/grant before certificate replacement; any later failure leaves
-    // a durable refusal rather than a partly enabled reinstall.
-    let mut denied = record.clone();
-    denied.binding.lifecycle = Lifecycle::Revoked;
-    admissions.insert(member, denied.clone());
-    crate::resident_admission::save(&app.session_dir(), &admissions)?;
-    app.denizens.admissions = admissions.clone();
-    if let Some(resident) = app.denizens.residents.get_mut(&member) {
-        resident.binding = denied.binding;
-    }
-    admissions.insert(member, record.clone());
-    // Write a reviewed fresh certificate while the prior lifecycle remains
-    // revoked/paused. Only after that succeeds may active lifecycle become
-    // durable; a failure leaves the previous denial in force.
-    save_certs_strict(&app.session_dir(), &hex, &certs)?;
-    crate::resident_admission::save(&app.session_dir(), &admissions)?;
-    app.denizens.admissions = admissions;
-    app.denizens.authority.set_now(issued_at);
-    for cert in certs {
-        app.denizens.authority.adopt(cert);
-    }
-    app.denizens.residents.insert(
-        member,
-        Resident {
-            subject,
-            label: pending.label,
-            nested,
-            binding: record.binding,
-        },
-    );
-
-    // The watch, registered only now: the certificates above are what make the
-    // containment check pass, so registering earlier would refuse its own
-    // grant. The author label is this journal's convention (the full hex, as
-    // `remote_projection` writes it), not chartulary's shorter one.
-    if let Some((_, scope)) = watched {
-        let authority = &app.denizens.authority;
-        match app
-            .watches
-            .register(authority, subject, scope.clone(), subject.to_hex())
-        {
-            Ok(watch) => tracing::info!(scope = %watch.scope, "participant watch registered"),
-            Err(err) => tracing::warn!(%err, %scope, "participant watch refused"),
-        }
-    }
-    if let Some(period) = schedule {
-        // Phase starts now, so a freshly admitted behavior waits out a full
-        // period rather than treating its own install as the first tick.
-        let started = app.now_ms.unwrap_or_default();
-        app.time_watches.register(subject, period, started);
-        tracing::info!(%period, "participant schedule registered");
-    }
-    if let Some(scope) = app_watch {
-        let authority = &app.denizens.authority;
-        match app
-            .app_watches
-            .register(authority, subject, scope.clone(), subject.to_hex())
-        {
-            Ok(watch) => tracing::info!(scope = %watch.scope, "participant app watch registered"),
-            Err(err) => tracing::warn!(%err, %scope, "participant app watch refused"),
-        }
-    }
-    if let Some(deadband) = deadband {
-        app.deadbands.register(subject, deadband);
-        tracing::info!(
-            minimum_change = deadband.minimum_change(),
-            minimum_interval_ms = deadband.minimum_interval_ms(),
-            "participant deadband registered"
-        );
-    }
-    save_watches(
-        &app.session_dir(),
-        &app.watches,
-        &app.app_watches,
-        &app.time_watches,
-        &app.deadbands,
-    );
-    Ok(member)
-}
-
 #[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::action::{Action, Update};
+#[path = "denizen/tests.rs"]
+mod tests;
 
-    #[test]
-    fn staged_installs_are_content_derived_and_reviewable() {
-        let dir = std::env::temp_dir().join(format!("turnstone-denizen-{}", std::process::id()));
-        std::fs::create_dir_all(&dir).unwrap();
-        let path = dir.join("trail-keeper.lua");
-        std::fs::write(&path, "mere.open('mere://kept')").unwrap();
-
-        let a = stage_install(&path).unwrap();
-        let b = stage_install(&path).unwrap();
-        assert_eq!(a.subject, b.subject, "same source, same subject");
-        assert_eq!(a.label, "trail-keeper");
-        let review = review_line(&a);
-        assert!(review.contains("grants:"), "the ask is visible: {review}");
-        for ring in default_rings() {
-            assert!(
-                review.contains(ring.name()),
-                "the ask names {}: {review}",
-                ring.name()
-            );
-        }
-        assert!(
-            review.contains("own world"),
-            "the ask names its scope: {review}"
-        );
-        assert!(
-            review.ends_with("Confirm"),
-            "the ask names its decision: {review}"
-        );
-        // Review rows may wrap; exercise the actual Confirm projection.
-        let mut app = App::test_stub();
-        app.viewport = (1024.0, 320.0);
-        app.pending_install = Some(a.clone());
-        app.update(Action::OmnibarOpen { command: true });
-        crate::chrome_view::tests::assert_install_review_layout(&app, &review);
-
-        std::fs::write(&path, "mere.open('mere://other')").unwrap();
-        let c = stage_install(&path).unwrap();
-        assert_ne!(
-            a.subject, c.subject,
-            "a modified script is a different subject"
-        );
-        let _ = std::fs::remove_dir_all(&dir);
-    }
-
-    #[test]
-    fn a_deadband_is_strictly_parsed_and_named_in_review() {
-        let source = "-- @deadband 5 1000\nmere.output(10)";
-        let band = parse_deadband(source).unwrap().unwrap();
-        assert_eq!(band.minimum_change(), 5);
-        assert_eq!(band.minimum_interval_ms(), 1_000);
-        for malformed in [
-            "-- @deadband 0 1000",
-            "-- @deadband 5 0",
-            "-- @deadband five 1000",
-            "-- @deadband 5",
-            "-- @deadband 5 1000 extra",
-        ] {
-            assert!(
-                parse_deadband(malformed).is_err(),
-                "malformed declarations fail closed: {malformed}"
-            );
-        }
-
-        let pending = PendingInstall {
-            path: PathBuf::from("controller.lua"),
-            label: "controller".into(),
-            body: PackBody::Scenario(source.into()),
-            subject: Subject::new([3; 32]),
-            rings: default_rings(),
-            watch_url: None,
-            deadband: Some(band),
-        };
-        let review = review_line(&pending);
-        assert!(review.contains("change >= 5"), "{review}");
-        assert!(review.contains("interval >= 1000 ms"), "{review}");
-    }
-
-    #[test]
-    fn a_legacy_binding_rebuilds_and_asks_for_a_heal() {
-        // A binding written before the containment ruling names the world in
-        // the facet. The resident still rebuilds (no one is orphaned by an
-        // upgrade), and the member is listed for the adopt-path heal that
-        // moves the pointer onto `Node.nested`.
-        let dir = std::env::temp_dir().join(format!("turnstone-legacy-{}", std::process::id()));
-        std::fs::create_dir_all(&dir).unwrap();
-        let member = Uuid::from_u128(0xa);
-        let mut store = pandect::NodeFacetStore::new();
-        store
-            .set(
-                member,
-                chartulary::FacetId::new(pandect::DENIZEN_BINDING),
-                serde_json::json!({
-                    "subject": "aa".repeat(32),
-                    "nested_log": "aa".repeat(32),
-                    "kind": "scenario",
-                }),
-                &chartulary::AcceptAll,
-            )
-            .unwrap();
-
-        let graph = mere::kernel::graph::Graph::new();
-        let provider = identity::InMemoryProvider::from_seed([5u8; 32]);
-        let denizens = rebuild(
-            &store,
-            &graph,
-            &dir,
-            Some(identity::IdentityProvider::master_public_key(&provider).to_bytes()),
-        );
-        assert_eq!(denizens.residents.len(), 1, "the legacy resident survives");
-        assert_eq!(
-            denizens.legacy_heals,
-            vec![(member, "aa".repeat(32))],
-            "and is queued for the one-time heal"
-        );
-        let _ = std::fs::remove_dir_all(&dir);
-    }
-
-    #[test]
-    fn nested_logs_round_trip_through_disk() {
-        let dir = std::env::temp_dir().join(format!("turnstone-nested-{}", std::process::id()));
-        std::fs::create_dir_all(&dir).unwrap();
-        let gate = Gate::new();
-        let subject = Subject::new([7u8; 32]);
-        let mut nested = GraphLog::with_id(LogId::new("aa".repeat(32)));
-        gate.project_grant(&mut nested, &Grant::new(subject, world_cap(), Mode::Write))
-            .unwrap();
-
-        save_nested(&dir, &"aa".repeat(32), &nested);
-        let restored = load_nested(&dir, &"aa".repeat(32)).expect("log restored");
-        assert_eq!(restored.revision(), nested.revision());
-        assert!(
-            restored
-                .graph()
-                .key_of(&Gate::projection_id(&world_cap()))
-                .is_some(),
-            "the grant projection survived the round trip"
-        );
-        let _ = std::fs::remove_dir_all(&dir);
-    }
-}
+#[path = "denizen/read_cap.rs"]
+mod read_cap;
+pub use read_cap::read_cap;
+#[path = "denizen/world_cap.rs"]
+mod world_cap;
+pub use world_cap::world_cap;
+#[path = "denizen/pack_body_kind.rs"]
+mod pack_body_kind;
+#[path = "denizen/parse_watch.rs"]
+mod parse_watch;
+pub use parse_watch::parse_watch;
+#[path = "denizen/parse_deadband.rs"]
+mod parse_deadband;
+pub use parse_deadband::parse_deadband;
+#[path = "denizen/default_rings.rs"]
+mod default_rings;
+pub use default_rings::default_rings;
+#[path = "denizen/denizens_new.rs"]
+mod denizens_new;
+#[path = "denizen/stage_install.rs"]
+mod stage_install;
+pub use stage_install::stage_install;
+#[path = "denizen/component_path.rs"]
+mod component_path;
+pub use component_path::component_path;
+#[path = "denizen/review_line.rs"]
+mod review_line;
+pub use review_line::review_line;
+#[path = "denizen/denizen_url.rs"]
+mod denizen_url;
+pub use denizen_url::denizen_url;
+#[path = "denizen/nested_log_path.rs"]
+mod nested_log_path;
+pub use nested_log_path::nested_log_path;
+#[path = "denizen/archived_world_path.rs"]
+mod archived_world_path;
+pub use archived_world_path::archived_world_path;
+#[path = "denizen/archive_world.rs"]
+mod archive_world;
+pub use archive_world::archive_world;
+#[path = "denizen/unarchive_world.rs"]
+mod unarchive_world;
+pub use unarchive_world::unarchive_world;
+#[path = "denizen/purge_archived_world.rs"]
+mod purge_archived_world;
+pub use purge_archived_world::purge_archived_world;
+#[path = "denizen/save_nested.rs"]
+mod save_nested;
+pub use save_nested::save_nested;
+#[path = "denizen/load_nested.rs"]
+mod load_nested;
+pub use load_nested::load_nested;
+#[path = "denizen/rebuild.rs"]
+mod rebuild;
+pub use rebuild::rebuild;
+#[path = "denizen/resident_body.rs"]
+mod resident_body;
+use resident_body::resident_body;
+#[path = "denizen/hex_to_bytes.rs"]
+mod hex_to_bytes;
+use hex_to_bytes::hex_to_bytes;
+#[path = "denizen/watches_path.rs"]
+mod watches_path;
+pub use watches_path::watches_path;
+#[path = "denizen/save_watches.rs"]
+mod save_watches;
+pub use save_watches::save_watches;
+#[path = "denizen/load_watches.rs"]
+mod load_watches;
+pub use load_watches::load_watches;
+#[path = "denizen/certs_path.rs"]
+mod certs_path;
+pub use certs_path::certs_path;
+#[path = "denizen/save_certs.rs"]
+mod save_certs;
+pub use save_certs::save_certs;
+#[path = "denizen/load_certs.rs"]
+mod load_certs;
+pub use load_certs::load_certs;
+#[path = "denizen/residency_resource.rs"]
+mod residency_resource;
+pub use residency_resource::residency_resource;
+#[path = "denizen/cert_nonce.rs"]
+mod cert_nonce;
+use cert_nonce::cert_nonce;
+#[path = "denizen/now_ms.rs"]
+mod now_ms;
+pub use now_ms::now_ms;
+#[path = "denizen/issue_install_certificates.rs"]
+mod issue_install_certificates;
+pub use issue_install_certificates::issue_install_certificates;
+#[path = "denizen/save_certs_strict.rs"]
+mod save_certs_strict;
+use save_certs_strict::save_certs_strict;
+#[path = "denizen/issue_install_certificates_for_generation.rs"]
+mod issue_install_certificates_for_generation;
+pub use issue_install_certificates_for_generation::issue_install_certificates_for_generation;
+#[path = "denizen/install_caps.rs"]
+mod install_caps;
+pub use install_caps::install_caps;
+#[path = "denizen/install.rs"]
+mod install;
+pub use install::install;

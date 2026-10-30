@@ -37,7 +37,9 @@ impl PlaceRendezvousV1 {
             return Err("saved rendezvous belongs to another place or version".into());
         }
         if now_ms > self.not_after_ms {
-            return Err("saved contact hints expired; use Refresh place contact with a current card".into());
+            return Err(
+                "saved contact hints expired; use Refresh place contact with a current card".into(),
+            );
         }
         if self.rendezvous.len() > MAX_TICKETS {
             return Err("saved rendezvous exceeds the ticket limit".into());
@@ -302,44 +304,47 @@ mod tests {
         assert!(saved.tickets(&binding, 0).is_err());
     }
 
-#[test]
-fn refreshed_contacts_require_the_exact_binding_and_preserve_authority_boundaries() {
-    let directory = tempfile::tempdir().unwrap();
-    let binding = binding();
-    let mut card = super::super::PlaceCardV1 {
-        version: super::super::PLACE_CARD_VERSION,
-        binding: binding.clone(),
-        founder_root: "01".repeat(32),
-        rendezvous: saved(&binding).rendezvous,
-    };
-    assert!(save_card_rendezvous(directory.path(), &binding, &card, 100).is_err());
-    crate::session::save_place_binding(directory.path(), &binding).unwrap();
-    save_founder_rendezvous(directory.path(), &binding).unwrap();
-    let path = directory.path().join(RENDEZVOUS_FILE);
-    let previous = std::fs::read(&path).unwrap();
-    card.binding.root = super::super::SharedContainerId([9; 32]);
-    assert!(save_card_rendezvous(directory.path(), &binding, &card, 100).is_err());
-    assert_eq!(std::fs::read(&path).unwrap(), previous);
-    card.binding = binding.clone();
-    card.rendezvous[0].carrier = "foreign".into();
-    assert!(card_tickets(&binding, &card).is_err());
-    card.rendezvous.clear();
-    assert!(card_tickets(&binding, &card).is_err());
-    card.rendezvous = saved(&binding).rendezvous;
-    save_card_rendezvous(directory.path(), &binding, &card, 100).unwrap();
-    assert_eq!(
-        load_rendezvous(directory.path(), &binding, 100).unwrap(),
-        ["ticket"]
-    );
-    assert!(load_rendezvous(directory.path(), &binding, 100 + CONTACT_LIFETIME_MS + 1).is_err());
-    let value: serde_json::Value = serde_json::from_slice(&std::fs::read(path).unwrap()).unwrap();
-    assert_eq!(value.as_object().unwrap().len(), 6);
-    assert!(value.get("key_welcome").is_none() && value.get("governance").is_none());
-    assert_eq!(
-        crate::session::load_place_binding(directory.path()).unwrap(),
-        Some(binding)
-    );
-}
+    #[test]
+    fn refreshed_contacts_require_the_exact_binding_and_preserve_authority_boundaries() {
+        let directory = tempfile::tempdir().unwrap();
+        let binding = binding();
+        let mut card = super::super::PlaceCardV1 {
+            version: super::super::PLACE_CARD_VERSION,
+            binding: binding.clone(),
+            founder_root: "01".repeat(32),
+            rendezvous: saved(&binding).rendezvous,
+        };
+        assert!(save_card_rendezvous(directory.path(), &binding, &card, 100).is_err());
+        crate::session::save_place_binding(directory.path(), &binding).unwrap();
+        save_founder_rendezvous(directory.path(), &binding).unwrap();
+        let path = directory.path().join(RENDEZVOUS_FILE);
+        let previous = std::fs::read(&path).unwrap();
+        card.binding.root = super::super::SharedContainerId([9; 32]);
+        assert!(save_card_rendezvous(directory.path(), &binding, &card, 100).is_err());
+        assert_eq!(std::fs::read(&path).unwrap(), previous);
+        card.binding = binding.clone();
+        card.rendezvous[0].carrier = "foreign".into();
+        assert!(card_tickets(&binding, &card).is_err());
+        card.rendezvous.clear();
+        assert!(card_tickets(&binding, &card).is_err());
+        card.rendezvous = saved(&binding).rendezvous;
+        save_card_rendezvous(directory.path(), &binding, &card, 100).unwrap();
+        assert_eq!(
+            load_rendezvous(directory.path(), &binding, 100).unwrap(),
+            ["ticket"]
+        );
+        assert!(
+            load_rendezvous(directory.path(), &binding, 100 + CONTACT_LIFETIME_MS + 1).is_err()
+        );
+        let value: serde_json::Value =
+            serde_json::from_slice(&std::fs::read(path).unwrap()).unwrap();
+        assert_eq!(value.as_object().unwrap().len(), 6);
+        assert!(value.get("key_welcome").is_none() && value.get("governance").is_none());
+        assert_eq!(
+            crate::session::load_place_binding(directory.path()).unwrap(),
+            Some(binding)
+        );
+    }
     #[test]
     fn rendezvous_requires_binding_and_preserves_only_contact_metadata() {
         let directory =

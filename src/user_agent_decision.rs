@@ -114,7 +114,7 @@ impl PendingUserAgentDecision {
                     .unwrap_or_default();
                 let proxy = if *is_proxy { "proxy " } else { "" };
                 format!("Sign in to {proxy}{authority}{realm} with {scheme}")
-            }
+            },
         }
     }
 }

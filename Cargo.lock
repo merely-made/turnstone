@@ -509,7 +509,7 @@ dependencies = [
 [[package]]
 name = "armillary"
 version = "0.1.1"
-source = "git+https://www.github.com/merely-made/armillary.git?rev=864f107d44bf759111ad2ea3c9036b2cfbf03f4c#864f107d44bf759111ad2ea3c9036b2cfbf03f4c"
+source = "git+https://www.github.com/merely-made/armillary.git?rev=35298c555f59a018e5cdd1afc624b4a427555f0f#35298c555f59a018e5cdd1afc624b4a427555f0f"
 dependencies = [
  "tokio",
  "tracing",
@@ -891,7 +891,7 @@ checksum = "1254ebf6529f3763c491acfb5ab6e960809e3c75a38584cc664f8c5667fb7107"
 [[package]]
 name = "audio-primitives"
 version = "0.1.0"
-source = "git+https://github.com/merely-made/woodshed.git?branch=main#a0da751cf1188c77eb3b25798517e8dd6f0ef557"
+source = "git+https://github.com/merely-made/woodshed.git?branch=main#a4356b74084e9016f6fdb9a7c6b8130def547021"
 
 [[package]]
 name = "audioadapter"
@@ -12171,7 +12171,7 @@ dependencies = [
 [[package]]
 name = "redshank-model"
 version = "0.0.0"
-source = "git+https://github.com/merely-made/woodshed.git?branch=main#a0da751cf1188c77eb3b25798517e8dd6f0ef557"
+source = "git+https://github.com/merely-made/woodshed.git?branch=main#a4356b74084e9016f6fdb9a7c6b8130def547021"
 dependencies = [
  "serde",
  "serde_json",
@@ -12181,7 +12181,7 @@ dependencies = [
 [[package]]
 name = "redshank-playback"
 version = "0.0.0"
-source = "git+https://github.com/merely-made/woodshed.git?branch=main#a0da751cf1188c77eb3b25798517e8dd6f0ef557"
+source = "git+https://github.com/merely-made/woodshed.git?branch=main#a4356b74084e9016f6fdb9a7c6b8130def547021"
 dependencies = [
  "anyhow",
  "audio-primitives",
@@ -12197,7 +12197,7 @@ dependencies = [
 [[package]]
 name = "redshank-storage"
 version = "0.0.0"
-source = "git+https://github.com/merely-made/woodshed.git?branch=main#a0da751cf1188c77eb3b25798517e8dd6f0ef557"
+source = "git+https://github.com/merely-made/woodshed.git?branch=main#a4356b74084e9016f6fdb9a7c6b8130def547021"
 dependencies = [
  "redshank-model",
  "serde_json",
@@ -12206,7 +12206,7 @@ dependencies = [
 [[package]]
 name = "redshank-surfaces"
 version = "0.0.0"
-source = "git+https://github.com/merely-made/woodshed.git?branch=main#a0da751cf1188c77eb3b25798517e8dd6f0ef557"
+source = "git+https://github.com/merely-made/woodshed.git?branch=main#a4356b74084e9016f6fdb9a7c6b8130def547021"
 dependencies = [
  "cambium",
  "genet-scripted-dom",
@@ -15942,7 +15942,7 @@ dependencies = [
 [[package]]
 name = "timed-text"
 version = "0.1.0"
-source = "git+https://github.com/merely-made/woodshed.git?branch=main#a0da751cf1188c77eb3b25798517e8dd6f0ef557"
+source = "git+https://github.com/merely-made/woodshed.git?branch=main#a4356b74084e9016f6fdb9a7c6b8130def547021"
 
 [[package]]
 name = "tinct"
@@ -19582,7 +19582,7 @@ dependencies = [
 [[patch.unused]]
 name = "armillary"
 version = "0.1.1"
-source = "git+https://github.com/merely-made/armillary.git?rev=864f107d44bf759111ad2ea3c9036b2cfbf03f4c#864f107d44bf759111ad2ea3c9036b2cfbf03f4c"
+source = "git+https://github.com/merely-made/armillary.git?rev=35298c555f59a018e5cdd1afc624b4a427555f0f#35298c555f59a018e5cdd1afc624b4a427555f0f"
 
 [[patch.unused]]
 name = "chartulary"
@@ -19647,7 +19647,7 @@ source = "git+https://github.com/merely-made/eidetic.git?rev=e7eef1e622c8af7ea2a
 [[patch.unused]]
 name = "armillary"
 version = "0.1.1"
-source = "git+https://github.com/merely-made/armillary.git?rev=864f107d44bf759111ad2ea3c9036b2cfbf03f4c#864f107d44bf759111ad2ea3c9036b2cfbf03f4c"
+source = "git+https://github.com/merely-made/armillary.git?rev=35298c555f59a018e5cdd1afc624b4a427555f0f#35298c555f59a018e5cdd1afc624b4a427555f0f"
 
 [[patch.unused]]
 name = "chartulary"
@@ -19712,7 +19712,7 @@ source = "git+https://github.com/merely-made/eidetic.git?rev=e7eef1e622c8af7ea2a
 [[patch.unused]]
 name = "armillary"
 version = "0.1.1"
-source = "git+https://github.com/merely-made/armillary.git?rev=864f107d44bf759111ad2ea3c9036b2cfbf03f4c#864f107d44bf759111ad2ea3c9036b2cfbf03f4c"
+source = "git+https://github.com/merely-made/armillary.git?rev=35298c555f59a018e5cdd1afc624b4a427555f0f#35298c555f59a018e5cdd1afc624b4a427555f0f"
 
 [[patch.unused]]
 name = "chartulary"

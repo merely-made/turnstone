@@ -214,7 +214,9 @@ pub(super) fn completed_legacy(
     if receipt.request != *request {
         return Err("legacy capture request identity conflict".into());
     }
-    let stored = receipt.stored.ok_or("unfinished legacy capture needs explicit recovery")?;
+    let stored = receipt
+        .stored
+        .ok_or("unfinished legacy capture needs explicit recovery")?;
     verify_request(store, request, &stored)?;
     Ok(stored)
 }

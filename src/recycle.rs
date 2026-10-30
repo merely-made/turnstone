@@ -153,7 +153,7 @@ fn emit_list(store: &mut dyn Store, out: &Emitter<Update>) {
                 deleted.into_iter().filter_map(to_record).collect();
             records.sort_by_key(|r| std::cmp::Reverse(r.deleted_at_ms));
             out.emit(Update::BinListed { records });
-        }
+        },
         Err(err) => out.emit(Update::BinFailed {
             error: format!("list: {err}"),
         }),
@@ -167,7 +167,10 @@ pub fn spawn_bin(wake: Wake, dir: PathBuf) -> (ActorHandle<BinCommand>, Receiver
     spawn_bin_for_session(wake, Some(dir))
 }
 
-pub(crate) fn spawn_bin_for_session(wake: Wake, dir: Option<PathBuf>) -> (ActorHandle<BinCommand>, Receiver<Update>) {
+pub(crate) fn spawn_bin_for_session(
+    wake: Wake,
+    dir: Option<PathBuf>,
+) -> (ActorHandle<BinCommand>, Receiver<Update>) {
     spawn_named(
         "recycle-bin",
         wake,
@@ -177,14 +180,14 @@ pub(crate) fn spawn_bin_for_session(wake: Wake, dir: Option<PathBuf>) -> (ActorH
                 Ok(Some(mut store)) => {
                     retire_then_list(&mut store, &current_dir, &out);
                     Some(store)
-                }
+                },
                 Ok(None) => None,
                 Err(err) => {
                     out.emit(Update::BinFailed {
                         error: format!("open {}: {err}", current_dir.display()),
                     });
                     None
-                }
+                },
             };
             while let Ok(command) = commands.recv() {
                 match command {
@@ -205,7 +208,7 @@ pub(crate) fn spawn_bin_for_session(wake: Wake, dir: Option<PathBuf>) -> (ActorH
                             continue;
                         }
                         emit_list(store, &out);
-                    }
+                    },
                     BinCommand::Empty => {
                         let Some(store) = store.as_mut() else {
                             out.emit(Update::BinFailed {
@@ -232,23 +235,23 @@ pub(crate) fn spawn_bin_for_session(wake: Wake, dir: Option<PathBuf>) -> (ActorH
                             continue;
                         }
                         emit_list(store, &out);
-                    }
+                    },
                     BinCommand::Release(ack) => {
                         store = None;
                         let _ = ack.send(());
-                    }
+                    },
                     BinCommand::Reopen(dir) => match open(&dir) {
                         Ok(mut fresh) => {
                             retire_then_list(&mut fresh, &dir, &out);
                             store = Some(fresh);
                             current_dir = dir;
-                        }
+                        },
                         Err(err) => {
                             store = None;
                             out.emit(Update::BinFailed {
                                 error: format!("reopen {}: {err}", dir.display()),
                             });
-                        }
+                        },
                     },
                 }
             }

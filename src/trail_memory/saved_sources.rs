@@ -45,7 +45,7 @@ pub(super) fn load_with_sealed(
                 match (sealed.as_deref_mut(), sealer) {
                     (Some(store), Some(sealer)) => {
                         super::sealed_capture::content(store, sealer, admission)
-                    }
+                    },
                     _ => Err("Unlock the profile to read this sealed source".into()),
                 }
             } else {
@@ -380,7 +380,7 @@ mod tests {
         match updates.recv_timeout(Duration::from_secs(5)).unwrap() {
             crate::action::Update::SavedSourcesLoaded { result, .. } => {
                 assert!(result.unwrap_err().contains("Unlock the profile"));
-            }
+            },
             _ => panic!("expected locked legacy-source refusal"),
         }
         assert!(actor.command(TrailCommand::SetCustody(Some(fixture_custody()))));
@@ -406,7 +406,7 @@ mod tests {
                 assert_eq!(actual_session, session);
                 assert_eq!(admissions, vec![admitted.clone()]);
                 result.unwrap()
-            }
+            },
             _ => panic!("expected saved-source load result"),
         };
         let content = entries[0]
@@ -452,7 +452,7 @@ mod tests {
                 assert_eq!(url, reader_url);
                 assert_eq!(actual_target, target);
                 assert_eq!(result.unwrap(), content);
-            }
+            },
             _ => panic!("expected saved-source read result"),
         }
 
@@ -482,7 +482,7 @@ mod tests {
                             .contains("another session opening or store"),
                         "wrong {message} is refused"
                     );
-                }
+                },
                 _ => panic!("expected refused saved-source load"),
             }
         }
@@ -524,7 +524,7 @@ mod tests {
                             .contains("another session opening or attachment"),
                         "wrong read {message} is refused"
                     );
-                }
+                },
                 _ => panic!("expected refused saved-source read"),
             }
         }

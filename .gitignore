@@ -11,3 +11,4 @@
 
 # Generated fixture bytecode.
 scenarios/fixtures/document_a11y/__pycache__/
+/scripts/__pycache__/

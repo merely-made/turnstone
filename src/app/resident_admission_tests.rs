@@ -134,8 +134,18 @@ fn duplicate_subjects_refuse_manual_routing_without_actions() {
         .unwrap();
     let subject = app.denizens.residents[&first].subject;
     app.denizens.residents.get_mut(&second).unwrap().subject = subject;
-    app.denizens.residents.get_mut(&second).unwrap().binding.subject = subject;
-    app.denizens.admissions.get_mut(second).unwrap().binding.subject = subject;
+    app.denizens
+        .residents
+        .get_mut(&second)
+        .unwrap()
+        .binding
+        .subject = subject;
+    app.denizens
+        .admissions
+        .get_mut(second)
+        .unwrap()
+        .binding
+        .subject = subject;
 
     assert!(
         app.graph_runtimes
@@ -186,7 +196,8 @@ fn revoking_only_the_watch_scope_refuses_the_wake_but_keeps_base_authority() {
     let participant_author = mere::kernel::graph::Author::script(
         subject.to_hex(),
         blake3::Hash::from(app.denizens.residents[&member].binding.revision.0)
-            .to_hex().to_string(),
+            .to_hex()
+            .to_string(),
     )
     .via("turnstone");
     app.update(Action::ReseedLayout);
@@ -215,10 +226,11 @@ fn revoking_only_the_watch_scope_refuses_the_wake_but_keeps_base_authority() {
         &crate::denizen::world_cap(),
         servitor::Mode::Write
     ));
-    assert!(app
-        .denizens
-        .authority
-        .covers(subject, &watch_cap, servitor::Mode::Read));
+    assert!(
+        app.denizens
+            .authority
+            .covers(subject, &watch_cap, servitor::Mode::Read)
+    );
 
     let before_positive = app.journal.lock().unwrap().entries().len();
     app.update(Action::OpenAddress(
@@ -249,10 +261,11 @@ fn revoking_only_the_watch_scope_refuses_the_wake_but_keeps_base_authority() {
         &crate::denizen::world_cap(),
         servitor::Mode::Write
     ));
-    assert!(!app
-        .denizens
-        .authority
-        .covers(subject, &watch_cap, servitor::Mode::Read));
+    assert!(
+        !app.denizens
+            .authority
+            .covers(subject, &watch_cap, servitor::Mode::Read)
+    );
 
     let _ = app.take_events();
     let before_revoked = app.journal.lock().unwrap().entries().len();
@@ -268,7 +281,10 @@ fn revoking_only_the_watch_scope_refuses_the_wake_but_keeps_base_authority() {
         .skip(before_revoked)
         .filter(|entry| entry.author == participant_author)
         .count();
-    assert_eq!(revoked_writes, 0, "the revoked wake produced no participant work");
+    assert_eq!(
+        revoked_writes, 0,
+        "the revoked wake produced no participant work"
+    );
     assert!(app.take_events().iter().any(|event| {
         matches!(event, AppEvent::DenizenRefused(reason)
             if reason.contains("read authority") || reason.contains("admission refused"))

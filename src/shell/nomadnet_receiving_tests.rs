@@ -307,7 +307,7 @@ impl NativeFixture {
                 worker.abort();
                 let _ = worker.await;
                 panic!("native fixture responses did not complete before shutdown");
-            }
+            },
         }
         assert_eq!(
             self.completed.load(Ordering::SeqCst),

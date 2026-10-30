@@ -10,11 +10,11 @@ use std::io;
 use std::path::{Path, PathBuf};
 
 use cambium::{DomHandle, RetainedSurfaceSession};
-use mere_surface_api::{SurfaceDescriptor, SurfaceUnavailableReason};
 use knot_document::{
     DocumentFormat, KNOT_DOCUMENT_CSS, KnotDocumentSession, KnotDocumentSurfaceState,
     knot_document_descriptor, knot_document_surface,
 };
+use mere_surface_api::{SurfaceDescriptor, SurfaceUnavailableReason};
 use serde::{Deserialize, Serialize};
 
 use crate::contributed_surface::{SurfaceAdmissionError, SurfaceProvider};
@@ -268,7 +268,10 @@ mod tests {
     fn native_protocol_file_sessions_edit_and_save_exact_source_bytes() {
         let temp = tempdir().unwrap();
         for (name, source) in [
-            ("reading.scroll", "# Scroll\r\n=> /about About [Citation]\r\n"),
+            (
+                "reading.scroll",
+                "# Scroll\r\n=> /about About [Citation]\r\n",
+            ),
             ("capsule.gmi", "# Gemini\r\n=> /about About\r\n"),
             ("node.mu", "Micron source: café and 東京.\r\n"),
         ] {

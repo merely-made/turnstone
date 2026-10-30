@@ -1,11 +1,11 @@
 // Copyright 2026 Mark Alan Boykin
 // SPDX-License-Identifier: MPL-2.0
 //! Host-owned session write authority, independent of graph contents.
+use mere::kernel::graph::Graph;
+use std::fs::{File, OpenOptions};
 use std::io;
 use std::path::{Path, PathBuf};
-use std::fs::{File, OpenOptions};
 use std::sync::Arc;
-use mere::kernel::graph::Graph;
 
 /// Process-shared capability for writing one session directory.
 #[derive(Clone, Debug)]
@@ -104,7 +104,11 @@ impl<P: Copy> SessionPersistence<P> {
         Ok(Self::writable_with_lease(directory, placement, lease))
     }
 
-    pub(crate) fn writable_with_lease(directory: PathBuf, placement: Option<P>, lease: SessionWriteLease) -> Self {
+    pub(crate) fn writable_with_lease(
+        directory: PathBuf,
+        placement: Option<P>,
+        lease: SessionWriteLease,
+    ) -> Self {
         Self::Writable {
             directory,
             placement,
@@ -114,7 +118,11 @@ impl<P: Copy> SessionPersistence<P> {
 
     #[cfg(test)]
     fn test_writable(directory: PathBuf, placement: Option<P>) -> Self {
-        Self::Writable { directory, placement, _lease: None }
+        Self::Writable {
+            directory,
+            placement,
+            _lease: None,
+        }
     }
 
     pub(crate) fn refused(directory: PathBuf, reason: String) -> Self {
@@ -188,17 +196,31 @@ impl<P: Copy> SessionPersistence<P> {
         save_graph: impl FnOnce(Option<P>) -> io::Result<()>,
     ) -> io::Result<()> {
         self.placement_for(directory)?;
-        if !matches!(self, Self::Writable { _lease: Some(_), .. }) {
-            return Err(io::Error::new(io::ErrorKind::PermissionDenied, "session writer lease is absent"));
+        if !matches!(
+            self,
+            Self::Writable {
+                _lease: Some(_),
+                ..
+            }
+        ) {
+            return Err(io::Error::new(
+                io::ErrorKind::PermissionDenied,
+                "session writer lease is absent",
+            ));
         }
         let graph_path = directory.join(pandect::session_graph_store::GRAPH_FILE);
         if require_complete_file(&graph_path)? {
             let input = crate::session_graph_file::load_profiled_snapshot(&graph_path)
                 .map_err(io::Error::other)?
-                .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "session graph disappeared"))?;
-            let mut before = pandect::graph_placement::materialize_snapshot(&input.snapshot, input.placement)
-                .map_err(io::Error::other)?;
-            let facets = pandect::load_node_facets(directory).map_err(io::Error::other)?.unwrap_or_default();
+                .ok_or_else(|| {
+                    io::Error::new(io::ErrorKind::InvalidData, "session graph disappeared")
+                })?;
+            let mut before =
+                pandect::graph_placement::materialize_snapshot(&input.snapshot, input.placement)
+                    .map_err(io::Error::other)?;
+            let facets = pandect::load_node_facets(directory)
+                .map_err(io::Error::other)?
+                .unwrap_or_default();
             before.overlay_facets(facets).map_err(io::Error::other)?;
             athanor::workshop_destination::preserve_graph_operations(&before, candidate)
                 .map_err(io::Error::other)?;
@@ -372,8 +394,15 @@ mod tests {
             let fault = BlockedReplacement::new(&target);
             assert!(target.is_dir());
             assert!(backup.is_dir());
-            assert_eq!(fault.read_preserved(&target).unwrap(), b"current committed graph");
-            if explicit_restore { fault.restore(); } else { drop(fault); }
+            assert_eq!(
+                fault.read_preserved(&target).unwrap(),
+                b"current committed graph"
+            );
+            if explicit_restore {
+                fault.restore();
+            } else {
+                drop(fault);
+            }
             assert_eq!(std::fs::read(&target).unwrap(), b"current committed graph");
             assert_eq!(std::fs::read(&backup).unwrap(), b"earlier committed graph");
         }
@@ -434,7 +463,10 @@ impl BlockedReplacement {
         );
         let had_backup = backup.exists();
         if had_backup {
-            assert!(backup.is_file(), "existing backup must be a regular test file");
+            assert!(
+                backup.is_file(),
+                "existing backup must be a regular test file"
+            );
             std::fs::rename(&backup, &held_backup).unwrap();
         }
         let had_original = target.exists();

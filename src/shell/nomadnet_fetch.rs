@@ -13,10 +13,13 @@ pub(super) enum MicronSubmissionCommand {
         source: Option<uuid::Uuid>,
         submission: crate::action::MicronSubmission,
     },
-    Cancel { request: u64 },
+    Cancel {
+        request: u64,
+    },
 }
 
-pub(super) fn spawn(wake: Wake) -> (ActorHandle<FetchCommand>, Receiver<FetchUpdate>) {
+#[cfg(feature = "nomadnet")]
+fn spawn_active(wake: Wake) -> (ActorHandle<FetchCommand>, Receiver<FetchUpdate>) {
     armillary::spawn(wake, |commands, out: Emitter<FetchUpdate>| {
         let runtime = tokio::runtime::Builder::new_multi_thread()
             .enable_all()
@@ -65,7 +68,8 @@ pub(super) fn spawn(wake: Wake) -> (ActorHandle<FetchCommand>, Receiver<FetchUpd
     })
 }
 
-pub(super) fn spawn_submissions(
+#[cfg(feature = "nomadnet")]
+fn spawn_active_submissions(
     wake: Wake,
 ) -> (
     ActorHandle<MicronSubmissionCommand>,
@@ -79,7 +83,11 @@ pub(super) fn spawn_submissions(
         let mut active: Option<(u64, tokio::task::JoinHandle<()>)> = None;
         while let Ok(command) = commands.recv() {
             match command {
-                MicronSubmissionCommand::Submit { request, source, submission } => {
+                MicronSubmissionCommand::Submit {
+                    request,
+                    source,
+                    submission,
+                } => {
                     if let Some((_, task)) = active.take() {
                         task.abort();
                     }
@@ -89,16 +97,24 @@ pub(super) fn spawn_submissions(
                         let result = crate::nomadnet::submit_form(&target, submission.values)
                             .await
                             .map(crate::action::SmolwebSubmissionReceipt::Success);
-                        out.emit(crate::action::Update::SmolwebSubmitted { request, source, target, result });
+                        out.emit(crate::action::Update::SmolwebSubmitted {
+                            request,
+                            source,
+                            target,
+                            result,
+                        });
                     });
                     active = Some((request, task));
-                }
+                },
                 MicronSubmissionCommand::Cancel { request } => {
-                    if active.as_ref().is_some_and(|(active_request, _)| *active_request == request) {
+                    if active
+                        .as_ref()
+                        .is_some_and(|(active_request, _)| *active_request == request)
+                    {
                         let (_, task) = active.take().expect("checked active submission");
                         task.abort();
                     }
-                }
+                },
             }
         }
     })
@@ -106,7 +122,10 @@ pub(super) fn spawn_submissions(
 
 impl super::Shell {
     pub(super) fn command_fetch(&self, command: FetchCommand) {
-        if self.network_offline { self.fetch_handle.command(command); return; }
+        if self.network_offline {
+            self.fetch_handle.command(command);
+            return;
+        }
         match command {
             FetchCommand::Page { ref url, .. } if crate::nomadnet::parse_address(url).is_some() => {
                 self.nomadnet_handle.command(command);
@@ -123,3 +142,7 @@ impl super::Shell {
         }
     }
 }
+
+#[path = "nomadnet_port.rs"]
+mod port;
+pub(super) use port::{spawn, spawn_submissions};

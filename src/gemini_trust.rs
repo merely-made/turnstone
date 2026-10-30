@@ -62,11 +62,11 @@ impl GeminiTrustStore {
                         let state = decode_file(&bytes)?;
                         std::fs::rename(&backup, &path)?;
                         state
-                    }
+                    },
                     Err(error) if error.kind() == io::ErrorKind::NotFound => TrustFile::default(),
                     Err(error) => return Err(error),
                 }
-            }
+            },
             Err(error) => return Err(error),
         };
         Ok(Self {
@@ -106,10 +106,10 @@ impl GeminiTrustStore {
             match previous {
                 Some(previous) => {
                     state.pins.insert(target.to_string(), previous);
-                }
+                },
                 None => {
                     state.pins.remove(target);
-                }
+                },
             }
             return Err(error);
         }

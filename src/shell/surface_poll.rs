@@ -17,7 +17,10 @@ pub(super) struct SurfacePollClock {
 
 impl SurfacePollClock {
     pub(super) fn new(interval: Duration) -> Self {
-        Self { interval, next: None }
+        Self {
+            interval,
+            next: None,
+        }
     }
 
     pub(super) fn deadline(&mut self, active: bool, now: Instant) -> Option<Instant> {

@@ -1,0 +1,489 @@
+// Copyright 2026 Mark Alan Boykin
+// SPDX-License-Identifier: MPL-2.0
+
+use super::*;
+
+/// The pane draws the sections it was synced with: headers and key/value
+/// rows land in the DOM under the panel's classes.
+#[test]
+fn synced_sections_reach_the_dom() {
+    let mut pane = InspectorPane::new();
+    pane.runner.update(|state| {
+        state.viewer_expanded = true;
+        state.research_expanded = true;
+    });
+    pane.runner.update(|state| {
+        state.sections = vec![InspectorSection {
+            title: "Node".to_string(),
+            rows: vec![("URL".to_string(), "https://example.test/".to_string())],
+        }];
+        state.clip_target = Some("file:///notes/field.knot".into());
+        state.clip_offer = Some(uuid::Uuid::nil());
+        state.clip_status = "ready".into();
+        state.viewport_w = 400.0;
+        state.viewport_h = 600.0;
+    });
+    let dom = pane.dom.borrow();
+    let rows = dom.all_with_class(dom.document(), "detail-row");
+    assert_eq!(rows.len(), 1);
+    let values = dom.all_with_class(dom.document(), "detail-value");
+    let text: String = values
+        .iter()
+        .flat_map(|&n| dom.dom_children(n))
+        .filter_map(|c| dom.text(c).map(str::to_string))
+        .collect();
+    assert!(text.contains("https://example.test/"));
+    assert!(text.contains("Passage: ready"));
+}
+
+#[test]
+fn clip_button_bubbles_a_typed_inspector_intent() {
+    let mut pane = InspectorPane::new();
+    pane.runner.update(|state| {
+        state.viewer_expanded = true;
+        state.research_expanded = true;
+    });
+    pane.runner.update(|state| {
+        state.clip_target = Some("file:///notes/field.knot".into());
+        state.clip_offer = Some(uuid::Uuid::nil());
+        state.viewport_w = 400.0;
+        state.viewport_h = 600.0;
+    });
+    pane.runner.update(|state| {
+        state.viewer_expanded = true;
+        state.research_expanded = true;
+    });
+    let _ = pane.scene(400, 600, 1.0);
+    let (x, y) = pane
+        .selector_point(
+            &taproot::Selector::role("button")
+                .containing("Clip document")
+                .on_surface("inspector"),
+        )
+        .unwrap()
+        .expect("the clip action is visible");
+    assert_eq!(
+        pane.click(x, y, 400, 600),
+        vec![InspectorIntent::ClipToKnot {
+            offer: uuid::Uuid::nil()
+        }]
+    );
+}
+
+#[test]
+fn probe_resolved_clip_button_reaches_the_pane_at_receipt_size() {
+    let mut pane = InspectorPane::new();
+    pane.runner.update(|state| {
+        state.viewer_expanded = true;
+        state.research_expanded = true;
+    });
+    pane.runner.update(|state| {
+        state.sections = vec![InspectorSection {
+            title: "Node".to_string(),
+            rows: (0..14)
+                .map(|index| (format!("Field {index}"), format!("Value {index}")))
+                .collect(),
+        }];
+        state.clip_target = Some("clip_target_receipt.knot".into());
+        state.clip_offer = Some(uuid::Uuid::nil());
+        state.clip_status = "ready".into();
+        state.viewport_w = 509.0;
+        state.viewport_h = 576.0;
+    });
+    pane.runner.update(|state| {
+        state.viewer_expanded = true;
+        state.research_expanded = true;
+    });
+    let _ = pane.scene(509, 576, 1.0);
+    pane.scroll_by(0.0, 2000.0);
+    let _ = pane.scene(509, 576, 1.0);
+    let (x, y) = pane
+        .selector_point(
+            &taproot::Selector::role("button")
+                .containing("Clip document")
+                .on_surface("inspector"),
+        )
+        .expect("the configured clip button must resolve uniquely")
+        .expect("the configured clip button must be painted inside its pane");
+    assert!(
+        (0.0..509.0).contains(&x) && (0.0..576.0).contains(&y),
+        "Probe resolved the clip button outside its pane: ({x}, {y})"
+    );
+    assert_eq!(
+        pane.click(x, y, 509, 576),
+        vec![InspectorIntent::ClipToKnot {
+            offer: uuid::Uuid::nil()
+        }]
+    );
+}
+
+/// A click on a radio option reports the viewer intent — and the sidecar
+/// mirror round-trips (sync shows what the app persisted).
+#[test]
+fn picking_a_viewer_reports_the_intent_and_mirrors_back() {
+    let mut app = App::test_stub();
+    app.update(Action::OpenAddress("https://example.com/x".to_string()));
+    let mut pane = InspectorPane::new();
+    pane.runner.update(|state| {
+        state.viewer_expanded = true;
+        state.research_expanded = true;
+    });
+    pane.sync(
+        &app,
+        app.default_graph_pane(),
+        400.0,
+        600.0,
+        None,
+        None,
+        "unconfigured",
+    );
+    pane.runner.update(|state| {
+        state.viewer_expanded = true;
+        state.research_expanded = true;
+    });
+    // Resolve the livery option's centre off the laid-out DOM.
+    let (x, y) = {
+        let dom = pane.dom.borrow();
+        let radio = dom
+            .all_with_class(dom.document(), "radio")
+            .into_iter()
+            .find(|&n| {
+                dom.dom_children(n).any(|c| {
+                    dom.dom_children(c)
+                        .any(|text| dom.text(text).is_some_and(|t| t == "Genet"))
+                })
+            })
+            .expect("the livery option is drawn");
+        let (rx, ry, rw, rh) =
+            crate::ui::node_rect(&dom, radio, crate::ui::cambium_shell_sheet(), 400, 600).unwrap();
+        (rx + rw / 2.0, ry + rh / 2.0)
+    };
+    let intents = pane.click(x, y, 400, 600);
+    assert!(
+        matches!(&intents[..], [InspectorIntent::SetViewer { member: selected, viewer: Some(v) }] if v == "genet.livery" && Some(*selected) == app.graph_runtimes.focused_member()),
+        "picking livery reports the pinned viewer"
+    );
+    // The app applies it; a re-sync mirrors the persisted truth back.
+    let member = app.graph_runtimes.focused_member().unwrap();
+    app.update(Action::SetViewerOverride {
+        member,
+        viewer: Some("genet.livery".to_string()),
+    });
+    pane.sync(
+        &app,
+        app.default_graph_pane(),
+        400.0,
+        600.0,
+        None,
+        None,
+        "unconfigured",
+    );
+    pane.runner.update(|state| {
+        state.viewer_expanded = true;
+        state.research_expanded = true;
+    });
+    assert_eq!(
+        pane.runner.state().radio.selected,
+        1,
+        "the sidecar mirrors back"
+    );
+    assert!(
+        pane.click(x, y, 400, 600).is_empty(),
+        "re-picking the same is no intent"
+    );
+}
+
+#[test]
+fn engine_inventory_mapping_preserves_unknown_saved_pin() {
+    let app = App::test_stub();
+    let options = crate::inspector_controls::viewer_options(&app, Some("unknown.lane"));
+    assert_eq!(
+        crate::inspector_controls::viewer_for_index(&options, 0),
+        Some(None)
+    );
+    assert_eq!(
+        crate::inspector_controls::viewer_for_index(&options, 1),
+        Some(Some("genet.livery".into()))
+    );
+    assert_eq!(
+        crate::inspector_controls::index_for_viewer(&options, None),
+        0
+    );
+    assert_eq!(
+        crate::inspector_controls::index_for_viewer(&options, Some("genet.livery")),
+        1
+    );
+    let unknown = crate::inspector_controls::index_for_viewer(&options, Some("unknown.lane"));
+    assert_ne!(unknown, 0, "unknown must not look like Auto");
+    assert!(options[unknown].label.contains("unknown.lane"));
+    assert!(options[unknown].label.contains("unavailable"));
+    assert_eq!(
+        crate::inspector_controls::viewer_for_index(&options, unknown),
+        None
+    );
+}
+
+#[test]
+fn focused_document_capabilities_sit_beside_the_viewer_picker() {
+    let mut app = App::test_stub();
+    app.update(Action::OpenAddress("https://example.com/x".to_string()));
+    let node = app.graph_runtimes.focused_member().unwrap();
+    app.content.note_live(
+        node,
+        Some(crate::content::ContentFacts {
+            engine: "genet.livery".into(),
+            lane: crate::content::ContentLane::Document,
+            structure: None,
+            lineage: None,
+            capabilities: crate::content::DocumentCapabilityFacts {
+                find_in_page: crate::content::CapabilityStatus::Supported,
+                navigation: crate::content::CapabilityStatus::Partial {
+                    detail: "host-owned lineage".into(),
+                },
+                ..Default::default()
+            },
+        }),
+    );
+    let mut pane = InspectorPane::new();
+    pane.runner.update(|state| {
+        state.viewer_expanded = true;
+        state.research_expanded = true;
+    });
+    pane.sync(
+        &app,
+        app.default_graph_pane(),
+        400.0,
+        600.0,
+        None,
+        None,
+        "unconfigured",
+    );
+    pane.runner.update(|state| {
+        state.viewer_expanded = true;
+        state.research_expanded = true;
+    });
+    assert!(
+        content_lines(&pane)
+            .iter()
+            .any(|line| line == "Find in page: supported")
+    );
+    assert!(
+        content_lines(&pane)
+            .iter()
+            .any(|line| { line == "Navigation controls: partial: host-owned lineage" })
+    );
+}
+
+/// The requested page zoom rides beside the capability, labelled as the
+/// request it is: nothing reads the effective level back yet.
+#[test]
+fn the_requested_page_zoom_is_mirrored_beside_the_capability() {
+    let mut app = App::test_stub();
+    app.update(Action::OpenAddress("https://example.com/zoom".to_string()));
+    let node = app.graph_runtimes.focused_member().unwrap();
+    app.content.note_live(
+        node,
+        Some(crate::content::ContentFacts {
+            engine: "weld.chromium".into(),
+            lane: crate::content::ContentLane::Surface,
+            structure: None,
+            lineage: None,
+            capabilities: crate::content::DocumentCapabilityFacts {
+                page_zoom: crate::content::CapabilityStatus::Partial {
+                    detail: "applied, but the effective level is not read back".into(),
+                },
+                ..Default::default()
+            },
+        }),
+    );
+    let mut pane = InspectorPane::new();
+    pane.runner.update(|state| {
+        state.viewer_expanded = true;
+        state.research_expanded = true;
+    });
+    pane.sync(
+        &app,
+        app.default_graph_pane(),
+        400.0,
+        600.0,
+        None,
+        None,
+        "unconfigured",
+    );
+    pane.runner.update(|state| {
+        state.viewer_expanded = true;
+        state.research_expanded = true;
+    });
+    assert!(
+        content_lines(&pane)
+            .iter()
+            .any(|line| line == "Requested page zoom: 100%")
+    );
+
+    app.update(Action::PageZoomOut { member: node });
+    pane.sync(
+        &app,
+        app.default_graph_pane(),
+        400.0,
+        600.0,
+        None,
+        None,
+        "unconfigured",
+    );
+    pane.runner.update(|state| {
+        state.viewer_expanded = true;
+        state.research_expanded = true;
+    });
+    assert!(
+        content_lines(&pane)
+            .iter()
+            .any(|line| line == "Requested page zoom: 90%"),
+        "{:?}",
+        content_lines(&pane)
+    );
+
+    // A retained session answers with the level it settled on, and that
+    // rides beside the request rather than replacing it.
+    app.content.note_page_zoom(
+        node,
+        crate::content::PageZoomFacts {
+            requested: 0.9,
+            applied: 0.9,
+            min: 0.25,
+            max: 5.0,
+        },
+    );
+    pane.sync(
+        &app,
+        app.default_graph_pane(),
+        400.0,
+        600.0,
+        None,
+        None,
+        "unconfigured",
+    );
+    pane.runner.update(|state| {
+        state.viewer_expanded = true;
+        state.research_expanded = true;
+    });
+    assert!(
+        content_lines(&pane)
+            .iter()
+            .any(|line| line == "Requested page zoom: 90% (applied 90%)"),
+        "{:?}",
+        content_lines(&pane)
+    );
+}
+
+#[test]
+fn viewer_controls_write_the_followed_member_instead_of_the_runtime_cursor() {
+    let mut app = App::test_stub();
+    app.update(Action::OpenAddress("mere://followed".into()));
+    let followed = app.graph_runtimes.focused_member().unwrap();
+    app.update(Action::OpenAddress("mere://cursor".into()));
+    let cursor = app.graph_runtimes.focused_member().unwrap();
+    assert_ne!(followed, cursor);
+    let source = app.default_graph_pane();
+    app.publish_member_context(source, Some(followed));
+    app.update(Action::SummonPane(crate::panes::PaneKindId::new(
+        crate::panes::kind::INSPECTOR,
+    )));
+    let id = app.active_pane.unwrap();
+    let mut pane = InspectorPane::new();
+    pane.runner.update(|state| {
+        state.viewer_expanded = true;
+        state.research_expanded = true;
+    });
+    pane.sync(&app, id, 400.0, 600.0, None, None, "unconfigured");
+    pane.runner.update(|state| {
+        state.viewer_expanded = true;
+        state.research_expanded = true;
+    });
+    assert_eq!(pane.runner.state().member, Some(followed));
+    pane.runner.update(|state| {
+        state.viewer_expanded = true;
+        state.research_expanded = true;
+    });
+    let _ = pane.scene(400, 600, 1.0);
+    let (x, y) = pane
+        .selector_point(
+            &taproot::Selector::class("radio")
+                .with_attr("data-engine-id", "genet.reader")
+                .on_surface("inspector"),
+        )
+        .expect("the requested viewer must resolve uniquely")
+        .expect("the requested viewer must be painted inside its pane");
+    assert!(
+        (0.0..400.0).contains(&x) && (0.0..600.0).contains(&y),
+        "Probe resolved the viewer outside its pane: ({x}, {y})"
+    );
+    let intents = pane.click(x, y, 400, 600);
+    let [InspectorIntent::SetViewer { member, viewer }] = &intents[..] else {
+        panic!("typed viewer write")
+    };
+    assert_eq!(*member, followed);
+    let effects = app.update(Action::SetViewerOverride {
+        member: *member,
+        viewer: viewer.clone(),
+    });
+    assert!(
+        effects
+            .iter()
+            .any(|effect| matches!(effect, crate::action::Effect::SaveSession))
+    );
+    assert_eq!(
+        app.browser
+            .get(followed)
+            .unwrap()
+            .viewer_override
+            .as_deref(),
+        Some("genet.reader")
+    );
+    assert!(
+        app.browser
+            .get(cursor)
+            .and_then(|state| state.viewer_override.as_deref())
+            .is_none()
+    );
+    pane.sync(&app, id, 400.0, 600.0, None, None, "unconfigured");
+    pane.runner.update(|state| {
+        state.viewer_expanded = true;
+        state.research_expanded = true;
+    });
+    assert_eq!(pane.runner.state().radio.selected, 2);
+}
+
+#[test]
+fn engine_inventory_new_registration_reaches_picker_and_observation() {
+    let mut registry = crate::shell::standard_content_engines();
+    registry.register(Box::new(AddedDocumentEngine));
+    let mut app = App::test_stub();
+    app.engine_inventory =
+        crate::shell::project_engine_inventory(&registry, &inker::SurfaceEngineRegistry::new());
+    let options = crate::inspector_controls::viewer_options(&app, None);
+    let option = options
+        .iter()
+        .find(|option| option.viewer.as_deref() == Some("example.document"))
+        .expect("a registration must not require editing a picker list");
+    assert!(option.selectable);
+    let observed = crate::observe::snapshot(&app);
+    assert_eq!(observed.engine_inventory, app.engine_inventory);
+    assert_eq!(observed.viewer_choices, options);
+    assert!(
+        observed
+            .engine_inventory
+            .iter()
+            .any(|engine| engine.id == "scrying.web"
+                && if cfg!(all(feature = "scry", windows)) {
+                    matches!(
+                        engine.availability,
+                        crate::content::EngineAvailability::OnDemand { .. }
+                    )
+                } else {
+                    matches!(
+                        engine.availability,
+                        crate::content::EngineAvailability::Unavailable { .. }
+                    )
+                })
+    );
+}

@@ -14,8 +14,8 @@ use std::collections::BTreeMap;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 
-use servitor::resident::{BodyRevision, Lifecycle, ResidentBinding, ResidentId};
 use servitor::Subject;
+use servitor::resident::{BodyRevision, Lifecycle, ResidentBinding, ResidentId};
 use uuid::Uuid;
 
 const VERSION: u32 = 1;
@@ -64,17 +64,23 @@ pub fn resident_id(member: Uuid) -> ResidentId {
 
 pub fn load(session_dir: &Path) -> Result<ResidentAdmissions, String> {
     let target = path(session_dir);
-    let text = std::fs::read_to_string(&target)
-        .map_err(|err| {
-            format!(
-                "resident admission state unreadable at {}: {err}",
-                target.display()
-            )
-        })?;
-    let disk: DiskState = serde_json::from_str(&text)
-        .map_err(|err| format!("resident admission state malformed at {}: {err}", target.display()))?;
+    let text = std::fs::read_to_string(&target).map_err(|err| {
+        format!(
+            "resident admission state unreadable at {}: {err}",
+            target.display()
+        )
+    })?;
+    let disk: DiskState = serde_json::from_str(&text).map_err(|err| {
+        format!(
+            "resident admission state malformed at {}: {err}",
+            target.display()
+        )
+    })?;
     if disk.version != VERSION {
-        return Err(format!("resident admission state has unsupported version {}", disk.version));
+        return Err(format!(
+            "resident admission state has unsupported version {}",
+            disk.version
+        ));
     }
     let mut records = BTreeMap::new();
     for item in disk.residents {
@@ -138,7 +144,8 @@ pub fn save(session_dir: &Path, state: &ResidentAdmissions) -> Result<(), String
     let parent = target
         .parent()
         .ok_or_else(|| "resident admission state has no parent".to_string())?;
-    std::fs::create_dir_all(parent).map_err(|err| format!("cannot create resident admission directory: {err}"))?;
+    std::fs::create_dir_all(parent)
+        .map_err(|err| format!("cannot create resident admission directory: {err}"))?;
     let temporary = target.with_extension("json.new");
     let mut file = std::fs::File::create(&temporary)
         .map_err(|err| format!("cannot create resident admission state: {err}"))?;
@@ -220,7 +227,8 @@ mod tests {
         let _ = std::fs::remove_dir_all(&dir);
         let member = Uuid::from_u128(7);
         let mut state = ResidentAdmissions::default();
-        let mut paused = ResidentAdmissions::active(member, Subject::new([2; 32]), body_revision(b"body"));
+        let mut paused =
+            ResidentAdmissions::active(member, Subject::new([2; 32]), body_revision(b"body"));
         paused.binding.lifecycle = Lifecycle::Paused;
         paused.binding.generation = 4;
         paused.skipped = 3;
@@ -236,10 +244,16 @@ mod tests {
         save(&dir, &state).unwrap();
         save(&dir, &state).unwrap();
         let reopened = load(&dir).unwrap();
-        assert_eq!(reopened.get(member).unwrap().binding.lifecycle, Lifecycle::Paused);
+        assert_eq!(
+            reopened.get(member).unwrap().binding.lifecycle,
+            Lifecycle::Paused
+        );
         assert_eq!(reopened.get(member).unwrap().binding.generation, 4);
         assert_eq!(reopened.get(member).unwrap().skipped, 3);
-        assert_eq!(reopened.get(Uuid::from_u128(8)).unwrap().binding.lifecycle, Lifecycle::Revoked);
+        assert_eq!(
+            reopened.get(Uuid::from_u128(8)).unwrap().binding.lifecycle,
+            Lifecycle::Revoked
+        );
         let _ = std::fs::remove_dir_all(&dir);
     }
 

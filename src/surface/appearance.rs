@@ -99,11 +99,7 @@ mod tests {
 
         let inset_id = surfaces[1].id;
         let mut surviving = crate::surface::assemble(&[], &[], Some((node, inset)), None);
-        assign_content_appearance_ids(
-            &mut surviving,
-            0,
-            &[(node, 0x3000_0000_0000_0003, inset)],
-        );
+        assign_content_appearance_ids(&mut surviving, 0, &[(node, 0x3000_0000_0000_0003, inset)]);
         assert_eq!(
             surviving[0].id, inset_id,
             "closing a sibling appearance leaves this inset's retained identity intact"
@@ -142,14 +138,9 @@ mod tests {
                     node,
                     role ^ host.wrapping_mul(0x9e37_79b9_7f4a_7c15),
                 );
-                assert!(reader_appearance_belongs_to_pane(
-                    id, node, closed, 2
-                ));
-                assert!(!reader_appearance_belongs_to_pane(
-                    id, node, surviving, 2
-                ));
+                assert!(reader_appearance_belongs_to_pane(id, node, closed, 2));
+                assert!(!reader_appearance_belongs_to_pane(id, node, surviving, 2));
             }
         }
     }
-
 }

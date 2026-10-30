@@ -324,7 +324,10 @@ pub(super) fn compose(
     }
     frame.layout.borrow_mut().set_native_sources(commands);
     let mut translated = frame.scene_resources().map_err(|error| {
-        Failure::Aperture(slot as u64, format!("frame paint translation refused: {error}"))
+        Failure::Aperture(
+            slot as u64,
+            format!("frame paint translation refused: {error}"),
+        )
     })?;
     // The scene's blurred-shadow image keys refer to these actual GPU masks.
     // Dropping the side table makes correctly authored shadows disappear.

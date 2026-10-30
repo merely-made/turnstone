@@ -121,9 +121,7 @@ impl App {
                     facets.remove(&member, &chartulary::FacetId::new(NOTE_FACET));
                 }
             }) {
-                return self.saved_source_refusal(format!(
-                    "Research note choice failed: {error}"
-                ));
+                return self.saved_source_refusal(format!("Research note choice failed: {error}"));
             }
         }
         let Some(canvas) = self.graph_runtimes.canvas_mut(choice.graph) else {

@@ -168,7 +168,7 @@ impl Watcher {
                 loop {
                     match stopping.recv_timeout(Duration::from_millis(250)) {
                         Ok(()) | Err(mpsc::RecvTimeoutError::Disconnected) => return,
-                        Err(mpsc::RecvTimeoutError::Timeout) => {}
+                        Err(mpsc::RecvTimeoutError::Timeout) => {},
                     }
                     let healthy = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                         bound.check_status()
@@ -263,9 +263,9 @@ impl Setup {
                                 Err(_) => {
                                     bound.retire();
                                     SetupEvent::Refused
-                                }
+                                },
                             };
-                        }
+                        },
                         Err(_) => std::thread::sleep(Duration::from_millis(250)),
                     }
                 };
@@ -315,9 +315,9 @@ impl Setup {
                                 Err(_) => {
                                     bound.retire();
                                     SetupEvent::Refused
-                                }
+                                },
                             };
-                        }
+                        },
                         Err(_) => std::thread::sleep(Duration::from_millis(250)),
                     }
                 };

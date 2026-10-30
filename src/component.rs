@@ -68,12 +68,12 @@ impl ActionSink for RingSink {
                 let refusal = Refusal::Unknown(name);
                 self.refusals.push(format!("{refusal:?}"));
                 return Err(refusal);
-            }
+            },
             Err(EnvelopeError::Malformed(why)) => {
                 let refusal = Refusal::Malformed(why);
                 self.refusals.push(format!("{refusal:?}"));
                 return Err(refusal);
-            }
+            },
         };
         // Decoding is not authority: a host-only action decodes fine and dies
         // here, so the denial is exact and names its ring.

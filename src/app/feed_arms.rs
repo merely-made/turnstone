@@ -7,8 +7,8 @@
 //! Feed subscription actions and update folding.
 
 use crate::action::{Effect, FetchedPage};
-use crate::surface_controls::{self, Control};
 use crate::observe::AppEvent;
+use crate::surface_controls::{self, Control};
 
 use super::App;
 
@@ -104,7 +104,9 @@ impl App {
 
     /// Supply the host clock to both W4 behaviors and feed schedules.
     pub fn tick(&mut self, now_ms: u64) -> Vec<Effect> {
-        if self.session_load_refused() { return Vec::new(); }
+        if self.session_load_refused() {
+            return Vec::new();
+        }
         self.now_ms = Some(now_ms);
         let requests = self.feeds.start_due(now_ms);
         let mut effects = self.feed_fetch_effects(requests);
@@ -149,7 +151,7 @@ impl App {
             Err(error) => {
                 tracing::warn!(%error, "failed to project Gemini client identity for feed");
                 None
-            }
+            },
         };
         Effect::FetchFeed {
             node,
@@ -228,7 +230,9 @@ impl App {
                 );
                 canvas.set_node_title_for(member, projection.entry.title.clone());
                 canvas.set_node_body_for(member, projection.entry.summary.clone());
-                let bound = self.feeds.bind_projected_entry(node, &projection.entry, member);
+                let bound = self
+                    .feeds
+                    .bind_projected_entry(node, &projection.entry, member);
                 debug_assert!(bound, "merge projection names an admitted entry");
                 let (_, _, unread) = self.feeds.surface_flags(member);
                 surface_controls::set(canvas, member, Control::FeedEntry, true);
@@ -259,15 +263,22 @@ impl App {
     pub(super) fn reconcile_feed_tags(&mut self) {
         for member in self.graph_runtimes.member_ids() {
             let (source, entry, unread) = self.feeds.surface_flags(member);
-            let Some(graph) = self.graph_runtimes.graph_containing_member(member) else { continue };
-            let Some(canvas) = self.graph_runtimes.canvas_mut(graph) else { continue };
-            if source { surface_controls::set(canvas, member, Control::Keep, true); }
-            if entry { surface_controls::set(canvas, member, Control::FeedEntry, true); }
+            let Some(graph) = self.graph_runtimes.graph_containing_member(member) else {
+                continue;
+            };
+            let Some(canvas) = self.graph_runtimes.canvas_mut(graph) else {
+                continue;
+            };
+            if source {
+                surface_controls::set(canvas, member, Control::Keep, true);
+            }
+            if entry {
+                surface_controls::set(canvas, member, Control::FeedEntry, true);
+            }
             surface_controls::set(canvas, member, Control::Feed, source);
             surface_controls::set(canvas, member, Control::Unread, unread);
         }
     }
-
 }
 
 #[cfg(test)]
@@ -291,7 +302,11 @@ mod tests {
             Effect::FetchFeed { node, .. } if *node == source
         )));
         assert!(app.node_is_kept(source));
-        assert!(surface_controls::read(app.graph_runtimes.graph(), source, Control::Feed));
+        assert!(surface_controls::read(
+            app.graph_runtimes.graph(),
+            source,
+            Control::Feed
+        ));
 
         let fetched = FetchedPage::text(
             Some("text/gemini".into()),
@@ -311,8 +326,16 @@ mod tests {
             .unwrap()
             .1
             .id;
-        assert!(surface_controls::read(app.graph_runtimes.graph(), one, Control::FeedEntry));
-        assert!(surface_controls::read(app.graph_runtimes.graph(), one, Control::Unread));
+        assert!(surface_controls::read(
+            app.graph_runtimes.graph(),
+            one,
+            Control::FeedEntry
+        ));
+        assert!(surface_controls::read(
+            app.graph_runtimes.graph(),
+            one,
+            Control::Unread
+        ));
 
         app.apply_update(Update::FeedFetched {
             node: source,

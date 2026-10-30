@@ -82,14 +82,26 @@ fn float_in(app: &App, space: SpaceRef, pane: PaneId) -> (workbench::FloatingTil
 }
 fn shared_spec(app: &App, pane: PaneId) -> PaneSpec {
     let space = app.space_of(pane).expect("pane retains its actual window");
-    assert!(app.blueprint_space(space).is_none(), "shipping transfers keep shared Workspace authority");
+    assert!(
+        app.blueprint_space(space).is_none(),
+        "shipping transfers keep shared Workspace authority"
+    );
     let frame = app.space(space).unwrap().outer_workspace().unwrap();
-    let spec: PaneSpec = serde_json::from_value(frame.descriptors.get(&pane.0).expect("shared source descriptor").clone()).unwrap();
-    assert_eq!(spec.id,pane);
-    assert_eq!(app.pane_content(pane).unwrap().kind_id(),spec.kind);
+    let spec: PaneSpec = serde_json::from_value(
+        frame
+            .descriptors
+            .get(&pane.0)
+            .expect("shared source descriptor")
+            .clone(),
+    )
+    .unwrap();
+    assert_eq!(spec.id, pane);
+    assert_eq!(app.pane_content(pane).unwrap().kind_id(), spec.kind);
     spec
 }
-fn spec(f: &Fixture) -> PaneSpec { shared_spec(&f.app,f.pane) }
+fn spec(f: &Fixture) -> PaneSpec {
+    shared_spec(&f.app, f.pane)
+}
 
 fn publish(
     f: &Fixture,

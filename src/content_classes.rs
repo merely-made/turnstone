@@ -182,82 +182,82 @@ pub(crate) fn reconcile(canvas: &mut mere::canvas::Canvas) -> Result<usize, Face
         })
         .collect::<Vec<_>>();
     let edited = crate::graph_facets::try_edit_canvas_facets(canvas, |facets| {
-    for (node_id, class, address, media_type) in assignments {
-        let before = facets.facets_of(&node_id).cloned();
-        match class {
-            BuiltinClass::WebPage => {
-                facets.remove(&node_id, &note_facet);
-                facets.remove(&node_id, &download_facet);
-                let host = url::Url::parse(&address)
-                    .ok()
-                    .and_then(|parsed| parsed.host_str().map(str::to_owned))
-                    .unwrap_or_default();
-                facets.set(
-                    node_id,
-                    web_facet.clone(),
-                    json!({"version": 1, "address": address, "host": host}),
-                    &builtins.validator,
-                )?;
-                facets.set(
-                    node_id,
-                    class_facet.clone(),
-                    json!(WEB_PAGE_CLASS),
-                    &builtins.validator,
-                )?;
-            }
-            BuiltinClass::Note => {
-                facets.remove(&node_id, &web_facet);
-                facets.remove(&node_id, &download_facet);
-                facets.set(
-                    node_id,
-                    note_facet.clone(),
-                    json!({
-                        "version": 1,
-                        "format": media_type.as_deref().unwrap_or("text/djot")
-                    }),
-                    &builtins.validator,
-                )?;
-                facets.set(
-                    node_id,
-                    class_facet.clone(),
-                    json!(NOTE_CLASS),
-                    &builtins.validator,
-                )?;
-            }
-            BuiltinClass::Download => {
-                facets.remove(&node_id, &web_facet);
-                facets.remove(&node_id, &note_facet);
-                facets.set(
-                    node_id,
-                    class_facet.clone(),
-                    json!(DOWNLOAD_CLASS),
-                    &builtins.validator,
-                )?;
-            }
-        }
-        let node_facets = facets
-            .facets_of(&node_id)
-            .expect("class reconciliation just wrote node facets");
-        let ClassMembership::Known(class) = builtins.registry.membership(node_facets) else {
-            return Err(FacetError {
-                facet: class_facet.clone(),
-                reason: "reconciled content class is not registered".into(),
-            });
-        };
-        class
-            .admits(node_facets, &builtins.validator)
-            .map_err(|error| match error {
-                ClassError::MissingFacet(facet) => FacetError {
-                    facet,
-                    reason: "required content-class facet is absent".into(),
+        for (node_id, class, address, media_type) in assignments {
+            let before = facets.facets_of(&node_id).cloned();
+            match class {
+                BuiltinClass::WebPage => {
+                    facets.remove(&node_id, &note_facet);
+                    facets.remove(&node_id, &download_facet);
+                    let host = url::Url::parse(&address)
+                        .ok()
+                        .and_then(|parsed| parsed.host_str().map(str::to_owned))
+                        .unwrap_or_default();
+                    facets.set(
+                        node_id,
+                        web_facet.clone(),
+                        json!({"version": 1, "address": address, "host": host}),
+                        &builtins.validator,
+                    )?;
+                    facets.set(
+                        node_id,
+                        class_facet.clone(),
+                        json!(WEB_PAGE_CLASS),
+                        &builtins.validator,
+                    )?;
                 },
-                ClassError::InvalidFacet(error) => error,
-            })?;
-        if facets.facets_of(&node_id) != before.as_ref() {
-            changed += 1;
+                BuiltinClass::Note => {
+                    facets.remove(&node_id, &web_facet);
+                    facets.remove(&node_id, &download_facet);
+                    facets.set(
+                        node_id,
+                        note_facet.clone(),
+                        json!({
+                            "version": 1,
+                            "format": media_type.as_deref().unwrap_or("text/djot")
+                        }),
+                        &builtins.validator,
+                    )?;
+                    facets.set(
+                        node_id,
+                        class_facet.clone(),
+                        json!(NOTE_CLASS),
+                        &builtins.validator,
+                    )?;
+                },
+                BuiltinClass::Download => {
+                    facets.remove(&node_id, &web_facet);
+                    facets.remove(&node_id, &note_facet);
+                    facets.set(
+                        node_id,
+                        class_facet.clone(),
+                        json!(DOWNLOAD_CLASS),
+                        &builtins.validator,
+                    )?;
+                },
+            }
+            let node_facets = facets
+                .facets_of(&node_id)
+                .expect("class reconciliation just wrote node facets");
+            let ClassMembership::Known(class) = builtins.registry.membership(node_facets) else {
+                return Err(FacetError {
+                    facet: class_facet.clone(),
+                    reason: "reconciled content class is not registered".into(),
+                });
+            };
+            class
+                .admits(node_facets, &builtins.validator)
+                .map_err(|error| match error {
+                    ClassError::MissingFacet(facet) => FacetError {
+                        facet,
+                        reason: "required content-class facet is absent".into(),
+                    },
+                    ClassError::InvalidFacet(error) => error,
+                })?;
+            if facets.facets_of(&node_id) != before.as_ref() {
+                changed += 1;
+            }
         }
-    }
-    Ok(changed)
+        Ok(changed)
     });
     match edited {
         Ok(Ok(changed)) => Ok(changed),

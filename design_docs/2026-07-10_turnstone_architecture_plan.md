@@ -1131,3 +1131,124 @@ failure matrix remain open. Production custody and external-principal gates
 remain separate.
 Run receipts and the current receiving boundary are kept with the common plan
 at `mere/design_docs/archive_docs/2026-10-28/2026-10-28_alembic_implementation_plan_receipts.md`.
+
+## Source and service boundaries (2026-10-29)
+
+**Status (2026-10-29): implemented and locally qualified.** The existing
+600-line ceiling is enforced, and optional producers and services are explicit
+build choices with demand-driven startup. The R-PC release dry run remained visibly slow; this work does not
+establish the cause or close interactive performance qualification.
+
+### Source ownership
+
+The ceiling applies to owned Rust production, test and example files. Vendored
+suppliers and retained receipts are outside this ownership boundary. The check
+counts physical lines, including comments and blanks, discovers new files, and
+has no baseline allowance. Test modules and adapter implementations live beside
+their subjects; each dispatch retains one exhaustive routing match.
+
+**Done conditions:** the source-size gate passes after formatting; its 600/601
+boundary and untracked-file controls pass; Rust compilation and behavioral
+regressions preserve the existing input, lifecycle and retained-data contracts.
+
+### Build composition
+
+The native UI and the selected document producer form the browser core.
+Authoring, peer hosting, inference clients, audio playback and foreign browser
+producers must be named explicitly. Shared values and persisted identities do
+not imply that a service implementation is installed. An unavailable service
+reports its absence through the same product capability boundary.
+
+**Done conditions:** target-aware normal dependency checks reject optional
+runtime leakage from the default build and include positive controls for each
+opt-in. Feature combinations compile; existing stored data survives a build
+that does not install its optional service.
+
+### Runtime admission
+
+Installing an implementation does not start it. Device acquisition, worker
+threads, dialing and service polling begin with admitted demand. Closing or
+retiring the owning session releases those resources. Rendering and accessible
+navigation remain independent of unused service workers.
+
+**Done conditions:** startup controls observe no optional worker or device
+before demand; first use starts it once; unavailable builds refuse cleanly;
+release and session replacement retire the same owned resources.
+
+### Findings
+
+- 2026-10-29: the initial size gate rejected 86 owned Rust files. Inline tests
+  and large reducers had obscured the 600-line rule's lack of enforcement.
+- 2026-10-29: default browser features already exclude Servo, Weld and Scry,
+  but unconditional authoring, playback and peer dependencies bypass the
+  intended service-selection boundary. The original dependency check treated
+  several carried transports as information rather than failures.
+
+### Progress
+
+- 2026-10-29: added the failing size gate and its passing boundary controls;
+  extracted test subjects, operation modules and exhaustive dispatch adapters.
+  The final default library suite passes 1,100 tests, with 8 ignored. The
+  post-format source gate and all eight gate regression controls pass.
+
+- **Service admission boundary.** Build flags now name audio, authoring, peers,
+  inference, workshop, diagnostics and subprocess endpoint support. Genet UI,
+  local documents, custody and retained data remain core. Disabled private
+  sharing panes retain their identities and render an availability explanation.
+- **Demand boundary.** Place and NomadNet actor ports defer their workers until
+  a real command, acknowledge idle release/retirement without starting, and
+  coalesce passive identity configuration. Knot endpoint senders and sharing /
+  diagnostic readers retain one deferred owner. Audio keeps one runtime slot,
+  admits it only on media demand and carries its wake across session reopen.
+- **Supplier boundary.** Woodshed `a4356b74` makes Redshank's native audio
+  implementation a feature while preserving its standalone default. Turnstone
+  disables that default; the selected lock advances only Woodshed and Armillary.
+  Its contract-only regression and 12 native playback controls pass. The wider
+  dependency refresh initially attempted by Cargo was retained as diagnostic
+  evidence and excluded from the selected lock change.
+- **Composition evidence.** Package-selected target trees avoid feature
+  unification from the Windows sandbox workspace helper. The default tree
+  excludes the optional engine/backend families. Distillery's installed mesh
+  assembly still shares its supplier crate with inference wire types, so the
+  explicit inference selection admits that assembly. No frame-rate claim is
+  made by these source, dependency or startup gates.
+
+- **Sky admission.** The analytical Sky pane is selected with `sky`; its
+  existing calculation-on-mount/apply behavior remains demand driven. The
+  default build no longer needs its ephemeris implementation.
+
+- **Knot supplier granularity.** This authoring adapter uses Knot's existing
+  blob-backed evidence store, bundled upstream with Knot's `peers` feature.
+  Selecting `authoring` admits that supplier assembly. Turnstone place /
+  sharing workers and carriers still require its separate `peers` feature;
+  configured local endpoints remain dormant until document/clip demand.
+
+- **Shared mechanisms (2026-10-29).** Armillary `35298c5` owns demand admission
+  over its existing actor harness, including pending configuration and the
+  distinction between sender and inbox lifetime. Turnstone's local copy was
+  removed. It retains only product classifiers/refusals. Generic resource
+  initialization now uses standard `LazyLock`; audio's current-settings
+  initializer uses standard `OnceLock`. The retained unavailable views reuse
+  the existing inline-pane / Cambium retained-mount path rather than adding
+  another input, layout or accessibility implementation.
+
+- **Receiving evidence (2026-10-29).** The final default library run passes
+  1,100 tests (8 ignored). With `full-services,peer-tests`, 30 focused controls
+  pass (1 ignored), covering concrete authoring startup, idle place lifecycle,
+  departed generations, source withdrawal, reader/receipt configuration,
+  retained audio settings and unavailable output. Armillary's 18 owner tests
+  pass with default and all features; Redshank's contract-only control and
+  12 native playback controls pass. The eight Python boundary controls pass.
+  Linux default/audio/authoring/services/optional-engine selections and the
+  Windows Weld/Scry selection pass the normal dependency-tree gates. Those
+  target trees are composition evidence; native engine, physical input,
+  accessibility and R-PC frame-rate qualification remain separate evidence.
+
+- **Workspace qualification (2026-10-29).** The locked, offline workspace and
+  test-target check passes on the Mac with `full-services,peer-tests,nomadnet`,
+  using the published owner revisions above. The lock audit matches exactly
+  those two source-revision substitutions, including unused canonical patches;
+  every unrelated package record remains intact. The source cap is enforced
+  in CI, alongside target-aware composition gates. Retained logs, the original
+  failing controls and the final qualification manifest are under workspace
+  output `turnstone-boundaries-20261029`.

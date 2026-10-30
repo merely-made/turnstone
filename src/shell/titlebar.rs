@@ -36,7 +36,9 @@ impl Shell {
         let insets = WinitWindow(window.clone()).titlebar_insets();
         let mut chrome = self.app.shell_chrome_config().clone();
         let scale = crate::ui::clean_scale(window.scale_factor() as f32);
-        if chrome.titlebar_insets.get(&slot) == Some(&insets) && chrome.layout_scales.get(&slot) == Some(&scale) {
+        if chrome.titlebar_insets.get(&slot) == Some(&insets)
+            && chrome.layout_scales.get(&slot) == Some(&scale)
+        {
             return;
         }
         chrome.titlebar_insets.insert(slot, insets);
@@ -135,7 +137,8 @@ impl Shell {
         }
         // A modal card or palette retains the application's existing outside
         // press/dismissal policy instead of starting a window gesture.
-        if self.app.omnibar.open || self.app.user_agent_decision.is_open() || self.chrome.has_menu() {
+        if self.app.omnibar.open || self.app.user_agent_decision.is_open() || self.chrome.has_menu()
+        {
             return false;
         }
         if *button == MouseButton::Right {

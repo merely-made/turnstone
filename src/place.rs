@@ -15,61 +15,21 @@ use serde::{Deserialize, Serialize};
 pub(crate) mod captured_collection;
 pub(crate) mod contract;
 pub mod invite;
+#[cfg(feature = "peers")]
+pub(crate) mod lanes;
+#[cfg(not(feature = "peers"))]
+#[path = "disabled/place_lanes.rs"]
 pub(crate) mod lanes;
 pub mod projection;
+#[cfg(feature = "peers")]
 pub(crate) mod projection_host;
+pub(crate) mod protocol;
 pub(crate) mod rendezvous;
+#[cfg(feature = "peers")]
 pub mod worker;
-
-/// The only binding version this Turnstone build understands.
-pub const PLACE_BINDING_VERSION: u16 = 1;
-
-fn encode_hex(bytes: &[u8; 32]) -> String {
-    bytes.iter().map(|byte| format!("{byte:02x}")).collect()
-}
-
-fn decode_hex(kind: &'static str, value: &str) -> Result<[u8; 32], PlaceIdError> {
-    if value.len() != 64 {
-        return Err(PlaceIdError {
-            kind,
-            reason: "expected 64 lowercase hexadecimal characters",
-        });
-    }
-    if !value
-        .bytes()
-        .all(|byte| byte.is_ascii_digit() || matches!(byte, b'a'..=b'f'))
-    {
-        return Err(PlaceIdError {
-            kind,
-            reason: "identifier contains a non-lowercase-hexadecimal character",
-        });
-    }
-    let mut bytes = [0; 32];
-    for (index, pair) in value.as_bytes().chunks_exact(2).enumerate() {
-        let text = std::str::from_utf8(pair).map_err(|_| PlaceIdError {
-            kind,
-            reason: "identifier is not UTF-8 hexadecimal",
-        })?;
-        bytes[index] =
-            u8::from_str_radix(text, 16).expect("validated hexadecimal pair always parses");
-    }
-    Ok(bytes)
-}
-
-/// A malformed serialized place identifier.
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct PlaceIdError {
-    kind: &'static str,
-    reason: &'static str,
-}
-
-impl std::fmt::Display for PlaceIdError {
-    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(formatter, "invalid {}: {}", self.kind, self.reason)
-    }
-}
-
-impl std::error::Error for PlaceIdError {}
+#[cfg(not(feature = "peers"))]
+#[path = "disabled/place_worker.rs"]
+pub mod worker;
 
 macro_rules! place_id {
     ($name:ident, $kind:literal) => {
@@ -116,233 +76,6 @@ place_id!(SharedContainerId, "Commons root container id");
 place_id!(ChatSpaceId, "Commons chat space id");
 place_id!(PlaceCollectionId, "Moot collection id");
 
-/// App-owned form of one exact Gemot collection version.
-///
-/// The worker converts this at the Gemot boundary. Keeping it here prevents
-/// durable app state and surfaces from acquiring domain-crate types.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub struct PlaceCollectionVersion {
-    pub moot: PlaceId,
-    pub collection: PlaceCollectionId,
-    pub frontier: Vec<[u8; 32]>,
-    pub membership_commitment: [u8; 32],
-}
-
-/// A currently authorized collection offered by the local search picker.
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct PlaceCollectionChoice {
-    pub name: String,
-    pub version: PlaceCollectionVersion,
-}
-
-/// The public, durable binding between one Turnstone session and one governed
-/// shared place.
-///
-/// These ids remain distinct because the live domain APIs address different
-/// replicated spaces with them. Knot documents are addressed nodes inside the
-/// shared graph and therefore need no fourth root here.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub struct PlaceBindingV1 {
-    pub version: u16,
-    pub moot: PlaceId,
-    pub root: SharedContainerId,
-    pub chat: ChatSpaceId,
-    pub default_channel: String,
-}
-
-impl PlaceBindingV1 {
-    pub fn new(
-        moot: PlaceId,
-        root: SharedContainerId,
-        chat: ChatSpaceId,
-        default_channel: impl Into<String>,
-    ) -> Result<Self, PlaceBindingError> {
-        let binding = Self {
-            version: PLACE_BINDING_VERSION,
-            moot,
-            root,
-            chat,
-            default_channel: default_channel.into(),
-        };
-        binding.validate()?;
-        Ok(binding)
-    }
-
-    /// Validate product-level bounds after deserialization. Domain membership
-    /// and authority are intentionally not guessed here.
-    pub fn validate(&self) -> Result<(), PlaceBindingError> {
-        if self.version != PLACE_BINDING_VERSION {
-            return Err(PlaceBindingError::UnsupportedVersion(self.version));
-        }
-        if self.default_channel.trim().is_empty() {
-            return Err(PlaceBindingError::EmptyDefaultChannel);
-        }
-        if self.default_channel.len() > 128 {
-            return Err(PlaceBindingError::DefaultChannelTooLong(
-                self.default_channel.len(),
-            ));
-        }
-        if self.default_channel.chars().any(char::is_control) {
-            return Err(PlaceBindingError::DefaultChannelHasControl);
-        }
-        Ok(())
-    }
-}
-
-/// A malformed or unsupported public place binding.
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub enum PlaceBindingError {
-    UnsupportedVersion(u16),
-    EmptyDefaultChannel,
-    DefaultChannelTooLong(usize),
-    DefaultChannelHasControl,
-}
-
-impl std::fmt::Display for PlaceBindingError {
-    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::UnsupportedVersion(version) => {
-                write!(formatter, "unsupported place binding version {version}")
-            },
-            Self::EmptyDefaultChannel => write!(formatter, "default channel is empty"),
-            Self::DefaultChannelTooLong(length) => {
-                write!(
-                    formatter,
-                    "default channel is {length} bytes; maximum is 128"
-                )
-            },
-            Self::DefaultChannelHasControl => {
-                write!(formatter, "default channel contains a control character")
-            },
-        }
-    }
-}
-
-impl std::error::Error for PlaceBindingError {}
-
-/// The only card and pre-key-offer version this build understands.
-pub const PLACE_CARD_VERSION: u16 = 1;
-
-/// A place's public calling card: where it is and who founded it.
-///
-/// Carries no authority whatsoever. It exists so someone who wants in can
-/// name the Moot their pre-key belongs to; the invitation stays the only
-/// envelope admission reads.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct PlaceCardV1 {
-    pub version: u16,
-    pub binding: PlaceBindingV1,
-    /// The founder's Personae root, hex.
-    pub founder_root: String,
-    /// The founder's dialable contact hints at export time.
-    pub rendezvous: Vec<invite::RendezvousV1>,
-}
-
-impl PlaceCardV1 {
-    pub fn validate(&self) -> Result<(), String> {
-        if self.version != PLACE_CARD_VERSION {
-            return Err(format!("unsupported place card version {}", self.version));
-        }
-        self.binding.validate().map_err(|error| error.to_string())?;
-        decode_hex("founder root", &self.founder_root).map_err(|error| error.to_string())?;
-        Ok(())
-    }
-}
-
-/// One profile's published group pre-key for one Moot.
-///
-/// Also authority-free: the bundle carries its own Personae attestation, and
-/// the inviter re-derives the root from it rather than trusting `root` here.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct PlacePrekeyOfferV1 {
-    pub version: u16,
-    pub moot: PlaceId,
-    /// The offering profile's Personae root, hex.
-    pub root: String,
-    /// The published pre-key bundle, base64.
-    pub prekey: String,
-}
-
-impl PlacePrekeyOfferV1 {
-    /// Bounded, decoded bundle bytes, or the reason they cannot be read.
-    pub fn prekey_bytes(&self) -> Result<Vec<u8>, String> {
-        use base64::Engine as _;
-        if self.version != PLACE_CARD_VERSION {
-            return Err(format!(
-                "unsupported pre-key offer version {}",
-                self.version
-            ));
-        }
-        decode_hex("offering root", &self.root).map_err(|error| error.to_string())?;
-        base64::engine::general_purpose::STANDARD
-            .decode(&self.prekey)
-            .map_err(|error| format!("decode pre-key bundle: {error}"))
-    }
-}
-
-/// What an invitation admits its recipient as.
-///
-/// Not carried on the wire: an invitation's envelope is unchanged, and the
-/// difference is realized in the Moot the recipient then folds. A reader is
-/// admitted to membership at `Read` and holds no delegation, so it reads the
-/// place and its own worker refuses everything it tries to author.
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
-pub enum PlaceInviteAccess {
-    #[default]
-    Writer,
-    Reader,
-}
-
-/// Hex for a 32-byte public identifier, the one spelling the card uses.
-pub fn hex32(bytes: &[u8; 32]) -> String {
-    encode_hex(bytes)
-}
-
-/// Milliseconds since the epoch as ISO 8601 UTC, to the second.
-pub fn utc_ms(at_ms: u64) -> String {
-    i64::try_from(at_ms)
-        .ok()
-        .and_then(|ms| jiff::Timestamp::from_millisecond(ms).ok())
-        .map_or_else(
-            || format!("{at_ms} ms"),
-            |at| at.strftime("%Y-%m-%dT%H:%M:%SZ").to_string(),
-        )
-}
-
-/// Split an invite prompt line into its pre-key path and optional grant
-/// lifetime, `<path> for <n><s|m|h|d>`. Read from the right, so a path with
-/// spaces survives; a tail that is not a lifetime is part of the path.
-pub fn split_invite_lifetime(line: &str) -> Result<(&str, Option<u64>), String> {
-    let Some((path, tail)) = line.rsplit_once(" for ") else {
-        return Ok((line, None));
-    };
-    let Some(unit) = tail.chars().last() else {
-        return Ok((line, None));
-    };
-    let digits = &tail[..tail.len() - unit.len_utf8()];
-    let scale: u64 = match unit {
-        's' => 1_000,
-        'm' => 60_000,
-        'h' => 3_600_000,
-        'd' => 86_400_000,
-        _ => return Ok((line, None)),
-    };
-    if digits.is_empty() || !digits.bytes().all(|byte| byte.is_ascii_digit()) {
-        return Ok((line, None));
-    }
-    let lifetime = digits
-        .parse::<u64>()
-        .ok()
-        .and_then(|count| count.checked_mul(scale))
-        .ok_or_else(|| format!("grant lifetime {tail} is too long"))?;
-    if lifetime == 0 {
-        return Err("a grant lifetime must be longer than zero".into());
-    }
-    Ok((path.trim_end(), Some(lifetime)))
-}
-
 /// One member of the place's Gemot membership fold, app-owned.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct PlaceMember {
@@ -359,17 +92,6 @@ pub enum PlaceMemberAccess {
     Manage,
 }
 
-impl PlaceMemberAccess {
-    pub fn label(self) -> &'static str {
-        match self {
-            Self::Pull => "pull only",
-            Self::Read => "reader",
-            Self::Write => "writer",
-            Self::Manage => "manager",
-        }
-    }
-}
-
 /// This profile's own standing in the place at the last refresh.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum PlaceStanding {
@@ -384,46 +106,11 @@ pub enum PlaceStanding {
     GrantExpired { at_ms: u64 },
 }
 
-impl PlaceStanding {
-    /// The status row naming a withdrawal, if there is one.
-    pub fn status_line(self) -> Option<String> {
-        match self {
-            Self::Member => None,
-            Self::MembershipRevoked => Some("Membership: revoked".into()),
-            Self::GrantRevoked => Some("Grant: revoked".into()),
-            Self::GrantExpired { at_ms } => Some(format!("Grant: expired at {}", utc_ms(at_ms))),
-        }
-    }
-
-    /// Why a write or dial is refused, as a clause.
-    pub fn refusal(self) -> Option<String> {
-        match self {
-            Self::Member => None,
-            Self::MembershipRevoked => Some("its place membership was revoked".into()),
-            Self::GrantRevoked => Some("its grant was revoked".into()),
-            Self::GrantExpired { at_ms } => Some(format!("its grant expired at {}", utc_ms(at_ms))),
-        }
-    }
-}
-
 /// How much of an elided value's head and tail survives. A rendezvous ticket
 /// is ~200 characters and a chrome row is one clipped line, so the status
 /// surface shows the ends and the palette's copy action carries the whole.
 const ELIDE_HEAD: usize = 12;
 const ELIDE_TAIL: usize = 8;
-
-/// `value` with its middle replaced by an ellipsis, or `value` unchanged when
-/// eliding would not shorten it. Char-based, so a multi-byte value is never
-/// cut mid-character.
-pub fn elide_middle(value: &str) -> String {
-    let chars: Vec<char> = value.chars().collect();
-    if chars.len() <= ELIDE_HEAD + ELIDE_TAIL + 1 {
-        return value.to_string();
-    }
-    let head: String = chars[..ELIDE_HEAD].iter().collect();
-    let tail: String = chars[chars.len() - ELIDE_TAIL..].iter().collect();
-    format!("{head}…{tail}")
-}
 
 /// Cached, app-owned summary of the retained place domains.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
@@ -502,24 +189,6 @@ pub struct PlaceLaneSnapshot {
     pub last_activity_ms: Option<u64>,
 }
 
-impl PlaceLaneSnapshot {
-    fn label(&self) -> &str {
-        match self.name {
-            "gemot/constitution/v1" => "Constitution",
-            "gemot/delegation/v1" => "Delegation",
-            "gemot/membership/v1" => "Membership",
-            "gemot/records/v1" => "Records",
-            "gemot/standing/v1" => "Standing",
-            "gemot/tulpa/v1" => "Tulpa",
-            "gemot/flora/v1" => "Flora",
-            commons::encrypted::COMMONS_ENCRYPTED_GRAPH_LANE => "Shared graph",
-            "commons/chat/v1" => "Chat",
-            stickleback::GROUP_KEY_LANE => "Group keys",
-            other => other,
-        }
-    }
-}
-
 /// Local view choice for captured-page search. This is not a Gemot fact.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub enum CapturedCollectionSelection {
@@ -554,55 +223,6 @@ pub enum CapturedCollectionSelectionStatus {
 pub struct CapturedCollectionCache {
     pub groups: Vec<CapturedContentGroup>,
     pub rejected: Vec<CapturedContributionStatus>,
-}
-
-impl CapturedCollectionCache {
-    /// Search the current derived view. The index is transient and one result
-    /// represents one exact canonical-text group.
-    pub fn search(&self, query: &str, limit: usize) -> Vec<CapturedSearchHit> {
-        use eidetic_search::{DocumentIndex, DocumentIndexConfig, SearchDocument};
-
-        let index = DocumentIndex::from_documents(
-            DocumentIndexConfig::default(),
-            self.groups.iter().enumerate().map(|(position, group)| {
-                let latest = group
-                    .contributions
-                    .last()
-                    .expect("a captured content group always has a contribution");
-                let mut aliases: Vec<_> = group
-                    .contributions
-                    .iter()
-                    .map(|contribution| contribution.source.clone())
-                    .filter(|source| source != &latest.source)
-                    .collect();
-                aliases.sort();
-                aliases.dedup();
-                SearchDocument {
-                    key: position,
-                    primary_address: latest.source.clone(),
-                    aliases,
-                    title: Some(latest.title.clone()),
-                    body: Some(group.canonical_text.clone()),
-                }
-            }),
-        );
-        index
-            .search(query, limit)
-            .into_iter()
-            .filter_map(|hit| {
-                self.groups.get(hit.key).map(|group| CapturedSearchHit {
-                    canonical_text_hash: group.canonical_text_hash.clone(),
-                    title: group
-                        .contributions
-                        .last()
-                        .map(|contribution| contribution.title.clone())
-                        .unwrap_or_default(),
-                    source: hit.primary_address,
-                    contribution_count: group.contributions.len(),
-                })
-            })
-            .collect()
-    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -755,397 +375,82 @@ pub struct PlaceLeftSummary {
     pub members: usize,
 }
 
-impl Default for PlaceState {
-    fn default() -> Self {
-        Self::Personal
-    }
-}
-
-impl PlaceState {
-    /// Shared by the status surface and observation. Facts are from the last
-    /// worker snapshot; opening this view requests a fresh local snapshot.
-    pub fn status_lines(&self) -> Vec<String> {
-        let mut rows = match self {
-            Self::Personal => vec!["Personal session: no shared place joined".into()],
-            Self::Joining { .. } => vec!["Place: checking invitation".into()],
-            Self::Opening { .. } => vec!["Place: opening retained state or reconnecting".into()],
-            Self::Degraded { error, .. } => vec![format!("Place unavailable: {error}")],
-            Self::Failed { error } => vec![format!("Place not joined: {error}")],
-            Self::Left { retained, .. } => vec![format!(
-                "Place left: history retained; {} shared nodes, {} messages",
-                retained.graph_nodes, retained.chat_messages
-            )],
-            Self::Offline { snapshot, .. } => {
-                let mut rows = vec![match &snapshot.sync {
-                    None => "Last refresh: retained data only; no local sync lanes opened".into(),
-                    Some(_) => "Last refresh: local sync lanes opened; peer reachability unknown".into(),
-                }];
-                rows.push(format!("Retained history: {} shared nodes, {} messages",
-                    snapshot.graph.nodes, snapshot.chat.messages));
-                rows.push(format!("Group key frames: {} pending; {} refused",
-                    snapshot.group.pending_frames, snapshot.group.refused_frames));
-                // Parked records are held, not lost: they are offered again
-                // after every key refresh. Eviction is the one loss, so it
-                // says so on the same row rather than only in a log.
-                rows.push(format!("Awaiting keys: {} parked; {} re-admitted; {} evicted",
-                    snapshot.group.parked_records,
-                    snapshot.group.readmitted_records,
-                    snapshot.group.evicted_records));
-                match &snapshot.permissions {
-                    Some(permissions) => {
-                        let permission = |effective| if effective { "effective" } else { "not effective" };
-                        rows.push(format!("Message permission: {} locally at last refresh", permission(permissions.message_write)));
-                        rows.push(format!("Shared graph permission: {} locally at last refresh", permission(permissions.graph_write)));
-                    },
-                    None => rows.push("Writing permissions: not evaluated".into()),
-                }
-                rows.extend(snapshot.standing.status_line());
-                rows.push("Writing: permissions are checked again for each action".into());
-                rows.push("Delivery: these sync observations do not confirm message delivery".into());
-                if let Some(sync) = &snapshot.sync {
-                    // Listen-only is a real state and must never read as
-                    // connected: a founder alone in a place has lanes open and
-                    // nobody on them.
-                    if sync.dialed_rendezvous == 0 {
-                        rows.push("Listening for peers: none dialed".into());
-                    }
-                    rows.extend(
-                        sync.local_rendezvous
-                            .iter()
-                            // The full ticket stays in the snapshot, the
-                            // observation, and the exported card; only this
-                            // one-line row is elided.
-                            .map(|ticket| {
-                                format!("Local rendezvous: {}", elide_middle(ticket))
-                            }),
-                    );
-                    // "at last refresh" is dropped here: the header row above
-                    // already states every fact on this card is from the last
-                    // refresh, so repeating it per lane only pushed the row
-                    // past the card's text budget. (Mark, 2026-09-13)
-                    rows.push(match &sync.projection {
-                        Some(projection) => format!(
-                            "Projection: serving {} to {} live session{}; {} refused",
-                            projection.route,
-                            projection.live_sessions,
-                            if projection.live_sessions == 1 { "" } else { "s" },
-                            projection.refused
-                        ),
-                        None => "Projection: not serving (no Knot vault)".into(),
-                    });
-                    rows.extend(sync.lanes.iter().map(|lane| format!(
-                        "{}: {}; {} rounds; {} accepted ops",
-                        lane.label(), if lane.syncing { "syncing" } else { "idle" },
-                        lane.sync_rounds, lane.ops_received)));
-                }
-                rows
-            },
-        };
-        if self.binding().is_some() {
-            rows.push("Reconnect: use Refresh place contact if saved hints are stale".into());
-            rows.push("Leave: detach this session and retain its history".into());
-        }
-        if matches!(self, Self::Left { .. }) {
-            rows.push("Rejoin: reconnect with the retained history".into());
-        }
-        rows
-    }
-
-    /// This bind's own dialable tickets at the last refresh, whole. Empty
-    /// unless a place is open and its lanes reported one.
-    pub fn local_rendezvous(&self) -> &[String] {
-        match self {
-            Self::Offline { snapshot, .. } => snapshot
-                .sync
-                .as_ref()
-                .map(|sync| sync.local_rendezvous.as_slice())
-                .unwrap_or_default(),
-            _ => &[],
-        }
-    }
-
-    /// `None` for every state including `Left`: every "not joined" guard
-    /// (found, join, offer a pre-key) reads this the same way for a left
-    /// session as for a personal one. `Rejoin` alone needs the binding a
-    /// left session still remembers, so it reads [`Self::left_binding`]
-    /// instead.
-    pub fn binding(&self) -> Option<&PlaceBindingV1> {
-        match self {
-            Self::Opening { binding, .. }
-            | Self::Offline { binding, .. }
-            | Self::Degraded { binding, .. } => Some(binding),
-            Self::Personal | Self::Joining { .. } | Self::Failed { .. } | Self::Left { .. } => None,
-        }
-    }
-
-    /// The binding a locally left session still remembers, for `Rejoin`
-    /// alone. Every other guard uses [`Self::binding`], which reads `Left`
-    /// as not joined.
-    pub fn left_binding(&self) -> Option<&PlaceBindingV1> {
-        match self {
-            Self::Left { binding, .. } => Some(binding),
-            _ => None,
-        }
-    }
-
-    pub fn generation(&self) -> Option<u64> {
-        match self {
-            Self::Joining { generation }
-            | Self::Opening { generation, .. }
-            | Self::Offline { generation, .. }
-            | Self::Degraded { generation, .. } => Some(*generation),
-            Self::Personal | Self::Failed { .. } | Self::Left { .. } => None,
-        }
-    }
-}
-
 #[cfg(test)]
-mod tests {
-    use super::*;
+#[cfg(feature = "peers")]
+#[path = "place/tests.rs"]
+mod tests;
 
-    fn binding() -> PlaceBindingV1 {
-        PlaceBindingV1::new(
-            PlaceId([1; 32]),
-            SharedContainerId([2; 32]),
-            ChatSpaceId([3; 32]),
-            "hall",
-        )
-        .unwrap()
-    }
-
-    /// A realistic p2panda endpoint ticket: ~200 base32 characters.
-    fn long_ticket() -> String {
-        "abcdefghijklmnopqrstuvwxyz234567"
-            .chars()
-            .cycle()
-            .take(200)
-            .collect()
-    }
-
-    #[test]
-    fn elide_middle_keeps_the_ends_and_leaves_short_values_alone() {
-        assert_eq!(elide_middle(""), "");
-        assert_eq!(elide_middle("short"), "short");
-        // Exactly the length eliding would produce: nothing is gained, so the
-        // value is left whole.
-        let same = "a".repeat(ELIDE_HEAD + ELIDE_TAIL + 1);
-        assert_eq!(elide_middle(&same), same);
-
-        let ticket = long_ticket();
-        let elided = elide_middle(&ticket);
-        assert_eq!(elided.chars().count(), ELIDE_HEAD + ELIDE_TAIL + 1);
-        assert!(elided.starts_with(&ticket[..ELIDE_HEAD]));
-        assert!(elided.ends_with(&ticket[ticket.len() - ELIDE_TAIL..]));
-        assert!(elided.contains('…'));
-
-        // Multi-byte input is cut on character boundaries, not bytes.
-        let wide = "é".repeat(40);
-        assert_eq!(
-            elide_middle(&wide).chars().count(),
-            ELIDE_HEAD + ELIDE_TAIL + 1
-        );
-    }
-
-    /// Every status row is one `nowrap; overflow: hidden` line in a 560px
-    /// card, so a row that does not fit is cut off mid-string rather than
-    /// wrapped. The ~200-character rendezvous ticket is what broke this, and
-    /// six-digit lane counters against the longest lane labels are the other
-    /// edge: both are exercised here so the guard covers every row, lane rows
-    /// included.
-    #[test]
-    fn every_status_row_fits_one_palette_row() {
-        let state = PlaceState::Offline {
-            binding: binding(),
-            generation: 1,
-            snapshot: OfflinePlaceSnapshot {
-                sync: Some(PlaceSyncSnapshot {
-                    lanes: vec![
-                        PlaceLaneSnapshot {
-                            name: commons::encrypted::COMMONS_ENCRYPTED_GRAPH_LANE,
-                            syncing: true,
-                            sync_rounds: 123456,
-                            ops_received: 987654,
-                            last_activity_ms: Some(42),
-                        },
-                        PlaceLaneSnapshot {
-                            name: "gemot/constitution/v1",
-                            syncing: false,
-                            sync_rounds: 123456,
-                            ops_received: 987654,
-                            last_activity_ms: None,
-                        },
-                        PlaceLaneSnapshot {
-                            name: stickleback::GROUP_KEY_LANE,
-                            syncing: true,
-                            sync_rounds: 123456,
-                            ops_received: 987654,
-                            last_activity_ms: None,
-                        },
-                    ],
-                    projection: None,
-                    local_rendezvous: vec![long_ticket()],
-                    dialed_rendezvous: 0,
-                }),
-                permissions: Some(PlacePermissionSnapshot {
-                    message_write: true,
-                    graph_write: false,
-                }),
-                group: GroupCache {
-                    pending_frames: 123456,
-                    refused_frames: 987654,
-                    parked_records: 123456,
-                    readmitted_records: 987654,
-                    evicted_records: 123456,
-                    ..Default::default()
-                },
-                ..Default::default()
-            },
-        };
-
-        let rows = state.status_lines();
-        assert!(
-            rows.iter().any(|row| row.starts_with("Local rendezvous:")),
-            "the rendezvous row is the one under test",
-        );
-        for row in [
-            "Group keys: syncing; 123456 rounds; 987654 accepted ops",
-            "Group key frames: 123456 pending; 987654 refused",
-            "Awaiting keys: 123456 parked; 987654 re-admitted; 123456 evicted",
-        ] {
-            assert!(rows.iter().any(|line| line == row), "{row} missing: {rows:?}");
-        }
-        assert!(
-            rows.iter()
-                .any(|row| row == "Projection: not serving (no Knot vault)"),
-            "a place with no vault says so rather than omitting the row: {rows:?}"
-        );
-        for row in rows.iter() {
-            let width = crate::ui::chrome_row_width(row);
-            assert!(
-                width <= crate::ui::ROW_TEXT_BUDGET,
-                "status row must fit one palette row: {width}px > {}px: {row}",
-                crate::ui::ROW_TEXT_BUDGET,
-            );
-        }
-    }
-
-    /// Each withdrawal names itself in one row that fits; nothing withdrawn
-    /// adds no row.
-    #[test]
-    fn a_withdrawn_standing_names_itself_in_one_row() {
-        let rows = |standing| {
-            PlaceState::Offline {
-                binding: binding(),
-                generation: 1,
-                snapshot: OfflinePlaceSnapshot {
-                    standing,
-                    ..Default::default()
-                },
-            }
-            .status_lines()
-        };
-        let member = rows(PlaceStanding::Member);
-        for (standing, line) in [
-            (PlaceStanding::MembershipRevoked, "Membership: revoked"),
-            (PlaceStanding::GrantRevoked, "Grant: revoked"),
-            (
-                PlaceStanding::GrantExpired {
-                    at_ms: 1_789_000_000_000,
-                },
-                "Grant: expired at 2026-09-10T00:26:40Z",
-            ),
-        ] {
-            let withdrawn = rows(standing);
-            assert_eq!(withdrawn.len(), member.len() + 1);
-            assert!(withdrawn.iter().any(|row| row == line), "{withdrawn:?}");
-            assert!(crate::ui::chrome_row_width(line) <= crate::ui::ROW_TEXT_BUDGET);
-        }
-    }
-
-    /// The serving wording, singular and plural, and both fit one row.
-    #[test]
-    fn the_projection_row_names_what_is_served_and_what_was_refused() {
-        let serving = |live, refused| {
-            let state = PlaceState::Offline {
-                binding: binding(),
-                generation: 1,
-                snapshot: OfflinePlaceSnapshot {
-                    sync: Some(PlaceSyncSnapshot {
-                        projection: Some(PlaceProjectionSnapshot {
-                            live_sessions: live,
-                            refused,
-                            route: "knot".into(),
-                        }),
-                        ..Default::default()
-                    }),
-                    ..Default::default()
-                },
-            };
-            let rows = state.status_lines();
-            let row = rows
-                .iter()
-                .find(|row| row.starts_with("Projection:"))
-                .expect("the projection row is always present when lanes are")
-                .clone();
-            assert!(
-                crate::ui::chrome_row_width(&row) <= crate::ui::ROW_TEXT_BUDGET,
-                "the projection row must fit one palette row: {row}"
-            );
-            row
-        };
-        assert_eq!(
-            serving(1, 1),
-            "Projection: serving knot to 1 live session; 1 refused"
-        );
-        assert_eq!(
-            serving(2, 0),
-            "Projection: serving knot to 2 live sessions; 0 refused"
-        );
-    }
-
-    #[test]
-    fn binding_json_uses_distinct_readable_hex_ids() {
-        let json = serde_json::to_string_pretty(&binding()).unwrap();
-        assert!(json.contains(&"01".repeat(32)));
-        assert!(json.contains(&"02".repeat(32)));
-        assert!(json.contains(&"03".repeat(32)));
-        assert!(!json.contains("[\n    1,"));
-        let restored: PlaceBindingV1 = serde_json::from_str(&json).unwrap();
-        assert_eq!(restored, binding());
-    }
-
-    #[test]
-    fn binding_validation_rejects_version_and_channel_ambiguity() {
-        let mut candidate = binding();
-        candidate.version = 2;
-        assert_eq!(
-            candidate.validate(),
-            Err(PlaceBindingError::UnsupportedVersion(2))
-        );
-
-        candidate.version = PLACE_BINDING_VERSION;
-        candidate.default_channel = " \t".into();
-        assert_eq!(
-            candidate.validate(),
-            Err(PlaceBindingError::EmptyDefaultChannel)
-        );
-
-        candidate.default_channel = "hall\nannouncements".into();
-        assert_eq!(
-            candidate.validate(),
-            Err(PlaceBindingError::DefaultChannelHasControl)
-        );
-    }
-
-    #[test]
-    fn serialized_id_requires_exact_hex() {
-        let error = serde_json::from_str::<PlaceId>("\"abcd\"").unwrap_err();
-        assert!(error.to_string().contains("expected 64"));
-        let error =
-            serde_json::from_str::<PlaceId>(&format!("\"{}g\"", "0".repeat(63))).unwrap_err();
-        assert!(error.to_string().contains("non-lowercase-hexadecimal"));
-        let error =
-            serde_json::from_str::<PlaceId>(&format!("\"{}A\"", "0".repeat(63))).unwrap_err();
-        assert!(error.to_string().contains("non-lowercase-hexadecimal"));
-    }
-}
+#[path = "place/encode_hex.rs"]
+mod encode_hex;
+use encode_hex::encode_hex;
+#[path = "place/decode_hex.rs"]
+mod decode_hex;
+use decode_hex::decode_hex;
+#[path = "place/hex32.rs"]
+mod hex32;
+#[path = "place/impl_std_error_error_for_place.rs"]
+mod impl_std_error_error_for_place;
+#[path = "place/impl_std_error_error_for_place_2.rs"]
+mod impl_std_error_error_for_place_2;
+#[path = "place/impl_std_fmt_display_for_place.rs"]
+mod impl_std_fmt_display_for_place;
+#[path = "place/impl_std_fmt_display_for_place_2.rs"]
+mod impl_std_fmt_display_for_place_2;
+#[path = "place/place_binding_v1_new.rs"]
+mod place_binding_v1_new;
+#[path = "place/place_card_v1_validate.rs"]
+mod place_card_v1_validate;
+#[path = "place/place_prekey_offer_v1_prekey_bytes.rs"]
+mod place_prekey_offer_v1_prekey_bytes;
+pub use hex32::hex32;
+#[path = "place/utc_ms.rs"]
+mod utc_ms;
+pub use utc_ms::utc_ms;
+#[path = "place/split_invite_lifetime.rs"]
+mod split_invite_lifetime;
+pub use split_invite_lifetime::split_invite_lifetime;
+#[path = "place/elide_middle.rs"]
+mod elide_middle;
+#[path = "place/place_member_access_label.rs"]
+mod place_member_access_label;
+#[path = "place/place_standing_status_line.rs"]
+mod place_standing_status_line;
+pub use elide_middle::elide_middle;
+#[path = "place/captured_collection_cache_search.rs"]
+mod captured_collection_cache_search;
+#[path = "place/impl_default_for_place_state.rs"]
+mod impl_default_for_place_state;
+#[path = "place/place_binding_version.rs"]
+mod place_binding_version;
+#[path = "place/place_lane_snapshot_label.rs"]
+mod place_lane_snapshot_label;
+#[path = "place/place_state_status_lines.rs"]
+mod place_state_status_lines;
+pub use place_binding_version::PLACE_BINDING_VERSION;
+#[path = "place/place_id_error.rs"]
+mod place_id_error;
+pub use place_id_error::PlaceIdError;
+#[path = "place/place_collection_version.rs"]
+mod place_collection_version;
+pub use place_collection_version::PlaceCollectionVersion;
+#[path = "place/place_collection_choice.rs"]
+mod place_collection_choice;
+pub use place_collection_choice::PlaceCollectionChoice;
+#[path = "place/place_binding_v1.rs"]
+mod place_binding_v1;
+pub use place_binding_v1::PlaceBindingV1;
+#[path = "place/place_binding_error.rs"]
+mod place_binding_error;
+pub use place_binding_error::PlaceBindingError;
+#[path = "place/place_card_version.rs"]
+mod place_card_version;
+pub use place_card_version::PLACE_CARD_VERSION;
+#[path = "place/place_card_v1.rs"]
+mod place_card_v1;
+pub use place_card_v1::PlaceCardV1;
+#[path = "place/place_prekey_offer_v1.rs"]
+mod place_prekey_offer_v1;
+pub use place_prekey_offer_v1::PlacePrekeyOfferV1;
+#[path = "place/place_invite_access.rs"]
+mod place_invite_access;
+pub use place_invite_access::PlaceInviteAccess;

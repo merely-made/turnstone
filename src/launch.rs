@@ -72,11 +72,11 @@ pub fn run_direct(address: Option<String>) -> i32 {
                 welding::CefSandboxMode::UnsandboxedTrustedContent,
             ) {
                 Ok(Some(code)) => return code,
-                Ok(None) => {}
+                Ok(None) => {},
                 Err(error) => {
                     eprintln!("turnstone: CEF subprocess probe failed: {error}");
                     return 1;
-                }
+                },
             }
         }
     }
@@ -122,18 +122,16 @@ pub unsafe fn run_bootstrap(instance: *mut std::ffi::c_void, sandbox_info: *mut 
             Err(error) => {
                 eprintln!("turnstone: invalid CEF bootstrap sandbox context: {error}");
                 return 111;
-            }
+            },
         };
     match context.execute_process(&cef_path) {
         Ok(Some(code)) => return code,
-        Ok(None) => {}
+        Ok(None) => {},
         Err(error) => {
             eprintln!("turnstone: sandboxed CEF subprocess probe failed: {error}");
             return 112;
-        }
+        },
     }
-    crate::shell::weld::set_sandbox_route(crate::shell::weld::WeldSandboxRoute::Bootstrap(
-        context,
-    ));
+    crate::shell::weld::set_sandbox_route(crate::shell::weld::WeldSandboxRoute::Bootstrap(context));
     start_app(std::env::args().nth(1))
 }

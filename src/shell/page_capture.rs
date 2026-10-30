@@ -78,7 +78,8 @@ impl CaptureCorrelation {
             return Err(CaptureRefusal::StaleTarget);
         };
         let value = self.next_request;
-        self.next_request = self.next_request
+        self.next_request = self
+            .next_request
             .checked_add(1)
             .ok_or(CaptureRefusal::RequestIdExhausted)?;
         let request = PageCaptureRequestId::new(value);

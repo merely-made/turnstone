@@ -100,10 +100,7 @@ impl WeldProducerFactory for TurnstoneWeldFactory {
         .map_err(weld_spawn_error)?;
         producer.set_visible(true).map_err(weld_spawn_error)?;
         Ok(Box::new(TurnstoneWeldSurface {
-            inner: weld_engine::WeldingSurface::new(
-                Box::new(producer),
-                &surface,
-            ),
+            inner: weld_engine::WeldingSurface::new(Box::new(producer), &surface),
         }))
     }
 }
@@ -253,8 +250,8 @@ mod sandbox_preference_tests {
         use std::os::windows::ffi::OsStringExt;
         let invalid = std::ffi::OsString::from_wide(&[0xD800]);
         assert!(invalid.to_str().is_none());
-        let error = parse_sandbox_preference(Err(std::env::VarError::NotUnicode(invalid)))
-            .unwrap_err();
+        let error =
+            parse_sandbox_preference(Err(std::env::VarError::NotUnicode(invalid))).unwrap_err();
         assert_eq!(error, "TURNSTONE_WELD_SANDBOX is not valid UTF-8");
     }
 }

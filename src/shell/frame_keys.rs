@@ -179,7 +179,11 @@ impl Shell {
                 let window = lens.ordinal as u64 + 1;
                 lens.window.set_ime_allowed(
                     self.pane_text_in_window(window)
-                        || super::window_input::document_accepts_ime(&self.content_sessions.pool, self.app.focus, window),
+                        || super::window_input::document_accepts_ime(
+                            &self.content_sessions.pool,
+                            self.app.focus,
+                            window,
+                        ),
                 );
             }
         }
