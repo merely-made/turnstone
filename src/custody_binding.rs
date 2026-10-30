@@ -41,6 +41,20 @@ pub fn advance_generation(host: &AtomicU64) -> u64 {
     }
 }
 
+/// Proof that this binding was current at the local publication ordering point.
+pub struct PublicationClaim {
+    bound: Arc<BoundSealer>,
+    epoch: u64,
+}
+impl PublicationClaim {
+    pub fn epoch(&self) -> u64 {
+        self.epoch
+    }
+    pub fn belongs_to(&self, bound: &Arc<BoundSealer>) -> bool {
+        Arc::ptr_eq(&self.bound, bound)
+    }
+}
+
 pub struct BoundSealer {
     authority: Arc<dyn BindingAuthority>,
     root_epoch: u64,
@@ -81,6 +95,23 @@ impl BoundSealer {
             return None;
         }
         Some(self.host_epoch)
+    }
+    /// Linearize an already validated local operation against retirement.
+    /// After a successful claim the caller reports the actual I/O outcome;
+    /// retirement cannot retract a claimed write.
+    pub fn claim(self: &Arc<Self>) -> Option<PublicationClaim> {
+        let epoch = self.epoch()?;
+        self.claim_epoch(epoch)?;
+        Some(PublicationClaim {
+            bound: self.clone(),
+            epoch,
+        })
+    }
+    fn claim_epoch(&self, epoch: u64) -> Option<u64> {
+        self.retired
+            .compare_exchange(false, false, Ordering::SeqCst, Ordering::SeqCst)
+            .ok()
+            .map(|_| epoch)
     }
     pub fn retire(&self) {
         if !self.retired.swap(true, Ordering::SeqCst) {
@@ -442,6 +473,27 @@ mod tests {
         let start = std::time::Instant::now();
         drop(watcher);
         assert!(start.elapsed() < Duration::from_secs(3));
+    }
+    #[test]
+    fn claim_and_retirement_have_one_atomic_order() {
+        let host = Arc::new(AtomicU64::new(1));
+        let bound = BoundSealer::bind(fixture(), host.clone()).unwrap();
+        let checked = bound.epoch().unwrap();
+        bound.retire();
+        assert_eq!(
+            bound.claim_epoch(checked),
+            None,
+            "retirement after the epoch check defeats claim"
+        );
+        let fresh = BoundSealer::bind(fixture(), host).unwrap();
+        let claimed = fresh.claim();
+        assert!(claimed.is_some());
+        fresh.retire();
+        assert!(fresh.claim().is_none());
+        assert!(
+            claimed.is_some(),
+            "later retirement does not retract the claim"
+        );
     }
     #[test]
     fn exhausted_host_generation_never_reuses_a_binding() {

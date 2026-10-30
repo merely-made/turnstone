@@ -41,6 +41,7 @@ fn model_free_mixed_producers_scope_coverage_and_stale_revision() {
             start,
             end: start + selected.len(),
         },
+        1_000_000,
     )
     .unwrap();
     let capture_context = fleece::portable_clip::CaptureContext {

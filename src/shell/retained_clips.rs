@@ -71,7 +71,25 @@ impl Shell {
         choice: crate::app::research_note_arms::NoteChoice,
         selection: crate::producer_retention::ProducerSelection,
     ) {
-        let result = (|| {
+        let request = self
+            .latest_clip_retention
+            .as_ref()
+            .filter(|status| {
+                status.choice == choice
+                    && status.result.is_none()
+                    && !self.pending_clip_retains.contains_key(&status.request)
+            })
+            .map(|status| status.request)
+            .unwrap_or_else(|| {
+                let request = uuid::Uuid::new_v4();
+                self.latest_clip_retention = Some(super::clip_retaining::RetainStatus {
+                    request,
+                    choice: choice.clone(),
+                    result: None,
+                });
+                request
+            });
+        let result: Result<super::clip_retaining::PendingClipRetain, String> = (|| {
             if self.app.note_choice(choice.member).as_ref() != Some(&choice)
                 || self.app.browser_command_target().map(|(member, _)| member)
                     != Some(choice.member)
@@ -79,7 +97,23 @@ impl Shell {
                 return Err("The displayed source or retention destination changed".into());
             }
             let root = self.app.clip_destination()?;
+            let identity = self.app.identity.clone().ok_or(crate::identity::PENDING)?;
+            let binding = self
+                .custody_binding
+                .as_ref()
+                .ok_or(crate::identity::PENDING)?;
+            if !std::sync::Arc::ptr_eq(&identity, &binding.root) {
+                return Err(crate::identity::PENDING.into());
+            }
+            let bound = binding.bound.clone();
+            let epoch = bound.epoch().ok_or(crate::identity::PENDING)?;
             let policy = crate::retained_clip::limits()?;
+            let limits = self.app.research.storage_limits()?;
+            let input_limit = usize::try_from(policy.max_bytes)
+                .map_err(|_| "Clip size limit is too large")?
+                .checked_add(policy.max_record_bytes)
+                .ok_or("Clip size limit overflow")?
+                .min(limits.clip_queue.max_bytes);
             let (export, backing, voice, capture_id) = match &selection {
                 crate::producer_retention::ProducerSelection::Knot(expected) => {
                     let session = self
@@ -94,7 +128,8 @@ impl Shell {
                     if session.address() != choice.address {
                         return Err("The selected Knot document changed".into());
                     }
-                    let (export, backing) = session.selected_retained_export(expected)?;
+                    let (export, backing) =
+                        session.selected_retained_export(expected, input_limit)?;
                     let id = export
                         .get("id")
                         .and_then(|id| id.as_str())
@@ -108,14 +143,15 @@ impl Shell {
                         .annotations
                         .get(id)
                         .ok_or("The selected Redshank note is no longer available")?;
-                    if crate::producer_retention::note_digest(note)? != *digest
-                        || choice.address != format!("mere://redshank/note/{}", id.0)
-                    {
+                    if choice.address != format!("mere://redshank/note/{}", id.0) {
                         return Err("The selected Redshank note changed".into());
                     }
-                    let export = model
-                        .export_selected_note(id)
-                        .map_err(|e| format!("Redshank export refused: {e:?}"))?;
+                    let export = crate::producer_retention::export_redshank_selection(
+                        model,
+                        id,
+                        digest,
+                        input_limit,
+                    )?;
                     if matches!(note.body, redshank_model::NoteBody::Audio { .. }) {
                         return Err("This voice note needs body bytes from its source owner before retention".into());
                     }
@@ -137,35 +173,58 @@ impl Shell {
             };
             let source = match &selection {
                 crate::producer_retention::ProducerSelection::Knot(_) => {
-                    crate::retained_clip::NativeClip::Knot {
-                        export: &export,
-                        backing: backing.as_deref().ok_or("Knot source backing missing")?,
+                    crate::retained_clip::owner_worker::OwnedNative::Knot {
+                        export,
+                        backing: backing.ok_or("Knot source backing missing")?,
                     }
                 },
                 crate::producer_retention::ProducerSelection::Redshank { .. } => {
-                    crate::retained_clip::NativeClip::Redshank {
-                        export: &export,
+                    crate::retained_clip::owner_worker::OwnedNative::Redshank {
+                        export,
                         voice_body: voice,
                     }
                 },
             };
-            crate::retained_clip::retain_native_with_limits(
-                &root,
+            let claim = bound
+                .claim()
+                .ok_or("Profile custody changed before retention")?;
+            if claim.epoch() != epoch {
+                return Err("Profile custody changed before retention".into());
+            }
+            let access = crate::research::ClipAccess::from_bound(root.clone(), bound.clone());
+            let response = self.clip_owner.retain(
+                root.clone(),
                 source,
-                &context,
+                context,
                 policy,
-                self.app.clip_sealer()?,
-                &self.app.research.storage_limits()?,
-            )
+                access,
+                epoch,
+                limits,
+            )?;
+            Ok(super::clip_retaining::PendingClipRetain {
+                choice: choice.clone(),
+                selection: selection.clone(),
+                root,
+                identity,
+                bound,
+                epoch,
+                response,
+            })
         })();
         match result {
-            Ok(id) => {
-                self.act(crate::action::Action::OpenAddress(
-                    crate::retained_clip::address(id),
-                ));
-                self.run_effects(vec![crate::action::Effect::SaveSession]);
+            Ok(pending) => {
+                self.pending_clip_retains.insert(request, pending);
             },
-            Err(error) => self.app.note_retained_clip_refusal(error),
+            Err(error) => {
+                if let Some(status) = self
+                    .latest_clip_retention
+                    .as_mut()
+                    .filter(|status| status.request == request)
+                {
+                    status.record(request, Err(error.clone()));
+                }
+                self.app.note_retained_clip_refusal(error);
+            },
         }
     }
 }

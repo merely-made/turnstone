@@ -76,13 +76,13 @@ impl App {
         }
         effects
     }
-    /// Resolve the same sealed reader document used by the shell spawn path.
-    pub(crate) fn research_clip_document(
+    /// Snapshot and validate the current citation before or after worker I/O.
+    pub(crate) fn research_clip_reader(
         &self,
         node: uuid::Uuid,
         url: &str,
         id: eidetic::ManifestId,
-    ) -> Result<Option<inker::EngineDocument>, String> {
+    ) -> Result<Option<crate::research::ClipReader>, String> {
         let Some(reader) = self.research_clip_readers.get(&node) else {
             return Ok(None);
         };
@@ -103,24 +103,60 @@ impl App {
         if (access.epoch)() != Some(reader.custody_epoch) {
             return Err("Profile custody changed before reading the retained clip.".into());
         }
-        let clip = crate::retained_clip::read_sealed_with_limits(
-            &access.root,
-            id,
-            crate::retained_clip::limits()?,
-            &*access.sealer,
-            &self.research.storage_limits()?,
-        )?;
-        if (access.epoch)() != Some(reader.custody_epoch)
-            || self
-                .research
-                .clip_access()
-                .ok()
-                .and_then(|access| (access.epoch)())
-                != Some(reader.custody_epoch)
+        Ok(Some(reader.clone()))
+    }
+
+    pub(crate) fn finish_research_clip_document(
+        &self,
+        node: uuid::Uuid,
+        url: &str,
+        id: eidetic::ManifestId,
+        expected: &crate::research::ClipReader,
+        clip: &crate::retained_clip::ClipView,
+    ) -> Result<inker::EngineDocument, String> {
+        let reader = self
+            .research_clip_reader(node, url, id)?
+            .ok_or("The retained clip citation is no longer admitted.")?;
+        if reader.target != expected.target
+            || reader.generation != expected.generation
+            || reader.custody_epoch != expected.custody_epoch
+            || !std::sync::Arc::ptr_eq(&reader.identity, &expected.identity)
         {
-            return Err("Profile custody changed while reading the retained clip.".into());
+            return Err("The retained clip citation changed while reading.".into());
         }
-        crate::research::clip_document(&clip, &reader.target).map(Some)
+        crate::research::clip_document(clip, &reader.target)
+    }
+
+    #[cfg(test)]
+    pub(crate) fn research_clip_document(
+        &self,
+        node: uuid::Uuid,
+        url: &str,
+        id: eidetic::ManifestId,
+    ) -> Result<Option<inker::EngineDocument>, String> {
+        let Some(reader) = self.research_clip_reader(node, url, id)? else {
+            return Ok(None);
+        };
+        let access = self.research.clip_access()?;
+        let limits = self.research.storage_limits()?;
+        let clip = self
+            .research
+            .clip_owner()?
+            .read(
+                access.root.clone(),
+                id,
+                crate::retained_clip::limits()?,
+                access.sealer.clone(),
+                limits.clone(),
+                limits.budget(),
+                (&limits.clip_queue).into(),
+            )?
+            .recv()
+            .map_err(|_| "Retained clip owner stopped")?
+            .into_inner()
+            .map_err(|error| error.to_string())?;
+        self.finish_research_clip_document(node, url, id, &reader, &clip)
+            .map(Some)
     }
     pub(crate) fn invalidate_research_clip_readers(&mut self) -> Vec<Effect> {
         let admitted = self.research_clip_admissions();

@@ -68,6 +68,7 @@ impl KnotDocumentSession {
     pub fn selected_retained_export(
         &mut self,
         _: &crate::producer_retention::KnotSelection,
+        _: usize,
     ) -> Result<(serde_json::Value, Vec<u8>), String> {
         match *self {}
     }

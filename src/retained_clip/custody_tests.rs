@@ -45,6 +45,7 @@ fn native_knot_custody_reopens_and_onward_copy_excludes_private_backing() {
         "mere://knot/document/source",
         source,
         &selected,
+        1_000_000,
     )
     .unwrap();
     let seal = sealer();
@@ -216,9 +217,13 @@ fn unavailable_custody_and_stale_backing_refuse_before_creating_storage() {
         start: 8,
         end: 13,
     };
-    let (export, backing) =
-        crate::producer_retention::export_knot_selection("mere://knot/source", source, &selected)
-            .unwrap();
+    let (export, backing) = crate::producer_retention::export_knot_selection(
+        "mere://knot/source",
+        source,
+        &selected,
+        1_000_000,
+    )
+    .unwrap();
     assert!(
         retain_native(
             root.path(),
@@ -338,6 +343,7 @@ fn custody_process_roundtrip_fixture() {
             "mere://knot/process-source",
             source,
             &selected,
+            1_000_000,
         )
         .unwrap();
         let first = root.join("first");

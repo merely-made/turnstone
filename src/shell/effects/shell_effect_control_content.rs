@@ -460,6 +460,8 @@ impl Shell {
                 self.sync_ime_allowed();
             },
             Effect::CloseContent { node } => {
+                self.pending_clip_reads.remove(&node);
+                self.ready_clip_reads.remove(&node);
                 self.retire_surface_semantics(node);
                 self.withdraw_user_agent_requests(node, "surface-closed");
                 self.clear_reader_appearances(node);

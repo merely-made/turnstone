@@ -50,6 +50,17 @@ pub struct Shell {
     /// the bin's.
     pub(super) trail_rx: Receiver<Update>,
     pub(super) research_worker: crate::research_search::Worker,
+    pub(super) clip_owner: crate::retained_clip::owner_worker::Worker,
+    pub(super) pending_clip_actions: HashMap<uuid::Uuid, super::clip_actions::PendingClipAction>,
+    pub(super) pending_clip_export_prepares:
+        HashMap<uuid::Uuid, super::clip_actions::PendingExportPrepare>,
+    pub(super) pending_clip_export_commits:
+        HashMap<uuid::Uuid, super::clip_actions::PendingExportCommit>,
+    pub(super) pending_clip_imports: HashMap<uuid::Uuid, super::clip_retaining::PendingClipImport>,
+    pub(super) latest_clip_retention: Option<super::clip_retaining::RetainStatus>,
+    pub(super) pending_clip_retains: HashMap<uuid::Uuid, super::clip_retaining::PendingClipRetain>,
+    pub(super) pending_clip_reads: HashMap<uuid::Uuid, super::clip_reading::PendingClipRead>,
+    pub(super) ready_clip_reads: HashMap<uuid::Uuid, (String, inker::EngineDocument)>,
     /// The retained-place worker. It owns every Gemot, Commons, chat, group,
     /// and redb handle for the active session.
     pub(super) place_handle: crate::place_service::PlacePort,

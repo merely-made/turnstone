@@ -137,6 +137,7 @@ fn sealed_knot_and_redshank_bodies_reopen_without_sources_or_private_backing() {
             start,
             end: start + text.len(),
         },
+        1_000_000,
     )
     .unwrap();
     let capture = fleece::portable_clip::CaptureContext {
@@ -214,8 +215,7 @@ fn sealed_knot_and_redshank_bodies_reopen_without_sources_or_private_backing() {
             "A retained timed note 🐦"
         );
     }
-    let view = crate::retained_clip::read_sealed(root.path(), clips[0].manifest, policy, &*sealer)
-        .unwrap();
+    let view = bridge.clip_view(&context, &clips[0]).unwrap();
     let mut exact = ClipTarget {
         clip: clips[0].clone(),
         text_hash: eidetic::Hash::of(text.as_bytes()).to_string(),
@@ -243,19 +243,30 @@ fn sealed_knot_and_redshank_bodies_reopen_without_sources_or_private_backing() {
         "../../scenarios/fixtures/retained_clips/redshank.json"
     ))
     .unwrap();
-    let voice = retain_native(
-        root.path(),
-        NativeClip::Redshank {
-            export: &voice_export,
-            voice_body: Some(include_bytes!(
-                "../../scenarios/fixtures/retained_clips/voice.wav"
-            )),
-        },
-        &capture,
-        policy,
-        &*sealer,
-    )
-    .unwrap();
+    let access = bridge.clip_access().unwrap();
+    let limits = bridge.storage_limits().unwrap();
+    let voice = bridge
+        .clip_owner()
+        .unwrap()
+        .retain(
+            root.path().to_owned(),
+            crate::retained_clip::owner_worker::OwnedNative::Redshank {
+                export: voice_export,
+                voice_body: Some(
+                    include_bytes!("../../scenarios/fixtures/retained_clips/voice.wav").to_vec(),
+                ),
+            },
+            capture,
+            policy,
+            access,
+            1,
+            limits,
+        )
+        .unwrap()
+        .recv()
+        .unwrap()
+        .into_inner()
+        .unwrap();
     let voice_admission = ClipAdmission {
         manifest: voice,
         ..clips[0].clone()

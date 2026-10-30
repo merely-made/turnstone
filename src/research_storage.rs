@@ -34,6 +34,22 @@ pub(crate) struct StorageLimits {
     pub recovery: RecoveryLimits,
     pub owner_read: ReadLimits,
     pub operation_read: ReadLimits,
+    #[serde(default)]
+    pub clip_queue: ClipQueueLimits,
+}
+#[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct ClipQueueLimits {
+    pub max_jobs: usize,
+    pub max_bytes: usize,
+}
+impl Default for ClipQueueLimits {
+    fn default() -> Self {
+        Self {
+            max_jobs: 8,
+            max_bytes: 512 * 1024 * 1024,
+        }
+    }
 }
 impl Default for RecoveryLimits {
     fn default() -> Self {
@@ -135,6 +151,8 @@ impl StorageLimits {
             };
         }
         match field {
+            "storage_clip_queue_jobs" => self.clip_queue.max_jobs = n_usize()?,
+            "storage_clip_queue_bytes" => self.clip_queue.max_bytes = n_usize()?,
             "storage_recovery_value_bytes" => recovery!(max_value_bytes, usize),
             "storage_recovery_key_bytes" => recovery!(max_key_bytes, usize),
             "storage_recovery_replay_bytes" => recovery!(max_replay_bytes, u64),
@@ -179,6 +197,16 @@ impl StorageLimits {
     pub fn fields(&self) -> Vec<(String, String, String)> {
         let r = &self.recovery;
         let mut fields = vec![
+            (
+                "Clip queue: outstanding jobs",
+                "storage_clip_queue_jobs",
+                self.clip_queue.max_jobs.to_string(),
+            ),
+            (
+                "Clip queue: reserved bytes",
+                "storage_clip_queue_bytes",
+                self.clip_queue.max_bytes.to_string(),
+            ),
             (
                 "Open: value bytes",
                 "storage_recovery_value_bytes",
