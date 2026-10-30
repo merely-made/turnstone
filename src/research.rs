@@ -73,6 +73,7 @@ impl From<crate::saved_sources::Target> for Target {
         Self::Capture(value)
     }
 }
+#[derive(Clone)]
 pub(crate) struct ClipReader {
     pub target: ClipTarget,
     pub generation: uuid::Uuid,
@@ -132,11 +133,35 @@ struct State {
     choices: Vec<Choice>,
     intents: Vec<Intent>,
     clip_access: Option<ClipAccess>,
+    clip_owner: Option<crate::retained_clip::owner_worker::Worker>,
     storage_limits: Option<Result<crate::research_storage::StorageLimits, String>>,
+}
+impl Drop for State {
+    fn drop(&mut self) {
+        if let Some(owner) = &self.clip_owner {
+            owner.close();
+        }
+    }
 }
 #[derive(Clone, Default)]
 pub(crate) struct Bridge(Arc<Mutex<State>>);
 impl Bridge {
+    pub(crate) fn set_clip_owner(&self, owner: crate::retained_clip::owner_worker::Worker) {
+        self.0.lock().unwrap().clip_owner = Some(owner);
+    }
+    pub(crate) fn clip_owner(&self) -> Result<crate::retained_clip::owner_worker::Worker, String> {
+        let mut state = self.0.lock().unwrap();
+        #[cfg(test)]
+        if state.clip_owner.is_none() {
+            state.clip_owner = Some(crate::retained_clip::owner_worker::Worker::spawn(Arc::new(
+                || {},
+            )));
+        }
+        state
+            .clip_owner
+            .clone()
+            .ok_or_else(|| "Retained clip owner unavailable".into())
+    }
     pub(crate) fn set_storage_limits(
         &self,
         limits: Result<crate::research_storage::StorageLimits, String>,
@@ -301,14 +326,24 @@ impl Bridge {
         }
         let access = self.clip_access()?;
         let custody_epoch = (access.epoch)().ok_or_else(|| crate::identity::PENDING.to_string())?;
-        let mut view = crate::retained_clip::read_sealed_bounded(
-            &access.root,
-            admission.manifest,
-            crate::retained_clip::limits()?,
-            &*access.sealer,
-            &self.storage_limits()?,
-            budget,
-        )?;
+        let limits = self.storage_limits()?;
+        let queue = (&limits.clip_queue).into();
+        let response = self
+            .clip_owner()?
+            .read(
+                access.root.clone(),
+                admission.manifest,
+                crate::retained_clip::limits()?,
+                access.sealer.clone(),
+                limits,
+                budget,
+                queue,
+            )
+            .map_err(crate::research_storage::SourceReadError::from)?;
+        let mut view = response
+            .recv()
+            .map_err(|_| "Retained clip owner stopped")?
+            .into_inner()?;
         if (access.epoch)() != Some(custody_epoch) {
             if let crate::retained_clip::ClipBody::Text(text) = &mut view.body {
                 text.clear();

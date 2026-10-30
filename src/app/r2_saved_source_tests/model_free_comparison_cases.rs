@@ -36,6 +36,7 @@ fn model_free_comparison_side_opens_and_stale_results_are_refused() {
                 start: 0,
                 end: text.len(),
             },
+            1_000_000,
         )
         .unwrap();
         let manifest = crate::retained_clip::retain_native(

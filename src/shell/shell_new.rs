@@ -123,6 +123,12 @@ impl Shell {
         let research_wake: armillary::Wake = Arc::new(move || {
             let _ = research_proxy.send_event(crate::shell::ShellEvent::ActorWake);
         });
+        let clip_proxy = proxy.clone();
+        let clip_wake: armillary::Wake = Arc::new(move || {
+            let _ = clip_proxy.send_event(crate::shell::ShellEvent::ActorWake);
+        });
+        let clip_owner = crate::retained_clip::owner_worker::Worker::spawn(clip_wake);
+        app.research.set_clip_owner(clip_owner.clone());
         let research_worker = crate::research_search::Worker::spawn(
             app.research.clone(),
             trail_handle.clone(),
@@ -304,6 +310,15 @@ impl Shell {
             trail_handle,
             trail_rx,
             research_worker,
+            clip_owner,
+            pending_clip_actions: HashMap::new(),
+            pending_clip_export_prepares: HashMap::new(),
+            pending_clip_export_commits: HashMap::new(),
+            pending_clip_imports: HashMap::new(),
+            latest_clip_retention: None,
+            pending_clip_retains: HashMap::new(),
+            pending_clip_reads: HashMap::new(),
+            ready_clip_reads: HashMap::new(),
             place_handle,
             place_settings,
             place_wake,

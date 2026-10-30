@@ -237,6 +237,7 @@ fn model_free_search_action_opens_the_exact_sealed_clip_reader() {
             start,
             end: start + text.len(),
         },
+        1_000_000,
     )
     .unwrap();
     let context = fleece::portable_clip::CaptureContext {
