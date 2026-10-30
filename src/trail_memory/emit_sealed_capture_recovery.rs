@@ -9,12 +9,17 @@ pub(super) fn emit_sealed_capture_recovery(
     directory: &Path,
     capture_generation: uuid::Uuid,
     out: &Emitter<Update>,
+    limits: &crate::research_storage::StorageLimits,
 ) {
     let Some(custody_epoch) = custody.snapshot() else {
         return;
     };
     let mut updates = Vec::new();
-    match sealed_capture::receipts(store, custody.sealer.as_ref()) {
+    let mut bounded = crate::research_storage::BudgetStore {
+        store,
+        budget: limits.budget(),
+    };
+    match sealed_capture::receipts(&mut bounded, custody.sealer.as_ref()) {
         Ok(receipts) => {
             for receipt in receipts {
                 let owner = directory
@@ -30,23 +35,33 @@ pub(super) fn emit_sealed_capture_recovery(
                 }
                 if receipt.saved {
                     if let Some(stored) = receipt.stored {
-                        if sealed_capture::verify(
-                            store,
+                        if let Err(error) = sealed_capture::verify_typed(
+                            &mut bounded,
                             custody.sealer.as_ref(),
                             &receipt.request,
                             &stored,
-                        )
-                        .is_ok()
-                        {
+                        ) {
+                            let error = error.context(&format!(
+                                "sealed capture request {} verification failed",
+                                receipt.request.id
+                            ));
+                            if error.storage_error().is_some() {
+                                updates.clear();
+                                updates.push(Update::SourceCaptureRecoveryFailed {
+                                    capture_generation,
+                                    error: error.into(),
+                                });
+                                break;
+                            }
+                            updates.push(Update::SourceCaptureRecoveryFailed {
+                                capture_generation,
+                                error: error.into(),
+                            });
+                        } else {
                             updates.push(Update::SourceCaptureRevalidated {
                                 capture_generation,
                                 request: receipt.request,
                                 stored,
-                            });
-                        } else {
-                            updates.push(Update::SourceCaptureRecoveryFailed {
-                                capture_generation,
-                                error: "sealed capture verification refused".into(),
                             });
                         }
                     } else {
@@ -66,7 +81,7 @@ pub(super) fn emit_sealed_capture_recovery(
         },
         Err(error) => updates.push(Update::SourceCaptureRecoveryFailed {
             capture_generation,
-            error,
+            error: error.into(),
         }),
     }
     for update in updates {

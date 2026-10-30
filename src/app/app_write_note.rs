@@ -126,6 +126,7 @@ impl App {
             Action::RetrySourceDocumentCapture { request } => self.retry_source_capture(request),
             Action::SearchSavedSources => self.search_saved_sources(),
             Action::ResearchSearch(command) => self.research_search_command(command),
+            Action::ResearchStructured(command) => self.research_structured_command(command),
             Action::OpenSavedSource(target) => self.open_saved_source(target),
             Action::ChoosePermission { request, choice } => self.choose_permission(request, choice),
             Action::FocusAuthenticationField(field) => self.focus_authentication_field(field),

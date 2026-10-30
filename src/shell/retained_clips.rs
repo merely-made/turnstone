@@ -149,12 +149,13 @@ impl Shell {
                     }
                 },
             };
-            crate::retained_clip::retain_native(
+            crate::retained_clip::retain_native_with_limits(
                 &root,
                 source,
                 &context,
                 policy,
                 self.app.clip_sealer()?,
+                &self.app.research.storage_limits()?,
             )
         })();
         match result {

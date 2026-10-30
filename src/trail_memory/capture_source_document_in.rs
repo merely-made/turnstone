@@ -6,7 +6,7 @@ use super::*;
 pub(crate) fn capture_source_document_in(
     store: &mut dyn eidetic::Store,
     document: &crate::content::FetchedDocument,
-) -> Result<StoredSourceDocument, String> {
+) -> Result<StoredSourceDocument, crate::research_storage::SourceReadError> {
     use eidetic::models::OpaqueBlob;
     use eidetic::{
         ModerationState, PrivacyClass, ProvenanceOrigin, ProvenanceRecord, Timestamp,
@@ -15,7 +15,7 @@ pub(crate) fn capture_source_document_in(
     use fleece::eidetic_bridge::{CaptureDomMode, CaptureEvidenceV1};
 
     if document.acquired_at_ms == 0 {
-        return Err("source capture requires an observed acquisition time".to_string());
+        return Err("source capture requires an observed acquisition time".into());
     }
     if !document
         .content_type
@@ -27,9 +27,7 @@ pub(crate) fn capture_source_document_in(
                 .is_some_and(|media| media.trim().eq_ignore_ascii_case("text/html"))
         })
     {
-        return Err(
-            "source capture requires an observed text/html response content type".to_string(),
-        );
+        return Err("source capture requires an observed text/html response content type".into());
     }
     let captured_at = Timestamp(document.acquired_at_ms);
     let effective_url = document
@@ -104,7 +102,10 @@ pub(crate) fn capture_source_document_in(
     )?;
     if raw_exists {
         let manifest = pollster::block_on(eidetic::manifest::load_manifest(store, raw_manifest))
-            .map_err(|error| format!("raw source preflight: {error}"))?
+            .map_err(|error| {
+                crate::research_storage::SourceReadError::from(error)
+                    .context("raw source preflight")
+            })?
             .unwrap();
         if !matches!(
             manifest.provenance.origin,
@@ -120,7 +121,7 @@ pub(crate) fn capture_source_document_in(
             raw_manifest: raw_manifest.to_string(),
             annotation_manifest: annotation_manifest.to_string(),
         };
-        verify_source_document(store, &stored)?;
+        verify_source_document_typed(store, &stored)?;
     }
     if !raw_exists {
         pollster::block_on(eidetic::save_typed(
@@ -143,17 +144,23 @@ pub(crate) fn capture_source_document_in(
             },
             captured_at,
         ))
-        .map_err(|error| format!("raw source deposit: {error}"))?;
+        .map_err(|error| {
+            crate::research_storage::SourceReadError::from(error).context("raw source deposit")
+        })?;
     }
-    pollster::block_on(fleece::bootstrap_fleece_annotation_schema(store))
-        .map_err(|error| format!("Fleece schema bootstrap: {error}"))?;
+    pollster::block_on(fleece::bootstrap_fleece_annotation_schema(store)).map_err(|error| {
+        crate::research_storage::SourceReadError::from(error).context("Fleece schema bootstrap")
+    })?;
     if !annotation_exists {
         pollster::block_on(fleece::save_fleece_annotation(
             store,
             &record,
             document.acquired_at_ms,
         ))
-        .map_err(|error| format!("Fleece annotation deposit: {error}"))?;
+        .map_err(|error| {
+            crate::research_storage::SourceReadError::from(error)
+                .context("Fleece annotation deposit")
+        })?;
     } else {
         // Reusing a complete annotation preserves its exact manifest metadata.
         // Its resource association is independently idempotent and may have
@@ -164,12 +171,15 @@ pub(crate) fn capture_source_document_in(
             eidetic::CaptureContent::Acquired,
             document.acquired_at_ms,
         ))
-        .map_err(|error| format!("Fleece capture association: {error}"))?;
+        .map_err(|error| {
+            crate::research_storage::SourceReadError::from(error)
+                .context("Fleece capture association")
+        })?;
     }
     let stored = StoredSourceDocument {
         raw_manifest: raw_manifest.to_string(),
         annotation_manifest: annotation_manifest.to_string(),
     };
-    verify_source_document(store, &stored)?;
+    verify_source_document_typed(store, &stored)?;
     Ok(stored)
 }

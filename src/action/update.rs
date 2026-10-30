@@ -7,13 +7,16 @@ use super::*;
 /// state through [`crate::app::apply_update`]. App-owned types only; port
 /// adapters convert.
 pub enum Update {
+    ResearchRecords(crate::research_records::JobResult),
     ResearchCompareFinished {
         request: crate::research_compare::Request,
-        result: Result<crate::research_compare::ResultView, String>,
+        result:
+            Result<crate::research_compare::ResultView, crate::research_storage::SourceReadError>,
     },
     ResearchSearchFinished {
         request: crate::research_search::Request,
-        result: Result<eidetic_search::query::SearchResult, String>,
+        result:
+            Result<eidetic_search::query::SearchResult, crate::research_storage::SourceReadError>,
     },
     ReadingFindChanged {
         target: crate::reading_view::ReadTarget,
@@ -25,7 +28,7 @@ pub enum Update {
         request: uuid::Uuid,
         session: crate::panes::SessionId,
         admissions: Vec<crate::saved_sources::Admission>,
-        result: Result<Vec<crate::saved_sources::Entry>, String>,
+        result: Result<Vec<crate::saved_sources::Entry>, crate::research_storage::SourceReadError>,
     },
     SavedSourceRead {
         generation: uuid::Uuid,
@@ -33,7 +36,7 @@ pub enum Update {
         node: uuid::Uuid,
         url: String,
         target: crate::saved_sources::Target,
-        result: Result<crate::saved_sources::Content, String>,
+        result: Result<crate::saved_sources::Content, crate::research_storage::SourceReadError>,
     },
     /// Exact Gemini response bytes arrived before the terminal fetch answer.
     PageStreamed {
@@ -175,27 +178,39 @@ pub enum Update {
         document: crate::content::FetchedDocument,
     },
     /// The content port could not spawn (or lost) `node`'s session.
-    ContentFailed { node: uuid::Uuid, error: String },
+    ContentFailed {
+        node: uuid::Uuid,
+        error: String,
+    },
     /// The recycle bin's current contents (the bin port answers every record
     /// / reopen with the refreshed list, and emits one on spawn). Replaces the
     /// app's cache wholesale.
-    BinListed { records: Vec<RemovedRecord> },
+    BinListed {
+        records: Vec<RemovedRecord>,
+    },
     /// The bin store failed (open / record / list) — loud and attributable,
     /// never an empty list masquerading as "nothing deleted".
-    BinFailed { error: String },
+    BinFailed {
+        error: String,
+    },
     /// Lexical recall over browsing memory answered. `query` is the text the
     /// hits answer; the app drops an answer whose query is no longer what the
     /// omnibar holds (the keystroke that superseded it wins).
-    RecallHits { query: String, hits: Vec<RecallHit> },
+    RecallHits {
+        query: String,
+        hits: Vec<RecallHit>,
+    },
     /// Recall could not answer (no index yet, a re-mint failure, a broken
     /// store). Loud: a recall lane that silently shows nothing is
     /// indistinguishable from a trail with nothing in it.
-    RecallFailed { error: String },
+    RecallFailed {
+        error: String,
+    },
     /// The session Eidetic actor completed an explicit source-document capture.
     SourceDocumentCaptured {
         capture_generation: uuid::Uuid,
         request: crate::source_capture::CaptureRequest,
-        result: Result<StoredSourceDocument, String>,
+        result: Result<StoredSourceDocument, crate::research_storage::SourceReadError>,
     },
     SourceCaptureRecovered {
         capture_generation: uuid::Uuid,
@@ -205,11 +220,11 @@ pub enum Update {
     SourceCaptureSaved {
         capture_generation: uuid::Uuid,
         request: uuid::Uuid,
-        result: Result<(), String>,
+        result: Result<(), crate::research_storage::SourceReadError>,
     },
     SourceCaptureRecoveryFailed {
         capture_generation: uuid::Uuid,
-        error: String,
+        error: crate::research_storage::SourceReadError,
     },
     SourceCaptureRevalidated {
         capture_generation: uuid::Uuid,

@@ -9,6 +9,7 @@ pub(super) fn emit_capture_recovery(
     directory: &Path,
     capture_generation: uuid::Uuid,
     out: &Emitter<Update>,
+    limits: &crate::research_storage::StorageLimits,
 ) {
     let Some(custody_epoch) = custody.snapshot() else {
         return;
@@ -17,7 +18,11 @@ pub(super) fn emit_capture_recovery(
         return;
     };
     let mut updates = Vec::new();
-    match source_capture_receipts::recover_receipts(store) {
+    let mut bounded = crate::research_storage::BudgetStore {
+        store,
+        budget: limits.budget(),
+    };
+    match source_capture_receipts::recover_receipts(&mut bounded) {
         Ok(receipts) => {
             for receipt in receipts {
                 // Directory admission comes from the live actor, not saved JSON.
@@ -34,8 +39,21 @@ pub(super) fn emit_capture_recovery(
                     continue;
                 }
                 if receipt.saved {
-                    if let Err(error) = source_capture_receipts::verify_receipt(store, &receipt) {
-                        let id = receipt.request.id;
+                    if let Err(error) =
+                        source_capture_receipts::verify_receipt_typed(&mut bounded, &receipt)
+                    {
+                        let error = error.context(&format!(
+                            "capture request {} verification failed",
+                            receipt.request.id
+                        ));
+                        if error.storage_error().is_some() {
+                            updates.clear();
+                            updates.push(Update::SourceCaptureRecoveryFailed {
+                                capture_generation,
+                                error: error.into(),
+                            });
+                            break;
+                        }
                         updates.push(Update::SourceCaptureRecovered {
                             capture_generation,
                             request: receipt.request,
@@ -43,7 +61,7 @@ pub(super) fn emit_capture_recovery(
                         });
                         updates.push(Update::SourceCaptureRecoveryFailed {
                             capture_generation,
-                            error: format!("capture request {id} verification failed: {error}"),
+                            error: error.into(),
                         });
                     } else if let Some(stored) = receipt.stored {
                         updates.push(Update::SourceCaptureRevalidated {
@@ -68,7 +86,7 @@ pub(super) fn emit_capture_recovery(
         },
         Err(error) => updates.push(Update::SourceCaptureRecoveryFailed {
             capture_generation,
-            error,
+            error: error.into(),
         }),
     }
     for update in updates {

@@ -53,14 +53,26 @@ use eidetic_search::{CandidateIndex, FusedHit, IndexConfig, Ranking, TrailIndex,
 use muniment::FjallStore;
 
 use crate::action::{RecallHit, StoredSourceDocument, Update};
-mod saved_sources;
-mod sealed_capture;
-#[cfg(test)]
-#[path = "trail_memory/research_search_tests.rs"]
-mod research_search_tests;
+pub(crate) mod record_actor;
 #[cfg(test)]
 #[path = "trail_memory/research_compare_tests.rs"]
 mod research_compare_tests;
+#[cfg(test)]
+#[path = "trail_memory/research_search_tests.rs"]
+mod research_search_tests;
+mod saved_sources;
+mod sealed_capture;
+mod sealed_record_receipts;
+mod sealed_records;
+mod sealed_result_receipts;
+mod structured_bounded_store;
+#[cfg(test)]
+#[path = "trail_memory/structured_owner_tests.rs"]
+mod structured_owner_tests;
+mod worker_capture_ops;
+mod worker_open_sealed;
+mod worker_research_snapshot;
+mod worker_research_source;
 
 /// Traversals per stored trace segment. Segments are the flush granularity:
 /// small enough that a crash loses minutes, large enough that a stored trace
@@ -112,6 +124,7 @@ pub struct SourceCustody {
 pub(crate) mod custody_test_fixture;
 
 pub enum TrailCommand {
+    ResearchRecords(record_actor::Command),
     /// Ordered custody adoption or withdrawal; no key material is held here.
     SetCustody(Option<SourceCustody>),
     /// Acknowledge all prior custody work, including refreshing the shared
@@ -138,12 +151,18 @@ pub enum TrailCommand {
         selected: Option<Vec<crate::saved_sources::Key>>,
         max_chars: Option<usize>,
         max_metadata_chars: Option<usize>,
-        reply: std::sync::mpsc::SyncSender<Result<Vec<crate::saved_sources::Entry>, String>>,
+        budget: Option<crate::research_storage::SharedReadBudget>,
+        reply: std::sync::mpsc::SyncSender<
+            Result<Vec<crate::saved_sources::Entry>, crate::research_storage::SourceReadError>,
+        >,
     },
     ResearchSource {
         context: crate::research::Context,
         target: crate::saved_sources::Target,
-        reply: std::sync::mpsc::SyncSender<Result<crate::saved_sources::Content, String>>,
+        budget: Option<crate::research_storage::SharedReadBudget>,
+        reply: std::sync::mpsc::SyncSender<
+            Result<crate::saved_sources::Content, crate::research_storage::SourceReadError>,
+        >,
     },
     /// Read exact retained texts through this actor's existing store handle.
     InferenceSnapshot {
@@ -168,7 +187,10 @@ pub enum TrailCommand {
     },
     /// Legacy automatic-text command retained for compatibility with queued
     /// work. New commands are deliberately ignored under lifecycle ruling L1.
-    RecordText { url: String, text: String },
+    RecordText {
+        url: String,
+        text: String,
+    },
     /// An explicit request to preserve one fetched HTML response. This remains
     /// separate from `RecordText`: recall text is never source evidence.
     CaptureSourceDocument {
@@ -368,7 +390,7 @@ mod preflight_source_artifact;
 use preflight_source_artifact::preflight_source_artifact;
 #[path = "trail_memory/verify_source_document.rs"]
 mod verify_source_document;
-pub(crate) use verify_source_document::verify_source_document;
+pub(crate) use verify_source_document::{verify_source_document, verify_source_document_typed};
 #[path = "trail_memory/stored_page_texts.rs"]
 mod stored_page_texts;
 use stored_page_texts::stored_page_texts;
@@ -400,6 +422,7 @@ pub(crate) use spawn_trail_with_capture_library::spawn_trail_with_capture_librar
 #[path = "trail_memory/spawn_trail_for_session.rs"]
 mod spawn_trail_for_session;
 pub(crate) use spawn_trail_for_session::spawn_trail_for_session;
+pub(crate) use spawn_trail_for_session::spawn_trail_for_session_with_limits;
 #[path = "trail_memory/impl_crate_inference_service_retained_source_owner.rs"]
 mod impl_crate_inference_service_retained_source_owner;
 #[path = "trail_memory/inference_owner.rs"]
@@ -422,3 +445,7 @@ mod impl_crate_inference_service_retained_source_owner_2;
 
 #[path = "trail_memory/worker.rs"]
 mod worker;
+
+#[cfg(test)]
+#[path = "trail_memory/storage_owner_review_tests.rs"]
+mod storage_owner_review_tests;

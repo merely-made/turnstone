@@ -108,12 +108,15 @@ impl Shell {
             let _ = trail_proxy.send_event(crate::shell::ShellEvent::ActorWake);
         });
         let capture_library = crate::place::captured_collection::LocalCaptureLibrary::default();
-        let (trail_handle, trail_rx) = crate::trail_memory::spawn_trail_for_session(
+        let storage_limits = app.research_storage_limits();
+        app.research.set_storage_limits(storage_limits.clone());
+        let (trail_handle, trail_rx) = crate::trail_memory::spawn_trail_for_session_with_limits(
             trail_wake,
             (!app.session_load_refused())
                 .then(|| crate::trail_memory::memory_dir(&app.session_dir())),
             capture_library.clone(),
             app.source_capture_generation,
+            storage_limits,
         );
         let trail_handle = Arc::new(trail_handle);
         let research_proxy = proxy.clone();

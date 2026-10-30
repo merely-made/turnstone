@@ -10,7 +10,7 @@ use eidetic_search::query::{
 use std::sync::{Arc, Condvar, Mutex, mpsc};
 use std::time::Duration;
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum Member {
     Capture(crate::saved_sources::Key),
     Clip(ClipAdmission),
@@ -28,7 +28,7 @@ pub struct Request {
 }
 pub(crate) struct Response {
     pub request: Request,
-    pub result: Result<SearchResult, String>,
+    pub result: Result<SearchResult, crate::research_storage::SourceReadError>,
 }
 
 pub(crate) fn producer(view: &crate::retained_clip::ClipView) -> ProducerKind {
@@ -175,11 +175,20 @@ pub(crate) fn capture_metadata_cost(entry: &crate::saved_sources::Entry) -> Resu
     source_metadata_cost(&source)
 }
 
-pub(crate) fn run(
+pub(crate) fn snapshot(
     bridge: &research::Bridge,
     trail: &armillary::ActorHandle<crate::trail_memory::TrailCommand>,
     request: &Request,
-) -> Result<SearchResult, String> {
+) -> Result<ResearchSnapshot, crate::research_storage::SourceReadError> {
+    snapshot_with_budget(bridge, trail, request, bridge.storage_limits()?.budget())
+}
+
+pub(crate) fn snapshot_with_budget(
+    bridge: &research::Bridge,
+    trail: &armillary::ActorHandle<crate::trail_memory::TrailCommand>,
+    request: &Request,
+    budget: crate::research_storage::SharedReadBudget,
+) -> Result<ResearchSnapshot, crate::research_storage::SourceReadError> {
     if bridge.context_revision()? != (request.context.clone(), request.revision) {
         return Err("Search admissions changed.".into());
     }
@@ -231,6 +240,7 @@ pub(crate) fn run(
         selected: keys,
         max_chars: Some(request.settings.max_corpus_chars),
         max_metadata_chars: Some(request.settings.max_metadata_chars - metadata_chars),
+        budget: Some(budget.clone()),
         reply,
     }) {
         return Err("The saved-source owner is closed.".into());
@@ -290,7 +300,7 @@ pub(crate) fn run(
         if selected.is_some_and(|members| !members.contains(&Member::Clip(admission.clone()))) {
             continue;
         }
-        match bridge.clip_view(&request.context, admission) {
+        match bridge.clip_view_bounded(&request.context, admission, budget.clone()) {
             Ok(view) => {
                 let kind = producer(&view);
                 let tags = view
@@ -339,6 +349,9 @@ pub(crate) fn run(
                 }
                 sources.push(source);
             },
+            Err(error) if error.storage_error().is_some() => {
+                return Err(error);
+            },
             Err(error) => {
                 let exclusion = format!("{}: {error}", admission.manifest);
                 add_cost(&mut metadata_chars, &exclusion)?;
@@ -368,17 +381,28 @@ pub(crate) fn run(
             Coverage::Incomplete { exclusions }
         },
     };
-    query::search(&snapshot, &request.query, &request.settings)
+    Ok(snapshot)
+}
+
+pub(crate) fn run(
+    bridge: &research::Bridge,
+    trail: &armillary::ActorHandle<crate::trail_memory::TrailCommand>,
+    request: &Request,
+) -> Result<SearchResult, crate::research_storage::SourceReadError> {
+    let snapshot = snapshot(bridge, trail, request)?;
+    query::search(&snapshot, &request.query, &request.settings).map_err(Into::into)
 }
 
 /// One running job, one replaceable pending request and one replaceable response.
 enum Job {
     Search(Request),
     Compare(crate::research_compare::Request),
+    Records(crate::research_records::Job),
 }
 enum Completed {
     Search(Response),
     Compare(crate::research_compare::Response),
+    Records(crate::research_records::JobResult),
 }
 struct Queue {
     request: Option<Job>,
@@ -432,6 +456,9 @@ impl Worker {
                                 result,
                             })
                         },
+                        Job::Records(request) => Completed::Records(
+                            crate::research_records_worker::execute(&bridge, &trail, request),
+                        ),
                     };
                     let mut slot = lock.lock().unwrap();
                     if !slot.closed && slot.serial == serial {
@@ -470,6 +497,23 @@ impl Worker {
         queue.response = None;
         queue.request = Some(Job::Compare(request));
         ready.notify_one();
+    }
+    pub fn submit_records(&self, request: crate::research_records::Job) {
+        let (lock, ready) = &*self.pending;
+        let mut queue = lock.lock().unwrap();
+        queue.serial = queue.serial.wrapping_add(1);
+        queue.response = None;
+        queue.request = Some(Job::Records(request));
+        ready.notify_one();
+    }
+    pub fn take_records(&self) -> Option<crate::research_records::JobResult> {
+        let mut queue = self.pending.0.lock().unwrap();
+        if matches!(queue.response, Some(Completed::Records(_))) {
+            if let Some(Completed::Records(response)) = queue.response.take() {
+                return Some(response);
+            }
+        }
+        None
     }
     pub fn take_compare(&self) -> Option<crate::research_compare::Response> {
         let mut queue = self.pending.0.lock().unwrap();

@@ -204,7 +204,7 @@ fn source_capture_real_stack_process_worker() {
                 result.is_err(),
                 "actual required write must fail at {stage}"
             );
-            acknowledge(&mut app, &request, result);
+            acknowledge(&mut app, &request, result.map_err(|e| e.to_string()));
             assert_eq!(app.source_captures[&request.id].phase, CapturePhase::Failed);
             assert_eq!(saved_events(&mut app), 0);
             assert_eq!(blocked.read_preserved(&graph).unwrap(), graph_before);
@@ -235,7 +235,7 @@ fn source_capture_real_stack_process_worker() {
                         assert_eq!(id, request.id);
                         assert_eq!(capture_generation, app.source_capture_generation);
                         assert!(result.is_ok(), "receipt acknowledgement: {result:?}");
-                        acknowledge(&mut app, &request, result);
+                        acknowledge(&mut app, &request, result.map_err(|e| e.to_string()));
                         break;
                     },
                     other => {

@@ -6,6 +6,7 @@ use super::*;
 impl Shell {
     pub(super) fn effect_control_content(&mut self, effect: Effect) {
         match effect {
+            Effect::ResearchRecords(request) => self.research_worker.submit_records(request),
             Effect::ResearchSearch(request) => self.research_worker.submit(request),
             Effect::ResearchCompare(request) => self.research_worker.submit_compare(request),
             Effect::CancelResearchSearch => self.research_worker.cancel(),
@@ -106,7 +107,7 @@ impl Shell {
                     let effects = self.app.apply_update(Update::SourceCaptureSaved {
                         capture_generation: self.app.source_capture_generation,
                         request,
-                        result: Err(error),
+                        result: Err(error.into()),
                     });
                     self.run_effects(effects);
                 } else {
@@ -171,7 +172,7 @@ impl Shell {
                     let effects = self.app.apply_update(Update::SourceDocumentCaptured {
                         capture_generation,
                         request,
-                        result: Err(error),
+                        result: Err(error.into()),
                     });
                     self.run_effects(effects);
                 }

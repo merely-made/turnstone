@@ -25,14 +25,15 @@ pub struct ResultView {
 }
 pub(crate) struct Response {
     pub request: Request,
-    pub result: Result<ResultView, String>,
+    pub result: Result<ResultView, crate::research_storage::SourceReadError>,
 }
 fn read(
     bridge: &research::Bridge,
     trail: &armillary::ActorHandle<crate::trail_memory::TrailCommand>,
     request: &Request,
     target: &Target,
-) -> Result<RetainedSourceText, String> {
+    budget: &crate::research_storage::SharedReadBudget,
+) -> Result<RetainedSourceText, crate::research_storage::SourceReadError> {
     if target.selector().is_some() {
         return Err("A comparison side must name a whole source.".into());
     }
@@ -42,6 +43,7 @@ fn read(
             if !trail.command(crate::trail_memory::TrailCommand::ResearchSource {
                 context: request.context.clone(),
                 target: target.clone(),
+                budget: Some(budget.clone()),
                 reply,
             }) {
                 return Err("The saved-source owner is closed.".into());
@@ -51,7 +53,13 @@ fn read(
                 .map_err(|_| "The saved-source owner did not answer.")??;
             (content.title, content.text)
         },
-        Target::Clip(target) => bridge.clip_text(&request.context, &target.clip)?,
+        Target::Clip(target) => {
+            let view = bridge.clip_view_bounded(&request.context, &target.clip, budget.clone())?;
+            let crate::retained_clip::ClipBody::Text(text) = view.body else {
+                return Err("This clip has no text".into());
+            };
+            (view.clip.title, text)
+        },
     };
     if eidetic::Hash::of(text.as_bytes()).to_string() != target.text_hash() {
         return Err("The retained text version changed.".into());
@@ -67,7 +75,7 @@ pub(crate) fn run(
     bridge: &research::Bridge,
     trail: &armillary::ActorHandle<crate::trail_memory::TrailCommand>,
     request: &Request,
-) -> Result<ResultView, String> {
+) -> Result<ResultView, crate::research_storage::SourceReadError> {
     let check = || -> Result<(), String> {
         if bridge.context_revision()? != (request.context.clone(), request.revision) {
             return Err("Comparison admissions changed.".into());
@@ -84,11 +92,12 @@ pub(crate) fn run(
     if !research::admitted(&request.context, &request.right) {
         return Err("Right withdrawn from scope.".into());
     }
-    let left = read(bridge, trail, request, &request.left)
-        .map_err(|e| format!("Left unavailable: {e}"))?;
+    let budget = bridge.storage_limits()?.budget();
+    let left = read(bridge, trail, request, &request.left, &budget)
+        .map_err(|error| error.context("Left unavailable"))?;
     check()?;
-    let right = read(bridge, trail, request, &request.right)
-        .map_err(|e| format!("Right unavailable: {e}"))?;
+    let right = read(bridge, trail, request, &request.right, &budget)
+        .map_err(|error| error.context("Right unavailable"))?;
     check()?;
     let comparison = compare::compare(
         &left,

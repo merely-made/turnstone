@@ -5,8 +5,9 @@
 //! access under the existing trail actor. Legacy stores are never opened here.
 use crate::action::StoredSourceDocument;
 use crate::content::FetchedDocument;
+use crate::research_storage::SourceReadError as HostError;
 use crate::source_capture::{CaptureRequest, DepositReceipt, SourceIdentity};
-use eidetic::{Backend, PayloadSealer, TypedPayload};
+use eidetic::{PayloadSealer, TypedPayload};
 use serde::{Deserialize, Serialize};
 
 const PREFIX: &str = "turnstone/sealed-source-capture/v1/";
@@ -32,7 +33,7 @@ fn put_receipt(
     store: &mut dyn eidetic::Store,
     sealer: &dyn PayloadSealer,
     receipt: &DepositReceipt,
-) -> Result<(), String> {
+) -> Result<(), HostError> {
     let k = key(receipt.request.id);
     let clear = serde_json::to_vec(&BoundReceipt {
         namespace: k.clone(),
@@ -50,15 +51,17 @@ fn put_receipt(
     })
     .map_err(|_| "sealed capture envelope encoding")?;
     pollster::block_on(store.put(&k, &value))
-        .map_err(|e| format!("sealed capture receipt write: {e}"))
+        .map_err(HostError::from)
+        .map_err(|error| HostError::from(error).context("sealed capture receipt write"))
 }
 fn read_receipt(
     store: &mut dyn eidetic::Store,
     sealer: &dyn PayloadSealer,
     k: &str,
-) -> Result<Option<DepositReceipt>, String> {
+) -> Result<Option<DepositReceipt>, HostError> {
     let Some(bytes) = pollster::block_on(store.get(k))
-        .map_err(|e| format!("sealed capture receipt read: {e}"))?
+        .map_err(HostError::from)
+        .map_err(|error| HostError::from(error).context("sealed capture receipt read"))?
     else {
         return Ok(None);
     };
@@ -83,21 +86,23 @@ fn read_receipt(
 }
 
 /// A sealed-only namespace never adopts or overwrites an unsealed/partial role.
-fn save<T: TypedPayload>(
+pub(super) fn save<T: TypedPayload>(
     store: &mut dyn eidetic::Store,
     sealer: &dyn PayloadSealer,
     value: &T,
     _at: u64,
-) -> Result<eidetic::ManifestId, String> {
+) -> Result<eidetic::ManifestId, HostError> {
     let clear = value
         .serialize_to_bytes()
         .map_err(|_| "sealed capture payload encoding")?;
     let id = eidetic::ManifestId::of_blob(&clear);
     let manifest = pollster::block_on(eidetic::manifest::load_manifest(store, id))
-        .map_err(|e| format!("sealed capture manifest read: {e}"))?;
+        .map_err(HostError::from)
+        .map_err(|error| HostError::from(error).context("sealed capture manifest read"))?;
     let blob_key = format!("blob:{}", id.0.to_hex());
     let existing = pollster::block_on(store.get(&blob_key))
-        .map_err(|e| format!("sealed capture blob read: {e}"))?;
+        .map_err(HostError::from)
+        .map_err(|error| HostError::from(error).context("sealed capture blob read"))?;
     match (manifest, existing) {
         (Some(m), Some(_)) => {
             if m.id != id
@@ -119,7 +124,9 @@ fn save<T: TypedPayload>(
                 Some(sealer),
                 id,
             ))
-            .map_err(|_| "sealed capture existing artifact refused")?
+            .map_err(|error| {
+                HostError::from(error).context("sealed capture existing artifact refused")
+            })?
             .ok_or("sealed capture existing artifact missing")?;
             if value
                 .serialize_to_bytes()
@@ -152,16 +159,16 @@ fn save<T: TypedPayload>(
         },
         eidetic::Timestamp(0),
     ))
-    .map_err(|_| "sealed capture artifact write refused".into())
+    .map_err(|error| HostError::from(error).context("sealed capture artifact write refused"))
 }
 
-fn load<T: TypedPayload>(
+pub(super) fn load<T: TypedPayload>(
     store: &mut dyn eidetic::Store,
     sealer: &dyn PayloadSealer,
     id: eidetic::ManifestId,
-) -> Result<T, String> {
+) -> Result<T, crate::research_storage::SourceReadError> {
     let m = pollster::block_on(eidetic::manifest::load_manifest(store, id))
-        .map_err(|_| "sealed source manifest read failed")?
+        .map_err(|error| HostError::from(error).context("sealed source manifest read failed"))?
         .ok_or("sealed source manifest missing")?;
     let blob_key = format!("blob:{}", id.0.to_hex());
     if m.id != id
@@ -182,7 +189,7 @@ fn load<T: TypedPayload>(
         Some(sealer),
         id,
     ))
-    .map_err(|_| "sealed source custody or integrity refusal")?
+    .map_err(|error| HostError::from(error).context("sealed source custody or integrity refusal"))?
     .ok_or("sealed source payload missing")?;
     let encoded = value
         .serialize_to_bytes()
@@ -192,11 +199,11 @@ fn load<T: TypedPayload>(
     }
     Ok(value)
 }
-fn parse_id(s: &str) -> Result<eidetic::ManifestId, String> {
+fn parse_id(s: &str) -> Result<eidetic::ManifestId, HostError> {
     serde_json::from_value(serde_json::Value::String(s.to_owned()))
         .map_err(|_| "sealed source identity invalid".into())
 }
-fn annotation(document: &FetchedDocument) -> Result<fleece::FleeceAnnotationRecord, String> {
+fn annotation(document: &FetchedDocument) -> Result<fleece::FleeceAnnotationRecord, HostError> {
     use fleece::eidetic_bridge::{CaptureDomMode, CaptureEvidenceV1};
     if document.acquired_at_ms == 0
         || !document.content_type.as_deref().is_some_and(|v| {
@@ -247,7 +254,7 @@ pub(super) fn capture_request(
     sealer: &dyn PayloadSealer,
     request: &CaptureRequest,
     document: Option<&FetchedDocument>,
-) -> Result<StoredSourceDocument, String> {
+) -> Result<StoredSourceDocument, HostError> {
     let source = request
         .source
         .as_ref()
@@ -353,7 +360,16 @@ pub(super) fn verify(
     sealer: &dyn PayloadSealer,
     request: &CaptureRequest,
     stored: &StoredSourceDocument,
-) -> Result<(), String> {
+) -> Result<(), HostError> {
+    verify_typed(store, sealer, request, stored)
+}
+
+pub(super) fn verify_typed(
+    store: &mut dyn eidetic::Store,
+    sealer: &dyn PayloadSealer,
+    request: &CaptureRequest,
+    stored: &StoredSourceDocument,
+) -> Result<(), crate::research_storage::SourceReadError> {
     let source = request
         .source
         .as_ref()
@@ -403,7 +419,7 @@ pub(super) fn content(
     store: &mut dyn eidetic::Store,
     sealer: &dyn PayloadSealer,
     admission: &crate::saved_sources::Admission,
-) -> Result<crate::saved_sources::Content, String> {
+) -> Result<crate::saved_sources::Content, crate::research_storage::SourceReadError> {
     if admission.error.is_some() {
         return Err("sealed source admission refused".into());
     }
@@ -460,7 +476,7 @@ pub(super) fn acknowledge(
     store: &mut dyn eidetic::Store,
     sealer: &dyn PayloadSealer,
     request: &CaptureRequest,
-) -> Result<(), String> {
+) -> Result<(), HostError> {
     let mut receipt =
         read_receipt(store, sealer, &key(request.id))?.ok_or("sealed capture receipt missing")?;
     if receipt.request != *request {
@@ -484,9 +500,10 @@ pub(super) fn acknowledge(
 pub(super) fn receipts(
     store: &mut dyn eidetic::Store,
     sealer: &dyn PayloadSealer,
-) -> Result<Vec<DepositReceipt>, String> {
+) -> Result<Vec<DepositReceipt>, HostError> {
     let mut keys = pollster::block_on(store.list(PREFIX))
-        .map_err(|_| "sealed capture inventory unavailable")?;
+        .map_err(HostError::from)
+        .map_err(|error| HostError::from(error).context("sealed capture inventory unavailable"))?;
     keys.sort();
     keys.into_iter()
         .map(|key| {

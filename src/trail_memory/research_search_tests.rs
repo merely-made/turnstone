@@ -353,6 +353,7 @@ fn model_free_mixed_producers_scope_coverage_and_stale_revision() {
             selected: Some(keys),
             max_chars: Some(1_000_000),
             max_metadata_chars: budget,
+            budget: None,
             reply
         }));
         receive.recv_timeout(Duration::from_secs(5)).unwrap()

@@ -132,10 +132,25 @@ struct State {
     choices: Vec<Choice>,
     intents: Vec<Intent>,
     clip_access: Option<ClipAccess>,
+    storage_limits: Option<Result<crate::research_storage::StorageLimits, String>>,
 }
 #[derive(Clone, Default)]
 pub(crate) struct Bridge(Arc<Mutex<State>>);
 impl Bridge {
+    pub(crate) fn set_storage_limits(
+        &self,
+        limits: Result<crate::research_storage::StorageLimits, String>,
+    ) {
+        self.0.lock().unwrap().storage_limits = Some(limits);
+    }
+    pub(crate) fn storage_limits(&self) -> Result<crate::research_storage::StorageLimits, String> {
+        self.0
+            .lock()
+            .unwrap()
+            .storage_limits
+            .clone()
+            .unwrap_or_else(|| Ok(Default::default()))
+    }
     /// Invalidate session-scoped projections while preserving the live custody
     /// connection. The next session can publish a fresh context after its
     /// admissions have been loaded.
@@ -271,16 +286,28 @@ impl Bridge {
         context: &Context,
         admission: &ClipAdmission,
     ) -> Result<crate::retained_clip::ClipView, String> {
+        let limits = self.storage_limits()?;
+        self.clip_view_bounded(context, admission, limits.budget())
+            .map_err(|error| error.to_string())
+    }
+    pub(crate) fn clip_view_bounded(
+        &self,
+        context: &Context,
+        admission: &ClipAdmission,
+        budget: crate::research_storage::SharedReadBudget,
+    ) -> Result<crate::retained_clip::ClipView, crate::research_storage::SourceReadError> {
         if admission.session != context.session || !context.clips.contains(admission) {
             return Err("The retained clip was withdrawn from this session.".into());
         }
         let access = self.clip_access()?;
         let custody_epoch = (access.epoch)().ok_or_else(|| crate::identity::PENDING.to_string())?;
-        let mut view = crate::retained_clip::read_sealed(
+        let mut view = crate::retained_clip::read_sealed_bounded(
             &access.root,
             admission.manifest,
             crate::retained_clip::limits()?,
             &*access.sealer,
+            &self.storage_limits()?,
+            budget,
         )?;
         if (access.epoch)() != Some(custody_epoch) {
             if let crate::retained_clip::ClipBody::Text(text) = &mut view.body {
