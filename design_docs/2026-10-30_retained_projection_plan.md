@@ -1,14 +1,14 @@
 # Retained semantic projection without repeated tree searches
 
-**Status:** projection and layout-only preparation landed and locally qualified;
-shared-frame paint deferral in progress, 2026-10-30.
+**Status (2026-10-30):** landed and locally qualified, including shared-frame
+paint deferral, Genet used-color receiving and current upstream integration.
 
 The native render host now qualifies pending GPU frames away from the UI
-thread. Arrange remains slow with that change. A native stack sample places
+thread. Arrange remained slow after that change. An earlier native stack sample placed
 substantial work in the host's retained accessibility projection: each
-semantic node asks for its painted rectangle, and each rectangle starts
-another search from the layout root. Semantic identity matching also scans
-the projected node vector for each DOM node. The same pattern appears in
+semantic node asked for its painted rectangle, and each rectangle started
+another search from the layout root. Semantic identity matching also scanned
+the projected node vector for each DOM node. The same pattern appeared in
 Cambium's geometry and producer semantics, and in repeated accessibility
 source comparisons during Turnstone action admission.
 
@@ -64,8 +64,8 @@ Done when actual application-path regressions demonstrate bounded geometry
 visits and semantic probes, unchanged contributed sources preserve queued
 action generations, changed sources still invalidate them, and live
 validation rejects stale actions after earlier actions in the same drain.
-No cache survives publication, and semantic publication does not wait for
-a successfully presented pixel frame.
+The admission-comparison cache is confined to one publication. Semantic
+publication does not wait for a successfully presented pixel frame.
 
 ## Layout preparation without discarded paint
 
@@ -172,9 +172,10 @@ earlier receipts remain at their original paths.
   this pass follows the measured preparation-to-paint path.
 - 2026-10-30: the final native sample contains no painting below frame
   preparation. Remaining paint enters through explicit render paths; used-color
-  style materialization is still a shared producer cost. The observations are
-  diagnostic cues, with no naming-policy or persistent-cache change in this
-  implementation.
+  style materialization was still a shared producer cost in that earlier sample. The observations are
+  diagnostic cues, with no naming-policy or persistent paint-cache change in that
+  geometry slice; the later used-color slice has its own owner invalidation
+  contract below.
 - 2026-10-30: `shell_render.rs` and `shell_render_lens.rs` eagerly paint frame
   and floating-frame scenes which their shared-frame raster filters discard.
   `native_composition::compose` later installs current producer commands before
@@ -212,3 +213,17 @@ earlier receipts remain at their original paths.
 - 2026-10-30: the full default application library passes with the shared-frame
   deferral and received Genet used-color view. Both actual plan paint controls
   are green. Optional-service and native receiving qualification continue.
+
+- 2026-10-30: shared-frame deferral and Genet used-color receiving pass the
+  application library and optional-service check. Actual document resize, lens
+  input/close, floating Arrange tear-out/return and redocking controls pass.
+  Representative composed captures agree with the established layouts.
+- 2026-10-30: repeated matched native runs improve all observed cases. The
+  Arrange case shows the largest gain and lower sampled process memory. A fresh
+  native sample contains no discarded outer-frame scene and little used-color
+  materialization. Shader refusal, cancellation, exact-pixel publication and
+  controlled device-loss gates retain their assertions. Measurements and
+  source cohorts remain in the continuation evidence directory.
+- 2026-10-30: integrated current upstream search and note-editor fixes after the
+  frozen matched runs. The measured render files and selected Genet lock remain
+  byte-identical; the full application library passes after integration.
