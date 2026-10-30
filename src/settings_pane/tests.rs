@@ -11,17 +11,19 @@ fn root(label: &str) -> PathBuf {
     ))
 }
 
+fn replace_test_provider(state: &mut SettingsState, provider: ApplicationSettingsProvider) {
+    state.replace_owner_for_test(provider);
+}
+
 #[test]
 fn pane_renders_controls_from_setting_control_not_setting_ids() {
     let library = tempfile::tempdir().unwrap();
-    let mut pane = SettingsPane::new(root("render"));
-    pane.runner.update(|state| {
-        state.provider = ApplicationSettingsProvider::from_settings(
-            root("render"),
-            ApplicationSettings::default(),
-        )
-        .with_theme_library(library.path().join("themes.json"));
-    });
+    let data_root = root("render");
+    let live = LiveSettingsHandle::from_provider(
+        ApplicationSettingsProvider::from_settings(root("render"), ApplicationSettings::default())
+            .with_theme_library(library.path().join("themes.json")),
+    );
+    let pane = SettingsPane::with_live_settings(data_root, Some(live));
     let dom = pane.dom_ref();
     assert_eq!(dom.all_with_class(dom.document(), "setting-row").len(), 6);
     assert_eq!(dom.all_with_class(dom.document(), "setting-label").len(), 6);
@@ -118,14 +120,18 @@ fn saved_same_identity_waits_for_explicit_apply_and_reopens_latest_definition() 
         .save(&[theme.clone()])
         .unwrap();
     let choice = ThemeChoice::new(theme.id.clone(), Some(Mode::Dark));
-    let live = LiveSettingsHandle::new(&ApplicationSettings::default());
+    let provider =
+        ApplicationSettingsProvider::from_settings(root.path(), ApplicationSettings::default())
+            .with_theme_library(&library);
+    let live = LiveSettingsHandle::from_provider(provider);
     let mut pane = SettingsPane::with_live_settings(root.path().into(), Some(live.clone()));
     pane.runner.update(|state| {
-        state.provider =
-            ApplicationSettingsProvider::from_settings(root.path(), ApplicationSettings::default())
-                .with_theme_library(&library);
-        state.provider.apply_theme_choice(choice.clone()).unwrap();
-        state.live_settings.apply_provider(&state.provider);
+        apply_value(
+            state,
+            "theme.id",
+            SettingValue::Text(choice.theme_id.clone()),
+        );
+        apply_value(state, "theme.mode", SettingValue::Text("dark".into()));
     });
     let applied = live.snapshot();
     let persisted = std::fs::read(pandect::application_settings_path(root.path())).unwrap();
@@ -160,8 +166,7 @@ fn saved_same_identity_waits_for_explicit_apply_and_reopens_latest_definition() 
     let reopened = ApplicationSettingsProvider::load(root.path())
         .unwrap()
         .with_theme_library(&library);
-    let restarted = LiveSettingsHandle::new(reopened.settings());
-    restarted.publish_provider(&reopened);
+    let restarted = LiveSettingsHandle::from_provider(reopened);
     assert_ne!(restarted.snapshot().presentation, applied.presentation);
     pane.runner
         .update(|state| apply_value(state, "theme.mode", SettingValue::Text("dark".into())));
@@ -195,22 +200,20 @@ fn stale_settings_panes_cannot_apply_saved_definition_or_overwrite_selected_them
             .unwrap()
             .save(&[theme.clone()])
             .unwrap();
-        let live = LiveSettingsHandle::new(&ApplicationSettings::default());
+        let provider =
+            ApplicationSettingsProvider::from_settings(root.path(), ApplicationSettings::default())
+                .with_theme_library(&library);
+        let live = LiveSettingsHandle::from_provider(provider);
         let mut first = SettingsPane::with_live_settings(root.path().into(), Some(live.clone()));
         let mut stale = SettingsPane::with_live_settings(root.path().into(), Some(live.clone()));
-        for pane in [&mut first, &mut stale] {
-            pane.runner.update(|state| {
-                state.provider = ApplicationSettingsProvider::from_settings(
-                    root.path(),
-                    ApplicationSettings::default(),
-                )
-                .with_theme_library(&library);
-            });
-        }
         let choice = ThemeChoice::new(theme.id.clone(), Some(Mode::Dark));
         first.runner.update(|state| {
-            state.provider.apply_theme_choice(choice.clone()).unwrap();
-            state.live_settings.apply_provider(&state.provider);
+            apply_value(
+                state,
+                "theme.id",
+                SettingValue::Text(choice.theme_id.clone()),
+            );
+            apply_value(state, "theme.mode", SettingValue::Text("dark".into()));
         });
         let applied = live.snapshot();
         let saved_choice = std::fs::read(pandect::application_settings_path(root.path())).unwrap();
@@ -229,10 +232,6 @@ fn stale_settings_panes_cannot_apply_saved_definition_or_overwrite_selected_them
             first.reload_themes();
             stale.reload_themes();
         }
-        let owner = ApplicationSettingsProvider::load(root.path())
-            .unwrap()
-            .with_theme_library(&library);
-        live.publish_provider(&owner);
         assert_eq!(
             live.snapshot(),
             applied,
@@ -300,11 +299,14 @@ fn painted_settings_targets_drive_physical_edit_and_apply_at_wide_and_narrow_siz
         let live = LiveSettingsHandle::new(&ApplicationSettings::default());
         let mut pane = SettingsPane::with_live_settings(root.path().into(), Some(live.clone()));
         pane.runner.update(|state| {
-            state.provider = ApplicationSettingsProvider::from_settings(
-                root.path(),
-                ApplicationSettings::default(),
-            )
-            .with_theme_library(root.path().join("themes.json"));
+            replace_test_provider(
+                state,
+                ApplicationSettingsProvider::from_settings(
+                    root.path(),
+                    ApplicationSettings::default(),
+                )
+                .with_theme_library(root.path().join("themes.json")),
+            );
         });
         pane.sync(width as f32, height as f32);
         let _ = pane.scene(width, height, 1.0);
@@ -440,9 +442,11 @@ fn mode_radio_keyboard_stays_in_its_group_and_enter_applies_only_after_tab() {
     let live = LiveSettingsHandle::new(&ApplicationSettings::default());
     let mut pane = SettingsPane::with_live_settings(root.path().into(), Some(live.clone()));
     pane.runner.update(|state| {
-        state.provider =
+        replace_test_provider(
+            state,
             ApplicationSettingsProvider::from_settings(root.path(), ApplicationSettings::default())
-                .with_theme_library(library.clone());
+                .with_theme_library(library.clone()),
+        );
     });
     // The first click selects HcLight; the second focuses the now-active
     // roving-tabindex radio, exactly as the native fixture does.

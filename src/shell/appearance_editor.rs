@@ -8,9 +8,9 @@
 //! its shared editor model and native bindings on the shell's existing device.
 
 use super::Shell;
-use crate::settings_provider::ApplicationSettingsProvider;
 use cambium_genet_winit_host::{CloseRequest, HostOptions, WindowFrame, WinitHost};
 use cambium_rootstock::IdlePolicy;
+use mere_surface_api::settings::RevisionedSettingsProvider;
 use std::sync::Arc;
 use tabard::theme::choice::ThemeChoice;
 use tabard_workshop::{
@@ -37,8 +37,16 @@ impl Shell {
                 }
             } else if let Some(core) = self.host.as_ref().map(|host| host.shared_core()) {
                 let result = (|| {
-                    let provider = ApplicationSettingsProvider::load(&self.app.data_root)
-                        .map_err(|error| error.to_string())?;
+                    let owner = self
+                        .live_settings
+                        .owner()
+                        .ok_or_else(|| "Application settings owner is unavailable".to_owned())?;
+                    owner
+                        .snapshot(&workbench::SettingsRef(
+                            crate::settings_provider::APPLICATION_REFERENCE.into(),
+                        ))
+                        .map_err(|error| error.message)?;
+                    let provider = owner.provider_snapshot();
                     if let Some(error) = &provider.catalog().error {
                         return Err(error.clone());
                     }
@@ -136,8 +144,13 @@ impl Shell {
             for pane in self.renderers.settings.values_mut() {
                 pane.reload_themes();
             }
-            if let Ok(provider) = ApplicationSettingsProvider::load(&self.app.data_root) {
-                self.live_settings.publish_provider(&provider);
+            if let Some(owner) = self.live_settings.owner() {
+                if let Err(error) = owner.reload_themes() {
+                    self.live_settings
+                        .report_status(Some(format!("Could not refresh themes: {error:?}")));
+                }
+                self.live_settings
+                    .publish_provider(&owner.provider_snapshot());
             }
             self.poll_live_settings();
             if self.close_after_theme_editor {

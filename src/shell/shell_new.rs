@@ -23,8 +23,7 @@ impl Shell {
                 ApplicationSettingsProvider::from_failed_load(&app.data_root, error.to_string())
             },
         };
-        let live_settings = LiveSettingsHandle::new(initial_provider.settings());
-        live_settings.publish_provider(&initial_provider);
+        let live_settings = LiveSettingsHandle::from_provider(initial_provider);
         app.apply_chrome_settings_snapshot(&live_settings.snapshot());
         let policy_path = crate::web_policy::default_policy_path(&app.data_root);
         let policy_registry = crate::web_policy::PermissionRegistry::load(

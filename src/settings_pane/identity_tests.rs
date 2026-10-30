@@ -52,19 +52,18 @@ fn identity_test_pane(root: &std::path::Path, status: &str) -> SettingsPane {
         ..ApplicationSettings::default()
     };
     let provider = ApplicationSettingsProvider::from_settings(root, initial);
+    let live_settings = LiveSettingsHandle::from_provider(provider);
+    let provider = live_settings
+        .owner()
+        .expect("provider-backed test owner")
+        .provider_snapshot();
     let dom: DomHandle = Rc::new(RefCell::new(ScriptedDom::new()));
     let document = dom.borrow().document();
     let runner = SettingsRunner::new_at(
         dom.clone(),
         document,
         identity_regression_view as fn(&SettingsState) -> SettingsView,
-        SettingsState {
-            provider,
-            live_settings: LiveSettingsHandle::new(&ApplicationSettings::default()),
-            status: status.into(),
-            viewport_w: 0.0,
-            viewport_h: 0.0,
-        },
+        SettingsState::new(provider, live_settings, status.into()),
     );
     SettingsPane {
         dom,
@@ -159,7 +158,7 @@ fn keyed_settings_rows_keep_drafts_and_apply_to_the_original_id_after_insertion(
     ));
     apply_identity_setting(&mut pane, "theme.mode");
 
-    assert_eq!(pane.runner.state().status, "Saved theme.mode");
+    assert_eq!(pane.runner.state().status, "Saved.");
     let saved = ApplicationSettingsProvider::load(root.path()).unwrap();
     assert_eq!(
         saved.settings().theme.as_ref().unwrap().theme_mode,
@@ -200,7 +199,7 @@ fn keyed_settings_rows_keep_drafts_on_the_original_id_when_sibling_reorders() {
     ));
 
     apply_identity_setting(&mut pane, "theme.mode");
-    assert_eq!(pane.runner.state().status, "Saved theme.mode");
+    assert_eq!(pane.runner.state().status, "Saved.");
     let saved = ApplicationSettingsProvider::load(root.path()).unwrap();
     assert_eq!(
         saved.settings().theme.as_ref().unwrap().theme_mode,
@@ -210,4 +209,49 @@ fn keyed_settings_rows_keep_drafts_on_the_original_id_when_sibling_reorders() {
         saved.settings().theme.as_ref().unwrap().theme_id,
         tabard::theme::registry::THEME_ID_HIGH_CONTRAST
     );
+}
+
+#[test]
+fn panes_share_the_same_provider_owner_and_sync_other_committed_values() {
+    let root = tempfile::tempdir().unwrap();
+    let provider = ApplicationSettingsProvider::load(root.path()).unwrap();
+    let live = LiveSettingsHandle::from_provider(provider);
+    let mut first = SettingsPane::with_live_settings(root.path().into(), Some(live.clone()));
+    let mut second = SettingsPane::with_live_settings(root.path().into(), Some(live.clone()));
+    assert_eq!(first.settings().ui_zoom, 1.1);
+    second.runner.update(|state| {
+        apply_value(state, "ui.zoom", SettingValue::Number(1.8));
+    });
+    assert_eq!(
+        first.settings().ui_zoom,
+        1.1,
+        "a cached pane refreshes at its next sync"
+    );
+    first.sync(640.0, 780.0);
+    assert_eq!(first.settings().ui_zoom, 1.8);
+    assert_eq!(second.settings().ui_zoom, 1.8);
+    assert_eq!(live.owner().unwrap().data_root(), root.path().to_path_buf());
+}
+
+#[test]
+fn pane_rejects_a_different_root_without_replacing_or_writing_shared_owner() {
+    let shared_root = tempfile::tempdir().unwrap();
+    let other_root = tempfile::tempdir().unwrap();
+    let live = LiveSettingsHandle::from_provider(
+        ApplicationSettingsProvider::load(shared_root.path()).unwrap(),
+    );
+    let before = live.snapshot();
+    let mut wrong_root =
+        SettingsPane::with_live_settings(other_root.path().into(), Some(live.clone()));
+    assert!(wrong_root.runner.state().owner.is_none());
+    wrong_root.runner.update(|state| {
+        apply_value(state, "ui.zoom", SettingValue::Number(2.0));
+    });
+    assert_eq!(live.snapshot(), before);
+    assert_eq!(
+        live.owner().unwrap().data_root(),
+        shared_root.path().to_path_buf()
+    );
+    assert!(!pandect::application_settings_exist(shared_root.path()));
+    assert!(!pandect::application_settings_exist(other_root.path()));
 }

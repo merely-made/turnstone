@@ -20,11 +20,15 @@ use cambium::{
 };
 use genet_scripted_dom::ScriptedDom;
 use layout_dom_api::LayoutDom;
-use mere_surface_api::settings::{SettingSpec, SettingValue, SettingsProjection, SettingsProvider};
+use mere_surface_api::settings::RevisionedSettingsProvider;
+use mere_surface_api::settings::{SettingSpec, SettingValue, SettingsProjection};
 use pandect::{ApplicationSettings, ShellbarEdge};
 use workbench::SettingsRef;
 
-use crate::settings_provider::{APPLICATION_REFERENCE, ApplicationSettingsProvider};
+use crate::settings_provider::SettingsBinding;
+use crate::settings_provider::{
+    APPLICATION_REFERENCE, ApplicationSettingsProvider, SharedApplicationSettingsOwner,
+};
 use crate::shell_services::{ShellChromeConfig, ThemeMode};
 
 /// The part of the application owner that the shell can observe while it is
@@ -164,109 +168,97 @@ impl ChromeSettings {
     }
 }
 
-/// A cloneable live projection owned by the shell. The provider publishes only
-/// after it has persisted a successful write, so consumers cannot observe a
-/// value that failed to reach the application owner.
-#[derive(Clone)]
-pub struct LiveSettingsHandle(Rc<RefCell<LiveSettingsState>>);
-
-struct LiveSettingsState {
-    snapshot: ChromeSettings,
-    catalog_applied: bool,
-    actions: std::collections::VecDeque<crate::action::Action>,
-    notice: Option<String>,
-}
-
-impl LiveSettingsHandle {
-    pub fn new(settings: &ApplicationSettings) -> Self {
-        Self(Rc::new(RefCell::new(LiveSettingsState {
-            snapshot: ChromeSettings::from(settings),
-            catalog_applied: false,
-            actions: Default::default(),
-            notice: None,
-        })))
-    }
-
-    pub fn snapshot(&self) -> ChromeSettings {
-        self.0.borrow().snapshot.clone()
-    }
-
-    fn publish(&self, settings: &ApplicationSettings) {
-        let mut state = self.0.borrow_mut();
-        state.snapshot = ChromeSettings::from(settings);
-        state.catalog_applied = false;
-    }
-
-    pub(crate) fn report_status(&self, status: Option<String>) {
-        self.0.borrow_mut().notice = status;
-    }
-
-    fn notice(&self) -> Option<String> {
-        self.0.borrow().notice.clone()
-    }
-
-    pub(crate) fn request_action(&self, action: crate::action::Action) {
-        self.0.borrow_mut().actions.push_back(action);
-    }
-
-    pub(crate) fn take_actions(&self) -> Vec<crate::action::Action> {
-        self.0.borrow_mut().actions.drain(..).collect()
-    }
-
-    pub(crate) fn publish_provider(&self, provider: &ApplicationSettingsProvider) {
-        let mut state = self.0.borrow_mut();
-        let mut next = ChromeSettings::from_provider(provider);
-        // Library refresh and unrelated setting writes must keep the applied
-        // definition, even when an editor saved new bytes under the same id.
-        if state.catalog_applied {
-            next.theme_id = state.snapshot.theme_id.clone();
-            next.theme_mode = state.snapshot.theme_mode.clone();
-            next.presentation = state.snapshot.presentation.clone();
-            next.light_presentation = state.snapshot.light_presentation.clone();
-            next.typography = state.snapshot.typography.clone();
-            next.interface_font_properties = state.snapshot.interface_font_properties.clone();
-        }
-        state.snapshot = next;
-        state.catalog_applied = true;
-    }
-
-    pub(crate) fn apply_provider(&self, provider: &ApplicationSettingsProvider) {
-        let mut state = self.0.borrow_mut();
-        state.snapshot = ChromeSettings::from_provider(provider);
-        state.catalog_applied = true;
-    }
-}
+mod live_settings;
+pub use live_settings::LiveSettingsHandle;
+mod commands;
+use commands::apply_value;
 
 /// The pane's own state. In-progress edits are *not* here: each row's draft
 /// lives inside its `cambium::setting_row` component, and only an applied
 /// [`SettingValue`] reaches this state through the provider.
 struct SettingsState {
     provider: ApplicationSettingsProvider,
+    owner: Option<SharedApplicationSettingsOwner>,
+    bindings: std::collections::BTreeMap<String, SettingsBinding>,
     live_settings: LiveSettingsHandle,
     status: String,
+    reload_epoch: u64,
     viewport_w: f32,
     viewport_h: f32,
+}
+
+impl SettingsState {
+    fn new(
+        provider: ApplicationSettingsProvider,
+        live_settings: LiveSettingsHandle,
+        status: String,
+    ) -> Self {
+        let mut state = Self {
+            provider,
+            owner: None,
+            bindings: Default::default(),
+            live_settings,
+            status,
+            reload_epoch: 0,
+            viewport_w: 0.0,
+            viewport_h: 0.0,
+        };
+        state.connect_owner();
+        state
+    }
+
+    fn connect_owner(&mut self) {
+        match self.live_settings.owner_for(&self.provider) {
+            Ok(owner) => {
+                self.bindings = match bindings_for(&owner) {
+                    Ok(bindings) => bindings,
+                    Err(error) => {
+                        self.status = format!("Could not bind application settings: {error}");
+                        Default::default()
+                    },
+                };
+                self.provider = owner.provider_snapshot();
+                self.live_settings.publish_provider(&self.provider);
+                self.owner = Some(owner);
+            },
+            Err(error) => {
+                self.owner = None;
+                self.bindings.clear();
+                self.status = format!("Could not connect application settings owner: {error:?}");
+            },
+        }
+    }
+
+    #[cfg(test)]
+    fn replace_owner_for_test(&mut self, provider: ApplicationSettingsProvider) {
+        let owner = self.live_settings.replace_owner_for_test(provider);
+        self.bindings = bindings_for(&owner).expect("test provider snapshot");
+        self.provider = owner.provider_snapshot();
+        self.owner = Some(owner);
+        self.status.clear();
+        self.reload_epoch = self.reload_epoch.wrapping_add(1);
+    }
+}
+
+fn bindings_for(
+    owner: &SharedApplicationSettingsOwner,
+) -> Result<std::collections::BTreeMap<String, SettingsBinding>, String> {
+    let reference = SettingsRef(APPLICATION_REFERENCE.into());
+    let snapshot = owner.snapshot(&reference).map_err(|error| error.message)?;
+    snapshot
+        .specs
+        .iter()
+        .map(|entry| {
+            SettingsBinding::from_snapshot(&snapshot, entry.spec.id.clone(), 8)
+                .map(|binding| (entry.spec.id.clone(), binding))
+                .map_err(|error| format!("{error:?}"))
+        })
+        .collect()
 }
 
 type SettingsView = Box<dyn AnyView<SettingsState, (), GenetCtx, GenetElement>>;
 type SettingsRunner =
     GenetAppRunner<SettingsState, fn(&SettingsState) -> SettingsView, SettingsView, ()>;
-
-fn apply_value(state: &mut SettingsState, setting_id: &str, value: SettingValue) {
-    let reference = SettingsRef(APPLICATION_REFERENCE.into());
-    state.status = match state.provider.apply(&reference, setting_id, value) {
-        Ok(()) => {
-            if matches!(setting_id, "theme.id" | "theme.mode") {
-                state.live_settings.apply_provider(&state.provider);
-            } else {
-                state.live_settings.publish_provider(&state.provider);
-            }
-            state.live_settings.report_status(None);
-            format!("Saved {setting_id}")
-        },
-        Err(error) => format!("Could not save {setting_id}: {error:?}"),
-    };
-}
 
 /// One provider spec as a Cambium row. The draft is the component's; this
 /// pane only sees the applied value, which it forwards to the provider under
@@ -335,7 +327,15 @@ fn settings_view(state: &SettingsState) -> SettingsView {
                 )
                 .attr("class", "setting-apply")
                 .attr("data-action", "edit-themes"),
-                body,
+                button(
+                    "Discard edits and reload",
+                    |state: &mut SettingsState, _: cambium::PointerClick| {
+                        commands::reload_settings(state);
+                    },
+                )
+                .attr("class", "setting-reload")
+                .attr("data-action", "reload-settings"),
+                el::<_, SettingsState, ()>("div", Keyed::new(vec![(state.reload_epoch, body)])),
                 status_note::<SettingsState, ()>(
                     "list-row muted",
                     state
@@ -397,18 +397,11 @@ impl SettingsPane {
         };
         let live_settings =
             live_settings.unwrap_or_else(|| LiveSettingsHandle::new(provider.settings()));
-        live_settings.publish_provider(&provider);
         let dom: DomHandle = mount
             .as_ref()
             .map(cambium::RetainedMount::dom)
             .unwrap_or_else(|| Rc::new(RefCell::new(ScriptedDom::new())));
-        let state = SettingsState {
-            provider,
-            live_settings,
-            status,
-            viewport_w: 0.0,
-            viewport_h: 0.0,
-        };
+        let state = SettingsState::new(provider, live_settings, status);
         let runner = SettingsRunner::new_at(
             dom.clone(),
             mount
@@ -476,6 +469,7 @@ impl SettingsPane {
         self.runner.update(|state| {
             state.viewport_w = pane_w;
             state.viewport_h = pane_h;
+            commands::refresh_settings(state);
         });
     }
 
@@ -555,8 +549,12 @@ impl SettingsPane {
 
     pub(crate) fn reload_themes(&mut self) {
         self.runner.update(|state| {
-            state.provider.reload_themes();
-            state.status = state.provider.appearance_notice();
+            let reload = state.owner.as_ref().map(|owner| owner.reload_themes());
+            commands::refresh_settings(state);
+            state.status = match reload {
+                Some(Err(error)) => format!("Could not reload themes: {error:?}"),
+                _ => state.provider.appearance_notice(),
+            };
         });
     }
 
@@ -585,3 +583,7 @@ mod tests;
 #[cfg(test)]
 #[path = "settings_pane/identity_tests.rs"]
 mod identity_tests;
+
+#[cfg(test)]
+#[path = "settings_pane/commands_tests.rs"]
+mod commands_tests;
