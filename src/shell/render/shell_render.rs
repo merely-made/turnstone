@@ -4,6 +4,15 @@
 use super::*;
 
 impl Shell {
+    /// Build the standalone frame scene only when the window plan needs it.
+    /// Shared native composition paints after installing current producers.
+    pub(in super::super) fn frame_scene_for_plan(
+        shared_frame: bool,
+        paint: impl FnOnce() -> Scene,
+    ) -> Option<Scene> {
+        (!shared_frame).then(paint)
+    }
+
     /// The layered present (born minimal at rung 3, grows into the surface
     /// plan at rung 5): rasterize each surface's scene to its own texture and
     /// compose them in order onto the frame — the canvas below, the chrome
@@ -112,6 +121,9 @@ impl Shell {
             );
         }
         let surfaces = self.surface_plan();
+        let shared_frame = surfaces
+            .iter()
+            .any(|surface| surface.kind == SurfaceKind::Frame);
         let caption = self
             .app
             .focused_graph_pane()
@@ -260,7 +272,12 @@ impl Shell {
                     (scene, wgpu::Color::TRANSPARENT)
                 },
                 crate::surface::SurfaceKind::Frame | crate::surface::SurfaceKind::FloatFrame(_) => {
-                    (self.outer_scene(0), wgpu::Color::TRANSPARENT)
+                    let Some(scene) =
+                        Self::frame_scene_for_plan(shared_frame, || self.outer_scene(0))
+                    else {
+                        continue;
+                    };
+                    (scene, wgpu::Color::TRANSPARENT)
                 },
                 crate::surface::SurfaceKind::Divider(_) => {
                     // The band is the clear colour; nothing to draw over it.
@@ -363,9 +380,6 @@ impl Shell {
         let mut source_diagnostics = Vec::new();
         // Keep each returned texture alive through composition and capture.
         let mut raster_textures = Vec::new();
-        let shared_frame = surfaces
-            .iter()
-            .any(|surface| surface.kind == SurfaceKind::Frame);
         let layers: Result<Vec<CompositeLayer>, (u64, genet_render_host::RasterizeFailure)> =
             scenes
                 .into_iter()
@@ -484,3 +498,7 @@ impl Shell {
         presented
     }
 }
+
+#[cfg(test)]
+#[path = "frame_scene_tests.rs"]
+mod frame_scene_tests;

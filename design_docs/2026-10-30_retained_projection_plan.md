@@ -1,6 +1,7 @@
 # Retained semantic projection without repeated tree searches
 
-**Status:** landed and locally qualified, 2026-10-30.
+**Status:** projection and layout-only preparation landed and locally qualified;
+shared-frame paint deferral in progress, 2026-10-30.
 
 The native render host now qualifies pending GPU frames away from the UI
 thread. Arrange remains slow with that change. A native stack sample places
@@ -69,16 +70,54 @@ a successfully presented pixel frame.
 ## Layout preparation without discarded paint
 
 Frame rectangle and accessibility reads prepare the current Frisket layout.
-They currently also call `OuterFrame::scene`, emitting and discarding a complete
+They formerly also called `OuterFrame::scene`, emitting and discarding a complete
 painted scene on every preparation pass. Inline mounting legitimately needs
-multiple layout passes; those passes do not each need a painted scene. The
-existing retained `ensure` operation already provides layout without paint.
+multiple layout passes; those passes now use the existing retained `ensure`
+operation to provide current layout without paint.
 
 Done when actual `OuterFrame::prepare` calls emit no paint lists while keeping
 cold, resized, scaled and changed-selection geometry current; explicit scene
 production still emits its paint; and inline mounts, scrolling, hit testing,
 accessibility publication and native primary/lens controls retain their current
 behavior. This introduces no scene cache or new invalidation authority.
+
+## Frame painting after producer staging
+
+Primary and lens rendering formerly built standalone frame scenes in their
+mutable scene pass. When the plan contained a shared native frame, the later
+raster pass discarded these frame and floating-frame scenes before rasterization.
+Native composition then installs current producer commands and emits the actual
+frame scene with its shadow-mask requests. The earlier scene is not a fallback
+on composition failure and cannot substitute for that current producer-bound
+result.
+
+Frame painting now defers to the existing native composition owner for shared plans.
+Plans without a shared frame retain their standalone scene path. Keep the source
+surface plan, geometry preparation, producer staging, mask custody, native frame
+qualification and capture ordering unchanged.
+
+Done when actual primary/lens plan regressions measure no discarded standalone
+frame paints, standalone plans still paint once, and native composition continues
+to emit current producer content with its masks and unchanged capture/refusal
+behavior. This introduces no scene cache or second rendering authority.
+
+## Shared used-color projection
+
+Genet now owns a lazy numeric color view of each unchanged retained style plane.
+The contextual source still owns inheritance, CSSOM and animation. Its generated
+computed-value walk touches only color-bearing fields; mutable style access,
+length resolution, removal, cascade and generated-counter updates retire the
+view. Unchanged clones share it, and no-op liveness checks preserve it. Palette
+and scheme changes already replace the source through device invalidation.
+
+The owner contract and freshness controls live in
+`genet/docs/2026-07-28_livery_contextual_color_computation_plan.md`. Turnstone
+receives that owner revision through one coherent locked Genet cohort.
+
+Done when repeated retained UI paint reuses the numeric view, source expressions
+and next-frame changes remain current, the default product and optional services
+compile against the selected owner, and matched native runs retain memory and
+cadence evidence alongside current composed primary/lens captures.
 
 ## Consumer and product evidence
 
@@ -96,6 +135,9 @@ forced redraw cadence from natural idle behavior. These observations do
 not establish Linux performance, physical IME behavior or human
 accessibility qualification. Run receipts live separately under
 `Code/output/genet-geometry-projection-20261030`.
+The later shared-frame paint and used-color continuation retains its source,
+failure and product evidence under `Code/output/genet-used-colors-20261030`;
+earlier receipts remain at their original paths.
 
 ## Findings
 
@@ -133,6 +175,10 @@ accessibility qualification. Run receipts live separately under
   style materialization is still a shared producer cost. The observations are
   diagnostic cues, with no naming-policy or persistent-cache change in this
   implementation.
+- 2026-10-30: `shell_render.rs` and `shell_render_lens.rs` eagerly paint frame
+  and floating-frame scenes which their shared-frame raster filters discard.
+  `native_composition::compose` later installs current producer commands before
+  painting the scene that is actually rasterized; masks belong to that result.
 
 ## Progress
 
@@ -152,3 +198,17 @@ accessibility qualification. Run receipts live separately under
   comparisons improve all observed conditions; primary resize and lens
   input/close controls pass. Sources, failure receipts, profiles and captures
   are retained separately under the evidence path above.
+- 2026-10-30: a common lazy scene-construction seam and actual primary/lens
+  paint-count controls are prepared. Eager production behavior is retained for
+  the pre-fix test run and matched baseline freeze.
+- 2026-10-30: the shared-plan regression fails at the actual discarded-paint
+  count while the standalone scene control passes. Eager behavior remains in
+  place while the matched baseline release is frozen.
+- 2026-10-30: shared primary and lens plans now skip standalone frame scene
+  construction. Producer-bound scene emission and masks remain with native
+  composition; standalone plans retain their existing paint path. Combined
+  consumer and native qualification follows the retained baseline freeze.
+
+- 2026-10-30: the full default application library passes with the shared-frame
+  deferral and received Genet used-color view. Both actual plan paint controls
+  are green. Optional-service and native receiving qualification continue.

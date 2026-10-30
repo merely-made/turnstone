@@ -58,6 +58,9 @@ impl Shell {
             self.native_frames.cancel(id);
             return presented;
         }
+        let shared_frame = surfaces
+            .iter()
+            .any(|surface| surface.kind == SurfaceKind::Frame);
         // Visibility includes every open window. Each render invocation pumps
         // a retained document once; separate window events remain separate polls.
         self.pump_visible_documents();
@@ -162,7 +165,12 @@ impl Shell {
                     }
                 },
                 crate::surface::SurfaceKind::Frame | crate::surface::SurfaceKind::FloatFrame(_) => {
-                    (self.outer_scene(ordinal + 1), wgpu::Color::TRANSPARENT)
+                    let Some(scene) =
+                        Self::frame_scene_for_plan(shared_frame, || self.outer_scene(ordinal + 1))
+                    else {
+                        continue;
+                    };
+                    (scene, wgpu::Color::TRANSPARENT)
                 },
                 crate::surface::SurfaceKind::Divider(_) => {
                     (Scene::default(), crate::ui::SEAM_CLEAR)
@@ -249,9 +257,6 @@ impl Shell {
         let started = std::time::Instant::now();
         let mut source_diagnostics = Vec::new();
         let mut raster_textures = Vec::new();
-        let shared_frame = surfaces
-            .iter()
-            .any(|surface| surface.kind == SurfaceKind::Frame);
         let layers: Result<Vec<CompositeLayer>, (u64, genet_render_host::RasterizeFailure)> =
             scenes
                 .into_iter()
