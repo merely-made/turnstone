@@ -1,0 +1,15 @@
+# Restart twin for settings_arrangement.scn. Reuse its TURNSTONE_ROOT and start
+# a new Turnstone process; `Remove empty Group 1` exists only if the saved group restored.
+settle 30
+key escape
+open mere://alpha
+settle 30
+act Open Settings pane
+settle 10
+assert pane turnstone.settings
+click surface:settings role:button Edit arrangement
+settle 2
+capture 01_settings_arrangement_restored
+click surface:settings role:button Remove empty Group 1
+settle 2
+log Settings arrangement group restored

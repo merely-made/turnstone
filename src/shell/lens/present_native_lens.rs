@@ -14,6 +14,7 @@ impl Shell {
             needs_redraw,
             capture,
             diagnostics,
+            reactive,
             ..
         } = staged;
         let (lw, lh) = identity.dimensions;
@@ -84,6 +85,7 @@ impl Shell {
             return false;
         }
         host.queue().present(frame);
+        reactive.submitted(generation);
         self.pending_native_diagnostics.extend(diagnostics);
         self.main_receipt.lens_presented();
         // Only the request's chosen Lens may consume it. Failure participates

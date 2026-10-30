@@ -29,7 +29,7 @@ where
 {
     #[cfg(test)]
     PAINT_CALLS.with(|count| count.set(count.get() + 1));
-    emit_paint_list_with_text_system_scrolled_with_images(
+    let painted = emit_paint_list_with_text_system_scrolled_with_images(
         dom,
         &snapshot.styles,
         &snapshot.fragments,
@@ -39,5 +39,9 @@ where
         element_scroll,
         &HashMap::new(),
     )
-    .translated(-viewport_scroll.0, -viewport_scroll.1)
+    .translated(-viewport_scroll.0, -viewport_scroll.1);
+    crate::reactive_render::completed(
+        cambium::reactive_diagnostics::DiagnosticKind::RendererPaintCompleted,
+    );
+    painted
 }

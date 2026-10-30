@@ -141,6 +141,7 @@ pub fn ring_of(action: &Action) -> Ring {
         | ReadGraphMember(_)
         | NavigateRelationship(_) | RevealRelationship(_)
         | SetPaneBinding(_)
+        | SetSettingsPaneRecord(..)
         | RevealGraphMember(_)
         | ToggleToolPane(_)
         | SetChromeLayout(_)

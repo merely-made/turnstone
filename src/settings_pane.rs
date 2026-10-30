@@ -15,16 +15,19 @@ use std::path::PathBuf;
 use std::rc::Rc;
 
 use cambium::{
-    AnyView, DomHandle, GenetAppRunner, GenetCtx, GenetElement, button, el, setting_row,
-    status_note,
+    AnyView, DomHandle, GenetAppRunner, GenetCtx, GenetElement, Keyed, LifecycleEventSink, button,
+    el, status_note,
 };
 use genet_scripted_dom::ScriptedDom;
 use layout_dom_api::LayoutDom;
-use mere_surface_api::settings::{SettingSpec, SettingValue, SettingsProjection, SettingsProvider};
+use mere_surface_api::settings::{SettingSpec, SettingValue, SettingsProjection};
 use pandect::{ApplicationSettings, ShellbarEdge};
 use workbench::SettingsRef;
 
-use crate::settings_provider::{APPLICATION_REFERENCE, ApplicationSettingsProvider};
+use crate::settings_provider::SettingsBinding;
+use crate::settings_provider::{
+    APPLICATION_REFERENCE, ApplicationSettingsProvider, SharedApplicationSettingsOwner,
+};
 use crate::shell_services::{ShellChromeConfig, ThemeMode};
 
 /// The part of the application owner that the shell can observe while it is
@@ -164,192 +167,36 @@ impl ChromeSettings {
     }
 }
 
-/// A cloneable live projection owned by the shell. The provider publishes only
-/// after it has persisted a successful write, so consumers cannot observe a
-/// value that failed to reach the application owner.
-#[derive(Clone)]
-pub struct LiveSettingsHandle(Rc<RefCell<LiveSettingsState>>);
+mod live_settings;
+pub use live_settings::LiveSettingsHandle;
+mod commands;
+use commands::apply_value;
 
-struct LiveSettingsState {
-    snapshot: ChromeSettings,
-    catalog_applied: bool,
-    actions: std::collections::VecDeque<crate::action::Action>,
-    notice: Option<String>,
-}
-
-impl LiveSettingsHandle {
-    pub fn new(settings: &ApplicationSettings) -> Self {
-        Self(Rc::new(RefCell::new(LiveSettingsState {
-            snapshot: ChromeSettings::from(settings),
-            catalog_applied: false,
-            actions: Default::default(),
-            notice: None,
-        })))
-    }
-
-    pub fn snapshot(&self) -> ChromeSettings {
-        self.0.borrow().snapshot.clone()
-    }
-
-    fn publish(&self, settings: &ApplicationSettings) {
-        let mut state = self.0.borrow_mut();
-        state.snapshot = ChromeSettings::from(settings);
-        state.catalog_applied = false;
-    }
-
-    pub(crate) fn report_status(&self, status: Option<String>) {
-        self.0.borrow_mut().notice = status;
-    }
-
-    fn notice(&self) -> Option<String> {
-        self.0.borrow().notice.clone()
-    }
-
-    pub(crate) fn request_action(&self, action: crate::action::Action) {
-        self.0.borrow_mut().actions.push_back(action);
-    }
-
-    pub(crate) fn take_actions(&self) -> Vec<crate::action::Action> {
-        self.0.borrow_mut().actions.drain(..).collect()
-    }
-
-    pub(crate) fn publish_provider(&self, provider: &ApplicationSettingsProvider) {
-        let mut state = self.0.borrow_mut();
-        let mut next = ChromeSettings::from_provider(provider);
-        // Library refresh and unrelated setting writes must keep the applied
-        // definition, even when an editor saved new bytes under the same id.
-        if state.catalog_applied {
-            next.theme_id = state.snapshot.theme_id.clone();
-            next.theme_mode = state.snapshot.theme_mode.clone();
-            next.presentation = state.snapshot.presentation.clone();
-            next.light_presentation = state.snapshot.light_presentation.clone();
-            next.typography = state.snapshot.typography.clone();
-            next.interface_font_properties = state.snapshot.interface_font_properties.clone();
-        }
-        state.snapshot = next;
-        state.catalog_applied = true;
-    }
-
-    pub(crate) fn apply_provider(&self, provider: &ApplicationSettingsProvider) {
-        let mut state = self.0.borrow_mut();
-        state.snapshot = ChromeSettings::from_provider(provider);
-        state.catalog_applied = true;
-    }
-}
-
-/// The pane's own state. In-progress edits are *not* here: each row's draft
-/// lives inside its `cambium::setting_row` component, and only an applied
-/// [`SettingValue`] reaches this state through the provider.
-struct SettingsState {
-    provider: ApplicationSettingsProvider,
-    live_settings: LiveSettingsHandle,
-    status: String,
-    viewport_w: f32,
-    viewport_h: f32,
-}
+mod state;
+use state::{RowState, SettingsState};
 
 type SettingsView = Box<dyn AnyView<SettingsState, (), GenetCtx, GenetElement>>;
 type SettingsRunner =
     GenetAppRunner<SettingsState, fn(&SettingsState) -> SettingsView, SettingsView, ()>;
 
-fn apply_value(state: &mut SettingsState, setting_id: &str, value: SettingValue) {
-    let reference = SettingsRef(APPLICATION_REFERENCE.into());
-    state.status = match state.provider.apply(&reference, setting_id, value) {
-        Ok(()) => {
-            if matches!(setting_id, "theme.id" | "theme.mode") {
-                state.live_settings.apply_provider(&state.provider);
-            } else {
-                state.live_settings.publish_provider(&state.provider);
-            }
-            state.live_settings.report_status(None);
-            format!("Saved {setting_id}")
-        },
-        Err(error) => format!("Could not save {setting_id}: {error:?}"),
-    };
-}
+mod composition;
+#[cfg(test)]
+use composition::setting_rows;
 
-/// One provider spec as a Cambium row. The draft is the component's; this
-/// pane only sees the applied value, which it forwards to the provider under
-/// the id it passed in.
-fn pane_setting_row(spec: &SettingSpec) -> SettingsView {
-    let setting_id = spec.id.clone();
-    let label = format!(
-        "{} · {:?} · {:?} · {:?}",
-        spec.label, spec.scope, spec.movement, spec.mutability
-    );
-    Box::new(setting_row(
-        spec,
-        label,
-        move |state: &mut SettingsState, value: SettingValue| {
-            apply_value(state, &setting_id, value);
-        },
-    ))
-}
+mod view;
+use view::settings_view;
+mod arrangement;
+mod editor;
+mod editor_host;
+mod record_host;
+mod row_commands;
+mod source_sync;
 
-fn settings_view(state: &SettingsState) -> SettingsView {
-    let reference = SettingsRef(APPLICATION_REFERENCE.into());
-    let body: SettingsView = match SettingsProjection::resolve(&state.provider, &reference) {
-        Ok(projection) if projection.specs.is_empty() => {
-            Box::new(status_note::<SettingsState, ()>(
-                "setting-empty",
-                "No settings are available for this source.",
-            ))
-        },
-        Ok(projection) => {
-            let rows = projection
-                .specs
-                .iter()
-                .map(pane_setting_row)
-                .collect::<Vec<_>>();
-            Box::new(el::<_, SettingsState, ()>("div", rows))
-        },
-        Err(error) => Box::new(
-            el::<_, SettingsState, ()>("div", format!("Settings are unavailable: {error:?}"))
-                .attr("class", "setting-error")
-                .attr("role", "alert"),
-        ),
-    };
-    Box::new(
-        el::<_, SettingsState, ()>(
-            "div",
-            (
-                el::<_, SettingsState, ()>("div", "Application settings")
-                    .attr("class", "list-section-title"),
-                el::<_, SettingsState, ()>("div", APPLICATION_REFERENCE)
-                    .attr("class", "list-row muted"),
-                status_note::<SettingsState, ()>(
-                    "list-row muted",
-                    state.provider.appearance_notice(),
-                ),
-                button(
-                    "Edit themes",
-                    |state: &mut SettingsState, _: cambium::PointerClick| {
-                        state
-                            .live_settings
-                            .request_action(crate::action::Action::OpenThemeWorkshop);
-                    },
-                )
-                .attr("class", "setting-apply")
-                .attr("data-action", "edit-themes"),
-                body,
-                status_note::<SettingsState, ()>(
-                    "list-row muted",
-                    state
-                        .live_settings
-                        .notice()
-                        .unwrap_or_else(|| state.status.clone()),
-                ),
-            ),
-        )
-        .attr("class", "pane")
-        .attr(
-            "style",
-            format!(
-                "width: {}px; height: {}px;",
-                state.viewport_w, state.viewport_h
-            ),
-        ),
-    )
+pub(crate) fn validate_record(
+    config: &crate::panes::PaneConfig,
+    view: &crate::panes::PaneViewState,
+) -> Result<(), String> {
+    arrangement::validate_record(config, view)
 }
 
 /// A retained application-settings projection over Turnstone's provider.
@@ -393,18 +240,11 @@ impl SettingsPane {
         };
         let live_settings =
             live_settings.unwrap_or_else(|| LiveSettingsHandle::new(provider.settings()));
-        live_settings.publish_provider(&provider);
         let dom: DomHandle = mount
             .as_ref()
             .map(cambium::RetainedMount::dom)
             .unwrap_or_else(|| Rc::new(RefCell::new(ScriptedDom::new())));
-        let state = SettingsState {
-            provider,
-            live_settings,
-            status,
-            viewport_w: 0.0,
-            viewport_h: 0.0,
-        };
+        let state = SettingsState::new(provider, live_settings, status);
         let runner = SettingsRunner::new_at(
             dom.clone(),
             mount
@@ -445,6 +285,7 @@ impl SettingsPane {
     }
     pub(crate) fn key_inline(&mut self, event: cambium::KeyEvent) {
         let _: Vec<()> = self.runner.dispatch_key(event);
+        self.flush_editor_commands();
     }
     pub(crate) fn blur_inline(&mut self) {
         self.runner.set_focus(None);
@@ -469,13 +310,39 @@ impl SettingsPane {
         }
     }
     pub fn sync(&mut self, pane_w: f32, pane_h: f32) {
+        self.flush_editor_commands();
         self.runner.update(|state| {
             state.viewport_w = pane_w;
             state.viewport_h = pane_h;
+            commands::refresh_settings(state);
         });
+        self.include_reactive_mutations();
+    }
+
+    pub(crate) fn include_reactive_mutations(&self) {
+        let state = self.runner.state();
+        if state.input_queue_error.borrow().is_some() {
+            crate::reactive_render::mark_input_gap();
+        }
+        if let Some(queue) = &state.input_queue {
+            if queue.dropped_mutation_records() > 0 || queue.generation_exhaustions() > 0 {
+                crate::reactive_render::mark_input_gap();
+            }
+            crate::reactive_render::include_mutations(&queue.latest_mutations());
+        } else {
+            crate::reactive_render::mark_input_gap();
+        }
     }
 
     pub fn scene(&mut self, w: u32, h: u32, scale: f32) -> netrender::Scene {
+        let records = self
+            .runner
+            .state()
+            .input_queue
+            .as_ref()
+            .map(|queue| queue.latest_mutations())
+            .unwrap_or_default();
+        let _reactive_work = crate::reactive_render::WorkScope::settings(&records);
         self.layout.set_scale(scale);
         let snapshot = self.runner.state().live_settings.snapshot();
         let mut chrome = ShellChromeConfig::default();
@@ -488,6 +355,7 @@ impl SettingsPane {
     /// Wheel delta from the shell.
     pub fn scroll_by(&mut self, dx: f32, dy: f32) {
         self.scroll.nudge(dx, dy);
+        self.recompute_unsaved();
     }
 
     /// Whether the overlay bars still need repainting as they fade.
@@ -546,19 +414,25 @@ impl SettingsPane {
             let _: Vec<()> = self
                 .runner
                 .dispatch_click(node, cambium::PointerClick::at((x, y)));
+            self.flush_editor_commands();
         }
     }
 
     pub(crate) fn reload_themes(&mut self) {
         self.runner.update(|state| {
-            state.provider.reload_themes();
-            state.status = state.provider.appearance_notice();
+            let reload = state.owner.as_ref().map(|owner| owner.reload_themes());
+            commands::refresh_settings(state);
+            state.status = match reload {
+                Some(Err(error)) => format!("Could not reload themes: {error:?}"),
+                _ => state.provider.appearance_notice(),
+            };
         });
     }
 
     /// Native and scenario keys share the retained controls' keyboard route.
     pub(crate) fn key(&mut self, event: cambium::KeyEvent) {
         let _: Vec<()> = self.runner.dispatch_key(event);
+        self.flush_editor_commands();
     }
 
     pub(crate) fn focus_traverse(&mut self, forward: bool) {
@@ -577,3 +451,23 @@ impl SettingsPane {
 #[cfg(test)]
 #[path = "settings_pane/tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "settings_pane/identity_tests.rs"]
+mod identity_tests;
+
+#[cfg(test)]
+#[path = "settings_pane/commands_tests.rs"]
+mod commands_tests;
+
+#[cfg(test)]
+#[path = "settings_pane/composition_tests.rs"]
+mod composition_tests;
+
+#[cfg(test)]
+#[path = "settings_pane/p3_tests.rs"]
+mod p3_tests;
+
+#[cfg(test)]
+#[path = "settings_pane/reactive_tests.rs"]
+mod reactive_tests;

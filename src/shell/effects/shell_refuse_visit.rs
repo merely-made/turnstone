@@ -4,6 +4,26 @@
 use super::*;
 
 impl Shell {
+    /// Persist only the frame that owns this Settings pane. The caller sends
+    /// the matching pane acknowledgment after this fallible write completes.
+    pub(in super::super) fn persist_settings_pane_record(
+        &mut self,
+        pane: crate::panes::PaneId,
+    ) -> Result<(), String> {
+        persist_settings_pane_layout(&mut self.app, pane)
+    }
+
+    pub(in super::super) fn settings_pane_record_result(
+        &mut self,
+        pane: crate::panes::PaneId,
+        request_id: uuid::Uuid,
+        result: Result<(), String>,
+    ) {
+        if let Some(view) = self.renderers.settings.get_mut(&pane) {
+            view.arrangement_saved(request_id, result);
+        }
+    }
+
     /// Record a refusal and tell the app, without disturbing the node.
     pub(super) fn refuse_visit(&mut self, node: uuid::Uuid, url: &str, reason: &str) {
         self.app.note_place_refusal(format!("{url}: {reason}"));
@@ -263,5 +283,72 @@ impl Shell {
         }) {
             let _ = self.app.sessions.flush_dirty();
         }
+    }
+}
+
+fn persist_settings_pane_layout(
+    app: &mut crate::app::App,
+    pane: crate::panes::PaneId,
+) -> Result<(), String> {
+    let space = app
+        .space_of(pane)
+        .ok_or_else(|| "Settings pane is no longer placed".to_owned())?;
+    app.ensure_shared_space(space)?;
+    let layout = app
+        .space(space)
+        .ok_or_else(|| "Settings pane window is closed".to_owned())?;
+    let session_dir = app.session_dir();
+    match space {
+        crate::action::SpaceRef::Primary => {
+            crate::panes::store::save_frisket_layout(&session_dir, layout)
+                .map_err(|error| format!("Could not persist Settings pane frame: {error}"))
+        },
+        crate::action::SpaceRef::Lens(_) => {
+            crate::panes::store::save_lens_spaces(&session_dir, &app.lenses)
+                .map_err(|error| format!("Could not persist Settings pane window: {error}"))
+        },
+    }
+}
+
+#[cfg(test)]
+mod settings_record_persistence_tests {
+    use super::*;
+    use crate::{
+        action::{Action, Effect},
+        app::App,
+        panes::{PaneContent, PaneId, PaneKindId, PaneViewState},
+    };
+
+    fn app_with_settings(root: &std::path::Path) -> (App, PaneId) {
+        let mut app = App::test_stub_at(root.to_path_buf());
+        app.update(Action::SummonPane(PaneKindId::new(
+            crate::panes::kind::SETTINGS,
+        )));
+        let pane = app.frisket.iter_leaves().find_map(|(id, content, _)| {
+            matches!(content, PaneContent::Registered(kind) if kind.as_str() == crate::panes::kind::SETTINGS)
+                .then_some(id)
+        }).expect("summoned settings pane");
+        let admission = app.settings_pane_record_admission(pane).unwrap();
+        let request_id = uuid::Uuid::new_v4();
+        let effects = app.update(Action::SetSettingsPaneRecord((
+            pane,
+            admission,
+            request_id,
+            crate::panes::PaneConfig::empty("turnstone.settings.config"),
+            PaneViewState::empty("turnstone.settings.view"),
+        )));
+        assert!(effects.contains(&Effect::PersistSettingsPaneRecord { pane, request_id }));
+        (app, pane)
+    }
+
+    #[test]
+    fn settings_record_persistence_reports_frame_write_failure() {
+        let root = tempfile::tempdir().unwrap();
+        let (mut app, pane) = app_with_settings(root.path());
+        let blocker = root.path().join("not-a-directory");
+        std::fs::write(&blocker, b"block parent creation").unwrap();
+        app.data_root = blocker.join("child");
+        let error = persist_settings_pane_layout(&mut app, pane).unwrap_err();
+        assert!(error.contains("Could not persist Settings pane frame"));
     }
 }

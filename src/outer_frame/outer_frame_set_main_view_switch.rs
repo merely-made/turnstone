@@ -293,6 +293,7 @@ impl OuterFrame {
     pub(crate) fn scene_resources(
         &mut self,
     ) -> Result<paint_list_render::TranslatedDisplayList, paint_list_render::TranslationError> {
+        let _reactive_work = crate::reactive_render::WorkScope::window();
         self.layout.borrow_mut().scene_resources(
             &mut self.controls.dom.borrow_mut(),
             &self.sheet,

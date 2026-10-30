@@ -1,8 +1,7 @@
 // Copyright 2026 Mark Alan Boykin
 // SPDX-License-Identifier: MPL-2.0
 use super::*;
-/// A typed app intent. The shell (keys, later the omnibar / command palette /
-/// automation adapters) produces these; [`crate::app::update`] consumes them.
+/// Typed app intent consumed by [`crate::app::update`] after shell or automation input.
 #[derive(Clone, Debug, PartialEq)]
 pub enum Action {
     Reading(crate::reading_view::ReadAction),
@@ -472,6 +471,7 @@ pub enum Action {
     NavigateRelationship(crate::relationship_navigation::RelationshipTarget),
     RevealRelationship(crate::relationship_navigation::RelationshipTarget),
     SetPaneBinding(crate::pane_binding::BindingIntent),
+    SetSettingsPaneRecord(crate::action::SettingsPaneRecordIntent),
     /// Reveal an existing graph member without changing its reading arrangement.
     RevealGraphMember(uuid::Uuid),
     /// Hide retains the pane in an inactive stack; show restores its split.

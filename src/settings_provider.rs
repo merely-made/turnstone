@@ -22,6 +22,18 @@ use pandect::{
 use tabard::theme::{choice::ThemeChoice, registry::Mode};
 use workbench::SettingsRef;
 
+mod owner;
+pub use owner::SharedApplicationSettingsOwner;
+
+mod binding;
+#[cfg(test)]
+#[path = "settings_provider/receiving_tests.rs"]
+mod receiving_tests;
+pub(crate) use binding::{SettingsBinding, SettingsBindingError};
+
+#[cfg(test)]
+pub(crate) use binding::WriteDisposition;
+
 /// Turnstone's application-owned settings page.
 pub const APPLICATION_REFERENCE: &str = "turnstone/application";
 
@@ -72,6 +84,7 @@ fn invalid_choice(setting_id: &str, value: &str, options: &[(&str, &str)]) -> Se
 }
 
 /// Adapts Turnstone's application settings store to the host projection.
+#[derive(Clone)]
 pub struct ApplicationSettingsProvider {
     data_root: PathBuf,
     settings: ApplicationSettings,
@@ -414,8 +427,8 @@ impl SettingsProvider for ApplicationSettingsProvider {
         value: SettingValue,
     ) -> Result<(), SettingsError> {
         Self::check_reference(reference)?;
-
         let mut candidate = self.current_write_base()?;
+
         match (setting_id, value) {
             ("theme.id", SettingValue::Text(value)) => {
                 if let Some(error) = &self.theme_catalog.error {

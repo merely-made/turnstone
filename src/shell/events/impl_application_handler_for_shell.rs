@@ -123,6 +123,10 @@ impl ApplicationHandler<crate::shell::ShellEvent> for Shell {
 
     fn exiting(&mut self, _event_loop: &ActiveEventLoop) {
         self.cancel_native_frames("host exiting");
+        // Fence fetch ingress, cancel its tasks and join the worker, bounded
+        // like the trail release below.
+        self.fetch_handle
+            .close_and_join(std::time::Duration::from_millis(1500));
         // Retire actual renderer resources while their physical hosts still
         // exist, including a normal scenario exit and a primary-window close.
         let windows: Vec<_> = self

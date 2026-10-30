@@ -108,6 +108,19 @@ pub enum Effect {
     },
     /// Persist the session through the persistence port.
     SaveSession,
+    /// Persist the frame/window record for one admitted Settings pane. The
+    /// shell must acknowledge only after the underlying layout write succeeds.
+    PersistSettingsPaneRecord {
+        pane: crate::panes::PaneId,
+        request_id: uuid::Uuid,
+    },
+    /// Complete or refuse a Settings pane save request without claiming that
+    /// queued in-memory state is already durable.
+    SettingsPaneRecordResult {
+        pane: crate::panes::PaneId,
+        request_id: uuid::Uuid,
+        result: Result<(), String>,
+    },
     SaveChromeLayout(crate::chrome_layout::ChromeLayout),
     /// Put `text` on the system clipboard. The clipboard itself stays behind
     /// the shell; neither the app nor the place worker holds one.

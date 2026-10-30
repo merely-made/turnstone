@@ -29,6 +29,10 @@ mod citation_event_history;
 mod drive;
 mod effects;
 mod events;
+mod fetch_port;
+#[cfg(test)]
+#[path = "fetch_actor_receiving_tests.rs"]
+mod fetch_actor_receiving_tests;
 mod foreign_a11y;
 mod gestures;
 mod keys;

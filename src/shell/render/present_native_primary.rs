@@ -20,6 +20,7 @@ impl Shell {
             nodes,
             capture,
             diagnostics,
+            reactive,
         } = staged;
         let (w, h) = identity.dimensions;
         let generation = identity.generation;
@@ -90,6 +91,7 @@ impl Shell {
         }
         // wgpu 30 moved presentation from SurfaceTexture to Queue.
         host.queue().present(frame);
+        reactive.submitted(generation);
         self.pending_native_diagnostics.extend(diagnostics);
         self.main_receipt.presented();
         let compose_elapsed = compose_started.elapsed();

@@ -34,6 +34,7 @@ pub(super) struct StagedWindowFrame {
     pub nodes: usize,
     pub capture: Option<std::path::PathBuf>,
     pub diagnostics: Vec<super::appearance_receipt::PendingCapture>,
+    pub reactive: crate::reactive_render::StagedFrame,
 }
 pub(super) struct QueuedFrame {
     pub identity: Identity,

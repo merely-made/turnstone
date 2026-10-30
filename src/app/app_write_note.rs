@@ -380,6 +380,9 @@ impl App {
             Action::NavigateRelationship(target) => self.navigate_relationship(target),
             Action::RevealRelationship(target) => self.reveal_relationship(target),
             Action::SetPaneBinding(intent) => self.apply_pane_binding(intent),
+            Action::SetSettingsPaneRecord((pane, admission, request_id, config, view)) => {
+                self.set_settings_pane_record(pane, admission, request_id, config, view)
+            },
             Action::RevealGraphMember(member) => self.reveal_graph_member(member),
             Action::ToggleToolPane(kind) => self.toggle_tool_pane(kind),
             Action::SetChromeLayout(layout) => {

@@ -44,6 +44,7 @@ impl Shell {
         };
         #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
         let (surface_device, surface_queue) = (host.device().clone(), host.queue().clone());
+        let reactive_frame = self.reactive_frame_scope(ordinal + 1);
         self.prepare_inline_owners(ordinal + 1, (lw, lh));
         if let Some(area) = self.pane_ime_cursor_area(ordinal as u64 + 1)
             && let Some(lens) = self.lens_windows.get(&id)
@@ -359,6 +360,7 @@ impl Shell {
             nodes: self.app.graph_runtimes.graph().nodes().count(),
             capture,
             diagnostics: source_diagnostics,
+            reactive: reactive_frame.stage(),
         };
         let capture_hint = staged.capture.clone();
         let pending = batch.seal_with_wake(staged, self.native_frame_wake.clone());

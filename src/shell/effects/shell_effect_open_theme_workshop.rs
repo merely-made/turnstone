@@ -31,6 +31,15 @@ impl Shell {
                 },
             },
             Effect::SaveSession => self.save_session(),
+            Effect::PersistSettingsPaneRecord { pane, request_id } => {
+                let result = self.persist_settings_pane_record(pane);
+                self.settings_pane_record_result(pane, request_id, result);
+            },
+            Effect::SettingsPaneRecordResult {
+                pane,
+                request_id,
+                result,
+            } => self.settings_pane_record_result(pane, request_id, result),
             Effect::SaveChromeLayout(layout) => {
                 if let Err(error) = layout.save(&self.app.data_root) {
                     tracing::warn!(%error, "chrome placement could not be saved");

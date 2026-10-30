@@ -332,7 +332,7 @@ impl Shell {
                         Some(live_settings),
                     )
                 });
-                pane.sync(pw, ph);
+                pane.sync_for_pane(&self.app, pane_id, pw, ph);
                 pane.scene(rw, rh, scale)
             },
             Some(PaneContent::Registered(kind))

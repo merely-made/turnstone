@@ -157,6 +157,7 @@ impl FrisketLayout {
             workspace: Workspace::new(tree),
             panes,
             descriptors: BTreeMap::new(),
+            view_states: BTreeMap::new(),
         };
         frame.validate()?;
         Ok(std::borrow::Cow::Owned(frame))

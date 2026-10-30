@@ -16,6 +16,7 @@ use tabard::theme::{
     registry::{Mode, THEME_ID_DEFAULT, ThemeRegistry},
 };
 
+#[derive(Clone, PartialEq)]
 pub(crate) struct ThemeCatalog {
     pub path: PathBuf,
     pub registry: ThemeRegistry,

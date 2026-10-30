@@ -6,18 +6,23 @@
 
 use crate::observe::AppEvent;
 use apparatus_core::{
-    Batch, Cursor, Inspection, InspectionLimits, ObservationMetadata, ObservationStore,
-    RetentionLimits, RunId, SourceId, StoreStats, inspect_batch,
+    Batch, Cursor, Inspection, InspectionLimits, InspectionLine, ObservationMetadata,
+    ObservationStore, RetentionLimits, RunId, SourceId, StoreStats, inspect_batch,
 };
 use std::{
     path::Path,
     time::{Duration, Instant},
 };
 
+mod reactive;
+pub use reactive::{ReactiveAttachError, ReactiveObservationStats};
+
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize)]
 pub struct EventCategory {
     /// Fixed vocabulary only; never format or clone the event's fields.
     pub kind: &'static str,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reactive: Option<crate::reactive_trace::ReactiveTracePayload>,
 }
 
 fn category(event: &AppEvent) -> EventCategory {
@@ -50,7 +55,10 @@ fn category(event: &AppEvent) -> EventCategory {
         // but carries neither raw descriptions nor inferred operation meaning.
         _ => "other-app-event",
     };
-    EventCategory { kind }
+    EventCategory {
+        kind,
+        reactive: None,
+    }
 }
 
 /// Count, accounted encoded bytes and age can be configured for each run.
@@ -82,6 +90,8 @@ pub struct DiagnosticObservations {
     started: Instant,
     failure: Option<&'static str>,
     inspection_limits: Result<InspectionLimits, &'static str>,
+    run_id: RunId,
+    reactive: reactive::ReactiveIngress,
 }
 
 pub fn inspection_limits_from(
@@ -106,18 +116,25 @@ pub fn inspection_limits_from(
 
 impl DiagnosticObservations {
     pub fn new(run: RunId, limits: RetentionLimits) -> Self {
+        let run_id = run.clone();
         Self {
             store: ObservationStore::new(run, SourceId::from("turnstone.app-event-fanout"), limits),
             started: Instant::now(),
             failure: None,
             inspection_limits: inspection_limits_from(|_| None),
+            run_id,
+            reactive: reactive::ReactiveIngress::default(),
         }
     }
 
     pub fn from_env() -> Self {
+        Self::from_env_for_run(RunId(uuid::Uuid::new_v4().to_string()))
+    }
+
+    pub fn from_env_for_run(run: RunId) -> Self {
         let limits = limits_from(|key| std::env::var(key).ok());
         let mut observations = Self::new(
-            RunId(uuid::Uuid::new_v4().to_string()),
+            run,
             limits.unwrap_or(RetentionLimits {
                 max_records: 0,
                 max_bytes: 0,
@@ -136,17 +153,38 @@ impl DiagnosticObservations {
             return Err(failure.to_owned());
         }
         let display = self.inspection_limits.map_err(str::to_owned)?;
+        self.drain_reactive(4_096);
         let retention = self.store.limits();
         let mut cursor = self.cursor();
         let batch = self
             .read(&mut cursor, retention.max_records.max(1))
             .map_err(|_| "diagnostic inspection read failed".to_owned())?;
-        Ok(inspect_batch(&batch, retention, display, |payload| {
-            payload.kind
-        }))
+        let mut inspection = inspect_batch(&batch, retention, display, |payload| payload.kind);
+        let coverage = self.reactive.stats(&self.store);
+        let text = format!(
+            "Reactive: attached {}; ingress-loss {}; store-loss {}; malformed {}; gap-candidates {}; omitted-causes {}; join-evictions {}; edge-drops {}; renderer-gaps {}",
+            coverage.attached,
+            coverage
+                .ingress_full_loss
+                .saturating_add(coverage.ingress_disabled_loss)
+                .saturating_add(coverage.ingress_other_loss),
+            coverage.store_rejected,
+            coverage.malformed_rejected,
+            coverage.producer_gap_candidates,
+            coverage.causes_omitted,
+            coverage.join_evicted,
+            coverage.pending_edge_dropped,
+            coverage.renderer_coverage_gaps,
+        );
+        inspection.lines.push(InspectionLine {
+            id: "reactive-coverage".to_owned(),
+            text: text.chars().take(display.max_text_chars).collect(),
+        });
+        Ok(inspection)
     }
 
     pub fn record(&mut self, event: &AppEvent) {
+        self.drain_reactive(4_096);
         let payload = category(event);
         // This small static category has a bounded JSON encoding. Its encoded
         // length is the actual serializer result, not raw event size or a guess.
@@ -165,6 +203,7 @@ impl DiagnosticObservations {
         {
             self.failure = Some("diagnostic observation admission failed");
         }
+        self.reactive.reconcile_store_floor(&self.store);
     }
 
     /// UI consumers receive independent cursors; automation keeps its own stream.
@@ -172,19 +211,68 @@ impl DiagnosticObservations {
         self.store.cursor()
     }
     pub fn stats(&mut self) -> Result<StoreStats, apparatus_core::StoreError> {
-        self.store.expire(self.started.elapsed())
+        self.drain_reactive(4_096);
+        let stats = self.store.expire(self.started.elapsed());
+        self.reactive.reconcile_store_floor(&self.store);
+        stats
     }
     pub fn read(
         &mut self,
         cursor: &mut Cursor,
         max_records: usize,
     ) -> Result<Batch<EventCategory>, apparatus_core::StoreError> {
-        self.store.read(cursor, self.started.elapsed(), max_records)
+        self.drain_reactive(4_096);
+        let batch = self.store.read(cursor, self.started.elapsed(), max_records);
+        self.reactive.reconcile_store_floor(&self.store);
+        batch
+    }
+
+    /// Attach the receiver to this run. Boot identity mismatch is rejected so
+    /// receipts cannot silently merge events from a different tracing setup.
+    pub fn attach_reactive(
+        &mut self,
+        receiver: crate::reactive_trace::ReactiveTraceReceiver,
+        expected_boot: &apparatus_core::SourceBootId,
+    ) -> Result<(), ReactiveAttachError> {
+        self.reactive.attach(receiver, expected_boot, &self.run_id)
+    }
+
+    pub(crate) fn mark_reactive_attach_failure(&mut self) {
+        self.failure = Some("reactive diagnostics receiver attachment failed");
+    }
+
+    pub fn reactive_stats(&mut self) -> ReactiveObservationStats {
+        self.drain_reactive(4_096);
+        self.reactive.stats(&self.store)
+    }
+
+    pub(crate) fn drain_reactive(&mut self, max_records: usize) {
+        if self.failure.is_some() {
+            return;
+        }
+        if self
+            .reactive
+            .drain(&mut self.store, self.started.elapsed(), max_records)
+            .is_err()
+        {
+            self.failure = Some("reactive diagnostic observation admission failed");
+        }
     }
 
     fn export(&mut self, directory: &Path) -> Result<(), String> {
         if let Some(failure) = self.failure {
             return Err(failure.to_owned());
+        }
+        self.drain_reactive(4_096);
+        if let Some(failure) = self.failure {
+            return Err(failure.to_owned());
+        }
+        if self
+            .reactive
+            .record_coverage(&mut self.store, self.started.elapsed())
+            .is_err()
+        {
+            return Err("reactive coverage receipt admission failed".to_owned());
         }
         let mut cursor = self.cursor();
         // One bounded batch includes all retained records and any earlier loss.
@@ -397,7 +485,8 @@ mod tests {
     #[test]
     fn successful_requested_receipt_exports_records_and_loss() {
         let directory = tempfile::tempdir().unwrap();
-        let mut observed = DiagnosticObservations::new(RunId::from("receipt"), limits(1));
+        // The export's reactive coverage record takes one retained slot.
+        let mut observed = DiagnosticObservations::new(RunId::from("receipt"), limits(2));
         observed.record(&AppEvent::WindowOpened);
         observed.record(&AppEvent::WindowClosed);
         observed
@@ -415,6 +504,7 @@ mod tests {
         let json: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
         assert_eq!(json["stats"]["loss"]["evicted"], 1);
         assert_eq!(json["records"][0]["payload"]["kind"], "window-closed");
+        assert_eq!(json["records"][1]["payload"]["kind"], "reactive-coverage");
         assert_eq!(json["gaps"][0]["first_sequence"], 1);
     }
 

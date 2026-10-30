@@ -68,6 +68,7 @@ mod saved_source_arms;
 mod scene_arms;
 #[cfg(test)]
 mod scene_tests;
+mod settings_pane_record;
 mod source_capture_arms;
 #[cfg(test)]
 mod source_capture_persistence_tests;

@@ -5,6 +5,18 @@ use super::*;
 
 impl Shell {
     pub fn new(proxy: EventLoopProxy<crate::shell::ShellEvent>, address: Option<String>) -> Self {
+        Self::new_with_diagnostic_run(
+            proxy,
+            address,
+            apparatus_core::RunId(uuid::Uuid::new_v4().to_string()),
+        )
+    }
+
+    pub(crate) fn new_with_diagnostic_run(
+        proxy: EventLoopProxy<crate::shell::ShellEvent>,
+        address: Option<String>,
+        run: apparatus_core::RunId,
+    ) -> Self {
         let client_limits = crate::client_limits::BrowserClientLimits::from_environment()
             .expect("Turnstone client limit configuration is invalid");
         let (mut app, boot_effects) = App::boot(address.as_deref());
@@ -23,8 +35,7 @@ impl Shell {
                 ApplicationSettingsProvider::from_failed_load(&app.data_root, error.to_string())
             },
         };
-        let live_settings = LiveSettingsHandle::new(initial_provider.settings());
-        live_settings.publish_provider(&initial_provider);
+        let live_settings = LiveSettingsHandle::from_provider(initial_provider);
         app.apply_chrome_settings_snapshot(&live_settings.snapshot());
         let policy_path = crate::web_policy::default_policy_path(&app.data_root);
         let policy_registry = crate::web_policy::PermissionRegistry::load(
@@ -71,9 +82,17 @@ impl Shell {
         let network_offline = crate::offline::enabled();
         let offline_attempts = Arc::new(std::sync::atomic::AtomicUsize::new(0));
         let (fetch_handle, fetch_rx) = if network_offline {
-            crate::offline::spawn(fetch_wake, offline_attempts.clone())
+            let (handle, updates) = crate::offline::spawn(fetch_wake, offline_attempts.clone());
+            (fetch_port::FetchPort::Offline(handle), updates)
         } else {
-            fetch::spawn_fetcher_with_policy(fetch_wake, stores.clone(), client_limits.fetch)
+            let (actor, updates) = fetch::spawn_fetcher_with_admission(
+                fetch_wake,
+                stores.clone(),
+                client_limits.fetch,
+                client_limits.admission,
+            )
+            .expect("Turnstone could not start its fetch actor");
+            (fetch_port::FetchPort::Network(actor), updates)
         };
         let blocking_fetch: Arc<dyn fetch::Fetch> = if network_offline {
             Arc::new(crate::offline::NoNetwork(offline_attempts.clone()))
@@ -350,7 +369,7 @@ impl Shell {
             address_event_history: Default::default(),
             reader_event_history: Default::default(),
             diagnostic_observations:
-                crate::diagnostic_observations::DiagnosticObservations::from_env(),
+                crate::diagnostic_observations::DiagnosticObservations::from_env_for_run(run),
             shared_out_dir: shared_out_dir_from_env(),
             pending_capture: None,
             pending_capture_readback: None,

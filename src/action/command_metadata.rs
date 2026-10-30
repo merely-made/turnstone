@@ -183,6 +183,7 @@ pub(crate) fn command_metadata(action: &Action) -> (EffectClass, bool) {
         | Action::NavigateRelationship(..)
         | Action::RevealRelationship(..)
         | Action::SetPaneBinding(..)
+        | Action::SetSettingsPaneRecord(..)
         | Action::RevealGraphMember(..)
         | Action::ToggleToolPane(..)
         | Action::SetChromeLayout(..)

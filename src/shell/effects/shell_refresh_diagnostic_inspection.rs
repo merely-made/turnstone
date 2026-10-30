@@ -4,9 +4,66 @@
 use super::*;
 
 impl Shell {
+    pub(crate) fn reactive_frame_scope(&self, slot: usize) -> crate::reactive_render::FrameScope {
+        let window = if slot == 0 {
+            self.window.as_ref()
+        } else {
+            self.lens_windows
+                .values()
+                .find(|window| window.ordinal + 1 == slot)
+                .map(|window| &window.window)
+        };
+        let scope = window.map_or_else(
+            || {
+                crate::reactive_render::mark_input_gap();
+                crate::reactive_render::FrameScope::begin(0)
+            },
+            crate::reactive_render::FrameScope::native,
+        );
+        let space = if slot == 0 {
+            crate::action::SpaceRef::Primary
+        } else {
+            crate::action::SpaceRef::Lens(slot - 1)
+        };
+        let visible = self
+            .app
+            .space(space)
+            .and_then(|layout| layout.outer_workspace().ok())
+            .map(|frame| frame.active_ids())
+            .unwrap_or_default();
+        for id in visible {
+            let pane = crate::panes::PaneId(id.0);
+            if slot == 0
+                && self
+                    .app
+                    .maximized
+                    .is_some_and(|maximized| maximized != pane)
+            {
+                continue;
+            }
+            if let Some(pane) = self.renderers.settings.get(&pane) {
+                pane.include_reactive_mutations();
+            }
+        }
+        scope
+    }
+
+    pub(crate) fn attach_reactive_trace(
+        &mut self,
+        receiver: crate::reactive_trace::ReactiveTraceReceiver,
+        boot: &apparatus_core::SourceBootId,
+    ) -> Result<(), crate::diagnostic_observations::ReactiveAttachError> {
+        let result = self.diagnostic_observations.attach_reactive(receiver, boot);
+        if result.is_err() {
+            self.diagnostic_observations.mark_reactive_attach_failure();
+        }
+        result
+    }
+
     /// Refresh only the value-facing projection; diagnostics authority remains
     /// here, and Gloss reads its own independent immutable batch.
     pub(in super::super) fn refresh_diagnostic_inspection(&mut self) {
+        let _ = self.diagnostic_observations.drain_reactive(4096);
         let requested = self.app.frisket.iter_leaves().any(|(_, content, _)| {
             content
                 .composition()
@@ -262,7 +319,10 @@ impl Shell {
             if self.app.session_load_refused()
                 && !matches!(
                     &effect,
-                    Effect::SwitchSession { .. } | Effect::Redraw | Effect::ClosePlace { .. }
+                    Effect::SwitchSession { .. }
+                        | Effect::Redraw
+                        | Effect::ClosePlace { .. }
+                        | Effect::SettingsPaneRecordResult { .. }
                 )
             {
                 continue;
@@ -279,6 +339,8 @@ impl Shell {
                 | Effect::OpenAlembicWorkshop
                 | Effect::ReplaceGeminiTrust { .. }
                 | Effect::SaveSession
+                | Effect::PersistSettingsPaneRecord { .. }
+                | Effect::SettingsPaneRecordResult { .. }
                 | Effect::SaveChromeLayout(..)
                 | Effect::SaveGraphFolds { .. }
                 | Effect::CopyText(..)

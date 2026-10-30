@@ -4,13 +4,15 @@
 //! Product launch policy for ordinary fetches and body-less document loads.
 //! Micron's separate native wire/envelope/body settings live in `nomadnet`.
 
-use fetch::ClientFetchPolicy;
+use fetch::{ClientFetchPolicy, FetchActorPolicy};
 use mere_document_lanes::ResourceFetchPolicy;
 use std::time::Duration;
 
 #[derive(Clone, Copy, Debug, Default)]
 pub struct BrowserClientLimits {
     pub fetch: ClientFetchPolicy,
+    /// Fetch actor capacity, reserved before a command is enqueued.
+    pub admission: FetchActorPolicy,
     pub resources: ResourceFetchPolicy,
 }
 
@@ -105,7 +107,28 @@ impl BrowserClientLimits {
         .map_err(|_| {
             "TURNSTONE_RESOURCE_MAX_CONCURRENT_FETCHES exceeds a request count".to_string()
         })?;
+        result.admission.max_active = usize::try_from(number(
+            &mut get,
+            "TURNSTONE_FETCH_MAX_ACTIVE",
+            result.admission.max_active as u64,
+            true,
+        )?)
+        .map_err(|_| "TURNSTONE_FETCH_MAX_ACTIVE exceeds a request count".to_string())?;
+        result.admission.max_pending = usize::try_from(number(
+            &mut get,
+            "TURNSTONE_FETCH_MAX_PENDING",
+            result.admission.max_pending as u64,
+            true,
+        )?)
+        .map_err(|_| "TURNSTONE_FETCH_MAX_PENDING exceeds a request count".to_string())?;
+        result.admission.queue_timeout = Duration::from_millis(number(
+            &mut get,
+            "TURNSTONE_FETCH_QUEUE_TIMEOUT_MS",
+            result.admission.queue_timeout.as_millis() as u64,
+            false,
+        )?);
         result.fetch.validate()?;
+        result.admission.validate()?;
         Ok(result)
     }
 }
@@ -156,6 +179,7 @@ mod tests {
         assert_eq!(limits.fetch.max_redirects, 0);
         assert_eq!(limits.fetch.max_http_redirects, 20);
         assert_eq!(limits.resources.max_concurrent_fetches, 0);
+        assert_eq!(limits.admission, FetchActorPolicy::default());
         assert!(
             BrowserClientLimits::from_lookup(|name| Ok(
                 (name == "TURNSTONE_FETCH_MAX_PAGE_BYTES").then(|| "0".into())
@@ -165,6 +189,44 @@ mod tests {
         assert!(
             BrowserClientLimits::from_lookup(|name| Ok(
                 (name == "TURNSTONE_RESOURCE_TIMEOUT_MS").then(|| "unlimited".into())
+            ))
+            .is_err()
+        );
+    }
+
+    #[test]
+    fn fetch_actor_admission_is_configurable_and_zero_capacity_is_explicit() {
+        let limits = BrowserClientLimits::from_lookup(|name| {
+            Ok(match name {
+                "TURNSTONE_FETCH_MAX_ACTIVE" => Some("3".into()),
+                "TURNSTONE_FETCH_MAX_PENDING" => Some("0".into()),
+                "TURNSTONE_FETCH_QUEUE_TIMEOUT_MS" => Some("250".into()),
+                _ => None,
+            })
+        })
+        .unwrap();
+        assert_eq!(
+            limits.admission,
+            FetchActorPolicy {
+                max_active: 3,
+                max_pending: 0,
+                queue_timeout: Duration::from_millis(250),
+            }
+        );
+        let disabled = BrowserClientLimits::from_lookup(|name| {
+            Ok((name == "TURNSTONE_FETCH_MAX_ACTIVE").then(|| "0".into()))
+        })
+        .unwrap();
+        assert_eq!(disabled.admission.max_active, 0);
+        assert!(
+            BrowserClientLimits::from_lookup(|name| Ok(
+                (name == "TURNSTONE_FETCH_QUEUE_TIMEOUT_MS").then(|| "0".into())
+            ))
+            .is_err()
+        );
+        assert!(
+            BrowserClientLimits::from_lookup(|name| Ok(
+                (name == "TURNSTONE_FETCH_MAX_PENDING").then(|| "-1".into())
             ))
             .is_err()
         );

@@ -213,8 +213,6 @@ pub(super) fn inspect_exited_structured_copy() {
     assert_eq!(source_session, session);
     let admissions: Vec<crate::saved_sources::Admission> =
         serde_json::from_value(sources["admissions"].clone()).unwrap();
-    let entries: Vec<crate::saved_sources::Entry> =
-        serde_json::from_value(sources["entries"].clone()).unwrap();
     assert!(!admissions.is_empty(), "no admitted capture exercised");
     let clips: Vec<crate::research::ClipAdmission> =
         serde_json::from_value(sources["retained_admissions"].clone()).unwrap();
@@ -253,10 +251,10 @@ pub(super) fn inspect_exited_structured_copy() {
             admission.key.clone(),
         ));
         if source_selected {
-            assert!(
-                entries.iter().any(|entry| entry.admission == *admission
-                    && entry.content.as_ref() == Some(&content))
-            );
+            // The current research worker reads the sealed owner directly;
+            // the legacy saved-source cache need not contain an entry. The
+            // full owner-derived inventory is checked against the saved result
+            // below, including versions and record evidence hashes.
             let target = crate::research::Target::Capture(crate::saved_sources::Target {
                 key: admission.key.clone(),
                 text_hash: content.text_hash.clone(),

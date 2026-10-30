@@ -36,6 +36,15 @@ pub(crate) use command_metadata::command_metadata;
 use crate::panes::{PaneKindId, PaneSource};
 use mere::canvas::controls::CanvasCommand;
 
+/// One admitted Settings pane composition/view save request.
+pub type SettingsPaneRecordIntent = (
+    crate::panes::PaneId,
+    uuid::Uuid,
+    uuid::Uuid,
+    crate::panes::PaneConfig,
+    crate::panes::PaneViewState,
+);
+
 /// Manifest identities written by one explicit source-document capture.
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct StoredSourceDocument {

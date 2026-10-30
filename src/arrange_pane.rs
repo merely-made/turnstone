@@ -181,3 +181,7 @@ pub(crate) use physics_refusal_tree::physics_refusal_tree;
 mod arrange_pane_new;
 #[path = "arrange_pane/impl_default_for_arrange_pane.rs"]
 mod impl_default_for_arrange_pane;
+
+#[cfg(test)]
+#[path = "arrange_pane/identity_tests.rs"]
+mod identity_tests;

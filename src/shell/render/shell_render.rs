@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MPL-2.0
 
 use super::*;
-
 impl Shell {
     /// Build the standalone frame scene only when the window plan needs it.
     /// Shared native composition paints after installing current producers.
@@ -19,6 +18,9 @@ impl Shell {
     /// layer (transparent-cleared, alpha-blended) above when the omnibar is
     /// open. Chains another redraw while the canvas is still animating.
     pub(in super::super) fn render(&mut self) -> bool {
+        for action in self.live_settings.take_actions() {
+            self.act(action);
+        }
         self.refresh_retained_clip_playback();
         self.poll_capture_readback();
         let diagnostics = std::mem::take(&mut self.pending_native_diagnostics);
@@ -69,6 +71,7 @@ impl Shell {
             self.request_native_frame_redraws();
             return presented;
         }
+        let reactive_frame = self.reactive_frame_scope(0);
         self.refresh_diagnostic_inspection();
         // Frame cost, off by default (the shell's own filter is `info`). Turn
         // it on with `RUST_LOG=turnstone::shell::render=debug` when a window
@@ -82,8 +85,6 @@ impl Shell {
         // the hovered surface on frame wakes as well as immediately on input.
         self.apply_pending_surface_cursor();
         if self.poll_live_settings() {
-            // A SettingsPane has already persisted the write. Refresh every
-            // affected retained surface in this and any lens window now.
             self.request_redraw();
         }
         let (w, h) = (self.width.max(1), self.height.max(1));
@@ -491,6 +492,7 @@ impl Shell {
             nodes: self.app.graph_runtimes.graph().nodes().count(),
             capture: self.pending_capture.take(),
             diagnostics: source_diagnostics,
+            reactive: reactive_frame.stage(),
         };
         let capture_hint = staged.capture.clone();
         let pending = batch.seal_with_wake(staged, self.native_frame_wake.clone());
