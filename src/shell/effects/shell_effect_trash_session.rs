@@ -36,6 +36,7 @@ impl Shell {
                 self.clear_surface_content();
                 self.pending_surface_spawns.clear();
                 self.refuse_lens_captures_before_clear("session trashed");
+                self.cancel_native_frames("session window set retired");
                 self.lens_windows.clear();
                 self.lens_divider_drag = None;
                 self.pending_windows.clear();
@@ -68,6 +69,7 @@ impl Shell {
                 self.clear_surface_content();
                 self.pending_surface_spawns.clear();
                 self.refuse_lens_captures_before_clear("session switched");
+                self.cancel_native_frames("session window set retired");
                 self.lens_windows.clear();
                 self.lens_divider_drag = None;
                 self.pending_windows.clear();

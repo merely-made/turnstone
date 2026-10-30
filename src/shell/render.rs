@@ -58,3 +58,6 @@ pub(super) use read_texture_rgba::read_texture_rgba;
 #[path = "render/lens_content_frame.rs"]
 mod lens_content_frame;
 pub(super) use lens_content_frame::lens_content_frame;
+
+#[path = "render/present_native_primary.rs"]
+mod present_native_primary;

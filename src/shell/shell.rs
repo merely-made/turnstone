@@ -11,9 +11,11 @@ pub struct Shell {
     /// the shell alone polls and applies the typed chrome snapshot.
     pub(super) live_settings: LiveSettingsHandle,
     /// Wakes the loop when the physics or fetch actor has news.
-    pub(super) proxy: EventLoopProxy<()>,
+    pub(super) proxy: EventLoopProxy<crate::shell::ShellEvent>,
     /// Proxy callbacks admit one actor drain at the end of the native batch.
     pub(super) actor_wake_pending: bool,
+    pub(super) native_frames: super::native_frames::NativeFrameQueue,
+    pub(super) native_frame_wake: armillary::Wake,
     /// The fetch actor's command handle; dropping it ends the actor.
     pub(super) fetch_handle: armillary::ActorHandle<FetchCommand>,
     pub(super) network_offline: bool,

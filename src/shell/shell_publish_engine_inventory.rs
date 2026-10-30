@@ -116,7 +116,7 @@ impl Shell {
                 host.device().clone(),
                 host.queue().clone(),
                 Arc::new(move || {
-                    let _ = proxy.send_event(());
+                    let _ = proxy.send_event(crate::shell::ShellEvent::ActorWake);
                 }),
             )
             .map_err(|error| error.to_string())?,

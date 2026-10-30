@@ -16,7 +16,7 @@ impl Shell {
             self.primary_recovery = Some(WindowRecovery::new(
                 self.render_recovery.as_ref().expect("shared owner"),
                 Arc::new(move || {
-                    let _ = proxy.send_event(());
+                    let _ = proxy.send_event(crate::shell::ShellEvent::ActorWake);
                 }),
             ));
         }
@@ -198,6 +198,7 @@ impl Shell {
             return false;
         };
         if let Some(loss) = owner.status().loss().cloned() {
+            self.cancel_native_frames("render device generation lost");
             self.cue_frames.clear();
             let mut can_replace = true;
             #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
@@ -355,6 +356,7 @@ impl Shell {
         source_key: u64,
         failure: genet_render_host::RasterizeFailure,
     ) {
+        self.cancel_native_window(window, "raster frame refused");
         let failure = if matches!(
             &failure,
             genet_render_host::RasterizeFailure::ProviderError(_)
@@ -380,6 +382,7 @@ impl Shell {
     }
 
     pub(super) fn detach_render_surface(&mut self, window: u64) {
+        self.cancel_native_frames("render surface detached");
         let generation = if window == 0 {
             self.host
                 .as_ref()

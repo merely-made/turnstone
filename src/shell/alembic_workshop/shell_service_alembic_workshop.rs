@@ -40,7 +40,7 @@ impl Shell {
                     state.choices = self.alembic_workshop_choices(&owner);
                     let wake_proxy = self.proxy.clone();
                     let wake: armillary::Wake = Arc::new(move || {
-                        let _ = wake_proxy.send_event(());
+                        let _ = wake_proxy.send_event(crate::shell::ShellEvent::ActorWake);
                     });
                     let host = WinitHost::with_shared_render_core(
                         HostOptions {

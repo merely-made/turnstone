@@ -137,12 +137,12 @@ pub(super) fn safe_initial(update: &TreeUpdate) -> TreeUpdate {
 pub(crate) fn install(
     window: &Window,
     queue: ActionQueue,
-    wake: winit::event_loop::EventLoopProxy<()>,
+    wake: winit::event_loop::EventLoopProxy<crate::shell::ShellEvent>,
     name: &str,
 ) -> genet_winit_host::AccessKitBridge {
     let mut bridge = genet_winit_host::AccessKitBridge::with_action_handler(
         move || {
-            let _ = wake.send_event(());
+            let _ = wake.send_event(crate::shell::ShellEvent::ActorWake);
         },
         move |request| {
             queue

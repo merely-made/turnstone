@@ -122,6 +122,7 @@ impl Shell {
                 self.native_input_focus(ordinal as u64 + 1, false);
                 self.retire_render_receivers(ordinal as u64 + 1);
                 self.window_focus.remove(&(ordinal as u64 + 1));
+                self.native_frames.cancel(id);
                 self.lens_windows.remove(&id);
                 self.outer_frames.borrow_mut().remove(&(ordinal + 1));
                 let closed_panes: Vec<_> = self

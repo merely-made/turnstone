@@ -57,7 +57,7 @@ impl Shell {
                     state.edit_definition(&resolved.theme, resolved.resolved.theme_mode)?;
                     let wake_proxy = self.proxy.clone();
                     let wake: Arc<dyn Fn() + Send + Sync> = Arc::new(move || {
-                        let _ = wake_proxy.send_event(());
+                        let _ = wake_proxy.send_event(crate::shell::ShellEvent::ActorWake);
                     });
                     let hooks = native_hooks(|artifact| {
                         let extension = if artifact.format == tabard_workshop::ExportFormat::Css {

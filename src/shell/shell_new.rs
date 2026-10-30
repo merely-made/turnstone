@@ -4,7 +4,7 @@
 use super::*;
 
 impl Shell {
-    pub fn new(proxy: EventLoopProxy<()>, address: Option<String>) -> Self {
+    pub fn new(proxy: EventLoopProxy<crate::shell::ShellEvent>, address: Option<String>) -> Self {
         let client_limits = crate::client_limits::BrowserClientLimits::from_environment()
             .expect("Turnstone client limit configuration is invalid");
         let (mut app, boot_effects) = App::boot(address.as_deref());
@@ -55,7 +55,7 @@ impl Shell {
         // the physics actor does.
         let fetch_proxy = proxy.clone();
         let fetch_wake: armillary::Wake = Arc::new(move || {
-            let _ = fetch_proxy.send_event(());
+            let _ = fetch_proxy.send_event(crate::shell::ShellEvent::ActorWake);
         });
         let (nomadnet_handle, nomadnet_rx) = nomadnet_fetch::spawn(Arc::clone(&fetch_wake));
         let (micron_submission_handle, micron_submission_rx) =
@@ -85,7 +85,7 @@ impl Shell {
 
         let download_proxy = proxy.clone();
         let download_wake: armillary::Wake = Arc::new(move || {
-            let _ = download_proxy.send_event(());
+            let _ = download_proxy.send_event(crate::shell::ShellEvent::ActorWake);
         });
         let (download_handle, download_rx) = crate::download::spawn_downloads(download_wake);
 
@@ -93,7 +93,7 @@ impl Shell {
         // loop the same way; it answers its spawn with the initial list.
         let bin_proxy = proxy.clone();
         let bin_wake: armillary::Wake = Arc::new(move || {
-            let _ = bin_proxy.send_event(());
+            let _ = bin_proxy.send_event(crate::shell::ShellEvent::ActorWake);
         });
         let (bin_handle, bin_rx) = crate::recycle::spawn_bin_for_session(
             bin_wake,
@@ -105,7 +105,7 @@ impl Shell {
         // the same wake shape.
         let trail_proxy = proxy.clone();
         let trail_wake: armillary::Wake = Arc::new(move || {
-            let _ = trail_proxy.send_event(());
+            let _ = trail_proxy.send_event(crate::shell::ShellEvent::ActorWake);
         });
         let capture_library = crate::place::captured_collection::LocalCaptureLibrary::default();
         let (trail_handle, trail_rx) = crate::trail_memory::spawn_trail_for_session(
@@ -117,12 +117,18 @@ impl Shell {
         );
         let trail_handle = Arc::new(trail_handle);
         let research_proxy = proxy.clone();
-        let research_wake: armillary::Wake = Arc::new(move || { let _ = research_proxy.send_event(()); });
-        let research_worker = crate::research_search::Worker::spawn(app.research.clone(), trail_handle.clone(), research_wake);
+        let research_wake: armillary::Wake = Arc::new(move || {
+            let _ = research_proxy.send_event(crate::shell::ShellEvent::ActorWake);
+        });
+        let research_worker = crate::research_search::Worker::spawn(
+            app.research.clone(),
+            trail_handle.clone(),
+            research_wake,
+        );
 
         let place_proxy = proxy.clone();
         let place_wake: armillary::Wake = Arc::new(move || {
-            let _ = place_proxy.send_event(());
+            let _ = place_proxy.send_event(crate::shell::ShellEvent::ActorWake);
         });
         let place_settings = crate::place::worker::PlaceWorkerSettings {
             capture_library: capture_library.clone(),
@@ -140,7 +146,7 @@ impl Shell {
         let custody_generation = Arc::new(std::sync::atomic::AtomicU64::new(1));
         let custody_proxy = proxy.clone();
         let custody_wake: Arc<dyn Fn() + Send + Sync> = Arc::new(move || {
-            let _ = custody_proxy.send_event(());
+            let _ = custody_proxy.send_event(crate::shell::ShellEvent::ActorWake);
         });
         let custody_setup = match crate::custody_binding::Setup::connect(
             custody_generation.clone(),
@@ -160,7 +166,7 @@ impl Shell {
         let mut content_engines = content_engines_with_client_limits(client_limits);
         let knot_proxy = proxy.clone();
         let knot_wake: Arc<dyn Fn() + Send + Sync> = Arc::new(move || {
-            let _ = knot_proxy.send_event(());
+            let _ = knot_proxy.send_event(crate::shell::ShellEvent::ActorWake);
         });
         let mut knot_clip = None;
         let mut knot_notes_root = None;
@@ -230,7 +236,7 @@ impl Shell {
         app.sync_research_context();
         let answers_proxy = proxy.clone();
         let answers_wake: armillary::Wake = Arc::new(move || {
-            let _ = answers_proxy.send_event(());
+            let _ = answers_proxy.send_event(crate::shell::ShellEvent::ActorWake);
         });
         #[cfg(feature = "inference")]
         surface_providers
@@ -265,13 +271,19 @@ impl Shell {
         }
         let redshank_proxy = proxy.clone();
         app.redshank.set_wake(Arc::new(move || {
-            let _ = redshank_proxy.send_event(());
+            let _ = redshank_proxy.send_event(crate::shell::ShellEvent::ActorWake);
         }));
+        let native_proxy = proxy.clone();
+        let native_frame_wake: armillary::Wake = Arc::new(move || {
+            let _ = native_proxy.send_event(crate::shell::ShellEvent::NativeFrameReady);
+        });
         let mut shell = Self {
             app,
             live_settings,
             proxy,
             actor_wake_pending: false,
+            native_frames: Default::default(),
+            native_frame_wake,
             fetch_handle,
             network_offline,
             offline_attempts,

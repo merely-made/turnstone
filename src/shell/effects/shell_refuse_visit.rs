@@ -41,7 +41,7 @@ impl Shell {
         };
         let proxy = self.proxy.clone();
         let wake: std::sync::Arc<dyn Fn() + Send + Sync> = std::sync::Arc::new(move || {
-            let _ = proxy.send_event(());
+            let _ = proxy.send_event(crate::shell::ShellEvent::ActorWake);
         });
         let opened = result.and_then(|dial| crate::knot_authoring::visit_holder(*dial, wake));
         match opened {
