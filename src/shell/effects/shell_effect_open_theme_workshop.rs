@@ -94,12 +94,13 @@ impl Shell {
             },
             Effect::ImportClipPackage(path) => {
                 let admitted = self.app.clip_destination().and_then(|root| {
-                    crate::retained_clip::import_sealed(
+                    crate::retained_clip::import_sealed_with_limits(
                         &root,
                         &path,
                         crate::retained_clip::limits()?,
                         crate::denizen::now_ms(),
                         self.app.clip_sealer()?,
+                        &self.app.research.storage_limits()?,
                     )
                 });
                 match admitted {
@@ -114,11 +115,12 @@ impl Shell {
                 use crate::retained_clip::ClipRequest;
                 let result = self.app.clip_destination().and_then(|root| match control {
                     ClipRequest::Play(id) => {
-                        let clip = crate::retained_clip::read_sealed(
+                        let clip = crate::retained_clip::read_sealed_with_limits(
                             &root,
                             id,
                             crate::retained_clip::limits()?,
                             self.app.clip_sealer()?,
+                            &self.app.research.storage_limits()?,
                         )?;
                         let crate::retained_clip::ClipBody::Voice(bytes) = clip.body else {
                             return Err("This clip has no voice body".into());
@@ -138,11 +140,12 @@ impl Shell {
             },
             Effect::ChooseClipExportFile { clip } => {
                 let available = self.app.clip_destination().and_then(|root| {
-                    crate::retained_clip::read_sealed(
+                    crate::retained_clip::read_sealed_with_limits(
                         &root,
                         clip,
                         crate::retained_clip::limits()?,
                         self.app.clip_sealer()?,
+                        &self.app.research.storage_limits()?,
                     )
                     .map(|_| ())
                 });
@@ -170,13 +173,14 @@ impl Shell {
                 replace,
             } => {
                 let result = self.app.clip_destination().and_then(|root| {
-                    crate::retained_clip::export_sealed(
+                    crate::retained_clip::export_sealed_with_limits(
                         &root,
                         clip,
                         &path,
                         crate::retained_clip::limits()?,
                         replace,
                         self.app.clip_sealer()?,
+                        &self.app.research.storage_limits()?,
                     )
                 });
                 match result {

@@ -11,9 +11,11 @@ pub struct Shell {
     /// the shell alone polls and applies the typed chrome snapshot.
     pub(super) live_settings: LiveSettingsHandle,
     /// Wakes the loop when the physics or fetch actor has news.
-    pub(super) proxy: EventLoopProxy<()>,
+    pub(super) proxy: EventLoopProxy<crate::shell::ShellEvent>,
     /// Proxy callbacks admit one actor drain at the end of the native batch.
     pub(super) actor_wake_pending: bool,
+    pub(super) native_frames: super::native_frames::NativeFrameQueue,
+    pub(super) native_frame_wake: armillary::Wake,
     /// The fetch actor's command handle; dropping it ends the actor.
     pub(super) fetch_handle: armillary::ActorHandle<FetchCommand>,
     pub(super) network_offline: bool,
@@ -47,6 +49,7 @@ pub struct Shell {
     /// The trail's recall answers (RecallHits / RecallFailed), drained beside
     /// the bin's.
     pub(super) trail_rx: Receiver<Update>,
+    pub(super) research_worker: crate::research_search::Worker,
     /// The retained-place worker. It owns every Gemot, Commons, chat, group,
     /// and redb handle for the active session.
     pub(super) place_handle: crate::place_service::PlacePort,
@@ -107,6 +110,8 @@ pub struct Shell {
     /// received them. Automation drains this copy, so its assertions do not
     /// compete with trail memory for the app's one event stream.
     pub(super) observed_events: VecDeque<String>,
+    pub(super) address_event_history: super::citation_event_history::AddressEventHistory,
+    pub(super) reader_event_history: super::citation_event_history::AddressEventHistory,
     pub(super) diagnostic_observations: crate::diagnostic_observations::DiagnosticObservations,
     pub(super) shared_out_dir: std::path::PathBuf,
     /// A capture the next `render` fulfills from the very views it presents

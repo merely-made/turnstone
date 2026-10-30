@@ -250,6 +250,14 @@ impl App {
     /// changed. Cached hits keep showing until the answer lands, so the lane
     /// does not flicker empty between keystrokes.
     pub(super) fn refresh_omnibar(&mut self) -> Vec<Effect> {
+        if self.omnibar.open && matches!(self.omnibar.mode, OmnibarMode::SavedSources) {
+            let mut effects = if matches!(self.research_search.view, super::research_search_state::View::Results) {
+                self.research_search.page = 0;
+                self.research_search.error = None;
+                self.issue_research_search()
+            } else { vec![Effect::Redraw] };
+            self.recompute_omnibar_suggestions(); effects.push(Effect::Redraw); return effects;
+        }
         // Resolve the needle FIRST: a line narrowed below the floor drops its
         // cached hits there, and the rows must be recomputed after that drop
         // or the lane keeps offering pages for text that is gone.
@@ -448,6 +456,12 @@ impl App {
     }
 
     pub(super) fn omnibar_move(&mut self, delta: i32) -> Vec<Effect> {
+        if matches!(self.omnibar.mode, OmnibarMode::SavedSources) && !self.research_search.rows.is_empty() {
+            let len = self.research_search.rows.len() as i32;
+            self.research_search.first_row = (self.research_search.first_row as i32 + delta).rem_euclid(len) as usize;
+            self.recompute_omnibar_suggestions();
+            return vec![Effect::Redraw];
+        }
         let len = self.omnibar.suggestions.len();
         if len > 0 && self.omnibar_in_command_lane() {
             // The `>` lane's highlight moves through its menu session. The

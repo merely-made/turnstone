@@ -98,3 +98,6 @@ use lens_pane_content::lens_pane_content;
 #[path = "lens/append_foreign_lens.rs"]
 mod append_foreign_lens;
 pub(super) use append_foreign_lens::append_foreign_lens;
+
+#[path = "lens/present_native_lens.rs"]
+mod present_native_lens;

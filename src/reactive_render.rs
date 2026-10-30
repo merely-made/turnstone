@@ -43,7 +43,12 @@ struct FrameState {
 pub struct FrameScope {
     state: Rc<RefCell<FrameState>>,
     previous: Option<Rc<RefCell<FrameState>>>,
+    staged: bool,
 }
+
+/// A render attempt staged for deferred native presentation. It reports its
+/// submission at the actual present, or its refusal if dropped unpresented.
+pub(crate) struct StagedFrame(Rc<RefCell<FrameState>>);
 
 impl FrameScope {
     /// Assign an opaque identity to this actual native window lifetime. A
@@ -94,85 +99,114 @@ impl FrameScope {
             submitted: false,
         }));
         let previous = ACTIVE.with(|active| active.replace(Some(state.clone())));
-        Self { state, previous }
+        Self { state, previous, staged: false }
     }
 
     /// Called only after `host.queue().present(frame)` returns. Wgpu queue
     /// submission is not a proof of a physical display or captured pixels.
     pub fn submitted(&self, surface_generation: u64) {
-        let Ok(state) = self.state.try_borrow() else {
-            gap();
-            return;
-        };
-        let Some(producer) = state.producer.clone() else {
-            gap();
-            return;
-        };
-        let details = DiagnosticDetails {
-            frame_id: (state.frame != 0).then_some(state.frame),
-            window_id: (state.window != 0).then_some(state.window),
-            surface_generation: Some(surface_generation),
-            reason: DiagnosticReason::Accepted,
-            ..Default::default()
-        };
-        let causes = state
-            .outputs
-            .iter()
-            .copied()
-            .map(|parent| (CauseRelation::ScopeContains, parent))
-            .collect::<Vec<_>>();
-        drop(state);
-        if producer
-            .emit_with_causes(DiagnosticKind::HostFrameSubmitted, None, details, &causes)
-            .is_err()
-        {
-            gap();
-        }
-        if let Ok(mut state) = self.state.try_borrow_mut() {
-            state.submitted = true;
-        } else {
-            gap();
-        }
+        submit(&self.state, surface_generation);
+    }
+
+    /// Stop collecting and hand the attempt to its staged native frame.
+    pub(crate) fn stage(mut self) -> StagedFrame {
+        self.staged = true;
+        StagedFrame(self.state.clone())
+    }
+}
+
+impl StagedFrame {
+    /// Called only after the deferred `host.queue().present(frame)` returns.
+    pub(crate) fn submitted(&self, surface_generation: u64) {
+        submit(&self.0, surface_generation);
+    }
+}
+
+impl Drop for StagedFrame {
+    fn drop(&mut self) {
+        refuse_unsubmitted(&self.0);
+    }
+}
+
+fn submit(cell: &RefCell<FrameState>, surface_generation: u64) {
+    let Ok(state) = cell.try_borrow() else {
+        gap();
+        return;
+    };
+    let Some(producer) = state.producer.clone() else {
+        gap();
+        return;
+    };
+    let details = DiagnosticDetails {
+        frame_id: (state.frame != 0).then_some(state.frame),
+        window_id: (state.window != 0).then_some(state.window),
+        surface_generation: Some(surface_generation),
+        reason: DiagnosticReason::Accepted,
+        ..Default::default()
+    };
+    let causes = state
+        .outputs
+        .iter()
+        .copied()
+        .map(|parent| (CauseRelation::ScopeContains, parent))
+        .collect::<Vec<_>>();
+    drop(state);
+    if producer
+        .emit_with_causes(DiagnosticKind::HostFrameSubmitted, None, details, &causes)
+        .is_err()
+    {
+        gap();
+    }
+    if let Ok(mut state) = cell.try_borrow_mut() {
+        state.submitted = true;
+    } else {
+        gap();
     }
 }
 
 impl Drop for FrameScope {
     fn drop(&mut self) {
-        let snapshot = self.state.try_borrow().ok().and_then(|state| {
-            (!state.submitted).then(|| {
-                (
-                    state.producer.clone(),
-                    state.frame,
-                    state.window,
-                    state.outputs.clone(),
-                )
-            })
-        });
-        if let Some((Some(producer), frame, window, outputs)) = snapshot {
-            let causes = outputs
-                .into_iter()
-                .map(|p| (CauseRelation::ScopeContains, p))
-                .collect::<Vec<_>>();
-            if producer
-                .emit_with_causes(
-                    DiagnosticKind::HostFrameUnavailable,
-                    None,
-                    DiagnosticDetails {
-                        frame_id: (frame != 0).then_some(frame),
-                        window_id: (window != 0).then_some(window),
-                        reason: DiagnosticReason::Refused,
-                        ..Default::default()
-                    },
-                    &causes,
-                )
-                .is_err()
-            {
-                gap();
-            }
+        if !self.staged {
+            refuse_unsubmitted(&self.state);
         }
         ACTIVE.with(|active| {
             active.replace(self.previous.take());
         });
+    }
+}
+
+fn refuse_unsubmitted(cell: &RefCell<FrameState>) {
+    let snapshot = cell.try_borrow().ok().and_then(|state| {
+        (!state.submitted).then(|| {
+            (
+                state.producer.clone(),
+                state.frame,
+                state.window,
+                state.outputs.clone(),
+            )
+        })
+    });
+    if let Some((Some(producer), frame, window, outputs)) = snapshot {
+        let causes = outputs
+            .into_iter()
+            .map(|p| (CauseRelation::ScopeContains, p))
+            .collect::<Vec<_>>();
+        if producer
+            .emit_with_causes(
+                DiagnosticKind::HostFrameUnavailable,
+                None,
+                DiagnosticDetails {
+                    frame_id: (frame != 0).then_some(frame),
+                    window_id: (window != 0).then_some(window),
+                    reason: DiagnosticReason::Refused,
+                    ..Default::default()
+                },
+                &causes,
+            )
+            .is_err()
+        {
+            gap();
+        }
     }
 }
 

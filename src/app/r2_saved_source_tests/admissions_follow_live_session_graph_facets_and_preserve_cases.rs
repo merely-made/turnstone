@@ -96,7 +96,7 @@ fn asynchronous_corpus_answers_are_rejected_after_generation_or_facets_change() 
     let node = visit(&mut app, "https://saved-source.test/current");
     attach(&mut app, graph, node, "blake3:attached");
 
-    let effects = app.update(Action::SearchSavedSources);
+    let effects = vec![app.begin_saved_source_load()];
     let (generation, request, session, admissions) = effects
         .into_iter()
         .find_map(|effect| match effect {
@@ -108,7 +108,7 @@ fn asynchronous_corpus_answers_are_rejected_after_generation_or_facets_change() 
             } => Some((generation, request, session, admissions)),
             _ => None,
         })
-        .expect("search dispatches exact current admissions");
+        .expect("the quiet capture owner dispatches exact current admissions");
     let old_admission = admissions[0].clone();
 
     app.source_capture_generation = uuid::Uuid::new_v4();
@@ -125,7 +125,7 @@ fn asynchronous_corpus_answers_are_rejected_after_generation_or_facets_change() 
 
     // Start a new current-generation request, then remove the reference before
     // its reply. The late corpus cannot restore the detached source.
-    let effects = app.update(Action::SearchSavedSources);
+    let effects = vec![app.begin_saved_source_load()];
     let (generation, request, session, admissions) = effects
         .into_iter()
         .find_map(|effect| match effect {
@@ -413,4 +413,73 @@ fn saved_reader_navigation_back_restores_exact_offline_selector_and_rejects_bad_
             .iter()
             .any(|admission| admission.key == key)
     );
+}
+
+#[test]
+fn model_free_withdrawal_clears_private_line_at_action_and_update_boundaries() {
+    let root = tempfile::tempdir().unwrap();
+    let mut app = app_at(root.path());
+    let graph = app.graph_runtimes.active_graph();
+    let node = visit(&mut app, "https://example.test/private");
+    let manifest = eidetic::ManifestId::of_blob(b"search source").to_string();
+    attach(&mut app, graph, node, &manifest);
+    let custody = crate::trail_memory::custody_test_fixture::custody();
+    app.research.set_available(true);
+    app.research.access(Some(crate::research::ClipAccess {
+        root: root.path().into(),
+        sealer: custody.sealer,
+        epoch: custody.epoch,
+    }));
+    for through_update in [false, true] {
+        app.update(Action::SearchSavedSources);
+        app.update(Action::OmnibarInsert("private scope query".into()));
+        app.update(Action::ResearchSearch(
+            crate::action::ResearchSearchAction::Input("aliases".into()),
+        ));
+        app.update(Action::OmnibarInsert("private scope value".into()));
+        remove_refs(&mut app, graph, node);
+        if through_update {
+            app.apply_update(Update::RecallFailed {
+                error: "test".into(),
+            });
+        } else {
+            app.update(Action::OmnibarMove(1));
+        }
+        assert!(!app.omnibar.open);
+        assert!(app.omnibar.text.is_empty() && app.omnibar.suggestions.is_empty());
+        assert!(app.research_search.original_text.is_empty());
+        attach(&mut app, graph, node, &manifest);
+        app.update(Action::OmnibarMove(1));
+    }
+}
+
+#[test]
+fn model_free_withdrawal_clears_private_line_even_when_settings_refuse_search() {
+    let root = tempfile::tempdir().unwrap();
+    let mut app = app_at(root.path());
+    let graph = app.graph_runtimes.active_graph();
+    let node = visit(&mut app, "https://example.test/settings-refused");
+    let manifest = eidetic::ManifestId::of_blob(b"source").to_string();
+    attach(&mut app, graph, node, &manifest);
+    let custody = crate::trail_memory::custody_test_fixture::custody();
+    app.research.set_available(true);
+    app.research.access(Some(crate::research::ClipAccess {
+        root: root.path().into(),
+        sealer: custody.sealer,
+        epoch: custody.epoch,
+    }));
+    std::fs::write(
+        root.path().join("research-search-settings.json"),
+        b"invalid settings",
+    )
+    .unwrap();
+    app.update(Action::SearchSavedSources);
+    assert!(app.research_search.settings_error.is_some());
+    assert!(app.research_search.request.is_none());
+    app.update(Action::OmnibarInsert("private refused query".into()));
+    remove_refs(&mut app, graph, node);
+    app.update(Action::OmnibarMove(1));
+    assert!(!app.omnibar.open);
+    assert!(app.omnibar.text.is_empty() && app.omnibar.suggestions.is_empty());
+    assert!(app.research_search.rows.is_empty());
 }

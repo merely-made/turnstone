@@ -177,3 +177,37 @@ fn committing_a_captured_source_opens_its_source_address() {
         crate::shell_services::ShellIntent::Navigate { url } if url == source
     ));
 }
+
+#[test]
+fn saved_search_single_row_exposes_options_while_loading() {
+    let mut app = App::test_stub();
+    app.update(Action::SearchSavedSources);
+    app.recompute_saved_source_suggestions(1);
+    assert!(
+        matches!(app.omnibar.suggestions.as_slice(),
+        [Suggestion::Act { label, .. }] if label.contains("options")),
+        "options must remain reachable even in a one-row viewport"
+    );
+}
+
+#[test]
+fn saved_search_unselected_private_text_never_becomes_a_navigation_or_history_entry() {
+    let mut app = App::test_stub();
+    app.update(Action::SearchSavedSources);
+    app.update(Action::OmnibarInsert(
+        "https://private.example/secret".into(),
+    ));
+    // An unavailable or empty result must not use the regular address fallback.
+    app.omnibar.suggestions.clear();
+    let before = app.shell_transcript().entries().count();
+    let effects = app.update(Action::OmnibarCommit);
+    assert!(!effects.iter().any(|effect| matches!(
+        effect,
+        Effect::FetchPage { .. } | Effect::FetchFeed { .. } | Effect::FetchFavicon { .. }
+    )));
+    assert_eq!(app.shell_transcript().entries().count(), before);
+    assert!(
+        app.omnibar.open,
+        "search stays open when no search action is selected"
+    );
+}

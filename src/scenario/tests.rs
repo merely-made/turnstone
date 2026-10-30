@@ -219,3 +219,150 @@ fn inline_component_station_fixture_uses_supported_grammar() {
     crate::frame_a11y::fixture_body_request("1 click tab Links").unwrap();
     assert!(crate::frame_a11y::fixture_body_request("1 replace tab Links").is_err());
 }
+
+#[test]
+fn model_free_structured_observation_commands_parse_safely() {
+    let steps = parse("record-structured-research alpha_1\nchoose-suggestion Count by source kind")
+        .unwrap();
+    assert!(matches!(steps.as_slice(),
+        [Step::RecordStructuredResearch(name), Step::ChooseSuggestion(label)]
+        if name == "alpha_1" && label == "Count by source kind"));
+    for input in [
+        "record-structured-research",
+        "record-structured-research ../x",
+        "record-structured-research a/b",
+        "choose-suggestion",
+    ] {
+        assert!(parse(input).is_err(), "{input}");
+    }
+}
+
+#[test]
+fn model_free_suggestion_selection_refuses_ambiguity_and_prefers_exact() {
+    let labels = vec![
+        "› Count by source kind".into(),
+        "› Count by source".into(),
+        "› Back".into(),
+    ];
+    assert_eq!(suggestion_target(&labels, "Count by source").unwrap(), 1);
+    assert!(suggestion_target(&labels, "Count by").is_err());
+    assert!(suggestion_target(&labels, "absent").is_err());
+    let duplicates = vec!["› Back".into(), "› Back".into()];
+    assert!(suggestion_target(&duplicates, "Back").is_err());
+}
+
+#[test]
+fn model_free_status_observation_rejects_unsafe_names() {
+    assert!(
+        matches!(parse("record-structured-status status_1").unwrap().as_slice(),
+        [Step::RecordStructuredStatus(name)] if name == "status_1")
+    );
+    assert!(parse("record-structured-status ../status").is_err());
+}
+
+#[test]
+fn model_free_runtime_observation_name_is_bounded_to_one_file() {
+    assert!(matches!(parse("record-runtime cold_1").unwrap().as_slice(),
+        [Step::RecordRuntime(name)] if name == "cold_1"));
+    assert!(parse("record-runtime ../outside").is_err());
+}
+
+#[test]
+fn model_free_capture_choice_requires_exact_current_session_and_ordinal() {
+    let value = serde_json::json!([
+        {"session":"s", "ordinal":1, "phase":"saved", "stored":{"annotation_manifest":"blake3:a"}},
+        {"session":"s", "ordinal":2, "phase":"saved", "stored":{"annotation_manifest":"blake3:b"}},
+        {"session":"foreign", "ordinal":1, "phase":"saved", "stored":{"annotation_manifest":"blake3:c"}}
+    ]);
+    assert_eq!(
+        observed_capture_manifest(&value, "s", 1).unwrap(),
+        "blake3:a"
+    );
+    assert_eq!(
+        observed_capture_manifest(&value, "s", 2).unwrap(),
+        "blake3:b"
+    );
+    assert!(observed_capture_manifest(&value, "s", 3).is_err());
+    assert!(parse("choose-captured-source ../outside 1").is_err());
+    assert!(parse("choose-captured-source captured 0").is_err());
+    assert!(
+        matches!(parse("choose-captured-source captured 1").unwrap().as_slice(),
+        [Step::ChooseCapturedSource { name, ordinal: 1 }] if name == "captured")
+    );
+}
+
+#[test]
+fn model_free_comparison_observation_name_is_safe() {
+    assert!(
+        matches!(parse("record-comparison exact_pair").unwrap().as_slice(),
+        [Step::RecordComparison(name)] if name == "exact_pair")
+    );
+    assert!(parse("record-comparison ../pair").is_err());
+}
+
+#[test]
+fn model_free_saved_result_choice_requires_saved_current_identity() {
+    let mut value = serde_json::json!({"schema":"turnstone.structured-observation/v1",
+        "session":"s", "historical":false, "busy":false,
+        "saved_manifest":"blake3:a", "content_manifest":"blake3:a"});
+    assert_eq!(observed_saved_result(&value, "s").unwrap(), "blake3:a");
+    assert!(observed_saved_result(&value, "foreign").is_err());
+    value["content_manifest"] = serde_json::json!("blake3:b");
+    assert!(observed_saved_result(&value, "s").is_err());
+    assert!(parse("choose-saved-result ../outside").is_err());
+    assert!(
+        matches!(parse("choose-saved-result seed_sum").unwrap().as_slice(),
+        [Step::ChooseSavedResult(name)] if name == "seed_sum")
+    );
+}
+
+#[test]
+fn model_free_note_pointer_and_private_action_commands_parse() {
+    assert!(matches!(
+        parse("click-note-member").unwrap().as_slice(),
+        [Step::ClickNoteMember]
+    ));
+    assert!(parse("click-note-member another").is_err());
+    assert!(
+        matches!(parse("assert-no-action Retain selected Redshank note").unwrap().as_slice(),
+        [Step::AssertNoAction(label)] if label == "Retain selected Redshank note")
+    );
+    assert!(parse("assert-no-action").is_err());
+}
+
+#[test]
+fn model_free_search_wait_requires_a_frame_limit() {
+    assert!(matches!(
+        parse("wait-research-search 600").unwrap().as_slice(),
+        [Step::WaitResearchSearch(600)]
+    ));
+    assert!(parse("wait-research-search invalid").is_err());
+}
+
+#[test]
+fn model_free_structured_result_wait_requires_a_frame_limit() {
+    assert!(matches!(
+        parse("wait-structured-result 600").unwrap().as_slice(),
+        [Step::WaitStructuredResult(600)]
+    ));
+    assert!(parse("wait-structured-result invalid").is_err());
+    assert!(matches!(
+        parse("wait-structured-author-save 600").unwrap().as_slice(),
+        [Step::WaitStructuredAuthorSave(600)]
+    ));
+    assert!(parse("wait-structured-author-save invalid").is_err());
+    assert!(matches!(parse("wait-structured-idle 600").unwrap().as_slice(), [Step::WaitStructuredIdle(600)]));
+    assert!(matches!(parse("wait-structured-limit-refusal 600").unwrap().as_slice(), [Step::WaitStructuredLimitRefusal(600)]));
+    assert!(parse("wait-structured-idle invalid").is_err());
+    assert!(parse("wait-structured-limit-refusal invalid").is_err());
+}
+
+#[test]
+fn model_free_source_target_wait_requires_frames_and_exact_url() {
+    assert!(
+        matches!(parse("wait-source-target 600 https://example.test/A").unwrap().as_slice(),
+        [Step::WaitSourceTarget(600, url)] if url == "https://example.test/A")
+    );
+    assert!(parse("wait-source-target 600").is_err());
+    assert!(parse("wait-source-target invalid https://example.test/A").is_err());
+}

@@ -10,7 +10,6 @@
 //! module never enumerates the backing store to discover candidate sources.
 
 use serde::{Deserialize, Serialize};
-use std::collections::HashSet;
 
 pub const ENGINE_ID: &str = "turnstone.saved-source";
 
@@ -69,15 +68,6 @@ pub struct Target {
     pub selector: Option<Selector>,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub struct Hit {
-    pub target: Target,
-    pub title: String,
-    pub origin: String,
-    pub captured_at_ms: u64,
-    pub excerpt: String,
-}
-
 /// Clip the exact canonical version and scalar range already held by the
 /// private reader. Its bytes are a derived observed representation, never a
 /// fabricated raw HTTP response. Knot owns their subsequent retention.
@@ -108,76 +98,6 @@ pub fn clip(content: &Content, target: &Target) -> Result<inker::DocumentClip, S
             bytes: content.text.as_bytes().to_vec(),
         }],
     })
-}
-
-/// Return one hit per admitted source identity, preserving first occurrence
-/// order for list mode and result tie ordering. Search is exact-case substring
-/// matching over canonical text; selectors count Unicode scalar values.
-pub fn search(entries: &[Entry], query: &str, limit: usize) -> Vec<Hit> {
-    if limit == 0 {
-        return Vec::new();
-    }
-    let mut seen = HashSet::new();
-    let mut hits = Vec::new();
-    for entry in entries {
-        if !seen.insert(entry.admission.key.clone()) {
-            continue;
-        }
-        let Some(content) = entry.content.as_ref() else {
-            continue;
-        };
-        if entry.admission.error.is_some() || entry.error.is_some() {
-            continue;
-        }
-        let Ok(actual) = eidetic::Hash::parse(&content.text_hash) else {
-            continue;
-        };
-        if actual != eidetic::Hash::of(content.text.as_bytes()) {
-            continue;
-        }
-
-        let (selector, excerpt) = if query.is_empty() {
-            (None, content.title.clone())
-        } else {
-            if let Some(byte_start) = content.text.find(query) {
-                let byte_end = byte_start + query.len();
-                let start = content.text[..byte_start].chars().count();
-                let end = start + content.text[byte_start..byte_end].chars().count();
-                (Some(Selector { start, end }), query.to_owned())
-            } else {
-                let metadata = if content.title.contains(query) {
-                    Some(content.title.as_str())
-                } else if content.origin.contains(query) {
-                    Some(content.origin.as_str())
-                } else {
-                    None
-                };
-                let Some(metadata) = metadata else {
-                    continue;
-                };
-                (None, metadata.to_owned())
-            }
-        };
-        hits.push(Hit {
-            target: Target {
-                key: entry.admission.key.clone(),
-                text_hash: content.text_hash.clone(),
-                selector,
-            },
-            title: if content.title.is_empty() {
-                entry.admission.title.clone()
-            } else {
-                content.title.clone()
-            },
-            origin: content.origin.clone(),
-            captured_at_ms: content.captured_at_ms,
-            excerpt,
-        });
-        if hits.len() == limit {
-            break;
-        }
-    }
-    hits
 }
 
 /// Validate the exact content revision and optional scalar selector, returning

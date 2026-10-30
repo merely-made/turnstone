@@ -295,6 +295,9 @@ pub(crate) fn refresh_local_capture_library(
                 );
             },
             Err(error) => {
+                if error.storage_error().is_some() {
+                    return Err(format!("load local Fleece annotation: {error}"));
+                }
                 ready.invalid.insert(key, error.to_string());
             },
         }
@@ -431,3 +434,7 @@ pub(crate) fn effective_roster(
 #[cfg(all(test, feature = "peers"))]
 #[path = "captured_collection/tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "captured_collection/storage_tests.rs"]
+mod storage_tests;

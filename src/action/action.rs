@@ -1,8 +1,6 @@
 // Copyright 2026 Mark Alan Boykin
 // SPDX-License-Identifier: MPL-2.0
-
 use super::*;
-
 /// Typed app intent consumed by [`crate::app::update`] after shell or automation input.
 #[derive(Clone, Debug, PartialEq)]
 pub enum Action {
@@ -79,6 +77,8 @@ pub enum Action {
     },
     /// Search the current session's explicitly attached saved evidence.
     SearchSavedSources,
+    ResearchSearch(ResearchSearchAction),
+    ResearchStructured(ResearchStructuredAction),
     /// Read immutable source text at an optional exact Unicode passage.
     OpenSavedSource(crate::saved_sources::Target),
     ChoosePermission {

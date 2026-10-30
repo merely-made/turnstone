@@ -8,6 +8,11 @@ pub(super) async fn intent(
     name: &str,
     payload: Vec<u8>,
 ) -> Result<(), String> {
+    if name == ASK_PUBLISHED_INTENT {
+        crate::inference_activity::record_generation();
+    } else if name == PUBLISH_CORPUS_INTENT {
+        crate::inference_activity::record_publication();
+    }
     let result = connection
         .client
         .request_body(CarrierRequestBody::Intent(IntentInvocation {

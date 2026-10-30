@@ -71,7 +71,9 @@ pub struct FrameTimings {
     /// Kept apart from the chrome stages so a chrome regression cannot hide
     /// behind pane cost, and vice versa.
     pub pane_scenes: Duration,
-    /// Pass 2: rasterizing each planned scene to its own texture.
+    /// Pass 2 CPU encoding of each planned scene into staging textures.
+    /// Native GPU qualification runs asynchronously and remains part of the
+    /// whole-frame duration; this field excludes that completion interval.
     pub raster: Duration,
     /// Raster work split by surface class. Totals are derived from it rather
     /// than tracked beside it, so the parts cannot drift from the whole.
@@ -175,6 +177,21 @@ impl SurfaceRasterSplit {
 }
 
 impl FrameTimings {
+    /// Keep work from a qualified but unpresented attempt alongside input
+    /// accumulated while it was pending. A later successful frame owns both.
+    pub(crate) fn absorb(&mut self, other: Self) {
+        self.suggestions += other.suggestions;
+        self.suggestion_runs += other.suggestion_runs;
+        self.suggestion_refits += other.suggestion_refits;
+        self.chrome_sync += other.chrome_sync;
+        self.chrome_scene += other.chrome_scene;
+        self.chrome_syncs += other.chrome_syncs;
+        self.pane_scenes += other.pane_scenes;
+        self.raster += other.raster;
+        self.compose += other.compose;
+        self.surface_raster.add(other.surface_raster);
+    }
+
     /// Note one suggestion recomputation. `refit` records that the list was
     /// ranked twice because the fitted row limit was smaller than configured.
     pub fn note_suggestions(&mut self, elapsed: Duration, refit: bool) {

@@ -3,15 +3,31 @@
 
 use super::*;
 
+fn next_fetch_update(
+    first: impl FnOnce() -> Option<FetchUpdate>,
+    second: impl FnOnce() -> Option<FetchUpdate>,
+) -> Option<FetchUpdate> {
+    first().or_else(second)
+}
+
+fn next_research_search_update(
+    worker: &crate::research_search::Worker,
+) -> Option<crate::action::Update> {
+    worker
+        .take()
+        .map(|response| crate::action::Update::ResearchSearchFinished {
+            request: response.request,
+            result: response.result,
+        })
+}
+
 impl Shell {
-    pub(super) fn drain_actor_updates(&mut self, event_loop: &ActiveEventLoop) {
-        self.service_private_custody();
-        let started = std::time::Instant::now();
-        while let Ok(raw) = self
-            .fetch_rx
-            .try_recv()
-            .or_else(|_| self.nomadnet_rx.try_recv())
-        {
+    /// Apply the normal fetch and subresource completions without a window event.
+    pub(in crate::shell) fn drain_fetch_updates(&mut self) {
+        while let Some(raw) = next_fetch_update(
+            || self.fetch_rx.try_recv().ok(),
+            || self.nomadnet_rx.try_recv().ok(),
+        ) {
             let raw = match raw {
                 FetchUpdate::Subresource(outcome) => {
                     let requesters = self.pending_fetches.take_subresources(&outcome.url);
@@ -42,6 +58,38 @@ impl Shell {
                 self.run_effects(effects);
             }
         }
+    }
+
+    /// Apply the same queued worker completions during native scenario waits.
+    pub(in crate::shell) fn drain_research_worker_updates(&mut self) {
+        while let Some(update) = next_research_search_update(&self.research_worker) {
+            self.service_private_custody();
+            let effects = self.app.apply_update(update);
+            self.run_effects(effects);
+        }
+        while let Some(response) = self.research_worker.take_compare() {
+            self.service_private_custody();
+            let effects = self
+                .app
+                .apply_update(crate::action::Update::ResearchCompareFinished {
+                    request: response.request,
+                    result: response.result,
+                });
+            self.run_effects(effects);
+        }
+        while let Some(response) = self.research_worker.take_records() {
+            self.service_private_custody();
+            let effects = self
+                .app
+                .apply_update(crate::action::Update::ResearchRecords(response));
+            self.run_effects(effects);
+        }
+    }
+
+    pub(super) fn drain_actor_updates(&mut self, event_loop: &ActiveEventLoop) {
+        self.service_private_custody();
+        let started = std::time::Instant::now();
+        self.drain_fetch_updates();
         while let Ok(update) = self.bin_rx.try_recv() {
             // The bin actor already speaks the app-owned vocabulary.
             let effects = self.app.apply_update(update);
@@ -51,6 +99,7 @@ impl Shell {
             let effects = self.app.apply_update(update);
             self.run_effects(effects);
         }
+        self.drain_research_worker_updates();
         while let Ok(update) = self.trail_rx.try_recv() {
             // Recall answers (RecallHits / RecallFailed), already app-owned.
             self.service_private_custody();
@@ -181,14 +230,142 @@ impl Shell {
     }
 
     pub(super) fn pump_redshank(&mut self) {
-        let commands = self.redshank_docks.drain();
-        if !commands.is_empty() {
-            let effects = self.app.apply_redshank_commands(commands);
+        crate::redshank_episode_surface::reconcile_redshank_captures(
+            &mut self.app,
+            &self.redshank_docks,
+        );
+        for (item, command) in self.redshank_docks.drain_scoped() {
+            let effects = self.app.apply_redshank_note_command(&item, command);
             self.run_effects(effects);
         }
         for item in self.redshank_docks.items() {
-            let projection = self.app.redshank_projection(&item);
-            self.redshank_docks.project(&item, projection);
+            let projection = self.app.redshank_note_projection(&item);
+            self.redshank_docks.project_notes(&item, projection);
         }
+    }
+}
+
+#[cfg(test)]
+mod source_wait_tests {
+    use super::*;
+    #[test]
+    fn model_free_wait_drains_queued_research_worker_result() {
+        let root = tempfile::tempdir().unwrap();
+        let mut app = crate::app::App::test_stub_at(root.path().to_path_buf());
+        let custody = crate::trail_memory::custody_test_fixture::custody();
+        app.research.set_available(true);
+        app.research.access(Some(crate::research::ClipAccess {
+            root: root.path().to_path_buf(),
+            sealer: custody.sealer.clone(),
+            epoch: custody.epoch.clone(),
+        }));
+        app.sync_research_context();
+        let directory = crate::trail_memory::memory_dir(&crate::session::session_dir(
+            root.path(),
+            app.session_id,
+        ));
+        std::fs::create_dir_all(&directory).unwrap();
+        let (actor, _updates) = crate::trail_memory::spawn_trail_for_session(
+            std::sync::Arc::new(|| {}),
+            Some(directory),
+            Default::default(),
+            app.source_capture_generation,
+        );
+        assert!(actor.command(crate::trail_memory::TrailCommand::SetCustody(Some(custody))));
+        let (wake, receive) = std::sync::mpsc::channel();
+        let worker = crate::research_search::Worker::spawn(
+            app.research.clone(),
+            std::sync::Arc::new(actor),
+            std::sync::Arc::new(move || {
+                let _ = wake.send(());
+            }),
+        );
+        let request = app
+            .update(crate::action::Action::SearchSavedSources)
+            .into_iter()
+            .find_map(|effect| match effect {
+                crate::action::Effect::ResearchSearch(request) => Some(request),
+                _ => None,
+            })
+            .expect("ordinary search request");
+        worker.submit(request);
+        receive
+            .recv_timeout(std::time::Duration::from_secs(5))
+            .expect("worker completion");
+        assert!(app.scenario_research_search_summary().is_none());
+        let update = next_research_search_update(&worker).expect("queued research response");
+        if let crate::action::Update::ResearchSearchFinished {
+            result: Err(error), ..
+        } = &update
+        {
+            panic!("research worker refused fixture: {error}");
+        }
+        app.apply_update(update);
+        assert!(app.scenario_research_search_summary().is_some());
+        assert!(next_research_search_update(&worker).is_none());
+    }
+    #[test]
+    fn model_free_wait_pumps_real_correlated_fetch_to_source_action() {
+        let mut app = crate::app::App::test_stub();
+        let url = "https://example.test/source";
+        let effects = app.update(crate::action::Action::OpenAddress(url.into()));
+        let mut pending = crate::browse::PendingFetches::default();
+        let request = effects
+            .iter()
+            .flat_map(|effect| crate::browse::fetch_commands_for(effect, &mut pending))
+            .find_map(|command| match command {
+                fetch::FetchCommand::Page { request, .. } => Some(request),
+                _ => None,
+            })
+            .expect("ordinary navigation fetch");
+        assert!(!crate::scenario::source_target_ready(
+            &app.available_actions(),
+            url
+        ));
+        let (send, receive) = std::sync::mpsc::channel();
+        let (_other_send, other_receive) = std::sync::mpsc::channel();
+        let body = "<html><main>source fixture</main></html>";
+        send.send(fetch::FetchUpdate::PageProgress(fetch::PageProgress {
+            request,
+            url: url.into(),
+            response_url: url.into(),
+            content_type: Some("text/html".into()),
+            bytes: body.as_bytes().to_vec(),
+        }))
+        .unwrap();
+        send.send(fetch::FetchUpdate::Page(fetch::FetchOutcome {
+            request,
+            url: url.into(),
+            result: Ok(fetch::Fetched {
+                content_type: Some("text/html".into()),
+                content_disposition: None,
+                bytes: body.as_bytes().to_vec(),
+                body: body.into(),
+            }),
+        }))
+        .unwrap();
+        let raw = next_fetch_update(|| receive.try_recv().ok(), || other_receive.try_recv().ok())
+            .expect("queued progress update");
+        app.apply_update(
+            crate::browse::update_from_fetch(raw, &mut pending).expect("correlated progress"),
+        );
+        assert!(!crate::scenario::source_target_ready(
+            &app.available_actions(),
+            url
+        ));
+        let raw = next_fetch_update(|| receive.try_recv().ok(), || other_receive.try_recv().ok())
+            .expect("queued terminal update");
+        app.apply_update(
+            crate::browse::update_from_fetch(raw, &mut pending)
+                .expect("correlated terminal response"),
+        );
+        assert!(crate::scenario::source_target_ready(
+            &app.available_actions(),
+            url
+        ));
+        assert!(
+            next_fetch_update(|| receive.try_recv().ok(), || other_receive.try_recv().ok())
+                .is_none()
+        );
     }
 }

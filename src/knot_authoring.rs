@@ -329,6 +329,7 @@ pub struct KnotDocumentSession {
     /// re-shaped the whole document to draw an unchanged screen; see
     /// [`crate::ui::RetainedLayout`] for the measurement.
     layout: crate::ui::RetainedLayout,
+    scroll: crate::ui::PaneScroll,
     text_drag: Option<genet_scripted_dom::NodeId>,
 }
 

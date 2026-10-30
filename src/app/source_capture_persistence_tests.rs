@@ -118,7 +118,7 @@ fn acknowledge(app: &mut App, request: &CaptureRequest, result: Result<(), Strin
     app.apply_update(Update::SourceCaptureSaved {
         capture_generation: app.source_capture_generation,
         request: request.id,
-        result,
+        result: result.map_err(Into::into),
     });
 }
 

@@ -7,6 +7,10 @@ use super::*;
 /// itself never blocks and never touches a platform API.
 #[derive(Clone, Debug, PartialEq)]
 pub enum Effect {
+    ResearchRecords(crate::research_records::Job),
+    ResearchSearch(crate::research_search::Request),
+    CancelResearchSearch,
+    ResearchCompare(crate::research_compare::Request),
     SaveReadingPreferences,
     RestoreReadingAnchor {
         target: crate::reading_view::ReadTarget,

@@ -302,3 +302,22 @@ fn research_owner_loads_only_live_captures_and_reopens_exact_versions_without_pa
             .starts_with("A1")
     );
 }
+
+/// This reader opens a disposable copy taken after both product processes exit.
+#[test]
+#[ignore = "requires an exited M5 isolated profile copy and fixture custody"]
+fn model_free_inspect_exited_structured_copy() {
+    super::m5_inspection::inspect_exited_structured_copy();
+}
+
+#[test]
+#[ignore = "requires a separately marked M5 fault copy and fixture custody"]
+fn model_free_inject_missing_capture_copy() {
+    super::m5_inspection::inject_missing_capture_copy();
+}
+
+#[test]
+#[ignore = "requires an injected M5 fault copy and fixture custody"]
+fn model_free_verify_missing_capture_copy() {
+    super::m5_inspection::verify_missing_capture_copy();
+}

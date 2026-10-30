@@ -67,16 +67,25 @@ impl Shell {
                 } else {
                     match crate::retained_clip::request(&url) {
                         Ok(Some(crate::retained_clip::ClipRequest::Read(id))) => {
-                            let resolved = self.app.clip_destination().and_then(|root| {
-                                crate::retained_clip::read_sealed(
-                                    &root,
-                                    id,
-                                    crate::retained_clip::limits()?,
-                                    self.app.clip_sealer()?,
-                                )
-                            });
+                            let resolved = self
+                                .app
+                                .research_clip_document(node, &url, id)
+                                .and_then(|document| {
+                                    if let Some(document) = document {
+                                        return Ok(document);
+                                    }
+                                    let root = self.app.clip_destination()?;
+                                    let clip = crate::retained_clip::read_sealed_with_limits(
+                                        &root,
+                                        id,
+                                        crate::retained_clip::limits()?,
+                                        self.app.clip_sealer()?,
+                                        &self.app.research.storage_limits()?,
+                                    )?;
+                                    Ok(clip.document())
+                                });
                             match resolved {
-                                Ok(clip) => Some(clip.document()),
+                                Ok(document) => Some(document),
                                 Err(error) => {
                                     let follow_up = self
                                         .app

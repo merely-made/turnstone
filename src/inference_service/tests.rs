@@ -245,3 +245,39 @@ fn admitted_research_route_refuses_wrong_owner() {
             std::fs::write(output, serde_json::to_vec_pretty(&serde_json::json!({ "actual_admitted_route": true, "source_kind": "fleece", "wrong_owner_publication_refused": true, "wrong_owner_ask_refused": true, "publication_error": publication_error, "ask_error": ask_error })).unwrap()).unwrap();
         });
 }
+// Intended target: src/inference_service/tests.rs, compiled with inference.
+// Run only inside the isolated receipt supervisor while its marked custody
+// fixture is alive. This checks the named broker route, not model-load calls.
+#[test]
+#[ignore = "requires a running isolated M5 custody-only fixture"]
+fn model_free_fixture_refuses_inference_route() {
+    use djinn::door::app_client::AppClientError;
+    let endpoint = std::env::var("EIDETIC_CUSTODY_FIXTURE_ENDPOINT").expect("fixture endpoint");
+    let fixture_root = std::path::PathBuf::from(std::env::var_os("EIDETIC_CUSTODY_FIXTURE_ROOT").expect("fixture root"));
+    assert_eq!(std::fs::read(fixture_root.join("fixture-marker")).unwrap(), b"eidetic-retention-20261019\n");
+    assert!(std::path::Path::new(&endpoint).canonicalize().unwrap().starts_with(fixture_root.canonicalize().unwrap()));
+    let identity = crate::identity::RootIdentity::Custody(
+        djinn::door::custody_identity::CustodyIdentity::connect_at(&endpoint, "turnstone").expect("fixture custody unavailable"));
+    let (profile, public_key) = identity.custody_principal().expect("fixture principal unavailable");
+    let runtime = tokio::runtime::Builder::new_current_thread().enable_all().build().unwrap();
+    let result = runtime.block_on(AppBrokerClient::open_route_at(
+        &endpoint,
+        AppId::new("turnstone"),
+        AppRouteId::new(wire::INFERENCE_ASK_ROUTE).unwrap(),
+    ));
+    match result {
+        Err(AppClientError::Closed) => {},
+        Err(error) => panic!("inference route did not close during open: {error:?}"),
+        Ok(_) => panic!("inference route unexpectedly admitted"),
+    }
+    let after = crate::identity::RootIdentity::Custody(
+        djinn::door::custody_identity::CustodyIdentity::connect_at(&endpoint, "turnstone")
+            .expect("fixture custody unavailable after inference hello"));
+    assert_eq!(after.custody_principal(), Some((profile.clone(), public_key)),
+        "custody principal changed during inference hello");
+    std::fs::write(std::env::var_os("TURNSTONE_M5_ROUTE_RECEIPT").expect("route receipt"),
+        serde_json::to_vec_pretty(&serde_json::json!({
+            "schema":"turnstone.m5-route-probe/v1", "route":wire::INFERENCE_ASK_ROUTE,
+            "outcome":"closed-during-open", "pid":std::process::id(), "profile":profile.0, "public_key":public_key
+        })).unwrap()).unwrap();
+}

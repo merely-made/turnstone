@@ -78,3 +78,6 @@ fn target(key: Key, text: &str) -> (Target, Content) {
 mod admissions_follow_live_session_graph_facets_and_preserve_cases;
 #[path = "r2_saved_source_tests/opening_saved_source_uses_the_focused_panes_graph_cases.rs"]
 mod opening_saved_source_uses_the_focused_panes_graph_cases;
+
+#[path = "r2_saved_source_tests/model_free_comparison_cases.rs"]
+mod model_free_comparison_cases;

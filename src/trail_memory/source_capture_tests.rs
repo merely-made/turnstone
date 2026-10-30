@@ -155,3 +155,85 @@ mod deposit_failure_at_each_real_write_reopens_preserves_cases;
 mod partial_receipt_recovers_original_non_utf8_html_decoding_cases;
 #[path = "source_capture_tests/same_directory_actor_reopen_rejects_old_opening_commands_cases.rs"]
 mod same_directory_actor_reopen_rejects_old_opening_commands_cases;
+
+#[test]
+fn model_free_source_and_receipt_context_preserve_storage_limit() {
+    let root = tempfile::tempdir().unwrap();
+    let mut store = FjallStore::open(root.path()).unwrap();
+    let document = document("context");
+    let request = request(&document);
+    let saved =
+        source_capture_receipts::capture_request(&mut store, &request, Some(&document)).unwrap();
+    let mut limits = crate::research_storage::StorageLimits::default();
+    limits.operation_read.max_value_bytes = 0;
+    let mut bounded = crate::research_storage::BudgetStore {
+        store: &store,
+        budget: limits.budget(),
+    };
+    let error = verify_source_document_typed(&mut bounded, &saved).unwrap_err();
+    assert!(
+        error.to_string().contains("source manifest read"),
+        "{error}"
+    );
+    assert_eq!(
+        error.storage_error(),
+        Some(&StoreError::LimitExceeded {
+            kind: muniment::StoreLimitKind::ValueBytes,
+            limit: 0
+        })
+    );
+    let mut bounded = crate::research_storage::BudgetStore {
+        store: &store,
+        budget: limits.budget(),
+    };
+    let error = source_capture_receipts::capture_request(&mut bounded, &request, None).unwrap_err();
+    assert!(
+        error.to_string().contains("capture recovery receipt read"),
+        "{error}"
+    );
+    assert_eq!(
+        error.storage_error(),
+        Some(&StoreError::LimitExceeded {
+            kind: muniment::StoreLimitKind::ValueBytes,
+            limit: 0
+        })
+    );
+    let mut bounded = crate::research_storage::BudgetStore {
+        store: &store,
+        budget: limits.budget(),
+    };
+    let error = source_capture_receipts::acknowledge_saved(&mut bounded, &request).unwrap_err();
+    assert!(
+        error.to_string().contains("capture save receipt read"),
+        "{error}"
+    );
+    assert_eq!(
+        error.storage_error(),
+        Some(&StoreError::LimitExceeded {
+            kind: muniment::StoreLimitKind::ValueBytes,
+            limit: 0
+        })
+    );
+    let mut bounded = crate::research_storage::BudgetStore {
+        store: &store,
+        budget: limits.budget(),
+    };
+    let error = source_capture_receipts::completed_legacy(&mut bounded, &request).unwrap_err();
+    assert!(
+        error
+            .to_string()
+            .contains("legacy capture receipt unavailable"),
+        "{error}"
+    );
+    assert!(
+        !error.to_string().contains("capture save receipt read"),
+        "{error}"
+    );
+    assert_eq!(
+        error.storage_error(),
+        Some(&StoreError::LimitExceeded {
+            kind: muniment::StoreLimitKind::ValueBytes,
+            limit: 0
+        })
+    );
+}

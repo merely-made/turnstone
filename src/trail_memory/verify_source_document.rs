@@ -11,6 +11,13 @@ pub(crate) fn verify_source_document(
     store: &mut dyn eidetic::Store,
     stored: &StoredSourceDocument,
 ) -> Result<(), String> {
+    verify_source_document_typed(store, stored).map_err(|error| error.to_string())
+}
+
+pub(crate) fn verify_source_document_typed(
+    store: &mut dyn eidetic::Store,
+    stored: &StoredSourceDocument,
+) -> Result<(), crate::research_storage::SourceReadError> {
     use eidetic::{ManifestId, PrivacyClass, ProvenanceOrigin};
     use fleece::eidetic_bridge::CaptureDomMode;
 
@@ -22,29 +29,32 @@ pub(crate) fn verify_source_document(
     fn checked_manifest(
         store: &mut dyn eidetic::Store,
         id: ManifestId,
-    ) -> Result<eidetic::BlobManifest, String> {
+    ) -> Result<eidetic::BlobManifest, crate::research_storage::SourceReadError> {
         let manifest = pollster::block_on(eidetic::manifest::load_manifest(store, id))
-            .map_err(|error| format!("source manifest read: {error}"))?
+            .map_err(|error| {
+                crate::research_storage::SourceReadError::from(error)
+                    .context("source manifest read")
+            })?
             .ok_or_else(|| format!("source manifest {id} is missing"))?;
         if manifest.id != id || manifest.content_hash != id.0 {
-            return Err(format!("source manifest identity mismatch at {id}"));
+            return Err(format!("source manifest identity mismatch at {id}").into());
         }
         if manifest.privacy != PrivacyClass::LocalOnly {
-            return Err(format!(
-                "source manifest {id} is not private local evidence"
-            ));
+            return Err(format!("source manifest {id} is not private local evidence").into());
         }
         let key = format!("blob:{}", id.0.to_hex());
         if !manifest.sources.iter().any(
             |source| matches!(source, eidetic::BlobSource::Local { key: local } if local == &key),
         ) {
-            return Err(format!("source manifest {id} has no exact local payload"));
+            return Err(format!("source manifest {id} has no exact local payload").into());
         }
         let bytes = pollster::block_on(store.get(&key))
-            .map_err(|error| format!("source payload read: {error}"))?
+            .map_err(|error| {
+                crate::research_storage::SourceReadError::from(error).context("source payload read")
+            })?
             .ok_or_else(|| format!("source payload {id} is missing"))?;
         if eidetic::Hash::of(&bytes) != id.0 || bytes.len() as u64 != manifest.byte_size {
-            return Err(format!("source payload integrity mismatch at {id}"));
+            return Err(format!("source payload integrity mismatch at {id}").into());
         }
         Ok(manifest)
     }
@@ -54,7 +64,10 @@ pub(crate) fn verify_source_document(
     let raw_manifest = checked_manifest(store, raw_id)?;
     let annotation_manifest = checked_manifest(store, annotation_id)?;
     let record = pollster::block_on(fleece::load_fleece_annotation(store, annotation_id))
-        .map_err(|error| format!("source annotation validation: {error}"))?
+        .map_err(|error| {
+            crate::research_storage::SourceReadError::from(error)
+                .context("source annotation validation")
+        })?
         .ok_or_else(|| "source annotation is missing".to_string())?;
     let evidence = record
         .extraction
@@ -85,14 +98,16 @@ pub(crate) fn verify_source_document(
         || annotation_manifest.provenance.generated_at != evidence.captured_at
         || annotation_manifest.provenance.origin != ProvenanceOrigin::Generated
     {
-        return Err("source annotation and raw acquisition provenance disagree".to_string());
+        return Err("source annotation and raw acquisition provenance disagree".into());
     }
     pollster::block_on(eidetic::load_typed::<eidetic::models::OpaqueBlob>(
         store,
         &mut eidetic::NoFetcher,
         raw_id,
     ))
-    .map_err(|error| format!("raw source validation: {error}"))?
+    .map_err(|error| {
+        crate::research_storage::SourceReadError::from(error).context("raw source validation")
+    })?
     .ok_or_else(|| "raw source is missing".to_string())?;
     Ok(())
 }

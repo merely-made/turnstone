@@ -220,3 +220,5 @@ mod research_note_revision_grant_and_citation_control_refuse_cases;
 mod saved_selection_from_embedded_pool_pointer_gesture_cases;
 #[path = "tests/sharing_rewrites_a_locally_held_document_to_its_cases.rs"]
 mod sharing_rewrites_a_locally_held_document_to_its_cases;
+#[path = "tests/note_scroll_cases.rs"]
+mod note_scroll_cases;

@@ -3,10 +3,11 @@
 
 use super::*;
 
-impl ApplicationHandler for Shell {
+impl ApplicationHandler<crate::shell::ShellEvent> for Shell {
     fn new_events(&mut self, _event_loop: &ActiveEventLoop, cause: StartCause) {
         let started = std::time::Instant::now();
         self.poll_render_recovery();
+        self.prune_native_frames();
         self.observe_physics_display_rate(false);
         #[cfg(all(
             feature = "servo",
@@ -26,20 +27,28 @@ impl ApplicationHandler for Shell {
             self.pump_visible_documents();
             self.push_a11y_tree();
         }
-        let active = self.content_sessions.surface_count() > 0 || self.shared_scenario.is_some();
+        let active = self.content_sessions.surface_count() > 0
+            || self.shared_scenario.is_some()
+            || self.native_frames.active();
         let surface_due = self.surface_poll_clock.poll_due(active, now);
         if surface_due {
             // The mailbox clock belongs to native producers. Requeuing a
             // quiet component lens every overdue interval can repeatedly
             // service that window before another window receives its paint.
             // Shared state/input/theme invalidation still requests all windows.
-            if (self.shared_scenario.is_some() || self.content_sessions.pool.window_has_surface(0))
+            if (self.shared_scenario.is_some()
+                || self.content_sessions.pool.window_has_surface(0)
+                || self
+                    .window
+                    .as_ref()
+                    .is_some_and(|w| self.native_frames.wants(w.id())))
                 && let Some(window) = &self.window
             {
                 window.request_redraw();
             }
             for (id, lens) in &self.lens_windows {
-                if self.pending_lens_capture_window == Some(*id)
+                if self.native_frames.wants(*id)
+                    || self.pending_lens_capture_window == Some(*id)
                     || self
                         .content_sessions
                         .pool
@@ -88,7 +97,9 @@ impl ApplicationHandler for Shell {
         }
         // Live captured surfaces require a clock independent of paint delivery.
         // Otherwise a minute supplies the idle W4 schedule clock.
-        let active = self.content_sessions.surface_count() > 0 || self.shared_scenario.is_some();
+        let active = self.content_sessions.surface_count() > 0
+            || self.shared_scenario.is_some()
+            || self.native_frames.active();
         let now = std::time::Instant::now();
         let deadline = self
             .surface_poll_clock
@@ -111,6 +122,7 @@ impl ApplicationHandler for Shell {
     }
 
     fn exiting(&mut self, _event_loop: &ActiveEventLoop) {
+        self.cancel_native_frames("host exiting");
         // Retire actual renderer resources while their physical hosts still
         // exist, including a normal scenario exit and a primary-window close.
         let windows: Vec<_> = self
@@ -229,7 +241,7 @@ impl ApplicationHandler for Shell {
         // lands, so a heavy settle never blocks compositing or input.
         let proxy = self.proxy.clone();
         let physics_wake: armillary::Wake = Arc::new(move || {
-            let _ = proxy.send_event(());
+            let _ = proxy.send_event(crate::shell::ShellEvent::ActorWake);
         });
         self.app.graph_runtimes.offload_physics(physics_wake);
 
@@ -240,12 +252,15 @@ impl ApplicationHandler for Shell {
     /// An actor woke us through the proxy: a physics layout snapshot or a
     /// completed fetch is waiting. Drain fetches through the spine, then
     /// redraw so `frame()` folds everything in (and chains while settling).
-    fn user_event(&mut self, _event_loop: &ActiveEventLoop, _event: ()) {
+    fn user_event(&mut self, _event_loop: &ActiveEventLoop, event: crate::shell::ShellEvent) {
         // Winit's macOS adapter drains proxy callbacks until its queue is empty.
         // Projecting accessibility here can take longer than the producers'
         // cadence, starving window/input events and the next presentation.
         // Keep callbacks cheap; the retained actor queues drain once per batch.
-        self.actor_wake_pending = true;
+        match event {
+            crate::shell::ShellEvent::ActorWake => self.actor_wake_pending = true,
+            crate::shell::ShellEvent::NativeFrameReady => self.request_native_frame_redraws(),
+        }
     }
 
     fn window_event(

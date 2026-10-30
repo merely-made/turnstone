@@ -418,14 +418,29 @@ impl Shell {
         id: WindowId,
         event: &WindowEvent,
     ) -> bool {
-        let Some(window) = self
-            .alembic_workshop
-            .as_mut()
-            .filter(|w| w.host.native_window().is_some_and(|n| n.id() == id))
-        else {
+        let is_workshop = self.alembic_workshop.as_ref().is_some_and(|window| {
+            window
+                .host
+                .native_window()
+                .is_some_and(|native| native.id() == id)
+        });
+        if !is_workshop {
             return false;
-        };
-        window.host.handle_window_event(event.clone());
+        }
+        if !self.admit_native_child_redraw(id, event) {
+            self.alembic_workshop
+                .as_mut()
+                .expect("workshop matched")
+                .host
+                .sync_a11y();
+            return true;
+        }
+        self.alembic_workshop
+            .as_mut()
+            .expect("workshop matched")
+            .host
+            .handle_window_event(event.clone());
+        self.finish_native_child_redraw(id, event);
         self.request_redraw();
         true
     }

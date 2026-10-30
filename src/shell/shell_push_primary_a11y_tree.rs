@@ -90,12 +90,14 @@ impl Shell {
         }
         // An open host editor owns keyboard focus even while a document
         // remains the selected graph content behind it.
+        let published: std::collections::HashSet<_> =
+            tree.nodes.iter().map(|(id, _)| *id).collect();
         focus =
             frame_keys::accessibility_focus(crate::a11y::host_input_focus(&self.app), None, focus)
-                .filter(|id| tree.nodes.iter().any(|(current, _)| current == id));
+                .filter(|id| published.contains(id));
         // Some app routes outlive their optional projected nodes. A route
         // becomes available to the platform only while its node is published.
-        routes.retain(|id, _| tree.nodes.iter().any(|(current, _)| current == id));
+        routes.retain(|id, _| published.contains(id));
         let mut update = tree.to_tree_update(focus);
         // Narrator refuses to walk past a node without a bounding rectangle:
         // UIA treats boundless elements as off-screen, so the tree served

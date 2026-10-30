@@ -249,6 +249,7 @@ pub fn parse(body: &str) -> Result<Vec<Step>, String> {
             }
             "record-idle" if !rest.is_empty() => Step::RecordIdle(rest.to_string()),
             "select-graph-member" if !rest.is_empty() => Step::SelectGraphMember(rest.to_string()),
+            "click-note-member" if rest.is_empty() => Step::ClickNoteMember,
             "activate-graph-fold" => Step::ActivateGraphFold(rest.parse().map_err(|_| format!("line {}: fold index required", i + 1))?),
             "double-click-node" if !rest.is_empty() => Step::DoubleClickGraphNode(rest.to_string()),
             "record-graph-scene" if !rest.is_empty() => {
@@ -483,12 +484,26 @@ pub fn parse(body: &str) -> Result<Vec<Step>, String> {
                 }
                 Step::WaitSourceCapture(frames.unwrap(), ordinal.unwrap(), phase.unwrap().to_string())
             }
-            "wait-saved-sources" | "wait-saved-reader" => {
+            "wait-source-target" => {
+                let mut fields = rest.split_whitespace();
+                let frames = fields.next().and_then(|value| value.parse::<u32>().ok());
+                let target = fields.next().filter(|value| !value.is_empty());
+                if frames.is_none() || target.is_none() || fields.next().is_some() {
+                    return err("wait-source-target wants '<frames> <exact-url>'");
+                }
+                Step::WaitSourceTarget(frames.unwrap(), target.unwrap().to_owned())
+            }
+            "wait-saved-sources" | "wait-saved-reader" | "wait-research-search" | "wait-structured-result" | "wait-structured-author-save" | "wait-structured-idle" | "wait-structured-limit-refusal" => {
                 let frames = rest.trim().parse::<u32>().map_err(|_| {
                     format!("line {}: {verb} wants '<frames>'", i + 1)
                 })?;
                 match verb {
                     "wait-saved-sources" => Step::WaitSavedSources(frames),
+                    "wait-research-search" => Step::WaitResearchSearch(frames),
+                    "wait-structured-result" => Step::WaitStructuredResult(frames),
+                    "wait-structured-author-save" => Step::WaitStructuredAuthorSave(frames),
+                    "wait-structured-idle" => Step::WaitStructuredIdle(frames),
+                    "wait-structured-limit-refusal" => Step::WaitStructuredLimitRefusal(frames),
                     _ => Step::WaitSavedReader(frames),
                 }
             }
@@ -499,6 +514,48 @@ pub fn parse(body: &str) -> Result<Vec<Step>, String> {
             "record-saved-sources" if !rest.is_empty() => {
                 Step::RecordSavedSources(rest.to_string())
             }
+            "record-structured-research" if !rest.is_empty() => {
+                if !rest.chars().all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-') {
+                    return err("record-structured-research wants a safe name");
+                }
+                Step::RecordStructuredResearch(rest.to_string())
+            }
+            "record-structured-status" if !rest.is_empty() => {
+                if !rest.chars().all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-') {
+                    return err("record-structured-status wants a safe name");
+                }
+                Step::RecordStructuredStatus(rest.to_string())
+            }
+            "record-runtime" if !rest.is_empty() => {
+                if !rest.chars().all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-') {
+                    return err("record-runtime wants a safe name");
+                }
+                Step::RecordRuntime(rest.to_string())
+            }
+            "record-comparison" if !rest.is_empty() => {
+                if !rest.chars().all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-') {
+                    return err("record-comparison wants a safe name");
+                }
+                Step::RecordComparison(rest.to_string())
+            }
+            "choose-captured-source" => {
+                let mut fields = rest.split_whitespace();
+                let name = fields.next().ok_or_else(|| format!("line {}: capture observation name required", i + 1))?;
+                let ordinal = fields.next().and_then(|v| v.parse::<u64>().ok()).filter(|v| *v > 0)
+                    .ok_or_else(|| format!("line {}: positive capture ordinal required", i + 1))?;
+                if fields.next().is_some() || !name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-') {
+                    return err("choose-captured-source wants '<safe-name> <positive ordinal>'");
+                }
+                Step::ChooseCapturedSource { name: name.to_string(), ordinal }
+            }
+            "choose-saved-result" if !rest.is_empty() => {
+                if !rest.chars().all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-') {
+                    return err("choose-saved-result wants a safe name");
+                }
+                Step::ChooseSavedResult(rest.to_string())
+            }
+            "choose-suggestion" if !rest.is_empty() => Step::ChooseSuggestion(rest.to_string()),
+            "assert-no-action" if !rest.is_empty() => Step::AssertNoAction(rest.to_string()),
             "queue-act" if !rest.is_empty() => Step::QueueAct(rest.to_string()),
             "deliver-act" if rest.is_empty() => Step::DeliverAct,
             "touch" if !rest.is_empty() => Step::TouchFile(rest.to_string()),

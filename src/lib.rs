@@ -61,6 +61,7 @@ mod graph_facets;
 pub mod graph_scenes;
 mod host_journal;
 mod identity;
+mod inference_activity;
 mod inference_contract;
 #[cfg(feature = "inference")]
 mod inference_service;
@@ -114,7 +115,14 @@ pub mod redshank_episode_surface;
 pub mod redshank_host;
 pub mod relationship_navigation;
 pub mod remote_projection;
-mod research;
+pub mod research;
+pub mod research_compare;
+pub(crate) mod research_record_graph;
+pub mod research_records;
+pub(crate) mod research_records_worker;
+mod research_scenario_privacy;
+pub mod research_search;
+pub mod research_storage;
 pub mod resident_admission;
 pub mod resident_runs;
 #[cfg(test)]

@@ -9,14 +9,25 @@ pub(super) fn run(
     dir: Option<PathBuf>,
     capture_library: crate::place::captured_collection::LocalCaptureLibrary,
     capture_generation: uuid::Uuid,
+    limits: Result<crate::research_storage::StorageLimits, String>,
 ) {
-    let mut state = dir
+    let initial = dir.as_ref().map(|dir| match &limits {
+        Ok(limits) => open_memory(dir, &capture_library, limits),
+        Err(error) => Err(error.clone().into()),
+    });
+    let mut memory_error = initial
         .as_ref()
-        .and_then(|dir| open_memory(dir, &capture_library));
+        .and_then(|result| result.as_ref().err())
+        .cloned();
+    if let Some(error) = &memory_error {
+        capture_library.unavailable(error.to_string());
+    }
+    let mut state = initial.and_then(Result::ok);
     let mut current_dir = dir.unwrap_or_default();
     let mut current_capture_generation = capture_generation;
     let mut custody: Option<SourceCustody> = None;
     let mut sealed_store: Option<FjallStore> = None;
+    let mut sealed_error: Option<crate::research_storage::SourceReadError> = None;
     // The derived lexical/behavioural projection and whether the corpus has
     // moved since it was minted. Built on the first recall, not at
     // spawn: a session that never searches never pays for one.
@@ -28,6 +39,19 @@ pub(super) fn run(
     let mut last_to: HashMap<String, PageRef> = HashMap::new();
     while let Ok(command) = commands.recv() {
         match command {
+            TrailCommand::ResearchRecords(command) => {
+                if let Some(error) = &sealed_error {
+                    record_actor::reject(command, error.clone());
+                } else {
+                    record_actor::handle(
+                        command,
+                        &mut sealed_store,
+                        custody.as_ref(),
+                        &current_dir,
+                        current_capture_generation,
+                    );
+                }
+            },
             TrailCommand::SetCustody(binding) => {
                 drop(sealed_store.take());
                 custody = binding;
@@ -39,12 +63,12 @@ pub(super) fn run(
                 }
                 if custody_ready {
                     if let Some((store, _)) = state.as_mut()
-                        && let Err(error) =
-                            crate::place::captured_collection::refresh_local_capture_library(
-                                store,
-                                &current_dir,
-                                &capture_library,
-                            )
+                        && let Err(error) = worker_capture_ops::refresh(
+                            store,
+                            &current_dir,
+                            &capture_library,
+                            &limits,
+                        )
                     {
                         capture_library.unavailable(error);
                     }
@@ -52,26 +76,41 @@ pub(super) fn run(
                     capture_library.retire_custody();
                 }
                 sealed_store = if custody.is_some() && state.is_some() {
-                    FjallStore::open(sealed_memory_dir(&current_dir)).ok()
+                    let (store, error) = worker_open_sealed::run(&current_dir, &limits);
+                    sealed_error = error;
+                    store
                 } else {
+                    sealed_error = memory_error.clone();
                     None
                 };
-                if let Some(binding) = custody.as_ref() {
+                if custody.is_some()
+                    && let Some(error) = &sealed_error
+                {
+                    out.emit(Update::SourceCaptureRecoveryFailed {
+                        capture_generation: current_capture_generation,
+                        error: error.clone(),
+                    });
+                }
+                if let (Some(binding), Ok(limits)) = (custody.as_ref(), limits.as_ref()) {
                     emit_capture_recovery(
                         &mut state,
                         binding,
                         &current_dir,
                         current_capture_generation,
                         &out,
+                        limits,
                     );
                 }
-                if let (Some(store), Some(binding)) = (sealed_store.as_mut(), custody.as_ref()) {
+                if let (Some(store), Some(binding), Ok(limits)) =
+                    (sealed_store.as_mut(), custody.as_ref(), limits.as_ref())
+                {
                     emit_sealed_capture_recovery(
                         store,
                         binding,
                         &current_dir,
                         current_capture_generation,
                         &out,
+                        limits,
                     );
                 }
             },
@@ -100,17 +139,38 @@ pub(super) fn run(
                     Err("Saved source search belongs to another session opening or store".into())
                 } else if custody_epoch.is_none() {
                     Err("Unlock the profile to read private saved sources".into())
+                } else if let Some(error) = &sealed_error {
+                    Err(error.clone())
                 } else {
                     match state.as_mut() {
-                        Some((store, _)) => Ok(saved_sources::load_with_sealed(
-                            store,
-                            sealed_store.as_mut(),
-                            custody
-                                .as_ref()
-                                .map(|v| v.sealer.as_ref() as &dyn eidetic::PayloadSealer),
-                            &admissions,
-                        )),
-                        None => Err("The session evidence store is unavailable".into()),
+                        Some((store, _)) => {
+                            let budget =
+                                limits.as_ref().map(|limits| limits.budget()).map_err(|e| {
+                                    crate::research_storage::SourceReadError::from(e.clone())
+                                });
+                            budget.and_then(|budget| {
+                                let mut legacy = crate::research_storage::BudgetStore {
+                                    store,
+                                    budget: budget.clone(),
+                                };
+                                let mut sealed = sealed_store.as_mut().map(|store| {
+                                    crate::research_storage::BudgetStore { store, budget }
+                                });
+                                saved_sources::load_with_sealed_bounded(
+                                    &mut legacy,
+                                    sealed.as_mut().map(|s| s as &mut dyn eidetic::Store),
+                                    custody
+                                        .as_ref()
+                                        .map(|v| v.sealer.as_ref() as &dyn eidetic::PayloadSealer),
+                                    &admissions,
+                                    None,
+                                    None,
+                                )
+                            })
+                        },
+                        None => Err(memory_error
+                            .clone()
+                            .unwrap_or_else(|| "The session evidence store is unavailable".into())),
                     }
                 };
                 if custody_epoch.is_some()
@@ -154,18 +214,28 @@ pub(super) fn run(
                     )
                 } else if custody_epoch.is_none() {
                     Err("Unlock the profile to read private saved sources".into())
+                } else if let Some(error) = &sealed_error {
+                    Err(error.clone())
                 } else {
                     match state.as_mut() {
-                        Some((store, _)) => saved_sources::resolve_with_sealed(
-                            store,
-                            sealed_store.as_mut(),
-                            custody
-                                .as_ref()
-                                .map(|v| v.sealer.as_ref() as &dyn eidetic::PayloadSealer),
-                            &admission,
-                            &target,
-                        ),
-                        None => Err("The session evidence store is unavailable".into()),
+                        Some((store, _)) => limits
+                            .as_ref()
+                            .map_err(|e| crate::research_storage::SourceReadError::from(e.clone()))
+                            .and_then(|limits| {
+                                saved_sources::resolve_with_budget(
+                                    store,
+                                    sealed_store.as_ref(),
+                                    custody
+                                        .as_ref()
+                                        .map(|v| v.sealer.as_ref() as &dyn eidetic::PayloadSealer),
+                                    &admission,
+                                    &target,
+                                    limits.budget(),
+                                )
+                            }),
+                        None => Err(memory_error
+                            .clone()
+                            .unwrap_or_else(|| "The session evidence store is unavailable".into())),
                     }
                 };
                 if custody_epoch.is_some()
@@ -185,87 +255,51 @@ pub(super) fn run(
                     result,
                 });
             },
-            TrailCommand::ResearchSnapshot { context, reply } => {
-                let custody_epoch = custody.as_ref().and_then(SourceCustody::snapshot);
-                let valid = context.generation == current_capture_generation
-                    && inference_owner(&current_dir).ok()
-                        == Some(format!("turnstone/{}", context.session.as_uuid()))
-                    && context
-                        .admissions
-                        .iter()
-                        .all(|a| a.key.session == context.session);
-                let mut result = if !valid {
-                    Err("The saved-source owner belongs to another session opening.".into())
-                } else if custody_epoch.is_none() {
-                    Err("Unlock the profile to read private saved sources.".into())
-                } else {
-                    state
-                        .as_mut()
-                        .map(|(store, _)| {
-                            saved_sources::load_with_sealed(
-                                store,
-                                sealed_store.as_mut(),
-                                custody
-                                    .as_ref()
-                                    .map(|v| v.sealer.as_ref() as &dyn eidetic::PayloadSealer),
-                                &context.admissions,
-                            )
-                        })
-                        .ok_or_else(|| "The session evidence store is unavailable.".into())
-                };
-                if custody_epoch.is_some()
-                    && !custody
-                        .as_ref()
-                        .is_some_and(|binding| binding.remains_current(custody_epoch))
-                {
-                    result =
-                        Err("Profile custody changed while loading private saved sources.".into());
-                }
-                let _ = reply.send(result);
+            TrailCommand::ResearchSnapshot {
+                context,
+                selected,
+                max_chars,
+                max_metadata_chars,
+                budget,
+                reply,
+            } => {
+                worker_research_snapshot::run(
+                    context,
+                    selected,
+                    max_chars,
+                    max_metadata_chars,
+                    budget,
+                    reply,
+                    &mut state,
+                    &mut sealed_store,
+                    &custody,
+                    &current_dir,
+                    current_capture_generation,
+                    &memory_error,
+                    &sealed_error,
+                    &limits,
+                );
             },
             TrailCommand::ResearchSource {
                 context,
                 target,
+                budget,
                 reply,
             } => {
-                let custody_epoch = custody.as_ref().and_then(SourceCustody::snapshot);
-                let valid = context.generation == current_capture_generation
-                    && inference_owner(&current_dir).ok()
-                        == Some(format!("turnstone/{}", context.session.as_uuid()))
-                    && target.key.session == context.session;
-                let mut result = if !valid {
-                    Err("The cited source belongs to another session opening.".into())
-                } else if custody_epoch.is_none() {
-                    Err("Unlock the profile to read private saved sources.".into())
-                } else if let Some(admission) = context
-                    .admissions
-                    .iter()
-                    .find(|a| a.key == target.key && a.error.is_none())
-                {
-                    match state.as_mut() {
-                        Some((store, _)) => saved_sources::resolve_with_sealed(
-                            store,
-                            sealed_store.as_mut(),
-                            custody
-                                .as_ref()
-                                .map(|v| v.sealer.as_ref() as &dyn eidetic::PayloadSealer),
-                            admission,
-                            &target,
-                        ),
-                        None => Err("The session evidence store is unavailable.".into()),
-                    }
-                } else {
-                    Err("The cited saved source was withdrawn from this session.".into())
-                };
-                if custody_epoch.is_some()
-                    && !custody
-                        .as_ref()
-                        .is_some_and(|binding| binding.remains_current(custody_epoch))
-                {
-                    result =
-                        Err("Profile custody changed while reading a private cited source.".into());
-                }
-                let _ = reply.send(result);
+                worker_research_source::run(
+                    context,
+                    target,
+                    budget,
+                    reply,
+                    &mut state,
+                    &mut sealed_store,
+                    &custody,
+                    &current_dir,
+                    current_capture_generation,
+                    &memory_error,
+                    &sealed_error,
+                    &limits,
+                );
             },
             TrailCommand::InferenceSnapshot { owner, reply } => {
                 let custody_epoch = custody.as_ref().and_then(SourceCustody::snapshot);
@@ -393,28 +427,18 @@ pub(super) fn run(
                 } else if custody_epoch.is_none() {
                     Err("Unlock the profile to retain a private source".into())
                 } else {
-                    let legacy_key = format!("turnstone/source-capture-request/v1/{}", request.id);
-                    let legacy = state
-                        .as_ref()
-                        .map(|(store, _)| pollster::block_on(store.get(&legacy_key)));
-                    if matches!(legacy.as_ref(), Some(Ok(Some(_)))) {
-                        source_capture_receipts::completed_legacy(
-                            &mut state.as_mut().expect("legacy store checked").0,
-                            &request,
-                        )
-                    } else if !matches!(legacy.as_ref(), Some(Ok(None))) {
-                        Err("legacy capture store unavailable".into())
-                    } else {
-                        match (sealed_store.as_mut(), custody.as_ref()) {
-                            (Some(store), Some(binding)) => sealed_capture::capture_request(
-                                store,
-                                binding.sealer.as_ref(),
-                                &request,
-                                document.as_ref(),
-                            ),
-                            _ => Err("Unlock the profile to retain a private source".into()),
-                        }
-                    }
+                    worker_capture_ops::apply(
+                        &mut state,
+                        &mut sealed_store,
+                        custody.as_ref().expect("custody checked"),
+                        &limits,
+                        &memory_error,
+                        &sealed_error,
+                        &request,
+                        document.as_ref(),
+                        false,
+                    )
+                    .and_then(|stored| stored.ok_or_else(|| "Capture result missing".into()))
                 };
                 if custody_epoch.is_some()
                     && !custody
@@ -450,27 +474,18 @@ pub(super) fn run(
                 } else if custody_epoch.is_none() {
                     Err("Unlock the profile to acknowledge a private source".into())
                 } else {
-                    let legacy_key = format!("turnstone/source-capture-request/v1/{}", request.id);
-                    let legacy = state
-                        .as_ref()
-                        .map(|(store, _)| pollster::block_on(store.get(&legacy_key)));
-                    if matches!(legacy.as_ref(), Some(Ok(Some(_)))) {
-                        source_capture_receipts::acknowledge_saved(
-                            &mut state.as_mut().expect("legacy store checked").0,
-                            &request,
-                        )
-                    } else if !matches!(legacy.as_ref(), Some(Ok(None))) {
-                        Err("legacy capture store unavailable".into())
-                    } else {
-                        match (sealed_store.as_mut(), custody.as_ref()) {
-                            (Some(store), Some(binding)) => sealed_capture::acknowledge(
-                                store,
-                                binding.sealer.as_ref(),
-                                &request,
-                            ),
-                            _ => Err("Unlock the profile to acknowledge a private source".into()),
-                        }
-                    }
+                    worker_capture_ops::apply(
+                        &mut state,
+                        &mut sealed_store,
+                        custody.as_ref().expect("custody checked"),
+                        &limits,
+                        &memory_error,
+                        &sealed_error,
+                        &request,
+                        None,
+                        true,
+                    )
+                    .map(|_| ())
                 };
                 if custody_epoch.is_some()
                     && !custody
@@ -482,12 +497,12 @@ pub(super) fn run(
                 }
                 if result.is_ok() {
                     if let Some((store, _)) = state.as_mut()
-                        && let Err(error) =
-                            crate::place::captured_collection::refresh_local_capture_library(
-                                store,
-                                &current_dir,
-                                &capture_library,
-                            )
+                        && let Err(error) = worker_capture_ops::refresh(
+                            store,
+                            &current_dir,
+                            &capture_library,
+                            &limits,
+                        )
                     {
                         capture_library.unavailable(error);
                     }
@@ -511,8 +526,7 @@ pub(super) fn run(
                     flush(store, memory);
                 }
                 last_to.clear();
-                // The index belongs to the departing session's corpus;
-                // the adopted one mints its own on first recall.
+                // The departing session's index is recreated on first recall.
                 index = None;
                 index_stale = true;
                 indexed_sources.clear();
@@ -520,28 +534,50 @@ pub(super) fn run(
                 // its Fjall lock before evaluating the new open.
                 drop(state.take());
                 drop(sealed_store.take());
-                state = open_memory(&dir, &capture_library);
+                let opened = match &limits {
+                    Ok(limits) => open_memory(&dir, &capture_library, limits),
+                    Err(error) => Err(error.clone().into()),
+                };
+                memory_error = opened.as_ref().err().cloned();
+                if let Some(error) = &memory_error {
+                    capture_library.unavailable(error.to_string());
+                }
+                state = opened.ok();
                 current_dir = dir;
                 current_capture_generation = capture_generation;
                 if state.is_some() && custody.is_some() {
-                    sealed_store = FjallStore::open(sealed_memory_dir(&current_dir)).ok();
+                    (sealed_store, sealed_error) = worker_open_sealed::run(&current_dir, &limits);
+                } else if state.is_none() {
+                    sealed_error = memory_error.clone();
                 }
-                if let Some(binding) = custody.as_ref() {
+                if custody.is_some()
+                    && let Some(error) = &sealed_error
+                {
+                    out.emit(Update::SourceCaptureRecoveryFailed {
+                        capture_generation: current_capture_generation,
+                        error: error.clone(),
+                    });
+                }
+                if let (Some(binding), Ok(limits)) = (custody.as_ref(), limits.as_ref()) {
                     emit_capture_recovery(
                         &mut state,
                         binding,
                         &current_dir,
                         current_capture_generation,
                         &out,
+                        limits,
                     );
                 }
-                if let (Some(store), Some(binding)) = (sealed_store.as_mut(), custody.as_ref()) {
+                if let (Some(store), Some(binding), Ok(limits)) =
+                    (sealed_store.as_mut(), custody.as_ref(), limits.as_ref())
+                {
                     emit_sealed_capture_recovery(
                         store,
                         binding,
                         &current_dir,
                         current_capture_generation,
                         &out,
+                        limits,
                     );
                 }
             },
@@ -551,6 +587,7 @@ pub(super) fn run(
                 }
                 state = None;
                 sealed_store = None;
+                sealed_error = None;
                 index = None;
                 index_stale = true;
                 indexed_sources.clear();

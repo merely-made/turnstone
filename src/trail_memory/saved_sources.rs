@@ -13,7 +13,7 @@ use muniment::FjallStore;
 /// Load each supplied live-facet admission independently. Repeated references
 /// remain separate entries with their original occurrence positions; the
 /// search projection decides when identities are deduplicated.
-pub(super) fn load(store: &mut FjallStore, admissions: &[Admission]) -> Vec<Entry> {
+pub(super) fn load(store: &mut dyn eidetic::Store, admissions: &[Admission]) -> Vec<Entry> {
     admissions
         .iter()
         .map(|admission| match load_content(store, admission) {
@@ -25,55 +25,78 @@ pub(super) fn load(store: &mut FjallStore, admissions: &[Admission]) -> Vec<Entr
             Err(error) => Entry {
                 admission: admission.clone(),
                 content: None,
-                error: Some(error),
+                error: Some(error.to_string()),
             },
         })
         .collect()
 }
 
-/// Route tagged captures only through the separately owned sealed store.
-pub(super) fn load_with_sealed(
-    store: &mut FjallStore,
-    mut sealed: Option<&mut FjallStore>,
+/// Bound the accumulated corpus while reading one admitted capture at a time.
+pub(super) fn load_with_sealed_bounded(
+    store: &mut dyn eidetic::Store,
+    mut sealed: Option<&mut dyn eidetic::Store>,
     sealer: Option<&dyn eidetic::PayloadSealer>,
     admissions: &[Admission],
-) -> Vec<Entry> {
-    admissions
-        .iter()
-        .map(|admission| {
-            let result = if admission.key.annotation_manifest.starts_with("sealed-v1:") {
-                match (sealed.as_deref_mut(), sealer) {
-                    (Some(store), Some(sealer)) => {
-                        super::sealed_capture::content(store, sealer, admission)
-                    },
-                    _ => Err("Unlock the profile to read this sealed source".into()),
-                }
-            } else {
-                load_content(store, admission)
-            };
-            match result {
-                Ok(content) => Entry {
-                    admission: admission.clone(),
-                    content: Some(content),
-                    error: None,
+    max_chars: Option<usize>,
+    max_metadata_chars: Option<usize>,
+) -> Result<Vec<Entry>, crate::research_storage::SourceReadError> {
+    let mut entries = Vec::new();
+    let mut chars = 0usize;
+    let mut metadata = 0usize;
+    for admission in admissions {
+        let result = if admission.key.annotation_manifest.starts_with("sealed-v1:") {
+            match (sealed.as_deref_mut(), sealer) {
+                (Some(store), Some(sealer)) => {
+                    super::sealed_capture::content(store, sealer, admission)
                 },
-                Err(error) => Entry {
-                    admission: admission.clone(),
-                    content: None,
-                    error: Some(error),
-                },
+                _ => Err("Unlock the profile to read this sealed source".into()),
             }
-        })
-        .collect()
+        } else {
+            load_content(store, admission)
+        };
+        let entry = match result {
+            Ok(content) => Entry {
+                admission: admission.clone(),
+                content: Some(content),
+                error: None,
+            },
+            Err(error) if error.storage_error().is_some() => {
+                return Err(error);
+            },
+            Err(error) => Entry {
+                admission: admission.clone(),
+                content: None,
+                error: Some(error.to_string()),
+            },
+        };
+        if let Some(content) = &entry.content {
+            chars = chars
+                .checked_add(content.text.chars().count())
+                .ok_or("corpus size overflow")?;
+            if max_chars.is_some_and(|limit| chars > limit) {
+                return Err("corpus limit exceeded while loading captures".into());
+            }
+        }
+        if max_metadata_chars.is_some() {
+            metadata = metadata
+                .checked_add(crate::research_search::capture_metadata_cost(&entry)?)
+                .ok_or("metadata size overflow")?;
+            if max_metadata_chars.is_some_and(|limit| metadata > limit) {
+                return Err("metadata limit exceeded while loading captures".into());
+            }
+        }
+        entries.push(entry);
+    }
+    Ok(entries)
 }
 
 pub(super) fn resolve_with_sealed(
-    store: &mut FjallStore,
-    sealed: Option<&mut FjallStore>,
+    store: &mut dyn eidetic::Store,
+    sealed: Option<&mut dyn eidetic::Store>,
     sealer: Option<&dyn eidetic::PayloadSealer>,
     admission: &Admission,
     target: &Target,
-) -> Result<Content, String> {
+) -> Result<Content, crate::research_storage::SourceReadError> {
     if target.key != admission.key {
         return Err("saved source target does not match the admitted node reference".into());
     }
@@ -88,13 +111,36 @@ pub(super) fn resolve_with_sealed(
     Ok(content)
 }
 
+/// Resolve an evidence open against one ledger shared by both storage owners.
+pub(super) fn resolve_with_budget(
+    store: &FjallStore,
+    sealed: Option<&FjallStore>,
+    sealer: Option<&dyn eidetic::PayloadSealer>,
+    admission: &Admission,
+    target: &Target,
+    budget: crate::research_storage::SharedReadBudget,
+) -> Result<Content, crate::research_storage::SourceReadError> {
+    let mut legacy = crate::research_storage::BudgetStore {
+        store,
+        budget: budget.clone(),
+    };
+    let mut sealed = sealed.map(|store| crate::research_storage::BudgetStore { store, budget });
+    resolve_with_sealed(
+        &mut legacy,
+        sealed.as_mut().map(|s| s as &mut dyn eidetic::Store),
+        sealer,
+        admission,
+        target,
+    )
+}
+
 /// Resolve one result against its exact admission and canonical-text version.
 /// A stale/wrong target is refused before it can produce a reader document.
 pub(super) fn resolve(
-    store: &mut FjallStore,
+    store: &mut dyn eidetic::Store,
     admission: &Admission,
     target: &Target,
-) -> Result<Content, String> {
+) -> Result<Content, crate::research_storage::SourceReadError> {
     if target.key != admission.key {
         return Err("saved source target does not match the admitted node reference".into());
     }
@@ -103,13 +149,15 @@ pub(super) fn resolve(
     Ok(content)
 }
 
-fn load_content(store: &mut FjallStore, admission: &Admission) -> Result<Content, String> {
+fn load_content(
+    store: &mut dyn eidetic::Store,
+    admission: &Admission,
+) -> Result<Content, crate::research_storage::SourceReadError> {
     if let Some(error) = admission.error.as_ref() {
-        return Err(error.clone());
+        return Err(error.clone().into());
     }
     let annotation_id = parse_manifest(&admission.key.annotation_manifest)?;
-    let record = pollster::block_on(fleece::load_fleece_annotation(store, annotation_id))
-        .map_err(|error| format!("saved source annotation validation: {error}"))?
+    let record = pollster::block_on(fleece::load_fleece_annotation(store, annotation_id))?
         .ok_or_else(|| "saved source annotation is unavailable".to_string())?;
     let evidence = record
         .extraction
@@ -125,7 +173,7 @@ fn load_content(store: &mut FjallStore, admission: &Admission) -> Result<Content
         raw_manifest: raw_id.to_string(),
         annotation_manifest: annotation_id.to_string(),
     };
-    crate::trail_memory::verify_source_document(store, &stored)?;
+    crate::trail_memory::verify_source_document_typed(store, &stored)?;
 
     let extraction = record.extraction;
     let canonical = extraction.canonical_text_record;
@@ -535,3 +583,7 @@ mod tests {
         actor.join().unwrap();
     }
 }
+
+#[cfg(test)]
+#[path = "saved_sources_storage_tests.rs"]
+mod storage_limit_tests;

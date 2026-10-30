@@ -16,7 +16,12 @@ impl App {
                 if generation != self.source_capture_generation {
                     return Vec::new();
                 }
-                self.saved_sources_loaded(request, session, admissions, result)
+                self.saved_sources_loaded(
+                    request,
+                    session,
+                    admissions,
+                    result.map_err(|e| e.to_string()),
+                )
             },
             Update::SavedSourceRead {
                 generation,
@@ -29,7 +34,13 @@ impl App {
                 if generation != self.source_capture_generation {
                     return Vec::new();
                 }
-                self.saved_source_read(request, node, url, target, result)
+                self.saved_source_read(
+                    request,
+                    node,
+                    url,
+                    target,
+                    result.map_err(|e| e.to_string()),
+                )
             },
             Update::FeedFetched { node, url, result } => self.apply_feed_fetched(node, url, result),
             Update::PageStreamed {

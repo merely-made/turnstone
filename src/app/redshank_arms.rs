@@ -19,10 +19,15 @@ use uuid::Uuid;
 
 use crate::action::Effect;
 use crate::content_classes::{REDSHANK_NOTE_FACET, REDSHANK_PROGRESS_FACET};
-use crate::redshank_episode_surface::{PANE_KIND, RedshankEpisodeSourceV1, episode_source};
+use crate::redshank_episode_surface::{
+    PANE_KIND, RedshankEpisodeSourceV1, episode_source,
+};
 use crate::redshank_host::HostOutcome;
 
 use super::App;
+
+#[path = "redshank_notes.rs"]
+mod notes;
 
 /// The tag an episode note node carries, beside `feed-entry` and `unread` on
 /// the episode itself.
@@ -303,11 +308,11 @@ mod tests {
     use crate::action::{Action, FetchedPage, Update};
     use crate::panes::{PaneContent, PaneKindId, SessionId};
     use crate::redshank_host::Output;
-    use redshank_model::{AnnotationId, CaptureAnchor, RepresentationReceipt};
+    use redshank_model::AnnotationId;
     use std::path::{Path, PathBuf};
 
-    const FEED: &str = "https://podcast.test/feed.xml";
-    const PAGE: &str = "https://podcast.test/episodes/one";
+    pub(super) const FEED: &str = "https://podcast.test/feed.xml";
+    pub(super) const PAGE: &str = "https://podcast.test/episodes/one";
     const ENCLOSURE: &str = "https://cdn.podcast.test/one.mp3";
 
     fn rss() -> FetchedPage {
@@ -326,7 +331,7 @@ mod tests {
     }
 
     /// An app on `root`/`session` with one subscribed feed and its episode.
-    fn subscribed(root: &Path, session: SessionId) -> App {
+    pub(super) fn subscribed(root: &Path, session: SessionId) -> App {
         let mut app = App::test_stub();
         app.data_root = root.to_path_buf();
         std::fs::create_dir_all(crate::session::session_dir(root, session)).unwrap();
@@ -400,16 +405,7 @@ mod tests {
         app.update(Action::OpenAddress(PAGE.to_string()));
         let member = app.redshank_member(&item).expect("the episode's member");
 
-        let anchor = CaptureAnchor {
-            item_id: item.clone(),
-            offset_ms: 62_000,
-            end_offset_ms: None,
-            pressed_offset_ms: None,
-            representation: RepresentationReceipt::default(),
-            fingerprint: None,
-        };
-        // Begin freezes a capture target; cancelling releases it, so the
-        // editor's own anchor is the one that reaches the model.
+        // Begin freezes the actual target the editor must return on save.
         app.apply_redshank_commands(vec![(item.clone(), CompactCommand::BeginTextNote)]);
         assert_eq!(
             app.redshank
@@ -417,8 +413,8 @@ mod tests {
                 .map(|a| a.item_id.clone()),
             Some(item.clone())
         );
-        app.apply_redshank_commands(vec![(item.clone(), CompactCommand::CancelTextNote)]);
-        assert!(app.redshank.pending_anchor(&item).is_none());
+        let anchor = app.redshank.pending_anchor(&item).unwrap().clone();
+        let offset = anchor.offset_ms;
         let effects = app.apply_redshank_commands(vec![(
             item.clone(),
             CompactCommand::SaveTextNote {
@@ -461,7 +457,7 @@ mod tests {
             .expect("the note carries its anchor as a field");
         assert_eq!(
             anchor_field.get("offset_ms").and_then(|v| v.as_u64()),
-            Some(62_000)
+            Some(offset)
         );
         let progress_field = app
             .graph_runtimes
@@ -519,7 +515,7 @@ mod tests {
                 .get(&reborn, &FacetId::new(REDSHANK_NOTE_FACET))
                 .and_then(|value| value.get("offset_ms"))
                 .and_then(|value| value.as_u64()),
-            Some(62_000)
+            Some(offset)
         );
         let _ = std::fs::remove_dir_all(&root);
     }

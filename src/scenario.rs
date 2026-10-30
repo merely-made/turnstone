@@ -105,6 +105,8 @@
 //! wait-saved-sources <frames> # wait for this session's source admission read
 //! wait-saved-reader <frames> # wait for the focused saved source's live reader
 //! record-saved-sources <name> # write source admission, entries and live readers
+//! record-structured-research <name> # read only the current admitted result
+//! choose-suggestion <label> # unique visible row; ordinary arrow and enter keys
 //! queue-act <palette label> # retain the exact offered Action through later
 //!                            # scenario steps; no execution until deliver-act
 //! deliver-act               # lower the retained Action through Shell::act
@@ -190,6 +192,8 @@ pub enum Step {
     RecordIdle(String),
     /// Toggle the named current source member using Canvas multi-selection.
     SelectGraphMember(String),
+    /// Click the one painted note member through the normal pointer route.
+    ClickNoteMember,
     /// Read graph truth, native fold routes and the saved session sidecar.
     RecordGraphFolds(String, usize),
     /// Read the owning graph scene, geometry, source truth and saved facets.
@@ -331,6 +335,15 @@ pub enum Step {
     WaitSourceCapture(u32, u64, String),
     /// Wait until this session's saved-source admission load has completed.
     WaitSavedSources(u32),
+    /// Wait for the current admitted research query, not only its source owner.
+    WaitResearchSearch(u32),
+    /// Wait for an offered capture action bound to this exact current URL.
+    WaitSourceTarget(u32, String),
+    /// Wait for a current saved structured result or historical replay.
+    WaitStructuredResult(u32),
+    WaitStructuredAuthorSave(u32),
+    WaitStructuredIdle(u32),
+    WaitStructuredLimitRefusal(u32),
     /// Wait until the focused saved-source reader has content and a live engine.
     WaitSavedReader(u32),
     /// Write the place observation facts (`crate::observe::place_record`),
@@ -341,6 +354,25 @@ pub enum Step {
     RecordSourceCaptures(String),
     /// Write current-session saved-source admissions, entries, and reader state.
     RecordSavedSources(String),
+    /// Observe the admitted current structured result without evaluating it.
+    RecordStructuredResearch(String),
+    /// Record visible negative/scope status without disclosing an old result.
+    RecordStructuredStatus(String),
+    /// Record bounded process counters and nonsecret custody principal.
+    RecordRuntime(String),
+    /// Record the current admitted explicit comparison without source bodies.
+    RecordComparison(String),
+    /// Select a unique visible omnibar row through ordinary key events.
+    ChooseSuggestion(String),
+    /// Refuse a named action if it is in the ordinary current action catalog.
+    AssertNoAction(String),
+    /// Select the visible exact manifest from an earlier capture observation.
+    ChooseCapturedSource {
+        name: String,
+        ordinal: u64,
+    },
+    /// Select an exactly saved result recorded in this session.
+    ChooseSavedResult(String),
     /// Snapshot an exact catalog Action for a later stale-admission check.
     QueueAct(String),
     /// Deliver the previously queued catalog Action through the ordinary
@@ -350,6 +382,81 @@ pub enum Step {
     /// signal a scenario in another process waits on with `wait-file`.
     TouchFile(String),
     Log(String),
+}
+
+/// Extract a saved result identity without accepting a stale or foreign observation.
+pub(crate) fn observed_saved_result(
+    value: &serde_json::Value,
+    session: &str,
+) -> Result<String, String> {
+    if value["schema"] != "turnstone.structured-observation/v1"
+        || value["session"].as_str() != Some(session)
+        || value["historical"] != false
+        || value["busy"] != false
+    {
+        return Err("saved result observation is not current for this session".into());
+    }
+    let saved = value["saved_manifest"]
+        .as_str()
+        .ok_or("saved result missing")?;
+    if saved.is_empty() || value["content_manifest"].as_str() != Some(saved) {
+        return Err("saved result identity mismatch".into());
+    }
+    Ok(saved.to_string())
+}
+
+/// Extract one saved capture identity from a current-session observation.
+pub(crate) fn observed_capture_manifest(
+    value: &serde_json::Value,
+    session: &str,
+    ordinal: u64,
+) -> Result<String, String> {
+    let values = value
+        .as_array()
+        .ok_or("capture observation is not an array")?;
+    let matches: Vec<_> = values
+        .iter()
+        .filter(|item| {
+            item["session"].as_str() == Some(session)
+                && item["ordinal"].as_u64() == Some(ordinal)
+                && item["phase"] == "saved"
+        })
+        .collect();
+    let [item] = matches.as_slice() else {
+        return Err("capture observation absent or ambiguous".into());
+    };
+    let manifest = item["stored"]["annotation_manifest"]
+        .as_str()
+        .ok_or("capture manifest missing")?;
+    if manifest.is_empty() {
+        return Err("empty capture manifest".into());
+    }
+    Ok(manifest.to_string())
+}
+
+/// Find one row by exact displayed label, falling back to a unique substring.
+/// The caller must still navigate to the row through the ordinary input seam.
+pub(crate) fn suggestion_target(labels: &[String], label: &str) -> Result<usize, String> {
+    let exact: Vec<_> = labels
+        .iter()
+        .enumerate()
+        .filter(|(_, value)| value.as_str() == label || value.strip_prefix("› ") == Some(label))
+        .map(|(index, _)| index)
+        .collect();
+    let matches = if exact.is_empty() {
+        labels
+            .iter()
+            .enumerate()
+            .filter(|(_, value)| value.contains(label))
+            .map(|(index, _)| index)
+            .collect::<Vec<_>>()
+    } else {
+        exact
+    };
+    match matches.as_slice() {
+        [target] => Ok(*target),
+        _ => Err(format!("suggestion is absent or ambiguous: {label}")),
+    }
 }
 
 #[derive(Debug)]
@@ -401,3 +508,22 @@ pub(crate) use expand_env::expand_env;
 #[path = "scenario/parse.rs"]
 mod parse;
 pub use parse::parse;
+
+/// Observe the ordinary offered capture action; never synthesize or invoke it.
+pub(crate) fn source_target_ready(actions: &[(String, crate::action::Action)], url: &str) -> bool {
+    actions.iter().filter(|(label, action)| label == "Save source and keep"
+        && matches!(action, crate::action::Action::CaptureSourceDocument { target } if target.url == url))
+        .count() == 1
+}
+
+/// Diagnose the ordinary command target without exposing a different target's URL.
+pub(crate) fn source_target_wait_diagnostic(app: &crate::app::App, url: &str) -> String {
+    match app.browser_command_target() {
+        None => "no browser command target".into(),
+        Some((_, current)) if current != url => "browser command target differs".into(),
+        Some((node, _)) => match app.source_capture_target(node) {
+            Err(reason) => format!("source admission refused: {reason}"),
+            Ok(_) => "admitted source has no unique capture action".into(),
+        },
+    }
+}

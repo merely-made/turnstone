@@ -147,6 +147,7 @@ impl KnotDocumentSession {
             dom,
             runner,
             layout: crate::ui::RetainedLayout::new(),
+            scroll: crate::ui::PaneScroll::new(),
             text_drag: None,
         };
         if auto_resolve && resolve_available {

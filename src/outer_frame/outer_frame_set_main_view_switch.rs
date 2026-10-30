@@ -168,7 +168,14 @@ impl OuterFrame {
         self.current = current;
         self.size = size;
         self.laid_scale = scale;
-        self.scene();
+        // Placement and input queries need current fragments, not a discarded
+        // paint list. Explicit scene production owns painting this layout.
+        self.layout.borrow_mut().ensure(
+            &mut self.controls.dom.borrow_mut(),
+            &self.sheet,
+            self.size.0,
+            self.size.1,
+        );
         let scrolls = self.layout.borrow().scroll_stamp();
         if self.scrolls != scrolls {
             self.controls.invalidate();

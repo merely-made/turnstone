@@ -322,6 +322,10 @@ mod retained_layout_tests;
 #[path = "ui/contributed_projection_tests.rs"]
 mod contributed_projection_tests;
 
+#[cfg(test)]
+#[path = "ui/projection_work_tests.rs"]
+mod projection_work_tests;
+
 #[path = "ui/chrome_row_width.rs"]
 mod chrome_row_width;
 pub(crate) use chrome_row_width::chrome_row_width;
@@ -397,6 +401,8 @@ use build_livery_snapshot::build_livery_snapshot;
 #[path = "ui/paint_snapshot.rs"]
 mod paint_snapshot;
 use paint_snapshot::paint_snapshot;
+#[cfg(test)]
+pub(crate) use paint_snapshot::count_paint_calls;
 #[path = "ui/node_transform_translation.rs"]
 mod node_transform_translation;
 use node_transform_translation::node_transform_translation;
