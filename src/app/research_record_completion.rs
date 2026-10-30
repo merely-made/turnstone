@@ -100,7 +100,15 @@ impl App {
             } => {
                 let value = match result {
                     Ok(value) => value,
-                    Err(error) => return self.structured_error(error),
+                    Err(error) => {
+                        let message = error.to_string();
+                        let effects = self.structured_error(&message);
+                        if message == "Structured record limit exceeded" {
+                            self.research_search.structured.controller.limit_refusal =
+                                Some((request, message));
+                        }
+                        return effects;
+                    },
                 };
                 let manifest = match manifest {
                     Ok(value) => value,

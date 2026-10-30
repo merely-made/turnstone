@@ -215,3 +215,63 @@ fn model_free_compare_control_reachable_with_one_visible_row() {
         "Saved Sources must offer comparison with one visible row"
     );
 }
+
+#[test]
+fn model_free_search_observation_requires_current_accepted_scope() {
+    let root = tempfile::tempdir().unwrap();
+    let mut app = app_with_search(root.path());
+    let pending = request(app.update(Action::SearchSavedSources));
+    assert!(app.scenario_research_search_summary().is_none());
+    let snapshot = eidetic_search::query::ResearchSnapshot {
+        generation: "scope-test".into(),
+        scope: vec![],
+        sources: vec![],
+        coverage: eidetic_search::query::Coverage::Complete,
+    };
+    let mut result =
+        eidetic_search::query::search(&snapshot, &pending.query, &pending.settings).unwrap();
+    let source = eidetic::models::recall::RecallSourceId {
+        kind: eidetic::models::recall::RecallSourceKind::Clip,
+        owner: None,
+        source: "fixture".into(),
+        node: None,
+    };
+    let passage = eidetic::models::recall::InferencePassage {
+        source: source.clone(),
+        version: "v1".into(),
+        text_hash: eidetic::Hash::of(b"private search canary"),
+        selector: eidetic::models::recall::PassageSelector { start: 2, end: 5 },
+        chunker: "fixture".into(),
+        text: "private search canary".into(),
+    };
+    result.hits.push(eidetic_search::query::SearchHit {
+        source,
+        version: "v1".into(),
+        producer: eidetic_search::query::ProducerKind::Selection,
+        title: None,
+        address: None,
+        date: None,
+        tags: vec![],
+        score: 1.0,
+        matches: vec![],
+        passage: Some(passage),
+    });
+    result.total = 1;
+    app.research_search_finished(pending, Ok(result));
+    let observed = app
+        .scenario_research_search_summary()
+        .expect("accepted search");
+    assert_eq!(observed["coverage"], "Complete");
+    assert_eq!(observed["total"], 1);
+    assert_eq!(
+        observed["hits"][0]["selector"],
+        serde_json::json!({"start": 2, "end": 5})
+    );
+    assert!(!observed.to_string().contains("private search canary"));
+    assert!(observed["scope"].as_array().unwrap().is_empty());
+    app.research_search.selected = Some(vec![]);
+    assert!(
+        app.scenario_research_search_summary().is_none(),
+        "selection changed after acceptance"
+    );
+}

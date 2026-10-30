@@ -15,6 +15,9 @@ mod boundary_tests;
 #[path = "research_record_integration_tests.rs"]
 mod integration_tests;
 #[cfg(test)]
+#[path = "research_record_scenario_tests.rs"]
+mod scenario_tests;
+#[cfg(test)]
 #[path = "research_record_owner_tests.rs"]
 mod tests;
 
@@ -29,6 +32,7 @@ pub(crate) struct Controller {
     pub inspected_withdrawn: Option<bool>,
     pub saved_result: Option<eidetic::ManifestId>,
     pub error: Option<String>,
+    pub(super) limit_refusal: Option<(QueryRequest, String)>,
     pub busy: bool,
     pub(super) pending: Option<Job>,
     pub(super) view_scope: Option<ScopeToken>,
@@ -109,6 +113,7 @@ impl App {
             self.clear_structured_index();
         }
         let controller = &mut self.research_search.structured.controller;
+        controller.limit_refusal = None;
         if matches!(
             &job,
             Job::Deposit(_)
@@ -133,6 +138,7 @@ impl App {
     }
     pub(super) fn structured_error(&mut self, error: impl std::fmt::Display) -> Vec<Effect> {
         let controller = &mut self.research_search.structured.controller;
+        controller.limit_refusal = None;
         controller.busy = false;
         controller.pending = None;
         controller.error = Some(error.to_string());
@@ -412,6 +418,7 @@ impl App {
     pub(crate) fn invalidate_structured(&mut self) -> Vec<Effect> {
         let controller = &self.research_search.structured.controller;
         if controller.pending.is_none()
+            && controller.limit_refusal.is_none()
             && controller.view_scope.is_none()
             && controller.recovery_scope.is_none()
             && controller.discovery_scope.is_none()
@@ -441,6 +448,10 @@ impl App {
             | Job::OpenEvidence { scope, .. } => scope,
         });
         let stale = expected.is_some_and(|expected| !self.structured_scope_is_current(expected))
+            || state
+                .limit_refusal
+                .as_ref()
+                .is_some_and(|(request, _)| !self.structured_scope_is_current(&request.scope))
             || state
                 .view_scope
                 .as_ref()

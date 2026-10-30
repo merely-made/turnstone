@@ -5,6 +5,38 @@ use crate::action::Effect;
 use crate::research_compare::{Request, ResultView};
 
 impl App {
+    /// Observe only the currently admitted explicit comparison; no source body.
+    pub(crate) fn research_compare_observation(&self) -> Result<serde_json::Value, String> {
+        let state = &self.research_search;
+        if !self.omnibar.open || state.view != super::research_search_state::View::Compare
+            || state.compare_request.is_some() || state.error.is_some() {
+            return Err("comparison is not ready and visible".into());
+        }
+        let request = state.compare_accepted.as_ref().ok_or("comparison request absent")?;
+        let result = state.comparison.as_ref().ok_or("comparison result absent")?;
+        if state.compare_left.as_ref() != Some(&request.left)
+            || state.compare_right.as_ref() != Some(&request.right)
+            || self.research.context_revision().ok() != Some((request.context.clone(), request.revision))
+            || self.research.clip_access().ok().and_then(|a| (a.epoch)()) != Some(request.epoch)
+            || !crate::research::admitted(&request.context, &request.left)
+            || !crate::research::admitted(&request.context, &request.right) {
+            return Err("comparison scope changed".into());
+        }
+        let c = &result.comparison;
+        let spans: Vec<_> = c.spans.iter().map(|span| serde_json::json!({
+            "kind": format!("{:?}", span.kind),
+            "old": span.old.as_ref().map(|s| serde_json::json!({"start":s.start,"end":s.end})),
+            "new": span.new.as_ref().map(|s| serde_json::json!({"start":s.start,"end":s.end})),
+        })).collect();
+        Ok(serde_json::json!({"schema":"turnstone.comparison-observation/v1", "session":self.session_id,
+            "request":request.id, "left":request.left, "right":request.right,
+            "operation":c.operation, "relationship":format!("{:?}", c.relationship),
+            "settings":{"max_input_bytes":c.settings.max_input_bytes,"max_identity_bytes":c.settings.max_identity_bytes,
+                "max_diff_work":c.settings.max_diff_work,"max_output_spans":c.settings.max_output_spans},
+            "old":{"source":c.old.source,"version":c.old.version,"text_hash":c.old.text_hash},
+            "new":{"source":c.new.source,"version":c.new.version,"text_hash":c.new.text_hash}, "spans":spans}))
+    }
+
     pub(crate) fn issue_research_compare(&mut self) -> Vec<Effect> {
         let state = &mut self.research_search;
         state.compare_page = 0;

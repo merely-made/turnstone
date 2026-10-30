@@ -41,6 +41,7 @@ mod research_structured_rows;
 #[cfg(test)]
 mod research_structured_tests;
 mod research_search_arms;
+mod research_search_scenario;
 mod research_compare_arms;
 mod research_compare_rows;
 mod research_search_rows;

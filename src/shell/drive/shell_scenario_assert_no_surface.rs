@@ -236,6 +236,34 @@ impl Shell {
                     ));
                 }
             },
+            Step::WaitResearchSearch(frames) => {
+                if !self.wait_frames(*frames, |shell| {
+                    shell.app.scenario_research_search_summary().is_some()
+                }) {
+                    return Err(format!(
+                        "wait-research-search after {frames} frames: no current admitted result"
+                    ));
+                }
+            },
+            Step::WaitStructuredResult(frames) => {
+                if !self.wait_frames(*frames, |shell| {
+                    shell.app.structured_scenario_result_ready()
+                }) {
+                    return Err(format!(
+                        "wait-structured-result after {frames} frames: no current saved result or historical replay"
+                    ));
+                }
+            },
+            Step::WaitSourceTarget(frames, url) => {
+                if !self.wait_frames(*frames, |shell| {
+                    crate::scenario::source_target_ready(&shell.app.available_actions(), url)
+                }) {
+                    return Err(format!(
+                        "wait-source-target after {frames} frames: {}",
+                        crate::scenario::source_target_wait_diagnostic(&self.app, url)
+                    ));
+                }
+            },
             Step::WaitSavedReader(frames) => {
                 if !self.wait_frames(*frames, Shell::focused_saved_reader_ready) {
                     let node = self.focused_saved_reader_node();
@@ -315,11 +343,18 @@ impl Shell {
                 })?;
             },
             Step::RecordSavedSources(name) => {
+                let selected = self.app.research_search.selected.clone();
                 let mut readers = Vec::new();
                 let mut nodes: Vec<_> = self.app.saved_readers.keys().copied().collect();
                 nodes.sort();
                 for node in nodes {
                     let reader = &self.app.saved_readers[&node];
+                    if !crate::research_scenario_privacy::capture_selected(
+                        &selected,
+                        &reader.target.key,
+                    ) {
+                        continue;
+                    }
                     let engine = self
                         .app
                         .content
@@ -366,41 +401,20 @@ impl Shell {
                         "rendered_document": rendered_document,
                     }));
                 }
-                let mut retained_readers = Vec::new();
-                let mut members: Vec<_> = self
-                    .app
-                    .content
-                    .live_nodes()
-                    .filter(|node| {
-                        self.app
-                            .content
-                            .facts(*node)
-                            .is_some_and(|f| f.engine == crate::retained_clip::ENGINE_ID)
-                    })
-                    .collect();
-                members.sort();
-                for node in members {
-                    if let Some(session) =
-                        self.content_sessions
-                            .session_mut(&node)
-                            .and_then(|session| {
-                                session
-                                    .as_any()
-                                    .downcast_mut::<mere_document_lanes::SmolwebDocumentSession>()
-                            })
-                    {
-                        retained_readers.push(serde_json::json!({ "node": node, "engine": crate::retained_clip::ENGINE_ID, "rendered_document": session.document_mut().document().clone() }));
-                    }
-                }
+                let retained_readers = self.scenario_retained_readers(&selected);
                 let value = serde_json::json!({
                     "session": self.app.session_id,
                     "generation": self.app.source_capture_generation,
                     "status": self.app.saved_sources.status,
-                    "admissions": self.app.saved_source_admissions(),
-                    "entries": self.app.saved_sources.entries,
+                    "address_events": self.address_event_history.observation(&selected, |key| self.app.saved_source_admitted(key)),
+                    "reader_scope": {"schema":"turnstone.m5-reader-scope/v1",
+                        "selected": if selected.is_none() { None::<&str> } else { Some("restricted") }},
+                    "admissions": crate::research_scenario_privacy::admissions(&selected, self.app.saved_source_admissions()),
+                    "entries": crate::research_scenario_privacy::entries(&selected, &self.app.saved_sources.entries),
                     "readers": readers,
                     "retained_admissions": self.app.research_clip_admissions(),
                     "retained_readers": retained_readers,
+                    "search": self.app.scenario_research_search_summary(),
                 });
                 let body = serde_json::to_string_pretty(&value).map_err(|error| {
                     format!("record-saved-sources '{name}': could not serialize: {error}")
@@ -414,6 +428,137 @@ impl Shell {
                         path.display()
                     )
                 })?;
+            },
+            Step::RecordStructuredResearch(name) => {
+                let value = self.app.structured_scenario_observation()?;
+                let bytes = serde_json::to_vec_pretty(&value)
+                    .map_err(|e| format!("structured observation encoding: {e}"))?;
+                let path = self
+                    .shared_out_dir
+                    .join(format!("{name}.structured-research.json"));
+                std::fs::write(path, bytes)
+                    .map_err(|e| format!("structured observation write: {e}"))?;
+            },
+            Step::RecordStructuredStatus(name) => {
+                let value = self.app.structured_scenario_status();
+                let bytes = serde_json::to_vec_pretty(&value)
+                    .map_err(|e| format!("structured status encoding: {e}"))?;
+                let path = self
+                    .shared_out_dir
+                    .join(format!("{name}.structured-status.json"));
+                std::fs::write(path, bytes).map_err(|e| format!("structured status write: {e}"))?;
+            },
+            Step::RecordRuntime(name) => {
+                let principal = self
+                    .app
+                    .identity
+                    .as_ref()
+                    .and_then(|identity| identity.custody_principal());
+                let value = serde_json::json!({
+                    "schema": "turnstone.model-free-runtime/v1",
+                    "pid": std::process::id(),
+                    "session": self.app.session_id,
+                    "network_offline": self.network_offline,
+                    "offline_acquisition_attempts": self.offline_attempts.load(std::sync::atomic::Ordering::Relaxed),
+                    "custody_principal": principal.map(|(profile, public)| serde_json::json!({"profile": profile.0, "public_key": public})),
+                    "inference": crate::inference_activity::snapshot(),
+                });
+                let bytes = serde_json::to_vec_pretty(&value).map_err(|e| e.to_string())?;
+                std::fs::write(
+                    self.shared_out_dir.join(format!("{name}.runtime.json")),
+                    bytes,
+                )
+                .map_err(|e| format!("runtime observation write: {e}"))?;
+            },
+            Step::RecordComparison(name) => {
+                let value = self.app.research_compare_observation()?;
+                let bytes = serde_json::to_vec_pretty(&value).map_err(|e| e.to_string())?;
+                std::fs::write(
+                    self.shared_out_dir.join(format!("{name}.comparison.json")),
+                    bytes,
+                )
+                .map_err(|e| format!("comparison observation write: {e}"))?;
+            },
+            Step::ChooseCapturedSource { name, ordinal } => {
+                let path = self
+                    .shared_out_dir
+                    .join(format!("{name}.source-captures.json"));
+                let bytes = std::fs::read(path)
+                    .map_err(|e| format!("capture observation unavailable: {e}"))?;
+                let value: serde_json::Value =
+                    serde_json::from_slice(&bytes).map_err(|e| e.to_string())?;
+                let label = crate::scenario::observed_capture_manifest(
+                    &value,
+                    &self.app.session_id.as_uuid().to_string(),
+                    *ordinal,
+                )?;
+                self.scenario_assert_no_surface(&Step::ChooseSuggestion(label))?;
+            },
+            Step::ChooseSavedResult(name) => {
+                let path = self
+                    .shared_out_dir
+                    .join(format!("{name}.structured-research.json"));
+                let bytes = std::fs::read(path)
+                    .map_err(|e| format!("saved result observation unavailable: {e}"))?;
+                let value: serde_json::Value =
+                    serde_json::from_slice(&bytes).map_err(|e| e.to_string())?;
+                let label = crate::scenario::observed_saved_result(
+                    &value,
+                    &self.app.session_id.as_uuid().to_string(),
+                )?;
+                self.scenario_assert_no_surface(&Step::ChooseSuggestion(label))?;
+            },
+            Step::AssertNoAction(label) => {
+                let snap = crate::observe::snapshot(&self.app);
+                if snap.available_actions.iter().any(|action| action == label) {
+                    return Err(format!("action unexpectedly offered: {label}"));
+                }
+            },
+            Step::ChooseSuggestion(label) => {
+                // Saved Sources scrolls the rendered window rather than moving
+                // omnibar.selected. Discover the complete ordered row labels,
+                // reject ambiguity, then scroll via the actual keyboard seam.
+                if !self.app.omnibar.open
+                    || !matches!(self.app.omnibar.mode, crate::ui::OmnibarMode::SavedSources)
+                {
+                    return Err("saved-source omnibar is not open".into());
+                }
+                let labels: Vec<_> = self
+                    .app
+                    .research_search
+                    .rows
+                    .iter()
+                    .map(crate::observe::suggestion_line)
+                    .collect();
+                if labels.is_empty() || labels.len() > 10_000 {
+                    return Err("suggestion list is empty or over limit".into());
+                }
+                let target = crate::scenario::suggestion_target(&labels, label)?;
+                let first = self.app.research_search.first_row;
+                if first >= labels.len() {
+                    return Err("invalid first suggestion".into());
+                }
+                let count = (target + labels.len() - first) % labels.len();
+                for _ in 0..count {
+                    self.scenario_key_in_window(0, &EditKey::Down)?;
+                }
+                let current = crate::observe::snapshot(&self.app).omnibar;
+                let rows: Vec<_> = self
+                    .app
+                    .research_search
+                    .rows
+                    .iter()
+                    .map(crate::observe::suggestion_line)
+                    .collect();
+                if rows != labels
+                    || self.app.research_search.first_row != target
+                    || !current.open
+                    || current.selected != 0
+                    || current.suggestions.first() != Some(&labels[target])
+                {
+                    return Err("suggestion changed during keyboard selection".into());
+                }
+                self.scenario_key_in_window(0, &EditKey::Enter)?;
             },
             Step::TouchFile(path) => {
                 let p = std::path::Path::new(path.as_str());

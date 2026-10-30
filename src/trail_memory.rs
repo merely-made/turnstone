@@ -336,6 +336,11 @@ pub(crate) struct CaptureInferenceOwner {
 #[path = "trail_memory/research_owner_tests.rs"]
 mod research_owner_tests;
 
+#[cfg(test)]
+#[cfg(feature = "authoring")]
+#[path = "trail_memory/m5_inspection.rs"]
+mod m5_inspection;
+
 #[path = "trail_memory/impl_default_for_recall_config.rs"]
 mod impl_default_for_recall_config;
 #[path = "trail_memory/memory_dir.rs"]

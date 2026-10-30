@@ -306,3 +306,34 @@ pub struct PendingChoice {
     pub status: String,
     pub orphan: bool,
 }
+
+/// Bounded scenario evidence: disclose only fields needed to verify the
+/// selected result, never authors, methods, lifecycle refs or exclusion text.
+pub(crate) fn observation_record(record: &PropertyRecordV1) -> serde_json::Value {
+    serde_json::json!({
+        "id": record.id, "entity": record.entity, "property": record.property,
+        "schema_revision": record.schema_revision, "definition_manifest": record.definition_manifest,
+        "context": record.context, "value": record.value, "valid_time": record.valid_time,
+        "status": record.status, "evidence": record.evidence, "recorded_at": record.recorded_at,
+    })
+}
+pub(crate) fn observation_result(result: &RecordResult) -> serde_json::Value {
+    let snapshot = &result.snapshot;
+    serde_json::json!({
+        "operation_version": result.operation_version,
+        "query": result.query, "settings": result.settings, "rows": result.rows,
+        "snapshot": {
+            "scope_generation": snapshot.scope_generation, "complete": snapshot.complete,
+            "exclusion_count": snapshot.exclusions.len(),
+            "exclusions": snapshot.exclusions.iter().map(|value| match value.as_str() {
+                "Denied" => "denied", "Withdrawn" => "withdrawn", "Unavailable" => "unavailable",
+                "Unsupported" => "unsupported", _ => "unclassified",
+            }).collect::<Vec<_>>(),
+            "lifecycle": snapshot.lifecycle.iter().map(|value| serde_json::json!({
+                "record_id": value.record_id, "state": value.state,
+            })).collect::<Vec<_>>(),
+            "sources": snapshot.sources, "definitions": snapshot.definitions,
+            "records": snapshot.records.iter().map(observation_record).collect::<Vec<_>>(),
+        },
+    })
+}

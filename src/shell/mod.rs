@@ -22,6 +22,7 @@ mod contributed_automation;
 mod controller_input;
 mod cue_content;
 mod document_a11y;
+mod citation_event_history;
 mod drive;
 mod effects;
 mod events;

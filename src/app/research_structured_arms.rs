@@ -9,6 +9,7 @@ use eidetic::records::TagIdentity;
 
 impl App {
     pub(crate) fn research_structured_command(&mut self, command: Command) -> Vec<Effect> {
+        self.research_search.structured.controller.limit_refusal = None;
         let requested_generation = match &command {
             Command::Group { generation, .. }
             | Command::GroupPart { generation, .. }

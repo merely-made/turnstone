@@ -34,6 +34,15 @@ impl Shell {
             .map(|d| d.as_millis() as u64)
             .unwrap_or(0);
         for event in events {
+            if std::env::var_os("TURNSTONE_SCENARIO").is_some()
+                && let crate::observe::AppEvent::AddressOpened(address) = &event
+            {
+                let target = crate::saved_sources::parse_address(address).ok().flatten()
+                    .filter(|target| self.app.saved_source_admitted(&target.key))
+                    .filter(|target| crate::research_scenario_privacy::capture_selected(&self.app.research_search.selected, &target.key))
+                    .filter(|_| std::env::var("TURNSTONE_M5_EXPECTED_A1_URI").ok().as_deref() == Some(address.as_str()));
+                self.address_event_history.record(target);
+            }
             self.diagnostic_observations.record(&event);
             if self.observed_events.len() == 128 {
                 self.observed_events.pop_front();
