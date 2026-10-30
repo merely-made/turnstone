@@ -35,13 +35,16 @@ impl Shell {
             .unwrap_or(0);
         for event in events {
             if std::env::var_os("TURNSTONE_SCENARIO").is_some()
-                && let crate::observe::AppEvent::AddressOpened(address) = &event
+                && let Some((kind, address)) = super::super::citation_event_history::event_address(&event)
             {
                 let target = crate::saved_sources::parse_address(address).ok().flatten()
                     .filter(|target| self.app.saved_source_admitted(&target.key))
                     .filter(|target| crate::research_scenario_privacy::capture_selected(&self.app.research_search.selected, &target.key))
-                    .filter(|_| std::env::var("TURNSTONE_M5_EXPECTED_A1_URI").ok().as_deref() == Some(address.as_str()));
-                self.address_event_history.record(target);
+                    .filter(|_| std::env::var("TURNSTONE_M5_EXPECTED_A1_URI").ok().as_deref() == Some(address));
+                match kind {
+                    super::super::citation_event_history::OpenEvent::Address => self.address_event_history.record(target),
+                    super::super::citation_event_history::OpenEvent::Reader => self.reader_event_history.record(target),
+                }
             }
             self.diagnostic_observations.record(&event);
             if self.observed_events.len() == 128 {

@@ -333,6 +333,7 @@ impl Shell {
             contributed_click_request: 0,
             observed_events: VecDeque::with_capacity(128),
             address_event_history: Default::default(),
+            reader_event_history: Default::default(),
             diagnostic_observations:
                 crate::diagnostic_observations::DiagnosticObservations::from_env(),
             shared_out_dir: shared_out_dir_from_env(),

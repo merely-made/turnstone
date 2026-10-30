@@ -111,6 +111,7 @@ pub struct Shell {
     /// compete with trail memory for the app's one event stream.
     pub(super) observed_events: VecDeque<String>,
     pub(super) address_event_history: super::citation_event_history::AddressEventHistory,
+    pub(super) reader_event_history: super::citation_event_history::AddressEventHistory,
     pub(super) diagnostic_observations: crate::diagnostic_observations::DiagnosticObservations,
     pub(super) shared_out_dir: std::path::PathBuf,
     /// A capture the next `render` fulfills from the very views it presents

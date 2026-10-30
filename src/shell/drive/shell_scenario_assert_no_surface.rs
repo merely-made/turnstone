@@ -407,6 +407,7 @@ impl Shell {
                     "generation": self.app.source_capture_generation,
                     "status": self.app.saved_sources.status,
                     "address_events": self.address_event_history.observation(&selected, |key| self.app.saved_source_admitted(key)),
+                    "reader_open_events": self.reader_event_history.reader_observation(&selected, |key| self.app.saved_source_admitted(key)),
                     "reader_scope": {"schema":"turnstone.m5-reader-scope/v1",
                         "selected": if selected.is_none() { None::<&str> } else { Some("restricted") }},
                     "admissions": crate::research_scenario_privacy::admissions(&selected, self.app.saved_source_admissions()),

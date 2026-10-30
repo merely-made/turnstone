@@ -354,7 +354,7 @@ impl App {
                     preview_status: if excerpt.is_some() {
                         "Last retained reading passage".into()
                     } else {
-                        "No retained passage available".into()
+                        "No preview available".into()
                     },
                     excerpt,
                     primary: Some(
