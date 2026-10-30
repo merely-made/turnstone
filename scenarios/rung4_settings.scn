@@ -1,10 +1,8 @@
-# The settings matrix row, self-driven: "change engine/viewer settings and
-# SEE them apply". Two engines are registered (genet.web + genet.livery),
-# so picking a viewer is a real choice: the Inspector pane's radio lowers
-# SetViewerOverride, the sidecar persists it, live content RESPAWNS through
-# the pinned route, and the Inspector reads the applied engine back off the
-# respawned session. Network-dependent (example.com); FRESH profile; the
-# restore twin reuses it.
+# Persist an explicit viewer pin from Auto and observe the resulting content
+# respawn. Auto currently routes to genet.livery; the retired genet.web lane is
+# no longer registered. The Inspector lowers SetViewerOverride, the sidecar
+# persists it, and the restart twin verifies the saved pin. Network-dependent
+# (example.com); use a fresh profile and reuse it for the restore twin.
 settle 30
 key escape
 
@@ -14,17 +12,19 @@ act Toggle live content
 settle 30
 assert content-live
 
-# The default route: the static stylo lane.
+# Auto currently resolves to the registered livery lane.
 act Open Inspector pane
 settle 5
-assert row Engine: genet.web
+assert row Engine: genet.livery
 assert row Viewer: auto
 
-# Retarget through the Inspector pane: pick the livery lane by name. The
-# radio click lowers the typed Action; the respawn applies it visibly.
+# Pin the currently selected lane explicitly. The radio list is collapsed by
+# default, so expose it before selecting the livery option.
 act Open Inspector pane
 settle 5
 assert pane inspector
+click surface:inspector role:button Change viewer
+settle 2
 click-row genet.livery
 settle 30
 assert event viewer-changed

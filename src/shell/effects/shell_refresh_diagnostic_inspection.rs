@@ -250,7 +250,10 @@ impl Shell {
             if self.app.session_load_refused()
                 && !matches!(
                     &effect,
-                    Effect::SwitchSession { .. } | Effect::Redraw | Effect::ClosePlace { .. }
+                    Effect::SwitchSession { .. }
+                        | Effect::Redraw
+                        | Effect::ClosePlace { .. }
+                        | Effect::SettingsPaneRecordResult { .. }
                 )
             {
                 continue;
@@ -267,6 +270,8 @@ impl Shell {
                 | Effect::OpenAlembicWorkshop
                 | Effect::ReplaceGeminiTrust { .. }
                 | Effect::SaveSession
+                | Effect::PersistSettingsPaneRecord { .. }
+                | Effect::SettingsPaneRecordResult { .. }
                 | Effect::SaveChromeLayout(..)
                 | Effect::SaveGraphFolds { .. }
                 | Effect::CopyText(..)

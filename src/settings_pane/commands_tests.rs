@@ -121,12 +121,27 @@ fn explicit_discard_and_reload_resets_conflicted_draft_before_next_apply() {
     first.sync(640.0, 780.0);
     assert_eq!(visible_draft(&first).as_deref(), Some("false"));
 
+    let session = first
+        .runner
+        .state()
+        .rows
+        .values()
+        .find(|row| row.setting_id == "chrome.shellbar.visible")
+        .unwrap()
+        .session
+        .clone();
+    let reset_generation = session.snapshot().reset_generation;
+    let toggle = taproot::matching_estimated_fixture(&*first.dom_ref(), &toggle_selector())[0];
     click(
         &mut first,
         taproot::Selector::class("setting-reload").with_attr("data-action", "reload-settings"),
     );
     assert_eq!(visible_draft(&first).as_deref(), Some("true"));
-    assert!(first.runner.state().reload_epoch > 0);
+    assert!(session.snapshot().reset_generation > reset_generation);
+    assert_eq!(
+        taproot::matching_estimated_fixture(&*first.dom_ref(), &toggle_selector()),
+        vec![toggle]
+    );
 
     draft_toggle_off(&mut first);
     apply_toggle(&mut first);

@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MPL-2.0
 
 use super::*;
-
 impl Shell {
     /// The layered present (born minimal at rung 3, grows into the surface
     /// plan at rung 5): rasterize each surface's scene to its own texture and
@@ -10,6 +9,9 @@ impl Shell {
     /// layer (transparent-cleared, alpha-blended) above when the omnibar is
     /// open. Chains another redraw while the canvas is still animating.
     pub(in super::super) fn render(&mut self) -> bool {
+        for action in self.live_settings.take_actions() {
+            self.act(action);
+        }
         self.refresh_retained_clip_playback();
         self.poll_capture_readback();
         let diagnostics = std::mem::take(&mut self.pending_native_diagnostics);

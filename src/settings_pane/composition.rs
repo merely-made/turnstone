@@ -235,3 +235,56 @@ impl CompositionValidator for SettingsCompositionValidator<'_> {
         Ok(BindingAdmission::Available)
     }
 }
+
+/// Production composition: each durable instance has its own draft session and
+/// guarded binding even when two instances edit the same source setting.
+pub(super) fn managed_rows(state: &SettingsState) -> SettingsView {
+    let rows = state
+        .rows
+        .iter()
+        .map(|(key, row)| {
+            let spec = row.session.snapshot().observed_spec;
+            let label = format!(
+                "{} · {:?} · {:?} · {:?}",
+                spec.label, spec.scope, spec.movement, spec.mutability
+            );
+            (key.clone(), (row.session.clone(), label))
+        })
+        .collect::<BTreeMap<_, _>>();
+    let rows = Rc::new(rows);
+    let factory = Rc::new(move |descriptor: &ComponentDescriptor| -> SettingsView {
+        let key = descriptor.key.clone();
+        if let Some((session, label)) = rows.get(&key) {
+            let callback_key = key.clone();
+            Box::new(
+                el::<_, SettingsState, ()>(
+                    "div",
+                    cambium::setting_row_managed(
+                        session,
+                        label.clone(),
+                        move |state: &mut SettingsState, event| {
+                            super::row_commands::row_event(state, &callback_key, event);
+                        },
+                    ),
+                )
+                .attr("class", "settings-owned-row")
+                .attr("data-setting-instance", key.0),
+            )
+        } else {
+            Box::new(
+                el::<_, SettingsState, ()>(
+                    "div",
+                    format!("Unavailable saved component: {}", descriptor.kind.0),
+                )
+                .attr("class", "setting-unavailable")
+                .attr("role", "status")
+                .attr("data-setting-instance", key.0),
+            )
+        }
+    });
+    Box::new(
+        RetainedComposition::<SettingsState, ()>::new(state.arrangement.transaction(), factory)
+            .with_collapsed(state.collapsed.clone())
+            .with_lifecycle_sink(state.composition_lifecycle.clone()),
+    )
+}
