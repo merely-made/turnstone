@@ -22,6 +22,29 @@ struct TraceRecord {
     payload: crate::reactive_trace::ReactiveTracePayload,
 }
 
+/// Producer-gap assertions need a process where no other test thread evaluates
+/// views: Meristem's no_std trace sequence is process-wide, while a test's
+/// subscriber sees only its own thread. Returns true in the isolated rerun.
+fn in_own_process(test: &str) -> bool {
+    const CHILD: &str = "TURNSTONE_REACTIVE_TEST_CHILD";
+    if std::env::var_os(CHILD).is_some() {
+        return true;
+    }
+    let module = module_path!().split_once("::").map_or("", |(_, path)| path);
+    let output = std::process::Command::new(std::env::current_exe().unwrap())
+        .args(["--exact", &format!("{module}::{test}"), "--test-threads=1"])
+        .env(CHILD, "1")
+        .output()
+        .unwrap();
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(
+        output.status.success() && stdout.contains("1 passed"),
+        "{stdout}{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    false
+}
+
 fn limits() -> RetentionLimits {
     RetentionLimits {
         max_records: MAX_TEST_RECORDS,
@@ -256,6 +279,9 @@ fn assert_no_new_coverage_loss(
 
 #[test]
 fn installed_trace_links_owner_input_flush_mutation_livery_and_submitted_frame() {
+    if !in_own_process("installed_trace_links_owner_input_flush_mutation_livery_and_submitted_frame") {
+        return;
+    }
     let run = RunId::from("settings-reactive-receiving");
     let boot = SourceBootId::from("settings-reactive-boot");
     let (layer, receiver) = crate::reactive_trace::channel(run.clone(), boot.clone());
@@ -443,6 +469,9 @@ fn installed_trace_links_owner_input_flush_mutation_livery_and_submitted_frame()
 
 #[test]
 fn unrelated_behavior_revision_skips_the_unchanged_shell_row() {
+    if !in_own_process("unrelated_behavior_revision_skips_the_unchanged_shell_row") {
+        return;
+    }
     let run = RunId::from("settings-reactive-skip-receiving");
     let boot = SourceBootId::from("settings-reactive-skip-boot");
     let (layer, receiver) = crate::reactive_trace::channel(run.clone(), boot.clone());
