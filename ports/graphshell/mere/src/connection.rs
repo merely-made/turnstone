@@ -13,7 +13,7 @@ use chirograph::{
 use graphshell_client::LineDriven;
 use graphshell_endpoint::door::{
     app_admission::{AppId, AppRouteId},
-    app_client::AppBrokerClient,
+    projection::AppBrokerClient,
 };
 use mere_overmap::route_session::MereRouteSession;
 use mere_view::MereViewRequest;

@@ -23,4 +23,4 @@ chirograph.workspace = true
 sceno.workspace = true
 scenotime.workspace = true
 serde_json.workspace = true
-graphshell-endpoint = { workspace = true, optional = true, features = ["door"] }
+graphshell-endpoint = { workspace = true, optional = true, features = ["projection-door"] }

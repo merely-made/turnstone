@@ -13,10 +13,12 @@ use graphshell_endpoint::door::{
     app_admission::{AppHello, AppId, AppRouteId},
     frame::{read_native_message_async, write_native_message_async},
     wire::{
-        APP_CONNECT_SCHEMA, AppHostMessage, AppMessage, BROWSER_CHALLENGE_SCHEMA, BrowserChallenge,
+        APP_CONNECT_SCHEMA, AppHostMessage as WireHostMessage, AppMessage as WireMessage, BROWSER_CHALLENGE_SCHEMA, BrowserChallenge,
     },
 };
 use std::time::Duration;
+type AppMessage = WireMessage<chirograph::CarrierRequest, ()>;
+type AppHostMessage = WireHostMessage<chirograph::CarrierResponse, chirograph::CarrierNotice, ()>;
 use tokio::{net::UnixListener, time::timeout};
 
 #[tokio::test(flavor = "multi_thread")]
@@ -118,7 +120,7 @@ async fn application_door_resource_is_assembled_from_bounded_chunk_frames() {
     });
 
     let transfer = async {
-        let mut client = graphshell_endpoint::door::app_client::AppBrokerClient::open_route_at(
+        let mut client = graphshell_endpoint::door::projection::AppBrokerClient::open_route_at(
             &socket_path,
             AppId::new("graphshell"),
             AppRouteId::new("mere/native-test").unwrap(),
