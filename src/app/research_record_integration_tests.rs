@@ -139,7 +139,7 @@ fn model_free_app_authors_saves_reopens_and_queries_a_sourced_property() {
         status: Some("approved".into()),
         evidence: target,
     };
-    let effects = app.structured_author(property);
+    let effects = app.structured_author(property.clone());
     finish(&mut app, &bridge, &actor, effects);
     assert!(app.research_search.structured.controller.error.is_none());
     assert!(!app.research_search.structured.controller.busy);
@@ -275,4 +275,40 @@ fn model_free_app_authors_saves_reopens_and_queries_a_sourced_property() {
     let controller = &app.research_search.structured.controller;
     assert!(!controller.result_historical);
     assert!(controller.result.as_ref().unwrap().rows.is_empty());
+    let effects = app.structured_refresh_saved();
+    finish(&mut app, &bridge, &actor, effects);
+    let saved_again = app.structured_saved_results().unwrap();
+    assert_eq!(
+        saved_again.len(),
+        2,
+        "saved history is independent of the one-record query limit"
+    );
+    let minimum = super::boundary_tests::smallest_scope_limit(&mut app, true);
+    let author = app.structured_author_identity().unwrap().asserter_iri();
+    let (reservation, _) = crate::research_record_graph::attachment_reservation(
+        false,
+        &author,
+        eidetic::ManifestId::of_blob(b"size"),
+    );
+    app.research_search.preferences.records.max_work = minimum + reservation - 1;
+    let revision = app.graph_runtimes.graph().revision();
+    let effects = app.structured_author(property);
+    finish(&mut app, &bridge, &actor, effects);
+    assert!(app.research_search.structured.controller.error.is_some());
+    assert_eq!(app.graph_runtimes.graph().revision(), revision);
+    let effects = app.structured_refresh_recovery();
+    finish(&mut app, &bridge, &actor, effects);
+    let choices = &app.research_search.structured.controller.recovery;
+    assert_eq!(choices.len(), 1);
+    assert!(choices[0].orphan);
+    let nonce = choices[0].nonce;
+    let effects = app.structured_abandon_recovery(nonce);
+    finish(&mut app, &bridge, &actor, effects);
+    assert!(
+        app.research_search
+            .structured
+            .controller
+            .recovery
+            .is_empty()
+    );
 }

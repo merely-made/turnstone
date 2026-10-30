@@ -42,6 +42,12 @@ impl App {
         if author.asserter_iri() != expected_author {
             return Err("Profile identity changed before property commit".into());
         }
+        let (work, bytes) = research_record_graph::attachment_reservation(
+            result_binding,
+            expected_author,
+            manifest,
+        );
+        self.structured_scope_reserved(work, bytes)?;
         self.journal
             .lock()
             .map_err(|_| "Graph journal unavailable")?
@@ -247,6 +253,16 @@ impl App {
             };
         if session != *self.session_id.as_uuid() {
             return Err("Pending save belongs to another session".into());
+        }
+        let missing = statement.as_ref().is_some_and(|id| {
+            self.graph_runtimes
+                .get(graph_id)
+                .is_none_or(|runtime| runtime.canvas.graph().find_assertion(id).is_none())
+        });
+        if missing {
+            let (work, bytes) =
+                research_record_graph::attachment_reservation(result_kind, &author_iri, manifest);
+            self.structured_scope_reserved(work, bytes)?;
         }
         let directory = self.session_dir();
         let settings = self.research_search.preferences.records.clone();

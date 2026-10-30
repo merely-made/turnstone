@@ -317,6 +317,7 @@ impl App {
                     Ok(value) => value,
                     Err(error) => return self.structured_error(error),
                 };
+                let full_scope = self.structured_scope().ok();
                 let mut choices = Vec::new();
                 for item in &items {
                     let (kind, graph, manifest, attached, withdrawal) = match item {
@@ -335,14 +336,21 @@ impl App {
                             false,
                         ),
                     };
-                    let live = manifest.is_some_and(|manifest| {
-                        scope
-                            .graph_manifests
-                            .contains(&(crate::panes::GraphId(graph), manifest))
+                    let live = full_scope.as_ref().map(|full| {
+                        manifest.is_some_and(|manifest| {
+                            full.graph_manifests
+                                .contains(&(crate::panes::GraphId(graph), manifest))
+                        })
                     });
-                    let orphan = !attached && !live && !withdrawal;
+                    let orphan = !attached && live != Some(true) && !withdrawal;
                     let status = if orphan {
-                        "Unbound deposit"
+                        if live.is_none() {
+                            "Deposit unverified; adjust graph limits to verify"
+                        } else {
+                            "Unbound deposit"
+                        }
+                    } else if live.is_none() {
+                        "Pending save; adjust graph limits to retry"
                     } else if withdrawal {
                         "Withdrawal awaiting save"
                     } else {

@@ -12,6 +12,28 @@ const RESULT_PREDICATE: &str = "https://merely.computer/ns/research#structured-r
 const RESULT_METHOD: &str = "https://merely.computer/ns/research#structured-query-v1";
 const RESULT_REFERENCE: &str = "urn:turnstone:sealed-result:v1:";
 
+/// Reserve enough for a new self-loop and its assertion in both scope scans.
+/// The kernel's local ID comprises at most three 16-digit hex values and two separators.
+pub(crate) fn attachment_reservation(
+    result: bool,
+    author: &str,
+    manifest: eidetic::ManifestId,
+) -> (usize, usize) {
+    let (predicate, reference) = if result {
+        (RESULT_PREDICATE, RESULT_REFERENCE)
+    } else {
+        (PREDICATE, REFERENCE)
+    };
+    (
+        4,
+        50usize
+            .saturating_add(predicate.len())
+            .saturating_add(author.len())
+            .saturating_add(reference.len())
+            .saturating_add(manifest.to_string().len()),
+    )
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) struct GraphBinding {
     pub entity: uuid::Uuid,

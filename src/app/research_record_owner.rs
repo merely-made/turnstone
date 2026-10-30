@@ -9,6 +9,9 @@ use crate::research_records::{
 };
 use eidetic::records::{PropertyRecordV1, RecordQuery, RecordResult, RecordSettings};
 #[cfg(test)]
+#[path = "research_record_boundary_tests.rs"]
+mod boundary_tests;
+#[cfg(test)]
 #[path = "research_record_integration_tests.rs"]
 mod integration_tests;
 #[cfg(test)]
@@ -50,80 +53,6 @@ impl Controller {
     }
 }
 impl App {
-    pub(super) fn structured_scope(&self) -> Result<ScopeToken, String> {
-        let (context, revision) = self.research.context_revision()?;
-        if context.session != self.session_id {
-            return Err("Structured session changed".into());
-        }
-        let custody_epoch = (self.research.clip_access()?.epoch)()
-            .ok_or("Unlock the profile to use structured research")?;
-        let mut graphs = Vec::new();
-        let mut graph_instances = Vec::new();
-        let mut graph_manifests = Vec::new();
-        let mut owner_bindings = Vec::new();
-        let mut budget =
-            crate::research_record_graph::Budget::new(&self.research_search.preferences.records);
-        for runtime in self
-            .graph_runtimes
-            .iter()
-            .filter(|runtime| runtime.session == Some(self.session_id))
-        {
-            runtime
-                .persistence
-                .placement_for(&self.session_dir())
-                .map_err(|e| format!("Graph placement unavailable: {e}"))?;
-            for (_, node) in runtime.canvas.graph().nodes() {
-                budget.charge(1, 0, node.url().len())?;
-                crate::retained_clip::request(node.url())
-                    .map_err(|e| format!("Retained source is malformed: {e}"))?;
-            }
-            graphs.push((runtime.graph, runtime.canvas.graph().revision()));
-            graph_instances.push((runtime.graph, runtime.instance));
-            for binding in crate::research_record_graph::bindings_limited(
-                runtime.canvas.graph(),
-                true,
-                &mut budget,
-            )? {
-                graph_manifests.push((runtime.graph, binding.manifest));
-                owner_bindings.push(crate::research_records::OwnerBinding {
-                    binding: Binding {
-                        graph: runtime.graph,
-                        entity: binding.entity,
-                        statement_id: binding.statement_id,
-                        manifest: binding.manifest,
-                    },
-                    author: binding.author,
-                    withdrawn: binding.withdrawn,
-                });
-            }
-            for binding in crate::research_record_graph::result_bindings_limited(
-                runtime.canvas.graph(),
-                &mut budget,
-            )? {
-                graph_manifests.push((runtime.graph, binding.manifest));
-            }
-        }
-        graphs.sort_by_key(|(graph, _)| *graph.as_uuid());
-        graph_instances.sort_by_key(|(graph, _)| *graph.as_uuid());
-        graph_manifests.sort_by_key(|(graph, manifest)| (*graph.as_uuid(), manifest.to_string()));
-        owner_bindings.sort_by_key(|value| {
-            (
-                *value.binding.graph.as_uuid(),
-                value.binding.statement_id.clone(),
-            )
-        });
-        Ok(ScopeToken {
-            context,
-            revision,
-            custody_epoch,
-            graphs,
-            graph_instances,
-            selected: self.research_search.selected.clone(),
-            graph_manifests,
-            owner_bindings,
-            settings: self.research_search.preferences.records.clone(),
-        })
-    }
     pub(super) fn structured_candidates(&self, historical: bool) -> Result<Vec<Candidate>, String> {
         let mut values = Vec::new();
         let mut budget =
@@ -397,9 +326,6 @@ impl App {
             Ok(values) => values,
             Err(error) => return self.structured_error(error),
         };
-        if values.len() > scope.settings.max_records {
-            return self.structured_error("Saved result limit exceeded");
-        }
         self.structured_submit(Job::Discover {
             id: uuid::Uuid::new_v4(),
             scope,
@@ -408,7 +334,7 @@ impl App {
         })
     }
     pub(crate) fn structured_refresh_recovery(&mut self) -> Vec<Effect> {
-        let scope = match self.structured_scope() {
+        let scope = match self.structured_recovery_scope() {
             Ok(value) => value,
             Err(error) => return self.structured_error(error),
         };
@@ -418,12 +344,12 @@ impl App {
         })
     }
     pub(crate) fn structured_retry_recovery(&mut self, nonce: uuid::Uuid) -> Vec<Effect> {
-        let scope = match self.structured_scope() {
+        let recovery_scope = match self.structured_recovery_scope() {
             Ok(value) => value,
             Err(error) => return self.structured_error(error),
         };
         let controller = &self.research_search.structured.controller;
-        if controller.recovery_scope.as_ref() != Some(&scope) {
+        if controller.recovery_scope.as_ref() != Some(&recovery_scope) {
             return self.structured_error("Refresh pending saves first");
         }
         let Some(item) = controller
@@ -442,6 +368,13 @@ impl App {
             return self
                 .structured_error("This unbound deposit has no assertion to retry; set it aside");
         }
+        let scope = match self.structured_scope() {
+            Ok(value) => value,
+            Err(error) => {
+                return self
+                    .structured_error(format!("Cannot retry within current graph limits: {error}"));
+            },
+        };
         self.structured_submit(Job::Reconcile {
             id: uuid::Uuid::new_v4(),
             scope,
@@ -449,12 +382,12 @@ impl App {
         })
     }
     pub(crate) fn structured_abandon_recovery(&mut self, nonce: uuid::Uuid) -> Vec<Effect> {
-        let scope = match self.structured_scope() {
+        let recovery_scope = match self.structured_recovery_scope() {
             Ok(value) => value,
             Err(error) => return self.structured_error(error),
         };
         let controller = &self.research_search.structured.controller;
-        if controller.recovery_scope.as_ref() != Some(&scope)
+        if controller.recovery_scope.as_ref() != Some(&recovery_scope)
             || !controller
                 .recovery
                 .iter()
@@ -462,6 +395,13 @@ impl App {
         {
             return self.structured_error("Only an unbound pending save can be set aside");
         }
+        let scope =
+            match self.structured_scope() {
+                Ok(value) => value,
+                Err(_) => return self.structured_error(
+                    "Cannot verify the graph binding within current limits; pending save preserved",
+                ),
+            };
         self.structured_submit(Job::Abandon {
             id: uuid::Uuid::new_v4(),
             scope,
