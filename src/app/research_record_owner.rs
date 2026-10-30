@@ -131,11 +131,11 @@ impl App {
         controller.pending = Some(job.clone());
         vec![Effect::ResearchRecords(job), Effect::Redraw]
     }
-    pub(super) fn structured_error(&mut self, error: impl Into<String>) -> Vec<Effect> {
+    pub(super) fn structured_error(&mut self, error: impl std::fmt::Display) -> Vec<Effect> {
         let controller = &mut self.research_search.structured.controller;
         controller.busy = false;
         controller.pending = None;
-        controller.error = Some(error.into());
+        controller.error = Some(error.to_string());
         vec![Effect::Redraw]
     }
     pub(crate) fn structured_query(
@@ -371,8 +371,9 @@ impl App {
         let scope = match self.structured_scope() {
             Ok(value) => value,
             Err(error) => {
-                return self
-                    .structured_error(format!("Cannot retry within current graph limits: {error}"));
+                return self.structured_error(format!(
+                    "Cannot retry within current graph limits: {error}"
+                ));
             },
         };
         self.structured_submit(Job::Reconcile {

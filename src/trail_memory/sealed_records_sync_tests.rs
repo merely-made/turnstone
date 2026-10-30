@@ -11,14 +11,15 @@ fn call<T>(
     session: uuid::Uuid,
     generation: uuid::Uuid,
     fail: bool,
-    make: impl FnOnce(mpsc::SyncSender<Result<T, String>>) -> Kind,
-) -> Result<T, String> {
+    make: impl FnOnce(mpsc::SyncSender<Result<T, crate::research_storage::SourceReadError>>) -> Kind,
+) -> Result<T, crate::research_storage::SourceReadError> {
     let (reply, receive) = mpsc::sync_channel(1);
     record_actor::handle_with_sync(
         record_actor::Command {
             session,
             generation,
             max_bytes: 16 * 1024 * 1024,
+            budget: crate::research_storage::StorageLimits::default().budget(),
             kind: make(reply),
         },
         store,
@@ -27,7 +28,9 @@ fn call<T>(
         generation,
         &|_| {
             if fail {
-                Err("injected sync failure".into())
+                Err(muniment::StoreError::Backend(
+                    "injected sync failure".into(),
+                ))
             } else {
                 Ok(())
             }
@@ -47,7 +50,13 @@ fn model_free_property_sync_failure_fences_each_mutation_until_exact_retry() {
     let session = uuid::Uuid::new_v4();
     let generation = uuid::Uuid::new_v4();
     let directory = root.path().join(session.to_string()).join("memory");
-    let mut store = Some(muniment::FjallStore::open(root.path().join("sealed")).unwrap());
+    let mut store = Some(
+        muniment::FjallStore::open_with_limits(
+            root.path().join("sealed"),
+            crate::research_storage::StorageLimits::default().owner(),
+        )
+        .unwrap(),
+    );
     let definition = PropertyDefinitionV1 {
         id: "fixture.sync".into(),
         revision: "1".into(),
@@ -317,7 +326,13 @@ fn model_free_result_sync_failure_fences_each_mutation_until_exact_retry() {
     let session = uuid::Uuid::new_v4();
     let generation = uuid::Uuid::new_v4();
     let directory = root.path().join(session.to_string()).join("memory");
-    let mut store = Some(muniment::FjallStore::open(root.path().join("sealed")).unwrap());
+    let mut store = Some(
+        muniment::FjallStore::open_with_limits(
+            root.path().join("sealed"),
+            crate::research_storage::StorageLimits::default().owner(),
+        )
+        .unwrap(),
+    );
     let snapshot = RecordSnapshot {
         scope_generation: "scope".into(),
         complete: true,

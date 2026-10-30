@@ -186,7 +186,7 @@ impl App {
                 let original = std::mem::take(&mut self.research_search.original_text);
                 self.omnibar.text = original;
                 self.omnibar.cursor = self.omnibar.text.len();
-                let result = if field.starts_with("record_max_") {
+                let result = if field.starts_with("record_max_") || field.starts_with("storage_") {
                     super::research_search_values::apply_value(
                         &mut self.research_search,
                         &self.data_root,

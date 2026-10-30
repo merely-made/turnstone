@@ -4,8 +4,10 @@
 use super::sealed_result_receipts::{
     ResultReceipt, read_result_receipt, result_receipts, write_result_receipt,
 };
+use super::structured_bounded_store::StructuredStore;
+use crate::research_storage::SourceReadError as HostError;
 use eidetic::records::{PropertyDefinitionV1, PropertyRecordV1};
-use eidetic::{Backend as _, ManifestId, PayloadSealer, Store};
+use eidetic::{ManifestId, PayloadSealer};
 use serde::{Deserialize, Serialize};
 
 const LEGACY_PREFIX: &str = "turnstone/sealed-property-request/v1/";
@@ -59,10 +61,10 @@ fn pending_key(nonce: uuid::Uuid) -> String {
     format!("{PENDING_PREFIX}{nonce}")
 }
 fn write_receipt(
-    store: &mut dyn Store,
+    store: &mut dyn StructuredStore,
     sealer: &dyn PayloadSealer,
     receipt: &Receipt,
-) -> Result<(), String> {
+) -> Result<(), HostError> {
     let namespace = key(receipt.request.nonce);
     let clear = serde_json::to_vec(&Bound {
         namespace: namespace.clone(),
@@ -86,42 +88,34 @@ fn write_receipt(
             .as_ref()
             .is_some_and(|value| !value.saved)
     {
-        pollster::block_on(store.put(&pending, &encoded))
-            .map_err(|e| format!("Property pending receipt write failed: {e}"))?;
+        pollster::block_on(store.put(&pending, &encoded))?;
     } else {
-        pollster::block_on(store.put(&namespace, &encoded))
-            .map_err(|e| format!("Property completion write failed: {e}"))?;
-        pollster::block_on(store.delete(&pending))
-            .map_err(|e| format!("Property pending receipt cleanup failed: {e}"))?;
+        pollster::block_on(store.put(&namespace, &encoded))?;
+        pollster::block_on(store.delete(&pending))?;
     }
     Ok(())
 }
 pub(super) fn read_receipt(
-    store: &mut dyn Store,
+    store: &mut dyn StructuredStore,
     sealer: &dyn PayloadSealer,
     nonce: uuid::Uuid,
-) -> Result<Option<Receipt>, String> {
+) -> Result<Option<Receipt>, HostError> {
     Ok(read_receipt_bounded(store, sealer, nonce, usize::MAX)?.map(|(value, _)| value))
 }
 fn read_receipt_bounded(
-    store: &mut dyn Store,
+    store: &mut dyn StructuredStore,
     sealer: &dyn PayloadSealer,
     nonce: uuid::Uuid,
     limit: usize,
-) -> Result<Option<(Receipt, usize)>, String> {
+) -> Result<Option<(Receipt, usize)>, HostError> {
     let namespace = key(nonce);
-    if pollster::block_on(store.get(&format!("{LEGACY_PREFIX}{nonce}")))
-        .map_err(|e| format!("Legacy property receipt read failed: {e}"))?
-        .is_some()
-    {
+    if pollster::block_on(store.get(&format!("{LEGACY_PREFIX}{nonce}")))?.is_some() {
         return Err("Unsupported prior property receipt format; preserved for recovery".into());
     }
-    let pending = pollster::block_on(store.get(&pending_key(nonce)))
-        .map_err(|e| format!("Property pending receipt read failed: {e}"))?;
+    let pending = store.get_limited(&pending_key(nonce), limit)?;
     let bytes = match pending {
         Some(bytes) => Some(bytes),
-        None => pollster::block_on(store.get(&namespace))
-            .map_err(|e| format!("Property receipt read failed: {e}"))?,
+        None => store.get_limited(&namespace, limit)?,
     };
     let Some(bytes) = bytes else {
         return Ok(None);
@@ -164,10 +158,10 @@ fn read_receipt_bounded(
     Ok(Some((held.receipt, stored_bytes)))
 }
 pub(super) fn deposit_request(
-    store: &mut dyn Store,
+    store: &mut dyn StructuredStore,
     sealer: &dyn PayloadSealer,
     request: &DepositRequest,
-) -> Result<ManifestId, String> {
+) -> Result<ManifestId, HostError> {
     if request.record.id != request.nonce.to_string() {
         return Err("Property nonce mismatch".into());
     }
@@ -228,14 +222,14 @@ pub(super) fn deposit_request(
 }
 
 pub(super) fn prepare_withdrawal(
-    store: &mut dyn Store,
+    store: &mut dyn StructuredStore,
     sealer: &dyn PayloadSealer,
     nonce: uuid::Uuid,
     session: uuid::Uuid,
     graph: uuid::Uuid,
     manifest: ManifestId,
     statement: &str,
-) -> Result<(), String> {
+) -> Result<(), HostError> {
     let mut receipt =
         read_receipt(store, sealer, nonce)?.ok_or("Property receipt unavailable for withdrawal")?;
     if !receipt.saved
@@ -259,14 +253,14 @@ pub(super) fn prepare_withdrawal(
     write_receipt(store, sealer, &receipt)
 }
 pub(super) fn acknowledge_withdrawal(
-    store: &mut dyn Store,
+    store: &mut dyn StructuredStore,
     sealer: &dyn PayloadSealer,
     nonce: uuid::Uuid,
     session: uuid::Uuid,
     graph: uuid::Uuid,
     manifest: ManifestId,
     statement: &str,
-) -> Result<(), String> {
+) -> Result<(), HostError> {
     let mut receipt =
         read_receipt(store, sealer, nonce)?.ok_or("Property receipt unavailable for withdrawal")?;
     if !receipt.saved
@@ -288,12 +282,12 @@ pub(super) fn acknowledge_withdrawal(
     write_receipt(store, sealer, &receipt)
 }
 pub(super) fn acknowledge(
-    store: &mut dyn Store,
+    store: &mut dyn StructuredStore,
     sealer: &dyn PayloadSealer,
     request: &DepositRequest,
     id: ManifestId,
     statement_id: &str,
-) -> Result<(), String> {
+) -> Result<(), HostError> {
     let mut held = read_receipt(store, sealer, request.nonce)?.ok_or("Property receipt missing")?;
     if held.request != *request
         || held.abandoned
@@ -313,13 +307,13 @@ pub(super) fn acknowledge(
     write_receipt(store, sealer, &held)
 }
 pub(super) fn mark_attached(
-    store: &mut dyn Store,
+    store: &mut dyn StructuredStore,
     sealer: &dyn PayloadSealer,
     request: &DepositRequest,
     id: ManifestId,
     statement_id: &str,
     assertion: &serde_json::Value,
-) -> Result<(), String> {
+) -> Result<(), HostError> {
     let mut receipt =
         read_receipt(store, sealer, request.nonce)?.ok_or("Property receipt missing")?;
     if receipt.request != *request
@@ -345,19 +339,17 @@ pub(super) fn mark_attached(
 }
 
 pub(super) fn receipts(
-    store: &mut dyn Store,
+    store: &mut dyn StructuredStore,
     sealer: &dyn PayloadSealer,
     max_items: usize,
     max_bytes: usize,
-) -> Result<(Vec<Receipt>, usize), String> {
-    if !pollster::block_on(store.list(LEGACY_PREFIX))
-        .map_err(|e| format!("Legacy property inventory failed: {e}"))?
-        .is_empty()
-    {
+    legacy_checked: bool,
+) -> Result<(Vec<Receipt>, usize), HostError> {
+    if !legacy_checked && !pollster::block_on(store.list(LEGACY_PREFIX))?.is_empty() {
         return Err("Unsupported prior property receipt format; preserved for recovery".into());
     }
-    let keys = pollster::block_on(store.list(PENDING_PREFIX))
-        .map_err(|e| format!("Property recovery inventory failed: {e}"))?;
+    let key_bytes = max_items.saturating_mul(PENDING_PREFIX.len() + 36);
+    let keys = store.list_inventory(PENDING_PREFIX, max_items, key_bytes)?;
     if keys.len() > max_items {
         return Err("Property recovery inventory limit exceeded".into());
     }
@@ -405,14 +397,26 @@ impl RecoveryItem {
     }
 }
 pub(super) fn inventory(
-    store: &mut dyn Store,
+    store: &mut dyn StructuredStore,
     sealer: &dyn PayloadSealer,
     session: uuid::Uuid,
     max_items: usize,
     max_bytes: usize,
-) -> Result<Vec<RecoveryItem>, String> {
+) -> Result<Vec<RecoveryItem>, HostError> {
+    inventory_after_legacy_check(store, sealer, session, max_items, max_bytes, false)
+}
+pub(super) fn inventory_after_legacy_check(
+    store: &mut dyn StructuredStore,
+    sealer: &dyn PayloadSealer,
+    session: uuid::Uuid,
+    max_items: usize,
+    max_bytes: usize,
+    legacy_checked: bool,
+) -> Result<Vec<RecoveryItem>, HostError> {
     let mut values = Vec::new();
-    let (properties, property_bytes) = receipts(store, sealer, max_items, max_bytes)?;
+    let (properties, property_bytes) =
+        receipts(store, sealer, max_items, max_bytes, legacy_checked)?;
+    let property_count = properties.len();
     for receipt in properties {
         if receipt.request.session != session {
             return Err("Property receipt belongs to another session".into());
@@ -426,8 +430,9 @@ pub(super) fn inventory(
     let (results, _) = result_receipts(
         store,
         sealer,
-        max_items.saturating_sub(values.len()),
+        max_items.saturating_sub(property_count),
         max_bytes.saturating_sub(property_bytes),
+        legacy_checked,
     )?;
     for receipt in results {
         if receipt.request.session != session {
@@ -461,12 +466,12 @@ pub(super) fn inventory(
     Ok(values)
 }
 pub(super) fn abandon(
-    store: &mut dyn Store,
+    store: &mut dyn StructuredStore,
     sealer: &dyn PayloadSealer,
     session: uuid::Uuid,
     nonce: uuid::Uuid,
     bindings: &[(uuid::Uuid, ManifestId)],
-) -> Result<(), String> {
+) -> Result<(), HostError> {
     let property = read_receipt(store, sealer, nonce)?;
     let result = read_result_receipt(store, sealer, nonce)?;
     match (property, result) {

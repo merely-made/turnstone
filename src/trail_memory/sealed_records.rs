@@ -1,20 +1,20 @@
 // Copyright 2026 Mark Alan Boykin
 // SPDX-License-Identifier: MPL-2.0
 //! Strict typed structured-research payloads in the existing sealed owner.
+use super::structured_bounded_store::StructuredStore;
+use crate::research_storage::SourceReadError as HostError;
 use eidetic::records::{PropertyDefinitionV1, PropertyRecordV1, RecordResult};
 use eidetic::{ManifestId, PayloadSealer, Store, TypedPayload};
 
-// Check both manifest and ciphertext before decoding or unsealing. The current
-// Store::get interface still materializes the stored value before this check.
+// Check stored manifest and ciphertext sizes before storage materializes them.
 fn load_bounded<T: TypedPayload>(
-    store: &mut dyn Store,
+    store: &mut dyn StructuredStore,
     sealer: &dyn PayloadSealer,
     id: ManifestId,
     max_bytes: usize,
-) -> Result<(T, usize), String> {
-    use eidetic::Backend as _;
-    let manifest_bytes = pollster::block_on(store.get(&id.store_key()))
-        .map_err(|_| "Structured manifest read failed")?
+) -> Result<(T, usize), HostError> {
+    let manifest_bytes = store
+        .get_limited(&id.store_key(), max_bytes)?
         .ok_or("Structured manifest missing")?;
     if manifest_bytes.len() > max_bytes {
         return Err("Structured manifest byte limit exceeded".into());
@@ -35,8 +35,8 @@ fn load_bounded<T: TypedPayload>(
     {
         return Err("Structured artifact metadata or byte limit refused".into());
     }
-    let ciphertext = pollster::block_on(store.get(&key))
-        .map_err(|_| "Structured ciphertext read failed")?
+    let ciphertext = store
+        .get_limited(&key, max_bytes)?
         .ok_or("Structured ciphertext missing")?;
     if ciphertext.len() > max_bytes {
         return Err("Structured ciphertext byte limit exceeded".into());
@@ -84,25 +84,25 @@ fn load_bounded<T: TypedPayload>(
     Ok((value, clear.len()))
 }
 
-fn schema<T: TypedPayload>(store: &mut dyn Store, value: &T) -> Result<(), String> {
+fn schema<T: TypedPayload>(store: &mut dyn Store, value: &T) -> Result<(), HostError> {
     pollster::block_on(eidetic::records::validate_required_schema(
         store,
         &mut eidetic::NoFetcher,
         value,
     ))
-    .map_err(|e| format!("Required record schema refused: {e}"))
+    .map_err(HostError::from)
 }
 
 pub(super) fn deposit_definition(
-    store: &mut dyn Store,
+    store: &mut dyn StructuredStore,
     sealer: &dyn PayloadSealer,
     definition: &PropertyDefinitionV1,
-) -> Result<ManifestId, String> {
+) -> Result<ManifestId, HostError> {
     definition
         .validate()
         .map_err(|e| format!("Invalid property definition: {e:?}"))?;
     pollster::block_on(eidetic::records::bootstrap_record_schemas(store))
-        .map_err(|e| format!("Record schema bootstrap failed: {e}"))?;
+        .map_err(HostError::from)?;
     schema(store, definition)?;
     let id = super::sealed_capture::save(store, sealer, definition, 0)?;
     if id != definition.manifest_id().map_err(|e| e.to_string())? {
@@ -115,18 +115,18 @@ pub(super) fn deposit_definition(
 }
 
 pub(super) fn load_definition(
-    store: &mut dyn Store,
+    store: &mut dyn StructuredStore,
     sealer: &dyn PayloadSealer,
     id: ManifestId,
-) -> Result<PropertyDefinitionV1, String> {
+) -> Result<PropertyDefinitionV1, HostError> {
     load_definition_bounded(store, sealer, id, usize::MAX)
 }
 fn load_definition_bounded(
-    store: &mut dyn Store,
+    store: &mut dyn StructuredStore,
     sealer: &dyn PayloadSealer,
     id: ManifestId,
     max_bytes: usize,
-) -> Result<PropertyDefinitionV1, String> {
+) -> Result<PropertyDefinitionV1, HostError> {
     let (value, _): (PropertyDefinitionV1, _) = load_bounded(store, sealer, id, max_bytes)?;
     schema(store, &value)?;
     value
@@ -139,10 +139,10 @@ fn load_definition_bounded(
 }
 
 pub(super) fn deposit_record(
-    store: &mut dyn Store,
+    store: &mut dyn StructuredStore,
     sealer: &dyn PayloadSealer,
     record: &PropertyRecordV1,
-) -> Result<ManifestId, String> {
+) -> Result<ManifestId, HostError> {
     let definition = load_definition(store, sealer, record.definition_manifest)?;
     record
         .validate(&definition)
@@ -156,19 +156,19 @@ pub(super) fn deposit_record(
 }
 
 pub(super) fn load_record(
-    store: &mut dyn Store,
+    store: &mut dyn StructuredStore,
     sealer: &dyn PayloadSealer,
     id: ManifestId,
-) -> Result<(PropertyRecordV1, PropertyDefinitionV1), String> {
+) -> Result<(PropertyRecordV1, PropertyDefinitionV1), HostError> {
     load_record_bounded(store, sealer, id, usize::MAX, usize::MAX)
 }
 pub(super) fn load_record_bounded(
-    store: &mut dyn Store,
+    store: &mut dyn StructuredStore,
     sealer: &dyn PayloadSealer,
     id: ManifestId,
     max_bytes: usize,
     max_validation_bytes: usize,
-) -> Result<(PropertyRecordV1, PropertyDefinitionV1), String> {
+) -> Result<(PropertyRecordV1, PropertyDefinitionV1), HostError> {
     let (record, used): (PropertyRecordV1, _) = load_bounded(store, sealer, id, max_bytes)?;
     schema(store, &record)?;
     let definition = load_definition_bounded(
@@ -187,12 +187,12 @@ pub(super) fn load_record_bounded(
 }
 
 pub(super) fn deposit_result(
-    store: &mut dyn Store,
+    store: &mut dyn StructuredStore,
     sealer: &dyn PayloadSealer,
     result: &RecordResult,
-) -> Result<ManifestId, String> {
+) -> Result<ManifestId, HostError> {
     pollster::block_on(eidetic::records::bootstrap_record_schemas(store))
-        .map_err(|e| format!("Record schema bootstrap failed: {e}"))?;
+        .map_err(HostError::from)?;
     schema(store, result)?;
     let replay =
         eidetic_search::records::evaluate(&result.snapshot, &result.query, &result.settings)
@@ -208,19 +208,19 @@ pub(super) fn deposit_result(
 }
 
 pub(super) fn load_result(
-    store: &mut dyn Store,
+    store: &mut dyn StructuredStore,
     sealer: &dyn PayloadSealer,
     id: ManifestId,
-) -> Result<RecordResult, String> {
+) -> Result<RecordResult, HostError> {
     load_result_bounded(store, sealer, id, usize::MAX, None)
 }
 pub(super) fn load_result_bounded(
-    store: &mut dyn Store,
+    store: &mut dyn StructuredStore,
     sealer: &dyn PayloadSealer,
     id: ManifestId,
     max_bytes: usize,
     current: Option<&eidetic::records::RecordSettings>,
-) -> Result<RecordResult, String> {
+) -> Result<RecordResult, HostError> {
     let (result, _): (RecordResult, _) = load_bounded(store, sealer, id, max_bytes)?;
     schema(store, &result)?;
     let mut effective = result.settings.clone();

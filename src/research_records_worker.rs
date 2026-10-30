@@ -3,6 +3,7 @@
 //! Structured evaluation over the complete admitted source snapshot.
 use crate::research::{self, Target};
 use crate::research_records::*;
+use crate::research_storage::SourceReadError as HostError;
 use crate::trail_memory::{TrailCommand, record_actor};
 use eidetic::models::recall::PassageSelector;
 use eidetic::records::{
@@ -14,7 +15,7 @@ use std::sync::mpsc;
 use std::time::Duration;
 
 const MANUAL: &str = "https://merely.computer/ns/research#manual-property-v1";
-fn current(bridge: &research::Bridge, scope: &ScopeToken) -> Result<(), String> {
+fn current(bridge: &research::Bridge, scope: &ScopeToken) -> Result<(), HostError> {
     if bridge.context_revision()? != (scope.context.clone(), scope.revision)
         || (bridge.clip_access()?.epoch)() != Some(scope.custody_epoch)
     {
@@ -24,14 +25,16 @@ fn current(bridge: &research::Bridge, scope: &ScopeToken) -> Result<(), String> 
 }
 fn command<T>(
     trail: &armillary::ActorHandle<TrailCommand>,
+    budget: &Result<crate::research_storage::SharedReadBudget, String>,
     scope: &ScopeToken,
-    make: impl FnOnce(mpsc::SyncSender<Result<T, String>>) -> record_actor::Kind,
-) -> Result<T, String> {
+    make: impl FnOnce(mpsc::SyncSender<Result<T, HostError>>) -> record_actor::Kind,
+) -> Result<T, HostError> {
     let (send, receive) = mpsc::sync_channel(1);
     if !trail.command(TrailCommand::ResearchRecords(record_actor::Command {
         session: *scope.context.session.as_uuid(),
         generation: scope.context.generation,
         max_bytes: scope.settings.max_input_bytes,
+        budget: budget.as_ref().map_err(Clone::clone)?.clone(),
         kind: make(send),
     })) {
         return Err("Structured record owner unavailable".into());
@@ -43,19 +46,20 @@ fn command<T>(
 fn sources(
     bridge: &research::Bridge,
     trail: &armillary::ActorHandle<TrailCommand>,
+    budget: &Result<crate::research_storage::SharedReadBudget, String>,
     scope: &ScopeToken,
     selected: Option<Vec<crate::research_search::Member>>,
     max_sources: usize,
     max_bytes: usize,
     except: Option<uuid::Uuid>,
-) -> Result<eidetic_search::query::ResearchSnapshot, String> {
+) -> Result<eidetic_search::query::ResearchSnapshot, HostError> {
     current(bridge, scope)?;
     let bindings = scope
         .graph_manifests
         .iter()
         .map(|(graph, manifest)| (*graph.as_uuid(), *manifest))
         .collect();
-    command(trail, scope, |reply| {
+    command(trail, budget, scope, |reply| {
         record_actor::Kind::Pending(
             bindings,
             scope.settings.max_records,
@@ -78,7 +82,12 @@ fn sources(
         query: Default::default(),
         settings,
     };
-    let snapshot = crate::research_search::snapshot(bridge, trail, &request)?;
+    let snapshot = crate::research_search::snapshot_with_budget(
+        bridge,
+        trail,
+        &request,
+        budget.as_ref().map_err(Clone::clone)?.clone(),
+    )?;
     if !matches!(snapshot.coverage, Coverage::Complete) {
         return Err("Structured input is incomplete".into());
     }
@@ -98,11 +107,12 @@ fn sources(
 }
 fn read_record(
     trail: &armillary::ActorHandle<TrailCommand>,
+    budget: &Result<crate::research_storage::SharedReadBudget, String>,
     scope: &ScopeToken,
     manifest: eidetic::ManifestId,
     remaining: usize,
-) -> Result<(PropertyRecordV1, eidetic::records::PropertyDefinitionV1), String> {
-    command(trail, scope, |reply| {
+) -> Result<(PropertyRecordV1, eidetic::records::PropertyDefinitionV1), HostError> {
+    command(trail, budget, scope, |reply| {
         record_actor::Kind::ReadRecord(
             manifest,
             remaining,
@@ -113,13 +123,14 @@ fn read_record(
 }
 fn read_result(
     trail: &armillary::ActorHandle<TrailCommand>,
+    budget: &Result<crate::research_storage::SharedReadBudget, String>,
     scope: &ScopeToken,
     manifest: eidetic::ManifestId,
     remaining: usize,
-) -> Result<eidetic::records::RecordResult, String> {
+) -> Result<eidetic::records::RecordResult, HostError> {
     let mut settings = scope.settings.clone();
     settings.max_input_bytes = remaining;
-    command(trail, scope, |reply| {
+    command(trail, budget, scope, |reply| {
         record_actor::Kind::ReadResult(manifest, settings, reply)
     })
 }
@@ -156,10 +167,11 @@ fn validate_evidence(
 }
 fn validate_saved_inputs(
     trail: &armillary::ActorHandle<TrailCommand>,
+    budget: &Result<crate::research_storage::SharedReadBudget, String>,
     scope: &ScopeToken,
     inputs: &eidetic_search::query::ResearchSnapshot,
     value: &eidetic::records::RecordResult,
-) -> Result<(), String> {
+) -> Result<(), HostError> {
     let mut remaining = remaining_after_sources(scope.settings.max_input_bytes, inputs)?;
     remaining -= bounded_json_size(value, remaining)?;
     for source in &value.snapshot.sources {
@@ -204,7 +216,7 @@ fn validate_saved_inputs(
         if owner.author != record.author {
             return Err("Saved property attribution changed".into());
         }
-        let (held_record, definition) = read_record(trail, scope, manifest, remaining)?;
+        let (held_record, definition) = read_record(trail, budget, scope, manifest, remaining)?;
         remaining -= bounded_json_size(&(&held_record, &definition), remaining)?;
         if held_record != *record || !value.snapshot.definitions.contains(&definition) {
             return Err("Saved property payload is unavailable or changed".into());
@@ -236,11 +248,13 @@ pub(crate) fn parse_lifecycle(
 fn query(
     bridge: &research::Bridge,
     trail: &armillary::ActorHandle<TrailCommand>,
+    budget: &Result<crate::research_storage::SharedReadBudget, String>,
     request: &QueryRequest,
-) -> Result<eidetic::records::RecordResult, String> {
+) -> Result<eidetic::records::RecordResult, HostError> {
     let inputs = sources(
         bridge,
         trail,
+        budget,
         &request.scope,
         request.selected.clone(),
         request.settings.max_sources,
@@ -304,7 +318,7 @@ fn query(
         projections.clear();
     }
     for candidate in projections.into_values() {
-        let (record, definition) = command(trail, &request.scope, |reply| {
+        let (record, definition) = command(trail, budget, &request.scope, |reply| {
             record_actor::Kind::ReadRecord(
                 candidate.binding.manifest,
                 remaining,
@@ -349,7 +363,7 @@ fn query(
     }
     current(bridge, &request.scope)?;
     eidetic_search::records::evaluate(&snapshot, &request.query, &request.settings)
-        .map_err(|e| format!("Structured query refused: {e:?}"))
+        .map_err(|e| format!("Structured query refused: {e:?}").into())
 }
 fn bounded_json_size(value: &impl serde::Serialize, limit: usize) -> Result<usize, String> {
     struct Counter {
@@ -465,6 +479,38 @@ pub(crate) fn result_request(
         manifest,
     })
 }
+fn run_query(
+    bridge: &research::Bridge,
+    trail: &armillary::ActorHandle<TrailCommand>,
+    budget: &Result<crate::research_storage::SharedReadBudget, String>,
+    request: QueryRequest,
+) -> JobResult {
+    let result = query(bridge, trail, budget, &request);
+    let manifest = if request.result_anchor.is_some() {
+        match &result {
+            Ok(value) => (|| {
+                use eidetic::TypedPayload;
+                let id = eidetic::ManifestId::of_blob(
+                    &value.serialize_to_bytes().map_err(|e| e.to_string())?,
+                );
+                let saved = result_request(&request, id)?;
+                command(trail, budget, &request.scope, |reply| {
+                    record_actor::Kind::SaveResult(saved, value.clone(), reply)
+                })
+                .map(Some)
+            })(),
+            Err(_) => Ok(None),
+        }
+    } else {
+        Ok(None)
+    };
+    JobResult::Query {
+        request,
+        result,
+        manifest,
+    }
+}
+
 #[path = "research_records_dispatch.rs"]
 mod dispatch;
 pub(crate) use dispatch::execute;

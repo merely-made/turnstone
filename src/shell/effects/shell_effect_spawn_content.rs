@@ -75,11 +75,12 @@ impl Shell {
                                         return Ok(document);
                                     }
                                     let root = self.app.clip_destination()?;
-                                    let clip = crate::retained_clip::read_sealed(
+                                    let clip = crate::retained_clip::read_sealed_with_limits(
                                         &root,
                                         id,
                                         crate::retained_clip::limits()?,
                                         self.app.clip_sealer()?,
+                                        &self.app.research.storage_limits()?,
                                     )?;
                                     Ok(clip.document())
                                 });

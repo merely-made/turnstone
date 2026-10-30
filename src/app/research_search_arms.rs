@@ -11,6 +11,11 @@ use crate::ui::OmnibarMode;
 use eidetic_search::query::{ProducerKind, QueryMode};
 
 impl App {
+    pub(crate) fn research_storage_limits(
+        &self,
+    ) -> Result<crate::research_storage::StorageLimits, String> {
+        Ok(Preferences::load(&self.data_root)?.storage)
+    }
     pub(crate) fn start_research_search(&mut self) -> Vec<Effect> {
         self.research_search = State::default();
         match Preferences::load(&self.data_root) {

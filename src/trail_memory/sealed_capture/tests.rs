@@ -3,6 +3,7 @@
 
 use super::*;
 use crate::trail_memory::sealed_memory_dir;
+use eidetic::Backend as _;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 
 struct TestSealer(AtomicBool);
@@ -438,4 +439,99 @@ fn model_free_property_definition_requires_valid_sealed_round_trip() {
     assert!(
         crate::trail_memory::sealed_records::load_definition(&mut store, &sealer, id,).is_err()
     );
+}
+
+#[test]
+fn model_free_sealed_capture_limits_refuse_before_unseal_and_recovery_publication() {
+    let root = tempfile::tempdir().unwrap();
+    let document = FetchedDocument {
+        bytes: b"<html><main>sealed evidence</main></html>".to_vec(),
+        body: "<html><main>sealed evidence</main></html>".into(),
+        effective_url: Some("https://example.test/sealed".into()),
+        content_type: Some("text/html".into()),
+        acquired_at_ms: 1,
+    };
+    let request = CaptureRequest {
+        id: uuid::Uuid::new_v4(),
+        session: crate::panes::SessionId::new(),
+        graph: crate::panes::GraphId::new(),
+        node: uuid::Uuid::new_v4(),
+        url: "https://example.test/sealed".into(),
+        source: Some(SourceIdentity::of(&document)),
+        keep: true,
+    };
+    let calls = std::sync::Arc::new(AtomicU64::new(0));
+    let sealer = EpochFenceSealer {
+        inner: TestSealer(AtomicBool::new(true)),
+        epoch: std::sync::Arc::new(AtomicU64::new(1)),
+        change_epoch_after_unseal: AtomicBool::new(false),
+        unseal_calls: calls.clone(),
+    };
+    let mut initial = muniment::FjallStore::open(root.path()).unwrap();
+    let stored = capture_request(&mut initial, &sealer, &request, Some(&document)).unwrap();
+    acknowledge(&mut initial, &sealer, &request).unwrap();
+    drop(initial);
+    let limits = crate::research_storage::StorageLimits::default();
+    let owner = muniment::FjallStore::open_with_limits(root.path(), limits.owner()).unwrap();
+    let admission = crate::saved_sources::Admission {
+        key: crate::saved_sources::Key {
+            session: request.session,
+            graph: request.graph,
+            node: request.node,
+            annotation_manifest: stored.annotation_manifest,
+        },
+        occurrence: 0,
+        title: "sealed".into(),
+        url: request.url,
+        error: None,
+    };
+    let mut small = limits.clone();
+    small.operation_read.max_value_bytes = 0;
+    let mut bounded = crate::research_storage::BudgetStore {
+        store: &owner,
+        budget: small.budget(),
+    };
+    let before = calls.load(Ordering::SeqCst);
+    let error = content(&mut bounded, &sealer, &admission).unwrap_err();
+    assert!(
+        error
+            .to_string()
+            .contains("sealed source manifest read failed"),
+        "{error}"
+    );
+    assert!(matches!(
+        error.storage_error(),
+        Some(muniment::StoreError::LimitExceeded {
+            kind: muniment::StoreLimitKind::ValueBytes,
+            limit: 0
+        })
+    ));
+    assert_eq!(calls.load(Ordering::SeqCst), before);
+    let mut small = limits.clone();
+    small.operation_read.max_visited_items = 0;
+    let mut bounded = crate::research_storage::BudgetStore {
+        store: &owner,
+        budget: small.budget(),
+    };
+    let error = receipts(&mut bounded, &sealer).unwrap_err();
+    assert!(
+        error
+            .to_string()
+            .contains("sealed capture inventory unavailable"),
+        "{error}"
+    );
+    assert!(matches!(
+        error.storage_error(),
+        Some(muniment::StoreError::LimitExceeded {
+            kind: muniment::StoreLimitKind::VisitedItems,
+            limit: 0
+        })
+    ));
+    assert_eq!(calls.load(Ordering::SeqCst), before);
+    let mut bounded = crate::research_storage::BudgetStore {
+        store: &owner,
+        budget: limits.budget(),
+    };
+    assert!(content(&mut bounded, &sealer, &admission).is_ok());
+    assert_eq!(receipts(&mut bounded, &sealer).unwrap().len(), 1);
 }

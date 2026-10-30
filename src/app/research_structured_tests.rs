@@ -57,6 +57,99 @@ fn model_free_structured_settings_survive_and_old_settings_default() {
 }
 
 #[test]
+fn model_free_storage_settings_default_for_old_file_and_round_trip_each_scope() {
+    use super::research_search_state::{Preferences, State};
+    use super::research_search_values::apply_value;
+    let root = tempfile::tempdir().unwrap();
+    let mut state = State::default();
+    apply_value(&mut state, root.path(), "record_max_records", "77").unwrap();
+    let path = root.path().join("research-search-settings.json");
+    let mut old: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(&path).unwrap()).unwrap();
+    old.as_object_mut().unwrap().remove("storage");
+    std::fs::write(&path, serde_json::to_vec(&old).unwrap()).unwrap();
+    assert_eq!(
+        Preferences::load(root.path()).unwrap().storage,
+        Default::default()
+    );
+    for (field, value) in [
+        ("storage_recovery_value_bytes", "8192"),
+        ("storage_owner_block_decoded_bytes", "16384"),
+        ("storage_operation_input_bytes", "24576"),
+    ] {
+        apply_value(&mut state, root.path(), field, value).unwrap();
+    }
+    let stored = Preferences::load(root.path()).unwrap().storage;
+    assert_eq!(stored.recovery.max_value_bytes, 8192);
+    assert_eq!(stored.owner_read.max_block_decoded_bytes, 16384);
+    assert_eq!(stored.operation_read.max_input_bytes, 24576);
+    let bridge = crate::research::Bridge::default();
+    let active = crate::research_storage::StorageLimits::default();
+    bridge.set_storage_limits(Ok(active.clone()));
+    assert_eq!(bridge.storage_limits().unwrap(), active);
+    assert_ne!(bridge.storage_limits().unwrap(), stored);
+    for (index, (_, key, _)) in stored.fields().into_iter().enumerate() {
+        let value = (index + 100).to_string();
+        apply_value(&mut state, root.path(), &key, &value).unwrap();
+        assert!(
+            Preferences::load(root.path())
+                .unwrap()
+                .storage
+                .fields()
+                .iter()
+                .any(|(_, actual_key, actual_value)| actual_key == &key && actual_value == &value)
+        );
+    }
+}
+
+#[test]
+fn model_free_storage_settings_show_saved_and_active_limits_when_owner_failed() {
+    use super::research_structured_state::{Command, View};
+    use crate::{action::Action, ui::Suggestion};
+    let root = tempfile::tempdir().unwrap();
+    let mut app = super::App::test_stub_at(root.path().to_path_buf());
+    let active = crate::research_storage::StorageLimits::default();
+    app.research.set_storage_limits(Ok(active));
+    app.research_search
+        .preferences
+        .storage
+        .recovery
+        .max_value_bytes = 7;
+    app.research_search.structured.error = Some("open recovery limit exceeded".into());
+    app.research_search.structured.view = View::Settings;
+    app.research_structured_rows(1);
+    let rows = &app.research_search.rows;
+    for (_, key, _) in app.research_search.preferences.storage.fields() {
+        assert!(rows.iter().any(|row| matches!(row, Suggestion::Act {
+            action: Action::ResearchStructured(Command::Input(field)), ..
+        } if field == &key)));
+    }
+    assert!(rows.iter().any(|row| matches!(row, Suggestion::Act { label, action: Action::ResearchStructured(Command::Input(field)) } if field == "storage_recovery_value_bytes" && label.contains("active 67108864") && label.ends_with(": 7"))));
+    assert!(rows.iter().any(
+        |row| matches!(row, Suggestion::Act { label, .. } if label.contains("restarting Turnstone"))
+    ));
+    app.research_structured_command(Command::Input("storage_recovery_value_bytes".into()));
+    app.research_structured_command(Command::Submit("8192".into()));
+    assert!(app.research_search.structured.error.is_none());
+    assert_eq!(
+        super::research_search_state::Preferences::load(root.path())
+            .unwrap()
+            .storage
+            .recovery
+            .max_value_bytes,
+        8192
+    );
+    assert_eq!(
+        app.research
+            .storage_limits()
+            .unwrap()
+            .recovery
+            .max_value_bytes,
+        64 * 1024 * 1024
+    );
+}
+
+#[test]
 fn model_free_structured_single_row_route_and_custody_clear() {
     use crate::action::{Action, ResearchSearchAction, ResearchStructuredAction};
     use crate::ui::Suggestion;
@@ -231,4 +324,25 @@ fn model_free_structured_scope_distinguishes_all_from_empty_selection() {
         app.research_search.view,
         super::research_search_state::View::Sources
     );
+}
+
+#[test]
+fn model_free_recovery_limit_event_names_owner_setting_and_restart() {
+    let root = tempfile::tempdir().unwrap();
+    let mut app = super::App::test_stub_at(root.path().to_path_buf());
+    app.apply_update(crate::action::Update::SourceCaptureRecoveryFailed {
+        capture_generation: app.source_capture_generation,
+        error: crate::research_storage::SourceReadError::StorageOpen {
+            owner: "Session capture",
+            error: muniment::StoreError::LimitExceeded {
+                kind: muniment::StoreLimitKind::ValueBytes,
+                limit: 16,
+            },
+        },
+    });
+    assert!(app.events.iter().any(|event| matches!(event,
+        crate::observe::AppEvent::InteractionMissed { what: "recover-source-captures", target }
+        if target.contains("Session capture") && target.contains("open") && target.contains("ValueBytes")
+            && target.contains("16") && target.contains("Open: value bytes") && target.contains("settings") && target.contains("restart")
+    )));
 }

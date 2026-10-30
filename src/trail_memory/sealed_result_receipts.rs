@@ -1,6 +1,8 @@
 // Copyright 2026 Mark Alan Boykin
 // SPDX-License-Identifier: MPL-2.0
-use eidetic::{Backend as _, ManifestId, PayloadSealer, Store};
+use super::structured_bounded_store::StructuredStore;
+use crate::research_storage::SourceReadError as HostError;
+use eidetic::{ManifestId, PayloadSealer};
 use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -45,10 +47,10 @@ fn pending_key(id: uuid::Uuid) -> String {
     format!("{PENDING_PREFIX}{id}")
 }
 pub(super) fn write_result_receipt(
-    store: &mut dyn Store,
+    store: &mut dyn StructuredStore,
     sealer: &dyn PayloadSealer,
     receipt: &ResultReceipt,
-) -> Result<(), String> {
+) -> Result<(), HostError> {
     let namespace = result_key(receipt.request.nonce);
     let clear = serde_json::to_vec(&BoundResult {
         namespace: namespace.clone(),
@@ -67,42 +69,34 @@ pub(super) fn write_result_receipt(
     .map_err(|_| "Result receipt envelope invalid")?;
     let pending = pending_key(receipt.request.nonce);
     if !receipt.saved && !receipt.abandoned {
-        pollster::block_on(store.put(&pending, &encoded))
-            .map_err(|e| format!("Result pending receipt write failed: {e}"))?;
+        pollster::block_on(store.put(&pending, &encoded))?;
     } else {
-        pollster::block_on(store.put(&namespace, &encoded))
-            .map_err(|e| format!("Result completion write failed: {e}"))?;
-        pollster::block_on(store.delete(&pending))
-            .map_err(|e| format!("Result pending receipt cleanup failed: {e}"))?;
+        pollster::block_on(store.put(&namespace, &encoded))?;
+        pollster::block_on(store.delete(&pending))?;
     }
     Ok(())
 }
 pub(super) fn read_result_receipt(
-    store: &mut dyn Store,
+    store: &mut dyn StructuredStore,
     sealer: &dyn PayloadSealer,
     nonce: uuid::Uuid,
-) -> Result<Option<ResultReceipt>, String> {
+) -> Result<Option<ResultReceipt>, HostError> {
     Ok(read_result_receipt_bounded(store, sealer, nonce, usize::MAX)?.map(|(value, _)| value))
 }
 fn read_result_receipt_bounded(
-    store: &mut dyn Store,
+    store: &mut dyn StructuredStore,
     sealer: &dyn PayloadSealer,
     nonce: uuid::Uuid,
     limit: usize,
-) -> Result<Option<(ResultReceipt, usize)>, String> {
+) -> Result<Option<(ResultReceipt, usize)>, HostError> {
     let namespace = result_key(nonce);
-    if pollster::block_on(store.get(&format!("{LEGACY_PREFIX}{nonce}")))
-        .map_err(|e| format!("Legacy result receipt read failed: {e}"))?
-        .is_some()
-    {
+    if pollster::block_on(store.get(&format!("{LEGACY_PREFIX}{nonce}")))?.is_some() {
         return Err("Unsupported prior result receipt format; preserved for recovery".into());
     }
-    let pending = pollster::block_on(store.get(&pending_key(nonce)))
-        .map_err(|e| format!("Result pending receipt read failed: {e}"))?;
+    let pending = store.get_limited(&pending_key(nonce), limit)?;
     let bytes = match pending {
         Some(bytes) => Some(bytes),
-        None => pollster::block_on(store.get(&namespace))
-            .map_err(|e| format!("Result receipt read failed: {e}"))?,
+        None => store.get_limited(&namespace, limit)?,
     };
     let Some(bytes) = bytes else {
         return Ok(None);
@@ -143,11 +137,11 @@ fn read_result_receipt_bounded(
     Ok(Some((held.receipt, stored_bytes)))
 }
 pub(super) fn deposit_result_request(
-    store: &mut dyn Store,
+    store: &mut dyn StructuredStore,
     sealer: &dyn PayloadSealer,
     request: &ResultRequest,
     result: &eidetic::records::RecordResult,
-) -> Result<ManifestId, String> {
+) -> Result<ManifestId, HostError> {
     use eidetic::TypedPayload;
     let id = ManifestId::of_blob(&result.serialize_to_bytes().map_err(|e| e.to_string())?);
     if id != request.manifest {
@@ -199,11 +193,11 @@ pub(super) fn deposit_result_request(
     Ok(id)
 }
 pub(super) fn acknowledge_result(
-    store: &mut dyn Store,
+    store: &mut dyn StructuredStore,
     sealer: &dyn PayloadSealer,
     request: &ResultRequest,
     statement: &str,
-) -> Result<(), String> {
+) -> Result<(), HostError> {
     let mut held =
         read_result_receipt(store, sealer, request.nonce)?.ok_or("Result receipt missing")?;
     if held.request != *request
@@ -221,12 +215,12 @@ pub(super) fn acknowledge_result(
     write_result_receipt(store, sealer, &held)
 }
 pub(super) fn mark_result_attached(
-    store: &mut dyn Store,
+    store: &mut dyn StructuredStore,
     sealer: &dyn PayloadSealer,
     request: &ResultRequest,
     statement: &str,
     assertion: &serde_json::Value,
-) -> Result<(), String> {
+) -> Result<(), HostError> {
     let mut held =
         read_result_receipt(store, sealer, request.nonce)?.ok_or("Result receipt missing")?;
     if held.request != *request
@@ -251,19 +245,17 @@ pub(super) fn mark_result_attached(
     write_result_receipt(store, sealer, &held)
 }
 pub(super) fn result_receipts(
-    store: &mut dyn Store,
+    store: &mut dyn StructuredStore,
     sealer: &dyn PayloadSealer,
     max_items: usize,
     max_bytes: usize,
-) -> Result<(Vec<ResultReceipt>, usize), String> {
-    if !pollster::block_on(store.list(LEGACY_PREFIX))
-        .map_err(|e| format!("Legacy result inventory failed: {e}"))?
-        .is_empty()
-    {
+    legacy_checked: bool,
+) -> Result<(Vec<ResultReceipt>, usize), HostError> {
+    if !legacy_checked && !pollster::block_on(store.list(LEGACY_PREFIX))?.is_empty() {
         return Err("Unsupported prior result receipt format; preserved for recovery".into());
     }
-    let keys = pollster::block_on(store.list(PENDING_PREFIX))
-        .map_err(|e| format!("Result recovery inventory failed: {e}"))?;
+    let key_bytes = max_items.saturating_mul(PENDING_PREFIX.len() + 36);
+    let keys = store.list_inventory(PENDING_PREFIX, max_items, key_bytes)?;
     if keys.len() > max_items {
         return Err("Result recovery inventory limit exceeded".into());
     }

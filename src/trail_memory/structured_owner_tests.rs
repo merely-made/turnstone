@@ -10,19 +10,50 @@ use eidetic::records::{
 };
 use std::sync::{Arc, mpsc};
 
+#[path = "structured_three_owner_case.rs"]
+mod structured_three_owner_case;
+
 fn actor_call<T>(
     actor: &armillary::ActorHandle<TrailCommand>,
     session: uuid::Uuid,
     generation: uuid::Uuid,
-    make: impl FnOnce(mpsc::SyncSender<Result<T, String>>) -> record_actor::Kind,
-) -> Result<T, String> {
+    make: impl FnOnce(
+        mpsc::SyncSender<Result<T, crate::research_storage::SourceReadError>>,
+    ) -> record_actor::Kind,
+) -> Result<T, crate::research_storage::SourceReadError> {
     let (reply, receive) = mpsc::sync_channel(1);
     assert!(
         actor.command(TrailCommand::ResearchRecords(record_actor::Command {
             session,
             generation,
             max_bytes: 16 * 1024 * 1024,
+            budget: crate::research_storage::StorageLimits::default().budget(),
             kind: make(reply)
+        }))
+    );
+    receive.recv_timeout(Duration::from_secs(5)).unwrap()
+}
+
+fn actor_read_with_budget(
+    actor: &armillary::ActorHandle<TrailCommand>,
+    session: uuid::Uuid,
+    generation: uuid::Uuid,
+    manifest: eidetic::ManifestId,
+    budget: crate::research_storage::SharedReadBudget,
+) -> Result<(PropertyRecordV1, PropertyDefinitionV1), crate::research_storage::SourceReadError> {
+    let (reply, receive) = mpsc::sync_channel(1);
+    assert!(
+        actor.command(TrailCommand::ResearchRecords(record_actor::Command {
+            session,
+            generation,
+            max_bytes: 16 * 1024 * 1024,
+            budget,
+            kind: record_actor::Kind::ReadRecord(
+                manifest,
+                16 * 1024 * 1024,
+                16 * 1024 * 1024,
+                reply
+            ),
         }))
     );
     receive.recv_timeout(Duration::from_secs(5)).unwrap()
@@ -295,6 +326,84 @@ fn model_free_owner_enumeration_deduplicates_projection_and_refuses_ambiguous_no
     assert_eq!(result.rows.len(), 1);
     assert_eq!(result.rows[0].record_ids.len(), 2);
     assert_ne!(result.rows[0].record_ids[0], result.rows[0].record_ids[1]);
+    // Find the actual physical visit cost of a complete read, then show that
+    // separately dispatched commands consume the same operation ledger.
+    let manifest = candidates[0].binding.manifest;
+    let mut low = 0;
+    let mut high = 1_000_000;
+    while low < high {
+        let middle = (low + high) / 2;
+        let mut limits = crate::research_storage::StorageLimits::default();
+        limits.operation_read.max_visited_items = middle;
+        if actor_read_with_budget(
+            &actor,
+            *session.as_uuid(),
+            generation,
+            manifest,
+            limits.budget(),
+        )
+        .is_ok()
+        {
+            high = middle;
+        } else {
+            low = middle + 1;
+        }
+    }
+    assert!(low > 0 && low < 1_000_000);
+    let mut limits = crate::research_storage::StorageLimits::default();
+    limits.operation_read.max_visited_items = low;
+    let budget = limits.budget();
+    actor_read_with_budget(
+        &actor,
+        *session.as_uuid(),
+        generation,
+        manifest,
+        budget.clone(),
+    )
+    .unwrap();
+    assert!(
+        actor_read_with_budget(&actor, *session.as_uuid(), generation, manifest, budget).is_err()
+    );
+    // The same limit can admit a capture and a property separately while a
+    // combined structured query must pay for both in its one ledger.
+    let mut low = 0;
+    let mut high = 1_000_000;
+    while low < high {
+        let middle = (low + high) / 2;
+        let mut limits = crate::research_storage::StorageLimits::default();
+        limits.operation_read.max_visited_items = middle;
+        bridge.set_storage_limits(Ok(limits.clone()));
+        let source_fits = crate::research_search::snapshot(&bridge, &actor, &lexical).is_ok();
+        let record_fits = actor_read_with_budget(
+            &actor,
+            *session.as_uuid(),
+            generation,
+            manifest,
+            limits.budget(),
+        )
+        .is_ok();
+        if source_fits && record_fits {
+            high = middle;
+        } else {
+            low = middle + 1;
+        }
+    }
+    assert!(low > 0 && low < 1_000_000);
+    let mut limits = crate::research_storage::StorageLimits::default();
+    limits.operation_read.max_visited_items = low;
+    bridge.set_storage_limits(Ok(limits));
+    let mut one_record = request.clone();
+    one_record.candidates = vec![candidates[0].clone()];
+    let combined = super::super::research_records_worker::execute(
+        &bridge,
+        &actor,
+        crate::research_records::Job::Query(one_record),
+    );
+    assert!(matches!(
+        combined,
+        crate::research_records::JobResult::Query { result: Err(_), .. }
+    ));
+    bridge.set_storage_limits(Ok(Default::default()));
     let first_size =
         serde_json::to_vec(&(&result.snapshot.records[0], &result.snapshot.definitions[0]))
             .unwrap()
@@ -405,9 +514,65 @@ fn model_free_owner_enumeration_deduplicates_projection_and_refuses_ambiguous_no
     let result = super::super::research_records_worker::execute(
         &bridge,
         &actor,
-        crate::research_records::Job::Query(request),
+        crate::research_records::Job::Query(request.clone()),
     );
     assert!(
         matches!(result, crate::research_records::JobResult::Query { result: Err(error), .. } if error.contains("incomplete"))
     );
+
+    structured_three_owner_case::verify_three_owners(
+        &root, &bridge, &actor, &context, &request, &lexical, &admission, session, graph_id,
+        generation, manifest,
+    );
+}
+
+#[test]
+fn model_free_storage_configuration_failure_survives_startup_and_reopen() {
+    let root = tempfile::tempdir().unwrap();
+    let session = crate::panes::SessionId::new();
+    let generation = uuid::Uuid::new_v4();
+    let directory = root
+        .path()
+        .join(session.as_uuid().to_string())
+        .join("memory");
+    let (actor, _) = spawn_trail_for_session_with_limits(
+        Arc::new(|| {}),
+        Some(directory.clone()),
+        Default::default(),
+        generation,
+        Err("storage configuration refused".into()),
+    );
+    assert!(actor.command(TrailCommand::SetCustody(Some(
+        custody_test_fixture::custody()
+    ))));
+    let check = |generation| {
+        let (reply, receive) = mpsc::sync_channel(1);
+        assert!(actor.command(TrailCommand::ResearchSnapshot {
+            context: Context {
+                session,
+                generation,
+                admissions: vec![],
+                clips: vec![]
+            },
+            selected: None,
+            max_chars: Some(1000),
+            max_metadata_chars: Some(1000),
+            budget: None,
+            reply,
+        }));
+        assert!(
+            receive
+                .recv_timeout(Duration::from_secs(5))
+                .unwrap()
+                .unwrap_err()
+                .contains("storage configuration refused")
+        );
+    };
+    check(generation);
+    let reopened_generation = uuid::Uuid::new_v4();
+    assert!(actor.command(TrailCommand::Reopen {
+        directory,
+        capture_generation: reopened_generation
+    }));
+    check(reopened_generation);
 }

@@ -10,11 +10,13 @@ pub enum Update {
     ResearchRecords(crate::research_records::JobResult),
     ResearchCompareFinished {
         request: crate::research_compare::Request,
-        result: Result<crate::research_compare::ResultView, String>,
+        result:
+            Result<crate::research_compare::ResultView, crate::research_storage::SourceReadError>,
     },
     ResearchSearchFinished {
         request: crate::research_search::Request,
-        result: Result<eidetic_search::query::SearchResult, String>,
+        result:
+            Result<eidetic_search::query::SearchResult, crate::research_storage::SourceReadError>,
     },
     ReadingFindChanged {
         target: crate::reading_view::ReadTarget,
@@ -26,7 +28,7 @@ pub enum Update {
         request: uuid::Uuid,
         session: crate::panes::SessionId,
         admissions: Vec<crate::saved_sources::Admission>,
-        result: Result<Vec<crate::saved_sources::Entry>, String>,
+        result: Result<Vec<crate::saved_sources::Entry>, crate::research_storage::SourceReadError>,
     },
     SavedSourceRead {
         generation: uuid::Uuid,
@@ -34,7 +36,7 @@ pub enum Update {
         node: uuid::Uuid,
         url: String,
         target: crate::saved_sources::Target,
-        result: Result<crate::saved_sources::Content, String>,
+        result: Result<crate::saved_sources::Content, crate::research_storage::SourceReadError>,
     },
     /// Exact Gemini response bytes arrived before the terminal fetch answer.
     PageStreamed {
@@ -208,7 +210,7 @@ pub enum Update {
     SourceDocumentCaptured {
         capture_generation: uuid::Uuid,
         request: crate::source_capture::CaptureRequest,
-        result: Result<StoredSourceDocument, String>,
+        result: Result<StoredSourceDocument, crate::research_storage::SourceReadError>,
     },
     SourceCaptureRecovered {
         capture_generation: uuid::Uuid,
@@ -218,11 +220,11 @@ pub enum Update {
     SourceCaptureSaved {
         capture_generation: uuid::Uuid,
         request: uuid::Uuid,
-        result: Result<(), String>,
+        result: Result<(), crate::research_storage::SourceReadError>,
     },
     SourceCaptureRecoveryFailed {
         capture_generation: uuid::Uuid,
-        error: String,
+        error: crate::research_storage::SourceReadError,
     },
     SourceCaptureRevalidated {
         capture_generation: uuid::Uuid,

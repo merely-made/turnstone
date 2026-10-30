@@ -53,7 +53,14 @@ pub(super) fn apply_value(
         aliases: state.preferences.aliases.clone(),
         comparison: state.preferences.comparison.clone(),
         records: state.preferences.records.clone(),
+        storage: state.preferences.storage.clone(),
     };
+    if field.starts_with("storage_") {
+        prefs.storage.set(field, value)?;
+        prefs.save(root)?;
+        state.preferences = prefs;
+        return Ok(());
+    }
     match field {
         "aliases" => {
             prefs.aliases = if value.trim().is_empty() {

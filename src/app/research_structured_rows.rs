@@ -518,9 +518,12 @@ impl App {
                 );
                 item(&mut rows, "Back", Command::Author);
             },
-            View::Settings => {
-                format::settings_rows(&mut rows, &self.research_search.preferences.records)
-            },
+            View::Settings => format::settings_rows(
+                &mut rows,
+                &self.research_search.preferences.records,
+                &self.research_search.preferences.storage,
+                self.research.storage_limits().ok().as_ref(),
+            ),
             View::Saved => {
                 match self.structured_saved_results() {
                     Ok(choices) => {

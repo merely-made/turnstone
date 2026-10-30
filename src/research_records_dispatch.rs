@@ -6,33 +6,9 @@ pub(crate) fn execute(
     trail: &armillary::ActorHandle<TrailCommand>,
     job: Job,
 ) -> JobResult {
+    let budget = bridge.storage_limits().map(|limits| limits.budget());
     match job {
-        Job::Query(request) => {
-            let result = query(bridge, trail, &request);
-            let manifest = if request.result_anchor.is_some() {
-                match &result {
-                    Ok(value) => (|| {
-                        use eidetic::TypedPayload;
-                        let id = eidetic::ManifestId::of_blob(
-                            &value.serialize_to_bytes().map_err(|e| e.to_string())?,
-                        );
-                        let saved = result_request(&request, id)?;
-                        command(trail, &request.scope, |reply| {
-                            record_actor::Kind::SaveResult(saved, value.clone(), reply)
-                        })
-                        .map(Some)
-                    })(),
-                    Err(_) => Ok(None),
-                }
-            } else {
-                Ok(None)
-            };
-            JobResult::Query {
-                request,
-                result,
-                manifest,
-            }
-        },
+        Job::Query(request) => run_query(bridge, trail, &budget, request),
         Job::Deposit(request) => {
             let result = (|| {
                 let draft_bytes = author_input_size(&request)?;
@@ -44,6 +20,7 @@ pub(crate) fn execute(
                 let inputs = sources(
                     bridge,
                     trail,
+                    &budget,
                     &request.scope,
                     request.selected.clone(),
                     request.scope.settings.max_sources,
@@ -57,7 +34,7 @@ pub(crate) fn execute(
                     .ok_or("Passage is not in the selected admitted sources")?;
                 validate_evidence(&deposit.record, source)?;
                 current(bridge, &request.scope)?;
-                let manifest = command(trail, &request.scope, |reply| {
+                let manifest = command(trail, &budget, &request.scope, |reply| {
                     record_actor::Kind::Deposit(deposit, reply)
                 })?;
                 current(bridge, &request.scope)?;
@@ -70,6 +47,7 @@ pub(crate) fn execute(
                 let inputs = sources(
                     bridge,
                     trail,
+                    &budget,
                     &scope,
                     scope.selected.clone(),
                     scope.settings.max_sources,
@@ -77,7 +55,7 @@ pub(crate) fn execute(
                     None,
                 )?;
                 let remaining = remaining_after_sources(scope.settings.max_input_bytes, &inputs)?;
-                let (record, _) = read_record(trail, &scope, binding.manifest, remaining)?;
+                let (record, _) = read_record(trail, &budget, &scope, binding.manifest, remaining)?;
                 if record.entity != binding.entity.to_string() {
                     return Err("Property entity mismatch".into());
                 }
@@ -102,6 +80,7 @@ pub(crate) fn execute(
                 let inputs = sources(
                     bridge,
                     trail,
+                    &budget,
                     &scope,
                     scope.selected.clone(),
                     scope.settings.max_sources,
@@ -109,8 +88,8 @@ pub(crate) fn execute(
                     None,
                 )?;
                 let remaining = remaining_after_sources(scope.settings.max_input_bytes, &inputs)?;
-                let value = read_result(trail, &scope, result, remaining)?;
-                validate_saved_inputs(trail, &scope, &inputs, &value)?;
+                let value = read_result(trail, &budget, &scope, result, remaining)?;
+                validate_saved_inputs(trail, &budget, &scope, &inputs, &value)?;
                 current(bridge, &scope)?;
                 Ok(value)
             })();
@@ -128,7 +107,7 @@ pub(crate) fn execute(
             let result = (|| {
                 current(bridge, &scope)?;
                 let deposit = record_request(&request)?;
-                command(trail, &scope, |reply| {
+                command(trail, &budget, &scope, |reply| {
                     record_actor::Kind::Acknowledge(
                         deposit,
                         binding.manifest,
@@ -154,7 +133,7 @@ pub(crate) fn execute(
             let result = (|| {
                 current(bridge, &scope)?;
                 let saved = result_request(&request, binding.manifest)?;
-                command(trail, &scope, |reply| {
+                command(trail, &budget, &scope, |reply| {
                     record_actor::Kind::AcknowledgeResult(
                         saved,
                         binding.statement_id.clone(),
@@ -180,7 +159,7 @@ pub(crate) fn execute(
             let result = (|| {
                 current(bridge, &scope)?;
                 let deposit = record_request(&request)?;
-                command(trail, &scope, |reply| {
+                command(trail, &budget, &scope, |reply| {
                     record_actor::Kind::MarkAttached(
                         deposit,
                         binding.manifest,
@@ -209,7 +188,7 @@ pub(crate) fn execute(
             let result = (|| {
                 current(bridge, &scope)?;
                 let saved = result_request(&request, binding.manifest)?;
-                command(trail, &scope, |reply| {
+                command(trail, &budget, &scope, |reply| {
                     record_actor::Kind::MarkResultAttached(
                         saved,
                         binding.statement_id.clone(),
@@ -236,7 +215,7 @@ pub(crate) fn execute(
         } => {
             let result = (|| {
                 current(bridge, &scope)?;
-                command(trail, &scope, |reply| {
+                command(trail, &budget, &scope, |reply| {
                     record_actor::Kind::PrepareWithdrawal(
                         nonce,
                         *binding.graph.as_uuid(),
@@ -263,7 +242,7 @@ pub(crate) fn execute(
         } => {
             let result = (|| {
                 current(bridge, &scope)?;
-                command(trail, &scope, |reply| {
+                command(trail, &budget, &scope, |reply| {
                     record_actor::Kind::AcknowledgeWithdrawal(
                         nonce,
                         *binding.graph.as_uuid(),
@@ -285,7 +264,7 @@ pub(crate) fn execute(
         Job::Recovery { id, scope } => {
             let result = (|| {
                 current(bridge, &scope)?;
-                let items = command(trail, &scope, |reply| {
+                let items = command(trail, &budget, &scope, |reply| {
                     record_actor::Kind::Inventory(
                         scope.settings.max_records,
                         scope.settings.max_input_bytes,
@@ -302,6 +281,7 @@ pub(crate) fn execute(
                 let inputs = sources(
                     bridge,
                     trail,
+                    &budget,
                     &scope,
                     scope.selected.clone(),
                     scope.settings.max_sources,
@@ -315,7 +295,8 @@ pub(crate) fn execute(
                             .ok_or("The unbound deposit has no sealed record")?;
                         let remaining =
                             remaining_after_sources(scope.settings.max_input_bytes, &inputs)?;
-                        let (record, definition) = read_record(trail, &scope, manifest, remaining)?;
+                        let (record, definition) =
+                            read_record(trail, &budget, &scope, manifest, remaining)?;
                         if record != receipt.request.record
                             || definition != receipt.request.definition
                         {
@@ -334,9 +315,14 @@ pub(crate) fn execute(
                         }
                         let remaining =
                             remaining_after_sources(scope.settings.max_input_bytes, &inputs)?;
-                        let saved =
-                            read_result(trail, &scope, receipt.request.manifest, remaining)?;
-                        validate_saved_inputs(trail, &scope, &inputs, &saved)?;
+                        let saved = read_result(
+                            trail,
+                            &budget,
+                            &scope,
+                            receipt.request.manifest,
+                            remaining,
+                        )?;
+                        validate_saved_inputs(trail, &budget, &scope, &inputs, &saved)?;
                     },
                 }
                 current(bridge, &scope)
@@ -359,7 +345,7 @@ pub(crate) fn execute(
                 current(bridge, &scope)?;
                 match &item {
                     record_actor::RecoveryItem::Property(receipt) => {
-                        command(trail, &scope, |reply| {
+                        command(trail, &budget, &scope, |reply| {
                             record_actor::Kind::MarkAttached(
                                 receipt.request.clone(),
                                 binding.manifest,
@@ -370,7 +356,7 @@ pub(crate) fn execute(
                         })?
                     },
                     record_actor::RecoveryItem::Result(receipt) => {
-                        command(trail, &scope, |reply| {
+                        command(trail, &budget, &scope, |reply| {
                             record_actor::Kind::MarkResultAttached(
                                 receipt.request.clone(),
                                 binding.statement_id.clone(),
@@ -403,7 +389,7 @@ pub(crate) fn execute(
                     record_actor::RecoveryItem::Property(receipt)
                         if receipt.withdrawal.as_ref().is_some_and(|w| !w.saved) =>
                     {
-                        command(trail, &scope, |reply| {
+                        command(trail, &budget, &scope, |reply| {
                             record_actor::Kind::AcknowledgeWithdrawal(
                                 receipt.request.nonce,
                                 receipt.request.graph,
@@ -414,7 +400,7 @@ pub(crate) fn execute(
                         })?
                     },
                     record_actor::RecoveryItem::Property(receipt) => {
-                        command(trail, &scope, |reply| {
+                        command(trail, &budget, &scope, |reply| {
                             record_actor::Kind::Acknowledge(
                                 receipt.request.clone(),
                                 binding.manifest,
@@ -424,7 +410,7 @@ pub(crate) fn execute(
                         })?
                     },
                     record_actor::RecoveryItem::Result(receipt) => {
-                        command(trail, &scope, |reply| {
+                        command(trail, &budget, &scope, |reply| {
                             record_actor::Kind::AcknowledgeResult(
                                 receipt.request.clone(),
                                 binding.statement_id.clone(),
@@ -451,7 +437,7 @@ pub(crate) fn execute(
                     .iter()
                     .map(|(graph, manifest)| (*graph.as_uuid(), *manifest))
                     .collect();
-                command(trail, &scope, |reply| {
+                command(trail, &budget, &scope, |reply| {
                     record_actor::Kind::Abandon(nonce, bindings, reply)
                 })?;
                 current(bridge, &scope)
@@ -475,6 +461,7 @@ pub(crate) fn execute(
                     let inputs = sources(
                         bridge,
                         trail,
+                        &budget,
                         &scope,
                         scope.selected.clone(),
                         scope.settings.max_sources,
@@ -510,6 +497,7 @@ pub(crate) fn execute(
                 let inputs = sources(
                     bridge,
                     trail,
+                    &budget,
                     &scope,
                     scope.selected.clone(),
                     scope.settings.max_sources,
@@ -524,7 +512,7 @@ pub(crate) fn execute(
                     return Err("Property owner is unavailable".into());
                 }
                 let remaining = remaining_after_sources(scope.settings.max_input_bytes, &inputs)?;
-                let (held, _) = read_record(trail, &scope, binding.manifest, remaining)?;
+                let (held, _) = read_record(trail, &budget, &scope, binding.manifest, remaining)?;
                 if held != record {
                     return Err("Frozen property payload changed".into());
                 }
@@ -573,7 +561,7 @@ pub(crate) fn execute(
                     .iter()
                     .map(|(graph, manifest)| (*graph.as_uuid(), *manifest))
                     .collect();
-                command(trail, &scope, |reply| {
+                command(trail, &budget, &scope, |reply| {
                     record_actor::Kind::Pending(
                         held,
                         scope.settings.max_records,

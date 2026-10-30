@@ -107,7 +107,7 @@ impl Shell {
                     let effects = self.app.apply_update(Update::SourceCaptureSaved {
                         capture_generation: self.app.source_capture_generation,
                         request,
-                        result: Err(error),
+                        result: Err(error.into()),
                     });
                     self.run_effects(effects);
                 } else {
@@ -172,7 +172,7 @@ impl Shell {
                     let effects = self.app.apply_update(Update::SourceDocumentCaptured {
                         capture_generation,
                         request,
-                        result: Err(error),
+                        result: Err(error.into()),
                     });
                     self.run_effects(effects);
                 }

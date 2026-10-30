@@ -28,7 +28,7 @@ pub struct Request {
 }
 pub(crate) struct Response {
     pub request: Request,
-    pub result: Result<SearchResult, String>,
+    pub result: Result<SearchResult, crate::research_storage::SourceReadError>,
 }
 
 pub(crate) fn producer(view: &crate::retained_clip::ClipView) -> ProducerKind {
@@ -179,7 +179,16 @@ pub(crate) fn snapshot(
     bridge: &research::Bridge,
     trail: &armillary::ActorHandle<crate::trail_memory::TrailCommand>,
     request: &Request,
-) -> Result<ResearchSnapshot, String> {
+) -> Result<ResearchSnapshot, crate::research_storage::SourceReadError> {
+    snapshot_with_budget(bridge, trail, request, bridge.storage_limits()?.budget())
+}
+
+pub(crate) fn snapshot_with_budget(
+    bridge: &research::Bridge,
+    trail: &armillary::ActorHandle<crate::trail_memory::TrailCommand>,
+    request: &Request,
+    budget: crate::research_storage::SharedReadBudget,
+) -> Result<ResearchSnapshot, crate::research_storage::SourceReadError> {
     if bridge.context_revision()? != (request.context.clone(), request.revision) {
         return Err("Search admissions changed.".into());
     }
@@ -231,6 +240,7 @@ pub(crate) fn snapshot(
         selected: keys,
         max_chars: Some(request.settings.max_corpus_chars),
         max_metadata_chars: Some(request.settings.max_metadata_chars - metadata_chars),
+        budget: Some(budget.clone()),
         reply,
     }) {
         return Err("The saved-source owner is closed.".into());
@@ -290,7 +300,7 @@ pub(crate) fn snapshot(
         if selected.is_some_and(|members| !members.contains(&Member::Clip(admission.clone()))) {
             continue;
         }
-        match bridge.clip_view(&request.context, admission) {
+        match bridge.clip_view_bounded(&request.context, admission, budget.clone()) {
             Ok(view) => {
                 let kind = producer(&view);
                 let tags = view
@@ -339,6 +349,9 @@ pub(crate) fn snapshot(
                 }
                 sources.push(source);
             },
+            Err(error) if error.storage_error().is_some() => {
+                return Err(error);
+            },
             Err(error) => {
                 let exclusion = format!("{}: {error}", admission.manifest);
                 add_cost(&mut metadata_chars, &exclusion)?;
@@ -375,9 +388,9 @@ pub(crate) fn run(
     bridge: &research::Bridge,
     trail: &armillary::ActorHandle<crate::trail_memory::TrailCommand>,
     request: &Request,
-) -> Result<SearchResult, String> {
+) -> Result<SearchResult, crate::research_storage::SourceReadError> {
     let snapshot = snapshot(bridge, trail, request)?;
-    query::search(&snapshot, &request.query, &request.settings)
+    query::search(&snapshot, &request.query, &request.settings).map_err(Into::into)
 }
 
 /// One running job, one replaceable pending request and one replaceable response.

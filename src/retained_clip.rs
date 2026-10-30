@@ -26,13 +26,12 @@ fn read_store(
     sealer: Option<&dyn eidetic::PayloadSealer>,
     id: ManifestId,
     policy: ClipLimits,
-) -> Result<ClipView, String> {
+) -> Result<ClipView, crate::research_storage::SourceReadError> {
     if let Some(sealer) = sealer {
         require_existing_seals(store, [id])?;
         let held = pollster::block_on(eidetic::load_typed_sealed::<
             eidetic::clip_profile::RetainedClipV1,
-        >(store, &mut eidetic::NoFetcher, Some(sealer), id))
-        .map_err(|e| e.to_string())?
+        >(store, &mut eidetic::NoFetcher, Some(sealer), id))?
         .ok_or("Retained clip missing")?;
         require_existing_seals(
             store,
@@ -46,6 +45,7 @@ fn read_store(
     pollster::block_on(mere_document_lanes::retained_clip::read_store(
         store, sealer, id, policy,
     ))
+    .map_err(Into::into)
 }
 #[cfg(test)]
 mod custody_tests;
@@ -107,6 +107,18 @@ pub fn retain_native(
     policy: ClipLimits,
     sealer: &dyn eidetic::PayloadSealer,
 ) -> Result<ManifestId, String> {
+    let limits = crate::app::research_search_state::Preferences::load(root)?.storage;
+    retain_native_with_limits(root, source, context, policy, sealer, &limits)
+}
+
+pub(crate) fn retain_native_with_limits(
+    root: &Path,
+    source: NativeClip<'_>,
+    context: &CaptureContext,
+    policy: ClipLimits,
+    sealer: &dyn eidetic::PayloadSealer,
+    limits: &crate::research_storage::StorageLimits,
+) -> Result<ManifestId, String> {
     let mut staging = eidetic::MemoryBackend::new();
     let id = pollster::block_on(retain_native_into(
         &mut staging,
@@ -116,7 +128,7 @@ pub fn retain_native(
         policy,
     ))
     .map_err(|e| e.to_string())?;
-    read_store(&mut staging, Some(sealer), id, policy)?;
+    read_store(&mut staging, Some(sealer), id, policy).map_err(|error| error.to_string())?;
     let retained = pollster::block_on(eidetic::load_typed_sealed::<
         eidetic::clip_profile::RetainedClipV1,
     >(
@@ -124,7 +136,11 @@ pub fn retain_native(
     ))
     .map_err(|e| e.to_string())?
     .ok_or("Staged retained clip missing")?;
-    let mut store = open(root, true)?;
+    let owner = open_with_limits(root, true, limits).map_err(|error| error.to_string())?;
+    let mut store = crate::research_storage::BudgetStore {
+        store: &owner,
+        budget: limits.budget(),
+    };
     require_existing_seals(
         &mut store,
         std::iter::once(id).chain(
@@ -135,7 +151,8 @@ pub fn retain_native(
                 .chain(&retained.private_backing)
                 .map(|part| part.manifest),
         ),
-    )?;
+    )
+    .map_err(|error| error.to_string())?;
     let received = pollster::block_on(retain_native_into(
         &mut store, sealer, &source, context, policy,
     ))
@@ -143,7 +160,7 @@ pub fn retain_native(
     if received != id {
         return Err("Retained source changed during admission".into());
     }
-    read_store(&mut store, Some(sealer), received, policy)?;
+    read_store(&mut store, Some(sealer), received, policy).map_err(|error| error.to_string())?;
     Ok(received)
 }
 
@@ -171,11 +188,21 @@ pub fn limits() -> Result<ClipLimits, String> {
 }
 
 fn open(root: &Path, create: bool) -> Result<muniment::FjallStore, String> {
+    let limits = crate::app::research_search_state::Preferences::load(root)?.storage;
+    open_with_limits(root, create, &limits).map_err(|error| error.to_string())
+}
+fn open_with_limits(
+    root: &Path,
+    create: bool,
+    limits: &crate::research_storage::StorageLimits,
+) -> Result<muniment::FjallStore, crate::research_storage::SourceReadError> {
     let path = root.join(STORE_DIR);
     if !create && !path.is_dir() {
         return Err("This mere has no retained clip store".into());
     }
-    muniment::FjallStore::open(path).map_err(|e| e.to_string())
+    muniment::FjallStore::open_with_limits(path, limits.owner()).map_err(|error| {
+        crate::research_storage::SourceReadError::open_retry("Retained clip", error)
+    })
 }
 
 fn import_with_sealer(
@@ -184,6 +211,7 @@ fn import_with_sealer(
     file: &Path,
     policy: ClipLimits,
     now_ms: u64,
+    limits: &crate::research_storage::StorageLimits,
 ) -> Result<ManifestId, String> {
     let wire_limit = policy
         .max_bytes
@@ -229,19 +257,24 @@ fn import_with_sealer(
     ))
     .map_err(|e| e.to_string())?;
     // Validate the receiving capability before durable admission.
-    read_store(&mut staging, sealer, id, policy)?;
-    let mut store = open(root, true)?;
+    read_store(&mut staging, sealer, id, policy).map_err(|error| error.to_string())?;
+    let owner = open_with_limits(root, true, limits).map_err(|error| error.to_string())?;
+    let mut store = crate::research_storage::BudgetStore {
+        store: &owner,
+        budget: limits.budget(),
+    };
     if sealer.is_some() {
         require_existing_seals(
             &mut store,
             std::iter::once(id).chain(package.payloads.iter().map(|part| part.id)),
-        )?;
+        )
+        .map_err(|error| error.to_string())?;
     }
     let received = pollster::block_on(fleece::portable_clip::import_clip_package(
         &mut store, sealer, &package, &context, policy,
     ))
     .map_err(|e| e.to_string())?;
-    read_store(&mut store, sealer, received, policy)?;
+    read_store(&mut store, sealer, received, policy).map_err(|error| error.to_string())?;
     // Fjall's normal handle drop owns close/reopen durability; this function
     // never reports application graph/session admission as a store transaction.
     Ok(received)
@@ -250,15 +283,11 @@ fn import_with_sealer(
 fn require_existing_seals(
     store: &mut dyn eidetic::Store,
     ids: impl IntoIterator<Item = ManifestId>,
-) -> Result<(), String> {
+) -> Result<(), crate::research_storage::SourceReadError> {
     for id in ids {
-        let manifest = pollster::block_on(eidetic::manifest::load_manifest(store, id))
-            .map_err(|e| e.to_string())?;
+        let manifest = pollster::block_on(eidetic::manifest::load_manifest(store, id))?;
         if let Some(manifest) = manifest {
-            if eidetic::seal::seal_marker(&manifest)
-                .map_err(|e| e.to_string())?
-                .is_none()
-            {
+            if eidetic::seal::seal_marker(&manifest)?.is_none() {
                 return Err("Existing unsealed clip bytes need an explicit custody migration before private retention".into());
             }
         }
@@ -272,7 +301,30 @@ pub fn read_sealed(
     policy: ClipLimits,
     sealer: &dyn eidetic::PayloadSealer,
 ) -> Result<ClipView, String> {
-    read_store(&mut open(root, false)?, Some(sealer), id, policy)
+    let limits = crate::app::research_search_state::Preferences::load(root)?.storage;
+    read_sealed_bounded(root, id, policy, sealer, &limits, limits.budget())
+        .map_err(|error| error.to_string())
+}
+
+pub(crate) fn read_sealed_bounded(
+    root: &Path,
+    id: ManifestId,
+    policy: ClipLimits,
+    sealer: &dyn eidetic::PayloadSealer,
+    limits: &crate::research_storage::StorageLimits,
+    budget: crate::research_storage::SharedReadBudget,
+) -> Result<ClipView, crate::research_storage::SourceReadError> {
+    let path = root.join(STORE_DIR);
+    if !path.is_dir() {
+        return Err("This mere has no retained clip store".into());
+    }
+    let store = muniment::FjallStore::open_with_limits(path, limits.owner())
+        .map_err(|error| crate::research_storage::SourceReadError::open("Retained clip", error))?;
+    let mut bounded = crate::research_storage::BudgetStore {
+        store: &store,
+        budget,
+    };
+    read_store(&mut bounded, Some(sealer), id, policy)
 }
 
 pub fn import_sealed(
@@ -282,16 +334,29 @@ pub fn import_sealed(
     now_ms: u64,
     sealer: &dyn eidetic::PayloadSealer,
 ) -> Result<ManifestId, String> {
-    import_with_sealer(Some(sealer), root, file, policy, now_ms)
+    let limits = crate::app::research_search_state::Preferences::load(root)?.storage;
+    import_with_sealer(Some(sealer), root, file, policy, now_ms, &limits)
 }
 
 #[cfg(test)]
 fn import(root: &Path, file: &Path, policy: ClipLimits, now_ms: u64) -> Result<ManifestId, String> {
-    import_with_sealer(None, root, file, policy, now_ms)
+    let limits = crate::app::research_search_state::Preferences::load(root)?.storage;
+    import_with_sealer(None, root, file, policy, now_ms, &limits)
 }
+pub(crate) fn import_sealed_with_limits(
+    root: &Path,
+    file: &Path,
+    policy: ClipLimits,
+    now_ms: u64,
+    sealer: &dyn eidetic::PayloadSealer,
+    limits: &crate::research_storage::StorageLimits,
+) -> Result<ManifestId, String> {
+    import_with_sealer(Some(sealer), root, file, policy, now_ms, limits)
+}
+
 #[cfg(test)]
 fn read(root: &Path, id: ManifestId, policy: ClipLimits) -> Result<ClipView, String> {
-    read_store(&mut open(root, false)?, None, id, policy)
+    read_store(&mut open(root, false)?, None, id, policy).map_err(|error| error.to_string())
 }
 
 /// Explicit selected-body disclosure. Fleece validates the held inventory and
@@ -304,10 +369,16 @@ fn export_with_sealer(
     file: &Path,
     policy: ClipLimits,
     replace: bool,
+    limits: &crate::research_storage::StorageLimits,
 ) -> Result<(), String> {
-    read_store(&mut open(root, false)?, sealer, id, policy)?;
+    let owner = open_with_limits(root, false, limits).map_err(|error| error.to_string())?;
+    let mut store = crate::research_storage::BudgetStore {
+        store: &owner,
+        budget: limits.budget(),
+    };
+    read_store(&mut store, sealer, id, policy).map_err(|error| error.to_string())?;
     let package = pollster::block_on(fleece::portable_clip::export_selected_clip(
-        &mut open(root, false)?,
+        &mut store,
         sealer,
         id,
         &["body".into()],
@@ -339,7 +410,8 @@ pub fn export_sealed(
     replace: bool,
     sealer: &dyn eidetic::PayloadSealer,
 ) -> Result<(), String> {
-    export_with_sealer(Some(sealer), root, id, file, policy, replace)
+    let limits = crate::app::research_search_state::Preferences::load(root)?.storage;
+    export_with_sealer(Some(sealer), root, id, file, policy, replace, &limits)
 }
 #[cfg(test)]
 fn export(
@@ -349,7 +421,30 @@ fn export(
     policy: ClipLimits,
     replace: bool,
 ) -> Result<(), String> {
-    export_with_sealer(None, root, id, file, policy, replace)
+    let limits = crate::app::research_search_state::Preferences::load(root)?.storage;
+    export_with_sealer(None, root, id, file, policy, replace, &limits)
+}
+
+pub(crate) fn export_sealed_with_limits(
+    root: &Path,
+    id: ManifestId,
+    file: &Path,
+    policy: ClipLimits,
+    replace: bool,
+    sealer: &dyn eidetic::PayloadSealer,
+    limits: &crate::research_storage::StorageLimits,
+) -> Result<(), String> {
+    export_with_sealer(Some(sealer), root, id, file, policy, replace, limits)
+}
+pub(crate) fn read_sealed_with_limits(
+    root: &Path,
+    id: ManifestId,
+    policy: ClipLimits,
+    sealer: &dyn eidetic::PayloadSealer,
+    limits: &crate::research_storage::StorageLimits,
+) -> Result<ClipView, String> {
+    read_sealed_bounded(root, id, policy, sealer, limits, limits.budget())
+        .map_err(|error| error.to_string())
 }
 
 impl crate::app::App {

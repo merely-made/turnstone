@@ -103,11 +103,12 @@ impl App {
         if (access.epoch)() != Some(reader.custody_epoch) {
             return Err("Profile custody changed before reading the retained clip.".into());
         }
-        let clip = crate::retained_clip::read_sealed(
+        let clip = crate::retained_clip::read_sealed_with_limits(
             &access.root,
             id,
             crate::retained_clip::limits()?,
             &*access.sealer,
+            &self.research.storage_limits()?,
         )?;
         if (access.epoch)() != Some(reader.custody_epoch)
             || self

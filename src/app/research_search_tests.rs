@@ -131,6 +131,36 @@ fn model_free_settings_and_dates_validate_and_preserve_bad_file() {
         std::fs::read(root.path().join("research-search-settings.json")).unwrap(),
         malformed
     );
+    assert!(
+        apply_value(
+            &mut state,
+            root.path(),
+            "storage_recovery_value_bytes",
+            "8192"
+        )
+        .is_err()
+    );
+    assert_eq!(std::fs::read(&path).unwrap(), malformed);
+
+    old["version"] = serde_json::json!(2);
+    let newer = serde_json::to_vec(&old).unwrap();
+    std::fs::write(&path, &newer).unwrap();
+    assert!(
+        Preferences::load(root.path())
+            .err()
+            .unwrap()
+            .contains("unsupported")
+    );
+    assert!(
+        apply_value(
+            &mut state,
+            root.path(),
+            "storage_recovery_value_bytes",
+            "8192"
+        )
+        .is_err()
+    );
+    assert_eq!(std::fs::read(&path).unwrap(), newer);
 }
 
 #[test]

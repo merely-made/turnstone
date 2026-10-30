@@ -36,10 +36,10 @@ impl App {
         let mut effects = match update {
             Update::ResearchRecords(result) => self.structured_completed(result),
             Update::ResearchCompareFinished { request, result } => {
-                self.research_compare_finished(request, result)
+                self.research_compare_finished(request, result.map_err(|e| e.to_string()))
             },
             Update::ResearchSearchFinished { request, result } => {
-                self.research_search_finished(request, result)
+                self.research_search_finished(request, result.map_err(|e| e.to_string()))
             },
             Update::SavedSourcesLoaded { .. }
             | Update::SavedSourceRead { .. }

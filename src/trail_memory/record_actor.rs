@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MPL-2.0
 //! Structured records through the existing session-bound sealed actor.
 use super::{SourceCustody, sealed_record_receipts, sealed_records, sealed_result_receipts};
+use crate::research_storage::SourceReadError as HostError;
 use eidetic::ManifestId;
 use eidetic::records::{PropertyDefinitionV1, PropertyRecordV1, RecordResult};
 use std::path::Path;
@@ -13,72 +14,77 @@ pub(crate) struct Command {
     pub session: uuid::Uuid,
     pub generation: uuid::Uuid,
     pub max_bytes: usize,
+    pub budget: crate::research_storage::SharedReadBudget,
     pub kind: Kind,
 }
 pub(crate) enum Kind {
-    Deposit(DepositRequest, SyncSender<Result<ManifestId, String>>),
+    Deposit(DepositRequest, SyncSender<Result<ManifestId, HostError>>),
     ReadRecord(
         ManifestId,
         usize,
         usize,
-        SyncSender<Result<(PropertyRecordV1, PropertyDefinitionV1), String>>,
+        SyncSender<Result<(PropertyRecordV1, PropertyDefinitionV1), HostError>>,
     ),
     SaveResult(
         ResultRequest,
         RecordResult,
-        SyncSender<Result<ManifestId, String>>,
+        SyncSender<Result<ManifestId, HostError>>,
     ),
     ReadResult(
         ManifestId,
         eidetic::records::RecordSettings,
-        SyncSender<Result<RecordResult, String>>,
+        SyncSender<Result<RecordResult, HostError>>,
     ),
     Acknowledge(
         DepositRequest,
         ManifestId,
         String,
-        SyncSender<Result<(), String>>,
+        SyncSender<Result<(), HostError>>,
     ),
     MarkAttached(
         DepositRequest,
         ManifestId,
         String,
         serde_json::Value,
-        SyncSender<Result<(), String>>,
+        SyncSender<Result<(), HostError>>,
     ),
-    AcknowledgeResult(ResultRequest, String, SyncSender<Result<(), String>>),
+    AcknowledgeResult(ResultRequest, String, SyncSender<Result<(), HostError>>),
     MarkResultAttached(
         ResultRequest,
         String,
         serde_json::Value,
-        SyncSender<Result<(), String>>,
+        SyncSender<Result<(), HostError>>,
     ),
     Pending(
         Vec<(uuid::Uuid, ManifestId)>,
         usize,
         usize,
         Option<uuid::Uuid>,
-        SyncSender<Result<(), String>>,
+        SyncSender<Result<(), HostError>>,
     ),
     PrepareWithdrawal(
         uuid::Uuid,
         uuid::Uuid,
         ManifestId,
         String,
-        SyncSender<Result<(), String>>,
+        SyncSender<Result<(), HostError>>,
     ),
     AcknowledgeWithdrawal(
         uuid::Uuid,
         uuid::Uuid,
         ManifestId,
         String,
-        SyncSender<Result<(), String>>,
+        SyncSender<Result<(), HostError>>,
     ),
-    Inventory(usize, usize, SyncSender<Result<Vec<RecoveryItem>, String>>),
+    Inventory(
+        usize,
+        usize,
+        SyncSender<Result<Vec<RecoveryItem>, HostError>>,
+    ),
     Abandon(
         uuid::Uuid,
         Vec<(uuid::Uuid, ManifestId)>,
-        SyncSender<Result<(), String>>,
+        SyncSender<Result<(), HostError>>,
     ),
 }
 fn execute<T>(
@@ -89,10 +95,14 @@ fn execute<T>(
     directory: &Path,
     current_generation: uuid::Uuid,
     max_bytes: usize,
+    budget: &crate::research_storage::SharedReadBudget,
     sync_after: bool,
-    sync: &(dyn Fn(&muniment::FjallStore) -> Result<(), String> + Sync),
-    operation: impl FnOnce(&mut dyn eidetic::Store, &dyn eidetic::PayloadSealer) -> Result<T, String>,
-) -> Result<T, String> {
+    sync: &(dyn Fn(&muniment::FjallStore) -> Result<(), muniment::StoreError> + Sync),
+    operation: impl FnOnce(
+        &mut super::structured_bounded_store::BoundedStore<'_>,
+        &dyn eidetic::PayloadSealer,
+    ) -> Result<T, HostError>,
+) -> Result<T, HostError> {
     let current = directory
         .parent()
         .and_then(Path::file_name)
@@ -110,6 +120,7 @@ fn execute<T>(
     let mut bounded = super::structured_bounded_store::BoundedStore {
         inner: store,
         max_bytes,
+        budget: budget.clone(),
         sync,
     };
     let result = operation(&mut bounded, binding.sealer.as_ref());
@@ -122,6 +133,32 @@ fn execute<T>(
     }
     result
 }
+pub(super) fn reject(command: Command, error: HostError) {
+    match command.kind {
+        Kind::Deposit(_, reply) | Kind::SaveResult(_, _, reply) => {
+            let _ = reply.send(Err(error));
+        },
+        Kind::ReadRecord(_, _, _, reply) => {
+            let _ = reply.send(Err(error));
+        },
+        Kind::ReadResult(_, _, reply) => {
+            let _ = reply.send(Err(error));
+        },
+        Kind::Inventory(_, _, reply) => {
+            let _ = reply.send(Err(error));
+        },
+        Kind::Acknowledge(_, _, _, reply)
+        | Kind::MarkAttached(_, _, _, _, reply)
+        | Kind::AcknowledgeResult(_, _, reply)
+        | Kind::MarkResultAttached(_, _, _, reply)
+        | Kind::Pending(_, _, _, _, reply)
+        | Kind::PrepareWithdrawal(_, _, _, _, reply)
+        | Kind::AcknowledgeWithdrawal(_, _, _, _, reply)
+        | Kind::Abandon(_, _, reply) => {
+            let _ = reply.send(Err(error));
+        },
+    }
+}
 pub(super) fn handle(
     command: Command,
     store: &mut Option<muniment::FjallStore>,
@@ -130,9 +167,7 @@ pub(super) fn handle(
     generation: uuid::Uuid,
 ) {
     handle_with_sync(command, store, custody, directory, generation, &|store| {
-        store
-            .sync_all()
-            .map_err(|error| format!("Structured store sync failed: {error}"))
+        store.sync_all()
     });
 }
 pub(super) fn handle_with_sync(
@@ -141,12 +176,13 @@ pub(super) fn handle_with_sync(
     custody: Option<&SourceCustody>,
     directory: &Path,
     generation: uuid::Uuid,
-    sync: &(dyn Fn(&muniment::FjallStore) -> Result<(), String> + Sync),
+    sync: &(dyn Fn(&muniment::FjallStore) -> Result<(), muniment::StoreError> + Sync),
 ) {
     let Command {
         session,
         generation: request_generation,
         max_bytes,
+        budget,
         kind,
     } = command;
     let sync_after = matches!(
@@ -167,6 +203,7 @@ pub(super) fn handle_with_sync(
                 directory,
                 generation,
                 max_bytes,
+                &budget,
                 sync_after,
                 sync,
                 |store, sealer| {
@@ -187,6 +224,7 @@ pub(super) fn handle_with_sync(
                 directory,
                 generation,
                 max_bytes,
+                &budget,
                 sync_after,
                 sync,
                 |store, sealer| {
@@ -209,6 +247,7 @@ pub(super) fn handle_with_sync(
                 directory,
                 generation,
                 max_bytes,
+                &budget,
                 sync_after,
                 sync,
                 |store, sealer| {
@@ -227,7 +266,8 @@ pub(super) fn handle_with_sync(
                 custody,
                 directory,
                 generation,
-                max_bytes,
+                max_bytes.min(settings.max_input_bytes),
+                &budget,
                 sync_after,
                 sync,
                 |store, sealer| {
@@ -250,6 +290,7 @@ pub(super) fn handle_with_sync(
                 directory,
                 generation,
                 max_bytes,
+                &budget,
                 sync_after,
                 sync,
                 |store, sealer| {
@@ -266,6 +307,7 @@ pub(super) fn handle_with_sync(
                 directory,
                 generation,
                 max_bytes,
+                &budget,
                 sync_after,
                 sync,
                 |store, sealer| {
@@ -284,6 +326,7 @@ pub(super) fn handle_with_sync(
                 directory,
                 generation,
                 max_bytes,
+                &budget,
                 sync_after,
                 sync,
                 |store, sealer| {
@@ -300,6 +343,7 @@ pub(super) fn handle_with_sync(
                 directory,
                 generation,
                 max_bytes,
+                &budget,
                 sync_after,
                 sync,
                 |store, sealer| {
@@ -318,6 +362,7 @@ pub(super) fn handle_with_sync(
                 directory,
                 generation,
                 max_bytes,
+                &budget,
                 sync_after,
                 sync,
                 |store, sealer| {
@@ -336,6 +381,7 @@ pub(super) fn handle_with_sync(
                 directory,
                 generation,
                 max_bytes,
+                &budget,
                 sync_after,
                 sync,
                 |store, sealer| {
@@ -354,10 +400,14 @@ pub(super) fn handle_with_sync(
                 directory,
                 generation,
                 max_bytes,
+                &budget,
                 sync_after,
                 sync,
                 |store, sealer| {
-                    sealed_record_receipts::inventory(store, sealer, session, max_items, max_bytes)
+                    store.ensure_no_legacy_receipts()?;
+                    sealed_record_receipts::inventory_after_legacy_check(
+                        store, sealer, session, max_items, max_bytes, true,
+                    )
                 },
             ));
         },
@@ -370,6 +420,7 @@ pub(super) fn handle_with_sync(
                 directory,
                 generation,
                 max_bytes,
+                &budget,
                 sync_after,
                 sync,
                 |store, sealer| {
@@ -386,11 +437,13 @@ pub(super) fn handle_with_sync(
                 directory,
                 generation,
                 max_bytes,
+                &budget,
                 sync_after,
                 sync,
                 |store, sealer| {
-                    for item in sealed_record_receipts::inventory(
-                        store, sealer, session, max_items, max_bytes,
+                    store.ensure_no_legacy_receipts()?;
+                    for item in sealed_record_receipts::inventory_after_legacy_check(
+                        store, sealer, session, max_items, max_bytes, true,
                     )? {
                         if Some(item.nonce()) == except {
                             continue;

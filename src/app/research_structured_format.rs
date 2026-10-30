@@ -306,7 +306,12 @@ pub(crate) fn recovery_rows<'a>(
     item(rows, "Back", Command::Home);
 }
 
-pub(super) fn settings_rows(rows: &mut Vec<Suggestion>, s: &eidetic::records::RecordSettings) {
+pub(super) fn settings_rows(
+    rows: &mut Vec<Suggestion>,
+    s: &eidetic::records::RecordSettings,
+    storage: &crate::research_storage::StorageLimits,
+    active: Option<&crate::research_storage::StorageLimits>,
+) {
     for (label, key, n) in [
         ("Sources", "record_max_sources", s.max_sources),
         ("Records", "record_max_records", s.max_records),
@@ -326,6 +331,25 @@ pub(super) fn settings_rows(rows: &mut Vec<Suggestion>, s: &eidetic::records::Re
     ] {
         field(rows, label, &n.to_string(), key);
     }
+    let active_fields = active.map(|limits| limits.fields()).unwrap_or_default();
+    for (label, key, value) in storage.fields() {
+        let active_value = active_fields
+            .iter()
+            .find(|(_, active_key, _)| active_key == &key)
+            .map(|(_, _, value)| value.as_str())
+            .unwrap_or("unavailable");
+        field(
+            rows,
+            &format!("{label} (active {active_value})"),
+            &value,
+            &key,
+        );
+    }
+    item(
+        rows,
+        "Storage settings take effect after restarting Turnstone",
+        Command::Settings,
+    );
     item(rows, "Back", Command::Home);
 }
 

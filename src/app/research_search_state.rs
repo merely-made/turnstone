@@ -69,6 +69,7 @@ pub struct Preferences {
     pub aliases: Vec<Alias>,
     pub comparison: eidetic_search::compare::ComparisonSettings,
     pub records: eidetic::records::RecordSettings,
+    pub(crate) storage: crate::research_storage::StorageLimits,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -80,6 +81,8 @@ struct StoredPreferences {
     comparison: StoredComparison,
     #[serde(default)]
     records: eidetic::records::RecordSettings,
+    #[serde(default)]
+    storage: crate::research_storage::StorageLimits,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -133,6 +136,7 @@ impl From<&Preferences> for StoredPreferences {
             aliases: value.aliases.clone(),
             comparison: (&value.comparison).into(),
             records: value.records.clone(),
+            storage: value.storage.clone(),
             settings: StoredSettings {
                 weights: settings.weights,
                 snippet_context: settings.snippet_context,
@@ -153,6 +157,7 @@ impl From<StoredPreferences> for Preferences {
             aliases: value.aliases,
             comparison: value.comparison.into(),
             records: value.records,
+            storage: value.storage,
             settings: SearchSettings {
                 weights: settings.weights,
                 snippet_context: settings.snippet_context,
@@ -174,6 +179,7 @@ impl Default for Preferences {
             aliases: vec![],
             comparison: Default::default(),
             records: Default::default(),
+            storage: Default::default(),
         }
     }
 }
