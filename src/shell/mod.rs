@@ -29,6 +29,7 @@ mod citation_event_history;
 mod drive;
 mod effects;
 mod events;
+mod fetch_port;
 mod foreign_a11y;
 mod gestures;
 mod keys;
