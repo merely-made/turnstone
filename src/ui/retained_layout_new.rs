@@ -21,6 +21,7 @@ impl RetainedLayout {
             rebuilds: 0,
             viewport_scroll: (0.0, 0.0),
             element_scroll: HashMap::new(),
+            projections: std::cell::RefCell::new(HashMap::new()),
         }
     }
 
@@ -88,12 +89,18 @@ impl RetainedLayout {
         self.inline_scroll_root = root;
         self.inline_bar = Some(bar);
         self.inline = Some((std::rc::Rc::downgrade(layout), owner));
-        self.snapshot = None;
+        self.replace_snapshot(None);
     }
 
     pub(crate) fn unbind_inline(&mut self) {
         self.inline = None;
-        self.snapshot = None;
+        self.replace_snapshot(None);
+    }
+
+    /// Every snapshot change retires the projection derived from the old one.
+    pub(super) fn replace_snapshot(&mut self, snapshot: Option<LiverySnapshot<DomNodeId>>) {
+        self.snapshot = snapshot;
+        self.projections.get_mut().clear();
     }
 
     pub(crate) fn set_native_sources(&mut self, sources: HashMap<u64, Vec<PaintCmd>>) {
@@ -293,7 +300,43 @@ impl RetainedLayout {
             .unwrap_or_default()
     }
 
+    /// Every recorded DOM change, snapshot refresh, focus, scroll or scale
+    /// change yields a fresh projection; otherwise the last one is reused.
     pub(super) fn document_projection_at(
+        &self,
+        dom: &ScriptedDom,
+        root: DomNodeId,
+        focus: Option<DomNodeId>,
+    ) -> Option<document_session_api::DocumentA11yProjection> {
+        self.snapshot.as_ref()?;
+        let (base, pending) = dom.pending_mutations();
+        let key = ProjectionKey {
+            dom: base + pending.len() as u64,
+            focus,
+            scale: self.scale.to_bits(),
+            viewport_scroll: (
+                self.viewport_scroll.0.to_bits(),
+                self.viewport_scroll.1.to_bits(),
+            ),
+            element_scroll: self.scroll_stamp(),
+        };
+        if let Some(memo) = self.projections.borrow().get(&root)
+            && memo.key == key
+        {
+            return Some(memo.projection.clone());
+        }
+        let projection = self.fresh_projection_at(dom, root, focus)?;
+        self.projections.borrow_mut().insert(
+            root,
+            ProjectionMemo {
+                key,
+                projection: projection.clone(),
+            },
+        );
+        Some(projection)
+    }
+
+    pub(super) fn fresh_projection_at(
         &self,
         dom: &ScriptedDom,
         root: DomNodeId,

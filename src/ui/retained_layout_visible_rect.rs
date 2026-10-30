@@ -150,7 +150,7 @@ impl RetainedLayout {
         let scoped =
             cambium_rootstock::WindowDom::new(dom, self.root.unwrap_or_else(|| dom.document()));
         let (lw, lh) = logical_size((w, h), self.scale);
-        self.snapshot = Some(build_livery_snapshot(&scoped, sheet, lw, lh, text));
+        self.replace_snapshot(Some(build_livery_snapshot(&scoped, sheet, lw, lh, text)));
         self.mutation_cursor = end;
         self.size = (w, h);
         self.laid_at = self.scale;

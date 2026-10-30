@@ -191,6 +191,25 @@ pub struct RetainedLayout {
     /// Scroll offsets inside the layout, in layout (logical) pixels.
     viewport_scroll: (f32, f32),
     element_scroll: HashMap<DomNodeId, (f32, f32)>,
+    /// The last semantic projection of each root with every input it was
+    /// derived from. Publication asks several times per frame, and inline
+    /// bodies ask with their own roots; an unchanged DOM, snapshot, focus,
+    /// scroll and scale give the same answer.
+    projections: std::cell::RefCell<HashMap<DomNodeId, ProjectionMemo>>,
+}
+
+struct ProjectionMemo {
+    key: ProjectionKey,
+    projection: document_session_api::DocumentA11yProjection,
+}
+
+#[derive(PartialEq)]
+struct ProjectionKey {
+    dom: u64,
+    focus: Option<DomNodeId>,
+    scale: u32,
+    viewport_scroll: (u32, u32),
+    element_scroll: Vec<(u64, u32, u32)>,
 }
 
 /// A borrowed DOM view re-rooted at one window root. This remains a host

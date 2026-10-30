@@ -1,7 +1,8 @@
 # Retained semantic projection without repeated tree searches
 
 **Status (2026-10-30):** landed and locally qualified, including shared-frame
-paint deferral, Genet used-color receiving and current upstream integration.
+paint deferral, Genet used-color receiving, current upstream integration and
+semantic projection reuse.
 
 The native render host now qualifies pending GPU frames away from the UI
 thread. Arrange remained slow after that change. An earlier native stack sample placed
@@ -119,6 +120,32 @@ and next-frame changes remain current, the default product and optional services
 compile against the selected owner, and matched native runs retain memory and
 cadence evidence alongside current composed primary/lens captures.
 
+## Semantic projection reuse
+
+After paint deferral, the Arrange sample spent most of the main thread
+publishing accessibility: each publish rebuilt the outer frame's whole
+semantic projection, and the shell publishes twice per frame (actor drain
+and redraw). `RetainedLayout` now keeps the last projection for each root.
+The key holds the DOM mutation revision, focus, scale, viewport scroll
+and element scroll. Snapshot replacement clears every entry. Any recorded
+DOM change, including labels, referenced elements, form state and generated
+content, therefore projects afresh. Inline bodies project through their owner's
+layout under their own roots, so the frame and its bodies do not evict
+each other. Callers still receive an owned projection.
+
+Every surface plan prepares the outer frame, about ten times per frame, and
+each preparation synced the frame controls, rescanning the frame DOM in
+`enhance` and twice for focus. A sync that changes nothing now records a
+stamp of the DOM revision, control admission and revision, host focus and
+runner focus. The next sync with the same stamp returns at once. Any write,
+invalidation, focus move or workspace change runs the full pass again.
+
+Done when an unchanged layout reuses its projection without geometry or
+semantic work, each key input and a restyle produce output equal to a fresh
+projection, separate roots keep separate entries, a settled control sync skips
+while outside writes, runner focus, workspace and invalidation each resume it,
+and matched native Arrange runs measure the change.
+
 ## Consumer and product evidence
 
 Done when the source owners and receiving application pass focused
@@ -227,3 +254,12 @@ earlier receipts remain at their original paths.
 - 2026-10-30: integrated current upstream search and note-editor fixes after the
   frozen matched runs. The measured render files and selected Genet lock remain
   byte-identical; the full application library passes after integration.
+- 2026-10-30: semantic projection reuse and settled control sync landed with
+  reuse and freshness controls; the application library passes (1239). Matched
+  optimized Arrange runs against the frozen shared-frame build improve from
+  14.4 to 18.6 fps, with p95 presentation from 81 to 61 ms. The follow-up sample
+  shows no fresh projection or control rescans in steady state. Remaining
+  main-thread cues: publication still runs twice per frame and is 57% of the
+  sample; `body_slots` in frame preparation, the outer frame's projection clone,
+  lowering and action-map walk, and `frame_with_guests` lead it. Evidence:
+  `Code/output/turnstone-a11y-reuse-20261030`.

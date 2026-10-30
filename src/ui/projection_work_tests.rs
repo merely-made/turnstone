@@ -121,3 +121,98 @@ fn bulk_projection_matches_point_geometry_after_scoped_retained_changes() {
         );
     }
 }
+
+#[test]
+fn unchanged_projection_is_reused_and_each_input_retires_it() {
+    let mut dom = ScriptedDom::new();
+    let document = dom.document();
+    dom.set_inner_html(
+        document,
+        r#"<div id="scroll"><button>First</button><button>Second</button></div>"#,
+    );
+    let buttons = taproot::matching_estimated_fixture(&dom, &taproot::Selector::role("button"));
+    let mut scroll = None;
+    walk_dom(&dom, document, &mut |node| {
+        if dom.attribute(node, &Namespace::default(), &LocalName::from("id")) == Some("scroll") {
+            scroll = Some(node);
+        }
+    });
+    let mut layout = RetainedLayout::new();
+    let _ = layout.scene(&mut dom, "button { width:80px; height:20px; }", 400, 300);
+    let project = |layout: &RetainedLayout, dom: &ScriptedDom, focus| {
+        GEOMETRY_VISITS.with(|count| count.set(0));
+        let projection = layout.document_projection_at(dom, document, focus).unwrap();
+        assert_eq!(
+            projection,
+            layout.fresh_projection_at(dom, document, focus).unwrap()
+        );
+        (projection, GEOMETRY_VISITS.with(Cell::get))
+    };
+    let reprojects = |layout: &RetainedLayout, dom: &ScriptedDom, focus| {
+        let (first, visits) = project(layout, dom, focus);
+        let (again, reused) = project(layout, dom, focus);
+        assert!(visits > reused, "a changed input must project afresh");
+        assert_eq!(first, again);
+        first
+    };
+    let plain = reprojects(&layout, &dom, None);
+    let focused = reprojects(&layout, &dom, Some(buttons[0]));
+    assert!(focused.nodes().iter().any(|node| node.state.focused));
+    dom.set_attribute(buttons[1], qual("aria-label"), "Renamed");
+    let renamed = reprojects(&layout, &dom, Some(buttons[0]));
+    assert!(
+        renamed
+            .nodes()
+            .iter()
+            .any(|node| node.name.as_deref() == Some("Renamed"))
+    );
+    layout.element_scroll.insert(scroll.unwrap(), (0.0, 5.0));
+    let scrolled = reprojects(&layout, &dom, Some(buttons[0]));
+    layout.viewport_scroll = (0.0, 3.0);
+    let viewport = reprojects(&layout, &dom, Some(buttons[0]));
+    layout.set_scale(2.0);
+    let scaled = reprojects(&layout, &dom, Some(buttons[0]));
+    let _ = layout.scene(&mut dom, "button { width:90px; height:30px; }", 400, 300);
+    let restyled = reprojects(&layout, &dom, Some(buttons[0]));
+    let bounds = |projection: &document_session_api::DocumentA11yProjection| {
+        projection
+            .nodes()
+            .iter()
+            .filter_map(|node| node.bounds.map(|b| (b.x, b.y, b.width, b.height)))
+            .collect::<Vec<_>>()
+    };
+    let sequence = [&plain, &renamed, &scrolled, &viewport, &scaled, &restyled];
+    for pair in sequence.windows(2).skip(1) {
+        assert_ne!(bounds(pair[0]), bounds(pair[1]));
+    }
+}
+
+#[test]
+fn each_projection_root_keeps_its_own_reuse() {
+    let mut dom = ScriptedDom::new();
+    let document = dom.document();
+    dom.set_inner_html(
+        document,
+        r#"<div id="a"><button>A</button></div><div id="b"><button>B</button></div>"#,
+    );
+    let mut roots = HashMap::new();
+    walk_dom(&dom, document, &mut |node| {
+        if let Some(id) = dom.attribute(node, &Namespace::default(), &LocalName::from("id")) {
+            roots.insert(id.to_owned(), node);
+        }
+    });
+    let mut layout = RetainedLayout::new();
+    let _ = layout.scene(&mut dom, "button { height:20px; }", 400, 300);
+    let project = |root| {
+        GEOMETRY_VISITS.with(|count| count.set(0));
+        let projection = layout.document_projection_at(&dom, root, None).unwrap();
+        (projection, GEOMETRY_VISITS.with(Cell::get))
+    };
+    let (a, b) = (roots["a"], roots["b"]);
+    let ((first_a, cold_a), (first_b, cold_b)) = (project(a), project(b));
+    let ((again_a, warm_a), (again_b, warm_b)) = (project(a), project(b));
+    assert!(cold_a > 0 && cold_b > 0);
+    assert_eq!((warm_a, warm_b), (0, 0));
+    assert_eq!((&first_a, &first_b), (&again_a, &again_b));
+    assert_ne!(first_a, first_b);
+}

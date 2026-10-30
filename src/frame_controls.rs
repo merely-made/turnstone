@@ -64,6 +64,20 @@ pub(crate) struct FrameControls {
     revision: u64,
     focus: Option<Control>,
     body_cursor: u64,
+    /// Set when a sync changed nothing. Shell geometry and publication sync
+    /// many times per frame; an identical stamp means the next one would also
+    /// change nothing.
+    settled: Option<SyncStamp>,
+}
+
+/// Everything `sync` reads besides its arguments, which it compares itself.
+#[derive(PartialEq)]
+struct SyncStamp {
+    dom: u64,
+    admission: u64,
+    revision: u64,
+    focus: Option<Control>,
+    runner_focus: Option<NodeId>,
 }
 
 #[path = "frame_controls/view.rs"]
@@ -90,3 +104,7 @@ use has_class::has_class;
 #[path = "frame_controls/tree_at.rs"]
 mod tree_at;
 use tree_at::tree_at;
+
+#[cfg(test)]
+#[path = "frame_controls/sync_tests.rs"]
+mod sync_tests;
