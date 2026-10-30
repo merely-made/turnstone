@@ -143,7 +143,7 @@ cargo build -p djinn --bin djinn
 
 Start `djinn` under the platform's resident lifecycle before
 opening the extension. On Windows,
-[`../../djinn/install-windows.ps1`](../../djinn/install-windows.ps1)
+[`../../mere-resident/install-windows.ps1`](../../mere-resident/install-windows.ps1)
 performs the reversible standard-agent cutover; it requires the expected live
 fingerprint and preserves the previous Personae task.
 

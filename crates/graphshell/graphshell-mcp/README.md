@@ -17,7 +17,7 @@ The server holds no key and mints no grant (doctrine, Stack 2). `mere-mcp`
 names itself with `--app` and dials djinn's owner-only application door. Djinn
 admits that app id only for the routes its owner allows, serves it the
 projections that app may see, and attributes every accepted edit to the persona
-*via* that app (`Author::person(persona).via(app)`, `ports/djinn/src/resident_mere.rs`).
+*via* that app (`Author::person(persona).via(app)`, `ports/mere-resident/src/resident_mere.rs`).
 A refusal on the route is a refusal here, and reaches the model as a tool error
 it can read. To give two harnesses different reach, run them as different app
 ids; to withdraw one, revoke its route at djinn.
