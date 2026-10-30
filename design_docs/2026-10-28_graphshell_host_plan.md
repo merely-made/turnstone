@@ -91,7 +91,7 @@ A macOS resident Mere peer must ship as a signed app with the local-network usag
 ### G6, G7. Compose several applications; product pulls and constrained management
 Received from the archived remote projection host plan. G6: one saved Graphshell workspace reopens two endpoint applications, keeps their truths separate and preserves its own arrangement and links. G7: Woodshed, Hocket and radio-management adapters with task receipts, and a constrained profile with measured byte budgets. Their completion gates the publication of the four unpublished `graphshell-*` crates. The capability model's sub-delegation (a depth-1 certificate issuing a narrower one to the viewer) was tracked in the same archived plan; its gate (G5b, G5c) is met.
 - Done when: G6 and G7 hold as stated above; no separate condition is stated for publishing the crates, whose gate they were.
-- Needs: H8 for the constrained profile.
+- Needs: H8 for the constrained profile; for G6, an application serving a route (S1 of [`2026-10-30_capability_door_plan.md`](2026-10-30_capability_door_plan.md)).
 - Rulings: -
 - From: `archive_docs/2026-10-28/2026-07-27_graphshell_reference_host_plan.md:427-435`; `archive_docs/2026-10-28/2026-07-03_archived_plan_tails_plan.md:683-686,865-868,1277-1282`
 
