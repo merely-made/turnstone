@@ -15,8 +15,8 @@ use std::path::PathBuf;
 use std::rc::Rc;
 
 use cambium::{
-    AnyView, DomHandle, GenetAppRunner, GenetCtx, GenetElement, Keyed, button, el, setting_row,
-    status_note,
+    AnyView, DomHandle, GenetAppRunner, GenetCtx, GenetElement, Keyed, LifecycleEventSink, button,
+    el, status_note,
 };
 use genet_scripted_dom::ScriptedDom;
 use layout_dom_api::LayoutDom;
@@ -181,6 +181,7 @@ struct SettingsState {
     owner: Option<SharedApplicationSettingsOwner>,
     bindings: std::collections::BTreeMap<String, SettingsBinding>,
     live_settings: LiveSettingsHandle,
+    composition_lifecycle: LifecycleEventSink,
     status: String,
     reload_epoch: u64,
     viewport_w: f32,
@@ -198,6 +199,7 @@ impl SettingsState {
             owner: None,
             bindings: Default::default(),
             live_settings,
+            composition_lifecycle: LifecycleEventSink::default(),
             status,
             reload_epoch: 0,
             viewport_w: 0.0,
@@ -260,34 +262,9 @@ type SettingsView = Box<dyn AnyView<SettingsState, (), GenetCtx, GenetElement>>;
 type SettingsRunner =
     GenetAppRunner<SettingsState, fn(&SettingsState) -> SettingsView, SettingsView, ()>;
 
-/// One provider spec as a Cambium row. The draft is the component's; this
-/// pane only sees the applied value, which it forwards to the provider under
-/// the id it passed in.
-fn pane_setting_row(spec: &SettingSpec) -> SettingsView {
-    let setting_id = spec.id.clone();
-    let label = format!(
-        "{} · {:?} · {:?} · {:?}",
-        spec.label, spec.scope, spec.movement, spec.mutability
-    );
-    Box::new(setting_row(
-        spec,
-        label,
-        move |state: &mut SettingsState, value: SettingValue| {
-            apply_value(state, &setting_id, value);
-        },
-    ))
-}
-
-/// Keep each draft attached to the setting identity that owns it when the
-/// provider inserts or reorders rows. A positional sequence would transfer a
-/// retained row's component state to whichever spec occupies that index next.
-fn setting_rows(specs: &[SettingSpec]) -> SettingsView {
-    let rows = specs
-        .iter()
-        .map(|spec| (spec.id.clone(), pane_setting_row(spec)))
-        .collect::<Vec<_>>();
-    Box::new(el::<_, SettingsState, ()>("div", Keyed::new(rows)))
-}
+mod composition;
+#[cfg(test)]
+use composition::setting_rows;
 
 fn settings_view(state: &SettingsState) -> SettingsView {
     let reference = SettingsRef(APPLICATION_REFERENCE.into());
@@ -298,7 +275,10 @@ fn settings_view(state: &SettingsState) -> SettingsView {
                 "No settings are available for this source.",
             ))
         },
-        Ok(projection) => setting_rows(&projection.specs),
+        Ok(projection) => composition::settings_rows_for_specs(
+            &projection.specs,
+            state.composition_lifecycle.clone(),
+        ),
         Err(error) => Box::new(
             el::<_, SettingsState, ()>("div", format!("Settings are unavailable: {error:?}"))
                 .attr("class", "setting-error")
@@ -587,3 +567,7 @@ mod identity_tests;
 #[cfg(test)]
 #[path = "settings_pane/commands_tests.rs"]
 mod commands_tests;
+
+#[cfg(test)]
+#[path = "settings_pane/composition_tests.rs"]
+mod composition_tests;
