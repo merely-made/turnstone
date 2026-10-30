@@ -341,6 +341,9 @@ pub enum Step {
     WaitSourceTarget(u32, String),
     /// Wait for a current saved structured result or historical replay.
     WaitStructuredResult(u32),
+    WaitStructuredAuthorSave(u32),
+    WaitStructuredIdle(u32),
+    WaitStructuredLimitRefusal(u32),
     /// Wait until the focused saved-source reader has content and a live engine.
     WaitSavedReader(u32),
     /// Write the place observation facts (`crate::observe::place_record`),

@@ -67,6 +67,8 @@ mod idle_diagnosis_is_busy;
 mod shell_idle_diagnosis;
 #[path = "drive/shell_wait_frames.rs"]
 mod shell_wait_frames;
+#[path = "drive/shell_research_waits.rs"]
+mod shell_research_waits;
 use focused_saved_reader_node_for::focused_saved_reader_node_for;
 #[path = "drive/cmp_usize.rs"]
 mod cmp_usize;

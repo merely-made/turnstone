@@ -47,6 +47,8 @@ impl App {
             "schema": "turnstone.structured-status/v1", "session": self.session_id,
             "view": format!("{:?}", state.view), "visible": visible,
             "busy": controller.busy,
+            "author_save_ready": self.structured_scenario_author_save_ready(),
+            "structured_idle_ready": self.structured_scenario_idle_ready(),
             "error": state.error.as_deref().or(controller.error.as_deref()),
             "held_result": controller.result.is_some(),
             "result_scope_current": current,
@@ -130,6 +132,32 @@ impl App {
             },
             "result": crate::research_records::observation_result(result),
         }))
+    }
+
+    /// Completion barrier after an ordinary structured command; not a receipt.
+    pub(crate) fn structured_scenario_idle_ready(&self) -> bool {
+        let state = &self.research_search.structured;
+        self.omnibar.open
+            && self.research_search.view == super::research_search_state::View::Structured
+            && state.error.is_none()
+            && state.controller.error.is_none()
+            && !state.controller.busy
+            && state.controller.pending.is_none()
+    }
+
+    /// The authoring submit clears view_scope; only the confirmed save restores it.
+    /// The preceding Save action must itself have succeeded in the scenario.
+    pub(crate) fn structured_scenario_author_save_ready(&self) -> bool {
+        let state = &self.research_search.structured;
+        let controller = &state.controller;
+        self.omnibar.open
+            && self.research_search.view == super::research_search_state::View::Structured
+            && state.view == super::research_structured_state::View::Author
+            && state.error.is_none()
+            && controller.error.is_none()
+            && !controller.busy
+            && controller.pending.is_none()
+            && controller.view_scope.as_ref().is_some_and(|scope| self.structured_scope_is_current(scope))
     }
 
     /// Wait only for an admitted, settled result with durable current identity,

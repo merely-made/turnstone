@@ -139,8 +139,45 @@ fn model_free_app_authors_saves_reopens_and_queries_a_sourced_property() {
         status: Some("approved".into()),
         evidence: target,
     };
+    app.omnibar.open = true;
+    app.research_search.view = crate::app::research_search_state::View::Structured;
+    app.research_search.structured.view = crate::app::research_structured_state::View::Author;
+    assert_eq!(app.structured_scenario_status()["author_save_ready"], false);
     let effects = app.structured_author(property.clone());
+    let pending_save = app.research_search.structured.controller.pending.clone().unwrap();
+    assert_eq!(app.structured_scenario_status()["structured_idle_ready"], false);
+    assert_eq!(app.structured_scenario_status()["author_save_ready"], false);
     finish(&mut app, &bridge, &actor, effects);
+    assert_eq!(app.structured_scenario_status()["author_save_ready"], true);
+    assert_eq!(app.structured_scenario_status()["structured_idle_ready"], true);
+    app.research_search.structured.error = Some("draft refusal".into());
+    assert_eq!(app.structured_scenario_status()["structured_idle_ready"], false);
+    assert_eq!(app.structured_scenario_status()["author_save_ready"], false);
+    app.research_search.structured.error = None;
+    app.research_search.structured.controller.error = Some("save refusal".into());
+    assert_eq!(app.structured_scenario_status()["structured_idle_ready"], false);
+    assert_eq!(app.structured_scenario_status()["author_save_ready"], false);
+    app.research_search.structured.controller.error = None;
+    app.omnibar.open = false;
+    assert_eq!(app.structured_scenario_status()["structured_idle_ready"], false);
+    assert_eq!(app.structured_scenario_status()["author_save_ready"], false);
+    app.omnibar.open = true;
+    app.research_search.structured.view = crate::app::research_structured_state::View::Home;
+    assert_eq!(app.structured_scenario_status()["author_save_ready"], false);
+    app.research_search.structured.view = crate::app::research_structured_state::View::Author;
+    app.research_search.structured.controller.busy = true;
+    assert_eq!(app.structured_scenario_status()["structured_idle_ready"], false);
+    assert_eq!(app.structured_scenario_status()["author_save_ready"], false);
+    app.research_search.structured.controller.busy = false;
+    app.research_search.structured.controller.pending = Some(pending_save);
+    assert_eq!(app.structured_scenario_status()["structured_idle_ready"], false);
+    assert_eq!(app.structured_scenario_status()["author_save_ready"], false);
+    app.research_search.structured.controller.pending = None;
+    let session = app.session_id;
+    app.session_id = pandect::SessionId(uuid::Uuid::new_v4());
+    assert_eq!(app.structured_scenario_status()["author_save_ready"], false);
+    app.session_id = session;
+    assert_eq!(app.structured_scenario_status()["author_save_ready"], true);
     assert!(app.research_search.structured.controller.error.is_none());
     assert!(!app.research_search.structured.controller.busy);
     let saved_graph = crate::session_graph_file::load(&graph_file)

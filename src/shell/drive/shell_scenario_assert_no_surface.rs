@@ -245,6 +245,21 @@ impl Shell {
                     ));
                 }
             },
+            Step::WaitStructuredAuthorSave(frames) => {
+                self.wait_frames(*frames, |shell| {
+                    shell.app.structured_scenario_author_save_ready()
+                        || shell.app.structured_scenario_status()["error"].is_string()
+                });
+                if !self.app.structured_scenario_author_save_ready() {
+                    let status = self.app.structured_scenario_status();
+                    return Err(format!(
+                        "wait-structured-author-save after {frames} frames: no current confirmed save; error={}",
+                        status["error"]
+                    ));
+                }
+            },
+            Step::WaitStructuredIdle(frames) => self.scenario_wait_structured(*frames, false)?,
+            Step::WaitStructuredLimitRefusal(frames) => self.scenario_wait_structured(*frames, true)?,
             Step::WaitStructuredResult(frames) => {
                 if !self.wait_frames(*frames, |shell| {
                     shell.app.structured_scenario_result_ready()
@@ -472,6 +487,7 @@ impl Shell {
                 .map_err(|e| format!("runtime observation write: {e}"))?;
             },
             Step::RecordComparison(name) => {
+                self.scenario_wait_comparison(600)?;
                 let value = self.app.research_compare_observation()?;
                 let bytes = serde_json::to_vec_pretty(&value).map_err(|e| e.to_string())?;
                 std::fs::write(

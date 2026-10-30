@@ -493,7 +493,7 @@ pub fn parse(body: &str) -> Result<Vec<Step>, String> {
                 }
                 Step::WaitSourceTarget(frames.unwrap(), target.unwrap().to_owned())
             }
-            "wait-saved-sources" | "wait-saved-reader" | "wait-research-search" | "wait-structured-result" => {
+            "wait-saved-sources" | "wait-saved-reader" | "wait-research-search" | "wait-structured-result" | "wait-structured-author-save" | "wait-structured-idle" | "wait-structured-limit-refusal" => {
                 let frames = rest.trim().parse::<u32>().map_err(|_| {
                     format!("line {}: {verb} wants '<frames>'", i + 1)
                 })?;
@@ -501,6 +501,9 @@ pub fn parse(body: &str) -> Result<Vec<Step>, String> {
                     "wait-saved-sources" => Step::WaitSavedSources(frames),
                     "wait-research-search" => Step::WaitResearchSearch(frames),
                     "wait-structured-result" => Step::WaitStructuredResult(frames),
+                    "wait-structured-author-save" => Step::WaitStructuredAuthorSave(frames),
+                    "wait-structured-idle" => Step::WaitStructuredIdle(frames),
+                    "wait-structured-limit-refusal" => Step::WaitStructuredLimitRefusal(frames),
                     _ => Step::WaitSavedReader(frames),
                 }
             }

@@ -346,6 +346,15 @@ fn model_free_structured_result_wait_requires_a_frame_limit() {
         [Step::WaitStructuredResult(600)]
     ));
     assert!(parse("wait-structured-result invalid").is_err());
+    assert!(matches!(
+        parse("wait-structured-author-save 600").unwrap().as_slice(),
+        [Step::WaitStructuredAuthorSave(600)]
+    ));
+    assert!(parse("wait-structured-author-save invalid").is_err());
+    assert!(matches!(parse("wait-structured-idle 600").unwrap().as_slice(), [Step::WaitStructuredIdle(600)]));
+    assert!(matches!(parse("wait-structured-limit-refusal 600").unwrap().as_slice(), [Step::WaitStructuredLimitRefusal(600)]));
+    assert!(parse("wait-structured-idle invalid").is_err());
+    assert!(parse("wait-structured-limit-refusal invalid").is_err());
 }
 
 #[test]

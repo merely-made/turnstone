@@ -110,7 +110,7 @@ impl Shell {
             | Step::WaitSourceCapture(..)
             | Step::WaitSavedSources(..)
             | Step::WaitResearchSearch(..) | Step::WaitSourceTarget(..)
-            | Step::WaitStructuredResult(..)
+            | Step::WaitStructuredResult(..) | Step::WaitStructuredAuthorSave(..) | Step::WaitStructuredIdle(..) | Step::WaitStructuredLimitRefusal(..)
             | Step::WaitSavedReader(..)
             | Step::WaitFile(..)
             | Step::RecordPlace(..)
