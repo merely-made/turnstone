@@ -1,5 +1,12 @@
 # Turnstone design documents
 
+Model-free retained research (2026-10-29): M1 shared retrieval and receiving have landed; the work is tracked in `eidetic/design_docs/eidetic_docs/implementation_strategy/2026-10-11_eidetic_development_plan.md`,
+P4a. Shared lexical retrieval preserves exact passage identities; Distillery
+retains generated-answer assembly and evidence assessment. M2–M5, including
+Turnstone three-source search and offline restart, remain open. Alembic remains
+the owner of selected-source proposals and acceptance. The rebased saved-source tests pass under the resource guard; native
+product and offline restart qualification remain open.
+
 Rust policy (2026-10-13): working toolchain 1.99.1 and shared MSRV 1.97.1, qualified separately. Canonical policy: `mere/design_docs/2026-08-12_family_composition_thesis_brief.md`, section "Shared Rust toolchain and minimum version".
 
 Murm source adoption (2026-10-13) is tracked in
