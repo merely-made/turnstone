@@ -15,6 +15,9 @@ impl crate::inference_service::RetainedSourceOwner for CaptureInferenceOwner {
         let (reply, receive) = std::sync::mpsc::sync_channel(1);
         if !self.trail.command(TrailCommand::ResearchSnapshot {
             context: context.clone(),
+            selected: None,
+            max_chars: None,
+            max_metadata_chars: None,
             reply,
         }) {
             return Err("The saved-source owner is closed.".into());

@@ -55,6 +55,9 @@ use muniment::FjallStore;
 use crate::action::{RecallHit, StoredSourceDocument, Update};
 mod saved_sources;
 mod sealed_capture;
+#[cfg(test)]
+#[path = "trail_memory/research_search_tests.rs"]
+mod research_search_tests;
 
 /// Traversals per stored trace segment. Segments are the flush granularity:
 /// small enough that a crash loses minutes, large enough that a stored trace
@@ -129,6 +132,9 @@ pub enum TrailCommand {
     },
     ResearchSnapshot {
         context: crate::research::Context,
+        selected: Option<Vec<crate::saved_sources::Key>>,
+        max_chars: Option<usize>,
+        max_metadata_chars: Option<usize>,
         reply: std::sync::mpsc::SyncSender<Result<Vec<crate::saved_sources::Entry>, String>>,
     },
     ResearchSource {

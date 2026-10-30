@@ -47,6 +47,7 @@ pub struct Shell {
     /// The trail's recall answers (RecallHits / RecallFailed), drained beside
     /// the bin's.
     pub(super) trail_rx: Receiver<Update>,
+    pub(super) research_worker: crate::research_search::Worker,
     /// The retained-place worker. It owns every Gemot, Commons, chat, group,
     /// and redb handle for the active session.
     pub(super) place_handle: crate::place_service::PlacePort,

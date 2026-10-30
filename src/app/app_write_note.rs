@@ -71,6 +71,9 @@ impl App {
             effects.extend(crate::behaviors::drain(self));
         }
         effects.extend(self.invalidate_saved_readers());
+        self.sync_research_context();
+        effects.extend(self.invalidate_research_search());
+        effects.extend(self.invalidate_research_clip_readers());
         effects
     }
 
@@ -122,6 +125,7 @@ impl App {
             Action::CaptureSourceDocument { target } => self.begin_source_capture(target),
             Action::RetrySourceDocumentCapture { request } => self.retry_source_capture(request),
             Action::SearchSavedSources => self.search_saved_sources(),
+            Action::ResearchSearch(command) => self.research_search_command(command),
             Action::OpenSavedSource(target) => self.open_saved_source(target),
             Action::ChoosePermission { request, choice } => self.choose_permission(request, choice),
             Action::FocusAuthenticationField(field) => self.focus_authentication_field(field),

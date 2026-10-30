@@ -116,6 +116,9 @@ impl Shell {
             app.source_capture_generation,
         );
         let trail_handle = Arc::new(trail_handle);
+        let research_proxy = proxy.clone();
+        let research_wake: armillary::Wake = Arc::new(move || { let _ = research_proxy.send_event(()); });
+        let research_worker = crate::research_search::Worker::spawn(app.research.clone(), trail_handle.clone(), research_wake);
 
         let place_proxy = proxy.clone();
         let place_wake: armillary::Wake = Arc::new(move || {
@@ -285,6 +288,7 @@ impl Shell {
             bin_rx,
             trail_handle,
             trail_rx,
+            research_worker,
             place_handle,
             place_settings,
             place_wake,

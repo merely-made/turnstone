@@ -310,6 +310,8 @@ impl Shell {
                 | Effect::CaptureContent { .. }
                 | Effect::PersistSourceCapture { .. }
                 | Effect::CaptureSourceDocument { .. }
+                | Effect::ResearchSearch(..)
+                | Effect::CancelResearchSearch
                 | Effect::LoadSavedSources { .. }
                 | Effect::ReadSavedSource { .. }
                 | Effect::RestoreReadingAnchor { .. }

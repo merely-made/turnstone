@@ -6,6 +6,8 @@ use super::*;
 impl Shell {
     pub(super) fn effect_control_content(&mut self, effect: Effect) {
         match effect {
+            Effect::ResearchSearch(request) => self.research_worker.submit(request),
+            Effect::CancelResearchSearch => self.research_worker.cancel(),
             Effect::ControlContent { node, control } => {
                 // The surface lane's own command API reaches the engine's
                 // web plane. A document's Back, Reload and Stop belong to

@@ -67,6 +67,47 @@ pub(super) fn load_with_sealed(
         .collect()
 }
 
+/// Bound the accumulated corpus while reading one admitted capture at a time.
+pub(super) fn load_with_sealed_bounded(
+    store: &mut FjallStore,
+    mut sealed: Option<&mut FjallStore>,
+    sealer: Option<&dyn eidetic::PayloadSealer>,
+    admissions: &[Admission],
+    max_chars: Option<usize>,
+    max_metadata_chars: Option<usize>,
+) -> Result<Vec<Entry>, String> {
+    let mut entries = Vec::new();
+    let mut chars = 0usize;
+    let mut metadata = 0usize;
+    for admission in admissions {
+        let mut one = load_with_sealed(
+            store,
+            sealed.as_deref_mut(),
+            sealer,
+            std::slice::from_ref(admission),
+        );
+        let entry = one.pop().expect("one admission produces one result");
+        if let Some(content) = &entry.content {
+            chars = chars
+                .checked_add(content.text.chars().count())
+                .ok_or("corpus size overflow")?;
+            if max_chars.is_some_and(|limit| chars > limit) {
+                return Err("corpus limit exceeded while loading captures".into());
+            }
+        }
+        if max_metadata_chars.is_some() {
+            metadata = metadata
+                .checked_add(crate::research_search::capture_metadata_cost(&entry)?)
+                .ok_or("metadata size overflow")?;
+            if max_metadata_chars.is_some_and(|limit| metadata > limit) {
+                return Err("metadata limit exceeded while loading captures".into());
+            }
+        }
+        entries.push(entry);
+    }
+    Ok(entries)
+}
+
 pub(super) fn resolve_with_sealed(
     store: &mut FjallStore,
     sealed: Option<&mut FjallStore>,

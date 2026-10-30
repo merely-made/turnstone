@@ -297,6 +297,7 @@ pub fn ring_of(action: &Action) -> Ring {
         // admission gesture literal until attachment disclosure has its own
         // narrower authority.
         | CapturePage { .. }
+        | ResearchSearch(..)
         | SearchSavedSources
         | CaptureSourceDocument { .. }
         | RetrySourceDocumentCapture { .. }

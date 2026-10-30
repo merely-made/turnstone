@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MPL-2.0
 
 use super::*;
-
 /// A typed app intent. The shell (keys, later the omnibar / command palette /
 /// automation adapters) produces these; [`crate::app::update`] consumes them.
 #[derive(Clone, Debug, PartialEq)]
@@ -80,6 +79,7 @@ pub enum Action {
     },
     /// Search the current session's explicitly attached saved evidence.
     SearchSavedSources,
+    ResearchSearch(ResearchSearchAction),
     /// Read immutable source text at an optional exact Unicode passage.
     OpenSavedSource(crate::saved_sources::Target),
     ChoosePermission {

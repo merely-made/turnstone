@@ -112,7 +112,8 @@ pub mod redshank_episode_surface;
 pub mod redshank_host;
 pub mod relationship_navigation;
 pub mod remote_projection;
-mod research;
+pub mod research;
+pub mod research_search;
 pub mod resident_admission;
 pub mod resident_runs;
 #[cfg(test)]

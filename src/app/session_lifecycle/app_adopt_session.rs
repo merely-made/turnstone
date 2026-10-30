@@ -14,12 +14,15 @@ impl App {
         // Invalidate old retained-source admissions before any fallible owner
         // open. Keep the healthy custody binding available for a successful
         // session projection after its new admissions are loaded.
+        self.clear_private_research();
         self.research.invalidate_projection();
         self.behavior_binding = None;
         self.session_id = id;
         self.await_source_capture_revalidation(id);
         self.saved_sources = Default::default();
+        self.research_search = Default::default();
         self.saved_readers.clear();
+        self.research_clip_readers.clear();
         self.physics_refusal = None;
         let graph = self
             .sessions
@@ -44,7 +47,7 @@ impl App {
                     let error = format!("session writer lease refused: {error}");
                     tracing::warn!(%error, "refusing session adoption; disk state remains protected");
                     self.refuse_session_adoption(graph, sdir, error);
-                    return vec![Effect::Redraw];
+                    return vec![Effect::CancelResearchSearch, Effect::Redraw];
                 },
             };
             match session::try_load_session_graph_locked(&sdir) {
@@ -68,7 +71,7 @@ impl App {
                 Err(error) => {
                     tracing::warn!(%error, "refusing session adoption; disk state remains protected");
                     self.refuse_session_adoption(graph, sdir, error);
-                    return vec![Effect::Redraw];
+                    return vec![Effect::CancelResearchSearch, Effect::Redraw];
                 },
             }
         }
@@ -105,7 +108,7 @@ impl App {
                 self.resident_run_error = Some(error);
             },
         }
-        let mut effects = Vec::new();
+        let mut effects = vec![Effect::CancelResearchSearch];
         self.next_place_generation = self.next_place_generation.wrapping_add(1);
         let place_generation = self.next_place_generation;
         // A shared session opens its private graph cache immediately while the

@@ -185,7 +185,13 @@ pub(super) fn run(
                     result,
                 });
             },
-            TrailCommand::ResearchSnapshot { context, reply } => {
+            TrailCommand::ResearchSnapshot {
+                context,
+                selected,
+                max_chars,
+                max_metadata_chars,
+                reply,
+            } => {
                 let custody_epoch = custody.as_ref().and_then(SourceCustody::snapshot);
                 let valid = context.generation == current_capture_generation
                     && inference_owner(&current_dir).ok()
@@ -193,7 +199,15 @@ pub(super) fn run(
                     && context
                         .admissions
                         .iter()
-                        .all(|a| a.key.session == context.session);
+                        .all(|a| a.key.session == context.session)
+                    && selected.as_ref().is_none_or(|selected| {
+                        selected.iter().all(|key| {
+                            context
+                                .admissions
+                                .iter()
+                                .any(|admission| &admission.key == key)
+                        })
+                    });
                 let mut result = if !valid {
                     Err("The saved-source owner belongs to another session opening.".into())
                 } else if custody_epoch.is_none() {
@@ -202,16 +216,32 @@ pub(super) fn run(
                     state
                         .as_mut()
                         .map(|(store, _)| {
-                            saved_sources::load_with_sealed(
+                            let mut seen = std::collections::HashSet::new();
+                            let admissions = context
+                                .admissions
+                                .iter()
+                                .filter(|admission| {
+                                    selected
+                                        .as_ref()
+                                        .is_none_or(|keys| keys.contains(&admission.key))
+                                        && (max_chars.is_none()
+                                            || seen.insert(admission.key.clone()))
+                                })
+                                .cloned()
+                                .collect::<Vec<_>>();
+                            saved_sources::load_with_sealed_bounded(
                                 store,
                                 sealed_store.as_mut(),
                                 custody
                                     .as_ref()
                                     .map(|v| v.sealer.as_ref() as &dyn eidetic::PayloadSealer),
-                                &context.admissions,
+                                &admissions,
+                                max_chars,
+                                max_metadata_chars,
                             )
                         })
-                        .ok_or_else(|| "The session evidence store is unavailable.".into())
+                        .ok_or_else(|| "The session evidence store is unavailable.".to_string())
+                        .and_then(|result| result)
                 };
                 if custody_epoch.is_some()
                     && !custody

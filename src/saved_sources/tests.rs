@@ -34,32 +34,6 @@ fn entry(key: Key, occurrence: usize, text: &str, title: &str) -> Entry {
 }
 
 #[test]
-fn search_keeps_equal_text_provenance_separate_and_deduplicates_occurrences() {
-    let node = uuid::Uuid::new_v4();
-    let first_key = key(
-        node,
-        "blake3:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-    );
-    let mut first = entry(first_key.clone(), 0, "before 🐦 target after", "First");
-    first.content.as_mut().unwrap().origin = "https://first.test".into();
-    let duplicate = entry(first_key, 3, "before 🐦 target after", "Duplicate");
-    let second_key = key(
-        uuid::Uuid::new_v4(),
-        "blake3:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-    );
-    let mut second = entry(second_key, 1, "before 🐦 target after", "Second");
-    second.content.as_mut().unwrap().origin = "https://second.test".into();
-    let hits = search(&[first, duplicate, second], "🐦 target", 10);
-    assert_eq!(hits.len(), 2);
-    assert_eq!(
-        hits[0].target.selector,
-        Some(Selector { start: 7, end: 15 })
-    );
-    assert_eq!(hits[0].origin, "https://first.test");
-    assert_eq!(hits[1].origin, "https://second.test");
-}
-
-#[test]
 fn sealed_address_round_trips_without_legacy_namespace_alias() {
     let node = uuid::Uuid::new_v4();
     let annotation = eidetic::Hash::of(b"sealed annotation").to_string();

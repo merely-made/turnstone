@@ -26,6 +26,13 @@ use crate::surface::FocusTarget;
 use crate::{browse, session};
 
 mod contributed_pane_arms;
+mod research_clip_arms;
+pub(crate) mod research_search_state;
+mod research_search_arms;
+mod research_search_rows;
+mod research_search_values;
+#[cfg(test)]
+mod research_search_tests;
 mod document_find_arms;
 mod fold_arms;
 mod journal_origin;
@@ -141,7 +148,9 @@ pub struct App {
     pub(crate) source_capture_generation: uuid::Uuid,
     pub(crate) saved_sources: saved_source_arms::SavedSourcesState,
     pub(crate) research: crate::research::Bridge,
+    pub(crate) research_search: research_search_state::State,
     pub(crate) saved_readers: HashMap<uuid::Uuid, saved_source_arms::SavedReader>,
+    pub(crate) research_clip_readers: HashMap<uuid::Uuid, crate::research::ClipReader>,
     /// Transient host engine availability; retained across session switches.
     pub engine_inventory: Vec<crate::content::EngineDescriptor>,
     /// Durable feed schedules and duplicate-suppression state for this

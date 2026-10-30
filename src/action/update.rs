@@ -7,6 +7,7 @@ use super::*;
 /// state through [`crate::app::apply_update`]. App-owned types only; port
 /// adapters convert.
 pub enum Update {
+    ResearchSearchFinished { request: crate::research_search::Request, result: Result<eidetic_search::query::SearchResult, String> },
     ReadingFindChanged {
         target: crate::reading_view::ReadTarget,
         query: String,
