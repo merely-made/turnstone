@@ -135,6 +135,59 @@ impl Shell {
         self.main_receipt.errors.extend(captures);
         self.native_frames.clear();
     }
+    // Child hosts retain the checked raster API. Their redraws participate in
+    // this same host-owned queue, while ordinary input is delivered at once.
+    fn native_child_windows(&self) -> Vec<Arc<winit::window::Window>> {
+        let mut windows = Vec::new();
+        if let Some(window) = self
+            .theme_editor
+            .as_ref()
+            .and_then(|editor| editor.host.native_window())
+        {
+            windows.push(window.clone());
+        }
+        #[cfg(feature = "workshop")]
+        if let Some(window) = self
+            .alembic_workshop
+            .as_ref()
+            .and_then(|editor| editor.host.native_window())
+        {
+            windows.push(window.clone());
+        }
+        windows
+    }
+    pub(super) fn native_child_open_pending(&self) -> bool {
+        self.host
+            .as_ref()
+            .is_some_and(|host| host.core().native_frame_busy())
+    }
+    pub(super) fn defer_native_child_open(&self) {
+        // A canceled batch may still be retiring after its staging is gone.
+        // Keep an event clock until the Core's actual admission interval ends.
+        if let Some(window) = &self.window {
+            window.request_redraw();
+        }
+        self.request_native_frame_redraws();
+    }
+    pub(super) fn native_child_requested(&self) -> bool {
+        self.theme_editor_requested || self.alembic_workshop_requested
+    }
+    pub(super) fn admit_native_child_redraw(&mut self, id: WindowId, event: &WindowEvent) -> bool {
+        if !matches!(event, WindowEvent::RedrawRequested) {
+            return true;
+        }
+        if self.native_frames.prepare(id) && !self.native_child_open_pending() {
+            return true;
+        }
+        self.defer_native_child_open();
+        false
+    }
+    pub(super) fn finish_native_child_redraw(&mut self, id: WindowId, event: &WindowEvent) {
+        if matches!(event, WindowEvent::RedrawRequested) {
+            self.native_frames.cancel(id);
+            self.request_native_frame_redraws();
+        }
+    }
     pub(super) fn prune_native_frames(&mut self) {
         let obsolete = self
             .native_frames
@@ -153,6 +206,7 @@ impl Shell {
             }
             self.native_frames.cancel(id);
         }
+        let children = self.native_child_windows();
         let absent = self
             .native_frames
             .waiting
@@ -167,6 +221,7 @@ impl Shell {
                         .lens_windows
                         .get(id)
                         .is_some_and(|lens| lens.host.is_some())
+                    && !children.iter().any(|window| window.id() == *id)
             })
             .collect::<Vec<_>>();
         for id in absent {
@@ -321,6 +376,11 @@ impl Shell {
         outcome
     }
     pub(super) fn request_native_frame_redraws(&self) {
+        for window in self.native_child_windows() {
+            if self.native_frames.wants(window.id()) {
+                window.request_redraw();
+            }
+        }
         if let Some(window) = &self.window
             && self.native_frames.wants(window.id())
         {

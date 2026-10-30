@@ -22,6 +22,9 @@ impl Shell {
                 return presented;
             }
         }
+        if self.native_child_requested() {
+            return presented;
+        }
         if !self.native_frames.prepare(id) {
             self.request_native_frame_redraws();
             return presented;

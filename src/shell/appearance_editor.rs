@@ -29,6 +29,10 @@ impl Shell {
         for action in self.live_settings.take_actions() {
             self.act(action);
         }
+        if self.theme_editor_requested && self.native_child_open_pending() {
+            self.defer_native_child_open();
+            return IdlePolicy::Wait;
+        }
         if self.theme_editor_requested {
             self.theme_editor_requested = false;
             if let Some(editor) = &self.theme_editor {
@@ -154,15 +158,29 @@ impl Shell {
     }
 
     pub(super) fn theme_editor_event(&mut self, window_id: WindowId, event: &WindowEvent) -> bool {
-        let Some(editor) = self.theme_editor.as_mut().filter(|editor| {
+        let is_editor = self.theme_editor.as_ref().is_some_and(|editor| {
             editor
                 .host
                 .native_window()
                 .is_some_and(|window| window.id() == window_id)
-        }) else {
+        });
+        if !is_editor {
             return false;
-        };
-        editor.host.handle_window_event(event.clone());
+        }
+        if !self.admit_native_child_redraw(window_id, event) {
+            self.theme_editor
+                .as_mut()
+                .expect("editor matched")
+                .host
+                .sync_a11y();
+            return true;
+        }
+        self.theme_editor
+            .as_mut()
+            .expect("editor matched")
+            .host
+            .handle_window_event(event.clone());
+        self.finish_native_child_redraw(window_id, event);
         self.request_redraw();
         true
     }

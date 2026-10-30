@@ -8,6 +8,10 @@ impl Shell {
         &mut self,
         event_loop: &ActiveEventLoop,
     ) -> IdlePolicy {
+        if self.alembic_workshop_requested && self.native_child_open_pending() {
+            self.defer_native_child_open();
+            return IdlePolicy::Wait;
+        }
         if self.alembic_workshop_requested {
             self.alembic_workshop_requested = false;
             if let Some(window) = &self.alembic_workshop {
