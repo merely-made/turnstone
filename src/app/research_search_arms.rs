@@ -369,14 +369,18 @@ impl App {
             },
             _ => {},
         }
-        let mut effects = if refresh {
-            self.research_search.error = None;
-            self.issue_research_search()
+        // Cancel work for the old structured scope before submitting the
+        // replacement search; canceling afterward would cancel the new job.
+        let mut effects = if scope_changed {
+            self.invalidate_structured()
         } else {
-            vec![Effect::Redraw]
+            vec![]
         };
-        if scope_changed {
-            effects.extend(self.invalidate_structured());
+        if refresh {
+            self.research_search.error = None;
+            effects.extend(self.issue_research_search());
+        } else {
+            effects.push(Effect::Redraw);
         }
         self.recompute_omnibar_suggestions();
         effects.push(Effect::Redraw);
