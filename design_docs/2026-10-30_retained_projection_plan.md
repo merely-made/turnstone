@@ -207,6 +207,12 @@ earlier receipts remain at their original paths.
   and floating-frame scenes which their shared-frame raster filters discard.
   `native_composition::compose` later installs current producer commands before
   painting the scene that is actually rasterized; masks belong to that result.
+- 2026-10-30: after projection reuse and settled control sync, Arrange
+  publication still runs twice per frame (actor drain and redraw) and leads
+  the main thread. Inside it, `body_slots` and tab-bar scans in every frame
+  preparation, the outer frame's projection clone, lowering and whole-forest
+  action-map walk, and `frame_with_guests` lead. Each surface plan still
+  prepares the frame, about ten times per frame.
 
 ## Progress
 
@@ -255,11 +261,6 @@ earlier receipts remain at their original paths.
   frozen matched runs. The measured render files and selected Genet lock remain
   byte-identical; the full application library passes after integration.
 - 2026-10-30: semantic projection reuse and settled control sync landed with
-  reuse and freshness controls; the application library passes (1239). Matched
-  optimized Arrange runs against the frozen shared-frame build improve from
-  14.4 to 18.6 fps, with p95 presentation from 81 to 61 ms. The follow-up sample
-  shows no fresh projection or control rescans in steady state. Remaining
-  main-thread cues: publication still runs twice per frame and is 57% of the
-  sample; `body_slots` in frame preparation, the outer frame's projection clone,
-  lowering and action-map walk, and `frame_with_guests` lead it. Evidence:
-  `Code/output/turnstone-a11y-reuse-20261030`.
+  reuse and freshness controls; the application library and matched native
+  Arrange runs pass. Receipts are in
+  `archive_docs/receipts/2026-10-30_retained_projection_plan_receipts.md`.
