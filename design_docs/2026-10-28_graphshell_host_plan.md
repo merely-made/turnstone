@@ -177,7 +177,7 @@ The native retained-content path does not close physical assistive technology, p
 
 ## Findings
 
-- 2026-10-28: the desktop resident is `ports/djinn/src/bin/djinn.rs`; Graphshell ships no device-host binary. Decisions 2 and 3 of §12 are closed against the tree (the browser store is muniment's IndexedDB backend, `crates/eidetic/muniment/src/indexeddb_backend.rs`; the presenter is a thin Genet host adapter over `genet_render_host::RenderCore`).
+- 2026-10-28: the desktop resident is `ports/mere-resident/src/bin/djinn.rs`; Graphshell ships no device-host binary. Decisions 2 and 3 of §12 are closed against the tree (the browser store is muniment's IndexedDB backend, `crates/eidetic/muniment/src/indexeddb_backend.rs`; the presenter is a thin Genet host adapter over `genet_render_host::RenderCore`).
 - 2026-10-28: a bare iroh node id is not dialable and the address book is per process; a resident sync host that cannot receive a packet reports `reachable=1` because `known_peers` is address-book membership.
 - 2026-10-28: `put_bytes` tags every blob permanently and no GC is wired; everything is kept forever until pins exist.
 - 2026-10-28: macOS denial of multicast egress follows the binary, not socket age; an unsigned dev binary under sshd or launchd is not a viable macOS peer.
