@@ -208,14 +208,17 @@ impl Shell {
     }
 
     pub(super) fn pump_redshank(&mut self) {
-        let commands = self.redshank_docks.drain();
-        if !commands.is_empty() {
-            let effects = self.app.apply_redshank_commands(commands);
+        crate::redshank_episode_surface::reconcile_redshank_captures(
+            &mut self.app,
+            &self.redshank_docks,
+        );
+        for (item, command) in self.redshank_docks.drain_scoped() {
+            let effects = self.app.apply_redshank_note_command(&item, command);
             self.run_effects(effects);
         }
         for item in self.redshank_docks.items() {
-            let projection = self.app.redshank_projection(&item);
-            self.redshank_docks.project(&item, projection);
+            let projection = self.app.redshank_note_projection(&item);
+            self.redshank_docks.project_notes(&item, projection);
         }
     }
 }

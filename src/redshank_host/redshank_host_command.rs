@@ -97,12 +97,25 @@ impl RedshankHost {
                 HostOutcome::changed()
             },
             CompactCommand::BeginTextNote | CompactCommand::AddTextNote => {
+                if self.selected.as_ref() != Some(item) || !self.model.library.contains_key(item) {
+                    return HostOutcome::notice("Select this episode before adding a note");
+                }
+                if self.anchors.contains_key(item) {
+                    return HostOutcome::notice("Save or cancel the current note first");
+                }
                 let anchor = self.anchor(item);
                 self.anchors.insert(item.clone(), anchor);
+                self.capture_generations
+                    .insert(item.clone(), uuid::Uuid::new_v4());
+                self.advance_control_generation();
                 HostOutcome::default()
             },
             CompactCommand::CancelTextNote => {
-                self.anchors.remove(item);
+                let existed = self.anchors.remove(item).is_some();
+                self.capture_generations.remove(item);
+                if existed {
+                    self.advance_control_generation();
+                }
                 HostOutcome::default()
             },
             CompactCommand::SaveTextNote { anchor, plain_text } => {
@@ -361,25 +374,24 @@ impl RedshankHost {
         if plain_text.trim().is_empty() {
             return HostOutcome::notice("Write a note before saving");
         }
-        // The host froze the target when the note began; that is the truth.
-        // A dock that supplies its own anchor is honoured only when it names
-        // this item, and a note with no frozen target anchors where the
-        // listener stands now.
-        let frozen = self.anchors.remove(item);
-        let anchor = match frozen {
-            Some(frozen) => frozen,
-            None if anchor.item_id == *item => anchor,
-            None => self.anchor(item),
-        };
+        if self.selected.as_ref() != Some(item) || self.anchors.get(item) != Some(&anchor) {
+            return HostOutcome::notice("That note capture is no longer current");
+        }
         let id = self.next_note_id();
         match self
             .model
             .add_text_annotation(id.clone(), anchor, plain_text, now_ms)
         {
-            Ok(()) => HostOutcome {
-                model_changed: true,
-                added_note: Some(id),
-                notice: None,
+            Ok(()) => {
+                // Keep the target on a rejected save so the editor can retry.
+                self.anchors.remove(item);
+                self.capture_generations.remove(item);
+                self.advance_control_generation();
+                HostOutcome {
+                    model_changed: true,
+                    added_note: Some(id),
+                    notice: None,
+                }
             },
             Err(error) => HostOutcome::notice(format!("Could not add that note: {error:?}")),
         }

@@ -141,6 +141,15 @@ impl RedshankHost {
         self.selected.as_ref()
     }
 
+    /// Identity of the current control context, including selection and captures.
+    pub(crate) fn control_generation(&self) -> uuid::Uuid {
+        self.control_generation
+    }
+
+    pub(super) fn advance_control_generation(&mut self) {
+        self.control_generation = uuid::Uuid::new_v4();
+    }
+
     pub fn runtime(&self) -> Option<&PlaybackRuntime> {
         self.runtime.get()
     }
@@ -197,6 +206,11 @@ impl RedshankHost {
         let Some(source) = self.model.library.get(id).map(|item| item.source().clone()) else {
             return None;
         };
+        self.advance_control_generation();
+        if self.selected.as_ref() != Some(id) {
+            self.anchors.clear();
+            self.capture_generations.clear();
+        }
         self.pending_note_open = None;
         self.pending_note_seek = None;
         self.span_stop_ms = None;
@@ -393,6 +407,11 @@ impl RedshankHost {
     /// The anchor a `BeginTextNote` froze, if the host is still holding one.
     pub fn pending_anchor(&self, item: &ItemId) -> Option<&CaptureAnchor> {
         self.anchors.get(item)
+    }
+
+    /// Identity of the currently frozen capture, distinct after every begin.
+    pub fn pending_capture_generation(&self, item: &ItemId) -> Option<uuid::Uuid> {
+        self.capture_generations.get(item).copied()
     }
 
     pub fn annotation(&self, id: &AnnotationId) -> Option<&Annotation> {
