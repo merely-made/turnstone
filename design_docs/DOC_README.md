@@ -1,14 +1,16 @@
 # Turnstone design documents
 
-Model-free retained research (2026-10-29): M1 and M2 implementation have landed;
+Model-free retained research (2026-10-30): M1–M3 implementation have landed;
 the canonical plan is `eidetic/design_docs/eidetic_docs/implementation_strategy/2026-10-11_eidetic_development_plan.md`, P4a.
-The ordinary saved-source search now covers admitted captures, selections and notes,
-with explicit query modes, filters, configurable limits, coverage and exact readers.
-The default path does not require inference. Source-owner, reader and control tests,
-optional-inference compilation and dependency boundary checks pass after receiving
-the custody/projection update. M3–M5 remain open; headed product and offline restart
-qualification are still untested. Alembic retains proposal and acceptance ownership.
-Evidence lives in the canonical plan's linked receipt archive.
+The ordinary saved-source search covers admitted captures, selections and notes,
+with configurable search and comparison, explicit Left/Right selection, exact
+side citations and retained readers. Comparison preserves full source identities;
+current head and lineage remain unknown unless declared by their owners.
+The default path does not require inference. Shared/provider and host regression
+checks, optional-inference compilation and dependency boundaries pass. M4 structured
+queries and M5 headed product/offline restart qualification remain open.
+Alembic retains proposal and acceptance ownership. Evidence lives in the canonical
+plan's linked receipt archives.
 
 Rust policy (2026-10-13): working toolchain 1.99.1 and shared MSRV 1.97.1, qualified separately. Canonical policy: `mere/design_docs/2026-08-12_family_composition_thesis_brief.md`, section "Shared Rust toolchain and minimum version".
 
