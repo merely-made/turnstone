@@ -100,7 +100,7 @@ def main():
         suppliers.append({'checkout': repo, 'source': item['source'], 'head': head,
                           'packages': sorted(item['packages']), 'tracked_code_changes': []})
     trees = []
-    for package, extra in [('graphshell-mere', []), ('djinn', ['--features', 'passphrase-fd'])]:
+    for package, extra in [('graphshell-mere', []), ('mere-resident', ['--features', 'passphrase-fd'])]:
         tree = run(cargo, '+1.99.1', 'tree', '--locked', '--offline', '-p', package,
                    *extra, '--edges', 'normal,build')
         (out / (package + '-tree.txt')).write_text(tree)
