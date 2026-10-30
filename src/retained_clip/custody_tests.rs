@@ -313,7 +313,7 @@ fn native_redshank_export_keeps_body_and_timed_target_distinct() {
 #[test]
 #[ignore]
 fn custody_process_roundtrip_fixture() {
-    use graphshell_endpoint::door::custody_identity::CustodyIdentity;
+    use djinn::door::custody_identity::CustodyIdentity;
     let root =
         PathBuf::from(std::env::var_os("EIDETIC_CLIENT_FIXTURE_ROOT").expect("fixture root"));
     assert_eq!(
