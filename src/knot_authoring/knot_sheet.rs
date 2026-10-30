@@ -30,4 +30,4 @@ pub(crate) const KNOT_SHEET: &str = "\
     .syntax-strong { color: rgb(235, 239, 247); } \
     .syntax-emphasis { color: rgb(194, 205, 224); } \
     .syntax-codeblock, .syntax-verbatim { color: rgb(141, 207, 160); } \
-    .knot-selection { background-color: rgb(42, 76, 118); color: rgb(240, 245, 255); }";
+    .knot-selection { background-color: rgba(42, 76, 118, 0.35); color: rgb(240, 245, 255); }";
