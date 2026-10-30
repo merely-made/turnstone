@@ -49,11 +49,40 @@ pub(crate) fn apply_route(
     surface.accessibility_action(action, route.node).is_some()
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug)]
 pub(crate) struct PublishedRoute {
     pub route: ContributedA11yRoute,
     pub rect: Rect,
     pub source: std::sync::Arc<TreeUpdate>,
+}
+
+impl PartialEq for PublishedRoute {
+    fn eq(&self, other: &Self) -> bool {
+        self.route == other.route
+            && self.rect == other.rect
+            && source_trees_equal(&self.source, &other.source)
+    }
+}
+
+pub(crate) fn source_trees_equal(
+    left: &std::sync::Arc<TreeUpdate>,
+    right: &std::sync::Arc<TreeUpdate>,
+) -> bool {
+    #[cfg(test)]
+    SOURCE_COMPARISONS.with(|count| count.set(count.get() + 1));
+    left.as_ref() == right.as_ref()
+}
+
+#[cfg(test)]
+thread_local! {
+    static SOURCE_COMPARISONS: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+}
+
+#[cfg(test)]
+pub(crate) fn count_source_comparisons(f: impl FnOnce()) -> usize {
+    SOURCE_COMPARISONS.with(|count| count.set(0));
+    f();
+    SOURCE_COMPARISONS.with(std::cell::Cell::get)
 }
 
 pub(crate) struct ContributedA11yProjection {

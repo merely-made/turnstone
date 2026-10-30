@@ -243,7 +243,11 @@ pub(crate) fn graft(
     pane_roots: &HashMap<TileId, NodeId>,
     mut frame: FrameProjection,
 ) -> Option<(HashMap<NodeId, FrameRoute>, Option<NodeId>)> {
-    let (_, old) = tree.nodes.iter().find(|(id, _)| *id == parent)?;
+    let mut indices = HashMap::new();
+    for (index, (id, _)) in tree.nodes.iter().enumerate() {
+        indices.entry(*id).or_insert(index);
+    }
+    let old = &tree.nodes[*indices.get(&parent)?].1;
     let keep: HashSet<_> = frame
         .slots
         .keys()
@@ -256,9 +260,14 @@ pub(crate) fn graft(
         if keep.contains(&id) || !retired.insert(id) {
             continue;
         }
-        if let Some((_, node)) = tree.nodes.iter().find(|(candidate, _)| *candidate == id) {
+        if let Some(index) = indices.get(&id) {
+            let node = &tree.nodes[*index].1;
             pending.extend(node.children().iter().copied());
         }
+    }
+    let mut frame_indices = HashMap::new();
+    for (index, (id, _)) in frame.nodes.iter().enumerate() {
+        frame_indices.entry(*id).or_insert(index);
     }
     for (tile, slot) in &frame.slots {
         if frame.inline_tiles.contains(tile) {
@@ -266,9 +275,10 @@ pub(crate) fn graft(
         }
         if let Some(body) = pane_roots
             .get(tile)
-            .filter(|body| tree.nodes.iter().any(|(id, _)| id == *body))
+            .filter(|body| indices.contains_key(*body))
         {
-            if let Some((_, node)) = frame.nodes.iter_mut().find(|(id, _)| id == slot) {
+            if let Some(index) = frame_indices.get(slot) {
+                let node = &mut frame.nodes[*index].1;
                 node.set_children(vec![*body]);
             }
         }

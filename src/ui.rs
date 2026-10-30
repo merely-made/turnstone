@@ -322,6 +322,10 @@ mod retained_layout_tests;
 #[path = "ui/contributed_projection_tests.rs"]
 mod contributed_projection_tests;
 
+#[cfg(test)]
+#[path = "ui/projection_work_tests.rs"]
+mod projection_work_tests;
+
 #[path = "ui/chrome_row_width.rs"]
 mod chrome_row_width;
 pub(crate) use chrome_row_width::chrome_row_width;

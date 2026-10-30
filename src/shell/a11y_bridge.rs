@@ -71,13 +71,52 @@ impl ActionQueueState {
         &mut self,
         admissions: std::collections::HashMap<(accesskit::TreeId, accesskit::NodeId), Admission>,
     ) {
+        // Controls from a contributed pane or document placement share their
+        // immutable source. Compare each old/new pair structurally once here;
+        // allocation addresses only identify a comparison already performed.
+        // Both snapshots stay alive in the old/new admission maps throughout.
+        let mut compared_sources = std::collections::HashMap::new();
+        let mut compared_snapshots = std::collections::HashMap::new();
         self.published = admissions
             .into_iter()
             .map(|(key, admission)| {
                 let generation = self
                     .published
                     .get(&key)
-                    .filter(|old| old.admission == admission)
+                    .filter(|old| match (&old.admission, &admission) {
+                        (Admission::PoolDocument(before), Admission::PoolDocument(after)) => {
+                            before.key == after.key
+                                && before.local == after.local
+                                && before.placement == after.placement
+                                && *compared_snapshots
+                                    .entry((
+                                        Arc::as_ptr(&before.snapshot),
+                                        Arc::as_ptr(&after.snapshot),
+                                    ))
+                                    .or_insert_with(|| {
+                                        super::document_a11y::snapshots_equal(
+                                            &before.snapshot,
+                                            &after.snapshot,
+                                        )
+                                    })
+                        },
+                        (Admission::Contributed(before), Admission::Contributed(after)) => {
+                            before.route == after.route
+                                && before.rect == after.rect
+                                && *compared_sources
+                                    .entry((
+                                        Arc::as_ptr(&before.source),
+                                        Arc::as_ptr(&after.source),
+                                    ))
+                                    .or_insert_with(|| {
+                                        crate::contributed_a11y::source_trees_equal(
+                                            &before.source,
+                                            &after.source,
+                                        )
+                                    })
+                        },
+                        _ => old.admission == admission,
+                    })
                     .map(|old| old.generation)
                     .unwrap_or_else(|| {
                         self.next_generation = self
@@ -117,6 +156,10 @@ impl ActionQueueState {
 }
 
 pub(crate) type ActionQueue = Arc<Mutex<ActionQueueState>>;
+
+#[cfg(test)]
+#[path = "a11y_bridge/admission_tests.rs"]
+mod admission_tests;
 
 /// Initial native activation must never enter a guest before the ordered
 /// complete forest has installed its subtrees.

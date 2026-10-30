@@ -397,12 +397,10 @@ impl Shell {
             header_focus,
             frame.focus,
         );
-        frame.focus = frame
-            .focus
-            .filter(|id| frame.tree.nodes.iter().any(|(current, _)| current == id));
-        frame
-            .routes
-            .retain(|id, _| frame.tree.nodes.iter().any(|(node, _)| node == id));
+        let published: std::collections::HashSet<_> =
+            frame.tree.nodes.iter().map(|(id, _)| *id).collect();
+        frame.focus = frame.focus.filter(|id| published.contains(id));
+        frame.routes.retain(|id, _| published.contains(id));
         let mounted: std::collections::HashSet<_> = frame
             .tree
             .nodes

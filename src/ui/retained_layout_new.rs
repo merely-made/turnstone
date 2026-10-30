@@ -305,44 +305,71 @@ impl RetainedLayout {
         let projected =
             genet_render::document_a11y_projection(&scoped, &snapshot.fragments, focus, 0);
         let mut nodes = projected.nodes().to_vec();
-        walk_dom(&scoped, root, &mut |node| {
-            let Some(semantic) = nodes
-                .iter_mut()
-                .find(|candidate| candidate.id.get() == dom.opaque_id(node))
-            else {
-                return;
-            };
-            // Cambium's controlled field owns editing in its runner, rather
-            // than native HTML contenteditable. Its explicit committed-value
-            // property supplies producer semantics, not a browser editing flag.
-            if semantic.role == document_session_api::DocumentA11yRole::TextField {
-                if let Some(value) = dom.attribute(
-                    node,
-                    &Namespace::default(),
-                    &LocalName::from("data-cambium-text-value"),
-                ) {
-                    semantic.value = Some(value.to_owned());
-                    semantic.state.editable = !semantic.state.disabled && !semantic.state.read_only;
-                    semantic.state.multiline |= dom.attribute(
+        let indices: HashMap<_, _> = nodes
+            .iter()
+            .enumerate()
+            .map(|(index, node)| (node.id.get(), index))
+            .collect();
+        // An inline semantic root can sit inside a wider retained snapshot.
+        // Carry that owner's transforms and scroll through one descent, then
+        // select this projection's nodes by identity.
+        let owner =
+            cambium_rootstock::WindowDom::new(dom, self.root.unwrap_or_else(|| dom.document()));
+        genet_livery::walk_translated_geometry(
+            &owner,
+            &snapshot.styles,
+            &snapshot.fragments,
+            &self.element_scroll,
+            |node, geometry| {
+                #[cfg(test)]
+                super::projection_work_tests::geometry_visit();
+                #[cfg(test)]
+                super::projection_work_tests::semantic_probe();
+                let Some(&index) = indices.get(&dom.opaque_id(node)) else {
+                    return;
+                };
+                let semantic = &mut nodes[index];
+                // Cambium's controlled field owns editing in its runner, rather
+                // than native HTML contenteditable. Its explicit committed-value
+                // property supplies producer semantics, not a browser editing flag.
+                if semantic.role == document_session_api::DocumentA11yRole::TextField {
+                    if let Some(value) = dom.attribute(
                         node,
                         &Namespace::default(),
-                        &LocalName::from("aria-multiline"),
-                    ) == Some("true");
+                        &LocalName::from("data-cambium-text-value"),
+                    ) {
+                        semantic.value = Some(value.to_owned());
+                        semantic.state.editable =
+                            !semantic.state.disabled && !semantic.state.read_only;
+                        semantic.state.multiline |= dom.attribute(
+                            node,
+                            &Namespace::default(),
+                            &LocalName::from("aria-multiline"),
+                        ) == Some("true");
+                    }
                 }
-            }
-            semantic.state.hidden |= snapshot
-                .styles
-                .computed_style(node, "visibility")
-                .is_some_and(|value| matches!(value.as_str(), "hidden" | "collapse"));
-            semantic.bounds =
-                self.painted_rect(dom, node)
+                semantic.state.hidden |= snapshot
+                    .styles
+                    .computed_style(node, "visibility")
+                    .is_some_and(|value| matches!(value.as_str(), "hidden" | "collapse"));
+                semantic.bounds = geometry
+                    .border_rect
+                    .map(|(x, y, width, height)| {
+                        self.physical((
+                            x - self.viewport_scroll.0,
+                            y - self.viewport_scroll.1,
+                            width,
+                            height,
+                        ))
+                    })
                     .map(|(x, y, width, height)| DocumentA11yBounds {
                         x,
                         y,
                         width,
                         height,
                     });
-        });
+            },
+        );
         Some(DocumentA11yProjection::new(
             projected.revision(),
             projected.support().clone(),
@@ -359,14 +386,14 @@ impl RetainedLayout {
         focus: Option<DomNodeId>,
     ) -> Option<(accesskit::TreeUpdate, HashMap<accesskit::NodeId, DomNodeId>)> {
         let projected = self.document_projection(dom, focus)?;
+        let semantic_ids: std::collections::HashSet<_> =
+            projected.nodes().iter().map(|node| node.id.get()).collect();
         let mut action_map = HashMap::new();
         walk_dom(dom, dom.document(), &mut |node| {
             let id = dom.opaque_id(node);
-            if projected
-                .nodes()
-                .iter()
-                .any(|semantic| semantic.id.get() == id)
-            {
+            #[cfg(test)]
+            super::projection_work_tests::semantic_probe();
+            if semantic_ids.contains(&id) {
                 action_map.insert(accesskit::NodeId(id), node);
             }
         });
