@@ -14,7 +14,7 @@ use distillery::inference_protocol::{self as wire, InferenceRunsV1, RunV1};
 use eidetic::models::recall::{PassageSelector, RecallSourceId, RetainedSourceText};
 use graphshell_endpoint::door::{
     app_admission::{AppId, AppRouteId},
-    app_client::AppBrokerClient,
+    projection::AppBrokerClient,
 };
 use sceno::InstanceId;
 use scenotime::{Revision, SceneEpoch};
