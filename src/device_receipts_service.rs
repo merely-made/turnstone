@@ -148,8 +148,12 @@ async fn run(
 
 #[cfg(feature = "diagnostics")]
 async fn read_cards() -> Result<Vec<ReceiptCardView>, String> {
-    let mut client = AppBrokerClient::open(AppId::new("turnstone"))
-        .await
+    let mut client = AppBrokerClient::open_declared_route(
+        AppId::new(crate::identity::CUSTODY_APP),
+        djinn::door::app_admission::AppRouteId::identity(),
+        crate::identity::app_declaration(),
+    )
+    .await
         .map_err(|error| error.to_string())?;
     let opened = client
         .open_session()

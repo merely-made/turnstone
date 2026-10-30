@@ -200,9 +200,10 @@ impl KnotHub {
                 let retained = (|| {
                     let route = djinn::door::app_admission::AppRouteId::new("knot")
                         .map_err(|error| format!("invalid resident Knot route: {error}"))?;
-                    let carrier = graphshell_endpoint::door::projection::AppRouteCarrier::open(
-                        djinn::door::app_admission::AppId::new("turnstone"),
+                    let carrier = graphshell_endpoint::door::projection::AppRouteCarrier::open_declared(
+                        djinn::door::app_admission::AppId::new(crate::identity::CUSTODY_APP),
                         route,
+                        crate::identity::app_declaration(),
                     )
                     .map_err(|error| format!("could not open resident Knot route: {error}"))?;
                     RetainedEndpointSession::over(Box::new(carrier), profile)
