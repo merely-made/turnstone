@@ -51,6 +51,10 @@ pub struct OuterFrame {
 #[path = "outer_frame/native_aperture_tests.rs"]
 mod native_aperture_tests;
 
+#[cfg(test)]
+#[path = "outer_frame/prepare_work_tests.rs"]
+mod prepare_work_tests;
+
 #[path = "outer_frame/impl_default_for_outer_frame.rs"]
 mod impl_default_for_outer_frame;
 #[path = "outer_frame/impl_drop_for_outer_frame.rs"]

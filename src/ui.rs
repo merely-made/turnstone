@@ -401,6 +401,8 @@ use build_livery_snapshot::build_livery_snapshot;
 #[path = "ui/paint_snapshot.rs"]
 mod paint_snapshot;
 use paint_snapshot::paint_snapshot;
+#[cfg(test)]
+pub(crate) use paint_snapshot::count_paint_calls;
 #[path = "ui/node_transform_translation.rs"]
 mod node_transform_translation;
 use node_transform_translation::node_transform_translation;

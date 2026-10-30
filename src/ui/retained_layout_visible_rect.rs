@@ -109,7 +109,9 @@ impl RetainedLayout {
     /// shared forest after recording current owner revisions; an observer
     /// behind that drain rebuilds conservatively rather than losing a sibling's
     /// changes. Standalone owners use the same retained path.
-    pub(super) fn ensure(&mut self, dom: &mut ScriptedDom, sheet: &str, w: u32, h: u32) {
+    /// Geometry readers use this preparation without emitting a paint list;
+    /// `scene_resources` owns explicit scene production.
+    pub(crate) fn ensure(&mut self, dom: &mut ScriptedDom, sheet: &str, w: u32, h: u32) {
         // Every window and body observes the same forest. Reading a sibling
         // cannot consume mutations that another window still needs to see.
         let (base, pending) = dom.pending_mutations();

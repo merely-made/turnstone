@@ -66,6 +66,20 @@ validation rejects stale actions after earlier actions in the same drain.
 No cache survives publication, and semantic publication does not wait for
 a successfully presented pixel frame.
 
+## Layout preparation without discarded paint
+
+Frame rectangle and accessibility reads prepare the current Frisket layout.
+They currently also call `OuterFrame::scene`, emitting and discarding a complete
+painted scene on every preparation pass. Inline mounting legitimately needs
+multiple layout passes; those passes do not each need a painted scene. The
+existing retained `ensure` operation already provides layout without paint.
+
+Done when actual `OuterFrame::prepare` calls emit no paint lists while keeping
+cold, resized, scaled and changed-selection geometry current; explicit scene
+production still emits its paint; and inline mounts, scrolling, hit testing,
+accessibility publication and native primary/lens controls retain their current
+behavior. This introduces no scene cache or new invalidation authority.
+
 ## Consumer and product evidence
 
 Done when the source owners and receiving application pass focused
@@ -106,6 +120,14 @@ accessibility qualification. Run receipts live separately under
   Reusing membership from that inventory avoids another ancestor walk per
   node; later action capture still checks current ancestry and contributor
   liveness.
+- 2026-10-30: the first native comparison improves Arrange modestly. A fresh
+  profile locates its larger remaining cost in `OuterFrame::prepare` painting
+  through rectangle and publication queries. `RetainedLayout::ensure` already
+  supplies fresh geometry separately from `scene_resources`.
+- 2026-10-30: the naming audit identifies additional repeated label, scope and
+  description work, but naming is a small branch in this Arrange sample.
+  Unexecuted probe tests and source findings are retained as diagnostic cues;
+  this pass follows the measured preparation-to-paint path.
 
 ## Progress
 
@@ -117,3 +139,6 @@ accessibility qualification. Run receipts live separately under
 - 2026-10-30: Turnstone geometry indexing, shared admission snapshots,
   publication-local comparisons and shared field lowering implemented.
   Published-cohort receiving and local performance qualification continue.
+- 2026-10-30: combined consumer library and optional-service checks pass.
+  The first matched native comparison and follow-up sample are retained;
+  layout-only frame preparation is now the measured continuation.
