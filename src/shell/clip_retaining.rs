@@ -74,7 +74,7 @@ impl Shell {
             self.app.session_id,
             self.app.graph_runtimes.active_graph(),
             self.app.source_capture_generation,
-            self.app.clip_export_target().ok(),
+            selected_graph_clip(&self.app),
         ) && self.app.clip_destination().ok().as_ref() == Some(&success.root)
             && self
                 .app
@@ -175,6 +175,29 @@ impl Shell {
                 },
             }
         }
+    }
+}
+
+// Retention opens its result in the graph. A previously focused document can
+// remain the browser command target until the user opens the new graph member
+// in the Workbench, so this barrier checks that graph selection instead.
+fn selected_graph_clip(app: &crate::app::App) -> Option<eidetic::ManifestId> {
+    let pane = app
+        .focused_graph_pane()
+        .unwrap_or_else(|| app.default_graph_pane());
+    let graph = app.graph_for_pane(pane)?;
+    if graph != app.graph_runtimes.active_graph() {
+        return None;
+    }
+    let member = app.graph_pane_focused_member(pane)?;
+    let (_, node) = app
+        .graph_runtimes
+        .canvas(graph)?
+        .graph()
+        .get_node_by_id(member)?;
+    match crate::retained_clip::request(node.url()).ok()? {
+        Some(crate::retained_clip::ClipRequest::Read(manifest)) => Some(manifest),
+        _ => None,
     }
 }
 
@@ -282,6 +305,77 @@ impl Shell {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn retention_wait_tracks_new_graph_clip_while_old_document_keeps_focus() {
+        let root = tempfile::tempdir().unwrap();
+        let mut app = crate::app::App::test_stub_at(root.path().to_owned());
+        app.update(crate::action::Action::OpenAddress(
+            "mere://knot/previous".into(),
+        ));
+        let old = app.graph_runtimes.focused_member().unwrap();
+        let choice = crate::app::research_note_arms::NoteChoice {
+            generation: app.source_capture_generation,
+            context_admission: uuid::Uuid::new_v4(),
+            session: app.session_id,
+            graph: app.graph_runtimes.active_graph(),
+            member: old,
+            address: "mere://knot/previous".into(),
+        };
+        app.focus = crate::surface::FocusTarget::Content {
+            node: old,
+            appearance: crate::surface::SurfaceId(1),
+        };
+        let manifest = eidetic::ManifestId::of_blob(b"new retained clip");
+        app.update(crate::action::Action::OpenAddress(
+            crate::retained_clip::address(manifest),
+        ));
+        let identity = app.identity.clone().unwrap();
+        let bound = crate::custody_binding::BoundSealer::bind(
+            identity.clone(),
+            Arc::new(std::sync::atomic::AtomicU64::new(1)),
+        )
+        .unwrap();
+        let status = RetainStatus {
+            request: uuid::Uuid::new_v4(),
+            choice,
+            result: Some(Ok(RetainSuccess {
+                manifest,
+                root: root.path().to_owned(),
+                identity,
+                bound,
+                epoch: 1,
+            })),
+        };
+        assert!(
+            app.clip_export_target().is_err(),
+            "old document still owns browser commands"
+        );
+        assert!(status.matches_scope(
+            app.session_id,
+            app.graph_runtimes.active_graph(),
+            app.source_capture_generation,
+            selected_graph_clip(&app)
+        ));
+        assert!(!status.matches_scope(
+            app.session_id,
+            crate::panes::GraphId::new(),
+            app.source_capture_generation,
+            selected_graph_clip(&app)
+        ));
+        app.update(crate::action::Action::OpenAddress(
+            crate::retained_clip::address(eidetic::ManifestId::of_blob(b"another clip")),
+        ));
+        assert!(!status.matches_scope(
+            app.session_id,
+            app.graph_runtimes.active_graph(),
+            app.source_capture_generation,
+            selected_graph_clip(&app)
+        ));
+        app.update(crate::action::Action::OpenAddress(
+            "mere://knot/other".into(),
+        ));
+        assert_eq!(selected_graph_clip(&app), None);
+    }
     #[test]
     fn retention_wait_requires_this_request_success_and_matching_current_target() {
         let root = tempfile::tempdir().unwrap();
