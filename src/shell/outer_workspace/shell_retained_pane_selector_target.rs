@@ -151,6 +151,8 @@ impl Shell {
             size.0,
             size.1,
         ));
+        // Preparation runs this window frame's style and layout before its scene.
+        let _reactive_work = crate::reactive_render::WorkScope::window();
         frame
             .prepare(
                 layout,

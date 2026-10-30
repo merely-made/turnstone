@@ -36,6 +36,9 @@ struct FrameState {
     omitted: usize,
     outputs: Vec<ProducerRef>,
     submitted: bool,
+    /// The window frame's last stage, carried across its work scopes so that
+    /// preparation's style/layout and the later scene's paint stay linked.
+    window_work: Option<(ProducerRef, DiagnosticKind)>,
 }
 
 /// A window-scoped render attempt. Dropping an unsubmitted attempt records
@@ -97,6 +100,7 @@ impl FrameScope {
             omitted: 0,
             outputs: Vec::new(),
             submitted: false,
+            window_work: None,
         }));
         let previous = ACTIVE.with(|active| active.replace(Some(state.clone())));
         Self { state, previous, staged: false }
@@ -249,6 +253,8 @@ struct WorkState {
     inputs: Vec<ProducerRef>,
     last_work: Option<ProducerRef>,
     last_kind: Option<DiagnosticKind>,
+    carried: Option<ProducerRef>,
+    window: bool,
 }
 
 /// An actual DOM/layout call scope. Only callers that own the rendered DOM
@@ -261,18 +267,21 @@ pub(crate) struct WorkScope {
 
 impl WorkScope {
     pub(crate) fn window() -> Self {
-        Self::enter(None)
+        Self::enter(None, true)
     }
     pub(crate) fn settings(records: &[MutationRecord]) -> Self {
-        Self::enter(Some(
-            records
-                .iter()
-                .filter(|r| r.visible)
-                .map(|r| r.reference)
-                .collect(),
-        ))
+        Self::enter(
+            Some(
+                records
+                    .iter()
+                    .filter(|r| r.visible)
+                    .map(|r| r.reference)
+                    .collect(),
+            ),
+            false,
+        )
     }
-    fn enter(inputs: Option<Vec<ProducerRef>>) -> Self {
+    fn enter(inputs: Option<Vec<ProducerRef>>, window: bool) -> Self {
         let frame = ACTIVE.with(|slot| slot.try_borrow().ok().and_then(|v| v.clone()));
         let Some(frame) = frame else {
             return Self {
@@ -280,17 +289,20 @@ impl WorkScope {
                 previous: None,
             };
         };
-        let inputs = inputs.unwrap_or_else(|| {
-            frame
-                .try_borrow()
-                .map(|f| f.inputs.clone())
-                .unwrap_or_default()
-        });
+        let (inputs, carried) = match frame.try_borrow() {
+            Ok(current) => (
+                inputs.unwrap_or_else(|| current.inputs.clone()),
+                current.window_work.filter(|_| window),
+            ),
+            Err(_) => (inputs.unwrap_or_default(), None),
+        };
         let state = Rc::new(RefCell::new(WorkState {
             frame,
             inputs,
-            last_work: None,
-            last_kind: None,
+            last_work: carried.map(|(work, _)| work),
+            last_kind: carried.map(|(_, kind)| kind),
+            carried: carried.map(|(work, _)| work),
+            window,
         }));
         let previous = WORK.with(|slot| slot.replace(Some(state.clone())));
         Self {
@@ -307,9 +319,19 @@ impl Drop for WorkScope {
         };
         if let Ok(state) = state.try_borrow()
             && let Some(last) = state.last_work
+            && state.carried != Some(last)
             && let Ok(mut frame) = state.frame.try_borrow_mut()
         {
-            if frame.outputs.len() < MAX_INPUTS {
+            if state.window {
+                frame.window_work = state.last_kind.map(|kind| (last, kind));
+            }
+            // A continued window stage replaces its earlier terminal output.
+            let earlier = state.carried.and_then(|carried| {
+                frame.outputs.iter().position(|output| *output == carried)
+            });
+            if let Some(index) = earlier {
+                frame.outputs[index] = last;
+            } else if frame.outputs.len() < MAX_INPUTS {
                 frame.outputs.push(last);
             } else {
                 gap();
@@ -409,5 +431,28 @@ mod tests {
         first.submitted(9);
         drop(first);
         assert!(ACTIVE.with(|slot| slot.borrow().is_none()));
+    }
+
+    #[test]
+    fn window_scene_paint_continues_preparation_layout() {
+        let frame = FrameScope::begin(0);
+        {
+            let _prepare = WorkScope::window();
+            completed(DiagnosticKind::RendererStyleCompleted);
+            completed(DiagnosticKind::RendererLayoutCompleted);
+        }
+        let (layout, kind) = frame.state.borrow().window_work.unwrap();
+        assert_eq!(kind, DiagnosticKind::RendererLayoutCompleted);
+        assert_eq!(frame.state.borrow().outputs, vec![layout]);
+        {
+            let _scene = WorkScope::window();
+            let work = WORK.with(|slot| slot.borrow().clone()).unwrap();
+            assert_eq!(work.borrow().last_work, Some(layout));
+            completed(DiagnosticKind::RendererPaintCompleted);
+        }
+        let state = frame.state.borrow();
+        let (paint, kind) = state.window_work.unwrap();
+        assert_eq!(kind, DiagnosticKind::RendererPaintCompleted);
+        assert_eq!(state.outputs, vec![paint]);
     }
 }
