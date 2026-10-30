@@ -142,6 +142,13 @@ impl App {
         controller.busy = false;
         controller.pending = None;
         controller.error = Some(error.to_string());
+        if self.omnibar.open
+            && self.omnibar.mode == crate::ui::OmnibarMode::SavedSources
+            && self.research_search.view == super::research_search_state::View::Structured
+        {
+            self.research_search.first_row = 0;
+            self.recompute_omnibar_suggestions();
+        }
         vec![Effect::Redraw]
     }
     pub(crate) fn structured_query(

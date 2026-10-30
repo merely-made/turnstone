@@ -71,12 +71,17 @@ fn model_free_limit_refusal_binds_the_attempt_and_current_scope() {
         manifest: Ok(None),
     });
     assert!(app.structured_scenario_status()["limit_refusal"].is_null());
+    app.omnibar.mode = crate::ui::OmnibarMode::SavedSources;
+    app.research_search.first_row = 3;
+    app.recompute_omnibar_suggestions();
     app.structured_completed(JobResult::Query {
         request,
         result: Err("Structured record limit exceeded".into()),
         manifest: Ok(None),
     });
     let status = app.structured_scenario_status();
+    assert!(status["visible_rows"][0].as_str().unwrap().contains("Unavailable: Structured record limit exceeded"), "refusal should be immediately visible: {status}");
+    assert_eq!(app.research_search.first_row, 0);
     assert_eq!(status["error"], "Structured record limit exceeded");
     let refusal = &status["limit_refusal"];
     assert_eq!(refusal["stage"], "worker-refusal");
