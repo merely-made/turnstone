@@ -3,7 +3,9 @@
 
 use super::*;
 use cambium::{SettingRowEvent, SettingRowFailureKind, SettingRowPhase, composition::ComponentKey};
-use mere_surface_api::settings::{RevisionedWriteOutcome, SettingsRevisionGuard};
+use mere_surface_api::settings::{
+    RevisionedSettingsSnapshot, RevisionedWriteOutcome, SettingsRevisionGuard,
+};
 
 pub(super) fn row_event(state: &mut SettingsState, key: &ComponentKey, event: SettingRowEvent) {
     match event {
@@ -95,7 +97,6 @@ pub(super) fn apply_instance(
             if let Some(row) = state.rows.get_mut(key) {
                 row.reviewed = None;
             }
-            advance_local_siblings(state, key, &reference, &expected, &committed.guard);
             if reference.0 == APPLICATION_REFERENCE {
                 if let Some(owner) = &state.owner {
                     state.provider = owner.provider_snapshot();
@@ -107,6 +108,16 @@ pub(super) fn apply_instance(
                 }
             }
             source_sync::refresh_settings(state);
+            if let Some(snapshot) = state.snapshots.get(&reference.0).cloned() {
+                advance_local_siblings(
+                    state,
+                    key,
+                    &reference,
+                    &expected,
+                    &committed.guard,
+                    &snapshot,
+                );
+            }
             state.status = "Saved.".into();
         },
         Ok((RevisionedWriteOutcome::Conflict { .. }, _)) => {
@@ -148,13 +159,8 @@ fn advance_local_siblings(
     reference: &SettingsRef,
     expected: &SettingsRevisionGuard,
     committed: &SettingsRevisionGuard,
+    snapshot: &RevisionedSettingsSnapshot,
 ) {
-    let Some(source) = state.sources.get(&reference.0).cloned() else {
-        return;
-    };
-    let Ok(snapshot) = source.borrow().snapshot(reference) else {
-        return;
-    };
     for (key, row) in &mut state.rows {
         if key == applied
             || row.reference != *reference
@@ -174,9 +180,9 @@ fn advance_local_siblings(
         };
         if entry.guard == *committed
             && binding.guard() == expected
-            && binding.needs_snapshot_adoption(&snapshot) == Ok(false)
+            && binding.needs_snapshot_adoption(snapshot) == Ok(false)
         {
-            let _ = binding.adopt_snapshot(&snapshot, row.setting_id.clone());
+            let _ = binding.adopt_snapshot(snapshot, row.setting_id.clone());
         }
     }
 }

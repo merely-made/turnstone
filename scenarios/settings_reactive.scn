@@ -1,0 +1,22 @@
+# Fresh private profile; this writes Show shellbar through its real Settings row.
+# For a retained causal export set TURNSTONE_DIAGNOSTIC_RECORDS=65536 and
+# TURNSTONE_DIAGNOSTIC_BYTES=33554432; counters still report bounded join losses.
+settle 20
+key escape
+resize 1180 950
+open mere://settings-reactive
+settle 10
+act Open Settings pane
+settle 5
+assert pane turnstone.settings
+act Maximize pane
+settle 4
+scroll 800 450 10000
+settle 4
+capture 01_settings_before_apply
+click surface:settings .toggle
+settle 2
+click surface:settings .setting-apply @data-setting=chrome.shellbar.visible
+settle 8
+capture 02_settings_after_apply
+log Settings Apply completed for reactive diagnostic qualification

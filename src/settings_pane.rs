@@ -316,9 +316,33 @@ impl SettingsPane {
             state.viewport_h = pane_h;
             commands::refresh_settings(state);
         });
+        self.include_reactive_mutations();
+    }
+
+    pub(crate) fn include_reactive_mutations(&self) {
+        let state = self.runner.state();
+        if state.input_queue_error.borrow().is_some() {
+            crate::reactive_render::mark_input_gap();
+        }
+        if let Some(queue) = &state.input_queue {
+            if queue.dropped_mutation_records() > 0 || queue.generation_exhaustions() > 0 {
+                crate::reactive_render::mark_input_gap();
+            }
+            crate::reactive_render::include_mutations(&queue.latest_mutations());
+        } else {
+            crate::reactive_render::mark_input_gap();
+        }
     }
 
     pub fn scene(&mut self, w: u32, h: u32, scale: f32) -> netrender::Scene {
+        let records = self
+            .runner
+            .state()
+            .input_queue
+            .as_ref()
+            .map(|queue| queue.latest_mutations())
+            .unwrap_or_default();
+        let _reactive_work = crate::reactive_render::WorkScope::settings(&records);
         self.layout.set_scale(scale);
         let snapshot = self.runner.state().live_settings.snapshot();
         let mut chrome = ShellChromeConfig::default();
@@ -443,3 +467,7 @@ mod composition_tests;
 #[cfg(test)]
 #[path = "settings_pane/p3_tests.rs"]
 mod p3_tests;
+
+#[cfg(test)]
+#[path = "settings_pane/reactive_tests.rs"]
+mod reactive_tests;

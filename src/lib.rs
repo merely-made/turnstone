@@ -107,6 +107,8 @@ mod publish_service;
 #[cfg(not(feature = "peers"))]
 #[path = "disabled/publish_service.rs"]
 mod publish_service;
+pub mod reactive_render;
+pub mod reactive_trace;
 mod recycle;
 pub mod redshank_episode_surface;
 pub mod redshank_host;

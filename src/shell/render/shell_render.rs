@@ -46,6 +46,7 @@ impl Shell {
         if !self.poll_render_recovery() || self.host.is_none() {
             return false;
         }
+        let reactive_frame = self.reactive_frame_scope(0);
         self.refresh_diagnostic_inspection();
         // Frame cost, off by default (the shell's own filter is `info`). Turn
         // it on with `RUST_LOG=turnstone::shell::render=debug` when a window
@@ -59,8 +60,6 @@ impl Shell {
         // the hovered surface on frame wakes as well as immediately on input.
         self.apply_pending_surface_cursor();
         if self.poll_live_settings() {
-            // A SettingsPane has already persisted the write. Refresh every
-            // affected retained surface in this and any lens window now.
             self.request_redraw();
         }
         let (w, h) = (self.width.max(1), self.height.max(1));
@@ -508,6 +507,7 @@ impl Shell {
         }
         // wgpu 30 moved presentation from SurfaceTexture to Queue.
         host.queue().present(frame);
+        reactive_frame.submitted(generation);
         self.main_receipt.presented();
         let compose_elapsed = compose_started.elapsed();
 

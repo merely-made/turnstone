@@ -5,6 +5,18 @@ use super::*;
 
 impl Shell {
     pub fn new(proxy: EventLoopProxy<()>, address: Option<String>) -> Self {
+        Self::new_with_diagnostic_run(
+            proxy,
+            address,
+            apparatus_core::RunId(uuid::Uuid::new_v4().to_string()),
+        )
+    }
+
+    pub(crate) fn new_with_diagnostic_run(
+        proxy: EventLoopProxy<()>,
+        address: Option<String>,
+        run: apparatus_core::RunId,
+    ) -> Self {
         let client_limits = crate::client_limits::BrowserClientLimits::from_environment()
             .expect("Turnstone client limit configuration is invalid");
         let (mut app, boot_effects) = App::boot(address.as_deref());
@@ -313,7 +325,7 @@ impl Shell {
             contributed_click_request: 0,
             observed_events: VecDeque::with_capacity(128),
             diagnostic_observations:
-                crate::diagnostic_observations::DiagnosticObservations::from_env(),
+                crate::diagnostic_observations::DiagnosticObservations::from_env_for_run(run),
             shared_out_dir: shared_out_dir_from_env(),
             pending_capture: None,
             pending_capture_readback: None,

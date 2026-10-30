@@ -8438,6 +8438,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "mere-registry"
+version = "0.0.1"
+source = "git+https://github.com/merely-made/mere.git?branch=main#9f8618e90e23a0e1d957d996f1b68649265c5c5c"
+dependencies = [
+ "log",
+ "web-time",
+]
+
+[[package]]
 name = "mere-surface-api"
 version = "0.1.0"
 source = "git+https://github.com/merely-made/mere.git?branch=main#9f8618e90e23a0e1d957d996f1b68649265c5c5c"
@@ -16526,6 +16535,7 @@ dependencies = [
  "mere-moot",
  "mere-pageload",
  "mere-proofs",
+ "mere-registry",
  "mere-surface-api",
  "mere-transport",
  "mesquite",

@@ -248,6 +248,7 @@ genet-presenter = { git = "https://github.com/merely-made/genet.git", branch = "
 # chrome migrates onto this over time; panes that need a grid or a paint leaf
 # adopt it first.
 cambium = { version = "0.6.0", git = "https://github.com/merely-made/mere.git", branch = "main" }
+registry = { package = "mere-registry", git = "https://github.com/merely-made/mere.git", branch = "main", default-features = false, features = ["diagnostics"] }
 cambium-winit = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 # Authority-free source buffer plus Knot highlighting/outline/folds/preview.
 # Storage, sync, grants, and keys stay in the endpoint process.

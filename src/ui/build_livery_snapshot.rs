@@ -21,8 +21,11 @@ where
         &device,
         &InteractionStates::default(),
     );
+    crate::reactive_render::completed(
+        cambium::reactive_diagnostics::DiagnosticKind::RendererStyleCompleted,
+    );
     let images = HashMap::new();
-    let (styles, fragments) = layout_with_text_system(
+    let result = layout_with_text_system(
         dom,
         &styles,
         w as f32,
@@ -30,8 +33,16 @@ where
         device.viewport_sizes,
         &mut text,
         &images,
-    )
-    .expect("Turnstone Livery/Buckram layout");
+    );
+    if result.is_err() {
+        crate::reactive_render::completed(
+            cambium::reactive_diagnostics::DiagnosticKind::RendererWorkFailed,
+        );
+    }
+    let (styles, fragments) = result.expect("Turnstone Livery/Buckram layout");
+    crate::reactive_render::completed(
+        cambium::reactive_diagnostics::DiagnosticKind::RendererLayoutCompleted,
+    );
     let content_extent = content_extent(dom, &fragments);
     LiverySnapshot {
         styles,

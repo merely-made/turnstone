@@ -11,6 +11,10 @@ use std::collections::BTreeMap;
 use std::path::PathBuf;
 use std::rc::Rc;
 
+use cambium::reactive_diagnostics::{
+    CauseRelation, DiagnosticDetails, DiagnosticKind, Producer, ProducerRef,
+};
+
 use mere_surface_api::settings::{
     CommittedSettingsWrite, RevisionedSettingSpec, RevisionedSettingsProvider,
     RevisionedSettingsSnapshot, RevisionedSettingsWriteRequest, RevisionedWriteOutcome,
@@ -48,6 +52,124 @@ struct OwnerState {
     provider: ApplicationSettingsProvider,
     incarnation: SettingsOwnerIncarnation,
     revisions: BTreeMap<String, u64>,
+    diagnostics: Option<Producer>,
+    next_update_id: u64,
+    revision_causes: BTreeMap<String, (u64, ProducerRef)>,
+}
+
+impl OwnerState {
+    fn update_id(&mut self) -> Option<u64> {
+        let id = self.next_update_id;
+        self.next_update_id = self.next_update_id.checked_add(1)?;
+        Some(id)
+    }
+
+    fn emit(
+        &self,
+        kind: DiagnosticKind,
+        update_id: Option<u64>,
+        revision: Option<u64>,
+        cause: Option<(CauseRelation, ProducerRef)>,
+    ) -> Option<ProducerRef> {
+        self.emit_details(
+            kind,
+            DiagnosticDetails {
+                update_id,
+                revision,
+                ..DiagnosticDetails::default()
+            },
+            cause,
+        )
+    }
+
+    fn emit_details(
+        &self,
+        kind: DiagnosticKind,
+        details: DiagnosticDetails,
+        cause: Option<(CauseRelation, ProducerRef)>,
+    ) -> Option<ProducerRef> {
+        let producer = self.diagnostics.as_ref()?;
+        match cause {
+            Some(cause) => producer
+                .emit_with_causes(kind, None, details, &[cause])
+                .ok(),
+            None => producer.emit(kind, None, details).ok(),
+        }
+    }
+
+    fn request(&mut self, domain: &str) -> (Option<u64>, Option<ProducerRef>) {
+        let update_id = self.update_id();
+        let revision = self.revisions.get(domain).copied();
+        let cause = self
+            .revision_causes
+            .get(domain)
+            .map(|(_, reference)| (CauseRelation::TriggeredBy, *reference));
+        let reference = self.emit(
+            DiagnosticKind::SettingsRequested,
+            update_id,
+            revision,
+            cause,
+        );
+        (update_id, reference)
+    }
+
+    fn request_optional(&mut self, domain: Option<&str>) -> (Option<u64>, Option<ProducerRef>) {
+        let update_id = self.update_id();
+        let revision = domain.and_then(|domain| self.revisions.get(domain).copied());
+        let cause = domain
+            .and_then(|domain| self.revision_causes.get(domain))
+            .map(|(_, reference)| (CauseRelation::TriggeredBy, *reference));
+        let reference = self.emit(
+            DiagnosticKind::SettingsRequested,
+            update_id,
+            revision,
+            cause,
+        );
+        (update_id, reference)
+    }
+
+    fn advance_revision(
+        &mut self,
+        domain: &str,
+        revision: u64,
+        update_id: Option<u64>,
+        commit: Option<ProducerRef>,
+    ) {
+        let cause = commit.map(|reference| (CauseRelation::CommittedBy, reference));
+        if let Some(reference) = self.emit_details(
+            DiagnosticKind::RevisionAdvanced,
+            DiagnosticDetails {
+                update_id,
+                revision: Some(revision),
+                dependency_id: dependency_id_for_domain(domain),
+                ..DiagnosticDetails::default()
+            },
+            cause,
+        ) {
+            self.revision_causes
+                .insert(domain.to_owned(), (revision, reference));
+        }
+    }
+}
+
+fn dependency_id_for_domain(domain: &str) -> Option<u64> {
+    match domain {
+        APPEARANCE => Some(1),
+        SHELL_CHROME => Some(2),
+        BEHAVIORS => Some(3),
+        THEME_CATALOG => Some(4),
+        _ => None,
+    }
+}
+
+/// A value-free causal head for one owner revision. Domain names are the
+/// owner's fixed bounded vocabulary; setting identities and values are never
+/// exposed through this diagnostic projection.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(crate) struct OwnerRevisionCause {
+    pub domain: String,
+    pub revision: u64,
+    pub cause: ProducerRef,
 }
 
 impl SharedApplicationSettingsOwner {
@@ -62,8 +184,26 @@ impl SharedApplicationSettingsOwner {
                 provider,
                 incarnation: SettingsOwnerIncarnation(uuid::Uuid::new_v4().to_string()),
                 revisions,
+                diagnostics: Producer::new().ok(),
+                next_update_id: 1,
+                revision_causes: BTreeMap::new(),
             })),
         }
+    }
+
+    /// Return the latest value-free causal head for every changed domain.
+    /// Consumers match these to the same coherent snapshot's revisions.
+    pub(crate) fn latest_revision_causes(&self) -> Vec<OwnerRevisionCause> {
+        self.inner
+            .borrow()
+            .revision_causes
+            .iter()
+            .map(|(domain, (revision, cause))| OwnerRevisionCause {
+                domain: domain.clone(),
+                revision: *revision,
+                cause: *cause,
+            })
+            .collect()
     }
 
     /// Return the persistence root selected by the application.
@@ -92,6 +232,7 @@ impl SharedApplicationSettingsOwner {
                 },
             };
             state.revisions.insert(THEME_CATALOG.into(), next);
+            state.advance_revision(THEME_CATALOG, next, None, None);
         }
         Ok(())
     }
@@ -103,8 +244,24 @@ impl SharedApplicationSettingsOwner {
         let mut state = self.inner.borrow_mut();
         observe_durable_settings(&mut state)?;
         let next = next_revision(&state, APPEARANCE)?;
-        state.provider.apply_theme_choice(choice)?;
+        let (update_id, requested) = state.request(APPEARANCE);
+        if let Err(error) = state.provider.apply_theme_choice(choice) {
+            state.emit(
+                diagnostic_kind_for_error(&error),
+                update_id,
+                state.revisions.get(APPEARANCE).copied(),
+                requested.map(|reference| (CauseRelation::TriggeredBy, reference)),
+            );
+            return Err(error);
+        }
         state.revisions.insert(APPEARANCE.into(), next);
+        let committed = state.emit(
+            DiagnosticKind::SettingsCommitted,
+            update_id,
+            Some(next),
+            requested.map(|reference| (CauseRelation::CommittedBy, reference)),
+        );
+        state.advance_revision(APPEARANCE, next, update_id, committed);
         Ok(())
     }
 }
@@ -131,9 +288,25 @@ impl SettingsProvider for SharedApplicationSettingsOwner {
         let next = domain
             .map(|domain| next_revision(&state, domain))
             .transpose()?;
-        state.provider.apply(reference, setting_id, value)?;
+        let (update_id, requested) = state.request_optional(domain);
+        if let Err(error) = state.provider.apply(reference, setting_id, value) {
+            state.emit(
+                diagnostic_kind_for_error(&error),
+                update_id,
+                domain.and_then(|domain| state.revisions.get(domain).copied()),
+                requested.map(|reference| (CauseRelation::TriggeredBy, reference)),
+            );
+            return Err(error);
+        }
         if let (Some(domain), Some(next)) = (domain, next) {
             state.revisions.insert(domain.into(), next);
+            let committed = state.emit(
+                DiagnosticKind::SettingsCommitted,
+                update_id,
+                Some(next),
+                requested.map(|reference| (CauseRelation::CommittedBy, reference)),
+            );
+            state.advance_revision(domain, next, update_id, committed);
         }
         Ok(())
     }
@@ -177,7 +350,15 @@ impl RevisionedSettingsProvider for SharedApplicationSettingsOwner {
     ) -> RevisionedWriteOutcome {
         let request_id = request.request_id.clone();
         let mut state = self.inner.borrow_mut();
+        let requested_domain = domain_for_setting(&request.setting_id);
         if let Err(error) = observe_durable_settings(&mut state) {
+            let (update_id, requested) = state.request_optional(requested_domain);
+            state.emit(
+                DiagnosticKind::SettingsStorage,
+                update_id,
+                requested_domain.and_then(|domain| state.revisions.get(domain).copied()),
+                requested.map(|reference| (CauseRelation::TriggeredBy, reference)),
+            );
             return RevisionedWriteOutcome::Storage {
                 request_id,
                 failure: SettingsStorageFailure {
@@ -185,7 +366,14 @@ impl RevisionedSettingsProvider for SharedApplicationSettingsOwner {
                 },
             };
         }
+        let (update_id, requested) = state.request_optional(requested_domain);
         if request.reference.0 != APPLICATION_REFERENCE {
+            state.emit(
+                DiagnosticKind::SettingsUnavailable,
+                update_id,
+                None,
+                requested.map(|reference| (CauseRelation::TriggeredBy, reference)),
+            );
             return RevisionedWriteOutcome::Unavailable {
                 request_id,
                 reason: SettingsUnavailable {
@@ -194,6 +382,12 @@ impl RevisionedSettingsProvider for SharedApplicationSettingsOwner {
             };
         }
         let Some(domain) = domain_for_setting(&request.setting_id) else {
+            state.emit(
+                DiagnosticKind::SettingsValidation,
+                update_id,
+                None,
+                requested.map(|reference| (CauseRelation::TriggeredBy, reference)),
+            );
             return RevisionedWriteOutcome::Validation {
                 request_id,
                 failure: SettingsValidationFailure {
@@ -204,6 +398,18 @@ impl RevisionedSettingsProvider for SharedApplicationSettingsOwner {
         };
         let current = guard_for(&state, domain);
         if request.expected != current {
+            state.emit_details(
+                DiagnosticKind::SettingsConflict,
+                DiagnosticDetails {
+                    update_id,
+                    revision: Some(current.revision),
+                    dependency_id: dependency_id_for_domain(domain),
+                    expected_revision: Some(request.expected.revision),
+                    current_revision: Some(current.revision),
+                    ..DiagnosticDetails::default()
+                },
+                requested.map(|reference| (CauseRelation::TriggeredBy, reference)),
+            );
             return RevisionedWriteOutcome::Conflict {
                 request_id,
                 current,
@@ -212,6 +418,12 @@ impl RevisionedSettingsProvider for SharedApplicationSettingsOwner {
         let next = match next_revision(&state, domain) {
             Ok(next) => next,
             Err(error) => {
+                state.emit(
+                    DiagnosticKind::SettingsStorage,
+                    update_id,
+                    Some(current.revision),
+                    requested.map(|reference| (CauseRelation::TriggeredBy, reference)),
+                );
                 return RevisionedWriteOutcome::Storage {
                     request_id,
                     failure: SettingsStorageFailure {
@@ -225,6 +437,12 @@ impl RevisionedSettingsProvider for SharedApplicationSettingsOwner {
             &request.setting_id,
             request.value.clone(),
         ) {
+            state.emit(
+                diagnostic_kind_for_error(&error),
+                update_id,
+                Some(current.revision),
+                requested.map(|reference| (CauseRelation::TriggeredBy, reference)),
+            );
             return map_write_error(request_id, error);
         }
         state.revisions.insert(domain.into(), next);
@@ -239,6 +457,13 @@ impl RevisionedSettingsProvider for SharedApplicationSettingsOwner {
                     .map(|spec| spec.value)
             })
             .unwrap_or(request.value);
+        let committed = state.emit(
+            DiagnosticKind::SettingsCommitted,
+            update_id,
+            Some(next),
+            requested.map(|reference| (CauseRelation::CommittedBy, reference)),
+        );
+        state.advance_revision(domain, next, update_id, committed);
         RevisionedWriteOutcome::Committed(CommittedSettingsWrite {
             request_id,
             reference: request.reference,
@@ -312,8 +537,19 @@ fn observe_durable_settings(state: &mut OwnerState) -> Result<ApplicationSetting
     state.provider.settings = durable.clone();
     for (domain, revision) in updates {
         state.revisions.insert(domain.into(), revision);
+        state.advance_revision(domain, revision, None, None);
     }
     Ok(durable)
+}
+
+fn diagnostic_kind_for_error(error: &SettingsError) -> DiagnosticKind {
+    match error {
+        SettingsError::UnsupportedReference(_) => DiagnosticKind::SettingsUnavailable,
+        SettingsError::UnknownSetting(_) | SettingsError::InvalidValue { .. } => {
+            DiagnosticKind::SettingsValidation
+        },
+        SettingsError::Storage(_) => DiagnosticKind::SettingsStorage,
+    }
 }
 
 fn next_revision(state: &OwnerState, domain: &str) -> Result<u64, SettingsError> {

@@ -27,6 +27,7 @@ impl Shell {
         };
         #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
         let (surface_device, surface_queue) = (host.device().clone(), host.queue().clone());
+        let reactive_frame = self.reactive_frame_scope(ordinal + 1);
         self.prepare_inline_owners(ordinal + 1, (lw, lh));
         if let Some(area) = self.pane_ime_cursor_area(ordinal as u64 + 1)
             && let Some(lens) = self.lens_windows.get(&id)
@@ -374,6 +375,7 @@ impl Shell {
             return false;
         }
         host.queue().present(frame);
+        reactive_frame.submitted(generation);
         self.main_receipt.lens_presented();
         // Only the request's chosen Lens may consume it. Failure participates
         // in the same scenario receipt as the primary, rather than warning only.

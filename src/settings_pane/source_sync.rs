@@ -69,6 +69,7 @@ pub(super) fn refresh_settings(state: &mut SettingsState) {
         }
     }
     state.snapshots = snapshots;
+    update_revision_causes(state);
     state.arrangement.update_sources(registered_specs(state));
     reconcile_rows(state, &unavailable);
     if let Some(owner) = &state.owner {
@@ -181,23 +182,63 @@ pub(super) fn refresh_row_snapshot(
     state: &mut SettingsState,
     key: &ComponentKey,
 ) -> Result<RevisionedSettingsSnapshot, String> {
-    let row = state
+    let reference = state
         .rows
         .get(key)
-        .ok_or("This component has no available setting binding.")?;
+        .ok_or("This component has no available setting binding.")?
+        .reference
+        .clone();
+    let setting_id = state.rows.get(key).unwrap().setting_id.clone();
     let source = state
         .sources
-        .get(&row.reference.0)
+        .get(&reference.0)
         .ok_or("The settings source is unavailable.")?;
     let snapshot = source
         .borrow()
-        .snapshot(&row.reference)
+        .snapshot(&reference)
         .map_err(|error| error.message)?;
-    if snapshot.reference != row.reference {
+    if snapshot.reference != reference {
         return Err("The settings source returned a different reference.".into());
     }
-    if current_spec(&snapshot, &row.setting_id).is_none() {
+    if current_spec(&snapshot, &setting_id).is_none() {
         return Err("The setting is unavailable.".into());
     }
+    state.snapshots.insert(reference.0, snapshot.clone());
+    update_revision_causes(state);
+    state.arrangement.update_sources(registered_specs(state));
+    reconcile_rows(state, &Default::default());
+    if let Some(owner) = &state.owner {
+        state.provider = owner.provider_snapshot();
+        state.live_settings.publish_provider(&state.provider);
+    }
     Ok(snapshot)
+}
+
+fn update_revision_causes(state: &mut SettingsState) {
+    let mut revision_causes = BTreeMap::new();
+    if let (Some(owner), Some(snapshot), Some(source_id)) = (
+        &state.owner,
+        state.snapshots.get(APPLICATION_REFERENCE),
+        state.source_ids.get(APPLICATION_REFERENCE),
+    ) && let Ok(owner_token) =
+        super::composition::owner_token(state, *source_id, &snapshot.owner.0)
+    {
+        let causes = owner.latest_revision_causes();
+        for revision in &snapshot.revisions {
+            if let Some(cause) = causes.iter().find(|cause| {
+                cause.domain == revision.domain.0 && cause.revision == revision.revision
+            }) {
+                revision_causes.insert(
+                    (
+                        *source_id,
+                        owner_token,
+                        cause.domain.clone(),
+                        cause.revision,
+                    ),
+                    cause.cause,
+                );
+            }
+        }
+    }
+    state.revision_causes = revision_causes;
 }

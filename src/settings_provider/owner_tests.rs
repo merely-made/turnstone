@@ -7,11 +7,14 @@
 use super::*;
 use std::path::Path;
 
+use apparatus_core::{RetentionLimits, RunId, SourceBootId};
+use cambium::reactive_diagnostics::{DiagnosticKind, ReactiveDiagnosticEvent};
 use mere_surface_api::settings::{
     RevisionedSettingsProvider, RevisionedSettingsSnapshot, RevisionedSettingsWriteRequest,
     RevisionedWriteOutcome, SettingValue, SettingsRevisionGuard,
 };
 use pandect::{application_settings_path, save_application_settings};
+use tracing_subscriber::layer::SubscriberExt;
 
 fn settings_snapshot(owner: &SharedApplicationSettingsOwner) -> RevisionedSettingsSnapshot {
     owner
@@ -88,6 +91,129 @@ fn owner_clones_share_committed_values_and_guards() {
         .unwrap();
     assert_eq!(zoom.spec.value, SettingValue::Number(1.5));
     assert_eq!(zoom.guard, committed.guard);
+}
+
+#[test]
+fn owner_retains_revision_advance_cause_for_the_committed_domain() {
+    let temporary = tempfile::tempdir().unwrap();
+    let mut owner = make_owner(temporary.path());
+    let before = settings_snapshot(&owner);
+    assert!(owner.latest_revision_causes().is_empty());
+    let outcome = owner.apply_revisioned(write_request(
+        &before,
+        "cause-check",
+        "ui.zoom",
+        SettingValue::Number(1.5),
+    ));
+    let RevisionedWriteOutcome::Committed(committed) = outcome else {
+        panic!("current guard should commit");
+    };
+    let causes = owner.latest_revision_causes();
+    let cause = causes
+        .iter()
+        .find(|cause| cause.domain == SHELL_CHROME)
+        .expect("committed domain has a causal head");
+    assert_eq!(cause.revision, committed.guard.revision);
+    assert_ne!(cause.cause.producer_id, 0);
+    assert!(causes.iter().all(|cause| cause.domain.len() <= 64));
+}
+
+#[test]
+fn guarded_revision_diagnostics_carry_numeric_domain_and_revision_facts() {
+    let run = RunId::from("owner-domain-facts-run");
+    let boot = SourceBootId::from("owner-domain-facts-boot");
+    let (layer, receiver) = crate::reactive_trace::channel(run.clone(), boot.clone());
+    let subscriber = tracing_subscriber::registry().with(layer);
+    let temporary = tempfile::tempdir().unwrap();
+    let before = {
+        let mut captured = None;
+        tracing::subscriber::with_default(subscriber, || {
+            let mut owner = make_owner(temporary.path());
+            let snapshot = settings_snapshot(&owner);
+            let write = owner.apply_revisioned(write_request(
+                &snapshot,
+                "domain-fact-commit",
+                "ui.zoom",
+                SettingValue::Number(1.5),
+            ));
+            assert!(matches!(write, RevisionedWriteOutcome::Committed(_)));
+            let conflict = owner.apply_revisioned(write_request(
+                &snapshot,
+                "domain-fact-conflict",
+                "ui.zoom",
+                SettingValue::Number(1.8),
+            ));
+            assert!(matches!(conflict, RevisionedWriteOutcome::Conflict { .. }));
+            captured = Some(snapshot);
+        });
+        captured.unwrap()
+    };
+
+    let mut observations = crate::diagnostic_observations::DiagnosticObservations::new(
+        run,
+        RetentionLimits {
+            max_records: 256,
+            max_bytes: 1_048_576,
+            max_age: std::time::Duration::from_secs(300),
+        },
+    );
+    observations.attach_reactive(receiver, &boot).unwrap();
+    let mut cursor = observations.cursor();
+    let records = observations.read(&mut cursor, 256).unwrap();
+    let mut advanced = None;
+    let mut conflict = None;
+    let serialized = serde_json::to_string(
+        &records
+            .records
+            .iter()
+            .filter_map(|record| record.payload.reactive.as_ref())
+            .collect::<Vec<_>>(),
+    )
+    .unwrap();
+    for record in &records.records {
+        let Some(crate::reactive_trace::ReactiveTracePayload {
+            event:
+                crate::reactive_trace::ReactiveDiagnosticPayload::Cambium(
+                    ReactiveDiagnosticEvent::Decision { kind, details, .. },
+                ),
+            ..
+        }) = record.payload.reactive.as_ref()
+        else {
+            continue;
+        };
+        match kind {
+            DiagnosticKind::RevisionAdvanced if details.dependency_id == Some(2) => {
+                advanced = Some(*details);
+            },
+            DiagnosticKind::SettingsConflict if details.dependency_id == Some(2) => {
+                conflict = Some(*details);
+            },
+            _ => {},
+        }
+    }
+    let advanced = advanced.expect("shell-chrome revision advance has numeric domain id");
+    assert_eq!(advanced.revision, Some(1));
+    let conflict = conflict.expect("guard conflict has numeric domain id");
+    assert_eq!(conflict.expected_revision, Some(0));
+    assert_eq!(conflict.current_revision, Some(1));
+    assert_eq!(conflict.dependency_id, Some(2));
+    assert_eq!(
+        before
+            .specs
+            .iter()
+            .find(|entry| entry.spec.id == "ui.zoom")
+            .unwrap()
+            .guard
+            .revision,
+        0
+    );
+    assert!(!serialized.contains("ui.zoom"));
+    assert!(!serialized.contains("1.8"));
+    assert!(!serialized.contains(temporary.path().to_string_lossy().as_ref()));
+    assert_eq!(dependency_id_for_domain(APPEARANCE), Some(1));
+    assert_eq!(dependency_id_for_domain(SHELL_CHROME), Some(2));
+    assert_eq!(dependency_id_for_domain(BEHAVIORS), Some(3));
+    assert_eq!(dependency_id_for_domain(THEME_CATALOG), Some(4));
 }
 
 #[test]

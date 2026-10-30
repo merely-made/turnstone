@@ -17,7 +17,11 @@ use cambium::composition::{
     BindingAdmission, ComponentDescriptor, ComponentKey, ComponentKind, Composition,
     CompositionLimits, CompositionTransaction, CompositionValidator, ContainerKey, PlacementNode,
 };
-use cambium::{LifecycleEventSink, RetainedComposition, el, setting_row};
+use cambium::composition_scheduler::{
+    CompositionCauseRef, CompositionInputError, CompositionInputSnapshot, CompositionInputs,
+    DependencyStamp, InputVector, LocalInputStamp,
+};
+use cambium::{LifecycleEventSink, RetainedComposition, SettingRowSnapshot, el, setting_row};
 use mere_surface_api::settings::SettingSpec;
 use serde_json::{Value, json};
 
@@ -239,19 +243,67 @@ impl CompositionValidator for SettingsCompositionValidator<'_> {
 /// Production composition: each durable instance has its own draft session and
 /// guarded binding even when two instances edit the same source setting.
 pub(super) fn managed_rows(state: &SettingsState) -> SettingsView {
-    let rows = state
-        .rows
-        .iter()
-        .map(|(key, row)| {
-            let spec = row.session.snapshot().observed_spec;
-            let label = format!(
-                "{} · {:?} · {:?} · {:?}",
-                spec.label, spec.scope, spec.movement, spec.mutability
-            );
-            (key.clone(), (row.session.clone(), label))
-        })
-        .collect::<BTreeMap<_, _>>();
-    let rows = Rc::new(rows);
+    let mut inputs_by_key = BTreeMap::new();
+    let mut row_props = BTreeMap::new();
+    let mut input_error = None;
+    let mut cache = state.presentation_cache.borrow_mut();
+    for (key, row) in &state.rows {
+        // This is the single session read for this retained-view flush. Its
+        // frozen snapshot supplies both the dependency generation and label.
+        let snapshot = row.session.snapshot();
+        let generation = match cache.get(key) {
+            Some((previous, generation)) if previous == &snapshot => *generation,
+            Some((_, generation)) => match generation.checked_add(1) {
+                Some(next) => next,
+                None => {
+                    // A local stamp only needs to differ from the immediately
+                    // preceding snapshot. Resetting after exhaustion changes
+                    // MAX to zero and forces the retained factory to run.
+                    input_error.get_or_insert(CompositionInputError::GenerationExhausted);
+                    0
+                },
+            },
+            None => 1,
+        };
+        cache.insert(key.clone(), (snapshot.clone(), generation));
+        let label = row_label(&snapshot);
+        let vector = match input_vector(state, row, generation) {
+            Ok(vector) => vector,
+            Err(error) => {
+                input_error.get_or_insert(error);
+                local_only_input(generation)
+            },
+        };
+        inputs_by_key.insert(key.clone(), vector);
+        row_props.insert(key.clone(), (row.session.clone(), label));
+    }
+    cache.retain(|key, _| state.rows.contains_key(key));
+    drop(cache);
+
+    let inputs = match CompositionInputs::new(inputs_by_key) {
+        Ok(inputs) => inputs,
+        Err(error) => {
+            input_error = Some(error);
+            CompositionInputs::default()
+        },
+    };
+    let previous = state.published_inputs.borrow().clone();
+    let input_snapshot = if let Some(queue) = &state.input_queue {
+        match publish_inputs(state, queue, &previous, &inputs) {
+            Ok(()) => queue.capture(),
+            Err(error) => {
+                input_error.get_or_insert(error);
+                CompositionInputSnapshot::detached(inputs.clone())
+            },
+        }
+    } else {
+        CompositionInputSnapshot::detached(inputs.clone())
+    };
+    *state.input_queue_error.borrow_mut() = input_error;
+    *state.published_inputs.borrow_mut() = inputs;
+    let attach_inputs = state.input_queue.is_some() && state.input_queue_error.borrow().is_none();
+
+    let rows = Rc::new(row_props);
     let factory = Rc::new(move |descriptor: &ComponentDescriptor| -> SettingsView {
         let key = descriptor.key.clone();
         if let Some((session, label)) = rows.get(&key) {
@@ -282,9 +334,152 @@ pub(super) fn managed_rows(state: &SettingsState) -> SettingsView {
             )
         }
     });
-    Box::new(
+    let retained =
         RetainedComposition::<SettingsState, ()>::new(state.arrangement.transaction(), factory)
             .with_collapsed(state.collapsed.clone())
-            .with_lifecycle_sink(state.composition_lifecycle.clone()),
+            .with_lifecycle_sink(state.composition_lifecycle.clone());
+    if attach_inputs {
+        Box::new(retained.with_inputs(input_snapshot))
+    } else {
+        // The previous accepted composition still renders through the legacy
+        // path. A local-only fallback must never be treated as a complete
+        // dependency set when one row's source stamp could not be built.
+        Box::new(retained)
+    }
+}
+
+fn row_label(snapshot: &SettingRowSnapshot) -> String {
+    let spec = &snapshot.observed_spec;
+    format!(
+        "{} · {:?} · {:?} · {:?}",
+        spec.label, spec.scope, spec.movement, spec.mutability
     )
+}
+
+fn input_vector(
+    state: &SettingsState,
+    row: &super::RowState,
+    generation: u64,
+) -> Result<InputVector, CompositionInputError> {
+    let mut dependencies = Vec::new();
+    if let Some(source) = state.snapshots.get(&row.reference.0) {
+        let source_id = state
+            .source_ids
+            .get(&row.reference.0)
+            .ok_or(CompositionInputError::InvalidName)?;
+        let owner = owner_token(state, *source_id, &source.owner.0)?;
+        for revision in source.revisions.iter().filter(|revision| {
+            setting_domains(&row.setting_id).contains(&revision.domain.0.as_str())
+        }) {
+            let stamp = DependencyStamp::new(
+                *source_id,
+                owner,
+                revision.domain.0.clone(),
+                revision.revision,
+            )?;
+            dependencies.push(stamp);
+        }
+    }
+    let local = LocalInputStamp::new("row-session", generation)?;
+    InputVector::new(dependencies, vec![local])
+}
+
+fn local_only_input(generation: u64) -> InputVector {
+    InputVector::new(
+        Vec::new(),
+        vec![
+            LocalInputStamp::new("row-session", generation)
+                .expect("static local input name is valid"),
+        ],
+    )
+    .expect("one local input is valid")
+}
+
+/// Give each source incarnation a collision-free, per-pane numeric identity.
+/// The source contract intentionally leaves incarnation strings opaque.
+pub(super) fn owner_token(
+    state: &SettingsState,
+    source_id: u64,
+    incarnation: &str,
+) -> Result<u128, CompositionInputError> {
+    let mut owners = state.owner_tokens.borrow_mut();
+    if let Some((known_incarnation, token)) = owners.get(&source_id)
+        && known_incarnation == incarnation
+    {
+        return Ok(*token);
+    }
+    let token = state
+        .next_owner_token
+        .get()
+        .ok_or(CompositionInputError::GenerationExhausted)?;
+    state.next_owner_token.set(token.checked_add(1));
+    owners.insert(source_id, (incarnation.to_owned(), token));
+    Ok(token)
+}
+
+fn setting_domains(setting_id: &str) -> &'static [&'static str] {
+    if setting_id.starts_with("theme.") {
+        &["appearance-choice", "theme-catalog"]
+    } else if setting_id == "ui.zoom" || setting_id.starts_with("chrome.") {
+        &["shell-chrome"]
+    } else if setting_id.starts_with("behaviors.") {
+        &["behaviors"]
+    } else {
+        &[]
+    }
+}
+
+pub(super) fn changed_input_cause(
+    state: &SettingsState,
+    previous: &InputVector,
+    next: &InputVector,
+) -> Vec<(CompositionCauseRef, DependencyStamp)> {
+    let mut changed = Vec::new();
+    for dependency in next.dependencies() {
+        let same_axis = previous.dependencies().iter().any(|old| {
+            old.source_id() == dependency.source_id()
+                && old.owner_incarnation() == dependency.owner_incarnation()
+                && old.domain() == dependency.domain()
+        });
+        if !same_axis
+            || previous.dependencies().iter().any(|old| {
+                old.source_id() == dependency.source_id()
+                    && old.owner_incarnation() == dependency.owner_incarnation()
+                    && old.domain() == dependency.domain()
+                    && old.revision() != dependency.revision()
+            })
+        {
+            if let Some(cause) = state.revision_causes.get(&(
+                dependency.source_id(),
+                dependency.owner_incarnation(),
+                dependency.domain().to_owned(),
+                dependency.revision(),
+            )) {
+                changed.push((*cause, dependency.clone()));
+            }
+        }
+    }
+    changed
+}
+
+fn publish_inputs(
+    state: &SettingsState,
+    queue: &cambium::composition_scheduler::CompositionInputQueue,
+    previous: &CompositionInputs,
+    next: &CompositionInputs,
+) -> Result<(), CompositionInputError> {
+    let mut by_component = BTreeMap::new();
+    for (key, vector) in next.components() {
+        let Some(old) = previous.vector(key) else {
+            continue;
+        };
+        let causes = changed_input_cause(state, old, vector)
+            .into_iter()
+            .map(|(cause, _)| cause)
+            .collect::<BTreeSet<_>>();
+        if !causes.is_empty() {
+            by_component.insert(key.clone(), causes.into_iter().collect());
+        }
+    }
+    queue.publish_with_causes(next.clone(), by_component)
 }
