@@ -15,13 +15,18 @@ impl crate::inference_service::RetainedSourceOwner for CaptureInferenceOwner {
         let (reply, receive) = std::sync::mpsc::sync_channel(1);
         if !self.trail.command(TrailCommand::ResearchSnapshot {
             context: context.clone(),
+            selected: None,
+            max_chars: None,
+            max_metadata_chars: None,
+            budget: None,
             reply,
         }) {
             return Err("The saved-source owner is closed.".into());
         }
         let entries = receive
             .recv_timeout(Duration::from_secs(2))
-            .map_err(|_| "The saved-source owner did not answer.")??;
+            .map_err(|_| "The saved-source owner did not answer.")?
+            .map_err(|error| error.to_string())?;
 
         let mut sources = Vec::new();
         for entry in &entries {
@@ -112,13 +117,15 @@ impl crate::inference_service::RetainedSourceOwner for CaptureInferenceOwner {
         if !self.trail.command(TrailCommand::ResearchSource {
             context: context.clone(),
             target,
+            budget: None,
             reply,
         }) {
             return Err("The saved-source owner is closed.".into());
         }
         let content = receive
             .recv_timeout(Duration::from_secs(2))
-            .map_err(|_| "The saved-source owner did not answer.")??;
+            .map_err(|_| "The saved-source owner did not answer.")?
+            .map_err(|error| error.to_string())?;
         if self.bridge.context()? != context {
             return Err("The cited source session or admissions changed.".into());
         }

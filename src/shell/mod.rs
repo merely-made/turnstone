@@ -17,17 +17,22 @@ mod alembic_workshop;
 mod alembic_workshop;
 mod appearance_editor;
 mod appearance_receipt;
+mod clip_actions;
+mod clip_reading;
+mod clip_retaining;
 mod content_pool;
 mod contributed_automation;
 mod controller_input;
 mod cue_content;
 mod document_a11y;
+mod citation_event_history;
 mod drive;
 mod effects;
 mod events;
 mod foreign_a11y;
 mod gestures;
 mod keys;
+mod native_frames;
 mod nomadnet_fetch;
 mod page_capture;
 mod reader_observe;
@@ -276,3 +281,10 @@ use host_file_drag::HostFileDrag;
 #[path = "shell.rs"]
 mod shell;
 pub use shell::Shell;
+
+/// Wake classification keeps model invalidation apart from GPU completion.
+#[derive(Clone, Copy, Debug)]
+pub enum ShellEvent {
+    ActorWake,
+    NativeFrameReady,
+}

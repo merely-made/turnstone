@@ -14,16 +14,33 @@ impl Shell {
         if !self.poll_render_recovery() {
             return false;
         }
+        let mut presented = false;
+        if self.native_frames.has(id) {
+            let (completed, continue_render) = self.poll_native_frame(id);
+            presented = completed;
+            if !continue_render {
+                return presented;
+            }
+        }
+        if self.native_child_requested() {
+            return presented;
+        }
+        if !self.native_frames.prepare(id) {
+            self.request_native_frame_redraws();
+            return presented;
+        }
         self.bind_lens_capture();
         if self.poll_live_settings() {
             self.request_redraw();
         }
         let Some(lens) = self.lens_windows.get(&id) else {
-            return false;
+            self.native_frames.cancel(id);
+            return presented;
         };
         let (lw, lh, ordinal) = (lens.width, lens.height, lens.ordinal);
         let Some(host) = lens.host.as_ref() else {
-            return false;
+            self.native_frames.cancel(id);
+            return presented;
         };
         #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
         let (surface_device, surface_queue) = (host.device().clone(), host.queue().clone());
@@ -39,8 +56,12 @@ impl Shell {
         }
         let surfaces = self.lens_plan(ordinal, lw, lh);
         if surfaces.is_empty() {
-            return false;
+            self.native_frames.cancel(id);
+            return presented;
         }
+        let shared_frame = surfaces
+            .iter()
+            .any(|surface| surface.kind == SurfaceKind::Frame);
         // Visibility includes every open window. Each render invocation pumps
         // a retained document once; separate window events remain separate polls.
         self.pump_visible_documents();
@@ -145,7 +166,12 @@ impl Shell {
                     }
                 },
                 crate::surface::SurfaceKind::Frame | crate::surface::SurfaceKind::FloatFrame(_) => {
-                    (self.outer_scene(ordinal + 1), wgpu::Color::TRANSPARENT)
+                    let Some(scene) =
+                        Self::frame_scene_for_plan(shared_frame, || self.outer_scene(ordinal + 1))
+                    else {
+                        continue;
+                    };
+                    (scene, wgpu::Color::TRANSPARENT)
                 },
                 crate::surface::SurfaceKind::Divider(_) => {
                     (Scene::default(), crate::ui::SEAM_CLEAR)
@@ -200,7 +226,7 @@ impl Shell {
         }
         #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
         if self.fail_surface_frames(surface_failures) {
-            return false;
+            return presented;
         }
         if let Some(area) = self.document_ime_cursor_area(ordinal as u64 + 1)
             && let Some(lens) = self.lens_windows.get(&id)
@@ -214,16 +240,24 @@ impl Shell {
         }
         // Pass 2 is all-or-refused; keep textures alive until presentation/capture.
         let Some(lens) = self.lens_windows.get_mut(&id) else {
-            return false;
+            return presented;
         };
         let Some(host) = lens.host.as_ref() else {
-            return false;
+            return presented;
         };
         let generation = host.core().generation();
+        let batch = match host.shared_core().try_begin_native_frame() {
+            Ok(batch) => batch,
+            Err(genet_render_host::NativeFrameStartError::Busy) => return presented,
+            Err(genet_render_host::NativeFrameStartError::Refused(failure)) => {
+                self.native_frames.cancel(id);
+                self.refuse_raster_frame(ordinal as u64 + 1, generation, 0, failure);
+                return presented;
+            },
+        };
+        let started = std::time::Instant::now();
+        let mut source_diagnostics = Vec::new();
         let mut raster_textures = Vec::new();
-        let shared_frame = surfaces
-            .iter()
-            .any(|surface| surface.kind == SurfaceKind::Frame);
         let layers: Result<Vec<CompositeLayer>, (u64, genet_render_host::RasterizeFailure)> =
             scenes
                 .into_iter()
@@ -231,9 +265,8 @@ impl Shell {
                     PlannedLayer::Scene(scene) if matches!(scene.kind, SurfaceKind::Frame | SurfaceKind::FloatFrame(_))))
                 .map(|source| match source {
                     PlannedLayer::Scene(scene) => {
-                        let (texture, view) = host
-                            .core()
-                            .try_rasterize_scaled_for(
+                        let (texture, view) = batch
+                            .rasterize(
                                 scene.id,
                                 &scene.scene,
                                 scene.dims.0,
@@ -266,7 +299,7 @@ impl Shell {
                 #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
                 drop((surface_device, surface_queue));
                 self.refuse_raster_frame(ordinal as u64 + 1, generation, source, failure);
-                return false;
+                return presented;
             },
         };
         let layers = if shared_frame {
@@ -277,6 +310,7 @@ impl Shell {
                     .expect("shared lens frame prepared"),
                 &self.app,
                 host.core(),
+                &batch,
                 &mut self.renderers.native_images,
                 &mut self.renderers.native_masks,
                 ordinal + 1,
@@ -291,110 +325,46 @@ impl Shell {
                             && std::env::var("TURNSTONE_A4_DIAGNOSTICS")
                                 .is_ok_and(|value| value == "1")
                     })
-                    .map(|path| {
-                        (
-                            path,
-                            &mut self.pending_native_diagnostics,
-                            lens.window.scale_factor(),
-                        )
-                    }),
+                    .map(|path| (path, &mut source_diagnostics, lens.window.scale_factor())),
             ) {
                 Ok(layers) => layers,
                 Err(failure) => {
                     drop(frames);
                     drop(raster_textures);
                     self.refuse_native_composition(ordinal as u64 + 1, generation, failure);
-                    return false;
+                    return presented;
                 },
             }
         } else {
             layers
         };
-        let frame = match host.acquire_status() {
-            genet_render_host::SurfaceAcquire::Frame(frame) => frame,
-            genet_render_host::SurfaceAcquire::DeviceLost(loss) => {
-                drop(layers);
-                drop(raster_textures);
-                #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
-                drop((surface_device, surface_queue));
-                self.refuse_raster_frame(
-                    ordinal as u64 + 1,
-                    generation,
-                    0,
-                    genet_render_host::RasterizeFailure::DeviceLost(loss),
-                );
-                return false;
-            },
-            genet_render_host::SurfaceAcquire::SurfaceLost => {
-                drop(layers);
-                drop(raster_textures);
-                #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
-                drop((surface_device, surface_queue));
-                self.detach_render_surface(ordinal as u64 + 1);
-                return false;
-            },
-            genet_render_host::SurfaceAcquire::Reconfigured => {
-                tracing::debug!(
-                    window = ordinal + 1,
-                    "lens surface reconfigured; frame skipped"
-                );
-                return false;
-            },
-            genet_render_host::SurfaceAcquire::Unavailable { reason } => {
-                tracing::debug!(%reason, window = ordinal + 1, "lens surface acquire skipped");
-                return false;
-            },
-        };
-        let target = frame
-            .texture
-            .create_view(&wgpu::TextureViewDescriptor::default());
-        super::super::render::clear_composition_target(&host, &target);
-        for layer in &layers {
-            host.renderer().compose_external_texture(
-                &layer.view,
-                &target,
-                host.format(),
-                lw,
-                lh,
-                layer.placement,
-            );
-        }
-        if let Some(loss) = host.core().device_failure() {
-            drop(frame);
-            drop(target);
-            drop(layers);
-            drop(raster_textures);
-            #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
-            drop((surface_device, surface_queue));
-            self.refuse_raster_frame(
-                ordinal as u64 + 1,
-                generation,
-                0,
-                genet_render_host::RasterizeFailure::DeviceLost(loss),
-            );
-            return false;
-        }
-        host.queue().present(frame);
-        reactive_frame.submitted(generation);
-        self.main_receipt.lens_presented();
-        // Only the request's chosen Lens may consume it. Failure participates
-        // in the same scenario receipt as the primary, rather than warning only.
-        if self.pending_lens_capture_window == Some(id) {
+        let needs_redraw = animating || self.renderers.bars_visible_in(&surfaces);
+        let capture = if self.pending_lens_capture_window == Some(id) {
             self.pending_lens_capture_window = None;
-            if let Some(path) = self.pending_lens_capture.take() {
-                if !capture_composed(host, &layers, lw, lh, &path) {
-                    self.main_receipt.errors.push(format!(
-                        "lens capture {} window={}: readback or PNG failed",
-                        path.display(),
-                        ordinal + 1
-                    ));
-                }
-            }
-        }
-        if animating || self.renderers.bars_visible_in(&surfaces) {
-            lens.window.request_redraw();
-        }
-        self.finish_inline_frame();
-        true
+            self.pending_lens_capture.take()
+        } else {
+            None
+        };
+        let identity = self.native_frame_identity(id, ordinal + 1, generation, (lw, lh));
+        let staged = super::super::native_frames::StagedWindowFrame {
+            identity,
+            revision: self.native_frames.revision(),
+            layers,
+            raster_textures,
+            started,
+            timings: Default::default(),
+            raster_elapsed: started.elapsed(),
+            surface_raster: Default::default(),
+            needs_redraw,
+            palette: self.app.omnibar.open,
+            nodes: self.app.graph_runtimes.graph().nodes().count(),
+            capture,
+            diagnostics: source_diagnostics,
+            reactive: reactive_frame.stage(),
+        };
+        let capture_hint = staged.capture.clone();
+        let pending = batch.seal_with_wake(staged, self.native_frame_wake.clone());
+        self.native_frames.submit(identity, pending, capture_hint);
+        presented
     }
 }

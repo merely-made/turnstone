@@ -47,6 +47,8 @@ impl FrameControls {
     }
 
     pub(super) fn enhance(&self) {
+        #[cfg(test)]
+        super::sync_tests::enhanced();
         let controls: Vec<_> = nodes(&self.dom.borrow(), self.root())
             .into_iter()
             .map(|n| (n, self.control_at(n)))

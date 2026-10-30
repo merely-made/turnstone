@@ -9,9 +9,12 @@ pub(super) fn preflight_source_artifact(
     schema: eidetic::SchemaRef,
     privacy: eidetic::PrivacyClass,
     expected: Option<&[u8]>,
-) -> Result<bool, String> {
-    let manifest = pollster::block_on(eidetic::manifest::load_manifest(store, id))
-        .map_err(|error| format!("source artifact preflight manifest: {error}"))?;
+) -> Result<bool, crate::research_storage::SourceReadError> {
+    let manifest =
+        pollster::block_on(eidetic::manifest::load_manifest(store, id)).map_err(|error| {
+            crate::research_storage::SourceReadError::from(error)
+                .context("source artifact preflight manifest")
+        })?;
     if let Some(manifest) = &manifest {
         if manifest.id != id
             || manifest.content_hash != id.0
@@ -20,17 +23,20 @@ pub(super) fn preflight_source_artifact(
         {
             return Err(format!(
                 "source artifact preflight: incompatible existing manifest role at {id}"
-            ));
+            )
+            .into());
         }
     }
     let key = format!("blob:{}", id.0.to_hex());
-    let bytes = pollster::block_on(store.get(&key))
-        .map_err(|error| format!("source artifact preflight payload: {error}"))?;
+    let bytes = pollster::block_on(store.get(&key)).map_err(|error| {
+        crate::research_storage::SourceReadError::from(error)
+            .context("source artifact preflight payload")
+    })?;
     if let Some(bytes) = &bytes {
         if eidetic::Hash::of(bytes) != id.0 || expected.is_some_and(|expected| expected != bytes) {
-            return Err(format!(
-                "source artifact preflight: payload integrity mismatch at {id}"
-            ));
+            return Err(
+                format!("source artifact preflight: payload integrity mismatch at {id}").into(),
+            );
         }
     }
     if let Some(manifest) = &manifest {
@@ -40,7 +46,7 @@ pub(super) fn preflight_source_artifact(
         if manifest.byte_size != bytes.len() as u64
             || !manifest.sources.iter().any(|source| matches!(source, eidetic::BlobSource::Local { key: local } if local == &key))
         {
-            return Err(format!("source artifact preflight: inconsistent local payload at {id}"));
+            return Err(format!("source artifact preflight: inconsistent local payload at {id}").into());
         }
     }
     Ok(manifest.is_some())

@@ -67,6 +67,7 @@ pub(super) fn worker(
                     None
                 };
                 if connection.is_none() {
+                    crate::inference_activity::record_route_attempt();
                     let mut client = AppBrokerClient::open_route(
                         AppId::new("turnstone"),
                         AppRouteId::new(wire::INFERENCE_ASK_ROUTE).map_err(|e| e.to_string())?,

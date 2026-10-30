@@ -21,7 +21,7 @@ fn receipt(byte: char) -> RepresentationReceipt {
     }
 }
 
-fn note_host() -> (RedshankHost, PlaybackSnapshot, AnnotationId) {
+pub(super) fn note_host() -> (RedshankHost, PlaybackSnapshot, AnnotationId) {
     let mut host = RedshankHost::default();
     let item = ItemId("episode".into());
     host.model

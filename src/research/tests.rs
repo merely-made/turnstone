@@ -137,6 +137,7 @@ fn sealed_knot_and_redshank_bodies_reopen_without_sources_or_private_backing() {
             start,
             end: start + text.len(),
         },
+        1_000_000,
     )
     .unwrap();
     let capture = fleece::portable_clip::CaptureContext {
@@ -214,6 +215,27 @@ fn sealed_knot_and_redshank_bodies_reopen_without_sources_or_private_backing() {
             "A retained timed note 🐦"
         );
     }
+    let view = bridge.clip_view(&context, &clips[0]).unwrap();
+    let mut exact = ClipTarget {
+        clip: clips[0].clone(),
+        text_hash: eidetic::Hash::of(text.as_bytes()).to_string(),
+        selector: Some(crate::saved_sources::Selector { start: 0, end: 4 }),
+    };
+    let document = clip_document(&view, &exact).unwrap();
+    assert!(document.blocks.iter().any(|block| matches!(block,
+        inker::Block::Quote { blocks } if matches!(blocks.as_slice(),
+            [inker::Block::Paragraph { spans }] if matches!(spans.as_slice(), [inker::InlineSpan::Text(value)] if value == "café")))));
+    exact.selector = Some(crate::saved_sources::Selector { start: 5, end: 6 });
+    let document = clip_document(&view, &exact).unwrap();
+    assert!(document.blocks.iter().any(|block| matches!(block,
+        inker::Block::Quote { blocks } if matches!(blocks.as_slice(),
+            [inker::Block::Paragraph { spans }] if matches!(spans.as_slice(), [inker::InlineSpan::Text(value)] if value == "→")))));
+    exact.selector = Some(crate::saved_sources::Selector { start: 0, end: 999 });
+    assert!(clip_document(&view, &exact).is_err());
+    exact.selector = None;
+    assert!(clip_document(&view, &exact).is_ok());
+    exact.text_hash = eidetic::Hash::of(b"wrong text").to_string();
+    assert!(clip_document(&view, &exact).is_err());
     let mut foreign = clips[0].clone();
     foreign.node = uuid::Uuid::new_v4();
     assert!(bridge.clip_text(&context, &foreign).is_err());
@@ -221,19 +243,30 @@ fn sealed_knot_and_redshank_bodies_reopen_without_sources_or_private_backing() {
         "../../scenarios/fixtures/retained_clips/redshank.json"
     ))
     .unwrap();
-    let voice = retain_native(
-        root.path(),
-        NativeClip::Redshank {
-            export: &voice_export,
-            voice_body: Some(include_bytes!(
-                "../../scenarios/fixtures/retained_clips/voice.wav"
-            )),
-        },
-        &capture,
-        policy,
-        &*sealer,
-    )
-    .unwrap();
+    let access = bridge.clip_access().unwrap();
+    let limits = bridge.storage_limits().unwrap();
+    let voice = bridge
+        .clip_owner()
+        .unwrap()
+        .retain(
+            root.path().to_owned(),
+            crate::retained_clip::owner_worker::OwnedNative::Redshank {
+                export: voice_export,
+                voice_body: Some(
+                    include_bytes!("../../scenarios/fixtures/retained_clips/voice.wav").to_vec(),
+                ),
+            },
+            capture,
+            policy,
+            access,
+            1,
+            limits,
+        )
+        .unwrap()
+        .recv()
+        .unwrap()
+        .into_inner()
+        .unwrap();
     let voice_admission = ClipAdmission {
         manifest: voice,
         ..clips[0].clone()
@@ -304,4 +337,41 @@ fn malformed_unicode_reference_is_reported_without_poisoning_the_owner_bridge() 
     assert!(choices[0].error.is_some());
     assert!(choices[0].label.contains('🦊'));
     assert_eq!(bridge.context().unwrap(), context);
+}
+
+#[test]
+fn withdrawn_and_readmitted_source_cannot_replay_an_old_citation_intent() {
+    let (target, _) = fixture();
+    let Target::Capture(capture) = &target else {
+        unreachable!()
+    };
+    let admission = Admission {
+        key: capture.key.clone(),
+        occurrence: 0,
+        title: "Source".into(),
+        url: "https://example.test/source".into(),
+        error: None,
+    };
+    let context = Context {
+        session: capture.key.session,
+        generation: uuid::Uuid::new_v4(),
+        admissions: vec![admission],
+        clips: vec![],
+    };
+    let bridge = Bridge::default();
+    bridge.set_available(true);
+    bridge.project(context.clone());
+    bridge.send(Intent::Citation {
+        context: context.clone(),
+        target,
+    });
+    bridge.project(Context {
+        admissions: vec![],
+        ..context.clone()
+    });
+    bridge.project(context);
+    assert!(
+        bridge.drain().is_empty(),
+        "withdrawal must retire pending private citation intents even if the same identity is admitted again"
+    );
 }

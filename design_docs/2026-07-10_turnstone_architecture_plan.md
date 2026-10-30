@@ -1252,3 +1252,64 @@ release and session replacement retire the same owned resources.
   in CI, alongside target-aware composition gates. Retained logs, the original
   failing controls and the final qualification manifest are under workspace
   output `turnstone-boundaries-20261029`.
+
+## Native frame qualification (2026-10-30)
+
+**Status (2026-10-30): implemented; bounded Metal qualification complete.** Genet owns one admitted native
+batch and a demand-started completion worker per shared Core. Turnstone retains
+window scheduling, staged composition layers and final presentation. Pending
+collection is channel-only; quality counters and GPU scopes must qualify before
+publication. Primary and lens windows share fair admission, and model
+invalidation survives a pending frame. Session, custody, geometry and generation
+changes discard obsolete staging.
+
+**Done conditions:** default native receiving and lens scheduling controls pass;
+ordinary input, resize, captures and close remain functional; the owner retains
+current-frame shader refusal and device-loss admission. Matched release runs
+include the original palette cases, an open Arrange pane and a live document
+tile. Presentation cadence is the direct throughput comparison. Raster timing
+after adoption measures encoding on the UI thread; whole-frame latency includes
+asynchronous qualification and intervening event work that the synchronous
+render span previously left between frames.
+
+### Findings
+
+- 2026-10-30: `shell_render.rs` and `shell_render_lens.rs` previously called the
+  synchronous checked raster once per surface. Their replacement uses Genet's
+  explicit staging API; it does not weaken an existing checked success result.
+- 2026-10-30: the open Arrange fixture reproduces substantial CPU work outside
+  the synchronous completion waits. Removing those waits alone is not evidence
+  that pane layout and semantic projection costs have been resolved.
+
+- 2026-10-30: completion must not add a separate redraw solely to start the
+  next needed batch. Primary and lens renderers can publish accepted staging,
+  then prepare their next admitted frame in the same redraw. Continuation is
+  demand gated and still yields to another waiting window.
+- 2026-10-30: a native Arrange stack sample identifies retained accessibility
+  geometry projection (`RetainedLayout::document_projection_at`,
+  `painted_rect`, `snapshot_node_rect` and `accumulated_translation`) as
+  substantial remaining CPU work. Its repeated DOM walks are separate from
+  GPU completion. Semantic publication remains independent of GPU acceptance.
+
+- 2026-10-30: screenshot requests staged for GPU qualification remain visible
+  to the existing scenario and adapter waiters. Capture-before-resize ordering
+  survives the move out of the shell's global pending slot.
+
+- 2026-10-30: native child workshop windows share the same admission queue.
+  Their initial draw waits for the Core's actual busy interval, including
+  canceled staging still retiring on the worker. Checked child draws receive
+  fair turns alongside primary/lens batches; input and semantic delivery
+  remain available during redraw deferral. Genet owns the admission hint and
+  quality/loss contract (`genet/components/genet-render-host/DEVICE_RECOVERY.md`).
+
+### Progress
+
+- 2026-10-30: refreshed the measurement base and retained matching synthetic
+  Arrange and retained-document fixtures. Paired controlled-cut presentation
+  comparisons improve across the palette, Arrange and document cases.
+- 2026-10-30: primary/lens pending frames, capture waiter retention and shared
+  checked-child scheduling are implemented. The native workshop and combined
+  document/resize/lens/input/capture workflows pass on the merged upstream
+  Djinn-client cohort. Default shell tests, optional-service source checks and
+  the source-size gate pass. Paused admission settles without repeated frames.
+  Integrated-cohort receiving is separate from the paired throughput cut.

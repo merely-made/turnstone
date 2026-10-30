@@ -6,6 +6,10 @@ use super::*;
 impl Shell {
     pub(super) fn effect_control_content(&mut self, effect: Effect) {
         match effect {
+            Effect::ResearchRecords(request) => self.research_worker.submit_records(request),
+            Effect::ResearchSearch(request) => self.research_worker.submit(request),
+            Effect::ResearchCompare(request) => self.research_worker.submit_compare(request),
+            Effect::CancelResearchSearch => self.research_worker.cancel(),
             Effect::ControlContent { node, control } => {
                 // The surface lane's own command API reaches the engine's
                 // web plane. A document's Back, Reload and Stop belong to
@@ -103,7 +107,7 @@ impl Shell {
                     let effects = self.app.apply_update(Update::SourceCaptureSaved {
                         capture_generation: self.app.source_capture_generation,
                         request,
-                        result: Err(error),
+                        result: Err(error.into()),
                     });
                     self.run_effects(effects);
                 } else {
@@ -168,7 +172,7 @@ impl Shell {
                     let effects = self.app.apply_update(Update::SourceDocumentCaptured {
                         capture_generation,
                         request,
-                        result: Err(error),
+                        result: Err(error.into()),
                     });
                     self.run_effects(effects);
                 }
@@ -456,6 +460,8 @@ impl Shell {
                 self.sync_ime_allowed();
             },
             Effect::CloseContent { node } => {
+                self.pending_clip_reads.remove(&node);
+                self.ready_clip_reads.remove(&node);
                 self.retire_surface_semantics(node);
                 self.withdraw_user_agent_requests(node, "surface-closed");
                 self.clear_reader_appearances(node);

@@ -19,6 +19,7 @@ impl Shell {
         match step {
             Step::Open(..)
             | Step::SelectGraphMember(..)
+            | Step::ClickNoteMember
             | Step::ActivateGraphFold(..)
             | Step::DoubleClickGraphNode(..)
             | Step::RecordGraphScene(..)
@@ -108,11 +109,21 @@ impl Shell {
             | Step::WaitKnot(..)
             | Step::WaitSourceCapture(..)
             | Step::WaitSavedSources(..)
-            | Step::WaitSavedReader(..)
+            | Step::WaitResearchSearch(..) | Step::WaitSourceTarget(..)
+            | Step::WaitStructuredResult(..) | Step::WaitStructuredAuthorSave(..) | Step::WaitStructuredIdle(..) | Step::WaitStructuredLimitRefusal(..)
+            | Step::WaitSavedReader(..) | Step::WaitRetainedClip(..) | Step::WaitRetainedReader(..)
             | Step::WaitFile(..)
             | Step::RecordPlace(..)
             | Step::RecordSourceCaptures(..)
             | Step::RecordSavedSources(..)
+            | Step::RecordStructuredResearch(..)
+            | Step::RecordStructuredStatus(..)
+            | Step::RecordRuntime(..)
+            | Step::RecordComparison(..)
+            | Step::ChooseSuggestion(..)
+            | Step::AssertNoAction(..)
+            | Step::ChooseCapturedSource { .. }
+            | Step::ChooseSavedResult(..)
             | Step::TouchFile(..) => self.scenario_assert_no_surface(step)?,
         }
         self.request_redraw();
@@ -148,6 +159,7 @@ impl Shell {
                 self.app.focus = crate::surface::FocusTarget::Graph(pane);
                 self.request_redraw();
             },
+            Step::ClickNoteMember => self.scenario_click_note_member()?,
             Step::ActivateGraphFold(index) => {
                 let pane = self.app.graph_command_pane().ok_or("no graph owner pane")?;
                 let badge = self

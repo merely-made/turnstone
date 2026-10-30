@@ -485,7 +485,8 @@ mod tests {
     #[test]
     fn successful_requested_receipt_exports_records_and_loss() {
         let directory = tempfile::tempdir().unwrap();
-        let mut observed = DiagnosticObservations::new(RunId::from("receipt"), limits(1));
+        // The export's reactive coverage record takes one retained slot.
+        let mut observed = DiagnosticObservations::new(RunId::from("receipt"), limits(2));
         observed.record(&AppEvent::WindowOpened);
         observed.record(&AppEvent::WindowClosed);
         observed
@@ -503,6 +504,7 @@ mod tests {
         let json: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
         assert_eq!(json["stats"]["loss"]["evicted"], 1);
         assert_eq!(json["records"][0]["payload"]["kind"], "window-closed");
+        assert_eq!(json["records"][1]["payload"]["kind"], "reactive-coverage");
         assert_eq!(json["gaps"][0]["first_sequence"], 1);
     }
 

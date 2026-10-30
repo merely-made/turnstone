@@ -1,6 +1,7 @@
 // Copyright 2026 Mark Alan Boykin
 // SPDX-License-Identifier: MPL-2.0
 //! Request-scoped deposit recovery under the existing trail store owner.
+use crate::research_storage::SourceReadError as HostError;
 
 use crate::action::StoredSourceDocument;
 use crate::content::FetchedDocument;
@@ -12,33 +13,45 @@ fn key(request: &CaptureRequest) -> String {
     format!("{PREFIX}{}", request.id)
 }
 
-fn decode(key: &str, bytes: &[u8]) -> Result<DepositReceipt, String> {
+fn decode(key: &str, bytes: &[u8]) -> Result<DepositReceipt, HostError> {
     let receipt: DepositReceipt = serde_json::from_slice(bytes)
         .map_err(|error| format!("capture recovery receipt {key} is unreadable: {error}"))?;
     if key != self::key(&receipt.request)
         || receipt.request.source.is_none()
         || (receipt.saved && receipt.stored.is_none())
     {
-        return Err(format!(
-            "capture recovery receipt {key} has inconsistent request identity"
-        ));
+        return Err(
+            format!("capture recovery receipt {key} has inconsistent request identity").into(),
+        );
     }
     Ok(receipt)
 }
 
-fn put(store: &mut dyn eidetic::Store, receipt: &DepositReceipt) -> Result<(), String> {
+fn put(store: &mut dyn eidetic::Store, receipt: &DepositReceipt) -> Result<(), HostError> {
     let bytes = serde_json::to_vec(receipt)
         .map_err(|error| format!("capture recovery receipt encode: {error}"))?;
     pollster::block_on(store.put(&key(&receipt.request), &bytes))
-        .map_err(|error| format!("capture recovery receipt write: {error}"))
+        .map_err(HostError::from)
+        .map_err(|error| {
+            crate::research_storage::SourceReadError::from(error)
+                .context("capture recovery receipt write")
+        })
 }
 
 fn verify_request(
     store: &mut dyn eidetic::Store,
     request: &CaptureRequest,
     stored: &StoredSourceDocument,
-) -> Result<(), String> {
-    super::verify_source_document(store, stored)?;
+) -> Result<(), HostError> {
+    verify_request_typed(store, request, stored)
+}
+
+fn verify_request_typed(
+    store: &mut dyn eidetic::Store,
+    request: &CaptureRequest,
+    stored: &StoredSourceDocument,
+) -> Result<(), crate::research_storage::SourceReadError> {
+    super::verify_source_document_typed(store, stored)?;
     let source = request
         .source
         .as_ref()
@@ -49,7 +62,10 @@ fn verify_request(
     let annotation_id = serde_json::from_value(serde_json::json!(stored.annotation_manifest))
         .map_err(|error| format!("capture annotation identity: {error}"))?;
     let record = pollster::block_on(fleece::load_fleece_annotation(store, annotation_id))
-        .map_err(|error| format!("capture request annotation: {error}"))?
+        .map_err(|error| {
+            crate::research_storage::SourceReadError::from(error)
+                .context("capture request annotation")
+        })?
         .ok_or("capture request annotation is missing")?;
     let evidence = record
         .extraction
@@ -72,11 +88,14 @@ fn verify_request(
 fn recover_document(
     store: &mut dyn eidetic::Store,
     source: &SourceIdentity,
-) -> Result<FetchedDocument, String> {
+) -> Result<FetchedDocument, HostError> {
     let hash: eidetic::Hash = serde_json::from_value(serde_json::json!(source.hash))
         .map_err(|error| format!("capture source identity: {error}"))?;
     let bytes = pollster::block_on(store.get(&format!("blob:{}", hash.to_hex())))
-        .map_err(|error| format!("capture retry raw read: {error}"))?
+        .map_err(HostError::from)
+        .map_err(|error| {
+            crate::research_storage::SourceReadError::from(error).context("capture retry raw read")
+        })?
         .ok_or("capture retry requires the original response; no local raw deposit exists")?;
     if eidetic::Hash::of(&bytes) != hash {
         return Err("capture retry raw payload integrity mismatch".into());
@@ -84,7 +103,11 @@ fn recover_document(
     let body_hash: eidetic::Hash = serde_json::from_value(serde_json::json!(source.body_hash))
         .map_err(|error| format!("capture decoded-body identity: {error}"))?;
     let body_bytes = pollster::block_on(store.get(&format!("blob:{}", body_hash.to_hex())))
-        .map_err(|error| format!("capture retry decoded-body read: {error}"))?
+        .map_err(HostError::from)
+        .map_err(|error| {
+            crate::research_storage::SourceReadError::from(error)
+                .context("capture retry decoded-body read")
+        })?
         .ok_or(
             "capture retry requires the original decoded response; no local body deposit exists",
         )?;
@@ -112,13 +135,17 @@ pub(super) fn capture_request(
     store: &mut dyn eidetic::Store,
     request: &CaptureRequest,
     document: Option<&FetchedDocument>,
-) -> Result<StoredSourceDocument, String> {
+) -> Result<StoredSourceDocument, HostError> {
     let source = request
         .source
         .as_ref()
         .ok_or("capture request has no source identity")?;
     let existing = pollster::block_on(store.get(&key(request)))
-        .map_err(|error| format!("capture recovery receipt read: {error}"))?
+        .map_err(HostError::from)
+        .map_err(|error| {
+            crate::research_storage::SourceReadError::from(error)
+                .context("capture recovery receipt read")
+        })?
         .map(|bytes| decode(&key(request), &bytes))
         .transpose()?;
     if let Some(existing) = &existing {
@@ -164,8 +191,11 @@ pub(super) fn capture_request(
     let body_hash = eidetic::Hash::of(document.body.as_bytes());
     let body_key = format!("blob:{}", body_hash.to_hex());
     match pollster::block_on(store.get(&body_key))
-        .map_err(|error| format!("capture decoded-body deposit read: {error}"))?
-    {
+        .map_err(HostError::from)
+        .map_err(|error| {
+            crate::research_storage::SourceReadError::from(error)
+                .context("capture decoded-body deposit read")
+        })? {
         Some(existing) if existing == document.body.as_bytes() => {},
         Some(_) => {
             return Err(
@@ -175,7 +205,11 @@ pub(super) fn capture_request(
         None => {
             let manifest_key = eidetic::ManifestId::from_hash(body_hash).store_key();
             if pollster::block_on(store.get(&manifest_key))
-                .map_err(|error| format!("capture decoded-body manifest check: {error}"))?
+                .map_err(HostError::from)
+                .map_err(|error| {
+                    crate::research_storage::SourceReadError::from(error)
+                        .context("capture decoded-body manifest check")
+                })?
                 .is_some()
             {
                 return Err(
@@ -183,7 +217,11 @@ pub(super) fn capture_request(
                 );
             }
             pollster::block_on(store.put(&body_key, document.body.as_bytes()))
-                .map_err(|error| format!("capture decoded-body deposit: {error}"))?;
+                .map_err(HostError::from)
+                .map_err(|error| {
+                    crate::research_storage::SourceReadError::from(error)
+                        .context("capture decoded-body deposit")
+                })?;
         },
     }
     let stored = super::capture_source_document_in(store, document)?;
@@ -205,10 +243,14 @@ pub(super) fn capture_request(
 pub(super) fn completed_legacy(
     store: &mut dyn eidetic::Store,
     request: &CaptureRequest,
-) -> Result<StoredSourceDocument, String> {
+) -> Result<StoredSourceDocument, HostError> {
     let receipt_key = key(request);
     let bytes = pollster::block_on(store.get(&receipt_key))
-        .map_err(|_| "legacy capture receipt unavailable")?
+        .map_err(HostError::from)
+        .map_err(|error| {
+            crate::research_storage::SourceReadError::from(error)
+                .context("legacy capture receipt unavailable")
+        })?
         .ok_or("legacy capture receipt missing")?;
     let receipt = decode(&receipt_key, &bytes)?;
     if receipt.request != *request {
@@ -228,12 +270,19 @@ pub(super) fn completed_legacy(
 pub(super) fn verify_receipt(
     store: &mut dyn eidetic::Store,
     receipt: &DepositReceipt,
-) -> Result<(), String> {
+) -> Result<(), HostError> {
+    verify_receipt_typed(store, receipt)
+}
+
+pub(super) fn verify_receipt_typed(
+    store: &mut dyn eidetic::Store,
+    receipt: &DepositReceipt,
+) -> Result<(), crate::research_storage::SourceReadError> {
     let stored = receipt
         .stored
         .as_ref()
         .ok_or("capture receipt has no completed deposit")?;
-    verify_request(store, &receipt.request, stored)
+    verify_request_typed(store, &receipt.request, stored)
 }
 
 /// Mark the request saved only after the host has acknowledged its owning
@@ -242,10 +291,10 @@ pub(super) fn verify_receipt(
 pub(super) fn acknowledge_saved(
     store: &mut dyn eidetic::Store,
     request: &CaptureRequest,
-) -> Result<(), String> {
+) -> Result<(), HostError> {
     let receipt_key = key(request);
     let bytes = pollster::block_on(store.get(&receipt_key))
-        .map_err(|error| format!("capture save receipt read: {error}"))?
+        .map_err(|error| HostError::from(error).context("capture save receipt read"))?
         .ok_or("capture save acknowledgement has no deposit receipt")?;
     let mut receipt = decode(&receipt_key, &bytes)?;
     if receipt.request != *request {
@@ -272,14 +321,22 @@ pub(super) fn acknowledge_saved(
 /// never silently treated as an empty successful recovery.
 pub(super) fn recover_receipts(
     store: &mut dyn eidetic::Store,
-) -> Result<Vec<DepositReceipt>, String> {
+) -> Result<Vec<DepositReceipt>, HostError> {
     let mut keys = pollster::block_on(store.list(PREFIX))
-        .map_err(|error| format!("capture recovery inventory: {error}"))?;
+        .map_err(HostError::from)
+        .map_err(|error| {
+            crate::research_storage::SourceReadError::from(error)
+                .context("capture recovery inventory")
+        })?;
     keys.sort();
     keys.into_iter()
         .map(|key| {
             let bytes = pollster::block_on(store.get(&key))
-                .map_err(|error| format!("capture recovery receipt {key}: {error}"))?
+                .map_err(HostError::from)
+                .map_err(|error| {
+                    crate::research_storage::SourceReadError::from(error)
+                        .context(&format!("capture recovery receipt {key}"))
+                })?
                 .ok_or_else(|| format!("capture recovery receipt {key} disappeared"))?;
             decode(&key, &bytes)
         })

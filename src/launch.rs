@@ -53,7 +53,9 @@ fn start_app(address: Option<String>) -> i32 {
         None => tracing::info!("turnstone starting"),
     }
 
-    let event_loop = EventLoop::new().expect("failed to create event loop");
+    let event_loop = EventLoop::<crate::shell::ShellEvent>::with_user_event()
+        .build()
+        .expect("failed to create event loop");
     let proxy = event_loop.create_proxy();
     let mut shell =
         crate::shell::Shell::new_with_diagnostic_run(proxy, address, diagnostic_run.clone());

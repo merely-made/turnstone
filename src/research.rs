@@ -74,6 +74,14 @@ impl From<crate::saved_sources::Target> for Target {
     }
 }
 #[derive(Clone)]
+pub(crate) struct ClipReader {
+    pub target: ClipTarget,
+    pub generation: uuid::Uuid,
+    pub identity: Arc<crate::identity::RootIdentity>,
+    pub custody_epoch: u64,
+}
+
+#[derive(Clone)]
 pub(crate) struct ClipAccess {
     pub root: std::path::PathBuf,
     pub sealer: Arc<dyn eidetic::PayloadSealer + Send + Sync>,
@@ -99,7 +107,7 @@ pub(crate) struct Choice {
     pub error: Option<String>,
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub(crate) struct Context {
+pub struct Context {
     pub session: SessionId,
     pub generation: uuid::Uuid,
     pub admissions: Vec<Admission>,
@@ -121,19 +129,60 @@ pub(crate) enum Intent {
 struct State {
     available: bool,
     context: Option<Context>,
+    revision: u64,
     choices: Vec<Choice>,
     intents: Vec<Intent>,
     clip_access: Option<ClipAccess>,
+    clip_owner: Option<crate::retained_clip::owner_worker::Worker>,
+    storage_limits: Option<Result<crate::research_storage::StorageLimits, String>>,
+}
+impl Drop for State {
+    fn drop(&mut self) {
+        if let Some(owner) = &self.clip_owner {
+            owner.close();
+        }
+    }
 }
 #[derive(Clone, Default)]
 pub(crate) struct Bridge(Arc<Mutex<State>>);
 impl Bridge {
+    pub(crate) fn set_clip_owner(&self, owner: crate::retained_clip::owner_worker::Worker) {
+        self.0.lock().unwrap().clip_owner = Some(owner);
+    }
+    pub(crate) fn clip_owner(&self) -> Result<crate::retained_clip::owner_worker::Worker, String> {
+        let mut state = self.0.lock().unwrap();
+        #[cfg(test)]
+        if state.clip_owner.is_none() {
+            state.clip_owner = Some(crate::retained_clip::owner_worker::Worker::spawn(Arc::new(
+                || {},
+            )));
+        }
+        state
+            .clip_owner
+            .clone()
+            .ok_or_else(|| "Retained clip owner unavailable".into())
+    }
+    pub(crate) fn set_storage_limits(
+        &self,
+        limits: Result<crate::research_storage::StorageLimits, String>,
+    ) {
+        self.0.lock().unwrap().storage_limits = Some(limits);
+    }
+    pub(crate) fn storage_limits(&self) -> Result<crate::research_storage::StorageLimits, String> {
+        self.0
+            .lock()
+            .unwrap()
+            .storage_limits
+            .clone()
+            .unwrap_or_else(|| Ok(Default::default()))
+    }
     /// Invalidate session-scoped projections while preserving the live custody
     /// connection. The next session can publish a fresh context after its
     /// admissions have been loaded.
     pub fn invalidate_projection(&self) {
         let mut state = self.0.lock().unwrap();
         state.context = None;
+        state.revision = state.revision.saturating_add(1);
         state.choices.clear();
         state.intents.clear();
     }
@@ -142,6 +191,7 @@ impl Bridge {
         let mut state = self.0.lock().unwrap();
         state.available = available;
         if !available {
+            state.revision = state.revision.saturating_add(1);
             state.context = None;
             state.choices.clear();
             state.intents.clear();
@@ -170,7 +220,9 @@ impl Bridge {
             return;
         }
         if state.context.as_ref() != Some(&context) {
+            state.revision = state.revision.saturating_add(1);
             state.choices.clear();
+            state.intents.clear();
             state.context = Some(context);
         }
     }
@@ -181,6 +233,14 @@ impl Bridge {
             .context
             .clone()
             .ok_or_else(|| "Saved sources have no active session.".into())
+    }
+    pub fn context_revision(&self) -> Result<(Context, u64), String> {
+        let state = self.0.lock().unwrap();
+        let context = state
+            .context
+            .clone()
+            .ok_or("Saved sources have no active session.")?;
+        Ok((context, state.revision))
     }
     pub fn choices(&self) -> Vec<Choice> {
         self.0.lock().unwrap().choices.clone()
@@ -246,37 +306,110 @@ pub(crate) fn admitted(context: &Context, target: &Target) -> bool {
         }
 }
 impl Bridge {
-    pub fn clip_text(
+    pub fn clip_view(
         &self,
         context: &Context,
         admission: &ClipAdmission,
-    ) -> Result<(String, String), String> {
+    ) -> Result<crate::retained_clip::ClipView, String> {
+        let limits = self.storage_limits()?;
+        self.clip_view_bounded(context, admission, limits.budget())
+            .map_err(|error| error.to_string())
+    }
+    pub(crate) fn clip_view_bounded(
+        &self,
+        context: &Context,
+        admission: &ClipAdmission,
+        budget: crate::research_storage::SharedReadBudget,
+    ) -> Result<crate::retained_clip::ClipView, crate::research_storage::SourceReadError> {
         if admission.session != context.session || !context.clips.contains(admission) {
             return Err("The retained clip was withdrawn from this session.".into());
         }
         let access = self.clip_access()?;
         let custody_epoch = (access.epoch)().ok_or_else(|| crate::identity::PENDING.to_string())?;
-        let mut view = crate::retained_clip::read_sealed(
-            &access.root,
-            admission.manifest,
-            crate::retained_clip::limits()?,
-            &*access.sealer,
-        )?;
+        let limits = self.storage_limits()?;
+        let queue = (&limits.clip_queue).into();
+        let response = self
+            .clip_owner()?
+            .read(
+                access.root.clone(),
+                admission.manifest,
+                crate::retained_clip::limits()?,
+                access.sealer.clone(),
+                limits,
+                budget,
+                queue,
+            )
+            .map_err(crate::research_storage::SourceReadError::from)?;
+        let mut view = response
+            .recv()
+            .map_err(|_| "Retained clip owner stopped")?
+            .into_inner()?;
         if (access.epoch)() != Some(custody_epoch) {
             if let crate::retained_clip::ClipBody::Text(text) = &mut view.body {
                 text.clear();
             }
             return Err("Profile custody changed while reading the retained clip.".into());
         }
-        let crate::retained_clip::ClipBody::Text(text) = view.body else {
+        if !matches!(&view.body, crate::retained_clip::ClipBody::Text(_)) {
             return Err("This retained clip has no recallable text body.".into());
-        };
+        }
         if self.context()? != *context {
             return Err("The retained clip session or admissions changed.".into());
         }
+        Ok(view)
+    }
+    pub fn clip_text(
+        &self,
+        context: &Context,
+        admission: &ClipAdmission,
+    ) -> Result<(String, String), String> {
+        let view = self.clip_view(context, admission)?;
+        let crate::retained_clip::ClipBody::Text(text) = view.body else {
+            unreachable!()
+        };
         Ok((view.clip.title, text))
     }
 }
+/// Construct a reader only from the exact sealed text named by the citation.
+pub(crate) fn clip_document(
+    view: &crate::retained_clip::ClipView,
+    target: &ClipTarget,
+) -> Result<inker::EngineDocument, String> {
+    if view.id != target.clip.manifest {
+        return Err("The retained clip manifest changed.".into());
+    }
+    let crate::retained_clip::ClipBody::Text(text) = &view.body else {
+        return Err("The retained clip has no text body.".into());
+    };
+    if eidetic::Hash::of(text.as_bytes()).to_string() != target.text_hash {
+        return Err("The retained clip text version does not match the citation.".into());
+    }
+    let mut document = view.document();
+    if let Some(selector) = &target.selector {
+        let chars: Vec<char> = text.chars().collect();
+        if selector.start >= selector.end || selector.end > chars.len() {
+            return Err("The retained clip selector is outside the retained text.".into());
+        }
+        let quote: String = chars[selector.start..selector.end].iter().collect();
+        document.blocks.insert(
+            1,
+            inker::Block::Heading {
+                level: 2,
+                spans: vec![inker::InlineSpan::Text("Selected passage".into())],
+            },
+        );
+        document.blocks.insert(
+            2,
+            inker::Block::Quote {
+                blocks: vec![inker::Block::Paragraph {
+                    spans: vec![inker::InlineSpan::Text(quote)],
+                }],
+            },
+        );
+    }
+    Ok(document)
+}
+
 pub(crate) fn namespace(session: SessionId) -> String {
     format!("turnstone/{}/research/v1", session.as_uuid())
 }

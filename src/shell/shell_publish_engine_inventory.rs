@@ -116,7 +116,7 @@ impl Shell {
                 host.device().clone(),
                 host.queue().clone(),
                 Arc::new(move || {
-                    let _ = proxy.send_event(());
+                    let _ = proxy.send_event(crate::shell::ShellEvent::ActorWake);
                 }),
             )
             .map_err(|error| error.to_string())?,
@@ -162,6 +162,18 @@ impl Shell {
         action: Action,
         invocation: Option<cambium::Invocation>,
     ) -> Option<cambium::Outcome> {
+        let retention_request =
+            if let Action::RetainProducerSelection { choice, selection } = &action {
+                let request = uuid::Uuid::new_v4();
+                self.latest_clip_retention = Some(super::clip_retaining::RetainStatus {
+                    request,
+                    choice: choice.clone(),
+                    result: None,
+                });
+                Some((request, choice.clone(), selection.clone()))
+            } else {
+                None
+            };
         let accepted_text = self.accepts_controlled_text();
         let closing = match &action {
             Action::CloseActivePane => self.app.active_pane,
@@ -175,6 +187,19 @@ impl Shell {
             Some(invocation) => self.app.invoke_command(&invocation),
             None => (self.app.update(action), None),
         };
+        if let Some((request, choice, selection)) = retention_request {
+            let dispatched = effects.iter().any(|effect| matches!(effect,
+                Effect::RetainProducerSelection { choice: c, selection: s } if c == &choice && s == &selection));
+            if !dispatched {
+                if let Some(status) = self
+                    .latest_clip_retention
+                    .as_mut()
+                    .filter(|status| status.request == request)
+                {
+                    status.record(request, Err("The retained selection was refused".into()));
+                }
+            }
+        }
         if let Some(pane) = closing
             && self.app.space_of(pane).is_none()
         {

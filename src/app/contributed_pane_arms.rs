@@ -304,45 +304,6 @@ impl App {
                 },
             }
     }
-    pub(crate) fn open_research_clip(
-        &mut self,
-        target: crate::research::ClipTarget,
-    ) -> Vec<Effect> {
-        if !self.research_clip_admissions().contains(&target.clip) {
-            return self.saved_source_refusal(
-                "The cited retained clip was withdrawn from this session.".into(),
-            );
-        }
-        if let Err(error) = self.clip_destination() {
-            return self.saved_source_refusal(error);
-        }
-        let pane = self
-            .frisket
-            .iter_leaves()
-            .chain(
-                self.lenses
-                    .iter()
-                    .flatten()
-                    .flat_map(|layout| layout.iter_leaves()),
-            )
-            .find(|(_, content, graph)| {
-                matches!(content, crate::panes::PaneContent::Orrery) && *graph == target.clip.graph
-            })
-            .map(|(pane, _, _)| pane);
-        let Some(pane) = pane else {
-            return self
-                .saved_source_refusal("The cited retained clip has no open owning graph.".into());
-        };
-        self.reveal_pane(pane);
-        self.focus = crate::surface::FocusTarget::Graph(pane);
-        self.graph_pane_select_member(pane, target.clip.node);
-        let effects = self.open_in_workbench();
-        if let Some(pane) = self.active_pane {
-            self.reveal_pane(pane);
-            self.focus = crate::surface::FocusTarget::Pane(pane);
-        }
-        effects
-    }
     pub(crate) fn sync_research_context(&self) {
         if !self.research.is_available() {
             return;

@@ -89,11 +89,15 @@ pub struct RedshankHost {
     /// The playback identity of the current selection. A snapshot belongs to
     /// the selection only when its load token matches.
     token: u64,
+    /// Changes on selection or capture transitions, including round trips.
+    control_generation: uuid::Uuid,
     selected: Option<ItemId>,
     /// Saved progress the selection resumed from, for the dock's mark.
     resumed_from_ms: Option<u64>,
     /// A frozen capture target per item, taken when a note begins.
     anchors: BTreeMap<ItemId, CaptureAnchor>,
+    /// A fresh identity for every capture, even at the same source offset.
+    capture_generations: BTreeMap<ItemId, uuid::Uuid>,
     next_note: u64,
     pending_note_open: Option<PendingNoteOpen>,
     pending_note_seek: Option<u64>,
@@ -106,6 +110,10 @@ pub struct RedshankHost {
 #[cfg(test)]
 #[path = "redshank_host/tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "redshank_host/note_capture_tests.rs"]
+mod note_capture_tests;
 
 #[path = "redshank_host/feed_title.rs"]
 mod feed_title;

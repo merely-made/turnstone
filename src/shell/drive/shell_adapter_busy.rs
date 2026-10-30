@@ -14,6 +14,7 @@ impl Shell {
             return Some(true);
         }
         if self.pending_capture.is_some()
+            || self.native_frames.capture_pending()
             || self.pending_lens_capture.is_some()
             || self.pending_capture_readback.is_some()
         {

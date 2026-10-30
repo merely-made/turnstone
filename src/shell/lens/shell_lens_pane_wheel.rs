@@ -89,7 +89,7 @@ impl Shell {
                     let recovery = super::super::WindowRecovery::new(
                         &owner,
                         Arc::new(move || {
-                            let _ = proxy.send_event(());
+                            let _ = proxy.send_event(crate::shell::ShellEvent::ActorWake);
                         }),
                     );
                     let id = window.id();

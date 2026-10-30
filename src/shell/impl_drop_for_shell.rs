@@ -5,6 +5,7 @@ use super::*;
 
 impl Drop for Shell {
     fn drop(&mut self) {
+        self.clip_owner.close();
         // Driver drop cancels and joins its worker. Keep App's session writer
         // leases alive until that join completes, including unwind paths;
         // normal window close persists shutdown before removing the window.

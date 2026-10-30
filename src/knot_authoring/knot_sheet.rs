@@ -18,16 +18,16 @@ pub(crate) const KNOT_SHEET: &str = "\
     .knot-citations { padding: 4px 10px; } \
     .knot-saved-citation { color: rgb(103, 184, 235); background-color: rgb(28, 34, 50); padding: 3px 8px; } \
     .knot-body { display: flex; } \
-    .knot-editor-wrap { width: 70%; padding: 10px; } \
+    .knot-editor-wrap { width: 70%; min-width: 0; box-sizing: border-box; padding: 10px; overflow: hidden; } \
     .knot-editor-wrap textarea, .knot-editor-wrap [role=textbox][data-cambium-text-value] { color: rgb(218, 224, 236); \
                                  background-color: rgb(25, 30, 44); \
-                                 font-size: 13px; white-space: pre-wrap; \
+                                 font-size: 13px; white-space: pre-wrap; overflow-wrap: anywhere; \
                                  padding: 10px; border: 1px solid rgb(52, 62, 86); } \
-    .knot-readout { width: 30%; padding: 10px; color: rgb(172, 183, 204); \
-                    font-size: 12px; white-space: pre-wrap; overflow: hidden; } \
+    .knot-readout { width: 30%; min-width: 0; box-sizing: border-box; padding: 10px; color: rgb(172, 183, 204); \
+                    font-size: 12px; white-space: pre-wrap; overflow-wrap: anywhere; overflow: hidden; } \
     .syntax-heading { color: rgb(240, 179, 94); } \
     .syntax-link { color: rgb(103, 184, 235); } \
     .syntax-strong { color: rgb(235, 239, 247); } \
     .syntax-emphasis { color: rgb(194, 205, 224); } \
     .syntax-codeblock, .syntax-verbatim { color: rgb(141, 207, 160); } \
-    .knot-selection { background-color: rgb(42, 76, 118); color: rgb(240, 245, 255); }";
+    .knot-selection { background-color: rgba(42, 76, 118, 0.35); color: rgb(240, 245, 255); }";

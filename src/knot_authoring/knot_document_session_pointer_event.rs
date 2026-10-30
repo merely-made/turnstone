@@ -147,6 +147,7 @@ impl KnotDocumentSession {
             dom,
             runner,
             layout: crate::ui::RetainedLayout::new(),
+            scroll: crate::ui::PaneScroll::new(),
             text_drag: None,
         };
         if auto_resolve && resolve_available {
@@ -231,6 +232,7 @@ impl KnotDocumentSession {
     pub(crate) fn selected_retained_export(
         &mut self,
         expected: &crate::producer_retention::KnotSelection,
+        max_bytes: usize,
     ) -> Result<(serde_json::Value, Vec<u8>), String> {
         self.drain_events();
         if self.retained_selection().as_ref() != Some(expected) {
@@ -240,6 +242,7 @@ impl KnotDocumentSession {
             &self.address,
             self.runner.state().editor.source(),
             expected,
+            max_bytes,
         )
     }
 

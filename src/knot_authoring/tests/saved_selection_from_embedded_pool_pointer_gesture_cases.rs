@@ -246,7 +246,10 @@ fn saved_selection_from_pointer_drag_survives_reverse_release_and_cancel() {
         .expect("drag selects saved text");
     assert_eq!((offer.start, offer.end), (16, 21));
     assert_eq!(
-        session.selected_retained_export(&offer).unwrap().0["text"],
+        session
+            .selected_retained_export(&offer, 1_000_000)
+            .unwrap()
+            .0["text"],
         "café"
     );
     let selected = session.runner.state().editor.selection();
@@ -282,7 +285,7 @@ fn saved_selection_from_pointer_drag_survives_reverse_release_and_cancel() {
     session.input(movement(start));
     assert_eq!(session.runner.state().editor.selection(), blurred);
     assert!(
-        session.selected_retained_export(&offer).is_err(),
+        session.selected_retained_export(&offer, 1_000_000).is_err(),
         "changed selection invalidates a prior offer"
     );
     // A captured drag continues outside the field and across painted lines.
@@ -377,7 +380,7 @@ fn saved_selection_from_neutral_keyboard_input_keeps_exact_unicode_bytes() {
     }
     let offer = session.retained_selection().expect("saved selected range");
     assert_eq!((offer.start, offer.end), (16, 21));
-    let (export, backing) = session.selected_retained_export(&offer).unwrap();
+    let (export, backing) = session.selected_retained_export(&offer, 1_000_000).unwrap();
     assert_eq!(export["text"], "café");
     assert_eq!(backing, source.as_bytes());
     assert_eq!(fs::read_to_string(path).unwrap(), source);
@@ -413,13 +416,13 @@ fn retained_selection_is_bound_to_the_saved_editor_offer() {
         state.editor.apply(cambium::TextCommand::SelectAll);
     });
     let offer = session.retained_selection().expect("saved selected source");
-    let (export, backing) = session.selected_retained_export(&offer).unwrap();
+    let (export, backing) = session.selected_retained_export(&offer, 1_000_000).unwrap();
     assert_eq!(export["text"], source);
     assert_eq!(backing, source.as_bytes());
     focus_editor(&mut session);
     type_text(&mut session, "changed source");
     assert!(session.retained_selection().is_none());
-    assert!(session.selected_retained_export(&offer).is_err());
+    assert!(session.selected_retained_export(&offer, 1_000_000).is_err());
     assert_eq!(
         fs::read_to_string(path).unwrap(),
         source,

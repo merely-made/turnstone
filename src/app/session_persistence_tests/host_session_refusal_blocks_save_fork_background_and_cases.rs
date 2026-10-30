@@ -19,7 +19,17 @@ fn host_session_refusal_blocks_save_fork_background_and_survives_graph_replaceme
     assert!(
         adopted
             .iter()
-            .all(|effect| matches!(effect, Effect::Redraw))
+            .any(|effect| matches!(effect, Effect::CancelResearchSearch))
+    );
+    assert!(
+        adopted
+            .iter()
+            .any(|effect| matches!(effect, Effect::Redraw))
+    );
+    assert!(
+        adopted
+            .iter()
+            .all(|effect| matches!(effect, Effect::CancelResearchSearch | Effect::Redraw))
     );
     assert!(app.session_load_refused());
     app.update(Action::OmnibarOpen { command: true });

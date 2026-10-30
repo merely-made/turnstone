@@ -158,6 +158,7 @@ impl Shell {
         generation: u64,
         failure: Failure,
     ) {
+        self.cancel_native_window(window, "native composition refused");
         match failure {
             Failure::Raster(source, failure) => {
                 self.refuse_raster_frame(window, generation, source, failure)
@@ -197,6 +198,7 @@ pub(super) fn compose(
     frame: &mut OuterFrame,
     app: &App,
     core: &RenderCore,
+    batch: &genet_render_host::NativeFrameSubmission,
     images: &mut Images,
     masks: &mut Masks,
     slot: usize,
@@ -376,8 +378,8 @@ pub(super) fn compose(
     }
     // The frame is laid out in layout pixels and rasterized at the window's
     // layout scale, onto a texture of the window's physical size.
-    let (texture, view) = core
-        .try_rasterize_scaled_for(
+    let (texture, view) = batch
+        .rasterize(
             id,
             &scene,
             size.0,

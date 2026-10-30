@@ -93,6 +93,8 @@ pub(crate) fn command_metadata(action: &Action) -> (EffectClass, bool) {
         | Action::PageZoomIn { .. }
         | Action::PageZoomOut { .. }
         | Action::PageZoomReset { .. }
+        | Action::ResearchSearch(..)
+        | Action::ResearchStructured(..)
         | Action::SearchSavedSources
         | Action::FocusAuthenticationField(..)
         | Action::InsertAuthentication(..)

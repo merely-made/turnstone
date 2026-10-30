@@ -24,7 +24,9 @@ impl Shell {
         for attempt in 0..attempts {
             // A resolved citation is an App intent, independent of a surface's
             // next viewport sync. Poll the same native drain during waits.
+            self.drain_fetch_updates();
             self.pump_research();
+            self.drain_research_worker_updates();
             while let Ok(update) = self.trail_rx.try_recv() {
                 let effects = self.app.apply_update(update);
                 self.run_effects(effects);

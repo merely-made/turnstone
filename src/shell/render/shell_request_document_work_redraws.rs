@@ -78,6 +78,7 @@ impl Shell {
     }
 
     pub(in super::super) fn request_redraw(&self) {
+        self.native_frames.invalidate();
         if let Some(window) = self.window.as_ref() {
             window.request_redraw();
         }

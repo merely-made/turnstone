@@ -8,6 +8,10 @@ impl Shell {
         &mut self,
         event_loop: &ActiveEventLoop,
     ) -> IdlePolicy {
+        if self.alembic_workshop_requested && self.native_child_open_pending() {
+            self.defer_native_child_open();
+            return IdlePolicy::Wait;
+        }
         if self.alembic_workshop_requested {
             self.alembic_workshop_requested = false;
             if let Some(window) = &self.alembic_workshop {
@@ -40,7 +44,7 @@ impl Shell {
                     state.choices = self.alembic_workshop_choices(&owner);
                     let wake_proxy = self.proxy.clone();
                     let wake: armillary::Wake = Arc::new(move || {
-                        let _ = wake_proxy.send_event(());
+                        let _ = wake_proxy.send_event(crate::shell::ShellEvent::ActorWake);
                     });
                     let host = WinitHost::with_shared_render_core(
                         HostOptions {

@@ -232,14 +232,14 @@ impl App {
             },
             Update::SourceDocumentCaptured {
                 request, result, ..
-            } => self.source_capture_deposited(request, result),
+            } => self.source_capture_deposited(request, result.map_err(|error| error.to_string())),
             Update::SourceCaptureRevalidated {
                 request, stored, ..
             } => self.revalidate_source_capture(request, stored),
             Update::SourceCaptureRecoveryFailed { error, .. } => {
                 self.events.push(AppEvent::InteractionMissed {
                     what: "recover-source-captures",
-                    target: error,
+                    target: error.to_string(),
                 });
                 vec![Effect::Redraw]
             },
@@ -248,7 +248,7 @@ impl App {
             } => self.recover_source_capture(request, stored),
             Update::SourceCaptureSaved {
                 request, result, ..
-            } => self.source_capture_saved(request, result),
+            } => self.source_capture_saved(request, result.map_err(|error| error.to_string())),
             Update::PlaceDocumentVisit { .. } => Vec::new(),
             Update::PlaceLanesAdvanced {
                 session,

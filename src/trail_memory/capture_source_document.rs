@@ -11,5 +11,5 @@ pub(super) fn capture_source_document(
     store: &mut FjallStore,
     document: &crate::content::FetchedDocument,
 ) -> Result<StoredSourceDocument, String> {
-    capture_source_document_in(store, document)
+    capture_source_document_in(store, document).map_err(|error| error.to_string())
 }

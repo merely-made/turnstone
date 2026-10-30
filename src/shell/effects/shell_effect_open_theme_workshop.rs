@@ -92,98 +92,28 @@ impl Shell {
                     self.act(Action::ImportClipPackage(path));
                 }
             },
-            Effect::ImportClipPackage(path) => {
-                let admitted = self.app.clip_destination().and_then(|root| {
-                    crate::retained_clip::import_sealed(
-                        &root,
-                        &path,
-                        crate::retained_clip::limits()?,
-                        crate::denizen::now_ms(),
-                        self.app.clip_sealer()?,
-                    )
-                });
-                match admitted {
-                    Ok(id) => {
-                        self.act(Action::OpenAddress(crate::retained_clip::address(id)));
-                        self.run_effects(vec![Effect::SaveSession]);
-                    },
-                    Err(error) => self.app.note_retained_clip_refusal(error),
-                }
+            Effect::ImportClipPackage(path) => self.request_clip_import(path),
+            Effect::ControlRetainedClip(control) => match control {
+                crate::retained_clip::ClipRequest::Play(id) => {
+                    self.request_clip_action_read(id, super::super::clip_actions::ReadKind::Play)
+                },
+                crate::retained_clip::ClipRequest::Stop(id) => {
+                    self.cancel_pending_clip_play(id);
+                    if let Err(error) = self.app.redshank.stop_retained_voice(&id.0.to_hex()) {
+                        self.app.note_retained_clip_refusal(error);
+                    }
+                },
+                _ => self
+                    .app
+                    .note_retained_clip_refusal("Unsupported retained clip control".into()),
             },
-            Effect::ControlRetainedClip(control) => {
-                use crate::retained_clip::ClipRequest;
-                let result = self.app.clip_destination().and_then(|root| match control {
-                    ClipRequest::Play(id) => {
-                        let clip = crate::retained_clip::read_sealed(
-                            &root,
-                            id,
-                            crate::retained_clip::limits()?,
-                            self.app.clip_sealer()?,
-                        )?;
-                        let crate::retained_clip::ClipBody::Voice(bytes) = clip.body else {
-                            return Err("This clip has no voice body".into());
-                        };
-                        self.app
-                            .redshank
-                            .play_retained_voice_bytes(&id.0.to_hex(), bytes)
-                    },
-                    ClipRequest::Stop(id) => self.app.redshank.stop_retained_voice(&id.0.to_hex()),
-                    ClipRequest::Read(_) | ClipRequest::Export(_) => {
-                        Err("Unsupported retained clip control".into())
-                    },
-                });
-                if let Err(error) = result {
-                    self.app.note_retained_clip_refusal(error);
-                }
-            },
-            Effect::ChooseClipExportFile { clip } => {
-                let available = self.app.clip_destination().and_then(|root| {
-                    crate::retained_clip::read_sealed(
-                        &root,
-                        clip,
-                        crate::retained_clip::limits()?,
-                        self.app.clip_sealer()?,
-                    )
-                    .map(|_| ())
-                });
-                if let Err(error) = available {
-                    self.app.note_retained_clip_refusal(error);
-                    return;
-                }
-                if let Some(path) = rfd::FileDialog::new()
-                    .set_title("Export selected clip")
-                    .add_filter("Selected clip package", &["mereclip"])
-                    .set_file_name("selected-clip.mereclip")
-                    .save_file()
-                {
-                    // The native save dialog owns its overwrite confirmation.
-                    self.act(Action::ExportClipPackage {
-                        clip,
-                        path,
-                        replace: true,
-                    });
-                }
-            },
+            Effect::ChooseClipExportFile { clip } => self
+                .request_clip_action_read(clip, super::super::clip_actions::ReadKind::ChooseExport),
             Effect::ExportClipPackage {
                 clip,
                 path,
                 replace,
-            } => {
-                let result = self.app.clip_destination().and_then(|root| {
-                    crate::retained_clip::export_sealed(
-                        &root,
-                        clip,
-                        &path,
-                        crate::retained_clip::limits()?,
-                        replace,
-                        self.app.clip_sealer()?,
-                    )
-                });
-                match result {
-                    Ok(()) => self.app.note_clip_package_exported(clip, &path),
-                    Err(error) => self.app.note_retained_clip_refusal(error),
-                }
-            },
+            } => self.request_clip_export(clip, path, replace),
             Effect::OpenPlace {
                 session,
                 generation,

@@ -31,7 +31,16 @@ impl App {
         {
             return Vec::new();
         }
-        match update {
+        self.sync_research_context();
+        let mut validity_effects = self.invalidate_research_search();
+        let mut effects = match update {
+            Update::ResearchRecords(result) => self.structured_completed(result),
+            Update::ResearchCompareFinished { request, result } => {
+                self.research_compare_finished(request, result.map_err(|e| e.to_string()))
+            },
+            Update::ResearchSearchFinished { request, result } => {
+                self.research_search_finished(request, result.map_err(|e| e.to_string()))
+            },
             Update::SavedSourcesLoaded { .. }
             | Update::SavedSourceRead { .. }
             | Update::FeedFetched { .. }
@@ -72,6 +81,12 @@ impl App {
             Update::PlaceInvited { .. }
             | Update::PlaceJoined { .. }
             | Update::PlaceOpened { .. } => self.update_place_invited(update),
-        }
+        };
+        self.sync_research_context();
+        validity_effects.extend(self.invalidate_research_search());
+        validity_effects.extend(self.invalidate_research_clip_readers());
+        validity_effects.append(&mut effects);
+        let effects = validity_effects;
+        effects
     }
 }

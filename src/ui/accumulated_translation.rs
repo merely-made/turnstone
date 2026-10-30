@@ -23,6 +23,8 @@ where
         D: LayoutDom,
         D::NodeId: Copy + Eq + Hash,
     {
+        #[cfg(test)]
+        super::projection_work_tests::geometry_visit();
         let own = node_transform_translation(snapshot, node);
         let translated = (inherited.0 + own.0, inherited.1 + own.1);
         if node == target {

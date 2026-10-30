@@ -32,7 +32,7 @@
 
 use std::sync::Arc;
 
-use graphshell_endpoint::door::custody_identity::CustodyIdentity;
+use djinn::door::custody_identity::CustodyIdentity;
 use identity::delegation::DelegationError;
 use identity::{Ed25519Keypair, Ed25519PublicKey, IdentityError, IdentityProvider};
 use insigne::DerivedKeyAttestation;
@@ -138,7 +138,7 @@ impl RootIdentity {
                 let Ok(status) = custody.status_timeout(std::time::Duration::from_secs(2)) else {
                     return false;
                 };
-                status.lock == graphshell_endpoint::door::identity::VaultLockView::Unlocked
+                status.lock == dramatis::view::VaultLockView::Unlocked
                     && custody
                         .connected_status()
                         .custody_epoch
@@ -159,7 +159,7 @@ impl RootIdentity {
 /// Used only by the cancellable background binding task. No key or passphrase
 /// is read here, and the fresh connection has one deadline for its handshake.
 pub fn bind_timeout(timeout: std::time::Duration) -> Option<Arc<RootIdentity>> {
-    graphshell_endpoint::door::custody_identity::CustodyIdentity::connect_timeout(
+    djinn::door::custody_identity::CustodyIdentity::connect_timeout(
         CUSTODY_APP,
         timeout,
     )

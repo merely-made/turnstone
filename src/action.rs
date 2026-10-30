@@ -28,6 +28,8 @@
 //!   types at the boundary. The universal vocabulary must not depend on one
 //!   port implementation.
 
+pub use crate::app::research_search_state::Command as ResearchSearchAction;
+pub use crate::app::research_structured_state::Command as ResearchStructuredAction;
 mod command_metadata;
 pub(crate) use command_metadata::command_metadata;
 

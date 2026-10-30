@@ -540,3 +540,50 @@ fn stale_place_update_from_a_departed_session_is_ignored() {
     );
     let _ = std::fs::remove_dir_all(root);
 }
+
+#[test]
+fn model_free_source_target_wait_tracks_exact_current_admission() {
+    let mut app = App::test_stub();
+    let url = "https://example.test/source";
+    assert_eq!(crate::scenario::source_target_wait_diagnostic(&app, url), "no browser command target");
+    app.graph_runtimes.visit(url);
+    let node = app
+        .graph_runtimes
+        .graph()
+        .get_node_by_url(url)
+        .unwrap()
+        .1
+        .id;
+    assert!(!crate::scenario::source_target_ready(
+        &app.available_actions(),
+        url
+    ));
+    assert!(crate::scenario::source_target_wait_diagnostic(&app, url).starts_with("source admission refused: "));
+    let body = "<html><main>source fixture</main></html>";
+    app.content.note_fetched(
+        node,
+        url.into(),
+        crate::content::FetchedDocument {
+            bytes: body.as_bytes().to_vec(),
+            body: body.into(),
+            content_type: Some("text/html".into()),
+            effective_url: Some(url.into()),
+            acquired_at_ms: 1,
+        },
+        body.len(),
+    );
+    assert!(crate::scenario::source_target_ready(
+        &app.available_actions(),
+        url
+    ));
+    assert!(!crate::scenario::source_target_ready(
+        &app.available_actions(),
+        "https://example.test/other"
+    ));
+    app.graph_runtimes.visit("https://example.test/other");
+    assert_eq!(crate::scenario::source_target_wait_diagnostic(&app, url), "browser command target differs");
+    assert!(!crate::scenario::source_target_ready(
+        &app.available_actions(),
+        url
+    ));
+}

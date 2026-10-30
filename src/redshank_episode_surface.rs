@@ -21,17 +21,20 @@ use std::rc::Rc;
 use cambium::{DomHandle, RetainedSurfaceSession};
 use mere_surface_api::SurfaceDescriptor;
 use redshank_model::{FeedEpisodeFacts, ItemId, LibraryItem, MediaSource};
-use redshank_surfaces::surface_api::{
-    CompactDock, EPISODE_SOURCE_KIND, compact_descriptor, compact_session, compact_stylesheet,
-};
+use redshank_surfaces::surface_api::{EPISODE_SOURCE_KIND, compact_descriptor, compact_stylesheet};
 use redshank_surfaces::{
-    CompactCommand, CompactPlayerState, Face, Mode, NowPlaying, Seed, SourceKind, TransportState,
+    CompactCommand, CompactPlayerState, Face, NowPlaying, SourceKind, TransportState,
 };
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::contributed_surface::{SurfaceAdmissionError, SurfaceProvider};
 use crate::panes::{PaneKindId, PaneSource, SerializedSource, SourceRef, SourceSchemaId};
+
+#[path = "redshank_notes_session.rs"]
+mod notes_session;
+use notes_session::NoteDock;
+pub(crate) use notes_session::{NoteCommand, NoteProjection, NoteScope};
 
 pub const PANE_KIND: &str = "turnstone.redshank-episode";
 /// The schema a pane source must name. It is Redshank's word, not Turnstone's:
@@ -115,7 +118,7 @@ pub fn episode_source(payload: RedshankEpisodeSourceV1) -> PaneSource {
 /// shell beside the other retained product state.
 #[derive(Clone, Default)]
 pub struct RedshankDocks {
-    docks: Rc<RefCell<BTreeMap<ItemId, CompactDock>>>,
+    docks: Rc<RefCell<BTreeMap<ItemId, NoteDock>>>,
 }
 
 impl RedshankDocks {
@@ -124,11 +127,11 @@ impl RedshankDocks {
     }
 
     /// The dock for `item`, minting one seeded with `seed` if it is new.
-    fn dock(&self, item: &ItemId, seed: CompactPlayerState) -> CompactDock {
+    fn dock(&self, item: &ItemId, seed: CompactPlayerState) -> NoteDock {
         self.docks
             .borrow_mut()
             .entry(item.clone())
-            .or_insert_with(|| CompactDock::new(seed))
+            .or_insert_with(|| NoteDock::new(seed))
             .clone()
     }
 
@@ -143,12 +146,24 @@ impl RedshankDocks {
     /// Show `state` on `item`'s dock, if one is mounted.
     pub fn project(&self, item: &ItemId, state: CompactPlayerState) {
         if let Some(dock) = self.docks.borrow().get(item) {
-            dock.project(state);
+            let mut projection = dock.snapshot();
+            projection.compact = state;
+            dock.project(projection);
         }
     }
 
+    pub(crate) fn project_notes(&self, item: &ItemId, projection: NoteProjection) {
+        if let Some(dock) = self.docks.borrow().get(item) {
+            dock.project(projection);
+        }
+    }
+
+    pub(crate) fn note_projection(&self, item: &ItemId) -> Option<NoteProjection> {
+        self.docks.borrow().get(item).map(NoteDock::snapshot)
+    }
+
     /// Take every command the listener issued on every mounted dock.
-    pub fn drain(&self) -> Vec<(ItemId, CompactCommand)> {
+    pub(crate) fn drain_scoped(&self) -> Vec<(ItemId, NoteCommand)> {
         let docks = self.docks.borrow();
         let mut drained = Vec::new();
         for (item, dock) in docks.iter() {
@@ -161,15 +176,23 @@ impl RedshankDocks {
         drained
     }
 
-    /// Queue a command as the dock would. Turnstone's own chrome (a note
-    /// editor beside the tile) speaks the same vocabulary.
-    pub fn request(&self, item: &ItemId, command: CompactCommand) -> bool {
-        let docks = self.docks.borrow();
-        let Some(dock) = docks.get(item) else {
-            return false;
-        };
-        dock.request(command);
-        true
+    #[cfg(test)]
+    pub fn drain(&self) -> Vec<(ItemId, CompactCommand)> {
+        self.drain_scoped()
+            .into_iter()
+            .map(|(item, command)| (item, command.command))
+            .collect()
+    }
+}
+
+/// Reconcile retained captures before applying the commands queued by docks.
+pub(crate) fn reconcile_redshank_captures(app: &mut crate::app::App, docks: &RedshankDocks) {
+    for item in docks.items() {
+        if let Some(old) = docks.note_projection(&item)
+            && !old.same_capture_owner(&app.redshank_note_projection(&item))
+        {
+            app.invalidate_redshank_capture(&item, &old);
+        }
     }
 }
 
@@ -279,7 +302,7 @@ impl SurfaceProvider for RedshankEpisodeProvider {
             return Err(invalid_payload("the episode has no stable guid".to_owned()));
         }
         let dock = self.docks.dock(&source.item_id(), seed_state(&source));
-        Ok(compact_session(dom, dock, Seed::Wetland, Mode::Dark))
+        Ok(notes_session::session(dom, dock))
     }
 }
 
@@ -408,6 +431,18 @@ mod tests {
         let _ = node_with_label(&dom, pane.session().root(), "Play");
     }
 
+    #[test]
+    fn admitted_episode_exposes_its_note_list_alongside_the_dock() {
+        let docks = RedshankDocks::new();
+        let pane = registry(&docks)
+            .admit(&PaneKindId::new(PANE_KIND), &episode_source(payload()))
+            .expect("Redshank episode admission");
+        assert!(text_present(
+            &pane.dom_ref(),
+            "No notes for this episode yet."
+        ));
+    }
+
     /// The done-condition the port plan calls "the same action and snapshot
     /// contract": the assertions `redshank-surfaces`' own dock tests make,
     /// re-run against a session admitted through Turnstone's registry.
@@ -473,4 +508,8 @@ mod tests {
         assert!(!pane.availability().is_available());
         assert!(text_present(&pane.dom_ref(), "No audio output"));
     }
+
+    include!("redshank_episode_surface_event_tests.rs");
+    include!("redshank_stale_transport_event_tests.rs");
+    include!("redshank_reopen_event_tests.rs");
 }
