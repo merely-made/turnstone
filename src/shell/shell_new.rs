@@ -82,9 +82,17 @@ impl Shell {
         let network_offline = crate::offline::enabled();
         let offline_attempts = Arc::new(std::sync::atomic::AtomicUsize::new(0));
         let (fetch_handle, fetch_rx) = if network_offline {
-            crate::offline::spawn(fetch_wake, offline_attempts.clone())
+            let (handle, updates) = crate::offline::spawn(fetch_wake, offline_attempts.clone());
+            (fetch_port::FetchPort::Offline(handle), updates)
         } else {
-            fetch::spawn_fetcher_with_policy(fetch_wake, stores.clone(), client_limits.fetch)
+            let (actor, updates) = fetch::spawn_fetcher_with_admission(
+                fetch_wake,
+                stores.clone(),
+                client_limits.fetch,
+                client_limits.admission,
+            )
+            .expect("Turnstone could not start its fetch actor");
+            (fetch_port::FetchPort::Network(actor), updates)
         };
         let blocking_fetch: Arc<dyn fetch::Fetch> = if network_offline {
             Arc::new(crate::offline::NoNetwork(offline_attempts.clone()))

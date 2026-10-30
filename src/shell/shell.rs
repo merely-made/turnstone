@@ -16,8 +16,8 @@ pub struct Shell {
     pub(super) actor_wake_pending: bool,
     pub(super) native_frames: super::native_frames::NativeFrameQueue,
     pub(super) native_frame_wake: armillary::Wake,
-    /// The fetch actor's command handle; dropping it ends the actor.
-    pub(super) fetch_handle: armillary::ActorHandle<FetchCommand>,
+    /// Bounded fetch ingress, joined at exit; dropping it only requests shutdown.
+    pub(super) fetch_handle: fetch_port::FetchPort,
     pub(super) network_offline: bool,
     pub(super) offline_attempts: Arc<std::sync::atomic::AtomicUsize>,
     /// Durable Gemini server pins. The protocol verifier shares this exact
