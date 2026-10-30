@@ -16,7 +16,7 @@
 
 use std::sync::{Arc, Mutex, mpsc};
 
-use graphshell_endpoint::door::app_admission::AppId;
+use djinn::door::app_admission::AppId;
 use graphshell_endpoint::door::projection::AppBrokerClient;
 use tokio::sync::mpsc as tokio_mpsc;
 

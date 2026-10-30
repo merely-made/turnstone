@@ -35,7 +35,7 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicU32, AtomicU64, Ordering};
 use std::time::Duration;
 
-use graphshell_endpoint::door::route::ResidentEndpointRoute;
+use djinn::door::route::ResidentEndpointRoute;
 use graphshell_host::admission::{CONNECT_ACTION, GRAPHSHELL_DOMAIN, PROJECTION_SERVICE};
 use graphshell_host::carrier::{admit_accepted_session, projection_alpn, projection_policy};
 use graphshell_host::endpoint_catalog::ResidentEndpointCatalog;
