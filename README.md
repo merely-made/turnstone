@@ -30,7 +30,7 @@ surface and the saved UI zoom.
 ## Build and run
 
 Windows native builds need the MSVC C++ build tools, Windows SDK, CMake and
-Ninja. The CEF dependency downloads its matching binary distribution when needed;
+Ninja. A build with `weld` downloads CEF's matching binary distribution when needed;
 set `CEF_PATH` to an existing matching distribution to reuse it. This is a native
 SDK input, separate from Cargo's source redirects.
 
@@ -38,6 +38,50 @@ SDK input, separate from Cargo's source redirects.
 cargo run     # the turnstone window
 cargo test    # unit tests
 ```
+
+The default build uses Genet for the native UI and document lanes. Additional
+engines are selected with `servo`, `weld`, `scry`, `nomadnet`, `wasm`, or
+`piccolo`; an unselected implementation stays outside the normal dependency
+tree. Foreign browser processes are constructed when a card selects that
+engine, after the host device exists.
+
+The generic demand-admission gate lives in Armillary's `demand` module and
+uses its existing actor harness. Turnstone supplies command classification,
+identity and feature policy. Resource initializers use the standard library's
+`LazyLock`; audio uses `OnceLock` so first use reads the current retained
+settings. There is no Turnstone copy of the actor gate or lazy initializer.
+
+Services are also explicit build selections:
+
+| Feature | Admitted service | First demand |
+| --- | --- | --- |
+| `audio` | Redshank native decoder/device backend | Loading media or starting a voice preview |
+| `authoring` | Knot's local/resident endpoint engine | Opening a document or inserting a clip |
+| `peers` | Places and private document sharing; includes `authoring` | Opening a place or showing/using a sharing pane |
+| `inference` | Resident answer client and installed Distillery surface | Mounting an answer surface |
+| `workshop` | Alembic native workshop and worker | Opening the workshop |
+| `sky` | Analytical Sky pane | Mounting its surface or applying a calculation |
+| `diagnostics` | Resident device-receipt reader | Showing or refreshing its pane |
+| `endpoint-process` | Explicit subprocess endpoint adapter | Opening a document through that endpoint |
+
+`cargo run --release --features audio,authoring` composes those two services;
+`full-services` admits the service set above. It does not enable the optional
+foreign browser engines, NomadNet, Piccolo, or Wasmtime. Identity unlock,
+session configuration and unused-service teardown do not start the audio or
+peer workers. Pure document, retention, custody and saved-pane contracts stay
+available in the default build. Knot's blob evidence store currently uses its
+supplier's `peers` feature; `authoring` admits that assembly without installing
+Turnstone's peer workers. Distillery currently shares its installed mesh
+assembly and inference wire vocabulary in one supplier crate; selecting
+`inference` admits that dependency assembly, but does not start Turnstone's
+place or sharing workers.
+
+Owned Rust source, tests and examples have a **600 physical line ceiling**,
+including comments and blank lines. `python3 scripts/check_source_size.py`
+checks tracked and newly created files. `python3 scripts/check_default_links.py`
+checks the application and target's normal dependency tree; `--features` and
+`--expect` provide enabled controls. CI runs both gates. These composition and
+startup checks do not measure interactive frame rate on an older GPU.
 
 `TURNSTONE_CLICK_SLOP_PX` sets how far a contributed-pane mouse press may
 move before it becomes a drag. The value is a finite, nonnegative number of

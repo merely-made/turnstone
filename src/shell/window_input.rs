@@ -15,14 +15,22 @@ pub(super) type Pool = PeltControllerPool<ContentKey, SurfaceId, netrender::Scen
 /// placement, a different window or a browser without retained composition
 /// cannot inherit another document's editable focus.
 pub(super) fn document_accepts_ime(pool: &Pool, focus: FocusTarget, window: u64) -> bool {
-    let FocusTarget::Content { node, appearance } = focus else { return false; };
-    let Some(placement) = pool.placement(&appearance) else { return false; };
+    let FocusTarget::Content { node, appearance } = focus else {
+        return false;
+    };
+    let Some(placement) = pool.placement(&appearance) else {
+        return false;
+    };
     let same_node = match placement.content {
         ContentKey::Node(owner) | ContentKey::Reader { node: owner, .. } => owner == node,
     };
-    same_node && placement.window == window && placement.visible && placement.focused
+    same_node
+        && placement.window == window
+        && placement.visible
+        && placement.focused
         && pool.focused_content(window) == Some(&placement.content)
-        && pool.content(&placement.content)
+        && pool
+            .content(&placement.content)
             .and_then(pelt_core::PeltContent::document)
             .is_some_and(|controller| controller.session().editable_focus())
 }
@@ -30,13 +38,21 @@ pub(super) fn document_accepts_ime(pool: &Pool, focus: FocusTarget, window: u64)
 /// Current published caret, mapped once from producer logical viewport to this
 /// native window's physical coordinates. Placement custody rejects geometry
 /// from another appearance, hidden receiver, replacement or window.
-pub(super) fn document_text_input_area(pool: &Pool, focus: FocusTarget, window: u64) -> Option<crate::surface::Rect> {
-    let FocusTarget::Content { node, appearance } = focus else { return None; };
+pub(super) fn document_text_input_area(
+    pool: &Pool,
+    focus: FocusTarget,
+    window: u64,
+) -> Option<crate::surface::Rect> {
+    let FocusTarget::Content { node, appearance } = focus else {
+        return None;
+    };
     let placement = pool.placement(&appearance)?;
     let owner = match placement.content {
         ContentKey::Node(owner) | ContentKey::Reader { node: owner, .. } => owner,
     };
-    if owner != node || placement.window != window || !placement.focused
+    if owner != node
+        || placement.window != window
+        || !placement.focused
         || pool.focused_content(window) != Some(&placement.content)
         || !pool.admits(&appearance, pool.placement_generation(&appearance)?)
     {
@@ -47,14 +63,23 @@ pub(super) fn document_text_input_area(pool: &Pool, focus: FocusTarget, window: 
     let rect = [
         (f64::from(placement.rect.x) + caret.x) * scale,
         (f64::from(placement.rect.y) + caret.y) * scale,
-        caret.width * scale, caret.height * scale,
+        caret.width * scale,
+        caret.height * scale,
     ];
-    if !rect.into_iter().all(|v| v.is_finite() && v.abs() <= f64::from(f32::MAX))
-        || rect[2] <= 0.0 || rect[3] <= 0.0
+    if !rect
+        .into_iter()
+        .all(|v| v.is_finite() && v.abs() <= f64::from(f32::MAX))
+        || rect[2] <= 0.0
+        || rect[3] <= 0.0
     {
         return None;
     }
-    Some(crate::surface::Rect::new(rect[0] as f32, rect[1] as f32, rect[2] as f32, rect[3] as f32))
+    Some(crate::surface::Rect::new(
+        rect[0] as f32,
+        rect[1] as f32,
+        rect[2] as f32,
+        rect[3] as f32,
+    ))
 }
 
 #[derive(Clone, Copy)]
@@ -250,7 +275,9 @@ pub(super) fn captured_content_hit(
     let id = captured_mouse(pool)?;
     let placement = pool.placement(&id)?;
     if placement.window != window
-        || !pool.placement_generation(&id).is_some_and(|generation| pool.admits(&id, generation))
+        || !pool
+            .placement_generation(&id)
+            .is_some_and(|generation| pool.admits(&id, generation))
     {
         return None;
     }

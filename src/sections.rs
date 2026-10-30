@@ -348,12 +348,22 @@ mod tests {
             let url = format!("gemini://capsule.test/{name}");
             let key = app.graph_runtimes.visit(&url);
             let node = app.graph_runtimes.graph().get_node(key).unwrap().id;
-            crate::content_classes::set_download_record(&mut app.graph_runtimes, node,
+            crate::content_classes::set_download_record(
+                &mut app.graph_runtimes,
+                node,
                 crate::content_classes::DownloadFacetRecord {
-                    source_url: &url, received_at_ms: timestamp, byte_size: 12,
-                    status, media_type: None, content_disposition: None,
-                    destination_path: None, content_hash: None, error,
-                }).unwrap();
+                    source_url: &url,
+                    received_at_ms: timestamp,
+                    byte_size: 12,
+                    status,
+                    media_type: None,
+                    content_disposition: None,
+                    destination_path: None,
+                    content_hash: None,
+                    error,
+                },
+            )
+            .unwrap();
         }
         let rows = (DOWNLOADS_SECTION.gather)(&app);
         assert_eq!(rows.len(), 2);

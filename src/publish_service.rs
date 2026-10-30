@@ -26,14 +26,14 @@ use transport::Transport;
 use transport::p2panda_transport::{MdnsDiscoveryMode, P2pandaTransport};
 
 use crate::identity::RootIdentity;
+pub(crate) type PublishSource = KnotPublishSource;
 
 const NETWORK_CONTEXT: &str = "turnstone.knot-publish.network.v1";
 const AUTHORITY_CONTEXT: &str = "turnstone.knot-publish.authority.v1";
 pub(super) const PROFILE_ID: &str = "mere.knot.publish";
 pub(super) const PROFILE_REVISION: u32 = 1;
 const DEFAULT_SHARE_HOURS: u64 = 24;
-pub(crate) const PUBLISHING_UNAVAILABLE: &str =
-    "Private document sharing is unavailable: the document owner has not offered publication authority.";
+pub(crate) const PUBLISHING_UNAVAILABLE: &str = "Private document sharing is unavailable: the document owner has not offered publication authority.";
 
 /// The owner-visible status of one source candidate.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -104,17 +104,17 @@ struct IssuedShare {
 
 /// A shell-owned service handle. Dropping the final handle closes its command
 /// channel and stops the private carrier with the worker thread.
-pub struct KnotPublishingService {
+pub struct ActivePublishingService {
     commands: Option<tokio_mpsc::UnboundedSender<PublishCommand>>,
     shutdown: Option<tokio::sync::oneshot::Sender<()>>,
     snapshot: Arc<Mutex<PublishSnapshot>>,
     worker: Option<std::thread::JoinHandle<()>>,
 }
 
-impl KnotPublishingService {
-    /// Start a publishing carrier from the same startup unlock that created
-    /// the authoring endpoint. The service has no relay URL and activates
-    /// active p2panda mDNS for the preferred same-LAN route.
+impl ActivePublishingService {
+    /// Start a publishing carrier on pane demand using the unlocked identity.
+    /// The service has no relay URL and activates p2panda mDNS for the
+    /// preferred same-LAN route.
     pub fn start(source: KnotPublishSource, identity: Arc<RootIdentity>) -> Result<Self, String> {
         let (commands, receiver) = tokio_mpsc::unbounded_channel();
         let (shutdown, shutdown_receive) = tokio::sync::oneshot::channel();
@@ -132,11 +132,16 @@ impl KnotPublishingService {
                     Err(error) => {
                         let _ = ready_send.send(Err(format!("create publishing runtime: {error}")));
                         return;
-                    }
+                    },
                 };
-                if let Err(error) =
-                    runtime.block_on(run(source, identity, receiver, shutdown_receive, worker_snapshot, ready_send))
-                {
+                if let Err(error) = runtime.block_on(run(
+                    source,
+                    identity,
+                    receiver,
+                    shutdown_receive,
+                    worker_snapshot,
+                    ready_send,
+                )) {
                     tracing::warn!(%error, "Knot publishing worker stopped");
                 }
             })
@@ -152,11 +157,11 @@ impl KnotPublishingService {
             Ok(Err(error)) => {
                 drop(service);
                 Err(error)
-            }
+            },
             Err(_) => {
                 drop(service);
                 Err("Knot publishing worker stopped during startup".to_string())
-            }
+            },
         }
     }
 
@@ -205,7 +210,7 @@ impl KnotPublishingService {
     }
 }
 
-impl Drop for KnotPublishingService {
+impl Drop for ActivePublishingService {
     fn drop(&mut self) {
         self.commands.take();
         if let Some(shutdown) = self.shutdown.take() {
@@ -455,7 +460,7 @@ async fn refresh(
             current.candidates = candidates;
             current.selected = selected
                 .filter(|publication| selected_by_source.values().any(|id| id == publication));
-        }
+        },
         Err(error) => set_status(
             snapshot,
             format!("Could not inspect retained sources: {error}"),
@@ -513,3 +518,7 @@ fn now_ms() -> u64 {
         .try_into()
         .unwrap_or(u64::MAX)
 }
+
+#[path = "publish_service/lazy.rs"]
+mod lazy;
+pub use lazy::KnotPublishingService;

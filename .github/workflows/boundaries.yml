@@ -1,0 +1,26 @@
+name: Source and composition boundaries
+on:
+  push:
+  pull_request:
+
+jobs:
+  source-size:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - run: python3 scripts/check_source_size.py
+      - run: python3 -m unittest discover -s scripts -p 'test_check_source_size.py' -v
+      - run: python3 -m unittest discover -s scripts -p 'test_check_default_links.py' -v
+  composition:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - run: rustup toolchain install 1.99.1 --profile minimal
+      - run: rustup default 1.99.1
+      - run: |
+          python3 scripts/check_default_links.py --online --target x86_64-unknown-linux-gnu
+          python3 scripts/check_default_links.py --online --target x86_64-unknown-linux-gnu --features audio
+          python3 scripts/check_default_links.py --online --target x86_64-unknown-linux-gnu --features authoring
+          python3 scripts/check_default_links.py --online --target x86_64-unknown-linux-gnu --features full-services
+          python3 scripts/check_default_links.py --online --target x86_64-unknown-linux-gnu --features servo,nomadnet,wasm,piccolo
+          python3 scripts/check_default_links.py --online --target x86_64-pc-windows-msvc --features weld,scry --expect welding --expect scrying-engine

@@ -110,15 +110,26 @@ fn roster_pane(state: &RosterState) -> RosterView {
     // shows through. Geometry inline, per the sheet contract; the colour is the
     // host sheet's `.pane`, the same one the hand-DOM panes wear.
     Box::new(
-        el::<_, RosterState, RosterAction>("div", (crate::pane_binding::binding_view(&state.binding, |s: &mut RosterState| &mut s.binding, RosterAction::Binding), strip, body))
-            .attr("class", "pane")
-            .attr(
-                "style",
-                format!(
-                    "width: {}px; height: {}px;",
-                    state.viewport_w, state.viewport_h
+        el::<_, RosterState, RosterAction>(
+            "div",
+            (
+                crate::pane_binding::binding_view(
+                    &state.binding,
+                    |s: &mut RosterState| &mut s.binding,
+                    RosterAction::Binding,
                 ),
+                strip,
+                body,
             ),
+        )
+        .attr("class", "pane")
+        .attr(
+            "style",
+            format!(
+                "width: {}px; height: {}px;",
+                state.viewport_w, state.viewport_h
+            ),
+        ),
     )
 }
 
@@ -253,7 +264,9 @@ impl RosterGrid {
         self.layout.selector_point(&self.dom.borrow(), selector)
     }
     pub(crate) fn key_inline(&mut self, event: cambium::KeyEvent) -> Vec<RosterAction> {
-        if matches!(event.key, cambium::Key::Named(cambium::NamedKey::Escape)) && self.runner.state().binding.expanded {
+        if matches!(event.key, cambium::Key::Named(cambium::NamedKey::Escape))
+            && self.runner.state().binding.expanded
+        {
             self.runner.update(|state| state.binding.expanded = false);
             return Vec::new();
         }
@@ -377,362 +390,5 @@ impl RosterGrid {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-    use layout_dom_api::LayoutDom;
-
-    #[test]
-    fn inline_roster_uses_shared_fragments_and_preserves_owner_across_windows() {
-        use layout_dom_api::LayoutDomMut;
-        use workbench::{ContentSource, Tile, TileId, TileTree, Workspace};
-        let dom = Rc::new(RefCell::new(ScriptedDom::new()));
-        let mount = cambium::RetainedMount::new(dom.clone());
-        let mut grid = RosterGrid::new_in(Some(mount.clone()));
-        grid.runner.update(|state| {
-            state.rows = vec![row("alpha"), row("beta")];
-            state.viewport_w = 512.0;
-            state.viewport_h = 400.0;
-        });
-        let root = grid.runner.root();
-        let window = dom.borrow_mut().create_element(cambium::html_qual("div"));
-        let document = dom.borrow().document();
-        dom.borrow_mut().append_child(document, window);
-        let mut frame = crate::frame_controls::FrameControls::new_at(dom.clone(), window);
-        let tile = Tile {
-            id: TileId(7),
-            title: "Roster".into(),
-            accent: None,
-            content: ContentSource::Open {
-                kind: "roster".into(),
-                id: "7".into(),
-            },
-        };
-        let mut workspace = Workspace::new(TileTree::single(tile));
-        frame.set_mounts([(TileId(7), mount.clone())].into());
-        frame.sync(11, workspace.clone(), Some(TileId(7)));
-        let layout = Rc::new(RefCell::new(crate::ui::RetainedLayout::new_at(Some(
-            window,
-        ))));
-        grid.bind_inline(&layout);
-        let sheet = format!("{} {}", crate::ui::cambium_shell_sheet(), cambium::FRISKET_CSS);
-        let scene = layout
-            .borrow_mut()
-            .scene(&mut dom.borrow_mut(), &sheet, 512, 480);
-        assert!(
-            !scene.ops.is_empty(),
-            "the shared scene paints actual body content"
-        );
-        let (x, y) = grid
-            .inline_selector(&taproot::Selector::class("tab").containing("Links"))
-            .unwrap()
-            .unwrap();
-        grid.click(x, y, 512, 400);
-        assert_eq!(grid.selected_tab().0, 1);
-        assert_eq!(grid.runner.root(), root);
-
-        // A real source-first withdrawal must keep the runner through eager
-        // subtree removal and a host GC cycle, before the next station mounts.
-        frame.set_mounts(Default::default());
-        dom.borrow_mut().collect([]);
-        assert!(dom.borrow().is_live(root));
-        assert_eq!(grid.selected_tab().0, 1);
-        frame.set_mounts([(TileId(7), mount.clone())].into());
-
-        workspace.apply(
-            &workbench::FloatEvent::Float {
-                tile: TileId(7),
-                rect: workbench::RelativeRect {
-                    x: 0.2,
-                    y: 0.2,
-                    width: 0.65,
-                    height: 0.65,
-                },
-            }
-            .into(),
-        );
-        frame.sync(11, workspace.clone(), Some(TileId(7)));
-        layout
-            .borrow_mut()
-            .scene(&mut dom.borrow_mut(), &sheet, 512, 480);
-        assert_eq!(
-            grid.selected_tab().0,
-            1,
-            "floating preserves actual widget state"
-        );
-        assert_eq!(grid.runner.root(), root);
-        assert!(
-            dom.borrow().is_live(root),
-            "actual body survives the float rebuild"
-        );
-
-        grid.unbind_inline();
-        assert!(
-            !grid.scene(512, 400, 1.0).ops.is_empty(),
-            "the same scoped owner can render a legacy station"
-        );
-        assert_eq!(grid.runner.root(), root);
-        assert_eq!(grid.selected_tab().0, 1);
-        grid.bind_inline(&layout);
-
-        let next_window = dom.borrow_mut().create_element(cambium::html_qual("div"));
-        dom.borrow_mut().append_child(document, next_window);
-        let mut destination =
-            crate::frame_controls::FrameControls::new_at(dom.clone(), next_window);
-        destination.set_mounts([(TileId(7), mount.clone())].into());
-        destination.sync(11, workspace, Some(TileId(7)));
-        // Source withdrawal follows destination presentation. It must not
-        // detach the current owner or rebuild its widget state.
-        frame.set_mounts(Default::default());
-        assert!(cambium_rootstock::WindowDom::new(&dom.borrow(), next_window).contains(root));
-        assert!(!cambium_rootstock::WindowDom::new(&dom.borrow(), window).contains(root));
-        assert_eq!(grid.selected_tab().0, 1);
-        assert_eq!(grid.runner.root(), root);
-        let destination_layout = Rc::new(RefCell::new(crate::ui::RetainedLayout::new_at(Some(
-            next_window,
-        ))));
-        grid.bind_inline(&destination_layout);
-        destination_layout
-            .borrow_mut()
-            .scene(&mut dom.borrow_mut(), &sheet, 640, 480);
-        assert!(
-            grid.inline_selector(&taproot::Selector::class("tab").containing("Nodes"))
-                .unwrap()
-                .is_some()
-        );
-    }
-
-    fn row(title: &str) -> RosterGridRow {
-        RosterGridRow {
-            title: title.to_string(),
-            kind: "text/html".to_string(),
-            url: format!("https://{title}/"),
-            selected: false,
-        }
-    }
-
-    fn grid_with_rows() -> RosterGrid {
-        let mut g = RosterGrid::new();
-        g.runner.update(|state| {
-            state.rows = vec![row("alpha"), row("beta"), row("gamma")];
-            state.viewport_w = 512.0;
-            state.viewport_h = 600.0;
-        });
-        let _ = g.scene(512, 600, 1.0);
-        g
-    }
-
-    /// The pane-event round trip, headless: lay the grid's DOM out at a pane size
-    /// and hit-test the points a click would land on. Pins the integration this
-    /// seam depends on — a cambium view's DOM must be hit-testable through
-    /// the Livery/Buckram host, or no cambium pane can take a click.
-    #[test]
-    fn grid_dom_is_hit_testable() {
-        let g = grid_with_rows();
-        let d = g.dom.borrow();
-        assert!(
-            crate::ui::hit_test(
-                &d,
-                crate::ui::cambium_shell_sheet(),
-                512,
-                600,
-                20.0,
-                grid_row_center_y(0),
-            )
-            .is_some(),
-            "a point inside the grid's first row must hit a DOM node"
-        );
-    }
-
-    /// Isolates the click-row path: a `roster-cell` must resolve through
-    /// taproot to a point, the way the shell's `click-row` drives it.
-    #[test]
-    fn a_roster_cell_resolves_by_text() {
-        let g = grid_with_rows();
-        let selector = taproot::Selector::class("roster-cell").containing("alpha");
-        let hit = g.resolve(
-            &selector,
-            [0.0, 0.0, 512.0, 600.0],
-        );
-        assert!(
-            matches!(g.inline_selector(&selector), Err("multiple visible body targets match")),
-            "the title and address both contain alpha, so the shell refuses ambiguity"
-        );
-        let address = taproot::Selector::class("roster-cell").containing("https://alpha/");
-        assert_eq!(
-            g.inline_selector(&address).expect("retained selector"),
-            g.resolve(&address, [0.0, 0.0, 512.0, 600.0]),
-            "a unique address uses the same standalone pane paint in both routes"
-        );
-        // Diagnostic: how many roster-cell elements exist at all.
-        let d = g.dom.borrow();
-        let cells = d.all_with_class(d.document(), "roster-cell");
-        assert!(
-            hit.is_some(),
-            "roster-cell 'alpha' must resolve; {} roster-cell elements in the DOM",
-            cells.len()
-        );
-    }
-
-    /// A Roster as long and as narrow as a real one: the row-click path must
-    /// resolve the named row through taproot and, at exactly the point that
-    /// resolves to, dispatch `Navigate` carrying THAT row's url. Run 23's
-    /// reader had fifteen rows in a ~254px-wide pane (the grid's own width is
-    /// 600px, so the Address column hangs off the right edge) and the click
-    /// did nothing; this pins that neither the length, the virtual window, nor
-    /// the overhanging second column is what broke it — the press never
-    /// arrived, because the omnibar was open and swallowed it
-    /// (`Shell::deliver_press`, src/shell/input.rs).
-    #[test]
-    fn a_row_in_a_long_narrow_roster_navigates_to_its_own_url() {
-        const PANE_W: f32 = 254.0;
-        const PANE_H: f32 = 600.0;
-        let mut g = RosterGrid::new();
-        let mut rows = vec![row("Reader page"), row("shared.html")];
-        rows.push(RosterGridRow {
-            title: "field.knot".into(),
-            kind: "text/djot".into(),
-            url:
-                "knot://ff23f774bd2cb1adfe0887e3f8701ab195e925c0e9082573fb3f1d2e60070fb6/field.knot"
-                    .into(),
-            selected: false,
-        });
-        rows.extend((0..12).map(|i| row(&format!("node{i}"))));
-        let want = rows[2].url.clone();
-        g.runner.update(|state| {
-            state.rows = rows;
-            state.viewport_w = PANE_W;
-            state.viewport_h = PANE_H;
-        });
-        g.scene(PANE_W as u32, PANE_H as u32, 1.0);
-
-        let point = g
-            .resolve(
-                &taproot::Selector::class("roster-cell").containing("field.knot"),
-                [0.0, 0.0, PANE_W, PANE_H],
-            )
-            .expect("the row resolves through taproot");
-        assert!(
-            point.0 < PANE_W,
-            "the resolved point must fall inside the pane, not on the overhanging              Address column: x={} pane width {PANE_W}",
-            point.0
-        );
-
-        let actions = g.click(point.0, point.1, PANE_W as u32, PANE_H as u32);
-        assert_eq!(
-            actions,
-            vec![RosterAction::Navigate(want)],
-            "clicking where the row resolved must navigate to that row's url"
-        );
-    }
-
-    /// `TABLIST_HEIGHT` is a host-side constant standing in for what the host
-    /// sheet lays the strip out at — the Roster subtracts it from the grid's
-    /// viewport and adds it to a row's y, so if the sheet and the constant drift
-    /// apart every click lands on the wrong row. Hold them together.
-    #[test]
-    fn tablist_height_matches_the_sheet() {
-        let g = grid_with_rows();
-        let d = g.dom.borrow();
-        // The strip occupies its declared height: a point just inside its bottom
-        // edge is still a tab, and one just below it is not.
-        let inside = crate::ui::hit_test(
-            &d,
-            crate::ui::cambium_shell_sheet(),
-            512,
-            600,
-            20.0,
-            crate::ui::TABLIST_HEIGHT - 2.0,
-        );
-        let below = crate::ui::hit_test(
-            &d,
-            crate::ui::cambium_shell_sheet(),
-            512,
-            600,
-            20.0,
-            crate::ui::TABLIST_HEIGHT + 2.0,
-        );
-        assert!(inside.is_some(), "the strip must fill its declared height");
-        assert_ne!(
-            inside,
-            below,
-            "the strip must END at its declared height: {}px hits the same node as \
-             the row below it, so the sheet and TABLIST_HEIGHT have drifted",
-            crate::ui::TABLIST_HEIGHT
-        );
-    }
-
-    /// The tabs are live end-to-end: a click at a tab's centre reaches the
-    /// strip's handler and switches the pane's body. This is the whole point of
-    /// the strip — that cambium's catalog widget takes a real pane click through
-    /// turnstone's hit-test path, not just that it renders.
-    #[test]
-    fn clicking_a_tab_switches_the_body() {
-        let mut g = grid_with_rows();
-        assert_eq!(g.selected_tab(), (0, "Nodes"));
-        let (x, y) = g
-            .resolve(
-                &taproot::Selector::class("tab").containing("Links"),
-                [0.0, 0.0, 512.0, 600.0],
-            )
-            .expect("the strip must draw a Links tab");
-        g.click(x, y, 512, 600);
-        assert_eq!(
-            g.selected_tab(),
-            (1, "Links"),
-            "clicking the Links tab must select it"
-        );
-        // The body followed the tab: the grid is gone, replaced by the empty
-        // state. (The pane's backdrop still covers those pixels — that is the
-        // point of it — so ask the DOM what is there, not whether anything is.)
-        let d = g.dom.borrow();
-        assert!(
-            d.all_with_class(d.document(), "grid").is_empty(),
-            "the Links tab has no gatherer, so no grid may remain under it"
-        );
-        assert!(
-            !d.all_with_class(d.document(), "pane-empty").is_empty(),
-            "a gatherer-less tab must say so rather than draw an empty grid"
-        );
-    }
-
-    #[test]
-    fn two_roster_runners_keep_independent_selection() {
-        let mut first = grid_with_rows();
-        let second = grid_with_rows();
-        let (x, y) = first
-            .resolve(
-                &taproot::Selector::class("tab").containing("Links"),
-                [0.0, 0.0, 512.0, 600.0],
-            )
-            .expect("the first runner draws a Links tab");
-
-        first.click(x, y, 512, 600);
-
-        assert_eq!(first.selected_tab(), (1, "Links"));
-        assert_eq!(second.selected_tab(), (0, "Nodes"));
-    }
-
-    /// The shared resolver must agree with the strip the sheet lays out: every
-    /// declared tab is drawn, in order, inside the strip's height. The scenario's
-    /// `click-tab` aims through the same resolver, so a drift means receipts click
-    /// the wrong tab.
-    #[test]
-    fn every_tab_is_drawn_in_the_strip() {
-        let g = grid_with_rows();
-        let mut last_x = 0.0;
-        for label in ROSTER_TABS {
-            let (x, y) = g
-                .resolve(
-                    &taproot::Selector::class("tab").containing(label),
-                    [0.0, 0.0, 512.0, 600.0],
-                )
-                .unwrap_or_else(|| panic!("the strip must draw a {label} tab"));
-            assert!(x > last_x, "tabs must run left to right: {label} at {x}");
-            assert!(
-                y > 0.0 && y < crate::ui::TABLIST_HEIGHT,
-                "{label}'s centre ({y}) must sit inside the strip"
-            );
-            last_x = x;
-        }
-    }
-}
+#[path = "cambium_pane/tests.rs"]
+mod tests;

@@ -49,6 +49,7 @@ impl SharedGraph {
     /// Takes the already-filtered projection, never the raw one: everything
     /// pending or revoked is gone before this sees it, so there is no path
     /// from an unauthorized operation to a surface through here.
+    #[cfg(feature = "peers")]
     pub(crate) fn from_projection(projection: &commons::CommonsProjection) -> Self {
         let mut nodes: Vec<SharedNode> = projection
             .graph

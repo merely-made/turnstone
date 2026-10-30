@@ -81,12 +81,12 @@ impl Shell {
                             self.act(Action::WorkbenchActivate(a.0));
                         }
                         self.request_redraw();
-                    }
+                    },
                 }
-            }
+            },
             None => {
                 self.request_redraw();
-            }
+            },
         }
     }
 
@@ -126,7 +126,7 @@ impl Shell {
                         _ => (body.x + body.w * 0.5, body.y + body.h * 0.9),
                     };
                     (s.rect.x + px, s.rect.y + py)
-                }
+                },
             };
             Some((a, release))
         });
@@ -353,7 +353,7 @@ impl Shell {
                     if self.content_sessions.has_surface(&node) =>
                 {
                     Some((node, hit.local.0, hit.local.1))
-                }
+                },
                 _ => None,
             }
         })
@@ -367,8 +367,11 @@ impl Shell {
         phase: inker::DragPhase,
     ) {
         let local = self.surface_plan().into_iter().find_map(|surface| {
-            (surface.kind == crate::surface::SurfaceKind::Content(node))
-                .then_some((surface.id, window_x - surface.rect.x, window_y - surface.rect.y))
+            (surface.kind == crate::surface::SurfaceKind::Content(node)).then_some((
+                surface.id,
+                window_x - surface.rect.x,
+                window_y - surface.rect.y,
+            ))
         });
         let Some((appearance, x, y)) = local else {
             return;
@@ -395,7 +398,9 @@ impl Shell {
             alt: self.alt,
             meta: self.meta,
         };
-        self.content_input(appearance, pelt_core::PeltInput::Drag(inker::DragEvent {
+        self.content_input(
+            appearance,
+            pelt_core::PeltInput::Drag(inker::DragEvent {
                 phase,
                 position: inker::PhysicalPosition { x, y },
                 modifiers,
@@ -408,7 +413,8 @@ impl Shell {
                     inker::PointerButtons::PRIMARY
                 },
                 data_transfer,
-            }));
+            }),
+        );
     }
 }
 

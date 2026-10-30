@@ -35,7 +35,10 @@ impl MapThemeCache {
                 &mode,
                 tabard::theme::registry::THEME_ID_DEFAULT,
             );
-            self.theme = Some(CanvasTheme::from_palette(&palette.palette, &palette.gated_roles()));
+            self.theme = Some(CanvasTheme::from_palette(
+                &palette.palette,
+                &palette.gated_roles(),
+            ));
             self.key = Some((presentation.clone(), mode));
         }
         self.theme
@@ -56,7 +59,12 @@ pub(crate) fn clear_color(theme: Option<CanvasTheme>) -> wgpu::Color {
         })
     };
     let [r, g, b, a] = theme.ground();
-    wgpu::Color { r: linear(r), g: linear(g), b: linear(b), a: f64::from(a) }
+    wgpu::Color {
+        r: linear(r),
+        g: linear(g),
+        b: linear(b),
+        a: f64::from(a),
+    }
 }
 
 #[cfg(test)]
@@ -91,14 +99,27 @@ mod tests {
         assert_eq!(app.pane_layout_scale(pane), 2.0);
         let (scene, _) = app.graph_pane_frame(pane, 1200, 800).unwrap();
         assert!(!scene.ops.is_empty());
-        let canvas = app.graph_runtimes.canvas(app.graph_for_pane(pane).unwrap()).unwrap();
-        assert_eq!(canvas.viewport().view, (600, 400), "physical size over the layout scale");
+        let canvas = app
+            .graph_runtimes
+            .canvas(app.graph_for_pane(pane).unwrap())
+            .unwrap();
+        assert_eq!(
+            canvas.viewport().view,
+            (600, 400),
+            "physical size over the layout scale"
+        );
 
-        let ThemePresentation::Derived(light) = light_presentation() else { unreachable!() };
+        let ThemePresentation::Derived(light) = light_presentation() else {
+            unreachable!()
+        };
         let faces = canvas.derived_face_palette().colors();
         assert_eq!(faces[0], light.palette.primary.to_array());
         assert_eq!(faces[2], light.palette.tertiary.to_array());
-        assert_ne!(clear_color(app.map_theme()), wgpu::Color::WHITE, "ground follows the theme");
+        assert_ne!(
+            clear_color(app.map_theme()),
+            wgpu::Color::WHITE,
+            "ground follows the theme"
+        );
     }
 
     #[test]
@@ -118,6 +139,9 @@ mod tests {
             .unwrap()
             .focused_screen_position()
             .expect("the opened node is on screen");
-        assert_eq!(app.graph_pane_node_at_screen(pane, x * 2.0, y * 2.0), Some(member));
+        assert_eq!(
+            app.graph_pane_node_at_screen(pane, x * 2.0, y * 2.0),
+            Some(member)
+        );
     }
 }

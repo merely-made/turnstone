@@ -336,11 +336,7 @@ mod tests {
     }
 
     fn text_present(dom: &genet_scripted_dom::ScriptedDom, needle: &str) -> bool {
-        fn contains(
-            dom: &genet_scripted_dom::ScriptedDom,
-            node: NodeId,
-            needle: &str,
-        ) -> bool {
+        fn contains(dom: &genet_scripted_dom::ScriptedDom, node: NodeId, needle: &str) -> bool {
             dom.text(node).is_some_and(|text| text.contains(needle))
                 || dom
                     .dom_children(node)

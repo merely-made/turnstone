@@ -154,7 +154,8 @@ mod tests {
                     "graph_id": "00000000-0000-0000-0000-000000000001"
                 } }
             } }
-        }).to_string();
+        })
+        .to_string();
         fs::write(dir.join(LEGACY_FRAME_FILE), &old).unwrap();
         fs::write(dir.join(LEGACY_WINDOWS_FILE), format!("[{old},null]")).unwrap();
         let restored = load_frisket_layout(&dir).unwrap().unwrap();

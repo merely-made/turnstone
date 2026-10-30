@@ -37,7 +37,11 @@ impl mesquite::Product for WorkshopReceipt {
             .with_field("status", state.status())
             .with_field(
                 "preview-errors",
-                state.stylesheet_preview().borrow().diagnostics().join(" | "),
+                state
+                    .stylesheet_preview()
+                    .borrow()
+                    .diagnostics()
+                    .join(" | "),
             )
     }
     fn busy_mut(&mut self, _: &mut mesquite::Ctx<'_, Self>, capture_pending: bool) -> Option<bool> {

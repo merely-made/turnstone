@@ -105,11 +105,11 @@ impl SkySurfaceState {
                 self.sync_draft();
                 self.status = self.calculated_status();
                 self.status_is_error = false;
-            }
+            },
             Err(error) => {
                 self.status = format!("Sky calculation was not applied: {error}");
                 self.status_is_error = true;
-            }
+            },
         }
     }
 
@@ -141,9 +141,11 @@ fn field(
     field_name: &'static str,
 ) -> SkyView {
     let input = Box::new(lens(
-        move |input: &mut TextInput| text_field_typed(input)
-            .attr("aria-label", label)
-            .attr("class", "sky-input"),
+        move |input: &mut TextInput| {
+            text_field_typed(input)
+                .attr("aria-label", label)
+                .attr("class", "sky-input")
+        },
         getter,
     )) as SkyView;
     Box::new(
@@ -173,7 +175,7 @@ fn draft_candidate(state: &mut SkySurfaceState) -> Option<SkyPaneSourceV1> {
             state.status = format!("Sky calculation was not applied: {error}");
             state.status_is_error = true;
             None
-        }
+        },
     }
 }
 
@@ -190,11 +192,11 @@ fn previous_day(state: &mut SkySurfaceState, _: PointerClick) {
         Ok(date) => {
             candidate.date = date.to_string();
             state.apply(candidate);
-        }
+        },
         Err(error) => {
             state.status = format!("Sky calculation was not applied: {error}");
             state.status_is_error = true;
-        }
+        },
     }
 }
 
@@ -211,11 +213,11 @@ fn next_day(state: &mut SkySurfaceState, _: PointerClick) {
         Ok(date) => {
             candidate.date = date.to_string();
             state.apply(candidate);
-        }
+        },
         Err(error) => {
             state.status = format!("Sky calculation was not applied: {error}");
             state.status_is_error = true;
-        }
+        },
     }
 }
 
@@ -388,9 +390,10 @@ pub(super) fn sky_surface_view(state: &SkySurfaceState) -> SkyView {
         .empty_rise_set
         .iter()
         .map(|message| {
-            Box::new(
-                status_note::<SkySurfaceState, ()>("list-row muted", message.clone()),
-            ) as SkyView
+            Box::new(status_note::<SkySurfaceState, ()>(
+                "list-row muted",
+                message.clone(),
+            )) as SkyView
         })
         .collect();
     let children: Vec<SkyView> = vec![

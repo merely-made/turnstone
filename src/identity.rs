@@ -75,7 +75,7 @@ impl RootIdentity {
             RootIdentity::Local(provider) => {
                 use identity::delegation::Issue as _;
                 SignedDelegationCertificate::issue(provider, certificate)
-            }
+            },
         }
     }
 
@@ -149,7 +149,7 @@ impl RootIdentity {
                     && status.profile.as_ref() == custody.profile()
                     && status.persona_public_key == Some(custody.master_public_key().to_bytes())
                     && custody.custody_epoch() == Some(before)
-            }
+            },
             #[cfg(test)]
             Self::Local(_) => true,
         }
@@ -207,15 +207,15 @@ pub fn bind() -> Option<Arc<RootIdentity>> {
             let root = RootIdentity::Custody(custody);
             tracing::info!(protection = %root.description(), "profile identity (djinn)");
             Some(Arc::new(root))
-        }
+        },
         Err(error) if error.is_pending() => {
             tracing::warn!(%error, "profile identity pending: djinn is absent or locked");
             None
-        }
+        },
         Err(error) => {
             tracing::warn!(%error, "profile identity pending: djinn refused the custody route");
             None
-        }
+        },
     }
 }
 
@@ -248,5 +248,4 @@ mod tests {
             root_subject(&identity::InMemoryProvider::from_seed([3; 32]))
         );
     }
-
 }

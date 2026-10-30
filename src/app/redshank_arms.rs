@@ -120,9 +120,8 @@ impl App {
         // the durable association is the pair of stores that ARE: the library
         // item names its feed and GUID, and the feed store names the member
         // it bound. Re-minted on adoption, never repaired.
-        let redshank_model::LibraryItem::FeedEpisode {
-            feed_url, guid, ..
-        } = self.redshank.model().library.get(item)?
+        let redshank_model::LibraryItem::FeedEpisode { feed_url, guid, .. } =
+            self.redshank.model().library.get(item)?
         else {
             return None;
         };
@@ -173,7 +172,12 @@ impl App {
             return;
         };
         match crate::graph_facets::edit_canvas_facets(canvas, |facets| {
-            facets.set(member, FacetId::new(REDSHANK_PROGRESS_FACET), value, &validator)
+            facets.set(
+                member,
+                FacetId::new(REDSHANK_PROGRESS_FACET),
+                value,
+                &validator,
+            )
         }) {
             Ok(Ok(())) => {},
             Ok(Err(error)) => tracing::warn!(?error, "the episode's progress field was refused"),
@@ -378,7 +382,9 @@ mod tests {
         // A page that is not audio still opens the reader.
         let mut reader = App::test_stub();
         reader.data_root = scratch_root();
-        reader.update(Action::OpenAddress("https://elsewhere.test/post".to_string()));
+        reader.update(Action::OpenAddress(
+            "https://elsewhere.test/post".to_string(),
+        ));
         assert_eq!(episode_panes(&reader), 0);
         let _ = std::fs::remove_dir_all(&root);
     }
@@ -406,7 +412,9 @@ mod tests {
         // editor's own anchor is the one that reaches the model.
         app.apply_redshank_commands(vec![(item.clone(), CompactCommand::BeginTextNote)]);
         assert_eq!(
-            app.redshank.pending_anchor(&item).map(|a| a.item_id.clone()),
+            app.redshank
+                .pending_anchor(&item)
+                .map(|a| a.item_id.clone()),
             Some(item.clone())
         );
         app.apply_redshank_commands(vec![(item.clone(), CompactCommand::CancelTextNote)]);
@@ -418,7 +426,11 @@ mod tests {
                 plain_text: "The bittern calls here".into(),
             },
         )]);
-        assert!(effects.iter().any(|effect| matches!(effect, Effect::SaveSession)));
+        assert!(
+            effects
+                .iter()
+                .any(|effect| matches!(effect, Effect::SaveSession))
+        );
 
         let note_id = AnnotationId("note-0".into());
         let address = note_address(&note_id);
@@ -447,7 +459,10 @@ mod tests {
             .facets()
             .get(&node, &FacetId::new(REDSHANK_NOTE_FACET))
             .expect("the note carries its anchor as a field");
-        assert_eq!(anchor_field.get("offset_ms").and_then(|v| v.as_u64()), Some(62_000));
+        assert_eq!(
+            anchor_field.get("offset_ms").and_then(|v| v.as_u64()),
+            Some(62_000)
+        );
         let progress_field = app
             .graph_runtimes
             .facets()
@@ -479,7 +494,12 @@ mod tests {
         assert_eq!(reborn, node);
         assert!(reopened.redshank.annotation(&note_id).is_some());
         assert_eq!(
-            reopened.redshank.model().library.get(&item).map(|item| item.title()),
+            reopened
+                .redshank
+                .model()
+                .library
+                .get(&item)
+                .map(|item| item.title()),
             Some("Marsh at dawn")
         );
         assert_eq!(reopened.redshank_member(&item), Some(member));

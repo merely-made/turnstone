@@ -5,9 +5,9 @@ use crate::panes::GraphId;
 use crate::scene_state::{self, ViewState};
 use mere::canvas::Canvas;
 use mere::canvas::controls::CanvasCommand;
-use pandect::{CartographyGeometry, SavedMosaic, SavedRegion};
 use mere::canvas::mosaic::MosaicTarget;
 use mere::kernel::graph::Graph;
+use pandect::{CartographyGeometry, SavedMosaic, SavedRegion};
 use serde_json::{Value, json};
 use std::collections::BTreeMap;
 use uuid::Uuid;
@@ -107,7 +107,10 @@ fn scene_state_round_trips_through_the_real_facet_file_into_a_fresh_canvas() {
     assert_eq!(seed_map(&restored), seed_map(&geometry));
     assert_eq!(restored.regions(), geometry.regions());
     assert_same_mosaic(restored.mosaic().unwrap(), geometry.mosaic().unwrap());
-    assert_eq!(restored.iter().collect::<BTreeMap<_, _>>(), geometry.iter().collect::<BTreeMap<_, _>>());
+    assert_eq!(
+        restored.iter().collect::<BTreeMap<_, _>>(),
+        geometry.iter().collect::<BTreeMap<_, _>>()
+    );
     // Reset must use the restored saved seed, even after a subsequent move.
     reopened.seed_cartography(members.iter().map(|id| (*id, (900.0, 700.0))));
     reopened.reset_to_seed();
@@ -130,7 +133,10 @@ fn camera_selection_and_pause_ride_the_scene_as_graphshell_saves_them() {
     assert_eq!(reopened.camera().offset, (120.0, -45.0));
     assert_eq!(reopened.camera().zoom, 1.75);
     assert_eq!(
-        reopened.selected_members().into_iter().collect::<std::collections::BTreeSet<_>>(),
+        reopened
+            .selected_members()
+            .into_iter()
+            .collect::<std::collections::BTreeSet<_>>(),
         members[..2].iter().copied().collect()
     );
     assert!(reopened.physics_paused());
@@ -141,11 +147,15 @@ fn restoring_recipe_seed_replaces_the_saved_seed_without_losing_regions_or_mosai
     let (mut source, _) = fixture();
     let container = Uuid::new_v4();
     scene_state::stage_scene(&mut source, container, &ViewState::default());
-    let staged = scene_state::read_scene(source.facets(), container).unwrap().unwrap();
+    let staged = scene_state::read_scene(source.facets(), container)
+        .unwrap()
+        .unwrap();
     assert!(staged.cartography.seed().is_some());
     assert!(source.restore_recipe_seed());
     let reopened = reopen(&mut source, container);
-    let scene = scene_state::read_scene(reopened.facets(), container).unwrap().unwrap();
+    let scene = scene_state::read_scene(reopened.facets(), container)
+        .unwrap()
+        .unwrap();
     assert!(scene.cartography.seed().is_none());
     assert!(!scene.cartography.regions().is_empty());
     assert!(scene.cartography.mosaic().is_some());
@@ -181,7 +191,9 @@ fn scene_restore_skips_missing_member_identities_across_every_geometry_field() {
         pandect::write_saved_scene(facets, container, &scene)
     })
     .unwrap();
-    let stored = scene_state::read_scene(reopened.facets(), container).unwrap().unwrap();
+    let stored = scene_state::read_scene(reopened.facets(), container)
+        .unwrap()
+        .unwrap();
     reopened.apply_scene(&stored, None).unwrap();
     let restored = reopened.cartography_geometry();
     assert_eq!(seed_map(&restored), BTreeMap::from([(kept, (11.0, 22.0))]));
@@ -212,7 +224,13 @@ fn view_file(dir: &std::path::Path) -> std::path::PathBuf {
 fn fold_records_round_trip_in_the_view_intent_and_expanding_stays_view_only() {
     let (dir, graph, mut canvas) = fold_fixture();
     let expected = canvas.fold_records().to_vec();
-    scene_state::save_view(dir.path(), &canvas, &Default::default(), &ViewState::default()).unwrap();
+    scene_state::save_view(
+        dir.path(),
+        &canvas,
+        &Default::default(),
+        &ViewState::default(),
+    )
+    .unwrap();
     canvas.restore_folds(vec![]);
     let opened = scene_state::open_view(dir.path(), graph, &mut canvas);
     assert_eq!(canvas.fold_records(), expected);
@@ -232,7 +250,9 @@ fn unreadable_and_interrupted_view_intents_survive_saves_byte_for_byte() {
         std::fs::write(view_file(dir.path()), raw).unwrap();
         let opened = scene_state::open_view(dir.path(), graph, &mut canvas);
         assert!(opened.state.read_only);
-        assert!(scene_state::save_view(dir.path(), &canvas, &opened.commands, &opened.state).is_err());
+        assert!(
+            scene_state::save_view(dir.path(), &canvas, &opened.commands, &opened.state).is_err()
+        );
         assert_eq!(std::fs::read(view_file(dir.path())).unwrap(), raw);
     }
     std::fs::remove_file(view_file(dir.path())).unwrap();
@@ -264,7 +284,8 @@ fn stale_foreign_future_and_overlapping_fold_records_are_retained() {
     assert_eq!(canvas.fold_records().len(), 1);
     assert_eq!(opened.state.retained_len(), 4);
     scene_state::save_view(dir.path(), &canvas, &opened.commands, &opened.state).unwrap();
-    let saved: Value = serde_json::from_slice(&std::fs::read(view_file(dir.path())).unwrap()).unwrap();
+    let saved: Value =
+        serde_json::from_slice(&std::fs::read(view_file(dir.path())).unwrap()).unwrap();
     for raw in rejected {
         assert!(saved["retained_folds"].as_array().unwrap().contains(&raw));
     }
@@ -298,12 +319,27 @@ fn a_session_saved_before_the_view_intent_shapes_is_read_once_and_rewritten() {
     )
     .unwrap();
     let opened = scene_state::open_view(dir.path(), graph, &mut canvas);
-    assert_eq!(canvas.fold_records().len(), 1, "folds.json records are taken in");
-    assert_eq!(opened.commands.added, ["Reseed layout"], "the menu is carried");
+    assert_eq!(
+        canvas.fold_records().len(),
+        1,
+        "folds.json records are taken in"
+    );
+    assert_eq!(
+        opened.commands.added,
+        ["Reseed layout"],
+        "the menu is carried"
+    );
     scene_state::save_view(dir.path(), &canvas, &opened.commands, &opened.state).unwrap();
-    assert!(!dir.path().join("folds.json").exists(), "the save holds its records");
-    let saved: Value = serde_json::from_slice(&std::fs::read(view_file(dir.path())).unwrap()).unwrap();
-    assert!(saved.get("layout_strategy").is_none(), "the flat fields are gone");
+    assert!(
+        !dir.path().join("folds.json").exists(),
+        "the save holds its records"
+    );
+    let saved: Value =
+        serde_json::from_slice(&std::fs::read(view_file(dir.path())).unwrap()).unwrap();
+    assert!(
+        saved.get("layout_strategy").is_none(),
+        "the flat fields are gone"
+    );
     assert_eq!(saved["folds"].as_array().unwrap().len(), 1);
     assert_eq!(saved["commands"]["added"], json!(["Reseed layout"]));
     canvas.restore_folds(vec![]);

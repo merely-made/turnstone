@@ -23,9 +23,7 @@ pub(crate) fn lifecycle_report(state: &PlaceState, now_ms: u64) -> coop::Lifecyc
     match state {
         PlaceState::Personal => not_joined("no shared place is joined", now_ms),
         PlaceState::Joining { .. } => not_joined("an invitation is being admitted", now_ms),
-        PlaceState::Opening { .. } => {
-            not_joined("opening retained state or reconnecting", now_ms)
-        },
+        PlaceState::Opening { .. } => not_joined("opening retained state or reconnecting", now_ms),
         // Degraded carries only the error, not the last-retained snapshot, so
         // it reads as not joined with that error as its reason. Chosen over
         // inventing a standing this state does not carry. (K3 brief.)
@@ -101,9 +99,10 @@ pub(crate) fn lifecycle_report_from_snapshot(
     // fabricated `at_ms` here would look like a second, different fact.
     // (K3 brief, documented choice.)
     let revocation = match snapshot.standing {
-        PlaceStanding::MembershipRevoked | PlaceStanding::GrantRevoked => {
-            Some(coop::Revocation { by: None, at_ms: None })
-        },
+        PlaceStanding::MembershipRevoked | PlaceStanding::GrantRevoked => Some(coop::Revocation {
+            by: None,
+            at_ms: None,
+        }),
         _ => None,
     };
     let mut report = coop::LifecycleReport::new(verdict, reason, now_ms);
@@ -127,7 +126,10 @@ mod tests {
         OfflinePlaceSnapshot {
             personae_root: [9; 32],
             standing,
-            members: vec![PlaceMember { root: [9; 32], access: PlaceMemberAccess::Write }],
+            members: vec![PlaceMember {
+                root: [9; 32],
+                access: PlaceMemberAccess::Write,
+            }],
             ..Default::default()
         }
     }
@@ -137,11 +139,15 @@ mod tests {
         for state in [
             PlaceState::Personal,
             PlaceState::Joining { generation: 1 },
-            PlaceState::Failed { error: "no network".into() },
+            PlaceState::Failed {
+                error: "no network".into(),
+            },
         ] {
             let report = lifecycle_report(&state, 50);
             assert_eq!(report.verdict, coop::Verdict::NotJoined);
-            report.check_invariants().expect("not_joined reports invariants hold");
+            report
+                .check_invariants()
+                .expect("not_joined reports invariants hold");
         }
     }
 
@@ -167,7 +173,9 @@ mod tests {
         assert!(report.reason.is_some());
         assert_eq!(report.reading, coop::Reading::Unknown);
         assert_eq!(report.membership, None);
-        report.check_invariants().expect("left report invariants hold");
+        report
+            .check_invariants()
+            .expect("left report invariants hold");
     }
 
     #[test]
@@ -179,7 +187,9 @@ mod tests {
         assert_eq!(report.reading, coop::Reading::Continues);
         assert!(report.membership.is_some());
         assert!(report.grant.is_some());
-        report.check_invariants().expect("joined report invariants hold");
+        report
+            .check_invariants()
+            .expect("joined report invariants hold");
     }
 
     #[test]
@@ -189,7 +199,9 @@ mod tests {
         assert_eq!(report.verdict, coop::Verdict::Revoked);
         assert_eq!(report.reading, coop::Reading::Cut);
         assert!(report.revocation.is_some());
-        report.check_invariants().expect("revoked report invariants hold");
+        report
+            .check_invariants()
+            .expect("revoked report invariants hold");
     }
 
     #[test]
@@ -199,7 +211,9 @@ mod tests {
         assert_eq!(report.verdict, coop::Verdict::Revoked);
         assert_eq!(report.reading, coop::Reading::Cut);
         assert!(report.revocation.is_some());
-        report.check_invariants().expect("revoked report invariants hold");
+        report
+            .check_invariants()
+            .expect("revoked report invariants hold");
     }
 
     #[test]
@@ -208,7 +222,12 @@ mod tests {
         let report = lifecycle_report_from_snapshot(&snapshot, 1_500);
         assert_eq!(report.verdict, coop::Verdict::Expired);
         assert_eq!(report.reading, coop::Reading::Unknown);
-        assert_eq!(report.grant.and_then(|grant| grant.expired_at_ms), Some(1_000));
-        report.check_invariants().expect("expired report invariants hold");
+        assert_eq!(
+            report.grant.and_then(|grant| grant.expired_at_ms),
+            Some(1_000)
+        );
+        report
+            .check_invariants()
+            .expect("expired report invariants hold");
     }
 }

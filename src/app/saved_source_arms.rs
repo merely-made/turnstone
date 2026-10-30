@@ -278,7 +278,9 @@ impl App {
             Ok(url) => {
                 // A citation may originate in a maximized contributed Answers
                 // pane. Reveal the existing graph-owned reader at its destination.
-                let pane = self.focused_graph_pane().unwrap_or_else(|| self.default_graph_pane());
+                let pane = self
+                    .focused_graph_pane()
+                    .unwrap_or_else(|| self.default_graph_pane());
                 self.reveal_pane(pane);
                 self.focus = crate::surface::FocusTarget::Graph(pane);
                 self.open_address(url)

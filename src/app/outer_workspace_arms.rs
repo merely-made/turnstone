@@ -15,8 +15,12 @@ impl App {
         space: SpaceRef,
         event: WorkspaceEvent,
     ) -> Vec<Effect> {
-        if let Err(reason)=self.ensure_shared_space(space) {
-            self.events.push(crate::observe::AppEvent::InteractionMissed {what:"outer-workspace",target:reason});
+        if let Err(reason) = self.ensure_shared_space(space) {
+            self.events
+                .push(crate::observe::AppEvent::InteractionMissed {
+                    what: "outer-workspace",
+                    target: reason,
+                });
             return vec![Effect::Redraw];
         }
         let id = match &event {
@@ -25,11 +29,14 @@ impl App {
                 | TileEvent::Closed(id)
                 | TileEvent::Dragged { tile: id, .. },
             ) => Some(PaneId(id.0)),
-            WorkspaceEvent::Float(event)=>Some(PaneId(match event {
-                workbench::FloatEvent::Float {tile,..}|workbench::FloatEvent::Dock {tile,..}
-                |workbench::FloatEvent::SetRect {tile,..}|workbench::FloatEvent::SetConstraints {tile,..}
-                |workbench::FloatEvent::SetPinned {tile,..}|workbench::FloatEvent::SetVisible {tile,..}
-                |workbench::FloatEvent::Raise(tile)=>tile.0,
+            WorkspaceEvent::Float(event) => Some(PaneId(match event {
+                workbench::FloatEvent::Float { tile, .. }
+                | workbench::FloatEvent::Dock { tile, .. }
+                | workbench::FloatEvent::SetRect { tile, .. }
+                | workbench::FloatEvent::SetConstraints { tile, .. }
+                | workbench::FloatEvent::SetPinned { tile, .. }
+                | workbench::FloatEvent::SetVisible { tile, .. }
+                | workbench::FloatEvent::Raise(tile) => tile.0,
             })),
             _ => None,
         };
@@ -100,7 +107,11 @@ impl App {
             }
             self.index_pane_spaces();
             if outcome.changed() {
-                return if matches!(event, WorkspaceEvent::Tile(TileEvent::DividerMoved { .. }) | WorkspaceEvent::Float(workbench::FloatEvent::SetRect {..})) {
+                return if matches!(
+                    event,
+                    WorkspaceEvent::Tile(TileEvent::DividerMoved { .. })
+                        | WorkspaceEvent::Float(workbench::FloatEvent::SetRect { .. })
+                ) {
                     vec![Effect::Redraw]
                 } else {
                     vec![Effect::SaveSession, Effect::Redraw]

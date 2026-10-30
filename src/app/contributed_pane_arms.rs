@@ -263,13 +263,32 @@ impl App {
         effects
     }
     pub(crate) fn research_clip_admissions(&self) -> Vec<crate::research::ClipAdmission> {
-        if self.session_load_refused() { return Vec::new(); }
+        if self.session_load_refused() {
+            return Vec::new();
+        }
         let mut clips = Vec::new();
-        for runtime in self.graph_runtimes.iter().filter(|r| r.session == Some(self.session_id)) {
-            if runtime.persistence.placement_for(&self.session_dir()).is_err() { continue; }
+        for runtime in self
+            .graph_runtimes
+            .iter()
+            .filter(|r| r.session == Some(self.session_id))
+        {
+            if runtime
+                .persistence
+                .placement_for(&self.session_dir())
+                .is_err()
+            {
+                continue;
+            }
             for (_, node) in runtime.canvas.graph().nodes() {
-                if let Ok(Some(crate::retained_clip::ClipRequest::Read(manifest))) = crate::retained_clip::request(node.url()) {
-                    clips.push(crate::research::ClipAdmission { session: self.session_id, graph: runtime.graph, node: node.id, manifest });
+                if let Ok(Some(crate::retained_clip::ClipRequest::Read(manifest))) =
+                    crate::retained_clip::request(node.url())
+                {
+                    clips.push(crate::research::ClipAdmission {
+                        session: self.session_id,
+                        graph: runtime.graph,
+                        node: node.id,
+                        manifest,
+                    });
                 }
             }
         }
@@ -277,19 +296,43 @@ impl App {
         clips
     }
     fn research_target_admitted(&self, target: &crate::research::Target) -> bool {
-        target.selector().is_none() && match target {
-            crate::research::Target::Capture(t) => self.saved_source_admitted(&t.key),
-            crate::research::Target::Clip(t) => self.research_clip_admissions().contains(&t.clip),
-        }
+        target.selector().is_none()
+            && match target {
+                crate::research::Target::Capture(t) => self.saved_source_admitted(&t.key),
+                crate::research::Target::Clip(t) => {
+                    self.research_clip_admissions().contains(&t.clip)
+                },
+            }
     }
-    pub(crate) fn open_research_clip(&mut self, target: crate::research::ClipTarget) -> Vec<Effect> {
+    pub(crate) fn open_research_clip(
+        &mut self,
+        target: crate::research::ClipTarget,
+    ) -> Vec<Effect> {
         if !self.research_clip_admissions().contains(&target.clip) {
-            return self.saved_source_refusal("The cited retained clip was withdrawn from this session.".into());
+            return self.saved_source_refusal(
+                "The cited retained clip was withdrawn from this session.".into(),
+            );
         }
-        if let Err(error) = self.clip_destination() { return self.saved_source_refusal(error); }
-        let pane = self.frisket.iter_leaves().chain(self.lenses.iter().flatten().flat_map(|layout| layout.iter_leaves()))
-            .find(|(_, content, graph)| matches!(content, crate::panes::PaneContent::Orrery) && *graph == target.clip.graph).map(|(pane, _, _)| pane);
-        let Some(pane) = pane else { return self.saved_source_refusal("The cited retained clip has no open owning graph.".into()); };
+        if let Err(error) = self.clip_destination() {
+            return self.saved_source_refusal(error);
+        }
+        let pane = self
+            .frisket
+            .iter_leaves()
+            .chain(
+                self.lenses
+                    .iter()
+                    .flatten()
+                    .flat_map(|layout| layout.iter_leaves()),
+            )
+            .find(|(_, content, graph)| {
+                matches!(content, crate::panes::PaneContent::Orrery) && *graph == target.clip.graph
+            })
+            .map(|(pane, _, _)| pane);
+        let Some(pane) = pane else {
+            return self
+                .saved_source_refusal("The cited retained clip has no open owning graph.".into());
+        };
         self.reveal_pane(pane);
         self.focus = crate::surface::FocusTarget::Graph(pane);
         self.graph_pane_select_member(pane, target.clip.node);
@@ -323,8 +366,7 @@ impl App {
                 // Existing stale choices may remain while the person removes
                 // them. Only additions need current admission; every ask still
                 // validates the entire selected scope against exact content.
-                !expected.chosen.contains(target)
-                    && !self.research_target_admitted(target)
+                !expected.chosen.contains(target) && !self.research_target_admitted(target)
             })
         {
             return self.saved_source_refusal(
@@ -423,11 +465,13 @@ mod research_view_tests {
         let chosen: Vec<_> = app
             .saved_source_admissions()
             .into_iter()
-            .map(|admission| crate::research::Target::Capture(crate::saved_sources::Target {
-                key: admission.key,
-                text_hash: eidetic::Hash::of(b"saved text").to_string(),
-                selector: None,
-            }))
+            .map(|admission| {
+                crate::research::Target::Capture(crate::saved_sources::Target {
+                    key: admission.key,
+                    text_hash: eidetic::Hash::of(b"saved text").to_string(),
+                    selector: None,
+                })
+            })
             .collect();
         assert_eq!(chosen.len(), 2);
         app.update(Action::OpenAnswers);

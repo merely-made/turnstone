@@ -39,28 +39,49 @@ fn contributed_editor_exposes_ime_admission_caret_commit_and_cancel() {
         pane.reveal(target);
         pane.focus(Some(target));
         pane.scene(1200, 1600, scale);
-        assert!(pane.accepts_text(), "a contributed editor must admit OS IME");
+        assert!(
+            pane.accepts_text(),
+            "a contributed editor must admit OS IME"
+        );
         let area = pane.ime_cursor_area().expect("painted editor caret");
-        assert!([area.0, area.1, area.2, area.3].into_iter().all(f32::is_finite));
+        assert!(
+            [area.0, area.1, area.2, area.3]
+                .into_iter()
+                .all(f32::is_finite)
+        );
         assert!(area.2 > 0.0 && area.3 > 0.0);
         let value = |pane: &crate::contributed_surface::ContributedSurfacePane| {
             let id = pane.dom_ref().opaque_id(target);
-            pane.document_projection().unwrap().nodes().iter()
+            pane.document_projection()
+                .unwrap()
+                .nodes()
+                .iter()
                 .find(|n| n.id.get() == id)
-                .expect("focused editor semantics").value.clone().expect("committed editor value")
+                .expect("focused editor semantics")
+                .value
+                .clone()
+                .expect("committed editor value")
         };
         let original = value(&pane);
         let composition = |event| cambium::KeyEvent::new(cambium::Key::Composition(event));
         pane.key(composition(cambium::CompositionEvent::Preedit {
-            text: "temporary".into(), selection: Some((0, 9)),
+            text: "temporary".into(),
+            selection: Some((0, 9)),
         }));
         pane.scene(1200, 1600, scale);
-        assert_eq!(value(&pane), original, "preedit cannot enter the committed value");
-        pane.key(composition(cambium::CompositionEvent::Commit("世界".into())));
+        assert_eq!(
+            value(&pane),
+            original,
+            "preedit cannot enter the committed value"
+        );
+        pane.key(composition(cambium::CompositionEvent::Commit(
+            "世界".into(),
+        )));
         pane.scene(1200, 1600, scale);
         assert_eq!(value(&pane), format!("{original}世界"));
         pane.key(composition(cambium::CompositionEvent::Preedit {
-            text: "zzcancel".into(), selection: Some((8, 8)),
+            text: "zzcancel".into(),
+            selection: Some((8, 8)),
         }));
         pane.key(composition(cambium::CompositionEvent::Disabled));
         pane.scene(1200, 1600, scale);
@@ -101,11 +122,13 @@ fn has_labeled_text_control(
         &layout_dom_api::Namespace::from(""),
         &layout_dom_api::LocalName::from("role"),
     ) == Some("textbox")
-        && dom.attribute(
-            node,
-            &layout_dom_api::Namespace::from(""),
-            &layout_dom_api::LocalName::from("data-cambium-text-value"),
-        ).is_some();
+        && dom
+            .attribute(
+                node,
+                &layout_dom_api::Namespace::from(""),
+                &layout_dom_api::LocalName::from("data-cambium-text-value"),
+            )
+            .is_some();
     (matches!(tag, Some("input" | "textarea")) || marked) && aria_label == Some(label)
         || dom
             .dom_children(node)
