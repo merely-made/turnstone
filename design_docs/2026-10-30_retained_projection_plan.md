@@ -211,8 +211,10 @@ earlier receipts remain at their original paths.
   publication still runs twice per frame (actor drain and redraw) and leads
   the main thread. Inside it, `body_slots` and tab-bar scans in every frame
   preparation, the outer frame's projection clone, lowering and whole-forest
-  action-map walk, and `frame_with_guests` lead. Each surface plan still
-  prepares the frame, about ten times per frame.
+  action-map walk, and `frame_with_guests` lead. Each publication now shares
+  one surface plan; render and input paths still prepare their own. Inside
+  `OuterFrame::accessibility`, `frame_a11y::project` formats and hashes a path
+  id per node and resolves each node's control by walking the body mounts.
 
 ## Progress
 
@@ -264,3 +266,5 @@ earlier receipts remain at their original paths.
   reuse and freshness controls; the application library and matched native
   Arrange runs pass. Receipts are in
   `archive_docs/receipts/2026-10-30_retained_projection_plan_receipts.md`.
+- 2026-10-30: each accessibility publication shares one surface plan across
+  placements, projection and the primary push. Receipts as above.

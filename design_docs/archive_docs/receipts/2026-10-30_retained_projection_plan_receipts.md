@@ -16,3 +16,15 @@
   fresh projections 0, `OuterFrame::accessibility` 154, sync 455. Final:
   sync 1, publication 57%, `body_slots` 12.7%, `OuterFrame::accessibility`
   12.5%, `frame_with_guests` 9.9%.
+
+## 2026-10-30: one surface plan per publication
+
+- Source: commit after 41f3ba69 ("Share one surface plan across each
+  accessibility publication"). Application library: 1259 passed, 0 failed,
+  9 ignored.
+- Arrange, three alternating repetitions (attempts 81–83 after two runs
+  rejected for compiler overlap), last 120 presentations: prior final
+  20.46 / 19.87 / 19.43 fps (median 19.87, p95 57.2 ms); plan sharing
+  20.25 / 19.99 / 20.29 fps (median 20.25, p95 53.8 ms), +1.9%. Peak sampled
+  RSS 199 / 206 MiB. Frozen bundles: `perf-final`, `perf-plan` in
+  `Code/output/turnstone-a11y-reuse-20261030`.
