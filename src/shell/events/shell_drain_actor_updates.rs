@@ -71,6 +71,13 @@ impl Shell {
                 });
             self.run_effects(effects);
         }
+        while let Some(response) = self.research_worker.take_records() {
+            self.service_private_custody();
+            let effects = self
+                .app
+                .apply_update(crate::action::Update::ResearchRecords(response));
+            self.run_effects(effects);
+        }
         while let Ok(update) = self.trail_rx.try_recv() {
             // Recall answers (RecallHits / RecallFailed), already app-owned.
             self.service_private_custody();

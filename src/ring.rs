@@ -298,6 +298,7 @@ pub fn ring_of(action: &Action) -> Ring {
         // narrower authority.
         | CapturePage { .. }
         | ResearchSearch(..)
+        | ResearchStructured(..)
         | SearchSavedSources
         | CaptureSourceDocument { .. }
         | RetrySourceDocumentCapture { .. }

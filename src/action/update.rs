@@ -7,6 +7,7 @@ use super::*;
 /// state through [`crate::app::apply_update`]. App-owned types only; port
 /// adapters convert.
 pub enum Update {
+    ResearchRecords(crate::research_records::JobResult),
     ResearchCompareFinished {
         request: crate::research_compare::Request,
         result: Result<crate::research_compare::ResultView, String>,
@@ -175,22 +176,34 @@ pub enum Update {
         document: crate::content::FetchedDocument,
     },
     /// The content port could not spawn (or lost) `node`'s session.
-    ContentFailed { node: uuid::Uuid, error: String },
+    ContentFailed {
+        node: uuid::Uuid,
+        error: String,
+    },
     /// The recycle bin's current contents (the bin port answers every record
     /// / reopen with the refreshed list, and emits one on spawn). Replaces the
     /// app's cache wholesale.
-    BinListed { records: Vec<RemovedRecord> },
+    BinListed {
+        records: Vec<RemovedRecord>,
+    },
     /// The bin store failed (open / record / list) — loud and attributable,
     /// never an empty list masquerading as "nothing deleted".
-    BinFailed { error: String },
+    BinFailed {
+        error: String,
+    },
     /// Lexical recall over browsing memory answered. `query` is the text the
     /// hits answer; the app drops an answer whose query is no longer what the
     /// omnibar holds (the keystroke that superseded it wins).
-    RecallHits { query: String, hits: Vec<RecallHit> },
+    RecallHits {
+        query: String,
+        hits: Vec<RecallHit>,
+    },
     /// Recall could not answer (no index yet, a re-mint failure, a broken
     /// store). Loud: a recall lane that silently shows nothing is
     /// indistinguishable from a trail with nothing in it.
-    RecallFailed { error: String },
+    RecallFailed {
+        error: String,
+    },
     /// The session Eidetic actor completed an explicit source-document capture.
     SourceDocumentCaptured {
         capture_generation: uuid::Uuid,

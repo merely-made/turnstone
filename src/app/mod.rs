@@ -28,6 +28,18 @@ use crate::{browse, session};
 mod contributed_pane_arms;
 mod research_clip_arms;
 pub(crate) mod research_search_state;
+pub(crate) mod research_record_owner;
+mod research_record_commit;
+mod research_record_completion;
+mod research_record_index;
+mod research_record_open;
+mod research_record_response_check;
+mod research_record_scope;
+pub(crate) mod research_structured_state;
+mod research_structured_arms;
+mod research_structured_rows;
+#[cfg(test)]
+mod research_structured_tests;
 mod research_search_arms;
 mod research_compare_arms;
 mod research_compare_rows;

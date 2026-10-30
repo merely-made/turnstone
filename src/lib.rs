@@ -115,6 +115,9 @@ pub mod remote_projection;
 pub mod research;
 pub mod research_search;
 pub mod research_compare;
+pub(crate) mod research_record_graph;
+pub mod research_records;
+pub(crate) mod research_records_worker;
 pub mod resident_admission;
 pub mod resident_runs;
 #[cfg(test)]

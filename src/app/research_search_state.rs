@@ -30,6 +30,7 @@ pub enum Command {
     Tags,
     Settings,
     Coverage,
+    Structured,
     Mode(u8),
     Kind(ProducerKind),
     AllKinds,
@@ -59,6 +60,7 @@ pub enum View {
     Tags,
     Settings,
     Coverage,
+    Structured,
     Input(String),
 }
 pub struct Preferences {
@@ -66,6 +68,7 @@ pub struct Preferences {
     pub settings: SearchSettings,
     pub aliases: Vec<Alias>,
     pub comparison: eidetic_search::compare::ComparisonSettings,
+    pub records: eidetic::records::RecordSettings,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -75,6 +78,8 @@ struct StoredPreferences {
     aliases: Vec<Alias>,
     #[serde(default)]
     comparison: StoredComparison,
+    #[serde(default)]
+    records: eidetic::records::RecordSettings,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -127,6 +132,7 @@ impl From<&Preferences> for StoredPreferences {
             version: value.version,
             aliases: value.aliases.clone(),
             comparison: (&value.comparison).into(),
+            records: value.records.clone(),
             settings: StoredSettings {
                 weights: settings.weights,
                 snippet_context: settings.snippet_context,
@@ -146,6 +152,7 @@ impl From<StoredPreferences> for Preferences {
             version: value.version,
             aliases: value.aliases,
             comparison: value.comparison.into(),
+            records: value.records,
             settings: SearchSettings {
                 weights: settings.weights,
                 snippet_context: settings.snippet_context,
@@ -166,6 +173,7 @@ impl Default for Preferences {
             settings: SearchSettings::default(),
             aliases: vec![],
             comparison: Default::default(),
+            records: Default::default(),
         }
     }
 }
@@ -225,6 +233,7 @@ impl Preferences {
 }
 
 pub(crate) struct State {
+    pub structured: super::research_structured_state::State,
     pub view: View,
     pub mode: u8,
     pub query: SearchQuery,
@@ -251,6 +260,7 @@ pub(crate) struct State {
 impl Default for State {
     fn default() -> Self {
         Self {
+            structured: Default::default(),
             view: View::Results,
             mode: 0,
             query: SearchQuery::default(),

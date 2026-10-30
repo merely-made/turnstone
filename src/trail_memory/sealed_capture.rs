@@ -83,7 +83,7 @@ fn read_receipt(
 }
 
 /// A sealed-only namespace never adopts or overwrites an unsealed/partial role.
-fn save<T: TypedPayload>(
+pub(super) fn save<T: TypedPayload>(
     store: &mut dyn eidetic::Store,
     sealer: &dyn PayloadSealer,
     value: &T,
@@ -155,7 +155,7 @@ fn save<T: TypedPayload>(
     .map_err(|_| "sealed capture artifact write refused".into())
 }
 
-fn load<T: TypedPayload>(
+pub(super) fn load<T: TypedPayload>(
     store: &mut dyn eidetic::Store,
     sealer: &dyn PayloadSealer,
     id: eidetic::ManifestId,

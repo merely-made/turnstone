@@ -34,6 +34,7 @@ impl App {
         self.sync_research_context();
         let mut validity_effects = self.invalidate_research_search();
         let mut effects = match update {
+            Update::ResearchRecords(result) => self.structured_completed(result),
             Update::ResearchCompareFinished { request, result } => {
                 self.research_compare_finished(request, result)
             },

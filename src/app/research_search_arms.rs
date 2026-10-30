@@ -90,6 +90,7 @@ impl App {
     }
     /// Forget all private text and projections before custody or session changes.
     pub(crate) fn clear_private_research(&mut self) {
+        let _ = self.invalidate_structured();
         if matches!(self.omnibar.mode, OmnibarMode::SavedSources) {
             self.omnibar = crate::ui::OmnibarState::default();
             self.shell.close_omnibar();
@@ -100,6 +101,7 @@ impl App {
         self.research_search = State::default();
     }
     pub(crate) fn invalidate_research_search(&mut self) -> Vec<Effect> {
+        let structured_effects = self.invalidate_structured();
         let current = self.research.context_revision().ok();
         let epoch = self
             .research
@@ -132,9 +134,11 @@ impl App {
                 });
         if stale {
             self.clear_private_research();
-            return vec![Effect::CancelResearchSearch];
+            let mut effects = structured_effects;
+            effects.push(Effect::CancelResearchSearch);
+            return effects;
         }
-        vec![]
+        structured_effects
     }
     pub(crate) fn research_search_finished(
         &mut self,
@@ -169,6 +173,7 @@ impl App {
     }
     pub(crate) fn research_search_command(&mut self, command: Command) -> Vec<Effect> {
         let mut refresh = false;
+        let mut scope_changed = false;
         let state = &mut self.research_search;
         state.first_row = 0;
         match command {
@@ -229,6 +234,7 @@ impl App {
             Command::Tags => state.view = View::Tags,
             Command::Settings => state.view = View::Settings,
             Command::Coverage => state.view = View::Coverage,
+            Command::Structured => state.view = View::Structured,
             Command::Mode(mode) if mode < 5 => {
                 state.mode = mode;
                 state.page = 0;
@@ -250,16 +256,19 @@ impl App {
                 refresh = true;
             },
             Command::ScopeAll => {
+                scope_changed = true;
                 state.selected = None;
                 state.page = 0;
                 refresh = true;
             },
             Command::ScopeChosen => {
+                scope_changed = true;
                 state.selected = Some(vec![]);
                 state.page = 0;
                 refresh = true;
             },
             Command::Member(member) => {
+                scope_changed = true;
                 let selected = state.selected.get_or_insert_with(Vec::new);
                 if let Some(i) = selected.iter().position(|v| v == &member) {
                     selected.remove(i);
@@ -361,6 +370,9 @@ impl App {
         } else {
             vec![Effect::Redraw]
         };
+        if scope_changed {
+            effects.extend(self.invalidate_structured());
+        }
         self.recompute_omnibar_suggestions();
         effects.push(Effect::Redraw);
         effects

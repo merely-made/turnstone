@@ -311,6 +311,7 @@ impl Shell {
                 | Effect::PersistSourceCapture { .. }
                 | Effect::CaptureSourceDocument { .. }
                 | Effect::ResearchCompare(..)
+                | Effect::ResearchRecords(..)
                 | Effect::ResearchSearch(..)
                 | Effect::CancelResearchSearch
                 | Effect::LoadSavedSources { .. }

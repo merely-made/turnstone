@@ -395,3 +395,47 @@ fn recovery_does_not_unseal_after_custody_closes_before_recovery() {
     receive.recv_timeout(Duration::from_secs(5)).unwrap();
     actor.join().unwrap();
 }
+
+#[test]
+fn model_free_property_definition_requires_valid_sealed_round_trip() {
+    use eidetic::records::{Cardinality, PropertyDefinitionV1, ValueType};
+    let root = tempfile::tempdir().unwrap();
+    let sealer = TestSealer(AtomicBool::new(true));
+    let mut store = muniment::FjallStore::open(root.path()).unwrap();
+    let definition = PropertyDefinitionV1 {
+        id: "fixture.departure".into(),
+        revision: "1".into(),
+        value_type: ValueType::Text,
+        unit: None,
+        cardinality: Cardinality::Single,
+        statuses: vec!["approved".into()],
+    };
+    let id =
+        crate::trail_memory::sealed_records::deposit_definition(&mut store, &sealer, &definition)
+            .unwrap();
+    assert_eq!(id, definition.manifest_id().unwrap());
+    for key in pollster::block_on(store.list("")).unwrap() {
+        let bytes = pollster::block_on(store.get(&key)).unwrap().unwrap();
+        assert!(
+            !bytes
+                .windows("fixture.departure".len())
+                .any(|v| v == b"fixture.departure")
+        );
+    }
+    drop(store);
+    let mut store = muniment::FjallStore::open(root.path()).unwrap();
+    assert_eq!(
+        crate::trail_memory::sealed_records::load_definition(&mut store, &sealer, id,).unwrap(),
+        definition
+    );
+    let mut invalid = definition.clone();
+    invalid.id.clear();
+    assert!(
+        crate::trail_memory::sealed_records::deposit_definition(&mut store, &sealer, &invalid,)
+            .is_err()
+    );
+    sealer.0.store(false, Ordering::SeqCst);
+    assert!(
+        crate::trail_memory::sealed_records::load_definition(&mut store, &sealer, id,).is_err()
+    );
+}

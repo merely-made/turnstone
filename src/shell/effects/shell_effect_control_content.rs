@@ -6,6 +6,7 @@ use super::*;
 impl Shell {
     pub(super) fn effect_control_content(&mut self, effect: Effect) {
         match effect {
+            Effect::ResearchRecords(request) => self.research_worker.submit_records(request),
             Effect::ResearchSearch(request) => self.research_worker.submit(request),
             Effect::ResearchCompare(request) => self.research_worker.submit_compare(request),
             Effect::CancelResearchSearch => self.research_worker.cancel(),

@@ -28,6 +28,14 @@ impl App {
         }
         // Search terms and value prompts stay out of ordinary command history.
         if matches!(self.omnibar.mode, crate::ui::OmnibarMode::SavedSources) {
+            if matches!(self.research_search.view, crate::app::research_search_state::View::Structured) {
+                if matches!(self.research_search.structured.view, crate::app::research_structured_state::View::Input(_)) {
+                    return self.update(Action::ResearchStructured(crate::action::ResearchStructuredAction::Submit(self.omnibar.text.clone())));
+                }
+                if let Some(Suggestion::Act { action: Action::ResearchStructured(command), .. }) = self.omnibar.selection().cloned() {
+                    return self.update(Action::ResearchStructured(command));
+                }
+            }
             if matches!(self.research_search.view, crate::app::research_search_state::View::Input(_)) {
                 return self.update(Action::ResearchSearch(crate::action::ResearchSearchAction::Submit(self.omnibar.text.clone())));
             }

@@ -28,6 +28,13 @@ pub(super) fn run(
     let mut last_to: HashMap<String, PageRef> = HashMap::new();
     while let Ok(command) = commands.recv() {
         match command {
+            TrailCommand::ResearchRecords(command) => record_actor::handle(
+                command,
+                &mut sealed_store,
+                custody.as_ref(),
+                &current_dir,
+                current_capture_generation,
+            ),
             TrailCommand::SetCustody(binding) => {
                 drop(sealed_store.take());
                 custody = binding;

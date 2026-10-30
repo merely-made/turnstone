@@ -12,6 +12,10 @@ use eidetic_search::query::{Coverage, ProducerKind, TagId};
 
 impl App {
     pub(crate) fn research_rows(&mut self, row_limit: usize) {
+        if matches!(self.research_search.view, View::Structured) {
+            self.research_structured_rows(row_limit);
+            return;
+        }
         let state = &self.research_search;
         let mut rows = Vec::new();
         let mut push = |label: String, command: Command| {
@@ -29,6 +33,7 @@ impl App {
             View::Results => {
                 push("Search options…".into(), Command::Options);
                 push("Compare sources…".into(), Command::Compare);
+                push("Structured records…".into(), Command::Structured);
                 if let Some(error) = &state.error {
                     push(format!("Search unavailable: {error}"), Command::Coverage);
                 }
@@ -502,6 +507,7 @@ impl App {
                     Command::Submit(self.omnibar.text.clone()),
                 );
             },
+            View::Structured => unreachable!(),
         }
         let start = state.first_row.min(rows.len().saturating_sub(1));
         self.omnibar.suggestions = rows
