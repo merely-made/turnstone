@@ -13,12 +13,24 @@ impl DocumentSession<Scene> for KnotDocumentSession {
             });
         }
         let sheet = format!("{} {}", crate::ui::CAMBIUM_SHEET, KNOT_SHEET);
-        self.layout
-            .scene(&mut self.dom.borrow_mut(), &sheet, width, height)
+        self.layout.scene_scrolled(
+            &mut self.dom.borrow_mut(),
+            &sheet,
+            width,
+            height,
+            &mut self.scroll,
+        )
     }
 
-    fn scroll_by(&mut self, _dx: f32, _dy: f32) -> bool {
-        false
+    fn scroll_by(&mut self, dx: f32, dy: f32) -> bool {
+        if dx == 0.0 && dy == 0.0 {
+            return false;
+        }
+        let before = self.scroll.offset();
+        self.scroll.nudge(dx, dy);
+        let (width, height) = (self.runner.state().width, self.runner.state().height);
+        let _ = self.frame(width, height);
+        self.scroll.offset() != before
     }
 
     fn scroll_for_key(&mut self, _key: SessionScrollKey) -> bool {
@@ -85,9 +97,15 @@ impl DocumentSession<Scene> for KnotDocumentSession {
         self.drain_events();
         let size = (self.runner.state().width, self.runner.state().height);
         let sheet = format!("{} {}", crate::ui::CAMBIUM_SHEET, KNOT_SHEET);
-        let hit = self
-            .layout
-            .hit_test(&mut self.dom.borrow_mut(), &sheet, size.0, size.1, x, y);
+        let hit = self.layout.hit_test_scrolled(
+            &mut self.dom.borrow_mut(),
+            &sheet,
+            size.0,
+            size.1,
+            x,
+            y,
+            &self.scroll,
+        );
         let Some(node) = hit else {
             return SessionClick::Miss;
         };

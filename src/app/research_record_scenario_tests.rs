@@ -230,3 +230,30 @@ fn model_free_scenario_observation_is_scope_checked_and_read_only() {
     app.graph_runtimes.get_mut(graph).unwrap().instance = uuid::Uuid::new_v4();
     assert!(app.structured_scenario_observation().is_err());
 }
+
+#[test]
+fn model_free_scope_change_cancels_stale_work_before_dispatching_fresh_search() {
+    let root = tempfile::tempdir().unwrap();
+    let mut app = App::test_stub_at(root.path().to_path_buf());
+    let custody = crate::trail_memory::custody_test_fixture::custody();
+    app.research.set_available(true);
+    app.research.access(Some(crate::research::ClipAccess {
+        root: root.path().into(),
+        sealer: custody.sealer,
+        epoch: custody.epoch,
+    }));
+    app.sync_research_context();
+    for (command, selected) in [
+        (crate::action::ResearchSearchAction::ScopeChosen, Some(vec![])),
+        (crate::action::ResearchSearchAction::ScopeAll, None),
+    ] {
+        app.research_search.structured.controller.view_scope = Some(app.structured_scope().unwrap());
+        let effects = app.research_search_command(command);
+        let cancel = effects.iter().position(|effect| matches!(effect, Effect::CancelResearchSearch)).expect("stale structured work canceled");
+        let search = effects.iter().position(|effect| matches!(effect, Effect::ResearchSearch(_))).expect("fresh search dispatched");
+        assert!(cancel < search, "cancel must precede the replacement search");
+        assert_eq!(app.research_search.selected, selected);
+        assert!(app.research_search.structured.controller.view_scope.is_none());
+        assert!(matches!(&effects[search], Effect::ResearchSearch(request) if request.selected == selected));
+    }
+}
