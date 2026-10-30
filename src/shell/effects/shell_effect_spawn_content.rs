@@ -67,32 +67,21 @@ impl Shell {
                 } else {
                     match crate::retained_clip::request(&url) {
                         Ok(Some(crate::retained_clip::ClipRequest::Read(id))) => {
-                            let resolved = self
-                                .app
-                                .research_clip_document(node, &url, id)
-                                .and_then(|document| {
-                                    if let Some(document) = document {
-                                        return Ok(document);
-                                    }
-                                    let root = self.app.clip_destination()?;
-                                    let clip = crate::retained_clip::read_sealed_with_limits(
-                                        &root,
-                                        id,
-                                        crate::retained_clip::limits()?,
-                                        self.app.clip_sealer()?,
-                                        &self.app.research.storage_limits()?,
-                                    )?;
-                                    Ok(clip.document())
-                                });
-                            match resolved {
-                                Ok(document) => Some(document),
-                                Err(error) => {
-                                    let follow_up = self
+                            let ready = self
+                                .ready_clip_reads
+                                .remove(&node)
+                                .filter(|(ready_url, _)| ready_url == &url);
+                            if let Some((_, document)) = ready {
+                                Some(document)
+                            } else {
+                                self.pending_clip_reads.remove(&node);
+                                if let Err(error) = self.request_clip_read(node, &url, id) {
+                                    let effects = self
                                         .app
                                         .apply_update(Update::ContentFailed { node, error });
-                                    self.run_effects(follow_up);
-                                    return;
-                                },
+                                    self.run_effects(effects);
+                                }
+                                return;
                             }
                         },
                         Ok(None) => None,

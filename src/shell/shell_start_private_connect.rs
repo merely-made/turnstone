@@ -286,11 +286,13 @@ impl Shell {
         {
             self.custody_expected_principal = Some(principal);
         }
-        crate::custody_binding::advance_generation(&self.custody_generation);
         if let Some(binding) = self.custody_binding.take() {
+            // Retire through the same atomic state used by publication claim.
             binding.bound.retire();
             binding.watcher.request_stop();
             self.retired_watchers.push(binding.watcher);
+        } else {
+            crate::custody_binding::advance_generation(&self.custody_generation);
         }
         if let Some((setup, _)) = self.custody_setup.take() {
             setup.request_stop();

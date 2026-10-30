@@ -34,6 +34,7 @@ impl FrameControls {
             revision: 0,
             focus: None,
             body_cursor: 0,
+            settled: None,
         }
     }
 
@@ -74,6 +75,10 @@ impl FrameControls {
                 s.events.clear();
             });
         }
+        let stamp = self.sync_stamp();
+        if self.settled.as_ref() == Some(&stamp) {
+            return;
+        }
         self.enhance();
         self.observe_body_mutations();
         if self.focus.as_ref().is_some_and(|c| self.node(c).is_none()) {
@@ -88,6 +93,23 @@ impl FrameControls {
                 });
         }
         self.apply_focus();
+        let after = self.sync_stamp();
+        self.settled = (after == stamp).then_some(after);
+    }
+
+    fn sync_stamp(&self) -> SyncStamp {
+        let dom = {
+            let dom = self.dom.borrow();
+            let (base, pending) = dom.pending_mutations();
+            base + pending.len() as u64
+        };
+        SyncStamp {
+            dom,
+            admission: self.admission,
+            revision: self.revision,
+            focus: self.focus.clone(),
+            runner_focus: self.runner.focus(),
+        }
     }
 
     pub fn invalidate(&mut self) {

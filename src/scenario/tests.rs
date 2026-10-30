@@ -351,8 +351,16 @@ fn model_free_structured_result_wait_requires_a_frame_limit() {
         [Step::WaitStructuredAuthorSave(600)]
     ));
     assert!(parse("wait-structured-author-save invalid").is_err());
-    assert!(matches!(parse("wait-structured-idle 600").unwrap().as_slice(), [Step::WaitStructuredIdle(600)]));
-    assert!(matches!(parse("wait-structured-limit-refusal 600").unwrap().as_slice(), [Step::WaitStructuredLimitRefusal(600)]));
+    assert!(matches!(
+        parse("wait-structured-idle 600").unwrap().as_slice(),
+        [Step::WaitStructuredIdle(600)]
+    ));
+    assert!(matches!(
+        parse("wait-structured-limit-refusal 600")
+            .unwrap()
+            .as_slice(),
+        [Step::WaitStructuredLimitRefusal(600)]
+    ));
     assert!(parse("wait-structured-idle invalid").is_err());
     assert!(parse("wait-structured-limit-refusal invalid").is_err());
 }
@@ -365,4 +373,18 @@ fn model_free_source_target_wait_requires_frames_and_exact_url() {
     );
     assert!(parse("wait-source-target 600").is_err());
     assert!(parse("wait-source-target invalid https://example.test/A").is_err());
+}
+
+#[test]
+fn retained_waits_parse_with_explicit_frame_bounds() {
+    assert!(matches!(
+        parse("wait-retained-clip 600").unwrap().as_slice(),
+        [Step::WaitRetainedClip(600)]
+    ));
+    assert!(matches!(
+        parse("wait-retained-reader 600").unwrap().as_slice(),
+        [Step::WaitRetainedReader(600)]
+    ));
+    assert!(parse("wait-retained-clip invalid").is_err());
+    assert!(parse("wait-retained-reader").is_err());
 }

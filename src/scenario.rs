@@ -346,6 +346,10 @@ pub enum Step {
     WaitStructuredLimitRefusal(u32),
     /// Wait until the focused saved-source reader has content and a live engine.
     WaitSavedReader(u32),
+    /// Wait for this action's accepted retention and its active clip target.
+    WaitRetainedClip(u32),
+    /// Wait for the current focused admitted retained reader to become live.
+    WaitRetainedReader(u32),
     /// Write the place observation facts (`crate::observe::place_record`),
     /// pretty-printed, to `<name>.json` in the capture directory.
     RecordPlace(String),

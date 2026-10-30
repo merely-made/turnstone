@@ -62,6 +62,11 @@ impl Shell {
 
     /// Apply the same queued worker completions during native scenario waits.
     pub(in crate::shell) fn drain_research_worker_updates(&mut self) {
+        self.service_private_custody();
+        self.drain_clip_reads();
+        self.drain_clip_retains();
+        self.drain_clip_imports();
+        self.drain_clip_actions();
         while let Some(update) = next_research_search_update(&self.research_worker) {
             self.service_private_custody();
             let effects = self.app.apply_update(update);

@@ -279,6 +279,17 @@ impl Shell {
                     ));
                 }
             },
+            Step::WaitRetainedClip(frames) => {
+                self.wait_frames(*frames, |shell| shell.latest_retention_ready() || shell.latest_retention_error().is_some());
+                if !self.latest_retention_ready() {
+                    return Err(format!("wait-retained-clip after {frames} frames: {}", self.latest_retention_error().unwrap_or("no current successful retention")));
+                }
+            },
+            Step::WaitRetainedReader(frames) => {
+                if !self.wait_frames(*frames, Shell::focused_retained_reader_ready) {
+                    return Err(format!("wait-retained-reader after {frames} frames: no current focused admitted live reader"));
+                }
+            },
             Step::WaitSavedReader(frames) => {
                 if !self.wait_frames(*frames, Shell::focused_saved_reader_ready) {
                     let node = self.focused_saved_reader_node();
