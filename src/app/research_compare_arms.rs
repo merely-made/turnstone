@@ -7,6 +7,7 @@ use crate::research_compare::{Request, ResultView};
 impl App {
     pub(crate) fn issue_research_compare(&mut self) -> Vec<Effect> {
         let state = &mut self.research_search;
+        state.compare_page = 0;
         state.comparison = None;
         state.compare_accepted = None;
         state.compare_request = None;
@@ -34,7 +35,12 @@ impl App {
         if !crate::research::admitted(&context, &left)
             || !crate::research::admitted(&context, &right)
         {
-            state.error = Some("A selected source was withdrawn.".into());
+            let side = if !crate::research::admitted(&context, &left) {
+                "Left"
+            } else {
+                "Right"
+            };
+            state.error = Some(format!("{side} withdrawn from scope."));
             return vec![Effect::CancelResearchSearch, Effect::Redraw];
         }
         let request = Request {

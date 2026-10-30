@@ -33,8 +33,8 @@ fn read(
     request: &Request,
     target: &Target,
 ) -> Result<RetainedSourceText, String> {
-    if target.selector().is_some() || !research::admitted(&request.context, target) {
-        return Err("Source was withdrawn from this session.".into());
+    if target.selector().is_some() {
+        return Err("A comparison side must name a whole source.".into());
     }
     let (title, text) = match target {
         Target::Capture(target) => {
@@ -78,6 +78,12 @@ pub(crate) fn run(
         Ok(())
     };
     check()?;
+    if !research::admitted(&request.context, &request.left) {
+        return Err("Left withdrawn from scope.".into());
+    }
+    if !research::admitted(&request.context, &request.right) {
+        return Err("Right withdrawn from scope.".into());
+    }
     let left = read(bridge, trail, request, &request.left)
         .map_err(|e| format!("Left unavailable: {e}"))?;
     check()?;

@@ -1,5 +1,6 @@
 // Copyright 2026 Mark Alan Boykin
 // SPDX-License-Identifier: MPL-2.0
+use super::research_compare_rows::{comparison_identity, comparison_previews};
 use super::{
     App,
     research_search_state::{Command, View},
@@ -75,7 +76,7 @@ impl App {
             View::Compare => {
                 let side_label = |side: &Option<crate::research::Target>| {
                     side.as_ref()
-                        .map(|t| format!("{} · {}", t.identity(), t.text_hash()))
+                        .map(comparison_identity)
                         .unwrap_or_else(|| "not selected".into())
                 };
                 push(
@@ -92,7 +93,7 @@ impl App {
                     Command::Compare,
                 );
                 if let Some(error) = &state.error {
-                    push(format!("Comparison unavailable: {error}"), Command::Compare);
+                    push(format!("Comparison: {error}"), Command::Compare);
                 }
                 if let (Some(result), Some(request)) = (&state.comparison, &state.compare_accepted)
                 {
@@ -118,24 +119,32 @@ impl App {
                     let page_size = state.preferences.settings.limit.max(1);
                     let preview_chars = state.preferences.settings.snippet_context.max(1);
                     let start = state.compare_page.saturating_mul(page_size);
-                    for (index, span) in result
+                    let spans: Vec<_> = result
                         .comparison
                         .spans
                         .iter()
                         .enumerate()
                         .skip(start)
                         .take(page_size)
-                    {
-                        for (left, selector, text) in [
-                            (true, &span.old, &result.left.text),
-                            (false, &span.new, &result.right.text),
+                        .collect();
+                    let left_previews = comparison_previews(
+                        result.left.text.chars(),
+                        spans.iter().map(|(_, span)| *span),
+                        true,
+                        preview_chars,
+                    );
+                    let right_previews = comparison_previews(
+                        result.right.text.chars(),
+                        spans.iter().map(|(_, span)| *span),
+                        false,
+                        preview_chars,
+                    );
+                    for (position, (index, span)) in spans.into_iter().enumerate() {
+                        for (left, excerpt) in [
+                            (true, &left_previews[position]),
+                            (false, &right_previews[position]),
                         ] {
-                            if let Some(selector) = selector {
-                                let excerpt: String = text
-                                    .chars()
-                                    .skip(selector.start)
-                                    .take((selector.end - selector.start).min(preview_chars))
-                                    .collect();
+                            if let Some(excerpt) = excerpt {
                                 push(
                                     format!(
                                         "{:?} {}: {}",
@@ -168,10 +177,9 @@ impl App {
                         if let Ok(target) = crate::research::target(&input.source, &input.version) {
                             push(
                                 format!(
-                                    "{} · {} · {}",
+                                    "{} · {}",
                                     input.title.as_deref().unwrap_or("Untitled"),
-                                    target.identity(),
-                                    target.text_hash()
+                                    comparison_identity(&target)
                                 ),
                                 Command::ChooseCompare { left, target },
                             );

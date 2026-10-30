@@ -79,6 +79,74 @@ fn model_free_comparison_side_opens_and_stale_results_are_refused() {
             })
         })
         .collect();
+    // The same manifest and text admitted under another node must remain distinguishable.
+    let mut other = targets[0].clone();
+    let crate::research::Target::Clip(other_clip) = &mut other else {
+        unreachable!()
+    };
+    other_clip.clip.node = uuid::Uuid::new_v4();
+    let sources: Vec<_> = [targets[0].clone(), other.clone()]
+        .iter()
+        .map(|target| eidetic_search::query::ResearchSource {
+            retained: RetainedSourceText {
+                source: crate::research::source_id(target).unwrap(),
+                version: target.text_hash().into(),
+                title: Some("Same title".into()),
+                text: items[0].0.clone(),
+            },
+            producer: eidetic_search::query::ProducerKind::Selection,
+            address: None,
+            date: None,
+            tags: vec![],
+        })
+        .collect();
+    let snapshot = eidetic_search::query::ResearchSnapshot {
+        generation: "fixture".into(),
+        scope: sources.iter().map(|s| s.retained.source.clone()).collect(),
+        sources,
+        coverage: eidetic_search::query::Coverage::Complete,
+    };
+    app.research_search.result = Some(
+        eidetic_search::query::search(&snapshot, &Default::default(), &Default::default()).unwrap(),
+    );
+    app.research_search.view = crate::app::research_search_state::View::ChooseLeft;
+    app.research_rows(100);
+    let labels: Vec<_> = app
+        .research_search
+        .rows
+        .iter()
+        .filter_map(|row| match row {
+            crate::ui::Suggestion::Act {
+                label,
+                action: Action::ResearchSearch(Command::ChooseCompare { .. }),
+            } => Some(label),
+            _ => None,
+        })
+        .collect();
+    assert_eq!(labels.len(), 2);
+    for target in [&targets[0], &other] {
+        assert!(
+            labels
+                .iter()
+                .any(|label| label.contains(&target.node().to_string())
+                    && label.contains(&target.session().as_uuid().to_string()))
+        );
+    }
+    app.research_search.compare_left = Some(targets[0].clone());
+    app.research_search.compare_right = Some(other.clone());
+    app.research_search.view = crate::app::research_search_state::View::Compare;
+    app.research_rows(100);
+    for target in [&targets[0], &other] {
+        assert!(app.research_search.rows.iter().any(|row| matches!(row, crate::ui::Suggestion::Act { label, .. } if label.contains(&target.node().to_string()))));
+    }
+    app.research_search.error = Some("Left withdrawn from scope.".into());
+    app.research_rows(100);
+    assert!(app.research_search.rows.iter().any(|row| matches!(row, crate::ui::Suggestion::Act { label, .. } if label.contains("Left withdrawn") && !label.contains("unavailable"))));
+    app.research_search.error = None;
+    app.research_search.compare_right = Some(targets[1].clone());
+    app.research_search.compare_page = 12;
+    app.issue_research_compare();
+    assert_eq!(app.research_search.compare_page, 0);
     let texts: Vec<_> = items
         .iter()
         .zip(&targets)

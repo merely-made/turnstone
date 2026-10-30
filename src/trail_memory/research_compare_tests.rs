@@ -121,11 +121,14 @@ fn model_free_comparison_retained_capture_series_and_withdrawal() {
     let (_, changed_revision) = bridge.context_revision().unwrap();
     request.context = withdrawn;
     request.revision = changed_revision;
-    assert!(
-        crate::research_compare::run(&bridge, &actor, &request)
-            .unwrap_err()
-            .contains("withdrawn")
-    );
+    let error = crate::research_compare::run(&bridge, &actor, &request).unwrap_err();
+    assert!(error.contains("Left withdrawn"), "{error}");
+    assert!(!error.contains("unavailable"), "{error}");
+    std::mem::swap(&mut request.left, &mut request.right);
+    let error = crate::research_compare::run(&bridge, &actor, &request).unwrap_err();
+    assert!(error.contains("Right withdrawn"), "{error}");
+    assert!(!error.contains("unavailable"), "{error}");
+    std::mem::swap(&mut request.left, &mut request.right);
     // The exact stored bytes become readable again only after explicit re-admission.
     bridge.project(context.clone());
     request.context = context;
