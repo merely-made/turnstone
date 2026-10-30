@@ -306,9 +306,16 @@ impl Shell {
     }
 
     pub(super) fn projected_a11y_tree(&mut self) -> document_a11y::Projected {
-        let pane_rects = self
-            .surface_plan()
-            .into_iter()
+        let plan = self.surface_plan();
+        self.projected_a11y_tree_in(&plan)
+    }
+
+    pub(super) fn projected_a11y_tree_in(
+        &mut self,
+        plan: &[crate::surface::Surface],
+    ) -> document_a11y::Projected {
+        let pane_rects = plan
+            .iter()
             .filter_map(|surface| match surface.kind {
                 crate::surface::SurfaceKind::Pane(pane) => Some((pane, surface.rect)),
                 _ => None,
@@ -390,8 +397,7 @@ impl Shell {
         } else {
             None
         };
-        let plan = self.surface_plan();
-        self.project_document_accessibility(&mut frame, &plan);
+        self.project_document_accessibility(&mut frame, plan);
         frame.focus = frame_keys::accessibility_focus(
             crate::a11y::host_input_focus(&self.app),
             header_focus,
@@ -421,8 +427,10 @@ impl Shell {
     pub(super) fn push_a11y_tree(&mut self) {
         self.sync_content_placements();
         self.drain_surface_accessibility();
+        // One plan serves the whole publication; nothing below changes it.
+        let plan = self.surface_plan();
         // All losing native parents detach before any destination attaches.
-        let current = self.foreign_a11y_placements();
+        let current = self.window_foreign_a11y_placements_with(0, plan.clone());
         if self
             .a11y_surface_layout
             .iter()
@@ -432,10 +440,10 @@ impl Shell {
                 .into_iter()
                 .filter(|(node, _)| self.a11y_surface_layout.iter().any(|(n, _)| n == node))
                 .collect();
-            self.push_primary_a11y_tree(Some(retained));
+            self.push_primary_a11y_tree(Some(retained), &plan);
         }
         self.withdraw_lens_a11y_departures();
-        self.push_primary_a11y_tree(None);
+        self.push_primary_a11y_tree(None, &plan);
         self.push_lens_a11y_trees();
     }
 }

@@ -7,6 +7,7 @@ impl Shell {
     pub(super) fn push_primary_a11y_tree(
         &mut self,
         override_placements: Option<Vec<(uuid::Uuid, accesskit::Rect)>>,
+        plan: &[crate::surface::Surface],
     ) {
         let epoch = self
             .a11y_adapter
@@ -20,14 +21,15 @@ impl Shell {
                 .publish(Default::default());
             self.a11y_epoch = epoch;
         }
-        let placements = override_placements.unwrap_or_else(|| self.foreign_a11y_placements());
+        let placements = override_placements
+            .unwrap_or_else(|| self.window_foreign_a11y_placements_with(0, plan.to_vec()));
         let document_a11y::Projected {
             mut tree,
             mut routes,
             mut focus,
             guests,
             admissions,
-        } = self.projected_a11y_tree();
+        } = self.projected_a11y_tree_in(plan);
         let mut visible = Vec::new();
         for &(node, rect) in &placements {
             let Some(mut graft) = self.surface_a11y.graft(node, rect) else {
