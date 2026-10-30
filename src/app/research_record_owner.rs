@@ -19,9 +19,11 @@ mod tests;
 pub(crate) struct Controller {
     pub result: Option<RecordResult>,
     pub result_generation: Option<uuid::Uuid>,
+    pub result_historical: bool,
     pub(super) record_index: std::collections::HashMap<String, (usize, Binding)>,
     pub accepted: Option<QueryRequest>,
     pub inspected: Option<(Binding, PropertyRecordV1)>,
+    pub inspected_withdrawn: Option<bool>,
     pub saved_result: Option<eidetic::ManifestId>,
     pub error: Option<String>,
     pub busy: bool,
@@ -188,9 +190,11 @@ impl App {
         ) {
             controller.result = None;
             controller.result_generation = None;
+            controller.result_historical = false;
             controller.record_index.clear();
             controller.accepted = None;
             controller.inspected = None;
+            controller.inspected_withdrawn = None;
             controller.view_scope = None;
         }
         controller.error = None;

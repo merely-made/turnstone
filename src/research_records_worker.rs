@@ -31,6 +31,7 @@ fn command<T>(
     if !trail.command(TrailCommand::ResearchRecords(record_actor::Command {
         session: *scope.context.session.as_uuid(),
         generation: scope.context.generation,
+        max_bytes: scope.settings.max_input_bytes,
         kind: make(send),
     })) {
         return Err("Structured record owner unavailable".into());
@@ -91,8 +92,45 @@ fn sources(
     if total > max_bytes {
         return Err("Structured source byte limit exceeded".into());
     }
+    bounded_json_size(&snapshot, max_bytes)?;
     current(bridge, scope)?;
     Ok(snapshot)
+}
+fn read_record(
+    trail: &armillary::ActorHandle<TrailCommand>,
+    scope: &ScopeToken,
+    manifest: eidetic::ManifestId,
+    remaining: usize,
+) -> Result<(PropertyRecordV1, eidetic::records::PropertyDefinitionV1), String> {
+    command(trail, scope, |reply| {
+        record_actor::Kind::ReadRecord(
+            manifest,
+            remaining,
+            scope.settings.max_validation_bytes,
+            reply,
+        )
+    })
+}
+fn read_result(
+    trail: &armillary::ActorHandle<TrailCommand>,
+    scope: &ScopeToken,
+    manifest: eidetic::ManifestId,
+    remaining: usize,
+) -> Result<eidetic::records::RecordResult, String> {
+    let mut settings = scope.settings.clone();
+    settings.max_input_bytes = remaining;
+    command(trail, scope, |reply| {
+        record_actor::Kind::ReadResult(manifest, settings, reply)
+    })
+}
+fn remaining_after_sources(
+    max_bytes: usize,
+    inputs: &eidetic_search::query::ResearchSnapshot,
+) -> Result<usize, String> {
+    let used = bounded_json_size(inputs, max_bytes)?;
+    max_bytes
+        .checked_sub(used)
+        .ok_or_else(|| "Structured input byte limit exceeded".into())
 }
 fn validate_evidence(
     record: &PropertyRecordV1,
@@ -122,6 +160,8 @@ fn validate_saved_inputs(
     inputs: &eidetic_search::query::ResearchSnapshot,
     value: &eidetic::records::RecordResult,
 ) -> Result<(), String> {
+    let mut remaining = remaining_after_sources(scope.settings.max_input_bytes, inputs)?;
+    remaining -= bounded_json_size(value, remaining)?;
     for source in &value.snapshot.sources {
         if !inputs.sources.iter().any(|held| {
             held.retained.source == source.source && held.retained.version == source.version
@@ -164,9 +204,8 @@ fn validate_saved_inputs(
         if owner.author != record.author {
             return Err("Saved property attribution changed".into());
         }
-        let (held_record, definition) = command(trail, scope, |reply| {
-            record_actor::Kind::ReadRecord(manifest, reply)
-        })?;
+        let (held_record, definition) = read_record(trail, scope, manifest, remaining)?;
+        remaining -= bounded_json_size(&(&held_record, &definition), remaining)?;
         if held_record != *record || !value.snapshot.definitions.contains(&definition) {
             return Err("Saved property payload is unavailable or changed".into());
         }
@@ -208,9 +247,6 @@ fn query(
         request.settings.max_input_bytes,
         None,
     )?;
-    if request.candidates.len() > request.settings.max_records {
-        return Err("Structured record limit exceeded".into());
-    }
     let mut snapshot = RecordSnapshot {
         scope_generation: serde_json::to_string(&(
             &request.scope.context.generation,
@@ -263,10 +299,21 @@ fn query(
         }
     }
     let mut nonce_bindings = std::collections::BTreeMap::new();
+    let mut remaining = remaining_after_sources(request.settings.max_input_bytes, &inputs)?;
+    if inputs.sources.is_empty() {
+        projections.clear();
+    }
     for candidate in projections.into_values() {
         let (record, definition) = command(trail, &request.scope, |reply| {
-            record_actor::Kind::ReadRecord(candidate.binding.manifest, reply)
+            record_actor::Kind::ReadRecord(
+                candidate.binding.manifest,
+                remaining,
+                request.settings.max_validation_bytes,
+                reply,
+            )
         })?;
+        let used = bounded_json_size(&(&record, &definition), remaining)?;
+        remaining -= used;
         if record.entity != candidate.binding.entity.to_string()
             || record.author != candidate.author
             || record.method != MANUAL
@@ -280,6 +327,9 @@ fn query(
         else {
             continue;
         };
+        if snapshot.records.len() >= request.settings.max_records {
+            return Err("Structured record limit exceeded".into());
+        }
         validate_evidence(&record, source)?;
         if nonce_bindings
             .insert(record.id.clone(), &candidate.binding)
@@ -321,7 +371,7 @@ fn bounded_json_size(value: &impl serde::Serialize, limit: usize) -> Result<usiz
     }
     let mut counter = Counter { used: 0, limit };
     serde_json::to_writer(&mut counter, value)
-        .map_err(|_| "Structured author input byte limit exceeded".to_string())?;
+        .map_err(|_| "Structured input byte limit exceeded".to_string())?;
     Ok(counter.used)
 }
 fn author_input_size(request: &AuthorRequest) -> Result<usize, String> {

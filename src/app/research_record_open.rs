@@ -7,6 +7,36 @@ use crate::research_records::{Binding, Job};
 use eidetic::models::recall::RecallSourceId;
 
 impl App {
+    pub(crate) fn structured_inspect_frozen_record(
+        &mut self,
+        generation: uuid::Uuid,
+        index: usize,
+    ) -> Vec<Effect> {
+        let scope = match self.structured_scope() {
+            Ok(value) => value,
+            Err(error) => return self.structured_error(error),
+        };
+        let controller = &self.research_search.structured.controller;
+        if controller.view_scope.as_ref() != Some(&scope)
+            || controller.result_generation != Some(generation)
+        {
+            return self.structured_error("Frozen result is stale");
+        }
+        let Some(record) = controller
+            .result
+            .as_ref()
+            .and_then(|result| result.snapshot.records.get(index))
+        else {
+            return self.structured_error("Frozen record unavailable");
+        };
+        let Some((held_index, binding)) = controller.record_index.get(&record.id) else {
+            return self.structured_error("Frozen record binding unavailable");
+        };
+        if *held_index != index {
+            return self.structured_error("Frozen record binding changed");
+        }
+        self.structured_inspect(binding.clone())
+    }
     pub(crate) fn structured_open_evidence(&mut self, binding: Binding) -> Vec<Effect> {
         let scope = match self.structured_scope() {
             Ok(value) => value,

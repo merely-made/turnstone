@@ -106,7 +106,9 @@ fn bindings_for(
                         .iter()
                         .fold(0usize, |total, value| total.saturating_add(value.len())),
                 );
-            budget.charge(0, 1, bytes)?;
+            // Bindings include saved history and unselected evidence. Their traversal and
+            // metadata are bounded here; max_records applies to eligible query records.
+            budget.charge(0, 0, bytes)?;
             if from.id() != to.id()
                 || statement.graph_scope != GraphScope::Default
                 || statement.recognized_sub_kind.is_some()
@@ -360,6 +362,7 @@ pub(crate) fn restore(
     expected: &GraphBinding,
     assertion: &serde_json::Value,
     result: bool,
+    settings: &eidetic::records::RecordSettings,
 ) -> Result<(), String> {
     use mere::kernel::graph::apply::{GraphDelta, GraphDeltaResult, apply_graph_delta};
     use mere::kernel::persistence_edge::{PersistedEdge, PersistedSemanticStatement};
@@ -396,7 +399,7 @@ pub(crate) fn restore(
         predicate,
         method,
         reference,
-        &mut Budget::unlimited(),
+        &mut Budget::new(settings),
     )?;
     if let Some(existing) = current
         .iter()
@@ -415,12 +418,14 @@ pub(crate) fn restore(
         return Err("Recovery assertion conflicts with current graph".into());
     }
     let endpoint = expected.entity.to_string();
-    let mut edges: Vec<_> = graph
-        .to_snapshot()
-        .resource_edges
-        .into_iter()
-        .filter(|edge| edge.from_node_id == endpoint && edge.to_node_id == endpoint)
-        .collect();
+    let mut edges = graph
+        .persisted_resource_edges_between_bounded(
+            expected.entity,
+            expected.entity,
+            settings.max_work,
+            settings.max_input_bytes,
+        )
+        .map_err(|error| format!("Recovery target bucket refused: {error:?}"))?;
     edges.push(PersistedEdge {
         from_node_id: endpoint.clone(),
         to_node_id: endpoint,
@@ -433,6 +438,24 @@ pub(crate) fn restore(
         provenance: None,
         assertions: Some(vec![statement]),
     });
+    if edges.len() > settings.max_work {
+        return Err("Recovery target bucket work limit exceeded".into());
+    }
+    struct ByteLimit(usize);
+    impl std::io::Write for ByteLimit {
+        fn write(&mut self, bytes: &[u8]) -> std::io::Result<usize> {
+            self.0 = self
+                .0
+                .checked_sub(bytes.len())
+                .ok_or_else(|| std::io::Error::other("recovery byte limit"))?;
+            Ok(bytes.len())
+        }
+        fn flush(&mut self) -> std::io::Result<()> {
+            Ok(())
+        }
+    }
+    serde_json::to_writer(&mut ByteLimit(settings.max_input_bytes), &edges)
+        .map_err(|_| "Recovery target bucket byte limit exceeded")?;
     if !matches!(
         apply_graph_delta(
             graph,
@@ -452,7 +475,7 @@ pub(crate) fn restore(
         predicate,
         method,
         reference,
-        &mut Budget::unlimited(),
+        &mut Budget::new(settings),
     )?
     .into_iter()
     .find(|item| item.statement_id == expected.statement_id)

@@ -352,3 +352,11 @@ pub(super) fn home_scope(
     };
     item(rows, label, Command::Scope);
 }
+
+pub(super) fn result_operation(op: &RecordOperation, historical: bool) -> String {
+    if historical {
+        format!("{} · frozen historical input", operation(op))
+    } else {
+        operation(op).into()
+    }
+}

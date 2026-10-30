@@ -21,6 +21,7 @@ fn actor_call<T>(
         actor.command(TrailCommand::ResearchRecords(record_actor::Command {
             session,
             generation,
+            max_bytes: 16 * 1024 * 1024,
             kind: make(reply)
         }))
     );
@@ -168,7 +169,7 @@ fn model_free_owner_enumeration_deduplicates_projection_and_refuses_ambiguous_no
     );
     assert!(
         matches!(refused, crate::research_records::JobResult::Deposit { result: Err(error), .. }
-        if error.contains("author input byte limit"))
+        if error.contains("input byte limit"))
     );
     let persistence = crate::session_persistence::SessionPersistence::<
         pandect::graph_placement::PlacementProfile,
@@ -184,7 +185,7 @@ fn model_free_owner_enumeration_deduplicates_projection_and_refuses_ambiguous_no
             property: definition.id.clone(),
             schema_revision: definition.revision.clone(),
             definition_manifest: definition.manifest_id().unwrap(),
-            context: "route".into(),
+            context: format!("route{}", "x".repeat(4096)),
             value: PropertyValue::Integer(930),
             valid_time: None,
             status: Some("approved".into()),
@@ -294,6 +295,37 @@ fn model_free_owner_enumeration_deduplicates_projection_and_refuses_ambiguous_no
     assert_eq!(result.rows.len(), 1);
     assert_eq!(result.rows[0].record_ids.len(), 2);
     assert_ne!(result.rows[0].record_ids[0], result.rows[0].record_ids[1]);
+    let first_size =
+        serde_json::to_vec(&(&result.snapshot.records[0], &result.snapshot.definitions[0]))
+            .unwrap()
+            .len();
+    let second_size =
+        serde_json::to_vec(&(&result.snapshot.records[1], &result.snapshot.definitions[0]))
+            .unwrap()
+            .len();
+    let mut limited = request.clone();
+    limited.settings.max_input_bytes =
+        serde_json::to_vec(&sources).unwrap().len() + first_size + second_size / 2;
+    limited.candidates = vec![candidates[0].clone()];
+    let one = super::super::research_records_worker::execute(
+        &bridge,
+        &actor,
+        crate::research_records::Job::Query(limited.clone()),
+    );
+    assert!(matches!(
+        one,
+        crate::research_records::JobResult::Query { result: Ok(_), .. }
+    ));
+    limited.candidates = candidates.clone();
+    let both = super::super::research_records_worker::execute(
+        &bridge,
+        &actor,
+        crate::research_records::Job::Query(limited),
+    );
+    assert!(matches!(
+        both,
+        crate::research_records::JobResult::Query { result: Err(_), .. }
+    ));
     let open = super::super::research_records_worker::execute(
         &bridge,
         &actor,

@@ -14,6 +14,7 @@ impl Controller {
     ) -> Result<(), String> {
         self.result = None;
         self.result_generation = None;
+        self.result_historical = false;
         self.record_index.clear();
         let mut observations = HashMap::new();
         let mut owners = HashMap::new();

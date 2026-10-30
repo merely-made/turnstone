@@ -56,6 +56,10 @@ pub enum Command {
         generation: uuid::Uuid,
         record: usize,
     },
+    InspectCurrentAssertion {
+        generation: uuid::Uuid,
+        record: usize,
+    },
     Group {
         generation: uuid::Uuid,
         index: usize,

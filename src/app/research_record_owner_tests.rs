@@ -225,6 +225,27 @@ fn model_free_failed_graph_save_and_ack_never_install_a_successful_result() {
         .structured_attach_binding(graph_id, entity, manifest, true, &author)
         .unwrap();
     let scope = app.structured_scope().unwrap();
+    app.research_search.structured.controller.pending = Some(Job::MarkResult {
+        request: request.clone(),
+        scope: scope.clone(),
+        binding: binding.clone(),
+        assertion: assertion.clone(),
+        value: value.clone(),
+    });
+    app.structured_completed(JobResult::MarkResult {
+        request: request.clone(),
+        scope: scope.clone(),
+        binding: binding.clone(),
+        assertion: assertion.clone(),
+        value: value.clone(),
+        result: Err("injected sync failure".into()),
+    });
+    assert!(app.research_search.structured.controller.result.is_none());
+    assert!(
+        !app.session_dir()
+            .join(pandect::session_graph_store::GRAPH_FILE)
+            .exists()
+    );
     std::fs::create_dir(
         app.session_dir()
             .join(pandect::session_graph_store::GRAPH_FILE),

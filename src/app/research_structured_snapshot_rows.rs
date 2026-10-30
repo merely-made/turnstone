@@ -203,23 +203,41 @@ pub(super) fn frozen_fields(
             "Open exact retained source",
             Command::OpenResultSource { generation, source },
         ),
-        (Some(generation), FrozenTarget::Record(record)) => item(
-            rows,
-            "Open exact record evidence",
-            Command::OpenFrozenEvidence { generation, record },
-        ),
+        (Some(generation), FrozenTarget::Record(record)) => {
+            item(
+                rows,
+                "Open exact record evidence",
+                Command::OpenFrozenEvidence { generation, record },
+            );
+            item(
+                rows,
+                "Inspect current assertion",
+                Command::InspectCurrentAssertion { generation, record },
+            );
+        },
         (None, FrozenTarget::Inspected) => {
             if let Some((binding, _)) = &controller.inspected {
+                item(
+                    rows,
+                    match controller.inspected_withdrawn {
+                        Some(false) => "Current assertion: active",
+                        Some(true) => "Current assertion: withdrawn",
+                        None => "Current assertion: state unavailable",
+                    },
+                    Command::Home,
+                );
                 item(
                     rows,
                     "Open exact record evidence",
                     Command::OpenEvidence(binding.clone()),
                 );
-                item(
-                    rows,
-                    "Withdraw this assertion",
-                    Command::Withdraw(binding.clone()),
-                );
+                if controller.inspected_withdrawn == Some(false) {
+                    item(
+                        rows,
+                        "Withdraw this assertion",
+                        Command::Withdraw(binding.clone()),
+                    );
+                }
             }
         },
         _ => {},

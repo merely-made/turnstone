@@ -14,7 +14,8 @@ impl App {
             | Command::GroupPart { generation, .. }
             | Command::RowSource { generation, .. }
             | Command::OpenResultSource { generation, .. }
-            | Command::OpenFrozenEvidence { generation, .. } => Some(*generation),
+            | Command::OpenFrozenEvidence { generation, .. }
+            | Command::InspectCurrentAssertion { generation, .. } => Some(*generation),
             Command::Frozen { generation, .. } | Command::FrozenPart { generation, .. } => {
                 *generation
             },
@@ -88,6 +89,10 @@ impl App {
             },
             Command::OpenFrozenEvidence { generation, record } => {
                 return self.structured_open_frozen_record_evidence(generation, record);
+            },
+            Command::InspectCurrentAssertion { generation, record } => {
+                state.view = View::Home;
+                return self.structured_inspect_frozen_record(generation, record);
             },
             Command::Group { generation, index } => {
                 state.page = 0;

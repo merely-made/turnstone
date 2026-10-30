@@ -12,12 +12,15 @@ pub(crate) use sealed_result_receipts::ResultRequest;
 pub(crate) struct Command {
     pub session: uuid::Uuid,
     pub generation: uuid::Uuid,
+    pub max_bytes: usize,
     pub kind: Kind,
 }
 pub(crate) enum Kind {
     Deposit(DepositRequest, SyncSender<Result<ManifestId, String>>),
     ReadRecord(
         ManifestId,
+        usize,
+        usize,
         SyncSender<Result<(PropertyRecordV1, PropertyDefinitionV1), String>>,
     ),
     SaveResult(
@@ -25,7 +28,11 @@ pub(crate) enum Kind {
         RecordResult,
         SyncSender<Result<ManifestId, String>>,
     ),
-    ReadResult(ManifestId, SyncSender<Result<RecordResult, String>>),
+    ReadResult(
+        ManifestId,
+        eidetic::records::RecordSettings,
+        SyncSender<Result<RecordResult, String>>,
+    ),
     Acknowledge(
         DepositRequest,
         ManifestId,
@@ -81,7 +88,10 @@ fn execute<T>(
     custody: Option<&SourceCustody>,
     directory: &Path,
     current_generation: uuid::Uuid,
-    operation: impl FnOnce(&mut muniment::FjallStore, &dyn eidetic::PayloadSealer) -> Result<T, String>,
+    max_bytes: usize,
+    sync_after: bool,
+    sync: &(dyn Fn(&muniment::FjallStore) -> Result<(), String> + Sync),
+    operation: impl FnOnce(&mut dyn eidetic::Store, &dyn eidetic::PayloadSealer) -> Result<T, String>,
 ) -> Result<T, String> {
     let current = directory
         .parent()
@@ -97,7 +107,16 @@ fn execute<T>(
     let store = store
         .as_mut()
         .ok_or("Structured research store unavailable")?;
-    let result = operation(store, binding.sealer.as_ref());
+    let mut bounded = super::structured_bounded_store::BoundedStore {
+        inner: store,
+        max_bytes,
+        sync,
+    };
+    let result = operation(&mut bounded, binding.sealer.as_ref());
+    drop(bounded);
+    if result.is_ok() && sync_after {
+        sync(store)?;
+    }
     if !binding.remains_current(Some(epoch)) {
         return Err("Structured research custody changed".into());
     }
@@ -110,11 +129,34 @@ pub(super) fn handle(
     directory: &Path,
     generation: uuid::Uuid,
 ) {
+    handle_with_sync(command, store, custody, directory, generation, &|store| {
+        store
+            .sync_all()
+            .map_err(|error| format!("Structured store sync failed: {error}"))
+    });
+}
+pub(super) fn handle_with_sync(
+    command: Command,
+    store: &mut Option<muniment::FjallStore>,
+    custody: Option<&SourceCustody>,
+    directory: &Path,
+    generation: uuid::Uuid,
+    sync: &(dyn Fn(&muniment::FjallStore) -> Result<(), String> + Sync),
+) {
     let Command {
         session,
         generation: request_generation,
+        max_bytes,
         kind,
     } = command;
+    let sync_after = matches!(
+        &kind,
+        Kind::Deposit(..)
+            | Kind::SaveResult(..)
+            | Kind::MarkAttached(..)
+            | Kind::MarkResultAttached(..)
+            | Kind::PrepareWithdrawal(..)
+    );
     match kind {
         Kind::Deposit(request, reply) => {
             let result = execute(
@@ -124,6 +166,9 @@ pub(super) fn handle(
                 custody,
                 directory,
                 generation,
+                max_bytes,
+                sync_after,
+                sync,
                 |store, sealer| {
                     if request.session != session || request.generation != request_generation {
                         return Err("Property request owner mismatch".into());
@@ -133,7 +178,7 @@ pub(super) fn handle(
             );
             let _ = reply.send(result);
         },
-        Kind::ReadRecord(id, reply) => {
+        Kind::ReadRecord(id, max_bytes, max_validation_bytes, reply) => {
             let _ = reply.send(execute(
                 session,
                 request_generation,
@@ -141,7 +186,18 @@ pub(super) fn handle(
                 custody,
                 directory,
                 generation,
-                |store, sealer| sealed_records::load_record(store, sealer, id),
+                max_bytes,
+                sync_after,
+                sync,
+                |store, sealer| {
+                    sealed_records::load_record_bounded(
+                        store,
+                        sealer,
+                        id,
+                        max_bytes,
+                        max_validation_bytes,
+                    )
+                },
             ));
         },
         Kind::SaveResult(request, result, reply) => {
@@ -152,6 +208,9 @@ pub(super) fn handle(
                 custody,
                 directory,
                 generation,
+                max_bytes,
+                sync_after,
+                sync,
                 |store, sealer| {
                     if request.session != session || request.generation != request_generation {
                         return Err("Result request owner mismatch".into());
@@ -160,7 +219,7 @@ pub(super) fn handle(
                 },
             ));
         },
-        Kind::ReadResult(id, reply) => {
+        Kind::ReadResult(id, settings, reply) => {
             let _ = reply.send(execute(
                 session,
                 request_generation,
@@ -168,7 +227,18 @@ pub(super) fn handle(
                 custody,
                 directory,
                 generation,
-                |store, sealer| sealed_records::load_result(store, sealer, id),
+                max_bytes,
+                sync_after,
+                sync,
+                |store, sealer| {
+                    sealed_records::load_result_bounded(
+                        store,
+                        sealer,
+                        id,
+                        settings.max_input_bytes,
+                        Some(&settings),
+                    )
+                },
             ));
         },
         Kind::Acknowledge(request, id, statement, reply) => {
@@ -179,6 +249,9 @@ pub(super) fn handle(
                 custody,
                 directory,
                 generation,
+                max_bytes,
+                sync_after,
+                sync,
                 |store, sealer| {
                     sealed_record_receipts::acknowledge(store, sealer, &request, id, &statement)
                 },
@@ -192,6 +265,9 @@ pub(super) fn handle(
                 custody,
                 directory,
                 generation,
+                max_bytes,
+                sync_after,
+                sync,
                 |store, sealer| {
                     sealed_record_receipts::mark_attached(
                         store, sealer, &request, id, &statement, &assertion,
@@ -207,6 +283,9 @@ pub(super) fn handle(
                 custody,
                 directory,
                 generation,
+                max_bytes,
+                sync_after,
+                sync,
                 |store, sealer| {
                     sealed_result_receipts::acknowledge_result(store, sealer, &request, &statement)
                 },
@@ -220,6 +299,9 @@ pub(super) fn handle(
                 custody,
                 directory,
                 generation,
+                max_bytes,
+                sync_after,
+                sync,
                 |store, sealer| {
                     sealed_result_receipts::mark_result_attached(
                         store, sealer, &request, &statement, &assertion,
@@ -235,6 +317,9 @@ pub(super) fn handle(
                 custody,
                 directory,
                 generation,
+                max_bytes,
+                sync_after,
+                sync,
                 |store, sealer| {
                     sealed_record_receipts::prepare_withdrawal(
                         store, sealer, nonce, session, graph, manifest, &statement,
@@ -250,6 +335,9 @@ pub(super) fn handle(
                 custody,
                 directory,
                 generation,
+                max_bytes,
+                sync_after,
+                sync,
                 |store, sealer| {
                     sealed_record_receipts::acknowledge_withdrawal(
                         store, sealer, nonce, session, graph, manifest, &statement,
@@ -265,6 +353,9 @@ pub(super) fn handle(
                 custody,
                 directory,
                 generation,
+                max_bytes,
+                sync_after,
+                sync,
                 |store, sealer| {
                     sealed_record_receipts::inventory(store, sealer, session, max_items, max_bytes)
                 },
@@ -278,6 +369,9 @@ pub(super) fn handle(
                 custody,
                 directory,
                 generation,
+                max_bytes,
+                sync_after,
+                sync,
                 |store, sealer| {
                     sealed_record_receipts::abandon(store, sealer, session, nonce, &bindings)
                 },
@@ -291,6 +385,9 @@ pub(super) fn handle(
                 custody,
                 directory,
                 generation,
+                max_bytes,
+                sync_after,
+                sync,
                 |store, sealer| {
                     for item in sealed_record_receipts::inventory(
                         store, sealer, session, max_items, max_bytes,

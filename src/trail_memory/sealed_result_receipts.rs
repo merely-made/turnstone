@@ -9,7 +9,9 @@ struct Envelope {
     marker: eidetic::SealedBlobRef,
     ciphertext: Vec<u8>,
 }
-const RESULT_PREFIX: &str = "turnstone/sealed-result-request/v1/";
+const LEGACY_PREFIX: &str = "turnstone/sealed-result-request/v1/";
+const RESULT_PREFIX: &str = "turnstone/sealed-result-complete/v2/";
+const PENDING_PREFIX: &str = "turnstone/sealed-result-pending/v2/";
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub(crate) struct ResultRequest {
     pub nonce: uuid::Uuid,
@@ -39,6 +41,9 @@ struct BoundResult {
 fn result_key(id: uuid::Uuid) -> String {
     format!("{RESULT_PREFIX}{id}")
 }
+fn pending_key(id: uuid::Uuid) -> String {
+    format!("{PENDING_PREFIX}{id}")
+}
 pub(super) fn write_result_receipt(
     store: &mut dyn Store,
     sealer: &dyn PayloadSealer,
@@ -60,25 +65,60 @@ pub(super) fn write_result_receipt(
         ciphertext,
     })
     .map_err(|_| "Result receipt envelope invalid")?;
-    pollster::block_on(store.put(&namespace, &encoded))
-        .map_err(|e| format!("Result receipt write failed: {e}"))
+    let pending = pending_key(receipt.request.nonce);
+    if !receipt.saved && !receipt.abandoned {
+        pollster::block_on(store.put(&pending, &encoded))
+            .map_err(|e| format!("Result pending receipt write failed: {e}"))?;
+    } else {
+        pollster::block_on(store.put(&namespace, &encoded))
+            .map_err(|e| format!("Result completion write failed: {e}"))?;
+        pollster::block_on(store.delete(&pending))
+            .map_err(|e| format!("Result pending receipt cleanup failed: {e}"))?;
+    }
+    Ok(())
 }
 pub(super) fn read_result_receipt(
     store: &mut dyn Store,
     sealer: &dyn PayloadSealer,
     nonce: uuid::Uuid,
 ) -> Result<Option<ResultReceipt>, String> {
+    Ok(read_result_receipt_bounded(store, sealer, nonce, usize::MAX)?.map(|(value, _)| value))
+}
+fn read_result_receipt_bounded(
+    store: &mut dyn Store,
+    sealer: &dyn PayloadSealer,
+    nonce: uuid::Uuid,
+    limit: usize,
+) -> Result<Option<(ResultReceipt, usize)>, String> {
     let namespace = result_key(nonce);
-    let Some(bytes) = pollster::block_on(store.get(&namespace))
-        .map_err(|e| format!("Result receipt read failed: {e}"))?
-    else {
+    if pollster::block_on(store.get(&format!("{LEGACY_PREFIX}{nonce}")))
+        .map_err(|e| format!("Legacy result receipt read failed: {e}"))?
+        .is_some()
+    {
+        return Err("Unsupported prior result receipt format; preserved for recovery".into());
+    }
+    let pending = pollster::block_on(store.get(&pending_key(nonce)))
+        .map_err(|e| format!("Result pending receipt read failed: {e}"))?;
+    let bytes = match pending {
+        Some(bytes) => Some(bytes),
+        None => pollster::block_on(store.get(&namespace))
+            .map_err(|e| format!("Result receipt read failed: {e}"))?,
+    };
+    let Some(bytes) = bytes else {
         return Ok(None);
     };
+    if bytes.len() > limit {
+        return Err("Result receipt envelope byte limit exceeded".into());
+    }
+    let stored_bytes = bytes.len();
     let envelope: Envelope =
         serde_json::from_slice(&bytes).map_err(|_| "Result receipt envelope invalid")?;
     let clear = sealer
         .unseal(&envelope.hash, &envelope.marker, &envelope.ciphertext)
         .map_err(|_| "Result custody refused")?;
+    if clear.len() > limit {
+        return Err("Result receipt clear byte limit exceeded".into());
+    }
     if eidetic::Hash::of(&clear) != envelope.hash {
         return Err("Result receipt digest mismatch".into());
     }
@@ -100,7 +140,7 @@ pub(super) fn read_result_receipt(
     {
         return Err("Result receipt identity mismatch".into());
     }
-    Ok(Some(held.receipt))
+    Ok(Some((held.receipt, stored_bytes)))
 }
 pub(super) fn deposit_result_request(
     store: &mut dyn Store,
@@ -215,8 +255,14 @@ pub(super) fn result_receipts(
     sealer: &dyn PayloadSealer,
     max_items: usize,
     max_bytes: usize,
-) -> Result<Vec<ResultReceipt>, String> {
-    let keys = pollster::block_on(store.list(RESULT_PREFIX))
+) -> Result<(Vec<ResultReceipt>, usize), String> {
+    if !pollster::block_on(store.list(LEGACY_PREFIX))
+        .map_err(|e| format!("Legacy result inventory failed: {e}"))?
+        .is_empty()
+    {
+        return Err("Unsupported prior result receipt format; preserved for recovery".into());
+    }
+    let keys = pollster::block_on(store.list(PENDING_PREFIX))
         .map_err(|e| format!("Result recovery inventory failed: {e}"))?;
     if keys.len() > max_items {
         return Err("Result recovery inventory limit exceeded".into());
@@ -225,21 +271,22 @@ pub(super) fn result_receipts(
     let mut bytes = 0usize;
     for key in keys {
         let suffix = key
-            .strip_prefix(RESULT_PREFIX)
+            .strip_prefix(PENDING_PREFIX)
             .ok_or("Invalid result recovery key")?;
         let nonce = uuid::Uuid::parse_str(suffix).map_err(|_| "Invalid result recovery nonce")?;
-        if key != result_key(nonce) {
+        if key != pending_key(nonce) {
             return Err("Noncanonical result recovery key".into());
         }
-        let value = read_result_receipt(store, sealer, nonce)?
-            .ok_or("Result recovery receipt disappeared")?;
+        let (value, used) =
+            read_result_receipt_bounded(store, sealer, nonce, max_bytes.saturating_sub(bytes))?
+                .ok_or("Result recovery receipt disappeared")?;
         bytes = bytes
-            .checked_add(serde_json::to_vec(&value).map_err(|e| e.to_string())?.len())
+            .checked_add(used)
             .ok_or("Result recovery inventory overflow")?;
         if bytes > max_bytes {
             return Err("Result recovery inventory byte limit exceeded".into());
         }
         values.push(value);
     }
-    Ok(values)
+    Ok((values, bytes))
 }

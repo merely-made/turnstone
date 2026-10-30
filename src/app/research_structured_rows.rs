@@ -97,7 +97,10 @@ impl App {
                         &mut rows,
                         format!(
                             "{} · {} · {} inputs · {} records",
-                            operation(&result.query.operation),
+                            format::result_operation(
+                                &result.query.operation,
+                                state.controller.result_historical
+                            ),
                             if result.snapshot.complete {
                                 "complete"
                             } else {

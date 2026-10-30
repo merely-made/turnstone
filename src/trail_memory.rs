@@ -65,6 +65,7 @@ mod sealed_capture;
 mod sealed_record_receipts;
 mod sealed_records;
 mod sealed_result_receipts;
+mod structured_bounded_store;
 #[cfg(test)]
 #[path = "trail_memory/structured_owner_tests.rs"]
 mod structured_owner_tests;

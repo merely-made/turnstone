@@ -255,3 +255,105 @@ fn model_free_result_replacement_rebuilds_cached_index_and_rejects_stale_actions
         super::super::super::research_structured_state::View::Frozen { .. }
     ));
 }
+
+#[test]
+fn model_free_active_result_routes_to_live_inspection_and_withdraw_control() {
+    let mut result = fixture();
+    let record = result.snapshot.records[0].clone();
+    result.rows.push(RecordRow {
+        key: RowValue::Value(record.value.clone()),
+        group: None,
+        count: None,
+        record_ids: vec![record.id.clone()],
+        sources: vec![],
+    });
+    let generation = uuid::Uuid::new_v4();
+    let index = Index::new(
+        generation,
+        &result.rows,
+        &result.snapshot.sources,
+        &result.snapshot.records,
+    )
+    .unwrap();
+    let mut rows = vec![];
+    super::super::result_rows::result_rows(&mut rows, &result, &index, 0, 20);
+    assert!(rows.iter().any(|row| matches!(row, Suggestion::Act { action: Action::ResearchStructured(ResearchStructuredAction::Frozen { generation: Some(g), target: FrozenTarget::Record(0) }), .. } if *g == generation)));
+    let mut controller = Controller::default();
+    controller.result = Some(result);
+    controller.result_generation = Some(generation);
+    rows.clear();
+    frozen_fields(
+        &mut rows,
+        &controller,
+        Some(generation),
+        FrozenTarget::Record(0),
+        0,
+        30,
+    );
+    assert!(rows.iter().any(|row| matches!(row, Suggestion::Act { action: Action::ResearchStructured(ResearchStructuredAction::InspectCurrentAssertion { generation: g, record: 0 }), .. } if *g == generation)));
+    let binding = crate::research_records::Binding {
+        graph: crate::panes::GraphId::new(),
+        entity: uuid::Uuid::new_v4(),
+        statement_id: "exact-statement".into(),
+        manifest: eidetic::ManifestId::of_blob(b"assertion"),
+    };
+    controller.inspected = Some((binding.clone(), record));
+    controller.inspected_withdrawn = Some(false);
+    rows.clear();
+    frozen_fields(&mut rows, &controller, None, FrozenTarget::Inspected, 0, 30);
+    assert!(rows.iter().any(|row| matches!(row, Suggestion::Act { action: Action::ResearchStructured(ResearchStructuredAction::Withdraw(actual)), .. } if actual == &binding)));
+}
+
+#[test]
+fn model_free_live_inspection_from_stale_result_never_dispatches() {
+    let root = tempfile::tempdir().unwrap();
+    let mut app = super::super::super::App::test_stub_at(root.path().to_path_buf());
+    let current = uuid::Uuid::new_v4();
+    app.research_search.structured.controller.result = Some(fixture());
+    app.research_search.structured.controller.result_generation = Some(current);
+    let effects =
+        app.research_structured_command(ResearchStructuredAction::InspectCurrentAssertion {
+            generation: uuid::Uuid::new_v4(),
+            record: 0,
+        });
+    assert!(
+        !effects
+            .iter()
+            .any(|effect| matches!(effect, crate::action::Effect::ResearchRecords(_)))
+    );
+    assert!(
+        app.research_search
+            .structured
+            .controller
+            .inspected
+            .is_none()
+    );
+}
+
+#[test]
+fn model_free_historical_replay_and_withdrawn_inspection_are_labeled() {
+    use super::super::format::result_operation;
+    assert!(
+        result_operation(&RecordOperation::PropertyLookup, true)
+            .contains("frozen historical input")
+    );
+    let mut controller = Controller::default();
+    let binding = crate::research_records::Binding {
+        graph: crate::panes::GraphId::new(),
+        entity: uuid::Uuid::new_v4(),
+        statement_id: "assertion".into(),
+        manifest: eidetic::ManifestId::of_blob(b"assertion"),
+    };
+    controller.inspected = Some((binding, fixture().snapshot.records[0].clone()));
+    controller.inspected_withdrawn = Some(true);
+    let mut rows = vec![];
+    frozen_fields(&mut rows, &controller, None, FrozenTarget::Inspected, 0, 30);
+    assert!(rows.iter().any(|row| matches!(row, Suggestion::Act { label, .. } if label == "Current assertion: withdrawn")));
+    assert!(!rows.iter().any(|row| matches!(
+        row,
+        Suggestion::Act {
+            action: Action::ResearchStructured(ResearchStructuredAction::Withdraw(_)),
+            ..
+        }
+    )));
+}

@@ -76,9 +76,8 @@ pub(crate) fn execute(
                     scope.settings.max_input_bytes,
                     None,
                 )?;
-                let (record, _) = command(trail, &scope, |reply| {
-                    record_actor::Kind::ReadRecord(binding.manifest, reply)
-                })?;
+                let remaining = remaining_after_sources(scope.settings.max_input_bytes, &inputs)?;
+                let (record, _) = read_record(trail, &scope, binding.manifest, remaining)?;
                 if record.entity != binding.entity.to_string() {
                     return Err("Property entity mismatch".into());
                 }
@@ -109,9 +108,8 @@ pub(crate) fn execute(
                     scope.settings.max_input_bytes,
                     None,
                 )?;
-                let value = command(trail, &scope, |reply| {
-                    record_actor::Kind::ReadResult(result, reply)
-                })?;
+                let remaining = remaining_after_sources(scope.settings.max_input_bytes, &inputs)?;
+                let value = read_result(trail, &scope, result, remaining)?;
                 validate_saved_inputs(trail, &scope, &inputs, &value)?;
                 current(bridge, &scope)?;
                 Ok(value)
@@ -315,9 +313,9 @@ pub(crate) fn execute(
                         let manifest = receipt
                             .manifest
                             .ok_or("The unbound deposit has no sealed record")?;
-                        let (record, definition) = command(trail, &scope, |reply| {
-                            record_actor::Kind::ReadRecord(manifest, reply)
-                        })?;
+                        let remaining =
+                            remaining_after_sources(scope.settings.max_input_bytes, &inputs)?;
+                        let (record, definition) = read_record(trail, &scope, manifest, remaining)?;
                         if record != receipt.request.record
                             || definition != receipt.request.definition
                         {
@@ -334,9 +332,10 @@ pub(crate) fn execute(
                         if !receipt.deposited {
                             return Err("The unbound result has no sealed payload".into());
                         }
-                        let saved = command(trail, &scope, |reply| {
-                            record_actor::Kind::ReadResult(receipt.request.manifest, reply)
-                        })?;
+                        let remaining =
+                            remaining_after_sources(scope.settings.max_input_bytes, &inputs)?;
+                        let saved =
+                            read_result(trail, &scope, receipt.request.manifest, remaining)?;
                         validate_saved_inputs(trail, &scope, &inputs, &saved)?;
                     },
                 }
@@ -524,9 +523,8 @@ pub(crate) fn execute(
                 {
                     return Err("Property owner is unavailable".into());
                 }
-                let (held, _) = command(trail, &scope, |reply| {
-                    record_actor::Kind::ReadRecord(binding.manifest, reply)
-                })?;
+                let remaining = remaining_after_sources(scope.settings.max_input_bytes, &inputs)?;
+                let (held, _) = read_record(trail, &scope, binding.manifest, remaining)?;
                 if held != record {
                     return Err("Frozen property payload changed".into());
                 }

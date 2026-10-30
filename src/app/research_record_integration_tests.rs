@@ -36,6 +36,7 @@ fn finish(
 fn model_free_app_authors_saves_reopens_and_queries_a_sourced_property() {
     let root = tempfile::tempdir().unwrap();
     let mut app = App::test_stub_at(root.path().to_path_buf());
+    app.research_search.preferences.records.max_records = 1;
     let graph_id = app.graph_runtimes.active_graph();
     let node = app.graph_runtimes.visit("https://fixture.test/ferry");
     let graph = app.graph_runtimes.graph();
@@ -151,7 +152,9 @@ fn model_free_app_authors_saves_reopens_and_queries_a_sourced_property() {
         operation: RecordOperation::PropertyLookup,
         filters: RecordFilters::default(),
     };
-    let effects = app.structured_query(query, RecordSettings::default());
+    let mut settings = RecordSettings::default();
+    settings.max_records = 1;
+    let effects = app.structured_query(query.clone(), settings.clone());
     finish(&mut app, &bridge, &actor, effects);
     let controller = &app.research_search.structured.controller;
     assert!(controller.error.is_none(), "{:?}", controller.error);
@@ -203,7 +206,20 @@ fn model_free_app_authors_saves_reopens_and_queries_a_sourced_property() {
         .controller
         .binding_for_record(&record_id)
         .unwrap();
-    let effects = app.structured_inspect(binding.clone());
+    let generation = app
+        .research_search
+        .structured
+        .controller
+        .result_generation
+        .unwrap();
+    let index = app.research_search.structured.controller.record_index[&record_id].0;
+    let stale = app.structured_inspect_frozen_record(uuid::Uuid::new_v4(), index);
+    assert!(
+        !stale
+            .iter()
+            .any(|effect| matches!(effect, Effect::ResearchRecords(_)))
+    );
+    let effects = app.structured_inspect_frozen_record(generation, index);
     finish(&mut app, &bridge, &actor, effects);
     assert!(
         app.research_search
@@ -211,6 +227,13 @@ fn model_free_app_authors_saves_reopens_and_queries_a_sourced_property() {
             .controller
             .inspected
             .is_some()
+    );
+    assert_eq!(
+        app.research_search
+            .structured
+            .controller
+            .inspected_withdrawn,
+        Some(false)
     );
     let effects = app.structured_withdraw(binding.clone());
     finish(&mut app, &bridge, &actor, effects);
@@ -228,5 +251,28 @@ fn model_free_app_authors_saves_reopens_and_queries_a_sourced_property() {
     );
     let effects = app.structured_refresh_history();
     finish(&mut app, &bridge, &actor, effects);
-    assert_eq!(app.structured_history().unwrap(), vec![binding]);
+    assert_eq!(app.structured_history().unwrap(), vec![binding.clone()]);
+    let effects = app.structured_refresh_saved();
+    finish(&mut app, &bridge, &actor, effects);
+    let effects = app.structured_replay(saved[0].binding.manifest);
+    finish(&mut app, &bridge, &actor, effects);
+    let controller = &app.research_search.structured.controller;
+    assert!(controller.result_historical);
+    assert_eq!(controller.result.as_ref().unwrap().rows.len(), 1);
+    let generation = controller.result_generation.unwrap();
+    let index = controller.record_index[&record_id].0;
+    let effects = app.structured_inspect_frozen_record(generation, index);
+    finish(&mut app, &bridge, &actor, effects);
+    assert_eq!(
+        app.research_search
+            .structured
+            .controller
+            .inspected_withdrawn,
+        Some(true)
+    );
+    let effects = app.structured_query(query, settings);
+    finish(&mut app, &bridge, &actor, effects);
+    let controller = &app.research_search.structured.controller;
+    assert!(!controller.result_historical);
+    assert!(controller.result.as_ref().unwrap().rows.is_empty());
 }

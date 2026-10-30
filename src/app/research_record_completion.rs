@@ -149,18 +149,20 @@ impl App {
                     Ok(value) => value,
                     Err(error) => return self.structured_error(error),
                 };
-                let candidate = self.structured_candidates(false).and_then(|mut a| {
-                    a.extend(self.structured_candidates(true)?);
-                    Ok(a)
-                });
-                if !candidate.ok().is_some_and(|all| {
-                    all.iter()
-                        .any(|item| item.binding == binding && item.author == value.author)
-                }) {
+                let mut owners = scope
+                    .owner_bindings
+                    .iter()
+                    .filter(|item| item.binding == binding && item.author == value.author);
+                let Some(owner) = owners.next() else {
                     return self.structured_error("Property attribution changed");
+                };
+                if owners.next().is_some() {
+                    return self.structured_error("Property attribution is ambiguous");
                 }
+                let withdrawn = owner.withdrawn;
                 let controller = &mut self.research_search.structured.controller;
                 controller.inspected = Some((binding, value));
+                controller.inspected_withdrawn = Some(withdrawn);
                 controller.view_scope = Some(scope);
                 controller.error = None;
             },
@@ -173,6 +175,7 @@ impl App {
                 if let Err(error) = controller.install_result(value, scope) {
                     return self.structured_error(error);
                 }
+                controller.result_historical = true;
                 controller.accepted = None;
                 controller.error = None;
             },
@@ -189,6 +192,7 @@ impl App {
                 controller.view_scope = Some(scope);
                 controller.error = None;
                 controller.inspected = None;
+                controller.inspected_withdrawn = None;
                 controller.saved_result = None;
                 let _ = binding;
             },

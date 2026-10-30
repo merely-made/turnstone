@@ -249,6 +249,7 @@ impl App {
             return Err("Pending save belongs to another session".into());
         }
         let directory = self.session_dir();
+        let settings = self.research_search.preferences.records.clone();
         let guard = crate::host_journal::AuthorRestore::enter(self.journal.clone(), author.clone());
         let runtime = self
             .graph_runtimes
@@ -260,10 +261,11 @@ impl App {
         {
             return Err("Pending graph or writer lease unavailable".into());
         }
+        let mut budget = research_record_graph::Budget::new(&settings);
         let candidates = if result_kind {
-            research_record_graph::result_bindings(runtime.canvas.graph())?
+            research_record_graph::result_bindings_limited(runtime.canvas.graph(), &mut budget)?
         } else {
-            research_record_graph::bindings(runtime.canvas.graph(), true)?
+            research_record_graph::bindings_limited(runtime.canvas.graph(), true, &mut budget)?
         };
         let mut same = candidates
             .into_iter()
@@ -318,7 +320,13 @@ impl App {
             let mut outcome = Err("Recovery graph mutation did not run".to_owned());
             runtime.canvas.ingest_graph(|graph| {
                 outcome = graph.write_as(author, |graph| {
-                    research_record_graph::restore(graph, &expected, &assertion, result_kind)
+                    research_record_graph::restore(
+                        graph,
+                        &expected,
+                        &assertion,
+                        result_kind,
+                        &settings,
+                    )
                 });
                 outcome.is_ok()
             });

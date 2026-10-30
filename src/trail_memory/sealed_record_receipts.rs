@@ -8,7 +8,9 @@ use eidetic::records::{PropertyDefinitionV1, PropertyRecordV1};
 use eidetic::{Backend as _, ManifestId, PayloadSealer, Store};
 use serde::{Deserialize, Serialize};
 
-const PREFIX: &str = "turnstone/sealed-property-request/v1/";
+const LEGACY_PREFIX: &str = "turnstone/sealed-property-request/v1/";
+const PREFIX: &str = "turnstone/sealed-property-complete/v2/";
+const PENDING_PREFIX: &str = "turnstone/sealed-property-pending/v2/";
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub(crate) struct DepositRequest {
@@ -53,6 +55,9 @@ struct Bound {
 fn key(nonce: uuid::Uuid) -> String {
     format!("{PREFIX}{nonce}")
 }
+fn pending_key(nonce: uuid::Uuid) -> String {
+    format!("{PENDING_PREFIX}{nonce}")
+}
 fn write_receipt(
     store: &mut dyn Store,
     sealer: &dyn PayloadSealer,
@@ -74,25 +79,65 @@ fn write_receipt(
         ciphertext,
     })
     .map_err(|_| "Property receipt envelope invalid")?;
-    pollster::block_on(store.put(&namespace, &encoded))
-        .map_err(|e| format!("Property receipt write failed: {e}"))
+    let pending = pending_key(receipt.request.nonce);
+    if (!receipt.saved && !receipt.abandoned)
+        || receipt
+            .withdrawal
+            .as_ref()
+            .is_some_and(|value| !value.saved)
+    {
+        pollster::block_on(store.put(&pending, &encoded))
+            .map_err(|e| format!("Property pending receipt write failed: {e}"))?;
+    } else {
+        pollster::block_on(store.put(&namespace, &encoded))
+            .map_err(|e| format!("Property completion write failed: {e}"))?;
+        pollster::block_on(store.delete(&pending))
+            .map_err(|e| format!("Property pending receipt cleanup failed: {e}"))?;
+    }
+    Ok(())
 }
 pub(super) fn read_receipt(
     store: &mut dyn Store,
     sealer: &dyn PayloadSealer,
     nonce: uuid::Uuid,
 ) -> Result<Option<Receipt>, String> {
+    Ok(read_receipt_bounded(store, sealer, nonce, usize::MAX)?.map(|(value, _)| value))
+}
+fn read_receipt_bounded(
+    store: &mut dyn Store,
+    sealer: &dyn PayloadSealer,
+    nonce: uuid::Uuid,
+    limit: usize,
+) -> Result<Option<(Receipt, usize)>, String> {
     let namespace = key(nonce);
-    let Some(bytes) = pollster::block_on(store.get(&namespace))
-        .map_err(|e| format!("Property receipt read failed: {e}"))?
-    else {
+    if pollster::block_on(store.get(&format!("{LEGACY_PREFIX}{nonce}")))
+        .map_err(|e| format!("Legacy property receipt read failed: {e}"))?
+        .is_some()
+    {
+        return Err("Unsupported prior property receipt format; preserved for recovery".into());
+    }
+    let pending = pollster::block_on(store.get(&pending_key(nonce)))
+        .map_err(|e| format!("Property pending receipt read failed: {e}"))?;
+    let bytes = match pending {
+        Some(bytes) => Some(bytes),
+        None => pollster::block_on(store.get(&namespace))
+            .map_err(|e| format!("Property receipt read failed: {e}"))?,
+    };
+    let Some(bytes) = bytes else {
         return Ok(None);
     };
+    if bytes.len() > limit {
+        return Err("Property receipt envelope byte limit exceeded".into());
+    }
+    let stored_bytes = bytes.len();
     let envelope: Envelope =
         serde_json::from_slice(&bytes).map_err(|_| "Property receipt envelope invalid")?;
     let clear = sealer
         .unseal(&envelope.hash, &envelope.marker, &envelope.ciphertext)
         .map_err(|_| "Property custody refused")?;
+    if clear.len() > limit {
+        return Err("Property receipt clear byte limit exceeded".into());
+    }
     if eidetic::Hash::of(&clear) != envelope.hash {
         return Err("Property receipt digest mismatch".into());
     }
@@ -116,7 +161,7 @@ pub(super) fn read_receipt(
     {
         return Err("Property receipt identity mismatch".into());
     }
-    Ok(Some(held.receipt))
+    Ok(Some((held.receipt, stored_bytes)))
 }
 pub(super) fn deposit_request(
     store: &mut dyn Store,
@@ -304,8 +349,14 @@ pub(super) fn receipts(
     sealer: &dyn PayloadSealer,
     max_items: usize,
     max_bytes: usize,
-) -> Result<Vec<Receipt>, String> {
-    let keys = pollster::block_on(store.list(PREFIX))
+) -> Result<(Vec<Receipt>, usize), String> {
+    if !pollster::block_on(store.list(LEGACY_PREFIX))
+        .map_err(|e| format!("Legacy property inventory failed: {e}"))?
+        .is_empty()
+    {
+        return Err("Unsupported prior property receipt format; preserved for recovery".into());
+    }
+    let keys = pollster::block_on(store.list(PENDING_PREFIX))
         .map_err(|e| format!("Property recovery inventory failed: {e}"))?;
     if keys.len() > max_items {
         return Err("Property recovery inventory limit exceeded".into());
@@ -314,23 +365,24 @@ pub(super) fn receipts(
     let mut bytes = 0usize;
     for key in keys {
         let suffix = key
-            .strip_prefix(PREFIX)
+            .strip_prefix(PENDING_PREFIX)
             .ok_or("Invalid property recovery key")?;
         let nonce = uuid::Uuid::parse_str(suffix).map_err(|_| "Invalid property recovery nonce")?;
-        if key != self::key(nonce) {
+        if key != pending_key(nonce) {
             return Err("Noncanonical property recovery key".into());
         }
-        let value =
-            read_receipt(store, sealer, nonce)?.ok_or("Property recovery receipt disappeared")?;
+        let (value, used) =
+            read_receipt_bounded(store, sealer, nonce, max_bytes.saturating_sub(bytes))?
+                .ok_or("Property recovery receipt disappeared")?;
         bytes = bytes
-            .checked_add(serde_json::to_vec(&value).map_err(|e| e.to_string())?.len())
+            .checked_add(used)
             .ok_or("Property recovery inventory overflow")?;
         if bytes > max_bytes {
             return Err("Property recovery inventory byte limit exceeded".into());
         }
         values.push(value);
     }
-    Ok(values)
+    Ok((values, bytes))
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -360,7 +412,8 @@ pub(super) fn inventory(
     max_bytes: usize,
 ) -> Result<Vec<RecoveryItem>, String> {
     let mut values = Vec::new();
-    for receipt in receipts(store, sealer, max_items, max_bytes)? {
+    let (properties, property_bytes) = receipts(store, sealer, max_items, max_bytes)?;
+    for receipt in properties {
         if receipt.request.session != session {
             return Err("Property receipt belongs to another session".into());
         }
@@ -370,7 +423,13 @@ pub(super) fn inventory(
             values.push(RecoveryItem::Property(receipt));
         }
     }
-    for receipt in result_receipts(store, sealer, max_items, max_bytes)? {
+    let (results, _) = result_receipts(
+        store,
+        sealer,
+        max_items.saturating_sub(values.len()),
+        max_bytes.saturating_sub(property_bytes),
+    )?;
+    for receipt in results {
         if receipt.request.session != session {
             return Err("Result receipt belongs to another session".into());
         }

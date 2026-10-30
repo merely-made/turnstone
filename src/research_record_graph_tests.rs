@@ -75,7 +75,40 @@ fn model_free_recovery_restores_exact_statement_without_replacing_existing_asser
         eidetic::ManifestId::of_blob(b"other"),
     )
     .unwrap();
-    restore(&mut reopened, &first, &assertion, false).unwrap();
+    let unrelated_node = mere::kernel::graph::apply::add_node(
+        &mut reopened,
+        Some(uuid::Uuid::new_v4()),
+        "https://example.test/unrelated".into(),
+        Default::default(),
+    );
+    let unrelated = reopened.shown_resource_id(unrelated_node).unwrap();
+    let (_, unrelated_assertion) = reopened
+        .try_assert_semantic_statement_by_resource_ids(
+            unrelated,
+            unrelated,
+            mere::kernel::graph::SemanticStatementSpec {
+                predicate: "urn:example:unrelated".into(),
+                recognized_sub_kind: None,
+                label: None,
+                basis: AssertionBasis {
+                    note: Some("x".repeat(100_000)),
+                    method: None,
+                    evidence: vec![],
+                },
+                graph_scope: GraphScope::Default,
+                provenance_iri: None,
+                asserted_at_ms: None,
+            },
+        )
+        .unwrap();
+    let mut settings = eidetic::records::RecordSettings::default();
+    settings.max_input_bytes = 8192;
+    restore(&mut reopened, &first, &assertion, false, &settings).unwrap();
+    assert!(
+        reopened
+            .find_assertion(&unrelated_assertion.statement_id)
+            .is_some()
+    );
     let current = bindings(&reopened, false).unwrap();
     assert_eq!(current.len(), 2);
     assert!(current.contains(&first));
@@ -83,7 +116,16 @@ fn model_free_recovery_restores_exact_statement_without_replacing_existing_asser
     assert_eq!(assertion_for(&reopened, &first).unwrap(), assertion);
     let mut conflicting = assertion.clone();
     conflicting["predicate"] = serde_json::json!("urn:wrong");
-    assert!(restore(&mut reopened, &first, &conflicting, false).is_err());
+    assert!(
+        restore(
+            &mut reopened,
+            &first,
+            &conflicting,
+            false,
+            &Default::default()
+        )
+        .is_err()
+    );
 }
 
 #[test]
