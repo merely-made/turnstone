@@ -53,7 +53,22 @@ impl Shell {
         }
         while let Some(response) = self.research_worker.take() {
             self.service_private_custody();
-            let effects = self.app.apply_update(crate::action::Update::ResearchSearchFinished { request: response.request, result: response.result });
+            let effects = self
+                .app
+                .apply_update(crate::action::Update::ResearchSearchFinished {
+                    request: response.request,
+                    result: response.result,
+                });
+            self.run_effects(effects);
+        }
+        while let Some(response) = self.research_worker.take_compare() {
+            self.service_private_custody();
+            let effects = self
+                .app
+                .apply_update(crate::action::Update::ResearchCompareFinished {
+                    request: response.request,
+                    result: response.result,
+                });
             self.run_effects(effects);
         }
         while let Ok(update) = self.trail_rx.try_recv() {

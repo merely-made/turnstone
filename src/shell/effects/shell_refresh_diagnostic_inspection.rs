@@ -310,6 +310,7 @@ impl Shell {
                 | Effect::CaptureContent { .. }
                 | Effect::PersistSourceCapture { .. }
                 | Effect::CaptureSourceDocument { .. }
+                | Effect::ResearchCompare(..)
                 | Effect::ResearchSearch(..)
                 | Effect::CancelResearchSearch
                 | Effect::LoadSavedSources { .. }

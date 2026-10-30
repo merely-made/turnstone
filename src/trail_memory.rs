@@ -58,6 +58,9 @@ mod sealed_capture;
 #[cfg(test)]
 #[path = "trail_memory/research_search_tests.rs"]
 mod research_search_tests;
+#[cfg(test)]
+#[path = "trail_memory/research_compare_tests.rs"]
+mod research_compare_tests;
 
 /// Traversals per stored trace segment. Segments are the flush granularity:
 /// small enough that a crash loses minutes, large enough that a stored trace

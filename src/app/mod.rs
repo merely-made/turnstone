@@ -29,6 +29,7 @@ mod contributed_pane_arms;
 mod research_clip_arms;
 pub(crate) mod research_search_state;
 mod research_search_arms;
+mod research_compare_arms;
 mod research_search_rows;
 mod research_search_values;
 #[cfg(test)]

@@ -372,9 +372,17 @@ pub(crate) fn run(
 }
 
 /// One running job, one replaceable pending request and one replaceable response.
+enum Job {
+    Search(Request),
+    Compare(crate::research_compare::Request),
+}
+enum Completed {
+    Search(Response),
+    Compare(crate::research_compare::Response),
+}
 struct Queue {
-    request: Option<Request>,
-    response: Option<Response>,
+    request: Option<Job>,
+    response: Option<Completed>,
     serial: u64,
     closed: bool,
 }
@@ -412,10 +420,22 @@ impl Worker {
                     let request = slot.request.take().unwrap();
                     let serial = slot.serial;
                     drop(slot);
-                    let result = run(&bridge, &trail, &request);
+                    let response = match request {
+                        Job::Search(request) => {
+                            let result = run(&bridge, &trail, &request);
+                            Completed::Search(Response { request, result })
+                        },
+                        Job::Compare(request) => {
+                            let result = crate::research_compare::run(&bridge, &trail, &request);
+                            Completed::Compare(crate::research_compare::Response {
+                                request,
+                                result,
+                            })
+                        },
+                    };
                     let mut slot = lock.lock().unwrap();
                     if !slot.closed && slot.serial == serial {
-                        slot.response = Some(Response { request, result });
+                        slot.response = Some(response);
                         drop(slot);
                         wake();
                     }
@@ -429,11 +449,36 @@ impl Worker {
         let mut queue = lock.lock().unwrap();
         queue.serial = queue.serial.wrapping_add(1);
         queue.response = None;
-        queue.request = Some(request);
+        queue.request = Some(Job::Search(request));
         ready.notify_one();
     }
     pub fn take(&self) -> Option<Response> {
-        self.pending.0.lock().unwrap().response.take()
+        {
+            let mut queue = self.pending.0.lock().unwrap();
+            if matches!(queue.response, Some(Completed::Search(_))) {
+                if let Some(Completed::Search(response)) = queue.response.take() {
+                    return Some(response);
+                }
+            }
+            None
+        }
+    }
+    pub fn submit_compare(&self, request: crate::research_compare::Request) {
+        let (lock, ready) = &*self.pending;
+        let mut queue = lock.lock().unwrap();
+        queue.serial = queue.serial.wrapping_add(1);
+        queue.response = None;
+        queue.request = Some(Job::Compare(request));
+        ready.notify_one();
+    }
+    pub fn take_compare(&self) -> Option<crate::research_compare::Response> {
+        let mut queue = self.pending.0.lock().unwrap();
+        if matches!(queue.response, Some(Completed::Compare(_))) {
+            if let Some(Completed::Compare(response)) = queue.response.take() {
+                return Some(response);
+            }
+        }
+        None
     }
     pub fn cancel(&self) {
         let mut queue = self.pending.0.lock().unwrap();

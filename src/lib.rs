@@ -114,6 +114,7 @@ pub mod relationship_navigation;
 pub mod remote_projection;
 pub mod research;
 pub mod research_search;
+pub mod research_compare;
 pub mod resident_admission;
 pub mod resident_runs;
 #[cfg(test)]

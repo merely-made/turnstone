@@ -97,6 +97,23 @@ fn model_free_settings_and_dates_validate_and_preserve_bad_file() {
     let bytes = std::fs::read_to_string(root.path().join("research-search-settings.json")).unwrap();
     assert!(!bytes.contains("offset"));
     assert_eq!(Preferences::load(root.path()).unwrap().settings.limit, 7);
+    apply_value(&mut state, root.path(), "compare_max_diff_work", "42").unwrap();
+    assert_eq!(
+        Preferences::load(root.path())
+            .unwrap()
+            .comparison
+            .max_diff_work,
+        42
+    );
+    let path = root.path().join("research-search-settings.json");
+    let mut old: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(&path).unwrap()).unwrap();
+    old.as_object_mut().unwrap().remove("comparison");
+    std::fs::write(&path, serde_json::to_vec(&old).unwrap()).unwrap();
+    assert_eq!(
+        Preferences::load(root.path()).unwrap().comparison,
+        eidetic_search::compare::ComparisonSettings::default()
+    );
     apply_value(&mut state, root.path(), "date_from", "2026-02-03").unwrap();
     apply_value(&mut state, root.path(), "date_to", "2026-02-03").unwrap();
     assert_eq!(
@@ -147,4 +164,24 @@ fn model_free_lifecycle_clears_private_query_and_prompt_before_refusal_or_lock()
     assert!(!app.omnibar.open);
     assert!(app.omnibar.text.is_empty() && app.omnibar.suggestions.is_empty());
     assert!(app.research_search.original_text.is_empty());
+}
+
+#[test]
+fn model_free_compare_control_reachable_with_one_visible_row() {
+    let root = tempfile::tempdir().unwrap();
+    let mut app = app_with_search(root.path());
+    app.update(Action::SearchSavedSources);
+    app.recompute_saved_source_suggestions(1);
+    let mut found = false;
+    for _ in 0..app.research_search.rows.len() {
+        if let Some(Suggestion::Act { label, .. }) = app.omnibar.suggestions.first() {
+            found |= label == "Compare sources…";
+        }
+        app.update(Action::OmnibarMove(1));
+        app.recompute_saved_source_suggestions(1);
+    }
+    assert!(
+        found,
+        "Saved Sources must offer comparison with one visible row"
+    );
 }

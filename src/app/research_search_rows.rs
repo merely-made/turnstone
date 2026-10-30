@@ -27,6 +27,7 @@ impl App {
         match &state.view {
             View::Results => {
                 push("Search options…".into(), Command::Options);
+                push("Compare sources…".into(), Command::Compare);
                 if let Some(error) = &state.error {
                     push(format!("Search unavailable: {error}"), Command::Coverage);
                 }
@@ -70,6 +71,114 @@ impl App {
                         push("Next results".into(), Command::Page(1));
                     }
                 }
+            },
+            View::Compare => {
+                let side_label = |side: &Option<crate::research::Target>| {
+                    side.as_ref()
+                        .map(|t| format!("{} · {}", t.identity(), t.text_hash()))
+                        .unwrap_or_else(|| "not selected".into())
+                };
+                push(
+                    format!("Left: {}", side_label(&state.compare_left)),
+                    Command::ChooseLeft,
+                );
+                push(
+                    format!("Right: {}", side_label(&state.compare_right)),
+                    Command::ChooseRight,
+                );
+                push("Compare selected sources".into(), Command::RunCompare);
+                push(
+                    "Explicit pair · head and lineage unknown".into(),
+                    Command::Compare,
+                );
+                if let Some(error) = &state.error {
+                    push(format!("Comparison unavailable: {error}"), Command::Compare);
+                }
+                if let (Some(result), Some(request)) = (&state.comparison, &state.compare_accepted)
+                {
+                    let equal = result.comparison.old.text_hash == result.comparison.new.text_hash;
+                    push(
+                        if equal {
+                            "Equal text".into()
+                        } else {
+                            "Changes".into()
+                        },
+                        Command::Compare,
+                    );
+                    for (left, label) in [(true, "Open whole left"), (false, "Open whole right")] {
+                        push(
+                            label.into(),
+                            Command::OpenCompare {
+                                left,
+                                span: None,
+                                request: request.id,
+                            },
+                        );
+                    }
+                    let page_size = state.preferences.settings.limit.max(1);
+                    let preview_chars = state.preferences.settings.snippet_context.max(1);
+                    let start = state.compare_page.saturating_mul(page_size);
+                    for (index, span) in result
+                        .comparison
+                        .spans
+                        .iter()
+                        .enumerate()
+                        .skip(start)
+                        .take(page_size)
+                    {
+                        for (left, selector, text) in [
+                            (true, &span.old, &result.left.text),
+                            (false, &span.new, &result.right.text),
+                        ] {
+                            if let Some(selector) = selector {
+                                let excerpt: String = text
+                                    .chars()
+                                    .skip(selector.start)
+                                    .take((selector.end - selector.start).min(preview_chars))
+                                    .collect();
+                                push(
+                                    format!(
+                                        "{:?} {}: {}",
+                                        span.kind,
+                                        if left { "Left" } else { "Right" },
+                                        excerpt
+                                    ),
+                                    Command::OpenCompare {
+                                        left,
+                                        span: Some(index),
+                                        request: request.id,
+                                    },
+                                );
+                            }
+                        }
+                    }
+                    if state.compare_page > 0 {
+                        push("Previous comparison lines".into(), Command::ComparePage(-1));
+                    }
+                    if start.saturating_add(page_size) < result.comparison.spans.len() {
+                        push("Next comparison lines".into(), Command::ComparePage(1));
+                    }
+                }
+                push("Back to results".into(), Command::Results);
+            },
+            View::ChooseLeft | View::ChooseRight => {
+                let left = matches!(state.view, View::ChooseLeft);
+                if let Some(result) = &state.result {
+                    for input in &result.inputs {
+                        if let Ok(target) = crate::research::target(&input.source, &input.version) {
+                            push(
+                                format!(
+                                    "{} · {} · {}",
+                                    input.title.as_deref().unwrap_or("Untitled"),
+                                    target.identity(),
+                                    target.text_hash()
+                                ),
+                                Command::ChooseCompare { left, target },
+                            );
+                        }
+                    }
+                }
+                push("Back to comparison".into(), Command::Compare);
             },
             View::Options => {
                 for (label, command) in [
@@ -283,6 +392,30 @@ impl App {
                         "aliases",
                         "Alternative terms",
                         format!("{} rules", state.preferences.aliases.len()),
+                    ),
+                ] {
+                    push(format!("{label}: {value}"), Command::Input(field.into()));
+                }
+                for (field, label, value) in [
+                    (
+                        "compare_max_input_bytes",
+                        "Comparison input bytes",
+                        state.preferences.comparison.max_input_bytes,
+                    ),
+                    (
+                        "compare_max_identity_bytes",
+                        "Comparison identity bytes",
+                        state.preferences.comparison.max_identity_bytes,
+                    ),
+                    (
+                        "compare_max_diff_work",
+                        "Comparison work",
+                        state.preferences.comparison.max_diff_work,
+                    ),
+                    (
+                        "compare_max_output_spans",
+                        "Comparison spans",
+                        state.preferences.comparison.max_output_spans,
                     ),
                 ] {
                     push(format!("{label}: {value}"), Command::Input(field.into()));

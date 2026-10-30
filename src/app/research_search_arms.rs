@@ -30,6 +30,11 @@ impl App {
     }
     pub(crate) fn issue_research_search(&mut self) -> Vec<Effect> {
         self.research_search.query_revision = self.research_search.query_revision.saturating_add(1);
+        self.research_search.compare_left = None;
+        self.research_search.compare_right = None;
+        self.research_search.compare_request = None;
+        self.research_search.compare_accepted = None;
+        self.research_search.comparison = None;
         self.research_search.result = None;
         self.research_search.accepted = None;
         self.research_search.request = None;
@@ -115,6 +120,16 @@ impl App {
                     current.as_ref() != Some(&(request.context.clone(), request.revision))
                         || epoch != Some(request.epoch)
                 });
+        let stale = stale
+            || self
+                .research_search
+                .compare_request
+                .as_ref()
+                .or(self.research_search.compare_accepted.as_ref())
+                .is_some_and(|request| {
+                    current.as_ref() != Some(&(request.context.clone(), request.revision))
+                        || epoch != Some(request.epoch)
+                });
         if stale {
             self.clear_private_research();
             return vec![Effect::CancelResearchSearch];
@@ -158,6 +173,54 @@ impl App {
         state.first_row = 0;
         match command {
             Command::Results => state.view = View::Results,
+            Command::Compare => state.view = View::Compare,
+            Command::ChooseLeft => state.view = View::ChooseLeft,
+            Command::ChooseRight => state.view = View::ChooseRight,
+            Command::ChooseCompare { left, target } => {
+                let valid = state.accepted.as_ref().is_some_and(|r| {
+                    self.research.context_revision().ok() == Some((r.context.clone(), r.revision))
+                        && self.research.clip_access().ok().and_then(|a| (a.epoch)())
+                            == Some(r.epoch)
+                }) && state.result.as_ref().is_some_and(|result| {
+                    result.inputs.iter().any(|input| {
+                        crate::research::target(&input.source, &input.version)
+                            .ok()
+                            .as_ref()
+                            == Some(&target)
+                    })
+                });
+                if !valid {
+                    return self.saved_source_refusal(
+                        "The source selection is stale or unavailable.".into(),
+                    );
+                }
+                if left {
+                    state.compare_left = Some(target);
+                } else {
+                    state.compare_right = Some(target);
+                }
+                state.compare_request = None;
+                state.compare_accepted = None;
+                state.comparison = None;
+                state.compare_page = 0;
+                state.view = View::Compare;
+                state.error = None;
+                self.recompute_omnibar_suggestions();
+                return vec![Effect::CancelResearchSearch, Effect::Redraw];
+            },
+            Command::RunCompare => {
+                let effects = self.issue_research_compare();
+                self.recompute_omnibar_suggestions();
+                return effects;
+            },
+            Command::ComparePage(delta) => {
+                state.compare_page = state.compare_page.saturating_add_signed(delta)
+            },
+            Command::OpenCompare {
+                left,
+                span,
+                request,
+            } => return self.open_comparison(left, span, request),
             Command::Options => state.view = View::Options,
             Command::Modes => state.view = View::Modes,
             Command::Types => state.view = View::Types,

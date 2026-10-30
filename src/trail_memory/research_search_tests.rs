@@ -248,6 +248,86 @@ fn model_free_mixed_producers_scope_coverage_and_stale_revision() {
     let result = crate::research_search::run(&bridge, &actor, &request).unwrap();
     assert_eq!(result.total, 3);
     assert!(matches!(result.coverage, Coverage::Incomplete { .. }));
+    // Exercise real capture and sealed clip owners, including exact Unicode ranges.
+    let left_input = result
+        .inputs
+        .iter()
+        .find(|i| i.producer == ProducerKind::Capture)
+        .unwrap();
+    let right_input = result
+        .inputs
+        .iter()
+        .find(|i| i.producer == ProducerKind::Selection)
+        .unwrap();
+    let mut comparison_request = crate::research_compare::Request {
+        id: uuid::Uuid::new_v4(),
+        context: context.clone(),
+        revision,
+        epoch: 1,
+        left: crate::research::target(&left_input.source, &left_input.version).unwrap(),
+        right: crate::research::target(&right_input.source, &right_input.version).unwrap(),
+        settings: Default::default(),
+    };
+    let compared = crate::research_compare::run(&bridge, &actor, &comparison_request).unwrap();
+    assert_eq!(
+        compared.comparison.relationship,
+        eidetic_search::compare::ComparisonRelationship::Explicit
+    );
+    assert_ne!(
+        compared.comparison.old.source,
+        compared.comparison.new.source
+    );
+    for (text, left) in [(&compared.left.text, true), (&compared.right.text, false)] {
+        let rebuilt: String = compared
+            .comparison
+            .spans
+            .iter()
+            .filter_map(|span| {
+                if left {
+                    span.old.as_ref()
+                } else {
+                    span.new.as_ref()
+                }
+            })
+            .flat_map(|selector| {
+                text.chars()
+                    .skip(selector.start)
+                    .take(selector.end - selector.start)
+            })
+            .collect();
+        assert_eq!(&rebuilt, text);
+    }
+    let original_left = comparison_request.left.clone();
+    comparison_request.left = crate::research::Target::Capture(crate::saved_sources::Target {
+        key: context.admissions[2].key.clone(),
+        text_hash: original_left.text_hash().into(),
+        selector: None,
+    });
+    assert!(
+        crate::research_compare::run(&bridge, &actor, &comparison_request)
+            .unwrap_err()
+            .contains("Left unavailable")
+    );
+    comparison_request.left = original_left;
+    comparison_request.settings.max_diff_work = 0;
+    assert!(
+        crate::research_compare::run(&bridge, &actor, &comparison_request)
+            .unwrap_err()
+            .contains("refused")
+    );
+    comparison_request.settings = Default::default();
+    let mut changed = context.clone();
+    changed.clips.retain(|clip| clip != &clips[0]);
+    bridge.project(changed);
+    bridge.project(context.clone());
+    assert!(
+        crate::research_compare::run(&bridge, &actor, &comparison_request)
+            .unwrap_err()
+            .contains("admissions changed")
+    );
+    bridge.project(context.clone());
+    let (_, current_revision) = bridge.context_revision().unwrap();
+    request.revision = current_revision;
     for kind in [
         ProducerKind::Capture,
         ProducerKind::Selection,

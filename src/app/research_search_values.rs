@@ -51,6 +51,7 @@ pub(super) fn apply_value(
         version: 1,
         settings: state.preferences.settings.clone(),
         aliases: state.preferences.aliases.clone(),
+        comparison: state.preferences.comparison.clone(),
     };
     match field {
         "aliases" => {
@@ -91,6 +92,10 @@ pub(super) fn apply_value(
                 .parse()
                 .map_err(|_| "Enter a nonnegative whole number")?;
             match field {
+                "compare_max_input_bytes" => prefs.comparison.max_input_bytes = n,
+                "compare_max_identity_bytes" => prefs.comparison.max_identity_bytes = n,
+                "compare_max_diff_work" => prefs.comparison.max_diff_work = n,
+                "compare_max_output_spans" => prefs.comparison.max_output_spans = n,
                 "limit" => prefs.settings.limit = n,
                 "snippet_context" => prefs.settings.snippet_context = n,
                 "max_sources" => prefs.settings.max_sources = n,
