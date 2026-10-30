@@ -99,7 +99,8 @@ set.
 
 - [Retained semantic projection](2026-10-30_retained_projection_plan.md):
   shared Genet geometry traversal, Cambium and Turnstone receiving, bounded
-  accessibility admission comparisons, and local performance qualification.
+  accessibility admission comparisons, layout-only frame preparation, and
+  completed local native performance qualification.
 
 - [Compare: selection sources, selection commands and shared scenes](2026-10-21_compare_selection_and_shared_scenes_plan.md):
   proposed next slice. A snapshot, live or frozen selection source in `curation`;

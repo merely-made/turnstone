@@ -1,6 +1,6 @@
 # Retained semantic projection without repeated tree searches
 
-**Status:** in progress, 2026-10-30.
+**Status:** landed and locally qualified, 2026-10-30.
 
 The native render host now qualifies pending GPU frames away from the UI
 thread. Arrange remains slow with that change. A native stack sample places
@@ -128,6 +128,11 @@ accessibility qualification. Run receipts live separately under
   description work, but naming is a small branch in this Arrange sample.
   Unexecuted probe tests and source findings are retained as diagnostic cues;
   this pass follows the measured preparation-to-paint path.
+- 2026-10-30: the final native sample contains no painting below frame
+  preparation. Remaining paint enters through explicit render paths; used-color
+  style materialization is still a shared producer cost. The observations are
+  diagnostic cues, with no naming-policy or persistent-cache change in this
+  implementation.
 
 ## Progress
 
@@ -142,3 +147,8 @@ accessibility qualification. Run receipts live separately under
 - 2026-10-30: combined consumer library and optional-service checks pass.
   The first matched native comparison and follow-up sample are retained;
   layout-only frame preparation is now the measured continuation.
+- 2026-10-30: layout-only preparation landed with actual paint-count regression
+  controls and a passing full consumer library gate. Matched optimized native
+  comparisons improve all observed conditions; primary resize and lens
+  input/close controls pass. Sources, failure receipts, profiles and captures
+  are retained separately under the evidence path above.
