@@ -53,7 +53,7 @@ use std::net::{IpAddr, SocketAddr};
 use std::sync::Arc;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-use graphshell_endpoint::door::route::ResidentEndpointRoute;
+use djinn::door::route::ResidentEndpointRoute;
 use graphshell_host::carrier::projection_policy;
 use graphshell_host::endpoint_catalog::ResidentEndpointCatalog;
 use graphshell_host::live_endpoint::{
@@ -253,7 +253,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut catalog = ResidentEndpointCatalog::new();
     let (route, fixture_endpoint) = match args.endpoint {
         Endpoint::ResidentMere => {
-            let endpoint = graphshell_endpoint::door::app_admission::configured_app_endpoint();
+            let endpoint = djinn::door::app_admission::configured_app_endpoint();
             catalog.register_resumable_notifying(
                 "resident.divination",
                 "Resident divination mere",

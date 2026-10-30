@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: MPL-2.0
 
 #![cfg(feature = "native")]
-use graphshell_endpoint::door::app_admission::AppId;
-use graphshell_endpoint::door::custody_client::CustodyClient;
+use djinn::door::app_admission::AppId;
+use djinn::door::custody_client::CustodyClient;
 
 #[tokio::test]
 #[ignore = "run scripts/dr_c_receipts.py against the isolated receipt keeper"]
@@ -22,7 +22,7 @@ async fn dr_c_graphshell_identity_stays_pending() {
             let status = client.status().await.unwrap();
             assert_eq!(
                 status.lock,
-                graphshell_endpoint::door::identity::VaultLockView::Locked
+                dramatis::view::VaultLockView::Locked
             );
             assert!(status.persona_public_key.is_none());
             assert!(

@@ -17,7 +17,7 @@
 use std::io::{self, BufReader};
 use std::process::ExitCode;
 
-use graphshell_endpoint::door::app_admission::{AppId, AppRouteId, configured_app_endpoint};
+use djinn::door::app_admission::{AppId, AppRouteId, configured_app_endpoint};
 use graphshell_endpoint::door::projection::AppRouteCarrier;
 use graphshell_mcp::{Config, Server};
 

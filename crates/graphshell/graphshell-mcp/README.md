@@ -79,7 +79,7 @@ time.
 
 `cargo test -p graphshell-mcp` drives the real JSON-RPC against a route that
 behaves like djinn's (opens a session, refuses an ungranted write, checks the
-observed revision). `cargo test -p djinn --lib resident_mere::tests::mcp` serves
+observed revision). `cargo test -p mere-resident --lib resident_mere::tests::mcp` serves
 the adapter over djinn's real mere route (the reservoir, the route grants and the
 session item, through the endpoint catalog the application door uses). There an
 unadmitted app reaches no mere; an admitted agent lists the route's projections,

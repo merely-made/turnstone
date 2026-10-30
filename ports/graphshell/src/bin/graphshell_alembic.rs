@@ -38,9 +38,8 @@ fn open_owner(
         },
         #[cfg(feature = "alembic-workshop-private")]
         OwnerMode::Private { endpoint } => {
-            use graphshell_endpoint::door::{
-                custody_identity::CustodyIdentity, identity::VaultLockView,
-            };
+            use djinn::door::custody_identity::CustodyIdentity;
+use dramatis::view::VaultLockView;
             let identity = Arc::new(
                 CustodyIdentity::connect_at_timeout(
                     endpoint,

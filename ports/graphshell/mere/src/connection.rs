@@ -11,10 +11,8 @@ use chirograph::{
     CarrierResponse, CarrierResponseBody, PresentationCapability, SessionOpened,
 };
 use graphshell_client::LineDriven;
-use graphshell_endpoint::door::{
-    app_admission::{AppId, AppRouteId},
-    projection::AppBrokerClient,
-};
+use djinn::door::app_admission::{AppId, AppRouteId};
+use graphshell_endpoint::door::projection::AppBrokerClient;
 use mere_overmap::route_session::MereRouteSession;
 use mere_view::MereViewRequest;
 

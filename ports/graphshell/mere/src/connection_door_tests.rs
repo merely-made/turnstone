@@ -9,13 +9,11 @@ use chirograph::{
     CarrierRequest, CarrierResponse, CarrierResponseBody, ContentHash, MAX_RESOURCE_CHUNK_BYTES,
     ProjectionSession, ResourceChunkResponse, ResourceRequest,
 };
-use graphshell_endpoint::door::{
-    app_admission::{AppHello, AppId, AppRouteId},
-    frame::{read_native_message_async, write_native_message_async},
-    wire::{
+use djinn::door::app_admission::{AppHello, AppId, AppRouteId};
+use djinn::door::frame::{read_native_message_async, write_native_message_async};
+use djinn::door::wire::{
         APP_CONNECT_SCHEMA, AppHostMessage as WireHostMessage, AppMessage as WireMessage, BROWSER_CHALLENGE_SCHEMA, BrowserChallenge,
-    },
-};
+    };
 use std::time::Duration;
 type AppMessage = WireMessage<chirograph::CarrierRequest, ()>;
 type AppHostMessage = WireHostMessage<chirograph::CarrierResponse, chirograph::CarrierNotice, ()>;
