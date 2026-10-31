@@ -31,6 +31,9 @@ pub(super) const BOARD_FIT: BoardFit = BoardFit {
     top: 24.0,
     bottom: 24.0,
     frame_edges: true,
+    zoom: 1.0,
+    pan: (0.0, 0.0),
+    card_scale: None,
 };
 /// The draft form's unset choice.
 const CHOOSE: &str = "Choose…";
