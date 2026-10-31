@@ -359,12 +359,21 @@ impl BrowserSession {
     /// until its end arrives.
     pub async fn next_line(&mut self) -> Result<Option<String>, String> {
         loop {
-            if let Some(line) = self.assembler.next_line() {
+            if let Some(line) = self
+                .assembler
+                .next_line()
+                .map_err(|error| error.to_string())?
+            {
                 return Ok(Some(line));
             }
             match self.frames.recv().await? {
                 Some(frame) => self.assembler.push(&frame),
-                None => return Ok(self.assembler.take_partial()),
+                None => {
+                    return self
+                        .assembler
+                        .take_partial()
+                        .map_err(|error| error.to_string());
+                },
             }
         }
     }

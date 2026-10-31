@@ -1,6 +1,6 @@
 # Graphshell H2 Browser Presenter Receipt
 
-**Plan:** [Graphshell reference host H2](../../../design_docs/mere_docs/implementation_strategy/2026-07-27_graphshell_reference_host_plan.md#h2-present-the-host-in-a-browser)  
+**Plan:** [Graphshell reference host H2](../../../design_docs/archive_docs/2026-10-28/2026-07-27_graphshell_reference_host_plan.md#h2-present-the-host-in-a-browser)  
 **Executed:** 2026-07-28
 
 ## Result

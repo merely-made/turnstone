@@ -9,6 +9,9 @@
 //! G1 adds a native semantic view over the portable client state. Networking,
 //! product models, and source authority remain injected at the edge.
 
+#[cfg(all(feature = "alembic-workshop", not(target_arch = "wasm32")))]
+pub mod alembic_workshop;
+
 #[cfg(feature = "editable-blocks")]
 pub mod block_editing;
 pub mod bound_actions;
@@ -47,6 +50,8 @@ mod capture_resources;
 pub mod carriage;
 #[cfg(feature = "web")]
 pub mod command_invocation;
+#[cfg(feature = "workspace-editor")]
+pub mod comms_open;
 #[cfg(any(feature = "native", feature = "web"))]
 pub mod distillery_w1;
 #[cfg(feature = "web")]
@@ -69,6 +74,8 @@ pub mod link_inspection;
 pub mod local_edit;
 #[cfg(feature = "web")]
 pub mod local_intake;
+#[cfg(feature = "web")]
+pub mod local_locations;
 #[cfg(any(feature = "native", feature = "web"))]
 pub mod local_projection;
 #[cfg(feature = "web")]
@@ -118,6 +125,8 @@ pub mod projection_compile;
 pub mod projection_dynamics_compare;
 #[cfg(feature = "web")]
 pub mod projection_dynamics_receipt;
+#[cfg(any(feature = "native", feature = "web"))]
+pub mod projection_save;
 /// Receipt ingest: a scenario-receipt directory becomes personal-graph facts.
 #[cfg(all(feature = "personal-sync", not(target_arch = "wasm32")))]
 pub mod receipts;

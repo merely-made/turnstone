@@ -28,6 +28,7 @@ use muniment::{Backend, JsonSlots, StoreError};
 /// The view types a host writes through [`MereHost::set_view_now`].
 pub use pandect::ViewIntent as SessionViewIntent;
 use pandect::graph_placement::{PlacementProfile, materialize_snapshot};
+use pandect::graph_session::{CommitExtra, LegacyTransactionBackend};
 use pandect::{
     GraphSession, MereSessions, Pending, Reverted, SessionError, SessionId, ViewIntent, ViewKey,
 };
@@ -203,6 +204,9 @@ pub struct MereHost<B> {
     resources: BTreeMap<ContentHash, Vec<u8>>,
     instance_targets: Vec<NodeKey>,
     reopened: bool,
+    /// The launch number navigations stamp on their nodes; `0` until the
+    /// boot owner installs one. A replacement session takes it too.
+    launch: u64,
     projection_session: ProjectionSession,
     /// Whether the graph projection shows the session item (§7 item 31).
     session_item: bool,
@@ -228,9 +232,12 @@ mod resident_presentation;
 #[path = "mere_host_resident.rs"]
 mod resident_transaction;
 
-/// Changes not yet stored, taken as one batch: what [`MereHost::stage`] put
-/// in a batch, or what [`MereHost::prepare_store`] took for its caller to
-/// write. Mark it stored once it commits.
+#[cfg(feature = "alembic-workshop")]
+#[path = "mere_host_alembic.rs"]
+mod alembic_owner;
+
+/// Changes not yet stored, taken as one batch by [`MereHost::prepare_store`]
+/// for its caller to write. Mark it stored once it commits.
 pub struct Staged {
     current: Pending,
     retired: Vec<Pending>,
@@ -256,6 +263,13 @@ impl Staged {
         }
         Ok(())
     }
+}
+
+/// A detached copy of the host's session with edits made on it, not yet
+/// committed.
+pub(crate) struct Candidate<B> {
+    session: GraphSession<B>,
+    projection_revision: u64,
 }
 
 fn saved_at(saved_at_secs: u64) -> SystemTime {
@@ -291,6 +305,7 @@ impl<B: Backend + Clone> MereHost<B> {
             resources: BTreeMap::new(),
             instance_targets: Vec::new(),
             reopened,
+            launch: 0,
             projection_session: ProjectionSession(LOCAL_SESSION.to_string()),
             session_item: false,
             resident_publication: false,
@@ -353,19 +368,19 @@ impl<B: Backend + Clone> MereHost<B> {
                         materialize_snapshot(&saved.graph, saved.placement).map_err(|error| {
                             MereHostError::InvalidSnapshot(format!("{HOST_SLOT}: {error}"))
                         })?;
-                    graph.overlay_facets(saved.facets);
-                    graph
-                        .validate_active_resource_assertion_handles()
-                        .map_err(|error| {
-                            MereHostError::InvalidSnapshot(format!("{HOST_SLOT}: {error}"))
-                        })?;
+                    graph.overlay_facets(saved.facets).map_err(|error| {
+                        MereHostError::InvalidSnapshot(format!("{HOST_SLOT}: {error}"))
+                    })?;
                     let mut migrated = match saved.placement {
                         Some(PlacementProfile::RecordedStrataV1) => {
                             sessions.begin_recorded(author, Some(graph))
                         },
                         _ => sessions.begin(author, Some(graph)),
                     };
-                    migrated.flush(wall_clock_now()).await?;
+                    // A session nobody else holds has nothing to recheck.
+                    let pending = migrated.pending(wall_clock_now())?;
+                    backend.apply(pending.ops()).await?;
+                    migrated.stored(pending);
                     (migrated, saved.projection_epoch, true)
                 },
                 None => (sessions.begin(author, None), 0, false),
@@ -444,7 +459,7 @@ impl<B: Backend + Clone> MereHost<B> {
         graph
             .validate_active_resource_assertion_handles()
             .map_err(|error| MereHostError::InvalidSnapshot(error.to_string()))?;
-        let next = match placement {
+        let mut next = match placement {
             Some(PlacementProfile::LegacySurfaceV1) => {
                 return Err(MereHostError::InvalidSnapshot(
                     "legacy graph placement requires qualified durable replay".into(),
@@ -455,6 +470,7 @@ impl<B: Backend + Clone> MereHost<B> {
             },
             None => self.sessions.begin(self.author(), Some(graph)),
         };
+        next.set_current_session(self.launch);
         self.retired
             .push(std::mem::replace(&mut self.graph_session, next));
         // One registry serves one graph.
@@ -479,7 +495,11 @@ impl<B: Backend> MereHost<B> {
             .placement()
             .map(|_| PlacementProfile::RecordedStrataV1)
     }
-    /// Store every change not yet stored.
+}
+
+impl<B: LegacyTransactionBackend> MereHost<B> {
+    /// Store every change not yet stored. Each session commits in one
+    /// transaction that a competing writer to it refuses.
     ///
     /// The clock is injected so tests and importing hosts stamp stable times.
     pub async fn persist(&mut self, saved_at_secs: u64) -> Result<(), MereHostError> {
@@ -495,21 +515,59 @@ impl<B: Backend> MereHost<B> {
         }
         Ok(())
     }
+}
 
-    /// Put every change not yet stored into `batch`: capture's write buffer,
-    /// so the graph, access records and browsing traces land in one outer
-    /// `Backend::apply`. Hand the result to [`staged`](Self::staged) once the
-    /// batch commits; until then the changes stay pending.
-    pub(crate) async fn stage<T: Backend>(
-        &self,
-        batch: &T,
-        saved_at_secs: u64,
-    ) -> Result<Staged, MereHostError> {
-        let staged = self.prepare_store(saved_at_secs)?;
-        staged.write(batch).await?;
-        Ok(staged)
+impl<B: LegacyTransactionBackend + Clone> MereHost<B> {
+    /// Run `change` on this host with its session swapped for a detached
+    /// candidate, so every edit it makes (the host's own, through
+    /// `edit_now`) lands on the candidate and nothing live moves. Hand the
+    /// candidate to [`commit_candidate`](Self::commit_candidate); dropping it
+    /// discards the edits.
+    pub(crate) fn edit_candidate<R, E>(
+        &mut self,
+        change: impl FnOnce(&mut Self) -> Result<R, E>,
+    ) -> Result<(Candidate<B>, R), E> {
+        let cut = self.graph_session.detached_candidate();
+        let live = std::mem::replace(&mut self.graph_session, cut);
+        let revision = self.projection_revision;
+        let result = change(self);
+        let session = std::mem::replace(&mut self.graph_session, live);
+        let projection_revision = std::mem::replace(&mut self.projection_revision, revision);
+        result.map(|value| {
+            (
+                Candidate {
+                    session,
+                    projection_revision,
+                },
+                value,
+            )
+        })
     }
 
+    /// Commit `candidate` with `extra`, the caller's own writes and the keys
+    /// they depend on, in one transaction, and install it. Sessions switched
+    /// away from are stored first. A refusal leaves the live session, with
+    /// whatever it had pending, as it was.
+    pub(crate) async fn commit_candidate(
+        &mut self,
+        candidate: Candidate<B>,
+        saved_at_secs: u64,
+        extra: CommitExtra,
+    ) -> Result<(), MereHostError> {
+        let at = saved_at(saved_at_secs);
+        for session in &mut self.retired {
+            session.flush(at).await?;
+        }
+        self.retired.clear();
+        self.graph_session
+            .commit_candidate(candidate.session, at, false, extra)
+            .await?;
+        self.projection_revision = candidate.projection_revision;
+        Ok(())
+    }
+}
+
+impl<B: Backend> MereHost<B> {
     /// Take every change not yet stored as one batch, without writing it. The
     /// caller writes it ([`Staged::write`]) through [`store`](Self::store),
     /// then hands it to [`staged`](Self::staged). Changes made in between stay
@@ -615,6 +673,16 @@ impl<B: Backend> MereHost<B> {
     /// [`LOCAL_SESSION`]: a resident names the projections it serves.
     pub fn with_projection_session(mut self, session: ProjectionSession) -> Self {
         self.projection_session = session;
+        self
+    }
+
+    /// This host, stamping `launch` on every node navigated from now on: the
+    /// number the persona's boot owner recorded for this process
+    /// ([`pandect::record_launch`]). Sessions this host begins later take it
+    /// too.
+    pub fn with_launch(mut self, launch: u64) -> Self {
+        self.launch = launch;
+        self.graph_session.set_current_session(launch);
         self
     }
 
@@ -1322,7 +1390,7 @@ pub(crate) fn placement_test_graph() -> Graph {
         provenance: None,
     }];
     let mut result = Graph::try_from_recorded_snapshot(&snapshot).unwrap();
-    *result.facets_mut() = graph.facets().clone();
+    result.install_facets(graph.facets().clone()).unwrap();
     result
 }
 
@@ -1521,6 +1589,7 @@ pub fn fixture_handlers() -> HandlerRegistry {
 
 #[cfg(test)]
 mod tests {
+    use kernel::graph::fixtures::GraphFixtures;
     use muniment::MemoryBackend;
 
     use super::*;
@@ -1977,6 +2046,63 @@ mod tests {
     }
 
     #[test]
+    fn a_navigation_in_launch_n_stamps_n() {
+        fn navigate(host: &mut MereHost<MemoryBackend>, id: uuid::Uuid, url: &str) {
+            let key = host.graph().get_node_key_by_id(id).unwrap();
+            host.mutate_product_graph(|graph| {
+                apply_graph_delta(
+                    graph,
+                    GraphDelta::NavigateNode {
+                        key,
+                        url: url.into(),
+                    },
+                )
+            })
+            .unwrap();
+        }
+        fn stamp(host: &MereHost<MemoryBackend>, id: uuid::Uuid) -> Option<u64> {
+            let key = host.graph().get_node_key_by_id(id).unwrap();
+            host.graph().node_last_session_visited(key)
+        }
+        pollster::block_on(async {
+            let backend = MemoryBackend::new();
+            let mut host = MereHost::empty(
+                backend.clone(),
+                selected_persona(),
+                fixture_handlers(),
+                access_context(),
+            )
+            .with_launch(5);
+            let first = host.create_address("https://launch.test/a", "a").unwrap();
+            assert_eq!(stamp(&host, first), Some(0), "creating is not navigating");
+            navigate(&mut host, first, "https://launch.test/a/next");
+            assert_eq!(stamp(&host, first), Some(5));
+
+            // A session begun later takes the launch from the host.
+            host.begin_session(Graph::new());
+            let second = host.create_address("https://launch.test/b", "b").unwrap();
+            navigate(&mut host, second, "https://launch.test/b/next");
+            assert_eq!(stamp(&host, second), Some(5));
+            host.persist(1_800_000_000).await.unwrap();
+
+            // The stamp is stored with the journal; the next launch stamps its own.
+            let mut next = MereHost::open_session(
+                backend.clone(),
+                host.graph_session().id(),
+                selected_persona(),
+                fixture_handlers(),
+                access_context(),
+            )
+            .await
+            .unwrap()
+            .with_launch(6);
+            assert_eq!(stamp(&next, second), Some(5));
+            navigate(&mut next, second, "https://launch.test/b/again");
+            assert_eq!(stamp(&next, second), Some(6));
+        });
+    }
+
+    #[test]
     fn link_source_is_session_scoped_and_keeps_revision_unavailable() {
         pollster::block_on(async {
             let backend = MemoryBackend::new();
@@ -2055,7 +2181,7 @@ mod tests {
             let migrated = opened(&backend).await;
             assert!(migrated.was_reopened());
             let mut expected = Graph::from_snapshot(&document.graph);
-            expected.overlay_facets(document.facets.clone());
+            expected.overlay_facets(document.facets.clone()).unwrap();
             assert_eq!(
                 encoded(migrated.graph()),
                 encoded(&expected),

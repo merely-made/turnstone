@@ -326,19 +326,26 @@ fn a_kept_link_arrives_with_its_hyperlink_in_one_change() {
                 .count()
         };
 
-        let kept = create_link(&mut app, page, "https://kept.example/next").unwrap();
+        let kept = create_link(&mut app, Some(page), "https://kept.example/next").unwrap();
         assert_eq!(app.host.graph_session().changes().len(), changes + 1);
         assert_eq!(linked(&app, kept), 1);
         persist_intake(&mut app, kept, 2).await.unwrap();
 
         assert_eq!(
-            create_link(&mut app, page, "https://kept.example/next").unwrap(),
+            create_link(&mut app, Some(page), "https://kept.example/next").unwrap(),
             kept,
             "an address already held is not added again"
         );
         assert_eq!(linked(&app, kept), 1);
 
-        let unlinked = create_link(&mut app, Uuid::new_v4(), "https://kept.example/far").unwrap();
+        let unlinked =
+            create_link(&mut app, Some(Uuid::new_v4()), "https://kept.example/far").unwrap();
         assert_eq!(linked(&app, unlinked), 0, "a page the person does not hold");
+        let unheld = create_link(&mut app, None, "https://kept.example/none").unwrap();
+        assert_eq!(
+            linked(&app, unheld),
+            0,
+            "no page held the link when it was kept"
+        );
     });
 }

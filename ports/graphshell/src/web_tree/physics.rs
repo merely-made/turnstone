@@ -139,7 +139,8 @@ impl PhysicsPanel {
     /// Set every physics control to the canvas's live choice. A mix root is
     /// custom because its first flat law does not describe the full profile.
     pub(super) fn sync(&mut self, canvas: &Canvas) {
-        let live = PhysicsChoice::live(canvas);
+        self.readback = Readback::of(canvas);
+        let live = &self.readback.physics;
         self.law.selected = index_of(PhysicsLaw::ALL, live.law);
         self.kind.selected = index_of(PhysicsKindSource::ALL, live.kind);
         self.mass.selected = index_of(PhysicsMassSource::ALL, live.mass);
@@ -148,19 +149,15 @@ impl PhysicsPanel {
         for (checked, overlay) in self.overlays.iter_mut().zip(PhysicsOverlay::ALL) {
             *checked = live.overlays.contains(&overlay);
         }
-        self.profile.selected = live
-            .profile_id()
-            .and_then(|id| CANVAS_PHYSICS_PROFILES.iter().position(|p| p.id == id))
-            .map_or(0, |index| index + 1);
-        self.readback = Readback::of(canvas);
-        if !matches!(self.readback.mix, Ok(None))
-            || !matches!(self.readback.grouping, Ok(None))
-            || !matches!(self.readback.schedule, Ok(None))
-        {
-            // A composed or scheduled root cannot be named by a profile
-            // inferred from the live law or first stage.
-            self.profile.selected = 0;
-        }
+        let Control::Choice { options, .. } = self.form.field(FieldId::PhysicsProfile).control
+        else {
+            unreachable!("the profile field is a choice")
+        };
+        self.profile.selected = index_of(
+            options.iter().map(|(id, _)| *id),
+            self.readback.physics_profile,
+        );
+        self.form.follow_physics(&self.readback);
         self.pull();
         self.form.follow_roles(&self.readback);
         self.form.follow_composition(&self.readback);
@@ -177,20 +174,7 @@ impl PhysicsPanel {
 
     /// Read the controls into the form.
     fn pull(&mut self) {
-        for id in composing_fields() {
-            match self.form.field(id).control {
-                Control::Choice { options, .. } => {
-                    let picked = self.selects[&id].selected.min(options.len() - 1);
-                    self.form.choose(id, options[picked].0);
-                },
-                Control::Number { .. } => {
-                    self.form.enter(id, self.inputs[&id].text());
-                },
-                Control::Toggle(_) => {
-                    self.form.tick(id, self.ticks[&id]);
-                },
-            }
-        }
+        self.form = self.pulled();
     }
 
     /// Show the form in the controls.
@@ -219,6 +203,24 @@ impl PhysicsPanel {
     /// The form as the controls hold it now, applied or not.
     pub(super) fn pulled(&self) -> PhysicsForm {
         let mut panel_form = self.form.clone();
+        // These are widget indexes only; the shared form owns their ids and
+        // typed values. The separate profile picker is applied by Apply profile,
+        // so merely reading the panel must not overwrite staged law/overlay edits.
+        for (id, selected) in [
+            (FieldId::PhysicsLaw, self.law.selected),
+            (FieldId::PhysicsKind, self.kind.selected),
+            (FieldId::PhysicsMass, self.mass.selected),
+            (FieldId::PhysicsDepth, self.depth.selected),
+            (FieldId::PhysicsGroups, self.groups.selected),
+        ] {
+            let Control::Choice { options, .. } = panel_form.field(id).control else {
+                unreachable!("a flat source/law field is a choice")
+            };
+            panel_form.choose(id, options[selected.min(options.len() - 1)].0);
+        }
+        for (on, overlay) in self.overlays.iter().zip(PhysicsOverlay::ALL) {
+            panel_form.tick(FieldId::PhysicsOverlay(overlay), *on);
+        }
         for id in composing_fields() {
             match self.form.field(id).control {
                 Control::Choice { options, .. } => {
@@ -301,34 +303,26 @@ impl PhysicsPanel {
     }
 
     /// The choice the controls hold. Overlays the picked law refuses are
-    /// left out, whatever was ticked before it was picked.
+    /// left out, whatever was ticked before it was picked. Keep their authored
+    /// order among the overlays the law admits.
     pub(super) fn choice(&self) -> PhysicsChoice {
-        let law = self.picked_law();
-        PhysicsChoice {
-            law,
-            overlays: mere::canvas::physics_controls::ticked_overlays(|overlay| {
-                law.refuses(overlay).is_none()
-                    && PhysicsOverlay::ALL
-                        .iter()
-                        .position(|o| *o == overlay)
-                        .is_some_and(|index| self.overlays[index])
-            }),
-            kind: PhysicsKindSource::ALL[self.kind.selected.min(PhysicsKindSource::ALL.len() - 1)],
-            groups: PhysicsKindSource::ALL
-                [self.groups.selected.min(PhysicsKindSource::ALL.len() - 1)],
-            mass: PhysicsMassSource::ALL[self.mass.selected.min(PhysicsMassSource::ALL.len() - 1)],
-            depth: PhysicsDepthSource::ALL
-                [self.depth.selected.min(PhysicsDepthSource::ALL.len() - 1)],
-        }
+        let mut choice = self.pulled().physics_choice();
+        let law = choice.law;
+        choice
+            .overlays
+            .retain(|overlay| law.refuses(*overlay).is_none());
+        choice
     }
 
     /// The profile id the picker shows, or custom.
     pub(super) fn profile_id(&self) -> &'static str {
-        self.profile
-            .selected
-            .checked_sub(1)
-            .and_then(|index| CANVAS_PHYSICS_PROFILES.get(index))
-            .map_or(CUSTOM_PROFILE, |profile| profile.id)
+        let Control::Choice { options, .. } = self.form.field(FieldId::PhysicsProfile).control
+        else {
+            unreachable!("the profile field is a choice")
+        };
+        options
+            .get(self.profile.selected)
+            .map_or(CUSTOM_PROFILE, |(id, _)| *id)
     }
 
     /// The overlay ids ticked in the panel, comma-joined.
@@ -390,7 +384,12 @@ impl TreePage {
     /// A form button: read the controls into the model, and run what it asks.
     fn press(&mut self, command: Command) {
         self.physics.pull();
-        match self.physics.form.action(command, &self.physics.choice()) {
+        match self.physics.form.action(command) {
+            Ok(FormAction::SingleLaw(_)) => {
+                // Preserve the panel's historical law-based filter while the
+                // shared form continues to expose raw typed checkbox values.
+                self.run_form(FormAction::SingleLaw(self.physics.choice()));
+            },
             Ok(action) => self.run_form(action),
             Err(refusal) => self.physics.status = refusal,
         }
@@ -526,7 +525,8 @@ fn hooks(id: FieldId) -> Vec<(&'static str, &'static str)> {
             ("data-physics-schedule-overlay", overlay.id()),
             ("data-overlay-id", overlay.id()),
         ],
-        Role | RoleGroups | Speed | GroupPartition => Vec::new(),
+        Role | RoleGroups | Speed | GroupPartition | PhysicsLaw | PhysicsKind | PhysicsMass
+        | PhysicsDepth | PhysicsGroups | PhysicsOverlay(_) | PhysicsProfile => Vec::new(),
     }
 }
 

@@ -916,7 +916,8 @@ pub(super) fn clip_appearance(
             let result = async {
                 let clip =
                     mere_document_lanes::retained_clip::read_store(&mut store, None, id, limits)
-                        .await?;
+                        .await
+                        .map_err(|error| format!("Could not read retained clip: {error}"))?;
                 HeldContent::clip(&clip)
             }
             .await;

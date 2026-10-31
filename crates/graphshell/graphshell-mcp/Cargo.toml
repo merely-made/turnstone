@@ -11,7 +11,7 @@ description = "A stdio Model Context Protocol server over an admitted Graphshell
 default = []
 # The `mere-mcp` binary: dials djinn's owner-only application door. The library
 # serves any `chirograph::Carrier`, so it needs none of this.
-door = ["dep:graphshell-endpoint"]
+door = ["dep:djinn", "dep:graphshell-endpoint"]
 
 [[bin]]
 name = "mere-mcp"
@@ -19,8 +19,9 @@ path = "src/bin/mere-mcp.rs"
 required-features = ["door"]
 
 [dependencies]
+djinn = { workspace = true, optional = true, features = ["door-native"] }
 chirograph.workspace = true
 sceno.workspace = true
 scenotime.workspace = true
 serde_json.workspace = true
-graphshell-endpoint = { workspace = true, optional = true, features = ["door"] }
+graphshell-endpoint = { workspace = true, optional = true, features = ["projection-door"] }

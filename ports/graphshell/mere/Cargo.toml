@@ -16,6 +16,7 @@ name = "graphshell_mere"
 path = "src/main.rs"
 
 [dependencies]
+djinn = { workspace = true, features = ["custody-client"] }
 graphshell = { path = "..", default-features = false, features = ["coop"] }
 serde_json.workspace = true
 url = "2"
@@ -29,7 +30,7 @@ chirograph.workspace = true
 graphshell-client.workspace = true
 hest.workspace = true
 # The app side of the first-party door: `AppBrokerClient`.
-graphshell-endpoint = { workspace = true, features = ["door"] }
+graphshell-endpoint = { workspace = true, features = ["projection-door"] }
 # The route panel that fills the mere view (stack lift plan L14).
 mere-overmap = { workspace = true, features = ["view"] }
 mere-view.workspace = true

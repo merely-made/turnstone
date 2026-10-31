@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: MPL-2.0
 //! Explicit synthetic acceptance data, admitted through the actual owners.
 use super::*;
-pub async fn seed<B: muniment::Backend + Clone>(
+pub async fn seed<B: pandect::graph_session::LegacyTransactionBackend + Clone>(
     app: &mut crate::app::GraphshellApp<B>,
     limits: mere_document_lanes::retained_clip::ClipLimits,
 ) -> Result<(), String> {
@@ -87,7 +87,7 @@ pub async fn seed<B: muniment::Backend + Clone>(
 
 /// Opt-in reading fixture. It uses the ordinary normalized-document lane and
 /// persisted graph intake, so captures exercise the real portable text layout.
-pub async fn seed_reading<B: muniment::Backend + Clone>(
+pub async fn seed_reading<B: pandect::graph_session::LegacyTransactionBackend + Clone>(
     app: &mut crate::app::GraphshellApp<B>,
 ) -> Result<(), String> {
     use inker::{Block, EngineDocument, InlineSpan};

@@ -9,19 +9,25 @@ use crate::forme_workspace::{
     GraphshellSaveKind as SaveKind,
 };
 use muniment::Backend;
+use pandect::slot_guard::SlotBackend;
 use platen::workspace::{FormeLoadGate, FormeWriteFence};
 use uuid::Uuid;
 
+/// The write `web_tree::forme::Pane::save` makes, which is web code and cannot
+/// run here: the slot guard with the baseline the proposal was prepared against.
 trait PersistPreparedSave {
-    async fn save<B: Backend>(&self, backend: B) -> Result<(), String>;
+    async fn save<B: SlotBackend>(&self, backend: B) -> Result<(), String>;
 }
 impl PersistPreparedSave for PreparedSave {
-    async fn save<B: Backend>(&self, backend: B) -> Result<(), String> {
+    async fn save<B: SlotBackend>(&self, backend: B) -> Result<(), String> {
+        use pandect::slot_guard::{Outcome, replace};
         let bytes = self.bytes()?;
-        backend
-            .put(&crate::forme_workspace::slot(self.graph_id()), &bytes)
-            .await
-            .map_err(|e| e.to_string())
+        let key = crate::forme_workspace::slot(self.graph_id());
+        match replace(&backend, &key, self.baseline(), &bytes).await {
+            Ok(Outcome::Replaced) => Ok(()),
+            Ok(Outcome::Conflict) => Err("Saved workbench changed elsewhere".into()),
+            Err(error) => Err(error.to_string()),
+        }
     }
 }
 async fn load<B: Backend>(
@@ -739,6 +745,8 @@ fn owner_lifecycle_old_save_cannot_mutate_reloaded_same_slot_busy_session() {
         persist(&mut old, backend.clone()).await;
         let old_proposal = old.prepare_save(SaveKind::Visibility, 20).unwrap();
         let mut current = load(&backend, owner, app.host.graph()).await.unwrap();
+        let loaded = backend.get(&slot(owner)).await.unwrap();
+        assert_eq!(current.baseline(), loaded.as_deref());
         current.unlock().unwrap();
         current
             .edit(None, 21, |w| {
@@ -749,17 +757,107 @@ fn owner_lifecycle_old_save_cannot_mutate_reloaded_same_slot_busy_session() {
         let current_proposal = current.prepare_save(SaveKind::Apply, 22).unwrap();
         let before = serde_json::to_vec(current.view()).unwrap();
         let committed = serde_json::to_vec(current.committed()).unwrap();
+        // Both proposals replace the same bytes. The old one lands first, and
+        // its acknowledgement cannot finish the current session's own save.
         let result = old_proposal.save(backend.clone()).await;
+        let landed = backend.get(&slot(owner)).await.unwrap();
+        assert_eq!(landed, Some(old_proposal.bytes().unwrap()));
         assert!(current.finish_save(old_proposal, result).is_err());
         assert!(current.busy());
         assert!(current.editing());
         assert_eq!(serde_json::to_vec(current.view()).unwrap(), before);
         assert_eq!(serde_json::to_vec(current.committed()).unwrap(), committed);
+        // The slot moved under the current write: the guard refuses it, the
+        // old write stays, and the draft is kept.
         let duplicate = current_proposal.clone();
-        let result = current_proposal.save(backend).await;
-        current.finish_save(current_proposal, result).unwrap();
+        let result = current_proposal.save(backend.clone()).await;
+        assert!(result.is_err());
+        assert_eq!(backend.get(&slot(owner)).await.unwrap(), landed);
+        assert!(current.finish_save(current_proposal, result).is_err());
         assert!(!current.busy());
+        assert!(current.editing());
+        assert_eq!(serde_json::to_vec(current.view()).unwrap(), before);
+        assert_eq!(serde_json::to_vec(current.committed()).unwrap(), committed);
+        assert_eq!(current.baseline(), loaded.as_deref());
         assert!(current.finish_save(duplicate, Ok(())).is_err());
+    });
+}
+
+#[test]
+fn a_session_refused_by_the_slot_guard_keeps_its_draft_until_it_reloads_the_slot() {
+    pollster::block_on(async {
+        let (backend, app, mut first, _) = fixture();
+        let owner = app.host.graph_session().id().0;
+        persist(&mut first, backend.clone()).await;
+        let mut stale = load(&backend, owner, app.host.graph()).await.unwrap();
+        first.unlock().unwrap();
+        first
+            .edit(None, 1, |w| {
+                w.bounds[0] -= 10.;
+                Ok(())
+            })
+            .unwrap();
+        save_kind(&mut first, backend.clone(), SaveKind::Apply).await;
+        let acknowledged = backend.get(&slot(owner)).await.unwrap();
+        assert_eq!(first.baseline(), acknowledged.as_deref());
+
+        stale.unlock().unwrap();
+        stale
+            .edit(None, 2, |w| {
+                w.bounds[1] -= 20.;
+                Ok(())
+            })
+            .unwrap();
+        let draft = serde_json::to_vec(stale.view()).unwrap();
+        let committed = serde_json::to_vec(stale.committed()).unwrap();
+        for now in [3, 4] {
+            let proposal = stale.prepare_save(SaveKind::Apply, now).unwrap();
+            let result = proposal.save(backend.clone()).await;
+            assert!(
+                result.is_err(),
+                "a retry from the stale baseline is refused"
+            );
+            assert!(stale.finish_save(proposal, result).is_err());
+            assert!(stale.editing() && !stale.busy());
+            assert_eq!(serde_json::to_vec(stale.view()).unwrap(), draft);
+            assert_eq!(serde_json::to_vec(stale.committed()).unwrap(), committed);
+            assert_eq!(backend.get(&slot(owner)).await.unwrap(), acknowledged);
+        }
+
+        let mut reloaded = load(&backend, owner, app.host.graph()).await.unwrap();
+        assert_eq!(reloaded.baseline(), acknowledged.as_deref());
+        reloaded.unlock().unwrap();
+        reloaded
+            .edit(None, 5, |w| {
+                w.bounds[1] -= 20.;
+                Ok(())
+            })
+            .unwrap();
+        save_kind(&mut reloaded, backend.clone(), SaveKind::Apply).await;
+        let written = backend.get(&slot(owner)).await.unwrap();
+        assert_ne!(written, acknowledged);
+        assert_eq!(reloaded.baseline(), written.as_deref());
+    });
+}
+
+#[test]
+fn two_sessions_loaded_from_an_empty_slot_cannot_both_create_it() {
+    pollster::block_on(async {
+        let (backend, app, _, _) = fixture();
+        let owner = app.host.graph_session().id().0;
+        let mut first = load(&backend, owner, app.host.graph()).await.unwrap();
+        let mut second = load(&backend, owner, app.host.graph()).await.unwrap();
+        assert_eq!((first.baseline(), second.baseline()), (None, None));
+        persist(&mut first, backend.clone()).await;
+        let created = backend.get(&slot(owner)).await.unwrap();
+        assert!(created.is_some());
+        assert_eq!(first.baseline(), created.as_deref());
+        let proposal = second.prepare_save(SaveKind::Visibility, 18).unwrap();
+        let result = proposal.save(backend.clone()).await;
+        assert!(result.is_err());
+        assert!(second.finish_save(proposal, result).is_err());
+        assert_eq!(second.baseline(), None);
+        assert_eq!(backend.get(&slot(owner)).await.unwrap(), created);
     });
 }
 
@@ -794,28 +892,18 @@ fn owner_lifecycle_valid_failed_save_releases_own_request_and_retains_draft_for_
 }
 
 #[derive(Clone)]
-struct DelayedPut {
+struct DelayedWrite {
     inner: MemoryBackend,
     started: std::sync::Arc<std::sync::atomic::AtomicBool>,
     released: std::sync::Arc<std::sync::atomic::AtomicBool>,
 }
 #[cfg_attr(not(target_arch = "wasm32"), async_trait::async_trait)]
 #[cfg_attr(target_arch = "wasm32", async_trait::async_trait(?Send))]
-impl Backend for DelayedPut {
+impl Backend for DelayedWrite {
     async fn get(&self, key: &str) -> Result<Option<Vec<u8>>, muniment::StoreError> {
         self.inner.get(key).await
     }
     async fn put(&self, key: &str, bytes: &[u8]) -> Result<(), muniment::StoreError> {
-        self.started
-            .store(true, std::sync::atomic::Ordering::SeqCst);
-        std::future::poll_fn(|_| {
-            if self.released.load(std::sync::atomic::Ordering::SeqCst) {
-                std::task::Poll::Ready(())
-            } else {
-                std::task::Poll::Pending
-            }
-        })
-        .await;
         self.inner.put(key, bytes).await
     }
     async fn delete(&self, key: &str) -> Result<(), muniment::StoreError> {
@@ -829,6 +917,19 @@ impl Backend for DelayedPut {
     }
     async fn apply(&self, ops: &[muniment::WriteOp]) -> Result<(), muniment::StoreError> {
         self.inner.apply(ops).await
+    }
+    async fn transact(&self, f: muniment::TransactFn) -> Result<(), muniment::StoreError> {
+        self.started
+            .store(true, std::sync::atomic::Ordering::SeqCst);
+        std::future::poll_fn(|_| {
+            if self.released.load(std::sync::atomic::Ordering::SeqCst) {
+                std::task::Poll::Ready(())
+            } else {
+                std::task::Poll::Pending
+            }
+        })
+        .await;
+        self.inner.transact(f).await
     }
 }
 
@@ -845,7 +946,7 @@ fn owner_lifecycle_reentered_actual_a_waits_for_retired_a_write_before_loading_o
         app.host.persist(1).await.unwrap();
         persist(&mut old, backend.clone()).await;
         let proposal = old.prepare_save(SaveKind::Visibility, 21).unwrap();
-        let delay = DelayedPut {
+        let delay = DelayedWrite {
             inner: backend.clone(),
             started: Arc::new(AtomicBool::new(false)),
             released: Arc::new(AtomicBool::new(false)),
@@ -855,7 +956,7 @@ fn owner_lifecycle_reentered_actual_a_waits_for_retired_a_write_before_loading_o
         assert!(pending.as_mut().poll(&mut cx).is_pending());
         assert!(
             delay.started.load(Ordering::SeqCst),
-            "old A put is actually in flight"
+            "old A write is actually in flight"
         );
         let mut fence = FormeWriteFence::default();
         let write = fence.retire(a_id.0);
@@ -1364,11 +1465,11 @@ fn owner_lifecycle_actual_history_forget_completion_updates_canvas_before_projec
             canvas.graph().get_node_by_id(captured).is_some(),
             "the real async request returns before completion installs its owner"
         );
-        crate::local_scene::reconcile_completed_graph(
+        crate::local_scene::adopt_host_graph(
             &mut canvas,
             Some(owner),
             app.host.graph_session().id().0,
-            app.host.graph(),
+            &app.host,
         );
         assert!(canvas.graph().get_node_by_id(captured).is_none());
         canvas
@@ -1400,7 +1501,7 @@ fn owner_lifecycle_async_completion_new_actual_owner_releases_old_region() {
     let bytes = codicil(&app, member);
     app.host.replace_with_product_codicil(&bytes).unwrap();
     let b = app.host.graph_session().id().0;
-    crate::local_scene::reconcile_completed_graph(&mut canvas, Some(a), b, app.host.graph());
+    crate::local_scene::adopt_host_graph(&mut canvas, Some(a), b, &app.host);
     assert_ne!(a, b);
     assert!(canvas.forme_region().is_none());
     assert_eq!(
@@ -1505,11 +1606,11 @@ fn owner_lifecycle_failed_real_intake_persistence_still_reconciles_returned_app(
             "failed persistence retains the real admitted in-memory edit"
         );
         assert!(canvas.graph().get_node_by_id(added).is_none());
-        crate::local_scene::reconcile_completed_graph(
+        crate::local_scene::adopt_host_graph(
             &mut canvas,
             Some(owner),
             app.host.graph_session().id().0,
-            app.host.graph(),
+            &app.host,
         );
         assert!(canvas.graph().get_node_by_id(added).is_some());
         canvas
@@ -1576,11 +1677,11 @@ fn owner_lifecycle_failed_real_detail_persistence_reconciles_facet_and_preserves
             Some(&serde_json::json!({"reviewed":true}))
         );
         assert!(canvas.graph().facets().get(&member, &facet).is_none());
-        crate::local_scene::reconcile_completed_graph(
+        crate::local_scene::adopt_host_graph(
             &mut canvas,
             Some(owner),
             app.host.graph_session().id().0,
-            app.host.graph(),
+            &app.host,
         );
         assert_eq!(
             canvas.graph().facets().get(&member, &facet),
@@ -1644,11 +1745,11 @@ fn owner_lifecycle_successful_actual_metadata_completion_keeps_unpaused_physics_
             crate::local_edit::save_metadata(&mut app, member, "Retained title", "reviewed", 5)
                 .await
                 .unwrap();
-        crate::local_scene::reconcile_completed_graph(
+        crate::local_scene::adopt_host_graph(
             &mut canvas,
             Some(owner),
             app.host.graph_session().id().0,
-            app.host.graph(),
+            &app.host,
         );
         assert!(!canvas.physics_paused());
         assert!(
@@ -1694,11 +1795,11 @@ fn owner_lifecycle_failed_actual_facet_completion_keeps_unpaused_physics_parked(
             .await
             .is_err()
         );
-        crate::local_scene::reconcile_completed_graph(
+        crate::local_scene::adopt_host_graph(
             &mut canvas,
             Some(owner),
             app.host.graph_session().id().0,
-            app.host.graph(),
+            &app.host,
         );
         assert!(!canvas.physics_paused());
         assert!(
@@ -1736,11 +1837,11 @@ fn owner_lifecycle_actual_structural_completion_still_ingests_addition_and_remov
         canvas.graph().get_node_by_id(added).is_none(),
         "refused metadata refresh is atomic"
     );
-    crate::local_scene::reconcile_completed_graph(
+    crate::local_scene::adopt_host_graph(
         &mut canvas,
         Some(owner),
         app.host.graph_session().id().0,
-        app.host.graph(),
+        &app.host,
     );
     let key = canvas.graph().get_node_key_by_id(added).unwrap();
     assert!(
@@ -1760,11 +1861,11 @@ fn owner_lifecycle_actual_structural_completion_still_ingests_addition_and_remov
             .is_err()
     );
     assert!(canvas.graph().get_node_by_id(added).is_some());
-    crate::local_scene::reconcile_completed_graph(
+    crate::local_scene::adopt_host_graph(
         &mut canvas,
         Some(owner),
         app.host.graph_session().id().0,
-        app.host.graph(),
+        &app.host,
     );
     assert!(canvas.graph().get_node_by_id(added).is_none());
     assert!(canvas.is_settling());

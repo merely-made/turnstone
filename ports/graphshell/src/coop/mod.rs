@@ -89,7 +89,7 @@ pub trait Signer: IdentityProvider {
     fn revocation(&self, value: DelegationRevocation)
     -> Result<SignedDelegationRevocation, String>;
 }
-impl Signer for graphshell_endpoint::door::custody_identity::CustodyIdentity {
+impl Signer for djinn::door::custody_identity::CustodyIdentity {
     fn certificate(
         &self,
         value: DelegationCertificate,

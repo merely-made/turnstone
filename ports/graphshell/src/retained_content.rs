@@ -57,7 +57,9 @@ pub async fn import_clip<B: muniment::Backend + Clone>(
         fleece::portable_clip::import_clip_package(&mut staging, None, &package, context, limits)
             .await
             .map_err(|e| e.to_string())?;
-    mere_document_lanes::retained_clip::read_store(&mut staging, None, staged, limits).await?;
+    mere_document_lanes::retained_clip::read_store(&mut staging, None, staged, limits)
+        .await
+        .map_err(|error| format!("Could not verify imported retained clip: {error}"))?;
     let mut store = app.host.store();
     let id =
         fleece::portable_clip::import_clip_package(&mut store, None, &package, context, limits)
@@ -517,8 +519,9 @@ impl ContentHost {
         id: eidetic::ManifestId,
         limits: mere_document_lanes::retained_clip::ClipLimits,
     ) -> Result<Rc<RefCell<ContentSlot>>, String> {
-        let view =
-            mere_document_lanes::retained_clip::read_store(store, sealer, id, limits).await?;
+        let view = mere_document_lanes::retained_clip::read_store(store, sealer, id, limits)
+            .await
+            .map_err(|error| format!("Could not read retained clip: {error}"))?;
         self.open(access, HeldContent::clip(&view)?)
     }
     pub fn new(registries: PeltRegistries<Scene>) -> Self {

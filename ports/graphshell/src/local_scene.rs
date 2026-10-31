@@ -44,12 +44,30 @@ pub fn open_codicil<B: muniment::Backend + Clone>(
         .map_err(|e| e.to_string())?;
     let owner = host.graph_session().id().0;
     let view_error = install_accepted_codicil(canvas, host.graph(), scene.as_ref(), viewport);
+    canvas.set_withdraw_policy(Some(crate::promoted_links::withdraw_policy(
+        host.selected_persona(),
+    )));
     Ok(OpenedCodicil {
         receipt,
         owner,
         scene,
         view_error,
     })
+}
+
+/// Install the host's graph after a completed App operation: the canvas adopts
+/// the graph through [`reconcile_completed_graph`] and the host's withdraw rule
+/// (`promoted_links::can_withdraw`) for its pair gesture.
+pub fn adopt_host_graph<B: muniment::Backend + Clone>(
+    canvas: &mut Canvas,
+    previous_owner: Option<uuid::Uuid>,
+    actual_owner: uuid::Uuid,
+    host: &crate::mere_host::MereHost<B>,
+) {
+    canvas.set_withdraw_policy(Some(crate::promoted_links::withdraw_policy(
+        host.selected_persona(),
+    )));
+    reconcile_completed_graph(canvas, previous_owner, actual_owner, host.graph());
 }
 
 /// Install the returned App graph before Forme reconciliation, including a

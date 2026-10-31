@@ -19,7 +19,7 @@ use chirograph::{
 use distillery::{ChronicleObserver, ChronicleRevision, ResidentReceipt};
 use graphshell_client::ClientState;
 use graphshell_client::frozen::FrozenScene;
-use graphshell_endpoint::door::route::ResidentEndpointRoute;
+use djinn::door::route::ResidentEndpointRoute;
 use graphshell_host::admission::open_session;
 use graphshell_host::carrier::projection_policy;
 use graphshell_host::endpoint_catalog::ResidentEndpointCatalog;

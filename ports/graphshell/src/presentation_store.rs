@@ -6,9 +6,8 @@
 
 //! Graph-scoped Muniment record and compare-and-replace adapter for the pure
 //! Scenograph presentation rule workspace.
-use std::sync::{Arc, Mutex};
-
-use muniment::{Backend, WriteOp};
+use muniment::Backend;
+use pandect::slot_guard::{self, Outcome};
 use scenograph::presentation::editor::{
     OperationId, PreparedOperation, RuleWorkspace, SaveKind, SavedState, parse,
 };
@@ -18,14 +17,7 @@ use uuid::Uuid;
 const RECORD_LIMIT: usize = 1024 * 1024;
 const HISTORY_LIMIT: usize = 32;
 
-#[cfg(not(target_arch = "wasm32"))]
-pub trait RuleStore: Backend + Sync {}
-#[cfg(not(target_arch = "wasm32"))]
-impl<B: Backend + Sync> RuleStore for B {}
-#[cfg(target_arch = "wasm32")]
-pub trait RuleStore: Backend {}
-#[cfg(target_arch = "wasm32")]
-impl<B: Backend> RuleStore for B {}
+pub use slot_guard::SlotBackend as RuleStore;
 
 pub fn slot(graph_id: Uuid) -> String {
     format!("graphshell/presentation-rules/v1/{graph_id}")
@@ -118,6 +110,8 @@ pub async fn load<B: Backend>(backend: B, graph_id: Uuid) -> Result<Loaded, Stri
     })
 }
 
+const CONFLICT: &str = "Saved rules changed elsewhere; draft retained. Reload latest rules and review before applying.";
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum SaveFailure {
     Conflict(String),
@@ -143,24 +137,12 @@ impl PreparedSave {
     }
     pub async fn save<B: RuleStore>(&self, backend: B) -> Result<Vec<u8>, SaveFailure> {
         let key = slot(self.graph_id);
-        let expected = self.expected.clone();
-        let bytes = self.bytes.clone();
-        let outcome = Arc::new(Mutex::new(None));
-        let answer = outcome.clone();
-        backend.transact(Box::new(move |reader| {
-            let result = reader.get(&key).map_err(|e| SaveFailure::Failed(e.to_string())).and_then(|held| {
-                if held == expected { Ok(()) } else { Err(SaveFailure::Conflict("Saved rules changed elsewhere; draft retained. Reload latest rules and review before applying.".into())) }
-            });
-            let accepted = result.is_ok();
-            *answer.lock().expect("transaction result") = Some(result);
-            if accepted { vec![WriteOp::Put { key, value: bytes }] } else { Vec::new() }
-        })).await.map_err(|e| SaveFailure::Failed(e.to_string()))?;
-        outcome
-            .lock()
-            .expect("transaction result")
-            .take()
-            .ok_or_else(|| SaveFailure::Failed("backend did not run the transaction".into()))?
-            .map(|()| self.bytes.clone())
+        let expected = self.expected.as_deref();
+        match slot_guard::replace(&backend, &key, expected, &self.bytes).await {
+            Ok(Outcome::Replaced) => Ok(self.bytes.clone()),
+            Ok(Outcome::Conflict) => Err(SaveFailure::Conflict(CONFLICT.into())),
+            Err(error) => Err(SaveFailure::Failed(error.to_string())),
+        }
     }
 }
 

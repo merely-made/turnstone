@@ -3862,7 +3862,7 @@ mod tests {
             let PersonalGraphEvent::SaveScene { scene, .. } = &back.events[0] else {
                 panic!("the event comes back as it went");
             };
-            assert_eq!(scene.dynamics.as_ref().unwrap().spec(), Ok(spec));
+            assert_eq!(saved_scene::read_dynamics(scene.dynamics.as_ref().unwrap()), Ok(spec));
             assert_eq!(
                 encode_cbor(&back).unwrap(),
                 bytes,
@@ -3927,10 +3927,8 @@ mod tests {
             .events
             .iter()
             .map(|event| match event {
-                PersonalGraphEvent::SaveScene { scene, .. } => scene
-                    .clone()
-                    .into_v3()
-                    .and_then(|scene| scene.check_dynamics()),
+                PersonalGraphEvent::SaveScene { scene, .. } => saved_scene::scene_from_v2(scene.clone())
+                    .and_then(|scene| saved_scene::scene_spec(&scene).map(|_| ())),
                 _ => unreachable!("two scenes"),
             })
             .collect();

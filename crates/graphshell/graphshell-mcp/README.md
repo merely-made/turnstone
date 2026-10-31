@@ -5,9 +5,9 @@ admitted Graphshell route. An agent harness (Claude Code, Codex) launches it as 
 subprocess and reads and writes a mere through it, as a granted participant.
 
 It is the optional MCP adapter the
-[Graphshell reference host plan](../../../design_docs/mere_docs/implementation_strategy/2026-07-27_graphshell_reference_host_plan.md)
+[Graphshell reference host plan](../../../design_docs/archive_docs/2026-10-28/2026-07-27_graphshell_reference_host_plan.md)
 (H9) and the
-[djinn family resident services plan](../../../design_docs/mere_docs/implementation_strategy/2026-08-22_djinn_family_resident_services_plan.md)
+[djinn family resident services plan](../../../design_docs/archive_docs/2026-10-28/2026-08-22_djinn_family_resident_services_plan.md)
 (F2) schedule, over the same projection and intent grammar every Graphshell
 client uses. It is not a domain model and adds no authority.
 
@@ -17,7 +17,7 @@ The server holds no key and mints no grant (doctrine, Stack 2). `mere-mcp`
 names itself with `--app` and dials djinn's owner-only application door. Djinn
 admits that app id only for the routes its owner allows, serves it the
 projections that app may see, and attributes every accepted edit to the persona
-*via* that app (`Author::person(persona).via(app)`, `ports/djinn/src/resident_mere.rs`).
+*via* that app (`Author::person(persona).via(app)`, `ports/mere-resident/src/resident_mere.rs`).
 A refusal on the route is a refusal here, and reaches the model as a tool error
 it can read. To give two harnesses different reach, run them as different app
 ids; to withdraw one, revoke its route at djinn.
@@ -79,7 +79,7 @@ time.
 
 `cargo test -p graphshell-mcp` drives the real JSON-RPC against a route that
 behaves like djinn's (opens a session, refuses an ungranted write, checks the
-observed revision). `cargo test -p djinn --lib resident_mere::tests::mcp` serves
+observed revision). `cargo test -p mere-resident --lib resident_mere::tests::mcp` serves
 the adapter over djinn's real mere route (the reservoir, the route grants and the
 session item, through the endpoint catalog the application door uses). There an
 unadmitted app reaches no mere; an admitted agent lists the route's projections,

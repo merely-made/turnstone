@@ -514,6 +514,9 @@ pub(crate) struct TreePage {
     dynamics_inspector: dynamics_inspection::Pane,
     #[cfg(feature = "product")]
     node_presentation: node_presentation::Pane,
+    /// The Comms pane a node naming a correspondent opens.
+    #[cfg(feature = "product")]
+    comms: comms_pane::Pane,
     #[cfg(feature = "applets")]
     applet_seen: u64,
     #[cfg(feature = "applets")]
@@ -1170,6 +1173,8 @@ fn tools_region(page: &TreePage) -> Child {
     children.push(promoted_links::section(page));
     #[cfg(feature = "product")]
     children.push(node_presentation::section(page));
+    #[cfg(feature = "product")]
+    children.push(comms_pane::section(page));
     #[cfg(feature = "product")]
     children.push(forme::section(page));
     #[cfg(feature = "remote")]
@@ -1847,6 +1852,8 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
                 dynamics_inspector: dynamics_inspection::Pane::default(),
                 #[cfg(feature = "product")]
                 node_presentation: node_presentation::Pane::default(),
+                #[cfg(feature = "product")]
+                comms: comms_pane::Pane::default(),
                 #[cfg(feature = "applets")]
                 applet_seen: 0,
                 #[cfg(feature = "applets")]
@@ -2540,6 +2547,8 @@ mod backdrop;
 #[cfg(feature = "product")]
 mod blocks;
 mod commands;
+#[cfg(feature = "product")]
+mod comms_pane;
 mod controls;
 #[cfg(feature = "product")]
 mod coupling;

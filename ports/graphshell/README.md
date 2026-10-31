@@ -368,4 +368,4 @@ same content host, input view and producer. The explicit
 it is not a default capture operation.
 
 Qualification and unresolved gates are recorded in the
-[one-tree plan](../../design_docs/mere_docs/implementation_strategy/2026-09-25_graphshell_one_tree_plan.md).
+[one-tree plan](../../design_docs/archive_docs/2026-10-28/2026-09-25_graphshell_one_tree_plan.md).

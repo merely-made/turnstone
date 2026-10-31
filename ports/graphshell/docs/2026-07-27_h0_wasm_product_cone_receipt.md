@@ -1,7 +1,7 @@
 # H0 WASM Product-Cone Receipt
 
 **Date:** 2026-07-27  
-**Plan:** [Graphshell reference host H0](../../../design_docs/mere_docs/implementation_strategy/2026-07-27_graphshell_reference_host_plan.md#h0-seal-the-wasm-product-cone)  
+**Plan:** [Graphshell reference host H0](../../../design_docs/archive_docs/2026-10-28/2026-07-27_graphshell_reference_host_plan.md#h0-seal-the-wasm-product-cone)  
 **Result:** complete in the live checkout
 
 ## Boundary landed
