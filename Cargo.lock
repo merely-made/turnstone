@@ -368,7 +368,7 @@ version = "1.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "40c48f72fd53cd289104fc64099abca73db4166ad86ea0b4341abe65af83dadc"
 dependencies = [
- "windows-sys 0.61.2",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
@@ -379,7 +379,7 @@ checksum = "291e6a250ff86cd4a820112fb8898808a366d8f9f58ce16d1f538353ad55747d"
 dependencies = [
  "anstyle",
  "once_cell_polyfill",
- "windows-sys 0.61.2",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
@@ -462,7 +462,7 @@ dependencies = [
  "objc2-foundation 0.3.2",
  "parking_lot",
  "percent-encoding",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
  "wl-clipboard-rs",
  "x11rb",
 ]
@@ -1135,7 +1135,7 @@ dependencies = [
  "spin 0.10.1",
  "wasm-bindgen",
  "wasm-bindgen-futures",
- "windows-sys 0.61.2",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -1447,7 +1447,7 @@ dependencies = [
 [[package]]
 name = "buckram"
 version = "0.0.3"
-source = "git+https://github.com/merely-made/genet.git?branch=main#b7c0bef04613d854367d407b91c87a38b9b03b35"
+source = "git+https://github.com/merely-made/genet.git?branch=main#a3ea104bb9a4c8589f79732f5b1ba54cfcd17970"
 dependencies = [
  "genet-flow",
  "genet-taffy",
@@ -1586,7 +1586,7 @@ dependencies = [
 [[package]]
 name = "cadency"
 version = "0.0.1"
-source = "git+https://github.com/merely-made/genet.git?branch=main#b7c0bef04613d854367d407b91c87a38b9b03b35"
+source = "git+https://github.com/merely-made/genet.git?branch=main#a3ea104bb9a4c8589f79732f5b1ba54cfcd17970"
 dependencies = [
  "cssparser",
 ]
@@ -1750,7 +1750,7 @@ dependencies = [
  "cap-primitives",
  "cap-std",
  "io-lifetimes",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -1779,7 +1779,7 @@ dependencies = [
  "maybe-owned",
  "rustix 1.1.5",
  "rustix-linux-procfs",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
  "winx",
 ]
 
@@ -2899,7 +2899,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d045de693cb712d0b22c6a64be5b953f67b3ce00ab5ad3dd5d8b441886ab8e1a"
 dependencies = [
  "quote",
- "syn 3.0.6",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -3317,7 +3317,7 @@ dependencies = [
  "libc",
  "option-ext",
  "redox_users 0.5.3",
- "windows-sys 0.61.2",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -3461,7 +3461,7 @@ dependencies = [
 [[package]]
 name = "document-session-api"
 version = "0.1.1"
-source = "git+https://github.com/merely-made/genet.git?branch=main#b7c0bef04613d854367d407b91c87a38b9b03b35"
+source = "git+https://github.com/merely-made/genet.git?branch=main#a3ea104bb9a4c8589f79732f5b1ba54cfcd17970"
 dependencies = [
  "accesskit 0.25.1",
  "serde",
@@ -3721,7 +3721,7 @@ checksum = "66b7e2430c6dff6a955451e2cfc438f09cea1965a9d6f87f7e3b90decc014099"
 [[package]]
 name = "engine-observables-api"
 version = "0.2.0"
-source = "git+https://github.com/merely-made/genet.git?branch=main#b7c0bef04613d854367d407b91c87a38b9b03b35"
+source = "git+https://github.com/merely-made/genet.git?branch=main#a3ea104bb9a4c8589f79732f5b1ba54cfcd17970"
 dependencies = [
  "genet-paint-types",
  "serde",
@@ -3870,7 +3870,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
 dependencies = [
  "libc",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -4253,7 +4253,7 @@ dependencies = [
 [[package]]
 name = "fleece"
 version = "0.5.0"
-source = "git+https://github.com/merely-made/genet.git?branch=main#b7c0bef04613d854367d407b91c87a38b9b03b35"
+source = "git+https://github.com/merely-made/genet.git?branch=main#a3ea104bb9a4c8589f79732f5b1ba54cfcd17970"
 dependencies = [
  "layout-dom-api",
  "serde",
@@ -4415,7 +4415,7 @@ checksum = "94e7099f6313ecacbe1256e8ff9d617b75d1bcb16a6fddef94866d225a01a14a"
 dependencies = [
  "io-lifetimes",
  "rustix 1.1.5",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -4727,7 +4727,7 @@ dependencies = [
 [[package]]
 name = "genet-browsing"
 version = "0.1.0"
-source = "git+https://github.com/merely-made/genet.git?branch=main#b7c0bef04613d854367d407b91c87a38b9b03b35"
+source = "git+https://github.com/merely-made/genet.git?branch=main#a3ea104bb9a4c8589f79732f5b1ba54cfcd17970"
 dependencies = [
  "url",
 ]
@@ -4735,7 +4735,7 @@ dependencies = [
 [[package]]
 name = "genet-clipboard"
 version = "0.1.0"
-source = "git+https://github.com/merely-made/genet.git?branch=main#b7c0bef04613d854367d407b91c87a38b9b03b35"
+source = "git+https://github.com/merely-made/genet.git?branch=main#a3ea104bb9a4c8589f79732f5b1ba54cfcd17970"
 dependencies = [
  "arboard",
 ]
@@ -4743,7 +4743,7 @@ dependencies = [
 [[package]]
 name = "genet-didge"
 version = "0.0.0"
-source = "git+https://github.com/merely-made/genet.git?branch=main#b7c0bef04613d854367d407b91c87a38b9b03b35"
+source = "git+https://github.com/merely-made/genet.git?branch=main#a3ea104bb9a4c8589f79732f5b1ba54cfcd17970"
 dependencies = [
  "gc-arena",
  "piccolo",
@@ -4753,7 +4753,7 @@ dependencies = [
 [[package]]
 name = "genet-document-resources"
 version = "0.2.1"
-source = "git+https://github.com/merely-made/genet.git?branch=main#b7c0bef04613d854367d407b91c87a38b9b03b35"
+source = "git+https://github.com/merely-made/genet.git?branch=main#a3ea104bb9a4c8589f79732f5b1ba54cfcd17970"
 dependencies = [
  "genet-host-api",
  "layout-dom-api",
@@ -4762,7 +4762,7 @@ dependencies = [
 [[package]]
 name = "genet-documents"
 version = "0.1.0"
-source = "git+https://github.com/merely-made/genet.git?branch=main#b7c0bef04613d854367d407b91c87a38b9b03b35"
+source = "git+https://github.com/merely-made/genet.git?branch=main#a3ea104bb9a4c8589f79732f5b1ba54cfcd17970"
 dependencies = [
  "data-url",
  "document-session-api",
@@ -4785,7 +4785,7 @@ dependencies = [
 [[package]]
 name = "genet-events"
 version = "0.0.0"
-source = "git+https://github.com/merely-made/genet.git?branch=main#b7c0bef04613d854367d407b91c87a38b9b03b35"
+source = "git+https://github.com/merely-made/genet.git?branch=main#a3ea104bb9a4c8589f79732f5b1ba54cfcd17970"
 dependencies = [
  "genet-scripted-dom",
  "layout-dom-api",
@@ -4794,12 +4794,12 @@ dependencies = [
 [[package]]
 name = "genet-flow"
 version = "0.1.0"
-source = "git+https://github.com/merely-made/genet.git?branch=main#b7c0bef04613d854367d407b91c87a38b9b03b35"
+source = "git+https://github.com/merely-made/genet.git?branch=main#a3ea104bb9a4c8589f79732f5b1ba54cfcd17970"
 
 [[package]]
 name = "genet-fontique"
 version = "0.10.0"
-source = "git+https://github.com/merely-made/genet.git?branch=main#b7c0bef04613d854367d407b91c87a38b9b03b35"
+source = "git+https://github.com/merely-made/genet.git?branch=main#a3ea104bb9a4c8589f79732f5b1ba54cfcd17970"
 dependencies = [
  "hashbrown 0.17.1",
  "linebender_resource_handle",
@@ -4820,7 +4820,7 @@ dependencies = [
 [[package]]
 name = "genet-host-api"
 version = "0.2.0"
-source = "git+https://github.com/merely-made/genet.git?branch=main#b7c0bef04613d854367d407b91c87a38b9b03b35"
+source = "git+https://github.com/merely-made/genet.git?branch=main#a3ea104bb9a4c8589f79732f5b1ba54cfcd17970"
 dependencies = [
  "serde",
 ]
@@ -4828,7 +4828,7 @@ dependencies = [
 [[package]]
 name = "genet-livery"
 version = "0.0.4"
-source = "git+https://github.com/merely-made/genet.git?branch=main#b7c0bef04613d854367d407b91c87a38b9b03b35"
+source = "git+https://github.com/merely-made/genet.git?branch=main#a3ea104bb9a4c8589f79732f5b1ba54cfcd17970"
 dependencies = [
  "buckram",
  "cssparser",
@@ -4851,7 +4851,7 @@ dependencies = [
 [[package]]
 name = "genet-paint-types"
 version = "0.2.0"
-source = "git+https://github.com/merely-made/genet.git?branch=main#b7c0bef04613d854367d407b91c87a38b9b03b35"
+source = "git+https://github.com/merely-made/genet.git?branch=main#a3ea104bb9a4c8589f79732f5b1ba54cfcd17970"
 dependencies = [
  "app_units",
  "euclid",
@@ -4861,7 +4861,7 @@ dependencies = [
 [[package]]
 name = "genet-parley"
 version = "0.10.0"
-source = "git+https://github.com/merely-made/genet.git?branch=main#b7c0bef04613d854367d407b91c87a38b9b03b35"
+source = "git+https://github.com/merely-made/genet.git?branch=main#a3ea104bb9a4c8589f79732f5b1ba54cfcd17970"
 dependencies = [
  "genet-fontique",
  "harfrust",
@@ -4880,7 +4880,7 @@ dependencies = [
 [[package]]
 name = "genet-presenter"
 version = "0.2.0"
-source = "git+https://github.com/merely-made/genet.git?branch=main#b7c0bef04613d854367d407b91c87a38b9b03b35"
+source = "git+https://github.com/merely-made/genet.git?branch=main#a3ea104bb9a4c8589f79732f5b1ba54cfcd17970"
 dependencies = [
  "gloo-timers",
  "js-sys",
@@ -4895,7 +4895,7 @@ dependencies = [
 [[package]]
 name = "genet-render"
 version = "0.2.0"
-source = "git+https://github.com/merely-made/genet.git?branch=main#b7c0bef04613d854367d407b91c87a38b9b03b35"
+source = "git+https://github.com/merely-made/genet.git?branch=main#a3ea104bb9a4c8589f79732f5b1ba54cfcd17970"
 dependencies = [
  "accesskit 0.25.1",
  "document-session-api",
@@ -4910,7 +4910,7 @@ dependencies = [
 [[package]]
 name = "genet-scripted-dom"
 version = "0.1.2"
-source = "git+https://github.com/merely-made/genet.git?branch=main#b7c0bef04613d854367d407b91c87a38b9b03b35"
+source = "git+https://github.com/merely-made/genet.git?branch=main#a3ea104bb9a4c8589f79732f5b1ba54cfcd17970"
 dependencies = [
  "encoding_rs",
  "engine-observables-api",
@@ -4927,7 +4927,7 @@ dependencies = [
 [[package]]
 name = "genet-static-dom"
 version = "0.1.1"
-source = "git+https://github.com/merely-made/genet.git?branch=main#b7c0bef04613d854367d407b91c87a38b9b03b35"
+source = "git+https://github.com/merely-made/genet.git?branch=main#a3ea104bb9a4c8589f79732f5b1ba54cfcd17970"
 dependencies = [
  "html5ever",
  "layout-dom-api",
@@ -4948,7 +4948,7 @@ dependencies = [
 [[package]]
 name = "genet-text"
 version = "0.1.0"
-source = "git+https://github.com/merely-made/genet.git?branch=main#b7c0bef04613d854367d407b91c87a38b9b03b35"
+source = "git+https://github.com/merely-made/genet.git?branch=main#a3ea104bb9a4c8589f79732f5b1ba54cfcd17970"
 dependencies = [
  "unicode-segmentation",
 ]
@@ -4956,7 +4956,7 @@ dependencies = [
 [[package]]
 name = "genet-winit"
 version = "0.2.0"
-source = "git+https://github.com/merely-made/genet.git?branch=main#b7c0bef04613d854367d407b91c87a38b9b03b35"
+source = "git+https://github.com/merely-made/genet.git?branch=main#a3ea104bb9a4c8589f79732f5b1ba54cfcd17970"
 dependencies = [
  "accesskit 0.25.1",
  "accesskit_macos",
@@ -6765,7 +6765,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2285ddfe3054097ef4b2fe909ef8c3bcd1ea52a8f0d274416caebeef39f04a65"
 dependencies = [
  "io-lifetimes",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -6776,22 +6776,9 @@ checksum = "06432fb54d3be7964ecd3649233cddf80db2832f47fec34c01f65b3d9d774983"
 
 [[package]]
 name = "ipc-channel"
-version = "0.22.0"
-source = "git+https://github.com/merely-made/genet.git?branch=main#b7c0bef04613d854367d407b91c87a38b9b03b35"
-dependencies = [
- "crossbeam-channel",
- "libc",
- "postcard",
- "serde_core",
- "thiserror 2.0.20",
- "uuid",
-]
-
-[[package]]
-name = "ipc-channel"
-version = "0.23.0"
+version = "0.23.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "25c2117f45662580ea93b6fb2bc665c52667ea0370c23fab9bb9485acec8bd24"
+checksum = "cf1d9c442a2ec790209da8a49f99f7dae0fad31ba24c9947b01ce5e8de8bddcb"
 dependencies = [
  "crossbeam-channel",
  "libc",
@@ -7615,7 +7602,7 @@ dependencies = [
 [[package]]
 name = "layout-dom-api"
 version = "0.1.1"
-source = "git+https://github.com/merely-made/genet.git?branch=main#b7c0bef04613d854367d407b91c87a38b9b03b35"
+source = "git+https://github.com/merely-made/genet.git?branch=main#a3ea104bb9a4c8589f79732f5b1ba54cfcd17970"
 dependencies = [
  "markup5ever",
  "serde",
@@ -7866,7 +7853,7 @@ checksum = "11d3d7f243d5c5a8b9bb5d6dd2b1602c0cb0b9db1621bafc7ed66e35ff9fe092"
 [[package]]
 name = "livery"
 version = "0.0.5"
-source = "git+https://github.com/merely-made/genet.git?branch=main#b7c0bef04613d854367d407b91c87a38b9b03b35"
+source = "git+https://github.com/merely-made/genet.git?branch=main#a3ea104bb9a4c8589f79732f5b1ba54cfcd17970"
 dependencies = [
  "cadency",
  "cssparser",
@@ -8881,7 +8868,7 @@ dependencies = [
 [[package]]
 name = "murm-wire"
 version = "0.1.0"
-source = "git+https://github.com/merely-made/murm.git?branch=main#75eb9108879003015c934426565a55097d21a193"
+source = "git+https://github.com/merely-made/murm.git?branch=main#b86e7d29333799059f269399f1b71a7a7f778a52"
 dependencies = [
  "bytes",
  "futures-util",
@@ -9161,7 +9148,7 @@ dependencies = [
 [[package]]
 name = "netfetcher"
 version = "0.1.1"
-source = "git+https://github.com/merely-made/genet.git?branch=main#b7c0bef04613d854367d407b91c87a38b9b03b35"
+source = "git+https://github.com/merely-made/genet.git?branch=main#a3ea104bb9a4c8589f79732f5b1ba54cfcd17970"
 dependencies = [
  "async-compression",
  "base64 0.22.1",
@@ -9263,7 +9250,7 @@ dependencies = [
 [[package]]
 name = "netrender"
 version = "0.1.2"
-source = "git+https://github.com/merely-made/netrender.git?branch=main#66b2f72e9e0785819139739cc4503bf1e8766de9"
+source = "git+https://github.com/merely-made/netrender.git?branch=main#11e208b84a981993df8077bb6025f8b3adbe2291"
 dependencies = [
  "log",
  "netrender-vello",
@@ -9299,7 +9286,7 @@ dependencies = [
 [[package]]
 name = "netrender_device"
 version = "0.1.2"
-source = "git+https://github.com/merely-made/netrender.git?branch=main#66b2f72e9e0785819139739cc4503bf1e8766de9"
+source = "git+https://github.com/merely-made/netrender.git?branch=main#11e208b84a981993df8077bb6025f8b3adbe2291"
 dependencies = [
  "log",
  "pollster 1.0.1",
@@ -9544,7 +9531,7 @@ version = "0.50.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7957b9740744892f114936ab4a57b3f487491bbeafaf8083688b16841a4240e5"
 dependencies = [
- "windows-sys 0.61.2",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -10439,7 +10426,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7d8fae84b431384b68627d0f9b3b1245fcf9f46f6c0e3dc902e9dce64edd1967"
 dependencies = [
  "libc",
- "windows-sys 0.45.0",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]
@@ -10476,7 +10463,7 @@ dependencies = [
  "oxiri",
  "oxrdf",
  "ryu-js",
- "thiserror 1.0.69",
+ "thiserror 2.0.20",
 ]
 
 [[package]]
@@ -10488,7 +10475,7 @@ dependencies = [
  "oxilangtag",
  "oxiri",
  "rand 0.9.5",
- "thiserror 1.0.69",
+ "thiserror 2.0.20",
 ]
 
 [[package]]
@@ -10501,7 +10488,7 @@ dependencies = [
  "oxilangtag",
  "oxiri",
  "oxrdf",
- "thiserror 1.0.69",
+ "thiserror 2.0.20",
 ]
 
 [[package]]
@@ -10618,7 +10605,7 @@ dependencies = [
 [[package]]
 name = "paint_list_api"
 version = "0.1.2"
-source = "git+https://github.com/merely-made/netrender.git?branch=main#66b2f72e9e0785819139739cc4503bf1e8766de9"
+source = "git+https://github.com/merely-made/netrender.git?branch=main#11e208b84a981993df8077bb6025f8b3adbe2291"
 dependencies = [
  "euclid",
  "serde",
@@ -10627,7 +10614,7 @@ dependencies = [
 [[package]]
 name = "paint_list_render"
 version = "0.1.2"
-source = "git+https://github.com/merely-made/netrender.git?branch=main#66b2f72e9e0785819139739cc4503bf1e8766de9"
+source = "git+https://github.com/merely-made/netrender.git?branch=main#11e208b84a981993df8077bb6025f8b3adbe2291"
 dependencies = [
  "log",
  "netrender",
@@ -11746,7 +11733,7 @@ dependencies = [
  "once_cell",
  "socket2",
  "tracing",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -12311,7 +12298,7 @@ checksum = "d6f6ff9a378485b298a5286656da665ba74413d36db0979633275d2e708145d4"
 [[package]]
 name = "regress"
 version = "0.11.1"
-source = "git+https://github.com/merely-made/genet.git?branch=main#b7c0bef04613d854367d407b91c87a38b9b03b35"
+source = "git+https://github.com/merely-made/genet.git?branch=main#a3ea104bb9a4c8589f79732f5b1ba54cfcd17970"
 dependencies = [
  "hashbrown 0.16.1",
  "memchr",
@@ -12670,7 +12657,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys 0.4.15",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -12683,7 +12670,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys 0.12.1",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -12752,7 +12739,7 @@ dependencies = [
  "security-framework",
  "security-framework-sys",
  "webpki-root-certs",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -12899,7 +12886,7 @@ checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
 [[package]]
 name = "script-engine-api"
 version = "0.1.1"
-source = "git+https://github.com/merely-made/genet.git?branch=main#b7c0bef04613d854367d407b91c87a38b9b03b35"
+source = "git+https://github.com/merely-made/genet.git?branch=main#a3ea104bb9a4c8589f79732f5b1ba54cfcd17970"
 
 [[package]]
 name = "script-rhai"
@@ -13281,7 +13268,7 @@ dependencies = [
  "gaol",
  "http",
  "image",
- "ipc-channel 0.23.0",
+ "ipc-channel",
  "keyboard-types",
  "log",
  "mozangle",
@@ -13369,7 +13356,7 @@ source = "git+https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c
 dependencies = [
  "accesskit 0.24.1",
  "crossbeam-channel",
- "ipc-channel 0.23.0",
+ "ipc-channel",
  "libc",
  "log",
  "mach2 0.7.0",
@@ -13473,7 +13460,7 @@ dependencies = [
  "crossbeam-channel",
  "euclid",
  "gaol",
- "ipc-channel 0.23.0",
+ "ipc-channel",
  "keyboard-types",
  "log",
  "parking_lot",
@@ -13884,7 +13871,7 @@ dependencies = [
  "http",
  "icu_locale_core 2.3.0",
  "indexmap 2.14.2",
- "ipc-channel 0.23.0",
+ "ipc-channel",
  "keyboard-types",
  "markup5ever",
  "memmap2",
@@ -14002,9 +13989,9 @@ dependencies = [
 [[package]]
 name = "servo-media-player"
 version = "0.2.0"
-source = "git+https://github.com/merely-made/genet.git?branch=main#b7c0bef04613d854367d407b91c87a38b9b03b35"
+source = "git+https://github.com/merely-made/genet.git?branch=main#a3ea104bb9a4c8589f79732f5b1ba54cfcd17970"
 dependencies = [
- "ipc-channel 0.22.0",
+ "ipc-channel",
  "serde",
  "servo-media-streams 0.2.0",
  "servo-media-traits 0.2.0",
@@ -14026,7 +14013,7 @@ dependencies = [
 [[package]]
 name = "servo-media-streams"
 version = "0.2.0"
-source = "git+https://github.com/merely-made/genet.git?branch=main#b7c0bef04613d854367d407b91c87a38b9b03b35"
+source = "git+https://github.com/merely-made/genet.git?branch=main#a3ea104bb9a4c8589f79732f5b1ba54cfcd17970"
 dependencies = [
  "uuid",
 ]
@@ -14047,7 +14034,7 @@ version = "0.7.0"
 source = "git+https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f31a259f04a574f5ec4e959c943ad7cc7"
 dependencies = [
  "euclid",
- "ipc-channel 0.23.0",
+ "ipc-channel",
  "log",
  "malloc_size_of_derive",
  "rustc-hash 2.1.3",
@@ -14063,7 +14050,7 @@ dependencies = [
 [[package]]
 name = "servo-media-traits"
 version = "0.2.0"
-source = "git+https://github.com/merely-made/genet.git?branch=main#b7c0bef04613d854367d407b91c87a38b9b03b35"
+source = "git+https://github.com/merely-made/genet.git?branch=main#a3ea104bb9a4c8589f79732f5b1ba54cfcd17970"
 
 [[package]]
 name = "servo-media-traits"
@@ -14126,7 +14113,7 @@ dependencies = [
  "hyper-rustls",
  "hyper-util",
  "imsz",
- "ipc-channel 0.23.0",
+ "ipc-channel",
  "itertools 0.15.0",
  "log",
  "malloc_size_of_derive",
@@ -14189,7 +14176,7 @@ dependencies = [
  "headers",
  "http",
  "hyper-util",
- "ipc-channel 0.23.0",
+ "ipc-channel",
  "log",
  "malloc_size_of_derive",
  "mime",
@@ -14329,7 +14316,7 @@ version = "0.7.0"
 source = "git+https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f31a259f04a574f5ec4e959c943ad7cc7"
 dependencies = [
  "crossbeam-channel",
- "ipc-channel 0.23.0",
+ "ipc-channel",
  "log",
  "malloc_size_of_derive",
  "serde",
@@ -14373,7 +14360,7 @@ dependencies = [
  "httparse",
  "icu_locale_core 2.3.0",
  "indexmap 2.14.2",
- "ipc-channel 0.23.0",
+ "ipc-channel",
  "itertools 0.15.0",
  "keyboard-types",
  "libc",
@@ -14628,7 +14615,7 @@ version = "0.7.0"
 source = "git+https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f31a259f04a574f5ec4e959c943ad7cc7"
 dependencies = [
  "euclid",
- "ipc-channel 0.23.0",
+ "ipc-channel",
  "log",
  "malloc_size_of_derive",
  "serde",
@@ -14970,7 +14957,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c3d1e2c7f27f8d4cb10542a02c49005dbd6e93095799d6f3be745fae9f8fedd4"
 dependencies = [
  "libc",
- "windows-sys 0.61.2",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
@@ -15124,7 +15111,7 @@ dependencies = [
  "cfg-if",
  "libc",
  "psm",
- "windows-sys 0.61.2",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
@@ -15773,7 +15760,7 @@ dependencies = [
 [[package]]
 name = "taproot"
 version = "0.1.0"
-source = "git+https://github.com/merely-made/genet.git?branch=main#b7c0bef04613d854367d407b91c87a38b9b03b35"
+source = "git+https://github.com/merely-made/genet.git?branch=main#a3ea104bb9a4c8589f79732f5b1ba54cfcd17970"
 dependencies = [
  "accesskit 0.25.1",
  "document-session-api",
@@ -15809,7 +15796,7 @@ dependencies = [
  "getrandom 0.3.4",
  "once_cell",
  "rustix 1.1.5",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -16643,7 +16630,7 @@ checksum = "f2f6fb2847f6742cd76af783a2a2c49e9375d0a111c7bef6f71cd9e738c72d6e"
 dependencies = [
  "memoffset",
  "tempfile",
- "windows-sys 0.61.2",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
@@ -16903,9 +16890,9 @@ checksum = "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821"
 
 [[package]]
 name = "uuid"
-version = "1.27.0"
+version = "1.26.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "97277d36b9c3ace13e58fa6e753f8b0bbbf302a18dd193240d70f9e29681059a"
+checksum = "2ef6dac1e96601b4fb3acccccff2139741fcb757cb9a36089bf5be91cfb285ce"
 dependencies = [
  "getrandom 0.4.3",
  "js-sys",
@@ -18230,7 +18217,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.52.0",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]
@@ -18762,7 +18749,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3f3fd376f71958b862e7afb20cfe5a22830e1963462f3a17f49d82a6c1d1f42d"
 dependencies = [
  "bitflags 2.13.2",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
