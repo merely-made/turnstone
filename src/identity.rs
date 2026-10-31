@@ -41,6 +41,62 @@ use insigne::delegation::{DelegationCertificate, SignedDelegationCertificate};
 /// The name Turnstone is admitted to djinn's custody route under.
 pub const CUSTODY_APP: &str = "turnstone";
 
+/// The resident inference lane's route, named without the optional
+/// `inference` feature's dependency.
+const INFERENCE_ASK_ROUTE: &str = "inference.ask";
+
+/// What Turnstone declares to Djinn on every door connection: the resident
+/// routes it opens, and the custody calls and persona salts it needs. The
+/// resident owner's grant decides what Turnstone receives; anything not named
+/// here is refused. Salts are released unless listed under `acts`.
+pub fn app_declaration() -> djinn::door::declaration::AppDeclaration {
+    use djinn::door::declaration::{
+        AppDeclaration, CustodyOperation, CustodyUse, NamePattern, SaltPattern, SaltUse,
+    };
+    let prefix = |text: &str| SaltUse::persona(SaltPattern::Prefix(text.into()));
+    let scope = |domain: &str| SaltUse::persona(SaltPattern::DelegationScope(domain.into()));
+    AppDeclaration {
+        routes: vec![
+            NamePattern::exact(djinn::door::custody::CUSTODY_ROUTE),
+            NamePattern::exact(djinn::door::app_admission::APP_IDENTITY_ROUTE),
+            NamePattern::exact("knot"),
+            // The resident inference lane (`INFERENCE_ASK_ROUTE`).
+            NamePattern::exact(INFERENCE_ASK_ROUTE),
+        ],
+        offers: Vec::new(),
+        custody: CustodyUse {
+            operations: [
+                CustodyOperation::Status,
+                CustodyOperation::WatchLock,
+                CustodyOperation::Release,
+                CustodyOperation::Attest,
+                CustodyOperation::Payload,
+            ]
+            .into(),
+            salts: vec![
+                // A place's transport, sealed secrets and founding key.
+                prefix("turnstone.place."),
+                // Capsule-scoped Gemini client identities.
+                prefix("personae/gemini-client-identity/v1/"),
+                // The reader key Knot's published shares open with.
+                SaltUse::persona(SaltPattern::Exact("mere/knot-publish/reader/v1".into())),
+                // The shared-place writers Turnstone authors under.
+                prefix("mere.gemot.membership.v1/"),
+                prefix("mere.commons.writer.v1/"),
+                prefix("mere.commons.chat.writer.v1/"),
+                prefix("stickleback/group-key-writer/v1/"),
+                prefix("stickleback/group-prekey-identity/v1"),
+                // Delegations issued through a provider release their scope
+                // key: a Moot's, Knot's shares, and a place's Graphshell guests.
+                scope("moot"),
+                scope("mere.knot"),
+                scope("mere.graphshell"),
+            ],
+            ..CustodyUse::default()
+        },
+    }
+}
+
 /// Nonsecret profile and root-key identity used to match a fresh binding.
 pub type CustodyPrincipal = (identity::ProfileId, [u8; 32]);
 
@@ -159,8 +215,9 @@ impl RootIdentity {
 /// Used only by the cancellable background binding task. No key or passphrase
 /// is read here, and the fresh connection has one deadline for its handshake.
 pub fn bind_timeout(timeout: std::time::Duration) -> Option<Arc<RootIdentity>> {
-    djinn::door::custody_identity::CustodyIdentity::connect_timeout(
+    djinn::door::custody_identity::CustodyIdentity::connect_declared_timeout(
         CUSTODY_APP,
+        app_declaration(),
         timeout,
     )
     .ok()
@@ -239,6 +296,24 @@ impl RootIdentity {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn the_declaration_is_bounded_and_names_what_turnstone_opens() {
+        use djinn::door::app_admission::AppRouteId;
+        let declaration = app_declaration();
+        assert!(declaration.validate().is_ok());
+        for route in ["custody", "identity", "knot", "inference.ask"] {
+            assert!(declaration.declares_route(&AppRouteId::new(route).unwrap()), "{route}");
+        }
+        assert!(!declaration.declares_route(&AppRouteId::new("reservoir").unwrap()));
+        assert!(declaration.custody.epoch.is_empty(), "Turnstone asks for no epoch keys");
+    }
+
+    #[cfg(feature = "inference")]
+    #[test]
+    fn the_inference_route_matches_distillery() {
+        assert_eq!(INFERENCE_ASK_ROUTE, distillery::inference_protocol::INFERENCE_ASK_ROUTE);
+    }
 
     #[test]
     fn a_fixture_root_speaks_as_its_seed() {

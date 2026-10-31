@@ -143,7 +143,7 @@ knot-document = { git = "https://github.com/merely-made/knot-editor.git", branch
 distillery = { git = "https://github.com/merely-made/mere.git", branch = "main", default-features = false, optional = true, features = ["inference-wire"] }
 graphshell-client = { git = "https://github.com/merely-made/mere.git", branch = "main", features = ["accesskit"] }
 graphshell-endpoint = { git = "https://github.com/merely-made/mere.git", branch = "main", features = ["projection-door", "local", "stdio"] }
-djinn = { git = "https://github.com/merely-made/armillary.git", rev = "b6578ee6fbb8ae5efcf819d660d4124d092ef2de", version = "0.0.3", default-features = false, features = ["custody-client"] }
+djinn = { git = "https://github.com/merely-made/armillary.git", rev = "73968e28e2ceb78399b9d533bfa037cd300126c5", version = "0.0.3", default-features = false, features = ["custody-client"] }
 dramatis = { git = "https://github.com/merely-made/dramatis.git", branch = "main" }
 chirograph = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 # The pane model (rung 5 slice C) is no longer a dependency at all: it folded

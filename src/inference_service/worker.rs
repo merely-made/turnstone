@@ -68,9 +68,10 @@ pub(super) fn worker(
                 };
                 if connection.is_none() {
                     crate::inference_activity::record_route_attempt();
-                    let mut client = AppBrokerClient::open_route(
-                        AppId::new("turnstone"),
+                    let mut client = AppBrokerClient::open_declared_route(
+                        AppId::new(crate::identity::CUSTODY_APP),
                         AppRouteId::new(wire::INFERENCE_ASK_ROUTE).map_err(|e| e.to_string())?,
+                        crate::identity::app_declaration(),
                     )
                     .await
                     .map_err(|e| format!("Answers needs the inference resident. {e}"))?;
