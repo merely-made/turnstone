@@ -31,7 +31,7 @@ use mere::canvas::{
 use super::*;
 use crate::app::GraphshellApp;
 use crate::mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef};
-use crate::remote_board::RemoteBoard;
+use graphshell_host::board::RemoteBoard;
 
 const SLOT: u64 = 3;
 const WIDTH: u32 = 1200;

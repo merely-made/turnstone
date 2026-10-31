@@ -99,8 +99,6 @@ pub mod product;
 #[cfg(feature = "web")]
 pub mod promoted_links;
 #[cfg(feature = "web")]
-pub mod remote_board;
-#[cfg(feature = "web")]
 pub mod resident_host;
 #[cfg(feature = "web")]
 pub mod responsive_links;

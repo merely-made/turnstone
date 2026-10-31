@@ -16,7 +16,7 @@
 //! the link's disconnect, reconnect and nudge, and the action status.
 use super::*;
 use cambium::{DisclosureState, SelectState, button, disclosure, lens, select};
-use graphshell::remote_board::RemoteBoard;
+use graphshell_host::board::RemoteBoard;
 use graphshell_client::remote::ActionForm;
 use graphshell_client::{ActionDraftSemantics, MountedScene};
 use mere::canvas::{BoardFit, BoardText};

@@ -1017,6 +1017,7 @@ dependencies = [
  "serde",
  "serde_json",
  "sprigging",
+ "tracing",
  "workbench",
 ]
 
@@ -3861,6 +3862,7 @@ dependencies = [
  "murm-webrtc",
  "notochord",
  "personae",
+ "pictograph",
  "sceno",
  "scenotime",
  "serde",
@@ -3885,6 +3887,7 @@ dependencies = [
  "genet-scripted-dom",
  "graphshell",
  "graphshell-client",
+ "graphshell-host",
  "js-sys",
  "layout-dom-api",
  "mere",

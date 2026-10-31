@@ -43,7 +43,7 @@ applets = ["graphshell/applets", "muniment/indexeddb"]
 # remote board.
 remote = ["graphshell/webrtc-browser", "dep:mere-overmap", "dep:mere-view", "dep:futures-channel", "dep:futures-util"]
 # The canvas's repulsion on the page's own WebGPU device (physics catalog P5c).
-canvas-gpu = ["graphshell/canvas-gpu", "mere/canvas-gpu"]
+canvas-gpu = ["graphshell/canvas-gpu", "mere/canvas-gpu", "graphshell-host/board-gpu"]
 # Forwards genet-livery's image decoding (mer3ly Ruling 111); on by default.
 image-decode = ["genet-render/image-decode", "taproot/image-decode", "cambium-rootstock/image-decode", "mesquite/image-decode", "cambium-web/image-decode", "graphshell/image-decode", "mere/image-decode"]
 
@@ -72,6 +72,8 @@ mere = { path = "../../../crates/mere", default-features = false, features = ["g
 # the duplicate showed up; muniment owns the backend family, so it owns this.
 muniment = { git = "https://github.com/merely-made/eidetic.git", rev = "e7eef1e622c8af7ea2a04e85ef7485aac0763433" }
 graphshell-client = { path = "../../../crates/graphshell/graphshell-client" }
+# The remote board the pages draw (stack lift plan, P10).
+graphshell-host = { path = "../../../crates/graphshell/graphshell-host", default-features = false, features = ["board"] }
 chirograph = { path = "../../../crates/chirograph" }
 workbench = { path = "../../../crates/cambium/workbench" }
 sceno = { path = "../../../crates/cambium/scenes/sceno" }
