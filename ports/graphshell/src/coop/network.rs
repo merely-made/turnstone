@@ -96,7 +96,7 @@ pub async fn card(
 /// Small, public handoff artifacts use replacement, never partial writes.
 pub fn write_json(path: &Path, value: &impl Serialize) -> Result<(), String> {
     let bytes = serde_json::to_vec_pretty(value).map_err(|e| e.to_string())?;
-    pandect::atomic_file::write_bytes_with_backup(path, &bytes).map_err(|e| e.to_string())
+    muniment::atomic_file::write_bytes_with_backup(path, &bytes).map_err(|e| e.to_string())
 }
 pub fn read_json<T: serde::de::DeserializeOwned>(path: &Path) -> Result<T, String> {
     let bytes = std::fs::read(path).map_err(|e| e.to_string())?;

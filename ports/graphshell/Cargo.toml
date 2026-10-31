@@ -225,7 +225,7 @@ chartulary = { workspace = true, optional = true }
 distillery = { path = "../distillery", optional = true }
 eidetic = { workspace = true, optional = true }
 graphshell-client = { version = "0.0.2", path = "../../crates/graphshell/graphshell-client" }
-graphshell-endpoint = { version = "0.0.2", path = "../../crates/graphshell/graphshell-endpoint" }
+graphshell-endpoint = { version = "0.0.3", path = "../../crates/graphshell/graphshell-endpoint" }
 # The serving half (stack lift plan, L2): admission, the session loop, the
 # catalog and the projection host. `native` and the WebRTC features name its
 # halves; with none, it is the fixture endpoints the web tests use.

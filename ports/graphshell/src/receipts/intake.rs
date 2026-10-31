@@ -156,7 +156,7 @@ pub fn write_to_inbox(
     // Readers must never observe a partially serialized hand-off. Unlike a
     // settings document, intake cannot recover a temporarily displaced target
     // from a .previous file, so installation uses a single atomic rename.
-    pandect::atomic_file::write_bytes_atomic(&path, json.as_bytes())?;
+    muniment::atomic_file::write_bytes_atomic(&path, json.as_bytes())?;
     Ok(path)
 }
 
