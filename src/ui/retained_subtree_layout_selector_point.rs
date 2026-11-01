@@ -30,7 +30,7 @@ impl RetainedSubtreeLayout {
                 &view,
                 snapshot,
                 node,
-                &HashMap::new(),
+                &self.element_scroll,
                 (0.0, 0.0),
                 logical_size(self.size, self.scale),
             ) else {
@@ -57,6 +57,7 @@ impl RetainedSubtreeLayout {
             dirty: true,
             rebuilds: 0,
             mutation_cursor: 0,
+            element_scroll: HashMap::new(),
         }
     }
 
@@ -100,6 +101,9 @@ impl RetainedSubtreeLayout {
         {
             return;
         }
+        // DOM replacement and resizes can invalidate both the owner and its
+        // extent; return to the start instead of retaining a stale offset.
+        self.element_scroll.clear();
         self.rebuilds = self.rebuilds.saturating_add(1);
         tracing::debug!(
             dirty = self.dirty,
@@ -141,7 +145,7 @@ impl RetainedSubtreeLayout {
             self.snapshot.as_mut().expect("ensure leaves a snapshot"),
             lw,
             lh,
-            &HashMap::new(),
+            &self.element_scroll,
             (0.0, 0.0),
         );
         composite(DeviceIntSize::new(lw as i32, lh as i32), &plist)
@@ -179,16 +183,21 @@ impl RetainedSubtreeLayout {
             }
         });
         registry.render_into(|key| sizes.get(&key).copied(), cache);
-        let mut plist = paint_snapshot(&view, snapshot, lw, lh, &HashMap::new(), (0., 0.));
+        let mut plist = paint_snapshot(&view, snapshot, lw, lh, &self.element_scroll, (0., 0.));
         for (node, key) in nodes {
             let Some((x, y, _, _)) =
-                snapshot_node_rect(&view, snapshot, node, &HashMap::new(), (0., 0.))
+                snapshot_node_rect(&view, snapshot, node, &self.element_scroll, (0., 0.))
             else {
                 continue;
             };
-            let Some((vx, vy, vw, vh)) =
-                snapshot_visible_rect(&view, snapshot, node, &HashMap::new(), (0., 0.), (lw, lh))
-            else {
+            let Some((vx, vy, vw, vh)) = snapshot_visible_rect(
+                &view,
+                snapshot,
+                node,
+                &self.element_scroll,
+                (0., 0.),
+                (lw, lh),
+            ) else {
                 continue;
             };
             if let Some(commands) = cache.get(key) {
@@ -206,6 +215,47 @@ impl RetainedSubtreeLayout {
             }
         }
         composite(DeviceIntSize::new(lw as i32, lh as i32), &plist)
+    }
+
+    /// Scroll a named overflow owner while keeping paint and hit testing aligned.
+    pub(crate) fn scroll_element(
+        &mut self,
+        dom: &ScriptedDom,
+        root: DomNodeId,
+        sheet: &str,
+        w: u32,
+        h: u32,
+        owner: DomNodeId,
+        x: f32,
+        y: f32,
+        dy: f32,
+    ) -> bool {
+        self.ensure(dom, root, sheet, w, h);
+        let view = SubtreeView::new(dom, root);
+        let snapshot = self.snapshot.as_ref().expect("layout exists");
+        let Some((ox, oy, ow, oh)) = snapshot_visible_rect(
+            &view,
+            snapshot,
+            owner,
+            &self.element_scroll,
+            (0.0, 0.0),
+            logical_size(self.size, self.scale),
+        ) else {
+            return false;
+        };
+        let (x, y) = (x / self.scale, y / self.scale);
+        if x < ox || x >= ox + ow || y < oy || y >= oy + oh {
+            return false;
+        }
+        let Some(owner_fragment) = snapshot.fragments.get(owner) else {
+            return false;
+        };
+        let scoped = cambium_rootstock::WindowDom::new(dom, owner);
+        let extent = content_extent(&scoped, &snapshot.fragments);
+        let max = (extent.1 - owner_fragment.y - owner_fragment.height).max(0.0);
+        let offset = self.element_scroll.entry(owner).or_default();
+        offset.1 = (offset.1 - dy / self.scale).clamp(0.0, max);
+        true
     }
 
     /// Hit-test this root against the same retained layout the frame painted.
@@ -230,7 +280,7 @@ impl RetainedSubtreeLayout {
             self.snapshot.as_ref().expect("ensure leaves a snapshot"),
             x / self.scale,
             y / self.scale,
-            &HashMap::new(),
+            &self.element_scroll,
             (0.0, 0.0),
             logical_size(self.size, self.scale),
         )

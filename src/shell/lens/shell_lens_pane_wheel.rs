@@ -31,6 +31,13 @@ impl Shell {
         let redraw = if let Some(surface) = self.renderers.contributed.get_mut(pane) {
             surface.wheel(dx, dy, hit.local.0, hit.local.1)
                 == crate::contributed_surface::SurfaceRequest::Redraw
+        } else if self
+            .renderers
+            .workbench
+            .get_mut(&pane)
+            .is_some_and(|view| view.scroll_body_at(hit.local.0, hit.local.1, dy))
+        {
+            true
         } else {
             self.renderers.scroll_pane(pane, dx, dy)
         };

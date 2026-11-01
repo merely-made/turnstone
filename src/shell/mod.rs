@@ -40,6 +40,7 @@ mod native_frames;
 mod nomadnet_fetch;
 mod page_capture;
 mod reader_observe;
+mod reader_recovery;
 mod render;
 mod renderers;
 mod research_notes;

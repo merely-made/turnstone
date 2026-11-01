@@ -487,3 +487,60 @@ fn engine_inventory_new_registration_reaches_picker_and_observation() {
                 })
     );
 }
+
+#[test]
+fn long_inspector_value_wraps_and_later_controls_remain_reachable() {
+    let mut pane = InspectorPane::new();
+    let value = "long-source-identity-".repeat(20);
+    pane.runner.update(|state| {
+        state.sections = vec![InspectorSection {
+            title: "Node".into(),
+            rows: vec![("Source".into(), value.clone())],
+        }];
+        state.viewer_expanded = true;
+        state.research_expanded = true;
+        state.clip_target = Some("field.knot".into());
+        state.clip_offer = Some(uuid::Uuid::nil());
+        state.viewport_w = 400.0;
+        state.viewport_h = 300.0;
+    });
+    pane.scene(400, 300, 1.0);
+    {
+        let dom = pane.dom.borrow();
+        let value_node = dom
+            .all_with_class(dom.document(), "detail-value")
+            .into_iter()
+            .find(|node| dom.outer_html(*node).contains(&value))
+            .unwrap();
+        let (x, _, width, height) = pane.layout.painted_rect(&dom, value_node).unwrap();
+        let row = dom.all_with_class(dom.document(), "detail-row")[0];
+        let (row_x, _, row_width, _) = pane.layout.painted_rect(&dom, row).unwrap();
+        assert!(
+            x >= row_x
+                && x + width <= row_x + row_width
+                && x >= 0.0
+                && x + width <= 400.0
+                && height > 20.0,
+            "value must wrap within its row: value {x}+{width} height {height}, row {row_x}+{row_width}"
+        );
+    }
+    let selector = taproot::Selector::role("button")
+        .containing("Clip document")
+        .on_surface("inspector");
+    let mut point = None;
+    for _ in 0..40 {
+        if let Some(found) = pane.selector_point(&selector).unwrap() {
+            point = Some(found);
+            break;
+        }
+        pane.scroll_by(0.0, 60.0);
+        pane.scene(400, 300, 1.0);
+    }
+    let point = point.expect("the Clip action is reachable by scrolling");
+    assert_eq!(
+        pane.click(point.0, point.1, 400, 300),
+        vec![InspectorIntent::ClipToKnot {
+            offer: uuid::Uuid::nil()
+        }]
+    );
+}

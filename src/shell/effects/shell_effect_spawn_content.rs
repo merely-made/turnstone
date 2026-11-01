@@ -33,6 +33,12 @@ impl Shell {
                 } else {
                     None
                 };
+                if saved_target.is_some()
+                    && self.private_reader_waiting()
+                    && self.reader_recovery.defer(&mut self.app, node, &url)
+                {
+                    return;
+                }
                 let saved_source_document = if let Some(target) = saved_target.as_ref() {
                     match self.app.held_saved_source_document(node, &url, target) {
                         Ok(Some(document)) => Some(document),
@@ -67,6 +73,11 @@ impl Shell {
                 } else {
                     match crate::retained_clip::request(&url) {
                         Ok(Some(crate::retained_clip::ClipRequest::Read(id))) => {
+                            if self.private_reader_waiting()
+                                && self.reader_recovery.defer(&mut self.app, node, &url)
+                            {
+                                return;
+                            }
                             let ready = self
                                 .ready_clip_reads
                                 .remove(&node)

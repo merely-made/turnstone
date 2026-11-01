@@ -49,6 +49,39 @@ impl ChromeSurfaces {
         intents
     }
 
+    pub(crate) fn scroll_research(
+        &mut self,
+        slot: usize,
+        x: f32,
+        y: f32,
+        dy: f32,
+        w: u32,
+        h: u32,
+    ) -> bool {
+        let Some(&id) = self.projections.get(slot) else {
+            return false;
+        };
+        self.absorb_dom_mutations();
+        let Some(root) = self.runner.window_root(id) else {
+            return false;
+        };
+        let sheet = crate::ui::chrome_sheet(&self.appearance);
+        let scale = self.window_scale(slot);
+        let dom = self.dom.borrow();
+        let Some(layout) = self.layouts.get_mut(slot) else {
+            return false;
+        };
+        layout.set_scale(scale);
+        let Some(owner) = dom
+            .all_with_class(root, "omni-research-scroll")
+            .into_iter()
+            .next()
+        else {
+            return false;
+        };
+        layout.scroll_element(&dom, root, &sheet, w, h, owner, x, y, dy)
+    }
+
     /// Screen attachments use the same measured surface aperture as rendering
     /// and input, and the viewport stashed by that exact graph pane.
     pub(crate) fn sync_forme_fields(

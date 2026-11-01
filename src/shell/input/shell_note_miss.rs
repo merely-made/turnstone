@@ -74,6 +74,13 @@ impl Shell {
         if self.app.user_agent_decision.is_open() {
             return;
         }
+        if self
+            .chrome
+            .scroll_research(0, x, y, dy, self.width.max(1), self.height.max(1))
+        {
+            self.request_redraw();
+            return;
+        }
         let plan = self.surface_plan();
         if let Some(hit) = crate::surface::hit_test(&plan, self.app.focus, x, y)
             && let crate::surface::SurfaceKind::Content(node) = hit.kind
@@ -105,6 +112,13 @@ impl Shell {
                 {
                     self.request_redraw();
                 }
+            } else if self
+                .renderers
+                .workbench
+                .get_mut(&pane)
+                .is_some_and(|view| view.scroll_body_at(local.0, local.1, dy))
+            {
+                self.request_redraw();
             } else if self.renderers.scroll_pane(pane, dx, dy) {
                 self.request_redraw();
             }

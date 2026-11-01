@@ -460,6 +460,7 @@ impl Shell {
                 self.sync_ime_allowed();
             },
             Effect::CloseContent { node } => {
+                self.reader_recovery.remove(&mut self.app, node);
                 self.pending_clip_reads.remove(&node);
                 self.ready_clip_reads.remove(&node);
                 self.retire_surface_semantics(node);

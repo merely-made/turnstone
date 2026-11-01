@@ -90,6 +90,7 @@ impl App {
                     NodeContent::Live
                         | NodeContent::Requested
                         | NodeContent::AwaitingInput
+                        | NodeContent::AwaitingCustody
                         | NodeContent::AwaitingIdentity
                         | NodeContent::AwaitingTrust
                 )

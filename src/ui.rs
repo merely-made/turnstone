@@ -82,7 +82,7 @@ pub(crate) const CHROME_SHEET: &str = "\
     .omni-row-sel { color: rgb(28, 22, 10); font-size: 14px; \
                     padding: 5px 8px; white-space: nowrap; overflow: hidden; \
                     background-color: rgb(232, 150, 40); border-radius: 6px; } \
-    .omni-row-review { white-space: normal; overflow-wrap: anywhere; } \
+    .omni-row-review, .omni-row-research { white-space: normal; overflow-wrap: anywhere; } \
     .omni-row-command { display: flex; align-items: center; } \
     .omni-row-label { flex-grow: 1; flex-shrink: 1; white-space: nowrap; overflow: hidden; } \
     .omni-keep { flex-shrink: 0; margin-left: 8px; padding: 1px 6px; font-size: 11px; \
@@ -258,6 +258,7 @@ pub struct RetainedSubtreeLayout {
     rebuilds: u32,
     /// DOM revision represented by the painted fragments, even after a drain.
     mutation_cursor: u64,
+    element_scroll: HashMap<DomNodeId, (f32, f32)>,
 }
 
 /// The host stylesheet for cambium's classes (rung 5 slice D). cambium ships no
@@ -292,12 +293,12 @@ pub const CAMBIUM_SHEET: &str = "\
     .list-section-title { color: rgb(150, 160, 180); font-size: 12px;                           padding: 10px 14px 4px 14px; white-space: nowrap; }     .list-row { color: rgb(200, 208, 224); font-size: 13px;                 padding: 5px 14px; white-space: nowrap; overflow: hidden; }     .list-row.muted { color: rgb(120, 130, 150); }     .list-row.action { color: rgb(232, 150, 40); }     .detail-section-title { color: rgb(150, 160, 180); font-size: 12px; \
                             padding: 10px 14px 4px 14px; white-space: nowrap; } \
     .detail-row { display: flex; padding: 3px 14px; } \
-    .detail-key { color: rgb(150, 160, 180); font-size: 12px; width: 130px; \
+    .detail-key { color: rgb(150, 160, 180); font-size: 12px; width: 130px; flex-shrink: 0; \
                   white-space: nowrap; overflow: hidden; } \
-    .detail-value { color: rgb(200, 208, 224); font-size: 12px; \
-                    white-space: nowrap; overflow: hidden; } \
-    .wb-body { color: rgb(120, 130, 150); font-size: 12px; padding: 12px; \
-               background-color: rgb(25, 30, 44); white-space: nowrap; overflow: hidden; } \
+    .detail-value { color: rgb(200, 208, 224); font-size: 12px; flex: 1; min-width: 0; \
+                    white-space: normal; overflow-wrap: anywhere; } \
+    .wb-body { color: rgb(120, 130, 150); font-size: 12px; padding: 12px; width: 100%; box-sizing: border-box; \
+               background-color: rgb(25, 30, 44); white-space: normal; overflow-wrap: anywhere; overflow-y: auto; } \
     .graph-canvas-swatch { background-color: rgb(18, 22, 33); \
                            border: 1px solid rgb(52, 62, 86); border-radius: 7px; } \
     .graph-canvas-swatch-node { background-color: transparent; border: 0; padding: 0; }     .graph-canvas-swatch-label { color: rgb(196, 204, 220); font-size: 10px; } \
@@ -419,9 +420,9 @@ mod build_livery_snapshot;
 use build_livery_snapshot::build_livery_snapshot;
 #[path = "ui/paint_snapshot.rs"]
 mod paint_snapshot;
-use paint_snapshot::paint_snapshot;
 #[cfg(test)]
 pub(crate) use paint_snapshot::count_paint_calls;
+use paint_snapshot::paint_snapshot;
 #[path = "ui/node_transform_translation.rs"]
 mod node_transform_translation;
 use node_transform_translation::node_transform_translation;
@@ -463,6 +464,8 @@ mod impl_default_for_retained_layout;
 mod retained_layout_hit_test_scrolled;
 #[path = "ui/retained_layout_new.rs"]
 mod retained_layout_new;
+#[path = "ui/retained_layout_scroll_element.rs"]
+mod retained_layout_scroll_element;
 #[path = "ui/retained_layout_visible_rect.rs"]
 mod retained_layout_visible_rect;
 use composite::composite;

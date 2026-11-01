@@ -28,6 +28,19 @@ impl ChromeSurfaces {
             .map(|(i, s)| RowView {
                 text: row_text(s),
                 class: match s {
+                    Suggestion::Hint(_) | Suggestion::Prompt(_)
+                        if matches!(omnibar.mode, crate::ui::OmnibarMode::SavedSources) =>
+                    {
+                        "omni-row-muted omni-row-research"
+                    },
+                    _ if matches!(omnibar.mode, crate::ui::OmnibarMode::SavedSources)
+                        && i == omnibar.selected =>
+                    {
+                        "omni-row-sel omni-row-research"
+                    },
+                    _ if matches!(omnibar.mode, crate::ui::OmnibarMode::SavedSources) => {
+                        "omni-row omni-row-research"
+                    },
                     Suggestion::Hint(_) | Suggestion::Prompt(_) => "omni-row-muted",
                     _ if is_install_review(s) && i == omnibar.selected => {
                         "omni-row-sel omni-row-review"

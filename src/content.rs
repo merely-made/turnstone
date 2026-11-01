@@ -59,6 +59,8 @@ pub enum NodeContent {
     /// The actor reached a protocol input response and the host is waiting for
     /// a human answer. There is no live document handle yet.
     AwaitingInput,
+    /// Private content is waiting for profile custody.
+    AwaitingCustody,
     /// A Gemini capsule asked for a client certificate and the host is waiting
     /// for explicit approval to derive and present one.
     AwaitingIdentity,

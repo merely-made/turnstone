@@ -295,6 +295,7 @@ fn content_rows(app: &App, node: Option<uuid::Uuid>) -> Vec<(String, String)> {
             Some(NodeContent::Requested) => "requested".to_string(),
             Some(NodeContent::Live) => "live".to_string(),
             Some(NodeContent::AwaitingInput) => "awaiting input".to_string(),
+            Some(NodeContent::AwaitingCustody) => "waiting for profile unlock".to_string(),
             Some(NodeContent::AwaitingIdentity) => "awaiting client identity".to_string(),
             Some(NodeContent::AwaitingTrust) => "awaiting certificate decision".to_string(),
             Some(NodeContent::Failed(err)) => format!("failed: {}", truncate(err, 120)),

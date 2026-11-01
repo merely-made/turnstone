@@ -9,6 +9,9 @@
 //! Editing recomputes the suggestion list against the catalog every keystroke,
 //! so what the lane offers always matches app truth.
 
+#[path = "research_row_fit.rs"]
+mod research_row_fit;
+
 use crate::action::{Action, CaretMove, Effect};
 use crate::observe::AppEvent;
 use crate::shell_services::{ShellIntent, ShellOutcome};
@@ -67,6 +70,7 @@ impl App {
         );
         if matches!(self.omnibar.mode, OmnibarMode::SavedSources) {
             self.recompute_saved_source_suggestions(row_limit);
+            research_row_fit::fit(self, &chrome);
             self.frame_timings
                 .note_suggestions(started.elapsed(), false);
             return;
@@ -251,12 +255,19 @@ impl App {
     /// does not flicker empty between keystrokes.
     pub(super) fn refresh_omnibar(&mut self) -> Vec<Effect> {
         if self.omnibar.open && matches!(self.omnibar.mode, OmnibarMode::SavedSources) {
-            let mut effects = if matches!(self.research_search.view, super::research_search_state::View::Results) {
+            let mut effects = if matches!(
+                self.research_search.view,
+                super::research_search_state::View::Results
+            ) {
                 self.research_search.page = 0;
                 self.research_search.error = None;
                 self.issue_research_search()
-            } else { vec![Effect::Redraw] };
-            self.recompute_omnibar_suggestions(); effects.push(Effect::Redraw); return effects;
+            } else {
+                vec![Effect::Redraw]
+            };
+            self.recompute_omnibar_suggestions();
+            effects.push(Effect::Redraw);
+            return effects;
         }
         // Resolve the needle FIRST: a line narrowed below the floor drops its
         // cached hits there, and the rows must be recomputed after that drop
@@ -456,9 +467,12 @@ impl App {
     }
 
     pub(super) fn omnibar_move(&mut self, delta: i32) -> Vec<Effect> {
-        if matches!(self.omnibar.mode, OmnibarMode::SavedSources) && !self.research_search.rows.is_empty() {
+        if matches!(self.omnibar.mode, OmnibarMode::SavedSources)
+            && !self.research_search.rows.is_empty()
+        {
             let len = self.research_search.rows.len() as i32;
-            self.research_search.first_row = (self.research_search.first_row as i32 + delta).rem_euclid(len) as usize;
+            self.research_search.first_row =
+                (self.research_search.first_row as i32 + delta).rem_euclid(len) as usize;
             self.recompute_omnibar_suggestions();
             return vec![Effect::Redraw];
         }

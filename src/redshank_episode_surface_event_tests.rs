@@ -143,3 +143,59 @@ fn redshank_session_routes_typed_draft_and_note_privacy() {
         matches!(&issued[0].1.command, CompactCommand::SetNotePrivacy { id, privacy: NotePrivacy::Shareable } if id.0 == "note-0")
     );
 }
+
+#[test]
+fn redshank_note_body_has_room_above_wrapped_controls() {
+    use redshank_model::AnnotationId;
+    use redshank_surfaces::{NoteSummary, NoteSummaryBody};
+    let docks = RedshankDocks::new();
+    let item = payload().item_id();
+    let mut pane = registry(&docks)
+        .admit(&PaneKindId::new(PANE_KIND), &episode_source(payload()))
+        .expect("Redshank episode admission");
+    let mut compact = seed_state(&payload());
+    compact.transport = TransportState::Unavailable("No output".into());
+    docks.project_notes(
+        &item,
+        NoteProjection {
+            compact,
+            scope: None,
+            capture: None,
+            notes: vec![NoteSummary {
+                id: AnnotationId("note-0".into()),
+                item_id: item.clone(),
+                offset_ms: 0,
+                end_offset_ms: None,
+                body: NoteSummaryBody::Text(
+                    "A readable note with enough words to measure its width".into(),
+                ),
+                private: false,
+            }],
+        },
+    );
+    pane.session_mut().sync_viewport(SurfaceViewport {
+        width: 600.0,
+        height: 420.0,
+        scale_factor: 1.0,
+    });
+    let dom = pane.dom_ref();
+    let root = pane.session().root();
+    let notes = dom.all_with_class(root, "rs-listen-notes")[0];
+    assert!(
+        !dom.has_class(notes, "rs-pane-off"),
+        "the Notes pane must be visible at this width"
+    );
+    let body = dom.all_with_class(notes, "rs-note-text")[0];
+    let actions = dom.all_with_class(notes, "rs-row-tail")[0];
+    let sheet = compact_stylesheet();
+    let (_, by, bw, bh) = crate::ui::subtree_node_rect(&dom, root, body, &sheet, 600, 420).unwrap();
+    let (_, ay, aw, _) =
+        crate::ui::subtree_node_rect(&dom, root, actions, &sheet, 600, 420).unwrap();
+    assert!(bw >= 120.0, "note body was squeezed to {bw}px");
+    assert!(
+        ay >= by + bh,
+        "actions must follow the note body: {ay} < {}",
+        by + bh
+    );
+    assert!(aw <= 600.0, "actions extend beyond the surface: {aw}");
+}

@@ -336,6 +336,7 @@ impl Shell {
             pending_clip_imports: HashMap::new(),
             latest_clip_retention: None,
             pending_clip_retains: HashMap::new(),
+            reader_recovery: Default::default(),
             pending_clip_reads: HashMap::new(),
             ready_clip_reads: HashMap::new(),
             place_handle,

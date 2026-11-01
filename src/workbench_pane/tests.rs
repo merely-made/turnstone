@@ -359,3 +359,169 @@ fn clicking_an_inactive_tab_reports_activation() {
     assert_eq!(acts.len(), 1);
     assert_eq!(acts[0].0, a, "clicking alpha's tab activates alpha");
 }
+
+#[test]
+fn long_failure_hint_wraps_inside_the_document_body() {
+    let mut app = App::test_stub();
+    app.update(Action::OpenAddress("mere://failure".into()));
+    app.update(Action::OpenInWorkbench);
+    let member = app.graph_runtimes.focused_member().unwrap();
+    let error = format!(
+        "profile identity is pending: {}",
+        "long-unavailable-source ".repeat(6)
+    );
+    app.content.note_failed(member, error.clone());
+    let pane = pane_over(&app, 400.0, 400.0);
+    let dom = pane.dom.borrow();
+    let body = dom.all_with_class(dom.document(), "wb-body")[0];
+    assert!(dom.outer_html(body).contains(&error));
+    let text = dom.all_with_class(body, "wb-hint")[0];
+    let (_, _, body_w, body_h) = pane.layout.visible_rect(&dom, body).unwrap();
+    let (_, _, text_w, text_h) = pane
+        .layout
+        .visible_rect(&dom, text)
+        .expect("hint text is laid out");
+    assert!(
+        text_w <= body_w,
+        "hint exceeds body width: {text_w} > {body_w}"
+    );
+    assert!(
+        text_h > 20.0 && text_h <= body_h,
+        "hint should occupy multiple visible lines: {text_h}"
+    );
+}
+
+#[test]
+fn tall_failure_hint_scrolls_within_its_body_and_clamps() {
+    let mut app = App::test_stub();
+    app.update(Action::OpenAddress("mere://failure".into()));
+    app.update(Action::OpenInWorkbench);
+    let member = app.graph_runtimes.focused_member().unwrap();
+    app.content
+        .note_failed(member, "unavailable source identity ".repeat(200));
+    let mut pane = pane_over(&app, 400.0, 240.0);
+    let (x, y) = {
+        let dom = pane.dom.borrow();
+        let body = dom.all_with_class(dom.document(), "wb-body")[0];
+        let (x, y, w, h) = pane.layout.visible_rect(&dom, body).unwrap();
+        (x + w / 2.0, y + h / 2.0)
+    };
+    assert!(pane.scroll_body_at(x, y, -100_000.0));
+    pane.scene(400, 240, 1.0);
+    let tail = {
+        let mut dom = pane.dom.borrow_mut();
+        let body = dom.all_with_class(dom.document(), "wb-body")[0];
+        let (bx, by, bw, bh) = pane.layout.visible_rect(&dom, body).unwrap();
+        let mut max_byte = 0;
+        for row in 0..8 {
+            for column in 0..8 {
+                if let Some(position) = pane.layout.text_caret_at(
+                    &mut dom,
+                    body,
+                    bx + 14.0 + column as f32 * (bw - 28.0) / 8.0,
+                    by + 14.0 + row as f32 * (bh - 28.0) / 8.0,
+                ) {
+                    max_byte = max_byte.max(position.byte);
+                }
+            }
+        }
+        max_byte
+    };
+    assert!(
+        tail > 4_000,
+        "end of long error must be painted: byte {tail}"
+    );
+    let end = pane.layout.scroll_stamp();
+    assert!(
+        end.iter().any(|(_, _, y)| f32::from_bits(*y) > 0.0),
+        "downward wheel must move the body: {end:?}"
+    );
+    assert!(pane.scroll_body_at(x, y, -100_000.0));
+    assert_eq!(
+        pane.layout.scroll_stamp(),
+        end,
+        "offset is clamped at the end"
+    );
+    assert!(pane.scroll_body_at(x, y, 100_000.0));
+    assert_ne!(
+        pane.layout.scroll_stamp(),
+        end,
+        "the beginning remains reachable"
+    );
+}
+
+#[test]
+fn mounted_failure_body_scrolls_in_shared_scaled_layout() {
+    let mut app = App::test_stub();
+    app.update(Action::OpenAddress("mere://failure".into()));
+    app.update(Action::OpenInWorkbench);
+    let member = app.graph_runtimes.focused_member().unwrap();
+    app.content
+        .note_failed(member, "unavailable source identity ".repeat(200));
+    let dom = Rc::new(RefCell::new(ScriptedDom::new()));
+    let mount = cambium::RetainedMount::new(dom.clone());
+    let mut pane = WorkbenchPane::new_in(Some(mount.clone()));
+    let sibling_mount = cambium::RetainedMount::new(dom.clone());
+    let mut sibling = WorkbenchPane::new_in(Some(sibling_mount.clone()));
+    let window = dom.borrow_mut().create_element(cambium::html_qual("div"));
+    let host = dom.borrow_mut().create_element(cambium::html_qual("div"));
+    {
+        let mut dom = dom.borrow_mut();
+        let document = dom.document();
+        dom.append_child(document, window);
+        dom.append_child(window, host);
+        dom.set_attribute(
+            host,
+            cambium::attr_qual("style"),
+            "position:relative;transform:translate(50px,30px);width:200px;height:120px;",
+        );
+        dom.append_child(host, mount.node());
+        dom.append_child(host, sibling_mount.node());
+    }
+    sibling.sync(&app, app.default_graph_pane(), 400.0, 240.0);
+    pane.sync(&app, app.default_graph_pane(), 400.0, 240.0);
+    let shared = Rc::new(RefCell::new(crate::ui::RetainedLayout::new_at(Some(
+        window,
+    ))));
+    shared.borrow_mut().set_scale(2.0);
+    pane.bind_inline(&shared);
+    sibling.bind_inline(&shared);
+    shared
+        .borrow_mut()
+        .scene(&mut dom.borrow_mut(), workbench_sheet(), 800, 600);
+    let (x, y, before) = {
+        let dom = dom.borrow();
+        let body = dom.all_with_class(host, "wb-body")[0];
+        let (x, y, w, h) = pane.layout.visible_rect(&dom, body).unwrap();
+        let host_rect = shared.borrow().painted_rect(&dom, mount.node()).unwrap();
+        assert!(
+            host_rect.0 > 0.0 && host_rect.1 > 0.0,
+            "fixture has a nonzero mount offset: {host_rect:?}"
+        );
+        (x + w / 2.0, y + h / 2.0, shared.borrow().scroll_stamp())
+    };
+    assert!(pane.scroll_body_at(x, y, -100_000.0));
+    let after = shared.borrow().scroll_stamp();
+    assert_ne!(
+        before, after,
+        "mounted pane updates the shared scroll owner"
+    );
+    assert!(after.iter().any(|(_, _, y)| f32::from_bits(*y) > 0.0));
+    app.content
+        .note_failed(member, "a changed sibling error".into());
+    sibling.sync(&app, app.default_graph_pane(), 400.0, 240.0);
+    assert_eq!(
+        shared.borrow().scroll_stamp(),
+        after,
+        "refreshing a sibling preserves this pane's scroll"
+    );
+    shared
+        .borrow_mut()
+        .scene(&mut dom.borrow_mut(), workbench_sheet(), 800, 600);
+    let dom = dom.borrow();
+    let body = dom.all_with_class(host, "wb-body")[0];
+    assert!(
+        pane.layout.visible_rect(&dom, body).is_some(),
+        "body remains visible after scrolling"
+    );
+}

@@ -39,7 +39,8 @@ pub(super) fn workbench_view(state: &WorkbenchState) -> WbView {
             }),
         );
         let body_h = cell.body.h;
-        let body = el::<_, WorkbenchState, ()>("div", cell.hint.clone())
+        let hint = el::<_, WorkbenchState, ()>("div", cell.hint.clone()).attr("class", "wb-hint");
+        let body = el::<_, WorkbenchState, ()>("div", hint)
             .attr("class", "wb-body")
             .attr(
                 "data-native-role",

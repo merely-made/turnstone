@@ -255,3 +255,152 @@ mod browser_strip_targets_the_workbench_member_without_moving_cases;
 mod field_preview_is_attached_to_its_measured_graph_cases;
 #[path = "tests/shared_title_bar_respects_native_controls_and_drag_cases.rs"]
 mod shared_title_bar_respects_native_controls_and_drag_cases;
+
+#[test]
+fn research_comparison_rows_wrap_fit_and_keep_their_click_indices() {
+    use crate::app::research_search_state::View;
+    let mut app = App::test_stub();
+    app.viewport = (1024.0, 320.0);
+    app.update(Action::SearchSavedSources);
+    app.research_search.view = View::Compare;
+    app.research_search.error = Some(format!(
+        "Source unavailable: {}",
+        "long-source-identity-".repeat(12)
+    ));
+    // Movement rebuilds the same research view through the ordinary input path.
+    app.update(Action::OmnibarMove(0));
+    let expected = app
+        .omnibar
+        .suggestions
+        .iter()
+        .map(row_text)
+        .collect::<Vec<_>>();
+    assert!(expected[0].contains("long-source-identity"));
+    assert!(crate::ui::chrome_row_width(&expected[0]) > crate::ui::ROW_TEXT_BUDGET);
+    let mut chrome = ChromeSurfaces::new();
+    chrome.sync(&app, &[(0, 1024.0, 320.0)]);
+    let points = {
+        let dom = chrome.dom.borrow();
+        let root = chrome.runner.window_root(chrome.projections[0]).unwrap();
+        let sheet = crate::ui::chrome_sheet(&chrome.appearance);
+        let rows = dom.all_with_class(root, "omni-row-research");
+        assert_eq!(rows.len(), expected.len());
+        let card = dom.all_with_class(root, "omni")[0];
+        let (_, cy, _, ch) =
+            crate::ui::subtree_node_rect(&dom, root, card, &sheet, 1024, 320).unwrap();
+        assert!(cy + ch <= 304.0, "card extends below viewport: {}", cy + ch);
+        rows.iter()
+            .enumerate()
+            .map(|(index, row)| {
+                let html = dom.outer_html(*row);
+                assert!(html.contains(&expected[index]), "row text changed: {html}");
+                let (x, y, w, h) =
+                    crate::ui::subtree_node_rect(&dom, root, *row, &sheet, 1024, 320).unwrap();
+                if index == 0 {
+                    assert!(h > 30.0, "long source label did not wrap: {h}");
+                }
+                assert!(y + h <= 304.0);
+                (x + w / 2.0, y + h / 2.0)
+            })
+            .collect::<Vec<_>>()
+    };
+    for (index, (x, y)) in points.into_iter().enumerate() {
+        assert_eq!(
+            chrome.click(0, x, y, 1024, 320),
+            vec![ChromeIntent::CommitRow(index)]
+        );
+    }
+    let previous_first = row_text(&app.omnibar.suggestions[0]);
+    app.update(Action::OmnibarMove(1));
+    assert_ne!(
+        row_text(&app.omnibar.suggestions[0]),
+        previous_first,
+        "trimmed rows remain reachable"
+    );
+}
+
+#[test]
+fn very_long_research_row_scrolls_inside_card_and_keeps_its_action() {
+    use crate::app::research_search_state::View;
+    let mut app = App::test_stub();
+    app.viewport = (1024.0, 320.0);
+    app.update(Action::SearchSavedSources);
+    app.research_search.view = View::Compare;
+    app.research_search.error = Some(format!(
+        "Exact source: {}",
+        "very-long-source-identity-".repeat(120)
+    ));
+    app.update(Action::OmnibarMove(0));
+    assert_eq!(app.omnibar.suggestions.len(), 1);
+    let mut chrome = ChromeSurfaces::new();
+    chrome.sync(&app, &[(0, 1024.0, 320.0)]);
+    chrome.scene(0, 1024, 320);
+    let (x, y, bottom) = {
+        let dom = chrome.dom.borrow();
+        let root = chrome.runner.window_root(chrome.projections[0]).unwrap();
+        let card = dom.all_with_class(root, "omni-research-scroll")[0];
+        let (x, y, w, h) = crate::ui::subtree_node_rect(
+            &dom,
+            root,
+            card,
+            &crate::ui::chrome_sheet(&chrome.appearance),
+            1024,
+            320,
+        )
+        .unwrap();
+        assert!(y + h <= 304.0, "card must fit its viewport");
+        (x + w / 2.0, y + h / 2.0, y + h)
+    };
+    assert!(!chrome.scroll_research(0, 0.0, 0.0, -100.0, 1024, 320));
+    assert!(chrome.scroll_research(0, x, y, -100_000.0, 1024, 320));
+    chrome.scene(0, 1024, 320);
+    assert_eq!(
+        chrome.click(0, x, bottom - 10.0, 1024, 320),
+        vec![ChromeIntent::CommitRow(0)]
+    );
+    assert!(chrome.scroll_research(0, x, y, -100_000.0, 1024, 320));
+    assert_eq!(
+        chrome.click(0, x, bottom - 10.0, 1024, 320),
+        vec![ChromeIntent::CommitRow(0)],
+        "scroll is clamped at the end"
+    );
+}
+
+#[test]
+fn narrow_research_card_fits_window_and_keeps_rows_clickable() {
+    use crate::app::research_search_state::View;
+    let mut app = App::test_stub();
+    app.viewport = (400.0, 320.0);
+    app.update(Action::SearchSavedSources);
+    app.research_search.view = View::Compare;
+    app.research_search.error = Some("long source identity ".repeat(100));
+    app.update(Action::OmnibarMove(0));
+    let mut chrome = ChromeSurfaces::new();
+    chrome.sync(&app, &[(0, 400.0, 320.0)]);
+    chrome.scene(0, 400, 320);
+    let (x, y, bottom) = {
+        let dom = chrome.dom.borrow();
+        let root = chrome.runner.window_root(chrome.projections[0]).unwrap();
+        let card = dom.all_with_class(root, "omni-research-scroll")[0];
+        let (x, y, w, h) = crate::ui::subtree_node_rect(
+            &dom,
+            root,
+            card,
+            &crate::ui::chrome_sheet(&chrome.appearance),
+            400,
+            320,
+        )
+        .unwrap();
+        assert!(
+            x >= 0.0 && x + w <= 400.0 && y + h <= 304.0,
+            "card exceeds narrow window: {x}, {y}, {w}, {h}"
+        );
+        (x + w / 2.0, y + h / 2.0, y + h)
+    };
+    assert!(chrome.scroll_research(0, x, y, -100_000.0, 400, 320));
+    chrome.scene(0, 400, 320);
+    assert_eq!(
+        chrome.click(0, x, bottom - 10.0, 400, 320),
+        vec![ChromeIntent::CommitRow(0)]
+    );
+}

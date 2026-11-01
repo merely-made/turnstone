@@ -31,6 +31,7 @@ pub fn snapshot(app: &App) -> Snapshot {
                 NodeContent::Requested => "requested".to_string(),
                 NodeContent::Live => "live".to_string(),
                 NodeContent::AwaitingInput => "awaiting-input".to_string(),
+                NodeContent::AwaitingCustody => "awaiting-custody".to_string(),
                 NodeContent::AwaitingIdentity => "awaiting-identity".to_string(),
                 NodeContent::AwaitingTrust => "awaiting-trust".to_string(),
                 NodeContent::Failed(err) => format!("failed: {err}"),

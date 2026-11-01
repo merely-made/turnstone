@@ -162,6 +162,9 @@ impl WorkbenchPane {
                     Some(Some(NodeContent::Live)) => String::new(),
                     Some(Some(NodeContent::Requested)) => "content loading".to_string(),
                     Some(Some(NodeContent::AwaitingInput)) => "content needs input".to_string(),
+                    Some(Some(NodeContent::AwaitingCustody)) => {
+                        "Waiting for profile unlock".to_string()
+                    },
                     Some(Some(NodeContent::AwaitingIdentity)) => {
                         "content needs a client identity".to_string()
                     },
@@ -228,6 +231,23 @@ impl WorkbenchPane {
                 }
             })
             .collect();
+        let previous = self.runner.state();
+        let hints_changed = previous.cells.len() != cells.len()
+            || previous
+                .cells
+                .iter()
+                .zip(&cells)
+                .any(|(a, b)| a.hint != b.hint || a.body.w != b.body.w || a.body.h != b.body.h);
+        if hints_changed {
+            let dom = self.dom.borrow();
+            let root = self
+                .mount
+                .as_ref()
+                .map_or_else(|| dom.document(), cambium::RetainedMount::node);
+            for node in dom.all_with_class(root, "wb-body") {
+                self.layout.reset_element_scroll(&dom, node);
+            }
+        }
         self.runner.update(|state| {
             state.cells = cells;
             state.viewport_w = pane_w / scale;
@@ -255,6 +275,25 @@ impl WorkbenchPane {
             h,
             &mut self.scroll,
         )
+    }
+
+    pub(crate) fn scroll_body_at(&mut self, x: f32, y: f32, dy: f32) -> bool {
+        let dom = self.dom.borrow();
+        let root = self
+            .mount
+            .as_ref()
+            .map_or_else(|| dom.document(), cambium::RetainedMount::node);
+        let body = dom
+            .all_with_class(root, "wb-body")
+            .into_iter()
+            .find(|node| {
+                self.layout
+                    .visible_rect(&dom, *node)
+                    .is_some_and(|(bx, by, bw, bh)| {
+                        x >= bx && x < bx + bw && y >= by && y < by + bh
+                    })
+            });
+        body.is_some_and(|node| self.layout.scroll_element(&dom, node, dy))
     }
 
     /// Wheel delta from the shell.

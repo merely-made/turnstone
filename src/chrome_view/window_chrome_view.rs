@@ -105,9 +105,19 @@ pub(super) fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView
         ));
     }
 
+    let research = state
+        .rows
+        .iter()
+        .any(|row| row.class.contains("omni-row-research"));
+    let card_width = if research {
+        CARD_W.min((win.w - 16.0).max(0.0))
+    } else {
+        CARD_W
+    };
     if win.primary
         && state.open
-        && let Some((left, top)) = chrome_position(&state.omnibar_placement, win.w, win.h, CARD_W)
+        && let Some((left, top)) =
+            chrome_position(&state.omnibar_placement, win.w, win.h, card_width)
     {
         let input = el::<_, ChromeState, ChromeIntent>(
             "div",
@@ -166,12 +176,27 @@ pub(super) fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView
                 None => Box::new(base),
             });
         }
+        let card_class = if research {
+            "omni omni-research-scroll"
+        } else {
+            "omni"
+        };
+        let max_height = (win.h - top - crate::ui::CARD_BOTTOM_MARGIN).max(0.0);
         children.push(Box::new(
             el::<_, ChromeState, ChromeIntent>("div", card_children)
-                .attr("class", "omni")
+                .attr("class", card_class)
                 .attr(
                     "style",
-                    format!("transform: translate({left}px, {top}px); width: {CARD_W}px;"),
+                    format!(
+                        "transform: translate({left}px, {top}px); width: {card_width}px; {}",
+                        if research {
+                            format!(
+                                "max-height:{max_height}px; box-sizing:border-box; overflow-y:auto;"
+                            )
+                        } else {
+                            String::new()
+                        }
+                    ),
                 ),
         ));
     }

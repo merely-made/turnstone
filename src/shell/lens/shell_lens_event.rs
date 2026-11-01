@@ -385,6 +385,15 @@ impl Shell {
                 };
                 let (x, y) = lens.cursor;
                 let (lw, lh, ordinal) = (lens.width, lens.height, lens.ordinal);
+                if self
+                    .chrome
+                    .scroll_research(ordinal + 1, x, y, dy, lw.max(1), lh.max(1))
+                {
+                    if let Some(lens) = self.lens_windows.get(&id) {
+                        lens.window.request_redraw();
+                    }
+                    return;
+                }
                 let plan = self.lens_plan(ordinal, lw, lh);
                 if let Some(hit) = crate::surface::hit_test(&plan, self.app.focus, x, y)
                     && let crate::surface::SurfaceKind::Content(node) = hit.kind

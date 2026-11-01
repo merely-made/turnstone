@@ -59,6 +59,7 @@ pub struct Shell {
     pub(super) pending_clip_imports: HashMap<uuid::Uuid, super::clip_retaining::PendingClipImport>,
     pub(super) latest_clip_retention: Option<super::clip_retaining::RetainStatus>,
     pub(super) pending_clip_retains: HashMap<uuid::Uuid, super::clip_retaining::PendingClipRetain>,
+    pub(super) reader_recovery: super::reader_recovery::ReaderRecovery,
     pub(super) pending_clip_reads: HashMap<uuid::Uuid, super::clip_reading::PendingClipRead>,
     pub(super) ready_clip_reads: HashMap<uuid::Uuid, (String, inker::EngineDocument)>,
     /// The retained-place worker. It owns every Gemot, Commons, chat, group,

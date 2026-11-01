@@ -4,6 +4,19 @@
 use super::*;
 
 impl Shell {
+    pub(super) fn private_reader_waiting(&self) -> bool {
+        self.app.identity.is_none()
+            || self.custody_trail_ready.is_some()
+            || self.custody_binding.as_ref().is_none_or(|binding| {
+                binding.bound.epoch().is_none()
+                    || !self
+                        .app
+                        .identity
+                        .as_ref()
+                        .is_some_and(|identity| Arc::ptr_eq(identity, &binding.root))
+            })
+    }
+
     pub(super) fn start_private_connect(&mut self) {
         if let Some((setup, _)) = self.custody_setup.take() {
             setup.request_stop();
@@ -23,6 +36,7 @@ impl Shell {
     /// Service bounded connection and loss notifications before accepting any
     /// private actor reply. The epoch is local and cheap to inspect here.
     pub(super) fn service_private_custody(&mut self) {
+        self.reader_recovery.prune(&mut self.app);
         self.retired_setups.retain(|setup| !setup.is_finished());
         self.retired_watchers
             .retain(|watcher| !watcher.is_finished());
@@ -106,6 +120,15 @@ impl Shell {
             Ok(()) => {},
             Err(std::sync::mpsc::TryRecvError::Empty) => return,
             Err(std::sync::mpsc::TryRecvError::Disconnected) => {
+                let failed = self.reader_recovery.failed(&mut self.app);
+                for node in failed {
+                    let effects = self.app.apply_update(crate::action::Update::ContentFailed {
+                        node,
+                        error: "The saved-source service stopped. Restart Turnstone to try again."
+                            .into(),
+                    });
+                    self.run_effects(effects);
+                }
                 self.custody_trail_ready = None;
                 self.pending_place_reopen = None;
                 self.app.place = crate::place::PlaceState::Failed {
@@ -119,6 +142,24 @@ impl Shell {
             },
         }
         self.custody_trail_ready = None;
+        if self.custody_binding.as_ref().is_some_and(|binding| {
+            binding.bound.epoch().is_some()
+                && self
+                    .app
+                    .identity
+                    .as_ref()
+                    .is_some_and(|identity| Arc::ptr_eq(identity, &binding.root))
+        }) {
+            let effects = self.reader_recovery.ready(&mut self.app);
+            for effect in &effects {
+                if let crate::action::Effect::SpawnContent { node, .. } = effect {
+                    self.app.content.note_requested(*node);
+                }
+            }
+            self.run_effects(effects);
+        } else {
+            self.reader_recovery.clear(&mut self.app);
+        }
         let Some((session, generation, binding)) = self.pending_place_reopen.take() else {
             return;
         };
@@ -279,6 +320,7 @@ impl Shell {
     }
 
     pub(super) fn lose_private_custody(&mut self) {
+        self.reader_recovery.clear(&mut self.app);
         if let Some(principal) = self
             .custody_binding
             .as_ref()

@@ -351,6 +351,7 @@ impl Shell {
                 .map_or("closed", |state| match state {
                     crate::content::NodeContent::Live => "live",
                     crate::content::NodeContent::Requested => "requested",
+                    crate::content::NodeContent::AwaitingCustody => "awaiting-custody",
                     crate::content::NodeContent::Failed(_) => "failed",
                     _ => "awaiting-input",
                 });

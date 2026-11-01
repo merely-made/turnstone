@@ -119,6 +119,7 @@ impl ContentStates {
                 NodeContent::Live
                     | NodeContent::Requested
                     | NodeContent::AwaitingInput
+                    | NodeContent::AwaitingCustody
                     | NodeContent::AwaitingIdentity
                     | NodeContent::AwaitingTrust
             )
@@ -210,6 +211,11 @@ impl ContentStates {
         self.cue_reports.remove(&node);
         self.surface_traversals.remove(&node);
         self.page_zoom.remove(&node);
+    }
+
+    pub fn note_awaiting_custody(&mut self, node: Uuid) {
+        self.note_requested(node);
+        self.states.insert(node, NodeContent::AwaitingCustody);
     }
 
     pub fn note_awaiting_identity(&mut self, node: Uuid) {
