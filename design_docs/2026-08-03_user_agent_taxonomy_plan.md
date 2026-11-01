@@ -323,7 +323,7 @@ Absent backend functions remain attributable and visible.
 ### Release qualification
 
 The trio's authoritative release plan stays in
-`wgpu-graft/design_docs/2026-09-03_wgpu_triplet_release_plan.md`.
+`wgpu-graft/design_docs/2026-11-01_triplet_release_plan.md`.
 Turnstone supplies an additional real consumer, not a replacement for the
 producer hardware batteries. Record exact source revisions, feature/wgpu rows,
 platform/runtime versions, commands and inspected outputs. A version bump,

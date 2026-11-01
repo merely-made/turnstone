@@ -60,7 +60,7 @@ Check current default Servo resize/reopen pixels, foreign-tree admission/actions
 and physical three-platform accessibility before claiming browser release readiness.
 
 For the trio's own release/hardware bookkeeping, read
-`wgpu-graft/design_docs/2026-09-03_wgpu_triplet_release_plan.md` and each trio
+`wgpu-graft/design_docs/2026-11-01_triplet_release_plan.md` and each trio
 repository's `design_docs/DOC_README.md`. Their latest primary commits record
 Intel visibility/foreground failures; an unlocked session is not by itself a
 passing animation/cadence receipt. Do not turn the successful ThinkPad archive
