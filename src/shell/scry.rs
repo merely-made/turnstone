@@ -88,7 +88,7 @@ struct KeyboardDispatchQueue {
 }
 
 macro_rules! forward_native {
-    ($name:ident($($arg:ident: $ty:ty),*) -> $result:ty) => {
+    ($name:ident($($arg:ident: $ty:ty),* $(,)?) -> $result:ty) => {
         fn $name(&mut self, $($arg: $ty),*) -> $result {
             WebSurfaceProducer::$name(&mut *self.0.borrow_mut(), $($arg),*)
         }
