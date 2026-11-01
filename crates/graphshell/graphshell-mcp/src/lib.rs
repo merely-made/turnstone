@@ -350,6 +350,11 @@ impl<C: Carrier> Server<C> {
                 self.gone = true;
                 format!("the resident closed the session: {message}")
             },
+            // Terminal too: nothing more is answered on a lapsed session.
+            lapsed @ CarrierError::Lapsed(_) => {
+                self.gone = true;
+                lapsed.message().to_string()
+            },
         }
     }
 }
