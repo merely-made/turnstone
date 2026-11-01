@@ -30,7 +30,7 @@ impl Request {
 #[serde(deny_unknown_fields)]
 pub struct Reply {
     pub data: Data,
-    pub contact: network::Card,
+    pub contact: Card,
     pub invitation: Option<Invitation>,
 }
 pub struct Endpoint {
@@ -207,10 +207,10 @@ mod tests {
             pollster::block_on(crate::coop::tests::fixture(muniment::MemoryBackend::new()));
         let reply = Reply {
             data: owner.owner_data(),
-            contact: network::Card {
+            contact: Card {
                 version: 1,
-                graph,
-                owner: Contact::create(&a).unwrap(),
+                session: *graph.as_uuid(),
+                owner: Contact::create(&a, &TERMS).unwrap(),
                 ticket: "unused in this control test".into(),
             },
             invitation: None,

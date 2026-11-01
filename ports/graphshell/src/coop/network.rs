@@ -8,13 +8,12 @@ use super::*;
 use djinn::door::custody_identity::CustodyIdentity;
 use djinn::door::route::ResidentEndpointRoute;
 use graphshell_host::{
-    admission::open_session_for,
     carrier::{projection_alpn, projection_policy},
     endpoint_catalog::ResidentEndpointCatalog,
-    network_carrier::{dial_projection_session, projection_binding},
+    network_carrier::dial_projection_session,
     projection_host::{ResidentProjectionHost, SelectedRoute},
 };
-use notochord::{NetworkId, ProfileRef, RequestedAction, TrafficClass, TrustedRoot};
+use notochord::{NetworkId, ProfileRef, TrustedRoot};
 use std::{path::Path, time::Duration};
 use transport::{P2pandaTransport, Transport};
 
@@ -73,14 +72,6 @@ pub async fn bind_with_relays(
     }
     Ok(transport)
 }
-#[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct Card {
-    pub version: u16,
-    pub graph: SessionId,
-    pub owner: Contact,
-    pub ticket: String,
-}
 pub async fn card(
     identity: &dyn IdentityProvider,
     graph: SessionId,
@@ -88,8 +79,8 @@ pub async fn card(
 ) -> Result<Card, String> {
     Ok(Card {
         version: 1,
-        graph,
-        owner: Contact::create(identity)?,
+        session: *graph.as_uuid(),
+        owner: Contact::create(identity, &TERMS)?,
         ticket: transport.ticket().await.map_err(|e| e.to_string())?,
     })
 }
@@ -184,19 +175,10 @@ impl Guest {
         invitation: Invitation,
         card: Card,
     ) -> Result<Self, String> {
-        invitation.check()?;
-        card.owner.check()?;
-        if card.version != 1
-            || card.graph != invitation.graph
-            || card.owner.binding != invitation.owner.binding
-            || identity.master_public_key().to_bytes() != invitation.guest.root()
-        {
+        card.check(&TERMS, &invitation)?;
+        if identity.master_public_key().to_bytes() != invitation.guest.root() {
             return Err("contact or invitation belongs to another graph or person".into());
         }
-        let key = identity
-            .derive_keypair(TRANSPORT_SALT)
-            .map_err(|e| e.to_string())?;
-        let signing = personae::InMemoryProvider::from_seed(key.to_seed());
         let transport = runtime.block_on(bind(identity))?;
         let peer = runtime
             .block_on(transport.add_peer_ticket(&card.ticket))
@@ -204,23 +186,7 @@ impl Guest {
         if peer.to_bytes() != card.owner.peer() {
             return Err("contact ticket names another holder".into());
         }
-        let mut nonce = [0; 32];
-        rand_core::RngCore::fill_bytes(&mut rand_core::OsRng, &mut nonce);
-        let hello = open_session_for(
-            &signing,
-            NetworkId(network(invitation.owner.root(), invitation.graph)),
-            profile(),
-            RequestedAction {
-                domain: DOMAIN.into(),
-                path: path(invitation.graph),
-                action: "connect".into(),
-            },
-            TrafficClass::Interactive,
-            nonce,
-            &projection_binding(transport.local_peer_id()),
-            vec![invitation.grant.clone()],
-        )
-        .map_err(|e| e.to_string())?;
+        let hello = invitation.hello(&TERMS, identity, profile(), transport.local_peer_id())?;
         let stream = runtime
             .block_on(async {
                 tokio::time::timeout(
@@ -357,7 +323,7 @@ impl Guest {
                 .find(|v| v.label == "graphshell.coop/state/v1")
                 .ok_or("unknown graph presentation")?;
             let data: Data = serde_json::from_str(&value.value).map_err(|e| e.to_string())?;
-            if data.graph != self.invitation.graph
+            if *data.graph.as_uuid() != self.invitation.session
                 || data.owner != hex(&self.invitation.owner.root())
                 || data.epoch != snapshot.scene.epoch
                 || data.revision != snapshot.scene.revision
@@ -400,6 +366,8 @@ impl Guest {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use graphshell_host::{admission::open_session_for, network_carrier::projection_binding};
+    use notochord::{RequestedAction, TrafficClass};
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
     async fn an_unreachable_configured_relay_cannot_produce_a_lan_only_contact() {
@@ -419,12 +387,12 @@ mod tests {
         let (mut owner, a, b, _) =
             runtime.block_on(crate::coop::tests::fixture(muniment::MemoryBackend::new()));
         let invitation = runtime
-            .block_on(owner.invite(&a, Contact::create(&b).unwrap(), true, now_ms() + 120000))
+            .block_on(owner.invite(&a, Contact::create(&b, &TERMS).unwrap(), true, now_ms() + 120000))
             .unwrap();
         let shared = Arc::new(Mutex::new(owner));
         let transport = runtime.block_on(bind(&a)).unwrap();
         let contact = runtime
-            .block_on(card(&a, invitation.graph, &transport))
+            .block_on(card(&a, SessionId(invitation.session), &transport))
             .unwrap();
         let mut host = host(shared.clone()).unwrap();
         let ledger = host.revocations().clone();
@@ -499,11 +467,11 @@ mod tests {
         let signing = personae::InMemoryProvider::from_seed(key.to_seed());
         let hello = open_session_for(
             &signing,
-            NetworkId(network(invitation.owner.root(), invitation.graph)),
+            NetworkId(network(invitation.owner.root(), SessionId(invitation.session))),
             profile(),
             RequestedAction {
                 domain: DOMAIN.into(),
-                path: path(invitation.graph),
+                path: path(SessionId(invitation.session)),
                 action: "connect".into(),
             },
             TrafficClass::Interactive,
@@ -527,7 +495,7 @@ mod tests {
         let signing = personae::InMemoryProvider::from_seed(key.to_seed());
         let hello = open_session_for(
             &signing,
-            NetworkId(network(invitation.owner.root(), invitation.graph)),
+            NetworkId(network(invitation.owner.root(), SessionId(invitation.session))),
             profile(),
             RequestedAction {
                 domain: DOMAIN.into(),

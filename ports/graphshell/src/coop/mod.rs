@@ -12,12 +12,9 @@ use graphshell_endpoint::{
     ResumableProjectionSource,
 };
 use graphshell_host::lifecycle::AdmittedEndpointContext;
-use insigne::{
-    DerivedKeyAttestation,
-    delegation::{
-        CapabilityScope, DelegationCertificate, DelegationParent, DelegationRevocation,
-        SignedDelegationCertificate, SignedDelegationRevocation,
-    },
+pub use graphshell_host::invitation::{Card, Contact, Invitation, InvitationTerms, Signer};
+use insigne::delegation::{
+    CapabilityScope, SignedDelegationCertificate, SignedDelegationRevocation,
 };
 use mere::kernel::graph::{Author, apply::GraphDelta};
 use muniment::JsonSlots;
@@ -49,120 +46,21 @@ pub fn now_ms() -> u64 {
 pub fn hex(bytes: &[u8]) -> String {
     bytes.iter().map(|b| format!("{b:02x}")).collect()
 }
+/// Co-op's invitation terms over the lifted invitation (case 1060).
+pub const TERMS: InvitationTerms = InvitationTerms {
+    domain: DOMAIN,
+    salt: TRANSPORT_SALT,
+    network_label: b"graphshell.coop/v1",
+    path_root: "/services/projection/coop",
+};
 pub fn path(graph: SessionId) -> String {
-    format!("/services/projection/coop/{}", graph.as_uuid())
+    TERMS.path(*graph.as_uuid())
 }
 pub fn network(owner: [u8; 32], graph: SessionId) -> [u8; 32] {
-    *blake3::hash(
-        &[
-            b"graphshell.coop/v1".as_slice(),
-            &owner,
-            graph.as_uuid().as_bytes(),
-        ]
-        .concat(),
-    )
-    .as_bytes()
+    TERMS.network(owner, *graph.as_uuid())
 }
 pub fn scope(owner: [u8; 32], graph: SessionId) -> CapabilityScope {
-    CapabilityScope {
-        domain: DOMAIN.into(),
-        resource: network(owner, graph).to_vec(),
-        path_prefix: path(graph),
-        actions: ["connect".into()].into_iter().collect(),
-    }
-}
-
-fn invitation_scope(owner: [u8; 32], graph: SessionId, write: bool) -> CapabilityScope {
-    let mut value = scope(owner, graph);
-    if write {
-        value.actions.insert("edit".into());
-    }
-    value
-}
-
-/// Root acts stay in the custodian. Tests inject an in-memory owner explicitly.
-pub trait Signer: IdentityProvider {
-    fn certificate(
-        &self,
-        value: DelegationCertificate,
-    ) -> Result<SignedDelegationCertificate, String>;
-    fn revocation(&self, value: DelegationRevocation)
-    -> Result<SignedDelegationRevocation, String>;
-}
-impl Signer for djinn::door::custody_identity::CustodyIdentity {
-    fn certificate(
-        &self,
-        value: DelegationCertificate,
-    ) -> Result<SignedDelegationCertificate, String> {
-        self.issue_certificate(value).map_err(|e| e.to_string())
-    }
-    fn revocation(
-        &self,
-        value: DelegationRevocation,
-    ) -> Result<SignedDelegationRevocation, String> {
-        self.issue_revocation(value).map_err(|e| e.to_string())
-    }
-}
-#[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct Contact {
-    pub version: u16,
-    pub binding: DerivedKeyAttestation,
-}
-impl Contact {
-    pub fn create(identity: &dyn IdentityProvider) -> Result<Self, String> {
-        Ok(Self {
-            version: 1,
-            binding: identity
-                .attest_derived_key(TRANSPORT_SALT)
-                .map_err(|e| e.to_string())?,
-        })
-    }
-    pub fn check(&self) -> Result<(), String> {
-        if self.version != 1 {
-            return Err("unsupported contact version".into());
-        }
-        self.binding
-            .check(TRANSPORT_SALT)
-            .map_err(|e| format!("invalid contact attestation: {e:?}"))?;
-        Ok(())
-    }
-    pub fn root(&self) -> [u8; 32] {
-        *self.binding.master()
-    }
-    pub fn peer(&self) -> [u8; 32] {
-        *self.binding.derived()
-    }
-}
-#[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct Invitation {
-    pub version: u16,
-    pub graph: SessionId,
-    pub owner: Contact,
-    pub guest: Contact,
-    pub write: bool,
-    pub grant: SignedDelegationCertificate,
-}
-impl Invitation {
-    pub fn check(&self) -> Result<(), String> {
-        self.owner.check()?;
-        self.guest.check()?;
-        let c = &self.grant.certificate;
-        self.grant
-            .check()
-            .map_err(|e| format!("invalid invitation signature: {e:?}"))?;
-        if self.version != 1
-            || c.issuer != self.owner.root()
-            || c.subject != self.guest.peer()
-            || c.parent != DelegationParent::Root(self.owner.root())
-            || c.scope != invitation_scope(self.owner.root(), self.graph, self.write)
-            || c.remaining_delegation_depth != 0
-        {
-            return Err("invitation does not bind this owner, graph and guest".into());
-        }
-        Ok(())
-    }
+    TERMS.scope(owner, *graph.as_uuid())
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -246,8 +144,8 @@ impl<B: pandect::graph_session::LegacyTransactionBackend + Clone> Owner<B> {
             return Err("co-op owner or graph does not match this store".into());
         }
         if let Some(invite) = &saved.invitation {
-            invite.check()?;
-            if invite.owner.root() != owner || invite.graph != graph {
+            invite.check(&TERMS)?;
+            if invite.owner.root() != owner || invite.session != *graph.as_uuid() {
                 return Err("stored invitation belongs to another graph".into());
             }
         }
@@ -331,7 +229,7 @@ impl<B: pandect::graph_session::LegacyTransactionBackend + Clone> Owner<B> {
         write: bool,
         expires: u64,
     ) -> Result<Invitation, String> {
-        guest.check()?;
+        guest.check(&TERMS)?;
         if signer.master_public_key().to_bytes() != self.saved.owner
             || guest.root() == self.saved.owner
         {
@@ -352,32 +250,15 @@ impl<B: pandect::graph_session::LegacyTransactionBackend + Clone> Owner<B> {
             }
             return Err("end the existing guest's access before issuing another invitation".into());
         }
-        let now = now_ms();
-        if expires <= now || expires - now > 30 * 24 * 60 * 60 * 1000 {
-            return Err("choose an expiry within thirty days".into());
-        }
-        let mut nonce = [0; 32];
-        rand_core::RngCore::fill_bytes(&mut rand_core::OsRng, &mut nonce);
-        let grant = signer.certificate(DelegationCertificate::new(
-            DelegationParent::Root(self.saved.owner),
-            self.saved.owner,
-            guest.peer(),
-            invitation_scope(self.saved.owner, self.saved.graph, write),
-            now.saturating_sub(30_000),
-            now.saturating_sub(30_000),
-            Some(expires),
-            0,
-            nonce,
-        ))?;
-        let invitation = Invitation {
-            version: 1,
-            graph: self.saved.graph,
-            owner: Contact::create(signer)?,
+        let invitation = Invitation::issue(
+            signer,
+            &TERMS,
+            *self.saved.graph.as_uuid(),
             guest,
             write,
-            grant,
-        };
-        invitation.check()?;
+            now_ms(),
+            expires,
+        )?;
         let mut saved = self.saved.clone();
         saved.invitation = Some(invitation.clone());
         saved.revocation = None;
@@ -393,15 +274,7 @@ impl<B: pandect::graph_session::LegacyTransactionBackend + Clone> Owner<B> {
             .invitation
             .as_ref()
             .ok_or("no guest invitation")?;
-        let mut nonce = [0; 32];
-        rand_core::RngCore::fill_bytes(&mut rand_core::OsRng, &mut nonce);
-        let revocation = signer.revocation(DelegationRevocation::new(
-            invite.grant.certificate.id(),
-            self.saved.owner,
-            invite.grant.certificate.scope.clone(),
-            now_ms(),
-            nonce,
-        ))?;
+        let revocation = invite.revoke(signer, now_ms())?;
         let mut saved = self.saved.clone();
         saved.revocation = Some(revocation);
         self.save(saved).await
@@ -418,45 +291,25 @@ impl<B: pandect::graph_session::LegacyTransactionBackend + Clone> Owner<B> {
         if self.access_guard.as_ref().is_some_and(|guard| !guard()) {
             return Err("owner authority unavailable".into());
         }
-        let i = self
-            .saved
+        self.saved
             .invitation
             .as_ref()
-            .ok_or("no guest invitation")?;
-        if i.guest.peer() != peer {
-            return Err("this guest is not invited".into());
-        }
-        if self.saved.revocation.is_some() {
-            return Err("guest access was revoked".into());
-        }
-        if i.grant
-            .certificate
-            .expires_at_ms
-            .is_none_or(|end| now_ms() > end)
-        {
-            return Err("guest access expired".into());
-        }
-        if write && !i.write {
-            return Err("guest has read-only access".into());
-        }
-        Ok(i.guest.root())
+            .ok_or("no guest invitation")?
+            .guest_access(peer, write, self.saved.revocation.is_some(), now_ms())
     }
     pub fn admits(
         &self,
         principal: &notochord::AdmittedPrincipal,
         chain: &[SignedDelegationCertificate],
     ) -> Result<(), String> {
-        self.guest(principal.subject, false)?;
-        let i = self.saved.invitation.as_ref().unwrap();
-        if principal.action.domain != DOMAIN
-            || principal.action.path != path(self.saved.graph)
-            || principal.action.action != "connect"
-            || chain.len() != 1
-            || chain[0] != i.grant
-        {
+        if self.access_guard.as_ref().is_some_and(|guard| !guard()) {
+            return Err("owner authority unavailable".into());
+        }
+        let i = self.saved.invitation.as_ref().ok_or("no guest invitation")?;
+        if i.session != *self.saved.graph.as_uuid() {
             return Err("invitation does not authorize this graph route".into());
         }
-        Ok(())
+        i.admits(&TERMS, principal, chain, self.saved.revocation.is_some(), now_ms())
     }
     pub fn owner_data(&self) -> Data {
         self.data()

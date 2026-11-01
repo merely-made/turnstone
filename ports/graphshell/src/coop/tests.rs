@@ -4,16 +4,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 use super::*;
-use muniment::Backend;
-use personae::{InMemoryProvider, delegation::Issue};
-impl Signer for InMemoryProvider {
-    fn certificate(&self, c: DelegationCertificate) -> Result<SignedDelegationCertificate, String> {
-        SignedDelegationCertificate::issue(self, c).map_err(|e| e.to_string())
-    }
-    fn revocation(&self, c: DelegationRevocation) -> Result<SignedDelegationRevocation, String> {
-        SignedDelegationRevocation::issue(self, c).map_err(|e| e.to_string())
-    }
-}
+use personae::InMemoryProvider;
 #[test]
 fn one_graph_guest_attribution_revoke_and_reopen() {
     pollster::block_on(async {
@@ -29,7 +20,7 @@ fn one_graph_guest_attribution_revoke_and_reopen() {
             .await
             .unwrap();
         let invitation = owner
-            .invite(&a, Contact::create(&b).unwrap(), true, now_ms() + 60000)
+            .invite(&a, Contact::create(&b, &TERMS).unwrap(), true, now_ms() + 60000)
             .await
             .unwrap();
         let data = owner.owner_data();
@@ -121,7 +112,7 @@ fn exact_graph_identity_payload_and_stale_requests_are_refused_without_writes() 
     pollster::block_on(async {
         let (mut owner, a, b, id) = fixture(muniment::MemoryBackend::new()).await;
         let invitation = owner
-            .invite(&a, Contact::create(&b).unwrap(), true, now_ms() + 60000)
+            .invite(&a, Contact::create(&b, &TERMS).unwrap(), true, now_ms() + 60000)
             .await
             .unwrap();
         let data = owner.owner_data();
@@ -181,7 +172,7 @@ fn reader_and_revoked_guest_cannot_fetch_or_mutate() {
     pollster::block_on(async {
         let (mut owner, a, b, _) = fixture(muniment::MemoryBackend::new()).await;
         let invitation = owner
-            .invite(&a, Contact::create(&b).unwrap(), false, now_ms() + 60000)
+            .invite(&a, Contact::create(&b, &TERMS).unwrap(), false, now_ms() + 60000)
             .await
             .unwrap();
         let data = owner.owner_data();
@@ -270,7 +261,7 @@ fn storage_refusal_keeps_graph_authors_revision_and_revocation_then_retry() {
         };
         let (mut owner, a, b, id) = fixture(backend.clone()).await;
         let invitation = owner
-            .invite(&a, Contact::create(&b).unwrap(), true, now_ms() + 60000)
+            .invite(&a, Contact::create(&b, &TERMS).unwrap(), true, now_ms() + 60000)
             .await
             .unwrap();
         let data = owner.owner_data();
@@ -336,15 +327,15 @@ fn contact_and_invitation_cannot_be_retargeted() {
     pollster::block_on(async {
         let (mut owner, a, b, _) = fixture(muniment::MemoryBackend::new()).await;
         let i = owner
-            .invite(&a, Contact::create(&b).unwrap(), true, now_ms() + 60000)
+            .invite(&a, Contact::create(&b, &TERMS).unwrap(), true, now_ms() + 60000)
             .await
             .unwrap();
         let mut tampered = i.clone();
-        tampered.graph = SessionId::new();
-        assert!(tampered.check().is_err());
+        tampered.session = *SessionId::new().as_uuid();
+        assert!(tampered.check(&TERMS).is_err());
         tampered = i.clone();
-        tampered.guest = Contact::create(&InMemoryProvider::from_seed([13; 32])).unwrap();
-        assert!(tampered.check().is_err());
+        tampered.guest = Contact::create(&InMemoryProvider::from_seed([13; 32]), &TERMS).unwrap();
+        assert!(tampered.check(&TERMS).is_err());
         assert!(
             Owner::open(owner.backend.clone(), owner.graph_id(), [88; 32])
                 .await
@@ -356,7 +347,7 @@ fn contact_and_invitation_cannot_be_retargeted() {
 fn export_retry_reuses_exact_grant_and_write_permission_is_signed() {
     pollster::block_on(async {
         let (mut owner, a, b, _) = fixture(muniment::MemoryBackend::new()).await;
-        let guest = Contact::create(&b).unwrap();
+        let guest = Contact::create(&b, &TERMS).unwrap();
         let first = owner
             .invite(&a, guest.clone(), true, now_ms() + 60000)
             .await
@@ -370,7 +361,7 @@ fn export_retry_reuses_exact_grant_and_write_permission_is_signed() {
         assert_eq!(first.grant, second.grant);
         let mut altered = first;
         altered.write = false;
-        assert!(altered.check().is_err());
+        assert!(altered.check(&TERMS).is_err());
     })
 }
 
@@ -446,7 +437,7 @@ fn attached_ordinary_host_is_the_only_writer_and_reopens_with_guest_authorship()
     ))
     .unwrap();
     let invite =
-        pollster::block_on(owner.invite(&a, Contact::create(&b).unwrap(), true, now_ms() + 60000))
+        pollster::block_on(owner.invite(&a, Contact::create(&b, &TERMS).unwrap(), true, now_ms() + 60000))
             .unwrap();
     assert_eq!(owner.owner_data().nodes[0].id, first);
     let ordinary_revision = host.lock().unwrap().projection_revision();

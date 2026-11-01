@@ -81,6 +81,7 @@ native = [
     "graphshell-endpoint/network",
     "graphshell-endpoint/stdio",
     "graphshell-host/native",
+    "graphshell-host/custody-client",
     "dep:notochord",
     "dep:dramatis",
     "dep:chatelaine",

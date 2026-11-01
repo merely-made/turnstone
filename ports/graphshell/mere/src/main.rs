@@ -575,7 +575,7 @@ fn main() {
         let identity = graphshell::coop::network::identity().expect("unlock identity");
         graphshell::coop::network::write_json(
             std::path::Path::new(&args[1]),
-            &graphshell::coop::Contact::create(&*identity).expect("contact attestation"),
+            &graphshell::coop::Contact::create(&*identity, &graphshell::coop::TERMS).expect("contact attestation"),
         )
         .expect("save public contact");
         return;

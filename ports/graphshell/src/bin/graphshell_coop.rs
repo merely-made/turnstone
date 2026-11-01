@@ -294,7 +294,7 @@ fn worker(a: Args, rx: mpsc::Receiver<Command>, tx: mpsc::Sender<Update>) -> Res
     std::fs::create_dir_all(&a.handoff).map_err(|e| e.to_string())?;
     network::write_json(
         &a.handoff.join("identity.json"),
-        &Contact::create(&*identity)?,
+        &Contact::create(&*identity, &coop::TERMS)?,
     )?;
     let owner = if a.mode == "owner" {
         let backend = RedbBackend::open(&a.store).map_err(|e| e.to_string())?;
@@ -510,7 +510,7 @@ fn start() -> Result<(), String> {
         let identity = network::identity()?;
         network::write_json(
             &a.handoff.join("identity.json"),
-            &Contact::create(&*identity)?,
+            &Contact::create(&*identity, &coop::TERMS)?,
         )?;
         return Ok(());
     }
