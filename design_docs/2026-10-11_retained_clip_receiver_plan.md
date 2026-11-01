@@ -16,7 +16,8 @@ passed in the real Windows host at its recorded source cut. This is Turnstone's
 first consumer of the draft Fleece selected-content profile.
 
 The shared contract and CP1 to CP4 rulings live in
-`eidetic/design_docs/eidetic_docs/implementation_strategy/2026-10-11_eidetic_development_plan.md`.
+`eidetic/design_docs/archive_docs/2026-11-01/2026-10-11_eidetic_development_plan.md`
+(open work continues in `eidetic/design_docs/eidetic_docs/implementation_strategy/2026-11-01_memory_gates_plan.md`).
 This plan owns Turnstone's receiving behavior and evidence. It does not freeze
 the profile or close that plan's whole Knot/Redshank host gate.
 
