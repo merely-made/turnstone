@@ -24,7 +24,7 @@ owner-state captures; these qualify paint/layout, not physical input or themes.
 Its public, unsealed
 in-memory fixtures use verified sans-I/O admission, with supplied carrier facts;
 they qualify no live peer, persistent community or private custody. Actual app
-session/coop routing remains open. The [Moot host plan](../../design_docs/moothold_docs/implementation_strategy/2026-06-12_moot_object_m1_plan.md#admitted-graphshell-resource-mount-2026-10-12)
+session/coop routing remains open. The [Moot host plan](https://github.com/merely-made/gemot/blob/main/design_docs/archive_docs/2026-11-01/2026-06-12_moot_object_m1_plan.md#admitted-graphshell-resource-mount-2026-10-12)
 and [qualification record](docs/receipts/moot_resources_host_20261012/qualification.json)
 retain the acceptance scope.
 
