@@ -346,7 +346,7 @@ kind of app-local copy the stack avoids.
   (I3h, 2026-09-15). Mere's djinn and its root pin Knot `ef89a186`, which pins
   Mere `e0cea3e0` and Genet `d851a9db`. Knot's in-Graphshell plan is
   historical; its K2 physical two-machine receipt passed on 2026-08-08
-  (`knot-editor/design_docs/2026-08-02_knot_in_graphshell_plan.md`).
+  (`knot-editor/design_docs/archive_docs/2026-11-02/2026-08-02_knot_in_graphshell_plan.md`).
 - **Woodshed, compiled in through Redshank.** Redshank is Woodshed's listening
   port, pinned at Woodshed `9e982b88`; its nested workspace pins Mere
   `3d1cdacc`. Its compact dock is Turnstone's fourth contributed-surface
