@@ -152,7 +152,7 @@ That document path depends on its holder being online. The exact scope is in
 the [place port plan](design_docs/archive_docs/2026-11-02/2026-07-28_turnstone_place_port_plan.md).
 
 Current browser work follows the
-[user-agent taxonomy](design_docs/2026-08-03_user_agent_taxonomy_plan.md):
+[user-agent taxonomy](design_docs/2026-11-02_user_agent_taxonomy_plan.md):
 registry-derived engine choices and optional Windows Scry, Weld and
 Servo/Graft hosts on the existing wgpu device. Scry and Weld use per-node
 profiles; Servo shares one explicitly named, configurable process profile
@@ -177,7 +177,7 @@ uses human labels, and keeps unavailable saved pins visible with reasons. Its
 qualification receipt (`Code/testing/turnstone/receipts/browser_engine_inventory_20261005/README.md`)
 records default/optional-Weld tests and the native picker scenario.
 
-The live plan is `design_docs/2026-07-10_turnstone_architecture_plan.md`; the
+The live plan is `design_docs/2026-11-02_architecture_plan.md` (cut from `design_docs/archive_docs/2026-11-02/2026-07-10_turnstone_architecture_plan.md`); the
 founding brief is `design_docs/2026-07-08_turnstone_founding.md`.
 
 ## Screenshots

@@ -2,7 +2,7 @@
 
 ## Embedded text-note retention, 2026-10-20
 
-The [receiver continuation](2026-10-11_retained_clip_receiver_plan.md) now
+The [receiver continuation](archive_docs/2026-11-02/2026-10-11_retained_clip_receiver_plan.md) now
 qualifies embedded Redshank selected text-note retention through four shipping
 macOS phases and eight reviewed captures. The private control has no retention
 offer. The selected shareable note survives removal of the original session,
@@ -24,7 +24,7 @@ Supplier pins are unchanged.
 
 ## Retained voice bodies, 2026-10-11
 
-The [retained clip receiver](2026-10-11_retained_clip_receiver_plan.md) uses the
+The [retained clip receiver](archive_docs/2026-11-02/2026-10-11_retained_clip_receiver_plan.md) uses the
 existing Redshank preview port and this host's one output runtime for imported
 WAV voice-body bytes. Its native receipt (`Code/testing/turnstone/receipts/2026-10-11_retained_clip_receiver/README.md`)
 qualifies local playback and fresh-process replay of a synthetic 500 ms PCM
@@ -40,7 +40,7 @@ Turnstone adopts Mere `c55a420dc6`, Genet `6c9452f422`, Knot `6ef4b85d82` and Wo
 `46659c0279` on one typed surface graph. Its reviewed host changes pass all nine
 guarded-host tests within the final 612-test workspace gate, with nine existing
 ignores. The locked graph and normal native build pass. The
-[adoption receipt](archive_docs/receipts/2026-09-29_shared_diagnostics_gloss_inspector_receipt_receipts.md)
+[adoption receipt](archive_docs/receipts/2026-09-29_shared_diagnostics_gloss_inspector_receipts.md)
 records the sealed pins and evidence; it does not qualify embedded audio or
 warning reachability in a short tile.
 

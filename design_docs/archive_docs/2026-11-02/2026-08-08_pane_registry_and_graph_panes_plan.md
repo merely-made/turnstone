@@ -1,5 +1,7 @@
 # Pane Registry, Graph Views, and Shell Composition Plan
 
+> **Archived 2026-11-02 (cut; history only).** Cut into [the successor plan](../../2026-11-02_pane_registry_and_graph_panes_plan.md), which holds the decisions and the open work. This file keeps the plan's history, rulings, findings and inline run evidence as they were. Hashes in the body are the hashes it was written with; the receipt files it cites moved to `Code/testing/turnstone/` (path cites, not links). Evidence index and old-to-main hash table: [2026-08-08_pane_registry_and_graph_panes_plan_receipts.md](../receipts/2026-08-08_pane_registry_and_graph_panes_plan_receipts.md). Mark, 2026-11-02: "Everything, drafts first".
+
 **Date**: 2026-08-08
 
 **Status (2026-10-14)**: A4/S3 implements shared Workspace custody, Tabard appearance, keyboard, floating/docking, per-window accessibility, retained inline component bodies and native image apertures in one window scene. Ordinary published Mere/Genet/Netrender suppliers pass eight affected test groups, the native build and fourteen headed cases. Local-source receipts retain their measured basis. Physical accessibility, OS activation, monitor DPI and early scrollbar-fade pixel timing remain open. A0, A1 and A6 complete and verified. Lanes open: **A2** and
@@ -11,11 +13,11 @@
 in Gloss, document and graph-object analysis in Inspector, and `mere-apparatus`
 for shared diagnostics. The current migration retires Turnstone's redundant
 Steward and Apparatus pane kinds after preserving their implemented capabilities.
-The [Gloss plan](2026-07-20_gloss_composite_pane.md#current-direction-2026-09-29)
+The [Gloss plan](../../2026-07-20_gloss_composite_pane.md#current-direction-2026-09-29)
 records the new default (minimap plus Downloads), scope and saved-layout behavior.
 Facet-backed Downloads render in configurable Gloss, Inspector writes the
 followed member's viewer through the product spine, and frame/lens restore plus
-native routing passed, as recorded in the [September 29 qualification receipt](archive_docs/receipts/2026-09-29_shared_diagnostics_gloss_inspector_receipt_receipts.md). Shared observations and any new operation
+native routing passed, as recorded in the [September 29 qualification receipt](../receipts/2026-09-29_shared_diagnostics_gloss_inspector_receipts.md). Shared observations and any new operation
 controls have separate ownership; this pane migration adds no job runtime.
 
 The Shared Knot seam that blocked A1's verification cleared on its own; the
@@ -50,11 +52,11 @@ The short ruling:
 
 | Source | Durable decision | Consequence here |
 | --- | --- | --- |
-| Multi-Graph Activation (`mere/design_docs/archive_docs/2026-10-06_completed_plans/2026-06-09_multi_graph_activation_plan.md`) and the archived [Window Composition Plan](../../mere/design_docs/archive_docs/2026-06-19_completed_plans/2026-06-11_window_composition_plan.md) | Graph authorities are pooled by `GraphId`; panes resolve through their own graph binding; one window may contain panes from different graphs. | Turnstone restores this model instead of extending its current single `App::canvas`. |
-| [Rung 5 Panes](archive_docs/2026-11-02/2026-07-14_turnstone_rung5_panes_plan.md) | The window pane tree and Platen Workbench nest because they arrange different identities. | They may share a topology algebra, while pane identity and member identity remain distinct. |
-| [Surfaces in Cambium](2026-07-15_turnstone_surfaces_in_cambium.md) | Cambium owns the furniture inside a pane rect; Turnstone owns rects, mixed surfaces, routing, and composition. | `cambium::frisket` does not become Turnstone's outer renderer. |
-| [Gloss Composite Pane](2026-07-20_gloss_composite_pane.md) | Composition is per pane instance and travels with it. | `PaneConfig` remains instance state; the registry does not absorb it into pane-kind globals. |
-| [Frisket Direction](../../genet/docs/2026-07-24_frisket_pane_component_direction.md) | `genet-host-api::TileTree` is presentation vocabulary; hosts remain authoritative. Turnstone's mixed-surface presenter deliberately differs from the DOM presenter. | Reuse of `TileTree` is proof-gated and does not imply adopting the Cambium DOM view. |
+| Multi-Graph Activation (`mere/design_docs/archive_docs/2026-10-06_completed_plans/2026-06-09_multi_graph_activation_plan.md`) and the archived Window Composition Plan (`mere/design_docs/archive_docs/2026-06-19_completed_plans/2026-06-11_window_composition_plan.md`) | Graph authorities are pooled by `GraphId`; panes resolve through their own graph binding; one window may contain panes from different graphs. | Turnstone restores this model instead of extending its current single `App::canvas`. |
+| [Rung 5 Panes](2026-07-14_turnstone_rung5_panes_plan.md) | The window pane tree and Platen Workbench nest because they arrange different identities. | They may share a topology algebra, while pane identity and member identity remain distinct. |
+| [Surfaces in Cambium](../../2026-07-15_turnstone_surfaces_in_cambium.md) | Cambium owns the furniture inside a pane rect; Turnstone owns rects, mixed surfaces, routing, and composition. | `cambium::frisket` does not become Turnstone's outer renderer. |
+| [Gloss Composite Pane](../../2026-07-20_gloss_composite_pane.md) | Composition is per pane instance and travels with it. | `PaneConfig` remains instance state; the registry does not absorb it into pane-kind globals. |
+| Frisket Direction (`genet/docs/2026-07-24_frisket_pane_component_direction.md`) | `genet-host-api::TileTree` is presentation vocabulary; hosts remain authoritative. Turnstone's mixed-surface presenter deliberately differs from the DOM presenter. | Reuse of `TileTree` is proof-gated and does not imply adopting the Cambium DOM view. |
 | Overmap (`mere/design_docs/archive_docs/2026-10-06_completed_plans/2026-07-20_overmap_sessions_graph_plan.md`) | Overmap derives a session graph from manifests and lineage. | A multi-graph space changes focus and composition, not Overmap's underlying truth. |
 | Configuration Ownership (`mere/design_docs/archive_docs/2026-10-06_completed_plans/2026-08-06_configuration_ownership_settings_projection_plan.md`) | The configured product owns typed storage; providers describe; Cambium renders; hosts apply. | `SettingsRef` is a pane source, not a graph-binding policy or a universal settings store. |
 
@@ -86,19 +88,19 @@ records per-instance retention and the September 29 Gloss/Inspector migration.
 
 Every `PaneNode::Leaf` already carries `graph_id`, and
 `retag_graph_bound_from` explicitly preserves a second graph pane
-([src/panes/layout.rs](../src/panes/layout.rs)). The current host then loses the
+([src/panes/layout.rs](../../../src/panes/layout.rs)). The current host then loses the
 binding:
 
 - `App` owns one `canvas` and one current `session_id`
-  ([src/app/mod.rs](../src/app/mod.rs)).
+  ([src/app/mod.rs](../../../src/app/mod.rs)).
 - Session adoption replaces the canvas graph in place
-  ([src/app/session_lifecycle.rs](../src/app/session_lifecycle.rs)).
+  ([src/app/session_lifecycle.rs](../../../src/app/session_lifecycle.rs)).
 - `PanePlacement` carries pane id, content, and rect, but not `graph_id`
-  ([src/pane.rs](../src/pane.rs)).
+  ([src/pane.rs](../../../src/pane.rs)).
 - Every Orrery leaf becomes the same `SurfaceKind::Canvas`, with one fixed
-  `SurfaceId::CANVAS` ([src/surface.rs](../src/surface.rs)).
+  `SurfaceId::CANVAS` ([src/surface.rs](../../../src/surface.rs)).
 - A lens borrows the same canvas and temporarily swaps only its viewport
-  ([src/shell/lens.rs](../src/shell/lens.rs)).
+  ([src/shell/lens.rs](../../../src/shell/lens.rs)).
 
 Two Orrery leaves can therefore duplicate one canvas view, but cannot present two
 independent graphs. The old Mere pool is precedent, not current Turnstone proof.
@@ -106,9 +108,9 @@ independent graphs. The old Mere pool is precedent, not current Turnstone proof.
 ### 2.2 Pane identity exists and renderer state is keyed by kind
 
 `summon_pane` mints a fresh `PaneId` on every summon
-([src/app/pane_arms.rs](../src/app/pane_arms.rs)), while the shell retains one
+([src/app/pane_arms.rs](../../../src/app/pane_arms.rs)), while the shell retains one
 Roster, Gloss, Trail, Inspector, Workbench, Apparatus, Settings, and Publishing
-runner ([src/shell/mod.rs](../src/shell/mod.rs)). Sharing one runner across a pane's
+runner ([src/shell/mod.rs](../../../src/shell/mod.rs)). Sharing one runner across a pane's
 tear-out stations preserves identity. Sharing it across two distinct pane ids
 does not.
 
@@ -124,7 +126,7 @@ Publishing use `Custom("settings")` and `Custom("publishing")`; layout mutation 
 Turnstone holds one `App.workbench`, so two Workbench panes cannot own different
 member arrangements. The omnibar likewise queries one `App::canvas`; its width and
 top offset are constants, and only the primary window renders it
-([src/ui.rs](../src/ui.rs), [src/chrome_view.rs](../src/chrome_view.rs)). Application
+([src/ui.rs](../../../src/ui.rs), [src/chrome_view.rs](../../../src/chrome_view.rs)). Application
 settings already name `shellbar_edge` and `shellbar_hidden`, but Turnstone does not
 apply them.
 
@@ -132,7 +134,7 @@ apply them.
 
 `AppEvent` is a useful semantic observation stream, but it is partial, drained each
 frame, and frequently carries display text without command identity, target context,
-correlation, or a typed result ([src/observe.rs](../src/observe.rs)). A visible shell
+correlation, or a typed result ([src/observe.rs](../../../src/observe.rs)). A visible shell
 transcript can consume those events; it cannot truthfully be a direct view over the
 current stream.
 
@@ -270,10 +272,10 @@ truth or the window layout.
 
 Platen already owns a recursive split tree of member tab-stacks and projects it onto
 `genet-host-api::TileTree`
-([Platen README](../../mere/crates/platen/platen/README.md),
-[workbench.rs](../../mere/crates/platen/platen/src/workbench.rs)). Turnstone currently
+(Platen README (`mere/crates/platen/platen/README.md`),
+workbench.rs (`mere/crates/platen/platen/src/workbench.rs`)). Turnstone currently
 hosts that tree inside one Workbench pane and composites live document surfaces into
-its cells ([src/workbench_pane.rs](../src/workbench_pane.rs)).
+its cells ([src/workbench_pane.rs](../../../src/workbench_pane.rs)).
 
 The durable relationship is:
 
@@ -532,8 +534,8 @@ Settings remains addressed configuration content:
 
 Turnstone's current provider still uses `pelt/appearance`, exposes only theme id,
 theme mode, and zoom, and marks them `Live` without updating the running shell
-([src/settings_provider.rs](../src/settings_provider.rs),
-[src/settings_pane.rs](../src/settings_pane.rs)). The first completion slice corrects
+([src/settings_provider.rs](../../../src/settings_provider.rs),
+[src/settings_pane.rs](../../../src/settings_pane.rs)). The first completion slice corrects
 the namespace and makes every advertised `Live` value observable immediately.
 
 Inspector owns object-facing analysis and handling controls. Shared diagnostic
@@ -571,7 +573,7 @@ Workbench, settings, and transcript stores are not discarded with it.
 ### A0. Pure model and inventory
 
 **Completed 2026-08-09.** The live pane audit is recorded in
-[Pane Inventory](archive_docs/receipts/2026-08-09_pane_inventory_receipts.md). The rendering-free model lives in
+[Pane Inventory](../receipts/2026-08-09_pane_inventory_receipts.md). The rendering-free model lives in
 `src/panes/blueprint.rs`; focused tests prove context resolution and pinning,
 recursive normalization, tiled-to-floating relocation, cross-space movement,
 global pane-station uniqueness, Forme/graph validation, and serialization.
@@ -885,7 +887,7 @@ layout can be shared or reset without changing graph/session truth.
   headed capture taken for an unrelated receipt, and went unremarked because
   the capture was being read for the one row it was taken to prove. The cost of
   the duplicates was separately real (see the layout retention entry in
-  [`2026-07-15_turnstone_surfaces_in_cambium.md`](2026-07-15_turnstone_surfaces_in_cambium.md):
+  [`2026-07-15_turnstone_surfaces_in_cambium.md`](../../2026-07-15_turnstone_surfaces_in_cambium.md):
   each copy cost 24 ms a frame).
 
   Still open, and named here rather than left implicit: **a pane has no close
@@ -908,7 +910,7 @@ layout can be shared or reset without changing graph/session truth.
 - Retired renderer and command paths after migration. `saved_content.rs` lowers
   old leaf tags immediately to current pane content, preserving actual user
   frame/lens arrangements; new saves contain current names only.
-- Qualified by the [September 29 qualification receipt](archive_docs/receipts/2026-09-29_shared_diagnostics_gloss_inspector_receipt_receipts.md):
+- Qualified by the [September 29 qualification receipt](../receipts/2026-09-29_shared_diagnostics_gloss_inspector_receipts.md):
   the locked, offline workspace gate passed 612 tests with 9 ignored; five exact
   Piccolo/Wasm tests and 33 UI/Inspector regressions passed. The default-feature
   native build and fresh/restart scenarios passed, with three reviewed nonblank
@@ -926,7 +928,7 @@ delivery, including Calculate request 3 held while clipped and delivered after
 scrolling. The helper-level admission refusal regression fails before repair;
 the stale-generation and missing Gloss platform-arm controls fail deliberately
 and exact source restoration passes. See the
-[September 30 consumer receipt](archive_docs/receipts/2026-09-29_shared_diagnostics_gloss_inspector_receipt_receipts.md#september-30-qualified-consumer-cohort).
+[September 30 consumer receipt](../receipts/2026-09-29_shared_diagnostics_gloss_inspector_receipts.md#september-30-qualified-consumer-cohort).
 All built-in panes remain a later qualification slice. The shared
 Mere semantic and diagnostics plan (`mere/design_docs/archive_docs/2026-10-28/2026-06-08_system_diagnostics_and_accessibility_plan.md`)
 owns projection matching and evidence boundaries.

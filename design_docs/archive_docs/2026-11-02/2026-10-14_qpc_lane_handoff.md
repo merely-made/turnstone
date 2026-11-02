@@ -1,6 +1,6 @@
 # Turnstone lane handoff to q-pc, 2026-10-14
 
-> **Archived 2026-11-02 (stale snapshot).** Main is the only live line; the lens-label fix it names landed in `1a0bf3d1` and was qualified in `de56f958` (2026-10-15), and its pins (Mere `77fd235f`, Rust 1.99.0) are out of date. Open points moved: item 3 (known UI issues, floating-toolbar occlusion and confirmation-caption overflow) to the successor `2026-11-02_architecture_plan.md`; item 5 (SC5/SC6/SC7 ledger drift) to `2026-11-02_unusual_protocols_browser_plan.md`; item 6 (view source and named collections, taxonomy U2 and U4, and the clip-system contracts) to `2026-11-02_user_agent_taxonomy_plan.md` and `2026-11-02_retained_clip_receiver_plan.md`. Item 4 is answered by the archived resource handoff (applied); item 2 is also recorded as separate gates in the pane registry plan. Receipts and the old-to-main hash table: [2026-10-14_qpc_lane_handoff_receipts.md](../receipts/2026-10-14_qpc_lane_handoff_receipts.md). Mark, 2026-11-02: "Everything, drafts first".
+> **Archived 2026-11-02 (stale snapshot).** Main is the only live line; the lens-label fix it names landed in `1a0bf3d1` and was qualified in `de56f958` (2026-10-15), and its pins (Mere `77fd235f`, Rust 1.99.0) are out of date. Open points moved: item 3 (known UI issues, floating-toolbar occlusion and confirmation-caption overflow) to the successor [`2026-11-02_architecture_plan.md`](../../2026-11-02_architecture_plan.md); item 5 (SC5/SC6/SC7 ledger drift) to [`2026-11-02_unusual_protocols_browser_plan.md`](../../2026-11-02_unusual_protocols_browser_plan.md); item 6 (view source and named collections, taxonomy U2 and U4, and the clip-system contracts) to [`2026-11-02_user_agent_taxonomy_plan.md`](../../2026-11-02_user_agent_taxonomy_plan.md) and [`2026-11-02_retained_clip_receiver_plan.md`](../../2026-11-02_retained_clip_receiver_plan.md). Item 4 is answered by the archived resource handoff (applied); item 2 is also recorded as separate gates in the pane registry plan. Receipts and the old-to-main hash table: [2026-10-14_qpc_lane_handoff_receipts.md](../receipts/2026-10-14_qpc_lane_handoff_receipts.md). Mark, 2026-11-02: "Everything, drafts first".
 
 **Status, 2026-10-14:** the Turnstone lane moves from the ThinkPad to q-pc,
 Mark's Mac. Windows-only work runs on o-pc, the ASUS Windows laptop. Remote `main` is the only live line: every branch and worktree on
@@ -31,7 +31,7 @@ a fresh pull; nothing needed is left behind.
   `8ed49d43f049921d56ab5a0c091a2c37c0970ee7`. Toolchain 1.99.0, MSRV 1.97.1.
 - Latest published work: retained pane composition and native image
   apertures inside the shared window scene (`1aa6663`), with its exact receipt
-  bytes (`c7a828e`). See the [pane registry plan](../../2026-08-08_pane_registry_and_graph_panes_plan.md)
+  bytes (`c7a828e`). See the [pane registry plan](2026-08-08_pane_registry_and_graph_panes_plan.md)
   and `Code/testing/turnstone/receipts/stations_windows_20261013/published-final-native-qualification.json`.
 - The lens accessibility-label fix landed with this handoff. Before it,
   `project_lens_with_contributions` labelled every lens window
@@ -78,7 +78,7 @@ a fresh pull; nothing needed is left behind.
    runtime/session/fork/save, behavior-journal attribution to the originating
    graph runtime. Several were applied after that list was written; verify
    each against the live tree before treating it as open.
-5. **Plan ledger drift.** The [unusual-protocols plan](../../2026-10-06_unusual_protocols_browser_plan.md)
+5. **Plan ledger drift.** The [unusual-protocols plan](2026-10-06_unusual_protocols_browser_plan.md)
    still describes SC5/SC6 as open preparations although much is implemented;
    reconcile implemented versus qualified scope. SC7 store traits remain
    broader existing-plan work.

@@ -113,7 +113,7 @@ alongside document inspection and now carries the viewer and capability controls
 Within-document selection inspection remains later work. New Gloss instances
 start with minimap plus Downloads; existing configured compositions are preserved.
 The object-analysis Apparatus pane is retired. The bounded migration passed
-its automated and native gates in the [September 29 qualification receipt](2026-09-29_shared_diagnostics_gloss_inspector_receipt_receipts.md), including fresh/restart
+its automated and native gates in the [September 29 qualification receipt](2026-09-29_shared_diagnostics_gloss_inspector_receipts.md), including fresh/restart
 configuration and viewer persistence. Custom-leaf semantic parity, full built-in
 selectors, document selection, exact frame correlation and human AT remain open.
 Preserve the July ruling below as superseded implementation history, not current

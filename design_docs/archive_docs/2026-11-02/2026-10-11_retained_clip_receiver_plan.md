@@ -1,5 +1,7 @@
 # Retained clips in the receiving Turnstone host
 
+> **Archived 2026-11-02 (cut; history only).** Cut into [the successor plan](../../2026-11-02_retained_clip_receiver_plan.md), which holds the decisions and the open work. This file keeps the plan's history, rulings, findings and inline run evidence as they were. Hashes in the body are the hashes it was written with; the receipt files it cites moved to `Code/testing/turnstone/` (path cites, not links). Evidence index and old-to-main hash table: [2026-10-11_retained_clip_receiver_plan_receipts.md](../receipts/2026-10-11_retained_clip_receiver_plan_receipts.md). Mark, 2026-11-02: "Everything, drafts first".
+
 **Status (2026-10-20):** the original bounded native receiver and onward copy
 are landed and qualified at their recorded source cuts. Producer-to-retention
 integration and its custody connection now have published suppliers, refreshed

@@ -1,5 +1,7 @@
 # User-agent taxonomy â€” the things a browser owes its user, by spec
 
+> **Archived 2026-11-02 (cut; history only).** Cut into [the successor plan](../../2026-11-02_user_agent_taxonomy_plan.md), which holds the decisions and the open work. This file keeps the plan's history, rulings, findings and inline run evidence as they were. Hashes in the body are the hashes it was written with; the receipt files it cites moved to `Code/testing/turnstone/` (path cites, not links). Evidence index and old-to-main hash table: [2026-08-03_user_agent_taxonomy_plan_receipts.md](../receipts/2026-08-03_user_agent_taxonomy_plan_receipts.md). Mark, 2026-11-02: "Everything, drafts first".
+
 **Date:** 2026-08-03
 **Status:** in progress, rechecked 2026-10-07. Browser taxonomy and the Scry/Weld/Servo
 integration retain their scoped October receipts. Accessibility on Windows,
@@ -59,7 +61,7 @@ retained find, and the reader lane landed in the later browser-surface work.
 "Bookmarks" is where the taxonomy enrichment lands. Turnstone ships three
 content classes today (`turnstone.web-page`, `turnstone.note`, and
 `turnstone.download` in
-[content_classes.rs](../src/content_classes.rs)), registered through the same
+[content_classes.rs](../../../src/content_classes.rs)), registered through the same
 chartulary seams a pack would use. The browser taxonomy grows the same way:
 
 - classes for the artifact kinds the UA mints: downloaded file, source view,
@@ -140,7 +142,7 @@ pack-expressible structure, not a privileged store.
 
 External protocols (engine plan E4) and the unified trust posture (fidelity
 plan WS2, widened to the reticulum posture from the
-[Reticulum browsing plan](2026-08-03_reticulum_browsing_plan.md)). Owned by
+[Reticulum browsing plan](../../2026-08-03_reticulum_browsing_plan.md)). Owned by
 those plans; listed here because they complete the UA obligations table.
 
 ## Not in scope
@@ -151,7 +153,7 @@ those plans; listed here because they complete the UA obligations table.
 - Cookie/storage inspection was deferred in the original scope. The October
   browser matrix includes it as a separate product consumer gate.
 - Engine-side capabilities (that is the
-  [engine adoption plan](2026-08-03_turnstone_engine_adoption_plan.md)).
+  [engine adoption plan](../../2026-08-03_turnstone_engine_adoption_plan.md)).
 
 ## Ordering
 

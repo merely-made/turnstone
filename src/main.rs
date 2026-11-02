@@ -7,7 +7,7 @@
 //! Turnstone: a graph-workspace browser and the reference host for the mere
 //! library.
 //!
-//! Architecture (design_docs/2026-07-10_turnstone_architecture_plan.md): one
+//! Architecture (design_docs/archive_docs/2026-11-02/2026-07-10_turnstone_architecture_plan.md): one
 //! typed vocabulary. Platform events lower to [`turnstone::action::Action`]s;
 //! [`turnstone::app::App::update`] mutates state and returns
 //! [`turnstone::action::Effect`]s; [`turnstone::shell::Shell`] runs effects through

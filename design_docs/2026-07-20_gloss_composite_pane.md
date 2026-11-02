@@ -39,7 +39,7 @@ with Downloads, Apparatus becomes Inspector. Pane ids, graph bindings, splits,
 ratios and closed lens slots are retained; the next save emits current names.
 `src/panes/saved_content.rs` contains only this read-boundary conversion.
 
-**Qualified, 2026-09-29:** the [September 29 qualification receipt](archive_docs/receipts/2026-09-29_shared_diagnostics_gloss_inspector_receipt_receipts.md)
+**Qualified, 2026-09-29:** the [September 29 qualification receipt](archive_docs/receipts/2026-09-29_shared_diagnostics_gloss_inspector_receipts.md)
 records the locked, offline workspace gate (612 passed, 9 ignored), five exact
 Piccolo/Wasm author/watch/admitted-ring tests, 33 UI/Inspector regressions and the
 normal default-feature native build. Fresh and restarted

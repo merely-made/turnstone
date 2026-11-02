@@ -1,13 +1,15 @@
 # Turnstone architecture: obviating meerkat
 
+> **Archived 2026-11-02 (cut; history only).** Cut into [the successor plan](../../2026-11-02_architecture_plan.md), which holds the decisions and the open work. This file keeps the plan's history, rulings, findings and inline run evidence as they were. Hashes in the body are the hashes it was written with; the receipt files it cites moved to `Code/testing/turnstone/` (path cites, not links). Evidence index and old-to-main hash table: [2026-07-10_turnstone_architecture_plan_receipts.md](../receipts/2026-07-10_turnstone_architecture_plan_receipts.md). Mark, 2026-11-02: "Everything, drafts first".
+
 2026-07-10, refreshed 2026-07-28. The founding doc set the role swap (mere =
 library, turnstone = the reference host); the boundary pass sharpened what mere
 keeps. This plan is the other half: what turnstone IS, structurally, and the
 ladder by which meerkat becomes unnecessary. Companion to
-[2026-07-08_turnstone_founding.md](2026-07-08_turnstone_founding.md),
-[2026-07-14_turnstone_rung5_panes_plan.md](archive_docs/2026-11-02/2026-07-14_turnstone_rung5_panes_plan.md),
+[2026-07-08_turnstone_founding.md](../../2026-07-08_turnstone_founding.md),
+[2026-07-14_turnstone_rung5_panes_plan.md](2026-07-14_turnstone_rung5_panes_plan.md),
 the
-[2026-07-28 peer-web reframe](2026-07-28_turnstone_peer_web_reframe.md),
+[2026-07-28 peer-web reframe](../../2026-07-28_turnstone_peer_web_reframe.md),
 and mere's 2026-07-09 boundary pass plan (its decisions are assumed here, as
 amended: canvas stays mere; platen is the node-tiling home inside the workbench
 pane and arrives with the port; the pane model itself is mere's `frisket` crate,
@@ -274,7 +276,7 @@ daily-driver value, not by meerkat's module sizes.
    the focused node is pumped and framed, so `Live` is a lie for every other node. The
    compat lane and content input are rung-5 work, because they need the surface plan.
 5. **Panes**. Scoped in
-   [2026-07-14_turnstone_rung5_panes_plan.md](archive_docs/2026-11-02/2026-07-14_turnstone_rung5_panes_plan.md).
+   [2026-07-14_turnstone_rung5_panes_plan.md](2026-07-14_turnstone_rung5_panes_plan.md).
    Supply: `frisket` (the pane model: PaneId, PaneContent, a PaneNode split tree,
    FrisketLayout, frame.json through session-runtime) plus `platen` (the node-tiling model
    INSIDE one `PaneContent::Workbench` leaf) plus the domain crates that actually exist:
@@ -374,7 +376,7 @@ daily-driver value, not by meerkat's module sizes.
    Commons shared graph/chat profile, and Knot authoring are central product
    services, each entering through a port and typed Actions. The bounded order
    and receipt are in the
-   [2026-07-28 peer-web reframe](2026-07-28_turnstone_peer_web_reframe.md).
+   [2026-07-28 peer-web reframe](../../2026-07-28_turnstone_peer_web_reframe.md).
    Calls keep their separate milestone plan. Intel (embed/infer glue),
    import/crawl, scripting beyond the landed Piccolo host seam, and theming
    remain the long tail.
@@ -830,7 +832,7 @@ done-conditions story.
   copies in the graph against one `links = "servo_style_crate"` key. It resolved when the
   sweep finished. Watch for it if a sibling's stylo pins move again.
 - 2026-07-14: **Rung 5 scoped** in
-  [2026-07-14_turnstone_rung5_panes_plan.md](archive_docs/2026-11-02/2026-07-14_turnstone_rung5_panes_plan.md), and
+  [2026-07-14_turnstone_rung5_panes_plan.md](2026-07-14_turnstone_rung5_panes_plan.md), and
   this plan refreshed against it. The headline correction: platen is not a pane model (every
   `Workbench` mutator takes a `forme::GraphMemberId`), the pane model is mere's `frisket`
   crate, and the surface composition + focus routing seam this plan booked as born-at-rung-3

@@ -1,5 +1,7 @@
 # Browser surfaces implementation plan
 
+> **Archived 2026-11-02 (cut; history only).** Cut into [the successor plan](../../2026-11-02_browser_surface_implementation_plan.md), which holds the decisions and the open work. This file keeps the plan's history, rulings, findings and inline run evidence as they were. Hashes in the body are the hashes it was written with; the receipt files it cites moved to `Code/testing/turnstone/` (path cites, not links). Evidence index and old-to-main hash table: [2026-08-25_browser_surface_implementation_plan_receipts.md](../receipts/2026-08-25_browser_surface_implementation_plan_receipts.md). Mark, 2026-11-02: "Everything, drafts first".
+
 **Status:** in progress, rechecked 2026-10-07. The bounded Windows Scry/Weld consumer
 phase qualifies native cookies, current captured pixels and removal of
 Turnstone's local Weld mouse/CHAR bridge. Its exact executable, source archive
@@ -16,12 +18,12 @@ T0 contributed document surfaces, K0
 one-gesture Keep, F0 retained find, the D0 host decision surface, E0.1 engine
 capability disclosure, and E0.2 per-node page zoom are landed. Captured-page
 provenance P1's owner contracts and exact source pins are landed under the
-ruled [page capture and provenance plan](2026-08-28_page_capture_plan.md); its
+ruled [page capture and provenance plan](../../2026-08-28_page_capture_plan.md); its
 clean-source Turnstone compile receipt closed on 2026-09-09; hosted capture
 and remaining custody work are still open. Live CEF authentication
 callback delivery remains an independent E0 acceptance tail. This plan
 succeeds the remaining-work portion of the historical
-[browser gap analysis](archive_docs/2026-11-02/2026-08-17_smolweb_browser_gap_analysis.md); the analysis
+[browser gap analysis](2026-08-17_smolweb_browser_gap_analysis.md); the analysis
 remains useful as research and acceptance evidence.
 
 **Rechecked 2026-11-02:** the status above is the 2026-10-07 state. Later sections record Linux native Cue receiving (2026-10-23), product UI receiving through Cue (2026-10-23), the password and shared geometry receiving (2026-10-27) and Taffy 0.15.1 Linux geometry receiving (2026-10-29, `Code/testing/turnstone/receipts/cue_taffy_geometry_linux_20261029/receipt.json`); synthetic input in those runs does not extend physical IME, OS candidate-popup, CJK, human AT, native high-DPI, X11 or Servo IME acceptance. A0, S0 and X0 are not started: `src/` has no arrivals or shallows surface.
@@ -621,7 +623,7 @@ chrome/canvas scale on both retained Livery and hosted Weld. Livery reports
 the applied value through the typed `set_page_zoom`; Weld stays Partial
 because Windows CEF cannot read the effective level back. Capture and the CEF
 authentication receipt remain open. Capture is in progress under the
-[page capture and provenance plan](2026-08-28_page_capture_plan.md); its D1-D6
+[page capture and provenance plan](../../2026-08-28_page_capture_plan.md); its D1-D6
 decisions were ruled 2026-08-30 before P1 began. P1's clean-source compile gate
 closed on 2026-09-09. P2 has begun at host correlation; its Weld capture hook
 and remaining custody work are open. Capture closes

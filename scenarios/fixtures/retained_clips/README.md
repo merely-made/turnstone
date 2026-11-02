@@ -22,5 +22,5 @@ recording URL is evidence; it is not a fetch or playback instruction.
 
 The receiver scenarios use the normal Action/effect path. Import is a host
 gesture; the addresses reopen local retained content. See
-`design_docs/2026-10-11_retained_clip_receiver_plan.md` for host boundaries and
+`design_docs/archive_docs/2026-11-02/2026-10-11_retained_clip_receiver_plan.md` for host boundaries and
 `Code/testing/turnstone/receipts/2026-10-11_retained_clip_receiver/README.md` for execution evidence.

@@ -148,7 +148,7 @@ listed under "Remaining" in the slice 3 section above: the continuous
 background timer, the engram bake, per-item permanent delete and the Apparatus
 retention knob.
 
-2026-09-06: the [page lifecycle plan](2026-09-06_page_lifecycle_plan.md) extends the record to carry a node's capture
+2026-09-06: the [page lifecycle plan](2026-11-02_page_lifecycle_plan.md) (rulings in the [archived plan](archive_docs/2026-11-02/2026-09-06_page_lifecycle_plan.md)) extends the record to carry a node's capture
 envelopes and restores them on recovery (L4, phase L-P2), and gives
 athanor's retirement pass blob reaping over a reference set of living
 envelopes, surviving tombstones and download facets (L-P3).

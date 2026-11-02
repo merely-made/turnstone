@@ -1,5 +1,7 @@
 # Unusual-protocols browser plan
 
+> **Archived 2026-11-02 (cut; history only).** Cut into [the successor plan](../../2026-11-02_unusual_protocols_browser_plan.md), which holds the decisions and the open work. This file keeps the plan's history, rulings, findings and inline run evidence as they were. Hashes in the body are the hashes it was written with; the receipt files it cites moved to `Code/testing/turnstone/` (path cites, not links). Evidence index and old-to-main hash table: [2026-10-06_unusual_protocols_browser_plan_receipts.md](../receipts/2026-10-06_unusual_protocols_browser_plan_receipts.md). Mark, 2026-11-02: "Everything, drafts first".
+
 **Date:** 2026-10-06
 **Status (2026-10-26): in progress.** Errand adoption below is qualified on
 refreshed main `fbae4ea7`, with 172 native receiving/session passes, the locked
@@ -116,13 +118,13 @@ package, is fork U1.
     with seven headed Gemini cases plus Titan and Spartan mutations.
   - NomadNet acceptance (`Code/testing/turnstone/receipts/nomadnet_acceptance_20260911/README.md`).
   - The Scroll note in the
-    [browser gap analysis](archive_docs/2026-11-02/2026-08-17_smolweb_browser_gap_analysis.md).
+    [browser gap analysis](2026-08-17_smolweb_browser_gap_analysis.md).
   - The 2026-09-13 Micron form acceptance recorded in Mere's smolweb fidelity
     plan. Its artifacts were deleted by 2026-09-16, and the tests it cites
     still exist.
   - The Turnstone unit tests named per row.
   - The last full gate:
-    [635 workspace tests, nine ignored](archive_docs/receipts/2026-09-29_shared_diagnostics_gloss_inspector_receipt_receipts.md).
+    [635 workspace tests, nine ignored](../receipts/2026-09-29_shared_diagnostics_gloss_inspector_receipts.md).
 
 ## Findings (2026-10-06)
 
@@ -149,7 +151,7 @@ The cell values mean the following:
 | Feeds (RSS, Atom, JSON Feed, gemtext) | working through subscriptions | partial: `rss+xml`, `atom+xml` and `feed+xml` render; `text/xml` and `application/xml` route to Livery | partial: entries are graph nodes with unread tags; unread counts appear per source in Inspector | n/a | n/a | `feed.rs` (5 tests), `app/feed_arms.rs` (3); no headed receipt |
 | NomadNet and Micron over Reticulum | partial: the TCP interface is set only by `TURNSTONE_NOMADNET_TCP`; a temporary identity per fetch | partial: the shared Micron reading subset | working: same-node links, exact Stop, Reload and stale-answer handling; the shared session's folds and anchors are pointer-only and unqualified in Turnstone | working: forms (headed 2026-09-13; artifacts lost) | missing: the destination identity is proven but not shown | headed NomadNet acceptance; `nomadnet.rs` (4 tests) |
 | Misfin | n/a | **fails**: routed to `nematic.misfin`, which Turnstone does not register | n/a | missing: no mail surface | n/a | Inker routing at `3d1cdacc` lines 231 and 328; `src/shell/mod.rs:77-110` |
-| Gemini over Reticulum | missing: Retinue example only | | | | | [Reticulum browsing plan](2026-08-03_reticulum_browsing_plan.md) |
+| Gemini over Reticulum | missing: Retinue example only | | | | | [Reticulum browsing plan](../../2026-08-03_reticulum_browsing_plan.md) |
 
 Six gaps hold across every smolweb page, whatever the protocol:
 
@@ -250,7 +252,7 @@ browser for these protocols.
 9. **G9. Revisits need the network.** Back and Forward refetch the revealed
    address (gap analysis, Navigation table). No body is retained for a
    visited smolweb page, and capture's offline replay is still open
-   ([page capture plan](2026-08-28_page_capture_plan.md)). Closed by S7.
+   ([page capture plan](../../2026-08-28_page_capture_plan.md)). Closed by S7.
 10. **G10. Page content reaches assistive technology as an outline only.**
     Links cannot be reached by keyboard (G2), and no human pass covered a
     page. Closed by S8.
@@ -331,7 +333,7 @@ kind of app-local copy the stack avoids.
   lifecycle plan's open joins ([page lifecycle](2026-09-06_page_lifecycle_plan.md)).
 - **One Reticulum.** Reticulum is a browsing lane (NomadNet) and a candidate
   place carrier (the P5 row in the
-  [peer-web reframe](2026-07-28_turnstone_peer_web_reframe.md)). Nothing
+  [peer-web reframe](../../2026-07-28_turnstone_peer_web_reframe.md)). Nothing
   shares one transport, identity or interface set between the two.
 
 ### 4. Composition with Knot and Woodshed
@@ -351,7 +353,7 @@ kind of app-local copy the stack avoids.
   port, pinned at Woodshed `9e982b88`; its nested workspace pins Mere
   `3d1cdacc`. Its compact dock is Turnstone's fourth contributed-surface
   provider and the first from outside Mere
-  ([Redshank episode surface](2026-09-14_redshank_episode_surface_plan.md)).
+  ([Redshank episode surface](../../2026-09-14_redshank_episode_surface_plan.md)).
   The microphone and a headed receipt are open. Woodshed's own practice
   views (`woodshed-views`) build on `cambium`, `workbench` and
   `mere-surface-api`, the same contracts Turnstone admits.
@@ -2312,10 +2314,10 @@ is recorded separately from compiler errors in each successful build receipt.
 - Hocket auto-update plan:
   `woodshed/ports/hocket/design_docs/2026-07-24_auto-update_plan.md`.
 - Turnstone plans this one feeds:
-  - [browser gap analysis](archive_docs/2026-11-02/2026-08-17_smolweb_browser_gap_analysis.md)
+  - [browser gap analysis](2026-08-17_smolweb_browser_gap_analysis.md)
   - [browser surfaces](2026-08-25_browser_surface_implementation_plan.md)
-  - [Reticulum browsing](2026-08-03_reticulum_browsing_plan.md)
-  - [page capture](2026-08-28_page_capture_plan.md)
+  - [Reticulum browsing](../../2026-08-03_reticulum_browsing_plan.md)
+  - [page capture](../../2026-08-28_page_capture_plan.md)
   - [pane registry](2026-08-08_pane_registry_and_graph_panes_plan.md)
 
 

@@ -1,5 +1,7 @@
 # Page lifecycle plan
 
+> **Archived 2026-11-02 (cut; history only).** Cut into [the successor plan](../../2026-11-02_page_lifecycle_plan.md), which holds the decisions and the open work. This file keeps the plan's history, rulings, findings and inline run evidence as they were. Hashes in the body are the hashes it was written with; the receipt files it cites moved to `Code/testing/turnstone/` (path cites, not links). Evidence index and old-to-main hash table: [2026-09-06_page_lifecycle_plan_receipts.md](../receipts/2026-09-06_page_lifecycle_plan_receipts.md). Mark, 2026-11-02: "Everything, drafts first".
+
 **Status:** in progress, refreshed 2026-10-19. Rulings L1-L7 were made with Mark on
 2026-09-06. The research-workflow section below records the R0/R1 bounded
 qualifications, the bounded macOS R2 private search/reader qualification,
@@ -11,8 +13,8 @@ already exist in three documents into one experience and adds the rules that
 were missing between them. It consumes the
 [browser surfaces implementation plan](2026-08-25_browser_surface_implementation_plan.md)
 (K0 Keep, S0 shallows), the
-[page capture and provenance plan](2026-08-28_page_capture_plan.md) (D1-D6, P3
-envelope), and the [recycle bin and Athanor](2026-07-20_recycle_bin_athanor.md)
+[page capture and provenance plan](../../2026-08-28_page_capture_plan.md) (D1-D6, P3
+envelope), and the [recycle bin and Athanor](../../2026-07-20_recycle_bin_athanor.md)
 decision. Those documents keep their own done-conditions; this one owns the
 joins.
 
@@ -997,7 +999,7 @@ changing the retained scope. This does not transfer captured source bodies,
 research-note documents or individually chosen saved-source attachments, and
 does not requalify current document projection. Automatic multicast discovery
 and WAN reachability also remain separate. The
-[place-port plan](archive_docs/2026-11-02/2026-07-28_turnstone_place_port_plan.md) preserves historical
+[place-port plan](2026-07-28_turnstone_place_port_plan.md) preserves historical
 T5b/T5c Windows receipts at their own scope. Place and named-recipient
 publication results do not close each other's remaining gates.
 
@@ -1204,7 +1206,7 @@ refreshed 2026-09-12.
   Snapshot completions refresh the open field, so live withdrawal removes its
   results without typing. Corrupt selection sidecars fail closed. This does not
   close Keep promotion, bin custody, offline replay, or headed acceptance. See
-  the [capture plan progress](2026-08-28_page_capture_plan.md#progress) for the
+  the [capture plan progress](../../2026-08-28_page_capture_plan.md#progress) for the
   implementation and validation receipt.
 
 - **2026-10-17, research workflow planning:** audited current `428deb5` and

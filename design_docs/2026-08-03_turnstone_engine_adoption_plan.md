@@ -2,7 +2,7 @@
 
 **Date:** 2026-08-03
 **Status:** in progress, rechecked 2026-10-07; the current browser consumer sequence is
-the October appendix of the [user-agent taxonomy](2026-08-03_user_agent_taxonomy_plan.md).
+the open work of the [user-agent taxonomy](2026-11-02_user_agent_taxonomy_plan.md) (the October appendix is in the [archived plan](archive_docs/2026-11-02/2026-08-03_user_agent_taxonomy_plan.md)).
 This plan retains the engine-specific construction and sandbox evidence.
 The ask: arbitrary selection of engines,
 possible and selectable within the app, including genet with its rungs
@@ -58,7 +58,7 @@ remaining model to Turnstone's actual state; it does not re-decide it.
 
 ### October coordination and accessibility
 
-U2 of the [unusual-protocols plan](2026-10-06_unusual_protocols_browser_plan.md)
+U2 of the [unusual-protocols plan](archive_docs/2026-11-02/2026-10-06_unusual_protocols_browser_plan.md)
 puts accessibility on Windows, macOS and Linux first. The scoped live-pixel
 receipts below do not establish browser content trees or assistive actions.
 U9 holds the final consumer repin for WS4 pushed and a tested set in order:
