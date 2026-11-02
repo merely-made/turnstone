@@ -61,7 +61,13 @@ fn run() -> Result<(), String> {
     }
     let route = route.ok_or(format!("--route is required\n{USAGE}"))?;
     let route_id = AppRouteId::new(route.clone()).map_err(|error| error.to_string())?;
-    let carrier = AppRouteCarrier::open_at(&endpoint, AppId::new(&app), route_id)
+    // The agent declares exactly the route it serves (capability door D25);
+    // the owner's grant for it decides.
+    let declaration = djinn::door::declaration::AppDeclaration {
+        routes: vec![djinn::door::declaration::NamePattern::exact(route_id.as_str())],
+        ..Default::default()
+    };
+    let carrier = AppRouteCarrier::open_declared_at(&endpoint, AppId::new(&app), route_id, declaration)
         .map_err(|error| format!("the resident refused {app} on {route}: {error}"))?;
     let config = Config {
         scope: route,

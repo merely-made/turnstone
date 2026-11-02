@@ -359,9 +359,10 @@ fn owner_worker(
     while let Ok((acknowledged, command)) = rx.recv() {
         let result = runtime.block_on(async {
             if connection.is_none() {
-                let mut client = AppBrokerClient::open_route(
-                    AppId::new("graphshell"),
+                let mut client = AppBrokerClient::open_declared_route(
+                    AppId::new(graphshell::declaration::APP),
                     AppRouteId::new(format!("coop/{domain}")).map_err(|e| e.to_string())?,
+                    graphshell::declaration::declaration(),
                 )
                 .await
                 .map_err(|e| e.to_string())?;
