@@ -15,6 +15,20 @@ const USAGE: &str = "usage: personae-vault [--app-endpoint <endpoint>] [--profil
 commands: profiles, new-profile, list, show, generate-ssh, add-ssh, pub, remove, ca, mint, enroll-host, face, revoke, krl, cxf-preview, cxf-import\n\
 Unlock through djinn's own surface. Vault location and passphrase belong to djinn.";
 
+/// What the vault's command line declares (Mere's capability door D24): the
+/// roster, status and the administrative commands djinn runs for it.
+fn declaration() -> djinn::door::declaration::AppDeclaration {
+    use djinn::door::declaration::{AppDeclaration, CustodyOperation, CustodyUse, NamePattern};
+    AppDeclaration {
+        routes: vec![NamePattern::exact("custody")],
+        custody: CustodyUse {
+            operations: [CustodyOperation::Status, CustodyOperation::Roster, CustodyOperation::VaultCommand].into(),
+            ..CustodyUse::default()
+        },
+        ..AppDeclaration::default()
+    }
+}
+
 fn main() {
     match run(std::env::args().skip(1).collect()) {
         Ok(text) => print!("{text}"),
@@ -69,7 +83,7 @@ fn run(args: Vec<String>) -> Result<String, String> {
             rest[index + 1] = cwd.join(&rest[index + 1]).display().to_string();
         }
     }
-    let answer = BlockingCustodyClient::open_at(&endpoint, AppId::new("personae-vault"))
+    let answer = BlockingCustodyClient::open_declared_at(&endpoint, AppId::new("personae-vault"), declaration())
         .and_then(|mut client| {
             if command == "profiles" {
                 return client.roster().map(CustodyAnswer::Roster);
