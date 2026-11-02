@@ -32,14 +32,14 @@ impl App {
         let (answer, retention) = match choice {
             PermissionChoice::AllowOnce => {
                 (inker::PermissionAnswer::Grant, PermissionRetention::OneShot)
-            }
+            },
             PermissionChoice::AlwaysAllow => (
                 inker::PermissionAnswer::Grant,
                 PermissionRetention::Remember,
             ),
             PermissionChoice::Deny => {
                 (inker::PermissionAnswer::Deny, PermissionRetention::Remember)
-            }
+            },
             PermissionChoice::Dismiss => (
                 inker::PermissionAnswer::Dismiss,
                 PermissionRetention::OneShot,

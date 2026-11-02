@@ -1,0 +1,662 @@
+{
+  "case": "password",
+  "source_head": "299d6ff7fb6f41cf109be93eb7384add2380436c",
+  "binary_sha256": "661308f3497e55bea4e055e9d45e436dcad929d3ce554c7ce12696e2e23abdb3",
+  "inputs": {
+    "geometry.html": "56791e10f30cc338d92c5a50a8d22c75f716e339f49dc579926daf2c23646cf3",
+    "geometry-wayland.scn": "5e1a955d135c2b12b28b1f8ec2a14954624bbe2f18acf5e0aea29c1e44117987",
+    "run-headed.py": "092d7b8e7beadbfb59ad9f68b88a4a7fe4e652a2bd01899ab4dd06a1d79bfeb3"
+  },
+  "requested_backend": "Vulkan",
+  "wayland_display": "wayland-0",
+  "qualified": true,
+  "physical_input": false,
+  "exit": 0,
+  "elapsed_seconds": 32.679,
+  "shared_caret_observations": [
+    {
+      "window": 0.0,
+      "x": 32.0,
+      "y": 105.5999984741211,
+      "width": 1.0,
+      "height": 33.0
+    },
+    {
+      "window": 0.0,
+      "x": 104.19200897216797,
+      "y": 105.5999984741211,
+      "width": 1.0,
+      "height": 33.0
+    },
+    {
+      "window": 0.0,
+      "x": 104.19200897216797,
+      "y": 105.5999984741211,
+      "width": 1.0,
+      "height": 33.0
+    },
+    {
+      "window": 0.0,
+      "x": 104.19200897216797,
+      "y": 105.5999984741211,
+      "width": 1.0,
+      "height": 33.0
+    },
+    {
+      "window": 0.0,
+      "x": 104.19200897216797,
+      "y": 105.5999984741211,
+      "width": 1.0,
+      "height": 33.0
+    },
+    {
+      "window": 0.0,
+      "x": 104.19200897216797,
+      "y": 105.5999984741211,
+      "width": 1.0,
+      "height": 33.0
+    },
+    {
+      "window": 0.0,
+      "x": 104.19200897216797,
+      "y": 105.5999984741211,
+      "width": 1.0,
+      "height": 33.0
+    },
+    {
+      "window": 0.0,
+      "x": 104.19200897216797,
+      "y": 105.5999984741211,
+      "width": 1.0,
+      "height": 33.0
+    },
+    {
+      "window": 0.0,
+      "x": 104.19200897216797,
+      "y": 105.5999984741211,
+      "width": 1.0,
+      "height": 33.0
+    },
+    {
+      "window": 0.0,
+      "x": 104.19200897216797,
+      "y": 105.5999984741211,
+      "width": 1.0,
+      "height": 33.0
+    },
+    {
+      "window": 0.0,
+      "x": 104.19200897216797,
+      "y": 105.5999984741211,
+      "width": 1.0,
+      "height": 33.0
+    },
+    {
+      "window": 0.0,
+      "x": 104.19200897216797,
+      "y": 105.5999984741211,
+      "width": 1.0,
+      "height": 33.0
+    },
+    {
+      "window": 0.0,
+      "x": 104.19200897216797,
+      "y": 105.5999984741211,
+      "width": 1.0,
+      "height": 33.0
+    },
+    {
+      "window": 0.0,
+      "x": 104.19200897216797,
+      "y": 105.5999984741211,
+      "width": 1.0,
+      "height": 33.0
+    },
+    {
+      "window": 0.0,
+      "x": 104.19200897216797,
+      "y": 105.5999984741211,
+      "width": 1.0,
+      "height": 33.0
+    },
+    {
+      "window": 0.0,
+      "x": 104.19200897216797,
+      "y": 105.5999984741211,
+      "width": 1.0,
+      "height": 33.0
+    },
+    {
+      "window": 0.0,
+      "x": 104.19200897216797,
+      "y": 105.5999984741211,
+      "width": 1.0,
+      "height": 33.0
+    },
+    {
+      "window": 0.0,
+      "x": 104.19200897216797,
+      "y": 105.5999984741211,
+      "width": 1.0,
+      "height": 33.0
+    },
+    {
+      "window": 0.0,
+      "x": 104.19200897216797,
+      "y": 105.5999984741211,
+      "width": 1.0,
+      "height": 33.0
+    },
+    {
+      "window": 0.0,
+      "x": 104.19200897216797,
+      "y": 105.5999984741211,
+      "width": 1.0,
+      "height": 33.0
+    },
+    {
+      "window": 0.0,
+      "x": 104.19200897216797,
+      "y": 105.5999984741211,
+      "width": 1.0,
+      "height": 33.0
+    },
+    {
+      "window": 0.0,
+      "x": 114.61121368408203,
+      "y": 108.80000305175781,
+      "width": 1.100000023841858,
+      "height": 36.29999923706055
+    },
+    {
+      "window": 0.0,
+      "x": 114.61121368408203,
+      "y": 108.80000305175781,
+      "width": 1.100000023841858,
+      "height": 36.29999923706055
+    },
+    {
+      "window": 0.0,
+      "x": 114.61121368408203,
+      "y": 108.80000305175781,
+      "width": 1.100000023841858,
+      "height": 36.29999923706055
+    },
+    {
+      "window": 0.0,
+      "x": 114.61121368408203,
+      "y": 108.80000305175781,
+      "width": 1.100000023841858,
+      "height": 36.29999923706055
+    },
+    {
+      "window": 0.0,
+      "x": 114.61121368408203,
+      "y": 108.80000305175781,
+      "width": 1.100000023841858,
+      "height": 36.29999923706055
+    },
+    {
+      "window": 0.0,
+      "x": 114.61121368408203,
+      "y": 108.80000305175781,
+      "width": 1.100000023841858,
+      "height": 36.29999923706055
+    },
+    {
+      "window": 0.0,
+      "x": 114.61121368408203,
+      "y": 108.80000305175781,
+      "width": 1.100000023841858,
+      "height": 36.29999923706055
+    },
+    {
+      "window": 0.0,
+      "x": 114.61121368408203,
+      "y": 108.80000305175781,
+      "width": 1.100000023841858,
+      "height": 36.29999923706055
+    },
+    {
+      "window": 0.0,
+      "x": 114.61121368408203,
+      "y": 108.80000305175781,
+      "width": 1.100000023841858,
+      "height": 36.29999923706055
+    },
+    {
+      "window": 0.0,
+      "x": 114.61121368408203,
+      "y": 108.80000305175781,
+      "width": 1.100000023841858,
+      "height": 36.29999923706055
+    },
+    {
+      "window": 0.0,
+      "x": 114.61121368408203,
+      "y": 108.80000305175781,
+      "width": 1.100000023841858,
+      "height": 36.29999923706055
+    },
+    {
+      "window": 0.0,
+      "x": 114.61121368408203,
+      "y": 108.80000305175781,
+      "width": 1.100000023841858,
+      "height": 36.29999923706055
+    },
+    {
+      "window": 0.0,
+      "x": 114.61121368408203,
+      "y": 108.80000305175781,
+      "width": 1.100000023841858,
+      "height": 36.29999923706055
+    },
+    {
+      "window": 0.0,
+      "x": 114.61121368408203,
+      "y": 108.80000305175781,
+      "width": 1.100000023841858,
+      "height": 36.29999923706055
+    },
+    {
+      "window": 0.0,
+      "x": 114.61121368408203,
+      "y": 108.80000305175781,
+      "width": 1.100000023841858,
+      "height": 36.29999923706055
+    },
+    {
+      "window": 0.0,
+      "x": 114.61121368408203,
+      "y": 108.80000305175781,
+      "width": 1.100000023841858,
+      "height": 36.29999923706055
+    },
+    {
+      "window": 0.0,
+      "x": 114.61121368408203,
+      "y": 108.80000305175781,
+      "width": 1.100000023841858,
+      "height": 36.29999923706055
+    },
+    {
+      "window": 0.0,
+      "x": 114.61121368408203,
+      "y": 108.80000305175781,
+      "width": 1.100000023841858,
+      "height": 36.29999923706055
+    },
+    {
+      "window": 0.0,
+      "x": 114.61121368408203,
+      "y": 108.80000305175781,
+      "width": 1.100000023841858,
+      "height": 36.29999923706055
+    },
+    {
+      "window": 0.0,
+      "x": 667.5712280273438,
+      "y": 205.99996948242188,
+      "width": 1.100000023841858,
+      "height": 36.29999923706055
+    },
+    {
+      "window": 0.0,
+      "x": 667.5712280273438,
+      "y": 205.99996948242188,
+      "width": 1.100000023841858,
+      "height": 36.29999923706055
+    },
+    {
+      "window": 0.0,
+      "x": 667.5712280273438,
+      "y": 205.99996948242188,
+      "width": 1.100000023841858,
+      "height": 36.29999923706055
+    },
+    {
+      "window": 0.0,
+      "x": 667.5712280273438,
+      "y": 205.99996948242188,
+      "width": 1.100000023841858,
+      "height": 36.29999923706055
+    },
+    {
+      "window": 1.0,
+      "x": 515.6112060546875,
+      "y": 141.8000030517578,
+      "width": 1.100000023841858,
+      "height": 36.29999923706055
+    },
+    {
+      "window": 1.0,
+      "x": 515.6112060546875,
+      "y": 141.8000030517578,
+      "width": 1.100000023841858,
+      "height": 36.29999923706055
+    },
+    {
+      "window": 1.0,
+      "x": 515.6112060546875,
+      "y": 141.8000030517578,
+      "width": 1.100000023841858,
+      "height": 36.29999923706055
+    },
+    {
+      "window": 1.0,
+      "x": 515.6112060546875,
+      "y": 141.8000030517578,
+      "width": 1.100000023841858,
+      "height": 36.29999923706055
+    },
+    {
+      "window": 1.0,
+      "x": 515.6112060546875,
+      "y": 141.8000030517578,
+      "width": 1.100000023841858,
+      "height": 36.29999923706055
+    },
+    {
+      "window": 1.0,
+      "x": 515.6112060546875,
+      "y": 141.8000030517578,
+      "width": 1.100000023841858,
+      "height": 36.29999923706055
+    },
+    {
+      "window": 1.0,
+      "x": 515.6112060546875,
+      "y": 141.8000030517578,
+      "width": 1.100000023841858,
+      "height": 36.29999923706055
+    },
+    {
+      "window": 1.0,
+      "x": 515.6112060546875,
+      "y": 141.8000030517578,
+      "width": 1.100000023841858,
+      "height": 36.29999923706055
+    },
+    {
+      "window": 1.0,
+      "x": 515.6112060546875,
+      "y": 141.8000030517578,
+      "width": 1.100000023841858,
+      "height": 36.29999923706055
+    },
+    {
+      "window": 1.0,
+      "x": 505.684814453125,
+      "y": 141.8000030517578,
+      "width": 1.100000023841858,
+      "height": 36.29999923706055
+    },
+    {
+      "window": 1.0,
+      "x": 505.684814453125,
+      "y": 141.8000030517578,
+      "width": 1.100000023841858,
+      "height": 36.29999923706055
+    },
+    {
+      "window": 1.0,
+      "x": 505.684814453125,
+      "y": 141.8000030517578,
+      "width": 1.100000023841858,
+      "height": 36.29999923706055
+    },
+    {
+      "window": 1.0,
+      "x": 505.684814453125,
+      "y": 141.8000030517578,
+      "width": 1.100000023841858,
+      "height": 36.29999923706055
+    },
+    {
+      "window": 1.0,
+      "x": 505.684814453125,
+      "y": 141.8000030517578,
+      "width": 1.100000023841858,
+      "height": 36.29999923706055
+    },
+    {
+      "window": 1.0,
+      "x": 505.684814453125,
+      "y": 141.8000030517578,
+      "width": 1.100000023841858,
+      "height": 36.29999923706055
+    },
+    {
+      "window": 1.0,
+      "x": 505.684814453125,
+      "y": 141.8000030517578,
+      "width": 1.100000023841858,
+      "height": 36.29999923706055
+    },
+    {
+      "window": 1.0,
+      "x": 505.684814453125,
+      "y": 141.8000030517578,
+      "width": 1.100000023841858,
+      "height": 36.29999923706055
+    },
+    {
+      "window": 1.0,
+      "x": 505.684814453125,
+      "y": 141.8000030517578,
+      "width": 1.100000023841858,
+      "height": 36.29999923706055
+    },
+    {
+      "window": 1.0,
+      "x": 505.684814453125,
+      "y": 141.8000030517578,
+      "width": 1.100000023841858,
+      "height": 36.29999923706055
+    },
+    {
+      "window": 1.0,
+      "x": 505.684814453125,
+      "y": 141.8000030517578,
+      "width": 1.100000023841858,
+      "height": 36.29999923706055
+    }
+  ],
+  "windows_with_geometry": [
+    0,
+    1
+  ],
+  "wayland_cursor_rectangles": [
+    "zwp_text_input_v3#20.set_cursor_rectangle(248, 106, 2, 28)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(248, 106, 2, 28)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(248, 106, 2, 28)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(248, 106, 2, 28)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(248, 106, 2, 28)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(248, 106, 2, 28)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(248, 106, 2, 28)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(248, 106, 2, 28)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(248, 106, 2, 28)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(248, 106, 2, 28)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(248, 106, 2, 28)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(248, 106, 2, 28)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(248, 106, 2, 28)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(248, 106, 2, 28)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(248, 106, 2, 28)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(32, 106, 1, 33)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(104, 106, 1, 33)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(104, 106, 1, 33)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(104, 106, 1, 33)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(104, 106, 1, 33)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(104, 106, 1, 33)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(104, 106, 1, 33)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(104, 106, 1, 33)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(104, 106, 1, 33)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(104, 106, 1, 33)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(104, 106, 1, 33)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(104, 106, 1, 33)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(104, 106, 1, 33)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(104, 106, 1, 33)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(104, 106, 1, 33)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(104, 106, 1, 33)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(104, 106, 1, 33)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(104, 106, 1, 33)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(104, 106, 1, 33)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(104, 106, 1, 33)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(104, 106, 1, 33)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(115, 109, 1, 36)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(115, 109, 1, 36)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(115, 109, 1, 36)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(115, 109, 1, 36)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(115, 109, 1, 36)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(115, 109, 1, 36)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(115, 109, 1, 36)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(115, 109, 1, 36)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(115, 109, 1, 36)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(115, 109, 1, 36)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(115, 109, 1, 36)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(115, 109, 1, 36)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(115, 109, 1, 36)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(115, 109, 1, 36)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(115, 109, 1, 36)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(115, 109, 1, 36)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(115, 109, 1, 36)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(115, 109, 1, 36)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(115, 109, 1, 36)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(668, 206, 1, 36)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(668, 206, 1, 36)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(668, 206, 1, 36)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(668, 206, 1, 36)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(516, 142, 1, 36)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(516, 142, 1, 36)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(516, 142, 1, 36)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(516, 142, 1, 36)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(516, 142, 1, 36)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(516, 142, 1, 36)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(516, 142, 1, 36)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(516, 142, 1, 36)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(516, 142, 1, 36)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(506, 142, 1, 36)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(506, 142, 1, 36)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(506, 142, 1, 36)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(506, 142, 1, 36)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(506, 142, 1, 36)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(506, 142, 1, 36)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(506, 142, 1, 36)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(506, 142, 1, 36)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(506, 142, 1, 36)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(506, 142, 1, 36)",
+    "zwp_text_input_v3#20.set_cursor_rectangle(506, 142, 1, 36)"
+  ],
+  "scenario_outcome": "RESULT ok\nwaited 71 frames\nwaited 0 frames\ncaptured 01_primary_geometry\ncaptured 02_primary_zoom\nShared geometry native primary and lens receiving complete\npresentation frames=198 captures=2 blank=0\ncapture <Code>/output/cue-taffy-geometry-linux-20261029/headed-password/receiving/01_primary_geometry.png digest=4eb2956cc501a546 blank=false\ncapture <Code>/output/cue-taffy-geometry-linux-20261029/headed-password/receiving/02_primary_zoom.png digest=585c31c9c66a92a1 blank=false\n",
+  "source_captures": [
+    {
+      "capture": "01_primary_geometry.sources.json",
+      "adapter": {
+        "backend": "Vulkan",
+        "device": 5686,
+        "device_type": "IntegratedGpu",
+        "name": "AMD Radeon Graphics (RADV RENOIR)",
+        "vendor": 4098
+      },
+      "alpha": "Straight",
+      "content_generation": 133,
+      "device_generation": 1,
+      "dimensions": [
+        1024,
+        503
+      ],
+      "file": "01_primary_geometry.source-1176657005713031170.png",
+      "format": "Rgba8Unorm",
+      "image_key": 15011715060995194882,
+      "native_window_scale": 1.0,
+      "producer_key": 1176657005713031170,
+      "raster_scale": 1.0,
+      "session": "bc3b96a8-e221-4c36-8dd3-13419d9d7374",
+      "surface_id": 3937591200173737703,
+      "window": 0
+    },
+    {
+      "capture": "02_primary_zoom.sources.json",
+      "adapter": {
+        "backend": "Vulkan",
+        "device": 5686,
+        "device_type": "IntegratedGpu",
+        "name": "AMD Radeon Graphics (RADV RENOIR)",
+        "vendor": 4098
+      },
+      "alpha": "Straight",
+      "content_generation": 152,
+      "device_generation": 1,
+      "dimensions": [
+        1024,
+        503
+      ],
+      "file": "02_primary_zoom.source-1176657005713031170.png",
+      "format": "Rgba8Unorm",
+      "image_key": 15011715060995194882,
+      "native_window_scale": 1.0,
+      "producer_key": 1176657005713031170,
+      "raster_scale": 1.0,
+      "session": "bc3b96a8-e221-4c36-8dd3-13419d9d7374",
+      "surface_id": 3937591200173737703,
+      "window": 0
+    },
+    {
+      "capture": "03_lens_geometry.sources.json",
+      "adapter": {
+        "backend": "Vulkan",
+        "device": 5686,
+        "device_type": "IntegratedGpu",
+        "name": "AMD Radeon Graphics (RADV RENOIR)",
+        "vendor": 4098
+      },
+      "alpha": "Straight",
+      "content_generation": 273,
+      "device_generation": 1,
+      "dimensions": [
+        400,
+        502
+      ],
+      "file": "03_lens_geometry.source-1176657005713031174.png",
+      "format": "Rgba8Unorm",
+      "image_key": 15011715060995194886,
+      "native_window_scale": 1.0,
+      "producer_key": 1176657005713031174,
+      "raster_scale": 1.0,
+      "session": "bc3b96a8-e221-4c36-8dd3-13419d9d7374",
+      "surface_id": 20075162472808450,
+      "window": 1
+    },
+    {
+      "capture": "03_lens_geometry.sources.json",
+      "adapter": {
+        "backend": "Vulkan",
+        "device": 5686,
+        "device_type": "IntegratedGpu",
+        "name": "AMD Radeon Graphics (RADV RENOIR)",
+        "vendor": 4098
+      },
+      "alpha": "Straight",
+      "content_generation": 274,
+      "device_generation": 1,
+      "dimensions": [
+        399,
+        470
+      ],
+      "file": "03_lens_geometry.source-1176657005713031176.png",
+      "format": "Rgba8Unorm",
+      "image_key": 15011715060995194888,
+      "native_window_scale": 1.0,
+      "producer_key": 1176657005713031176,
+      "raster_scale": 1.0,
+      "session": "bc3b96a8-e221-4c36-8dd3-13419d9d7374",
+      "surface_id": 3274410501350127918,
+      "window": 1
+    }
+  ],
+  "window_rectangles_match_wayland": {
+    "0": true,
+    "1": true
+  }
+}

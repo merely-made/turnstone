@@ -201,7 +201,7 @@ fn walk(node: &LayoutNode, area: Rect, path: &mut LayoutPath, out: &mut Blueprin
                 walk(child, area, path, out);
                 path.pop();
             }
-        }
+        },
         LayoutNode::Grid {
             children,
             columns,

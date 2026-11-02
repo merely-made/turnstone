@@ -300,7 +300,10 @@ mod tests {
         layout
             .borrow_mut()
             .scene(&mut dom.borrow_mut(), crate::ui::CAMBIUM_SHEET, 640, 480);
-        let target = taproot::matching_estimated_fixture(&*dom.borrow(), &taproot::Selector::role("textbox"))[0];
+        let target = taproot::matching_estimated_fixture(
+            &*dom.borrow(),
+            &taproot::Selector::role("textbox"),
+        )[0];
         assert!(pane.focus_inline(target));
         layout
             .borrow_mut()

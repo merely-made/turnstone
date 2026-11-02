@@ -195,8 +195,10 @@ mod tests {
         let donor = SessionId::new();
         let fork = SessionId::new();
         let picked = SessionId::new();
-        let donor_m = GraphSessionManifest::new(donor, GraphId::from_uuid(uuid::Uuid::from_u128(0xd0)));
-        let mut fork_m = GraphSessionManifest::new(fork, GraphId::from_uuid(uuid::Uuid::from_u128(0xf0)));
+        let donor_m =
+            GraphSessionManifest::new(donor, GraphId::from_uuid(uuid::Uuid::from_u128(0xd0)));
+        let mut fork_m =
+            GraphSessionManifest::new(fork, GraphId::from_uuid(uuid::Uuid::from_u128(0xf0)));
         fork_m.parent_session = Some(donor);
         let mut picked_m =
             GraphSessionManifest::new(picked, GraphId::from_uuid(uuid::Uuid::from_u128(0xe0)));
@@ -219,8 +221,10 @@ mod tests {
         let store = store_with(vec![
             GraphSessionManifest::new(donor, GraphId::from_uuid(uuid::Uuid::from_u128(0xd0))),
             {
-                let mut m =
-                    GraphSessionManifest::new(fork, GraphId::from_uuid(uuid::Uuid::from_u128(0xf0)));
+                let mut m = GraphSessionManifest::new(
+                    fork,
+                    GraphId::from_uuid(uuid::Uuid::from_u128(0xf0)),
+                );
                 m.parent_session = Some(donor);
                 m
             },

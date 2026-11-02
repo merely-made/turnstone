@@ -29,8 +29,8 @@ mod projection;
 mod registry;
 mod saved_content;
 mod workspace;
-pub(crate) mod workspace_bridge;
 pub(crate) mod workspace_blueprint;
+pub(crate) mod workspace_bridge;
 mod workspace_store;
 
 /// The frame-sidecar persistence (`frame.json` beside `graph.json`), moved
@@ -51,8 +51,8 @@ mod tests;
 
 pub use blueprint::*;
 pub(crate) use layout::path_for_pane_id;
-pub(crate) use projection::pane_projection_ids;
 pub use legacy_bridge::blueprint_from_frisket;
+pub(crate) use projection::pane_projection_ids;
 pub use projection::{
     project_frisket, project_frisket_with, project_space_blueprint,
     project_space_blueprint_with_float_layer,
@@ -191,8 +191,20 @@ impl PaneContent {
 
     /// Compact tag suitable for tracing fields and accessible names.
     /// Human-facing pane names; serialized kind tags remain stable.
-    pub fn label(&self)->&str {
-        match self {Self::Orrery=>"Map",Self::Workbench=>"Read",Self::Inspector=>"Inspect",Self::Roster=>"Roster",Self::Trail=>"Trail",Self::Comms=>"Comms",Self::Gloss(_)=>"Overview",Self::Alembic=>"Alembic",Self::Overmap(_)=>"Overmap",Self::Tile(_)=>"Document",Self::Registered(kind)=>kind.as_str()}
+    pub fn label(&self) -> &str {
+        match self {
+            Self::Orrery => "Map",
+            Self::Workbench => "Read",
+            Self::Inspector => "Inspect",
+            Self::Roster => "Roster",
+            Self::Trail => "Trail",
+            Self::Comms => "Comms",
+            Self::Gloss(_) => "Overview",
+            Self::Alembic => "Alembic",
+            Self::Overmap(_) => "Overmap",
+            Self::Tile(_) => "Document",
+            Self::Registered(kind) => kind.as_str(),
+        }
     }
     pub fn tag(&self) -> &str {
         match self {

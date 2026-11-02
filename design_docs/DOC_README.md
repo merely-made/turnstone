@@ -1,5 +1,13 @@
 # Turnstone design documents
 
+Model-free retained research (2026-11-01): M1–M5, including bounded storage
+reads, are complete for the recorded Linux cohort (Turnstone `554f323f`).
+The canonical plan and receipt are in
+`eidetic/design_docs/eidetic_docs/implementation_strategy/2026-10-11_eidetic_development_plan.md`.
+Current-source follow-ups for restored reader recovery and clipped research text
+are tracked in [the recovery plan](2026-11-01_retained_reader_recovery_plan.md).
+Later source tests do not extend the original native qualification.
+
 Rust policy (2026-10-13): working toolchain 1.99.1 and shared MSRV 1.97.1, qualified separately. Canonical policy: `mere/design_docs/2026-08-12_family_composition_thesis_brief.md`, section "Shared Rust toolchain and minimum version".
 
 Murm source adoption (2026-10-13) is tracked in
@@ -48,6 +56,24 @@ set.
 - Match proof to the claim: focused unit tests for state and identity, real
   consumer tests for wiring, restart receipts for persistence, and headed
   interaction receipts for visible UI.
+- For Turnstone native verification, launch the application only with an
+  explicit isolated `TURNSTONE_ROOT`; flags such as `--list` may reach the app
+  entrypoint instead of selecting an inspection mode. Choose a test executable
+  from Cargo's `compiler-artifact` metadata for the exact target/profile, never
+  from a filesystem glob or by probing executables with `--list`.
+- When restoring source snapshots, ensure the compiler sees the restored bytes
+  as newer than prior outputs (or otherwise force a fresh compile) before
+  claiming a repaired binary; byte-identical file copies can preserve stale
+  timestamps and let Cargo reuse the prior artifact.
+- Treat a modern canonical facet file as complete authority, including absent
+  fields. Snapshot reconstruction defaults belong to legacy migration and must
+  not silently change an owner's saved revision token.
+- Auxiliary native owner windows request their own redraw after asynchronous
+  state updates; the primary/lens redraw fanout does not cover them.
+- Private source protection includes raw, decoded and recovery copies plus
+  transient derived caches. LocalOnly is a distribution classification, not an
+  encryption receipt; custody continuity needs the live binding generation.
+  Legacy data retains its identity until an explicitly qualified migration.
 - Record sidequests, contradictions, unusual synergies, and still-open gates in
   the active plan. Do not let a successful focused check stand in for a green
   workspace gate.
@@ -66,6 +92,11 @@ set.
   local policy addendum specifies.
 
 ## Current implementation plans and product direction
+
+- [Retained semantic projection](2026-10-30_retained_projection_plan.md):
+  shared Genet geometry traversal, Cambium and Turnstone receiving, bounded
+  accessibility admission comparisons, layout-only frame preparation, and
+  completed local native performance qualification.
 
 - [Compare: selection sources, selection commands and shared scenes](2026-10-21_compare_selection_and_shared_scenes_plan.md):
   proposed next slice. A snapshot, live or frozen selection source in `curation`;
@@ -217,7 +248,7 @@ set.
 - [User-agent taxonomy](2026-08-03_user_agent_taxonomy_plan.md): browser obligations assigned to graph-native Turnstone homes; B0 and scoped Windows Scry/Weld controls retain their [supplier receipt](../docs/receipts/browser_supplier_integration_20261006/README.md). U14's older publication is historical; the [U9 coordinated family](../docs/receipts/browser_family_20261007/README.md) is now published with passing Windows/Linux S0 source checks. Default Servo pixel failures, foreign accessibility and library/application release gates remain separate.
 - [Turnstone place port](2026-07-28_turnstone_place_port_plan.md): shared-place product composition and two-peer acceptance path. Historical T5b/T5c Windows receipts retain their scope. The [current macOS baseline](../docs/receipts/place_sharing_20261019/README.md) qualifies create/invite/join, chosen address and chat sharing, reader refusal, and origin-gone cold return with explicit contact renewal. Current document projection, research attachments, automatic discovery/WAN and named-recipient publication remain separate.
 - [Peer-web reframe](2026-07-28_turnstone_peer_web_reframe.md): current product direction for local-first personal and shared places.
-- [Turnstone architecture](2026-07-10_turnstone_architecture_plan.md): structural obviation ladder and current Mere/Turnstone boundaries.
+- [Turnstone architecture](2026-07-10_turnstone_architecture_plan.md): structural obviation ladder and current Mere/Turnstone boundaries, including Alembic workshop receiving, enforced source and service boundaries, and qualified native pending-frame adoption across primary, lens and checked child hosts.
 - [Turnstone rung 5 panes](2026-07-14_turnstone_rung5_panes_plan.md): pane, surface-composition, focus, workbench, and window foundations; October 10 application appearance adoption uses shared Tabard definitions and native workshop bindings; current-origin native13 macOS production acceptance passed four serialized processes, 521 presentations and nineteen inspected captures, including repaired 34 CSS px Theme name/seed fields; final 32 Turnstone / 74 family targeted CPU checks and exact Save/Apply/restart evidence in the [receipt ledger](../docs/receipts/tabard_adoption_20261010/README.md). Reader/browser rollout gates remain separate.
 - [Genet probe automatability](2026-07-17_genet_probe_automatability_plan.md): proposed shared diagnostics, accessibility, and automation contract for Genet apps.
 

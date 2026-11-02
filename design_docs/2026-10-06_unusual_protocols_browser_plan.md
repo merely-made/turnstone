@@ -2134,6 +2134,9 @@ concurrency pool across HTTP and smolweb; queue time counts toward the deadline.
 | `TURNSTONE_FETCH_TIMEOUT_MS` | 30000 for one complete operation, including redirects |
 | `TURNSTONE_FETCH_MAX_HTTP_REDIRECTS` | 20 followed redirects, preserving the HTTP default |
 | `TURNSTONE_FETCH_MAX_SMOLWEB_REDIRECTS` | 4 followed redirects, preserving five total attempts |
+| `TURNSTONE_FETCH_MAX_ACTIVE` | 16 running fetch-actor operations; zero refuses every page, subresource, favicon and Submit command |
+| `TURNSTONE_FETCH_MAX_PENDING` | 64 further operations waiting for a running slot; zero sheds work once all running slots are held |
+| `TURNSTONE_FETCH_QUEUE_TIMEOUT_MS` | 30000 from enqueue until a running slot; the operation deadline starts afterwards |
 | `TURNSTONE_RESOURCE_MAX_RESPONSE_BYTES` | 8388608 bodyless remote-document bytes |
 | `TURNSTONE_RESOURCE_TIMEOUT_MS` | 15000, including queue time |
 | `TURNSTONE_RESOURCE_MAX_REDIRECTS` | 20 for HTTP; smolweb redirects remain unfollowed |

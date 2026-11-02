@@ -17,7 +17,7 @@ impl LayoutNode {
         match self {
             Self::Pane(pane) if !policy.prune_unknown_panes || known.contains(&pane) => {
                 Some(Self::Pane(pane))
-            }
+            },
             Self::Pane(_) => None,
             Self::Split { axis, children } => {
                 let mut kept = Vec::new();
@@ -35,7 +35,7 @@ impl LayoutNode {
                                 fraction: outer * sane_fraction(nested.fraction),
                                 tree: nested.tree,
                             }));
-                        }
+                        },
                         tree => kept.push(LayoutBranch {
                             fraction: sane_fraction(branch.fraction),
                             tree,
@@ -53,7 +53,7 @@ impl LayoutNode {
                         children: kept,
                     })
                 }
-            }
+            },
             Self::Tabs { children, active } => {
                 let mut active_after = None;
                 let mut kept = Vec::new();
@@ -77,7 +77,7 @@ impl LayoutNode {
                         active,
                     })
                 }
-            }
+            },
             Self::Grid {
                 children,
                 columns,
@@ -102,7 +102,7 @@ impl LayoutNode {
                     columns,
                     shares,
                 })
-            }
+            },
         }
     }
 
@@ -151,10 +151,10 @@ impl LayoutNode {
                 children
                     .iter()
                     .for_each(|branch| branch.tree.collect_panes(out));
-            }
+            },
             Self::Tabs { children, .. } | Self::Grid { children, .. } => {
                 children.iter().for_each(|tree| tree.collect_panes(out));
-            }
+            },
         }
     }
 
@@ -209,7 +209,7 @@ impl LayoutNode {
                 };
                 *self = Self::Split { axis, children };
                 true
-            }
+            },
             Self::Pane(_) => false,
             Self::Split { children, .. } => children
                 .iter_mut()
@@ -229,7 +229,7 @@ impl LayoutNode {
                     active: 1,
                 };
                 true
-            }
+            },
             Self::Pane(_) => false,
             Self::Split { children, .. } => children
                 .iter_mut()
@@ -258,7 +258,7 @@ impl LayoutNode {
                         .iter_mut()
                         .any(|tree| tree.activate_tab_containing(pane))
                 }
-            }
+            },
         }
     }
 
@@ -289,13 +289,13 @@ impl LayoutNode {
             node = match (node, step) {
                 (Self::Split { children, .. }, LayoutPathStep::Split(index)) => {
                     &mut children.get_mut(*index)?.tree
-                }
+                },
                 (Self::Tabs { children, .. }, LayoutPathStep::Tab(index)) => {
                     children.get_mut(*index)?
-                }
+                },
                 (Self::Grid { children, .. }, LayoutPathStep::Grid(index)) => {
                     children.get_mut(*index)?
-                }
+                },
                 _ => return None,
             };
         }
@@ -310,7 +310,7 @@ impl LayoutNode {
                 .any(|branch| branch.tree.contains_pane(pane)),
             Self::Tabs { children, .. } | Self::Grid { children, .. } => {
                 children.iter().any(|tree| tree.contains_pane(pane))
-            }
+            },
         }
     }
 }

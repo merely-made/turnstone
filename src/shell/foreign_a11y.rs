@@ -72,7 +72,16 @@ impl Shell {
         &self,
         slot: usize,
     ) -> Vec<(uuid::Uuid, accesskit::Rect)> {
-        let mut surfaces = vec![(0, self.surface_plan())];
+        self.window_foreign_a11y_placements_with(slot, self.surface_plan())
+    }
+
+    /// As above, with the primary plan this publication already computed.
+    pub(super) fn window_foreign_a11y_placements_with(
+        &self,
+        slot: usize,
+        primary: Vec<crate::surface::Surface>,
+    ) -> Vec<(uuid::Uuid, accesskit::Rect)> {
+        let mut surfaces = vec![(0, primary)];
         let mut lenses = self.lens_windows.values().collect::<Vec<_>>();
         lenses.sort_by_key(|l| l.ordinal);
         surfaces.extend(

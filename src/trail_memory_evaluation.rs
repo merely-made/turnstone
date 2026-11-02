@@ -102,10 +102,7 @@ fn load_evaluation_corpus(source: &Path) -> Result<EvaluationCorpus, String> {
     let traces = traces_with_titles(&memory, &sources);
     let texts = stored_page_texts(&store);
     let documents = recall_documents(&page_table_of(&traces, &texts));
-    let titled_documents = documents
-        .values()
-        .filter(|hit| hit.title.is_some())
-        .count();
+    let titled_documents = documents.values().filter(|hit| hit.title.is_some()).count();
     let canonical = serde_json::to_vec(&traces)
         .map_err(|error| format!("serialize corpus receipt: {error}"))?;
     let digest = blake3::hash(&canonical).to_hex().to_string();

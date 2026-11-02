@@ -107,18 +107,18 @@ pub(crate) fn open_view(dir: &Path, graph: GraphId, canvas: &mut Canvas) -> Open
     let path = crate::session::view_intent_path(dir);
     let mut raw_folds: Vec<Value> = Vec::new();
     match read_object(&path) {
-        Ok(None) => {}
+        Ok(None) => {},
         Ok(Some(mut object)) => {
             if LEGACY_KEYS.iter().any(|key| object.contains_key(*key)) {
                 match serde_json::from_value::<LegacyIntent>(Value::Object(object)) {
                     Ok(legacy) => {
                         opened.commands = legacy.command_menu.clone();
                         opened.legacy = Some(legacy);
-                    }
+                    },
                     Err(error) => {
                         tracing::warn!(%error, path = ?path, "failed to parse view intent");
                         opened.state.read_only = true;
-                    }
+                    },
                 }
             } else {
                 if let Some(Value::Array(records)) = object.remove("folds") {
@@ -133,14 +133,14 @@ pub(crate) fn open_view(dir: &Path, graph: GraphId, canvas: &mut Canvas) -> Open
                     Err(error) => {
                         tracing::warn!(%error, path = ?path, "failed to parse view intent");
                         opened.state.read_only = true;
-                    }
+                    },
                 }
             }
-        }
+        },
         Err(error) => {
             tracing::warn!(%error, path = ?path, "view intent preserved unread");
             opened.state.read_only = true;
-        }
+        },
     }
     if !opened.state.read_only {
         match legacy_folds(dir) {
@@ -148,11 +148,11 @@ pub(crate) fn open_view(dir: &Path, graph: GraphId, canvas: &mut Canvas) -> Open
                 raw_folds.extend(records);
                 opened.state.retained.extend(refused);
                 opened.state.folds_file_migrated = true;
-            }
-            Ok(None) => {}
+            },
+            Ok(None) => {},
             Err(error) => {
                 tracing::warn!(%error, "legacy fold sidecar left in place unread");
-            }
+            },
         }
     }
     let mut records = Vec::new();
@@ -160,7 +160,7 @@ pub(crate) fn open_view(dir: &Path, graph: GraphId, canvas: &mut Canvas) -> Open
         match serde_json::from_value::<curation::FoldRecord>(raw.clone()) {
             Ok(record) if record.source_scope == scope(graph) && record.validate().is_ok() => {
                 records.push(record)
-            }
+            },
             _ => opened.state.retained.push(raw),
         }
     }
@@ -272,7 +272,13 @@ pub(crate) fn stage_scene(canvas: &mut Canvas, container: Uuid, state: &ViewStat
         .unwrap_or(FREE_ARRANGEMENT)
         .to_owned();
     match canvas.capture_scene(WORKING_SCENE, &arrangement, "") {
-        Ok(scene) => pandect::write_saved_scene(canvas.facets_mut(), container, &scene),
+        Ok(scene) => {
+            if let Err(error) = crate::graph_facets::edit_canvas_facets(canvas, |facets| {
+                pandect::write_saved_scene(facets, container, &scene)
+            }) {
+                tracing::warn!(%error, "saved scene facet edit was refused");
+            }
+        },
         Err(error) => tracing::warn!(%error, "scene capture refused; the saved scene is unchanged"),
     }
 }
@@ -319,10 +325,13 @@ pub(crate) fn restore_scene(
     let scene = match container.and_then(|c| read_scene(pool.facets(), c)) {
         Some(Ok(scene)) => Some(scene),
         Some(Err(error)) => {
-            tracing::warn!(?error, "saved scene refused; the session opens on its defaults");
+            tracing::warn!(
+                ?error,
+                "saved scene refused; the session opens on its defaults"
+            );
             opened.state.scene_refused = true;
             None
-        }
+        },
         None => carry_legacy(pool, container, opened.legacy.as_ref(), &mut refusals),
     };
     let Some(scene) = scene else {
@@ -367,13 +376,25 @@ fn carry_legacy(
     }
     let default = LegacyIntent::default();
     let legacy = legacy.unwrap_or(&default);
-    if let Some(source) = legacy.physics_kind_source.as_deref().and_then(PhysicsKindSource::parse) {
+    if let Some(source) = legacy
+        .physics_kind_source
+        .as_deref()
+        .and_then(PhysicsKindSource::parse)
+    {
         pool.set_physics_kind_source(source);
     }
-    if let Some(source) = legacy.physics_mass_source.as_deref().and_then(PhysicsMassSource::parse) {
+    if let Some(source) = legacy
+        .physics_mass_source
+        .as_deref()
+        .and_then(PhysicsMassSource::parse)
+    {
         pool.set_physics_mass_source(source);
     }
-    if let Some(source) = legacy.physics_depth_source.as_deref().and_then(PhysicsDepthSource::parse) {
+    if let Some(source) = legacy
+        .physics_depth_source
+        .as_deref()
+        .and_then(PhysicsDepthSource::parse)
+    {
         pool.set_physics_depth_source(source);
     }
     if let Some(law) = legacy.physics_law.as_deref().and_then(PhysicsLaw::parse) {
@@ -391,7 +412,9 @@ fn carry_legacy(
     pool.set_physics_damping(
         scene_facets
             .as_ref()
-            .map_or(pandect::DEFAULT_PHYSICS_DAMPING, |scene| scene.physics_damping),
+            .map_or(pandect::DEFAULT_PHYSICS_DAMPING, |scene| {
+                scene.physics_damping
+            }),
     );
     let arrangement = legacy
         .layout_strategy
@@ -403,16 +426,20 @@ fn carry_legacy(
         Err(error) => {
             tracing::warn!(%error, "the earlier scene state could not be carried; it is left in place");
             return None;
-        }
+        },
     };
     scene.cartography = geometry;
     if let Some(paused) = legacy.physics_paused {
         scene.physics_paused = paused;
     }
-    let facets = pool.facets_mut();
-    pandect::clear_arrangement(facets, container);
-    if let Some(container) = container {
-        pandect::clear_scene_facets(facets, container);
+    if let Err(error) = pool.edit_facets(|facets| {
+        pandect::clear_arrangement(facets, container);
+        if let Some(container) = container {
+            pandect::clear_scene_facets(facets, container);
+        }
+    }) {
+        tracing::warn!(%error, "saved scene facet carry was refused");
+        return None;
     }
     Some(scene)
 }

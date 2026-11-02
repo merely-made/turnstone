@@ -13,8 +13,14 @@ pub type OuterWorkspace = super::workspace::PaneWorkspace<(PaneContent, GraphId)
 
 pub(crate) fn validate_descriptors(frame: &OuterWorkspace) -> Result<(), String> {
     for (&id, value) in &frame.descriptors {
-        let spec: super::PaneSpec = serde_json::from_value(value.clone()).map_err(|e| e.to_string())?;
-        if spec.id.0 != id || frame.panes.get(&id).is_none_or(|(content,_)| content.kind_id()!=spec.kind) {
+        let spec: super::PaneSpec =
+            serde_json::from_value(value.clone()).map_err(|e| e.to_string())?;
+        if spec.id.0 != id
+            || frame
+                .panes
+                .get(&id)
+                .is_none_or(|(content, _)| content.kind_id() != spec.kind)
+        {
             return Err("Pane descriptor disagrees with its host payload".into());
         }
     }
@@ -151,6 +157,7 @@ impl FrisketLayout {
             workspace: Workspace::new(tree),
             panes,
             descriptors: BTreeMap::new(),
+            view_states: BTreeMap::new(),
         };
         frame.validate()?;
         Ok(std::borrow::Cow::Owned(frame))

@@ -8,9 +8,9 @@
 //! its shared editor model and native bindings on the shell's existing device.
 
 use super::Shell;
-use crate::settings_provider::ApplicationSettingsProvider;
 use cambium_genet_winit_host::{CloseRequest, HostOptions, WindowFrame, WinitHost};
 use cambium_rootstock::IdlePolicy;
+use mere_surface_api::settings::RevisionedSettingsProvider;
 use std::sync::Arc;
 use tabard::theme::choice::ThemeChoice;
 use tabard_workshop::{
@@ -29,6 +29,10 @@ impl Shell {
         for action in self.live_settings.take_actions() {
             self.act(action);
         }
+        if self.theme_editor_requested && self.native_child_open_pending() {
+            self.defer_native_child_open();
+            return IdlePolicy::Wait;
+        }
         if self.theme_editor_requested {
             self.theme_editor_requested = false;
             if let Some(editor) = &self.theme_editor {
@@ -37,8 +41,16 @@ impl Shell {
                 }
             } else if let Some(core) = self.host.as_ref().map(|host| host.shared_core()) {
                 let result = (|| {
-                    let provider = ApplicationSettingsProvider::load(&self.app.data_root)
-                        .map_err(|error| error.to_string())?;
+                    let owner = self
+                        .live_settings
+                        .owner()
+                        .ok_or_else(|| "Application settings owner is unavailable".to_owned())?;
+                    owner
+                        .snapshot(&workbench::SettingsRef(
+                            crate::settings_provider::APPLICATION_REFERENCE.into(),
+                        ))
+                        .map_err(|error| error.message)?;
+                    let provider = owner.provider_snapshot();
                     if let Some(error) = &provider.catalog().error {
                         return Err(error.clone());
                     }
@@ -57,7 +69,7 @@ impl Shell {
                     state.edit_definition(&resolved.theme, resolved.resolved.theme_mode)?;
                     let wake_proxy = self.proxy.clone();
                     let wake: Arc<dyn Fn() + Send + Sync> = Arc::new(move || {
-                        let _ = wake_proxy.send_event(());
+                        let _ = wake_proxy.send_event(crate::shell::ShellEvent::ActorWake);
                     });
                     let hooks = native_hooks(|artifact| {
                         let extension = if artifact.format == tabard_workshop::ExportFormat::Css {
@@ -136,8 +148,13 @@ impl Shell {
             for pane in self.renderers.settings.values_mut() {
                 pane.reload_themes();
             }
-            if let Ok(provider) = ApplicationSettingsProvider::load(&self.app.data_root) {
-                self.live_settings.publish_provider(&provider);
+            if let Some(owner) = self.live_settings.owner() {
+                if let Err(error) = owner.reload_themes() {
+                    self.live_settings
+                        .report_status(Some(format!("Could not refresh themes: {error:?}")));
+                }
+                self.live_settings
+                    .publish_provider(&owner.provider_snapshot());
             }
             self.poll_live_settings();
             if self.close_after_theme_editor {
@@ -154,15 +171,29 @@ impl Shell {
     }
 
     pub(super) fn theme_editor_event(&mut self, window_id: WindowId, event: &WindowEvent) -> bool {
-        let Some(editor) = self.theme_editor.as_mut().filter(|editor| {
+        let is_editor = self.theme_editor.as_ref().is_some_and(|editor| {
             editor
                 .host
                 .native_window()
                 .is_some_and(|window| window.id() == window_id)
-        }) else {
+        });
+        if !is_editor {
             return false;
-        };
-        editor.host.handle_window_event(event.clone());
+        }
+        if !self.admit_native_child_redraw(window_id, event) {
+            self.theme_editor
+                .as_mut()
+                .expect("editor matched")
+                .host
+                .sync_a11y();
+            return true;
+        }
+        self.theme_editor
+            .as_mut()
+            .expect("editor matched")
+            .host
+            .handle_window_event(event.clone());
+        self.finish_native_child_redraw(window_id, event);
         self.request_redraw();
         true
     }

@@ -22,18 +22,24 @@ use super::App;
 /// A test's root: in memory, one per scratch root, so a "restart" over the
 /// same root keeps its identity.
 #[cfg(test)]
-fn fixture_identity(data_root: &std::path::Path) -> Option<std::sync::Arc<crate::identity::RootIdentity>> {
+fn fixture_identity(
+    data_root: &std::path::Path,
+) -> Option<std::sync::Arc<crate::identity::RootIdentity>> {
     let seed = blake3::derive_key(
         "turnstone fixture identity v1",
         data_root.to_string_lossy().as_bytes(),
     );
-    Some(std::sync::Arc::new(crate::identity::RootIdentity::from_seed(seed)))
+    Some(std::sync::Arc::new(
+        crate::identity::RootIdentity::from_seed(seed),
+    ))
 }
 
 /// Outside tests a fixture app speaks as djinn's persona, or is pending.
 #[cfg(not(test))]
-fn fixture_identity(_data_root: &std::path::Path) -> Option<std::sync::Arc<crate::identity::RootIdentity>> {
-    crate::identity::bind()
+fn fixture_identity(
+    _data_root: &std::path::Path,
+) -> Option<std::sync::Arc<crate::identity::RootIdentity>> {
+    None
 }
 
 impl App {
@@ -48,13 +54,19 @@ impl App {
         frisket.retag_graph_bound(graph_id);
         mere::kernel::graph::set_captured_delta_hook(None);
         let journal = crate::host_journal::shared_journal();
-        let mut graph_runtimes = super::GraphRuntimePool::with_journal(graph_id, Some(session_id), Canvas::new(),
+        let mut graph_runtimes = super::GraphRuntimePool::with_journal(
+            graph_id,
+            Some(session_id),
+            Canvas::new(),
             journal.clone(),
         );
-        graph_runtimes.adopt_graph(mere::kernel::graph::Graph::new(),
+        graph_runtimes.adopt_graph(
+            mere::kernel::graph::Graph::new(),
             crate::session_persistence::SessionPersistence::writable(
-                crate::session::session_dir(&data_root, session_id), None,
-            ),
+                crate::session::session_dir(&data_root, session_id),
+                None,
+            )
+            .expect("isolated fixture owns its session writer"),
         );
         let behavior_binding = graph_runtimes
             .get(graph_id)
@@ -91,7 +103,9 @@ impl App {
             source_capture_generation: uuid::Uuid::new_v4(),
             saved_sources: Default::default(),
             research: Default::default(),
+            research_search: Default::default(),
             saved_readers: Default::default(),
+            research_clip_readers: Default::default(),
             engine_inventory: Vec::new(),
             feeds: crate::feed::FeedSubscriptions::default(),
             redshank: crate::redshank_host::RedshankHost::default(),
@@ -122,11 +136,20 @@ impl App {
             recall_query: String::new(),
             trash: Vec::new(),
             pending_install: None,
-            denizens: root.map_or_else(crate::denizen::Denizens::pending, crate::denizen::Denizens::new),
+            denizens: root.map_or_else(
+                crate::denizen::Denizens::pending,
+                crate::denizen::Denizens::new,
+            ),
             resident_runs: crate::resident_runs::ResidentRuns::default(),
             resident_run_error: None,
             resident_run_effect_policy: crate::resident_runs::ExternalEffectPolicy::default(),
-            resident_run_limits: servitor::RunLimits { decisions: crate::denizen::RUN_BUDGET as u64, tool_calls: 0, tokens: 0, elapsed_ms: 30_000, consecutive_failures: 1 },
+            resident_run_limits: servitor::RunLimits {
+                decisions: crate::denizen::RUN_BUDGET as u64,
+                tool_calls: 0,
+                tokens: 0,
+                elapsed_ms: 30_000,
+                consecutive_failures: 1,
+            },
             resident_run_storage_limits: crate::resident_runs::StorageLimits::default(),
             gemini_identities: crate::gemini_identity::GeminiIdentityBindings::default(),
             identity,

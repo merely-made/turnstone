@@ -1,0 +1,32 @@
+[
+  {
+    "path": "<Code>/repos/turnstone",
+    "head": "e4c7239310a1dc327d4f63edaf65ec1eac5ae763",
+    "status": "",
+    "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "<Code>/repos/genet",
+    "head": "7c8539c1b9585c95b4f2c92722e2b9cbf4eb8a9f",
+    "status": "",
+    "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "<Code>/worktrees/genet-password-caret-20261027",
+    "head": "01d3f528a8ff3f7c69201a736cdfdf296acccea3",
+    "status": " M components/genet-documents/src/engines/tests/text_input.rs\n M components/genet-livery/src/document/tests.rs\n M components/genet-livery/src/text.rs\n",
+    "diff_sha256": "fb1f1061c13cd492ef23b6a413f3764d4008d4cc6423d1994b3320e00e3a5a11"
+  },
+  {
+    "path": "<Code>/worktrees/wgpu-cue-password-caret-20261027",
+    "head": "ba92bded17bb3b2891e7d104edc3d687035dc00f",
+    "status": " M Cargo.lock\n M Cargo.toml\n M adapters/genet/Cargo.toml\n M adapters/genet/tests/text_input.rs\n",
+    "diff_sha256": "3a038816094e288dffd394c373f025e879f45bddd67e16ecc874246d47e8d77c"
+  },
+  {
+    "path": "<Code>/worktrees/turnstone-password-caret-20261027",
+    "head": "2a42f7e6c65cbc64eca088224b86d3811e557716",
+    "status": "",
+    "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+]

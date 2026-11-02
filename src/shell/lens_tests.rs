@@ -166,13 +166,24 @@ fn content(plan: &[crate::surface::Surface], node: uuid::Uuid) -> crate::surface
 fn native_surface_body_apertures_reserve_primary_and_lens_headers() {
     let (mut app, contents, node, _) = fixture(Paint::Frame);
     let primary = super::super::primary_content_plan(&app, &contents, 1200, 900);
-    assert!(primary.iter().any(|surface| surface.kind == SurfaceKind::Frame));
-    assert!(primary.iter().filter(|surface| matches!(surface.kind,
-        SurfaceKind::Graph(_) | SurfaceKind::Pane(_))).all(|surface| surface.rect.y > 0.0));
+    assert!(
+        primary
+            .iter()
+            .any(|surface| surface.kind == SurfaceKind::Frame)
+    );
+    assert!(
+        primary
+            .iter()
+            .filter(|surface| matches!(surface.kind, SurfaceKind::Graph(_) | SurfaceKind::Pane(_)))
+            .all(|surface| surface.rect.y > 0.0)
+    );
     let identity = contents.get(&node).unwrap().session_identity();
     app.update(Action::TearOutActivePane);
     let lens = lens_content_plan(&app, &contents, 0, 800, 600);
-    assert!(lens.iter().any(|surface| surface.kind == SurfaceKind::Frame));
+    assert!(
+        lens.iter()
+            .any(|surface| surface.kind == SurfaceKind::Frame)
+    );
     let body = content(&lens, node).rect;
     assert!(body.y > 0.0 && body.h > 0.0 && body.y + body.h <= 600.0);
     assert_eq!(contents.get(&node).unwrap().session_identity(), identity);
@@ -239,11 +250,24 @@ fn native_surface_lens_floating_tile_keeps_actual_appearance() {
     let plan = lens_content_plan(&app, &contents, 0, 800, 600);
     let moved = content(&plan, node);
     assert!(
-        app.lenses[0].as_ref().unwrap().outer_workspace().unwrap().workspace
-            .floating().iter().any(|float| Some(crate::panes::PaneId(float.tile.id.0)) == app.active_pane)
+        app.lenses[0]
+            .as_ref()
+            .unwrap()
+            .outer_workspace()
+            .unwrap()
+            .workspace
+            .floating()
+            .iter()
+            .any(|float| Some(crate::panes::PaneId(float.tile.id.0)) == app.active_pane)
     );
-    let frame = plan.iter().find(|s| matches!(s.kind, crate::surface::SurfaceKind::FloatFrame(_))).expect("shared float frame is present");
-    assert!(moved.rect.y > frame.rect.y, "content keeps the retained header aperture");
+    let frame = plan
+        .iter()
+        .find(|s| matches!(s.kind, crate::surface::SurfaceKind::FloatFrame(_)))
+        .expect("shared float frame is present");
+    assert!(
+        moved.rect.y > frame.rect.y,
+        "content keeps the retained header aperture"
+    );
     sync(&mut contents, &plan, 1);
     assert_eq!(contents.pool.placement(&moved.id).unwrap().window, 1);
 }
@@ -453,22 +477,51 @@ fn header_return_focus_preserves_primary_and_lens_actual_appearance() {
     let primary = super::super::primary_content_plan(&app, &contents, 1200, 900);
     let primary_body = content(&primary, node);
     let owner = super::super::frame_keys::HeaderFocus {
-        slot: 0, session: *app.session_id.as_uuid(),
+        slot: 0,
+        session: *app.session_id.as_uuid(),
         return_pane: app.active_pane,
-        return_focus: crate::surface::FocusTarget::Content { node, appearance: primary_body.id },
+        return_focus: crate::surface::FocusTarget::Content {
+            node,
+            appearance: primary_body.id,
+        },
     };
-    assert!(super::super::frame_keys::return_focus_is_valid(&app, &owner, app.active_pane, &primary));
+    assert!(super::super::frame_keys::return_focus_is_valid(
+        &app,
+        &owner,
+        app.active_pane,
+        &primary
+    ));
     let identity = contents.get(&node).unwrap().session_identity();
     app.update(Action::TearOutActivePane);
     let lens = lens_content_plan(&app, &contents, 0, 800, 600);
     let lens_body = content(&lens, node);
     let mut owner = super::super::frame_keys::HeaderFocus {
-        slot: 1, session: *app.session_id.as_uuid(), return_pane: app.active_pane,
-        return_focus: crate::surface::FocusTarget::Content { node, appearance: lens_body.id },
+        slot: 1,
+        session: *app.session_id.as_uuid(),
+        return_pane: app.active_pane,
+        return_focus: crate::surface::FocusTarget::Content {
+            node,
+            appearance: lens_body.id,
+        },
     };
-    assert!(super::super::frame_keys::return_focus_is_valid(&app, &owner, app.active_pane, &lens));
-    assert!(!super::super::frame_keys::return_focus_is_valid(&app, &owner, app.active_pane, &[]));
+    assert!(super::super::frame_keys::return_focus_is_valid(
+        &app,
+        &owner,
+        app.active_pane,
+        &lens
+    ));
+    assert!(!super::super::frame_keys::return_focus_is_valid(
+        &app,
+        &owner,
+        app.active_pane,
+        &[]
+    ));
     owner.session = uuid::Uuid::from_u128(app.session_id.as_uuid().as_u128().wrapping_add(1));
-    assert!(!super::super::frame_keys::return_focus_is_valid(&app, &owner, app.active_pane, &lens));
+    assert!(!super::super::frame_keys::return_focus_is_valid(
+        &app,
+        &owner,
+        app.active_pane,
+        &lens
+    ));
     assert_eq!(contents.get(&node).unwrap().session_identity(), identity);
 }

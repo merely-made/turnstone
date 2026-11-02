@@ -1001,3 +1001,315 @@ both selected producer bodies with twenty reviewed captures, compatible index
 reuse and exact local citations/export. Native/libtest builds and all 43 focused
 Turnstone cases pass on Rust 1.99.1. The receiver plan links both frozen cuts
 and their source/evidence proofs; the short-word/model boundary stays explicit.
+
+### Alembic workshop receiving, 2026-10-28
+
+**Status:** bounded local private receiving qualified on the selected published
+custody and renderer cohort. Private source and derived-state protection was
+prioritized before further workshop UI completion (Mark, 2026-10-28; common
+plan W0P). The complete W3 failure matrix and production custody remain open.
+The common composition, workflow and W1–W3 done-conditions live once in
+`mere/design_docs/mere_docs/implementation_strategy/2026-10-28_alembic_implementation_plan.md`.
+Servitor stays in Eidetic; Armillary supplies execution and cancellation.
+
+The named **Evidence brief workshop** action opens Alembic's shared native
+surface. Its synthetic public corpus is the same authored example set as
+Graphshell's, with independent owner, installation, subject, run and acceptance
+identities. Opening the workshop also requests saved-source admissions through
+the existing owner actor, without opening or switching the omnibar. The current
+owner may select sealed saved-source versions from its exact session and graph;
+legacy unsealed, stale, foreign, incomplete or hash-mismatched entries stay
+unavailable. The first private slice admits only the complete retained text,
+from byte zero to its UTF-8 byte length, up to 2,048 bytes. Longer sources are
+refused rather than truncated or assigned an invented range. Public examples
+and sealed private sources may appear together in one ordered proposal.
+
+The bounded private path uses a local owner-scoped GrantTable: the app owner
+admits the selected immutable source and proposal caps and owns the local worker;
+the human root separately authorizes note acceptance. The helper subject is an
+installation and correlation identity, not an authenticated external
+participant. This does not qualify production resident, MCP/A2A, remote-peer or
+fleet principals, and does not raise those consumer qualification flags. The
+deterministic body proposes a brief; the accepting human and proposing run
+remain distinct.
+
+Turnstone's canonical Canvas/runtime writer stages and saves an accepted note.
+It does not open a second GraphSession to apply the result. The operation ledger
+and note share the atomic graph snapshot, with operation evidence retained on
+every subsequent save, including undo and note removal. Reconciliation reloads
+the complete durable snapshot and acknowledges only the matching operation.
+
+The receiving phase is done when the selected published supplier cohort checks,
+the lease/source/custody/acceptance regressions execute, and native controls
+plus an independent process prove accepted public and sealed results and exact
+citations survive. Private selection, mixed-source proposals and result reading
+have focused coverage; native private receiving is qualified within the paused
+local workflow below. Production identity, remote peers and the common plan's full per-host failure matrix remain
+outside this bounded local flow.
+
+**Findings (2026-10-28):**
+
+- `SessionPersistence` acquires an exclusive session writer lease before load
+  and retains it through graph replacement. Same-session adoption reuses the
+  owning runtime so it keeps the lease and unsaved graph.
+- `Shell::drop` drops the workshop before App fields and their writer leases.
+  Shared Driver drop cancels and joins the worker without persisting during
+  unwind; normal window close retains the separate fallible shutdown path.
+- Shared helper computation runs off the UI thread, but the current adapter's
+  journal I/O and graph snapshot replacement remain synchronous UI service
+  calls (`src/shell/alembic_workshop.rs`). Moving them off-thread requires a
+  canonical owner queue or transaction gate; detached asynchronous saves could
+  overwrite intervening edits. W1 responsiveness remains open.
+- Public source admission is an exact current URL/title/body/Resource check
+  (`src/alembic_workshop.rs`). A same-title source or a changed example cannot
+  silently replace the captured version.
+- Citation reading authenticates the exact persisted proposal and owner and
+  reads its saved Passage bytes. Live source edits can refuse a new acceptance
+  while the historical cited version remains readable. Lease refusal and graph
+  load refusal share the same session-state cleanup.
+
+- New captures use a separately tagged sealed store for raw bytes, decoded
+  body, annotation and request/recovery evidence (`src/trail_memory/sealed_capture.rs`).
+  Legacy LocalOnly captures retain their old identity and remain explicitly
+  unsealed; there is no automatic real-store migration or plaintext fallback.
+- A shared live custody predicate gates source replies, private reader caches,
+  retained clip access and the sealed workshop (`src/custody_binding.rs`).
+  Reconnection matches the expected profile/master and replaces the binding.
+  Missing authoritative resident epoch capability leaves private access pending.
+- Custody retirement clears fetched-source and captured Place projections,
+  invalidates Research Bridge context, and rejects stale library refill or
+  enable messages. Place identity retirement has a bounded acknowledgement
+  wait on the UI thread, so responsiveness is still unqualified.
+- The accepted private result uses the owner's Resource-only reader and can be
+  routed without the helper journal. Key retention and rewrapping are separate
+  gates; the current operation ledger protects its stored ciphertext bytes.
+
+**Findings (2026-10-29):**
+
+- Private source admission checks the current saved-source owner, session,
+  graph, sealed identity, content hash and custody epoch
+  (`src/alembic_workshop.rs`). Private citations read the immutable proposal
+  passage only after exact proposal, source, owner and live-custody checks;
+  mixed public/private proposals validate as one private proposal.
+- The local scope above relies on the app owner as source-admission authority
+  and worker owner, with human-root acceptance. It does not establish an
+  external servitor principal or production participant route. Full private
+  saved-source text is an explicit Taproot scenario export: when
+  `TURNSTONE_SCENARIO` is set, `saved-reader-text`/`saved-reader-quote` fields
+  are available to scenario snapshots, and the explicit `record-saved-sources`
+  step writes entries and reader bodies to its named output. This material is
+  outside ordinary-log/storage protection; private workshop qualification must
+  avoid those plaintext scenario exports.
+- The receiving graph-file adapter retains the existing flattened snapshot and
+  placement-profile schema (`src/session_graph_file.rs`). Member facet edits
+  use the canonical Canvas/runtime recorder; graph-container sidecars use the
+  checked complete facet installation available on the selected supplier.
+
+- Reconciliation installs the authoritative destination graph before helper
+  acknowledgement (`src/shell/alembic_workshop.rs`). A helper journal commit
+  whose reply is lost must not leave an Added result absent from the live owner.
+- For a modern graph with an existing canonical facet file, loading installs
+  its exact facet store, including absence (`src/session.rs`). Overlaying it on
+  reconstruction defaults invents a different destination revision. Genuine
+  legacy columns retain their evidence-first migration and canonical precedence.
+- An asynchronous workshop owner update requests a redraw of its own native
+  window. The primary/lens redraw fanout does not cover that auxiliary window.
+
+**Progress (2026-10-29):** added the action/window adapter, shared surface,
+public and sealed-source gates, quiet saved-source loading, existing-writer
+acceptance path and session lease. Receiving source/API issues and focused
+lease/source/custody/recovery regressions are qualified on the selected supplier
+cut. The initial native pass exposed revision reconstruction and auxiliary
+redraw gaps; both source repairs are applied. A paused-scene native workflow
+qualifies sealed-source admission, private acceptance, origin-absent cold
+result reading after helper dissolution, live lock and custodian-loss
+retirement. The approved custody and renderer cohort is integrated and the
+bounded native workflow requalified. Pausing through the ordinary action and
+saving through the normal session writer preserves the original multi-Read
+layout across an offline restart. Playing-scene responsiveness and the full
+failure matrix remain open. Production custody and external-principal gates
+remain separate.
+Run receipts and the current receiving boundary are kept with the common plan
+at `mere/design_docs/archive_docs/2026-10-28/2026-10-28_alembic_implementation_plan_receipts.md`.
+
+## Source and service boundaries (2026-10-29)
+
+**Status (2026-10-29): implemented and locally qualified.** The existing
+600-line ceiling is enforced, and optional producers and services are explicit
+build choices with demand-driven startup. The R-PC release dry run remained visibly slow; this work does not
+establish the cause or close interactive performance qualification.
+
+### Source ownership
+
+The ceiling applies to owned Rust production, test and example files. Vendored
+suppliers and retained receipts are outside this ownership boundary. The check
+counts physical lines, including comments and blanks, discovers new files, and
+has no baseline allowance. Test modules and adapter implementations live beside
+their subjects; each dispatch retains one exhaustive routing match.
+
+**Done conditions:** the source-size gate passes after formatting; its 600/601
+boundary and untracked-file controls pass; Rust compilation and behavioral
+regressions preserve the existing input, lifecycle and retained-data contracts.
+
+### Build composition
+
+The native UI and the selected document producer form the browser core.
+Authoring, peer hosting, inference clients, audio playback and foreign browser
+producers must be named explicitly. Shared values and persisted identities do
+not imply that a service implementation is installed. An unavailable service
+reports its absence through the same product capability boundary.
+
+**Done conditions:** target-aware normal dependency checks reject optional
+runtime leakage from the default build and include positive controls for each
+opt-in. Feature combinations compile; existing stored data survives a build
+that does not install its optional service.
+
+### Runtime admission
+
+Installing an implementation does not start it. Device acquisition, worker
+threads, dialing and service polling begin with admitted demand. Closing or
+retiring the owning session releases those resources. Rendering and accessible
+navigation remain independent of unused service workers.
+
+**Done conditions:** startup controls observe no optional worker or device
+before demand; first use starts it once; unavailable builds refuse cleanly;
+release and session replacement retire the same owned resources.
+
+### Findings
+
+- 2026-10-29: the initial size gate rejected 86 owned Rust files. Inline tests
+  and large reducers had obscured the 600-line rule's lack of enforcement.
+- 2026-10-29: default browser features already exclude Servo, Weld and Scry,
+  but unconditional authoring, playback and peer dependencies bypass the
+  intended service-selection boundary. The original dependency check treated
+  several carried transports as information rather than failures.
+
+### Progress
+
+- 2026-10-29: added the failing size gate and its passing boundary controls;
+  extracted test subjects, operation modules and exhaustive dispatch adapters.
+  The final default library suite passes 1,100 tests, with 8 ignored. The
+  post-format source gate and all eight gate regression controls pass.
+
+- **Service admission boundary.** Build flags now name audio, authoring, peers,
+  inference, workshop, diagnostics and subprocess endpoint support. Genet UI,
+  local documents, custody and retained data remain core. Disabled private
+  sharing panes retain their identities and render an availability explanation.
+- **Demand boundary.** Place and NomadNet actor ports defer their workers until
+  a real command, acknowledge idle release/retirement without starting, and
+  coalesce passive identity configuration. Knot endpoint senders and sharing /
+  diagnostic readers retain one deferred owner. Audio keeps one runtime slot,
+  admits it only on media demand and carries its wake across session reopen.
+- **Supplier boundary.** Woodshed `a4356b74` makes Redshank's native audio
+  implementation a feature while preserving its standalone default. Turnstone
+  disables that default; the selected lock advances only Woodshed and Armillary.
+  Its contract-only regression and 12 native playback controls pass. The wider
+  dependency refresh initially attempted by Cargo was retained as diagnostic
+  evidence and excluded from the selected lock change.
+- **Composition evidence.** Package-selected target trees avoid feature
+  unification from the Windows sandbox workspace helper. The default tree
+  excludes the optional engine/backend families. Distillery's installed mesh
+  assembly still shares its supplier crate with inference wire types, so the
+  explicit inference selection admits that assembly. No frame-rate claim is
+  made by these source, dependency or startup gates.
+
+- **Sky admission.** The analytical Sky pane is selected with `sky`; its
+  existing calculation-on-mount/apply behavior remains demand driven. The
+  default build no longer needs its ephemeris implementation.
+
+- **Knot supplier granularity.** This authoring adapter uses Knot's existing
+  blob-backed evidence store, bundled upstream with Knot's `peers` feature.
+  Selecting `authoring` admits that supplier assembly. Turnstone place /
+  sharing workers and carriers still require its separate `peers` feature;
+  configured local endpoints remain dormant until document/clip demand.
+
+- **Shared mechanisms (2026-10-29).** Armillary `35298c5` owns demand admission
+  over its existing actor harness, including pending configuration and the
+  distinction between sender and inbox lifetime. Turnstone's local copy was
+  removed. It retains only product classifiers/refusals. Generic resource
+  initialization now uses standard `LazyLock`; audio's current-settings
+  initializer uses standard `OnceLock`. The retained unavailable views reuse
+  the existing inline-pane / Cambium retained-mount path rather than adding
+  another input, layout or accessibility implementation.
+
+- **Receiving evidence (2026-10-29).** The final default library run passes
+  1,100 tests (8 ignored). With `full-services,peer-tests`, 30 focused controls
+  pass (1 ignored), covering concrete authoring startup, idle place lifecycle,
+  departed generations, source withdrawal, reader/receipt configuration,
+  retained audio settings and unavailable output. Armillary's 18 owner tests
+  pass with default and all features; Redshank's contract-only control and
+  12 native playback controls pass. The eight Python boundary controls pass.
+  Linux default/audio/authoring/services/optional-engine selections and the
+  Windows Weld/Scry selection pass the normal dependency-tree gates. Those
+  target trees are composition evidence; native engine, physical input,
+  accessibility and R-PC frame-rate qualification remain separate evidence.
+
+- **Workspace qualification (2026-10-29).** The locked, offline workspace and
+  test-target check passes on the Mac with `full-services,peer-tests,nomadnet`,
+  using the published owner revisions above. The lock audit matches exactly
+  those two source-revision substitutions, including unused canonical patches;
+  every unrelated package record remains intact. The source cap is enforced
+  in CI, alongside target-aware composition gates. Retained logs, the original
+  failing controls and the final qualification manifest are under workspace
+  output `turnstone-boundaries-20261029`.
+
+## Native frame qualification (2026-10-30)
+
+**Status (2026-10-30): implemented; bounded Metal qualification complete.** Genet owns one admitted native
+batch and a demand-started completion worker per shared Core. Turnstone retains
+window scheduling, staged composition layers and final presentation. Pending
+collection is channel-only; quality counters and GPU scopes must qualify before
+publication. Primary and lens windows share fair admission, and model
+invalidation survives a pending frame. Session, custody, geometry and generation
+changes discard obsolete staging.
+
+**Done conditions:** default native receiving and lens scheduling controls pass;
+ordinary input, resize, captures and close remain functional; the owner retains
+current-frame shader refusal and device-loss admission. Matched release runs
+include the original palette cases, an open Arrange pane and a live document
+tile. Presentation cadence is the direct throughput comparison. Raster timing
+after adoption measures encoding on the UI thread; whole-frame latency includes
+asynchronous qualification and intervening event work that the synchronous
+render span previously left between frames.
+
+### Findings
+
+- 2026-10-30: `shell_render.rs` and `shell_render_lens.rs` previously called the
+  synchronous checked raster once per surface. Their replacement uses Genet's
+  explicit staging API; it does not weaken an existing checked success result.
+- 2026-10-30: the open Arrange fixture reproduces substantial CPU work outside
+  the synchronous completion waits. Removing those waits alone is not evidence
+  that pane layout and semantic projection costs have been resolved.
+
+- 2026-10-30: completion must not add a separate redraw solely to start the
+  next needed batch. Primary and lens renderers can publish accepted staging,
+  then prepare their next admitted frame in the same redraw. Continuation is
+  demand gated and still yields to another waiting window.
+- 2026-10-30: a native Arrange stack sample identifies retained accessibility
+  geometry projection (`RetainedLayout::document_projection_at`,
+  `painted_rect`, `snapshot_node_rect` and `accumulated_translation`) as
+  substantial remaining CPU work. Its repeated DOM walks are separate from
+  GPU completion. Semantic publication remains independent of GPU acceptance.
+
+- 2026-10-30: screenshot requests staged for GPU qualification remain visible
+  to the existing scenario and adapter waiters. Capture-before-resize ordering
+  survives the move out of the shell's global pending slot.
+
+- 2026-10-30: native child workshop windows share the same admission queue.
+  Their initial draw waits for the Core's actual busy interval, including
+  canceled staging still retiring on the worker. Checked child draws receive
+  fair turns alongside primary/lens batches; input and semantic delivery
+  remain available during redraw deferral. Genet owns the admission hint and
+  quality/loss contract (`genet/components/genet-render-host/DEVICE_RECOVERY.md`).
+
+### Progress
+
+- 2026-10-30: refreshed the measurement base and retained matching synthetic
+  Arrange and retained-document fixtures. Paired controlled-cut presentation
+  comparisons improve across the palette, Arrange and document cases.
+- 2026-10-30: primary/lens pending frames, capture waiter retention and shared
+  checked-child scheduling are implemented. The native workshop and combined
+  document/resize/lens/input/capture workflows pass on the merged upstream
+  Djinn-client cohort. Default shell tests, optional-service source checks and
+  the source-size gate pass. Paused admission settles without repeated frames.
+  Integrated-cohort receiving is separate from the paired throughput cut.

@@ -22,7 +22,15 @@ pub fn find_action(event: cambium::ReadEvent) -> Option<Action> {
         cambium::ReadEvent::Command(C::CloseFind) => Some(Action::CloseDocumentFind),
         cambium::ReadEvent::Command(C::Find) => Some(Action::OpenDocumentFind),
         cambium::ReadEvent::Command(
-            C::Smaller | C::Larger | C::Narrower | C::Wider | C::Reset | C::Appearance | C::Back | C::Forward | C::ShowGraph,
+            C::Smaller
+            | C::Larger
+            | C::Narrower
+            | C::Wider
+            | C::Reset
+            | C::Appearance
+            | C::Back
+            | C::Forward
+            | C::ShowGraph,
         ) => None,
     }
 }
@@ -52,8 +60,12 @@ impl DocumentFindState {
         }
         let count = self.model.count;
         let searching = self.pending || !self.model.complete;
-        let mut status =
-            cambium::find_status(self.query().is_empty(), searching, count, self.model.current);
+        let mut status = cambium::find_status(
+            self.query().is_empty(),
+            searching,
+            count,
+            self.model.current,
+        );
         if let Some(item) = self.model.current.and_then(|i| self.model.matches.get(i)) {
             if let Some(role) = &item.role {
                 status.push_str(" · ");

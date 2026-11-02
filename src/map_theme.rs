@@ -7,31 +7,39 @@
 //! The Map follows the application theme through pictograph's one adapter,
 //! the same mapping Graphshell applies to its canvas.
 
-use crate::shell_services::{AppearanceConfig, ThemeMode};
+use crate::shell_services::AppearanceConfig;
 use mere::canvas::CanvasTheme;
 use tabard::ThemePresentation;
+use tabard::theme::registry::Mode;
 
 #[derive(Default)]
 pub(crate) struct MapThemeCache {
-    key: Option<(ThemePresentation, ThemeMode)>,
+    key: Option<(ThemePresentation, Mode)>,
     theme: Option<CanvasTheme>,
 }
 
 impl MapThemeCache {
     pub(crate) fn resolve(&mut self, appearance: &AppearanceConfig) -> Option<CanvasTheme> {
-        let presentation = appearance.theme_presentation.as_ref()?;
+        // Without a stored presentation the mode's built-in theme supplies the
+        // ground, as it does for the chrome.
+        let builtin = ThemePresentation::AuthoredStylesheet(Vec::new());
+        let presentation = appearance.theme_presentation.as_ref().unwrap_or(&builtin);
+        let mode = appearance.tabard_mode();
         let current = self
             .key
             .as_ref()
-            .is_some_and(|(held, mode)| held == presentation && *mode == appearance.theme_mode);
+            .is_some_and(|(held, held_mode)| held == presentation && *held_mode == mode);
         if !current {
             let palette = tabard::presentation_palette(
                 presentation,
-                &appearance.theme_mode.tabard(),
+                &mode,
                 tabard::theme::registry::THEME_ID_DEFAULT,
             );
-            self.theme = Some(CanvasTheme::from_palette(&palette.palette, &palette.gated_roles()));
-            self.key = Some((presentation.clone(), appearance.theme_mode.clone()));
+            self.theme = Some(CanvasTheme::from_palette(
+                &palette.palette,
+                &palette.gated_roles(),
+            ));
+            self.key = Some((presentation.clone(), mode));
         }
         self.theme
     }
@@ -51,7 +59,12 @@ pub(crate) fn clear_color(theme: Option<CanvasTheme>) -> wgpu::Color {
         })
     };
     let [r, g, b, a] = theme.ground();
-    wgpu::Color { r: linear(r), g: linear(g), b: linear(b), a: f64::from(a) }
+    wgpu::Color {
+        r: linear(r),
+        g: linear(g),
+        b: linear(b),
+        a: f64::from(a),
+    }
 }
 
 #[cfg(test)]
@@ -79,21 +92,34 @@ mod tests {
         let pane = app.default_graph_pane();
         let mut chrome = app.shell_chrome_config().clone();
         chrome.layout_scales.insert(0, 2.0);
-        chrome.appearance.theme_mode = ThemeMode::Light;
+        chrome.appearance.theme_mode = crate::shell_services::ThemeMode::Light;
         chrome.appearance.theme_presentation = Some(light_presentation());
         app.set_shell_chrome_config(chrome);
 
         assert_eq!(app.pane_layout_scale(pane), 2.0);
         let (scene, _) = app.graph_pane_frame(pane, 1200, 800).unwrap();
         assert!(!scene.ops.is_empty());
-        let canvas = app.graph_runtimes.canvas(app.graph_for_pane(pane).unwrap()).unwrap();
-        assert_eq!(canvas.viewport().view, (600, 400), "physical size over the layout scale");
+        let canvas = app
+            .graph_runtimes
+            .canvas(app.graph_for_pane(pane).unwrap())
+            .unwrap();
+        assert_eq!(
+            canvas.viewport().view,
+            (600, 400),
+            "physical size over the layout scale"
+        );
 
-        let ThemePresentation::Derived(light) = light_presentation() else { unreachable!() };
+        let ThemePresentation::Derived(light) = light_presentation() else {
+            unreachable!()
+        };
         let faces = canvas.derived_face_palette().colors();
         assert_eq!(faces[0], light.palette.primary.to_array());
         assert_eq!(faces[2], light.palette.tertiary.to_array());
-        assert_ne!(clear_color(app.map_theme()), wgpu::Color::WHITE, "ground follows the theme");
+        assert_ne!(
+            clear_color(app.map_theme()),
+            wgpu::Color::WHITE,
+            "ground follows the theme"
+        );
     }
 
     #[test]
@@ -113,6 +139,9 @@ mod tests {
             .unwrap()
             .focused_screen_position()
             .expect("the opened node is on screen");
-        assert_eq!(app.graph_pane_node_at_screen(pane, x * 2.0, y * 2.0), Some(member));
+        assert_eq!(
+            app.graph_pane_node_at_screen(pane, x * 2.0, y * 2.0),
+            Some(member)
+        );
     }
 }

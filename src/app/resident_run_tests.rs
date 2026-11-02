@@ -60,12 +60,18 @@ fn adopting_foreign_run_records_clears_the_live_table_without_rewriting_them() {
     app.update(Action::RunDenizen { member });
     assert!(app.resident_runs.reducer(servitor::RunId(1)).is_ok());
     let path = crate::resident_runs::path(&app.session_dir());
-    let mut disk: serde_json::Value = serde_json::from_slice(&std::fs::read(&path).unwrap()).unwrap();
+    let mut disk: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(&path).unwrap()).unwrap();
     disk["runs"][0]["session"] = serde_json::json!(uuid::Uuid::new_v4());
     let corrupt = serde_json::to_vec(&disk).unwrap();
     std::fs::write(&path, &corrupt).unwrap();
     app.adopt_session(app.session_id);
-    assert!(app.resident_run_error.as_ref().unwrap().contains("another session"));
+    assert!(
+        app.resident_run_error
+            .as_ref()
+            .unwrap()
+            .contains("another session")
+    );
     assert!(app.resident_runs.reducer(servitor::RunId(1)).is_err());
     assert_eq!(std::fs::read(path).unwrap(), corrupt);
     let _ = std::fs::remove_dir_all(&app.data_root);
@@ -79,7 +85,8 @@ fn default_policy_records_two_completed_invocations_without_replaying_them() {
     let participant_author = mere::kernel::graph::Author::script(
         subject.to_hex(),
         blake3::Hash::from(app.denizens.residents[&member].binding.revision.0)
-            .to_hex().to_string(),
+            .to_hex()
+            .to_string(),
     )
     .via("turnstone");
     let prior_author = mere::kernel::graph::Author::rule("before-run", "7").via("other-route");
@@ -88,27 +95,62 @@ fn default_policy_records_two_completed_invocations_without_replaying_them() {
     app.take_events();
     for _ in 0..2 {
         let effects = app.update(Action::RunDenizen { member });
-        assert!(effects.iter().any(|effect| matches!(effect, crate::action::Effect::SaveSession)));
-        assert!(app.take_events().iter().any(|event| matches!(event, AppEvent::DenizenRan(_))));
-        assert_eq!(app.journal.lock().unwrap().author(), &prior_author,
-            "normal participant lowering restores the full prior kind, id, version and route");
+        assert!(
+            effects
+                .iter()
+                .any(|effect| matches!(effect, crate::action::Effect::SaveSession))
+        );
+        assert!(
+            app.take_events()
+                .iter()
+                .any(|event| matches!(event, AppEvent::DenizenRan(_)))
+        );
+        assert_eq!(
+            app.journal.lock().unwrap().author(),
+            &prior_author,
+            "normal participant lowering restores the full prior kind, id, version and route"
+        );
     }
     let before = app.graph_runtimes.graph().node_count();
     let stored = crate::resident_runs::load(&app.session_dir()).unwrap();
     for id in [servitor::RunId(1), servitor::RunId(2)] {
         let run = stored.reducer(id).unwrap();
-        assert_eq!(run.phase(), servitor::RunPhase::Terminal(servitor::TerminalOutcome::Completed));
+        assert_eq!(
+            run.phase(),
+            servitor::RunPhase::Terminal(servitor::TerminalOutcome::Completed)
+        );
         assert_eq!(run.ticket().binding.id.0, *member.as_bytes());
-        assert!(run.event_sequence() >= 4, "evaluation and lowering each need an intent and a result");
+        assert!(
+            run.event_sequence() >= 4,
+            "evaluation and lowering each need an intent and a result"
+        );
     }
-    assert!(app.graph_runtimes.graph().get_node_by_url("https://resident.example/repeat").is_some());
-    assert!(crate::behaviors::entries_since(&app, before_seq).iter()
-        .any(|entry| entry.author == subject.to_hex()), "local graph edits retain their resident author");
-    assert!(app.journal.lock().unwrap().entries().iter()
-        .any(|entry| entry.author == participant_author),
-        "the journal preserves script kind, admitted body version and host route");
+    assert!(
+        app.graph_runtimes
+            .graph()
+            .get_node_by_url("https://resident.example/repeat")
+            .is_some()
+    );
+    assert!(
+        crate::behaviors::entries_since(&app, before_seq)
+            .iter()
+            .any(|entry| entry.author == subject.to_hex()),
+        "local graph edits retain their resident author"
+    );
+    assert!(
+        app.journal
+            .lock()
+            .unwrap()
+            .entries()
+            .iter()
+            .any(|entry| entry.author == participant_author),
+        "the journal preserves script kind, admitted body version and host route"
+    );
     assert_eq!(app.graph_runtimes.graph().node_count(), before);
-    assert!(app.take_events().is_empty(), "reading and replaying records never invokes the app");
+    assert!(
+        app.take_events().is_empty(),
+        "reading and replaying records never invokes the app"
+    );
     let _ = std::fs::remove_dir_all(&app.data_root);
 }
 
@@ -116,19 +158,30 @@ fn default_policy_records_two_completed_invocations_without_replaying_them() {
 #[test]
 fn strict_handoff_blocks_overlap_and_cancel_preserves_uncertainty() {
     let (mut app, member) = installed_app("strict", "mere.open('https://resident.example/strict')");
-    app.resident_run_effect_policy = crate::resident_runs::ExternalEffectPolicy::StrictReconciliation;
+    app.resident_run_effect_policy =
+        crate::resident_runs::ExternalEffectPolicy::StrictReconciliation;
     app.take_events();
     let session = app.session_id;
     let effects = app.update(Action::RunDenizen { member });
-    assert!(effects.iter().any(|effect| matches!(effect, crate::action::Effect::FetchPage { .. })));
+    assert!(
+        effects
+            .iter()
+            .any(|effect| matches!(effect, crate::action::Effect::FetchPage { .. }))
+    );
     let id = servitor::RunId(1);
     let pending = app.resident_runs.reducer(id).unwrap();
     let correlation = match pending.phase() {
-        servitor::RunPhase::Awaiting { correlation, effect }
-        | servitor::RunPhase::Reconciling { correlation, effect } => {
+        servitor::RunPhase::Awaiting {
+            correlation,
+            effect,
+        }
+        | servitor::RunPhase::Reconciling {
+            correlation,
+            effect,
+        } => {
             assert_eq!(effect.kind, servitor::EffectKind::NeedsReconciliation);
             correlation
-        }
+        },
         phase => panic!("strict external handoff must remain unresolved: {phase:?}"),
     };
     app.take_events();
@@ -139,24 +192,55 @@ fn strict_handoff_blocks_overlap_and_cancel_preserves_uncertainty() {
     assert!(app.resident_runs.reducer(servitor::RunId(2)).is_err());
 
     app.cancel_resident_run(session, id).unwrap();
-    assert!(matches!(app.resident_runs.reducer(id).unwrap().phase(), servitor::RunPhase::Reconciling { .. }));
-    assert!(app.reconcile_resident_run(
-        crate::panes::SessionId::new(), id, correlation, servitor::ResultKind::Completed,
-    ).is_err());
-    assert!(app.reconcile_resident_run(
-        session, id, servitor::Correlation { attempt: correlation.attempt + 1, ..correlation },
-        servitor::ResultKind::Completed,
-    ).is_err());
+    assert!(matches!(
+        app.resident_runs.reducer(id).unwrap().phase(),
+        servitor::RunPhase::Reconciling { .. }
+    ));
+    assert!(
+        app.reconcile_resident_run(
+            crate::panes::SessionId::new(),
+            id,
+            correlation,
+            servitor::ResultKind::Completed,
+        )
+        .is_err()
+    );
+    assert!(
+        app.reconcile_resident_run(
+            session,
+            id,
+            servitor::Correlation {
+                attempt: correlation.attempt + 1,
+                ..correlation
+            },
+            servitor::ResultKind::Completed,
+        )
+        .is_err()
+    );
     let disk = crate::resident_runs::load(&app.session_dir()).unwrap();
-    assert!(matches!(disk.reducer(id).unwrap().phase(), servitor::RunPhase::Reconciling { .. }));
-    app.reconcile_resident_run(session, id, correlation, servitor::ResultKind::Completed).unwrap();
-    assert_eq!(app.resident_runs.reducer(id).unwrap().phase(),
-        servitor::RunPhase::Terminal(servitor::TerminalOutcome::Cancelled));
-    assert!(app.reconcile_resident_run(session, id, correlation, servitor::ResultKind::Completed).is_err());
+    assert!(matches!(
+        disk.reducer(id).unwrap().phase(),
+        servitor::RunPhase::Reconciling { .. }
+    ));
+    app.reconcile_resident_run(session, id, correlation, servitor::ResultKind::Completed)
+        .unwrap();
+    assert_eq!(
+        app.resident_runs.reducer(id).unwrap().phase(),
+        servitor::RunPhase::Terminal(servitor::TerminalOutcome::Cancelled)
+    );
+    assert!(
+        app.reconcile_resident_run(session, id, correlation, servitor::ResultKind::Completed)
+            .is_err()
+    );
     app.resident_run_effect_policy = crate::resident_runs::ExternalEffectPolicy::HandoffUntracked;
     app.update(Action::RunDenizen { member });
-    assert_eq!(app.resident_runs.reducer(servitor::RunId(2)).unwrap().phase(),
-        servitor::RunPhase::Terminal(servitor::TerminalOutcome::Completed));
+    assert_eq!(
+        app.resident_runs
+            .reducer(servitor::RunId(2))
+            .unwrap()
+            .phase(),
+        servitor::RunPhase::Terminal(servitor::TerminalOutcome::Completed)
+    );
     let _ = std::fs::remove_dir_all(&app.data_root);
 }
 
@@ -169,9 +253,16 @@ fn evaluation_failure_is_recorded_and_does_not_strand_the_resident() {
         app.take_events();
         app.update(Action::RunDenizen { member });
         let run = app.resident_runs.reducer(id).unwrap();
-        assert_eq!(run.phase(), servitor::RunPhase::Terminal(servitor::TerminalOutcome::Failed));
+        assert_eq!(
+            run.phase(),
+            servitor::RunPhase::Terminal(servitor::TerminalOutcome::Failed)
+        );
         assert_eq!(run.usage().consecutive_failures, 1);
-        assert!(app.take_events().iter().any(|event| matches!(event, AppEvent::DenizenRefused(_))));
+        assert!(
+            app.take_events()
+                .iter()
+                .any(|event| matches!(event, AppEvent::DenizenRefused(_)))
+        );
     }
     assert_eq!(app.graph_runtimes.graph().node_count(), before);
     let _ = std::fs::remove_dir_all(&app.data_root);
@@ -185,20 +276,46 @@ fn exhausted_decision_budget_refuses_before_body_or_local_actions() {
     let before = app.graph_runtimes.graph().node_count();
     app.take_events();
     let effects = app.update(Action::RunDenizen { member });
-    assert!(!effects.iter().any(|effect| matches!(effect, crate::action::Effect::FetchPage { .. })));
+    assert!(
+        !effects
+            .iter()
+            .any(|effect| matches!(effect, crate::action::Effect::FetchPage { .. }))
+    );
     assert_eq!(app.graph_runtimes.graph().node_count(), before);
-    assert_eq!(app.resident_runs.reducer(servitor::RunId(1)).unwrap().phase(),
-        servitor::RunPhase::Terminal(servitor::TerminalOutcome::BudgetExhausted));
-    assert!(app.take_events().iter().any(|event| matches!(event, AppEvent::DenizenRefused(_))));
+    assert_eq!(
+        app.resident_runs
+            .reducer(servitor::RunId(1))
+            .unwrap()
+            .phase(),
+        servitor::RunPhase::Terminal(servitor::TerminalOutcome::BudgetExhausted)
+    );
+    assert!(
+        app.take_events()
+            .iter()
+            .any(|event| matches!(event, AppEvent::DenizenRefused(_)))
+    );
     app.resident_run_limits.decisions = 1;
     app.update(Action::RunDenizen { member });
-    assert_eq!(app.resident_runs.reducer(servitor::RunId(2)).unwrap().phase(),
-        servitor::RunPhase::Terminal(servitor::TerminalOutcome::BudgetExhausted));
-    assert!(app.resident_run_error.is_none(), "ordinary exhaustion is not corrupt storage");
+    assert_eq!(
+        app.resident_runs
+            .reducer(servitor::RunId(2))
+            .unwrap()
+            .phase(),
+        servitor::RunPhase::Terminal(servitor::TerminalOutcome::BudgetExhausted)
+    );
+    assert!(
+        app.resident_run_error.is_none(),
+        "ordinary exhaustion is not corrupt storage"
+    );
     assert_eq!(app.graph_runtimes.graph().node_count(), before);
     app.resident_run_limits.decisions = 100;
     app.update(Action::RunDenizen { member });
-    assert_eq!(app.resident_runs.reducer(servitor::RunId(3)).unwrap().phase(),
-        servitor::RunPhase::Terminal(servitor::TerminalOutcome::Completed));
+    assert_eq!(
+        app.resident_runs
+            .reducer(servitor::RunId(3))
+            .unwrap()
+            .phase(),
+        servitor::RunPhase::Terminal(servitor::TerminalOutcome::Completed)
+    );
     let _ = std::fs::remove_dir_all(&app.data_root);
 }

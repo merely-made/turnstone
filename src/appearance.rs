@@ -9,13 +9,14 @@
 //! host chrome; Reader panes keep their own appearance authority.
 
 use std::path::{Path, PathBuf};
+use tabard::ResolvedThemeChoice;
 use tabard::library::ThemeLibraryStore;
 use tabard::theme::{
     choice::ThemeChoice,
     registry::{Mode, THEME_ID_DEFAULT, ThemeRegistry},
 };
-use tabard::ResolvedThemeChoice;
 
+#[derive(Clone, PartialEq)]
 pub(crate) struct ThemeCatalog {
     pub path: PathBuf,
     pub registry: ThemeRegistry,

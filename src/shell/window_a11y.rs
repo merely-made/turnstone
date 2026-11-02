@@ -110,8 +110,10 @@ impl Shell {
                 }
             }
         }
-        focus = focus.filter(|id| tree.nodes.iter().any(|(n, _)| n == id));
-        routes.retain(|id, _| tree.nodes.iter().any(|(n, _)| n == id));
+        let published: std::collections::HashSet<_> =
+            tree.nodes.iter().map(|(id, _)| *id).collect();
+        focus = focus.filter(|id| published.contains(id));
+        routes.retain(|id, _| published.contains(id));
         let mut frame = super::document_a11y::Projected {
             tree,
             routes,

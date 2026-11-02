@@ -1137,3 +1137,27 @@ control and lifecycle gates. The repair has separate receiving evidence below.
 records the original negative raster and repaired positive raster, exact source
 and executable hashes, current receiving scenarios and focused validation.
 The earlier Linux receipt remains byte-identical.
+
+
+### Taffy 0.15.1 Linux geometry receiving, 2026-10-29
+
+**Status (2026-10-29): landed and qualified on the ThinkPad.**
+
+- **The receiving cohort follows the rebased owner.** Turnstone `299d6ff`
+  and standalone SDK `c314b7e` adopt Genet `565458ea3ab` and published
+  `genet-taffy 0.16.0`, based on upstream Taffy 0.15.1. Every nonselected
+  dependency record stays unchanged. The execution host checks the actual
+  Git checkout heads and all published fork source files before qualification.
+- **The native receiving paths agree on geometry.** The shared producer and
+  focused host checks execute on hardware RADV Renoir/Vulkan. Fresh ordinary
+  and password fixtures publish geometry to primary and lens windows, preserve
+  page zoom, and agree with Wayland cursor rectangles on each window's own
+  surface. The checker rejects swapped window identities. Nonblank source
+  captures and the frozen executable bind the result to this cohort.
+- **The earlier evidence retains its own inputs.** The original physical IME,
+  ordinary geometry and password receipts remain byte-identical, as do five
+  earlier remote source checkout states. Synthetic input does not extend
+  physical IME, OS candidate-popup, CJK, human AT, native high-DPI, X11 or
+  Servo IME acceptance. The
+  [receiving receipt](../docs/receipts/cue_taffy_geometry_linux_20261029/receipt.json)
+  retains commands, counts, hashes, protocol correlation and qualification bounds.

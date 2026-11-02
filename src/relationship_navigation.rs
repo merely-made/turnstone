@@ -13,10 +13,18 @@ pub use mere::navigation::relationships;
 
 impl App {
     pub(crate) fn valid_relationship(&self, target: RelationshipTarget) -> bool {
-        self.graph_runtimes.canvas(target.graph).is_some_and(|canvas|relationships(target.graph,canvas.graph(),target.source).iter().any(|row|row.target==target))
+        self.graph_runtimes
+            .canvas(target.graph)
+            .is_some_and(|canvas| {
+                relationships(target.graph, canvas.graph(), target.source)
+                    .iter()
+                    .any(|row| row.target == target)
+            })
     }
     pub(crate) fn navigate_relationship(&mut self, target: RelationshipTarget) -> Vec<Effect> {
-        if !self.valid_relationship(target) { return vec![Effect::Redraw]; }
+        if !self.valid_relationship(target) {
+            return vec![Effect::Redraw];
+        }
         self.read_member_in_graph(target.graph, target.member)
     }
 }

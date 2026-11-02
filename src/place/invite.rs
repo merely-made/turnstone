@@ -107,7 +107,7 @@ impl ArtifactRefV1 {
                     return Err(InviteError::ArtifactDigestMismatch { field });
                 }
                 Ok(bytes)
-            }
+            },
             Self::Addressed {
                 media_type,
                 address,
@@ -128,7 +128,7 @@ impl ArtifactRefV1 {
                     });
                 }
                 Err(InviteError::UnfetchedArtifact { field })
-            }
+            },
         }
     }
 }
@@ -292,7 +292,7 @@ impl PlaceInviteV1 {
                 .map(|artifact| (artifact, "projection grant artifact")),
         ) {
             match artifact.verified_bytes(field) {
-                Ok(_) | Err(InviteError::UnfetchedArtifact { .. }) => {}
+                Ok(_) | Err(InviteError::UnfetchedArtifact { .. }) => {},
                 Err(error) => return Err(error),
             }
         }
@@ -346,7 +346,7 @@ impl std::fmt::Display for InviteError {
         match self {
             Self::UnsupportedVersion(version) => {
                 write!(formatter, "unsupported place invite version {version}")
-            }
+            },
             Self::Binding(error) => write!(formatter, "invitation binding: {error}"),
             Self::TooManyRendezvous { count, maximum } => write!(
                 formatter,
@@ -369,10 +369,10 @@ impl std::fmt::Display for InviteError {
             } => write!(formatter, "{field} is {length} bytes; maximum is {maximum}"),
             Self::ArtifactDigestMismatch { field } => {
                 write!(formatter, "{field} does not match its declared digest")
-            }
+            },
             Self::UnfetchedArtifact { field } => {
                 write!(formatter, "{field} is addressed and has not been fetched")
-            }
+            },
         }
     }
 }

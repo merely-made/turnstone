@@ -7,7 +7,7 @@
 //! Retained client for this device's resident Graphshell host.
 //!
 //! Turnstone is a first-party application, so it enters through the
-//! first-party door — `graphshell_endpoint::door::app_client` — not the
+//! first-party door — `graphshell_endpoint::door::projection` — not the
 //! browser one.
 //! The service owns the worker thread and its runtime; the pane only projects
 //! the latest snapshot and asks for a refresh. Sessions are opened per
@@ -16,8 +16,8 @@
 
 use std::sync::{Arc, Mutex, mpsc};
 
-use graphshell_endpoint::door::app_admission::AppId;
-use graphshell_endpoint::door::app_client::AppBrokerClient;
+use djinn::door::app_admission::AppId;
+use graphshell_endpoint::door::projection::AppBrokerClient;
 use tokio::sync::mpsc as tokio_mpsc;
 
 /// One receipt card, reduced to what the pane shows.
@@ -64,14 +64,15 @@ enum Command {
 }
 
 /// Shell-owned handle for reading the resident host's cards.
-pub struct DeviceReceiptsService {
+pub struct ActiveDeviceReceiptsService {
     commands: tokio_mpsc::UnboundedSender<Command>,
     snapshot: Arc<Mutex<DeviceReceiptsSnapshot>>,
 }
 
-impl DeviceReceiptsService {
+impl ActiveDeviceReceiptsService {
     /// Start the worker and read once, so an opened pane is current without
     /// a click when the resident host is up.
+    #[cfg(feature = "diagnostics")]
     pub fn start() -> Result<Self, String> {
         let (commands, receiver) = tokio_mpsc::unbounded_channel();
         let snapshot = Arc::new(Mutex::new(DeviceReceiptsSnapshot::default()));
@@ -88,7 +89,7 @@ impl DeviceReceiptsService {
                     Err(error) => {
                         let _ = ready_send.send(Err(format!("create receipts runtime: {error}")));
                         return;
-                    }
+                    },
                 };
                 let _ = ready_send.send(Ok(()));
                 runtime.block_on(run(receiver, worker_snapshot));
@@ -114,6 +115,7 @@ impl DeviceReceiptsService {
     }
 }
 
+#[cfg(feature = "diagnostics")]
 async fn run(
     mut commands: tokio_mpsc::UnboundedReceiver<Command>,
     snapshot: Arc<Mutex<DeviceReceiptsSnapshot>>,
@@ -131,22 +133,27 @@ async fn run(
                             format!("Connected. {} card(s) on this device.", cards.len())
                         };
                         current.cards = cards;
-                    }
+                    },
                     Err(error) => {
                         // The cards from the last good read stay visible; the
                         // status says the read is stale rather than blanking
                         // the pane on a transient failure.
                         current.status = format!("Resident host not reachable: {error}");
-                    }
+                    },
                 }
-            }
+            },
         }
     }
 }
 
+#[cfg(feature = "diagnostics")]
 async fn read_cards() -> Result<Vec<ReceiptCardView>, String> {
-    let mut client = AppBrokerClient::open(AppId::new("turnstone"))
-        .await
+    let mut client = AppBrokerClient::open_declared_route(
+        AppId::new(crate::identity::CUSTODY_APP),
+        djinn::door::app_admission::AppRouteId::identity(),
+        crate::identity::app_declaration(),
+    )
+    .await
         .map_err(|error| error.to_string())?;
     let opened = client
         .open_session()
@@ -197,4 +204,48 @@ async fn read_cards() -> Result<Vec<ReceiptCardView>, String> {
     // so the host's own ordering still decides ties.
     cards.sort_by_key(|card| !card.is_receipt());
     Ok(cards)
+}
+
+pub struct DeviceReceiptsService {
+    active: crate::service_init::ServiceInit<ActiveDeviceReceiptsService>,
+}
+impl DeviceReceiptsService {
+    pub fn start() -> Result<Self, String> {
+        #[cfg(feature = "diagnostics")]
+        {
+            Ok(Self {
+                active: crate::service_init::ServiceInit::new(Box::new(
+                    ActiveDeviceReceiptsService::start,
+                )),
+            })
+        }
+        #[cfg(not(feature = "diagnostics"))]
+        {
+            Err("Device receipts require a build with the diagnostics feature".into())
+        }
+    }
+    pub fn snapshot(&self) -> DeviceReceiptsSnapshot {
+        match std::sync::LazyLock::force(&self.active).as_ref() {
+            Ok(s) => s.snapshot(),
+            Err(e) => DeviceReceiptsSnapshot {
+                status: e.clone(),
+                cards: Vec::new(),
+            },
+        }
+    }
+    pub fn refresh(&self) {
+        if let Ok(s) = std::sync::LazyLock::force(&self.active).as_ref() {
+            s.refresh()
+        }
+    }
+}
+
+#[cfg(all(test, feature = "diagnostics"))]
+mod startup_tests {
+    use super::*;
+    #[test]
+    fn configuring_receipts_does_not_connect_to_the_resident() {
+        let service = DeviceReceiptsService::start().unwrap();
+        assert!(std::sync::LazyLock::get(&service.active).is_none());
+    }
 }

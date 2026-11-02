@@ -29,6 +29,7 @@ fn view(state: &State) -> View {
 }
 pub(crate) struct InlinePane {
     runner: Runner,
+    dom: cambium::DomHandle,
     layout: crate::ui::RetainedLayout,
     // Drop the runner and its widget resources before final mount custody.
     mount: cambium::RetainedMount,
@@ -36,8 +37,12 @@ pub(crate) struct InlinePane {
 impl InlinePane {
     pub fn new(dom: cambium::DomHandle) -> Self {
         let mount = cambium::RetainedMount::new(dom.clone());
+        Self::new_in(mount)
+    }
+    pub fn new_in(mount: cambium::RetainedMount) -> Self {
+        let dom = mount.dom();
         let runner = Runner::new_at(
-            dom,
+            dom.clone(),
             mount.node(),
             view as fn(&State) -> View,
             State {
@@ -47,6 +52,7 @@ impl InlinePane {
             },
         );
         Self {
+            dom,
             layout: crate::ui::RetainedLayout::new_at(Some(mount.node())),
             mount,
             runner,
@@ -68,6 +74,9 @@ impl InlinePane {
             height,
             &mut crate::ui::PaneScroll::new(),
         )
+    }
+    pub fn dom_ref(&self) -> std::cell::Ref<'_, genet_scripted_dom::ScriptedDom> {
+        self.dom.borrow()
     }
     pub fn key_inline(&mut self, event: cambium::KeyEvent) -> Vec<()> {
         self.runner.dispatch_key(event)

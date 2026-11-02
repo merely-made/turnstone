@@ -50,14 +50,14 @@ enum ReaderCommand {
 }
 
 /// Shell-owned handle for local ticket import and private one-document reads.
-pub struct KnotShareReaderService {
+pub struct ActiveShareReaderService {
     commands: Option<tokio_mpsc::UnboundedSender<ReaderCommand>>,
     shutdown: Option<tokio::sync::oneshot::Sender<()>>,
     snapshot: Arc<Mutex<SharedKnotSnapshot>>,
     worker: Option<std::thread::JoinHandle<()>>,
 }
 
-impl KnotShareReaderService {
+impl ActiveShareReaderService {
     /// Starts a stable reader key and an active-mDNS carrier from the profile
     /// root. It does not require a local Knot authoring host.
     pub fn start(identity: Arc<RootIdentity>) -> Result<Self, String> {
@@ -77,11 +77,15 @@ impl KnotShareReaderService {
                     Err(error) => {
                         let _ = ready_send.send(Err(format!("create reader runtime: {error}")));
                         return;
-                    }
+                    },
                 };
-                if let Err(error) =
-                    runtime.block_on(run(identity, receiver, shutdown_receive, worker_snapshot, ready_send))
-                {
+                if let Err(error) = runtime.block_on(run(
+                    identity,
+                    receiver,
+                    shutdown_receive,
+                    worker_snapshot,
+                    ready_send,
+                )) {
                     tracing::warn!(%error, "Knot share reader stopped");
                 }
             })
@@ -97,11 +101,11 @@ impl KnotShareReaderService {
             Ok(Err(error)) => {
                 drop(service);
                 Err(error)
-            }
+            },
             Err(_) => {
                 drop(service);
                 Err("Knot share reader stopped during startup".to_string())
-            }
+            },
         }
     }
 
@@ -121,7 +125,7 @@ impl KnotShareReaderService {
     }
 }
 
-impl Drop for KnotShareReaderService {
+impl Drop for ActiveShareReaderService {
     fn drop(&mut self) {
         // Closing the command sender lets the async owner close its carrier;
         // joining makes that close complete before the shell drops its last
@@ -206,7 +210,7 @@ async fn open_ticket(
                 format!("Could not import this private ticket: {error}"),
             );
             return;
-        }
+        },
     };
     let recipient = ticket
         .delegations
@@ -243,14 +247,14 @@ async fn open_ticket(
                         "Ticket endpoint does not name its published carrier.".into(),
                     );
                     return;
-                }
+                },
                 Err(error) => {
                     clear_with_status(
                         snapshot,
                         format!("Could not use the ticket endpoint: {error}"),
                     );
                     return;
-                }
+                },
             };
             let _ = peer;
             match fetch_published_document(carrier, reader, profile, &ticket).await {
@@ -261,7 +265,7 @@ async fn open_ticket(
                 ),
                 Err(error) => apply_read_error(snapshot, error),
             }
-        }
+        },
         Err(error) => apply_read_error(snapshot, error),
     }
 }
@@ -272,11 +276,11 @@ fn apply_read(snapshot: &Arc<Mutex<SharedKnotSnapshot>>, read: knot::KnotPublish
         knot::KnotPublishRead::Document(document) => {
             current.document = Some(document);
             current.status = route.into();
-        }
+        },
         knot::KnotPublishRead::NotAvailable => {
             current.document = None;
             current.status = "Not available.".into();
-        }
+        },
     }
 }
 
@@ -285,7 +289,7 @@ fn apply_read_error(snapshot: &Arc<Mutex<SharedKnotSnapshot>>, error: KnotPublis
         KnotPublishClientError::Refused => "Not available.".to_string(),
         KnotPublishClientError::TicketCommitment => {
             "The host returned a document outside this private ticket.".to_string()
-        }
+        },
         other => format!("Could not read this private ticket: {other}"),
     };
     clear_with_status(snapshot, status);
@@ -303,3 +307,7 @@ fn set_status(snapshot: &Arc<Mutex<SharedKnotSnapshot>>, status: impl Into<Strin
         .expect("share reader snapshot poisoned")
         .status = status.into();
 }
+
+#[path = "share_reader_service/lazy.rs"]
+mod lazy;
+pub use lazy::KnotShareReaderService;

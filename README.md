@@ -12,7 +12,12 @@ repository home of the peer-domain packages it composes. Mere supplies graph
 truth and portable projections; Murm supplies invited exchange; Gemot governs
 durable moots; the Commons profile supplies shared graph and channel
 convergence; Knot owns authored documents; and Genet presents local and remote
-content. 
+content.
+
+<p align="center">
+  <img src="assets/screenshots/canvas.png" alt="Turnstone's graph canvas holding three sample meres, alpha, beta and gamma, with their documents drawn as pictograph tiles under the Cambium chrome" width="900"><br>
+  <sub>Three sample meres on the graph canvas. Each tile is a document; the chrome carries navigation, Keep, and the pane menus.</sub>
+</p>
 
 Be disclaimed: I use AI to develop this entire stack, as a tool, carefully, and with review.
 
@@ -25,7 +30,7 @@ surface and the saved UI zoom.
 ## Build and run
 
 Windows native builds need the MSVC C++ build tools, Windows SDK, CMake and
-Ninja. The CEF dependency downloads its matching binary distribution when needed;
+Ninja. A build with `weld` downloads CEF's matching binary distribution when needed;
 set `CEF_PATH` to an existing matching distribution to reuse it. This is a native
 SDK input, separate from Cargo's source redirects.
 
@@ -33,6 +38,50 @@ SDK input, separate from Cargo's source redirects.
 cargo run     # the turnstone window
 cargo test    # unit tests
 ```
+
+The default build uses Genet for the native UI and document lanes. Additional
+engines are selected with `servo`, `weld`, `scry`, `nomadnet`, `wasm`, or
+`piccolo`; an unselected implementation stays outside the normal dependency
+tree. Foreign browser processes are constructed when a card selects that
+engine, after the host device exists.
+
+The generic demand-admission gate lives in Armillary's `demand` module and
+uses its existing actor harness. Turnstone supplies command classification,
+identity and feature policy. Resource initializers use the standard library's
+`LazyLock`; audio uses `OnceLock` so first use reads the current retained
+settings. There is no Turnstone copy of the actor gate or lazy initializer.
+
+Services are also explicit build selections:
+
+| Feature | Admitted service | First demand |
+| --- | --- | --- |
+| `audio` | Redshank native decoder/device backend | Loading media or starting a voice preview |
+| `authoring` | Knot's local/resident endpoint engine | Opening a document or inserting a clip |
+| `peers` | Places and private document sharing; includes `authoring` | Opening a place or showing/using a sharing pane |
+| `inference` | Resident answer client and installed Distillery surface | Mounting an answer surface |
+| `workshop` | Alembic native workshop and worker | Opening the workshop |
+| `sky` | Analytical Sky pane | Mounting its surface or applying a calculation |
+| `diagnostics` | Resident device-receipt reader | Showing or refreshing its pane |
+| `endpoint-process` | Explicit subprocess endpoint adapter | Opening a document through that endpoint |
+
+`cargo run --release --features audio,authoring` composes those two services;
+`full-services` admits the service set above. It does not enable the optional
+foreign browser engines, NomadNet, Piccolo, or Wasmtime. Identity unlock,
+session configuration and unused-service teardown do not start the audio or
+peer workers. Pure document, retention, custody and saved-pane contracts stay
+available in the default build. Knot's blob evidence store currently uses its
+supplier's `peers` feature; `authoring` admits that assembly without installing
+Turnstone's peer workers. Distillery currently shares its installed mesh
+assembly and inference wire vocabulary in one supplier crate; selecting
+`inference` admits that dependency assembly, but does not start Turnstone's
+place or sharing workers.
+
+Owned Rust source, tests and examples have a **600 physical line ceiling**,
+including comments and blank lines. `python3 scripts/check_source_size.py`
+checks tracked and newly created files. `python3 scripts/check_default_links.py`
+checks the application and target's normal dependency tree; `--features` and
+`--expect` provide enabled controls. CI runs both gates. These composition and
+startup checks do not measure interactive frame rate on an older GPU.
 
 `TURNSTONE_CLICK_SLOP_PX` sets how far a contributed-pane mouse press may
 move before it becomes a drag. The value is a finite, nonnegative number of
@@ -42,7 +91,7 @@ Cancel always prevents a click.
 
 Turnstone pulls `mere` and the genet engine family as git dependencies; a plain
 `cargo build` fetches them. Headed self-drive receipts live under `scenarios/`.
-The committed `Cargo.lock` records the portable graph on Rust 1.98.1. Run
+The committed `Cargo.lock` records the portable graph on Rust 1.99.1. Run
 `cargo check --workspace --locked`, or use Python 3.11+ to check configuration,
 package provenance and lock preservation with `python scripts/cargo_mode.py verify`.
 
@@ -55,8 +104,11 @@ it requires Cargo 1.97+ and uses `.cargo/local/Cargo.lock`. Bare Cargo and edito
 metadata use the portable graph; configure editor checks to use the launcher
 when working across repositories. Local config and locks are never committed.
 
-Advance Git pins as tested integration sets, rather than chasing every sibling
-commit. A local build and a redirect-free locked build are separate checks.
+Mere, Genet, Knot and the other family repositories are followed on their
+`main` branches; `Cargo.lock` records the exact revisions a build used.
+Independently developed suppliers (Armillary, Eidetic, Gemot) stay on fixed
+revisions. Advance the lock as a tested set rather than on every sibling commit.
+A local build and a redirect-free locked build are separate checks.
 
 NomadNet pages over Reticulum are optional: `cargo run --features nomadnet`
 links Retinue, whose terms bar uses contributing to model training, so no default
@@ -71,36 +123,10 @@ construction failures are reported by the browser. Two-page native qualification
 records cookie retention and current captured pixels in the
 [supplier integration receipt](docs/receipts/browser_supplier_integration_20261006/README.md).
 
-The published U14 checkpoint (`4e217ef`) pins Mere `edf175f9`, Genet
-`679d8314`, Knot `211ff57a`, Woodshed `24f196f4` and Retinue `fa4f9250`.
-The [October 7 repin](design_docs/2026-08-25_browser_surface_implementation_plan.md)
-updates upstream Servo to 0.7 and CEF to `154.5.0+154.0.34`, then qualifies
-the current coordinated family: Mere `57b4893d`, Genet `965b64e2`, Knot
-`0096591a`, and Redshank/Woodshed `82271df2`. The browser suppliers are Scry
-`2c3ebd24`, Weld `c4dd593b`, and Graft `bb48281b`; upstream Servo is
-`aac43a3f` (0.7.0). The
-[current-family receipt](docs/receipts/browser_family_20261007/README.md)
-records source identity, compatibility changes and exact qualification scope.
-The family then advanced twice. The browser lane's foreign-accessibility
-repin (`fc52533`) moved Mere to `f1d169c7` and Knot to `14cd06e`. SC step 4
-(2026-10-08) moved it to Mere `3ded2cd7`, Genet `965b64e2`, Knot `6e66f1ab`
-and Redshank/Woodshed `3ef71040`, bringing in Pelt's routed browsing
-controller (`pelt-core`) and the sans-IO page load (`page-load`). The
-Scenograph C2 and vault lock repin (2026-10-08) moved it to Mere `463c8d40`,
-Genet `15713014`, Knot `5bef84c0` and Redshank/Woodshed `52fbe468`: the
-command menu stores Cambium's own choices under the stack's shared command
-ids, and a locked personae vault leaves the profile identity pending rather
-than replaced. SC step 4's pass B (2026-10-08) moved it to Mere `0357b286`,
-Knot `ee0512d0` and Redshank/Woodshed `2f8ac103`, Genet unchanged: each
-node's web surface is the surface lane of its Pelt content. Controller-level
-input (2026-10-09) moved it to Mere `e48db814`, Knot `16aaff78` and
-Redshank/Woodshed `ece6e9ea`: a document's pointer and keys go through its
-controller, which hands links and submissions up.
-Knot and Redshank
-share the Mere/Genet surface family with Turnstone so retained-surface,
-publishing and projection interfaces have one source identity.
-Sibling mode uses current local Mere/Genet with a separate lock.
-The portable pins must advance as a tested set covering those interfaces.
+Knot and Redshank share the Mere/Genet surface family with Turnstone, so
+retained-surface, publishing and projection interfaces have one source identity.
+The [current-family receipt](docs/receipts/browser_family_20261007/README.md)
+records the Servo 0.7 and CEF `154.5.0+154.0.34` browser suppliers.
 
 ## Status
 
@@ -157,14 +183,19 @@ founding brief is `design_docs/2026-07-08_turnstone_founding.md`.
 ## Screenshots
 
 <p align="center">
-  <img src="assets/screenshots/gloss-minimap.png" alt="Turnstone graph canvas beside its Gloss minimap" width="900"><br>
-  <sub>Gloss keeps the graph's wider shape visible while the canvas stays focused on the current node.</sub>
+  <img src="assets/screenshots/overview.png" alt="Turnstone graph canvas beside its Overview pane, a minimap of the whole graph with the focused node ringed" width="900"><br>
+  <sub>The Overview pane keeps the graph's whole shape in view while the canvas stays on the focused node.</sub>
 </p>
 
 <p align="center">
-  <img src="assets/screenshots/workbench-split.png" alt="Turnstone Workbench with two graph nodes rendered as tiled web documents" width="900"><br>
-  <sub>The Workbench tiles graph nodes into live document surfaces beside the canvas.</sub>
+  <img src="assets/screenshots/workbench-split.png" alt="Turnstone Workbench with two tiles: the IANA web page on a white canvas, and the Project Gemini capsule in a dark palette derived from its host" width="900"><br>
+  <sub>The Workbench tiles graph nodes as live documents: a web page beside a Gemini capsule, which takes a palette derived from its host in the app's light or dark mode.</sub>
 </p>
+
+The canvas and Overview images come from `scenarios/readme_screenshots.scn`,
+which runs offline; the Workbench image comes from
+`scenarios/readme_live_screenshots.scn`, which needs the network. Run either with
+`TURNSTONE_SCENARIO` set to the file and a fresh `TURNSTONE_ROOT`.
 
 ## Retained answers
 

@@ -81,6 +81,7 @@ pub(crate) fn command_metadata(action: &Action) -> (EffectClass, bool) {
         | Action::UninstallDenizen { .. }
         | Action::RunDenizen { .. } => EffectClass::ExternalEffect,
         Action::OpenThemeWorkshop
+        | Action::OpenAlembicWorkshop
         | Action::ComposeFocusedSmolwebSubmission
         | Action::ComposeFocusedMicronForm
         | Action::BeginSmolwebSubmission { .. }
@@ -92,6 +93,8 @@ pub(crate) fn command_metadata(action: &Action) -> (EffectClass, bool) {
         | Action::PageZoomIn { .. }
         | Action::PageZoomOut { .. }
         | Action::PageZoomReset { .. }
+        | Action::ResearchSearch(..)
+        | Action::ResearchStructured(..)
         | Action::SearchSavedSources
         | Action::FocusAuthenticationField(..)
         | Action::InsertAuthentication(..)
@@ -180,6 +183,7 @@ pub(crate) fn command_metadata(action: &Action) -> (EffectClass, bool) {
         | Action::NavigateRelationship(..)
         | Action::RevealRelationship(..)
         | Action::SetPaneBinding(..)
+        | Action::SetSettingsPaneRecord(..)
         | Action::RevealGraphMember(..)
         | Action::ToggleToolPane(..)
         | Action::SetChromeLayout(..)

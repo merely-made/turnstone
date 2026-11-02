@@ -1,0 +1,18 @@
+{
+  "resolved_package_identities": 309,
+  "lock_records": 505,
+  "missing_source_aware_records": [],
+  "git_checkout_heads": {
+    "<home>/.cargo/git/checkouts/genet-0bbbe1b4c8511eb3/565458e": "565458ea3ab816940484079330eb165a878a22e0",
+    "<home>/.cargo/git/checkouts/netrender-a79f0762881dec01/66b2f72": "66b2f72e9e0785819139739cc4503bf1e8766de9",
+    "<home>/.cargo/git/checkouts/vello-79c0d0e9216b3668/276b466": "276b46648c08f3d2062e70559afa999842e1873c"
+  },
+  "fork": [
+    {
+      "version": "0.16.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "all_published_source_files_match": true,
+      "source_files": 52
+    }
+  ]
+}

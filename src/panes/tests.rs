@@ -119,7 +119,7 @@ fn project_frame_with_attaches_subtree_to_matching_leaf() {
                 root: node_id_for_path("workbench-content-fixture"),
                 nodes: vec![(node_id_for_path("workbench-content-fixture"), sub_root)],
             })
-        }
+        },
         _ => None,
     });
 

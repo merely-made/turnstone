@@ -126,6 +126,15 @@ impl App {
             ..OmnibarState::default()
         };
         self.focus = crate::surface::FocusTarget::Chrome;
+        effects.extend(self.start_research_search());
+        self.recompute_omnibar_suggestions();
+        effects.push(Effect::Redraw);
+        effects
+    }
+
+    /// Queue the same owner-checked source actor request for a product surface
+    /// that needs private source choices without taking over the omnibar.
+    pub(crate) fn begin_saved_source_load(&mut self) -> Effect {
         let admissions = self.saved_source_admissions();
         let request = uuid::Uuid::new_v4();
         self.saved_sources = SavedSourcesState {
@@ -134,78 +143,16 @@ impl App {
             entries: Vec::new(),
             status: "Loading".into(),
         };
-        self.recompute_omnibar_suggestions();
-        effects.push(Effect::LoadSavedSources {
+        Effect::LoadSavedSources {
             generation: self.source_capture_generation,
             request,
             session: self.session_id,
             admissions,
-        });
-        effects.push(Effect::Redraw);
-        effects
+        }
     }
 
     pub(crate) fn recompute_saved_source_suggestions(&mut self, row_limit: usize) {
-        let query = self.omnibar.text.trim();
-        let admissions = self.saved_source_admissions();
-        let current: Vec<_> = self
-            .saved_sources
-            .entries
-            .iter()
-            .filter(|entry| {
-                admissions.iter().any(|admission| {
-                    admission.key == entry.admission.key && admission.error.is_none()
-                })
-            })
-            .cloned()
-            .collect();
-        let hits = saved_sources::search(&current, query, row_limit.max(1));
-        let mut rows = Vec::new();
-        for hit in hits {
-            let manifest = &hit.target.key.annotation_manifest;
-            let short = manifest.strip_prefix("blake3:").unwrap_or(manifest);
-            rows.push(Suggestion::Act {
-                label: format!(
-                    "Read saved source: {} · {} · {}",
-                    hit.title,
-                    crate::place::utc_ms(hit.captured_at_ms),
-                    &short[..short.len().min(8)]
-                ),
-                action: crate::action::Action::OpenSavedSource(hit.target),
-            });
-        }
-        for entry in &self.saved_sources.entries {
-            if let Some(error) = &entry.error
-                && (query.is_empty()
-                    || entry.admission.title.contains(query)
-                    || entry.admission.key.annotation_manifest.contains(query))
-                && admissions.iter().any(|a| a.key == entry.admission.key)
-            {
-                rows.push(Suggestion::Prompt(format!(
-                    "Unavailable saved source: {} · {} · {}",
-                    entry.admission.title, entry.admission.key.annotation_manifest, error
-                )));
-            }
-        }
-        if rows.is_empty() {
-            rows.push(Suggestion::Prompt(
-                match self.saved_sources.status.as_str() {
-                    "Loading" => "Loading saved sources".into(),
-                    "Ready" if query.is_empty() => "No saved sources in this session".into(),
-                    "Ready" => "No saved sources match".into(),
-                    status if !status.is_empty() => status.to_owned(),
-                    _ => "Search saved sources to load this session's evidence".into(),
-                },
-            ));
-        }
-        rows.truncate(row_limit.max(1));
-        self.omnibar.suggestions = rows;
-        self.omnibar.selected = self
-            .omnibar
-            .suggestions
-            .iter()
-            .position(|row| matches!(row, Suggestion::Act { .. }))
-            .unwrap_or(0);
+        self.research_rows(row_limit);
     }
 
     pub(crate) fn saved_sources_loaded(
@@ -272,7 +219,9 @@ impl App {
             Ok(url) => {
                 // A citation may originate in a maximized contributed Answers
                 // pane. Reveal the existing graph-owned reader at its destination.
-                let pane = self.focused_graph_pane().unwrap_or_else(|| self.default_graph_pane());
+                let pane = self
+                    .focused_graph_pane()
+                    .unwrap_or_else(|| self.default_graph_pane());
                 self.reveal_pane(pane);
                 self.focus = crate::surface::FocusTarget::Graph(pane);
                 self.open_address(url)

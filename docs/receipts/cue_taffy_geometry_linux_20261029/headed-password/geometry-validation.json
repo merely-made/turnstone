@@ -1,0 +1,195 @@
+{
+  "method": "Map protocol toplevel creation order to scenario window ids 0/1, then bind each text-input request to its most recent enter surface. Compare every distinct shared rectangle for that window within one logical pixel.",
+  "windows": {
+    "0": {
+      "wl_surface": "27",
+      "native_scale": 1.0,
+      "distinct_shared_rectangles": 4,
+      "matched_rectangles": [
+        {
+          "shared_logical_rectangle": [
+            32.0,
+            105.5999984741211,
+            1.0,
+            33.0
+          ],
+          "wayland_rectangle": [
+            32,
+            106,
+            1,
+            33
+          ]
+        },
+        {
+          "shared_logical_rectangle": [
+            104.19200897216797,
+            105.5999984741211,
+            1.0,
+            33.0
+          ],
+          "wayland_rectangle": [
+            104,
+            106,
+            1,
+            33
+          ]
+        },
+        {
+          "shared_logical_rectangle": [
+            114.61121368408203,
+            108.80000305175781,
+            1.100000023841858,
+            36.29999923706055
+          ],
+          "wayland_rectangle": [
+            115,
+            109,
+            1,
+            36
+          ]
+        },
+        {
+          "shared_logical_rectangle": [
+            667.5712280273438,
+            205.99996948242188,
+            1.100000023841858,
+            36.29999923706055
+          ],
+          "wayland_rectangle": [
+            668,
+            206,
+            1,
+            36
+          ]
+        }
+      ],
+      "unmatched_rectangles": [],
+      "all_rectangles_match": true
+    },
+    "1": {
+      "wl_surface": "60",
+      "native_scale": 1.0,
+      "distinct_shared_rectangles": 2,
+      "matched_rectangles": [
+        {
+          "shared_logical_rectangle": [
+            505.684814453125,
+            141.8000030517578,
+            1.100000023841858,
+            36.29999923706055
+          ],
+          "wayland_rectangle": [
+            506,
+            142,
+            1,
+            36
+          ]
+        },
+        {
+          "shared_logical_rectangle": [
+            515.6112060546875,
+            141.8000030517578,
+            1.100000023841858,
+            36.29999923706055
+          ],
+          "wayland_rectangle": [
+            516,
+            142,
+            1,
+            36
+          ]
+        }
+      ],
+      "unmatched_rectangles": [],
+      "all_rectangles_match": true
+    }
+  },
+  "observed_logical_caret_heights": {
+    "0": [
+      33.0,
+      36.3
+    ],
+    "1": [
+      36.3
+    ]
+  },
+  "primary_zoom_pair": [
+    33.0,
+    36.3
+  ],
+  "lens_keeps_zoom": true,
+  "qualified": true,
+  "rasters": {
+    "captures": [
+      {
+        "capture": "01_primary_geometry.sources.json",
+        "file": "01_primary_geometry.source-1176657005713031170.png",
+        "window": 0,
+        "size": [
+          1024,
+          503
+        ],
+        "nonblank": true,
+        "adapter": {
+          "backend": "Vulkan",
+          "device": 5686,
+          "device_type": "IntegratedGpu",
+          "name": "AMD Radeon Graphics (RADV RENOIR)",
+          "vendor": 4098
+        }
+      },
+      {
+        "capture": "02_primary_zoom.sources.json",
+        "file": "02_primary_zoom.source-1176657005713031170.png",
+        "window": 0,
+        "size": [
+          1024,
+          503
+        ],
+        "nonblank": true,
+        "adapter": {
+          "backend": "Vulkan",
+          "device": 5686,
+          "device_type": "IntegratedGpu",
+          "name": "AMD Radeon Graphics (RADV RENOIR)",
+          "vendor": 4098
+        }
+      },
+      {
+        "capture": "03_lens_geometry.sources.json",
+        "file": "03_lens_geometry.source-1176657005713031174.png",
+        "window": 1,
+        "size": [
+          400,
+          502
+        ],
+        "nonblank": true,
+        "adapter": {
+          "backend": "Vulkan",
+          "device": 5686,
+          "device_type": "IntegratedGpu",
+          "name": "AMD Radeon Graphics (RADV RENOIR)",
+          "vendor": 4098
+        }
+      },
+      {
+        "capture": "03_lens_geometry.sources.json",
+        "file": "03_lens_geometry.source-1176657005713031176.png",
+        "window": 1,
+        "size": [
+          399,
+          470
+        ],
+        "nonblank": true,
+        "adapter": {
+          "backend": "Vulkan",
+          "device": 5686,
+          "device_type": "IntegratedGpu",
+          "name": "AMD Radeon Graphics (RADV RENOIR)",
+          "vendor": 4098
+        }
+      }
+    ],
+    "qualified": true
+  }
+}

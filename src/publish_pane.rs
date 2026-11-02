@@ -17,7 +17,7 @@ use cambium::{
 use genet_scripted_dom::ScriptedDom;
 use layout_dom_api::LayoutDom;
 
-use crate::publish_service::{KnotPublishingService, PublishSnapshot, PUBLISHING_UNAVAILABLE};
+use crate::publish_service::{KnotPublishingService, PUBLISHING_UNAVAILABLE, PublishSnapshot};
 
 struct PublishPaneState {
     service: Option<Arc<KnotPublishingService>>,
@@ -88,9 +88,7 @@ fn revoke_latest(state: &mut PublishPaneState, _: cambium::PointerClick) {
             state.local_status = "Revoking the latest share…".into();
         },
         (_, None) => state.local_status = "No retained share is selected for revocation.".into(),
-        (None, _) => {
-            state.local_status = PUBLISHING_UNAVAILABLE.into()
-        },
+        (None, _) => state.local_status = PUBLISHING_UNAVAILABLE.into(),
     }
 }
 
@@ -101,9 +99,7 @@ fn withdraw_selected(state: &mut PublishPaneState, _: cambium::PointerClick) {
             state.local_status = "Withdrawing publication…".into();
         },
         (_, None) => state.local_status = "Select a publication before withdrawing it.".into(),
-        (None, _) => {
-            state.local_status = PUBLISHING_UNAVAILABLE.into()
-        },
+        (None, _) => state.local_status = PUBLISHING_UNAVAILABLE.into(),
     }
 }
 

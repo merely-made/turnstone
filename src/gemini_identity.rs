@@ -64,11 +64,11 @@ impl GeminiIdentityBindings {
             Ok(_) => {
                 tracing::warn!(path = ?path, "unsupported Gemini identity binding version");
                 Self::default()
-            }
+            },
             Err(error) => {
                 tracing::warn!(%error, path = ?path, "failed to read Gemini identity bindings");
                 Self::default()
-            }
+            },
         }
     }
 
@@ -223,7 +223,7 @@ impl crate::app::App {
             Err(error) => {
                 tracing::warn!(%error, "failed to project Gemini client identity");
                 None
-            }
+            },
         };
         crate::action::Effect::FetchPage {
             request,

@@ -1,0 +1,18 @@
+# Offline Settings arrangement save scenario. Run with a fresh TURNSTONE_ROOT;
+# the verify twin must reuse the same root in a new Turnstone process.
+settle 30
+key escape
+open mere://alpha
+settle 30
+act Open Settings pane
+settle 10
+assert pane turnstone.settings
+click surface:settings role:button Edit arrangement
+settle 2
+click surface:settings role:button Add group
+settle 2
+click surface:settings role:button Save arrangement
+settle 30
+assert a11y Arrangement saved.
+capture 01_settings_arrangement_saved
+log Settings arrangement group saved

@@ -1,25 +1,50 @@
 use super::*;
 #[test]
 fn nested_contexts_survive_reading_visits_and_up_follows_the_chosen_route() {
-    let (mut app,a,b,_)=fixture();let mut visit=app.reading.scope.navigation.current().unwrap().clone();
-    let graph=visit.place.graph;visit.place.root=Some(b);
-    visit.place.contexts=Some(vec![ScopeContext {level:ScopeLevel::Graph,graph,root:None},ScopeContext {level:ScopeLevel::Neighborhood,graph,root:Some(a)},ScopeContext {level:ScopeLevel::Neighborhood,graph,root:Some(b)}]);
+    let (mut app, a, b, _) = fixture();
+    let mut visit = app.reading.scope.navigation.current().unwrap().clone();
+    let graph = visit.place.graph;
+    visit.place.root = Some(b);
+    visit.place.contexts = Some(vec![
+        ScopeContext {
+            level: ScopeLevel::Graph,
+            graph,
+            root: None,
+        },
+        ScopeContext {
+            level: ScopeLevel::Neighborhood,
+            graph,
+            root: Some(a),
+        },
+        ScopeContext {
+            level: ScopeLevel::Neighborhood,
+            graph,
+            root: Some(b),
+        },
+    ]);
     app.reading.scope.navigation.capture(visit);
-    command(&mut app,ScopeDirection::Up);assert_eq!(app.scope_place().root,Some(b));
-    command(&mut app,ScopeDirection::Up);assert_eq!(app.scope_place().root,Some(a));
-    assert_eq!(app.scope_place().focus,Some(a));
-    command(&mut app,ScopeDirection::Down);assert_eq!(app.scope_place().focus,Some(a));
+    command(&mut app, ScopeDirection::Up);
+    assert_eq!(app.scope_place().root, Some(b));
+    command(&mut app, ScopeDirection::Up);
+    assert_eq!(app.scope_place().root, Some(a));
+    assert_eq!(app.scope_place().focus, Some(a));
+    command(&mut app, ScopeDirection::Down);
+    assert_eq!(app.scope_place().focus, Some(a));
 }
 #[test]
 fn replacing_the_live_canvas_cannot_complete_an_earlier_click_on_the_same_document() {
-    let (mut app,a,_,_)=fixture();let graph=app.scope_place().graph;
-    let before=app.graph_runtimes.get(graph).unwrap().instance;
-    let mut activation=cambium::scope_navigation::NodeActivation::default();
-    activation.press(Some((before,a)),(0.,0.),false);assert_eq!(activation.release(Some((before,a)),(0.,0.),10.),None);
-    let canvas=mere::canvas::Canvas::new();
+    let (mut app, a, _, _) = fixture();
+    let graph = app.scope_place().graph;
+    let before = app.graph_runtimes.get(graph).unwrap().instance;
+    let mut activation = cambium::scope_navigation::NodeActivation::default();
+    activation.press(Some((before, a)), (0., 0.), false);
+    assert_eq!(activation.release(Some((before, a)), (0., 0.), 10.), None);
+    let canvas = mere::canvas::Canvas::new();
     app.graph_runtimes.replace_active_canvas(canvas);
-    let after=app.graph_runtimes.get(graph).unwrap().instance;assert_ne!(before,after);
-    activation.press(Some((after,a)),(0.,0.),false);assert_eq!(activation.release(Some((after,a)),(0.,0.),100.),None);
+    let after = app.graph_runtimes.get(graph).unwrap().instance;
+    assert_ne!(before, after);
+    activation.press(Some((after, a)), (0., 0.), false);
+    assert_eq!(activation.release(Some((after, a)), (0., 0.), 100.), None);
 }
 #[test]
 fn close_prefers_the_remaining_tab_in_its_own_stack_over_another_cell() {

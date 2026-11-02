@@ -45,6 +45,7 @@ fn native_knot_custody_reopens_and_onward_copy_excludes_private_backing() {
         "mere://knot/document/source",
         source,
         &selected,
+        1_000_000,
     )
     .unwrap();
     let seal = sealer();
@@ -216,9 +217,13 @@ fn unavailable_custody_and_stale_backing_refuse_before_creating_storage() {
         start: 8,
         end: 13,
     };
-    let (export, backing) =
-        crate::producer_retention::export_knot_selection("mere://knot/source", source, &selected)
-            .unwrap();
+    let (export, backing) = crate::producer_retention::export_knot_selection(
+        "mere://knot/source",
+        source,
+        &selected,
+        1_000_000,
+    )
+    .unwrap();
     assert!(
         retain_native(
             root.path(),
@@ -313,7 +318,7 @@ fn native_redshank_export_keeps_body_and_timed_target_distinct() {
 #[test]
 #[ignore]
 fn custody_process_roundtrip_fixture() {
-    use graphshell_endpoint::door::custody_identity::CustodyIdentity;
+    use djinn::door::custody_identity::CustodyIdentity;
     let root =
         PathBuf::from(std::env::var_os("EIDETIC_CLIENT_FIXTURE_ROOT").expect("fixture root"));
     assert_eq!(
@@ -338,6 +343,7 @@ fn custody_process_roundtrip_fixture() {
             "mere://knot/process-source",
             source,
             &selected,
+            1_000_000,
         )
         .unwrap();
         let first = root.join("first");
@@ -391,4 +397,87 @@ fn custody_process_roundtrip_fixture() {
         assert!(!root.join("selected.mereclip").exists());
     }
     std::fs::write(root.join(format!("{phase}-passed.json")), serde_json::to_vec(&serde_json::json!({"phase":phase,"pid":std::process::id(),"passed":true,"scope":"synthetic wallet-backed IPC, native producer and store; no headed UI claim"})).unwrap()).unwrap();
+}
+
+#[test]
+fn model_free_clip_open_refusal_explains_setting_on_retain_import_and_export() {
+    let source = tempfile::tempdir().unwrap();
+    let destination = tempfile::tempdir().unwrap();
+    let mut note: serde_json::Value = serde_json::from_str(include_str!(
+        "../../scenarios/fixtures/retained_clips/redshank.json"
+    ))
+    .unwrap();
+    note["annotation"]["body"] = serde_json::json!({"kind":"text", "plain_text":"Retained note"});
+    let seal = sealer();
+    let source_id = retain_native(
+        source.path(),
+        NativeClip::Redshank {
+            export: &note,
+            voice_body: None,
+        },
+        &context(),
+        policy(),
+        &seal,
+    )
+    .unwrap();
+    let package = source.path().join("selected.clip.json");
+    export_sealed(source.path(), source_id, &package, policy(), false, &seal).unwrap();
+    let seeded = muniment::FjallStore::open(destination.path().join(STORE_DIR)).unwrap();
+    pollster::block_on(seeded.put("oversized", &vec![42; 8192])).unwrap();
+    seeded.sync_all().unwrap();
+    drop(seeded);
+    let mut limits = crate::research_storage::StorageLimits::default();
+    limits.recovery.max_value_bytes = 16;
+    let output = destination.path().join("refused.clip.json");
+    let error = match open_with_limits(destination.path(), false, &limits) {
+        Ok(_) => panic!("oversized retained store must refuse"),
+        Err(error) => error,
+    };
+    assert!(matches!(
+        error.storage_error(),
+        Some(muniment::StoreError::LimitExceeded {
+            kind: muniment::StoreLimitKind::ValueBytes,
+            limit: 16
+        })
+    ));
+
+    let retain_error = retain_native_with_limits(
+        destination.path(),
+        NativeClip::Redshank {
+            export: &note,
+            voice_body: None,
+        },
+        &context(),
+        policy(),
+        &seal,
+        &limits,
+    )
+    .unwrap_err();
+    let import_error =
+        import_sealed_with_limits(destination.path(), &package, policy(), 7, &seal, &limits)
+            .unwrap_err();
+    let export_error = export_sealed_with_limits(
+        destination.path(),
+        source_id,
+        &output,
+        policy(),
+        false,
+        &seal,
+        &limits,
+    )
+    .unwrap_err();
+    for error in [retain_error, import_error, export_error] {
+        assert!(
+            error.contains("Retained clip")
+                && error.contains("open")
+                && error.contains("ValueBytes")
+                && error.contains("16")
+                && error.contains("Open: value bytes")
+                && error.contains("settings")
+                && error.contains("retry")
+                && error.contains("restart Turnstone if"),
+            "{error}"
+        );
+    }
+    assert!(!output.exists());
 }

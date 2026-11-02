@@ -114,13 +114,17 @@ pub fn roster_grid_rows(app: &App) -> Vec<RosterGridRow> {
 /// never reads the graph pool's active compatibility cursor.
 pub fn roster_grid_rows_for_pane(app: &App, pane: crate::panes::PaneId) -> Vec<RosterGridRow> {
     let context = app.follower_context(pane);
-    let graph_id = context
-        .and_then(|context| context.graph)
-        .or_else(|| (!app.has_pane_binding(pane)).then(|| app.graph_for_pane(pane)).flatten());
+    let graph_id = context.and_then(|context| context.graph).or_else(|| {
+        (!app.has_pane_binding(pane))
+            .then(|| app.graph_for_pane(pane))
+            .flatten()
+    });
     let graph = graph_id.and_then(|graph| app.graph_runtimes.canvas(graph));
-    let focused = context
-        .and_then(|context| context.member)
-        .or_else(|| (!app.has_pane_binding(pane)).then(|| app.graph_pane_focused_member(pane)).flatten());
+    let focused = context.and_then(|context| context.member).or_else(|| {
+        (!app.has_pane_binding(pane))
+            .then(|| app.graph_pane_focused_member(pane))
+            .flatten()
+    });
     roster_grid_rows_for_context(app, graph, focused)
 }
 

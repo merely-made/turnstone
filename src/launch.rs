@@ -24,11 +24,25 @@ use winit::event_loop::EventLoop;
 /// routes; only reached once CEF's process-role probe (when one runs) has
 /// confirmed this is the browser process.
 fn start_app(address: Option<String>) -> i32 {
-    tracing_subscriber::fmt()
-        .with_env_filter(
-            tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("turnstone=info")),
+    use tracing_subscriber::prelude::*;
+
+    let diagnostic_run = apparatus_core::RunId::from(uuid::Uuid::new_v4().to_string());
+    let reactive_boot = apparatus_core::SourceBootId::from(uuid::Uuid::new_v4().to_string());
+    let (reactive_layer, reactive_receiver) =
+        crate::reactive_trace::channel(diagnostic_run.clone(), reactive_boot.clone());
+    let fmt_filter = tracing_subscriber::EnvFilter::try_from_default_env()
+        .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("turnstone=info"));
+    let reactive_filter = tracing_subscriber::filter::filter_fn(|metadata| {
+        matches!(
+            metadata.target(),
+            "cambium::reactive" | "meristem::reactive"
         )
+    });
+    let reactive_layer = reactive_layer.with_filter(reactive_filter);
+    let fmt_layer = tracing_subscriber::fmt::layer().with_filter(fmt_filter);
+    tracing_subscriber::registry()
+        .with(reactive_layer)
+        .with(fmt_layer)
         .init();
 
     // Which graph actually shows (restored session / fresh-from-address /
@@ -39,9 +53,18 @@ fn start_app(address: Option<String>) -> i32 {
         None => tracing::info!("turnstone starting"),
     }
 
-    let event_loop = EventLoop::new().expect("failed to create event loop");
+    let event_loop = EventLoop::<crate::shell::ShellEvent>::with_user_event()
+        .build()
+        .expect("failed to create event loop");
     let proxy = event_loop.create_proxy();
-    let mut shell = crate::shell::Shell::new(proxy, address);
+    let mut shell =
+        crate::shell::Shell::new_with_diagnostic_run(proxy, address, diagnostic_run.clone());
+    if shell
+        .attach_reactive_trace(reactive_receiver, &reactive_boot)
+        .is_err()
+    {
+        tracing::warn!("reactive diagnostics receiver did not attach to this run");
+    }
     event_loop.run_app(&mut shell).expect("event loop error");
     0
 }
@@ -72,11 +95,11 @@ pub fn run_direct(address: Option<String>) -> i32 {
                 welding::CefSandboxMode::UnsandboxedTrustedContent,
             ) {
                 Ok(Some(code)) => return code,
-                Ok(None) => {}
+                Ok(None) => {},
                 Err(error) => {
                     eprintln!("turnstone: CEF subprocess probe failed: {error}");
                     return 1;
-                }
+                },
             }
         }
     }
@@ -122,18 +145,16 @@ pub unsafe fn run_bootstrap(instance: *mut std::ffi::c_void, sandbox_info: *mut 
             Err(error) => {
                 eprintln!("turnstone: invalid CEF bootstrap sandbox context: {error}");
                 return 111;
-            }
+            },
         };
     match context.execute_process(&cef_path) {
         Ok(Some(code)) => return code,
-        Ok(None) => {}
+        Ok(None) => {},
         Err(error) => {
             eprintln!("turnstone: sandboxed CEF subprocess probe failed: {error}");
             return 112;
-        }
+        },
     }
-    crate::shell::weld::set_sandbox_route(crate::shell::weld::WeldSandboxRoute::Bootstrap(
-        context,
-    ));
+    crate::shell::weld::set_sandbox_route(crate::shell::weld::WeldSandboxRoute::Bootstrap(context));
     start_app(std::env::args().nth(1))
 }

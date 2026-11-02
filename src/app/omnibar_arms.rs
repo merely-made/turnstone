@@ -9,6 +9,9 @@
 //! Editing recomputes the suggestion list against the catalog every keystroke,
 //! so what the lane offers always matches app truth.
 
+#[path = "research_row_fit.rs"]
+mod research_row_fit;
+
 use crate::action::{Action, CaretMove, Effect};
 use crate::observe::AppEvent;
 use crate::shell_services::{ShellIntent, ShellOutcome};
@@ -67,7 +70,9 @@ impl App {
         );
         if matches!(self.omnibar.mode, OmnibarMode::SavedSources) {
             self.recompute_saved_source_suggestions(row_limit);
-            self.frame_timings.note_suggestions(started.elapsed(), false);
+            research_row_fit::fit(self, &chrome);
+            self.frame_timings
+                .note_suggestions(started.elapsed(), false);
             return;
         }
         if matches!(self.omnibar.mode, OmnibarMode::CapturedPages) {
@@ -156,12 +161,20 @@ impl App {
             );
         }
         if self.reading.scope.editing_location && !self.omnibar.text.trim().starts_with('>') {
-            let query=self.omnibar.text.trim().to_lowercase();
+            let query = self.omnibar.text.trim().to_lowercase();
             if !query.is_empty() {
-                let scopes:Vec<_>=self.scope_crumbs().into_iter()
-                    .filter(|crumb|!crumb.current && crumb.label.to_lowercase().contains(&query))
-                    .map(|crumb|Suggestion::Act {label:format!("Scope: {}",crumb.label),action:Action::Scope(crate::scope_navigation::ScopeCommand::To(crumb.target))}).collect();
-                self.omnibar.suggestions.splice(0..0,scopes);
+                let scopes: Vec<_> = self
+                    .scope_crumbs()
+                    .into_iter()
+                    .filter(|crumb| !crumb.current && crumb.label.to_lowercase().contains(&query))
+                    .map(|crumb| Suggestion::Act {
+                        label: format!("Scope: {}", crumb.label),
+                        action: Action::Scope(crate::scope_navigation::ScopeCommand::To(
+                            crumb.target,
+                        )),
+                    })
+                    .collect();
+                self.omnibar.suggestions.splice(0..0, scopes);
                 self.omnibar.suggestions.truncate(fitted_limit.max(1));
             }
         }
@@ -241,6 +254,21 @@ impl App {
     /// changed. Cached hits keep showing until the answer lands, so the lane
     /// does not flicker empty between keystrokes.
     pub(super) fn refresh_omnibar(&mut self) -> Vec<Effect> {
+        if self.omnibar.open && matches!(self.omnibar.mode, OmnibarMode::SavedSources) {
+            let mut effects = if matches!(
+                self.research_search.view,
+                super::research_search_state::View::Results
+            ) {
+                self.research_search.page = 0;
+                self.research_search.error = None;
+                self.issue_research_search()
+            } else {
+                vec![Effect::Redraw]
+            };
+            self.recompute_omnibar_suggestions();
+            effects.push(Effect::Redraw);
+            return effects;
+        }
         // Resolve the needle FIRST: a line narrowed below the floor drops its
         // cached hits there, and the rows must be recomputed after that drop
         // or the lane keeps offering pages for text that is gone.
@@ -276,7 +304,7 @@ impl App {
     }
 
     pub(super) fn open_omnibar(&mut self, command: bool) -> Vec<Effect> {
-        self.reading.scope.editing_location=false;
+        self.reading.scope.editing_location = false;
         let command = command || self.session_load_refused();
         let mut effects = self.cancel_smolweb_conversation();
         let target = self.fallback_shell_context();
@@ -344,7 +372,7 @@ impl App {
     }
 
     pub(super) fn close_omnibar(&mut self) -> Vec<Effect> {
-        self.reading.scope.editing_location=false;
+        self.reading.scope.editing_location = false;
         let mut effects = self.cancel_smolweb_conversation();
         self.omnibar = OmnibarState::default();
         // Drop the recall cache with the line it answered; a reopened omnibar
@@ -364,8 +392,8 @@ impl App {
     }
 
     pub(crate) fn edit_scope_location(&mut self) -> Vec<Effect> {
-        let effects=self.open_omnibar(false);
-        self.reading.scope.editing_location=true;
+        let effects = self.open_omnibar(false);
+        self.reading.scope.editing_location = true;
         self.recompute_omnibar_suggestions();
         effects
     }
@@ -439,6 +467,15 @@ impl App {
     }
 
     pub(super) fn omnibar_move(&mut self, delta: i32) -> Vec<Effect> {
+        if matches!(self.omnibar.mode, OmnibarMode::SavedSources)
+            && !self.research_search.rows.is_empty()
+        {
+            let len = self.research_search.rows.len() as i32;
+            self.research_search.first_row =
+                (self.research_search.first_row as i32 + delta).rem_euclid(len) as usize;
+            self.recompute_omnibar_suggestions();
+            return vec![Effect::Redraw];
+        }
         let len = self.omnibar.suggestions.len();
         if len > 0 && self.omnibar_in_command_lane() {
             // The `>` lane's highlight moves through its menu session. The
@@ -552,181 +589,5 @@ impl App {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn snapshot(body: &str, source: &str) -> crate::place::OfflinePlaceSnapshot {
-        crate::place::OfflinePlaceSnapshot {
-            captured: crate::place::CapturedCollectionCache {
-                groups: vec![crate::place::CapturedContentGroup {
-                    extraction_schema: "fleece/1".into(),
-                    normalization: "plain".into(),
-                    reader_profile: "reader".into(),
-                    canonical_text_hash: "a".repeat(64),
-                    canonical_text_iri: "urn:captured:test".into(),
-                    canonical_text: body.into(),
-                    contributions: vec![crate::place::CapturedContribution {
-                        share_operation: [1; 32],
-                        annotation_manifest: [2; 32],
-                        contributor: [3; 32],
-                        source: source.into(),
-                        title: "Field notes".into(),
-                        shared_at_ms: 1,
-                    }],
-                }],
-                ..Default::default()
-            },
-            ..Default::default()
-        }
-    }
-
-    fn offline(snapshot: crate::place::OfflinePlaceSnapshot) -> crate::place::PlaceState {
-        crate::place::PlaceState::Offline {
-            binding: crate::place::PlaceBindingV1::new(
-                crate::place::PlaceId([1; 32]),
-                crate::place::SharedContainerId([2; 32]),
-                crate::place::ChatSpaceId([3; 32]),
-                "hall",
-            )
-            .unwrap(),
-            generation: 1,
-            snapshot,
-        }
-    }
-
-    #[test]
-    fn captured_page_mode_finds_body_text_without_recall_rows() {
-        let source = "https://example.test/field-notes";
-        let mut app = App::test_stub();
-        app.place = offline(snapshot("a body-only phrase", source));
-        app.recall.push(crate::action::RecallHit {
-            url: "https://recall.test/unrelated".into(),
-            title: Some("a body-only phrase".into()),
-            at_ms: 1,
-        });
-
-        app.update(Action::SearchCapturedPages);
-        assert!(app.recall.is_empty() && app.recall_query.is_empty());
-        app.update(Action::OmnibarInsert("body-only phrase".into()));
-
-        assert!(app.omnibar.suggestions.iter().any(|row| {
-            matches!(
-                row,
-                Suggestion::Act { label, action }
-                    if label == "Open source: Field notes"
-                        && action == &Action::OpenAddress(source.into())
-            )
-        }));
-        assert!(
-            !app.omnibar
-                .suggestions
-                .iter()
-                .any(|row| matches!(row, Suggestion::Recall { .. })),
-            "captured-page search never blends browsing recall"
-        );
-    }
-
-    #[test]
-    fn captured_page_mode_drops_results_after_stale_or_empty_refresh() {
-        let source = "https://example.test/field-notes";
-        let mut app = App::test_stub();
-        app.place = offline(snapshot("a body-only phrase", source));
-        app.update(Action::SearchCapturedPages);
-        app.update(Action::OmnibarInsert("body-only phrase".into()));
-        assert!(
-            app.omnibar
-                .suggestions
-                .iter()
-                .any(|row| matches!(row, Suggestion::Act { .. }))
-        );
-
-        let requested = crate::place::PlaceCollectionVersion {
-            moot: crate::place::PlaceId([1; 32]),
-            collection: crate::place::PlaceCollectionId([4; 32]),
-            frontier: vec![[5; 32]],
-            membership_commitment: [6; 32],
-        };
-        let mut stale = snapshot("a body-only phrase", source);
-        stale.captured_selection = crate::place::CapturedCollectionSelection::Collection {
-            requested: requested.clone(),
-            status: crate::place::CapturedCollectionSelectionStatus::Stale { current: requested },
-        };
-        app.place = offline(stale);
-        app.recompute_omnibar_suggestions();
-        assert!(
-            !app.omnibar
-                .suggestions
-                .iter()
-                .any(|row| matches!(row, Suggestion::Act { .. })),
-            "a stale scope cannot retain prior hits"
-        );
-
-        app.place = offline(snapshot("a body-only phrase", source));
-        app.recompute_omnibar_suggestions();
-        assert!(
-            app.omnibar
-                .suggestions
-                .iter()
-                .any(|row| matches!(row, Suggestion::Act { .. })),
-            "the receipt starts with a visible captured result"
-        );
-        assert_eq!(
-            app.apply_update(crate::action::Update::PlaceOpened {
-                session: app.session_id,
-                generation: 1,
-                result: Ok(crate::place::OfflinePlaceSnapshot::default()),
-            }),
-            vec![Effect::Redraw]
-        );
-        assert!(
-            !app.omnibar
-                .suggestions
-                .iter()
-                .any(|row| matches!(row, Suggestion::Act { .. })),
-            "a PlaceOpened replacement reflows the open field without typing"
-        );
-    }
-
-    #[test]
-    fn captured_search_respects_a_single_row_setting() {
-        let source = "https://example.test/field-notes";
-        let mut app = App::test_stub();
-        app.place = offline(snapshot("a body-only phrase", source));
-        app.update(Action::SearchCapturedPages);
-        app.update(Action::OmnibarInsert("body-only phrase".into()));
-        app.recompute_captured_page_suggestions(1);
-        assert!(matches!(app.omnibar.suggestions.as_slice(),
-            [Suggestion::Act { action: Action::OpenAddress(url), .. }] if url == source));
-        app.omnibar.text = "no-matching-content".into();
-        app.recompute_captured_page_suggestions(1);
-        assert_eq!(
-            app.omnibar.suggestions,
-            vec![Suggestion::Hint("no captured pages match")]
-        );
-    }
-
-    #[test]
-    fn committing_a_captured_source_opens_its_source_address() {
-        let source = "https://example.test/field-notes";
-        let mut app = App::test_stub();
-        app.place = offline(snapshot("a body-only phrase", source));
-        app.update(Action::SearchCapturedPages);
-        app.update(Action::OmnibarInsert("body-only phrase".into()));
-
-        let effects = app.update(Action::OmnibarCommit);
-        assert!(effects.iter().any(|effect| matches!(
-            effect,
-            Effect::FetchPage { url, .. } if url == source
-        )));
-        assert_eq!(app.graph_runtimes.focused_url(), Some(source));
-        let entry = app
-            .shell_transcript()
-            .entries()
-            .last()
-            .expect("captured source navigation enters the shell transcript");
-        assert!(matches!(
-            &entry.resolved_intent,
-            crate::shell_services::ShellIntent::Navigate { url } if url == source
-        ));
-    }
-}
+#[path = "omnibar_arms/tests.rs"]
+mod tests;

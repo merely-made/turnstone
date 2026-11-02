@@ -93,9 +93,53 @@ pub(crate) struct DepositReceipt {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-struct CaptureAttachment {
-    request: CaptureRequest,
-    stored: crate::action::StoredSourceDocument,
+#[serde(untagged)]
+enum CaptureAttachment {
+    Legacy {
+        request: CaptureRequest,
+        stored: crate::action::StoredSourceDocument,
+    },
+    Sealed {
+        version: SealedAttachmentVersion,
+        request_id: uuid::Uuid,
+        request_digest: String,
+        stored: crate::action::StoredSourceDocument,
+    },
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+enum SealedAttachmentVersion {
+    #[serde(rename = "sealed-v1")]
+    V1,
+}
+
+fn request_digest(request: &CaptureRequest) -> String {
+    blake3::hash(&serde_json::to_vec(request).expect("capture request serializes"))
+        .to_hex()
+        .to_string()
+}
+impl CaptureAttachment {
+    fn request_id(&self) -> uuid::Uuid {
+        match self {
+            Self::Legacy { request, .. } => request.id,
+            Self::Sealed { request_id, .. } => *request_id,
+        }
+    }
+    fn stored(&self) -> &crate::action::StoredSourceDocument {
+        match self {
+            Self::Legacy { stored, .. } | Self::Sealed { stored, .. } => stored,
+        }
+    }
+    fn matches(&self, request: &CaptureRequest) -> bool {
+        match self {
+            Self::Legacy { request: held, .. } => held == request,
+            Self::Sealed {
+                request_id,
+                request_digest: held,
+                ..
+            } => *request_id == request.id && *held == request_digest(request),
+        }
+    }
 }
 
 const ATTACHMENTS_FACET: &str = "capture.source-requests/v1";
@@ -130,9 +174,10 @@ fn attachment_records(
     let mut ids = std::collections::HashSet::new();
     let mut references = series.iter();
     for record in &records {
-        if record.request.node != node
-            || !ids.insert(record.request.id)
-            || !references.any(|reference| *reference == record.stored.annotation_manifest)
+        if matches!(record, CaptureAttachment::Legacy { request, stored } if request.node != node || stored.annotation_manifest.starts_with("sealed-v1:"))
+            || matches!(record, CaptureAttachment::Sealed { stored, .. } if !stored.annotation_manifest.starts_with("sealed-v1:"))
+            || !ids.insert(record.request_id())
+            || !references.any(|reference| *reference == record.stored().annotation_manifest)
         {
             return Err("capture request ledger and ordered references disagree".into());
         }
@@ -149,8 +194,9 @@ pub(crate) fn attached(
         attachment_records(facets, request.node)
             .ok()?
             .into_iter()
-            .find(|entry| entry.request == *request)?
-            .stored,
+            .find(|entry| entry.matches(request))?
+            .stored()
+            .clone(),
     )
 }
 
@@ -165,8 +211,11 @@ pub(crate) fn attach_reference(
     }
     let key = FacetId::new(ATTACHMENTS_FACET);
     let mut receipts = attachment_records(facets, node)?;
-    if let Some(existing) = receipts.iter().find(|entry| entry.request.id == request.id) {
-        return if existing.request == *request && existing.stored == *stored {
+    if let Some(existing) = receipts
+        .iter()
+        .find(|entry| entry.request_id() == request.id)
+    {
+        return if existing.matches(request) && existing.stored() == stored {
             Ok(())
         } else {
             Err("capture request identity was reused for different evidence".into())
@@ -177,9 +226,18 @@ pub(crate) fn attach_reference(
     let mut replacement = facets.clone();
     append_reference(&mut replacement, node, stored.annotation_manifest.clone())
         .map_err(|error| error.to_string())?;
-    receipts.push(CaptureAttachment {
-        request: request.clone(),
-        stored: stored.clone(),
+    receipts.push(if stored.annotation_manifest.starts_with("sealed-v1:") {
+        CaptureAttachment::Sealed {
+            version: SealedAttachmentVersion::V1,
+            request_id: request.id,
+            request_digest: request_digest(request),
+            stored: stored.clone(),
+        }
+    } else {
+        CaptureAttachment::Legacy {
+            request: request.clone(),
+            stored: stored.clone(),
+        }
     });
     replacement
         .set(node, key, serde_json::json!(receipts), &AcceptAll)
@@ -223,6 +281,44 @@ pub fn append_reference(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn sealed_attachment_keeps_only_request_identity_and_preserves_exact_replay() {
+        let node = uuid::Uuid::new_v4();
+        let request = CaptureRequest {
+            id: uuid::Uuid::new_v4(),
+            session: crate::panes::SessionId::new(),
+            graph: crate::panes::GraphId::new(),
+            node,
+            url: "https://private.example/canary".into(),
+            source: Some(SourceIdentity {
+                hash: "hash".into(),
+                body_hash: "body".into(),
+                effective_url: Some("https://private.example/canary".into()),
+                content_type: Some("text/html".into()),
+                acquired_at_ms: 987654321,
+            }),
+            keep: true,
+        };
+        let stored = crate::action::StoredSourceDocument {
+            raw_manifest: "blake3:raw".into(),
+            annotation_manifest: "sealed-v1:blake3:annotation".into(),
+        };
+        let mut facets = pandect::NodeFacetStore::new();
+        attach_reference(&mut facets, node, &request, &stored).unwrap();
+        assert_eq!(attached(&facets, &request), Some(stored.clone()));
+        let encoded = facets
+            .get(&node, &FacetId::new(ATTACHMENTS_FACET))
+            .unwrap()
+            .to_string();
+        assert!(!encoded.contains("private.example"));
+        assert!(!encoded.contains("987654321"));
+        assert!(!encoded.contains("text/html"));
+        let mut changed = request.clone();
+        changed.url = "https://other.invalid".into();
+        assert_eq!(attached(&facets, &changed), None);
+        assert!(attach_reference(&mut facets, node, &changed, &stored).is_err());
+    }
 
     #[test]
     fn references_survive_facet_round_trip_in_capture_order() {

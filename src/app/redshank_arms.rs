@@ -19,10 +19,15 @@ use uuid::Uuid;
 
 use crate::action::Effect;
 use crate::content_classes::{REDSHANK_NOTE_FACET, REDSHANK_PROGRESS_FACET};
-use crate::redshank_episode_surface::{PANE_KIND, RedshankEpisodeSourceV1, episode_source};
+use crate::redshank_episode_surface::{
+    PANE_KIND, RedshankEpisodeSourceV1, episode_source,
+};
 use crate::redshank_host::HostOutcome;
 
 use super::App;
+
+#[path = "redshank_notes.rs"]
+mod notes;
 
 /// The tag an episode note node carries, beside `feed-entry` and `unread` on
 /// the episode itself.
@@ -120,9 +125,8 @@ impl App {
         // the durable association is the pair of stores that ARE: the library
         // item names its feed and GUID, and the feed store names the member
         // it bound. Re-minted on adoption, never repaired.
-        let redshank_model::LibraryItem::FeedEpisode {
-            feed_url, guid, ..
-        } = self.redshank.model().library.get(item)?
+        let redshank_model::LibraryItem::FeedEpisode { feed_url, guid, .. } =
+            self.redshank.model().library.get(item)?
         else {
             return None;
         };
@@ -172,12 +176,17 @@ impl App {
         let Some(canvas) = self.graph_runtimes.canvas_mut(graph) else {
             return;
         };
-        if let Err(error) =
-            canvas
-                .facets_mut()
-                .set(member, FacetId::new(REDSHANK_PROGRESS_FACET), value, &validator)
-        {
-            tracing::warn!(?error, "the episode's progress field was refused");
+        match crate::graph_facets::edit_canvas_facets(canvas, |facets| {
+            facets.set(
+                member,
+                FacetId::new(REDSHANK_PROGRESS_FACET),
+                value,
+                &validator,
+            )
+        }) {
+            Ok(Ok(())) => {},
+            Ok(Err(error)) => tracing::warn!(?error, "the episode's progress field was refused"),
+            Err(error) => tracing::warn!(%error, "the episode's progress edit was refused"),
         }
     }
 
@@ -225,12 +234,12 @@ impl App {
             "annotation_id": id.0,
             "offset_ms": note.target.offset_ms,
         });
-        if let Err(error) =
-            canvas
-                .facets_mut()
-                .set(node, FacetId::new(REDSHANK_NOTE_FACET), value, &validator)
-        {
-            tracing::warn!(?error, "the note's anchor field was refused");
+        match crate::graph_facets::edit_canvas_facets(canvas, |facets| {
+            facets.set(node, FacetId::new(REDSHANK_NOTE_FACET), value, &validator)
+        }) {
+            Ok(Ok(())) => {},
+            Ok(Err(error)) => tracing::warn!(?error, "the note's anchor field was refused"),
+            Err(error) => tracing::warn!(%error, "the note's anchor edit was refused"),
         }
     }
 
@@ -299,11 +308,11 @@ mod tests {
     use crate::action::{Action, FetchedPage, Update};
     use crate::panes::{PaneContent, PaneKindId, SessionId};
     use crate::redshank_host::Output;
-    use redshank_model::{AnnotationId, CaptureAnchor, RepresentationReceipt};
+    use redshank_model::AnnotationId;
     use std::path::{Path, PathBuf};
 
-    const FEED: &str = "https://podcast.test/feed.xml";
-    const PAGE: &str = "https://podcast.test/episodes/one";
+    pub(super) const FEED: &str = "https://podcast.test/feed.xml";
+    pub(super) const PAGE: &str = "https://podcast.test/episodes/one";
     const ENCLOSURE: &str = "https://cdn.podcast.test/one.mp3";
 
     fn rss() -> FetchedPage {
@@ -322,7 +331,7 @@ mod tests {
     }
 
     /// An app on `root`/`session` with one subscribed feed and its episode.
-    fn subscribed(root: &Path, session: SessionId) -> App {
+    pub(super) fn subscribed(root: &Path, session: SessionId) -> App {
         let mut app = App::test_stub();
         app.data_root = root.to_path_buf();
         std::fs::create_dir_all(crate::session::session_dir(root, session)).unwrap();
@@ -378,7 +387,9 @@ mod tests {
         // A page that is not audio still opens the reader.
         let mut reader = App::test_stub();
         reader.data_root = scratch_root();
-        reader.update(Action::OpenAddress("https://elsewhere.test/post".to_string()));
+        reader.update(Action::OpenAddress(
+            "https://elsewhere.test/post".to_string(),
+        ));
         assert_eq!(episode_panes(&reader), 0);
         let _ = std::fs::remove_dir_all(&root);
     }
@@ -394,23 +405,16 @@ mod tests {
         app.update(Action::OpenAddress(PAGE.to_string()));
         let member = app.redshank_member(&item).expect("the episode's member");
 
-        let anchor = CaptureAnchor {
-            item_id: item.clone(),
-            offset_ms: 62_000,
-            end_offset_ms: None,
-            pressed_offset_ms: None,
-            representation: RepresentationReceipt::default(),
-            fingerprint: None,
-        };
-        // Begin freezes a capture target; cancelling releases it, so the
-        // editor's own anchor is the one that reaches the model.
+        // Begin freezes the actual target the editor must return on save.
         app.apply_redshank_commands(vec![(item.clone(), CompactCommand::BeginTextNote)]);
         assert_eq!(
-            app.redshank.pending_anchor(&item).map(|a| a.item_id.clone()),
+            app.redshank
+                .pending_anchor(&item)
+                .map(|a| a.item_id.clone()),
             Some(item.clone())
         );
-        app.apply_redshank_commands(vec![(item.clone(), CompactCommand::CancelTextNote)]);
-        assert!(app.redshank.pending_anchor(&item).is_none());
+        let anchor = app.redshank.pending_anchor(&item).unwrap().clone();
+        let offset = anchor.offset_ms;
         let effects = app.apply_redshank_commands(vec![(
             item.clone(),
             CompactCommand::SaveTextNote {
@@ -418,7 +422,11 @@ mod tests {
                 plain_text: "The bittern calls here".into(),
             },
         )]);
-        assert!(effects.iter().any(|effect| matches!(effect, Effect::SaveSession)));
+        assert!(
+            effects
+                .iter()
+                .any(|effect| matches!(effect, Effect::SaveSession))
+        );
 
         let note_id = AnnotationId("note-0".into());
         let address = note_address(&note_id);
@@ -447,7 +455,10 @@ mod tests {
             .facets()
             .get(&node, &FacetId::new(REDSHANK_NOTE_FACET))
             .expect("the note carries its anchor as a field");
-        assert_eq!(anchor_field.get("offset_ms").and_then(|v| v.as_u64()), Some(62_000));
+        assert_eq!(
+            anchor_field.get("offset_ms").and_then(|v| v.as_u64()),
+            Some(offset)
+        );
         let progress_field = app
             .graph_runtimes
             .facets()
@@ -459,7 +470,9 @@ mod tests {
         );
 
         // Restart: the session graph and the listening model are both durable.
-        crate::session::save_session_graph(&sdir, app.graph_runtimes.graph());
+        if let Err(error) = app.persist_owned_graph() {
+            tracing::warn!(%error, "listening graph checkpoint was refused");
+        }
         app.feeds.save(&sdir).unwrap();
         drop(app);
 
@@ -477,7 +490,12 @@ mod tests {
         assert_eq!(reborn, node);
         assert!(reopened.redshank.annotation(&note_id).is_some());
         assert_eq!(
-            reopened.redshank.model().library.get(&item).map(|item| item.title()),
+            reopened
+                .redshank
+                .model()
+                .library
+                .get(&item)
+                .map(|item| item.title()),
             Some("Marsh at dawn")
         );
         assert_eq!(reopened.redshank_member(&item), Some(member));
@@ -497,7 +515,7 @@ mod tests {
                 .get(&reborn, &FacetId::new(REDSHANK_NOTE_FACET))
                 .and_then(|value| value.get("offset_ms"))
                 .and_then(|value| value.as_u64()),
-            Some(62_000)
+            Some(offset)
         );
         let _ = std::fs::remove_dir_all(&root);
     }

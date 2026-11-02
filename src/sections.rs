@@ -183,14 +183,12 @@ fn gather_downloads(app: &App) -> Vec<SectionRow> {
 }
 
 fn gather_recent(app: &App) -> Vec<SectionRow> {
-    app.graph_runtimes
-        .graph()
-        .recent_visited(8)
+    crate::session::recent_visited_urls(app.graph_runtimes.graph(), 8)
         .into_iter()
-        .map(|rv| SectionRow {
+        .map(|url| SectionRow {
             id: None,
-            text: mere::trail::short_url(&rv.url),
-            activate: Some(SectionActivate::Open(rv.url)),
+            text: mere::trail::short_url(&url),
+            activate: Some(SectionActivate::Open(url)),
         })
         .collect()
 }
@@ -350,12 +348,22 @@ mod tests {
             let url = format!("gemini://capsule.test/{name}");
             let key = app.graph_runtimes.visit(&url);
             let node = app.graph_runtimes.graph().get_node(key).unwrap().id;
-            crate::content_classes::set_download_record(&mut app.graph_runtimes, node,
+            crate::content_classes::set_download_record(
+                &mut app.graph_runtimes,
+                node,
                 crate::content_classes::DownloadFacetRecord {
-                    source_url: &url, received_at_ms: timestamp, byte_size: 12,
-                    status, media_type: None, content_disposition: None,
-                    destination_path: None, content_hash: None, error,
-                }).unwrap();
+                    source_url: &url,
+                    received_at_ms: timestamp,
+                    byte_size: 12,
+                    status,
+                    media_type: None,
+                    content_disposition: None,
+                    destination_path: None,
+                    content_hash: None,
+                    error,
+                },
+            )
+            .unwrap();
         }
         let rows = (DOWNLOADS_SECTION.gather)(&app);
         assert_eq!(rows.len(), 2);

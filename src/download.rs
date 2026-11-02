@@ -270,7 +270,7 @@ fn create_destination(directory: &Path, name: &str) -> Result<(PathBuf, File), S
             Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => continue,
             Err(error) => {
                 return Err(format!("could not create {}: {error}", candidate.display()));
-            }
+            },
         }
     }
     Err(format!("could not allocate a destination for {name}"))

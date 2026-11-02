@@ -1,0 +1,200 @@
+{
+  "date": "2026-10-29",
+  "status": "qualified",
+  "genet_commit": "565458ea3ab816940484079330eb165a878a22e0",
+  "fork": {
+    "package": "genet-taffy",
+    "version": "0.16.0",
+    "upstream_taffy": "0.15.1",
+    "registry_checksum": "c956cab2c4b0ae59ce89800c22d6f8db0cf4b45152fc17a5a945f260af085805",
+    "all_52_source_files_verified_on_execution_host": true
+  },
+  "sources": [
+    {
+      "repo": "turnstone",
+      "checkout": "<Code>/worktrees/turnstone-taffy-geometry-20261029",
+      "commit": "299d6ff7fb6f41cf109be93eb7384add2380436c",
+      "bundle_sha256": "bf72e0c621d9d677f3d908446ca98b44b7e68095805a12a42cad14aeaf927708",
+      "lock_sha256": "caecb4bd9e92e807331b5d17effd802bcf015dd0aba693e7ab0bb89489302cf2"
+    },
+    {
+      "repo": "sdk",
+      "checkout": "<Code>/worktrees/wgpu-cue-taffy-geometry-20261029",
+      "commit": "c314b7e3a2b2df4da2d9b0387b0c64c93b6b0e4d",
+      "bundle_sha256": "c3af480c65c4432cf95619095bc867f93fd4513fc53757ee91e6be205f3fab54",
+      "lock_sha256": "dd1cbf80f2f4362d74f5c34a3f048ff5c9363a7d77326127eea913342644a67b"
+    }
+  ],
+  "lock_reconciliation": {
+    "turnstone": {
+      "selected_package_records": 33,
+      "all_nonselected_records_unchanged": true,
+      "before_sha256": "d8220c32fc28ab5c8dd0ee1a41ff935df3a4a0b871ab09f7c868942cf1541705",
+      "after_sha256": "caecb4bd9e92e807331b5d17effd802bcf015dd0aba693e7ab0bb89489302cf2"
+    },
+    "sdk": {
+      "selected_package_records": 23,
+      "all_nonselected_records_unchanged": true,
+      "before_sha256": "9836bd3b2936504d754bf280b4efa12fd6e14ddf4edba59ab3fa65875c3eb4ab",
+      "after_sha256": "dd1cbf80f2f4362d74f5c34a3f048ff5c9363a7d77326127eea913342644a67b"
+    }
+  },
+  "metadata_source_audit": {
+    "turnstone": {
+      "resolved_packages": 1062,
+      "missing_source_aware_records": [],
+      "fork": [
+        {
+          "version": "0.16.0",
+          "source": "registry+https://github.com/rust-lang/crates.io-index"
+        }
+      ]
+    },
+    "sdk": {
+      "resolved_packages": 309,
+      "missing_source_aware_records": [],
+      "fork": [
+        {
+          "version": "0.16.0",
+          "source": "registry+https://github.com/rust-lang/crates.io-index"
+        }
+      ]
+    }
+  },
+  "executed_tests": {
+    "sdk-vulkan-geometry": [
+      [
+        2,
+        0,
+        0
+      ]
+    ],
+    "turnstone-primary-lens-geometry": [
+      [
+        1,
+        0,
+        0
+      ]
+    ],
+    "turnstone-ime-admission": [
+      [
+        1,
+        0,
+        0
+      ]
+    ],
+    "turnstone-vulkan-frame-custody": [
+      [
+        1,
+        0,
+        0
+      ]
+    ]
+  },
+  "headed": {
+    "ordinary": {
+      "qualified": true,
+      "source_surfaces_match": {
+        "0": true,
+        "1": true
+      },
+      "heights": {
+        "0": [
+          34.0,
+          37.4
+        ],
+        "1": [
+          37.4
+        ]
+      },
+      "zoom_pair": [
+        34.0,
+        37.4
+      ],
+      "lens_keeps_zoom": true,
+      "nonblank_vulkan_source_captures": 4,
+      "native_scales": {
+        "0": 1.0,
+        "1": 1.0
+      }
+    },
+    "password": {
+      "qualified": true,
+      "source_surfaces_match": {
+        "0": true,
+        "1": true
+      },
+      "heights": {
+        "0": [
+          33.0,
+          36.3
+        ],
+        "1": [
+          36.3
+        ]
+      },
+      "zoom_pair": [
+        33.0,
+        36.3
+      ],
+      "lens_keeps_zoom": true,
+      "nonblank_vulkan_source_captures": 4,
+      "native_scales": {
+        "0": 1.0,
+        "1": 1.0
+      }
+    }
+  },
+  "executable": {
+    "source": "299d6ff7fb6f41cf109be93eb7384add2380436c",
+    "path": "<Code>/output/cue-taffy-geometry-linux-20261029/turnstone-linux",
+    "sha256": "661308f3497e55bea4e055e9d45e436dcad929d3ce554c7ce12696e2e23abdb3",
+    "size": 534103080
+  },
+  "host": {
+    "kernel": "Linux T-PC 7.2.11-200.fc44.x86_64 #1 SMP PREEMPT_DYNAMIC Thu Oct 15 15:58:58 UTC 2026 x86_64 GNU/Linux",
+    "rustc": "rustc 1.99.1 (58cf8f9c3 2026-10-13)",
+    "cargo": "cargo 1.99.1 (5f94df478 2026-08-27)",
+    "gnome": "GNOME Shell 50.6",
+    "disk": "Filesystem      Size  Used Avail Use% Mounted on\n/dev/nvme0n1p3  929G  572G  354G  62% /home",
+    "environment": {
+      "XDG_RUNTIME_DIR": "/run/user/1000",
+      "WAYLAND_DISPLAY": "wayland-0",
+      "XDG_SESSION_TYPE": "wayland",
+      "WGPU_BACKEND": "vulkan",
+      "VK_DRIVER_FILES": "/usr/share/vulkan/icd.d/radeon_icd.x86_64.json",
+      "DISPLAY": null
+    }
+  },
+  "checker_controls": {
+    "ordinary": {
+      "actual_surfaces_pass": true,
+      "swapped_windows_rejected": true
+    },
+    "password": {
+      "actual_surfaces_pass": true,
+      "swapped_windows_rejected": true
+    }
+  },
+  "preservation": {
+    "five_original_remote_checkout_states_unchanged": true,
+    "new_qualification_checkouts_clean": true,
+    "prior_receipt_git_trees_unchanged": {
+      "docs/receipts/cue_ime_linux_20261024": "0517c18c73e5a1ce3991a7ea8ced6d5d4209f7c4",
+      "docs/receipts/cue_geometry_linux_20261027": "76ddeab137e66d32f9af1ef4dff591495989eb0f",
+      "docs/receipts/cue_password_geometry_linux_20261027": "c5694582b9b5ecfa50d60b2c89856b4e93db10af"
+    }
+  },
+  "scope_limits": [
+    "Synthetic programmatic input; no new physical keyboard or IME exercise",
+    "No new OS candidate-popup, CJK, human assistive-technology, X11, native high-DPI or Servo IME qualification",
+    "Captured source/composed rasters do not establish OS compositor pixel correlation"
+  ],
+  "raw_evidence": {
+    "execution_host_root": "<Code>/output/cue-taffy-geometry-linux-20261029",
+    "local_copy_root": "<Code>/output/cue-taffy-geometry-linux-20261029/evidence",
+    "archive_sha256": "11d6906c8c95f15489eb3cf1338d817c792beb05fb59a77dc9058f5eca99a115",
+    "full_compiler_messages_metadata_scene_dumps_profiles_and_frozen_binary": "Retained outside Git; published files are a bounded receiving receipt."
+  },
+  "published_evidence": "Home prefixes redacted. original-evidence-sha256.json identifies original bytes; derived-evidence.json describes filtered test stdout."
+}

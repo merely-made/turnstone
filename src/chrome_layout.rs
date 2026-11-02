@@ -20,7 +20,8 @@ mod tests {
     use super::*;
     #[test]
     fn existing_layout_files_keep_toolbar_navigation() {
-        let layout: ChromeLayout = serde_json::from_str(r#"{"toolbar_bottom":true,"document_tabs":"left"}"#).unwrap();
+        let layout: ChromeLayout =
+            serde_json::from_str(r#"{"toolbar_bottom":true,"document_tabs":"left"}"#).unwrap();
         assert!(!layout.activity_rail);
         assert!(layout.toolbar_bottom);
         assert_eq!(layout.document_tabs, TabEdge::Left);

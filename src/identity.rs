@@ -14,10 +14,10 @@
 //!
 //! ## Where the key lives
 //!
-//! **In djinn.** Turnstone opens no vault, storage or wallet (dramatis repo
-//! plan, D5). It calls djinn over Graphshell's custody route as the
-//! `turnstone` app and speaks as the persona djinn has chosen, so its root is
-//! the user's persona, the same one the SSH agent and Graphshell speak as.
+//! **With the configured custodian.** Turnstone opens no vault, storage or
+//! wallet (dramatis repo plan, D5). It reaches the current profile root through
+//! Djinn's Graphshell custody route as the `turnstone` app. Djinn brokers the
+//! route; the configured custodian owns and releases the root material.
 //!
 //! - Root-level acts happen inside djinn (D11): an install or endpoint
 //!   delegation is signed there through [`RootIdentity::issue_certificate`].
@@ -25,15 +25,14 @@
 //!   sealing, Commons and Gemot writers, Gemini client identities, the
 //!   projection endpoint) are released by djinn under its policy and dropped
 //!   when the vault locks.
-//! - With djinn absent or Locked the identity is **pending** (D12): [`bind`]
-//!   answers `None`, nothing signs, nothing is sealed, and there is no
-//!   fallback key. Already-public state (the browser, read-only places)
-//!   stays readable. [`watch_for_unlock`] asks djinn again until it
-//!   answers, and the app, the worker and the services adopt the root then.
+//! - With the route unavailable or custody locked, private identity access is
+//!   **pending** (D12). The shell retries bounded connections on a cancellable
+//!   background task and adopts only a fresh binding for the expected profile
+//!   and root. Already-public browser state remains available.
 
 use std::sync::Arc;
 
-use graphshell_endpoint::door::custody_identity::CustodyIdentity;
+use djinn::door::custody_identity::CustodyIdentity;
 use identity::delegation::DelegationError;
 use identity::{Ed25519Keypair, Ed25519PublicKey, IdentityError, IdentityProvider};
 use insigne::DerivedKeyAttestation;
@@ -41,6 +40,65 @@ use insigne::delegation::{DelegationCertificate, SignedDelegationCertificate};
 
 /// The name Turnstone is admitted to djinn's custody route under.
 pub const CUSTODY_APP: &str = "turnstone";
+
+/// The resident inference lane's route, named without the optional
+/// `inference` feature's dependency.
+const INFERENCE_ASK_ROUTE: &str = "inference.ask";
+
+/// What Turnstone declares to Djinn on every door connection: the resident
+/// routes it opens, and the custody calls and persona salts it needs. The
+/// resident owner's grant decides what Turnstone receives; anything not named
+/// here is refused. Salts are released unless listed under `acts`.
+pub fn app_declaration() -> djinn::door::declaration::AppDeclaration {
+    use djinn::door::declaration::{
+        AppDeclaration, CustodyOperation, CustodyUse, NamePattern, SaltPattern, SaltUse,
+    };
+    let prefix = |text: &str| SaltUse::persona(SaltPattern::Prefix(text.into()));
+    let scope = |domain: &str| SaltUse::persona(SaltPattern::DelegationScope(domain.into()));
+    AppDeclaration {
+        routes: vec![
+            NamePattern::exact(djinn::door::custody::CUSTODY_ROUTE),
+            NamePattern::exact(djinn::door::app_admission::APP_IDENTITY_ROUTE),
+            NamePattern::exact("knot"),
+            // The resident inference lane (`INFERENCE_ASK_ROUTE`).
+            NamePattern::exact(INFERENCE_ASK_ROUTE),
+        ],
+        offers: Vec::new(),
+        custody: CustodyUse {
+            operations: [
+                CustodyOperation::Status,
+                CustodyOperation::WatchLock,
+                CustodyOperation::Release,
+                CustodyOperation::Attest,
+                CustodyOperation::Payload,
+            ]
+            .into(),
+            salts: vec![
+                // A place's transport, sealed secrets and founding key.
+                prefix("turnstone.place."),
+                // Capsule-scoped Gemini client identities.
+                prefix("personae/gemini-client-identity/v1/"),
+                // The reader key Knot's published shares open with.
+                SaltUse::persona(SaltPattern::Exact("mere/knot-publish/reader/v1".into())),
+                // The shared-place writers Turnstone authors under.
+                prefix("mere.gemot.membership.v1/"),
+                prefix("mere.commons.writer.v1/"),
+                prefix("mere.commons.chat.writer.v1/"),
+                prefix("stickleback/group-key-writer/v1/"),
+                prefix("stickleback/group-prekey-identity/v1"),
+                // Delegations issued through a provider release their scope
+                // key: a Moot's, Knot's shares, and a place's Graphshell guests.
+                scope("moot"),
+                scope("mere.knot"),
+                scope("mere.graphshell"),
+            ],
+            ..CustodyUse::default()
+        },
+    }
+}
+
+/// Nonsecret profile and root-key identity used to match a fresh binding.
+pub type CustodyPrincipal = (identity::ProfileId, [u8; 32]);
 
 /// The persona Turnstone speaks as.
 pub enum RootIdentity {
@@ -73,7 +131,7 @@ impl RootIdentity {
             RootIdentity::Local(provider) => {
                 use identity::delegation::Issue as _;
                 SignedDelegationCertificate::issue(provider, certificate)
-            }
+            },
         }
     }
 
@@ -98,6 +156,72 @@ impl IdentityProvider for RootIdentity {
     fn attest_derived_key(&self, salt: &[u8]) -> Result<DerivedKeyAttestation, IdentityError> {
         self.provider().attest_derived_key(salt)
     }
+}
+
+impl RootIdentity {
+    /// This local observation only detects lock/loss transitions since the
+    /// custody route was bound. It is never authorization by itself.
+    pub fn custody_epoch(&self) -> Option<u64> {
+        match self {
+            Self::Custody(custody) => custody.custody_epoch(),
+            #[cfg(test)]
+            Self::Local(_) => Some(1),
+        }
+    }
+
+    /// Return the stable principal identity used to match a fresh connection
+    /// after lock. It contains no private key material.
+    pub fn custody_principal(&self) -> Option<CustodyPrincipal> {
+        match self {
+            Self::Custody(custody) => Some((
+                custody.profile()?.clone(),
+                self.master_public_key().to_bytes(),
+            )),
+            #[cfg(test)]
+            Self::Local(_) => None,
+        }
+    }
+
+    /// A bounded fresh status must still name the originally connected
+    /// profile and master, with the same observed custody epoch throughout.
+    pub fn custody_binding_current(&self) -> bool {
+        use identity::IdentityProvider as _;
+        match self {
+            Self::Custody(custody) => {
+                let Some(before) = custody.custody_epoch() else {
+                    return false;
+                };
+                let Ok(status) = custody.status_timeout(std::time::Duration::from_secs(2)) else {
+                    return false;
+                };
+                status.lock == dramatis::view::VaultLockView::Unlocked
+                    && custody
+                        .connected_status()
+                        .custody_epoch
+                        .as_ref()
+                        .is_some_and(|epoch| epoch.valid())
+                    && status.custody_epoch == custody.connected_status().custody_epoch
+                    && custody.profile().is_some()
+                    && status.profile.as_ref() == custody.profile()
+                    && status.persona_public_key == Some(custody.master_public_key().to_bytes())
+                    && custody.custody_epoch() == Some(before)
+            },
+            #[cfg(test)]
+            Self::Local(_) => true,
+        }
+    }
+}
+
+/// Used only by the cancellable background binding task. No key or passphrase
+/// is read here, and the fresh connection has one deadline for its handshake.
+pub fn bind_timeout(timeout: std::time::Duration) -> Option<Arc<RootIdentity>> {
+    djinn::door::custody_identity::CustodyIdentity::connect_declared_timeout(
+        CUSTODY_APP,
+        app_declaration(),
+        timeout,
+    )
+    .ok()
+    .map(|identity| Arc::new(RootIdentity::Custody(identity)))
 }
 
 /// The custodian performs each operation. This adapter holds no epoch key.
@@ -131,65 +255,30 @@ impl eidetic::PayloadSealer for RootIdentity {
     }
 }
 
-/// Reach the profile's root identity through djinn, or `None` while it is
-/// pending (djinn absent or Locked, D12). Never mints, opens or falls back
-/// to a key of Turnstone's own.
+/// Synchronous identity fixture helper. Production uses the shell's bounded
+/// background connection so no custody RPC runs on the UI thread.
+#[cfg(test)]
 pub fn bind() -> Option<Arc<RootIdentity>> {
     match CustodyIdentity::connect(CUSTODY_APP) {
         Ok(custody) => {
             let root = RootIdentity::Custody(custody);
             tracing::info!(protection = %root.description(), "profile identity (djinn)");
             Some(Arc::new(root))
-        }
+        },
         Err(error) if error.is_pending() => {
             tracing::warn!(%error, "profile identity pending: djinn is absent or locked");
             None
-        }
+        },
         Err(error) => {
             tracing::warn!(%error, "profile identity pending: djinn refused the custody route");
             None
-        }
+        },
     }
 }
 
 /// The refusal every identity-bound act gives while the identity is pending.
 pub const PENDING: &str =
     "the profile identity is pending: djinn is not running or the vault is locked";
-
-/// How often [`watch_for_unlock`] asks djinn again.
-const UNLOCK_POLL: std::time::Duration = std::time::Duration::from_secs(1);
-
-/// Wait for a pending identity and hand back the root once djinn answers
-/// (djinn started, or a user act unlocked its vault). Calls `wake` after
-/// sending; ends with the root sent or the receiver gone.
-pub fn watch_for_unlock(
-    wake: Arc<dyn Fn() + Send + Sync>,
-) -> std::sync::mpsc::Receiver<Arc<RootIdentity>> {
-    watch_with(bind, UNLOCK_POLL, wake)
-}
-
-fn watch_with(
-    bind: impl Fn() -> Option<Arc<RootIdentity>> + Send + 'static,
-    poll: std::time::Duration,
-    wake: Arc<dyn Fn() + Send + Sync>,
-) -> std::sync::mpsc::Receiver<Arc<RootIdentity>> {
-    let (tx, rx) = std::sync::mpsc::channel();
-    let spawned = std::thread::Builder::new()
-        .name("turnstone-unlock-watch".into())
-        .spawn(move || loop {
-            std::thread::sleep(poll);
-            if let Some(root) = bind() {
-                if tx.send(root).is_ok() {
-                    wake();
-                }
-                return;
-            }
-        });
-    if let Err(err) = spawned {
-        tracing::warn!(%err, "could not watch for djinn; the profile identity stays pending");
-    }
-    rx
-}
 
 /// The root subject: the master public key every participant grant descends from.
 pub fn root_subject(provider: &impl IdentityProvider) -> servitor::Subject {
@@ -209,40 +298,29 @@ mod tests {
     use super::*;
 
     #[test]
+    fn the_declaration_is_bounded_and_names_what_turnstone_opens() {
+        use djinn::door::app_admission::AppRouteId;
+        let declaration = app_declaration();
+        assert!(declaration.validate().is_ok());
+        for route in ["custody", "identity", "knot", "inference.ask"] {
+            assert!(declaration.declares_route(&AppRouteId::new(route).unwrap()), "{route}");
+        }
+        assert!(!declaration.declares_route(&AppRouteId::new("reservoir").unwrap()));
+        assert!(declaration.custody.epoch.is_empty(), "Turnstone asks for no epoch keys");
+    }
+
+    #[cfg(feature = "inference")]
+    #[test]
+    fn the_inference_route_matches_distillery() {
+        assert_eq!(INFERENCE_ASK_ROUTE, distillery::inference_protocol::INFERENCE_ASK_ROUTE);
+    }
+
+    #[test]
     fn a_fixture_root_speaks_as_its_seed() {
         let root = RootIdentity::from_seed([3; 32]);
         assert_eq!(
             root_subject(&root),
             root_subject(&identity::InMemoryProvider::from_seed([3; 32]))
-        );
-    }
-
-    /// The watch hands the root back once djinn answers, and not before.
-    #[test]
-    fn the_unlock_watch_adopts_the_root_once_djinn_answers() {
-        use std::sync::atomic::{AtomicUsize, Ordering};
-        let poll = std::time::Duration::from_millis(20);
-        let asks = Arc::new(AtomicUsize::new(0));
-        let counted = asks.clone();
-        // Delivery can wake this receiver before the watcher calls the host
-        // callback. Observe both events rather than assuming their scheduling.
-        let (wake_ack, woken) = std::sync::mpsc::channel();
-        let roots = watch_with(
-            move || {
-                (counted.fetch_add(1, Ordering::SeqCst) >= 3)
-                    .then(|| Arc::new(RootIdentity::from_seed([4; 32])))
-            },
-            poll,
-            Arc::new(move || { let _ = wake_ack.send(()); }),
-        );
-        let root = roots
-            .recv_timeout(poll * 100)
-            .expect("the root arrives once djinn answers");
-        assert!(asks.load(Ordering::SeqCst) >= 4, "pending answers came first");
-        woken.recv_timeout(poll * 100).expect("root adoption also wakes the host");
-        assert_eq!(
-            root_subject(root.as_ref()),
-            root_subject(&RootIdentity::from_seed([4; 32]))
         );
     }
 }

@@ -1,0 +1,16 @@
+[
+  {
+    "repo": "turnstone",
+    "checkout": "<Code>/worktrees/turnstone-taffy-geometry-20261029",
+    "commit": "299d6ff7fb6f41cf109be93eb7384add2380436c",
+    "bundle_sha256": "bf72e0c621d9d677f3d908446ca98b44b7e68095805a12a42cad14aeaf927708",
+    "lock_sha256": "caecb4bd9e92e807331b5d17effd802bcf015dd0aba693e7ab0bb89489302cf2"
+  },
+  {
+    "repo": "sdk",
+    "checkout": "<Code>/worktrees/wgpu-cue-taffy-geometry-20261029",
+    "commit": "c314b7e3a2b2df4da2d9b0387b0c64c93b6b0e4d",
+    "bundle_sha256": "c3af480c65c4432cf95619095bc867f93fd4513fc53757ee91e6be205f3fab54",
+    "lock_sha256": "dd1cbf80f2f4362d74f5c34a3f048ff5c9363a7d77326127eea913342644a67b"
+  }
+]

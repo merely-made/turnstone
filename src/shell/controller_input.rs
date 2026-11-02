@@ -121,7 +121,9 @@ impl Shell {
         let mut acted = false;
         if let Some(navigation) = effect.navigation {
             let url = content_link_target(&self.app, node, &navigation.request.address);
-            if !self.app.peek_inline_reference(node, &url) { self.act(Action::OpenAddress(url)); }
+            if !self.app.peek_inline_reference(node, &url) {
+                self.act(Action::OpenAddress(url));
+            }
             acted = true;
         }
         if let Some(submission) = effect.submission {

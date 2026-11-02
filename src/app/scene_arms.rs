@@ -65,7 +65,7 @@ impl App {
         let directory = crate::session::session_dir(&self.data_root, session);
         runtime.persistence.placement_for(&directory)?;
         crate::scene_state::stage_scene(&mut runtime.canvas, *graph.as_uuid(), &runtime.view);
-        pandect::save_node_facets(&directory, runtime.canvas.facets_mut())?;
+        pandect::save_node_facets(&directory, runtime.canvas.facets())?;
         crate::scene_state::save_view(
             &directory,
             &runtime.canvas,

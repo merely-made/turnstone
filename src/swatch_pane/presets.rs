@@ -71,6 +71,7 @@ fn content_state(app: &App, id: Uuid) -> NodeState {
         Some(NodeContent::Live)
         | Some(NodeContent::Requested)
         | Some(NodeContent::AwaitingInput)
+        | Some(NodeContent::AwaitingCustody)
         | Some(NodeContent::AwaitingIdentity)
         | Some(NodeContent::AwaitingTrust) => NodeState::Open,
         Some(NodeContent::Failed(_)) => NodeState::Closed,
@@ -194,7 +195,14 @@ fn overmap_gather(app: &App) -> SwatchModel {
         }
     };
 
-    let current_container = app.reading.scope.navigation.current().filter(|v|v.place.level==crate::scope_navigation::ScopeLevel::Overmap).map(|v|*v.place.graph.as_uuid()).or_else(||app.container_id());
+    let current_container = app
+        .reading
+        .scope
+        .navigation
+        .current()
+        .filter(|v| v.place.level == crate::scope_navigation::ScopeLevel::Overmap)
+        .map(|v| *v.place.graph.as_uuid())
+        .or_else(|| app.container_id());
     let mut model = SwatchModel::default();
     for &(id, depth, row) in &placed {
         let (key, node) = graph.get_node_by_id(id).expect("placed from this graph");

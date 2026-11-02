@@ -1,0 +1,22 @@
+{
+  "sdk-vulkan-geometry/test-output.log": {
+    "raw_path": "sdk-vulkan-geometry/stdout",
+    "raw_sha256": "967050b0dc1546592d7b914b65c7f07c1b0bfbb7263ed6e06b93032bd5b7cbe5",
+    "transformation": "Retain test stdout; omit Cargo compiler JSON records; redact home prefixes."
+  },
+  "turnstone-primary-lens-geometry/test-output.log": {
+    "raw_path": "turnstone-primary-lens-geometry/stdout",
+    "raw_sha256": "56c1ba23eb5324fadcee558f20793ab9734cd86bd13eb8c082e023b3012fc6ea",
+    "transformation": "Retain test stdout; omit Cargo compiler JSON records; redact home prefixes."
+  },
+  "turnstone-ime-admission/test-output.log": {
+    "raw_path": "turnstone-ime-admission/stdout",
+    "raw_sha256": "3a1ff95a04d9dae6488c06236340ed52b57034ef0ac52600520c5b08c46198f9",
+    "transformation": "Retain test stdout; omit Cargo compiler JSON records; redact home prefixes."
+  },
+  "turnstone-vulkan-frame-custody/test-output.log": {
+    "raw_path": "turnstone-vulkan-frame-custody/stdout",
+    "raw_sha256": "3739ab5e600b290677d0fba017e05b6f380674299cf6d135eacdadbd516e7627",
+    "transformation": "Retain test stdout; omit Cargo compiler JSON records; redact home prefixes."
+  }
+}

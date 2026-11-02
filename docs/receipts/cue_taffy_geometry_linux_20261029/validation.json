@@ -1,0 +1,13 @@
+{
+  "gates_passed": true,
+  "all_executed_counts_nonzero": true,
+  "source_audits_have_no_gaps": true,
+  "both_headed_cases_qualified": true,
+  "actual_trace_swapped_window_controls_rejected": true,
+  "old_checkout_states_and_receipts_unchanged": true,
+  "non_log_diff_check_passed": true,
+  "log_whitespace_preserved": {
+    "diagnostics": 160,
+    "reason": "Captured Cargo output contains space-before-tab indentation; filtered test stdout retains blank lines. Evidence bytes are preserved."
+  }
+}

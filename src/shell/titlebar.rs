@@ -36,13 +36,30 @@ impl Shell {
         let insets = WinitWindow(window.clone()).titlebar_insets();
         let mut chrome = self.app.shell_chrome_config().clone();
         let scale = crate::ui::clean_scale(window.scale_factor() as f32);
-        if chrome.titlebar_insets.get(&slot) == Some(&insets) && chrome.layout_scales.get(&slot) == Some(&scale) {
+        if chrome.titlebar_insets.get(&slot) == Some(&insets)
+            && chrome.layout_scales.get(&slot) == Some(&scale)
+        {
             return;
         }
         chrome.titlebar_insets.insert(slot, insets);
         chrome.layout_scales.insert(slot, scale);
         self.app.set_shell_chrome_config(chrome);
         window.request_redraw();
+    }
+
+    /// Record the OS light/dark preference that the `System` theme follows.
+    pub(super) fn publish_system_theme(&mut self, theme: Option<winit::window::Theme>) {
+        let Some(theme) = theme else { return };
+        let dark = theme == winit::window::Theme::Dark;
+        let mut chrome = self.app.shell_chrome_config().clone();
+        if chrome.appearance.system_dark == dark {
+            return;
+        }
+        chrome.appearance.system_dark = dark;
+        self.app.set_shell_chrome_config(chrome);
+        // A `System` theme's stored palette is chosen per OS preference.
+        self.poll_live_settings();
+        self.request_redraw();
     }
 
     /// Run before content delivery. The drag decision is read from the same
@@ -120,7 +137,8 @@ impl Shell {
         }
         // A modal card or palette retains the application's existing outside
         // press/dismissal policy instead of starting a window gesture.
-        if self.app.omnibar.open || self.app.user_agent_decision.is_open() || self.chrome.has_menu() {
+        if self.app.omnibar.open || self.app.user_agent_decision.is_open() || self.chrome.has_menu()
+        {
             return false;
         }
         if *button == MouseButton::Right {

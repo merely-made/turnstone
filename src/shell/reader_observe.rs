@@ -61,37 +61,104 @@ pub(super) struct ReaderAppearanceObservation {
 
 impl Shell {
     pub(super) fn retain_reading_positions(&mut self) {
-        if self.app.reading.load_error.is_some() {return;}
-        let panes:Vec<_>=self.app.frisket.iter_leaves().chain(self.app.lenses.iter().flatten().flat_map(|layout|layout.iter_leaves()))
-            .filter(|(_,kind,_)|matches!(kind,crate::panes::PaneContent::Workbench)).map(|(pane,_,_)|pane).collect();
-        let mut excerpts=std::collections::BTreeMap::new();
-        for (node,content) in self.content_sessions.iter() {
-            if let Some(controller)=content.document() {
-                let session=controller.session().as_any_ref();
-                let document=session.downcast_ref::<mere_document_lanes::ReaderDocumentSession>().map(|r|r.source_document())
-                    .or_else(||session.downcast_ref::<mere_document_lanes::SmolwebDocumentSession>().map(|d|d.document().source_document()));
-                if let Some(excerpt)=document.and_then(|doc|mere_document_lanes::reading_excerpt(&doc)) {excerpts.insert(*node,excerpt);}
-            }
+        if self.app.reading.load_error.is_some() {
+            return;
         }
-        self.app.reading.excerpts=excerpts;
-        let mut changed=false;
-        for key in self.content_sessions.pool.keys().copied().collect::<Vec<_>>() {
-            let super::content_pool::ContentKey::Reader {node,appearance}=key else {continue;};
-            let target=panes.iter().find_map(|pane| {let target=crate::reading_view::ReadTarget{pane:*pane,member:node};
-                (0..=self.app.lenses.len() as u64).any(|window|target.appearance(window)==appearance).then_some(target)});
-            let Some(target)=target else {continue;};
-            let Some(session)=self.content_sessions.pool.content(&key).and_then(pelt_core::PeltContent::document).map(|c|c.session().as_any_ref()) else {continue;};
-            let anchor=session.downcast_ref::<mere_document_lanes::ReaderDocumentSession>().and_then(|r|r.reading_anchor())
-                .or_else(||session.downcast_ref::<mere_document_lanes::SmolwebDocumentSession>().and_then(|d|d.document().reading_anchor()));
-            if let Some(anchor)=anchor {
-                changed|=self.app.retain_scope_anchor(target,&anchor);
-                if let Some(trail)=self.app.reading.trails.get_mut(&target.pane) {
-                    if trail.current().is_some_and(|visit|visit.member==node) && trail.current_anchor()!=Some(&anchor) {trail.anchor_current(anchor.clone());changed=true;}
+        let panes: Vec<_> = self
+            .app
+            .frisket
+            .iter_leaves()
+            .chain(
+                self.app
+                    .lenses
+                    .iter()
+                    .flatten()
+                    .flat_map(|layout| layout.iter_leaves()),
+            )
+            .filter(|(_, kind, _)| matches!(kind, crate::panes::PaneContent::Workbench))
+            .map(|(pane, _, _)| pane)
+            .collect();
+        let mut excerpts = std::collections::BTreeMap::new();
+        for (node, content) in self.content_sessions.iter() {
+            if let Some(controller) = content.document() {
+                let session = controller.session().as_any_ref();
+                let document = session
+                    .downcast_ref::<mere_document_lanes::ReaderDocumentSession>()
+                    .map(|r| r.source_document())
+                    .or_else(|| {
+                        session
+                            .downcast_ref::<mere_document_lanes::SmolwebDocumentSession>()
+                            .map(|d| d.document().source_document())
+                    });
+                if let Some(excerpt) =
+                    document.and_then(|doc| mere_document_lanes::reading_excerpt(&doc))
+                {
+                    excerpts.insert(*node, excerpt);
                 }
-                if self.app.reading.anchors.get(&target)!=Some(&anchor) {self.app.reading.anchors.insert(target,anchor);changed=true;}
             }
         }
-        if changed {if let Err(error)=self.app.reading.save(&self.app.session_dir()) {tracing::warn!(%error,"Reading positions were not saved");}}
+        self.app.reading.excerpts = excerpts;
+        let mut changed = false;
+        for key in self
+            .content_sessions
+            .pool
+            .keys()
+            .copied()
+            .collect::<Vec<_>>()
+        {
+            let super::content_pool::ContentKey::Reader { node, appearance } = key else {
+                continue;
+            };
+            let target = panes.iter().find_map(|pane| {
+                let target = crate::reading_view::ReadTarget {
+                    pane: *pane,
+                    member: node,
+                };
+                (0..=self.app.lenses.len() as u64)
+                    .any(|window| target.appearance(window) == appearance)
+                    .then_some(target)
+            });
+            let Some(target) = target else {
+                continue;
+            };
+            let Some(session) = self
+                .content_sessions
+                .pool
+                .content(&key)
+                .and_then(pelt_core::PeltContent::document)
+                .map(|c| c.session().as_any_ref())
+            else {
+                continue;
+            };
+            let anchor = session
+                .downcast_ref::<mere_document_lanes::ReaderDocumentSession>()
+                .and_then(|r| r.reading_anchor())
+                .or_else(|| {
+                    session
+                        .downcast_ref::<mere_document_lanes::SmolwebDocumentSession>()
+                        .and_then(|d| d.document().reading_anchor())
+                });
+            if let Some(anchor) = anchor {
+                changed |= self.app.retain_scope_anchor(target, &anchor);
+                if let Some(trail) = self.app.reading.trails.get_mut(&target.pane) {
+                    if trail.current().is_some_and(|visit| visit.member == node)
+                        && trail.current_anchor() != Some(&anchor)
+                    {
+                        trail.anchor_current(anchor.clone());
+                        changed = true;
+                    }
+                }
+                if self.app.reading.anchors.get(&target) != Some(&anchor) {
+                    self.app.reading.anchors.insert(target, anchor);
+                    changed = true;
+                }
+            }
+        }
+        if changed {
+            if let Err(error) = self.app.reading.save(&self.app.session_dir()) {
+                tracing::warn!(%error,"Reading positions were not saved");
+            }
+        }
     }
 
     pub(super) fn reader_appearance_observations(&self) -> Vec<ReaderAppearanceObservation> {
@@ -103,8 +170,12 @@ impl Shell {
                 let SurfaceKind::Content(node) = surface.kind else {
                     return None;
                 };
-                let reader = self.content_sessions.appearance(node, surface.id)?
-                    .document()?.session().as_any_ref()
+                let reader = self
+                    .content_sessions
+                    .appearance(node, surface.id)?
+                    .document()?
+                    .session()
+                    .as_any_ref()
                     .downcast_ref::<mere_document_lanes::ReaderDocumentSession>()?;
                 Some({
                     (
@@ -124,15 +195,8 @@ impl Shell {
 
         let mut sources = Vec::new();
         raw.into_iter()
-            .map(|(id, role, rect, viewport, scroll_y, layout_scale, reading_preferences, source)| {
-                let source_group = sources
-                    .iter()
-                    .position(|known| Arc::ptr_eq(known, &source))
-                    .unwrap_or_else(|| {
-                        sources.push(source);
-                        sources.len() - 1
-                    });
-                ReaderAppearanceObservation {
+            .map(
+                |(
                     id,
                     role,
                     rect,
@@ -140,9 +204,27 @@ impl Shell {
                     scroll_y,
                     layout_scale,
                     reading_preferences,
-                    source_group,
-                }
-            })
+                    source,
+                )| {
+                    let source_group = sources
+                        .iter()
+                        .position(|known| Arc::ptr_eq(known, &source))
+                        .unwrap_or_else(|| {
+                            sources.push(source);
+                            sources.len() - 1
+                        });
+                    ReaderAppearanceObservation {
+                        id,
+                        role,
+                        rect,
+                        viewport,
+                        scroll_y,
+                        layout_scale,
+                        reading_preferences,
+                        source_group,
+                    }
+                },
+            )
             .collect()
     }
 

@@ -67,7 +67,9 @@ impl FrisketLayout {
         let Some(frame) = self.workspace_mut() else {
             return false;
         };
-        let target=active_at(frame,path).or_else(||frame.workspace.tiled().tiles().last().map(|t|t.id)).unwrap_or(workbench::TileId(pane_id.0));
+        let target = active_at(frame, path)
+            .or_else(|| frame.workspace.tiled().tiles().last().map(|t| t.id))
+            .unwrap_or(workbench::TileId(pane_id.0));
         frame.insert_beside(
             target.0,
             edge(side),

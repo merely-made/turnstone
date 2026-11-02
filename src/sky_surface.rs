@@ -17,11 +17,11 @@ mod view;
 use std::time::Duration;
 
 use cambium::{DomHandle, RetainedSurfaceSession, RunnerSurfaceSession};
-use mere_surface_api::{ProviderId, SourceKindId, SurfaceDescriptor, SurfaceId};
 use jiff::{
     civil::{Date, Time},
     tz::TimeZone,
 };
+use mere_surface_api::{ProviderId, SourceKindId, SurfaceDescriptor, SurfaceId};
 use serde::{Deserialize, Serialize};
 use turquet::apparent::ApparentBody;
 use turquet::events::{
@@ -125,7 +125,7 @@ impl SkyRiseSetPresetV1 {
                     limb,
                     HorizonDipModel::level(),
                 )
-            }
+            },
         }
     }
 }
@@ -392,7 +392,7 @@ fn timeline_row(timeline: &SkyTimeline, item: &SkyTimelineItem) -> Result<SkyTim
                 horizon.latitude().radians().to_degrees(),
                 horizon.longitude().radians().to_degrees()
             )
-        }
+        },
         SkyTimelineItem::LunarPhase(event) => match event.phase() {
             LunarPhase::NewMoon => "Moon: New Moon".into(),
             LunarPhase::FirstQuarter => "Moon: First Quarter".into(),

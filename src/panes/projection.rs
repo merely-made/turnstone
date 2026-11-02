@@ -29,15 +29,42 @@ pub fn project_frisket(layout: &FrisketLayout) -> UxTree {
     project_frisket_with(layout, |_, _| None)
 }
 
-pub(crate) fn pane_projection_ids(layout:&FrisketLayout)->std::collections::HashMap<workbench::TileId,accesskit::NodeId> {
-    fn visit(node:&PaneNode,path:&str,out:&mut std::collections::HashMap<workbench::TileId,accesskit::NodeId>) {
+pub(crate) fn pane_projection_ids(
+    layout: &FrisketLayout,
+) -> std::collections::HashMap<workbench::TileId, accesskit::NodeId> {
+    fn visit(
+        node: &PaneNode,
+        path: &str,
+        out: &mut std::collections::HashMap<workbench::TileId, accesskit::NodeId>,
+    ) {
         match node {
-            PaneNode::Leaf {pane_id,..}=>{out.insert(workbench::TileId(pane_id.0),node_id_for_path(&format!("{path}/pane/{}",pane_id.0)));},
-            PaneNode::Workspace(frame)=>{for id in frame.panes.keys() {out.insert(workbench::TileId(*id),node_id_for_path(&format!("{path}/pane/{id}")));}},
-            PaneNode::Split {first,second,..}=>{visit(first,&format!("{path}/split/first"),out);visit(second,&format!("{path}/split/second"),out);},
+            PaneNode::Leaf { pane_id, .. } => {
+                out.insert(
+                    workbench::TileId(pane_id.0),
+                    node_id_for_path(&format!("{path}/pane/{}", pane_id.0)),
+                );
+            },
+            PaneNode::Workspace(frame) => {
+                for id in frame.panes.keys() {
+                    out.insert(
+                        workbench::TileId(*id),
+                        node_id_for_path(&format!("{path}/pane/{id}")),
+                    );
+                }
+            },
+            PaneNode::Split { first, second, .. } => {
+                visit(first, &format!("{path}/split/first"), out);
+                visit(second, &format!("{path}/split/second"), out);
+            },
         }
     }
-    let mut out=std::collections::HashMap::new();visit(&layout.root,&format!("frisket/{}",layout.id.as_str()),&mut out);out
+    let mut out = std::collections::HashMap::new();
+    visit(
+        &layout.root,
+        &format!("frisket/{}", layout.id.as_str()),
+        &mut out,
+    );
+    out
 }
 
 /// Project a frame layout, calling `content_for` at each leaf to ask
@@ -143,7 +170,13 @@ where
             }
             let mut ids = Vec::new();
             active(frame.workspace.tiled(), &mut ids);
-            ids.extend(frame.workspace.visible_floating(true).iter().map(|f|f.tile.id));
+            ids.extend(
+                frame
+                    .workspace
+                    .visible_floating(true)
+                    .iter()
+                    .map(|f| f.tile.id),
+            );
             let children = ids
                 .into_iter()
                 .filter_map(|id| {
