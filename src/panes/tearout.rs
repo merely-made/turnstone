@@ -6,8 +6,8 @@
 
 //! Tear-out gesture payload types.
 //!
-//! Per the [tear-out operations
-//! brief](../../../../design_docs/mere_docs/research/2026-05-11_tearout_operations_brief.md),
+//! Per the tear-out operations brief
+//! (`mere/design_docs/mere_docs/research/2026-05-11_tearout_operations_brief.md`),
 //! a tear-out gesture pulls a tile out of its donor window with one
 //! of three semantics — **leaf**, **branch**, or **fork**. The
 //! gesture's *payload* (which tile, from which pane) is portable;
@@ -39,7 +39,8 @@ pub struct TileDragPayload {
 /// pane was the target + which side, then dispatches
 /// `ActionKind::ReparentPane`.
 ///
-/// Per the [pane-UX brief](../../../../design_docs/mere_docs/design/2026-05-11_pane_ux_design_pass_brief.md)
+/// Per the pane-UX brief
+/// (`mere/design_docs/mere_docs/design/2026-05-11_pane_ux_design_pass_brief.md`)
 /// §1: drag a pane header to rearrange the frame without losing
 /// per-pane state.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

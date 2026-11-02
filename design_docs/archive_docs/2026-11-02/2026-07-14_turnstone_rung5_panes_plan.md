@@ -1,5 +1,7 @@
 # Turnstone rung 5: panes
 
+> **Archived 2026-11-02 (landed).** Slices A to F landed 2026-07-14 to 2026-07-18 (A `3f043d9`, B `29b9447`, C `79cdcbf`, D `caa55fb`, E and F per their headings), the September 29 consolidation (`d6b62adb`) retired Steward and object-analysis Apparatus, and application appearance adoption was qualified on 2026-10-10 (`7fca85ac`, `1ee6521c`). Open points moved to the successor `2026-11-02_pane_registry_and_graph_panes_plan.md`: Open questions 2 to 7 (section "Open questions", line 521; question 1 was decided and landed 2026-07-14) and the two Watch items (section "Watch items", line 575), carried there with a note that later work may have settled some. The successor `2026-11-02_architecture_plan.md` holds the general ladder. Receipts and the old-to-main hash table: [2026-07-14_turnstone_rung5_panes_plan_receipts.md](../receipts/2026-07-14_turnstone_rung5_panes_plan_receipts.md). Mark, 2026-11-02: "Everything, drafts first".
+
 **September 29 consolidation:** the historical pane taxonomy below has been
 revised. Gloss receives operational readouts, beginning with configurable
 Downloads beside its minimap; new instances default to both and old compositions
@@ -7,20 +9,20 @@ keep their chosen sections. Inspector includes graph-object analysis and
 handling controls alongside document inspection. Steward and object-analysis
 Apparatus are retired from runtime pane registration; real saved leaves restore
 to their replacements in place. Shared diagnostics now belong to
-`mere-apparatus`. The [current Gloss plan](2026-07-20_gloss_composite_pane.md#current-direction-2026-09-29)
-and [pane registry plan](2026-08-08_pane_registry_and_graph_panes_plan.md) track
+`mere-apparatus`. The [current Gloss plan](../../2026-07-20_gloss_composite_pane.md#current-direction-2026-09-29)
+and [pane registry plan](../../2026-08-08_pane_registry_and_graph_panes_plan.md) track
 implementation and final acceptance gates. Within-document selection inspection,
 background/sync operation controls and semantic automation qualification are later
 work; these source changes do not establish new human accessibility acceptance.
 The bounded migration passed the automated and native gates in the
-[September 29 qualification receipt](2026-09-29_shared_diagnostics_gloss_inspector_receipt.md): 612 workspace tests passed with 9 ignored, the default-feature native
+[September 29 qualification receipt](../receipts/2026-09-29_shared_diagnostics_gloss_inspector_receipt_receipts.md): 612 workspace tests passed with 9 ignored, the default-feature native
 build passed, and fresh/restart scenarios retained Gloss configuration, Inspector
 and the requested viewer. Custom-leaf semantic parity, full built-in selectors,
 document selection and exact frame correlation remain open alongside human AT.
 
 
 2026-07-14. Scopes rung 5 of the obviation ladder in
-[2026-07-10_turnstone_architecture_plan.md](./2026-07-10_turnstone_architecture_plan.md).
+[2026-07-10_turnstone_architecture_plan.md](../../2026-07-10_turnstone_architecture_plan.md).
 The ladder's one-line gate for this rung ("platen's pane model") is wrong in
 both halves, so this plan restates the gate before it slices the work.
 
@@ -624,7 +626,7 @@ and `incipit` moved onto turnstone's manifest. The pane model, its layout ops, t
 `frame.json` store, the tearout lane, and the uxtree projection are unchanged.
 
 Direction and the publish order are in genet's
-[frisket pane component doc](../../genet/docs/2026-07-24_frisket_pane_component_direction.md).
+frisket pane component doc (`genet/docs/2026-07-24_frisket_pane_component_direction.md`).
 
 ## Application appearance adoption, 2026-10-10
 

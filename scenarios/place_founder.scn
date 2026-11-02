@@ -1,4 +1,4 @@
-# T5a founder path (design_docs/2026-07-28_turnstone_place_port_plan.md,
+# T5a founder path (design_docs/archive_docs/2026-11-02/2026-07-28_turnstone_place_port_plan.md,
 # "T5a. Founder path and two-window proof"). Founds a place, exports a card,
 # invites the joiner's offered pre-key, and exchanges one message each way.
 # Runs paired with scenarios/place_joiner.scn through a shared exchange
@@ -132,7 +132,7 @@ key enter
 settle 10
 wait-status 3000 Retained history: 1 shared nodes, 5 messages
 
-# T5c: shared Knot document by projection (design_docs/2026-07-28_turnstone_
+# T5c: shared Knot document by projection (design_docs/archive_docs/2026-11-02/2026-07-28_turnstone_
 # place_port_plan.md, "T5c. Shared Knot document by projection"). Placed
 # AFTER the reader's refused-write receipt above (not before wait-file
 # reader.finished) so the reader's own "exactly 1 shared node" checks are

@@ -1,5 +1,7 @@
 # Command Palette Open-Lag Note
 
+> **Archived 2026-11-02 (closed).** Attributed 2026-08-23 (`c5495ee5`), fixed by retaining the chrome's layout (`103b3db7`, 4.37x to 1.19x) and closed 2026-08-24 by splitting dirty tiles by surface class (`26e7ad28`, chrome repaints nothing at idle). Nothing open. The comments at `src/ui.rs:233` and `src/frame_timing.rs:11` cite this note at its new path. Receipts and the old-to-main hash table: [2026-08-22_command_palette_open_lag_receipts.md](../receipts/2026-08-22_command_palette_open_lag_receipts.md). Mark, 2026-11-02: "Everything, drafts first".
+
 **Date:** 2026-08-22 (attributed and fixed 2026-08-23, closed 2026-08-24)
 **Status:** Closed. The cost was `ChromeView::scene` re-cascading the whole
 chrome subtree every frame. Chrome now retains its layout per window-root; the
@@ -82,9 +84,9 @@ The four candidates this note recorded on 2026-08-22, now answered:
    cheap. Turning the subtree into a scene is the whole problem.
 
 3. **The chrome subtree has no `RetainedLayout` - confirmed, and it is the
-   mechanism.** [`ui::scene_from_subtree`](../src/ui.rs) builds a fresh
+   mechanism.** [`ui::scene_from_subtree`](../../../src/ui.rs) builds a fresh
    `LiverySnapshot` and a fresh `TextSystem` on every call, and
-   [`ChromeView::scene`](../src/chrome_view.rs) calls it once per frame per
+   [`ChromeView::scene`](../../../src/chrome_view.rs) calls it once per frame per
    window with no retention of any kind. Fourteen panes hold a
    `crate::ui::RetainedLayout`, whose own contract says `rebuilds()` is
    "expected to reach 1 and stay there for a pane that is merely being
@@ -137,7 +139,7 @@ frame frame_ms=... surfaces=... palette=... suggestions_ms=... suggestion_runs=.
 than counted beside them, so the parts cannot drift from the whole.
 
 Enable it with `RUST_LOG=turnstone::shell::render=debug`. The accounting lives
-in [`frame_timing.rs`](../src/frame_timing.rs); it stays compiled in, because
+in [`frame_timing.rs`](../../../src/frame_timing.rs); it stays compiled in, because
 an instrument that has to be re-added is one that will not be there the next
 time a frame feels heavy.
 

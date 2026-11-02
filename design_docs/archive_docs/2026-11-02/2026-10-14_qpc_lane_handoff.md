@@ -1,5 +1,7 @@
 # Turnstone lane handoff to q-pc, 2026-10-14
 
+> **Archived 2026-11-02 (stale snapshot).** Main is the only live line; the lens-label fix it names landed in `1a0bf3d1` and was qualified in `de56f958` (2026-10-15), and its pins (Mere `77fd235f`, Rust 1.99.0) are out of date. Open points moved: item 3 (known UI issues, floating-toolbar occlusion and confirmation-caption overflow) to the successor `2026-11-02_architecture_plan.md`; item 5 (SC5/SC6/SC7 ledger drift) to `2026-11-02_unusual_protocols_browser_plan.md`; item 6 (view source and named collections, taxonomy U2 and U4, and the clip-system contracts) to `2026-11-02_user_agent_taxonomy_plan.md` and `2026-11-02_retained_clip_receiver_plan.md`. Item 4 is answered by the archived resource handoff (applied); item 2 is also recorded as separate gates in the pane registry plan. Receipts and the old-to-main hash table: [2026-10-14_qpc_lane_handoff_receipts.md](../receipts/2026-10-14_qpc_lane_handoff_receipts.md). Mark, 2026-11-02: "Everything, drafts first".
+
 **Status, 2026-10-14:** the Turnstone lane moves from the ThinkPad to q-pc,
 Mark's Mac. Windows-only work runs on o-pc, the ASUS Windows laptop. Remote `main` is the only live line: every branch and worktree on
 the ThinkPad was reconciled into it, archived as a tag, or removed. Start from
@@ -13,12 +15,12 @@ a fresh pull; nothing needed is left behind.
    administrative commits and untracked `.github/` WIP on that checkout;
    reconcile them against current main before building, and commit only
    paths owned by the current slice.
-2. Read [the index](DOC_README.md) and [the policy](DOC_POLICY.md). Its working
+2. Read [the index](../../DOC_README.md) and [the policy](../../DOC_POLICY.md). Its working
    principles hold: work directly on `main`, avoid branches, PRs and worktrees
    unless isolation is genuinely needed, and merge and prune any temporary
    lane before leaving it. Mark does not use pull requests, and commits carry
    no `Co-Authored-By` trailer.
-3. Build per the [README](../README.md). On o-pc that needs MSVC tools,
+3. Build per the [README](../../../README.md). On o-pc that needs MSVC tools,
    Windows SDK, CMake and Ninja (`CEF_PATH` reuses a matching distribution);
    approved Windows targets live under `C:/t/cargo-targets/<repo>`.
 
@@ -29,7 +31,7 @@ a fresh pull; nothing needed is left behind.
   `8ed49d43f049921d56ab5a0c091a2c37c0970ee7`. Toolchain 1.99.0, MSRV 1.97.1.
 - Latest published work: retained pane composition and native image
   apertures inside the shared window scene (`1aa6663`), with its exact receipt
-  bytes (`c7a828e`). See the [pane registry plan](2026-08-08_pane_registry_and_graph_panes_plan.md)
+  bytes (`c7a828e`). See the [pane registry plan](../../2026-08-08_pane_registry_and_graph_panes_plan.md)
   and `Code/testing/turnstone/receipts/stations_windows_20261013/published-final-native-qualification.json`.
 - The lens accessibility-label fix landed with this handoff. Before it,
   `project_lens_with_contributions` labelled every lens window
@@ -39,7 +41,7 @@ a fresh pull; nothing needed is left behind.
   `lens_window_tests`. On the ThinkPad against current main, the new test
   and all 59 `a11y` library tests pass (default features). It had been stranded on the ThinkPad's three-lanes
   branch after main moved past it; see
-  [the qualification note](2026-10-13_current_consumer_qualification.md).
+  [the qualification note](../receipts/2026-10-13_current_consumer_qualification_receipts.md).
 - Genet main has since gained `ValueEngine` (`f0a91f7`), an additive
   `script-engine-api` module for Mere's Scenograph rule runner. Turnstone needs
   no repin for it; take it with the next coordinated family repin.
@@ -49,7 +51,7 @@ a fresh pull; nothing needed is left behind.
 1. **Changed-source qualification after the lens fix.** The final App
    producer, the original five native compositions and the three
    station/lens-accessibility scenes are pending against the fixed source
-   ([qualification note](2026-10-13_current_consumer_qualification.md)).
+   ([qualification note](../receipts/2026-10-13_current_consumer_qualification_receipts.md)).
    Default and Piccolo native suites last passed 927/0/10 and 960/0/10 on the
    pre-fix source. On q-pc against `b0b709a`, the lib suites gave 938/2/10
    default and 970/3/10 Piccolo; all 59 `a11y` tests pass, and the failures
@@ -61,7 +63,7 @@ a fresh pull; nothing needed is left behind.
    built, 944/0/10 default and 977/0/10 Piccolo, the ten published cases
    14/14 with 40 captures, and the inferred original five 5/5 with 11
    captures. Gate 1 is closed for automated scope; see the
-   [qualification note](2026-10-13_current_consumer_qualification.md) and
+   [qualification note](../receipts/2026-10-13_current_consumer_qualification_receipts.md) and
    `Code/testing/turnstone/receipts/lens_fix_windows_20261014/`.
 2. **Separate platform scopes** that no automated pass closes: physical GPU
    device-loss recovery, Windows producer rebinding, OS accessibility
@@ -76,7 +78,7 @@ a fresh pull; nothing needed is left behind.
    runtime/session/fork/save, behavior-journal attribution to the originating
    graph runtime. Several were applied after that list was written; verify
    each against the live tree before treating it as open.
-5. **Plan ledger drift.** The [unusual-protocols plan](2026-10-06_unusual_protocols_browser_plan.md)
+5. **Plan ledger drift.** The [unusual-protocols plan](../../2026-10-06_unusual_protocols_browser_plan.md)
    still describes SC5/SC6 as open preparations although much is implemented;
    reconcile implemented versus qualified scope. SC7 store traits remain
    broader existing-plan work.

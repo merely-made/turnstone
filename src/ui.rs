@@ -230,7 +230,7 @@ struct SubtreeView<'a, D: LayoutDom> {
 /// reasoning that "the chrome card is a handful of rows against a pane's
 /// hundreds, so it is the cheap remaining site rather than an oversight." The
 /// command palette open-lag receipt
-/// (`design_docs/2026-08-22_command_palette_open_lag.md`) measured that
+/// (`design_docs/archive_docs/2026-11-02/2026-08-22_command_palette_open_lag.md`) measured that
 /// belief: with the palette open the card is not a handful of rows, and the
 /// one-shot cascade cost 36 ms of a 44 ms frame. The estimate was reasonable
 /// and wrong, which is the argument for measuring a site rather than sizing it

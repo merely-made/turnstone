@@ -1,5 +1,10 @@
 # Relationship navigation and visible pane bindings
 
+> **Archived 2026-11-02 (landed).** Landed 2026-10-21 in `2cae6fb3`; code at `src/pane_binding.rs:82` and `src/chrome_view/navigation_menu.rs:157`. Nothing open. Mark, 2026-11-02: "Everything, drafts first".
+
+**Status (2026-11-02):** landed 2026-10-21 in `2cae6fb3`. Code: `src/pane_binding.rs:82`
+(`cambium::shell_source_binding`), `src/chrome_view/navigation_menu.rs:157`.
+
 The graph supplies document identity and relationships. Read, Map, Inspector,
 and Roster present that data; their placement and source binding belong to the
 workspace. This pass makes those relationships usable while reading and makes

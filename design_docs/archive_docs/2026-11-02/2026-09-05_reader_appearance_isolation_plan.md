@@ -1,10 +1,12 @@
 # Reader appearance isolation
 
+> **Archived 2026-11-02 (landed; one item moved).** Reader appearance isolation landed 2026-09-06 (`b70ba554`, native scenario `07b31a8d`, headed verification `fd78c479`, shutdown repair `e2180b6b`). The open item, CPU/FPS sampling (status line; the plan's closing paragraph says what the idle predicate does not measure), moved to the successor `2026-11-02_pane_registry_and_graph_panes_plan.md`. The native verification receipt is folded into the receipts file below. Receipts and the old-to-main hash table: [2026-09-05_reader_appearance_isolation_plan_receipts.md](../receipts/2026-09-05_reader_appearance_isolation_plan_receipts.md). Mark, 2026-11-02: "Everything, drafts first".
+
 Status: bounded implementation, focused tests, and native Reader scroll/close,
 idle-wait, and observed shutdown gates passed, 2026-09-06. CPU/FPS sampling remains open.
 
 This is Turnstone's consumer slice of Mere's
-`design_docs/mere_docs/implementation_strategy/2026-09-05_projection_refresh_and_surface_reuse_plan.md`,
+`mere/design_docs/archive_docs/2026-10-06_completed_plans/2026-09-05_projection_refresh_and_surface_reuse_plan.md`,
 authorized by Mark. Reader article content is shared; viewport, layout, scroll,
 input focus, and raster identity belong to each appearance.
 
@@ -40,7 +42,7 @@ The actual pure surface modules passed 13 tests in a source-path harness using
 a minimal numeric PaneId. They cover appearance routing, identical overlapping
 rectangles, sibling-close identity, and pane-specific cleanup. The full
 Reader/Smolweb library suite passed 20 tests. The
-[combined receipt](../../mere/ports/graphshell/docs/receipts/projection_refresh_surface_reuse_receipt.json)
+combined receipt (`mere/ports/graphshell/docs/receipts/projection_refresh_surface_reuse_receipt.json`)
 records logs, hashes, and commands. The headed native Reader interaction is
 `scenarios/reader_appearance.scn`, run by
 `scenarios/run_reader_appearance.ps1`. It drives the local article fixture,
@@ -51,7 +53,7 @@ and after each scroll and sibling close. Its runner rejects absent captures or
 observations and checks that the closing receipt contains only the inset.
 Graphshell's browser receipt does not stand in for this native gate.
 The native executable build and headed runner passed on 2026-09-06. The
-[native receipt](2026-09-06_reader_appearance_native_check_receipt.md) records
+[native receipt](../receipts/2026-09-05_reader_appearance_isolation_plan_receipts.md) records
 different viewports (Workbench 251x570, inset 305x600), shared source identity,
 independent offsets (Workbench 240, inset 160), and unchanged inset identity
 and offset after Workbench closes. The runner also rejects an extra appearance
@@ -91,7 +93,7 @@ neither of the rejected ungraceful-shutdown diagnostics. Waits completed in
 103, 0, and 0 frames instead of reaching the three 240-frame caps. The runner
 now enforces these idle and shutdown conditions. The native build passed;
 three focused favicon tests passed. See the follow-up section of the
-[native receipt](2026-09-06_reader_appearance_native_check_receipt.md).
+[native receipt](../receipts/2026-09-05_reader_appearance_isolation_plan_receipts.md).
 
 This observes the native scenario's idle predicate and shutdown, not zero
 background CPU or a frame-rate target. Active place membership and an ongoing

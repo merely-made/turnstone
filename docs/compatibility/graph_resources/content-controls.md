@@ -4,7 +4,7 @@
 against qualified Mere P2 `3b3afa289` and matching Genet `15713014`. Native
 default and Piccolo gates pass; [the final receipt](native-integration-checks.json) binds their source and
 results. See [the integration status](README.md) and
-[the handoff](../../../design_docs/2026-10-08_browser_resource_handoff.md) for the
+[the handoff](../../../design_docs/archive_docs/2026-11-02/2026-10-08_browser_resource_handoff.md) for the
 fixed family, execution results and remaining scope. The contract and preparation
 receipts below are retained; their unapplied/pending statements describe earlier
 checkpoints.
@@ -81,7 +81,7 @@ These labels currently serve Surface/session controls, rather than descriptive
 page-content tags: `keep` marks retention of a member, `feed` marks that member's
 subscription, and `feed-entry`/`unread` reflect the per-member feed sidecar.
 Their writers and readers remain unchanged in this preparation. Concrete owner
-paths are `src/app/node_arms.rs:125` (Keep read and write),
+paths are `keep_node` in `src/app/node_arms/app_browser_command_target.rs:85` (Keep write; `node_is_kept` is the read),
 `src/app/feed_arms.rs:44` (subscription labels), `:70` (unsubscribe),
 `:98` (read status), `:236` (entry labels), and `:279` (reconciliation).
 Keep/feed policy is outside the supplier's bounded content-reader adoption.

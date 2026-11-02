@@ -33,7 +33,7 @@ are P5's other rows, not this plan.
   client. That gap is now partially closed: `src/nomadnet.rs` registers a
   retained session over Nematic's source-preserving Micron engine;
   `src/shell/nomadnet_fetch.rs` drives native page fetches through Retinue.
-  The [current receipt and limitations](2026-08-17_smolweb_browser_gap_analysis.md#micron-syntax-and-interoperability-2026-09-13)
+  The [current receipt and limitations](archive_docs/2026-11-02/2026-08-17_smolweb_browser_gap_analysis.md#micron-syntax-and-interoperability-2026-09-13)
   supersede the original inventory for this lane.
 
 ## The two content families
@@ -80,7 +80,7 @@ The general protocol ownership rule is recorded in
 `smolweb/design_docs/technical_architecture/2026-08-03_smolweb_home_decision.md`.
 
 - **Retinue**: node requests, links, Resources and static page serving in
-  `crates/retinue/src/nomadnet.rs`. `StringMapRequest` in `request.rs` carries
+  `murm/crates/retinue/src/nomadnet.rs`. `StringMapRequest` in `request.rs` carries
   the bounded, observed Micron form map; it does not grant a handler authority.
 - **Mere / Nematic**: source-preserving syntax and lowering in
   `crates/nematic/nematic/src/micron/`. Inker/document-canvas own reusable
@@ -126,7 +126,7 @@ only an explicitly confirmed typed map to the named native target.
 ### N4. Micron presentation and interaction (reading implementation; qualification remains)
 
 The canonical completion scope is
-`mere/design_docs/nematic_docs/implementation_strategy/2026-07-01_smolweb_fidelity_plan.md`,
+`mere/design_docs/archive_docs/2026-10-28/2026-07-01_smolweb_fidelity_plan.md`,
 section "Micron completion scope (2026-09-13)". Reading fidelity and horizontal
 table navigation come first, then anchor/fold behavior; typed request evidence
 gates forms, and partials/media/directives each need their own lifecycle proof.
@@ -151,7 +151,7 @@ Resource acknowledgement reaches the server before the interface closes.
 Response bounds remain after Resource reassembly, before further decoding;
 outgoing request Resources remain unsupported by Retinue.
 The two existing smolweb input tests also pass. The immutable dependency graph
-uses one Mere `91c6238d`, Genet `101d9e9a`, Knot `d100402` and Retinue `2563202`
+uses one Mere `734ac968b5`, Genet `99707babc8`, Knot `32d2a7ba67` and Retinue `2563202`
 source identity each. The Retinue typed map receipt supplies the independent
 stock-client interoperability evidence. These are automated seams rather than a
 headed desktop acceptance; that acceptance was taken on 2026-09-13 and is
@@ -218,8 +218,8 @@ navigation. Turnstone also descends through these retained wrappers when
 refusing unresolved aliases, so presentation cannot hide an unresolved target.
 Forms and further interactive behavior remain separate.
 
-The 2026-09-13 consumer check uses Mere `dce5cc97`, Knot `cf3afe8`, Genet
-`101d9e9` and Netrender `3961aca`, with one immutable Cargo source identity
+The 2026-09-13 consumer check uses Mere `caa6d11639`, Knot `7d176d0a4e`, Genet
+`99707babc8` and Netrender `993359b71b`, with one immutable Cargo source identity
 each. With Rust 1.97.1, `--locked --offline` and an absolute manifest outside
 the development override tree, all five NomadNet tests and both smolweb input
 tests pass. This includes nested presentation-wrapper alias refusal, preserved

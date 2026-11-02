@@ -21,6 +21,8 @@ those obligations against what Turnstone has and names the graph-native home
 for each, because Turnstone is a graph browser and several classic UA
 surfaces already exist here in a different, better shape.
 
+**Rechecked 2026-11-02:** U0 (downloads), U1 (find in page, 2026-08-26) and U3 (reader lane) are landed, per the step headings below. U2 (view source; zoom was accepted 2026-08-27) and U4 (bookmark taxonomy) stay open.
+
 ## Historical inventory (verified 2026-08-03)
 
 This table preserves the original framing. It is not the current acceptance
@@ -79,7 +81,7 @@ extraction lineage; these potential profiles are not required new classes.
 
 ## Steps
 
-### U0. Downloads
+### U0. Downloads - LANDED 2026-08-21
 
 Content-Disposition and `download`-attribute handling on the fetch lane: an
 attachment becomes a file on disk plus a `turnstone.download` node carrying
@@ -87,7 +89,10 @@ provenance (URL, timestamp, size, disposition). Steward shows in-flight
 progress honestly. Done when a download from a page yields a node whose file
 opens, and a failed one shows the error on the node.
 
-### U1. Find in page
+Landed: durable download custody `372f156a` and its acceptance record `60a20e26`
+(2026-08-21); `DOWNLOAD_CLASS` is `turnstone.download` (`src/content_classes.rs:19`).
+
+### U1. Find in page - ACCEPTED 2026-08-26
 
 A UA find bar (per focused tile) over the session's text. Uses the existing
 structure/outline facts where they suffice; where they do not, the engine
@@ -114,13 +119,16 @@ shared capability report must precede the control so unsupported engines stay
 honest. Done when Ctrl+wheel on content zooms the page without changing chrome
 or the canvas camera, and view source opens for any fetched node.
 
-### U3. Reader view as a lane
+### U3. Reader view as a lane - LANDED
 
 `genet_extract` promoted from title-only to a reader rendering, selectable
 as a viewer lane in the engine picker (it is a rendering choice, so it lives
 in that seam, not a separate toggle). Extraction lineage recorded on the
 node. Done when a cluttered page has a readable lane and switching back is
 lossless.
+
+Landed in the later browser-surface work (the inventory above says so); the engine
+inventory exposes a human-labelled Reader row (`scenarios/browser_engine_inventory.scn:26`).
 
 ### U4. Bookmark taxonomy
 

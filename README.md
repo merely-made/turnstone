@@ -149,7 +149,7 @@ The live place port composes Personae, Gemot and shared graph/chat convergence.
 Recorded native place scenarios cover shared addresses, reader write refusal,
 reconnect and a founder-held Knot document edited through its projection.
 That document path depends on its holder being online. The exact scope is in
-the [place port plan](design_docs/2026-07-28_turnstone_place_port_plan.md).
+the [place port plan](design_docs/archive_docs/2026-11-02/2026-07-28_turnstone_place_port_plan.md).
 
 Current browser work follows the
 [user-agent taxonomy](design_docs/2026-08-03_user_agent_taxonomy_plan.md):

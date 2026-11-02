@@ -1,9 +1,15 @@
 # genet-probe: shared automatability for the genet apps
 
-**Status:** design spike (no code yet). **Crate home:** genet (engine layer),
+> **Archived 2026-11-02 (landed; handed to genet).** Slices 1 to 5 landed 2026-07-17 to 2026-07-18 (`df716764` made the shared driver drive the real Shell) and the crate was renamed taproot in `6ec391f4` (2026-09-14); it lives at `genet/components/taproot`. The four follow-ons under "Remaining" after slice 5 (contributed-pane geometry and identity, manual assistive-technology receipt, retiring `scenario.rs`'s loop, a second consumer) are a one-line note in the successor `2026-11-02_architecture_plan.md`, handed to genet. Receipts and the old-to-main hash table: [2026-07-17_genet_probe_automatability_plan_receipts.md](../receipts/2026-07-17_genet_probe_automatability_plan_receipts.md). Mark, 2026-11-02: "Everything, drafts first".
+
+**Status (2026-11-02):** slices 1 to 5 landed (Progress below, 2026-07-17 to 2026-07-18); the
+crate was renamed taproot in turnstone `6ec391f4` (2026-09-14) and is `genet/components/taproot`,
+consumed here as `taproot::Automatable` (`src/shell/appearance_editor.rs:244`; `Cargo.toml:232`).
+Written as a design spike (no code yet) on 2026-07-17. Four follow-ons remain (the "Remaining" list
+after slice 5), handed to genet. **Crate home:** genet (engine layer),
 consumed by every genet app. **Lineage:** grows out of turnstone's self-drive
 harness + observation stream; sibling to
-[`2026-07-15_turnstone_surfaces_in_cambium.md`](2026-07-15_turnstone_surfaces_in_cambium.md).
+[`2026-07-15_turnstone_surfaces_in_cambium.md`](../../2026-07-15_turnstone_surfaces_in_cambium.md).
 **Working name:** `genet-probe` (naming is Mark's call — see Open questions).
 
 ## Why
@@ -19,15 +25,15 @@ The survey (2026-07-17, against the actual repos) found a lopsided answer:
   every app emits a semantic ARIA-attributed `ScriptedDom` (`role`,
   `aria-selected`, `aria-label`, `tabindex`). genet-layout gives all of them
   `hit_test` (point -> node), `absolute_rect` (node -> rect), and
-  [`a11y.rs`](../../genet/components/genet-layout/a11y.rs)'s DOM -> accesskit
+  `a11y.rs` (`genet/components/genet-layout/a11y.rs`)'s DOM -> accesskit
   `TreeUpdate` projection. "Click the element labelled X" and "what does the
   a11y tree say" are **already answerable for any cambium app** — that is the
   whole reason turnstone's scripting is ask-the-layout, not pixel-poking.
 - **The patterns are proven once and shared zero times.** The typed observation
   stream (`AppEvent` + `assert event`), the loud-and-attributable divergence
   events, and the self-drive harness (`TURNSTONE_SCENARIO`, ~20 verbs, `RESULT
-  ok/fail` sentinel) all live in [turnstone/src/scenario.rs](../src/scenario.rs)
-  and [observe.rs](../src/observe.rs) — app-local, ~80% generic, portable
+  ok/fail` sentinel) all live in [turnstone/src/scenario.rs](../../../src/scenario.rs)
+  and [observe.rs](../../../src/observe.rs) — app-local, ~80% generic, portable
   nowhere. isometry and woodshed have no harness at all; hocket's `-headless`
   binary is a hardcoded audio demo, not a scriptable driver.
 

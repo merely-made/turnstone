@@ -1,9 +1,11 @@
 # Pane Inventory
 
+> Moved 2026-11-02 from `design_docs/2026-08-09_pane_inventory.md` to `archive_docs/receipts/` under its own stem (Mark: "Own stem in receipts/"); text unchanged below this note except the hash table appended at the end.
+
 **Date**: 2026-08-09
 
 **Status**: A0 entry-state receipt for the [Pane Registry, Graph Views, and Shell
-Composition Plan](2026-08-08_pane_registry_and_graph_panes_plan.md). A1 began
+Composition Plan](../../2026-08-08_pane_registry_and_graph_panes_plan.md). A1 began
 immediately afterward; its changes are summarized below.
 
 This inventories the model at the A0 boundary, including summonable, internal,
@@ -17,7 +19,7 @@ per-instance add/remove/reorder configuration. Inspector includes document and
 graph-object readouts plus the former Apparatus viewer/capability controls.
 Steward and the object-analysis Apparatus pane are retired; saved leaves become
 Gloss with Downloads and Inspector in place, preserving arrangement identity.
-See the [current Gloss ruling and implementation](2026-07-20_gloss_composite_pane.md#current-direction-2026-09-29).
+See the [current Gloss ruling and implementation](../../2026-07-20_gloss_composite_pane.md#current-direction-2026-09-29).
 Downloads rows are inert and older Gloss compositions retain their configured
 sections. Within-document selection inspection, background/sync operation controls,
 built-in pane semantic automation and human AT remain separate qualification work.
@@ -25,7 +27,7 @@ built-in pane semantic automation and human AT remain separate qualification wor
 The table retains the dated A0/A1 entry-state receipt, with Gloss, Inspector and
 retired pane rows refreshed on September 29. Other rows retain their A0/A1 scope;
 the September consolidation's automated and native gates passed, as recorded
-in the [September 29 qualification receipt](2026-09-29_shared_diagnostics_gloss_inspector_receipt.md). Custom-leaf semantic parity, full built-in selectors, document
+in the [September 29 qualification receipt](2026-09-29_shared_diagnostics_gloss_inspector_receipt_receipts.md). Custom-leaf semantic parity, full built-in selectors, document
 selection and exact frame correlation remain open alongside human AT.
 
 ## Reading the live model
@@ -52,9 +54,9 @@ rows retain their dated scope rather than claiming a fresh whole-stack audit.
 | Orrery, the current Graph pane | Leaf `graph_id`; marked active-graph-following | Implicitly supplies the global canvas graph and focused member | Camera, selection, and graph runtime live in the singleton `App.canvas`, not under `PaneId`; leaf persists in `frame.json`; restore removes duplicate Orreries for one graph | Native mixed-surface canvas; pointer, keyboard, animation, accessibility, and content contribution | `rung5_panes.scn`, `rung5_panes_restore.scn` | Fixed Forme; **Many** |
 | Workbench | Leaf `graph_id`; active-graph-following | Implicitly supplies global graph and active member | One `App.workbench` and one retained runner for every Workbench leaf; arrangement persists separately in `workbench.json`, while the leaf persists in `frame.json` | Cambium furniture plus nested live document surfaces; tab, split, stack, close, drag, and tear-out actions | `rung5_workbench.scn`, `rung5_workbench_restore.scn`, app persistence tests | Fixed Forme; **Many** |
 | Tile | Member UUID in `PaneContent` plus leaf `graph_id`; currently active-graph-following despite being a pinned member | Implicit graph/member through the leaf and global content session | Member id and graph tag persist in the leaf; document session is runtime state | One live document surface when available; pointer and keyboard routing; honest placeholder otherwise | `rung7_tile_tearout.scn` | Fixed member; **Many** |
-| Gloss | Leaf `graph_id`; active-graph-following; minimap and section gathers still read the active runtime cursor | Reads active graph truth; no independent member publication | Per-`PaneId` retained swatch runner and camera; ordered section ids persist on the leaf in `frame.json` and `windows.json` | Minimap plus Downloads by default; configurable Recent/Removed/Nodes/Downloads sections | Existing Gloss scenarios; download-to-DOM and section persistence tests; native migration/restart passed ([receipt](2026-09-29_shared_diagnostics_gloss_inspector_receipt.md)) | Graph context with per-instance configuration; **Many** |
+| Gloss | Leaf `graph_id`; active-graph-following; minimap and section gathers still read the active runtime cursor | Reads active graph truth; no independent member publication | Per-`PaneId` retained swatch runner and camera; ordered section ids persist on the leaf in `frame.json` and `windows.json` | Minimap plus Downloads by default; configurable Recent/Removed/Nodes/Downloads sections | Existing Gloss scenarios; download-to-DOM and section persistence tests; native migration/restart passed ([receipt](2026-09-29_shared_diagnostics_gloss_inspector_receipt_receipts.md)) | Graph context with per-instance configuration; **Many** |
 | Roster | Leaf `graph_id`; active-graph-following | Implicit global graph | One retained grid for every Roster id; no durable pane-local selection or scroll | Retained Cambium graph manifest; pointer and DOM/accessibility contribution | `rung5_roster.scn`, tear-out and persistence scenarios | Graph context; **Per space and context** |
-| Inspector | Resolves graph/member through `follower_context(pane)` in its own space, with the pane-bound graph/member fallback | Consumes the last graph/member context publisher in its own space | Per-`PaneId` retained Inspector and scroll; viewer control mirrors product browser state and its typed write carries the followed member | Document/object facets, provenance, classification, viewer override, capability/zoom readouts and Knot clipping | Inspector and migrated viewer tests; followed-member regression; native migration/restart passed ([receipt](2026-09-29_shared_diagnostics_gloss_inspector_receipt.md)) | Member context; **Per space and context** |
+| Inspector | Resolves graph/member through `follower_context(pane)` in its own space, with the pane-bound graph/member fallback | Consumes the last graph/member context publisher in its own space | Per-`PaneId` retained Inspector and scroll; viewer control mirrors product browser state and its typed write carries the followed member | Document/object facets, provenance, classification, viewer override, capability/zoom readouts and Knot clipping | Inspector and migrated viewer tests; followed-member regression; native migration/restart passed ([receipt](2026-09-29_shared_diagnostics_gloss_inspector_receipt_receipts.md)) | Member context; **Per space and context** |
 | Apparatus | Retired September 29; old saved leaves restore as Inspector | Replaced by Inspector context consumption | Existing leaf identity, graph binding and split placement preserved on restore; viewer state remains product-owned | Viewer/capability controls migrated to Inspector; shared diagnostics belong to `mere-apparatus` | Frame/lens migration tests; migrated viewer scenarios | Retired pane; Inspector provides object analysis |
 | Trail | Leaf `graph_id`; active-graph-following | Implicit global graph/member/session | One retained Trail for every id; scroll is not pane-keyed | Retained Cambium chronology and recent/removed sections | `rung5_trail.scn` | Graph or session context; **Per space and context** |
 | Overmap | Application session set; classified graph-independent | Selection is observable but not published as pane context | Composition section ids persist per leaf; one retained paint runner for every id | Retained Cambium custom-paint session-lineage graph with section composition | `overmap.scn`, `overmap_composite.scn`, `overmap_o3.scn` | Session-set source; **Per space** |
@@ -135,4 +137,4 @@ Its invariants are:
   region draws too; the role, mix, grouping and schedule are in the dynamics
   spec the saved scene carries and reopen into the form, while the speed is
   the canvas's pace and is not saved. Plan:
-  `mere/design_docs/mere_docs/implementation_strategy/2026-09-02_physics_catalog_plan.md`.
+  `mere/design_docs/archive_docs/2026-10-28/2026-09-02_physics_catalog_plan.md`.

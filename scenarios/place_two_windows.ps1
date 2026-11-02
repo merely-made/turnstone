@@ -45,7 +45,7 @@
 # process exiting is what makes the document holder go away), then the
 # returning joiner and the reader together.
 #
-# See design_docs/2026-07-28_turnstone_place_port_plan.md, "T5a. Founder path
+# See design_docs/archive_docs/2026-11-02/2026-07-28_turnstone_place_port_plan.md, "T5a. Founder path
 # and two-window proof", "T5b. Shared address and refused write", and "T5c.
 # Shared Knot document by projection", for the scenario this proves.
 

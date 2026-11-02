@@ -1,5 +1,7 @@
 # Livery and Buckram dependency cutover
 
+> **Archived 2026-11-02 (landed).** Done 2026-08-21 in `91d0a005`; the removed `genet-layout` facade was not recreated. Nothing open. Receipts and the old-to-main hash table: [2026-08-21_livery_buckram_dependency_cutover_receipts.md](../receipts/2026-08-21_livery_buckram_dependency_cutover_receipts.md). Mark, 2026-11-02: "Everything, drafts first".
+
 **Status:** done, 2026-08-21.
 
 The removed `genet-layout` facade was not recreated. Its consumers now use the

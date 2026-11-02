@@ -11,7 +11,7 @@ work, sync and actionable operation controls remain later product-owned work.
 
 Shared diagnostic observations belong in `mere-apparatus`; the canonical contract
 and ownership ruling live at
-`mere/design_docs/mere_docs/implementation_strategy/2026-06-08_system_diagnostics_and_accessibility_plan.md`.
+`mere/design_docs/archive_docs/2026-10-28/2026-06-08_system_diagnostics_and_accessibility_plan.md`.
 Turnstone still owns operations, permissions, completion and actionable controls.
 Inspector takes the former Apparatus pane's object analysis alongside document
 inspection, metadata and clipping. Its existing graph facets, provenance and
@@ -39,7 +39,7 @@ with Downloads, Apparatus becomes Inspector. Pane ids, graph bindings, splits,
 ratios and closed lens slots are retained; the next save emits current names.
 `src/panes/saved_content.rs` contains only this read-boundary conversion.
 
-**Qualified, 2026-09-29:** the [September 29 qualification receipt](2026-09-29_shared_diagnostics_gloss_inspector_receipt.md)
+**Qualified, 2026-09-29:** the [September 29 qualification receipt](archive_docs/receipts/2026-09-29_shared_diagnostics_gloss_inspector_receipt_receipts.md)
 records the locked, offline workspace gate (612 passed, 9 ignored), five exact
 Piccolo/Wasm author/watch/admitted-ring tests, 33 UI/Inspector regressions and the
 normal default-feature native build. Fresh and restarted
@@ -125,7 +125,7 @@ arrangement/view state, not graph-object metadata (the taxonomy holds).
 ## Progress
 
 - **2026-07-21 (the preset half LANDED — turnstone `b02025c`):**
-  `src/swatch_pane.rs` is the vocabulary: `ProjectionPreset` (id, label,
+  `src/swatch_pane/mod.rs` is the vocabulary: `ProjectionPreset` (id, label,
   leaf key, component knobs, one pure `gather: fn(&App) -> SwatchModel`) and
   the one retained `SwatchPane` over any preset. Activation rides each node
   as DATA (`SwatchActivate::Open/Switch`), so presets need no handler code

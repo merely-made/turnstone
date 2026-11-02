@@ -5,6 +5,8 @@
 **Status (2026-10-14)**: A4/S3 implements shared Workspace custody, Tabard appearance, keyboard, floating/docking, per-window accessibility, retained inline component bodies and native image apertures in one window scene. Ordinary published Mere/Genet/Netrender suppliers pass eight affected test groups, the native build and fourteen headed cases. Local-source receipts retain their measured basis. Physical accessibility, OS activation, monitor DPI and early scrollbar-fade pixel timing remain open. A0, A1 and A6 complete and verified. Lanes open: **A2** and
 **A7**; **A3** retains its A2 acceptance gate. The A4 draft below does not close A2/A3 or A5 acceptance.
 
+**Rechecked 2026-11-02:** the status above is the 2026-10-14 state. The newest sections are the native Orrery selection folds and the graph scene refresh of 2026-10-16 to 2026-10-17 (receipts `graph_folds_20261016` and `graph_scenes_20261016`).
+
 **2026-09-29 pane consolidation: qualified.** Mark accepted operational status
 in Gloss, document and graph-object analysis in Inspector, and `mere-apparatus`
 for shared diagnostics. The current migration retires Turnstone's redundant
@@ -13,13 +15,13 @@ The [Gloss plan](2026-07-20_gloss_composite_pane.md#current-direction-2026-09-29
 records the new default (minimap plus Downloads), scope and saved-layout behavior.
 Facet-backed Downloads render in configurable Gloss, Inspector writes the
 followed member's viewer through the product spine, and frame/lens restore plus
-native routing passed, as recorded in the [September 29 qualification receipt](2026-09-29_shared_diagnostics_gloss_inspector_receipt.md). Shared observations and any new operation
+native routing passed, as recorded in the [September 29 qualification receipt](archive_docs/receipts/2026-09-29_shared_diagnostics_gloss_inspector_receipt_receipts.md). Shared observations and any new operation
 controls have separate ownership; this pane migration adds no job runtime.
 
 The Shared Knot seam that blocked A1's verification cleared on its own; the
 concurrent lane landed the five reader exports. A second, unrelated blocker
 appeared and is worth recording because Git cannot see it: a machine-local
-`.cargo/config.toml` path override still named `mere/crates/persona/personae`
+`.cargo/config.toml` path override still named `dramatis/crates/personae`
 after that crate moved to `crates/dramatis`. Thirty-eight of thirty-nine
 overrides were correct, which is how a silent patch bypass hides, and the
 file is gitignored, so no commit repairs it for the next machine.
@@ -48,13 +50,13 @@ The short ruling:
 
 | Source | Durable decision | Consequence here |
 | --- | --- | --- |
-| [Multi-Graph Activation](../../mere/design_docs/mere_docs/implementation_strategy/2026-06-09_multi_graph_activation_plan.md) and the archived [Window Composition Plan](../../mere/design_docs/archive_docs/2026-06-19_completed_plans/2026-06-11_window_composition_plan.md) | Graph authorities are pooled by `GraphId`; panes resolve through their own graph binding; one window may contain panes from different graphs. | Turnstone restores this model instead of extending its current single `App::canvas`. |
-| [Rung 5 Panes](2026-07-14_turnstone_rung5_panes_plan.md) | The window pane tree and Platen Workbench nest because they arrange different identities. | They may share a topology algebra, while pane identity and member identity remain distinct. |
+| Multi-Graph Activation (`mere/design_docs/archive_docs/2026-10-06_completed_plans/2026-06-09_multi_graph_activation_plan.md`) and the archived [Window Composition Plan](../../mere/design_docs/archive_docs/2026-06-19_completed_plans/2026-06-11_window_composition_plan.md) | Graph authorities are pooled by `GraphId`; panes resolve through their own graph binding; one window may contain panes from different graphs. | Turnstone restores this model instead of extending its current single `App::canvas`. |
+| [Rung 5 Panes](archive_docs/2026-11-02/2026-07-14_turnstone_rung5_panes_plan.md) | The window pane tree and Platen Workbench nest because they arrange different identities. | They may share a topology algebra, while pane identity and member identity remain distinct. |
 | [Surfaces in Cambium](2026-07-15_turnstone_surfaces_in_cambium.md) | Cambium owns the furniture inside a pane rect; Turnstone owns rects, mixed surfaces, routing, and composition. | `cambium::frisket` does not become Turnstone's outer renderer. |
 | [Gloss Composite Pane](2026-07-20_gloss_composite_pane.md) | Composition is per pane instance and travels with it. | `PaneConfig` remains instance state; the registry does not absorb it into pane-kind globals. |
 | [Frisket Direction](../../genet/docs/2026-07-24_frisket_pane_component_direction.md) | `genet-host-api::TileTree` is presentation vocabulary; hosts remain authoritative. Turnstone's mixed-surface presenter deliberately differs from the DOM presenter. | Reuse of `TileTree` is proof-gated and does not imply adopting the Cambium DOM view. |
-| [Overmap](../../mere/design_docs/mere_docs/implementation_strategy/2026-07-20_overmap_sessions_graph_plan.md) | Overmap derives a session graph from manifests and lineage. | A multi-graph space changes focus and composition, not Overmap's underlying truth. |
-| [Configuration Ownership](../../mere/design_docs/mere_docs/implementation_strategy/2026-08-06_configuration_ownership_settings_projection_plan.md) | The configured product owns typed storage; providers describe; Cambium renders; hosts apply. | `SettingsRef` is a pane source, not a graph-binding policy or a universal settings store. |
+| Overmap (`mere/design_docs/archive_docs/2026-10-06_completed_plans/2026-07-20_overmap_sessions_graph_plan.md`) | Overmap derives a session graph from manifests and lineage. | A multi-graph space changes focus and composition, not Overmap's underlying truth. |
+| Configuration Ownership (`mere/design_docs/archive_docs/2026-10-06_completed_plans/2026-08-06_configuration_ownership_settings_projection_plan.md`) | The configured product owns typed storage; providers describe; Cambium renders; hosts apply. | `SettingsRef` is a pane source, not a graph-binding policy or a universal settings store. |
 
 The external donors agree on the broad shape:
 
@@ -569,7 +571,7 @@ Workbench, settings, and transcript stores are not discarded with it.
 ### A0. Pure model and inventory
 
 **Completed 2026-08-09.** The live pane audit is recorded in
-[Pane Inventory](2026-08-09_pane_inventory.md). The rendering-free model lives in
+[Pane Inventory](archive_docs/receipts/2026-08-09_pane_inventory_receipts.md). The rendering-free model lives in
 `src/panes/blueprint.rs`; focused tests prove context resolution and pinning,
 recursive normalization, tiled-to-floating relocation, cross-space movement,
 global pane-station uniqueness, Forme/graph validation, and serialization.
@@ -616,7 +618,7 @@ to keep and expensive to retrofit:
   A2 owns the graph pool and graph surface runtime identity (`PaneId` and
   `graph_id`); A6 owns chrome, omnibar, and transcript; A7 owns Cambium
   components and settings. Port surface admission is tracked separately in
-  `mere/design_docs/mere_docs/implementation_strategy/2026-08-24_knot_shared_surface_and_port_contribution_plan.md`.
+  `knot-editor/design_docs/archive_docs/2026-11-02/2026-08-24_knot_shared_surface_and_port_contribution_plan.md`.
   Where a lane must touch a shared file, it touches only its own items in it.
 - **Commit your own paths, not the tree.** The whole-tree default is right for
   one agent and wrong for three. Where a sweep happens anyway, name what was
@@ -684,7 +686,7 @@ tab closes from its ×, panes stack by dragging one onto another, and the
 layout is saved and restored. `SpaceBlueprint`, the binary `PaneNode` tree,
 `legacy_bridge.rs` and `frame.json` retire; `Grid` is not ported, since
 nothing constructs one. The stack half and the done-conditions live in
-`mere/design_docs/cambium_docs/implementation_strategy/2026-08-31_workbench_component_plan.md`
+`mere/design_docs/archive_docs/2026-10-06_completed_plans/2026-08-31_workbench_component_plan.md`
 (W5); the revisit trigger it fires is
 `genet/docs/2026-07-24_frisket_pane_component_direction.md` follow-on §2.
 Turnstone's half starts only after mere is pushed and this repository's
@@ -841,7 +843,7 @@ layout can be shared or reset without changing graph/session truth.
   routing gap (2026-09-05): `ContributedSurface::pointer_move`
   (`src/contributed_surface.rs`) still dispatches moves without consulting the
   session's `pointer_capture()`. No Turnstone plan names that gap; it is noted
-  here because this plan owns the contributed-pane path. Recorded in Mere's archived plan tails plan (`mere/design_docs/mere_docs/implementation_strategy/2026-07-03_archived_plan_tails_plan.md`, section "2026-10-06 archive pass").
+  here because this plan owns the contributed-pane path. Recorded in Mere's archived plan tails plan (`mere/design_docs/archive_docs/2026-10-28/2026-07-03_archived_plan_tails_plan.md`, section "2026-10-06 archive pass").
 
 - 2026-09-04: A4 revised to outcome 1 on Mark's ruling, from a screen full of
   panes with no way to close them: the pane frame becomes Workbench's tree
@@ -906,7 +908,7 @@ layout can be shared or reset without changing graph/session truth.
 - Retired renderer and command paths after migration. `saved_content.rs` lowers
   old leaf tags immediately to current pane content, preserving actual user
   frame/lens arrangements; new saves contain current names only.
-- Qualified by the [September 29 qualification receipt](2026-09-29_shared_diagnostics_gloss_inspector_receipt.md):
+- Qualified by the [September 29 qualification receipt](archive_docs/receipts/2026-09-29_shared_diagnostics_gloss_inspector_receipt_receipts.md):
   the locked, offline workspace gate passed 612 tests with 9 ignored; five exact
   Piccolo/Wasm tests and 33 UI/Inspector regressions passed. The default-feature
   native build and fresh/restart scenarios passed, with three reviewed nonblank
@@ -924,9 +926,9 @@ delivery, including Calculate request 3 held while clipped and delivered after
 scrolling. The helper-level admission refusal regression fails before repair;
 the stale-generation and missing Gloss platform-arm controls fail deliberately
 and exact source restoration passes. See the
-[September 30 consumer receipt](2026-09-29_shared_diagnostics_gloss_inspector_receipt.md#september-30-qualified-consumer-cohort).
+[September 30 consumer receipt](archive_docs/receipts/2026-09-29_shared_diagnostics_gloss_inspector_receipt_receipts.md#september-30-qualified-consumer-cohort).
 All built-in panes remain a later qualification slice. The shared
-[Mere semantic and diagnostics plan](../../mere/design_docs/mere_docs/implementation_strategy/2026-06-08_system_diagnostics_and_accessibility_plan.md)
+Mere semantic and diagnostics plan (`mere/design_docs/archive_docs/2026-10-28/2026-06-08_system_diagnostics_and_accessibility_plan.md`)
 owns projection matching and evidence boundaries.
 
 ### Existing owner seams

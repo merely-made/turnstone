@@ -8,7 +8,7 @@
 //!
 //! `frame_ms` alone names a slow frame without naming what made it slow. The
 //! command palette open-lag note
-//! ([`design_docs/2026-08-22_command_palette_open_lag.md`]) reproduced roughly
+//! ([`design_docs/archive_docs/2026-11-02/2026-08-22_command_palette_open_lag.md`]) reproduced roughly
 //! a 9x whole-frame delta with the palette open and could attribute none of
 //! it, because one number covers suggestion computation, chrome update,
 //! cascade/layout/paint, rasterization, and composition at once. These spans

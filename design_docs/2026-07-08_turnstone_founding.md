@@ -4,13 +4,13 @@
 > since changed. `orrery` is now `canvas` and stays in mere (the 2026-07-09 boundary-pass
 > amendment reversed its move), so `mere::orrery::Orrery` is a path that no longer exists.
 > The engine `serval` is now `genet`. This doc's target-shape section is superseded by
-> [2026-07-10_turnstone_architecture_plan.md](./2026-07-10_turnstone_architecture_plan.md);
+> [2026-07-10_turnstone_architecture_plan.md](2026-07-10_turnstone_architecture_plan.md);
 > the naming, sequencing, and done-conditions story here still stands. Rung 5 is scoped in
-> [2026-07-14_turnstone_rung5_panes_plan.md](./2026-07-14_turnstone_rung5_panes_plan.md).
+> [2026-07-14_turnstone_rung5_panes_plan.md](archive_docs/2026-11-02/2026-07-14_turnstone_rung5_panes_plan.md).
 >
 > **Product note, 2026-07-28.** The structural role swap remains current, but
 > "reference host" no longer carries the whole product thesis. The
-> [peer-web reframe](./2026-07-28_turnstone_peer_web_reframe.md) defines
+> [peer-web reframe](2026-07-28_turnstone_peer_web_reframe.md) defines
 > Turnstone as the local-first browser and authoring client for personal and
 > shared addressed places. Web rendering is one content lane inside that
 > product.
@@ -45,7 +45,7 @@ embedded httpd (thttpd fork, BSD). Different domain; Mark is unbothered.
   satellites (composition/projection), and the verso family (verso,
   verso-api, verso-scry, verso-genet, browser-worker: the engine
   multiplexer, the heart of the web lane). Amended 2026-07-09 per the
-  [mere/turnstone boundary pass plan](../../mere/design_docs/mere_docs/implementation_strategy/2026-07-09_mere_turnstone_boundary_pass_plan.md):
+  mere/turnstone boundary pass plan (`mere/design_docs/archive_docs/2026-08-06_completed_plans/2026-07-09_mere_merecat_boundary_pass_plan.md`):
   the earlier shape kept orrery/platen in mere; they are application
   surfaces, and the `mere` facade's re-exports of them are compatibility
   scaffolding for the in-workspace host, not the library boundary. Its
@@ -70,7 +70,7 @@ embedded httpd (thttpd fork, BSD). Different domain; Mark is unbothered.
 
 Until step 3 the crate is a name-reserving placeholder. Murm/Moot promotion
 follows Mere's
-[`murm-replication` boundary plan](../../mere/design_docs/mere_docs/implementation_strategy/2026-07-12_murm_peer_runtime_and_moot_domain_plan.md):
+`murm-replication` boundary plan (`mere/design_docs/archive_docs/2026-10-28/2026-07-12_murm_peer_runtime_and_moot_domain_plan.md`):
 Murm owns the reusable peer-exchange foundation, Moot supplies governed-space
 semantics over its lower replication crate, and Turnstone configures both through
 domain-level services rather than assembling p2panda sessions.
@@ -113,7 +113,7 @@ Supporting seam work in mere: orrery gained `set_node_title` (rebuilds the
 caption pool) and `set_node_mime_hint` (metadata-only), mirroring its favicon
 stamp; and the founded-family sibling deps (chartulary/stemma/numen/codicil/
 muniment) converted from `../..` path deps to branch-tracked git deps, so
-mere.git is consumable per-crate by standalone hosts (mere 8f338ff — clean
+mere.git is consumable per-crate by standalone hosts (mere 4fa74721c8 — clean
 non-local resolution needs that commit pushed). Next: favicon-on-node, live
 content rendering (verso lane), session persistence.
 

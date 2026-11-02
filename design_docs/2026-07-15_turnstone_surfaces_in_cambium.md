@@ -8,7 +8,7 @@ answer is one of three — an existing catalog entry, a new catalog addition, or
 > Sibling: the cambium adoption also gave every turnstone surface a
 > semantic, hit-testable DOM — the substrate for driving the app by name. Where
 > that generalizes across the genet apps is
-> [`2026-07-17_genet_probe_automatability_plan.md`](2026-07-17_genet_probe_automatability_plan.md).
+> [`2026-07-17_genet_probe_automatability_plan.md`](archive_docs/2026-11-02/2026-07-17_genet_probe_automatability_plan.md).
 
 The framing is the serval/genet-era development pattern: **a consumer's need is a
 good reason to expand the catalog.** Not the only reason — cambium has its own
@@ -279,8 +279,8 @@ At integrated source `8e06a85fe244b6949002c433a502dc0f8ebc1d66`, corrected
 public metadata and the complete library pass: 674 tests, zero failures, nine
 existing ignores and no filtered cases. The marked-DIV Knot discovery and
 Sky Civil date name cases pass. All 70 Mere packages use public
-`f1d169c755e082b5119c2485762fd28f4226d8fb`; all 29 Genet packages use public
-`965b64e206a47d1c8808472de9aa461233638768`. The frozen lock SHA256 is
+`38a50a234b96e52cd5ba0a33219998bc818e27c2`; all 29 Genet packages use public
+`2d30a0d39c780af3f12a52dfc9ddbcbe5037d9be`. The frozen lock SHA256 is
 `313853BD573A1CB045D19B30B04016756AF8F19E9DD4B277A1E1754336CEE512`.
 Receipts and counts are `turnstone-forms-corrected-public-*` under
 `Code/testing/genet/forms`. The initial unescaped selector compile failure is
@@ -295,7 +295,7 @@ library passes on Fedora ThinkPad: 680 tests, zero failures, nine existing
 ignores and no filtered cases. Cargo 1.98.1 uses one build job and one test
 thread; the manifest, committed lock and tracked source stay unchanged. This
 source includes published upstream `d0775a1` and its existing family pin to
-Mere `3ded2cd7c2370713118a2440c962c39262720205`, with Genet `965b64e2`.
+Mere `a7e12bcaa606df5d9c5c7aa9a685131ce2bee693`, with Genet `2d30a0d39c`.
 Locked metadata resolves 73 Mere and 29 Genet packages; the lock contains 76
 and 31 respectively, including packages outside that resolved feature graph.
 The 1,697-package lock SHA256 is

@@ -2,11 +2,11 @@
 
 **Status (2026-10-21):** proposed, not started. Phases 0 to 2 can begin now;
 phase 4 waits on the open questions at the end. Source state: Turnstone
-`45054b0`, Mere `origin/main` `8008eba7`; Turnstone pins Mere `3cce9fe37`, and
+`e7017cb6d6`, Mere `origin/main` `e74d0d6121`; Turnstone pins Mere `3e65277ff4`, and
 every Mere path cited here is unchanged at that pin.
 
 This is the next slice after
-[relationship navigation and pane bindings](2026-10-21_relationship_navigation_and_pane_bindings.md).
+[relationship navigation and pane bindings](archive_docs/2026-11-02/2026-10-21_relationship_navigation_and_pane_bindings.md).
 That pass gave the graph influence over reading through the Related disclosure
 and visible Follow/Pin bindings. This one lets a *set* of documents drive a
 presentation, and lets the result be kept.
@@ -30,7 +30,7 @@ Each phase below names the steps it makes pass.
 - **Selection is single-member everywhere it is published.** Multi-select lives
   only in Mere's `Canvas` (`select_member`, `toggle_select_member`,
   `set_selected_members`). Turnstone keeps per-Map selections process-local
-  (`GraphPaneViews.selections`, `src/app/runtime_pool.rs:435`); `focused_member`
+  (`GraphPaneViews.selections`, `src/app/runtime_pool.rs:76`); `focused_member`
   returns a member only when exactly one is selected, so two selected documents
   publish nothing and the Inspector says "No document selected". `PaneContext`
   (`src/panes/blueprint.rs:182`) is a `Copy` struct of four single options.
@@ -47,7 +47,7 @@ Each phase below names the steps it makes pass.
   `CompareWith`, `PinnedIn` and `FocusPath` (`arrangement.rs:108-113`); only
   `StackedWith` and `SplitWith` have builders. `FormeRef::Stored` is documented
   as the "workbench / compare bench". Turnstone's Read is one Workbench pane
-  keyed on `FormeRef::Identity` (`forme_for_pane`, `src/app/mod.rs:645`);
+  keyed on `FormeRef::Identity` (`forme_for_pane`, `src/app/app_shell_chrome_config.rs:237`);
   `Workbench::open_split` is used only by a test.
 - **Paths.** `Graph::shortest_path` (graph-kernel `graph/query.rs:734`) returns
   one undirected unit-weight path and has no callers. The canvas can emphasise
@@ -115,7 +115,7 @@ the Map, and the marquee stays. Selecting never navigates.
 
 All four are ordinary `Action`s declared through Hest, following the
 the Hest command architecture
-(`mere/design_docs/cambium_docs/implementation_strategy/2026-10-20_hest_command_architecture_plan.md`):
+(`mere/design_docs/archive_docs/2026-10-28/2026-10-20_hest_command_architecture_plan.md`):
 a variant, an explicit `command_metadata` row, a ring entry (Panes), a dispatch
 arm, and a palette row offered only when the selection qualifies.
 

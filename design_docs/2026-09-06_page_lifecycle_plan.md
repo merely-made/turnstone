@@ -997,7 +997,7 @@ changing the retained scope. This does not transfer captured source bodies,
 research-note documents or individually chosen saved-source attachments, and
 does not requalify current document projection. Automatic multicast discovery
 and WAN reachability also remain separate. The
-[place-port plan](2026-07-28_turnstone_place_port_plan.md) preserves historical
+[place-port plan](archive_docs/2026-11-02/2026-07-28_turnstone_place_port_plan.md) preserves historical
 T5b/T5c Windows receipts at their own scope. Place and named-recipient
 publication results do not close each other's remaining gates.
 
@@ -1144,7 +1144,7 @@ refreshed 2026-09-12.
   session-state references by default and strips six named `web.*` facets;
   redaction drops the reference and leaves the blob to the orphan sweep.
 - Athanor's forgetting logic is pure propose/apply in
-  `crates/system/pandect/src/athanor.rs` (`propose_image_gc`,
+  `mere/ports/distillery/athanor/src/lib.rs` (`propose_image_gc`,
   `propose_retirement`, `apply_image_reference_forgetting`), honouring
   eidetic R0: apply drops only cached content, never graph truth or
   codicils. The image orphan sweep already marks only unreferenced digests

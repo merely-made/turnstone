@@ -1,5 +1,7 @@
 # Turnstone browser and resource integration handoff
 
+> **Archived 2026-11-02 (applied).** The five done-conditions of the section "Remaining done-conditions" were applied on 2026-10-09 (`25f85bd0`, `e86906a3`) and the native integration checkpoint was preserved on 2026-10-12 (`c4d5ccb3`). Open points moved to the successor `2026-11-02_unusual_protocols_browser_plan.md`: the "Next closure" list of the 2026-10-11 section "Integration continuation checkpoint" (line 701), which is Mere- and Graphshell-side work that was unpublished then. Receipts and the old-to-main hash table: [2026-10-08_browser_resource_handoff_receipts.md](../receipts/2026-10-08_browser_resource_handoff_receipts.md). Mark, 2026-11-02: "Everything, drafts first".
+
 **Status, 2026-10-09:** local native integration completed with Mark's
 authorization to continue. The qualified fixed family is Mere `3b3afa289`,
 Genet `15713014`, Knot `802238cb` and Redshank `e08bf4b`. All seven reconciled
@@ -8,12 +10,12 @@ existing ignored. Piccolo libraries: 782 passed, nine existing ignored.
 Both locked all-target checks and the fresh source review pass. The tested
 Knot, Redshank and consumer integration commits are now published to main.
 The final continuation and
-[source-bound receipt](../docs/compatibility/graph_resources/native-integration-checks.json)
+[source-bound receipt](../../../docs/compatibility/graph_resources/native-integration-checks.json)
 record qualification and publication scope.
 
 ## Start here
 
-Read [the active index](DOC_README.md), [resource integration](../docs/compatibility/graph_resources/README.md)
+Read [the active index](../../DOC_README.md), [resource integration](../../../docs/compatibility/graph_resources/README.md)
 and this handoff. Keep browser release qualification separate from the completed native
 Mere resource-graph integration. The earlier S0 tested-set browser repin is closed;
 it must not be redone merely because older plan prose mentions a pending repin.
@@ -127,7 +129,7 @@ envelope WIP**, with no Cargo run on that new source. Known Surface exact-replay
 parallel-record loss and paired-ID controls remain. Its Windows worktree is clean
 and original agents stopped. Continuation moves to **Discuss graph semantics**,
 thread `01a11e41-8ff4-7992-9dac-d3fac4af35b9` on the ThinkPad. The compact supplier
-handoff is in `mere/design_docs/mere_docs/implementation_strategy/2026-10-04_graph_semantics_plan.md`,
+handoff is in `mere/design_docs/archive_docs/2026-10-28/2026-10-04_graph_semantics_plan.md`,
 section "Continuation handoff (2026-10-08)" (reported near line 2100). The independent
 qualified base remains `72c68b6d`; `c49e3e0b` does not clear repin/integration gates.
 
@@ -159,28 +161,16 @@ semantic and persistence gates listed in `controls.md`; syntax is not qualificat
 
 ## Remaining done-conditions
 
-1. Obtain the owner's final qualified immutable Mere revision and integration
-   clearance. Update the family as a tested set, Knot then Woodshed/Redshank then
-   Turnstone, retaining one Mere source and its matching Genet. No independent
-   Turnstone repin to `72c68b6d` was made.
-2. Verify the saved controls draft and ordered application with the other
-   patches. Per-view feed entries must not attach unread state to the first
-   arbitrary URL match. Persist migrated control evidence before stripping old
-   disk labels; resource tags cannot prove a particular view's old control state.
-3. Carry explicit qualified placement through Turnstone's bare Canvas runtime,
-   session adoption, replacement, fork and ordinary save. Graphshell already
-   exposes qualified placement, but Turnstone has no equivalent retained value.
-   Do not mint it merely from resource columns. A refused load must not later
-   be overwritten by an automatic fresh-graph save. The load patch establishes
-   only immediate file preservation.
-4. Attribute behavior journal entries to their originating graph runtime.
-   The shared journal currently has no such identity and projects entries
-   through the active graph. Equal resource IDs in two graphs are insufficient.
-5. At the qualified family, compile and run proposed tests plus existing
-   behavior/session/feed/recycle controls, restart/save/fork refusal controls,
-   shared-resource sibling controls and appropriate consumer suites. Preserve
-   meaningful negative/positive controls and exact source/manifest/binary hashes.
-   Browser and physical accessibility gates remain separate.
+**Applied (checked 2026-11-02).** All five items of the 2026-10-08 list were applied by the
+2026-10-09 continuation (Status above; "Native integration completed, 2026-10-09"; the 23
+checkboxes in this document are ticked). Live-tree evidence for the two that were
+code-shaped: item 3, qualified placement retained per session, is
+`SessionPersistence<PlacementProfile>` at `src/app/runtime_pool.rs:46`; item 4, journal
+attribution to the originating graph runtime, is `behavior_origin` at
+`src/app/journal_origin.rs:49` over `src/host_journal.rs`. Items 1, 2 and 5 rest on the
+document's own qualification record. What was not applied is the separate
+three-lane continuation of 2026-10-11 (last section, "Integration remains open"), which is
+Mere- and Graphshell-side work carried by the successor plans.
 
 ## Machines, Git and retained files
 
@@ -303,7 +293,7 @@ persistence contract; its authority/envelope choice remains open.
 ## Graph-origin design review (2026-10-08)
 
 The next written contract is in
-[`behaviors.md`](../docs/compatibility/graph_resources/behaviors.md#proposed-graph-origin-contract-2026-10-08).
+[`behaviors.md`](../../../docs/compatibility/graph_resources/behaviors.md#proposed-graph-origin-contract-2026-10-08).
 It recommends graph-bound capture into one ordered host stream, with explicit
 session/runtime-generation binding for delivery. The existing participant roster,
 authority, run store and watch tables are session-owned; recording other live
@@ -451,7 +441,7 @@ journal. Use this current order:
 6. `host-persistence-current-family.patch`
 7. `journal-origin-current-family.patch`
 
-[Current checks](../docs/compatibility/graph_resources/current-family-checks.json)
+[Current checks](../../../docs/compatibility/graph_resources/current-family-checks.json)
 record clean ordered application in an isolated index, exact resulting hashes
 and 32 Rust parser checks. The actual journal module is unchanged from the
 previous compiled receipt; its existing binary was rerun with 15 passes.

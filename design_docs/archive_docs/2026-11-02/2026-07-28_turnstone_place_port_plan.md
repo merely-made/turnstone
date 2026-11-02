@@ -1,12 +1,17 @@
 # Turnstone place port
 
+> **Archived 2026-11-02 (landed).** T0 to T3c landed 2026-07-29 to 2026-08-01, the headed receipts T5a to T5c on 2026-09-13 to 2026-09-15 (projection proof `647c184e`), and the current-stack macOS place baseline was qualified on 2026-10-19 (`14707491`). Open points moved to the successor `2026-11-02_architecture_plan.md`: the items the baseline leaves separate (automatic discovery and WAN reachability, current document projection and editing, research-source and note attachment transfer; last paragraph of the section "Current-stack macOS place baseline", line 1305). Named-recipient document publishing keeps its gate in the successor `2026-11-02_page_lifecycle_plan.md`. Receipts and the old-to-main hash table: [2026-07-28_turnstone_place_port_plan_receipts.md](../receipts/2026-07-28_turnstone_place_port_plan_receipts.md). Mark, 2026-11-02: "Everything, drafts first".
+
 **Date:** 2026-07-28
 
-**Status:** active implementation plan; follows the Commons promotion and
-stops at the first headed two-peer receipt.
+**Status (2026-11-02):** landed. T0 to T3c (2026-07-29 to 2026-08-01), T4 and the headed
+receipts T5a to T5c (2026-09-13 to 2026-09-15) are done, and the current-stack macOS
+baseline of 2026-10-19 requalifies the address and chat path. Automatic discovery,
+WAN reachability, document projection on the current stack, research attachments
+and named-recipient publication stay open (see the last section).
 
 This is the file-level expansion of P2 and P3 in the
-[peer-web reframe](./2026-07-28_turnstone_peer_web_reframe.md). It is grounded
+[peer-web reframe](../../2026-07-28_turnstone_peer_web_reframe.md). It is grounded
 in the live Gemot, Commons, Stickleback, transport, Knot, and Turnstone APIs.
 
 ## Decision
@@ -424,7 +429,7 @@ delegation windows are absolute and the pending/revoked distinction depends on
 it. Tests pin it. A clock error reads as 0, under which nothing has opened yet,
 so unreadable time withholds content rather than admitting it.
 
-#### T3a. Invitation and admitted join - envelope landed 2026-07-31, admission open
+#### T3a. Invitation and admitted join - DONE 2026-07-31 (envelope, admission, lane join)
 
 - ~~Parse and bound `PlaceInviteV1`~~ done: `src/place/invite.rs`. Digests
   checked against bytes, inline artifacts and rendezvous lists bounded before
@@ -824,7 +829,7 @@ be read as that proof.
 
 - **Blocked, and not on wiring: whose authority admits a shared Knot space?**
 
-  `KnotSyncHost` (mere `ports/knot/src/resident.rs`) syncs **one persona's own
+  `KnotSyncHost` (now `knot-editor/crates/knot-editor/src/resident.rs`; mere `ports/knot/src/resident.rs` when written) syncs **one persona's own
   devices**. Its transport key IS the writer seed, so a device's node id and
   its author identity are the same value, and admission is a list of
   `paired_writers` — "writer keys of this persona's other devices", with
@@ -850,7 +855,7 @@ be read as that proof.
   wired until you ask which fold answers "may this person write here".
 
   **Reframed 2026-08-02, and the question may dissolve rather than resolve.**
-  See the [Knot in Graphshell plan](../../mere/design_docs/mere_docs/implementation_strategy/2026-08-02_knot_in_graphshell_plan.md).
+  See the Knot in Graphshell plan (`knot-editor/design_docs/archive_docs/2026-11-02/2026-08-02_knot_in_graphshell_plan.md`).
   `KnotEndpoint` already implements graphshell's `ProjectionSource` and
   `IntentSink`; only its deployment as a spawned process is accidental. If a
   shared document is **projected** by the mere that holds it rather than
@@ -942,7 +947,7 @@ the reframe. What T5 gates instead is showing shared place content on a
 product surface at all, and it is the gate the Commons calls plan's A1 waits
 on.
 
-### T5a. Founder path and two-window proof (planned 2026-09-13)
+### T5a. Founder path and two-window proof (planned 2026-09-13; receipted 2026-09-13)
 
 Decided 2026-09-13: the founder path is a product surface, not a scenario-only
 or fixture-only lane. The palette gains the founding half of the vocabulary and
@@ -1055,7 +1060,7 @@ commit with mere `0db9d10d` and knot-editor `30c85702` aligned on it; run 8
 under `C:/t/turnstone-place-two-windows-20260914-8` passed all three
 scenarios on that graph.
 
-### T5b. Shared address and refused write (planned 2026-09-14)
+### T5b. Shared address and refused write (planned 2026-09-14; receipted 2026-09-14)
 
 Decided 2026-09-14: close reframe steps 4 and 7 on the existing vocabulary.
 
@@ -1151,7 +1156,7 @@ both live-publish tests pass and run 16 under
 `C:/t/turnstone-place-two-windows-20260915-16` passed all four scenarios
 with three members and one graph digest on every side.
 
-### T5c. Shared Knot document by projection (planned 2026-09-15)
+### T5c. Shared Knot document by projection (planned 2026-09-15; receipted 2026-09-15)
 
 Reframe step 5 under the K1 decision (mere Knot-in-Graphshell plan, Option
 A): a document belongs to the mere that holds it, place members edit it live

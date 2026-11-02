@@ -30,17 +30,17 @@ WAV voice-body bytes. Its native receipt (`Code/testing/turnstone/receipts/2026-
 qualifies local playback and fresh-process replay of a synthetic 500 ms PCM
 body with acquisition disabled and the original recording unavailable. It does
 not close this plan's broader compact episode/audio/physical gates or provide
-a microphone. The current receiver adopts Woodshed `961731ac`, Mere `74c1d810`,
-Genet `4bc75583` and Knot `21e1b0f6` as one typed source graph; the September
+a microphone. The current receiver adopts Woodshed `d5ea81652e`, Mere `f9fc8d84f6`,
+Genet `8063e2861b` and Knot `21e1b0f6` as one typed source graph; the September
 adoption below remains its historical receipt.
 
 ## Current adoption, 2026-09-29
 
-Turnstone adopts Mere `ca2351b3`, Genet `19c20687`, Knot `c92ad044` and Woodshed
-`752c920e` on one typed surface graph. Its reviewed host changes pass all nine
+Turnstone adopts Mere `c55a420dc6`, Genet `6c9452f422`, Knot `6ef4b85d82` and Woodshed
+`46659c0279` on one typed surface graph. Its reviewed host changes pass all nine
 guarded-host tests within the final 612-test workspace gate, with nine existing
 ignores. The locked graph and normal native build pass. The
-[adoption receipt](2026-09-29_shared_diagnostics_gloss_inspector_receipt.md)
+[adoption receipt](archive_docs/receipts/2026-09-29_shared_diagnostics_gloss_inspector_receipt_receipts.md)
 records the sealed pins and evidence; it does not qualify embedded audio or
 warning reachability in a short tile.
 
@@ -174,7 +174,7 @@ node is session-graph truth and survives a restart on its own.
    and Turnstone fills it from its netfetcher context. Its plan is Mere's.
 
    *Closed 2026-09-22 (lane T1 of `mere/design_docs/mere_docs/implementation_strategy/2026-09-20_ranged_fetch_plan.md`).*
-   Woodshed `bf5923d` put the port's streaming, downloads and feeds on
+   Woodshed `dd09538a95` put the port's streaming, downloads and feeds on
    `fetch::Fetch`. `Shell::new` builds the page actor with
    `spawn_fetcher_with` over the process session stores and a blocking
    `NetFetch` over the same stores, and hands that to `RedshankHost::open`;
@@ -187,8 +187,8 @@ node is session-graph truth and survives a restart on its own.
    keeps `voice_capture_available` false and the dock disables Voice honestly.
    A voice command that arrives anyway is refused in words rather than
    silently dropped.
-3. **Pins, resolved 2026-09-15.** The manifest names woodshed `c31158bb`
-   (pushed), mere `1009f02d`, and knot-editor `cac6e823`, which realigned to
+3. **Pins, resolved 2026-09-15.** The manifest names woodshed `78d52320ac`
+   (pushed), mere `9694fbcf5a`, and knot-editor `de05ea952c`, which realigned to
    that Mere so both agree on `mere_surface_api::SurfaceDescriptor` and
    `cambium::RetainedSurfaceSession`. A worktree of this commit with no local
    `.cargo/config.toml` resolved every sibling from GitHub and passed the full

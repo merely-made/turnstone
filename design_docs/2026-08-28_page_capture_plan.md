@@ -2,8 +2,8 @@
 
 **Status:** in progress, 2026-09-13. D1-D6 were ruled before P1 began. P1's
 owner contracts and exact source pins are landed; its clean-source Turnstone
-compile gate closed 2026-09-09 (welding `65d057de`, grafting `403a30c2`, mere
-`2b1ce46e`; see Progress). P2 has begun only at the host correlation boundary;
+compile gate closed 2026-09-09 (welding `356ff0e756`, grafting `25e03c3362`, mere
+`ffeeca44dc`; see Progress). P2 has begun only at the host correlation boundary;
 the hosted Weld capture hook and its remaining custody work are still open.
 The separate source-document path now stores raw bytes and a Fleece annotation,
 and collection-scoped search consumes locally held authorized captures.
@@ -15,6 +15,8 @@ work when it lands. E0 itself also retains the independent CEF authentication
 acceptance tail. The [page lifecycle plan](2026-09-06_page_lifecycle_plan.md) rules how a capture relates to Keep,
 deletion, drift and sharing (L2, L4, L5, L7); P2 custody and P3's node
 attachment consume those rulings.
+
+**Rechecked 2026-11-02:** the status above is the 2026-09-13 state. R0 (save acknowledgement and recovery), R1 (completion-bound source Keep) and R2 (private saved-source search and offline text reading) landed 2026-10-17 with receipts `r0_source_save_20261017`, `r1_source_keep_20261017` and `r2_saved_sources_20261017` (Progress below). Hosted P2, P4 and P5 stay open.
 
 ## What a capture is
 
@@ -72,7 +74,7 @@ rather than deprecated (DOC_POLICY §3: no parallel obsolete system).
 The host mints a **capture request id**, not a receipt id: a failed request has
 no durable receipt. The first hosted slice permits one outstanding capture per
 surface and returns a typed busy result for a second. At decision time Welding's
-helper dropped its internal request identity before polling; `844f949a9f`
+helper dropped its internal request identity before polling; `7c36a64bb7`
 subsequently made that identity durable through completion. The Turnstone
 adapter still enforces single-flight before it can claim hosted capture.
 
@@ -267,10 +269,10 @@ Done-conditions:
 - **2026-08-28, pre-P1 tree:** `SurfaceProducer::capture_snapshot_png` was
   required and synchronous, while Welding capture was asynchronous. Turnstone
   answered the mandatory method `Unsupported`. P1 retired that seam in Genet
-  `da8762fd910`; hosted capture now uses a request plus correlated completion,
+  `e4f84037c0`; hosted capture now uses a request plus correlated completion,
   and retained sessions use a defaulted immediate method.
 - **2026-08-28, pre-P1 tree:** `DocumentSession` had no capture method at all.
-  Genet `da8762fd910` adds the defaulted contract without claiming a retained
+  Genet `e4f84037c0` adds the defaulted contract without claiming a retained
   implementation; retained capture remains net-new.
 - **2026-08-28, live tree:** the custody lane already exists and already does
   what capture needs — a serialized off-thread writer depositing into
@@ -293,7 +295,7 @@ Done-conditions:
 - **2026-08-30, pre-P1 Welding tree:** `SnapshotChannel` retained internal CDP
   ids while requests waited, but its public poll result dropped the id and its
   bounded result queue evicted the oldest completion at sixteen. Welding
-  `844f949a9f` now returns a typed request id with every success or error, counts
+  `7c36a64bb7` now returns a typed request id with every success or error, counts
   pending plus unpolled results against one sixteen-slot admission bound, and
   rejects overflow without evicting an admitted completion. This is
   source/compile evidence; a new live cross-platform screenshot receipt remains
@@ -334,18 +336,18 @@ Recorded here so they are not lost, and because each is independently closable:
   exact viewport geometry, deposit-only custody, and retained capture deferred.
   Save and PDF export are separated from actual printing; the CEF auth probe is
   retained as an E0 acceptance tail.
-- **2026-08-30:** P1 source implementation landed. Genet `da8762fd910` owns the
+- **2026-08-30:** P1 source implementation landed. Genet `e4f84037c0` owns the
   shared viewport request/result vocabulary, correlated hosted completion,
   defaulted retained method and typed busy error; its Inker tests pass 106/106,
   Graft/Scrying/Weld tests pass 21/21, Pelt routing passes 3/3, and the Pelt
-  desktop library checks. Welding `844f949a9f` retains request identity through
+  desktop library checks. Welding `7c36a64bb7` retains request identity through
   completion and rejects a seventeenth admitted capture without eviction; its
   CEF-featured Welding tests pass 52/52 plus two compile doctests, and the
   Windows demo checks. Mere `9667541261` aligns all 35 Genet pins; root,
   Distillery and Graphshell-web `--no-deps` metadata parse offline, while Knot
   desktop's workspace-membership error remains outside this slice.
 - **2026-08-30:** Turnstone commits `4a6ee8d`, `5b80580` and `6b1870c` retire
-  its obsolete sync stub and pin Genet `da8762fd910`, Welding `844f949a9f` and
+  its obsolete sync stub and pin Genet `e4f84037c0`, Welding `7c36a64bb7` and
   Mere `9667541261` exactly. The clean-source compile receipt is still open:
   bounded Cargo 1.96 and 1.97 resolver runs each crossed roughly 418 CPU seconds
   and 1.5 GB without writing a refreshed ignored lock, so they were stopped.
@@ -375,18 +377,18 @@ Recorded here so they are not lost, and because each is independently closable:
   6/6 refusal and exhaustion tests. An isolated offline no-default library
   check reached Turnstone and passed with pre-existing warnings. The Weld
   feature check reached a pre-Turnstone dependency mismatch: pinned Welding
-  `c65cc108` expects the older `Dx12SharedTexture` shape while the workspace
-  patch selects the clean local `wgpu-graft` checkout at `403a30c2`. Its six E0560/E0308
+  `5465cc2c11` expects the older `Dx12SharedTexture` shape while the workspace
+  patch selects the clean local `wgpu-graft` checkout at `25e03c3362`. Its six E0560/E0308
   errors leave the adapter compile and headed pixels open; this partial
   consumer proof does not close P1's clean-source pin gate. The named commands,
   regression manifest, runner hashes and retained Weld diagnostic are in the
   S9 receipt (`Code/testing/turnstone/receipts/page_capture_s9_20260908/README.md`).
 - **2026-09-09:** P1's clean-source Turnstone compile gate closed. Worktree
-  `turnstone-weld-pin-20260909` moved welding to `65d057def7db2b5034add6e316cbd51d97c163a1`
-  and grafting to `403a30c2fab39c573d1eebb57a0995e2c3347ff1` (commit `0c8461f`,
+  `turnstone-weld-pin-20260909` moved welding to `356ff0e7560e2c2995b44b23f6883cd0f70844f8`
+  and grafting to `25e03c33621fcf21a51622256d2fad7431029488` (commit `0c8461f`,
   pin choice left open for Mark), then migrated `src/shell/weld.rs` and
   `src/shell/surface_frames.rs` against those heads and the committed mere
-  `weld-engine` pin `2b1ce46e`: the local `WeldSurface` trait impl dropped its
+  `weld-engine` pin `ffeeca44dc`: the local `WeldSurface` trait impl dropped its
   two now-removed pollers in favour of welding's unified `poll_web_event`
   (`CefSurfaceEvent`), and `acquire_frame` / the DX12 import branches in
   `surface_frames.rs` moved to welding's and grafting's owned/borrowed
@@ -411,7 +413,7 @@ Recorded here so they are not lost, and because each is independently closable:
   existing session Eidetic/Fjall store. It refuses targets lacking an observed
   final URL, does not promote recall text or PNGs, and does not support hosted
   Weld. Every Turnstone Mere git pin moved together from `2b1cd731` to
-  `725b0f35` for the current Eidetic bridge; focused resolver validation is
+  `c014e77b54` for the current Eidetic bridge; focused resolver validation is
   pending the shared dependency cache. On a current completion, the node now
   appends only the annotation manifest to its durable
   `capture.source-annotations/v1` facet series and triggers `SaveSession`; a
@@ -429,8 +431,8 @@ Recorded here so they are not lost, and because each is independently closable:
   group while each signed share stays a separate contribution. Missing,
   invalid, unsupported and store-unavailable references remain explicit
   statuses and supply no search text. All 43 Mere dependencies now pin
-  `c328e6fc9028f0024a82c4a0086bf15605812630`; both Knot dependencies pin
-  `2309dc54f501ffd4de0392e8be59edeade6b4d07`. Locked offline metadata and the
+  `2141e28f30a8b11a2c17ae17a223a10b4307637a`; both Knot dependencies pin
+  `2263ec79db8b61b4dbe5dd6304ae8c13f202239c`. Locked offline metadata and the
   focused captured-collection and source-capture tests pass in Turnstone's
   actual feature graph.
 
@@ -476,7 +478,7 @@ Recorded here so they are not lost, and because each is independently closable:
   Command: `cargo +1.97.1 test --manifest-path C:\Users\mark_\Code\repos\turnstone\Cargo.toml --lib collection --offline --locked -j 2`,
   run from `C:\t\turnstone-clean-cwd` with target directory
   `C:\t\turnstone-partition-fixed-target`, excluding checkout-local Cargo
-  overrides. Mere pins remain `1777b19840a6478a0faf3ab060a3ff71d5532321`;
+  overrides. Mere pins remain `3884e62288cf4252e7d9ccbb7abdae68a05c28a0`;
   the p2panda patch remains `85f88345a1d6677c32099d3d306efcb9dafeb12d`.
 
   The same locked command with the `collection` filter removed passed the full
@@ -493,7 +495,7 @@ Recorded here so they are not lost, and because each is independently closable:
   the trail memory, and Graphshell's reference host plan at H5. Turnstone's
   gate is still the no-op `consented_to_keep` in `src/trail_memory.rs`, which
   returns `true`. Its default is open: `Full`, as Mere's C4 shipped, or
-  disabled and opt-in, as Graphshell's `HistoryCapturePolicy` is. Recorded in Mere's archived plan tails plan (`mere/design_docs/mere_docs/implementation_strategy/2026-07-03_archived_plan_tails_plan.md`, section "2026-10-06 archive pass").
+  disabled and opt-in, as Graphshell's `HistoryCapturePolicy` is. Recorded in Mere's archived plan tails plan (`mere/design_docs/archive_docs/2026-10-28/2026-07-03_archived_plan_tails_plan.md`, section "2026-10-06 archive pass").
 
 - **2026-10-17, research-workflow join planned:** the
   [lifecycle plan's research slice](2026-09-06_page_lifecycle_plan.md#research-workflow-smallest-complete-slice-2026-10-17)
@@ -502,7 +504,7 @@ Recorded here so they are not lost, and because each is independently closable:
   list/search and resident-independent exact saved-text reader, then a bounded
   capture-backed Answers context. This consumes P3a's existing source artifacts;
   it does not close hosted P2/P4/P5 or imply a new execution receipt. The audit
-  confirms `consented_to_keep` still returns true at `428deb5`. The proposed
+  confirms `consented_to_keep` still returns true at `684e16d821`. The proposed
   first slice follows L1/L3's metadata-only ordinary history and explicit-byte
   admission on new writes, preserves legacy PageText bytes/runs, and excludes
   them from research evidence. This names the conflict with the older open
@@ -550,7 +552,7 @@ Recorded here so they are not lost, and because each is independently closable:
   the existing NoFetcher/R0 boundary, while the original address is an explicit
   link. This consumer does not fork a supplier API or convert captures into
   ClipRecords. The branch's refreshed stack changes exactly 78 Mere lock records
-  to published `a9b5dd663`, including its scroll-boundary fix; Genet and the
+  to published `14dea0d8a5`, including its scroll-boundary fix; Genet and the
   other lock records are preserved. The
   R2 receipt (`Code/testing/turnstone/receipts/r2_saved_sources_20261017/qualification.json`)
   binds 969 bounded regression passes, three capture-library controls,

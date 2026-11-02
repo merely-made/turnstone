@@ -6,7 +6,7 @@ and let athanor (the oven) permanently forget it later, on command or
 schedule, baking an engram on the way out.
 
 This resumes work meerkat already did and turnstone forgot. It extends the
-[Alembic implementation plan](../../mere/design_docs/mere_docs/implementation_strategy/2026-06-24_alembic_implementation_plan.md)
+Alembic implementation plan (`mere/design_docs/archive_docs/2026-10-28/2026-06-24_alembic_implementation_plan.md`)
 (slice D, Athanor) and the deleted-node bin it names.
 
 ## The decision (and the dead ends behind it)
@@ -71,10 +71,10 @@ on the way out (distill before forget), on command ("empty the bin") or the
 steady-heat schedule. Config knobs land in Apparatus, live passes in Steward
 (the Alembic plan's §8 answer).
 
-**The on-command half LANDED 2026-07-21/22** (mere `df316b6` + turnstone
+**The on-command half LANDED 2026-07-21/22** (mere `53ff05436a` + turnstone
 `94c3043`):
 
-- mere `df316b6`: `eidetic::deleted` grew its deletion door — the append-only
+- mere `53ff05436a`: `eidetic::deleted` grew its deletion door — the append-only
   bin had no way out. `purge_deleted(node_id)` drops a node's tombstone(s)
   (`list_typed` -> `delete_manifest`, all matching since a node deleted twice
   has two); `clear_deleted` empties the bin. Both return real counts, both
@@ -90,7 +90,7 @@ steady-heat schedule. Config knobs land in Apparatus, live passes in Steward
   Removed gone, record forgotten from the STORE, not just derived away);
   headed RESULT ok, 88 unit tests green.
 
-**The retirement pass LANDED 2026-07-22** (mere `499b071` + turnstone `232f188`):
+**The retirement pass LANDED 2026-07-22** (mere `3a6d0e50d4` + turnstone `232f188`):
 athanor's third pass, beside forgetting (content) and consolidation (engrams).
 `propose_retirement(deleted, keep_ms, now_ms)` names the tombstone ids past the
 retention window (pure, R0 — a "what will be forgotten" preview is possible);
@@ -118,7 +118,7 @@ seconds-long run).
 
 Design locked 2026-07-20; slices 1+2 LANDED the same day.
 
-- mere 370a148: `canvas::recover_node` takes the record's uuid and re-mints
+- mere 0056f1702b: `canvas::recover_node` takes the record's uuid and re-mints
   under it (`mint_node_as` over `GraphDelta::AddNode`'s existing id param);
   idempotent (an existing id selects, never twins).
 - turnstone: `recycle.rs` is the bin port — an armillary actor
@@ -140,8 +140,13 @@ Design locked 2026-07-20; slices 1+2 LANDED the same day.
 - The tombstone dead-end's remnants (an origin merge re-landed them) were
   replaced by this in the same change.
 
-Slice 3 (athanor's pass: permanent forget + engram bake, "empty the bin" +
-steady-heat schedule, knobs in Apparatus / passes in Steward) is next.
+Slice 3 (athanor's pass) is half landed (2026-11-02): the on-command half
+(`Action::EmptyRecycleBin`, `src/action/action.rs:529`) and the retirement pass
+(`retire_then_list`, `src/recycle.rs:119`, run at session open with a 30-day
+`RETENTION_DAYS`, `src/recycle.rs:47`) are in the tree. Four items stay open,
+listed under "Remaining" in the slice 3 section above: the continuous
+background timer, the engram bake, per-item permanent delete and the Apparatus
+retention knob.
 
 2026-09-06: the [page lifecycle plan](2026-09-06_page_lifecycle_plan.md) extends the record to carry a node's capture
 envelopes and restores them on recovery (L4, phase L-P2), and gives

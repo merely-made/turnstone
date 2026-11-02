@@ -21,8 +21,10 @@ clean-source Turnstone compile receipt closed on 2026-09-09; hosted capture
 and remaining custody work are still open. Live CEF authentication
 callback delivery remains an independent E0 acceptance tail. This plan
 succeeds the remaining-work portion of the historical
-[browser gap analysis](2026-08-17_smolweb_browser_gap_analysis.md); the analysis
+[browser gap analysis](archive_docs/2026-11-02/2026-08-17_smolweb_browser_gap_analysis.md); the analysis
 remains useful as research and acceptance evidence.
+
+**Rechecked 2026-11-02:** the status above is the 2026-10-07 state. Later sections record Linux native Cue receiving (2026-10-23), product UI receiving through Cue (2026-10-23), the password and shared geometry receiving (2026-10-27) and Taffy 0.15.1 Linux geometry receiving (2026-10-29, `Code/testing/turnstone/receipts/cue_taffy_geometry_linux_20261029/receipt.json`); synthetic input in those runs does not extend physical IME, OS candidate-popup, CJK, human AT, native high-DPI, X11 or Servo IME acceptance. A0, S0 and X0 are not started: `src/` has no arrivals or shallows surface.
 
 ## Genet password geometry receiving, 2026-10-27
 
@@ -383,7 +385,7 @@ of the amendment.
 **Status:** source implementation with static review. Cargo, runtime and
 headed validation remain held at the user's request. This is a separate
 behavior change from the terminology amendment above. Mere's canonical
-graph behaviors plan (`mere/design_docs/mere_docs/implementation_strategy/2026-08-13_graph_behaviors_plan.md`),
+graph behaviors plan (`mere/design_docs/archive_docs/2026-10-28/2026-08-13_graph_behaviors_plan.md`),
 sections 8.5 and 8.6, owns the redesign and subsequent slices.
 
 Turnstone consumes Servitor's portable binding and admission contract, using
@@ -426,7 +428,7 @@ focused scenario receipt is still pending.
 ### Resident run outcomes R1b, 2026-09-20
 
 **Status:** source implementation with static review; execution remains held. Mere's
-graph behaviors plan (`mere/design_docs/mere_docs/implementation_strategy/2026-08-13_graph_behaviors_plan.md`),
+graph behaviors plan (`mere/design_docs/archive_docs/2026-10-28/2026-08-13_graph_behaviors_plan.md`),
 section 8.7, owns the run contract and acceptance boundaries.
 
 The host records the admitted ticket and ordered run events in

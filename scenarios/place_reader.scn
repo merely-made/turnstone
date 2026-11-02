@@ -1,4 +1,4 @@
-# T5b step 7: refused unauthorized write (design_docs/2026-07-28_turnstone_
+# T5b step 7: refused unauthorized write (design_docs/archive_docs/2026-11-02/2026-07-28_turnstone_
 # place_port_plan.md, "T5b. Shared address and refused write"). The
 # reader joins the place read-only (Invite to place as reader admits at Read
 # with no delegation), sees both write permissions read as not effective and
@@ -75,7 +75,7 @@ settle 5
 # this leg must run BEFORE that, not after.
 touch ${EXCHANGE}\reader.finished
 
-# T5c (design_docs/2026-07-28_turnstone_place_port_plan.md, "T5c. Shared
+# T5c (design_docs/archive_docs/2026-11-02/2026-07-28_turnstone_place_port_plan.md, "T5c. Shared
 # Knot document by projection"): attempt to visit the founder's Knot
 # document once it is shared. A reader carries no projection-connect grant
 # (Invite to place as reader issues no delegation), so the dial is refused

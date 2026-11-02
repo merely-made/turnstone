@@ -1,8 +1,19 @@
-# Reader appearance native verification receipt
+# Reader appearance isolation receipts
+
+Receipts for the archived [plan](../2026-11-02/2026-09-05_reader_appearance_isolation_plan.md) (archived 2026-11-02 under DOC_POLICY section 8: run evidence is kept apart from the plan). This file indexes the evidence; the evidence itself is not in the repository. Line numbers below are in the archived file, which begins with a one-paragraph archive header (line 3).
+
+## Inline run evidence that stays in the archived plan
+
+6 lines of the archived file mention a receipt. Sections that are run evidence:
+
+
+## 2026-09-06: native verification receipt
+
+Folded 2026-11-02 from `2026-09-06_reader_appearance_native_check_receipt.md` (Mark: "Own stem in receipts/" for the receipt-like documents; this one folds into its plan's receipts file). Its text follows unchanged except that headings are demoted one level.
 
 Date: 2026-09-06
 
-## Idle and shutdown follow-up
+### Idle and shutdown follow-up
 
 The follow-up native run passed, with all original appearance checks retained.
 Its three waits completed in **103, 0, and 0 frames**, within the unchanged
@@ -26,7 +37,7 @@ or publishing transfer; these paths have compilation and ownership review,
 not a transfer-in-progress receipt. A Gemini identity warning for the HTTP
 fixture remains in the raw log and was not suppressed.
 
-The [follow-up artifact receipt](receipts/reader_idle_shutdown/receipt.json)
+The follow-up artifact receipt (`Code/testing/turnstone/design_docs_receipts/reader_idle_shutdown/receipt.json`)
 contains hashes, the failed diagnostic observations, accepted observations and
 captures, app logs, and unit-test/build logs. The accepted independent-scroll
 capture was visually inspected. This is an idle-predicate and shutdown proof,
@@ -41,12 +52,12 @@ cargo build -p turnstone --offline --config C:/Users/mark_/Code/scratch/refresh-
 scenarios/run_reader_appearance.ps1 -TurnstoneBin C:/Users/mark_/Code/target-appearance-turnstone/debug/turnstone.exe -OutputRoot C:/Users/mark_/Code/scratch/refresh-proof/reader-idle-shutdown-run-02
 ```
 
-## Native result
+### Native result
 
 The executable build and headed scenario passed on 2026-09-06. The fixture,
 scenario, app process, and runner all completed successfully. Four captures
 and four state observations are retained in
-[the artifact receipt](receipts/reader_appearance_native/receipt.json).
+the artifact receipt (`Code/testing/turnstone/design_docs_receipts/reader_appearance_native/receipt.json`).
 
 | Checkpoint | Workbench scroll | Inset scroll |
 | --- | ---: | ---: |
@@ -59,8 +70,8 @@ The Workbench viewport was 251x570 and the inset 305x600. Both reported the
 same source group while present, backed by `Arc::ptr_eq` within each snapshot.
 Workbench ID `0x7ff62e3ddce5f1e0` and inset ID `0x83646760589b1fb1` remained
 stable. Closing Workbench preserved the inset ID and exact offset.
-The [independent scroll capture](receipts/reader_appearance_native/03_independent_scrolls.png)
-and [surviving inset capture](receipts/reader_appearance_native/04_inset_survives.png)
+The independent scroll capture (`Code/testing/turnstone/design_docs_receipts/reader_appearance_native/03_independent_scrolls.png`)
+and surviving inset capture (`Code/testing/turnstone/design_docs_receipts/reader_appearance_native/04_inset_survives.png`)
 were visually inspected. Pixel dimensions and scroll positions are recorded
 from the live host plan and retained Reader sessions, not fixture expectations.
 
@@ -94,7 +105,7 @@ Use a fresh output directory for each rerun. Binary, source, overlay, log, and
 capture hashes are in the artifact receipt above. Raw logs are retained,
 including capped waits and shutdown diagnostics.
 
-## Earlier compile-only result
+### Earlier compile-only result
 
 `cargo check` passed for the native Turnstone host. It completed in 1m45s
 with 76 warnings and no errors. This checks the new role-resolved Reader
@@ -112,7 +123,7 @@ The temporary overlay patches local Mere workspace packages. It deliberately
 retains Turnstone's pinned Distillery: the local Distillery WIP has an
 unrelated undeclared `scenomise` use in `chronicle.rs:324`.
 
-## Earlier blocked build attempts
+### Earlier blocked build attempts
 
 In the earlier compile-only pass, two attempted `cargo build` commands were
 stopped while waiting on an external package-cache lock. At observation time
@@ -131,7 +142,7 @@ The runner parses observation files with invariant-culture numeric parsing and
 verifies shared source, distinct IDs and viewport widths, one-role-only scroll
 changes, and exact surviving inset ID and scroll offset after closing Workbench.
 
-## Artifacts
+### Artifacts
 
 | Artifact | SHA-256 |
 | --- | --- |
@@ -146,3 +157,12 @@ changes, and exact surviving inset ID and scroll offset after closing Workbench.
 Static validation after the diagnostic text refinement passed: `rustfmt --emit
 stdout` parsed the three Rust scenario/observer files without changing them,
 and PowerShell's AST parser accepted the runner.
+
+### Hash table for the folded receipt
+
+The body keeps the hashes it was written with (Mark, 2026-11-02: "Live docs: local + sibling"; archived docs keep theirs). Each row is a cited commit that is not on its repository's main, with the commit on main that has the same author, author time and subject, re-verified with `git show` and `git merge-base --is-ancestor` on 2026-11-02. Line numbers are in the archived file.
+
+| cited | repo | on main | subject | lines |
+|---|---|---|---|---|
+| `115d348deddc344d949754e63beaece47cf49f34` | genet | `4b6108f2287d7af2159fa6d0ae2bd1f92f9d33ff` | Widen the ortet forbidden list as the last commit claimed, and correct its comme | 81 |
+| `1523c8287b419ae98e4122dec54668a445f2824d` | mere | `c1508ad40774c54e7d760eac37c54cb3f09e61ba` | Expose retained Reader viewport and scroll observations | 109 |

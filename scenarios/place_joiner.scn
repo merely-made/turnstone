@@ -1,6 +1,6 @@
 # T5a joiner path, paired with scenarios/place_founder.scn through the shared
 # exchange directory named by ${EXCHANGE} (see scenarios/place_two_windows.ps1
-# and design_docs/2026-07-28_turnstone_place_port_plan.md, "T5a").
+# and design_docs/archive_docs/2026-11-02/2026-07-28_turnstone_place_port_plan.md, "T5a").
 settle 30
 key escape
 

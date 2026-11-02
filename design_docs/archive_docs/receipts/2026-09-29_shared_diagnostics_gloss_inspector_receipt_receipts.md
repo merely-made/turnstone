@@ -1,5 +1,7 @@
 # Shared diagnostics adoption and Gloss / Inspector receipt
 
+> Moved 2026-11-02 from `design_docs/2026-09-29_shared_diagnostics_gloss_inspector_receipt.md` to `archive_docs/receipts/` under its own stem (Mark: "Own stem in receipts/"); text unchanged below this note except the hash table appended at the end.
+
 Date: 2026-09-29; continuation 2026-09-30 below.
 Status: sealed dependency graph resolves; focused diagnostics, UI and participant
 tests, the normal native build and final initial/restarted pane scenarios pass.
@@ -8,9 +10,9 @@ is open. The September 30 cohort below records its own source graph and gates;
 earlier hashes and captures remain historical evidence.
 
 This records the consumer graph and evidence boundaries for the
-[current Gloss / Inspector direction](2026-07-20_gloss_composite_pane.md#current-direction-2026-09-29).
+[current Gloss / Inspector direction](../../2026-07-20_gloss_composite_pane.md#current-direction-2026-09-29).
 The shared observation contract remains in
-`mere/design_docs/mere_docs/implementation_strategy/2026-06-08_system_diagnostics_and_accessibility_plan.md`;
+`mere/design_docs/archive_docs/2026-10-28/2026-06-08_system_diagnostics_and_accessibility_plan.md`;
 this document records Turnstone's application and acceptance evidence.
 
 ## September 29 published dependency graph
@@ -57,7 +59,7 @@ attribution; existing behavior string protocols retain the author's raw ID.
 
 ## Product diagnostic copy
 
-[DiagnosticObservations](../src/diagnostic_observations.rs) copies fixed categories
+[DiagnosticObservations](../../../src/diagnostic_observations.rs) copies fixed categories
 at the AppEvent fanout, omitting URLs, titles, paths, prompts, credentials, hashes
 and raw errors. Unclassified events become `other-app-event`; metadata supplies
 no inferred operation, subject, worker timing or cause. Trail retains its authority.
@@ -254,3 +256,21 @@ A pass requires the human's actual observations for these cases. Screen-reader
 startup, AccessKit tree tests and screenshots alone do not close this gate.
 Built-in semantic matching, custom paint leaves and the full live document
 projection retain separate implementation gates.
+
+## Old-to-main hash table (2026-11-02)
+
+The body keeps the hashes it was written with (Mark, 2026-11-02: "Live docs: local + sibling"; archived docs keep theirs). Each row is a cited commit that is not on its repository's main, with the commit on main that has the same author, author time and subject, re-verified with `git show` and `git merge-base --is-ancestor` on 2026-11-02. Line numbers are in the archived file.
+
+| cited | repo | on main | subject | lines |
+|---|---|---|---|---|
+| `ca2351b3fa21de1ca40a8553eed20fc503faf15c` | mere | `c55a420dc6a8a574a655330c24a1dd328907b076` | Add bounded Apparatus observations and optional Mesquite receipts | 22 |
+| `19c206873ab08ae227217892d9e74d0df18b349a` | genet | `6c9452f42299646aaa313e771bbc1880e3a8c17c` | Match Taproot semantic targets through owner accessibility projections | 23 |
+| `c92ad044103f8b3a97757a406e003c1b5381ac8d` | knot-editor | `6ef4b85d82ca26b618df18afecd31180f75089e9` | Adopt coherent shared diagnostics and automation pins | 24 |
+| `752c920e713fa511d6e5d73385c57522d7a03233` | woodshed | `46659c0279bf60ce7838f27c83cfce46b6077e97` | Adopt shared host updates and verify podcast intake and cue seeking | 25 |
+| `9607d16f1907f6c2085648ae96abcaa30d7c3d41` | netrender | `c6f809b089fec99b4e770fb09a8109eecd4de5c1` | Update Classic Vello to GPU-count buffer sizing release | 26, 167 |
+| `8a454fb7` | knot-editor | `92d1566497` | Pin verified shared graph sizing and scenario focus fixes | 84 |
+| `701d0f0b` | knot-editor | `ce85690db0` | Merge pull request #1 from merely-made/codex/nomadnet-backends | 85 |
+| `bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3` | mere | `d6e760120916473d3721ea4761ab8ed5d3654fca` | Merge command menus and font measures with bounded diagnostics | 163 |
+| `69a2383b2ad777b884a72f31f8f8fb7ece275c0b` | genet | `450f45b694c5acdef61a43cb2ea08a910d17e06e` | Merge font-backed host layout with qualified semantic diagnostics | 164 |
+| `3dfb70b01e79dadfcbd1e615ded43b34f01802da` | knot-editor | `eae29d1352d663c6623a3b1caf059f7ca712dce4` | Merge Commands and typography with qualified catalog diagnostics | 165 |
+| `cefc903dcd7f506803acfe2ee52cad7693787188` | woodshed | `ebe1cc0fbebfcb0fe88c649c4029f455a3049a9c` | Qualify Redshank diagnostics on combined command and font pins | 166 |

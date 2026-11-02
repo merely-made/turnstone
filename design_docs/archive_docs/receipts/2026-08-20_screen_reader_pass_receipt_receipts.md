@@ -1,10 +1,12 @@
 # Screen-reader pass receipt: the frozen projection, heard
 
+> Moved 2026-11-02 from `design_docs/2026-08-20_screen_reader_pass_receipt.md` to `archive_docs/receipts/` under its own stem (Mark: "Own stem in receipts/"); text unchanged below this note except the hash table appended at the end.
+
 **Date:** 2026-08-20
 **Operator:** Mark, at the machine, with Windows Narrator. Claude drove the
 builds, the UIA dumps, and the fixes between attempts.
 **Scope:** the manual leg of the projection grammar plan's B1 target (mere,
-`design_docs/mere_docs/implementation_strategy/2026-08-15_projection_grammar_adoption_plan.md`),
+`mere/design_docs/archive_docs/2026-10-28/2026-08-15_projection_grammar_adoption_plan.md`),
 run against turnstone's Frozen Projection pane over the sample graph.
 **Precedent:** the 2026-06-09 AccessKit verification checklist, written for
 meerkat and unrunnable since its retirement; this receipt replaces it as the

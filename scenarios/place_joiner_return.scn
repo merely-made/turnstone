@@ -1,5 +1,5 @@
 # T5a step 6: the joiner half of "stop, author while absent, restart,
-# converge" (design_docs/2026-07-28_turnstone_place_port_plan.md, "T5a",
+# converge" (design_docs/archive_docs/2026-11-02/2026-07-28_turnstone_place_port_plan.md, "T5a",
 # Scope). Runs as a SECOND process against the SAME appdata/root/profile the
 # phase-1 joiner used (scenarios/place_joiner.scn), so the place binding,
 # rendezvous and stores the worker persisted are retained offline at startup.
@@ -34,7 +34,7 @@ settle 10
 wait-status 600 Retained history: 0 shared nodes, 4 messages
 
 # Signal the founder that the return leg is complete; T5b step 4 continues
-# from here (design_docs/2026-07-28_turnstone_place_port_plan.md, "T5b.
+# from here (design_docs/archive_docs/2026-11-02/2026-07-28_turnstone_place_port_plan.md, "T5b.
 # Shared address and refused write") — the founder invites the reader and
 # shares a node on the address below while this process waits for it.
 touch ${EXCHANGE}\joiner.returned
@@ -62,7 +62,7 @@ assert pane workbench
 assert surface content
 capture joiner_shared
 
-# T5c: visit the founder's shared Knot document by projection (design_docs/
+# T5c: visit the founder's shared Knot document by projection (design_docs/archive_docs/2026-11-02/
 # 2026-07-28_turnstone_place_port_plan.md, "T5c"). The founder shares it
 # after the reader's leg completes, so this profile's shared-node count goes
 # from 1 to 2; the exact knot:// address (holder root hex) is never known to

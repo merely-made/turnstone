@@ -113,7 +113,7 @@ isolated Git index, with all 13 proposed Rust files parsing and clean whitespace
 `handoff-checks.json` binds patch bytes, ordered application and proposed-source
 hashes. The generated index was removed. These are static checks only: no new
 test was compiled or executed, and production source and pins stayed unchanged.
-Resume from the [browser/resource handoff](../../../design_docs/2026-10-08_browser_resource_handoff.md).
+Resume from the [browser/resource handoff](../../../design_docs/archive_docs/2026-11-02/2026-10-08_browser_resource_handoff.md).
 
 At source commit `78a59e172c78c70e943332ade5492b91ff09fea7`, the locked Linux test
 build passed. The same test binary then passed all seven Inspector read-model

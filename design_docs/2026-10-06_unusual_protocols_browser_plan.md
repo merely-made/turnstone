@@ -116,13 +116,13 @@ package, is fork U1.
     with seven headed Gemini cases plus Titan and Spartan mutations.
   - NomadNet acceptance (`Code/testing/turnstone/receipts/nomadnet_acceptance_20260911/README.md`).
   - The Scroll note in the
-    [browser gap analysis](2026-08-17_smolweb_browser_gap_analysis.md).
+    [browser gap analysis](archive_docs/2026-11-02/2026-08-17_smolweb_browser_gap_analysis.md).
   - The 2026-09-13 Micron form acceptance recorded in Mere's smolweb fidelity
     plan. Its artifacts were deleted by 2026-09-16, and the tests it cites
     still exist.
   - The Turnstone unit tests named per row.
   - The last full gate:
-    [635 workspace tests, nine ignored](2026-09-29_shared_diagnostics_gloss_inspector_receipt.md).
+    [635 workspace tests, nine ignored](archive_docs/receipts/2026-09-29_shared_diagnostics_gloss_inspector_receipt_receipts.md).
 
 ## Findings (2026-10-06)
 
@@ -1027,7 +1027,7 @@ deployment decision.
   complete native session, credentials or every page body from a scene link.
   Homes: `mere/design_docs/mere_docs/technical_architecture/2026-08-16_shelfmark_format_note.md`,
   `mere/crates/system/pandect/src/graph_codicil.rs`, and
-  `mere/design_docs/mere_docs/implementation_strategy/2026-09-23_reservoir_plan.md`.
+  `mere/design_docs/archive_docs/2026-10-28/2026-09-23_reservoir_plan.md`.
 - Preserve this repository's [page lifecycle](2026-09-06_page_lifecycle_plan.md):
   visits record addresses, Keep retains the node, and explicit Capture retains
   admitted bytes. Do not turn opening a host tab into an implicit capture.
@@ -1205,10 +1205,10 @@ inventory, 2026-10-07.)
   Cambium app's tree mounted into another Cambium host's forest document
   (stack seams P2, `cambium-rootstock/src/multi_host.rs`). Mark also pointed
   it at the archived tear-out plans: mere
-  `archive_docs/2026-07-04_completed_plans/2026-06-19_tearout_composability_plan.md`
+  `mere/design_docs/archive_docs/2026-07-04_completed_plans/2026-06-19_tearout_composability_plan.md`
   (C2's external-texture bridge, C3's cross-window pane resolution, C4's
   cross-graph composition) and
-  `archive_docs/2026-10-06_completed_plans/2026-06-24_tearout_gestures_plan.md`.
+  `mere/design_docs/archive_docs/2026-10-06_completed_plans/2026-06-24_tearout_gestures_plan.md`.
 
 ### Rulings (2026-10-06, second round)
 
@@ -1295,7 +1295,7 @@ inventory, 2026-10-07.)
 ### Rulings (2026-10-07, fifth round: the composition brief)
 
 The U8 research lane's brief is Mere
-`design_docs/cambium_docs/research/2026-10-06_app_composition_brief.md`
+`mere/design_docs/cambium_docs/research/2026-10-06_app_composition_brief.md`
 (Mere `5919dc64`). Its forks AC1 to AC6 were put to Mark as written, with
 notes on how AC2 and AC3 meet SC and S8. The brief's own §9 should carry
 the same record once this lane can push to Mere (U15).
@@ -1597,7 +1597,7 @@ the same record once this lane can push to Mere (U15).
       --all-targets --locked`.
   - Request for the next coordinated Mere repin, from the Scenograph editor
     lane (Mark's SE35 assigns it to this lane). The brief is §3 of
-    `mere/design_docs/mere_docs/implementation_strategy/2026-10-07_scenograph_editor_plan.md`.
+    `mere/design_docs/archive_docs/2026-10-28/2026-10-07_scenograph_editor_plan.md`.
     Mere main at `16c1ef8d` and later offers `cambium::CommandSet`, the
     pictograph context gestures (`take_context_request`) and pandect's
     `CommandMenuView`. Turnstone's side:
@@ -1994,8 +1994,8 @@ The same fixed Mere snapshot locates Graphshell at `ports/graphshell`: it is
 Mere's projection client/reference host, without a second PeltContent/PageLoad
 implementation. Its actual parallel GUI paths are the legacy presenter/DOM/
 scenario path and retained Cambium tree. The supplier's canonical
-`design_docs/mere_docs/implementation_strategy/2026-09-25_graphshell_one_tree_plan.md` and
-`design_docs/mere_docs/implementation_strategy/2026-09-27_graphshell_tree_migration_inventory.md` keep the five-page
+`mere/design_docs/archive_docs/2026-10-28/2026-09-25_graphshell_one_tree_plan.md` and
+`mere/design_docs/mere_docs/implementation_strategy/2026-09-27_graphshell_tree_migration_inventory.md` keep the five-page
 cutover open. That product migration is independent of Turnstone's SC5/S8 work.
 Shared surface input needs a coordinated contract for pointer identity,
 wheel modifiers and button parity; SC6 still owns the engine-aware pool,
@@ -2105,7 +2105,7 @@ continue serially in the existing shared target cache.
 
 The client-limit slice is implemented and its focused receiving gates pass under
 `smolweb/design_docs/implementation_strategy/2026-10-22_client_limits_plan.md`
-and `retinue/design_docs/2026-10-22_resource_client_limits_plan.md`.
+and `murm/design_docs/2026-10-22_resource_client_limits_plan.md`.
 It moves Micron limits before Resource allocation/decompression/body copying
 and passes host limits through shared smolweb receiving, including bodyless
 documents and explicit Submit responses. Encoded Resource, decoded envelope
@@ -2296,11 +2296,11 @@ is recorded separately from compiler errors in each successful build receipt.
 ## Cross-references
 
 - Mere smolweb fidelity plan:
-  `mere/design_docs/nematic_docs/implementation_strategy/2026-07-01_smolweb_fidelity_plan.md`
+  `mere/design_docs/archive_docs/2026-10-28/2026-07-01_smolweb_fidelity_plan.md`
   (WS1, WS2, WS4 R0 to R6).
 - Mere S14 record: `mere/support/doc-audit/d2/batch_51_s14_phase_b13.md`.
 - Mere stack seams plan:
-  `mere/design_docs/mere_docs/implementation_strategy/2026-10-04_stack_seams_plan.md`
+  `mere/design_docs/archive_docs/2026-10-28/2026-10-04_stack_seams_plan.md`
   (P1, S62, S66, S70 to S75).
 - Mere suite census:
   `mere/design_docs/2026-08-22_turnstone_suite_composition_and_capability_census.md`.
@@ -2312,7 +2312,7 @@ is recorded separately from compiler errors in each successful build receipt.
 - Hocket auto-update plan:
   `woodshed/ports/hocket/design_docs/2026-07-24_auto-update_plan.md`.
 - Turnstone plans this one feeds:
-  - [browser gap analysis](2026-08-17_smolweb_browser_gap_analysis.md)
+  - [browser gap analysis](archive_docs/2026-11-02/2026-08-17_smolweb_browser_gap_analysis.md)
   - [browser surfaces](2026-08-25_browser_surface_implementation_plan.md)
   - [Reticulum browsing](2026-08-03_reticulum_browsing_plan.md)
   - [page capture](2026-08-28_page_capture_plan.md)
@@ -2324,7 +2324,7 @@ is recorded separately from compiler errors in each successful build receipt.
 **Status:** canonical source adoption and locked receiving checks passed
 locally. Push and publication remain deferred by Mark's direction. The shared design
 and version rulings live in
-`mere/design_docs/cambium_docs/implementation_strategy/2026-10-20_hest_command_architecture_plan.md`.
+`mere/design_docs/archive_docs/2026-10-28/2026-10-20_hest_command_architecture_plan.md`.
 
 **Findings:** Turnstone starts at fetched `0dd9b1b`. Its actual palette now
 registers the qualified Hest effect/destructive declarations through Cambium,
@@ -2402,7 +2402,7 @@ cross-host evidence. Native GUI and assistive-technology acceptance remain
 separate from these software receipts.
 
 Canonical common-contract owner:
-`mere/design_docs/cambium_docs/implementation_strategy/2026-10-20_hest_command_architecture_plan.md`.
+`mere/design_docs/archive_docs/2026-10-28/2026-10-20_hest_command_architecture_plan.md`.
 
 
 H3 receiving is qualified on Mere `9ef5e3026` and embedded Knot `ebf10c741`:

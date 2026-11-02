@@ -9,8 +9,10 @@ possible and selectable within the app, including genet with its rungs
 (placeholder where a rung cannot spawn yet, best effort, for testing and
 design-to-shape purposes).
 
+**Rechecked 2026-11-02:** E0 is landed (step heading below). E1, E3 and E4 are open: `src/` has no `EngineEnableSet`.
+
 **Authority relationship:** the
-engine picker and pluggability plan (`mere/design_docs/inker_docs/implementation_strategy/2026-06-15_engine_picker_and_pluggability_plan.md`)
+engine picker and pluggability plan (`mere/design_docs/archive_docs/2026-10-28/2026-06-15_engine_picker_and_pluggability_plan.md`)
 (mere, 2026-06-15) owns the model: three activation levels collapsing to one
 `is_available` predicate, global default + per-session override, cargo
 features as the build tier, no-handler legibility, and the picker/flip
@@ -41,7 +43,7 @@ remaining model to Turnstone's actual state; it does not re-decide it.
   the published three-engine baseline (`Code/testing/turnstone/receipts/browser_family_20261007/README.md`)
   qualifies the Windows build and scoped native pixel controls. Foreign
   accessibility qualification is the next consumer lane below.
-  [2026-07-18_meerkat_harvest.md](2026-07-18_meerkat_harvest.md) and git
+  [2026-07-18_meerkat_harvest.md](archive_docs/receipts/2026-07-18_meerkat_harvest_receipts.md) and git
   history are the donors.
 - **Compositor**: the shell already composes per-surface textures via
   `netrender` `compose_external_texture` ([render.rs](../src/shell/render.rs),
@@ -99,7 +101,7 @@ action support remain open.
 
 The supplier integration receipt (`Code/testing/turnstone/receipts/browser_supplier_integration_20261006/README.md`)
 qualifies that shared Weld adapter at compatible Mere `db4ee312`,
-Woodshed `b613fc55` and Knot `91cb44a2`, retaining Genet `69a2383b`.
+Woodshed `0433a21d5b` and Knot `a0c9740df4`, retaining Genet `450f45b694`.
 Turnstone's local CEF mouse/text forwarding bridge is removed. The exact
 two-engine executable passes 83 distinct focused tests and four native runs:
 Weld input/find/zoom, Scry input/resize/reconstruction, Scry process restart
@@ -115,13 +117,13 @@ root across view closures and session changes. Scry and Weld retain their
 per-node profiles.
 
 Servo B3's qualification candidate uses upstream `1d44e5dd` and tested Graft
-`dec11bbd`, with GPU imports on
+`b25df3b706`, with GPU imports on
 Turnstone's device and queue. Its source includes ordered callbacks, native
 logical-key releases, explicit denial of unsupported permissions, view
 retirement and process shutdown. Basic mouse fields, navigation without a
 stop API, requested zoom and HiDPI scale projection retain explicit limits.
-The older full three-engine set builds successfully with Graft `01f3c9f3`;
-the corrected-swap `dec11bbd` candidate also builds successfully. Its first
+The older full three-engine set builds successfully with Graft `02ddc11ef4`;
+the corrected-swap `b25df3b706` candidate also builds successfully. Its first
 native control fails before creating a view because `graft.servo` reaches
 the document-session dispatcher. The failed source and run remain archived;
 the host dispatcher is repaired and all 64 focused shell tests pass. Its
@@ -164,7 +166,7 @@ row never pretends to spawn.
 
 ## Steps
 
-### E0. Registry-driven picker
+### E0. Registry-driven picker - LANDED 2026-10-05
 
 Replace the hardcoded `VIEWER_OPTIONS` array: the Inspector viewer enumerates
 engine ids from the registries the shell actually holds, plus declared-but-
@@ -175,6 +177,10 @@ the fidelity axis says it is.
 Done when: registering an engine in `shell/mod.rs` is the only step that adds
 it to the picker, and an unavailable rung renders as a disabled row with a
 reason string.
+
+Landed as the registry-backed engine inventory (`src/shell/project_engine_inventory.rs`,
+`src/shell/shell_publish_engine_inventory.rs`, `scenarios/browser_engine_inventory.scn`);
+qualification receipt `Code/testing/turnstone/receipts/browser_engine_inventory_20261005/README.md`.
 
 ### E1. The genet rungs
 
@@ -216,7 +222,7 @@ producers may land later, each behind its feature, disabled rows until then).
 
 #### E2-Scry Windows consumer (October 5 history, superseded by October 6 receipt)
 
-The initial optional adapter came from Turnstone's Mere `bd5912fb` pin and
+The initial optional adapter came from Turnstone's Mere `d6e7601209` pin and
 uses published `scrying` 0.7.1 with wgpu 30. Existing family pins stay intact.
 `scrying.web` is constructed lazily on the UI thread against the primary
 window's device and queue. Producers share an owned offscreen composition root;
@@ -328,7 +334,7 @@ Mark ruled Chromium's process sandbox default for Weld on Windows
 binary entry point (`CefRuntime::execute_process_from` /
 `CefRuntime::initialize`) rejects `Sandboxed` outright, because CEF 151 can
 only create the sandbox context inside `bootstrap.exe` calling an exported
-`RunWinMain` in a client DLL (wgpu-weld `a4f5cf7`, "Wire the Windows CEF
+`RunWinMain` in a client DLL (wgpu-weld `61c3c0598c`, "Wire the Windows CEF
 sandbox bootstrap"; `welding::CefWindowsSandboxContext` and
 `validate_direct_entrypoint` in `welding/src/runtime.rs`).
 

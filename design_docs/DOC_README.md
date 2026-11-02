@@ -3,7 +3,7 @@
 Model-free retained research (2026-11-01): M1–M5, including bounded storage
 reads, are complete for the recorded Linux cohort (Turnstone `554f323f`).
 The canonical plan and receipt are in
-`eidetic/design_docs/eidetic_docs/implementation_strategy/2026-10-11_eidetic_development_plan.md`.
+`eidetic/design_docs/eidetic_docs/implementation_strategy/2026-11-01_memory_gates_plan.md`.
 Current-source follow-ups for restored reader recovery and clipped research text
 are tracked in [the recovery plan](2026-11-01_retained_reader_recovery_plan.md).
 Later source tests do not extend the original native qualification.
@@ -78,12 +78,7 @@ set.
   the active plan. Do not let a successful focused check stand in for a green
   workspace gate.
 
-## Project and policy
-
-- [Reader appearance isolation](2026-09-05_reader_appearance_isolation_plan.md):
-  shared Reader content with independent pane state and stable appearance roles.
-- [Reader native verification receipt](2026-09-06_reader_appearance_native_check_receipt.md):
-  headed shared-source, independent-scroll, and sibling-close evidence, with idle limits.
+## Policy
 
 - [Documentation Policy](DOC_POLICY.md): canonical workspace documentation
   rules plus the Turnstone addendum.
@@ -103,15 +98,12 @@ set.
   Compare, Show connections, Read in sequence and Search within selection; the
   Graphshell scene format lifted to `pandect` and extended for comparisons.
   Phases 0–2 can start; phase 4 waits on four open questions.
-- [Relationship navigation and visible pane bindings](2026-10-21_relationship_navigation_and_pane_bindings.md):
-  landed `57be5ab`. Related disclosure; Inspector and Roster show and change
-  their source binding (Follow active pane, follow a publisher, Pin).
 
-- [Hest command invocation and Cambium 0.5 adoption](2026-10-06_unusual_protocols_browser_plan.md#hest-h3-command-invocation-2026-10-20): canonical H3 keyboard/reducer receiving qualified on Mere `9ef5e3026` and embedded Knot `ebf10c741`; 1107 full-library passes, all-targets and portable metadata checks pass. Deferred dispatch remains pending; Git delivery is authorized and crate publication remains held.
+- [Hest command invocation and Cambium 0.5 adoption](2026-10-06_unusual_protocols_browser_plan.md#hest-h3-command-invocation-2026-10-20): canonical H3 keyboard/reducer receiving qualified on Mere `c9033723b6` and embedded Knot `0ef13ff943`; 1107 full-library passes, all-targets and portable metadata checks pass. Deferred dispatch remains pending; Git delivery is authorized and crate publication remains held.
 
 - Resident answer card: source-owner publication, exact-version citations and
   headed I5 acceptance are tracked in
-  `mere/design_docs/mere_docs/implementation_strategy/2026-10-15_resident_inference_and_recall_plan.md`.
+  `mere/design_docs/mere_docs/implementation_strategy/2026-10-28_resident_inference_plan.md`.
   Native I5 is qualified with the pinned GPU model and an offline-origin
   restart. The October 20 embedding continuation is qualified on macOS:
   current SDK intake, real MiniLM fused recall through headed retained sources,
@@ -132,25 +124,10 @@ set.
   continuation qualifies both retained text bodies in explicit Answers scope,
   real fused recall, local citations and source-absent cold export on its recorded
   receiving cut. A companion packet also qualifies the final shared shell and
-  shared Apparatus-core SDK `7edfe3b09`; the four-scalar citation/model limit
+  shared Apparatus-core SDK `82522850e8`; the four-scalar citation/model limit
   remains explicit. The mixed-source continuation records a four-member scope, 52 native warm/cold
   captures and lexical-versus-fused measurements, with generated-reference and
   exact runtime-cut limits explicit.
-- [q-pc lane handoff, 2026-10-14](2026-10-14_qpc_lane_handoff.md): the lane's
-  resume point on q-pc (Mac), with Windows gates on o-pc. Main is the only live line after the ThinkPad
-  branch/worktree reconciliation; lists pins, the lens-label fix, ordered open
-  gates and what stays on the ThinkPad (evidence, Mere's unpublished
-  three-lanes half).
-- [Browser/resource handoff, 2026-10-08](2026-10-08_browser_resource_handoff.md):
-  resume point for browser adoption and applied resource-graph integration.
-  Mere P2 is qualified at `3b3afa289`; per-view controls, retained session
-  placement, refusal protection and graph-origin routing are applied. Default/Piccolo
-  native suites, all-target checks and source review pass. Final receipts bind
-  the tested source; sibling and consumer commits are published to main.
-  The SC continuation centralizes controller pumping and placement-derived
-  visibility. The current three-lane pass implements live document
-  accessibility, shared content custody/input and Graphshell's five public
-  mounts; new source and receipts remain under qualification.
 - [Unusual-protocols browser plan](2026-10-06_unusual_protocols_browser_plan.md):
   Errand adoption on refreshed October 26 main is qualified with 172 native
   passes, all-target compilation, production Clippy and portable metadata;
@@ -166,7 +143,7 @@ set.
   from PWA/extension capabilities; native SC/session/S8 ownership and stage
   order remain unchanged. The October 22 receiving continuation commits typed
   Scroll MIME replacement, shared explicit-Submit guard adoption and real native
-  Micron controller tests. Its final port preserves current upstream `8eebb5a3`
+  Micron controller tests. Its final port preserves current upstream `7299178a72`
   reading/navigation/command behavior and changes only receiving files plus 62
   Mere source pins. All 70 focused tests and the governed Djinn process probe
   pass on the integrated executable, covering exact native bytes, the 128 KiB
@@ -179,7 +156,7 @@ set.
   and deletion; rulings L1-L7 join the surfaces, capture and recycle bin
   plans and add phases for the missing joins. Source capture and persisted
   collection-scoped search are implemented. The October 17 research workflow
-  audited `428deb5` and sequences save acknowledgement/recovery, ordinary
+  audited `684e16d821` and sequences save acknowledgement/recovery, ordinary
   capture/Keep, private saved-source search and offline text reading, then
   explicitly scoped capture-backed Answers and cold-reopen acceptance. Authored
   Knot notes now join this workflow: the October 18 receipt (`Code/testing/turnstone/receipts/research_notes_20261018/README.md`)
@@ -189,8 +166,8 @@ set.
   deliberate attachment sharing remains unqualified. The
   format/local-note receipt (`Code/testing/turnstone/receipts/document_formats_20261019/README.md`)
   records the bounded naming and exact-citation regression checks. R0 save
-  acknowledgement/recovery is implemented from fetched `b7e1529`, adopting
-  published Mere `00e444286`:
+  acknowledgement/recovery is implemented from fetched `497fa8674c`, adopting
+  published Mere `17baa751bc`:
   940 bounded regression tests pass, including 50 capture and 16 scene controls;
   three capture-library controls and the Clippy correctness gate also pass.
   The R0 receipt (`Code/testing/turnstone/receipts/r0_source_save_20261017/qualification.json`)
@@ -246,17 +223,11 @@ set.
 - [Turnstone engine adoption](2026-08-03_turnstone_engine_adoption_plan.md): selectable engine routing and unavailable-engine behavior.
 - [Reticulum browsing](2026-08-03_reticulum_browsing_plan.md): native NomadNet page routing and Micron preview implemented; current shared presentation, typed interaction and independent carrier acceptance scopes.
 - [User-agent taxonomy](2026-08-03_user_agent_taxonomy_plan.md): browser obligations assigned to graph-native Turnstone homes; B0 and scoped Windows Scry/Weld controls retain their supplier receipt (`Code/testing/turnstone/receipts/browser_supplier_integration_20261006/README.md`). U14's older publication is historical; the U9 coordinated family (`Code/testing/turnstone/receipts/browser_family_20261007/README.md`) is now published with passing Windows/Linux S0 source checks. Default Servo pixel failures, foreign accessibility and library/application release gates remain separate.
-- [Turnstone place port](2026-07-28_turnstone_place_port_plan.md): shared-place product composition and two-peer acceptance path. Historical T5b/T5c Windows receipts retain their scope. The current macOS baseline (`Code/testing/turnstone/receipts/place_sharing_20261019/README.md`) qualifies create/invite/join, chosen address and chat sharing, reader refusal, and origin-gone cold return with explicit contact renewal. Current document projection, research attachments, automatic discovery/WAN and named-recipient publication remain separate.
 - [Peer-web reframe](2026-07-28_turnstone_peer_web_reframe.md): current product direction for local-first personal and shared places.
 - [Turnstone architecture](2026-07-10_turnstone_architecture_plan.md): structural obviation ladder and current Mere/Turnstone boundaries, including Alembic workshop receiving, enforced source and service boundaries, and qualified native pending-frame adoption across primary, lens and checked child hosts.
-- [Turnstone rung 5 panes](2026-07-14_turnstone_rung5_panes_plan.md): pane, surface-composition, focus, workbench, and window foundations; October 10 application appearance adoption uses shared Tabard definitions and native workshop bindings; current-origin native13 macOS production acceptance passed four serialized processes, 521 presentations and nineteen inspected captures, including repaired 34 CSS px Theme name/seed fields; final 32 Turnstone / 74 family targeted CPU checks and exact Save/Apply/restart evidence in the receipt ledger (`Code/testing/turnstone/receipts/tabard_adoption_20261010/README.md`). Reader/browser rollout gates remain separate.
-- [Genet probe automatability](2026-07-17_genet_probe_automatability_plan.md): proposed shared diagnostics, accessibility, and automation contract for Genet apps.
 
 ## Current architecture, audits, and design records
 
-- [Browser gap analysis](2026-08-17_smolweb_browser_gap_analysis.md): historical browser and smolweb gap map, acceptance ledger, and research basis for the successor implementation plan.
-- [Platform families audit](2026-08-03_platform_families_audit.md): live reachability audit across physics, graph, inference, and personal-mesh families.
-- [Pane inventory](2026-08-09_pane_inventory.md): A0 inventory of pane kinds, sources, multiplicity, and registry targets.
 - [Redshank episode surface](2026-09-14_redshank_episode_surface_plan.md):
   Turnstone as the listening port's second host — the contributed compact dock
   as an episode tile, enclosure routing, one app-owned audio and model
@@ -267,31 +238,65 @@ set.
   owner authoring/menu, embedded audio and microphone gates remain separate.
 - [Turnstone surfaces in Cambium](2026-07-15_turnstone_surfaces_in_cambium.md): mapping from product surfaces to Cambium components or non-Cambium lanes.
 - [Turnstone founding](2026-07-08_turnstone_founding.md): naming, role swap, and original sequencing, with later authority corrections called out in the document.
-- [Meerkat harvest](2026-07-18_meerkat_harvest.md): port, note, or leave audit made before retiring the donor application.
 - [Gloss composite pane](2026-07-20_gloss_composite_pane.md): configurable navigation and operational overview; September 29 implementation adds Downloads by default, moves object handling into Inspector, and preserves saved arrangements while retiring Steward/Apparatus panes. Automated and native restart gates pass; shared diagnostics live in `mere-apparatus`.
 - [Recycle bin and Athanor](2026-07-20_recycle_bin_athanor.md): recoverable deletion, identity-preserving restore, and eventual permanent forgetting.
 
-## Completed plans and receipts
+## Archived 2026-11-02
 
-- [Shared diagnostics and Gloss/Inspector adoption receipt](2026-09-29_shared_diagnostics_gloss_inspector_receipt.md): September 30 combined source graph qualifies 635 workspace tests with nine ignores, five exact optional participant checks, repaired admission refusal, restored failure controls and five native Sky/Diagnostics images. Earlier 612-test migration receipts retain their original graph. The October 11 owner update points to the Fleece/Muniment source-qualified compile receipt. Human AT and exact Turnstone presented-frame correlation remain open.
+Landed, superseded or historical documents were moved whole to `archive_docs/2026-11-02/`
+(Mark, 2026-11-02: "Everything, drafts first"; "Archive all 8"). Each carries a dated
+header naming its landing commit and where its open points went; open points live in the
+2026-11-02 successor plans. Run evidence is in `archive_docs/receipts/` (see below).
 
+- [Turnstone place port](archive_docs/2026-11-02/2026-07-28_turnstone_place_port_plan.md): shared-place composition and the two-peer acceptance path; landed, macOS baseline qualified 2026-10-19.
+- [Turnstone rung 5 panes](archive_docs/2026-11-02/2026-07-14_turnstone_rung5_panes_plan.md): pane, surface-composition, focus, workbench and window foundations; slices A to F landed.
+- [Browser/resource handoff, 2026-10-08](archive_docs/2026-11-02/2026-10-08_browser_resource_handoff.md): the resource-integration resume point; its done-conditions were applied 2026-10-09.
+- [q-pc lane handoff, 2026-10-14](archive_docs/2026-11-02/2026-10-14_qpc_lane_handoff.md): stale lane snapshot.
+- [Relationship navigation and visible pane bindings](archive_docs/2026-11-02/2026-10-21_relationship_navigation_and_pane_bindings.md): landed 2026-10-21.
+- [Genet probe automatability](archive_docs/2026-11-02/2026-07-17_genet_probe_automatability_plan.md): slices 1 to 5 landed; the crate is genet's taproot.
+- [Reader appearance isolation](archive_docs/2026-11-02/2026-09-05_reader_appearance_isolation_plan.md): landed 2026-09-06 (native verification is in its receipts file).
+- [Platform families audit](archive_docs/2026-11-02/2026-08-03_platform_families_audit.md): superseded; its one recommendation was executed.
+- [Browser gap analysis](archive_docs/2026-11-02/2026-08-17_smolweb_browser_gap_analysis.md): historical gap map and acceptance ledger.
+- [Livery and Buckram dependency cutover](archive_docs/2026-11-02/2026-08-21_livery_buckram_dependency_cutover.md): done 2026-08-21.
+- [Command palette open lag](archive_docs/2026-11-02/2026-08-22_command_palette_open_lag.md): closed with measured receipts.
 - [Sky home daily timeline](archive_docs/2026-08-26/2026-08-26_sky_home_timeline_plan.md): landed T5a astronomy consumer with an exact-source retained pane and headed receipt (`Code/testing/turnstone/receipts/sky_home_20260826/README.md`).
-- [Livery and Buckram dependency cutover](2026-08-21_livery_buckram_dependency_cutover.md): completed removal of retired layout edges with clean-source acceptance evidence.
-- [Command palette open lag](2026-08-22_command_palette_open_lag.md): closed retained-layout and repaint diagnosis with measured receipts.
-- [Screen-reader pass receipt](2026-08-20_screen_reader_pass_receipt.md): manual Narrator and UIA acceptance record for the Frozen Projection pane.
 
-## Recovered research, not current direction
+Recovered research, not current direction (archived whole, unchanged, by Mark's ruling; their relative links into the
+deleted Graphshell docs tree are dead by design):
+[RSS/Atom feed graph model](archive_docs/2026-11-02/2026-03-28_rss_feed_graph_model.md),
+[Smolnet dependency health audit](archive_docs/2026-11-02/2026-03-28_smolnet_dependency_health_audit.md),
+[Smolnet follow-on audit](archive_docs/2026-11-02/2026-03-28_smolnet_follow_on_audit.md),
+[Smolweb browser capability gaps](archive_docs/2026-11-02/2026-04-09_smolweb_browser_capability_gaps.md),
+[Smolweb discovery and aggregation signals](archive_docs/2026-11-02/2026-04-09_smolweb_discovery_and_aggregation_signal_model.md),
+[Smolweb graph enrichment and accessibility](archive_docs/2026-11-02/2026-04-09_smolweb_graph_enrichment_and_accessibility_note.md),
+[Smolnet capability model and scroll alignment](archive_docs/2026-11-02/2026-04-16_smolnet_capability_model_and_scroll_alignment.md),
+[Smolweb compliance and Middlenet HTML contract](archive_docs/2026-11-02/2026-04-16_smolweb_compliance_and_middlenet_html_contract.md).
 
-These documents remain at the active root as explicitly marked donor research.
-They are inputs, not implementation authority.
+## Archived receipts
 
-- [RSS/Atom feed graph model](2026-03-28_rss_feed_graph_model.md): recovered feed-to-graph research whose current implementation differs.
-- [Smolnet dependency health audit](2026-03-28_smolnet_dependency_health_audit.md): recovered dependency triage for the older Verso/Middlenet architecture.
-- [Smolnet follow-on audit](2026-03-28_smolnet_follow_on_audit.md): recovered protocol and ecosystem follow-on research.
-- [Smolweb browser capability gaps](2026-04-09_smolweb_browser_capability_gaps.md): recovered predecessor to the current browser gap analysis.
-- [Smolweb discovery and aggregation signals](2026-04-09_smolweb_discovery_and_aggregation_signal_model.md): recovered discovery, feed, and social-signal model.
-- [Smolweb graph enrichment and accessibility](2026-04-09_smolweb_graph_enrichment_and_accessibility_note.md): recovered enrichment and accessible-structure research.
-- [Smolnet capability model and scroll alignment](2026-04-16_smolnet_capability_model_and_scroll_alignment.md): recovered protocol-capability and text-view alignment note.
-- [Smolweb compliance and Middlenet HTML contract](2026-04-16_smolweb_compliance_and_middlenet_html_contract.md): recovered constrained-HTML contract research.
+Per core section 8, each archived plan keeps one file in `archive_docs/receipts/` with its evidence index and old-to-main hash
+table. The run evidence itself is in `Code/testing/turnstone/receipts/`, `.../design_docs_receipts/` and `.../support_receipts/`
+(moved out of the repository 2026-11-02; Mark: "Move all, fixture to tests/"). Files for plans archived on 2026-10-30 and 2026-11-01:
+[retained projection](archive_docs/receipts/2026-10-30_retained_projection_plan_receipts.md),
+[retained reader recovery](archive_docs/receipts/2026-11-01_retained_reader_recovery_plan_receipts.md).
 
-Foundation source adoption (2026-10-19): canonical promoted-family revisions and consumer source validation are recorded in `mere/design_docs/mere_docs/implementation_strategy/2026-10-19_family_promotion_plan.md`. Existing application and domain authority remain with their owning components.
+Receipt-like documents, moved under their own stem (Mark: "Own stem in receipts/"):
+
+- [Screen-reader pass](archive_docs/receipts/2026-08-20_screen_reader_pass_receipt_receipts.md): manual Narrator and UIA acceptance record for the Frozen Projection pane.
+- [Shared diagnostics and Gloss/Inspector adoption](archive_docs/receipts/2026-09-29_shared_diagnostics_gloss_inspector_receipt_receipts.md): September 30 combined source graph, 635 workspace tests, five native Sky/Diagnostics images.
+- [Current consumer qualification](archive_docs/receipts/2026-10-13_current_consumer_qualification_receipts.md): the October 13 to 14 consumer qualification narrative (was not indexed before).
+- [Pane inventory](archive_docs/receipts/2026-08-09_pane_inventory_receipts.md): A0 inventory of pane kinds, sources, multiplicity and registry targets.
+- [Meerkat harvest](archive_docs/receipts/2026-07-18_meerkat_harvest_receipts.md): port, note or leave audit made before retiring the donor application; the "Noted" backlog is carried by the architecture successor.
+
+Receipts files for archived plans:
+[place port](archive_docs/receipts/2026-07-28_turnstone_place_port_plan_receipts.md),
+[rung 5 panes](archive_docs/receipts/2026-07-14_turnstone_rung5_panes_plan_receipts.md),
+[genet probe](archive_docs/receipts/2026-07-17_genet_probe_automatability_plan_receipts.md),
+[reader appearance isolation](archive_docs/receipts/2026-09-05_reader_appearance_isolation_plan_receipts.md) (includes the folded native verification receipt),
+[browser/resource handoff](archive_docs/receipts/2026-10-08_browser_resource_handoff_receipts.md),
+[q-pc lane handoff](archive_docs/receipts/2026-10-14_qpc_lane_handoff_receipts.md),
+[browser gap analysis](archive_docs/receipts/2026-08-17_smolweb_browser_gap_analysis_receipts.md),
+[Livery and Buckram cutover](archive_docs/receipts/2026-08-21_livery_buckram_dependency_cutover_receipts.md),
+[command palette open lag](archive_docs/receipts/2026-08-22_command_palette_open_lag_receipts.md).
+
+Foundation source adoption (2026-10-19): canonical promoted-family revisions and consumer source validation are recorded in `mere/design_docs/mere_docs/implementation_strategy/2026-10-28_family_promotion_plan.md`. Existing application and domain authority remain with their owning components.

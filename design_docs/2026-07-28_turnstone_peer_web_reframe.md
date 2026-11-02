@@ -77,7 +77,7 @@ The substrate is further along than the product:
   authorization, durable storage, drops, and outbound operations.
 - the Commons graph and chat implementations have Memory, Redb, LogSync,
   authority, encryption, native-drop, Reticulum, and direct-PHY receipts.
-  `commons-spine` is promoted into Mere's workspace at `crates/moot/commons`.
+  `commons-spine` is promoted into Mere's workspace at `crates/moot/commons` (now `gemot/crates/commons`).
   Both domains project through a caller-supplied authority view: the graph
   since the delegation fold landed, chat since 2026-07-31.
 - Knot already consumes the neutral causal machinery from Stickleback. It
@@ -171,7 +171,7 @@ default `mere` facade remains peer-free.
 
 Done when:
 
-- the old probe path is gone: it is, `crates/moot/commons` is the home;
+- the old probe path is gone: it is, `crates/moot/commons` is the home (now `gemot/crates/commons`);
 - the promoted package passes the existing test corpus unchanged;
 - a Commons write authorized by a live Gemot delegation becomes effective;
 - revocation withdraws the projection without deleting the retained fact. This
@@ -189,7 +189,7 @@ build-time split would have to be maintained through every place surface.
 Local-only is a runtime session state (`PlaceState::Personal`), not a Cargo
 feature. Reopen this only if build footprint becomes a measured problem.
 
-### P2. One place port
+### P2. One place port - DONE 2026-08-01
 
 Add `src/place.rs` as the Turnstone adapter and shell-owned worker. Add
 data-only place snapshots to `App`, typed actions/effects/updates, and the
@@ -197,7 +197,7 @@ versioned `place.json` binding.
 
 The detailed contract, substrate gates, session-truth split, and file order
 are fixed in the
-[Turnstone place-port plan](./2026-07-28_turnstone_place_port_plan.md).
+[Turnstone place-port plan](archive_docs/2026-11-02/2026-07-28_turnstone_place_port_plan.md).
 The port defines a versioned `PlaceInvite` host envelope carrying the signed
 Gemot bootstrap artifact, recipient-bound group-key welcome, distinct Commons
 root and chat-space ids, default channel id, and carrier-tagged rendezvous.
@@ -214,7 +214,13 @@ The first vocabulary is deliberately small:
 Done when a render-free two-peer test completes all seven steps of the first
 proof, including restart and authorization refusal.
 
-### P3. Headed product receipt
+Receipt: the place-port plan's T0 to T2 (contract, bootstrap gate, worker and
+offline opening) were implemented 2026-07-29 and T3c closed 2026-08-01 with the
+render-free two-peer receipts in `src/place/lanes/` (join and catch-up,
+partition and heal, restart, unauthorized and revoked writes). See the
+[place-port plan](archive_docs/2026-11-02/2026-07-28_turnstone_place_port_plan.md), T3c.
+
+### P3. Headed product receipt - DONE 2026-09-15
 
 Bind existing surfaces instead of founding a new shell:
 
@@ -226,7 +232,10 @@ Bind existing surfaces instead of founding a new shell:
 - Steward shows sync, carrier, retention, and rejected-operation status.
 
 Done when one self-driving two-process scenario produces the headed and
-machine-readable receipt defined above. Peer support is already a default
+machine-readable receipt defined above (met: T5a 2026-09-13, T5b 2026-09-14,
+T5c 2026-09-15, each a headed two-window run; the place-port plan records
+"reframe steps 1 through 7 are now each receipted"; the current-stack macOS
+baseline of 2026-10-19 requalifies the address and chat path). Peer support is already a default
 Turnstone capability per the P1 amendment; what this rung earns is the right
 to show shared content on a surface, with local-only sessions and offline
 startup still available.
@@ -265,7 +274,7 @@ adapter starts only after the prior one has a headed receipt.
 
 | Repository | Seam |
 | --- | --- |
-| `mere` | `crates/moot/commons` (promoted); Gemot authority adapter on both Commons domains; keep Stickleback and Knot ownership unchanged |
+| `mere` | `crates/moot/commons` (promoted; now `gemot/crates/commons`); Gemot authority adapter on both Commons domains; keep Stickleback and Knot ownership unchanged |
 | `turnstone/src/action.rs` | place and comms intents, effects, and typed updates |
 | `turnstone/src/app/mod.rs` | data-only active-place and direct-comms snapshots |
 | `turnstone/src/place.rs` | Turnstone lowering between domain services and app vocabulary |

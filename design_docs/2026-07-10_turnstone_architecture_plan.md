@@ -4,10 +4,10 @@
 library, turnstone = the reference host); the boundary pass sharpened what mere
 keeps. This plan is the other half: what turnstone IS, structurally, and the
 ladder by which meerkat becomes unnecessary. Companion to
-[2026-07-08_turnstone_founding.md](./2026-07-08_turnstone_founding.md),
-[2026-07-14_turnstone_rung5_panes_plan.md](./2026-07-14_turnstone_rung5_panes_plan.md),
+[2026-07-08_turnstone_founding.md](2026-07-08_turnstone_founding.md),
+[2026-07-14_turnstone_rung5_panes_plan.md](archive_docs/2026-11-02/2026-07-14_turnstone_rung5_panes_plan.md),
 the
-[2026-07-28 peer-web reframe](./2026-07-28_turnstone_peer_web_reframe.md),
+[2026-07-28 peer-web reframe](2026-07-28_turnstone_peer_web_reframe.md),
 and mere's 2026-07-09 boundary pass plan (its decisions are assumed here, as
 amended: canvas stays mere; platen is the node-tiling home inside the workbench
 pane and arrives with the port; the pane model itself is mere's `frisket` crate,
@@ -17,7 +17,7 @@ Platen is **not** the pane home, and the 2026-07-10 text that said so is the
 root of rung 5's misframing. Every platen `Workbench` mutator takes a
 `forme::GraphMemberId` (the kernel `Node` UUID), so a platen tile can only ever be
 a graph node. The pane model with kinds, ids, a split tree, and an on-disk format
-is `mere/crates/shell/frisket`. See the rung-5 plan.
+is `mere/crates/shell/frisket` (now `mere/crates/cambium/cambium/src/frisket.rs`). See the rung-5 plan.
 
 ## Doctrine
 
@@ -274,7 +274,7 @@ daily-driver value, not by meerkat's module sizes.
    the focused node is pumped and framed, so `Live` is a lie for every other node. The
    compat lane and content input are rung-5 work, because they need the surface plan.
 5. **Panes**. Scoped in
-   [2026-07-14_turnstone_rung5_panes_plan.md](./2026-07-14_turnstone_rung5_panes_plan.md).
+   [2026-07-14_turnstone_rung5_panes_plan.md](archive_docs/2026-11-02/2026-07-14_turnstone_rung5_panes_plan.md).
    Supply: `frisket` (the pane model: PaneId, PaneContent, a PaneNode split tree,
    FrisketLayout, frame.json through session-runtime) plus `platen` (the node-tiling model
    INSIDE one `PaneContent::Workbench` leaf) plus the domain crates that actually exist:
@@ -374,7 +374,7 @@ daily-driver value, not by meerkat's module sizes.
    Commons shared graph/chat profile, and Knot authoring are central product
    services, each entering through a port and typed Actions. The bounded order
    and receipt are in the
-   [2026-07-28 peer-web reframe](./2026-07-28_turnstone_peer_web_reframe.md).
+   [2026-07-28 peer-web reframe](2026-07-28_turnstone_peer_web_reframe.md).
    Calls keep their separate milestone plan. Intel (embed/infer glue),
    import/crawl, scripting beyond the landed Piccolo host seam, and theming
    remain the long tail.
@@ -521,13 +521,13 @@ with the boundary REVISED first (with Mark, same day): `platen` and
 model** (prospective consumers: isometry's tiling, woodshed's knot-editor/tab
 work), so the facade keeps ALL twelve re-exports and only `frisket` moved.
 What the pass did: `crates/meerkat` + `crates/meerkat-browser-worker` +
-`crates/shell/frisket` left mere's workspace; frisket relocated to turnstone as
+`crates/shell/frisket` (now `mere/crates/cambium/cambium/src/frisket.rs`) left mere's workspace; frisket relocated to turnstone as
 a workspace member (`crates/frisket`, relicensed MPL→MIT/Apache — the named
 step), carrying `session_runtime::frisket_store` in as `frisket::store` and
 the tear-out payload types as `frisket::tearout`; session-runtime dropped its
 frisket dep (193 tests green). The harvest that preceded it (gems taken:
 the sprite-hull tracer → `mere::canvas::sprite_hull`; gems noted; chaff
-named) is `2026-07-18_meerkat_harvest.md`. The old paragraph's `workbench`
+named) is `archive_docs/receipts/2026-07-18_meerkat_harvest_receipts.md`. The old paragraph's `workbench`
 question is thereby answered: it does not move, and there is no inversion,
 because frisket (the app-vocabulary crate) is the one that left the library.
 
@@ -830,7 +830,7 @@ done-conditions story.
   copies in the graph against one `links = "servo_style_crate"` key. It resolved when the
   sweep finished. Watch for it if a sibling's stylo pins move again.
 - 2026-07-14: **Rung 5 scoped** in
-  [2026-07-14_turnstone_rung5_panes_plan.md](./2026-07-14_turnstone_rung5_panes_plan.md), and
+  [2026-07-14_turnstone_rung5_panes_plan.md](archive_docs/2026-11-02/2026-07-14_turnstone_rung5_panes_plan.md), and
   this plan refreshed against it. The headline correction: platen is not a pane model (every
   `Workbench` mutator takes a `forme::GraphMemberId`), the pane model is mere's `frisket`
   crate, and the surface composition + focus routing seam this plan booked as born-at-rung-3
@@ -841,7 +841,7 @@ done-conditions story.
   `session-runtime`, with nothing to do with panes) fused with the pane model. Cut at that seam.
   **`incipit`** (new, `crates/incipit`, serde + uuid only) holds the ids and stays in mere; it is
   what lets `crawl` name a graph without depending on `kernel`. **`frisket`** (renamed from
-  `frame`, `crates/shell/frisket`) is the pane model; a frisket is the press frame whose cut-out
+  `frame`, `crates/shell/frisket`, now `mere/crates/cambium/cambium/src/frisket.rs`) is the pane model; a frisket is the press frame whose cut-out
   apertures decide what prints where, and it sits beside `platen` and `forme` in the press
   anatomy. `frame` was overloaded three ways here (a rendered frame, a `TileFrame`, a window's
   pane arrangement), which is why it went. `session_runtime::frame_layout_store` became
@@ -861,7 +861,7 @@ done-conditions story.
   user-facing workflow command; those remain explicit follow-on surfaces.
 - 2026-07-17: **The follow-on surfaces above now have a canonical cross-repo
   plan**: the participant gate + packs plan
-  (`mere/design_docs/mere_docs/implementation_strategy/2026-07-17_participant_gate_packs_plan.md`,
+  (`mere/design_docs/archive_docs/2026-10-06_completed_plans/2026-07-17_participant_gate_packs_plan.md`,
   designed with Mark). One authority gate for every non-UI actor (script, wasm
   component, moot peer, agent, scenario runner); turnstone's stake is doctrine 2
   extended (proposals are typed Action mirrors, never strings), the palette
@@ -913,7 +913,7 @@ done-conditions story.
   Protocol, durability and key authority remain in Mere/Djinn; product state
   and source disclosure remain in Turnstone. The canonical done-conditions and
   current qualification belong to
-  `mere/design_docs/mere_docs/implementation_strategy/2026-10-15_resident_inference_and_recall_plan.md`.
+  `mere/design_docs/archive_docs/2026-10-28/2026-10-15_resident_inference_and_recall_plan.md`.
   The native gate passes with Turnstone `ec9881ea`, Mere wire supplier
   `65b97b0b` and test-owned Djinn resident `67a514e8`: two live fixture pages
   are retained, the trained SmolLM2 GPU model streams an answer, one ask pauses

@@ -1,8 +1,10 @@
 # Browser gap analysis
 
+> **Archived 2026-11-02 (historical).** Self-declared historical research and acceptance map (its first paragraph); the remaining browser surfaces are sequenced in the successor `2026-11-02_browser_surface_implementation_plan.md`, which grew from the plan added in `5d3c45f1` (2026-08-25). Nothing is carried from this file. Receipts and the old-to-main hash table: [2026-08-17_smolweb_browser_gap_analysis_receipts.md](../receipts/2026-08-17_smolweb_browser_gap_analysis_receipts.md). Mark, 2026-11-02: "Everything, drafts first".
+
 > **Successor plan, 2026-08-25:** implementation of the remaining browser
 > surfaces is sequenced in
-> [2026-08-25_browser_surface_implementation_plan.md](2026-08-25_browser_surface_implementation_plan.md).
+> [2026-08-25_browser_surface_implementation_plan.md](../../2026-08-25_browser_surface_implementation_plan.md).
 > This document remains the historical research and acceptance map.
 >
 > **Decision-surface update, 2026-08-26:** Turnstone's D0 host UI now retains
@@ -166,7 +168,7 @@ click or full visual-fidelity receipt.
 
 **Next scope:** shared reading fidelity, anchor/fold interaction and the
 evidence-gated form/refresh work are owned by
-`mere/design_docs/nematic_docs/implementation_strategy/2026-07-01_smolweb_fidelity_plan.md`,
+`mere/design_docs/archive_docs/2026-10-28/2026-07-01_smolweb_fidelity_plan.md`,
 section "Micron completion scope (2026-09-13)". This browser consumes those
 semantics and supplies a headed acceptance alongside Knot. Djinn's static
 snapshot serving and Tabard's theme adapters have independent owner plans.

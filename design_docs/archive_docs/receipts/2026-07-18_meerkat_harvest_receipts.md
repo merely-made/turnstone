@@ -1,5 +1,7 @@
 # The meerkat harvest: gems taken, gems noted, chaff named
 
+> Moved 2026-11-02 from `design_docs/2026-07-18_meerkat_harvest.md` to `archive_docs/receipts/` under its own stem (Mark: "Own stem in receipts/"); text unchanged below this note except the hash table appended at the end.
+
 2026-07-18, with Mark ("settings, then meerkat harvest and passing the torch
 formally"). The sweep before the funeral: meerkat's 174 source files (61.5k
 LOC) read for what the surviving ecosystem should TAKE (port now), NOTE
@@ -104,14 +106,14 @@ log` archaeology on mere's history still reaches them.
 ## Pane taxonomy REVISED at the harvest (2026-07-18, with Mark)
 
 **September 29 amendment:** the operational-status assignment below is superseded
-by [Gloss's accepted operational overview](2026-07-20_gloss_composite_pane.md#current-direction-2026-09-29).
+by [Gloss's accepted operational overview](../../2026-07-20_gloss_composite_pane.md#current-direction-2026-09-29).
 Steward's download content now composes in Gloss; the separate pane is retired.
 `mere-apparatus` is the shared diagnostics crate. Inspector takes object analysis
 alongside document inspection and now carries the viewer and capability controls.
 Within-document selection inspection remains later work. New Gloss instances
 start with minimap plus Downloads; existing configured compositions are preserved.
 The object-analysis Apparatus pane is retired. The bounded migration passed
-its automated and native gates in the [September 29 qualification receipt](2026-09-29_shared_diagnostics_gloss_inspector_receipt.md), including fresh/restart
+its automated and native gates in the [September 29 qualification receipt](2026-09-29_shared_diagnostics_gloss_inspector_receipt_receipts.md), including fresh/restart
 configuration and viewer persistence. Custom-leaf semantic parity, full built-in
 selectors, document selection, exact frame correlation and human AT remain open.
 Preserve the July ruling below as superseded implementation history, not current
