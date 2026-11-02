@@ -537,7 +537,7 @@ private research admission from saved attachments, never deposit inventory.
 assertion that exposed the supplier mismatch. Three captured-collection
 lookup/search/withdrawal controls separately passed in that same frozen binary.
 The source/lock inputs, binary digest, exact commands, test names and retained
-diagnostics are in the [R0 receipt](../docs/receipts/r0_source_save_20261017/qualification.json).
+diagnostics are in the R0 receipt (`Code/testing/turnstone/receipts/r0_source_save_20261017/qualification.json`).
 
 The controls inject failures before and after each actual Fjall put, exercise
 required facet/graph write failures and lost receipt acknowledgements, and
@@ -633,7 +633,7 @@ matching the existing Mere retained host. This bounds host callback work rather
 than changing producer cadence or introducing a new event loop.
 
 **Qualification (2026-10-17):** the
-[R1 receipt](../docs/receipts/r1_source_keep_20261017/qualification.json) binds the
+R1 receipt (`Code/testing/turnstone/receipts/r1_source_keep_20261017/qualification.json`) binds the
 final source, lock and binaries. All 953 bounded library tests, three separate
 capture-library controls and the Clippy correctness gate pass; Mere's affected
 fetch and PageLoad suites pass 34 + 12 tests. The two fresh headed native
@@ -693,7 +693,7 @@ explicit capture A2 creates another version. This phase may close the relevant
 L-P6 source-document series gates only after their own assertions pass; it does
 not qualify hosted screenshot/PDF series.
 
-The [R2 receipt](../docs/receipts/r2_saved_sources_20261017/qualification.json)
+The R2 receipt (`Code/testing/turnstone/receipts/r2_saved_sources_20261017/qualification.json`)
 binds the final source, refreshed Mere `a9b5dd663`, test executable and native
 binary. All 16 focused controls pass within 969 bounded regression passes;
 three capture-library controls, Clippy correctness and portable Cargo verification
@@ -759,7 +759,7 @@ Oversize encoded publication refuses visibly with zero new generation; source
 reading remains available. Reconnecting preserves owner/run isolation and does
 not let an old control mutate another session's ask.
 
-The [R3 receipt](../docs/receipts/r3_scoped_answers_20261017/README.md) binds
+The R3 receipt (`Code/testing/turnstone/receipts/r3_scoped_answers_20261017/README.md`) binds
 fetched Turnstone `0ab2d5e`, published Mere `e6250fd1`, coherent Genet
 `4733c557` and Netrender `c5efc94f`. The lock delta changes source pins only.
 979 bounded regression tests pass (11 ignored, 89 shared-place/Sky controls
@@ -805,7 +805,7 @@ and power-loss durability remain separate gates.
 #### R4. One end-to-end acceptance receipt
 
 **2026-10-18: bounded macOS qualification passed.** The
-[R4 receipt](../docs/receipts/r4_research_workflow_20261018/README.md) drives one
+R4 receipt (`Code/testing/turnstone/receipts/r4_research_workflow_20261018/README.md`) drives one
 fresh ordinary capture/find/read/ask/revise/return task from fetched Turnstone
 `b34a03c`, retaining the coherent R3 runtime lock (Mere `e6250fd1`, Genet
 `4733c557`, Netrender `c5efc94`). Two real headed app launches and two distinct
@@ -943,7 +943,7 @@ owned-member facet and the existing clip/save/read authorities. The intake also
 repairs missing-file admission beside Pandect's new unique temporaries, and
 updates R0's real failure controls without relying on private temp filenames.
 
-The [authored note receipt](../docs/receipts/research_notes_20261018/README.md)
+The authored note receipt (`Code/testing/turnstone/receipts/research_notes_20261018/README.md`)
 qualifies three fresh native processes, 12 reviewed captures, origin shutdown
 and TCP refusal, A1 return after A2, two independent exited-process owner/store
 reads, exact Unicode selectors, both content hashes and an unchanged second
@@ -987,7 +987,7 @@ rule still applies. The existing research-note receipt remains a local
 authoring/citation receipt.
 
 **The current-stack shared-place address and chat baseline is now
-qualified separately.** The [macOS receipt](../docs/receipts/place_sharing_20261019/README.md)
+qualified separately.** The macOS receipt (`Code/testing/turnstone/receipts/place_sharing_20261019/README.md`)
 exercises create, invite, writer/reader join, one deliberate address share,
 reader write refusal and absent-authoring catch-up. After all apps/residents
 stop and the origin is gone, fresh resident/native processes show the retained
@@ -1066,7 +1066,7 @@ remain supported and are labelled as that compatibility format. Generic file
 and recipient-reader controls say document; internal route, action and schema
 identities retain their compatibility spellings. This wording work does not
 close the selected-sharing gate.
-The [format/local-note receipt](../docs/receipts/document_formats_20261019/README.md)
+The format/local-note receipt (`Code/testing/turnstone/receipts/document_formats_20261019/README.md`)
 records three headed app launches, fourteen reviewed captures and two separate
 exited-store inspections, including exact old-capture return after origin
 shutdown and cold reopen. This is a local authoring regression qualification.

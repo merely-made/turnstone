@@ -1,5 +1,0 @@
-RESULT ok
-permission-page-responses=2
-permission-result-responses=1
-abandoned-connections=1
-sensitive-values-recorded=false

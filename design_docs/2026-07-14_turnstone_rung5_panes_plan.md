@@ -635,7 +635,7 @@ nonblank captures, including populated wide/narrow workshop previews, the repair
 34 CSS pixel Theme name/seed fields, ordinary Save/Apply separation and two
 fresh-process restorations. Native11 and partial native12 remain historical. Exact source/binary
 hashes, CPU test boundaries and historical failed attempts are in the
-[acceptance ledger](../docs/receipts/tabard_adoption_20261010/README.md).
+acceptance ledger (`Code/testing/turnstone/receipts/tabard_adoption_20261010/README.md`).
 The existing settings pane and application settings store remain the owner.
 Reader appearance isolation and browser SC fetch/controller work retain their
 existing authority and separate acceptance gates.

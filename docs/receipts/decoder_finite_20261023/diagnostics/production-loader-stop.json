@@ -1,6 +1,0 @@
-{
-  "reason": "bounded loader comparison: all sampled logits finite beyond first slot; direct tensor extraction matches standalone; move to slice readback isolation",
-  "pids": [
-    58681
-  ]
-}

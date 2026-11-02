@@ -1,2 +1,0 @@
-RESULT ok
-busy=true pending_fetches=true requested_content=false graph_settling=false unsettled_sessions=[]

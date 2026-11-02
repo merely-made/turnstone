@@ -25,7 +25,7 @@ The shared plan's **Native producer-to-retention continuation, 2026-10-19**
 records the accepted sequence and custody prerequisite once. The host joins
 real owner-selected material through its existing Fleece retention and graph
 admission path. The authored research-note workflow already qualified in
-`docs/receipts/research_notes_20261018/README.md` remains the exact-citation and
+`Code/testing/turnstone/receipts/research_notes_20261018/README.md` remains the exact-citation and
 authoring baseline; it does not establish portable note export or private clip
 custody. The 2026-10-19 supplier cutover changes dependency sources and does not
 renew the older native receipts. No unsealed fallback is a substitute for the
@@ -163,7 +163,7 @@ capability.
   through the existing output runtime, including the reopened view's Play
   link. All accepted runs have zero acquisition attempts and peer services;
   sampled endpoints are empty. The source and limits are recorded in
-  [the receiver receipt](../docs/receipts/2026-10-11_retained_clip_receiver/README.md).
+  the receiver receipt (`Code/testing/turnstone/receipts/2026-10-11_retained_clip_receiver/README.md`).
 - **2026-10-12, onward copy.** Implementation `97c1394` adds host-only selected
   export, a contextual command, a clip-view link and an observed completed
   outcome. The final library regression passes 794 tests with ten existing
@@ -174,7 +174,7 @@ capability.
   package-unavailable restart and unselected-note refusal pass, with nine
   reviewed onward captures. The same content references and original source
   facts survive, and the reopened Play link reaches Ended 500 ms. The
-  [onward receipt](../docs/receipts/2026-10-11_retained_clip_receiver/onward/README.md)
+  onward receipt (`Code/testing/turnstone/receipts/2026-10-11_retained_clip_receiver/onward/README.md`)
   preserves code, fixture, output and gate evidence. No dependency changed.
 
 - **2026-10-19, custody and first native producer slice implemented locally.**
@@ -197,7 +197,7 @@ capability.
   A separate synthetic receipt runs the real owner voice exporter, removes its
   source blob, imports through custody, removes transfer packages, restarts both
   custodian and receiver processes, and reopens selected Knot and voice content
-  with preserved selectors. The [machine receipt](../docs/receipts/2026-10-19_retained_custody/qualification.json)
+  with preserved selectors. The machine receipt (`Code/testing/turnstone/receipts/2026-10-19_retained_custody/qualification.json`)
   records source hashes, compiled artifact hashes, counts and exact scope.
   The receiving check uses explicit local `graphshell-endpoint` and
   `redshank-playback` supplier snapshots; its qualification lock is saved with
@@ -228,7 +228,7 @@ capability.
   acquisition attempts. The voice retains its 1250–4500 ms target and 1400 ms
   pressed offset. The synthetic custodian is also restarted during acceptance.
   All three retained stores lack the clear full source/WAV bytes, and no WAV
-  cache file is created. The [headed machine receipt](../docs/receipts/2026-10-19_retained_custody/headed/qualification.json)
+  cache file is created. The headed machine receipt (`Code/testing/turnstone/receipts/2026-10-19_retained_custody/headed/qualification.json`)
   records five native consumer phases and twelve reviewed captures, source and
   binary hashes, both tested lock graphs, selected-package equality and scope.
   The first failed owner-menu attempt remains in Woodshed's packet; unsupported
@@ -274,7 +274,7 @@ capability.
   voice fixture reaches Ended 100 ms, preserves its native selector, and makes
   zero acquisition attempts. Neither fixture store contains the complete clear
   backing/WAV body, and neither profile creates a WAV cache.
-  The [machine receipt](../docs/receipts/2026-10-20_knot_drag_retention/qualification.json)
+  The machine receipt (`Code/testing/turnstone/receipts/2026-10-20_knot_drag_retention/qualification.json`)
   binds these outcomes to the exact source files and one shipping executable.
   Supplier pins are unchanged. This closes the bounded primary-mouse drag gate;
   OS save-dialog automation, personal vault/migration, touch/bidi/autoscroll,
@@ -304,7 +304,7 @@ capability.
   (host 12, retained clip 15, producer selection 2, app 2, surface 5); two process
   helpers remain ignored in ordinary checks and the marked owner-model fixture
   helper is explicitly executed once. The
-  [receipt](../docs/receipts/2026-10-20_redshank_text_retention/README.md) binds
+  receipt (`Code/testing/turnstone/receipts/2026-10-20_redshank_text_retention/README.md`) binds
   the source hashes and one executable. Supplier pins are unchanged.
 
   Notes are seeded through the real typed embedded owner model/store, with
@@ -327,7 +327,7 @@ selected text body and keep producer backing/recordings outside the corpus.
 and Redshank selected packages, asks through real MiniLM fused recall and opens
 exact local citations, then fresh product/resident processes repeat a new ask
 using the sealed compatible index with producer inputs and transfer files absent.
-The public receipt belongs under `docs/receipts/retained_clip_embedding_20261020/`;
+The public receipt belongs under `Code/testing/turnstone/receipts/retained_clip_embedding_20261020/`;
 typed owner/identity refusals and existing capture regressions remain focused gates.
 
 **Probe finding:** the first headed short-selection ask retrieved the correct
@@ -347,7 +347,7 @@ and transfer packages are removed before separate product/resident cold pairs.
 Both historical and new cold citations open the exact local reader; compatible
 index/envelope identities and sealed old evidence survive; selected-only cold
 exports equal the inputs. Twenty receiver and four producer captures were
-reviewed. The [packet](../docs/receipts/retained_clip_embedding_20261020/README.md)
+reviewed. The packet (`Code/testing/turnstone/receipts/retained_clip_embedding_20261020/README.md`)
 records 43 Turnstone, 14 recall/embedding and two resident route passes.
 
 The source metadata echo is repaired in Mere `22c8c5e3c` and SDK `eb1244ccf`.
@@ -366,7 +366,7 @@ again. The resident recall file is byte-identical across the fix, both SDK
 cuts and the frozen GPU fixture. Twenty final captures were reviewed and the
 independent verifier passes raw/public evidence, product/scenario hashes,
 source identity, compatible reuse, historical evidence and selected-only export.
-The [final integration packet](../docs/receipts/retained_clip_embedding_integration_20261021/README.md)
+The final integration packet (`Code/testing/turnstone/receipts/retained_clip_embedding_integration_20261021/README.md`)
 records compiled-source Git-blob proofs; earlier receipts remain unchanged.
 
 ## Mixed-source recall qualification, 2026-10-21
@@ -380,7 +380,7 @@ four independent warm/cold phases produce 52 presented nonblank captures.
 Source origins and transfer files are absent before cold reopen. Selected package
 contents, payload bytes and original anchors survive onward export unchanged.
 
-The [mixed-source packet](../docs/receipts/mixed_source_recall_20261021/README.md)
+The mixed-source packet (`Code/testing/turnstone/receipts/mixed_source_recall_20261021/README.md`)
 records actual live published-index rankings, independently reconstructed passage
 IDs and reciprocal-rank fusion. On eight frozen questions, lexical MRR/top-1/
 recall@3 are 0.875; vector and fused are 1.0. The recovered paraphrase asks about a

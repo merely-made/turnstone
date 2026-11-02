@@ -1,4 +1,0 @@
-RESULT fail
-FAIL: no successful main presentation for ten seconds
-FAIL: no successful main presentation
-presentation frames=0 captures=0 blank=0

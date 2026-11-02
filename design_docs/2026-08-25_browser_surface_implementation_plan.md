@@ -4,7 +4,7 @@
 phase qualifies native cookies, current captured pixels and removal of
 Turnstone's local Weld mouse/CHAR bridge. Its exact executable, source archive
 and four native scenarios are recorded in the
-[supplier integration receipt](../docs/receipts/browser_supplier_integration_20261006/README.md).
+supplier integration receipt (`Code/testing/turnstone/receipts/browser_supplier_integration_20261006/README.md`).
 Optional Windows Servo B3 candidate source is present; the locked three-engine
 build passes. The preserved host dispatch failure is repaired, and native
 assertion/exit guards pass. Pixel review still rejects intermittent white
@@ -27,7 +27,7 @@ remains useful as research and acceptance evidence.
 ## Genet password geometry receiving, 2026-10-27
 
 **Status: native password projection is repaired; bounded ThinkPad receiving
-passes.** The [password geometry receipt](../docs/receipts/cue_password_geometry_linux_20261027/README.md)
+passes.** The password geometry receipt (`Code/testing/turnstone/receipts/cue_password_geometry_linux_20261027/README.md`)
 binds Genet `a732a7d4`, the shared producer's native regression and Turnstone's
 Genet-only lock update. Native text queries map editing-value bytes to the
 actual grapheme-counted bullet string and map hit tests back. Retained state
@@ -48,7 +48,7 @@ X11 and Servo IME retain their separate bounds.
 ## ThinkPad shared geometry receiving, 2026-10-27
 
 **Status: bounded native Wayland / hardware Vulkan receiving passes.** The
-[Linux geometry receipt](../docs/receipts/cue_geometry_linux_20261027/README.md)
+Linux geometry receipt (`Code/testing/turnstone/receipts/cue_geometry_linux_20261027/README.md`)
 binds the frozen consumer and SDK cohorts, executable hashes, five focused tests,
 source rasters and actual Wayland cursor-rectangle messages. Both primary and
 lens window rectangles match the shared observation after placement and display
@@ -77,7 +77,7 @@ enablement; its repaired retest now has all seven positive operator observations
 and native preedit/commit events. Host admission, contributed caret geometry,
 lens redraw and Sky field legibility are repaired in `16df175`.
 
-The [physical receipt](../docs/receipts/cue_ime_linux_20261024/README.md) retains
+The physical receipt (`Code/testing/turnstone/receipts/cue_ime_linux_20261024/README.md`) retains
 both executable hashes and source patches, operator checklists, window-bound
 native events, captures and input-settings restoration. The first three paths
 were exercised on executable A and repaired Sky on B; this is not a complete
@@ -88,12 +88,12 @@ separate automated Sky setup check passes on B without repeating physical input.
 
 Candidate placement is operator-observed; app captures exclude OS popup pixels.
 The Genet shared `TextInput` geometry publication gap is closed by the
-[published contract and programmatic host receipt](../docs/receipts/cue_text_input_20261024/README.md):
+published contract and programmatic host receipt (`Code/testing/turnstone/receipts/cue_text_input_20261024/README.md`):
 Genet publishes current native editor metadata, Pelt checks exact prepared
 appearance custody, and primary/lens windows map the current logical caret to
 physical candidate-area coordinates after frame preparation. The earlier
 physical receipt is unchanged. The later
-[ThinkPad Linux/Vulkan geometry rerun](../docs/receipts/cue_geometry_linux_20261027/README.md)
+ThinkPad Linux/Vulkan geometry rerun (`Code/testing/turnstone/receipts/cue_geometry_linux_20261027/README.md`)
 passes after mesh SSH identity unlock. Physical CJK methods, Servo IME, human AT,
 X11 and physical device loss retain separate bounds.
 
@@ -109,7 +109,7 @@ Native keyboard, IME and semantic exposure remain unavailable in this binding.
 The canonical cross-repository record is
 [the Graft implementation plan](https://github.com/merely-made/wgpu-graft/blob/main/design_docs/2026-10-23_linux_native_cue_plan.md).
 Graft 0.6.1 and Wgpu Cue 0.1.2 are published. The
-[Linux native product receipt](../docs/receipts/cue_native_linux_20261023/README.md)
+Linux native product receipt (`Code/testing/turnstone/receipts/cue_native_linux_20261023/README.md`)
 binds Turnstone `a2655c6e`, Mere `114f4ea26`, Genet `2b5c0181` and Graft
 `db273681` to executable
 `5b77504a3bc627d9b70b9de92ec5cbf6da75db0ee33f918bedd75827701a16aa`.
@@ -166,7 +166,7 @@ pass. The previous qualified captures remain evidence for their old binaries.
 Foreign accessibility and physical three-platform assistive-technology gates
 remain separate. An upgrade alone does not certify the intermittent reopen fix.
 
-The [current-family receipt](../docs/receipts/browser_family_20261007/README.md)
+The current-family receipt (`Code/testing/turnstone/receipts/browser_family_20261007/README.md`)
 records published Mere `57b4893d`, Genet `965b64e2`, Knot `0096591a`, Redshank
 `82271df2`, Graft `bb48281b`, Scry `2c3ebd24`, and Weld `c4dd593b`. Windows
 locked all-targets, 681 library tests (nine ignored), Cargo verification and
@@ -200,7 +200,7 @@ import failures retire the producer and report failed content. The current
 qualification scope is two distinct pages in the primary Workbench, with
 independent input, primary-pane resize, switching, profile restart and teardown.
 
-The [supplier integration receipt](../docs/receipts/browser_supplier_integration_20261006/README.md)
+The supplier integration receipt (`Code/testing/turnstone/receipts/browser_supplier_integration_20261006/README.md`)
 records a passing locked `scry,weld` build and four native scenarios on executable
 SHA-256 `b7bfd160ceab9710810b1993ac1a98eef04984fed670ffa9c9203ad91da861bb`.
 Each finishes with `RESULT ok`, native exit zero and no timeout. Direct captures
@@ -212,7 +212,7 @@ archives 172 exact source input paths and hashes 95 finished evidence files;
 later Servo source or executables do not extend that frozen proof.
 
 **Historical control, 2026-10-05:** the
-[earlier Windows Scry receipt](../docs/receipts/browser_scry_windows_20261005/README.md)
+earlier Windows Scry receipt (`Code/testing/turnstone/receipts/browser_scry_windows_20261005/README.md`)
 retains four full-run and two restart cookie assertion failures, stale
 post-input images and blank reopened tiles despite positive import counters.
 Those failures remain evidence for that source/executable; the October 6
@@ -226,15 +226,15 @@ does not close the trio's hardware or release qualification.
 
 ### Combined Servo build and dependency currency, 2026-10-06
 
-The [first three-engine build](../docs/receipts/browser_supplier_integration_20261006/turnstone-all3-build.log)
+The first three-engine build (`Code/testing/turnstone/receipts/browser_supplier_integration_20261006/turnstone-all3-build.log`)
 failed fontsan 0.7's exactly-one-decoder guard. Genet `69a2383b` enabled the
 default `woff2` decoder while upstream Servo enabled `libz-sys,wuff`; the
-[inverse feature tree](../docs/receipts/browser_supplier_integration_20261006/fontsan-conflict-tree.log)
+inverse feature tree (`Code/testing/turnstone/receipts/browser_supplier_integration_20261006/fontsan-conflict-tree.log`)
 records their additive collision. This failed control remains preserved.
 
 Genet `679d8314aab4ec9f57a903c79dde244c3c565c1e` aligns the dependency edge
 with Servo's `wuff` backend while retaining the existing sanitizer function.
-Its [qualification summary](../docs/receipts/browser_supplier_integration_20261006/fontsan-compatibility/qualification-summary.json)
+Its qualification summary (`Code/testing/turnstone/receipts/browser_supplier_integration_20261006/fontsan-compatibility/qualification-summary.json`)
 records three passing exact tests: valid WOFF2 decoding with the NKo glyph
 retained, malformed WOFF2 rejection and unchanged SFNT identity. This qualifies
 the supplier repair. The coherent older consumer family's resolved feature
@@ -248,7 +248,7 @@ the repaired host's next qualification and the final U9 set. That host passes
 rejects its white reopened Servo A. Separate unchanged-binary controls pass
 four simultaneous Servo/WebView2/CEF pages, resize/zero teardown and fresh
 Scry/Weld input, process restart and permission callbacks with observed runtime
-modules. The [six-run synchronization comparison](../docs/receipts/browser_supplier_integration_20261006/sync-diagnostic/README.md)
+modules. The six-run synchronization comparison (`Code/testing/turnstone/receipts/browser_supplier_integration_20261006/sync-diagnostic/README.md`)
 preserves 176 root and 38 supplier inputs. Existing passes once and reproduces
 white reopened A once on the same executable; producer-only and normalization-only
 each pass, Both passes twice. All six assertion/exit guards pass, but one pixel
@@ -261,7 +261,7 @@ candidate's Cargo/Rust publication first, so S0 can start from that head.
 The candidate retains its qualified older compatibility family; it does not
 claim the newer coordinated tested set or application release acceptance.
 
-The dated [dependency currency snapshot](../docs/receipts/browser_supplier_integration_20261006/dependency-currency/README.md)
+The dated dependency currency snapshot (`Code/testing/turnstone/receipts/browser_supplier_integration_20261006/dependency-currency/README.md`)
 records Servo 0.7.0 released October 5 and CEF 154 bindings released October 3.
 That checkpoint's Servo pin `1d44e5dd` belongs to the August 15 0.5 release branch;
 its later migration changes Surfman, mozangle and ipc-channel, including types
@@ -277,7 +277,7 @@ package, registry-only consumer and remaining hardware release gates.
 
 U2 in the [unusual-protocols plan](2026-10-06_unusual_protocols_browser_plan.md)
 puts accessibility on Windows, macOS and Linux first, together with keyboard
-and focus behavior. The [accessibility reconciliation receipt](../docs/receipts/browser_supplier_integration_20261006/accessibility-reconciliation/README.md)
+and focus behavior. The accessibility reconciliation receipt (`Code/testing/turnstone/receipts/browser_supplier_integration_20261006/accessibility-reconciliation/README.md`)
 records current owner seams and acceptance gates. Qualified live pixels,
 cookies and input retain their scope; they do not qualify foreign-page
 accessibility.
@@ -319,7 +319,7 @@ set after WS4 is pushed: Knot, then Redshank, then Turnstone, coordinated with
 the browser session owning the dirty tree. The three-engine build/native and
 supplier package gates remain separate.
 
-The [October 7 remote checkpoint](../docs/receipts/browser_supplier_integration_20261006/current-stack-reconciliation/README.md)
+The October 7 remote checkpoint (`Code/testing/turnstone/receipts/browser_supplier_integration_20261006/current-stack-reconciliation/README.md`)
 confirms R6 and the shared helper/E1a on published Mere `a59e4c47`. The WS4
 publication prerequisite is satisfied. The subsequent Mere prerequisite
 `57b4893d` selects Genet `965b64e2`, including its published decoder repair,
@@ -345,7 +345,7 @@ page-native Intl/normalization probes pass. The sequential cargo-mode verificati
 and Linux pre-repin all-targets baseline pass. Final clean-source S0 gates now
 pass on Windows and Linux, including the test-only portability follow-up above.
 
-The [current-family receipt](../docs/receipts/browser_family_20261007/README.md)
+The current-family receipt (`Code/testing/turnstone/receipts/browser_family_20261007/README.md`)
 preserves resize failures despite successful scenario/title/teardown assertions.
 Actual Surfman resize and imported texture extents reach 509 pixels, while the
 painted page can remain at its old 252-pixel width. On the same executable,
@@ -996,7 +996,7 @@ and exact source/binary identity; compile coverage is separate from runtime.
   replacement and teardown. Native custody survives source destruction;
   foreign-device import refuses. The strict fixture exposed retained input
   admission while hidden; Mere `737fec2df` repairs it with a real Genet regression.
-  [Receipt and retained failures](../docs/receipts/servo_cue_20261023/README.md).
+  Receipt and retained failures (`Code/testing/turnstone/receipts/servo_cue_20261023/README.md`).
 - 2026-10-23: both producers expose complete 28-feature reports. Servo's native
   import observation is recorded externally: its report remains `Constructed`
   because the browser adapter has no host-import feedback seam. Supplying that
@@ -1014,7 +1014,7 @@ This closes the earlier slice's explicit full-UI exclusion for those bindings.
 The earlier finite example remains separate evidence. Implementation
 `5e9e3bfea88e9e9b9133d01ec9486ed7fd056322` consumes Mere
 `86796a2447d68b3e6538d0ceff9f387a5d56e29c`.
-[Product receipt, captures and retained failures](../docs/receipts/cue_ui_20261023/README.md).
+Product receipt, captures and retained failures (`Code/testing/turnstone/receipts/cue_ui_20261023/README.md`).
 
 - **The pool remains the owner.** Main and lens presentation borrow an admitted
   Pelt controller for shared host-device rendering, or acquire a concrete
@@ -1093,7 +1093,7 @@ binary/source hashes, exact scenarios and qualification limits.
   text readable over the intended background; this qualification includes no
   repair and does not accept correct opaque coverage after scrolling.
 
-[The Linux receipt](../docs/receipts/cue_ui_linux_20261023/README.md) binds both
+The Linux receipt (`Code/testing/turnstone/receipts/cue_ui_linux_20261023/README.md`) binds both
 final cases to one executable. Focused validation passes the explicit pending
 Vulkan regression, seven history/control tests, 27 Inspector tests (two explicit
 endpoint-dependent ignores), nine Pelt shared-contract tests and the default
@@ -1133,7 +1133,7 @@ control and lifecycle gates. The repair has separate receiving evidence below.
   human assistive technology, physical device loss, native alpha/colour and
   OS-compositor pixel correlation retain their own gates.
 
-[The scroll repair receipt](../docs/receipts/cue_scroll_repair_20261023/README.md)
+The scroll repair receipt (`Code/testing/turnstone/receipts/cue_scroll_repair_20261023/README.md`)
 records the original negative raster and repaired positive raster, exact source
 and executable hashes, current receiving scenarios and focused validation.
 The earlier Linux receipt remains byte-identical.
@@ -1159,5 +1159,5 @@ The earlier Linux receipt remains byte-identical.
   earlier remote source checkout states. Synthetic input does not extend
   physical IME, OS candidate-popup, CJK, human AT, native high-DPI, X11 or
   Servo IME acceptance. The
-  [receiving receipt](../docs/receipts/cue_taffy_geometry_linux_20261029/receipt.json)
+  receiving receipt (`Code/testing/turnstone/receipts/cue_taffy_geometry_linux_20261029/receipt.json`)
   retains commands, counts, hashes, protocol correlation and qualification bounds.

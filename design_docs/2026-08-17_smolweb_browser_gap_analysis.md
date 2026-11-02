@@ -45,7 +45,7 @@ sets.
 > mutations, local prefix-before-EOF Gemini streaming, local multilingual
 > typography, and Livery-to-Knot source evidence all have checked-in `RESULT ok`
 > receipts and headed captures in
-> [`docs/receipts/smolweb_acceptance_20260821`](../docs/receipts/smolweb_acceptance_20260821/README.md).
+> `Code/testing/turnstone/receipts/smolweb_acceptance_20260821/README.md`.
 >
 > **Scroll verification, 2026-09-11:** Turnstone's ordinary content registry
 > already registers `nematic.scroll`, its route policy maps `scroll://` to
@@ -92,7 +92,7 @@ sets.
 > after Resource reassembly, not a wire-allocation ceiling. Peer identity is
 > discovered; the temporary client identity is created per fetch. These are
 > process-launch settings in this slice, not a dedicated connection-settings UI.
-> The [consumer acceptance](../docs/receipts/nomadnet_acceptance_20260911/README.md)
+> The consumer acceptance (`Code/testing/turnstone/receipts/nomadnet_acceptance_20260911/README.md`)
 > passed: actual local-file rendering, physical native address entry, stock-node
 > fetch/render, Reload, and Stop releasing the native connection. The updated
 > full library suite passed **460 tests, 9 ignored, 0 failed** after startup

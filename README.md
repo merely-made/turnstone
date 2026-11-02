@@ -121,11 +121,11 @@ The local Windows system-webview implementation is optional:
 `cargo run --features scry`. It requires the WebView2 runtime and a D3D12 host;
 construction failures are reported by the browser. Two-page native qualification
 records cookie retention and current captured pixels in the
-[supplier integration receipt](docs/receipts/browser_supplier_integration_20261006/README.md).
+supplier integration receipt (`Code/testing/turnstone/receipts/browser_supplier_integration_20261006/README.md`).
 
 Knot and Redshank share the Mere/Genet surface family with Turnstone, so
 retained-surface, publishing and projection interfaces have one source identity.
-The [current-family receipt](docs/receipts/browser_family_20261007/README.md)
+The current-family receipt (`Code/testing/turnstone/receipts/browser_family_20261007/README.md`)
 records the Servo 0.7 and CEF `154.5.0+154.0.34` browser suppliers.
 
 ## Status
@@ -156,7 +156,7 @@ Current browser work follows the
 registry-derived engine choices and optional Windows Scry, Weld and
 Servo/Graft hosts on the existing wgpu device. Scry and Weld use per-node
 profiles; Servo shares one explicitly named, configurable process profile
-across its views. The [integration receipt](docs/receipts/browser_supplier_integration_20261006/README.md)
+across its views. The integration receipt (`Code/testing/turnstone/receipts/browser_supplier_integration_20261006/README.md`)
 records scoped Scry/Weld input, persistence, permission and teardown controls,
 and mixed-runtime pixels. Servo's default reopen can still produce a white
 frame. Those captures qualify their recorded binaries; the upstream repin
@@ -174,7 +174,7 @@ and seven page-native Intl/normalization probes are in the current receipt.
 
 The local October engine-picker patch derives choices from actual registries,
 uses human labels, and keeps unavailable saved pins visible with reasons. Its
-[qualification receipt](docs/receipts/browser_engine_inventory_20261005/README.md)
+qualification receipt (`Code/testing/turnstone/receipts/browser_engine_inventory_20261005/README.md`)
 records default/optional-Weld tests and the native picker scenario.
 
 The live plan is `design_docs/2026-07-10_turnstone_architecture_plan.md`; the
@@ -211,7 +211,7 @@ reference to supplied material.
 The trail actor lends retained text to the resident while the pane is open.
 Only passages supplied to an ask enter its sealed run journal. This first
 handoff refuses publication JSON above 128 KiB; use a smaller browsing session
-when that limit is reached. The [native I5 receipt](docs/receipts/resident_inference_i5_windows_20261016/native/execution.json)
+when that limit is reached. The native I5 receipt (`Code/testing/turnstone/receipts/resident_inference_i5_windows_20261016/native/execution.json`)
 qualifies the pinned GPU model, pause/resume, cancellation, and restart with
 the fixture origin offline. It uses a test-owned native Djinn resident.
 

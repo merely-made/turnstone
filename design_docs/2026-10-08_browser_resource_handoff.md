@@ -50,7 +50,7 @@ no new worktree is needed. No message was sent to Forms.
 
 ## Published browser family versus newer primary checkouts
 
-The [browser family receipt](../docs/receipts/browser_family_20261007/README.md)
+The browser family receipt (`Code/testing/turnstone/receipts/browser_family_20261007/README.md`)
 records published runtime adoption `abb349cf`, test-only follow-up `8d1f907f`,
 681 Windows combined-browser tests and 650 Linux default-feature tests passing,
 locked all-targets checks and exact source identities. Native and release gates
@@ -94,7 +94,7 @@ shared-resource semantics.
 
 ThinkPad checkout refresh receipts were committed locally as `b99ddab` and
 `b323617`. Seventy-three colliding old receipts were preserved and rehashed,
-never discarded. See [the refresh receipt](../docs/receipts/thinkpad_checkout_sync_20261008/README.md).
+never discarded. See the refresh receipt (`Code/testing/turnstone/receipts/thinkpad_checkout_sync_20261008/README.md`).
 
 The dirty trio contained stale versions of already landed work, not a unique
 feature needing a port. After Mark authorized archival, exact dirty file bytes,
@@ -103,7 +103,7 @@ loose sources and 931-file CEF147 SDK were moved intact. All hashes/metadata
 were rechecked after fast-forward. The SDK remains on the ThinkPad, not in Git.
 All three primary tracked trees are clean and match their fetched upstreams:
 Graft `0b026a44`, Scry `dc9bd1a0`, Weld `c4dd593b`. The receipt is local commit
-`9ad6403`; see [trio preservation](../docs/receipts/thinkpad_trio_archive_20261008/README.md).
+`9ad6403`; see trio preservation (`Code/testing/turnstone/receipts/thinkpad_trio_archive_20261008/README.md`).
 This maintenance did not rebuild or qualify the trio for release.
 
 ## Next resource supplier and prepared adoption
@@ -199,7 +199,7 @@ not a shared SSH configuration change.
 Primary Turnstone remained `1802a68371327343539b3e73d4517248cf3361b1` at handoff,
 with untracked refresh/trio receipts. Preserve colliding local receipts before
 a future fast-forward. Trio archives live inside each primary repository at
-`docs/receipts/thinkpad_trio_archive_20261008/`.
+`Code/testing/turnstone/receipts/thinkpad_trio_archive_20261008/`.
 
 Retained worktree `/home/markik/Code/worktrees/turnstone-resource-compat` was clean
 at detached `eeb4a501aa63fe4c41a7a5abef29db77fcb87418` before this handoff transfer.

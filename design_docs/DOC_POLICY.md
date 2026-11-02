@@ -193,3 +193,15 @@ One core requirement is not yet met:
 - Core §7 refers to `PROJECT_DESCRIPTION.md`, which does not exist here yet.
   Until it does, the root `README.md` stands alone and §7's derivation rule is
   inert rather than violated.
+
+Run receipts leave the repository (2026-11-02; Mark: "Move all, fixture to
+tests/"). The folders `docs/receipts/`, `design_docs/receipts/` and
+`support/receipts/` were moved, byte for byte, to
+`Code/testing/turnstone/receipts/`, `.../design_docs_receipts/` and
+`.../support_receipts/`; docs cite them by that path (a path cite, not a link),
+and `/docs/receipts/` is git-ignored as a local output directory. The one file
+code reads, `g3_turnstone_endpoint.html`, is the test fixture
+`tests/fixtures/g3_turnstone_endpoint.html`. Per-plan receipt files stay in
+`archive_docs/receipts/`, as core section 8 says. Scripts inside the moved
+folders located the repository from their own path and no longer find it from
+the new home.

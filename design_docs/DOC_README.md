@@ -116,7 +116,7 @@ set.
   restart. The October 20 embedding continuation is qualified on macOS:
   current SDK intake, real MiniLM fused recall through headed retained sources,
   and an independent cold product/resident pair with a new ask. Its
-  [receipt](../docs/receipts/embedding_recall_20261020/qualification.json)
+  receipt (`Code/testing/turnstone/receipts/embedding_recall_20261020/qualification.json`)
   preserves the exact envelope/index, source/citation and private-journal evidence. Turnstone's client integration is recorded in the
   [architecture plan](2026-07-10_turnstone_architecture_plan.md).
 
@@ -160,7 +160,7 @@ set.
   U14: accessibility on Windows, macOS and Linux leads; Pelt convergence
   (SC) comes before the keyboard and accessibility stages. The plan's S0
   execution snapshot is historical: Knot and Redshank now publish the tested
-  family, and [Turnstone's S0 receipt](../docs/receipts/browser_family_20261007/README.md)
+  family, and Turnstone's S0 receipt (`Code/testing/turnstone/receipts/browser_family_20261007/README.md`)
   records published source and passing Windows/Linux source qualification.
   Its browser-sidecar scope proposal separates local/attached session authority
   from PWA/extension capabilities; native SC/session/S8 ownership and stage
@@ -182,29 +182,29 @@ set.
   audited `428deb5` and sequences save acknowledgement/recovery, ordinary
   capture/Keep, private saved-source search and offline text reading, then
   explicitly scoped capture-backed Answers and cold-reopen acceptance. Authored
-  Knot notes now join this workflow: the [October 18 receipt](../docs/receipts/research_notes_20261018/README.md)
+  Knot notes now join this workflow: the October 18 receipt (`Code/testing/turnstone/receipts/research_notes_20261018/README.md`)
   qualifies ordinary note creation/choice, exact source citations and a cold
   origin-gone return. The October 19 named-recipient assessment records the
   missing source-owner publication handoff and durable withdrawal decision;
   deliberate attachment sharing remains unqualified. The
-  [format/local-note receipt](../docs/receipts/document_formats_20261019/README.md)
+  format/local-note receipt (`Code/testing/turnstone/receipts/document_formats_20261019/README.md`)
   records the bounded naming and exact-citation regression checks. R0 save
   acknowledgement/recovery is implemented from fetched `b7e1529`, adopting
   published Mere `00e444286`:
   940 bounded regression tests pass, including 50 capture and 16 scene controls;
   three capture-library controls and the Clippy correctness gate also pass.
-  The [R0 receipt](../docs/receipts/r0_source_save_20261017/qualification.json)
+  The R0 receipt (`Code/testing/turnstone/receipts/r0_source_save_20261017/qualification.json`)
   preserves broader failures and process/durability/platform limits. R1 now
   qualifies the source-bound Inspector/catalog action, completion-bound Keep
   and metadata-only new history writes: 953 bounded tests, three capture-library
   controls, 46 supplier tests and two fresh headed processes pass. The
-  [R1 receipt](../docs/receipts/r1_source_keep_20261017/qualification.json) retains
+  R1 receipt (`Code/testing/turnstone/receipts/r1_source_keep_20261017/qualification.json`) retains
   12 reviewed captures, exact offline recovery, the HTTP provenance/host wake
   repairs and earlier failed diagnostics. The private saved-source search and
   offline text reader now have bounded macOS qualification: 969 regression
   passes, three capture-library controls, Clippy/Cargo verification and two
   headed processes with seven reviewed captures. The
-  [R2 receipt](../docs/receipts/r2_saved_sources_20261017/qualification.json)
+  R2 receipt (`Code/testing/turnstone/receipts/r2_saved_sources_20261017/qualification.json`)
   proves exact A1 search/read and fresh reopen after actual origin shutdown and
   TCP refusal, with A2/X/foreign-session isolation. Its internal view URL binds
   session, graph, node, annotation, text hash and scalar selector; the original
@@ -212,12 +212,12 @@ set.
   macOS qualification: 979 regression passes, three capture-library controls,
   an actual admitted-route wrong-owner probe, Clippy/Cargo verification and two
   fresh headed processes with 12 reviewed captures. The
-  [R3 receipt](../docs/receipts/r3_scoped_answers_20261017/README.md) independently
+  R3 receipt (`Code/testing/turnstone/receipts/r3_scoped_answers_20261017/README.md`) independently
   binds chosen A1+B then B-only scope, sealed prompts, exact-quotation citation
   hashes/Unicode ranges and cold old-A1 reading after actual origin shutdown.
   Oversized publication refuses while full offline reading remains available.
   Earlier uncited marker attempts and repaired native failures remain diagnostics.
-  [R4](../docs/receipts/r4_research_workflow_20261018/README.md) now qualifies one
+  R4 (`Code/testing/turnstone/receipts/r4_research_workflow_20261018/README.md`) now qualifies one
   complete private saved-HTML collect/find/inspect/ask/verify/return task: two
   app launches, distinct resident OS processes, actual origin shutdown, source
   reads before both resident startups, 19 reviewed captures and independently
@@ -237,19 +237,19 @@ set.
 - Shared-contract Servo receiving (2026-10-23): the browser surfaces plan
   records the concrete Metal/Cue binding and same-host Genet/Servo receiver;
   Linux/Vulkan and physical platform qualification remain separate.
-- [Browser surfaces implementation plan](2026-08-25_browser_surface_implementation_plan.md): the [current tested family](../docs/receipts/browser_family_20261007/README.md) publishes runtime adoption `abb349cf` and test-only portability follow-up `8d1f907f`, adopting Servo 0.7 and CEF154 after Mere/Genet, Knot and Redshank. S0 passes 681 Windows combined-browser and 650 Linux default-feature library tests, plus locked all-targets, Cargo verification and single-source sibling trees. Linux uses a measured child-only descriptor budget. Seven current-binary native controls exit cleanly. Default Servo stale resized pixels, foreign-tree accessibility and physical three-platform AT remain release gates; diagnostic positive pixels do not close them.
+- [Browser surfaces implementation plan](2026-08-25_browser_surface_implementation_plan.md): the current tested family (`Code/testing/turnstone/receipts/browser_family_20261007/README.md`) publishes runtime adoption `abb349cf` and test-only portability follow-up `8d1f907f`, adopting Servo 0.7 and CEF154 after Mere/Genet, Knot and Redshank. S0 passes 681 Windows combined-browser and 650 Linux default-feature library tests, plus locked all-targets, Cargo verification and single-source sibling trees. Linux uses a measured child-only descriptor budget. Seven current-binary native controls exit cleanly. Default Servo stale resized pixels, foreign-tree accessibility and physical three-platform AT remain release gates; diagnostic positive pixels do not close them.
 - Native Orrery selection folds (2026-10-16): qualified on current published
   suppliers with 958 workspace tests, native build, 379 presented create/reopen
-  frames and nine reviewed readbacks. The [receipt](../docs/receipts/graph_folds_20261016/README.md)
+  frames and nine reviewed readbacks. The receipt (`Code/testing/turnstone/receipts/graph_folds_20261016/README.md`)
   and pane registry plan section "Native graph folds" retain scope and inputs.
-- [Pane registry, graph views, and shell composition](2026-08-08_pane_registry_and_graph_panes_plan.md): registry and multi-graph pane roadmap, with remaining A-lane gates; The October 12 A4/S3 draft adopts shared tiled Workspace custody, Frisket furniture and versioned sidecars; the October 13 continuations connect Tabard themes/Interface typography, keyboard, shared floating/docking custody and per-window accessibility; the October 14 continuation implements retained inline bodies and native image apertures inside the shared window scene; normal published-source qualification passes 17 affected tests, the native build and 14 headed cases with 40 reviewed primary/lens captures; physical OS activation, human AT, monitor DPI transitions and early scrollbar fade pixel timing remain separate gates. The final receipt is `docs/receipts/stations_windows_20261013/published-final-native-qualification.json`. September 30 contributed semantics qualify shared retained projection, scoped automation and platform actions with scroll/stale/refusal controls and native Sky delivery. Inspector source/endpoint binding repairs precede its next semantic route; broader surfaces and human AT remain open. The October 16 graph scene refresh adopts bounded arrangements, Mosaic and shared attention/seed controls; source ownership and exact session-reopen repairs are recorded in `docs/receipts/graph_scenes_20261016/`; qualification passes 982 workspace tests, eight shared supplier tests, both headed processes and exact fresh-process reopening on macOS.
+- [Pane registry, graph views, and shell composition](2026-08-08_pane_registry_and_graph_panes_plan.md): registry and multi-graph pane roadmap, with remaining A-lane gates; The October 12 A4/S3 draft adopts shared tiled Workspace custody, Frisket furniture and versioned sidecars; the October 13 continuations connect Tabard themes/Interface typography, keyboard, shared floating/docking custody and per-window accessibility; the October 14 continuation implements retained inline bodies and native image apertures inside the shared window scene; normal published-source qualification passes 17 affected tests, the native build and 14 headed cases with 40 reviewed primary/lens captures; physical OS activation, human AT, monitor DPI transitions and early scrollbar fade pixel timing remain separate gates. The final receipt is `Code/testing/turnstone/receipts/stations_windows_20261013/published-final-native-qualification.json`. September 30 contributed semantics qualify shared retained projection, scoped automation and platform actions with scroll/stale/refusal controls and native Sky delivery. Inspector source/endpoint binding repairs precede its next semantic route; broader surfaces and human AT remain open. The October 16 graph scene refresh adopts bounded arrangements, Mosaic and shared attention/seed controls; source ownership and exact session-reopen repairs are recorded in `Code/testing/turnstone/receipts/graph_scenes_20261016/`; qualification passes 982 workspace tests, eight shared supplier tests, both headed processes and exact fresh-process reopening on macOS.
 - [Turnstone engine adoption](2026-08-03_turnstone_engine_adoption_plan.md): selectable engine routing and unavailable-engine behavior.
 - [Reticulum browsing](2026-08-03_reticulum_browsing_plan.md): native NomadNet page routing and Micron preview implemented; current shared presentation, typed interaction and independent carrier acceptance scopes.
-- [User-agent taxonomy](2026-08-03_user_agent_taxonomy_plan.md): browser obligations assigned to graph-native Turnstone homes; B0 and scoped Windows Scry/Weld controls retain their [supplier receipt](../docs/receipts/browser_supplier_integration_20261006/README.md). U14's older publication is historical; the [U9 coordinated family](../docs/receipts/browser_family_20261007/README.md) is now published with passing Windows/Linux S0 source checks. Default Servo pixel failures, foreign accessibility and library/application release gates remain separate.
-- [Turnstone place port](2026-07-28_turnstone_place_port_plan.md): shared-place product composition and two-peer acceptance path. Historical T5b/T5c Windows receipts retain their scope. The [current macOS baseline](../docs/receipts/place_sharing_20261019/README.md) qualifies create/invite/join, chosen address and chat sharing, reader refusal, and origin-gone cold return with explicit contact renewal. Current document projection, research attachments, automatic discovery/WAN and named-recipient publication remain separate.
+- [User-agent taxonomy](2026-08-03_user_agent_taxonomy_plan.md): browser obligations assigned to graph-native Turnstone homes; B0 and scoped Windows Scry/Weld controls retain their supplier receipt (`Code/testing/turnstone/receipts/browser_supplier_integration_20261006/README.md`). U14's older publication is historical; the U9 coordinated family (`Code/testing/turnstone/receipts/browser_family_20261007/README.md`) is now published with passing Windows/Linux S0 source checks. Default Servo pixel failures, foreign accessibility and library/application release gates remain separate.
+- [Turnstone place port](2026-07-28_turnstone_place_port_plan.md): shared-place product composition and two-peer acceptance path. Historical T5b/T5c Windows receipts retain their scope. The current macOS baseline (`Code/testing/turnstone/receipts/place_sharing_20261019/README.md`) qualifies create/invite/join, chosen address and chat sharing, reader refusal, and origin-gone cold return with explicit contact renewal. Current document projection, research attachments, automatic discovery/WAN and named-recipient publication remain separate.
 - [Peer-web reframe](2026-07-28_turnstone_peer_web_reframe.md): current product direction for local-first personal and shared places.
 - [Turnstone architecture](2026-07-10_turnstone_architecture_plan.md): structural obviation ladder and current Mere/Turnstone boundaries, including Alembic workshop receiving, enforced source and service boundaries, and qualified native pending-frame adoption across primary, lens and checked child hosts.
-- [Turnstone rung 5 panes](2026-07-14_turnstone_rung5_panes_plan.md): pane, surface-composition, focus, workbench, and window foundations; October 10 application appearance adoption uses shared Tabard definitions and native workshop bindings; current-origin native13 macOS production acceptance passed four serialized processes, 521 presentations and nineteen inspected captures, including repaired 34 CSS px Theme name/seed fields; final 32 Turnstone / 74 family targeted CPU checks and exact Save/Apply/restart evidence in the [receipt ledger](../docs/receipts/tabard_adoption_20261010/README.md). Reader/browser rollout gates remain separate.
+- [Turnstone rung 5 panes](2026-07-14_turnstone_rung5_panes_plan.md): pane, surface-composition, focus, workbench, and window foundations; October 10 application appearance adoption uses shared Tabard definitions and native workshop bindings; current-origin native13 macOS production acceptance passed four serialized processes, 521 presentations and nineteen inspected captures, including repaired 34 CSS px Theme name/seed fields; final 32 Turnstone / 74 family targeted CPU checks and exact Save/Apply/restart evidence in the receipt ledger (`Code/testing/turnstone/receipts/tabard_adoption_20261010/README.md`). Reader/browser rollout gates remain separate.
 - [Genet probe automatability](2026-07-17_genet_probe_automatability_plan.md): proposed shared diagnostics, accessibility, and automation contract for Genet apps.
 
 ## Current architecture, audits, and design records
@@ -275,7 +275,7 @@ set.
 
 - [Shared diagnostics and Gloss/Inspector adoption receipt](2026-09-29_shared_diagnostics_gloss_inspector_receipt.md): September 30 combined source graph qualifies 635 workspace tests with nine ignores, five exact optional participant checks, repaired admission refusal, restored failure controls and five native Sky/Diagnostics images. Earlier 612-test migration receipts retain their original graph. The October 11 owner update points to the Fleece/Muniment source-qualified compile receipt. Human AT and exact Turnstone presented-frame correlation remain open.
 
-- [Sky home daily timeline](archive_docs/2026-08-26/2026-08-26_sky_home_timeline_plan.md): landed T5a astronomy consumer with an exact-source retained pane and [headed receipt](../docs/receipts/sky_home_20260826/README.md).
+- [Sky home daily timeline](archive_docs/2026-08-26/2026-08-26_sky_home_timeline_plan.md): landed T5a astronomy consumer with an exact-source retained pane and headed receipt (`Code/testing/turnstone/receipts/sky_home_20260826/README.md`).
 - [Livery and Buckram dependency cutover](2026-08-21_livery_buckram_dependency_cutover.md): completed removal of retired layout edges with clean-source acceptance evidence.
 - [Command palette open lag](2026-08-22_command_palette_open_lag.md): closed retained-layout and repaint diagnosis with measured receipts.
 - [Screen-reader pass receipt](2026-08-20_screen_reader_pass_receipt.md): manual Narrator and UIA acceptance record for the Frozen Projection pane.

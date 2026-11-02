@@ -10,7 +10,7 @@ owner model, recording and transfer package, custodian/app restart, onward
 receive in an independent profile, removal of that transfer and a second cold
 export. Text, source facts and native timing remain equal to the selected
 original; acquisition attempts remain zero. The
-[text-note receipt](../docs/receipts/2026-10-20_redshank_text_retention/README.md)
+text-note receipt (`Code/testing/turnstone/receipts/2026-10-20_redshank_text_retention/README.md`)
 records the exact source/binary, privacy scan and 36 focused passing cases.
 
 `SetNotePrivacy` now reaches the owner model, rejects another episode's note,
@@ -26,7 +26,7 @@ Supplier pins are unchanged.
 
 The [retained clip receiver](2026-10-11_retained_clip_receiver_plan.md) uses the
 existing Redshank preview port and this host's one output runtime for imported
-WAV voice-body bytes. Its [native receipt](../docs/receipts/2026-10-11_retained_clip_receiver/README.md)
+WAV voice-body bytes. Its native receipt (`Code/testing/turnstone/receipts/2026-10-11_retained_clip_receiver/README.md`)
 qualifies local playback and fresh-process replay of a synthetic 500 ms PCM
 body with acquisition disabled and the original recording unavailable. It does
 not close this plan's broader compact episode/audio/physical gates or provide

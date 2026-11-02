@@ -1,4 +1,0 @@
-{
-  "tcp_refused": true,
-  "before_cold_reopen": true
-}

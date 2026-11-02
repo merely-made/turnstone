@@ -920,7 +920,7 @@ done-conditions story.
   at token 1 and finishes at token 18 after resume, another is cancelled, and
   a fresh Turnstone/resident pair reopens the answer and exact source with the
   origin server stopped. Six native frames and public run/prompt evidence are
-  retained under `docs/receipts/resident_inference_i5_windows_20261016/native/`.
+  retained under `Code/testing/turnstone/receipts/resident_inference_i5_windows_20261016/native/`.
   The self-drive file wait now yields to normal rendered frames; two tests
   cover its completion and timeout. Four new client/source-owner tests and
   11 trail regressions pass (four pre-existing trail tests remain ignored).
@@ -942,10 +942,10 @@ absent, both product and resident exit, an independent pair reopens the same
 private projection and historical evidence, and a new ask uses that matching
 projection. The canonical envelope/ranking policy remains in Eidetic P4 and
 Mere I10; Turnstone owns the product interaction and cold source reopening.
-Fixtures and receiving receipts live in `docs/receipts/embedding_recall_20261020/`.
+Fixtures and receiving receipts live in `Code/testing/turnstone/receipts/embedding_recall_20261020/`.
 
 The receiving receipt is
-[qualification.json](../docs/receipts/embedding_recall_20261020/qualification.json).
+qualification.json (`Code/testing/turnstone/receipts/embedding_recall_20261020/qualification.json`).
 Two independent native Turnstone processes and two real GPU resident processes
 pass the complete flow with 13 reviewed captures. The origin exits before the
 first ask and remains absent. A fresh cold ask uses the same private envelope

@@ -440,7 +440,8 @@ vello_shaders = { git = "https://github.com/mark-ik/vello", rev = "276b46648c08f
 icu_capi = { git = "https://github.com/unicode-org/icu4x", rev = "30120d6a07fc5bb03a6c7647077bd2658b2559de", version = "=2.1.2" }
 # Mozilla's unchanged private ICU source, with three production ranges widened
 # to share Genet's registry ICU family. Provenance and qualification are recorded
-# in docs/receipts/browser_family_20261007/icu-manifest-compat/.
+# in Code/testing/turnstone/receipts/browser_family_20261007/icu-manifest-compat/
+# (outside the repository).
 mozjs_icu_collator = { path = "vendor/mozjs-icu-collator" }
 mozjs_icu_normalizer = { path = "vendor/mozjs-icu-normalizer" }
 # The Servo interop adapter is git-only and carries this Grafting rev, so

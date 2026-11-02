@@ -1,12 +1,4 @@
 scenarios/fixtures/titan_acceptance.gmi text eol=lf
-# Preserve the bytes used by the dated browser receipt artifact hashes.
-docs/receipts/browser_engine_inventory_20261005/** -text
-docs/receipts/browser_scry_windows_20261005/** -text
-docs/receipts/graph_semantics_p2_20261005/** -text
-# Immutable captures and native logs retain their original bytes/whitespace.
-docs/receipts/browser_scry_windows_20261006/** -text -whitespace
-docs/receipts/browser_main_integration_20261006/** -text -whitespace
-docs/receipts/browser_supplier_integration_20261006/** -text -whitespace
 # Preserve verified published Mozilla ICU source, data and license bytes.
 vendor/mozjs-icu-collator/** -text -whitespace
 vendor/mozjs-icu-normalizer/** -text -whitespace
@@ -15,36 +7,5 @@ vendor/mozjs-icu-normalizer/** -text -whitespace
 scenarios/fixtures/sky_receipt_v1_boston_2024-04-08.json -text
 scenarios/fixtures/sky_receipt_v1_boston_2024-04-09.json -text
 
-# Raw outer Workspace proof logs and portable text metadata.
-docs/receipts/outer_workspace_20261012/checks/*.log -text -whitespace
-docs/receipts/outer_workspace_20261012/qualification.json text eol=lf
-docs/receipts/outer_workspace_20261012/harness/** text eol=lf
-
-# Shared frame appearance qualification, preserving raw diagnostic bytes.
-docs/receipts/frame_appearance_20261013/checks/*.log -text -whitespace
-docs/receipts/frame_appearance_20261013/*.json text eol=lf
-docs/receipts/frame_appearance_20261013/harness/** text eol=lf
+# Frame scenarios keep LF endings.
 scenarios/frame*.scn text eol=lf
-
-# Frame control qualification: raw compiler/test logs and portable source.
-docs/receipts/frame_controls_20261013/checks/*.log -text -whitespace
-docs/receipts/frame_controls_20261013/*.json text eol=lf
-docs/receipts/frame_controls_20261013/harness/** text eol=lf
-
-# Shared stations / per-window accessibility draft qualification.
-docs/receipts/stations_windows_20261013/checks/*.log -text -whitespace
-docs/receipts/stations_windows_20261013/*.json text eol=lf
-docs/receipts/stations_windows_20261013/checks/*.json text eol=lf
-docs/receipts/stations_windows_20261013/harness/** text eol=lf
-
-# Source-bound A4 native captures, metadata and raw diagnostics keep their bytes.
-docs/receipts/stations_windows_20261013/** -text -whitespace
-
-# Canvas-scroll receiving: preserve raw captures and diagnostic bytes.
-docs/receipts/cue_scroll_repair_20261023/** -text -whitespace
-
-# Linux native Cue receiving keeps exact captured and diagnostic bytes.
-docs/receipts/cue_native_linux_20261023/** -text -whitespace
-
-# Physical IME observations preserve original outcomes and captured bytes.
-docs/receipts/cue_ime_linux_20261024/** -text -whitespace

@@ -173,7 +173,7 @@
     "src/web_policy.rs": "a3edf34284f29042f733457eab3cfd9c79eb712d5519abe39986ab8e4668cbb5",
     "src/workbench_pane.rs": "aae7bcc466d19663818d2e37d89b422299e2209e004b32e3c82d86dddd224776",
     "src/workbench_tiling.rs": "cce30a832bcb6d6bf8f5d841293ad4437dfe75b9703466bfc71fe19865245751",
-    "docs/receipts/g3_turnstone_endpoint.html": "c742c2fa3d1744c6f384471ae823cd138625b4d3034aa10b954ed77b46bfb0ec"
+    "tests/fixtures/g3_turnstone_endpoint.html": "c742c2fa3d1744c6f384471ae823cd138625b4d3034aa10b954ed77b46bfb0ec"
   },
   "preserved_patch_sha256": {
     "reader.patch": "9066c11a14b61725e603ba26782020eb3d031db892495d99489b706beafa174f",

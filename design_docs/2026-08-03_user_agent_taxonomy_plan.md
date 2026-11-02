@@ -7,10 +7,10 @@ macOS and Linux takes priority under U2 of the unusual-protocols plan. Its U9
 also holds final consumer repinning for the coordinated tested set after WS4.
 The October evidence supersedes the August point-in-time inventory.
 B0 is qualified. The current Windows Scry B1 and direct Weld B2 consumer
-qualification is recorded in the [October 6 receipt](../docs/receipts/browser_scry_windows_20261006/README.md).
-The subsequent [current-main integration receipt](../docs/receipts/browser_main_integration_20261006/README.md)
+qualification is recorded in the October 6 receipt (`Code/testing/turnstone/receipts/browser_scry_windows_20261006/README.md`).
+The subsequent current-main integration receipt (`Code/testing/turnstone/receipts/browser_main_integration_20261006/README.md`)
 separately records the upstream Mere/Burn dependency merge and consumer checks.
-The [supplier integration receipt](../docs/receipts/browser_supplier_integration_20261006/README.md)
+The supplier integration receipt (`Code/testing/turnstone/receipts/browser_supplier_integration_20261006/README.md`)
 now qualifies removal of the local Weld input bridge at compatible supplier
 pins. Servo B3 source is implemented, with its full three-engine native gate
 pending; broader browser operations retain their separate slices.
@@ -231,7 +231,7 @@ remain intact; default and relevant optional-feature consumer tests pass.
 
 **B1. Windows Scry consumer.** The bounded primary-Workbench slice is qualified
 under `--features scry,weld` on Windows in the
-[October 6 receipt](../docs/receipts/browser_scry_windows_20261006/README.md).
+October 6 receipt (`Code/testing/turnstone/receipts/browser_scry_windows_20261006/README.md`).
 The pinned Inker Scry adapter resolves `scrying` 0.7.1 at immutable queue repair
 `39818a7` on wgpu 30. The host shares an owned
 offscreen `CompositionRoot` and captures each page visual independently;
@@ -241,7 +241,7 @@ and waits on every paint, including a reused allocation. Profiles remain
 explicit per-node directories under `scry/webview2-profiles/<node>`.
 
 The current acceptance scope is two distinct pages in the primary Workbench.
-The [October 5 control](../docs/receipts/browser_scry_windows_20261005/README.md)
+The October 5 control (`Code/testing/turnstone/receipts/browser_scry_windows_20261005/README.md`)
 preserves the earlier failures. Mere and Genet repository pins remain unchanged;
 the October 6 root patch selects the immutable Scry queue repair.
 In the earlier control, the full native script has four cookie assertion failures; separate
@@ -289,7 +289,7 @@ are preserved. The repaired host passes 64 focused shell tests and native
 assertion/exit guards, but direct review rejects a white reopened Servo A.
 Its separate mixed control qualifies four simultaneous Servo/WebView2/CEF
 pages through resize and cleared teardown. Fresh Scry/Weld controls also pass.
-The [six-run synchronization comparison](../docs/receipts/browser_supplier_integration_20261006/sync-diagnostic/README.md)
+The six-run synchronization comparison (`Code/testing/turnstone/receipts/browser_supplier_integration_20261006/sync-diagnostic/README.md`)
 reproduces white reopened A in one of two Existing controls on the same
 executable, while producer-only, normalization-only and both Both controls
 pass. All six scenario/exit guards pass; the separate pixel check rejects the
@@ -405,7 +405,7 @@ sharing does not establish cross-engine cookie or storage transfer.
   human labels, stable engine IDs, runtime availability and refusal reasons,
   preserved unknown saved pins, observation parity and failed-pin recovery.
   Default all-target compilation passed. The
-  [qualification receipt](../docs/receipts/browser_engine_inventory_20261005/README.md)
+  qualification receipt (`Code/testing/turnstone/receipts/browser_engine_inventory_20261005/README.md`)
   records 635 passing library tests (9 existing ignores), 14 Inspector tests
   in default and Weld builds, six Weld contract tests, and a passing native
   picker scenario with reviewed captures. The native run exposed ordinary
@@ -426,7 +426,7 @@ sharing does not establish cross-engine cookie or storage transfer.
   WebView2's mouse API with correct buttons and Shift/Control, while key/text
   dispatch uses the forwarded CDP route. Lazy capture/resize/import failures
   retire the producer and report failed content. Full qualification is **gated
-  on native cookies and current pixels** under the [B1 receipt](../docs/receipts/browser_scry_windows_20261005/README.md).
+  on native cookies and current pixels** under the B1 receipt (`Code/testing/turnstone/receipts/browser_scry_windows_20261005/README.md`).
   The target is two distinct primary-Workbench pages, with independent input,
   profile persistence, resize, switching and teardown. Typed find/zoom,
   permission/auth answers, correlated capture/PDF, DevTools opening and
@@ -447,7 +447,7 @@ sharing does not establish cross-engine cookie or storage transfer.
   `behaviors.rs` match; the existing edge test literal remains compatible.
   Mark subsequently authorized the coordinated consumer patch. Its exhaustive
   graph-aware match and six regressions are prepared, unapplied, in the
-  [P2 consumer receipt](../docs/receipts/graph_semantics_p2_20261005/README.md).
+  P2 consumer receipt (`Code/testing/turnstone/receipts/graph_semantics_p2_20261005/README.md`).
   Rust syntax and patch applicability pass. The exact proposed scope functions
   and all six regressions compile/pass against the real kernel/servitor API at
   reviewed Mere commit `cff35712a28419f921a3cb2ffe79ef02268af6c5`;
@@ -465,7 +465,7 @@ sharing does not establish cross-engine cookie or storage transfer.
   preflight fixes passed eight mocked cases each; native reruns remain open.
   The cross-repository release plan records the exact runs and claim limits.
 - **2026-10-06 B1/B2 Windows native:** the final locked production executable
-  passes all four [consumer runs](../docs/receipts/browser_scry_windows_20261006/README.md):
+  passes all four consumer runs (`Code/testing/turnstone/receipts/browser_scry_windows_20261006/README.md`):
   two-page Scry, same-profile separate-process restart, direct shared Weld
   adapter and real native permission denial/callback. Scry current input pixels,
   independent clicks/scroll, native cookies, resize, Reader switching,
@@ -481,7 +481,7 @@ sharing does not establish cross-engine cookie or storage transfer.
   text/clicks, permission-denial navigation/render and teardown pass.
   The pinned/current shared adapter rejects richer mouse PointerEvent and lacks
   CEF CHAR delivery, so a narrow host bridge forwards to the same producer;
-  its [Mere removal gate](../docs/receipts/browser_scry_windows_20261006/mere-weld-input-followup.md)
+  its Mere removal gate (`Code/testing/turnstone/receipts/browser_scry_windows_20261006/mere-weld-input-followup.md`)
   includes actual character codes, buttons and modifiers. Six final Weld tests
   pass. The prior broad source snapshot has one parallel network sync-round
   failure that passes in isolation; its suite is not reported as clean.
@@ -501,7 +501,7 @@ sharing does not establish cross-engine cookie or storage transfer.
   its Mere `3d1cdacc` and Woodshed `9e982b88` pins/root patches alongside the
   browser's Scry repair and direct Weld feature. The Inker/surface-api trees
   are identical between the old/new Mere pins; application Rust and fixture
-  source is unchanged. The [integration receipt](../docs/receipts/browser_main_integration_20261006/README.md)
+  source is unchanged. The integration receipt (`Code/testing/turnstone/receipts/browser_main_integration_20261006/README.md`)
   keeps this dependency snapshot separate from browser commit `a383cdd` and its
   frozen receipt. Its locked combined build and 83 focused browser tests pass;
   all four native scenarios pass on the integrated executable, with reviewed
@@ -541,7 +541,7 @@ sharing does not establish cross-engine cookie or storage transfer.
   Direct captures show independent alpha/bravo input, native find, requested
   zoom geometry, current Scry scroll pixels, resize/reconstruction, persisted
   native cookies and zero-producer/cache/importer close. The
-  [supplier integration receipt](../docs/receipts/browser_supplier_integration_20261006/README.md)
+  supplier integration receipt (`Code/testing/turnstone/receipts/browser_supplier_integration_20261006/README.md`)
   archives 172 exact input paths and hashes 95 finished evidence files before
   further Servo changes. This phase qualifies the shared adapter bridge removal;
   the later three-engine binary needs separate native runs because Servo's
@@ -604,7 +604,7 @@ sharing does not establish cross-engine cookie or storage transfer.
   updates, independent navigation, retirement and fresh reopen identities.
   Windows UIA exposes two original supplier headings in distinct foreign
   tree indices with actual ancestry to the owned window. Full details and
-  failed controls remain in the [dedicated receipt](../docs/receipts/browser_a11y_20261007/README.md).
+  failed controls remain in the dedicated receipt (`Code/testing/turnstone/receipts/browser_a11y_20261007/README.md`).
   Servo 0.7 advertises no actions, so its host refuses action dispatch; iframe
   export and human AT on Windows/macOS/Linux remain supplier/release gates.
   Capability metadata is not upgraded by transport implementation alone.

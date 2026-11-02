@@ -30,7 +30,7 @@ a fresh pull; nothing needed is left behind.
 - Latest published work: retained pane composition and native image
   apertures inside the shared window scene (`1aa6663`), with its exact receipt
   bytes (`c7a828e`). See the [pane registry plan](2026-08-08_pane_registry_and_graph_panes_plan.md)
-  and `docs/receipts/stations_windows_20261013/published-final-native-qualification.json`.
+  and `Code/testing/turnstone/receipts/stations_windows_20261013/published-final-native-qualification.json`.
 - The lens accessibility-label fix landed with this handoff. Before it,
   `project_lens_with_contributions` labelled every lens window
   `Turnstone — lens` while the shell's bridge and actual windows use
@@ -62,7 +62,7 @@ a fresh pull; nothing needed is left behind.
    14/14 with 40 captures, and the inferred original five 5/5 with 11
    captures. Gate 1 is closed for automated scope; see the
    [qualification note](2026-10-13_current_consumer_qualification.md) and
-   `docs/receipts/lens_fix_windows_20261014/`.
+   `Code/testing/turnstone/receipts/lens_fix_windows_20261014/`.
 2. **Separate platform scopes** that no automated pass closes: physical GPU
    device-loss recovery, Windows producer rebinding, OS accessibility
    activation, human AT, human cross-window focus, monitor DPI transitions and

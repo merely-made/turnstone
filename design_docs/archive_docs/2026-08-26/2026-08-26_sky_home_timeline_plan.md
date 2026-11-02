@@ -3,7 +3,7 @@
 **Status, 2026-08-26:** landed. P0's pure timeline and validated derivation
 receipt, P1's retained contributed surface, and P2's exact-source plus headed
 acceptance are complete. The canonical headed evidence is
-[`docs/receipts/sky_home_20260826`](../../../docs/receipts/sky_home_20260826/README.md).
+`Code/testing/turnstone/receipts/sky_home_20260826/README.md`.
 
 ## Purpose and authority
 

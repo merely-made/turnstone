@@ -58,7 +58,7 @@ Production Clippy completes with 278 warnings in unchanged source; this is not
 a warnings-as-errors qualification. Portable metadata verification passes
 offline with the committed lock unchanged. Native/headed, live TLS certificate
 decision flows, general actor cancellation/concurrency and physical radio keep
-their separate gates. The [qualification record](../support/receipts/errand-adoption/qualification.json)
+their separate gates. The qualification record (`Code/testing/turnstone/support_receipts/errand-adoption/qualification.json`)
 names the precise source, executable, commands, dependency audit and repo-refresh
 boundaries. Earlier receiving/process receipts retain their original scope.
 
@@ -112,9 +112,9 @@ package, is fork U1.
   So every "fails" below is a traced code path with citations, and it opens
   its stage as a failing test.
 - **Receipts and tests used:**
-  - [Smolweb acceptance](../docs/receipts/smolweb_acceptance_20260821/README.md),
+  - Smolweb acceptance (`Code/testing/turnstone/receipts/smolweb_acceptance_20260821/README.md`),
     with seven headed Gemini cases plus Titan and Spartan mutations.
-  - [NomadNet acceptance](../docs/receipts/nomadnet_acceptance_20260911/README.md).
+  - NomadNet acceptance (`Code/testing/turnstone/receipts/nomadnet_acceptance_20260911/README.md`).
   - The Scroll note in the
     [browser gap analysis](2026-08-17_smolweb_browser_gap_analysis.md).
   - The 2026-09-13 Micron form acceptance recorded in Mere's smolweb fidelity
@@ -375,7 +375,7 @@ kind of app-local copy the stack avoids.
 |---|---|---|---|
 | **Built: a crate pane.** The app ships a provider; Turnstone admits it. | A provider crate in the owning repo (descriptor, stylesheet, erased retained session), plus a Turnstone admission module. Redshank's was 480 lines, beside a 1,327-line authority host for the device. | Low to medium per app | Every composed repo joins the tested pin set, so each Mere move needs it moved first. This is already visible inside Woodshed: its root workspace pins Mere `8106c7c2`, while the Redshank workspace Turnstone consumes pins `3d1cdacc`. Device authority (audio, microphone, MIDI) needs one owner. Build weight grows. |
 | **Runtime: a session projection.** The app serves a granted projection; the host mounts it and returns intents. | A Graphshell endpoint per app with its projection and intent vocabulary. The host draws it generically (FrozenScene, Scenograph) or with the app's surface crate compiled in, as Knot does now. | Medium per app | Generic drawing loses bespoke interaction (a fretboard is not a card). The holder must be online, as the place port plan records for Knot. The machinery has receipts: G3, K2 and I3h. |
-| **Runtime: live pixels.** Another process's producer is shown live in the host's Workbench. | A cross-process producer protocol: shared GPU textures per OS (the full export, import and fence set exists only on Windows, as D3D12 from Weld and Scry; Linux, through DMABUF over Vulkan, and macOS, through `MTLTexture`, have import halves only, and nothing brokers a handle between two of the stack's own processes: corrected 2026-10-07 from the composition brief's F6), input, IME and focus forwarding, accessibility bridged across processes, and lifecycle and crash isolation. | High | High. Turnstone's Scry consumer shows how hard this class is even with a vendor runtime. The [2026-10-05 receipt](../docs/receipts/browser_scry_windows_20261005/README.md) found stale post-input images and blank reopened tiles, and clearing them took a dedicated qualification phase (another session's 2026-10-06 supplier integration receipt, uncommitted when this was written). |
+| **Runtime: live pixels.** Another process's producer is shown live in the host's Workbench. | A cross-process producer protocol: shared GPU textures per OS (the full export, import and fence set exists only on Windows, as D3D12 from Weld and Scry; Linux, through DMABUF over Vulkan, and macOS, through `MTLTexture`, have import halves only, and nothing brokers a handle between two of the stack's own processes: corrected 2026-10-07 from the composition brief's F6), input, IME and focus forwarding, accessibility bridged across processes, and lifecycle and crash isolation. | High | High. Turnstone's Scry consumer shows how hard this class is even with a vendor runtime. The 2026-10-05 receipt (`Code/testing/turnstone/receipts/browser_scry_windows_20261005/README.md`) found stale post-input images and blank reopened tiles, and clearing them took a dedicated qualification phase (another session's 2026-10-06 supplier integration receipt, uncommitted when this was written). |
 | **Runtime: in-process plugins.** Surfaces arrive as Wasm components. | Turnstone's optional `wasm` feature runs `app-core` components through the action envelope (participant gate B3); no guest contributes a surface. It would need a component interface for retained views and paint, plus admission. | High | Medium to high: interface churn and paint cost. |
 
 **The answer.** For a dude and an LLM, the first two modes are the reachable
@@ -1525,7 +1525,7 @@ the same record once this lane can push to Mere (U15).
     `0096591a` and Redshank `82271df2`; `e00869c` records the gates. Windows
     passes 681 library tests and Linux 650 (nine ignored on each), with
     `cargo_mode.py verify` and one source per sibling. The receipt is
-    `docs/receipts/browser_family_20261007/final-s0-audit.json`.
+    `Code/testing/turnstone/receipts/browser_family_20261007/final-s0-audit.json`.
     - Mere `57b4893d` is on `main` and carries the session seam
       (`a59e4c47`), S8's Mere half (`f2ad105a`, `35bd7d77`), the E1b probe
       (`d041cc69`) and the side-branch fixes (`edf175f9`), so the side-branch
@@ -2166,7 +2166,7 @@ Invalid native policy refuses before TCP contact. Launch settings, existing
 receiving/controller, reading, command and owner regressions pass. The two
 existing governed-host/R3 prerequisite tests remain ignored; this continuation
 does not claim a new external-host, window, installed-binary or radio receipt.
-The [client receiving receipt](../support/receipts/client-limits/consumer.json)
+The client receiving receipt (`Code/testing/turnstone/support_receipts/client-limits/consumer.json`)
 names qualified source `6737085d`, exact executable SHA256, all 17 test filters
 and the 62 Mere/nine Errand/four Murm source-only lock substitutions. The
 immutable source-edit supplier, registry versions, dependency tables and all
@@ -2217,18 +2217,18 @@ Final qualification uses current upstream `8eebb5a3`, retaining its 41 commits
 after the initially cached `9c842` baseline, including projection-owned Read
 controls, navigation and command metadata. Only the four receiving files were
 ported as `934494bf` and `1e5c7f47`; source and lock are committed at `a622c960`.
-The manifest is unchanged. The [integrated SDK
-receipt](../docs/receipts/native_browser_receiving_20261022/integrated-sdk.json)
+The manifest is unchanged. The integrated SDK
+receipt (`Code/testing/turnstone/receipts/native_browser_receiving_20261022/integrated-sdk.json`)
 records only 62 Mere source identifiers changing in the lock from `a483…` to
 published `af5c3ba85`; versions, registry entries, dependency tables and other
 supplier pins remain those of current upstream. The old checkpoint's SDK
 compatibility commit `6e5da6dc` was not applied to this port.
 
-The [integrated build
-receipt](../docs/receipts/native_browser_receiving_20261022/product-integrated-build.json)
+The integrated build
+receipt (`Code/testing/turnstone/receipts/native_browser_receiving_20261022/product-integrated-build.json`)
 records unchanged source hashes, lock SHA256 `521d344e…`, zero compiler errors
-and executable SHA256 `4ef1b302…`. The [integrated focused
-receipt](../docs/receipts/native_browser_receiving_20261022/product-integrated-tests.json)
+and executable SHA256 `4ef1b302…`. The integrated focused
+receipt (`Code/testing/turnstone/receipts/native_browser_receiving_20261022/product-integrated-tests.json`)
 records 70 passing tests across 15 filters: 3 receiving, 7 existing local
 Micron, and 60 current accessibility, command, reading, navigation and owner
 regressions. Current upstream has one platform-consumer accessibility test
@@ -2273,17 +2273,17 @@ headed/physical assistive-technology and full-family release gates remain.
 
 The earlier isolated checkpoint remains reproducible historical evidence.
 Starting from stale `9c842`, SDK adoption first failed with 242 compiler errors,
-mostly Accesskit 0.24.1 versus 0.25.1. The [failed build
-receipt](../docs/receipts/native_browser_receiving_20261022/product-build-failed-20261022T203202Z.json),
-[diagnostic census](../docs/receipts/native_browser_receiving_20261022/product-error-census.json)
-and [corrected grouping](../docs/receipts/native_browser_receiving_20261022/product-error-census-summary.json)
+mostly Accesskit 0.24.1 versus 0.25.1. The failed build
+receipt (`Code/testing/turnstone/receipts/native_browser_receiving_20261022/product-build-failed-20261022T203202Z.json`),
+diagnostic census (`Code/testing/turnstone/receipts/native_browser_receiving_20261022/product-error-census.json`)
+and corrected grouping (`Code/testing/turnstone/receipts/native_browser_receiving_20261022/product-error-census-summary.json`)
 are preserved. That checkpoint's `6e5da6dc` aligned Accesskit, test `NodeRef`
 callbacks, the `MenuBar` role, three join-result assertions, retired Semantic and
 optional embedding fixtures, and command semantic metadata. Its `dddbc94e9`
 build and 69-test receipts preceded the failed live process proof at
 `knot-editor/support/receipts/smolweb-browser-receiving/process.json`.
-The graceful fix at `cab743c1` then passed its [build](../docs/receipts/native_browser_receiving_20261022/product-graceful-build.json),
-[69 focused tests](../docs/receipts/native_browser_receiving_20261022/product-graceful-tests.json)
+The graceful fix at `cab743c1` then passed its build (`Code/testing/turnstone/receipts/native_browser_receiving_20261022/product-graceful-build.json`),
+69 focused tests (`Code/testing/turnstone/receipts/native_browser_receiving_20261022/product-graceful-tests.json`)
 and `knot-editor/support/receipts/smolweb-browser-receiving/process-graceful.json`.
 Those old receipts do not qualify current upstream; the integrated receipts
 above do. The old `500bc78a7` to `af5c3ba85` SDK comparison included HTTP referrer
@@ -2351,7 +2351,7 @@ is present. All 14 command-menu/sidecar cases pass. The full default library
 suite passes 1103 with 15 ignored and zero failures,
 run serially with `TMPDIR=/tmp`; the 14 focused cases are included in that
 full-suite count. Workspace all-target checking and portable metadata
-verification pass. The [receiving receipt](../docs/receipts/hest-cambium-adoption-20261020/qualification.json)
+verification pass. The receiving receipt (`Code/testing/turnstone/receipts/hest-cambium-adoption-20261020/qualification.json`)
 records the source hashes, exact commands and logs in the shared owner packet.
 
 Only two existing Rust files changed, plus the new declaration module;
@@ -2416,7 +2416,7 @@ Incoming NetRender `ec15eb26`, Genet `6ef3cd37` and Murm `e2f19a3f` remain
 pinned, with 1,604 unrelated package blocks preserved exactly. Git delivery is
 authorized; crate publication and native GUI/human AT acceptance remain separate.
 
-[H3 receiving qualification](../docs/receipts/hest-h3-20261020/qualification.json)
+H3 receiving qualification (`Code/testing/turnstone/receipts/hest-h3-20261020/qualification.json`)
 retains the final source and lock, owned compressed command logs, and superseded
 failed attempts. The passing full rerun is retained separately from the first
 run that found the timestamp fixture problem.

@@ -1301,7 +1301,7 @@ content sessions so a hub's bell or loss is visible to it.
 
 ### Current-stack macOS place baseline, 2026-10-19
 
-The [current-stack receipt](../docs/receipts/place_sharing_20261019/README.md)
+The current-stack receipt (`Code/testing/turnstone/receipts/place_sharing_20261019/README.md`)
 records six successful headed native phases using three isolated,
 custody-backed profiles. A founder creates a place, admits a writer and a
 reader, exchanges messages, and shares one chosen HTTP address. The

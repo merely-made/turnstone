@@ -1117,7 +1117,7 @@ The locked default-feature library and binary source checks pass, with 92
 compiler warnings; no broad green-suite claim. Matching ALSA 1.2.15.3 Ubuntu
 headers/runtime were staged in the task testing directory to complete those
 checks. Full source-check results and hashes are recorded in
-`docs/receipts/outer_workspace_20261012/qualification.json`; headed acceptance
+`Code/testing/turnstone/receipts/outer_workspace_20261012/qualification.json`; headed acceptance
 has not run on S-PC. Native consumer tests in `panes::store` retain the actual
 legacy content migration and are separate gates.
 
@@ -1187,7 +1187,7 @@ engine, renderer recovery, Redshank, Knot or other contributed-surface lanes.
 
 **Qualification and handoff.** The actual consumer stylesheet/shared Workspace
 DOM/Livery CPU harness and default-feature Linux library/binary source checks
-are recorded in `docs/receipts/frame_appearance_20261013/qualification.json`.
+are recorded in `Code/testing/turnstone/receipts/frame_appearance_20261013/qualification.json`.
 All 21 CPU tests pass (nine layout/cascade/font/scenario checks plus twelve
 actual custody/sidecar checks against the new Workbench pin). The library and
 binary typecheck passes with 92 warnings; warning-baseline equivalence is not
@@ -1286,7 +1286,7 @@ scenario parser regressions. They cover actual shared tab callbacks, inactive
 close, traversal exit, axis/pair resizing, focus repair, independent namespaces,
 exact Livery bounds and separator actions, scope/revision rejection and tree
 connectivity. Linux default-feature library/binary source checks and exact logs
-are recorded in `docs/receipts/frame_controls_20261013/qualification.json`.
+are recorded in `Code/testing/turnstone/receipts/frame_controls_20261013/qualification.json`.
 The final Linux library/binary check passes with 95 warnings; no warning-baseline
 equivalence is claimed. Computed geometry and synthetic queue delivery do not qualify displayed focus,
 OS adapter delivery or a human screen reader. No headed run, release build or
@@ -1387,7 +1387,7 @@ mount/replay, retained deltas, shared storage and retirement. They do not prove
 OS activation, screen-reader behavior or simultaneous visual appearances.
 
 **Evidence and limits.** The actual-source CPU harness and preserved logs are
-in `docs/receipts/stations_windows_20261013/qualification.json`. All 69 CPU tests
+in `Code/testing/turnstone/receipts/stations_windows_20261013/qualification.json`. All 69 CPU tests
 pass; the library/binary check reports 95 warnings. It includes the
 shared controller/layout/semantic tests, exact generic custody and sidecar
 modules, window namespace/appearance ownership, and the retained foreign forest
@@ -1485,7 +1485,7 @@ visually reviewed, and eight actual shared-raster/final pairs additionally pass
 the authored backdrop and pixel comparison checks. Alpha comparisons exclude
 the independently composed chrome overlays rather than claiming whole-target
 identity. Source, executable, normal manifest/lock, fixtures and artifact hashes
-are bound by `docs/receipts/stations_windows_20261013/published-final-native-qualification.json`.
+are bound by `Code/testing/turnstone/receipts/stations_windows_20261013/published-final-native-qualification.json`.
 Preserved local-source runs retain their separate authority.
 Physical OS activation, human assistive technology and monitor DPI transitions
 remain separate gates. The immediate lens-scroll fixture's capture dispatch can
@@ -1495,7 +1495,7 @@ scoped continuation control do not claim early scrollbar opacity pixels.
 ## Native graph folds (2026-10-16)
 
 **Status (2026-10-16): complete for the default macOS primary Orrery consumer.**
-The [native fold receipt](../docs/receipts/graph_folds_20261016/README.md) binds
+The native fold receipt (`Code/testing/turnstone/receipts/graph_folds_20261016/README.md`) binds
 source `f74fb679`, 958 passing workspace tests (ten ignores), the native build,
 288 headed creation/history frames and 91 fresh-process reopen frames, with
 nine reviewed captures and twelve full source/storage/position checkpoints.
@@ -1619,7 +1619,7 @@ Spiral-only remote/frozen disclosure remain separate follow-ups.
   successful corrective module rerun, not a second green full run.
   Native/reopen acceptance remains blocked by the locked Q-PC console, with
   the excluded attempt and exact software evidence in
-  `docs/receipts/graph_scenes_20261016/`. Both receiving and supplier pushes
+  `Code/testing/turnstone/receipts/graph_scenes_20261016/`. Both receiving and supplier pushes
   remain pending the headed/reopen gate.
 
 - 2026-10-17 native continuation: the unlocked probe exposed ordinary Arrange
@@ -1652,7 +1652,7 @@ Spiral-only remote/frozen disclosure remain separate follow-ups.
   workspace run: 982 passed, zero failed, ten existing ignores. The 24 new
   receiving regressions, eight shared supplier tests, native build, headed
   primary/lens controls and exact fresh-process reopen all pass. The byte- and
-  Git-bound packet is `docs/receipts/graph_scenes_20261016/`; earlier failed and
+  Git-bound packet is `Code/testing/turnstone/receipts/graph_scenes_20261016/`; earlier failed and
   deliberately superseded runs remain excluded diagnostics. Windows/Linux,
   portable SceneDocument hosting, remote/frozen arrangement expansion and
   independent scene-driving views of one graph remain separate boundaries.

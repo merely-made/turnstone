@@ -1,3 +1,0 @@
-/home/markik/Code/worktrees/mere-three-lanes/Cargo.lock: OK
-/home/markik/Code/worktrees/mere-three-lanes/.cargo/local/Cargo.lock: FAILED
-/home/markik/Code/worktrees/genet-three-lanes/Cargo.lock: OK

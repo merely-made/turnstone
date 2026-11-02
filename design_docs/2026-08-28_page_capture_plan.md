@@ -380,7 +380,7 @@ Recorded here so they are not lost, and because each is independently closable:
   errors leave the adapter compile and headed pixels open; this partial
   consumer proof does not close P1's clean-source pin gate. The named commands,
   regression manifest, runner hashes and retained Weld diagnostic are in the
-  [S9 receipt](../docs/receipts/page_capture_s9_20260908/README.md).
+  S9 receipt (`Code/testing/turnstone/receipts/page_capture_s9_20260908/README.md`).
 - **2026-09-09:** P1's clean-source Turnstone compile gate closed. Worktree
   `turnstone-weld-pin-20260909` moved welding to `65d057def7db2b5034add6e316cbd51d97c163a1`
   and grafting to `403a30c2fab39c573d1eebb57a0995e2c3347ff1` (commit `0c8461f`,
@@ -400,7 +400,7 @@ Recorded here so they are not lost, and because each is independently closable:
   capture request now resolves to that default (`Err(Unsupported)`) rather
   than reaching `welding`'s still-present `request_snapshot_png`; P2's hosted
   Weld capture hook remains unbuilt and needs a mere-side change this pass did
-  not make. See the [S9 receipt](../docs/receipts/page_capture_s9_20260908/README.md)'s
+  not make. See the S9 receipt (`Code/testing/turnstone/receipts/page_capture_s9_20260908/README.md`)'s
   2026-09-09 correction for the exact commands and the corrected E0308
   provenance.
 
@@ -514,7 +514,7 @@ Recorded here so they are not lost, and because each is independently closable:
   acknowledgement before final saved success. Fault/retry/reopen controls,
   including four joined real-Fjall processes, pass within the 940-test bounded
   regression run; all 50 capture controls pass. The
-  [R0 receipt](../docs/receipts/r0_source_save_20261017/qualification.json)
+  R0 receipt (`Code/testing/turnstone/receipts/r0_source_save_20261017/qualification.json`)
   binds source/lock/binary inputs and retains broader failed diagnostics.
   Existing Keep is preserved; automatic Keep, the ordinary research control,
   private reader/Answers joins and retention gates remain R1-R4 work. The
@@ -533,7 +533,7 @@ Recorded here so they are not lost, and because each is independently closable:
   The R2 private reader is now bounded-qualified on macOS; research
   Answers and hosted capture gates remain open.
 
-  The [R1 receipt](../docs/receipts/r1_source_keep_20261017/qualification.json)
+  The R1 receipt (`Code/testing/turnstone/receipts/r1_source_keep_20261017/qualification.json`)
   records 953 bounded regression tests, three capture-library controls, 46
   supplier tests, Clippy correctness and two fresh headed native processes.
   The exact five saved requests/references and Keep reopen offline without
@@ -552,7 +552,7 @@ Recorded here so they are not lost, and because each is independently closable:
   ClipRecords. The branch's refreshed stack changes exactly 78 Mere lock records
   to published `a9b5dd663`, including its scroll-boundary fix; Genet and the
   other lock records are preserved. The
-  [R2 receipt](../docs/receipts/r2_saved_sources_20261017/qualification.json)
+  R2 receipt (`Code/testing/turnstone/receipts/r2_saved_sources_20261017/qualification.json`)
   binds 969 bounded regression passes, three capture-library controls,
   Clippy/Cargo verification and two fresh headed processes. Seven reviewed
   captures and independent hash/facet/selector checks prove A1 search/read and

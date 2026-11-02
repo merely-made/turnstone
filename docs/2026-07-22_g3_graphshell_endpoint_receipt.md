@@ -28,7 +28,7 @@ Graphshell donor rename and repository publication.
 
 - `cargo check --lib`
 - `cargo test --lib remote_projection -- --nocapture`
-- the committed `docs/receipts/g3_turnstone_endpoint.html` is compared
+- the committed `tests/fixtures/g3_turnstone_endpoint.html` is compared
   byte-for-byte with a fresh executable run;
 - Graphshell `cargo test --workspace` remains green;
 - headed inspection at 1180 by 900 and 390 by 844 confirmed the semantic

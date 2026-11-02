@@ -1,8 +1,0 @@
-[
-  {
-    "filter": "appearance",
-    "status": "timeout",
-    "seconds": 60.245,
-    "log": "/tmp/turnstone-atlas-fixed-appearance-tests-signed.log"
-  }
-]

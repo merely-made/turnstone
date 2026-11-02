@@ -38,7 +38,7 @@ remaining model to Turnstone's actual state; it does not re-decide it.
   composition and pointer/key routing. The local Windows Scry consumer is
   wired behind `--features scry`; native qualification is recorded below.
   Servo/Graft construction is now implemented behind `--features servo`;
-  the [published three-engine baseline](../docs/receipts/browser_family_20261007/README.md)
+  the published three-engine baseline (`Code/testing/turnstone/receipts/browser_family_20261007/README.md`)
   qualifies the Windows build and scoped native pixel controls. Foreign
   accessibility qualification is the next consumer lane below.
   [2026-07-18_meerkat_harvest.md](2026-07-18_meerkat_harvest.md) and git
@@ -65,7 +65,7 @@ qualification evidence, with current-stack adoption coordinated separately.
 Servo 0.7's new public accessibility-action method makes its coherent
 Surfman/ANGLE migration a practical accessibility dependency.
 
-The [October 7 foreign-tree lane](../docs/receipts/browser_a11y_20261007/README.md)
+The October 7 foreign-tree lane (`Code/testing/turnstone/receipts/browser_a11y_20261007/README.md`)
 adds real Servo callback admission and retained subtree composition on the
 existing UI thread. Mere's four additive producer methods are published and
 library-tested. The coherent Knot/Redshank/Turnstone set passes 704 Turnstone
@@ -87,9 +87,9 @@ The raw-focus native negative control fails with absent/unreachable focus;
 its failures and the earlier observer timestamp/traversal failures remain in
 the receipt. A passed heading graft is not full browser accessibility.
 
-The [October 7 published-state checkpoint](../docs/receipts/browser_supplier_integration_20261006/current-stack-reconciliation/README.md)
+The October 7 published-state checkpoint (`Code/testing/turnstone/receipts/browser_supplier_integration_20261006/current-stack-reconciliation/README.md`)
 records WS4 R6 and the shared AccessKit helper/E1a on Mere main. The later
-[published family receipt](../docs/receipts/browser_family_20261007/README.md)
+published family receipt (`Code/testing/turnstone/receipts/browser_family_20261007/README.md`)
 qualifies the Genet decoder repair and ordered Knot/Redshank pins, ending at
 Turnstone `e00869c`. The new foreign-tree lane repeats that order for Mere's
 additive native semantic seam. Human assistive walks and complete browser
@@ -97,7 +97,7 @@ action support remain open.
 
 ### October 6 supplier integration history
 
-The [supplier integration receipt](../docs/receipts/browser_supplier_integration_20261006/README.md)
+The supplier integration receipt (`Code/testing/turnstone/receipts/browser_supplier_integration_20261006/README.md`)
 qualifies that shared Weld adapter at compatible Mere `db4ee312`,
 Woodshed `b613fc55` and Knot `91cb44a2`, retaining Genet `69a2383b`.
 Turnstone's local CEF mouse/text forwarding bridge is removed. The exact
@@ -129,7 +129,7 @@ native assertions and bounded full shutdown pass, but direct image review
 rejects a white reopened Servo A. The same binary separately qualifies four
 simultaneous Servo/WebView2/CEF pages, resize and cleared teardown, plus fresh
 Scry/Weld input, restart and permission controls with loaded-module evidence.
-The [six-run synchronization comparison](../docs/receipts/browser_supplier_integration_20261006/sync-diagnostic/README.md)
+The six-run synchronization comparison (`Code/testing/turnstone/receipts/browser_supplier_integration_20261006/sync-diagnostic/README.md`)
 uses one frozen diagnostic executable: Existing passes once and reproduces a
 white reopened A once; producer-only and normalization-only each pass; Both
 passes twice. All six assertion/exit guards pass, demonstrating why the pixel
@@ -238,7 +238,7 @@ zoom, correlated capture, credential answers, and an accessibility tree remain
 unavailable until the adapter forwards them. Native rehosting and different-size
 appearances of one node require separate gates.
 
-The [Windows consumer receipt](../docs/receipts/browser_scry_windows_20261005/README.md)
+The Windows consumer receipt (`Code/testing/turnstone/receipts/browser_scry_windows_20261005/README.md`)
 owns the two-page, input, resize, engine-switch, teardown and restart evidence.
 The full native script completes without external repaint and fails only four
 cookie assertions; separate-process restoration passes pins, localStorage and

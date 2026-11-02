@@ -1,5 +1,0 @@
-[resolver]
-lockfile-path = "C:/Users/mark_/Code/repos/turnstone/.cargo/browser-qualification/Cargo.lock"
-
-[patch.crates-io]
-scrying = { path = "C:/Users/mark_/Code/repos/wgpu-scry/scrying" }

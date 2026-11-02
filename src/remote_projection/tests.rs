@@ -248,6 +248,6 @@ fn projected_grant_accepts_view_and_refuses_graph_change() {
 #[test]
 fn committed_receipt_matches_the_live_turnstone_endpoint() {
     let committed =
-        include_str!("../../docs/receipts/g3_turnstone_endpoint.html").replace("\r\n", "\n");
+        include_str!("../../tests/fixtures/g3_turnstone_endpoint.html").replace("\r\n", "\n");
     assert_eq!(render_g3_receipt().unwrap(), committed);
 }
