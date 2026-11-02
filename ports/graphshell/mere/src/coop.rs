@@ -3,7 +3,7 @@
 use super::*;
 use cambium::{TextInput, button, lens, text_field_typed};
 use graphshell::coop::{self, Contact, Data, Operation, control, network};
-use djinn::door::app_admission::{AppId, AppRouteId};
+use ostiary::app_admission::{AppId, AppRouteId};
 use graphshell_endpoint::door::projection::AppBrokerClient;
 use std::{path::PathBuf, time::Duration};
 
@@ -359,9 +359,10 @@ fn owner_worker(
     while let Ok((acknowledged, command)) = rx.recv() {
         let result = runtime.block_on(async {
             if connection.is_none() {
-                let mut client = AppBrokerClient::open_route(
-                    AppId::new("graphshell"),
+                let mut client = AppBrokerClient::open_declared_route(
+                    AppId::new(graphshell::declaration::APP),
                     AppRouteId::new(format!("coop/{domain}")).map_err(|e| e.to_string())?,
+                    graphshell::declaration::declaration(),
                 )
                 .await
                 .map_err(|e| e.to_string())?;

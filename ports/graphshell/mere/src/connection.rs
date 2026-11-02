@@ -11,7 +11,7 @@ use chirograph::{
     CarrierResponse, CarrierResponseBody, PresentationCapability, SessionOpened,
 };
 use graphshell_client::LineDriven;
-use djinn::door::app_admission::{AppId, AppRouteId};
+use ostiary::app_admission::{AppId, AppRouteId};
 use graphshell_endpoint::door::projection::AppBrokerClient;
 use mere_overmap::route_session::MereRouteSession;
 use mere_view::MereViewRequest;
@@ -64,9 +64,10 @@ pub(super) struct Connection<T = AppBrokerClient, B = SystemBrowser> {
 
 impl Connection {
     pub(super) async fn open(domain: &str) -> Result<Self, String> {
-        let mut transport = AppBrokerClient::open_route(
-            AppId::new("graphshell"),
+        let mut transport = AppBrokerClient::open_declared_route(
+            AppId::new(graphshell::declaration::APP),
             AppRouteId::new(format!("mere/{domain}")).map_err(|error| error.to_string())?,
+            graphshell::declaration::declaration(),
         )
         .await
         .map_err(|error| error.to_string())?;

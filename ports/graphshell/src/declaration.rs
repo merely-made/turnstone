@@ -7,7 +7,7 @@
 //! What Graphshell declares on every hello to Djinn (Mere's capability door
 //! D24). The owner's grant decides what it receives; Djinn names nothing.
 
-use djinn::door::declaration::{
+use ostiary::declaration::{
     AppDeclaration, CustodyOperation, CustodyUse, NamePattern, SaltPattern, SaltUse,
 };
 
@@ -48,6 +48,8 @@ pub fn declaration() -> AppDeclaration {
                 SaltUse::persona(SaltPattern::DelegationScope("mere.graphshell".into())),
                 SaltUse::persona(SaltPattern::DelegationScope("mere.denizen".into())),
             ],
+            // The scope its retained content is already sealed under (D30).
+            payload_scope: Some("graphshell.retained-content/custody-v1".into()),
             ..CustodyUse::default()
         },
         ..AppDeclaration::default()

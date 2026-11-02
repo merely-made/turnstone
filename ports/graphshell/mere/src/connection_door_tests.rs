@@ -9,9 +9,9 @@ use chirograph::{
     CarrierRequest, CarrierResponse, CarrierResponseBody, ContentHash, MAX_RESOURCE_CHUNK_BYTES,
     ProjectionSession, ResourceChunkResponse, ResourceRequest,
 };
-use djinn::door::app_admission::{AppHello, AppId, AppRouteId};
-use djinn::door::frame::{read_native_message_async, write_native_message_async};
-use djinn::door::wire::{
+use ostiary::app_admission::{AppHello, AppId, AppRouteId};
+use ostiary::frame::{read_native_message_async, write_native_message_async};
+use ostiary::wire::{
         APP_CONNECT_SCHEMA, AppHostMessage as WireHostMessage, AppMessage as WireMessage, BROWSER_CHALLENGE_SCHEMA, BrowserChallenge,
     };
 use std::time::Duration;

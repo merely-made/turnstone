@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: MPL-2.0
 
 #![cfg(feature = "native")]
-use djinn::door::app_admission::AppId;
-use djinn::door::custody_client::CustodyClient;
+use ostiary::app_admission::AppId;
+use castellan_client::custody_client::CustodyClient;
 
 #[tokio::test]
 #[ignore = "run scripts/dr_c_receipts.py against the isolated receipt keeper"]

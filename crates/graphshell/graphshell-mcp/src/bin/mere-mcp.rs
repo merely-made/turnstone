@@ -17,7 +17,7 @@
 use std::io::{self, BufReader};
 use std::process::ExitCode;
 
-use djinn::door::app_admission::{AppId, AppRouteId, configured_app_endpoint};
+use ostiary::app_admission::{AppId, AppRouteId, configured_app_endpoint};
 use graphshell_endpoint::door::projection::AppRouteCarrier;
 use graphshell_mcp::{Config, Server};
 
@@ -63,8 +63,8 @@ fn run() -> Result<(), String> {
     let route_id = AppRouteId::new(route.clone()).map_err(|error| error.to_string())?;
     // The agent declares exactly the route it serves (capability door D27);
     // the owner's grant for it decides.
-    let declaration = djinn::door::declaration::AppDeclaration {
-        routes: vec![djinn::door::declaration::NamePattern::exact(route_id.as_str())],
+    let declaration = ostiary::declaration::AppDeclaration {
+        routes: vec![ostiary::declaration::NamePattern::exact(route_id.as_str())],
         ..Default::default()
     };
     let carrier = AppRouteCarrier::open_declared_at(&endpoint, AppId::new(&app), route_id, declaration)
