@@ -100,7 +100,7 @@ fn board() -> JobBoard {
     }
 
     let fixture: Fixture = serde_json::from_str(include_str!(
-        "../../distillery/tests/fixtures/chronicle/distillery_board.json"
+        "fixtures/distillery_board.json"
     ))
     .expect("W0 Chronicle fixture parses");
     JobBoard::fold_from_snapshot(

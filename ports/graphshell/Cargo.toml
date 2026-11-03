@@ -227,7 +227,7 @@ async-trait = { version = "0.1", optional = true }
 cambium-rootstock = { workspace = true, optional = true }
 base64.workspace = true
 chartulary = { workspace = true, optional = true }
-distillery = { path = "../distillery", optional = true }
+distillery = { workspace = true, optional = true }
 eidetic = { workspace = true, optional = true }
 graphshell-client = { version = "0.0.2", path = "../../crates/graphshell/graphshell-client" }
 graphshell-endpoint = { version = "0.0.3", path = "../../crates/graphshell/graphshell-endpoint" }
@@ -381,7 +381,7 @@ cambium = { workspace = true }
 # W1's integration receipt drives the actual Distillery Chronicle endpoint.
 # Distillery depends on Mere's substrate, not Graphshell, so this test-only
 # edge does not enter the product dependency graph.
-distillery = { path = "../distillery" }
+distillery.workspace = true
 mesh.workspace = true
 # The C0 acceptance fixture derives its shared link the way the real carrier
 # does rather than pasting a constant, so a change to the transcript encoding

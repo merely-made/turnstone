@@ -376,7 +376,7 @@ mod tests {
         }
 
         let fixture: Fixture = serde_json::from_str(include_str!(
-            "../../distillery/tests/fixtures/chronicle/distillery_board.json"
+            "../tests/fixtures/distillery_board.json"
         ))
         .expect("W0 Chronicle fixture parses");
         mesh::JobBoard::fold_from_snapshot(

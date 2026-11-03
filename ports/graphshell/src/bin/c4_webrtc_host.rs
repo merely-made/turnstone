@@ -523,7 +523,7 @@ fn distillery_chronicle_observer() -> Result<ChronicleObserver, Box<dyn std::err
     }
 
     let fixture: Fixture = serde_json::from_str(include_str!(
-        "../../../distillery/tests/fixtures/chronicle/distillery_board.json"
+        "../../tests/fixtures/distillery_board.json"
     ))?;
     let board = mesh::JobBoard::fold_from_snapshot(
         [0; 32],
