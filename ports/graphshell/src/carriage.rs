@@ -22,7 +22,7 @@ use std::collections::HashMap;
 
 use p2panda_core::prune::PruneFlag;
 use p2panda_core::{Hash, Operation, Topic};
-use pandect::BlindedSlotId;
+use sporran::BlindedSlotId;
 use personae::{Ed25519Keypair, Ed25519PublicKey, Ed25519Signature};
 use serde::{Deserialize, Serialize};
 use stickleback::{Admission, OperationPolicy, Reject, StoreTarget};
@@ -66,7 +66,7 @@ pub fn carriage_topic(graph: [u8; 32]) -> [u8; 32] {
 ///
 /// The body is a `pandect` `WrappedEpochRecord`, unchanged and already blinded;
 /// this extension never names a persona, a certificate, or a device. `slot` is
-/// the blinded handle (`pandect::blinded_slot_id`), computable only by the
+/// the blinded handle (`sporran::blinded_slot_id`), computable only by the
 /// holder and the issuer.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct CarriageExt {

@@ -91,6 +91,7 @@ native = [
     "dep:rand_core",
     "dep:serde",
     "dep:pandect",
+    "dep:sporran",
     "dep:signature",
     "dep:ssh-agent-lib",
     "dep:ssh-key",
@@ -172,6 +173,7 @@ web = [
     "dep:mere-overmap",
     "dep:muniment",
     "dep:pandect",
+    "dep:sporran",
     "dep:serde",
     "dep:sha2",
     "dep:uuid",
@@ -244,6 +246,7 @@ muniment = { workspace = true, optional = true }
 # too, so it sits here rather than in the native-only table (reservoir plan
 # §7 item 26).
 pandect = { workspace = true, optional = true }
+sporran = { workspace = true, optional = true }
 platen = { path = "../../crates/platen/platen", default-features = false, optional = true }
 scenograph.workspace = true
 sceno.workspace = true

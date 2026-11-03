@@ -461,7 +461,8 @@ pub fn record_observation(
 mod seal_wiring {
     use super::*;
     use muniment::MemoryBackend;
-    use pandect::{KeyEpochId, PersonaId, WalletEpochSealer};
+    use pandect::{PersonaId};
+    use sporran::{KeyEpochId, WalletEpochSealer};
 
     const ADDRESS: &str = "https://example.invalid/private-lane-probe";
 
