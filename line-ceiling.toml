@@ -1,0 +1,6 @@
+# mere/design_docs/mere_docs/implementation_strategy/2026-10-30_house_style_plan.md (H2); all physical source lines count.
+ceiling = 600
+
+[[exclude]]
+path = "vendor/"
+reason = "Vendored upstream sources; their module layout is maintained with the imported dependency."

@@ -23,3 +23,6 @@ path = "src/lib.rs"
 # cross this crate boundary), so this crate needs no `welding`/`cef`
 # dependency of its own; it only calls into `turnstone::launch`.
 turnstone = { path = "..", features = ["weld"] }
+
+[lints]
+workspace = true
