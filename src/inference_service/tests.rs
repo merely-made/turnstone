@@ -251,13 +251,13 @@ fn admitted_research_route_refuses_wrong_owner() {
 #[test]
 #[ignore = "requires a running isolated M5 custody-only fixture"]
 fn model_free_fixture_refuses_inference_route() {
-    use djinn::door::app_client::AppClientError;
+    use ostiary::app_client::AppClientError;
     let endpoint = std::env::var("EIDETIC_CUSTODY_FIXTURE_ENDPOINT").expect("fixture endpoint");
     let fixture_root = std::path::PathBuf::from(std::env::var_os("EIDETIC_CUSTODY_FIXTURE_ROOT").expect("fixture root"));
     assert_eq!(std::fs::read(fixture_root.join("fixture-marker")).unwrap(), b"eidetic-retention-20261019\n");
     assert!(std::path::Path::new(&endpoint).canonicalize().unwrap().starts_with(fixture_root.canonicalize().unwrap()));
     let identity = crate::identity::RootIdentity::Custody(
-        djinn::door::custody_identity::CustodyIdentity::connect_at(&endpoint, "turnstone").expect("fixture custody unavailable"));
+        castellan_client::custody_identity::CustodyIdentity::connect_at(&endpoint, "turnstone").expect("fixture custody unavailable"));
     let (profile, public_key) = identity.custody_principal().expect("fixture principal unavailable");
     let runtime = tokio::runtime::Builder::new_current_thread().enable_all().build().unwrap();
     let result = runtime.block_on(AppBrokerClient::open_route_at(
@@ -271,7 +271,7 @@ fn model_free_fixture_refuses_inference_route() {
         Ok(_) => panic!("inference route unexpectedly admitted"),
     }
     let after = crate::identity::RootIdentity::Custody(
-        djinn::door::custody_identity::CustodyIdentity::connect_at(&endpoint, "turnstone")
+        castellan_client::custody_identity::CustodyIdentity::connect_at(&endpoint, "turnstone")
             .expect("fixture custody unavailable after inference hello"));
     assert_eq!(after.custody_principal(), Some((profile.clone(), public_key)),
         "custody principal changed during inference hello");

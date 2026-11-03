@@ -22,9 +22,9 @@
 //! [`pollster::block_on`] on the actor thread: they are serial disk IO over
 //! one LSM store, which wants ordering, not a runtime.
 //!
-//! Athanor (the oven) speaks through this actor two ways now: on command,
+//! Pandect's furnace speaks through this actor two ways: on command,
 //! [`BinCommand::Empty`] clears the whole bin (`eidetic::clear_deleted`); on
-//! each session open, [`retire_then_list`] runs athanor's retirement pass to
+//! each session open, [`retire_then_list`] runs Pandect's retirement pass to
 //! permanently forget only the tombstones past the retention window. The
 //! remaining halves are the continuous background timer (this runs at session
 //! open, not on a clock), the engram bake (distill before forget), and the
@@ -41,7 +41,7 @@ use muniment::FjallStore;
 
 use crate::action::{RemovedRecord, Update};
 
-/// How long a deleted node sits in the recycle bin before athanor's steady-heat
+/// How long a deleted node sits in the recycle bin before the graph's retention
 /// pass permanently forgets it. A generous default; the application setting (per the
 /// Alembic plan's §8 config home) is the follow-on that makes it a real setting.
 const RETENTION_DAYS: u64 = 30;
@@ -111,8 +111,8 @@ fn open(dir: &Path) -> Result<FjallStore, String> {
 }
 
 /// The steady-heat trigger: on each session open, retire (permanently forget)
-/// the tombstones past the retention window, then list the survivors. Athanor's
-/// retirement pass (Athanor) decides which; a failed retire logs and
+/// the tombstones past the retention window, then list the survivors. Pandect's
+/// retirement pass decides which; a failed retire logs and
 /// still lists (forgetting is best-effort, never blocks the bin from showing).
 /// This runs at session open, not on a background timer — the continuous actor
 /// is the remaining half.
@@ -122,7 +122,7 @@ fn retire_then_list(store: &mut dyn Store, bin_dir: &Path, out: &Emitter<Update>
             .duration_since(UNIX_EPOCH)
             .map(|d| d.as_millis() as u64)
             .unwrap_or(0);
-        let proposal = athanor::propose_retirement(&deleted, RETENTION_DAYS * DAY_MS, now_ms);
+        let proposal = pandect::furnace::propose_retirement(&deleted, RETENTION_DAYS * DAY_MS, now_ms);
         if !proposal.is_empty() {
             // A retired tombstone takes its archived world with it — the
             // forget half of archive-never-orphan (the bin dir sits inside
@@ -136,7 +136,7 @@ fn retire_then_list(store: &mut dyn Store, bin_dir: &Path, out: &Emitter<Update>
                     }
                 }
             }
-            match pollster::block_on(athanor::apply_retirement(store, &proposal)) {
+            match pollster::block_on(pandect::furnace::apply_retirement(store, &proposal)) {
                 Ok(n) => tracing::info!(retired = n, "recycle bin: retired aged-out tombstones"),
                 Err(err) => tracing::warn!(%err, "recycle bin: retirement pass failed"),
             }

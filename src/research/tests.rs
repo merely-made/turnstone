@@ -121,9 +121,9 @@ fn retained_clip_targets_roundtrip_separately_from_capture_targets() {
 fn sealed_knot_and_redshank_bodies_reopen_without_sources_or_private_backing() {
     use crate::retained_clip::{NativeClip, retain_native};
     let root = tempfile::tempdir().unwrap();
-    let sealer = Arc::new(pandect::WalletEpochSealer::from_epoch(
+    let sealer = Arc::new(sporran::WalletEpochSealer::from_epoch(
         pandect::PersonaId::new(),
-        pandect::KeyEpochId::new(),
+        sporran::KeyEpochId::new(),
         b"recall fixture",
     ));
     let source = "PRIVATE PREFIX café → harbor PRIVATE SUFFIX";

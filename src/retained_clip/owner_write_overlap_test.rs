@@ -6,9 +6,9 @@ use super::*;
 #[test]
 fn queued_native_write_shares_owner_with_an_inflight_read() {
     let root = tempfile::tempdir().unwrap();
-    let sealer = Arc::new(pandect::WalletEpochSealer::from_epoch(
+    let sealer = Arc::new(sporran::WalletEpochSealer::from_epoch(
         pandect::PersonaId::new(),
-        pandect::KeyEpochId::new(),
+        sporran::KeyEpochId::new(),
         b"read write fixture",
     ));
     let policy = ClipLimits {
@@ -121,10 +121,10 @@ fn queued_native_write_shares_owner_with_an_inflight_read() {
     worker.close();
 }
 
-fn process_sealer() -> Arc<pandect::WalletEpochSealer> {
-    Arc::new(pandect::WalletEpochSealer::from_epoch(
+fn process_sealer() -> Arc<sporran::WalletEpochSealer> {
+    Arc::new(sporran::WalletEpochSealer::from_epoch(
         pandect::PersonaId(uuid::Uuid::from_u128(17)),
-        pandect::KeyEpochId(uuid::Uuid::from_u128(19)),
+        sporran::KeyEpochId(uuid::Uuid::from_u128(19)),
         b"process reopen fixture",
     ))
 }

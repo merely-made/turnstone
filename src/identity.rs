@@ -19,7 +19,7 @@
 //! Djinn's Graphshell custody route as the `turnstone` app. Djinn brokers the
 //! route; the configured custodian owns and releases the root material.
 //!
-//! - Root-level acts happen inside djinn (D11): an install or endpoint
+//! - Root-level acts happen inside the configured custodian (D11): an install or endpoint
 //!   delegation is signed there through [`RootIdentity::issue_certificate`].
 //! - The derived keys Turnstone needs continuously (place transports and
 //!   sealing, Commons and Gemot writers, Gemini client identities, the
@@ -32,7 +32,7 @@
 
 use std::sync::Arc;
 
-use djinn::door::custody_identity::CustodyIdentity;
+use castellan_client::custody_identity::CustodyIdentity;
 use identity::delegation::DelegationError;
 use identity::{Ed25519Keypair, Ed25519PublicKey, IdentityError, IdentityProvider};
 use insigne::DerivedKeyAttestation;
@@ -49,16 +49,16 @@ const INFERENCE_ASK_ROUTE: &str = "inference.ask";
 /// routes it opens, and the custody calls and persona salts it needs. The
 /// resident owner's grant decides what Turnstone receives; anything not named
 /// here is refused. Salts are released unless listed under `acts`.
-pub fn app_declaration() -> djinn::door::declaration::AppDeclaration {
-    use djinn::door::declaration::{
+pub fn app_declaration() -> ostiary::declaration::AppDeclaration {
+    use ostiary::declaration::{
         AppDeclaration, CustodyOperation, CustodyUse, NamePattern, SaltPattern, SaltUse,
     };
     let prefix = |text: &str| SaltUse::persona(SaltPattern::Prefix(text.into()));
     let scope = |domain: &str| SaltUse::persona(SaltPattern::DelegationScope(domain.into()));
     AppDeclaration {
         routes: vec![
-            NamePattern::exact(djinn::door::custody::CUSTODY_ROUTE),
-            NamePattern::exact(djinn::door::app_admission::APP_IDENTITY_ROUTE),
+            NamePattern::exact(castellan_client::custody::CUSTODY_ROUTE),
+            NamePattern::exact(ostiary::app_admission::APP_IDENTITY_ROUTE),
             NamePattern::exact("knot"),
             // The resident inference lane (`INFERENCE_ASK_ROUTE`).
             NamePattern::exact(INFERENCE_ASK_ROUTE),
@@ -215,7 +215,7 @@ impl RootIdentity {
 /// Used only by the cancellable background binding task. No key or passphrase
 /// is read here, and the fresh connection has one deadline for its handshake.
 pub fn bind_timeout(timeout: std::time::Duration) -> Option<Arc<RootIdentity>> {
-    djinn::door::custody_identity::CustodyIdentity::connect_declared_timeout(
+    castellan_client::custody_identity::CustodyIdentity::connect_declared_timeout(
         CUSTODY_APP,
         app_declaration(),
         timeout,
@@ -299,7 +299,7 @@ mod tests {
 
     #[test]
     fn the_declaration_is_bounded_and_names_what_turnstone_opens() {
-        use djinn::door::app_admission::AppRouteId;
+        use ostiary::app_admission::AppRouteId;
         let declaration = app_declaration();
         assert!(declaration.validate().is_ok());
         for route in ["custody", "identity", "knot", "inference.ask"] {

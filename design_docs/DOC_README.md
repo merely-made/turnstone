@@ -1,5 +1,13 @@
 # Turnstone design documents
 
+Supplier cutover (2026-11-03): Turnstone uses the extracted Distillery/ESP
+supplier and Dramatis custody clients. Door contracts come directly from
+Armillary's Ostiary; graph retention calls `pandect::furnace`. The canonical
+scope and exact consumer receipts are in
+`mere/design_docs/mere_docs/implementation_strategy/2026-10-31_distillery_extraction_plan.md`.
+Locked native compilation qualifies this intake; previous headed and physical
+receipts retain their original source cohorts.
+
 Model-free retained research (2026-11-01): M1–M5, including bounded storage
 reads, are complete for the recorded Linux cohort (Turnstone `554f323f`).
 The canonical plan and receipt are in

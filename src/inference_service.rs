@@ -12,7 +12,7 @@ use chirograph::{
 };
 use distillery::inference_protocol::{self as wire, InferenceRunsV1, RunV1};
 use eidetic::models::recall::{PassageSelector, RecallSourceId, RetainedSourceText};
-use djinn::door::app_admission::{AppId, AppRouteId};
+use ostiary::app_admission::{AppId, AppRouteId};
 use graphshell_endpoint::door::projection::AppBrokerClient;
 use sceno::InstanceId;
 use scenotime::{Revision, SceneEpoch};

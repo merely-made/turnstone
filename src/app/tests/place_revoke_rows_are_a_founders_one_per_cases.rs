@@ -287,8 +287,8 @@ fn dr_c_turnstone_identity_stays_pending() {
     let mode = std::env::var("DR_C_RECEIPT_MODE").expect("receipt mode");
     assert!(mode == "absent" || mode == "locked");
     if mode == "locked" {
-        let mut client = djinn::door::custody_client::BlockingCustodyClient::open(
-            djinn::door::app_admission::AppId::new(crate::identity::CUSTODY_APP),
+        let mut client = castellan_client::custody_client::BlockingCustodyClient::open(
+            ostiary::app_admission::AppId::new(crate::identity::CUSTODY_APP),
         )
         .unwrap();
         let status = client.status().unwrap();

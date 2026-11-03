@@ -111,7 +111,7 @@ pub(super) fn inject() {
     let endpoint = Path::new("/m5/custody/app.sock").canonicalize().unwrap();
     assert!(endpoint.starts_with(&fixture));
     let sealer = crate::identity::RootIdentity::Custody(
-        djinn::door::custody_identity::CustodyIdentity::connect_at(
+        castellan_client::custody_identity::CustodyIdentity::connect_at(
             endpoint.to_str().unwrap(), "turnstone").expect("fixture custody"));
 
     let a = &input.a1_admission;
@@ -227,7 +227,7 @@ pub(super) fn verify_preservation() {
     let endpoint = fixture.join("app.sock").canonicalize().unwrap();
     assert!(endpoint.starts_with(&fixture));
     let sealer = crate::identity::RootIdentity::Custody(
-        djinn::door::custody_identity::CustodyIdentity::connect_at(endpoint.to_str().unwrap(), "turnstone").unwrap());
+        castellan_client::custody_identity::CustodyIdentity::connect_at(endpoint.to_str().unwrap(), "turnstone").unwrap());
     let a = &input.a1_admission;
     let session = *a.key.session.as_uuid();
     let session_dir = root.join("sessions").join(session.to_string());

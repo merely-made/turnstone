@@ -1,5 +1,13 @@
 # The recycle bin: node deletion through eidetic + athanor
 
+**Owner update (2026-11-03):** the graph retirement API now lives in
+`pandect::furnace`, enabled by Pandect's `furnace` feature. Turnstone calls
+`propose_retirement` and `apply_retirement` there. Eidetic still owns deleted
+records and durable storage. Athanor retains its workshop role; this change
+does not move the held Athanor/Alembic workshop implementations. The dated
+history below retains its original API names. See the canonical Distillery
+extraction plan in Mere for the supplier cutover and qualified source cohort.
+
 2026-07-20, with Mark. How "forget this page" works in turnstone: stage the
 removed node in the memory subsystem, recover it with its identity intact,
 and let athanor (the oven) permanently forget it later, on command or

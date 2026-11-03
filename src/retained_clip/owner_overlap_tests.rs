@@ -11,7 +11,7 @@ use std::sync::{
 use std::time::Duration;
 
 struct PausedSealer {
-    inner: Arc<pandect::WalletEpochSealer>,
+    inner: Arc<sporran::WalletEpochSealer>,
     entered: mpsc::Sender<()>,
     release: Mutex<mpsc::Receiver<()>>,
     paused: AtomicBool,
@@ -41,9 +41,9 @@ impl PayloadSealer for PausedSealer {
 #[test]
 fn overlapping_sealed_clip_reads_complete_without_a_second_owner_open() {
     let root = tempfile::tempdir().unwrap();
-    let sealer = Arc::new(pandect::WalletEpochSealer::from_epoch(
+    let sealer = Arc::new(sporran::WalletEpochSealer::from_epoch(
         pandect::PersonaId::new(),
-        pandect::KeyEpochId::new(),
+        sporran::KeyEpochId::new(),
         b"overlap fixture",
     ));
     let source = "visible selected passage";
@@ -142,7 +142,7 @@ fn overlapping_sealed_clip_reads_complete_without_a_second_owner_open() {
 }
 
 struct CountingSealer {
-    inner: Arc<pandect::WalletEpochSealer>,
+    inner: Arc<sporran::WalletEpochSealer>,
     unseals: std::sync::atomic::AtomicUsize,
 }
 impl PayloadSealer for CountingSealer {
@@ -167,9 +167,9 @@ impl PayloadSealer for CountingSealer {
 #[test]
 fn oversized_record_is_refused_before_unseal_and_json_decode() {
     let root = tempfile::tempdir().unwrap();
-    let sealer = Arc::new(pandect::WalletEpochSealer::from_epoch(
+    let sealer = Arc::new(sporran::WalletEpochSealer::from_epoch(
         pandect::PersonaId::new(),
-        pandect::KeyEpochId::new(),
+        sporran::KeyEpochId::new(),
         b"size fixture",
     ));
     let source = "selected text";
@@ -242,7 +242,7 @@ fn oversized_record_is_refused_before_unseal_and_json_decode() {
     worker.close();
 }
 
-struct BindingFixture(Arc<pandect::WalletEpochSealer>);
+struct BindingFixture(Arc<sporran::WalletEpochSealer>);
 impl PayloadSealer for BindingFixture {
     fn seal(
         &self,
@@ -273,9 +273,9 @@ impl crate::custody_binding::BindingAuthority for BindingFixture {
 fn export_claim_fences_retirement_and_publishes_only_the_bound_destination() {
     let root = tempfile::tempdir().unwrap();
     let output = tempfile::tempdir().unwrap();
-    let sealer = Arc::new(pandect::WalletEpochSealer::from_epoch(
+    let sealer = Arc::new(sporran::WalletEpochSealer::from_epoch(
         pandect::PersonaId::new(),
-        pandect::KeyEpochId::new(),
+        sporran::KeyEpochId::new(),
         b"claim fixture",
     ));
     let source = "chosen body";

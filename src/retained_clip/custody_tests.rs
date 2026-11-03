@@ -10,10 +10,10 @@ fn policy() -> ClipLimits {
         max_record_bytes: 64_000,
     }
 }
-fn sealer() -> pandect::WalletEpochSealer {
-    pandect::WalletEpochSealer::from_epoch(
+fn sealer() -> sporran::WalletEpochSealer {
+    sporran::WalletEpochSealer::from_epoch(
         pandect::PersonaId::new(),
-        pandect::KeyEpochId::new(),
+        sporran::KeyEpochId::new(),
         b"fixture wallet epoch",
     )
 }
@@ -318,7 +318,7 @@ fn native_redshank_export_keeps_body_and_timed_target_distinct() {
 #[test]
 #[ignore]
 fn custody_process_roundtrip_fixture() {
-    use djinn::door::custody_identity::CustodyIdentity;
+    use castellan_client::custody_identity::CustodyIdentity;
     let root =
         PathBuf::from(std::env::var_os("EIDETIC_CLIENT_FIXTURE_ROOT").expect("fixture root"));
     assert_eq!(

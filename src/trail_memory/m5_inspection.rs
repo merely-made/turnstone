@@ -72,7 +72,7 @@ pub(super) fn inspect_exited_structured_copy() {
         "endpoint outside fixture root"
     );
     let sealer = crate::identity::RootIdentity::Custody(
-        djinn::door::custody_identity::CustodyIdentity::connect_at(&endpoint, "turnstone")
+        castellan_client::custody_identity::CustodyIdentity::connect_at(&endpoint, "turnstone")
             .expect("fixture custody"),
     );
     let observation: serde_json::Value = serde_json::from_slice(

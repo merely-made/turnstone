@@ -16,7 +16,7 @@
 
 use std::sync::{Arc, Mutex, mpsc};
 
-use djinn::door::app_admission::AppId;
+use ostiary::app_admission::AppId;
 use graphshell_endpoint::door::projection::AppBrokerClient;
 use tokio::sync::mpsc as tokio_mpsc;
 
@@ -150,7 +150,7 @@ async fn run(
 async fn read_cards() -> Result<Vec<ReceiptCardView>, String> {
     let mut client = AppBrokerClient::open_declared_route(
         AppId::new(crate::identity::CUSTODY_APP),
-        djinn::door::app_admission::AppRouteId::identity(),
+        ostiary::app_admission::AppRouteId::identity(),
         crate::identity::app_declaration(),
     )
     .await
