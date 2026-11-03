@@ -50,3 +50,6 @@ mere = { path = "../../../crates/mere", default-features = false, features = ["g
 serde_json.workspace = true
 tempfile = "3"
 uuid.workspace = true
+
+[lints]
+workspace = true

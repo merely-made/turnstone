@@ -445,3 +445,6 @@ required-features = ["webrtc-session"]
 name = "graphshell-coop"
 path = "src/bin/graphshell_coop.rs"
 required-features = ["coop-window"]
+
+[lints]
+workspace = true

@@ -25,3 +25,6 @@ sceno.workspace = true
 scenotime.workspace = true
 serde_json.workspace = true
 graphshell-endpoint = { workspace = true, optional = true, features = ["projection-door"] }
+
+[lints]
+workspace = true
