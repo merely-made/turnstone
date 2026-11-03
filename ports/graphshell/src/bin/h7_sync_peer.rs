@@ -30,7 +30,7 @@ use mere::kernel::graph::{EdgeAssertion, RelationKind, SemanticSubKind};
 use muniment::RedbBackend;
 use personae::{IdentityProvider, InMemoryProvider};
 use serde::Serialize;
-use stickleback::JoinedSpace;
+use murm_sync::JoinedSpace;
 use transport::{P2pandaTransport, PeerID, sync_overlay_topic};
 use uuid::Uuid;
 

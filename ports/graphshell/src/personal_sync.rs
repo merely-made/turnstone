@@ -1843,7 +1843,7 @@ mod tests {
     use personae::{IdentityProvider, InMemoryProvider};
     use std::sync::Arc;
     use std::time::Duration;
-    use stickleback::JoinedSpace;
+    use murm_sync::JoinedSpace;
     use transport::{P2pandaTransport, PeerID, sync_overlay_topic};
 
     const GRAPH: [u8; 32] = [0x77; 32];

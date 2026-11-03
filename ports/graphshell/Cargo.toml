@@ -199,6 +199,7 @@ personal-sync = [
 ]
 
 [dependencies]
+murm-sync.workspace = true
 ostiary = { workspace = true, optional = true }
 castellan-client = { workspace = true, optional = true }
 athanor = { package = "mere-athanor", path = "../distillery/athanor", default-features = false, optional = true }
