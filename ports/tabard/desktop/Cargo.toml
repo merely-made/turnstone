@@ -29,3 +29,6 @@ winit.workspace = true
 [[example]]
 name = "native_shared_recovery"
 path = "examples/native_shared_recovery.rs"
+
+[lints]
+workspace = true
