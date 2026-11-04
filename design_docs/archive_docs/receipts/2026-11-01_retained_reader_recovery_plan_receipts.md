@@ -556,3 +556,45 @@ uncommitted/unpublished, with a preserved patch and inventory under
 `Code/testing/mere-vello-cohort-20261104/`. No Mere source cohort intake is made
 here; the receiving Git-source patch already guarantees the one Classic Scene
 provider used by the qualified Turnstone executable.
+
+## Research-card wheel completion, 2026-11-04
+
+Turnstone `439e20c1` repairs continuation of the existing bounded row projection.
+Pixel scrolling handles long rows first; at its boundary the shared input route
+moves the row window only when another row is available. It cannot wrap at the
+ends or advance a closed card. Ordinary and structured projections canonicalize
+stored indices when results shrink. Query limits and row limits are preserved.
+The actual omnibar is primary-only; the lens route returns Outside.
+
+The production-route regression was observed red, then green. Four new controls
+cover comparison continuation and pointer targeting, pixel offsets across normal
+sync/redraw and projection replacement, closed-card state, and shrinking indices
+in both row builders. All 63 selected host checks pass under a persistent
+supervisor. The first outer runner again interrupted after the child succeeded;
+its incomplete log remains. The full locked offline application test command
+then passes: 1430 passed, zero failed, 21 ignored; binary targets and doctests
+also succeed. Execution takes 425.86 seconds, maximum RSS 2625500 KiB, zero swaps.
+Declared all-targets Clippy completes with warnings; no stricter claim is made.
+
+The clean native build takes 78.75 seconds, maximum RSS 2678920 KiB, zero swaps.
+Frozen executable SHA-256:
+`aee4ff23559144410164b69d455240bf04679be05997f5331eea0359d180c870`.
+Its six retained-source/rendering/shutdown scenarios and maximized pointer-open
+acceptance case pass, alongside three supporting wheel/navigation observations:
+ten runs, 2614 presented frames, 45 nonblank captures, all application exits zero.
+One wheel reveals both change excerpts and whole-source actions; upward input
+restores the headers and repeated downward input clamps. A real pointer click
+at the visible left action creates a new A1 reader and address event. Its exact
+manifest, whole-source selector, hash and 12-unit text are verified. Read document
+and Maximize pane then visibly show A1 alongside the retained selection and note.
+
+`final3-evidence-summary.json` verifies compiled source hashes, executable identity,
+all exact retained targets and comparison spans, pointer navigation, offline
+runtime counters, unchanged original fixtures, and empty native scopes. All
+recorded acquisition, generation and corpus-publication counters remain zero;
+the resident-model-load counter remains unavailable. No final application log
+contains an allocation shortfall, capture refusal or failed worker retirement.
+Native peaks range from 426590208 to 1671016448 bytes, with no OOM/swap-limit
+events, under the same enforced 3 GiB/zero-swap/150-percent-CPU/128-task caps.
+Physical wheel hardware, confirmed smaller native windows, screen readers and
+interactive identity unlocking retain their untested status.

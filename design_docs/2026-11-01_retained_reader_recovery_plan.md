@@ -1,6 +1,6 @@
 # Retained reader recovery and readable research text
 
-**Status (2026-11-03):** rendering and GPU shutdown repairs pass seven fresh native runs, exact-source checks and focused host verification. Research-card wheel continuation remains in progress; physical input, a confirmed smaller native window, screen-reader interaction and interactive unlocking remain untested. Historical M5 receipts retain their recorded source boundaries.
+**Status (2026-11-04):** startup recovery, readable retained research, rendering and GPU shutdown repairs pass current automated native scenarios and full application tests. Research-card wheel continuation and exact pointer reopening pass. Physical wheel hardware, confirmed smaller native windows, screen readers and interactive identity unlocking remain untested. Historical M5 receipts retain their original source boundaries.
 
 ## Scope
 
@@ -55,3 +55,15 @@ Repair the two usability follow-ups from the model-free retained-research milest
   window after pixel scrolling reaches its boundary. Done when the real
   comparison projection redraws to later visible, pointer-targetable actions,
   while long single rows, keyboard navigation and end clamps remain correct.
+
+- 2026-11-04: research-card wheel continuation is implemented and verified on
+  the production route. Long-row pixel scrolling survives redraw; projection
+  changes reset its offset; wheel input stops at list ends and closed cards;
+  shrunken ordinary/structured results keep a valid stored index. Query and row
+  limits are unchanged. The complete application command passes 1430 tests
+  with 21 ignored, including all 63 selected checks; declared Clippy also
+  completes with warnings. Ten current
+  native runs pass with 45 nonblank captures, exact source evidence, clean exits,
+  unchanged originals and empty scopes. Native pointer activation reopens A1;
+  its maximized reader visibly preserves the 12-unit text, selection and note.
+  See the [wheel receipt](archive_docs/receipts/2026-11-01_retained_reader_recovery_plan_receipts.md#research-card-wheel-completion-2026-11-04).
