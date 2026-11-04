@@ -5,7 +5,6 @@ use super::{
     research_structured_state::{Command, View},
 };
 use eidetic::records::{Cardinality, RecordOperation, ValueType};
-
 #[path = "research_structured_format.rs"]
 pub(super) mod format;
 #[path = "research_structured_result_rows.rs"]
@@ -588,6 +587,7 @@ impl App {
             .research_search
             .first_row
             .min(rows.len().saturating_sub(1));
+        self.research_search.first_row = start;
         self.omnibar.suggestions = rows
             .iter()
             .skip(start)

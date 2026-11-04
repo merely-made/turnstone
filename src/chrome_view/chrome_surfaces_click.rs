@@ -4,6 +4,43 @@
 use super::*;
 
 impl ChromeSurfaces {
+    pub(crate) fn route_research_wheel(
+        &mut self,
+        app: &App,
+        slot: usize,
+        x: f32,
+        y: f32,
+        dy: f32,
+        w: u32,
+        h: u32,
+    ) -> ResearchWheel {
+        match self.scroll_research(slot, x, y, dy, w, h) {
+            crate::ui::ElementScroll::Outside => ResearchWheel::Outside,
+            crate::ui::ElementScroll::Moved => ResearchWheel::Consumed,
+            crate::ui::ElementScroll::Boundary => {
+                let state = &app.research_search;
+                let step = if !app.omnibar.open
+                    || !matches!(app.omnibar.mode, crate::ui::OmnibarMode::SavedSources)
+                    || !dy.is_finite()
+                    || dy == 0.0
+                {
+                    None
+                } else if dy > 0.0 && state.first_row > 0 {
+                    Some(-1)
+                } else if dy < 0.0
+                    && state
+                        .first_row
+                        .saturating_add(app.omnibar.suggestions.len())
+                        < state.rows.len()
+                {
+                    Some(1)
+                } else {
+                    None
+                };
+                step.map_or(ResearchWheel::Consumed, ResearchWheel::Advance)
+            },
+        }
+    }
     /// Route a click at window-local `(x, y)` into `slot`'s chrome: hit-test
     /// that window-root's own subtree layout, dispatch through the runner,
     /// return what bubbled (a row commit).
@@ -57,19 +94,19 @@ impl ChromeSurfaces {
         dy: f32,
         w: u32,
         h: u32,
-    ) -> bool {
+    ) -> crate::ui::ElementScroll {
         let Some(&id) = self.projections.get(slot) else {
-            return false;
+            return crate::ui::ElementScroll::Outside;
         };
         self.absorb_dom_mutations();
         let Some(root) = self.runner.window_root(id) else {
-            return false;
+            return crate::ui::ElementScroll::Outside;
         };
         let sheet = crate::ui::chrome_sheet(&self.appearance);
         let scale = self.window_scale(slot);
         let dom = self.dom.borrow();
         let Some(layout) = self.layouts.get_mut(slot) else {
-            return false;
+            return crate::ui::ElementScroll::Outside;
         };
         layout.set_scale(scale);
         let Some(owner) = dom
@@ -77,7 +114,7 @@ impl ChromeSurfaces {
             .into_iter()
             .next()
         else {
-            return false;
+            return crate::ui::ElementScroll::Outside;
         };
         layout.scroll_element(&dom, root, &sheet, w, h, owner, x, y, dy)
     }

@@ -218,6 +218,13 @@ pub struct ChromeSurfaces {
     card_paint: sprigging::RenderedLeaves,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum ResearchWheel {
+    Outside,
+    Consumed,
+    Advance(i32),
+}
+
 #[cfg(test)]
 #[path = "chrome_view/tests.rs"]
 pub(crate) mod tests;

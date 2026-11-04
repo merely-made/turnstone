@@ -6,6 +6,9 @@ use layout_dom_api::LayoutDom;
 use super::*;
 use crate::action::{Action, Update};
 
+#[path = "tests/research_wheel_cases.rs"]
+mod research_wheel_cases;
+
 fn toolbar_point(chrome: &ChromeSurfaces, name: &str, w: u32, h: u32) -> (f32, f32) {
     let dom = chrome.dom.borrow();
     let root = chrome.runner.window_root(chrome.projections[0]).unwrap();
@@ -351,14 +354,23 @@ fn very_long_research_row_scrolls_inside_card_and_keeps_its_action() {
         assert!(y + h <= 304.0, "card must fit its viewport");
         (x + w / 2.0, y + h / 2.0, y + h)
     };
-    assert!(!chrome.scroll_research(0, 0.0, 0.0, -100.0, 1024, 320));
-    assert!(chrome.scroll_research(0, x, y, -100_000.0, 1024, 320));
+    assert_eq!(
+        chrome.scroll_research(0, 0.0, 0.0, -100.0, 1024, 320),
+        crate::ui::ElementScroll::Outside
+    );
+    assert_ne!(
+        chrome.scroll_research(0, x, y, -100_000.0, 1024, 320),
+        crate::ui::ElementScroll::Outside
+    );
     chrome.scene(0, 1024, 320);
     assert_eq!(
         chrome.click(0, x, bottom - 10.0, 1024, 320),
         vec![ChromeIntent::CommitRow(0)]
     );
-    assert!(chrome.scroll_research(0, x, y, -100_000.0, 1024, 320));
+    assert_ne!(
+        chrome.scroll_research(0, x, y, -100_000.0, 1024, 320),
+        crate::ui::ElementScroll::Outside
+    );
     assert_eq!(
         chrome.click(0, x, bottom - 10.0, 1024, 320),
         vec![ChromeIntent::CommitRow(0)],
@@ -397,7 +409,10 @@ fn narrow_research_card_fits_window_and_keeps_rows_clickable() {
         );
         (x + w / 2.0, y + h / 2.0, y + h)
     };
-    assert!(chrome.scroll_research(0, x, y, -100_000.0, 400, 320));
+    assert_ne!(
+        chrome.scroll_research(0, x, y, -100_000.0, 400, 320),
+        crate::ui::ElementScroll::Outside
+    );
     chrome.scene(0, 400, 320);
     assert_eq!(
         chrome.click(0, x, bottom - 10.0, 400, 320),

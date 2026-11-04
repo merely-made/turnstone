@@ -229,7 +229,7 @@ impl RetainedSubtreeLayout {
         x: f32,
         y: f32,
         dy: f32,
-    ) -> bool {
+    ) -> ElementScroll {
         self.ensure(dom, root, sheet, w, h);
         let view = SubtreeView::new(dom, root);
         let snapshot = self.snapshot.as_ref().expect("layout exists");
@@ -241,21 +241,30 @@ impl RetainedSubtreeLayout {
             (0.0, 0.0),
             logical_size(self.size, self.scale),
         ) else {
-            return false;
+            return ElementScroll::Outside;
         };
         let (x, y) = (x / self.scale, y / self.scale);
         if x < ox || x >= ox + ow || y < oy || y >= oy + oh {
-            return false;
+            return ElementScroll::Outside;
         }
         let Some(owner_fragment) = snapshot.fragments.get(owner) else {
-            return false;
+            return ElementScroll::Outside;
         };
         let scoped = cambium_rootstock::WindowDom::new(dom, owner);
         let extent = content_extent(&scoped, &snapshot.fragments);
         let max = (extent.1 - owner_fragment.y - owner_fragment.height).max(0.0);
         let offset = self.element_scroll.entry(owner).or_default();
-        offset.1 = (offset.1 - dy / self.scale).clamp(0.0, max);
-        true
+        let next = if dy.is_finite() {
+            (offset.1 - dy / self.scale).clamp(0.0, max)
+        } else {
+            offset.1
+        };
+        if next == offset.1 {
+            ElementScroll::Boundary
+        } else {
+            offset.1 = next;
+            ElementScroll::Moved
+        }
     }
 
     /// Hit-test this root against the same retained layout the frame painted.

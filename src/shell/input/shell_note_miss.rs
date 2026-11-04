@@ -74,12 +74,24 @@ impl Shell {
         if self.app.user_agent_decision.is_open() {
             return;
         }
-        if self
-            .chrome
-            .scroll_research(0, x, y, dy, self.width.max(1), self.height.max(1))
-        {
-            self.request_redraw();
-            return;
+        match self.chrome.route_research_wheel(
+            &self.app,
+            0,
+            x,
+            y,
+            dy,
+            self.width.max(1),
+            self.height.max(1),
+        ) {
+            crate::chrome_view::ResearchWheel::Outside => {},
+            crate::chrome_view::ResearchWheel::Consumed => {
+                self.request_redraw();
+                return;
+            },
+            crate::chrome_view::ResearchWheel::Advance(delta) => {
+                self.act(Action::OmnibarMove(delta));
+                return;
+            },
         }
         let plan = self.surface_plan();
         if let Some(hit) = crate::surface::hit_test(&plan, self.app.focus, x, y)

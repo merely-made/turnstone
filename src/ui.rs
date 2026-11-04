@@ -261,6 +261,13 @@ pub struct RetainedSubtreeLayout {
     element_scroll: HashMap<DomNodeId, (f32, f32)>,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum ElementScroll {
+    Outside,
+    Moved,
+    Boundary,
+}
+
 /// The host stylesheet for cambium's classes (rung 5 slice D). cambium ships no
 /// sheet — it names classes a host themes, and its own reference sheet
 /// (`component_catalog.css`) sets no `position` on any of them.

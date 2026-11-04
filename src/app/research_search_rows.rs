@@ -510,6 +510,7 @@ impl App {
             View::Structured => unreachable!(),
         }
         let start = state.first_row.min(rows.len().saturating_sub(1));
+        self.research_search.first_row = start;
         self.omnibar.suggestions = rows
             .iter()
             .skip(start)
