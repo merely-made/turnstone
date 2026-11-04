@@ -43,10 +43,23 @@ comparison and are explicitly refused by this read-text-only helper.
 
 Q465: the maintained browser driver now records rejected, still-open and timed-out
 closes as failures; collection requires the versioned release record and all
-three successful closes. These controls do not retroactively validate October's
-unconditional booleans or qualify closure in a real browser. That source-bound
-runtime gate remains with the existing Cambium presentation owner plan. Physical
-pointer, human AT, cross-app interoperability and other consumers remain separate.
+three successful closes. On 2026-11-04, the exact published finalizer also passed
+five source-bound success/failure controls, and the published release helper
+passed one owned headless Chrome/macOS contract probe: actual context/browser/HTTP
+closure, exit of all seven owned process IDs, removal of the temporary profile
+and reuse of its loopback port. The original false-success defect is repaired;
+this probe does not retroactively validate October's unconditional booleans.
+Receipts and exact runtime/source hashes are in
+`Code/testing/mere/closure-audit/batch-08-q465-owned-headless-probe.json` and
+`batch-08-q465-finalizer-controls.json` in the same directory.
+
+The full Instrument eight-case headed/product pilot remains separate. Its old
+browser package on Q-PC has 188/189 manifest-matching files; the Wasm and frozen
+native binary are missing, and current source no longer matches the old source
+manifest. Restore the original artifacts and exact source snapshot, or qualify a
+fresh candidate under its own source identity before claiming that pilot anew.
+Physical pointer, human AT, cross-app interoperability and other consumers retain
+their own gates. Active owner work is unchanged.
 
 Controls: `python -m unittest discover -s support/instrument -p test_paths.py` and
 `node --test support/instrument/test_release.cjs`. Neither starts a browser or
