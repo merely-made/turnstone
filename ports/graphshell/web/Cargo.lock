@@ -2860,7 +2860,7 @@ dependencies = [
 [[package]]
 name = "esp"
 version = "0.1.0"
-source = "git+https://www.github.com/merely-made/distillery.git?rev=52a4ca1704889638d8acb89f392ccb7e3c458c96#52a4ca1704889638d8acb89f392ccb7e3c458c96"
+source = "git+https://www.github.com/merely-made/distillery.git?rev=6346f087bb87d879cc9367dfb3d20fa00a8cbb9d#6346f087bb87d879cc9367dfb3d20fa00a8cbb9d"
 dependencies = [
  "serde",
  "zeroize",
@@ -12528,12 +12528,12 @@ source = "git+https://github.com/merely-made/armillary.git?rev=864f107d44bf75911
 [[patch.unused]]
 name = "distillery"
 version = "0.0.1"
-source = "git+https://www.github.com/merely-made/distillery.git?rev=52a4ca1704889638d8acb89f392ccb7e3c458c96#52a4ca1704889638d8acb89f392ccb7e3c458c96"
+source = "git+https://www.github.com/merely-made/distillery.git?rev=6346f087bb87d879cc9367dfb3d20fa00a8cbb9d#6346f087bb87d879cc9367dfb3d20fa00a8cbb9d"
 
 [[patch.unused]]
 name = "mere-mesh"
 version = "0.0.1"
-source = "git+https://www.github.com/merely-made/distillery.git?rev=52a4ca1704889638d8acb89f392ccb7e3c458c96#52a4ca1704889638d8acb89f392ccb7e3c458c96"
+source = "git+https://www.github.com/merely-made/distillery.git?rev=6346f087bb87d879cc9367dfb3d20fa00a8cbb9d#6346f087bb87d879cc9367dfb3d20fa00a8cbb9d"
 
 [[patch.unused]]
 name = "armillary"
@@ -12543,27 +12543,27 @@ source = "git+https://github.com/merely-made/armillary.git?rev=864f107d44bf75911
 [[patch.unused]]
 name = "distillery"
 version = "0.0.1"
-source = "git+https://www.github.com/merely-made/distillery.git?rev=52a4ca1704889638d8acb89f392ccb7e3c458c96#52a4ca1704889638d8acb89f392ccb7e3c458c96"
+source = "git+https://www.github.com/merely-made/distillery.git?rev=6346f087bb87d879cc9367dfb3d20fa00a8cbb9d#6346f087bb87d879cc9367dfb3d20fa00a8cbb9d"
 
 [[patch.unused]]
 name = "mere-mesh"
 version = "0.0.1"
-source = "git+https://www.github.com/merely-made/distillery.git?rev=52a4ca1704889638d8acb89f392ccb7e3c458c96#52a4ca1704889638d8acb89f392ccb7e3c458c96"
+source = "git+https://www.github.com/merely-made/distillery.git?rev=6346f087bb87d879cc9367dfb3d20fa00a8cbb9d#6346f087bb87d879cc9367dfb3d20fa00a8cbb9d"
 
 [[patch.unused]]
 name = "distillery"
 version = "0.0.1"
-source = "git+https://www.github.com/merely-made/distillery.git?rev=52a4ca1704889638d8acb89f392ccb7e3c458c96#52a4ca1704889638d8acb89f392ccb7e3c458c96"
+source = "git+https://www.github.com/merely-made/distillery.git?rev=6346f087bb87d879cc9367dfb3d20fa00a8cbb9d#6346f087bb87d879cc9367dfb3d20fa00a8cbb9d"
 
 [[patch.unused]]
 name = "esp-testkit"
 version = "0.1.0"
-source = "git+https://www.github.com/merely-made/distillery.git?rev=52a4ca1704889638d8acb89f392ccb7e3c458c96#52a4ca1704889638d8acb89f392ccb7e3c458c96"
+source = "git+https://www.github.com/merely-made/distillery.git?rev=6346f087bb87d879cc9367dfb3d20fa00a8cbb9d#6346f087bb87d879cc9367dfb3d20fa00a8cbb9d"
 
 [[patch.unused]]
 name = "mere-mesh"
 version = "0.0.1"
-source = "git+https://www.github.com/merely-made/distillery.git?rev=52a4ca1704889638d8acb89f392ccb7e3c458c96#52a4ca1704889638d8acb89f392ccb7e3c458c96"
+source = "git+https://www.github.com/merely-made/distillery.git?rev=6346f087bb87d879cc9367dfb3d20fa00a8cbb9d#6346f087bb87d879cc9367dfb3d20fa00a8cbb9d"
 
 [[patch.unused]]
 name = "armillary"
