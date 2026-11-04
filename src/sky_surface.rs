@@ -17,28 +17,28 @@ mod view;
 use std::time::Duration;
 
 use cambium::{DomHandle, RetainedSurfaceSession, RunnerSurfaceSession};
+use cleromancy_sky::turquet::apparent::ApparentBody;
+use cleromancy_sky::turquet::events::{
+    ConventionalRiseSetKind, ConventionalRiseSetPolicy, HorizonDipModel, LimbModel, LunarPhase,
+    MEAN_LUNAR_RADIUS_KM, MeridianTransitKind, RefractionModel,
+};
+use cleromancy_sky::turquet::foundation::{
+    Distance, EastLongitude, JulianDate, Latitude, Length, Model, Observer, ScaleAwareEpoch,
+    TimeOffset, UniversalTime1,
+};
+use cleromancy_sky::turquet::observer::EarthOrientation;
+use cleromancy_sky::turquet::provider::{AnalyticalEphemeris, ConstantOffsetEarthOrientation};
 use jiff::{
     civil::{Date, Time},
     tz::TimeZone,
 };
 use mere_surface_api::{ProviderId, SourceKindId, SurfaceDescriptor, SurfaceId};
 use serde::{Deserialize, Serialize};
-use turquet::apparent::ApparentBody;
-use turquet::events::{
-    ConventionalRiseSetKind, ConventionalRiseSetPolicy, HorizonDipModel, LimbModel, LunarPhase,
-    MEAN_LUNAR_RADIUS_KM, MeridianTransitKind, RefractionModel,
-};
-use turquet::foundation::{
-    Distance, EastLongitude, JulianDate, Latitude, Length, Model, Observer, ScaleAwareEpoch,
-    TimeOffset, UniversalTime1,
-};
-use turquet::observer::EarthOrientation;
-use turquet::provider::{AnalyticalEphemeris, ConstantOffsetEarthOrientation};
 
 use crate::contributed_surface::{SurfaceAdmissionError, SurfaceProvider};
 use crate::panes::{PaneKindId, PaneSource, SerializedSource, SourceRef, SourceSchemaId};
-use crate::sky_receipt::SkyReceiptV1;
-use crate::sky_timeline::{
+use cleromancy_sky::sky_receipt::SkyReceiptV1;
+use cleromancy_sky::sky_timeline::{
     SkyBodySelection, SkyDayRequest, SkySearchControls, SkyTimeline, SkyTimelineItem,
     build_sky_timeline,
 };
@@ -354,7 +354,7 @@ fn validate_source_identity(source: &SkyPaneSourceV1) -> Result<(), String> {
 
 fn earth_orientation_provider(
     source: &SkyPaneSourceV1,
-    day: &crate::sky_timeline::ResolvedSkyDay,
+    day: &cleromancy_sky::sky_timeline::ResolvedSkyDay,
 ) -> Result<ConstantOffsetEarthOrientation, String> {
     let utc = TimeZone::UTC.to_datetime(day.start_utc());
     let epoch = ScaleAwareEpoch::from_gregorian_utc(

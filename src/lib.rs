@@ -160,11 +160,7 @@ mod share_reader_service;
 pub mod shell;
 pub mod shell_services;
 #[cfg(feature = "sky")]
-pub mod sky_receipt;
-#[cfg(feature = "sky")]
 pub mod sky_surface;
-#[cfg(feature = "sky")]
-pub mod sky_timeline;
 pub mod source_capture;
 mod surface;
 mod surface_controls;

@@ -2207,6 +2207,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1c133bc6a41be0d194c306b5506d15e6feeea7b1d6604bd3f8310dfb2ca96486"
 
 [[package]]
+name = "cleromancy-sky"
+version = "0.1.0"
+source = "git+https://www.github.com/merely-made/cleromancy.git?rev=3e97e1375723a16f1877bc7a9ee136800d09de5e#3e97e1375723a16f1877bc7a9ee136800d09de5e"
+dependencies = [
+ "blake3",
+ "jiff",
+ "serde",
+ "serde_json",
+ "turquet",
+]
+
+[[package]]
 name = "clipboard-win"
 version = "5.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -16572,6 +16584,7 @@ dependencies = [
  "castellan-client",
  "chartulary",
  "chirograph",
+ "cleromancy-sky",
  "commons-spine",
  "dirs 6.0.0",
  "distillery",
@@ -16667,7 +16680,6 @@ dependencies = [
  "tokio",
  "tracing",
  "tracing-subscriber",
- "turquet",
  "url",
  "uuid",
  "uxtree",
@@ -16691,8 +16703,8 @@ dependencies = [
 
 [[package]]
 name = "turquet"
-version = "0.13.0"
-source = "git+https://github.com/merely-made/turquet.git?rev=bc3c454f755d0bfd70ab48bd9556a1cda2213d41#bc3c454f755d0bfd70ab48bd9556a1cda2213d41"
+version = "0.17.0"
+source = "git+https://www.github.com/merely-made/cleromancy.git?rev=3e97e1375723a16f1877bc7a9ee136800d09de5e#3e97e1375723a16f1877bc7a9ee136800d09de5e"
 dependencies = [
  "hifitime",
  "sofars",

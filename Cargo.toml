@@ -290,7 +290,7 @@ serde_json = { version = "1", features = ["float_roundtrip"] }
 # and IANA-zone rules needed to distinguish 23-, 24-, and 25-hour local dates.
 jiff = "0.2"
 # T5a is an acceptance consumer of this exact Turquet 0.13.0 source revision.
-turquet = { version = "=0.13.0", git = "https://github.com/merely-made/turquet.git", rev = "bc3c454f755d0bfd70ab48bd9556a1cda2213d41", optional = true }
+cleromancy-sky = { version = "0.1.0", git = "https://www.github.com/merely-made/cleromancy.git", rev = "3e97e1375723a16f1877bc7a9ee136800d09de5e", optional = true }
 
 # Atomic replacement of the local captured-search selection sidecar.
 tempfile = "3"
@@ -356,7 +356,7 @@ peer-tests = ["peers", "transport/test-identity"]
 endpoint-process = ["authoring", "graphshell-host/native"]
 inference = ["dep:distillery"]
 workshop = ["athanor/workshop-worker", "athanor/workshop-destination", "alembic/workshop", "alembic/workshop-surface", "alembic/workshop-native"]
-sky = ["dep:turquet"]
+sky = ["dep:cleromancy-sky"]
 diagnostics = []
 full-services = ["sky", "endpoint-process", "audio", "authoring", "peers", "inference", "workshop", "diagnostics"]
 audio = ["redshank-playback/native"]

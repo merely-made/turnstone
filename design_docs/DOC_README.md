@@ -1,5 +1,7 @@
 # Turnstone design documents
 
+Sky source home (2026-11-04): Turnstone embeds `cleromancy-sky` at `3e97e1375723a16f1877bc7a9ee136800d09de5e`, the shared library adopted from its named-zone timeline and receipt code. Pane controls, navigation, retained source/admission and UI remain here. The owning consolidation and receiving gates are in `cleromancy/design_docs/2026-10-18_duplication_reduction_plan.md`, section "Turquet and shared daily sky". Existing V1 receipt fixtures retain their 0.13 engine identity; newly calculated receipts identify the imported 0.17 engine. Current software checks do not renew the archived headed Sky acceptance.
+
 Supplier cutover (2026-11-03): Turnstone uses the extracted Distillery/ESP
 supplier and Dramatis custody clients. Door contracts come directly from
 Armillary's Ostiary; graph retention calls `pandect::furnace`. The canonical

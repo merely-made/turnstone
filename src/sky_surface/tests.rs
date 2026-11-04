@@ -136,9 +136,10 @@ fn has_labeled_text_control(
 }
 
 #[test]
-fn reference_source_reproduces_the_p0_receipt() {
+fn reference_source_uses_the_shared_engine_and_preserves_projection() {
     let source = SkyPaneSourceV1::boston_eclipse_reference();
     let projection = calculate_source(&source).unwrap();
+    assert_eq!(projection.receipt.engine.version, "0.17.0");
     assert_eq!(projection.receipt.day.date, "2024-04-08");
     assert_eq!(projection.receipt.day.time_zone, "America/New_York");
     assert_eq!(projection.receipt.facts.len(), 11);
