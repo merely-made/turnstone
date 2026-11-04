@@ -196,10 +196,10 @@ personal-sync = [
     "dep:p2panda-core",
     "dep:p2panda-store",
     "dep:stickleback",
+    "dep:murm-sync",
 ]
 
 [dependencies]
-murm-sync.workspace = true
 ostiary = { workspace = true, optional = true }
 castellan-client = { workspace = true, optional = true }
 athanor = { package = "mere-athanor", path = "../distillery/athanor", default-features = false, optional = true }
@@ -280,6 +280,7 @@ getrandom = { version = "0.3", optional = true }
 webrtc-carrier = { workspace = true, optional = true }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+murm-sync = { workspace = true, optional = true }
 cambium-desktop = { workspace = true, optional = true }
 mien = { workspace = true, optional = true }
 proofs = { workspace = true, optional = true }
