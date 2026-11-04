@@ -111,6 +111,9 @@ The controls, chrome and canvas become one tree; `web_gpu.rs` and `component.htm
 
 ### T4a. Remaining product controls
 The next bounded product target is the remaining detail actions (facets, relations, handlers, representation), then find and arrange and the other inventory panels (saved scene and transfer, projection, capture, practice). Native S5, saved-scene integration and the live site's viewer replacement are separate work; dense controls and small glyphs are usability work.
+
+File-intake qualification remains bounded: the recorded DOM cancel listener and shared headless callback do not establish operating-system file-dialog Cancel. Independently qualify an actual cancelled dialog on a named platform and host, including preservation of selection and durable graph state, before claiming that gate. The dated controls/physics receipt records OS-dialog Cancel as unverified; this is carried work, not a new implementation finding or an acceptance ruling.
+
 - Done when: each inventory panel passes its scenario and page gate on the tree, recorded here and in the inventory.
 - Needs: T4; Cambium gaining any missing control.
 - Rulings: -
