@@ -66,10 +66,12 @@ Firewheel/CPAL output authority are app-owned and shared by every tile.
 
 This is Phase 7 of the port plan, which lives in the Woodshed repository at
 `ports/redshank` and remains the product authority:
-`repos/woodshed/design_docs/2026-09-01_listening_annotation_port_plan.md`
-("Phase 7: Turnstone as second host"), sequenced by
-`repos/woodshed/design_docs/2026-09-13_redshank_gui_implementation_plan.md`
-("Pass 2 lanes" → "Lane T"). Nothing here restates the port's own design; this
+`repos/woodshed/design_docs/2026-11-03_listening_annotation_port_plan.md`,
+sequenced by `repos/woodshed/design_docs/2026-11-03_redshank_gui_implementation_plan.md`.
+The original "Phase 7: Turnstone as second host" and "Pass 2 lanes" → "Lane T"
+remain in the whole archived originals at
+`woodshed/design_docs/archive_docs/2026-11-03/2026-09-01_listening_annotation_port_plan.md`
+and `woodshed/design_docs/archive_docs/2026-11-03/2026-09-13_redshank_gui_implementation_plan.md`. Nothing here restates the port's own design; this
 document records only what Turnstone owns.
 
 ## The seam
