@@ -247,9 +247,9 @@ genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", branch 
 document-session-api = { git = "https://github.com/merely-made/genet.git", branch = "main" }
 # Classic 0.11 and its owned repairs, kept in step with the root Scene aliases.
 # Standalone workspaces restate the complete encoding/shader trio.
-netrender-vello = { git = "https://github.com/mark-ik/vello", rev = "276b46648c08f3d2062e70559afa999842e1873c" }
-vello_encoding = { git = "https://github.com/mark-ik/vello", rev = "276b46648c08f3d2062e70559afa999842e1873c" }
-vello_shaders = { git = "https://github.com/mark-ik/vello", rev = "276b46648c08f3d2062e70559afa999842e1873c" }
+netrender-vello = { git = "https://github.com/mark-ik/vello", rev = "b4a53486277ce37650f3803429cdc8a1d5551950" }
+netrender-vello-encoding = { git = "https://github.com/mark-ik/vello", rev = "b4a53486277ce37650f3803429cdc8a1d5551950" }
+netrender-vello-shaders = { git = "https://github.com/mark-ik/vello", rev = "b4a53486277ce37650f3803429cdc8a1d5551950" }
 # CubeCL 0.11.1 supplies the resident lane without the retired runtime
 # persistence patch (migration plan 13.48). The burn-cubecl selector likewise
 # remains the registry implementation, qualified under ruling 410.
