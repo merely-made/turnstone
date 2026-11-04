@@ -1,6 +1,6 @@
 # Retained reader recovery and readable research text
 
-**Status (2026-11-04):** startup recovery, readable retained research, rendering and GPU shutdown repairs pass current automated native scenarios and full application tests. Research-card wheel continuation and exact pointer reopening pass. Physical wheel hardware, confirmed smaller native windows, screen readers and interactive identity unlocking remain untested. Historical M5 receipts retain their original source boundaries.
+**Status (2026-11-04):** rendering, shutdown, retained-reader recovery and research-card wheel repairs are qualified after merging upstream `b9f6b88f`. The merged source passes the complete application suite and eight automated native scenarios, including exact pointer reopening and Inspector scrolling. Physical wheel hardware, confirmed smaller native windows, screen readers and interactive identity unlocking remain untested. Historical receipts retain their original source boundaries.
 
 ## Scope
 
@@ -24,6 +24,11 @@ Repair the two usability follow-ups from the model-free retained-research milest
 - 2026-11-01: the startup fix holds only pending reader spawns. It does not automatically reload previously live private readers after an explicit custody lock; existing retirement policy still requires reopening those readers.
 - 2026-11-01: Redshank's note row used an unshrinking actions column that squeezed text. The shared supplier now places wrapping controls below the note body (`woodshed` commit `676d625`). Inspector value rows also need wrapping inside their existing scroll owner.
 - 2026-11-01: a targeted Cargo update attempted unrelated Mere branch resolution and failed on a newer `chirograph` version. Updating exactly the six Woodshed source hashes preserves the package graph; locked offline metadata validates that narrow receiving change.
+
+- 2026-11-04: retained passage selectors and comparison spans use Unicode scalar
+  positions (`research_compare_rows.rs`, `open_source` validation). A1 has 57
+  scalars and 67 UTF-8 bytes. Corrected the earlier receipt's unit label; the
+  recorded spans and source identities were already correct.
 
 ## Progress
 
@@ -62,8 +67,26 @@ Repair the two usability follow-ups from the model-free retained-research milest
   shrunken ordinary/structured results keep a valid stored index. Query and row
   limits are unchanged. The complete application command passes 1430 tests
   with 21 ignored, including all 63 selected checks; declared Clippy also
-  completes with warnings. Ten current
-  native runs pass with 45 nonblank captures, exact source evidence, clean exits,
+  completes with warnings. Ten native runs on `439e20c1`
+  pass with 45 nonblank captures, exact source evidence, clean exits,
   unchanged originals and empty scopes. Native pointer activation reopens A1;
   its maximized reader visibly preserves the 12-unit text, selection and note.
   See the [wheel receipt](archive_docs/receipts/2026-11-01_retained_reader_recovery_plan_receipts.md#research-card-wheel-completion-2026-11-04).
+
+- 2026-11-04: pulled and merged upstream `b9f6b88f` before publication. Its
+  Murm intake also advances active Eidetic, Distillery, Mere, Knot and Dramatis
+  sources. Storage/read/proof source and fixture payload definitions are unchanged,
+  but current fixture interoperability and actor behavior required fresh execution.
+  The selected graph activates Murm sync through Knot, keeps Distillery on
+  inference-wire, and retains one qualified Vello provider. Fresh bounded native
+  and full application checks now pass; earlier receipts qualify their own
+  source cohorts only.
+
+- 2026-11-04: the merged-source qualification is complete: the full application
+  command passes 1430 tests, with 21 ignored, and declared Clippy completes with
+  warnings. Eight native cases pass with nonblank captures, clean exits, exact
+  source evidence, unchanged original fixtures and empty scopes. The added
+  Inspector check refreshes earlier-cohort coverage and confirms long-URL wrapping,
+  scrolling to lower metadata and return to top. Canonical Mere renderer pins
+  are aligned separately; Turnstone's tested Mere revision is unchanged.
+  See the [merged intake receipt](archive_docs/receipts/2026-11-01_retained_reader_recovery_plan_receipts.md#merged-custody-and-transport-intake-2026-11-04).

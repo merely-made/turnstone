@@ -199,8 +199,8 @@ this path. The gate and resource caps remain unchanged.
   `sealed-v1:blake3:` prefix. Actual identity was correct. `comparison-2` corrects
   that expectation and passes: 245 frames, seven nonblank captures, clean exit.
   Its observation records `eidetic.line-comparison/v1`, Explicit relationship,
-  exact A1/A2 manifests and hashes, deletion of bytes 0..57 and insertion of
-  bytes 0..59. The whole-left action reopens A1. Long identity rows visibly wrap.
+  exact A1/A2 manifests and hashes, deletion of Unicode scalar positions 0..57 and
+  insertion of positions 0..59. The whole-left action reopens A1. Long identity rows visibly wrap.
   Wheel input inside the research card does not visibly expose its lower rows
   in this run, so research-card wheel access remains unqualified. Keyboard
   selection reaches the action. Inspector URL wrapping is visible; positive
@@ -598,3 +598,104 @@ Native peaks range from 426590208 to 1671016448 bytes, with no OOM/swap-limit
 events, under the same enforced 3 GiB/zero-swap/150-percent-CPU/128-task caps.
 Physical wheel hardware, confirmed smaller native windows, screen readers and
 interactive identity unlocking retain their untested status.
+
+
+## Merged custody and transport intake, 2026-11-04
+
+The final upstream fetch found Turnstone `b9f6b88f`; merged source `79adac93`
+contains the wheel repair plus this intake. Active dependencies advance to
+Eidetic `7a3453a0`, Distillery `6346f087`, Mere `ab37ca96`, Knot `402eb28d`,
+Dramatis `e26b434a`, Gemot `3766de48` and Murm `ce53cebb`. The renderer cohort
+remains Genet `cbedf7b5`, Woodshed `e729fdad`, Netrender `6364e5d9` and Vello
+`b4a53486`. All three Classic Vello packages resolve to one immutable provider.
+
+A source audit found unchanged trail-memory, Muniment/storage, ESP and fixture
+custody-payload source. Joined/synced networking moved byte-identically to Murm;
+Dramatis also reorganized custody and identity modules. This source comparison
+cannot establish interoperability with the preserved historical fixture host.
+The exact selected feature graph activates Murm sync through Knot peers;
+Distillery enables inference-wire, without inference-model.
+
+The capped locked fetch succeeds without changing the selected graph. Cargo
+emits the known parser diagnostic for a Servo tidy fixture manifest, while the
+requested fetch/tree commands exit zero. Raw feature output and this boundary
+are recorded in `Code/testing/render-shutdown-fixes-20261103/final4/graph-audit.*`.
+
+The clean fresh native build passes in 228.71 seconds, maximum RSS 2700996 KiB,
+zero swaps. Its frozen SHA-256 is
+`07871e4e7c8174e5fbbeeffda322d95e24d71f40c6996d8c9f317f3fdcf26c88`.
+Source hashes and executable selection are in `final4/build-provenance.json`;
+no temporary paint or Vello probe code is present.
+
+The separate test build passes in 200.09 seconds, maximum RSS 3086952 KiB,
+zero swaps. The full locked/offline `authoring,inference` application test
+command then passes: 1430 passed, zero failed, 21 ignored, followed by successful
+binary targets and doctests. Library execution is 313.96 seconds; the command
+is 327.39 seconds, maximum RSS 724112 KiB, zero swaps. Gate elapsed time is
+430.56 seconds including shared-lock waiting. All runs keep the original caps.
+
+Eight native cases pass: delayed-custody recovery, comparison wheel and pointer,
+large overflowing error, two original shutdown repeats, note layout, retained
+selection/note reopen, and Inspector. They present 2337 frames with 36 nonblank
+captures; every application exits zero. The pointer-open frame visibly shows
+A1's 12-unit text beside the retained selection and authored note. Long-note
+text wraps in the actual 511-pixel pane with controls below. The large-error
+frame reaches its end sentinel and returns to top.
+
+The Inspector run was added because the wheel-specific comparison scenario
+replaced an earlier scenario that had covered Inspector. It uses the same frozen
+executable. Positive pane-scroll delta exposes lower metadata; negative delta
+returns to top, and the full retained-source URL visibly wraps. Capture filenames
+now agree with the observed scroll direction. Comparison outputs agree in every
+field except the request ID, which belongs to each invocation.
+
+The declared locked/offline all-targets Clippy command exits zero with warnings:
+116.87 seconds execution, maximum RSS 2032948 KiB, zero swaps. Its 178.40-second
+gate interval also includes shared-lock waiting. The native cases remain under
+3 GiB memory, zero scope swap, 150 percent CPU, 128 tasks, a 360-second application
+deadline and 420-second scope backstop. Peaks range from 381206528 to 1603330048
+bytes, with no OOM or swap-limit events. Original fixtures are unchanged and all
+native scopes are verified empty.
+
+`Code/testing/render-shutdown-fixes-20261103/final4-evidence-summary.json` verifies
+compiled-source and executable hashes, exact retained targets and comparison
+spans, new pointer-open identity, all recorded offline/acquisition/generation/
+corpus counters, caps, unchanged originals and cleanup. No final app log contains
+an allocation shortfall, capture refusal or failed worker retirement. Resident
+model loads remain unavailable as a counter; no zero-load counter is claimed.
+Physical wheel hardware, confirmed smaller windows, screen-reader interaction
+and interactive identity unlocking remain untested.
+
+Canonical Mere renderer pins and its two tracked locks are aligned separately
+at `4e2b8576`; two locked dependency graphs and 30 Sprigging tests pass there.
+Turnstone's qualified Mere pin stays `ab37ca96`. The Mere owner's plan records
+its own check scope; that publication does not extend this native receipt.
+
+Offset-label correction: retained passage selectors and comparison spans count
+Unicode scalar values. A1 contains 57 scalars and 67 UTF-8 bytes; A2 contains
+59 of each. The earlier receipt's byte label is corrected above. Recorded
+selectors, comparison spans, source hashes and raw evidence are unchanged.
+
+The changed-source line-ceiling hook passes, including the merged peers lane.
+Independent final review finds no publication blocker. The source-offset label
+correction above changes documentation only.
+
+The Mere follow-up receipt at `f69aed8d` records all declared checks for source
+`4e2b8576`: line ceiling, Responsa, warmed full-workspace Clippy and dependency
+bans pass. The first Clippy attempt reaches its unchanged 600-second limit;
+the retry passes. One missing locked WASI artifact (18,219 bytes) is fetched
+and checksum-verified without graph changes. The unrelated guest-projection
+fixture warning remains recorded. Later upstream reconciliation does not extend
+those source-specific checks to newer Mere code.
+
+The release follow-up also checks [Mesa 26.2.6](https://docs.mesa3d.org/relnotes/26.2.6.html),
+released 2026-10-28 after the tested 26.2.5. Its generic worker-queue
+[shutdown deadlock repair](https://chromium.googlesource.com/external/gitlab.freedesktop.org/mesa/mesa/%2B/74920caaa0bed55313e7af00036c61515621913b)
+addresses a completion barrier racing worker removal. That is analogous lifecycle
+evidence; no source establishes a connection to this RADV/Vulkan-validation-layer
+command-pool destruction crash. No matching Classic blank-frame repair is
+identified in those notes. The system driver remains unchanged, and this native
+receipt qualifies Mesa 26.2.5.
+
+The final capped upstream fetch succeeds and leaves Turnstone upstream at
+`b9f6b88f`, already merged and qualified above.
