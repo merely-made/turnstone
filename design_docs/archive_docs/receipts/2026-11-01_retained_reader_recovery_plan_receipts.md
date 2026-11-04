@@ -289,3 +289,52 @@ a confirmed smaller native window and an interactive identity-unlock flow remain
 After these corrections, rerun explicit capture, selection and note opens and
 retain exact source diagnostics alongside native frames. Historical and passing
 subset receipts must keep their recorded source boundaries.
+
+
+## Rendering and shutdown repair, 2026-11-03 (in progress)
+
+Genet `adfa1905d9e` adds explicit native completion-worker shutdown; its receipt
+is `4fce4b5d7fc`. Shared recovery retains lightweight worker handles across device
+generations, seals admission, waits for active publication and joins workers.
+Reentrant closure refuses explicitly. Turnstone cancels queued frames and closes
+all shared recovery owners during normal exit and Shell drop, before releasing
+GPU hosts. The 32 Genet lock-source entries advance together; package versions
+and the rest of the graph are preserved. Temporary paint diagnostics are kept
+out of the receiving commit.
+
+Supplier verification: five CPU tests and 16 actual-GPU native-frame tests pass;
+changed-file line ceiling passes, and package-scoped Clippy exits zero with
+warnings. Cargo-deny is unavailable. Exact commands, log hashes and source
+inventory are in `genet/design_docs/2026-10-30_nonblocking_native_frames_plan.md`.
+Independent review found and resolved a late-publication race before verification.
+The tests were not observed failing against the original implementation.
+
+Consumer artifacts are under `Code/testing/render-shutdown-fixes-20261103/`.
+Locked fetch succeeds. The first native build passes in 163.6 seconds, maximum
+RSS 2611944 KiB, zero scope swaps; executable SHA-256
+`58f510c2d29159ccf3f7c2eb0b2b57cc5919cd7086a4894e7e25e20b9f90390b`.
+It includes an opt-in temporary diagnostic at a paint entry point that did not
+run for the note; that failed probe remains preserved. `note-probe-1` passes its
+scenario and exits cleanly, while visual clipping remains. `shutdown-error-1`
+reruns the original 14-component missing-file scenario: 332 frames, three
+nonblank captures, scenario and process pass. This is one clean rerun of the
+previously crashing case, not proof of repeated clean exits.
+
+The corrected probe build passes in 78.56 seconds of execution (249.38 seconds
+including lock wait), maximum RSS 2659200 KiB, zero scope swaps. Its SHA-256 is
+`d5356d25f31f348e1bfc0afea93a22e295c87e27c6b976d46e2e97a87d67bdc5`.
+Its temporary diagnostic captures the actual note and workbench paint paths.
+`probe2/note-probe-2` again exits cleanly but clips text: computed wrap is enabled,
+yet the note fragment is about 2686 pixels wide inside a 511-pixel pane.
+`probe2/overflow-probe-2` produces three blank captures and fails its scenario;
+its pre-raster paint data contains opaque background and correctly wrapped text.
+Those rendering failures are still under investigation. Each native case uses
+fresh disposable fixture copies and retains the original integrity/cleanup
+checks. Resource caps and five-second frame qualification remain unchanged.
+
+Release/source review found no direct upgrade remedy: wgpu is already at listed
+release 30.0.1; the analogous [wgpu exit report](https://github.com/gfx-rs/wgpu/issues/8365)
+remains open. New Netrender changes are source/test reorganization. The newer
+Vello fork shader fix addresses Naga SPIR-V output in `vello_gpu_shaders`, which
+is outside this Classic backend's locked graph. No provider upgrade was made
+without a matching failure mechanism.

@@ -27,6 +27,8 @@ Repair the two usability follow-ups from the model-free retained-research milest
 
 ## Progress
 
+- 2026-11-03: began the authorized rendering and GPU shutdown repairs after fetching current upstream. Independent Genet worktrees isolate text-paint diagnosis and completion-worker lifecycle changes. The preserved native failures remain the acceptance cases; resource caps and frame qualification are unchanged.
+
 - 2026-11-03: pulled upstream through `4321a554` before native verification. The current intake includes extracted compute and custody clients. Built a fresh native binary and checked disposable retained-profile/custody copies under the existing resource caps. Startup recovery and exact-version comparison pass. Longer runs reproduce the five-second frame refusal; a larger real error yields blank captures; long note text clips; one run crashes during process exit while GPU destruction is active. Smaller-window requests were not reflected in actual capture dimensions. The canonical [receipt](archive_docs/receipts/2026-11-01_retained_reader_recovery_plan_receipts.md#native-window-follow-up-2026-11-03) records passing subsets, failed evidence, unchanged originals and concrete follow-up done-conditions. Production source and dependencies are unchanged by this qualification pass.
 
 - 2026-11-01: began the two authorized follow-ups in the existing isolated qualification worktree. Rust work remains serialized under the shared machine lock, 3 GiB memory, zero scope swap, 150 percent CPU and one build/test worker. Missing locked dependency sources are being fetched without changing dependency selections.

@@ -122,7 +122,7 @@ impl ApplicationHandler<crate::shell::ShellEvent> for Shell {
     }
 
     fn exiting(&mut self, _event_loop: &ActiveEventLoop) {
-        self.cancel_native_frames("host exiting");
+        self.close_native_frame_workers();
         // Fence fetch ingress, cancel its tasks and join the worker, bounded
         // like the trail release below.
         self.fetch_handle
