@@ -27,7 +27,8 @@ use identity::IdentityProvider;
 use identity::delegation::Issue;
 use insigne::delegation::{DelegationCertificate, DelegationParent, SignedDelegationCertificate};
 use notochord::{HandshakeLimits, NetworkId, TrafficClass};
-use stickleback::{GroupKeyExt, JoinedSpace};
+use stickleback::GroupKeyExt;
+use murm_sync::{GroupKeySync, JoinedSpace};
 use transport::p2panda_transport::MdnsDiscoveryMode;
 use transport::{P2pandaStream, P2pandaTransport, PeerID, Transport, sync_overlay_topic};
 
@@ -84,7 +85,7 @@ struct JoinedLanes {
 /// Shared counter handles across all ten lanes plus the projection host,
 /// sampled by the watcher.
 struct LaneCounters {
-    handles: Vec<std::sync::Arc<std::sync::Mutex<stickleback::SyncStatus>>>,
+    handles: Vec<std::sync::Arc<std::sync::Mutex<murm_sync::SyncStatus>>>,
     /// None when this profile has no vault, so there is no host to count.
     projection: Option<ProjectionWatchCounters>,
 }
