@@ -338,3 +338,221 @@ remains open. New Netrender changes are source/test reorganization. The newer
 Vello fork shader fix addresses Naga SPIR-V output in `vello_gpu_shaders`, which
 is outside this Classic backend's locked graph. No provider upgrade was made
 without a matching failure mechanism.
+
+
+### Root causes and corrected probe cohort, 2026-11-03
+
+The preserved probe cohort `probe3` receives Genet `cbedf7b5` and Woodshed
+`e729fdad`. Its frozen executable SHA-256 is
+`7a101dc6e3745e3ce9c08beb2e1ee7c912ab64ccf264846df6450c4efc3cc31b`.
+It also includes temporary paint and Vello allocation diagnostics, so these
+results qualify that diagnostic cohort. The build passes in 179.5 seconds,
+maximum RSS 2679756 KiB, zero scope swaps. The temporary paint source patch is
+preserved under `probe3/paint-snapshot-diagnostic.patch` and removed before the
+final receiving build.
+
+The note defect comes from the shared phone rule enabling flex wrapping on an
+already vertical note row. Woodshed now keeps that row unwrapped while its
+text and action controls wrap independently. The full-theme regression was
+observed failing before the fix; all 113 surface tests pass. In the actual
+511-pixel native pane, `note-fixed-1` shows the complete note in seven lines,
+with its controls below it: text width 399 pixels and height 126, replacing the
+2686-pixel single-line fragment. Its scenario passes with 445 frames, five
+nonblank captures and clean exit. Captures remain 1024 by 600; the unacknowledged
+smaller-window request still does not qualify a narrower native window.
+
+The five-second refusal also has an identified cause. GPU completion could
+qualify within its deadline, then be refused again when a delayed UI collected
+or published the result. Genet `33b23ed6` separates worker deadline checks from
+later live-device and publication checks; the original deadline remains enforced
+through the worker's final local scope retirement. Loss, closure and failed
+worker results still refuse publication. A regression was observed red before
+the fix; five CPU tests and 17 actual-GPU tests pass. `cbedf7b5` merges current
+upstream with identical render-host source. In `recovery-fixed-1`, 321 native
+frames and seven nonblank captures pass, including delayed-custody startup,
+exact A1/A2 opens, and explicit saved selection and note opens. `clips-fixed-1`
+passes 127 frames and two nonblank captures. Recorded rendered documents retain
+the exact manifests, hashes, selectors and text. Runtime records show offline
+mode, zero acquisition attempts, zero generation requests and zero corpus
+publications. The resident model-load counter is unavailable, not asserted zero.
+
+`shutdown-error-2` repeats the previously crashing 14-component missing-file
+scenario: 332 frames, three nonblank captures and clean exit. This is the second
+clean rerun, across two repair-cohort builds. All five `probe3` cases exit the
+application cleanly, including the blank-frame failure. The original fixture
+hashes are unchanged and each native scope is confirmed empty. Native memory
+peaks range from 438702080 to 789180416 bytes, with no OOM or swap-limit events.
+
+The 40-component error still fails on the target: `overflow-bump-1` presents
+331 frames and produces three entirely transparent captures. A4 evidence shows
+opaque pre-raster paint data and a valid scene containing 6062 glyphs in 45 runs,
+but both raw window raster and final composition are zero. Vello reports flatten
+allocation failure `0x4`, requiring roughly 8.7 to 9.3 million line records. A
+line record is 24 bytes; the requested 128 MiB storage binding permits at most
+5592405 records. The tile lowering repeatedly encodes entire glyph runs for
+intersecting 64-pixel tiles. A supplier regression confirms that a first tile
+encodes all 100 glyphs of a run spanning many tiles. Reducing that duplication
+and refusing unqualified allocation results are under verification; increasing
+buffer limits or lowering curve quality is not the repair.
+
+A bounded diagnostic on idle S-PC uses the identical frozen executable under
+900 MiB, zero scope swap and 150 percent CPU. It reports the same allocation
+failure, requiring about 15.17 million line records. Its later three captures
+are nonblank and exit is clean, unlike the target's final blank captures; this
+is supporting diagnostic evidence, not equivalent target acceptance. Peak
+memory is 747937792 bytes, without OOM or swap-limit events; its fixture hashes
+are unchanged and scope is empty. Raw evidence is copied to
+`remote-evidence/`, retaining the failed and passing observations separately.
+
+`probe3-evidence-summary.json` hashes the native observations and captures,
+checks all four exact retained targets and rendered text, verifies offline
+runtime counters, and checks unchanged originals and empty native scopes.
+The remaining blank-frame fix still requires a clean receiving build and the
+preserved native acceptance scenarios.
+
+
+The release check was repeated before receiving the final renderer. Official
+[wgpu 30.0.1](https://github.com/gfx-rs/wgpu/releases/tag/v30.0.1) remains the
+latest listed release and is already selected. Its Vulkan change concerns the
+acquire fence, not completion-worker lifetime. Official
+[Vello Research 0.11.0](https://github.com/linebender/vello/releases/tag/v0.11.0)
+updates wgpu/Naga and fixes bitmap-glyph placement. Its release commit
+`f3000c8d9e7a9c7e6abb09b9587238bf8b4860ff` is already an ancestor of the original
+`276b4664` fork pin, verified by fetching the release tag and checking ancestry.
+Those release fixes were present when the preserved failures occurred.
+
+
+### First clean receiving attempt
+
+The receiving graph unifies Classic renderer, encoding and shader packages at
+Vello `3d82d3b5`, with Netrender `1d37291c`, Genet `cbedf7b5` and Woodshed
+`e729fdad`. Mere remains at its previously qualified `f673d313` cohort. Its
+custom-paint package exposes `vello::Scene`, so merely updating Netrender would
+leave two incompatible Scene providers. Root Git-source patches select the
+same immutable Vello commit using the distinct `www.github.com` source URL;
+Cargo forbids patching a Git source back to that identical source identifier.
+The resolved graph contains exactly three Classic packages at one source and
+no old Vello encoding or shader package. All unrelated package versions are
+preserved. `final/graph-proof.json` records 43 changed package records plus the
+two package renames. Locked offline metadata succeeds with `authoring,inference`.
+The failed intermediate graph and same-source patch attempt are preserved.
+
+The clean application build passes in 139.92 seconds of execution (218.09
+seconds including lock wait), maximum RSS 2656596 KiB, zero swaps. Its frozen
+executable SHA-256 is
+`0e64bc7527b9b8930c5e6ddcb5fdc80076deec002c830a01914493b8a9eb34e6`.
+No temporary paint or allocation diagnostic source or environment is included.
+A sampled build cgroup reaches its 3 GiB cap and reclaims memory; OOM and
+OOM-kill counters remain zero, and scope swap is zero. Raw build messages,
+provenance, metadata and graph proof are under `final/`.
+
+The culler passes 87 library tests, with one ignored. GPU parity controls check
+opaque bytes, exact transparent alpha, and RGB wherever alpha is nonzero at
+scales 0.75, 1 and 1.5. They include rotated variable glyphs; a modified font
+with an understated glyph header exercises actual outline bounds through both
+tile membership and lowering. Unknown/color outlines retain conservatively;
+filtered layers disable glyph culling; scale changes invalidate paired caches.
+RGB beneath zero alpha is excluded because unfiltered repeat controls vary
+there too. The declared scoped Clippy command completes with warnings and the
+staged line-ceiling check passes. A stricter warnings-as-errors attempt fails
+on existing `netrender_device` warnings; that failed evidence is retained.
+
+`final/overflow-final-1` now refuses an unqualified frame explicitly rather than
+publishing a blank capture. It exits cleanly after 257 frames, before a capture,
+with `AllocationShortfall`: failed bits 16, blend 1057792, lines 606525, binding
+limit 134217728 bytes, and no line-binding exhaustion. Glyph work is reduced
+from the earlier roughly nine million line records; the observed coarse-stage
+shortfall is now below the binding cap. Its native memory peak is 818216960
+bytes, with no OOM or swap-limit events. Original-fixture integrity and empty
+scope cleanup are retained. This is still a failed acceptance run.
+
+The next provider correction sizes blend spill storage before submission using
+resolved clip/layer nesting and viewport tiles. Independent shader review
+supports that conservative bound, including expanded color-glyph layers. The
+estimate is capped at actual device limits; a loose upper bound does not itself
+refuse an otherwise admissible scene. Actual GPU counter failures still refuse.
+The preserved workload must pass again on the resulting immutable cohort.
+
+During independent Mere manifest preparation, one Git cache pack briefly grew
+to about 1.45 GiB outside the intended heavy scope. Its exact process tree was
+stopped; an already cached object alternate supplies the missing source without
+repacking. That exception is preserved in
+`Code/testing/mere-vello-cohort-20261104/cache-incident.txt`. An earlier stopped
+resolver left its scope child alive; the owned process group was identified and
+retired, releasing the machine and package-cache locks. No unrelated process
+was stopped. Build and native verification caps are unchanged.
+
+
+## Qualified rendering and shutdown cohort, 2026-11-03
+
+The final receiving cohort uses Netrender `6364e5d9`, Vello `b4a53486`, Genet
+`cbedf7b5` and Woodshed `e729fdad`. Vello now pre-sizes blend spill storage after
+scene resolution: maximum resolved clip nesting beyond the four local levels,
+times the number of 16 by 16 viewport tiles, times 256 u32 entries. Saturating
+arithmetic caps the estimate at the smaller device binding/buffer limit. Loose
+estimates do not themselves refuse a scene; observed nonzero failure flags still
+do. A fresh six-layer GPU scene reproduced the old shortfall before correction
+and passes afterward, with pixel readback on the target Radeon. Ten CPU tests,
+the GPU regression, no-default compilation and scoped Clippy pass. Netrender's
+87 tests pass with one ignored; its all-features graph has one Vello revision.
+
+The clean application build passes in 133.69 seconds, maximum RSS 2690072 KiB,
+zero swaps. Frozen executable SHA-256:
+`f44313c658f56ff6b4ebc0a2baa93ab3782d2c82ecc2e15b28d3b49e2faa2123`.
+All seven native cases use this executable and fresh disposable fixture copies.
+
+| Case | Presented frames | Captures | Result |
+|---|---:|---:|---|
+| `overflow-final-1` | 332 | 3 | PASS, nonblank captures, clean exit |
+| `shutdown-final-1` | 333 | 3 | PASS, nonblank captures, clean exit |
+| `note-final-1` | 446 | 5 | PASS, nonblank captures, clean exit |
+| `comparison-final-1` | 246 | 7 | PASS, nonblank captures, clean exit |
+| `recovery-final-1` | 321 | 7 | PASS, nonblank captures, clean exit |
+| `clips-final-1` | 128 | 2 | PASS, nonblank captures, clean exit |
+| `shutdown-final-2` | 333 | 3 | PASS, nonblank captures, clean exit |
+
+That is 2139 presented frames and 30 nonblank captures. The original crashing
+14-component error case passes twice on this final binary, alongside two clean
+reruns on earlier repair builds. The formerly blank 40-component error now
+renders; native top/bottom/return images show its first text, final path marker
+and return to the first text. The long note shows all seven lines and working
+controls below it in the actual 511-pixel pane. Delayed-custody startup, exact
+A1/A2 opens and explicit selection/note opens pass. Comparison retains the exact
+A1/A2 manifests and hashes, delete span 0..57 and insert span 0..59, and opens the
+chosen left source. Inspector wraps the long exact source URL and scrolls.
+
+`final2-evidence-summary.json` hashes observations/captures, checks all four
+retained targets and rendered text, checks exact comparison identities/spans,
+verifies all compiled root source hashes against the receiving tree, and verifies
+the same frozen executable in all seven cases. Every recorded runtime is offline
+with zero acquisition attempts, generation requests and corpus publications;
+the unavailable resident-model-load counter is not asserted zero. Each case
+confirms loopback-only networking, 3 GiB, zero scope swap, 150 percent CPU and
+128 tasks. Native memory peaks range from 621514752 to 917430272 bytes, with
+no OOM or swap-limit events. All originals remain unchanged and native scopes
+are verified empty. Preserved earlier failures keep their original outcomes.
+
+The full host test binary compiles and all 18 selected tests pass. Its first
+outer runner exits 143 after the child records success, before writing its JSON
+receipt; that incomplete supervision evidence remains. A frozen Cargo-selected
+test executable rerun passes all 18 checks in 7.25 seconds, maximum RSS 370852
+KiB, zero swaps, with a complete zero-exit receipt (`final-focused-2b`). The
+repository's declared locked offline all-targets Clippy check also exits zero
+with warnings (`final-clippy-2`); no warnings-as-errors claim is made. The
+line-ceiling hook and whitespace check pass (`final-line-ceiling-2`).
+
+This closes the observed note wrapping, false late-collection timeout, blank
+raster and GPU-exit crash findings for this cohort. It does not close every
+native follow-up: research-card wheel input still leaves later projected rows
+unreachable by wheel, although keyboard actions work. That continuation defect
+is being repaired separately with the existing bounded row window. Captures
+remain 1024 by 600; physical wheel hardware, a confirmed smaller native window,
+screen-reader interaction and interactive identity unlocking remain untested.
+
+The optional Mere canonical pin preparation has an isolated Scene-identity
+compile proof and 30 Sprigging unit-test passes. Full Mere offline lock resolution
+is blocked by uncached Gemot `3766de48`; its three manifest edits remain
+uncommitted/unpublished, with a preserved patch and inventory under
+`Code/testing/mere-vello-cohort-20261104/`. No Mere source cohort intake is made
+here; the receiving Git-source patch already guarantees the one Classic Scene
+provider used by the qualified Turnstone executable.

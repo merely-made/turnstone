@@ -1,6 +1,6 @@
 # Retained reader recovery and readable research text
 
-**Status (2026-11-03):** implemented and host-verified; fresh native-window checks have mixed results. Delayed-custody startup recovery and exact-version comparison pass, while frame refusals, blank output, long-note clipping and an exit crash keep the full native baseline unqualified. The original M5 receipt still covers its original cohort only.
+**Status (2026-11-03):** rendering and GPU shutdown repairs pass seven fresh native runs, exact-source checks and focused host verification. Research-card wheel continuation remains in progress; physical input, a confirmed smaller native window, screen-reader interaction and interactive unlocking remain untested. Historical M5 receipts retain their recorded source boundaries.
 
 ## Scope
 
@@ -40,3 +40,18 @@ Repair the two usability follow-ups from the model-free retained-research milest
 - 2026-11-01: all 15 selected layout and recovery cases pass, followed by the full host library suite (1423 passed, 0 failed, 21 ignored). Final review found that cancelling a closed waiting tile must also release its waiting state so a later explicit reopen can spawn. That regression and its correction are being verified separately from the passing full run.
 
 - 2026-11-01: final recovery review resolved closed-reader cancellation, detached-pane continuity and the distinction between live content state and its save-time sidecar. Both cancellation and stale-sidecar regressions failed before their corrections. The final build and all 18 focused tests pass (10 recovery, eight layout), with source-size and whitespace checks passing. The full suite above predates these localized recovery corrections; the canonical [receipt](archive_docs/receipts/2026-11-01_retained_reader_recovery_plan_receipts.md) preserves that boundary and the failed evidence.
+
+
+- 2026-11-03: the final rendering/shutdown cohort uses Netrender `6364e5d9`,
+  Vello `b4a53486`, Genet `cbedf7b5` and Woodshed `e729fdad`. Seven native cases
+  pass, totaling 2139 frames and 30 nonblank captures, with clean exits, exact
+  retained targets, offline counters, unchanged originals and empty scopes.
+  All 18 focused host checks and declared Clippy complete successfully. The
+  [qualified receipt](archive_docs/receipts/2026-11-01_retained_reader_recovery_plan_receipts.md#qualified-rendering-and-shutdown-cohort-2026-11-03)
+  preserves source hashes, resource bounds, failed probes and remaining limits.
+- 2026-11-03: native comparison exposes a separate continuation defect: the
+  height-fitted research projection omits later rows, so pixel scrolling alone
+  cannot reach them. Repair the wheel route using the existing bounded row
+  window after pixel scrolling reaches its boundary. Done when the real
+  comparison projection redraws to later visible, pointer-targetable actions,
+  while long single rows, keyboard navigation and end clamps remain correct.

@@ -450,9 +450,9 @@ muniment = { git = "https://www.github.com/merely-made/eidetic.git", rev = "1014
 # Genet and Mere share the maintained Classic 0.11 Vello
 # shader family. Root patches are not inherited from Mere or Genet, so keep
 # the renderer, encoding and shaders on the same immutable revision.
-netrender-vello = { git = "https://github.com/mark-ik/vello", rev = "276b46648c08f3d2062e70559afa999842e1873c" }
-vello_encoding = { git = "https://github.com/mark-ik/vello", rev = "276b46648c08f3d2062e70559afa999842e1873c" }
-vello_shaders = { git = "https://github.com/mark-ik/vello", rev = "276b46648c08f3d2062e70559afa999842e1873c" }
+netrender-vello = { git = "https://www.github.com/mark-ik/vello", rev = "b4a53486277ce37650f3803429cdc8a1d5551950" }
+netrender-vello-encoding = { git = "https://www.github.com/mark-ik/vello", rev = "b4a53486277ce37650f3803429cdc8a1d5551950" }
+netrender-vello-shaders = { git = "https://www.github.com/mark-ik/vello", rev = "b4a53486277ce37650f3803429cdc8a1d5551950" }
 # SpiderMonkey's exact C API 2.1.2 release uses ICU ~2.1 internally. Its official
 # published-source commit keeps those path dependencies in a separate Git
 # family from Genet/Vano's required registry ICU >=2.2. No ICU Rust types cross
@@ -639,3 +639,11 @@ too_many_lines = "warn"
 
 [lints]
 workspace = true
+
+# Unify immutable older Mere consumers with the qualified renderer family.
+# Cargo requires a distinct source URL for a Git patch; all selected Classic
+# packages below use the same commit and URL as the registry patches above.
+[patch."https://github.com/mark-ik/vello"]
+netrender-vello = { git = "https://www.github.com/mark-ik/vello", rev = "b4a53486277ce37650f3803429cdc8a1d5551950" }
+netrender-vello-encoding = { git = "https://www.github.com/mark-ik/vello", rev = "b4a53486277ce37650f3803429cdc8a1d5551950" }
+netrender-vello-shaders = { git = "https://www.github.com/mark-ik/vello", rev = "b4a53486277ce37650f3803429cdc8a1d5551950" }
