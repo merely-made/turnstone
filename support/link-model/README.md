@@ -46,3 +46,33 @@ Controls: `python -m unittest discover -s support/link-model -p test_tools.py`.
 They check shared imports, historical Git reads, log/manifest rejection and an
 owned loopback server's explicit site, package and receipt paths. They do not
 claim a fresh headed product run.
+
+For a new current-source qualification, use a new packet rather than replacing
+the inputs or hashes of an old packet:
+
+```
+node support/link-model/fresh_browser.cjs --packet NEW_PACKET --playwright PLAYWRIGHT_MODULE
+python support/link-model/fresh.py NEW_PACKET --repo MERE_REPO
+```
+
+The prepared packet needs a locked product WebGPU build, generated package,
+frozen site, source-bound command records and `fresh.json` describing one of
+`ordinary`, `attachments` or `topology`. Its complete test inventories retain
+Pictograph's `canvas` feature and integration/doc tests, Graphshell's web library
+with default features disabled, and Seiche's default integration/doc tests.
+Current passing and ignored counts must match independent unfiltered listings.
+Topology also retains the viewer-only Wasm check and port-boundary check.
+
+The macOS driver owns a fresh profile and loopback listener. It runs the original
+seed and reopen scenarios in distinct headed native Chrome processes at the same
+origin, forces WebGPU, records the AMD adapter and saves every scenario PNG.
+It closes only its own resources and records process exits, profile removal and
+port reuse. It refuses an existing browser-output directory. Any failed run is
+retained; another attempt needs a new packet. Visual review must inspect and hash
+every accepted PNG before `fresh.py` can accept the packet. This qualification
+does not replace physical input, assistive-technology or cross-application checks.
+
+Fresh controls: `python -m unittest discover -s support/link-model -p test_fresh.py`
+and `node --test support/link-model/test_fresh_browser.cjs`. They reject partial
+test scopes, altered scenario sets and forged inventory listings, and check the
+server's explicit roots. They do not constitute a product qualification.
