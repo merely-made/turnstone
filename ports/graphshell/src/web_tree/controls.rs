@@ -123,6 +123,8 @@ pub(super) fn toolbar(page: &TreePage) -> Child {
     if !resident && !hosted {
         let canvas = page.shared.canvas.borrow();
         let local_ready = page.product.as_ref().is_some_and(|p| !p.selection_locked());
+        // A follower stores no link visibility, so it offers none.
+        let editing = !page.product.as_ref().is_some_and(|p| p.following());
         for (label, show, enabled) in [
             (
                 "Hide selected link",
@@ -134,7 +136,10 @@ pub(super) fn toolbar(page: &TreePage) -> Child {
                 true,
                 local_ready && !canvas.hidden_link_keys().is_empty(),
             ),
-        ] {
+        ]
+        .into_iter()
+        .filter(|_| editing)
+        {
             let mut control = focusable_if(
                 on_click(el("button", label), move |page: &mut TreePage, _| {
                     if page.resident_mere_shown()

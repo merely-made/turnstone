@@ -308,7 +308,10 @@ async fn open_inner(root: &Element) -> Result<Option<SavedProduct>, String> {
         &persistence,
     );
     let session = app.host.graph_session().id().0.to_string();
-    let commands = commands::Commands::load(&app);
+    let mut commands = commands::Commands::load(&app);
+    if following {
+        commands.view_only();
+    }
     Ok(Some(SavedProduct {
         app: Some(app),
         completed: Rc::new(RefCell::new(None)),
@@ -741,6 +744,7 @@ impl SavedProduct {
     /// Persist selected canonical link hides. Canvas visibility is published
     /// only after `MereHost::set_view` confirms its IndexedDB write.
     pub(super) fn hide_selected_links(&mut self, canvas: &Canvas) -> Result<(), String> {
+        self.view_only()?;
         if self.selection_locked() {
             return Err("Another save is pending or its outcome is unconfirmed".into());
         }
@@ -775,6 +779,7 @@ impl SavedProduct {
     /// Clear only canonical whole-link hides. Legacy exact-cell filters and
     /// every other field in the saved canvas view are preserved.
     pub(super) fn show_hidden_links(&mut self, canvas: &Canvas) -> Result<(), String> {
+        self.view_only()?;
         if self.selection_locked() {
             return Err("Another save is pending or its outcome is unconfirmed".into());
         }
@@ -799,6 +804,7 @@ impl SavedProduct {
         canvas: &Canvas,
         assertion_id: &str,
     ) -> Result<(), String> {
+        self.view_only()?;
         if self.selection_locked() {
             return Err("Another save is pending or its outcome is unconfirmed".into());
         }
@@ -827,6 +833,7 @@ impl SavedProduct {
     /// Clear exact assertion hides while preserving whole-link and legacy
     /// selector visibility state.
     pub(super) fn show_hidden_assertions(&mut self, canvas: &Canvas) -> Result<(), String> {
+        self.view_only()?;
         if self.selection_locked() {
             return Err("Another save is pending or its outcome is unconfirmed".into());
         }
@@ -1010,6 +1017,10 @@ impl SavedProduct {
     }
 
     pub(super) fn save(&mut self) {
+        if let Err(refusal) = self.view_only() {
+            self.status = refusal;
+            return;
+        }
         if self.selection_locked() {
             return;
         }
@@ -1038,6 +1049,7 @@ impl SavedProduct {
     }
 
     pub(super) fn save_coupling(&mut self, operation: CouplingOperation) -> Result<(), String> {
+        self.view_only()?;
         if self.selection_locked() {
             return Err("Another graph save or intake is pending".into());
         }
@@ -1087,6 +1099,10 @@ impl SavedProduct {
     }
 
     fn add_address(&mut self) {
+        if let Err(refusal) = self.view_only() {
+            self.status = refusal;
+            return;
+        }
         if self.selection_locked() {
             return;
         }
@@ -1156,6 +1172,10 @@ impl SavedProduct {
     }
     fn receive_file(&mut self, event: FileEvent) {
         self.file_requested = false;
+        if let Err(refusal) = self.view_only() {
+            self.status = refusal;
+            return;
+        }
         if self.saving || self.pending_intake.is_some() || self.pending_detail.is_some() {
             return;
         }
@@ -1190,6 +1210,13 @@ impl SavedProduct {
     /// acknowledged graph then replaces the canvas's derived member.
     fn keep_links(&mut self, canvas: &mut Canvas) {
         self.kept_links.extend(canvas.take_kept_links());
+        if !self.kept_links.is_empty()
+            && let Err(refusal) = self.view_only()
+        {
+            self.kept_links.clear();
+            self.status = refusal;
+            return;
+        }
         if self.saving
             || self.pending_intake.is_some()
             || self.pending_detail.is_some()
@@ -1240,7 +1267,8 @@ impl SavedProduct {
     }
 
     fn persist_operation_kind(&mut self, reconciles_graph: bool) {
-        if self.saving {
+        // A follower has nothing of its own to store.
+        if self.saving || self.following() {
             return;
         }
         let Some(mut app) = self.app.take() else {
@@ -1736,15 +1764,22 @@ pub(super) fn controls(page: &TreePage) -> Child {
             }
         })));
     }
+    // A follower offers nothing that would store a change.
+    let editing = !product.following();
     for (label, id) in [
         ("Undo session", "session:undo"),
         ("Redo session", "session:redo"),
-    ] {
+    ]
+    .into_iter()
+    .filter(|_| editing)
+    {
         children.push(Box::new(button(label, move |page: &mut TreePage, _| {
             page.command(id);
         })));
     }
-    children.push(intake_controls(page));
+    if editing {
+        children.push(intake_controls(page));
+    }
     children.push(super::inspection::open_button(page));
     children.push(super::field_inspection::open_button(page));
     children.push(Box::new(button(
@@ -1772,14 +1807,19 @@ pub(super) fn controls(page: &TreePage) -> Child {
         },
     )));
     if product.detail_open {
+        let mut rows = vec![DetailRow::new("Address", &product.address)];
+        if !editing {
+            rows.push(DetailRow::new("Title", product.title.text()));
+            rows.push(DetailRow::new("Tags", product.tags.text()));
+        }
         let mut fields: Vec<Child> = vec![Box::new(detail_panel(&[DetailSection::new(
             "Object details",
-            vec![DetailRow::new("Address", &product.address)],
+            rows,
         )]))];
         fields.push(share::controls(product));
-        if product.saving {
+        if editing && product.saving {
             fields.push(Box::new(el("p", "Saving changes…")));
-        } else if product.pending_detail.is_some() {
+        } else if editing && product.pending_detail.is_some() {
             fields.push(Box::new(button(
                 "Retry detail save",
                 |page: &mut TreePage, _| {
@@ -1788,7 +1828,7 @@ pub(super) fn controls(page: &TreePage) -> Child {
                     }
                 },
             )));
-        } else {
+        } else if editing {
             fields.push(Box::new(el(
                 "label",
                 (

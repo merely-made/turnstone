@@ -42,7 +42,44 @@ impl Commands {
         }
     }
 }
+/// Whether running this command stores a change, so a follower lists it
+/// disabled. Opening details stays: a follower shows them read-only.
+fn stores_change(id: &str, effect: Option<EffectClass>) -> bool {
+    id != "node:edit"
+        && (effect == Some(EffectClass::DomainTruth)
+            || matches!(
+                id,
+                "session:undo"
+                    | "session:redo"
+                    | "save-projection"
+                    | "undo-projection-save"
+                    | "redo-projection-save"
+                    | "save-scene"
+                    | "open-codicil"
+            ))
+}
+impl Commands {
+    pub(super) fn view_only(&mut self) {
+        let ids: Vec<String> = self
+            .set
+            .commands()
+            .iter()
+            .filter(|command| stores_change(&command.id, Some(command.effect)))
+            .map(|command| command.id.clone())
+            .collect();
+        for id in ids {
+            self.set
+                .set_disabled(&id, Some(super::follow::VIEW_ONLY.into()));
+        }
+    }
+}
 impl SavedProduct {
+    fn refused_command(&self, id: &str) -> Result<(), String> {
+        if stores_change(id, self.commands.set.get(id).map(|command| command.effect)) {
+            self.view_only()?;
+        }
+        Ok(())
+    }
     pub(in crate::web_tree) fn menu_open(&self) -> bool {
         self.commands.menu.is_some()
     }
@@ -69,6 +106,15 @@ impl SavedProduct {
             return Err("A save is pending".into());
         }
         let (verb, id) = action.split_once(':').ok_or("Unknown menu action")?;
+        if self.following() {
+            // Keeping or dropping a row writes the session's view state.
+            if verb != "run" {
+                self.view_only()?;
+            }
+            self.refused_command(id)?;
+            self.commands.menu = None;
+            return Ok(Some(id.to_owned()));
+        }
         let c = &mut self.commands;
         match verb {
             "keep" => {
@@ -105,6 +151,7 @@ impl SavedProduct {
         layout: &str,
         viewport: (u32, u32),
     ) -> Result<(), String> {
+        self.refused_command(id)?;
         match id {
             "node:edit" => {
                 if self.selected.is_none() {
@@ -210,21 +257,31 @@ pub(in crate::web_tree) fn menu(page: &TreePage) -> Option<Child> {
         |page: &mut TreePage| &mut page.product.as_mut().expect("menu").commands.query,
     ))];
     for (index, item) in rows.into_iter().enumerate() {
-        for (verb, label) in [
-            ("run", item.label.clone()),
-            if kept.iter().any(|kept| kept.id == item.id) {
-                ("drop", format!("Remove {} from the menu", item.label))
-            } else {
-                ("keep", format!("Keep {} in the menu", item.label))
-            },
-        ] {
+        let keep = if kept.iter().any(|kept| kept.id == item.id) {
+            ("drop", format!("Remove {} from the menu", item.label))
+        } else {
+            ("keep", format!("Keep {} in the menu", item.label))
+        };
+        // A follower stores no menu choices and runs nothing that stores.
+        let verbs = std::iter::once(("run", item.label.clone()))
+            .chain((!product.following()).then_some(keep));
+        for (verb, label) in verbs {
             let action = format!("{verb}:{}", item.id);
             let target = action.clone();
+            let refused = verb == "run" && item.disabled_reason.is_some();
             children.push(Box::new(
                 button(label, move |page: &mut TreePage, _| {
                     apply_menu_action(page, &action);
                 })
                 .attr("data-command-menu", target)
+                .attr("aria-disabled", if refused { "true" } else { "false" })
+                .attr(
+                    "aria-description",
+                    item.disabled_reason
+                        .clone()
+                        .filter(|_| refused)
+                        .unwrap_or_default(),
+                )
                 .attr(
                     "data-command-highlight",
                     if verb == "run" && session.selected == Some(index) {
@@ -238,6 +295,9 @@ pub(in crate::web_tree) fn menu(page: &TreePage) -> Option<Child> {
     }
     if children.len() == 1 {
         children.push(Box::new(el("p", "No command matches")));
+    }
+    if product.following() {
+        children.insert(1, Box::new(el("p", super::follow::VIEW_ONLY)));
     }
     children.push(Box::new(button(
         "Close commands",

@@ -129,6 +129,7 @@ impl SavedProduct {
         target: &cambium::LinkMemberTarget,
     ) -> bool {
         !self.selection_locked()
+            && !self.following()
             && self
                 .app
                 .as_ref()
@@ -138,6 +139,7 @@ impl SavedProduct {
         &mut self,
         target: &cambium::LinkMemberTarget,
     ) -> Result<(), String> {
+        self.view_only()?;
         if self.selection_locked() {
             return Err("Wait for the current save".into());
         }

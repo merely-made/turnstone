@@ -587,7 +587,7 @@ pub(super) fn section(page: &TreePage) -> Child {
         )),
     ];
     let hidden_assertion_count = page.shared.canvas.borrow().hidden_assertion_ids().len();
-    if hidden_assertion_count > 0 {
+    if hidden_assertion_count > 0 && !page.product.as_ref().is_some_and(|p| p.following()) {
         children.push(Box::new(
             button("Show hidden assertions", |page: &mut TreePage, _| {
                 let canvas = page.shared.canvas.borrow();
@@ -653,21 +653,22 @@ pub(super) fn section(page: &TreePage) -> Child {
                         if assertion.withdrawn.is_some() {
                             return Vec::new();
                         }
-                        let mut actions = vec![
-                            cambium::LinkMemberAction {
-                                id: "inspect".into(),
-                                label: if history {
-                                    "Inspect held assertion {number}"
-                                } else {
-                                    "Inspect assertion {number}"
-                                }
-                                .into(),
-                            },
-                            cambium::LinkMemberAction {
+                        let mut actions = vec![cambium::LinkMemberAction {
+                            id: "inspect".into(),
+                            label: if history {
+                                "Inspect held assertion {number}"
+                            } else {
+                                "Inspect assertion {number}"
+                            }
+                            .into(),
+                        }];
+                        // A follower stores no hidden assertions.
+                        if !page.product.as_ref().is_some_and(|p| p.following()) {
+                            actions.push(cambium::LinkMemberAction {
                                 id: "hide".into(),
                                 label: "Hide this assertion from the view {number}".into(),
-                            },
-                        ];
+                            });
+                        }
                         let target = cambium::LinkMemberTarget {
                             source: source.clone(),
                             link: key.clone(),

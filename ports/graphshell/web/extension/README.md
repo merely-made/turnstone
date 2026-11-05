@@ -56,7 +56,9 @@ The writer posts `committed` on the views channel whenever `data-writer-busy`
 returns to false. Followers read the store again then, and whenever they are
 shown again.
 
-The follower's bar offers **Show that view** and **Edit here**. The writer
+A follower offers nothing that stores a change. Its details are text, and
+its command menu lists storing commands disabled with the reason. Its bar,
+at the bottom of the page, offers **Show that view** and **Edit here**. The writer
 hands over by reloading, only when nothing is being saved or awaiting retry,
 and comes back as a follower. The view taking over keeps the lock and remounts
 its element as the writer. If the writing view closes, a follower takes the

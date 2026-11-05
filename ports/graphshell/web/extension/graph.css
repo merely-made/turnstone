@@ -34,7 +34,8 @@
   max-width: calc(100vw - 24px);
   padding: 6px 10px;
   position: fixed;
-  top: 44px;
+  /* Below the graph, clear of the workspace's own top bars. */
+  bottom: 12px;
   transform: translateX(-50%);
   z-index: 11;
 }
