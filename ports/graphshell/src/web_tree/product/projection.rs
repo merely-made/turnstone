@@ -537,6 +537,9 @@ impl SavedProduct {
         snapshot
     }
     pub(super) fn projection_action(&mut self, action: &str) -> Result<(), String> {
+        if matches!(action, "save" | "undo-save" | "redo-save") {
+            self.view_only()?;
+        }
         if self.selection_locked() {
             return Err("A save is pending".into());
         }
@@ -776,10 +779,13 @@ fn action_button_state(label: &'static str, action: &'static str, enabled: bool)
 }
 
 pub(in crate::web_tree) fn editor(page: &TreePage) -> Option<Child> {
-    let p = &page.product.as_ref()?.projection;
+    let product = page.product.as_ref()?;
+    let p = &product.projection;
     if !p.open {
         return None;
     }
+    // A follower may arrange a draft here but stores no projection.
+    let stores = !product.following();
     let mut children: Vec<Child> = vec![
         Box::new(el("h2", "Projection editor")),
         Box::new(status_note_labelled(
@@ -874,6 +880,9 @@ pub(in crate::web_tree) fn editor(page: &TreePage) -> Option<Child> {
             "No unsaved changes"
         },
     )));
+    if !stores {
+        children.push(Box::new(el("p", super::follow::VIEW_ONLY)));
+    }
     for (label, action) in [
         ("Undo projection", "undo"),
         ("Redo projection", "redo"),
@@ -890,7 +899,10 @@ pub(in crate::web_tree) fn editor(page: &TreePage) -> Option<Child> {
         ("Later comparison rows", "compare-down"),
         ("Projection: grid", "grid"),
         ("Projection: order by tempo", "scatter"),
-    ] {
+    ]
+    .into_iter()
+    .filter(|(_, action)| stores || !matches!(*action, "save" | "undo-save" | "redo-save"))
+    {
         children.push(action_button_state(
             label,
             action,

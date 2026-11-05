@@ -30,13 +30,16 @@
   display: flex;
   flex-wrap: wrap;
   gap: 4px 12px;
-  left: 50%;
-  max-width: calc(100vw - 24px);
+  /* Centred with insets, not left: 50%, so a narrow side panel gives it its
+     whole width rather than half. */
+  left: 12px;
+  margin-inline: auto;
   padding: 6px 10px;
   position: fixed;
+  right: 12px;
+  width: fit-content;
   /* Below the graph, clear of the workspace's own top bars. */
   bottom: 12px;
-  transform: translateX(-50%);
   z-index: 11;
 }
 

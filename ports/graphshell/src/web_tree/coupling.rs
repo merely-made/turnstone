@@ -277,7 +277,10 @@ pub(super) fn section(page: &TreePage) -> Child {
             if pane.preview.as_deref() != Some(pane.input.text()) {
                 children.push(Box::new(el("p", "Preview is not current")));
             }
-        } else if page.field_inspector.coupling.is_some() {
+        } else if page.field_inspector.coupling.is_some()
+            // A follower stores no coupling change, so it offers no editor.
+            && !page.product.as_ref().is_some_and(|p| p.following())
+        {
             children.push(Box::new(button(
                 "Edit coupling strength",
                 |page: &mut TreePage, _| begin(page),
