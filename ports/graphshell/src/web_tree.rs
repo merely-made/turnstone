@@ -2004,6 +2004,7 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
     let frame_shared = shared.clone();
     let after_shared = shared.clone();
     HostHooks {
+        prepare_presentation: Box::new(|_, _| None),
         frame: Box::new(move |ctx| {
             if let Some(core) = ctx.render_core {
                 attach_gpu(&frame_shared, core);
@@ -2149,7 +2150,11 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
             owner_waypoint::ready(ctx.runner.state());
             #[cfg(feature = "product")]
             if ctx.runner.state().presentation.ready()
-                || ctx.runner.state().presentation.owner_changed(ctx.runner.state().product.as_ref())
+                || ctx
+                    .runner
+                    .state()
+                    .presentation
+                    .owner_changed(ctx.runner.state().product.as_ref())
             {
                 ctx.runner.update(presentation::poll);
             }
