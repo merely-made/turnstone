@@ -406,10 +406,10 @@ try {
   if ((globalThis.browser ?? globalThis.chrome)?.runtime?.id) {
     await import("./capture-model.js");
     const extensionProfile = await import("./extension-profile.js");
-    // Wait to be this profile's one writer before reading its queue or store.
-    await extensionProfile.claimWriter();
+    // Another view may already write this profile; this one then follows it.
+    const role = await extensionProfile.claimWriter();
     await extensionProfile.publishLocalProfile();
-    await extensionProfile.prepareCapture();
+    if (role === "writer") await extensionProfile.prepareCapture();
   }
   const module = await import("./pkg/graphshell_web.js");
   await module.default();

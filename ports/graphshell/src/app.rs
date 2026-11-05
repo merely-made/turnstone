@@ -139,6 +139,22 @@ impl<B: Backend + Clone> GraphshellApp<B> {
         .await?;
         Ok(Self::new(host))
     }
+
+    /// Observe the installed profile's store while another view writes it.
+    pub async fn observe_local(
+        backend: B,
+        profile: &LocalProfile,
+        at_ms: u64,
+    ) -> Result<Self, AppError> {
+        let host = MereHost::observe(
+            backend,
+            profile.persona(),
+            local_profile_handlers(),
+            profile.access_context(at_ms),
+        )
+        .await?;
+        Ok(Self::new(host))
+    }
 }
 
 impl<B: Backend> GraphshellApp<B> {
@@ -383,6 +399,77 @@ mod tests {
             assert_eq!(reopened.host.graph_session().id(), session);
             assert!(reopened.host.graph().get_node_by_id(member).is_some());
             assert_eq!(reopened.host.graph().node_count(), 1);
+        });
+    }
+
+    #[test]
+    fn a_second_view_observes_the_writers_commits_and_stores_nothing() {
+        pollster::block_on(async {
+            use muniment::Backend as _;
+            async fn bytes(store: &MemoryBackend) -> Vec<(String, Vec<u8>)> {
+                let mut keys = store.list("").await.unwrap();
+                keys.sort();
+                let mut out = Vec::new();
+                for key in keys {
+                    out.push((key.clone(), store.get(&key).await.unwrap().unwrap()));
+                }
+                out
+            }
+            let backend = MemoryBackend::new();
+            let profile = LocalProfile::new(
+                uuid::Uuid::from_u128(8),
+                crate::local_profile::Browser::Firefox,
+            );
+            // Before the writer stores anything, an observer sees an empty graph.
+            let empty = GraphshellApp::observe_local(backend.clone(), &profile, 1)
+                .await
+                .expect("observe an empty store");
+            assert_eq!(empty.host.graph().node_count(), 0);
+            assert!(bytes(&backend).await.is_empty(), "observing writes nothing");
+
+            let mut writer = GraphshellApp::open_local(backend.clone(), &profile, 2)
+                .await
+                .expect("open the writer");
+            let member =
+                crate::local_intake::create_address(&mut writer, "https://example.org/", "Example")
+                    .expect("add address");
+            writer.host.persist(SAVED_AT_SECS).await.expect("persist");
+
+            let mut observer = GraphshellApp::observe_local(backend.clone(), &profile, 3)
+                .await
+                .expect("observe the writer's store");
+            assert!(observer.host.is_observing());
+            assert_eq!(
+                observer.host.graph_session().id(),
+                writer.host.graph_session().id()
+            );
+            assert!(observer.host.graph().get_node_by_id(member).is_some());
+            let frozen = bytes(&backend).await;
+            assert!(
+                crate::local_intake::create_address(&mut observer, "https://example.net/", "No")
+                    .is_err(),
+                "an observer refuses an edit before it lands"
+            );
+            assert_eq!(observer.host.graph().node_count(), 1);
+            observer
+                .host
+                .persist(SAVED_AT_SECS)
+                .await
+                .expect("nothing to store");
+            assert_eq!(bytes(&backend).await, frozen, "the observer stored nothing");
+
+            // The writer's next commit is seen by the next observation.
+            crate::local_intake::create_address(&mut writer, "https://example.com/", "Next")
+                .expect("writer edits");
+            writer
+                .host
+                .persist(SAVED_AT_SECS + 1)
+                .await
+                .expect("persist");
+            let refreshed = GraphshellApp::observe_local(backend, &profile, 4)
+                .await
+                .expect("observe again");
+            assert_eq!(refreshed.host.graph().node_count(), 2);
         });
     }
 

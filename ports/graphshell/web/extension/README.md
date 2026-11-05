@@ -41,13 +41,28 @@ persona, and that scope claims no custody: signing, grants and native
 dispatch name the provider they need. `?fixture=` routes keep their own
 stores and fixture identity.
 
-One view writes the store at a time. A page takes the
-`graphshell.local-profile.writer.v1` Web Lock for its lifetime before reading
-the queue or opening the store. A second tab or the side panel shows **Show
-that view** and **Use this view instead**; the writer hands over by reloading
-only when nothing is being saved or awaiting retry, and the waiting view is
-granted the lock next. `graph.html` also opens as the Chrome side panel and the
-Firefox sidebar.
+One view writes the store at a time, and any other view follows it. A page
+takes the `graphshell.local-profile.writer.v1` Web Lock for its lifetime
+before reading the queue. A second tab or the side panel then mounts as a
+follower (`graphshellViewRole = "follower"`):
+- It opens the committed session with `GraphshellApp::observe_local`, which
+  writes nothing (no epoch advance, no migration).
+- pandect refuses every edit in that host before it runs
+  (`SessionError::Observing`).
+- It hands no store to documents, panes or retained content.
+- It takes no capture.
+
+The writer posts `committed` on the views channel whenever `data-writer-busy`
+returns to false. Followers read the store again then, and whenever they are
+shown again.
+
+The follower's bar offers **Show that view** and **Edit here**. The writer
+hands over by reloading, only when nothing is being saved or awaiting retry,
+and comes back as a follower. The view taking over keeps the lock and remounts
+its element as the writer. If the writing view closes, a follower takes the
+lock within about 2 s. A follower hidden in a background tab catches up when
+shown, because hidden tabs run no frames. `graph.html` also opens as the Chrome
+side panel and the Firefox sidebar.
 
 Selected objects offer **Copy link**, which writes the exact stored address
 (query and fragment kept) to the clipboard in the click and reports refusal

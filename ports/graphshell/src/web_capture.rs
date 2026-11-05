@@ -26,6 +26,10 @@ const HISTORY_FILTER_GLOBAL: &str = "graphshellHistoryFilterJson";
 const HISTORY_FORGET_GLOBAL: &str = "graphshellHistoryForgetJson";
 // The installed extension profile; absent on reference and fixture pages.
 const LOCAL_PROFILE_GLOBAL: &str = "graphshellLocalProfileJson";
+// "follower" when another view of the installed profile holds its writer.
+const VIEW_ROLE_GLOBAL: &str = "graphshellViewRole";
+// The writer finished a save; a follower reads the store again.
+const COMMITTED_EVENT: &str = "graphshell-committed";
 // The element `loader.js` reads the page's receipts from.
 const GRAPHSHELL_ROOT: &str = "graphshell-view, graphshell-tree";
 const CAPTURE_COMPLETE_EVENT: &str = "graphshell-capture-complete";
@@ -183,6 +187,23 @@ pub(crate) fn local_profile_input(window: &Window) -> Result<Option<LocalProfile
     global_json(window, LOCAL_PROFILE_GLOBAL)?
         .map(|json| LocalProfile::parse(&json))
         .transpose()
+}
+
+/// Whether this page observes the installed profile while another view writes.
+pub(crate) fn following_input(window: &Window) -> Result<bool, String> {
+    Ok(global_json(window, VIEW_ROLE_GLOBAL)?.as_deref() == Some("follower"))
+}
+
+/// Raise `requested` whenever the writer reports a finished save.
+pub(crate) fn listen_for_commits(
+    requested: Rc<std::cell::Cell<bool>>,
+) -> Result<BatchListener, String> {
+    let listener =
+        Closure::<dyn FnMut(web_sys::Event)>::new(move |_: web_sys::Event| requested.set(true));
+    crate::document()?
+        .add_event_listener_with_callback(COMMITTED_EVENT, listener.as_ref().unchecked_ref())
+        .map_err(|_| "could not listen for the writer's saves".to_string())?;
+    Ok(listener)
 }
 
 pub(crate) fn initial_capture_input(

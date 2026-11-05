@@ -204,6 +204,9 @@ pub struct MereHost<B> {
     resources: BTreeMap<ContentHash, Vec<u8>>,
     instance_targets: Vec<NodeKey>,
     reopened: bool,
+    /// Another view of this store holds its one writer: this host reads the
+    /// committed session and stores nothing.
+    observing: bool,
     /// The launch number navigations stamp on their nodes; `0` until the
     /// boot owner installs one. A replacement session takes it too.
     launch: u64,
@@ -305,6 +308,7 @@ impl<B: Backend + Clone> MereHost<B> {
             resources: BTreeMap::new(),
             instance_targets: Vec::new(),
             reopened,
+            observing: false,
             launch: 0,
             projection_session: ProjectionSession(LOCAL_SESSION.to_string()),
             session_item: false,
@@ -396,6 +400,38 @@ impl<B: Backend + Clone> MereHost<B> {
             (epoch, epoch),
             reopened,
         ))
+    }
+
+    /// Observe the live session changed last, writing nothing: no epoch is
+    /// advanced and no old slot migrated. Another view holds the writer. A
+    /// store with no live session yet shows an empty one, never stored here.
+    pub async fn observe(
+        backend: B,
+        selected_persona: SelectedPersonaRef,
+        handlers: HandlerRegistry,
+        access_context: AccessContext,
+    ) -> Result<Self, MereHostError> {
+        let sessions = MereSessions::new(backend.clone());
+        let slots = JsonSlots::new(backend.clone());
+        let (graph_session, reopened) = match sessions.latest_live().await? {
+            Some(latest) => (sessions.open(latest.session_id).await?, true),
+            None => (
+                sessions.begin(author_of(&selected_persona, GRAPHSHELL), None),
+                false,
+            ),
+        };
+        let epoch = slots.load::<u64>(EPOCH_SLOT).await?.unwrap_or(0);
+        let mut host = Self::assemble(
+            backend,
+            graph_session.observe(),
+            selected_persona,
+            handlers,
+            access_context,
+            (epoch, epoch),
+            reopened,
+        );
+        host.observing = true;
+        Ok(host)
     }
 
     /// Open session `id` of this store, as a resident does to serve one
@@ -503,6 +539,14 @@ impl<B: LegacyTransactionBackend> MereHost<B> {
     ///
     /// The clock is injected so tests and importing hosts stamp stable times.
     pub async fn persist(&mut self, saved_at_secs: u64) -> Result<(), MereHostError> {
+        if self.observing {
+            // Nothing to store is not a failure; anything to store is refused.
+            return if self.has_unstored() {
+                self.ensure_storing()
+            } else {
+                Ok(())
+            };
+        }
         let at = saved_at(saved_at_secs);
         for session in &mut self.retired {
             session.flush(at).await?;
@@ -554,6 +598,7 @@ impl<B: LegacyTransactionBackend + Clone> MereHost<B> {
         saved_at_secs: u64,
         extra: CommitExtra,
     ) -> Result<(), MereHostError> {
+        self.ensure_storing()?;
         let at = saved_at(saved_at_secs);
         for session in &mut self.retired {
             session.flush(at).await?;
@@ -568,11 +613,25 @@ impl<B: LegacyTransactionBackend + Clone> MereHost<B> {
 }
 
 impl<B: Backend> MereHost<B> {
+    pub fn is_observing(&self) -> bool {
+        self.observing
+    }
+
+    fn ensure_storing(&self) -> Result<(), MereHostError> {
+        if self.observing {
+            return Err(SessionError::Observing(self.graph_session.id()).into());
+        }
+        Ok(())
+    }
+}
+
+impl<B: Backend> MereHost<B> {
     /// Take every change not yet stored as one batch, without writing it. The
     /// caller writes it ([`Staged::write`]) through [`store`](Self::store),
     /// then hands it to [`staged`](Self::staged). Changes made in between stay
     /// pending for the next batch.
     pub fn prepare_store(&self, saved_at_secs: u64) -> Result<Staged, MereHostError> {
+        self.ensure_storing()?;
         let at = saved_at(saved_at_secs);
         let retired = self
             .retired

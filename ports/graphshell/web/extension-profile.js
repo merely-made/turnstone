@@ -364,8 +364,10 @@ async function focusThisView(channel) {
   channel.postMessage({ type: "shown", where: "tab" });
 }
 
-// The writer answers other views. It hands over only with nothing unsaved:
-// reloading drops this document, and the browser then grants the queued view.
+// The writer answers other views and tells them when a save has finished,
+// which is when the root's `data-writer-busy` returns to false. It hands over
+// only with nothing unsaved: reloading drops this document, the browser then
+// grants the queued view, and this one comes back following it.
 function serveViews() {
   const channel = new BroadcastChannel(VIEWS_CHANNEL);
   channel.onmessage = ({ data }) => {
@@ -380,55 +382,95 @@ function serveViews() {
       }
     }
   };
-}
-
-function standby() {
-  const note = document.querySelector("#writer-standby");
-  const status = document.querySelector("#writer-standby-status");
   const root = graphshellRoot();
-  if (!note) throw new Error("Graphshell is open in another view of this browser profile");
-  root.hidden = true;
-  note.hidden = false;
-  const channel = new BroadcastChannel(VIEWS_CHANNEL);
-  return new Promise((granted) => {
-    let request;
-    channel.onmessage = ({ data }) => {
-      if (data?.type === "shown") {
-        status.textContent = data.where === "panel"
-          ? "It is open in this browser's side panel."
-          : "Switched to the other view.";
-      } else if (data?.type === "busy") {
-        request?.abort();
-        request = null;
-        status.textContent = "That view has a change being saved or awaiting retry. Finish it there first.";
-      }
-    };
-    document.querySelector("#writer-show").addEventListener("click", () => {
-      channel.postMessage({ type: "show" });
-    });
-    document.querySelector("#writer-take").addEventListener("click", () => {
-      if (request) return;
-      request = new AbortController();
-      status.textContent = "Asking the other view to hand over…";
-      navigator.locks.request(WRITER_LOCK, { signal: request.signal }, () => {
-        channel.close();
-        note.hidden = true;
-        root.hidden = false;
-        granted();
-        serveViews();
-        return new Promise(() => {});
-      }).catch((error) => {
-        if (error.name !== "AbortError") status.textContent = String(error);
-      });
-      channel.postMessage({ type: "handover" });
-    });
-  });
+  let busy = root?.dataset.writerBusy === "true";
+  new MutationObserver(() => {
+    const now = root.dataset.writerBusy === "true";
+    if (busy && !now) channel.postMessage({ type: "committed" });
+    busy = now;
+  }).observe(root, { attributes: true, attributeFilter: ["data-writer-busy"] });
 }
 
-// One view of the installed profile edits its store at a time. The lock is
-// held for this document's life and released by the browser when it goes.
+// Drop the observing mount and mount again as the writer, keeping the lock
+// this document now holds; the element remounts when it is reconnected.
+async function becomeWriter(bar) {
+  globalThis.graphshellViewRole = "writer";
+  bar.hidden = true;
+  await prepareCapture();
+  const root = graphshellRoot();
+  const parent = root.parentNode;
+  const next = root.nextSibling;
+  root.remove();
+  parent.insertBefore(root, next);
+  serveViews();
+}
+
+// Another view holds the writer: this one shows the same graph, reads it
+// again after each of that view's saves, and can ask to edit here instead.
+function follow() {
+  const bar = document.querySelector("#writer-standby");
+  const status = document.querySelector("#writer-standby-status");
+  if (!bar) throw new Error("Graphshell is open in another view of this browser profile");
+  globalThis.graphshellViewRole = "follower";
+  bar.hidden = false;
+  const channel = new BroadcastChannel(VIEWS_CHANNEL);
+  let request;
+  channel.onmessage = ({ data }) => {
+    if (data?.type === "committed") {
+      document.dispatchEvent(new Event("graphshell-committed"));
+    } else if (data?.type === "shown") {
+      status.textContent = data.where === "panel"
+        ? "Editing happens in this browser's side panel."
+        : "Switched to the view that edits.";
+    } else if (data?.type === "busy") {
+      request?.abort();
+      request = null;
+      status.textContent = "That view has a change being saved or awaiting retry. Finish it there first.";
+    }
+  };
+  // A view shown again may have missed a notice while hidden.
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && globalThis.graphshellViewRole === "follower") {
+      document.dispatchEvent(new Event("graphshell-committed"));
+    }
+  });
+  document.querySelector("#writer-show").addEventListener("click", () => {
+    channel.postMessage({ type: "show" });
+  });
+  const granted = (lock) => {
+    if (!lock) return null;
+    clearInterval(vacancy);
+    channel.close();
+    becomeWriter(bar).catch((error) => {
+      bar.hidden = false;
+      status.textContent = `Could not start editing here · ${error}`;
+    });
+    return new Promise(() => {});
+  };
+  document.querySelector("#writer-take").addEventListener("click", () => {
+    if (request) return;
+    request = new AbortController();
+    status.textContent = "Asking the other view to hand over…";
+    navigator.locks.request(WRITER_LOCK, { signal: request.signal }, granted).catch((error) => {
+      if (error.name !== "AbortError") status.textContent = String(error);
+    });
+    channel.postMessage({ type: "handover" });
+  });
+  // When the writing view closes, the first follower to notice edits instead.
+  const vacancy = setInterval(async () => {
+    if (request || globalThis.graphshellViewRole !== "follower") return;
+    const { held } = await navigator.locks.query();
+    if (held.some((lock) => lock.name === WRITER_LOCK)) return;
+    navigator.locks.request(WRITER_LOCK, { ifAvailable: true }, granted)
+      .catch((error) => console.error("Graphshell writer", error));
+  }, 2000);
+}
+
+// One view of the installed profile edits its store at a time; others
+// follow it. The lock is held for this document's life and released by the
+// browser when it goes. Answers "writer" or "follower".
 async function claimWriter() {
-  if (fixtureRoute()) return;
+  if (fixtureRoute()) return "writer";
   if (!navigator.locks) {
     throw new Error("This browser cannot keep Graphshell to one writer");
   }
@@ -438,11 +480,14 @@ async function claimWriter() {
       return lock ? new Promise(() => {}) : null;
     });
   });
-  if (held) {
-    serveViews();
-    return;
+  if (!held) {
+    follow();
+    return "follower";
   }
-  await standby();
+  globalThis.graphshellViewRole = "writer";
+  // The root exists before mounting; its busy flag appears with the mount.
+  serveViews();
+  return "writer";
 }
 
 export { claimWriter, prepareCapture, publishLocalProfile };

@@ -34,7 +34,7 @@ pub(super) struct HistoryControls {
     /// The persona slot and device that capture records name.
     attribution: (String, String),
     pub(super) inbox: CaptureInbox,
-    _listener: BatchListener,
+    _listener: Option<BatchListener>,
 }
 
 /// A live batch's graph returned with its number and committed counts.
@@ -69,8 +69,25 @@ impl HistoryControls {
             completed: Rc::new(RefCell::new(None)),
             attribution: (persona.to_owned(), device.to_owned()),
             inbox,
-            _listener: listener,
+            _listener: Some(listener),
         })
+    }
+
+    /// A follower's controls: it takes no capture and runs no history action.
+    pub(super) fn idle(store: IndexedDbBackend, attribution: (&str, &str)) -> Self {
+        Self {
+            open: false,
+            inputs: LABELS.iter().map(|_| TextInput::new("")).collect(),
+            remove_object: false,
+            store,
+            policy: HistoryCapturePolicy::disabled(),
+            summary: HistoryControlSummary::default(),
+            capture: CaptureSummary::default(),
+            completed: Rc::new(RefCell::new(None)),
+            attribution: (attribution.0.to_owned(), attribution.1.to_owned()),
+            inbox: CaptureInbox::default(),
+            _listener: None,
+        }
     }
     pub(super) fn poll(&mut self) {
         if let Some(summary) = self.completed.borrow_mut().take() {
@@ -205,6 +222,9 @@ impl SavedProduct {
     fn history_action(&mut self, forget: bool) -> Result<(), String> {
         if self.selection_locked() {
             return Err("A save is pending".into());
+        }
+        if self.following() {
+            return Err("History actions run in the view that edits this graph".into());
         }
         let history = &self.history;
         let number = |index: usize| -> Result<Option<u64>, String> {
