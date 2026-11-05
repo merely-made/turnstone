@@ -12,6 +12,10 @@ use std::cell::Cell;
 use super::*;
 use crate::web_capture::{BatchListener, listen_for_commits};
 
+/// What a follower answers when asked to store a change.
+pub(in crate::web_tree) const VIEW_ONLY: &str =
+    "Viewing only · edit in the view that edits, or choose Edit here";
+
 pub(super) struct Following {
     requested: Rc<Cell<bool>>,
     refreshing: bool,
@@ -32,8 +36,17 @@ impl Following {
 }
 
 impl SavedProduct {
-    pub(super) fn following(&self) -> bool {
+    pub(in crate::web_tree) fn following(&self) -> bool {
         self.following.is_some()
+    }
+
+    /// A follower's refusal of anything that would store a change.
+    pub(in crate::web_tree) fn view_only(&self) -> Result<(), String> {
+        if self.following() {
+            Err(VIEW_ONLY.into())
+        } else {
+            Ok(())
+        }
     }
 
     pub(super) fn refresh_ready(&self) -> bool {
