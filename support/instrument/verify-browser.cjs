@@ -76,8 +76,8 @@ async function main(){
   const narrow=await run('narrow-graph','click role:button Map\nsettle 4\ncapture instrument_narrow_graph\n');
   assert.equal(narrow.scenario.result.saved_graph.session,scene);
   await page.getByRole('button',{name:'Graph commands',exact:true}).press('Enter');
-  const search=page.getByRole('textbox',{name:'Search graph commands',exact:true});await search.waitFor();await search.press('Escape');
-  await run('commands-focus','assert snap commands-open == false\nassert snap focus-kind == graph\n');
+  const search=page.getByRole('textbox',{name:'Search commands',exact:true});await search.waitFor();await search.press('Escape');
+  await run('commands-focus','settle 3\nassert snap command-menu == closed\nassert snap commands-open == false\nassert snap focus-kind == graph\n');
   fs.writeFileSync(path.join(out,'summary.json'),JSON.stringify({source:candidate.source,runs,adapter,browser:browser.version(),headed:true,page_errors:errors.length,session:scene},null,2));
 }
 Promise.race([main(),new Promise((_,reject)=>{timeout=setTimeout(()=>reject(new Error('Owned browser run deadline exceeded')),8*60*1000);})])
