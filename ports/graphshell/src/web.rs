@@ -22,6 +22,8 @@ mod web_appearance;
 #[cfg(feature = "product")]
 mod web_capture;
 #[cfg(feature = "product")]
+mod web_follower_edit;
+#[cfg(feature = "product")]
 mod web_command_catalog;
 mod web_dataset;
 mod web_graphs;

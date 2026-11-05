@@ -377,14 +377,24 @@ async function focusThisView(channel) {
 function serveViews() {
   const channel = new BroadcastChannel(VIEWS_CHANNEL);
   let handingOver = false;
+  // Edits followers send are admitted by the app, which answers by event.
+  const receiver = globalThis.GraphshellFollowerQueue.createReceiver({
+    post: (message) => channel.postMessage(message),
+    admit: (json) => document.dispatchEvent(new CustomEvent("graphshell-edit-admit", { detail: json })),
+    now: () => Date.now(),
+  });
+  document.addEventListener("graphshell-edit-admitted", (event) => receiver.answered(event.detail));
   addEventListener("pagehide", () => {
     if (!handingOver) channel.postMessage({ type: "reloading" });
   });
   channel.onmessage = ({ data }) => {
     if (data?.type === "show") {
       focusThisView(channel).catch((error) => console.error("Graphshell focus", error));
+    } else if (data?.type === "edit") {
+      receiver.onMessage(data);
     } else if (data?.type === "handover") {
-      if (graphshellRoot()?.dataset.writerBusy === "true") {
+      // An edit being admitted is unsaved work, as a save in progress is.
+      if (graphshellRoot()?.dataset.writerBusy === "true" || receiver.busy()) {
         channel.postMessage({ type: "busy" });
       } else {
         handingOver = true;
@@ -400,6 +410,8 @@ function serveViews() {
     if (busy && !now) channel.postMessage({ type: "committed" });
     busy = now;
   }).observe(root, { attributes: true, attributeFilter: ["data-writer-busy"] });
+  // Followers with an edit unanswered send it again to a new writer.
+  receiver.announce();
 }
 
 // Drop the observing mount and mount again as the writer, keeping the lock
@@ -427,7 +439,23 @@ function follow() {
   const channel = new BroadcastChannel(VIEWS_CHANNEL);
   let request;
   let holdUntil = 0;
+  // Edits made here go to the writer; the Rust app queues them by event.
+  globalThis.graphshellViewId = globalThis.crypto?.randomUUID?.() ?? `view-${Math.random().toString(36).slice(2)}`;
+  const sender = globalThis.GraphshellFollowerQueue.createSender({
+    post: (message) => channel.postMessage(message),
+    schedule: (run, ms) => setTimeout(run, ms),
+    cancel: (handle) => clearTimeout(handle),
+    deliver: (reply) => document.dispatchEvent(new CustomEvent("graphshell-edit-reply", { detail: JSON.stringify(reply) })),
+  });
+  document.addEventListener("graphshell-edit-submit", (event) => {
+    try {
+      sender.submit(JSON.parse(event.detail));
+    } catch (error) {
+      console.error("Graphshell edit", error);
+    }
+  });
   channel.onmessage = ({ data }) => {
+    sender.onMessage(data);
     if (data?.type === "committed") {
       document.dispatchEvent(new Event("graphshell-committed"));
     } else if (data?.type === "shown") {
@@ -454,6 +482,8 @@ function follow() {
   const granted = (lock) => {
     if (!lock) return null;
     clearInterval(vacancy);
+    const left = sender.abandon();
+    if (left) console.warn(`Graphshell: ${left} queued edit(s) were unanswered when this view took the writer; check the graph`);
     channel.close();
     becomeWriter(bar).catch((error) => {
       bar.hidden = false;

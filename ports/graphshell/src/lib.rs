@@ -58,6 +58,8 @@ pub mod comms_open;
 pub mod distillery_w1;
 #[cfg(feature = "web")]
 pub mod field_inspection;
+#[cfg(feature = "web")]
+pub mod follower_edit;
 #[cfg(feature = "workspace-editor")]
 pub mod forme_workspace;
 #[cfg(feature = "web")]

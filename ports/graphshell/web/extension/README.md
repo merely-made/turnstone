@@ -13,6 +13,7 @@ resident device host.
 | `background.js` | Browser action opens `graph.html`; the local profile record; history and permission listeners; the bounded `storage.local` capture queue; refuses messages from anything but its own pages |
 | `graph.html`, `graph.css` | The extension workspace: the shared Graphshell component, the browser-history consent panel and the second-view notice |
 | `capture-model.js` | `GraphshellCaptureModel`: default policy, visit sanitization, queue bounds, the ledger's conflict rule |
+| `follower-queue.js` | `GraphshellFollowerQueue`: a following view's edit transport on the views channel (send, acknowledge, resend once to a new writer, give up), and the writer's side (in-flight dedupe, no handover mid-edit); `smoke-writer-handover.mjs` runs it |
 | `action-form.js` | `GraphshellActionForm`: builds an intent payload from an advertised `input_form` |
 | `bridge.html`, `bridge.css`, `bridge.js`, `resource-chunk.js` | The native surface: connects `org.mere.graphshell`, pulls bounded resource chunks, renders identity cards and advertised actions |
 | `prepare-extension.ps1`, `prepare-extension.sh` | Assemble one unpacked extension directory |
