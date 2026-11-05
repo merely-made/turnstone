@@ -10,6 +10,26 @@ impl App {
         self.clear_private_research();
         self.source_capture_generation = uuid::Uuid::new_v4();
         self.identity = None;
+        self.catalogue_open = None;
+        // Derived catalogue labels and unfinished disclosure prompts belong to
+        // the retired identity, even when they were already in the palette.
+        let catalogue_ui = matches!(
+            self.omnibar.mode,
+            crate::ui::OmnibarMode::CatalogueSites { .. }
+                | crate::ui::OmnibarMode::Place(crate::ui::PlacePrompt::AdvertiseSite { .. })
+        ) || self.omnibar.suggestions.iter().any(|row| {
+            matches!(
+                row,
+                crate::ui::Suggestion::Act {
+                    action: crate::action::Action::Catalogue(_),
+                    ..
+                }
+            )
+        });
+        if catalogue_ui {
+            self.omnibar = Default::default();
+        }
+
         self.research.set_available(false);
         self.saved_sources = Default::default();
         self.research_search = Default::default();
@@ -17,6 +37,10 @@ impl App {
         self.content.clear_source_documents();
         if let crate::place::PlaceState::Offline { snapshot, .. } = &mut self.place {
             snapshot.captured = Default::default();
+            snapshot.catalogues.retain(|site| {
+                site.visibility == crate::place::catalogue::CatalogueVisibility::Public
+            });
+            snapshot.catalogue_navigation = None;
         }
         self.events.retain(|event| {
             !matches!(
@@ -27,7 +51,12 @@ impl App {
                     | AppEvent::SourceDocumentCaptureUnattached { .. }
             )
         });
-        let reader_nodes: Vec<_> = self.saved_readers.keys().chain(self.research_clip_readers.keys()).copied().collect();
+        let reader_nodes: Vec<_> = self
+            .saved_readers
+            .keys()
+            .chain(self.research_clip_readers.keys())
+            .copied()
+            .collect();
         self.saved_readers.clear();
         self.research_clip_readers.clear();
         let mut effects = self.cancel_smolweb_conversation();

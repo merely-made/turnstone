@@ -237,4 +237,6 @@ records Turnstone's public site advertisements, subject/abstract browsing,
 worker-validated opening and their local-peer qualification. Gemot owns the
 shared catalogue/workflow rules; Murm carries their bounded opaque hints.
 
-The page lifecycle plan records the November 5 native catalogue trial, its synthetic identity/offline boundaries, and the remaining protected-description work.
+The page lifecycle plan records the November 5 native catalogue trials and their synthetic identity/offline boundaries.
+
+The page lifecycle plan also records explicit member-only catalogue publication, encrypted hints/journals/bodies, custody UI cleanup and the separate headed protected-metadata trial. Shared encryption and audience contracts live in Gemot S6.

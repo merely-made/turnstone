@@ -4,11 +4,19 @@ use crate::place::{OfflinePlaceSnapshot, catalogue::CatalogueSiteDraft};
 
 #[test]
 fn catalogue_advertisement_reaches_later_invitee_then_withdraws_over_live_lanes() {
+    exercise_catalogue(crate::place::catalogue::CatalogueVisibility::Public);
+}
+#[test]
+fn protected_catalogue_reaches_later_invitee_across_key_rotation_then_withdraws() {
+    exercise_catalogue(crate::place::catalogue::CatalogueVisibility::Members);
+}
+fn exercise_catalogue(visibility: crate::place::catalogue::CatalogueVisibility) {
     let root = tempfile::tempdir().unwrap();
     let host = root.path().join("host");
     let guest = root.path().join("guest");
     let (founder, session, binding) = found_live(&host, 71);
     let draft = CatalogueSiteDraft {
+        visibility,
         address: "scroll://garden.test/".into(),
         title: "Garden".into(),
         abstract_text: "Painting and music".into(),
@@ -48,6 +56,17 @@ fn catalogue_advertisement_reaches_later_invitee_then_withdraws_over_live_lanes(
         },
     );
     assert_eq!(received.catalogues[0].scroll_subject, Some(7));
+    assert_eq!(received.catalogues[0].visibility, visibility);
+    if visibility == crate::place::catalogue::CatalogueVisibility::Members {
+        let bytes = std::fs::read(guest.join("protected-catalogue-hints.cbor")).unwrap();
+        assert!(
+            !bytes
+                .windows(b"garden.test".len())
+                .any(|w| w == b"garden.test")
+        );
+        assert!(!guest.join("catalogue-hints.cbor").exists());
+    }
+
     member.command(PlaceWorkerCommand::Author {
         session: member_session,
         generation: 1,

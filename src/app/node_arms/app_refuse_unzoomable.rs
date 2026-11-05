@@ -157,7 +157,7 @@ impl App {
         use crate::ui::PlacePrompt;
         let text = self.omnibar.text.trim().to_string();
         let action = match prompt {
-            PlacePrompt::AdvertiseSite {subject,expected_address} => Action::Catalogue(SiteAction::CommitSiteAdvertisement {subject,expected_address,abstract_text:text.clone()}),
+            PlacePrompt::AdvertiseSite {subject,expected_address,visibility} => Action::Catalogue(SiteAction::CommitSiteAdvertisement {subject,expected_address,visibility,abstract_text:text.clone()}),
             PlacePrompt::FoundPlace => Action::FoundPlace { name: text.clone() },
             PlacePrompt::ExportCard => Action::ExportPlaceCard { path: text.clone() },
             PlacePrompt::RefreshContact => Action::RefreshPlaceContact { path: text.clone() },

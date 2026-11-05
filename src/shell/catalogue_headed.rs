@@ -5,6 +5,14 @@ use identity::IdentityProvider;
 #[test]
 #[ignore = "interactive native window; requires an isolated acceptance root"]
 fn catalogue_native_window() {
+    native_window(false);
+}
+#[test]
+#[ignore = "interactive member-metadata native window; isolated acceptance root required"]
+fn protected_catalogue_native_window() {
+    native_window(true);
+}
+fn native_window(protected: bool) {
     use winit::platform::{
         pump_events::{EventLoopExtPumpEvents, PumpStatus},
         windows::EventLoopBuilderExtWindows,
@@ -50,12 +58,28 @@ fn catalogue_native_window() {
         }
     }
     let session = shell.app.session_dir();
-    let path = session.join("catalogue-hints.cbor");
-    let directory = gemot::moot::workflow::discovery::CatalogueDirectory::decode(
-        &std::fs::read(&path).expect("advertisement journal"),
-        128,
-    )
-    .unwrap();
+    let path = session.join(if protected {
+        "protected-catalogue-hints.cbor"
+    } else {
+        "catalogue-hints.cbor"
+    });
+    let bytes = std::fs::read(&path).expect("advertisement journal");
+    let directory = if protected {
+        let moot = shell
+            .app
+            .place
+            .binding()
+            .expect("retained place binding")
+            .moot
+            .0;
+        let identity = crate::identity::RootIdentity::from_seed([71; 32]);
+        let group = crate::place::worker::load_group_session(&session, &identity, moot).unwrap();
+        let keys =
+            stickleback::DataKeyring::from_bytes(&group.data_keyring_state().unwrap()).unwrap();
+        gemot::moot::workflow::discovery::protected::open_cache(moot, &keys, &bytes, 128).unwrap()
+    } else {
+        gemot::moot::workflow::discovery::CatalogueDirectory::decode(&bytes, 128).unwrap()
+    };
     let provider = identity::InMemoryProvider::from_seed([71; 32])
         .master_public_key()
         .to_bytes();
@@ -70,5 +94,5 @@ fn catalogue_native_window() {
             .any(|h| h.advertisement.description.is_none()),
         "withdrawal must be exercised through the UI"
     );
-    std::fs::write(root.join("headed-domain-result.json"),serde_json::to_vec_pretty(&serde_json::json!({"public_test_identity":true,"window_closed":true,"signed_withdrawal_retained":true,"journal":path})).unwrap()).unwrap();
+    std::fs::write(root.join(if protected {"headed-protected-domain-result.json"} else {"headed-domain-result.json"}),serde_json::to_vec_pretty(&serde_json::json!({"public_test_identity":true,"member_metadata":protected,"window_closed":true,"signed_withdrawal_retained":true,"journal":path})).unwrap()).unwrap();
 }

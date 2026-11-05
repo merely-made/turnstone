@@ -241,5 +241,13 @@ founder can choose **Advertise focused public site**, enter the public abstract,
 and later withdraw that advertisement. Opening a result rechecks current place
 access. `TURNSTONE_CATALOGUE_LIFETIME_MS` selects a lifetime up to one hour
 (default ten minutes). This advertises descriptions; it does not retain the
-website's content. Protected descriptions and remote keeper serving are separate
-gates in the Gemot site/workflow plan.
+website's content. Remote keeper serving remains a separate gate in the Gemot
+site/workflow plan.
+
+The palette also offers **Advertise focused site to place members** for each
+subject. That choice encrypts the discovery hint, catalogue journal and replicated
+description body using the place's existing group keys. Results identify their
+Public or Members audience, and opening checks current access. Public
+advertisements remain separate disclosures. Member encryption does not erase
+previously learned content or hide peer traffic, and does not change the
+browser's separate history and source-retention policy.

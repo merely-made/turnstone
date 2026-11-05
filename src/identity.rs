@@ -309,6 +309,10 @@ mod tests {
         }
         assert!(!declaration.declares_route(&AppRouteId::new("reservoir").unwrap()));
         assert!(declaration.custody.epoch.is_empty(), "Turnstone asks for no epoch keys");
+        for prefix in ["mere.gemot.objects.v1/","gemot/catalogue-advertisement/v1/","turnstone.place."] {
+            assert!(declaration.custody.salts.iter().any(|use_|use_.name==ostiary::declaration::SaltPattern::Prefix(prefix.into())),"missing catalogue key namespace {prefix}");
+        }
+
     }
 
     #[cfg(feature = "inference")]

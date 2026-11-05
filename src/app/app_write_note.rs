@@ -276,8 +276,9 @@ impl App {
                     vec![Effect::Redraw]
                 },
             },
-            Action::Catalogue(SiteAction::BeginAdvertiseSite {subject})=>self.begin_advertise_site(subject),
-            Action::Catalogue(SiteAction::CommitSiteAdvertisement {expected_address,subject,abstract_text})=>self.commit_site_advertisement(expected_address,subject,abstract_text),
+            Action::Catalogue(SiteAction::BeginAdvertiseSite {subject})=>self.begin_advertise_site(subject,crate::place::catalogue::CatalogueVisibility::Public),
+            Action::Catalogue(SiteAction::BeginProtectedSite {subject})=>self.begin_advertise_site(subject,crate::place::catalogue::CatalogueVisibility::Members),
+            Action::Catalogue(SiteAction::CommitSiteAdvertisement {expected_address,subject,abstract_text,visibility})=>self.commit_site_advertisement(expected_address,subject,abstract_text,visibility),
             Action::Catalogue(SiteAction::BrowseSites {subject})=>self.browse_sites(subject),
             Action::Catalogue(SiteAction::OpenDiscoveredSite {digest})=>self.open_catalogue_site(digest),
             Action::Catalogue(SiteAction::WithdrawSite {collection})=>self.run_place_command(crate::place::worker::PlaceCommand::WithdrawSite {collection}),

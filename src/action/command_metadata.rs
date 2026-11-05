@@ -158,6 +158,7 @@ pub(crate) fn command_metadata(action: &Action) -> (EffectClass, bool) {
         | Action::ShowPlaceStatus
         | Action::SetPlaceCollection(..)
         | Action::SearchCapturedPages
+        | Action::Catalogue(SiteAction::BeginProtectedSite {..})
         | Action::Catalogue(SiteAction::BeginAdvertiseSite {..})
         | Action::Catalogue(SiteAction::BrowseSites {..})
         | Action::OmnibarOpen { .. }

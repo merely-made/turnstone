@@ -2297,7 +2297,7 @@ dependencies = [
 [[package]]
 name = "commons-spine"
 version = "0.0.1"
-source = "git+https://github.com/merely-made/gemot.git?rev=89a5935d75b8b9b62e625c823ab372dfbc05f9cb#89a5935d75b8b9b62e625c823ab372dfbc05f9cb"
+source = "git+https://github.com/merely-made/gemot.git?rev=495e5e65f250023ef5a6d8db40389f933ba274be#495e5e65f250023ef5a6d8db40389f933ba274be"
 dependencies = [
  "chartulary",
  "gemot",
@@ -4644,7 +4644,7 @@ dependencies = [
 [[package]]
 name = "gemot"
 version = "0.1.1"
-source = "git+https://github.com/merely-made/gemot.git?rev=89a5935d75b8b9b62e625c823ab372dfbc05f9cb#89a5935d75b8b9b62e625c823ab372dfbc05f9cb"
+source = "git+https://github.com/merely-made/gemot.git?rev=495e5e65f250023ef5a6d8db40389f933ba274be#495e5e65f250023ef5a6d8db40389f933ba274be"
 dependencies = [
  "insigne",
  "mere-proofs",
@@ -8505,7 +8505,7 @@ dependencies = [
 [[package]]
 name = "mien"
 version = "0.0.1"
-source = "git+https://github.com/merely-made/gemot.git?rev=89a5935d75b8b9b62e625c823ab372dfbc05f9cb#89a5935d75b8b9b62e625c823ab372dfbc05f9cb"
+source = "git+https://github.com/merely-made/gemot.git?rev=495e5e65f250023ef5a6d8db40389f933ba274be#495e5e65f250023ef5a6d8db40389f933ba274be"
 dependencies = [
  "insigne",
  "muniment",
@@ -8592,7 +8592,7 @@ dependencies = [
 [[package]]
 name = "mooting"
 version = "0.1.0"
-source = "git+https://github.com/merely-made/gemot.git?rev=89a5935d75b8b9b62e625c823ab372dfbc05f9cb#89a5935d75b8b9b62e625c823ab372dfbc05f9cb"
+source = "git+https://github.com/merely-made/gemot.git?rev=495e5e65f250023ef5a6d8db40389f933ba274be#495e5e65f250023ef5a6d8db40389f933ba274be"
 dependencies = [
  "p2panda-core",
  "serde",

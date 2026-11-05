@@ -2,9 +2,15 @@
 use super::*;
 use crate::action::{Action, Effect};
 use crate::place::catalogue::CatalogueAction as SiteAction;
-use crate::place::catalogue::{CatalogueSiteDraft, subject_name};
+use crate::place::catalogue::{CatalogueSiteDraft, CatalogueVisibility, subject_name};
 use crate::ui::{OmnibarMode, OmnibarState, PlacePrompt, Suggestion};
 impl App {
+    fn member_catalogue_visible(&self, snapshot: &crate::place::OfflinePlaceSnapshot) -> bool {
+        self.identity.as_ref().is_some_and(|id| {
+            ::identity::IdentityProvider::master_public_key(id.as_ref()).to_bytes()
+                == snapshot.personae_root
+        })
+    }
     pub(super) fn open_catalogue_site(&mut self, digest: [u8; 32]) -> Vec<Effect> {
         let effects =
             self.run_place_command(crate::place::worker::PlaceCommand::OpenCatalogue { digest });
@@ -30,7 +36,11 @@ impl App {
         self.catalogue_open = None;
         valid.then_some(address)
     }
-    pub(super) fn begin_advertise_site(&mut self, subject: u8) -> Vec<Effect> {
+    pub(super) fn begin_advertise_site(
+        &mut self,
+        subject: u8,
+        visibility: CatalogueVisibility,
+    ) -> Vec<Effect> {
         if subject > 9 {
             return self.refuse_place("invalid Scroll subject class");
         }
@@ -41,6 +51,7 @@ impl App {
             return self.refuse_place("join a place first");
         }
         self.begin_place_prompt(PlacePrompt::AdvertiseSite {
+            visibility,
             subject,
             expected_address: *blake3::hash(address.as_bytes()).as_bytes(),
         })
@@ -50,6 +61,7 @@ impl App {
         expected: [u8; 32],
         subject: u8,
         abstract_text: String,
+        visibility: CatalogueVisibility,
     ) -> Vec<Effect> {
         let Some(address) = self.focused_address() else {
             return self.refuse_place("the site focus changed; start the advertisement again");
@@ -64,6 +76,7 @@ impl App {
         };
         self.run_place_command(crate::place::worker::PlaceCommand::AdvertiseSite(
             CatalogueSiteDraft {
+                visibility,
                 address,
                 title,
                 abstract_text,
@@ -105,13 +118,29 @@ impl App {
                     format!("Advertise focused public site: {}", subject_name(class)),
                     Action::Catalogue(SiteAction::BeginAdvertiseSite { subject: class }),
                 ));
+                rows.push((
+                    format!(
+                        "Advertise focused site to place members: {}",
+                        subject_name(class)
+                    ),
+                    Action::Catalogue(SiteAction::BeginProtectedSite { subject: class }),
+                ));
             }
         }
         if let crate::place::PlaceState::Offline { snapshot, .. } = &self.place {
             for site in &snapshot.catalogues {
+                if site.visibility == CatalogueVisibility::Members
+                    && !self.member_catalogue_visible(snapshot)
+                {
+                    continue;
+                }
                 if site.provider == snapshot.personae_root {
                     rows.push((
-                        format!("Withdraw site advertisement: {}", site.title),
+                        format!(
+                            "Withdraw {} site advertisement: {}",
+                            site.visibility.label(),
+                            site.title
+                        ),
                         Action::Catalogue(SiteAction::WithdrawSite {
                             collection: site.collection,
                         }),
@@ -137,7 +166,11 @@ impl App {
                     "Site catalogue unavailable: {error}"
                 )));
             }
+            let members_visible = self.member_catalogue_visible(snapshot);
             for site in &snapshot.catalogues {
+                if site.visibility == CatalogueVisibility::Members && !members_visible {
+                    continue;
+                }
                 if site.expires_at_ms <= now
                     || subject.is_some_and(|v| site.scroll_subject != Some(v))
                 {
@@ -149,7 +182,12 @@ impl App {
                     continue;
                 }
                 rows.push(Suggestion::Act {
-                    label: format!("{} · {}", site.title, site.address),
+                    label: format!(
+                        "{} · {} · {}",
+                        site.visibility.label(),
+                        site.title,
+                        site.address
+                    ),
                     action: Action::Catalogue(SiteAction::OpenDiscoveredSite {
                         digest: site.digest,
                     }),
@@ -187,6 +225,7 @@ mod tests {
         .unwrap();
         let mut snapshot = crate::place::OfflinePlaceSnapshot::default();
         snapshot.catalogues = vec![crate::place::catalogue::DiscoveredSite {
+            visibility: CatalogueVisibility::Public,
             digest: [4; 32],
             provider: [5; 32],
             collection: [6; 32],
@@ -240,6 +279,7 @@ mod tests {
                 .any(|s| matches!(s, Suggestion::Act { .. }))
         );
         let effects = app.update(Action::Catalogue(SiteAction::CommitSiteAdvertisement {
+            visibility: CatalogueVisibility::Public,
             expected_address: [99; 32],
             subject: 7,
             abstract_text: "old focus".into(),
@@ -298,6 +338,12 @@ mod tests {
     fn catalogue_publication_requires_host_ring() {
         use crate::ring::{Ring, ring_of};
         assert_eq!(
+            ring_of(&Action::Catalogue(SiteAction::BeginProtectedSite {
+                subject: 7
+            })),
+            Ring::HostOnly
+        );
+        assert_eq!(
             ring_of(&Action::Catalogue(SiteAction::BeginAdvertiseSite {
                 subject: 7
             })),
@@ -305,11 +351,49 @@ mod tests {
         );
         assert_eq!(
             ring_of(&Action::Catalogue(SiteAction::CommitSiteAdvertisement {
+                visibility: CatalogueVisibility::Public,
                 expected_address: [0; 32],
                 subject: 7,
                 abstract_text: "public".into()
             })),
             Ring::HostOnly
+        );
+    }
+    #[test]
+    fn protected_catalogue_rows_and_withdrawal_titles_hide_without_bound_identity() {
+        let mut app = fixture();
+        let identity = std::sync::Arc::new(crate::identity::RootIdentity::from_seed([83; 32]));
+        let root = ::identity::IdentityProvider::master_public_key(identity.as_ref()).to_bytes();
+        app.identity = Some(identity);
+        if let crate::place::PlaceState::Offline { snapshot, .. } = &mut app.place {
+            snapshot.personae_root = root;
+            snapshot.catalogues[0].visibility = CatalogueVisibility::Members;
+            snapshot.catalogues[0].provider = root;
+        }
+        app.update(Action::Catalogue(SiteAction::BrowseSites { subject: None }));
+        assert!(
+            app.omnibar
+                .suggestions
+                .iter()
+                .any(|s| matches!(s, Suggestion::Act { .. }))
+        );
+        app.retire_private_custody();
+        assert!(
+            !app.omnibar.open,
+            "custody loss clears an already rendered private palette"
+        );
+        assert!(app.catalogue_open.is_none());
+        app.update(Action::Catalogue(SiteAction::BrowseSites { subject: None }));
+        assert!(
+            !app.omnibar
+                .suggestions
+                .iter()
+                .any(|s| matches!(s, Suggestion::Act { .. }))
+        );
+        assert!(
+            !app.catalogue_actions()
+                .iter()
+                .any(|(label, _)| label.contains("Garden"))
         );
     }
 }

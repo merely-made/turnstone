@@ -338,6 +338,7 @@ pub fn ring_of(action: &Action) -> Ring {
         | BeginJoinPlaceFile
         | JoinPlaceFile { .. }
         | BeginSendPlaceMessage
+        | Catalogue(SiteAction::BeginProtectedSite {..})
         | Catalogue(SiteAction::BeginAdvertiseSite {..})
         | Catalogue(SiteAction::CommitSiteAdvertisement {..})
         // Revoking decides who stays in the community, the same trust act.
@@ -394,7 +395,7 @@ pub fn emit_allowed(
             | Action::BeginInviteToPlaceAsReader
             | Action::InviteToPlace { .. }
             | Action::InviteToPlaceWithPrekey { .. } => "inviting to a place",
-            Action::Catalogue(SiteAction::BeginAdvertiseSite {..}) | Action::Catalogue(SiteAction::CommitSiteAdvertisement {..}) => "advertising a public site",
+            Action::Catalogue(SiteAction::BeginAdvertiseSite {..}) | Action::Catalogue(SiteAction::BeginProtectedSite {..}) | Action::Catalogue(SiteAction::CommitSiteAdvertisement {..}) => "advertising a site",
             Action::BeginSendPlaceMessage => "opening the place message prompt",
             Action::RevokePlaceMember { .. } => "revoking a place member",
             Action::LeavePlace => "leaving a place",

@@ -14,5 +14,5 @@ pub enum PlacePrompt {
     InviteReader,
     Join,
     SendMessage,
-    AdvertiseSite {subject:u8,expected_address:[u8;32]},
+    AdvertiseSite {subject:u8,expected_address:[u8;32],visibility:crate::place::catalogue::CatalogueVisibility},
 }

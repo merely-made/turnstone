@@ -175,3 +175,53 @@ Evidence: `Code/testing/gemot/headed-protected-20261105/headed-receipt.json`,
 window captures and the marked fixture. The lane now declares 200 MB, preserving
 preallocated native storage that exceeded its initial 100 MB estimate. The
 budget refinement is recorded; original evidence remains intact.
+
+## Protected catalogue metadata, 2026-11-05
+
+Gemot `495e5e6` supplies signed V2 member audiences and group-encrypted hint,
+journal and body envelopes with distinct authenticated contexts. Existing
+public V1 signatures remain readable. Turnstone adds an explicit place-member
+publishing choice per subject. The current group epoch seals every wire retry;
+existing invitation and removal flows own key distribution and rotation. All
+group key holders form the cryptographic audience; typed collection grants and
+current membership separately decide what the client lists or opens.
+
+Protected collection ids are stable per profile/Moot/address but derive through
+a private identity namespace. Replicated record labels remain generic and bodies
+are encrypted, so clear fauna/collection fields do not reveal the description.
+A separate encrypted journal retains private replay/withdrawal state. Each
+public/member journal permits 128 entries and 3 MiB, with the existing shared
+16 KiB message and pending-queue bounds. Missing keys, damaged journals and old
+wire epochs fail without plaintext fallback. Protected ingress errors are
+redacted before logs/UI. Original public resources remain public; the new mode
+is not a conversion or private-browsing policy.
+
+Current identity binding gates private UI rows. Custody retirement drops private
+catalogue projections, closes their rendered palette/prompts and invalidates
+pending catalogue navigation. Journal, incoming/outgoing and publishing code
+have separate modules without a size exception. The native member trial runs
+the actual shell, publishes in Arts, displays the Members result, invokes opening,
+withdraws, observes the empty catalogue and reopens the encrypted journal after
+window close to verify the signed withdrawal. It restores the earlier public
+V1 fixture in the same profile. Both native trials use a public synthetic key
+and offline document acquisition; installed custody and remote machines remain
+separate gates.
+
+Receipts stay in `Code/testing/gemot/headed-protected-20261105`, cap 200 MB. The
+focused cases cover ciphertext at rest (including raw retained record files),
+cold reopening, stable private ids, missing-epoch preflight, corrupt-cache refusal,
+late-invitee live delivery across key rotation, withdrawal and custody UI cleanup.
+The source audit changes only four Gemot package sources; other Git/registry
+records, renderer and storage pins remain unchanged. Old recipients may retain
+old plaintext, and routing/epoch/traffic observations remain visible.
+
+Qualification: the focused catalogue filter passes 14 cases (five app controls,
+five worker cases, two live-peer cases and two existing palette cases). The
+complete place suite passes 88 cases. Both public and member native-window
+trials pass, as do four identity-declaration tests, three exact custody lifecycle
+regressions, and locked all-target production Clippy with `peers`. Clippy retains
+existing warnings. A broader custody-name filter passes four but fails ten
+capture fixtures at their unchanged graph-persistence setup with Windows
+`Access is denied`; the retained pre-encryption executable reproduces the same
+four/ten outcome. These failures precede the retirement method changed here.
+The baseline and current attempts remain in the receipt lane.

@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MPL-2.0
-//! App-owned values for public site discovery; domain and keys stay in the worker.
+//! App-owned site discovery values; domain rules and keys stay in the worker.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct CatalogueSiteDraft {
+    pub visibility: CatalogueVisibility,
     pub address: String,
     pub title: String,
     pub abstract_text: String,
@@ -9,6 +10,7 @@ pub struct CatalogueSiteDraft {
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct DiscoveredSite {
+    pub visibility: CatalogueVisibility,
     pub digest: [u8; 32],
     pub provider: [u8; 32],
     pub collection: [u8; 32],
@@ -38,10 +40,14 @@ pub fn subject_name(class: u8) -> &'static str {
 /// Catalogue controls are one app action family; grants stay in the worker.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum CatalogueAction {
+    BeginProtectedSite {
+        subject: u8,
+    },
     BeginAdvertiseSite {
         subject: u8,
     },
     CommitSiteAdvertisement {
+        visibility: CatalogueVisibility,
         expected_address: [u8; 32],
         subject: u8,
         abstract_text: String,
@@ -55,4 +61,19 @@ pub enum CatalogueAction {
     WithdrawSite {
         collection: [u8; 32],
     },
+}
+
+/// Disclosure is explicit at publication; existing public copies stay public.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum CatalogueVisibility {
+    Public,
+    Members,
+}
+impl CatalogueVisibility {
+    pub fn label(self) -> &'static str {
+        match self {
+            Self::Public => "Public",
+            Self::Members => "Members",
+        }
+    }
 }
