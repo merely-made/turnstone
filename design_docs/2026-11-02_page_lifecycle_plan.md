@@ -152,3 +152,9 @@ quiet-state regression passes. The initial interrupted run and its overlapping
 Windows linker refusal remain non-acceptance receipts. Commit line-ceiling and
 locked all-target default Clippy checks pass. This retains the local verification
 boundaries stated above.
+
+`turnstone-peer-production` also passes locked all-target Clippy with `peers`,
+covering the production binary and examples as well as tests. Mien is an
+explicit optional normal dependency of that feature; a test-only dependency
+must not supply the production admission API. Warnings remain existing style
+and documentation debt, rather than a warnings-clean claim.

@@ -82,6 +82,7 @@ rcgen = "0.14"
 # Commons, Stickleback, and Muniment retain their own wire, authority, crypto,
 # and durable-store contracts.
 commons = { package = "commons-spine", git = "https://github.com/merely-made/gemot.git", rev = "89a5935d75b8b9b62e625c823ab372dfbc05f9cb", optional = true }
+mien = { git = "https://github.com/merely-made/gemot.git", rev = "89a5935d75b8b9b62e625c823ab372dfbc05f9cb", optional = true }
 # The live-lane carrier: ticket import, overlay tagging, and the sync parts
 # the domain join helpers take. The place worker owns the handles; sessions
 # are assembled by Murm's JoinedSpace inside the domain crates.
@@ -351,7 +352,7 @@ default = []
 # Knot currently bundles the blob evidence store used by this adapter with its
 # supplier `peers` feature. This does not install Turnstone's peer workers.
 authoring = ["dep:knot", "knot/peers"]
-peers = ["authoring", "graphshell-host/native", "dep:transport", "dep:commons", "dep:gemot", "moot-port/captured-web", "dep:stickleback", "dep:murm-sync"]
+peers = ["authoring", "graphshell-host/native", "dep:transport", "dep:commons", "dep:gemot", "moot-port/captured-web", "dep:stickleback", "dep:murm-sync", "dep:mien"]
 peer-tests = ["peers", "transport/test-identity"]
 endpoint-process = ["authoring", "graphshell-host/native"]
 inference = ["dep:distillery"]
