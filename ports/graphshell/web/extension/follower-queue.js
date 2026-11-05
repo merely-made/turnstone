@@ -29,7 +29,7 @@
     id,
     view: "",
     status: "refused",
-    reason: "No answer from the view that edits. A view in a hidden tab applies edits when it is shown; check the graph before trying again",
+    reason: "No answer from the view that edits. The edit may still be saved; check the graph before trying again",
   });
 
   // A follower's side. `post` sends on the channel, `schedule(run, ms)` returns

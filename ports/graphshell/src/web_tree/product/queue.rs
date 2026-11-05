@@ -29,16 +29,18 @@ pub(super) struct Queue {
     requests: Option<wire::Inbox<Request>>,
     admissions: Admissions,
     admitting: Option<Request>,
-    _listeners: Vec<wire::Listener>,
+    _listener: wire::Listener,
+    wake: wire::Wake,
 }
 
 impl Queue {
     pub(super) fn new(following: bool) -> Result<Self, String> {
+        let wake = wire::Wake::default();
         let (replies, requests, listener) = if following {
-            let (inbox, listener) = wire::listen_for_replies()?;
+            let (inbox, listener) = wire::listen_for_replies(wake.clone())?;
             (Some(inbox), None, listener)
         } else {
-            let (inbox, listener) = wire::listen_for_requests()?;
+            let (inbox, listener) = wire::listen_for_requests(wake.clone())?;
             (None, Some(inbox), listener)
         };
         Ok(Self {
@@ -47,7 +49,8 @@ impl Queue {
             requests,
             admissions: Admissions::new(),
             admitting: None,
-            _listeners: vec![listener],
+            _listener: listener,
+            wake,
         })
     }
 }
@@ -63,6 +66,28 @@ fn refused(id: String, reason: String) -> Reply {
 }
 
 impl SavedProduct {
+    pub(in crate::web_tree) fn bind_queue_wake(&mut self, wake: &cambium_rootstock::HostWake) {
+        if let Some(queue) = &self.queue {
+            *queue.wake.borrow_mut() = Some(wake.clone());
+        }
+    }
+
+    // A completion can free the writer for the next queued edit. Signal the
+    // host after publishing it, including when a normal save was already in
+    // progress when the follower sent its request.
+    pub(super) fn spawn_storage_task(&self, task: impl Future<Output = ()> + 'static) {
+        let wake = self
+            .queue
+            .as_ref()
+            .and_then(|queue| queue.wake.borrow().clone());
+        wasm_bindgen_futures::spawn_local(async move {
+            task.await;
+            if let Some(wake) = wake {
+                wake.wake();
+            }
+        });
+    }
+
     /// Send `edit` to the view that edits and show it pending.
     fn send_edit(&mut self, edit: Edit, what: String) -> Result<(), String> {
         let app = self
@@ -129,7 +154,14 @@ impl SavedProduct {
             },
         };
         let title = self.title.text().trim().to_owned();
-        let tags = normalized(&self.tags.text().split(',').map(str::to_owned).collect::<Vec<_>>());
+        let tags = normalized(
+            &self
+                .tags
+                .text()
+                .split(',')
+                .map(str::to_owned)
+                .collect::<Vec<_>>(),
+        );
         if let Err(error) = self.send_edit(
             Edit::EditNode {
                 member,
@@ -138,7 +170,14 @@ impl SavedProduct {
                 was_title: held.title,
                 was_tags: held.tags,
             },
-            format!("save {}", if title.is_empty() { &held.address } else { &title }),
+            format!(
+                "save {}",
+                if title.is_empty() {
+                    &held.address
+                } else {
+                    &title
+                }
+            ),
         ) {
             self.status = error;
         }
@@ -146,12 +185,18 @@ impl SavedProduct {
 
     /// Whether an answer or an edit waits for the frame loop: an answer to
     /// show, or an edit this writer can start now.
-    pub(super) fn queue_ready(&self) -> bool {
+    pub(in crate::web_tree) fn queue_ready(&self) -> bool {
         let Some(queue) = &self.queue else {
             return false;
         };
-        let answers = queue.replies.as_ref().is_some_and(|inbox| !inbox.borrow().is_empty());
-        let edits = queue.requests.as_ref().is_some_and(|inbox| !inbox.borrow().is_empty());
+        let answers = queue
+            .replies
+            .as_ref()
+            .is_some_and(|inbox| !inbox.borrow().is_empty());
+        let edits = queue
+            .requests
+            .as_ref()
+            .is_some_and(|inbox| !inbox.borrow().is_empty());
         answers
             || (edits
                 && queue.admitting.is_none()
@@ -241,7 +286,7 @@ impl SavedProduct {
         self.status = "Saving an edit from another view…".into();
         let completed = self.completed.clone();
         // The task owns the app. No RefCell borrow crosses the IndexedDB await.
-        wasm_bindgen_futures::spawn_local(async move {
+        self.spawn_storage_task(async move {
             let result = match apply(&mut app, &edit, now_secs()).await {
                 Ok(Some(member)) => metadata(&app, member),
                 Ok(None) => Err("the edit named no object".into()),

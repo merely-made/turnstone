@@ -79,7 +79,7 @@ impl SavedProduct {
         follow.refreshing = true;
         let backend = app.host.store();
         let completed = follow.completed.clone();
-        wasm_bindgen_futures::spawn_local(async move {
+        self.spawn_storage_task(async move {
             let observed =
                 GraphshellApp::observe_local(backend, &profile, js_sys::Date::now() as u64)
                     .await

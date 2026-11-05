@@ -894,7 +894,7 @@ impl SavedProduct {
             format!("Saving {} exact assertion hide(s)…", desired.len())
         };
         let completed = self.assertion_visibility_completed.clone();
-        wasm_bindgen_futures::spawn_local(async move {
+        self.spawn_storage_task(async move {
             let result = app
                 .host
                 .set_view(graphshell::mere_host::GRAPHSHELL, "canvas", intent)
@@ -966,7 +966,7 @@ impl SavedProduct {
             format!("Saving {} whole-link hide(s)…", desired.len())
         };
         let completed = self.link_visibility_completed.clone();
-        wasm_bindgen_futures::spawn_local(async move {
+        self.spawn_storage_task(async move {
             let result = app
                 .host
                 .set_view(graphshell::mere_host::GRAPHSHELL, "canvas", intent)
@@ -1061,7 +1061,7 @@ impl SavedProduct {
         self.status = "Saving changes…".into();
         let completed = self.completed.clone();
         // The task owns the app. No RefCell borrow crosses the IndexedDB await.
-        wasm_bindgen_futures::spawn_local(async move {
+        self.spawn_storage_task(async move {
             let result = save_metadata(&mut app, member, &title, &tags, now_secs()).await;
             *completed.borrow_mut() = Some((app, CompletedEdit::Metadata, result));
         });
@@ -1078,7 +1078,7 @@ impl SavedProduct {
         self.saving = true;
         self.save_state = "saving";
         let completed = self.coupling_completed.clone();
-        wasm_bindgen_futures::spawn_local(async move {
+        self.spawn_storage_task(async move {
             let (id, result) = match operation {
                 CouplingOperation::Apply(draft) => {
                     let id = draft.baseline.id;
@@ -1175,7 +1175,7 @@ impl SavedProduct {
             trust: eidetic::TrustEnvelope::self_asserted(),
             captured_at: eidetic::Timestamp(now_secs() * 1000),
         };
-        wasm_bindgen_futures::spawn_local(async move {
+        self.spawn_storage_task(async move {
             let result = async {
                 let member =
                     graphshell::retained_content::import_clip(&mut app, &bytes, limits, &context)
@@ -1268,7 +1268,7 @@ impl SavedProduct {
         self.save_state = "saving";
         self.status = "Saving new object…".into();
         let completed = self.completed.clone();
-        wasm_bindgen_futures::spawn_local(async move {
+        self.spawn_storage_task(async move {
             let result = persist_intake(&mut app, member, now_secs()).await;
             *completed.borrow_mut() = Some((app, CompletedEdit::Intake, result));
         });
@@ -1298,7 +1298,7 @@ impl SavedProduct {
         self.save_state = "saving";
         let completed = self.operation_completed.clone();
         let pending_operation = self.pending_operation.clone();
-        wasm_bindgen_futures::spawn_local(async move {
+        self.spawn_storage_task(async move {
             let result = app
                 .host
                 .persist(now_secs())

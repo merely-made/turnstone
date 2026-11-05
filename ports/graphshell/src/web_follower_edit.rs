@@ -26,7 +26,21 @@ const ADMITTED_EVENT: &str = "graphshell-edit-admitted";
 /// More waiting than this means a misbehaving page; the rest are refused.
 pub(crate) const MAX_WAITING: usize = 16;
 
-pub(crate) type Listener = Closure<dyn FnMut(web_sys::Event)>;
+pub(crate) type Wake = Rc<RefCell<Option<cambium_rootstock::HostWake>>>;
+
+pub(crate) struct Listener {
+    document: web_sys::Document,
+    name: &'static str,
+    callback: Closure<dyn FnMut(web_sys::Event)>,
+}
+
+impl Drop for Listener {
+    fn drop(&mut self) {
+        let _ = self
+            .document
+            .remove_event_listener_with_callback(self.name, self.callback.as_ref().unchecked_ref());
+    }
+}
 /// What arrived, in order: parsed, or the id it carried and why it did not parse.
 pub(crate) type Inbox<T> = Rc<RefCell<VecDeque<Result<T, (String, String)>>>>;
 
@@ -45,7 +59,8 @@ fn id_of(json: &str) -> String {
 }
 
 fn listen<T: 'static>(
-    name: &str,
+    name: &'static str,
+    wake: Wake,
     parse: fn(&str) -> Result<T, String>,
 ) -> Result<(Inbox<T>, Listener), String> {
     let inbox: Inbox<T> = Rc::default();
@@ -59,27 +74,42 @@ fn listen<T: 'static>(
             parse(&json).map_err(|error| (id_of(&json), error))
         };
         queue.push_back(parsed);
+        if let Some(wake) = wake.borrow().as_ref() {
+            wake.wake();
+        }
     });
-    crate::document()?
+    let document = crate::document()?;
+    document
         .add_event_listener_with_callback(name, listener.as_ref().unchecked_ref())
         .map_err(|_| format!("could not listen for {name}"))?;
-    Ok((inbox, listener))
+    Ok((
+        inbox,
+        Listener {
+            document,
+            name,
+            callback: listener,
+        },
+    ))
 }
 
 /// Replies to the edits this follower sent.
-pub(crate) fn listen_for_replies() -> Result<(Inbox<Reply>, Listener), String> {
-    listen(REPLY_EVENT, Reply::parse)
+pub(crate) fn listen_for_replies(wake: Wake) -> Result<(Inbox<Reply>, Listener), String> {
+    listen(REPLY_EVENT, wake, Reply::parse)
 }
 
 /// Edits followers sent to this writer.
-pub(crate) fn listen_for_requests() -> Result<(Inbox<Request>, Listener), String> {
-    listen(ADMIT_EVENT, Request::parse)
+pub(crate) fn listen_for_requests(wake: Wake) -> Result<(Inbox<Request>, Listener), String> {
+    listen(ADMIT_EVENT, wake, Request::parse)
 }
 
 fn announce(name: &str, json: &str) -> Result<(), String> {
     let event = web_sys::Event::new(name).map_err(|_| format!("could not create {name}"))?;
-    js_sys::Reflect::set(&event, &JsValue::from_str("detail"), &JsValue::from_str(json))
-        .map_err(|_| format!("could not carry {name}"))?;
+    js_sys::Reflect::set(
+        &event,
+        &JsValue::from_str("detail"),
+        &JsValue::from_str(json),
+    )
+    .map_err(|_| format!("could not carry {name}"))?;
     crate::document()?
         .dispatch_event(&event)
         .map_err(|_| format!("could not announce {name}"))?;

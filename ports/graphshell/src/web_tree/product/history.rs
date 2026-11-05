@@ -130,7 +130,7 @@ impl SavedProduct {
         let (persona, device) = self.history.attribution.clone();
         let completed = self.capture_completed.clone();
         self.capture_pending = true;
-        wasm_bindgen_futures::spawn_local(async move {
+        self.spawn_storage_task(async move {
             let result = async {
                 let summary = apply_capture(
                     &mut app,
@@ -263,7 +263,7 @@ impl SavedProduct {
         self.operation_reconciles_graph = true;
         self.saving = true;
         self.save_state = "saving";
-        wasm_bindgen_futures::spawn_local(async move {
+        self.spawn_storage_task(async move {
             let summary =
                 apply_history_request(&mut app, &mut store, policy, now_secs(), filter, request)
                     .await;

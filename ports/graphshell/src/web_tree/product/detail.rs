@@ -147,7 +147,7 @@ impl SavedProduct {
         self.save_state = "saving";
         self.status = "Saving detail changes…".into();
         let completed = self.completed.clone();
-        wasm_bindgen_futures::spawn_local(async move {
+        self.spawn_storage_task(async move {
             let result = persist_intake(&mut app, member, now_secs()).await;
             *completed.borrow_mut() = Some((app, edit, result));
         });

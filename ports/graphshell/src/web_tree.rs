@@ -1868,7 +1868,10 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
                 nodes,
                 picked: None,
                 #[cfg(feature = "product")]
-                product,
+                product: product.map(|mut product| {
+                    product.bind_queue_wake(_wake);
+                    product
+                }),
                 #[cfg(feature = "product")]
                 practice,
                 responsive_links,
@@ -2000,6 +2003,55 @@ fn fixture_graph() -> Result<Graph, String> {
     Ok(app.host.graph().clone())
 }
 
+// A hidden writer still owns the profile. Drain its application work from
+// a browser event-loop wake even when no presentation frames are delivered.
+#[cfg(feature = "product")]
+fn poll_saved_product(ctx: &mut AppCtx<TreePage, Logic, Child>, shared: &Shared) {
+    if ctx
+        .runner
+        .state()
+        .product
+        .as_ref()
+        .is_some_and(|product| product.ready())
+    {
+        ctx.runner.update(|page| {
+            if let Some(product) = &mut page.product {
+                let mut canvas = shared.canvas.borrow_mut();
+                if product.poll(&mut canvas) {
+                    page.nodes = canvas.graph().nodes().count();
+                    page.picked = canvas.focused_url().map(str::to_owned);
+                }
+            }
+        });
+        shared.dirty.set(true);
+    }
+    {
+        let locked = ctx
+            .runner
+            .state()
+            .product
+            .as_ref()
+            .is_some_and(|product| product.selection_locked());
+        // The extension's writer hands over only while nothing is unsaved.
+        if shared.selection_locked.replace(locked) != locked
+            || !shared.root.has_attribute("data-writer-busy")
+        {
+            let _ = shared
+                .root
+                .set_attribute("data-writer-busy", if locked { "true" } else { "false" });
+        }
+    }
+    if ctx
+        .runner
+        .state()
+        .product
+        .as_ref()
+        .is_some_and(|product| product.queue_ready())
+    {
+        ctx.wake.wake();
+    }
+}
+
 fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
     let frame_shared = shared.clone();
     let after_shared = shared.clone();
@@ -2087,41 +2139,7 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
                 }
             }
             #[cfg(feature = "product")]
-            if ctx
-                .runner
-                .state()
-                .product
-                .as_ref()
-                .is_some_and(|product| product.ready())
-            {
-                ctx.runner.update(|page| {
-                    if let Some(product) = &mut page.product {
-                        let mut canvas = frame_shared.canvas.borrow_mut();
-                        if product.poll(&mut canvas) {
-                            page.nodes = canvas.graph().nodes().count();
-                            page.picked = canvas.focused_url().map(str::to_owned);
-                        }
-                    }
-                });
-                frame_shared.dirty.set(true);
-            }
-            #[cfg(feature = "product")]
-            {
-                let locked = ctx
-                    .runner
-                    .state()
-                    .product
-                    .as_ref()
-                    .is_some_and(|product| product.selection_locked());
-                // The extension's writer hands over only while nothing is unsaved.
-                if frame_shared.selection_locked.replace(locked) != locked
-                    || !frame_shared.root.has_attribute("data-writer-busy")
-                {
-                    let _ = frame_shared
-                        .root
-                        .set_attribute("data-writer-busy", if locked { "true" } else { "false" });
-                }
-            }
+            poll_saved_product(ctx, &frame_shared);
             #[cfg(feature = "product")]
             if forme::owner_ready(ctx.runner.state()) {
                 ctx.runner.update(forme::poll_owner);
@@ -2407,7 +2425,10 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
                 }
             });
         }),
-        after_wake: Box::new(|_ctx| {}),
+        after_wake: Box::new(move |_ctx| {
+            #[cfg(feature = "product")]
+            poll_saved_product(_ctx, &shared);
+        }),
         close_request: Box::new(|_ctx, _request| CloseDisposition::KeepVisible),
         focused_text: Box::new(|runner| {
             #[cfg(feature = "product")]
