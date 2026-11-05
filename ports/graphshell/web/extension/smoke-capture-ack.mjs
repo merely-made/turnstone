@@ -21,7 +21,8 @@ const chrome = {
     id: "graphshell",
     getURL: (path) => `chrome-extension://graphshell/${path}`,
     onMessage: { addListener: (listener) => listeners.push(listener) },
-    sendMessage: (message) => new Promise((resolve) => listeners[0](message, {}, resolve)),
+    sendMessage: (message) => new Promise((resolve) => listeners[0](message,
+      { id: "graphshell", url: "chrome-extension://graphshell/graph.html" }, resolve)),
   },
   storage: { local: {
     async get(keys) { return Object.fromEntries(keys.filter((key) => key in stored).map((key) => [key, stored[key]])); },

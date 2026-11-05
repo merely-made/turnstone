@@ -28,5 +28,10 @@
   },
   "action": {
     "default_title": "Open Graphshell"
+  },
+  "sidebar_action": {
+    "default_panel": "graph.html",
+    "default_title": "Graphshell",
+    "open_at_install": false
   }
 }

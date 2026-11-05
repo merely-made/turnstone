@@ -24,6 +24,9 @@ const historyForgetObjectNode = document.querySelector("#history-forget-object")
 const historyForgetButton = document.querySelector("#history-forget");
 const HISTORY_FILTER_STATE_KEY = "graphshell.history.filter.controls.v1";
 const HISTORY_FORGET_KEY = "graphshell.history.forget.pending.v1";
+const WRITER_LOCK = "graphshell.local-profile.writer.v1";
+const VIEWS_CHANNEL = "graphshell.local-profile.views.v1";
+const LOCAL_PROFILE_GLOBAL = "graphshellLocalProfileJson";
 let pulledIds = [];
 let currentPolicy = model.defaultPolicy();
 
@@ -77,7 +80,7 @@ function historyFilterState() {
 }
 
 function showHistoryFilter(state) {
-  if (!historyRangeNode) return;
+  if (!historyRangeNode || !historyPersonaNode || !historyDeviceNode) return;
   historyRangeNode.value = String(state.days);
   historyPersonaNode.value = state.persona;
   historyDeviceNode.value = state.device;
@@ -139,6 +142,7 @@ function publishHistoryInputs() {
 
 function finishHistoryControls() {
   sessionStorage.removeItem(HISTORY_FORGET_KEY);
+  if (!historyResultStatusNode) return;
   const error = document.body.dataset.historyError;
   const count = Number(document.body.dataset.historyResultCount || 0);
   const attempted = document.body.dataset.historyForgetAttempted === "true";
@@ -228,8 +232,8 @@ async function prepareCapture() {
   // The controls are optional: without them the queue is still pulled and acknowledged.
   if (panel) {
     panel.hidden = false;
-    historyFilterButton.addEventListener("click", applyHistoryFilter);
-    historyForgetButton.addEventListener("click", forgetHistory);
+    historyFilterButton?.addEventListener("click", applyHistoryFilter);
+    historyForgetButton?.addEventListener("click", forgetHistory);
     enableButton.addEventListener("click", () => {
       enableCapture().catch((error) => setStatus(String(error), "failed"));
     });
@@ -274,4 +278,103 @@ async function prepareCapture() {
   );
 }
 
-export { prepareCapture };
+// The installed profile's local scope, for the host to attribute work to.
+async function publishLocalProfile() {
+  globalThis[LOCAL_PROFILE_GLOBAL] = JSON.stringify(await send({ type: "profile.local" }));
+}
+
+const fixtureRoute = () => new URLSearchParams(location.search).has("fixture");
+
+async function focusThisView(channel) {
+  const tab = await extensionApi.tabs?.getCurrent?.();
+  if (!tab) {
+    channel.postMessage({ type: "shown", where: "panel" });
+    return;
+  }
+  await extensionApi.tabs.update(tab.id, { active: true });
+  await extensionApi.windows?.update?.(tab.windowId, { focused: true });
+  channel.postMessage({ type: "shown", where: "tab" });
+}
+
+// The writer answers other views. It hands over only with nothing unsaved:
+// reloading drops this document, and the browser then grants the queued view.
+function serveViews() {
+  const channel = new BroadcastChannel(VIEWS_CHANNEL);
+  channel.onmessage = ({ data }) => {
+    if (data?.type === "show") {
+      focusThisView(channel).catch((error) => console.error("Graphshell focus", error));
+    } else if (data?.type === "handover") {
+      if (graphshellRoot()?.dataset.writerBusy === "true") {
+        channel.postMessage({ type: "busy" });
+      } else {
+        channel.postMessage({ type: "released" });
+        location.reload();
+      }
+    }
+  };
+}
+
+function standby() {
+  const note = document.querySelector("#writer-standby");
+  const status = document.querySelector("#writer-standby-status");
+  const root = graphshellRoot();
+  if (!note) throw new Error("Graphshell is open in another view of this browser profile");
+  root.hidden = true;
+  note.hidden = false;
+  const channel = new BroadcastChannel(VIEWS_CHANNEL);
+  return new Promise((granted) => {
+    let request;
+    channel.onmessage = ({ data }) => {
+      if (data?.type === "shown") {
+        status.textContent = data.where === "panel"
+          ? "It is open in this browser's side panel."
+          : "Switched to the other view.";
+      } else if (data?.type === "busy") {
+        request?.abort();
+        request = null;
+        status.textContent = "That view has a change being saved or awaiting retry. Finish it there first.";
+      }
+    };
+    document.querySelector("#writer-show").addEventListener("click", () => {
+      channel.postMessage({ type: "show" });
+    });
+    document.querySelector("#writer-take").addEventListener("click", () => {
+      if (request) return;
+      request = new AbortController();
+      status.textContent = "Asking the other view to hand over…";
+      navigator.locks.request(WRITER_LOCK, { signal: request.signal }, () => {
+        channel.close();
+        note.hidden = true;
+        root.hidden = false;
+        granted();
+        serveViews();
+        return new Promise(() => {});
+      }).catch((error) => {
+        if (error.name !== "AbortError") status.textContent = String(error);
+      });
+      channel.postMessage({ type: "handover" });
+    });
+  });
+}
+
+// One view of the installed profile edits its store at a time. The lock is
+// held for this document's life and released by the browser when it goes.
+async function claimWriter() {
+  if (fixtureRoute()) return;
+  if (!navigator.locks) {
+    throw new Error("This browser cannot keep Graphshell to one writer");
+  }
+  const held = await new Promise((resolve) => {
+    navigator.locks.request(WRITER_LOCK, { ifAvailable: true }, (lock) => {
+      resolve(Boolean(lock));
+      return lock ? new Promise(() => {}) : null;
+    });
+  });
+  if (held) {
+    serveViews();
+    return;
+  }
+  await standby();
+}
+
+export { claimWriter, prepareCapture, publishLocalProfile };

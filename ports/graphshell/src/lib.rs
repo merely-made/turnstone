@@ -17,6 +17,8 @@ pub mod block_editing;
 pub mod bound_actions;
 #[cfg(all(feature = "coop", not(target_arch = "wasm32")))]
 pub mod coop;
+#[cfg(any(feature = "native", feature = "alembic-workshop-private"))]
+pub mod declaration;
 
 #[cfg(feature = "moot-resources")]
 pub mod moot_resources;
@@ -76,6 +78,8 @@ pub mod local_edit;
 pub mod local_intake;
 #[cfg(feature = "web")]
 pub mod local_locations;
+#[cfg(feature = "web")]
+pub mod local_profile;
 #[cfg(any(feature = "native", feature = "web"))]
 pub mod local_projection;
 #[cfg(feature = "web")]

@@ -1559,19 +1559,7 @@ fn relation_kind_label(kind: RelationKind) -> &'static str {
 pub fn fixture_handlers() -> HandlerRegistry {
     use mere::kernel::address::AddressKind;
     HandlerRegistry::new(vec![
-        HandlerOffer {
-            id: "graphshell.inspect".to_string(),
-            label: "Inspect in Graphshell".to_string(),
-            explanation: "Keep the address in the graph portal.".to_string(),
-            address_kinds: vec![
-                AddressKind::Http,
-                AddressKind::File,
-                AddressKind::Data,
-                AddressKind::GraphshellClip,
-                AddressKind::Directory,
-                AddressKind::Unknown,
-            ],
-        },
+        crate::handlers::inspect_handler(),
         HandlerOffer {
             id: "system.default".to_string(),
             label: "Open in another application".to_string(),

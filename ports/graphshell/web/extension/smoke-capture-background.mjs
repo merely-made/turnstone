@@ -31,6 +31,7 @@ const chrome = {
   action: { onClicked: actionClicked },
   tabs: { create: async () => {} },
   runtime: {
+    id: "graphshell",
     getURL: (path) => `chrome-extension://graphshell/${path}`,
     onMessage: runtimeMessage,
   },
@@ -110,9 +111,11 @@ vm.runInContext(
   context,
 );
 
+const PAGE = { id: "graphshell", url: "chrome-extension://graphshell/graph.html" };
+const senders = new Map();
 function send(message, listener = runtimeMessage.listeners[0]) {
   return new Promise((resolve) => {
-    const keptOpen = listener(message, {}, resolve);
+    const keptOpen = listener(message, senders.get(listener) ?? PAGE, resolve);
     assert.equal(keptOpen, true);
   }).then((response) => {
     if (response?.error) {
@@ -121,6 +124,23 @@ function send(message, listener = runtimeMessage.listeners[0]) {
     return response;
   });
 }
+
+// The installed profile's local scope is minted once and kept.
+const profile = await send({ type: "profile.local" });
+assert.deepEqual({ ...profile }, { schema: "graphshell.local-profile/v1", id: "fixture-scope", browser: "chromium" });
+assert.deepEqual({ ...(await send({ type: "profile.local" })) }, { ...profile });
+
+// Only this extension's packaged pages are answered; oversized messages are refused unread.
+function refused(message, sender) {
+  return new Promise((resolve) => {
+    const keptOpen = runtimeMessage.listeners[0](message, sender, resolve);
+    assert.equal(keptOpen, false);
+  }).then((response) => response.error);
+}
+assert.match(await refused({ type: "capture.pull" }, { id: "graphshell", url: "https://example.net/", tab: {} }), /own pages/);
+assert.match(await refused({ type: "capture.pull" }, { id: "other", url: PAGE.url }), /own pages/);
+assert.match(await refused({ type: "capture.ack", ids: ["x".repeat(70_000)] }, PAGE), /too large/);
+await assert.rejects(send({ type: "capture.ack", ids: [1] }), /Invalid capture acknowledgement/);
 
 historyGranted = true;
 const status = await send({ type: "capture.status" });
@@ -301,6 +321,8 @@ for (const file of ["capture-model.js", "background.js"]) {
   vm.runInContext(fs.readFileSync(new URL(`./${file}`, import.meta.url), "utf8"), firefoxContext);
 }
 const firefoxListener = firefoxMessages.listeners[0];
+senders.set(firefoxListener, { id: "graphshell", url: "moz-extension://fixture/graph.html" });
+assert.equal((await send({ type: "profile.local" }, firefoxListener)).browser, "firefox");
 const firefoxStatus = await send({ type: "capture.status" }, firefoxListener);
 assert.equal(firefoxStatus.source_scope.product, "firefox");
 await send({ type: "capture.configure", policy: { ...firefoxStatus.policy, enabled: true } }, firefoxListener);

@@ -17,7 +17,8 @@ use pandect::MereSessions;
 use sceno::InstanceId;
 
 use crate::access::AccessContext;
-use crate::handlers::{OpenAddressV1, intent_id};
+use crate::handlers::{OpenAddressV1, intent_id, local_profile_handlers};
+use crate::local_profile::LocalProfile;
 use crate::mere_host::{
     FIXTURE_DEVICE_TWO_ADDRESS, FIXTURE_PERSONA_ADDRESS, HOST_SLOT, MereHost, MereHostError,
     SelectedPersonaRef, fixture_handlers,
@@ -115,6 +116,25 @@ impl<B: Backend + Clone> GraphshellApp<B> {
                 device: FIXTURE_DEVICE_TWO_ADDRESS.to_string(),
                 at_ms: 3_000,
             },
+        )
+        .await?;
+        Ok(Self::new(host))
+    }
+}
+
+impl<B: Backend + Clone> GraphshellApp<B> {
+    /// Open the installed browser profile's store: its latest session, or an
+    /// empty one. It never seeds a fixture or names a fixture persona.
+    pub async fn open_local(
+        backend: B,
+        profile: &LocalProfile,
+        at_ms: u64,
+    ) -> Result<Self, AppError> {
+        let host = MereHost::open(
+            backend,
+            profile.persona(),
+            local_profile_handlers(),
+            profile.access_context(at_ms),
         )
         .await?;
         Ok(Self::new(host))
@@ -334,6 +354,36 @@ mod tests {
             device: FIXTURE_DEVICE_TWO_ADDRESS.to_string(),
             at_ms: 3_000,
         }
+    }
+
+    #[test]
+    fn local_profile_opens_empty_and_reopens_its_own_scope() {
+        pollster::block_on(async {
+            let backend = MemoryBackend::new();
+            let profile = LocalProfile::new(
+                uuid::Uuid::from_u128(7),
+                crate::local_profile::Browser::Chromium,
+            );
+            let mut app = GraphshellApp::open_local(backend.clone(), &profile, 1)
+                .await
+                .expect("open local profile");
+            assert!(!app.host.was_reopened());
+            assert_eq!(app.host.graph().node_count(), 0);
+            assert_eq!(app.host.selected_persona().persona, profile.scope());
+            let member =
+                crate::local_intake::create_address(&mut app, "https://example.org/", "Example")
+                    .expect("add address");
+            app.host.persist(SAVED_AT_SECS).await.expect("persist");
+            let session = app.host.graph_session().id();
+
+            let reopened = GraphshellApp::open_local(backend, &profile, 2)
+                .await
+                .expect("reopen local profile");
+            assert!(reopened.host.was_reopened());
+            assert_eq!(reopened.host.graph_session().id(), session);
+            assert!(reopened.host.graph().get_node_by_id(member).is_some());
+            assert_eq!(reopened.host.graph().node_count(), 1);
+        });
     }
 
     #[test]

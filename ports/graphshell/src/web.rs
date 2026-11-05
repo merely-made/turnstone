@@ -31,6 +31,8 @@ mod web_practice;
 #[cfg(feature = "remote")]
 mod web_rtc_link;
 mod web_scenario;
+#[cfg(feature = "product")]
+mod web_share;
 mod web_speed;
 mod web_suggestions;
 mod web_timing;

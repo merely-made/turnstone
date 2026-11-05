@@ -10,7 +10,8 @@ resident device host.
 |---|---|
 | `manifest.chromium.json` | MV3 manifest: `background.js` service worker, fixed public `key` |
 | `manifest.firefox.json` | MV3 manifest: `capture-model.js` + `background.js` background scripts, add-on id |
-| `background.js` | Browser action opens `graph.html`; history and permission listeners; the bounded `storage.local` capture queue |
+| `background.js` | Browser action opens `graph.html`; the local profile record; history and permission listeners; the bounded `storage.local` capture queue; refuses messages from anything but its own pages |
+| `graph.html`, `graph.css` | The extension workspace: the shared Graphshell component, the browser-history consent panel and the second-view notice |
 | `capture-model.js` | `GraphshellCaptureModel`: default policy, visit sanitization, queue bounds, the ledger's conflict rule |
 | `action-form.js` | `GraphshellActionForm`: builds an intent payload from an advertised `input_form` |
 | `bridge.html`, `bridge.css`, `bridge.js`, `resource-chunk.js` | The native surface: connects `org.mere.graphshell`, pulls bounded resource chunks, renders identity cards and advertised actions |
@@ -20,13 +21,40 @@ resident device host.
 | `fixtures/capture-conflicts.json` | Visit pairs with the encounter ledger's verdicts, written by `tests/capture_conflict_fixture.rs` |
 | `smoke-action-form.mjs`, `smoke-capture-model.mjs`, `smoke-capture-background.mjs`, `smoke-capture-ack.mjs`, `smoke-native-host.mjs`, `smoke-transfer-accept.mjs`, `smoke-resource-chunk.mjs` | Node smoke tests |
 
-`prepare-extension` also copies `index.html` (as `graph.html`), `styles.css`,
+`prepare-extension` also copies `graph.html`, `graph.css`, `styles.css`,
 `loader.js`, `mount.js`, `extension-profile.js`, the fonts and their notices
 (`IBMPlexSans-Regular.ttf`, `IBMPlexMono-Regular.ttf`, `Newsreader-Regular.ttf`,
 `NotoSansMath-Regular.ttf`, `OFL-IBMPlex.txt`, `OFL-Newsreader.txt`, `OFL-NotoSansMath.txt`), the segmenter dictionaries and their
 notice (`dictionaries/`, fetched only when reading text needs them), and
 `pkg/` from the parent `web/` directory into the destination. `dist/` is
 gitignored, so it is the usual destination.
+
+## Local profile
+
+The installed extension is useful without the native host. `background.js`
+mints one `graphshell.local-profile/v1` record (`id`, `browser`) in its own
+storage; the page passes it to the host, which opens the
+`graphshell-local-v1` IndexedDB store with `GraphshellApp::open_local`: the
+latest session, or an empty one. Nothing is seeded. Local work and captured
+visits are attributed to `graphshell://local-scope/<id>`, not to a Personae
+persona, and that scope claims no custody: signing, grants and native
+dispatch name the provider they need. `?fixture=` routes keep their own
+stores and fixture identity.
+
+One view writes the store at a time. A page takes the
+`graphshell.local-profile.writer.v1` Web Lock for its lifetime before reading
+the queue or opening the store. A second tab or the side panel shows **Show
+that view** and **Use this view instead**; the writer hands over by reloading
+only when nothing is being saved or awaiting retry, and the waiting view is
+granted the lock next. `graph.html` also opens as the Chrome side panel and the
+Firefox sidebar.
+
+Selected objects offer **Copy link**, which writes the exact stored address
+(query and fragment kept) to the clipboard in the click and reports refusal
+rather than success, and **Open in this browser**, the `browser.attached`
+handler: an accepted HTTP(S) open becomes `tabs.create` in this browser. Graph
+ids, inline data and browser-internal schemes are not copied as links; other
+schemes are not opened.
 
 ## Identities
 
@@ -42,11 +70,12 @@ release ids can replace the defaults through the installer.
 
 ## Permissions
 
-`nativeMessaging` and `storage` are installed permissions. `history`, `tabs`,
+`nativeMessaging`, `storage` and (Chromium) `sidePanel` are installed permissions. `history`, `tabs`,
 and `webNavigation` are optional; the portal's **Enable capture** control
 requests `history`. The default policy in `capture-model.js` has `enabled:
 false`. Visits are sanitized against the query-string and origin-exclusion
-settings before they enter the `storage.local` queue.
+settings before they enter the `storage.local` queue. Consent and those
+settings live in the **Browser history** panel of `graph.html`.
 
 Every write to the policy, queue, visit map and observation floor runs in one
 serialized order, so a configure or a permission removal cannot overwrite a
@@ -68,7 +97,8 @@ redelivery is absorbed as duplicates by the ledger.
 
 Capture attribution comes from the `SelectedPersonaRef` and device reference
 injected by the composing host, not from the selected vault profile or a
-device-roster entry.
+device-roster entry. In the installed extension that is the local profile's
+scope and browser.
 
 ## Encounter intake
 

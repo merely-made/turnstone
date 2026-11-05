@@ -9,7 +9,7 @@ use graphshell::capture::{
     BROWSER_HISTORY_HANDLER_PREFIX, BrowserHistoryCapture, BrowserVisit, CaptureOutcome,
     ForgetMode, HistoryCapturePolicy,
 };
-use graphshell::mere_host::FIXTURE_DEVICE_TWO_ADDRESS;
+use graphshell::local_profile::LocalProfile;
 use muniment::IndexedDbBackend;
 use serde::Deserialize;
 use wasm_bindgen::JsValue;
@@ -19,6 +19,8 @@ const CAPTURE_POLICY_GLOBAL: &str = "graphshellCapturePolicyJson";
 const CAPTURE_VISITS_GLOBAL: &str = "graphshellInitialVisitsJson";
 const HISTORY_FILTER_GLOBAL: &str = "graphshellHistoryFilterJson";
 const HISTORY_FORGET_GLOBAL: &str = "graphshellHistoryForgetJson";
+// The installed extension profile; absent on reference and fixture pages.
+const LOCAL_PROFILE_GLOBAL: &str = "graphshellLocalProfileJson";
 // The element `loader.js` reads the page's receipts from.
 const GRAPHSHELL_ROOT: &str = "graphshell-view, graphshell-tree";
 const CAPTURE_COMPLETE_EVENT: &str = "graphshell-capture-complete";
@@ -74,6 +76,12 @@ fn global_json(window: &Window, name: &str) -> Result<Option<String>, String> {
     Ok(value.as_string())
 }
 
+pub(crate) fn local_profile_input(window: &Window) -> Result<Option<LocalProfile>, String> {
+    global_json(window, LOCAL_PROFILE_GLOBAL)?
+        .map(|json| LocalProfile::parse(&json))
+        .transpose()
+}
+
 pub(crate) fn initial_capture_input(
     window: &Window,
 ) -> Result<Option<(HistoryCapturePolicy, Vec<BrowserVisit>)>, String> {
@@ -94,6 +102,7 @@ pub(crate) async fn apply_initial_capture(
     store: &mut IndexedDbBackend,
     input: Option<(HistoryCapturePolicy, Vec<BrowserVisit>)>,
     persona: &str,
+    device: &str,
     now_secs: u64,
 ) -> Result<InitialCaptureSummary, String> {
     let Some((policy, visits)) = input else {
@@ -109,14 +118,7 @@ pub(crate) async fn apply_initial_capture(
         });
     }
     let outcomes = capture
-        .ingest_batch(
-            &mut app.host,
-            store,
-            visits,
-            persona,
-            FIXTURE_DEVICE_TWO_ADDRESS,
-            now_secs,
-        )
+        .ingest_batch(&mut app.host, store, visits, persona, device, now_secs)
         .await
         .map_err(|error| error.to_string())?;
     Ok(InitialCaptureSummary {

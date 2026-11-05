@@ -197,6 +197,12 @@ impl SavedProduct {
         };
         let handler = HANDLERS[self.detail.handler.selected.min(HANDLERS.len() - 1)].0;
         self.detail.actions = self.detail.actions.saturating_add(1);
+        if self.local_profile.is_some() && handler == "system.default" {
+            self.status =
+                "Open in another application needs the Graphshell native host; it is not attached"
+                    .into();
+            return;
+        }
         self.status = match app.open_address(&data.address, handler) {
             Ok(chirograph::IntentResult::Accepted) => "Accepted".into(),
             Ok(result) => format!("{result:?}"),

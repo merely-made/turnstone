@@ -1,0 +1,50 @@
+/* Copyright 2026 Mark Alan Boykin
+   SPDX-License-Identifier: MPL-2.0
+   The extension's own controls beside the shared workspace. */
+.extension-panel,
+.extension-note {
+  background: var(--gs-app-surface, var(--tabard-color-surface, #101820));
+  border: 1px solid var(--gs-app-edge, var(--tabard-color-border-strong, #41616b));
+  border-radius: 6px;
+  color: var(--gs-app-text, var(--tabard-color-text, #dce5e8));
+  font: 14px/1.4 "IBM Plex Sans", system-ui, sans-serif;
+}
+
+.extension-panel {
+  bottom: 12px;
+  left: 12px;
+  max-width: min(360px, calc(100vw - 24px));
+  padding: 8px 12px;
+  position: fixed;
+  z-index: 10;
+}
+
+.extension-panel[open] { display: grid; gap: 6px; }
+.extension-panel summary { cursor: pointer; font-weight: 600; }
+.extension-panel textarea { min-height: 3em; }
+.extension-panel .check { align-items: center; display: flex; gap: 6px; }
+
+.extension-note {
+  margin: 15vh auto 0;
+  max-width: min(520px, calc(100vw - 32px));
+  padding: 20px 24px;
+}
+
+.extension-note h1 { font-size: 1.25rem; margin: 0 0 8px; }
+.button-row { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.extension-panel :is(button, select, textarea, input),
+.extension-note button {
+  background: var(--gs-app-surface, var(--tabard-color-surface-2, #17242c));
+  border: 1px solid var(--gs-app-edge, var(--tabard-color-border-strong, #41616b));
+  border-radius: 4px;
+  color: inherit;
+  font: inherit;
+  padding: 4px 8px;
+}
+
+.extension-panel button:focus-visible,
+.extension-note button:focus-visible {
+  outline: 2px solid var(--gs-app-primary, var(--tabard-color-primary, #d39b4a));
+  outline-offset: 2px;
+}

@@ -16,11 +16,18 @@ const VISIT_MAP_KEY = "graphshell.capture.visit-map.v1";
 const SOURCE_SCOPE_KEY = "graphshell.capture.source-scope.v1";
 const COVERAGE_KEY = "graphshell.capture.coverage.v1";
 const LIVE_FROM_KEY = "graphshell.capture.live-from.v1";
+// The installed profile's local, unassociated scope: no persona, no custody.
+const LOCAL_PROFILE_KEY = "graphshell.local-profile.v1";
+const LOCAL_PROFILE_SCHEMA = "graphshell.local-profile/v1";
+// No message from a packaged page needs more; larger ones are refused unread.
+const MAX_MESSAGE_CHARS = 64 * 1024;
+const EXTENSION_ORIGIN = extensionApi.runtime.getURL("");
 const SOURCE = extensionApi.runtime.getURL("").startsWith("moz-extension:")
   ? "firefox"
   : "chromium";
 let queueMutation = Promise.resolve();
 let sourceScopePromise;
+let localProfilePromise;
 const addressReconciliation = new Map();
 
 function sourceScope() {
@@ -33,6 +40,23 @@ function sourceScope() {
     return scope;
   })();
   return sourceScopePromise;
+}
+
+function localProfile() {
+  localProfilePromise ??= (async () => {
+    const stored = await extensionApi.storage.local.get([LOCAL_PROFILE_KEY]);
+    if (stored[LOCAL_PROFILE_KEY]?.schema === LOCAL_PROFILE_SCHEMA) return stored[LOCAL_PROFILE_KEY];
+    const profile = { schema: LOCAL_PROFILE_SCHEMA, id: crypto.randomUUID(), browser: SOURCE };
+    await extensionApi.storage.local.set({ [LOCAL_PROFILE_KEY]: profile });
+    return profile;
+  })();
+  return localProfilePromise;
+}
+
+// Only this extension's own pages may drive capture; it has no content scripts.
+function fromPackagedPage(sender) {
+  return sender?.id === extensionApi.runtime.id
+    && typeof sender.url === "string" && sender.url.startsWith(EXTENSION_ORIGIN);
 }
 
 extensionApi.action.onClicked.addListener(() => {
@@ -229,6 +253,9 @@ function configureCapture(requested) {
 }
 
 async function handleMessage(message) {
+  if (message?.type === "profile.local") {
+    return localProfile();
+  }
   if (message?.type === "capture.status") {
     const state = await storedCaptureState();
     return {
@@ -256,7 +283,11 @@ async function handleMessage(message) {
     };
   }
   if (message?.type === "capture.ack") {
-    const acknowledged = new Set(Array.isArray(message.ids) ? message.ids : []);
+    const ids = Array.isArray(message.ids) ? message.ids : [];
+    if (ids.length > model.DEFAULT_QUEUE_LIMIT || ids.some((id) => typeof id !== "string")) {
+      throw new Error("Invalid capture acknowledgement");
+    }
+    const acknowledged = new Set(ids);
     await serializedQueueMutation(async () => {
       const state = await storedCaptureState();
       await extensionApi.storage.local.set({
@@ -270,7 +301,21 @@ async function handleMessage(message) {
   throw new Error(`Unknown Graphshell extension message: ${message?.type}`);
 }
 
-extensionApi.runtime.onMessage.addListener((message, _sender, respond) => {
+extensionApi.runtime.onMessage.addListener((message, sender, respond) => {
+  if (!fromPackagedPage(sender)) {
+    respond({ error: "Graphshell accepts messages from its own pages only" });
+    return false;
+  }
+  let size;
+  try {
+    size = JSON.stringify(message ?? null).length;
+  } catch {
+    size = Infinity;
+  }
+  if (size > MAX_MESSAGE_CHARS) {
+    respond({ error: "Graphshell extension message is too large" });
+    return false;
+  }
   handleMessage(message).then(
     (result) => respond(result),
     (error) => respond({ error: String(error) }),

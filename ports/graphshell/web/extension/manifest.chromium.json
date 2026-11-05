@@ -6,7 +6,8 @@
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuxQtqbh5xrLn54gyn9mcce0P6hiCIV4bjisqzEIlHbvlb15sG+urgqCxhR4+DHCSzndNaJXgtmqd6Ubb/cjsXUWSPP1TenTstUMTMRTACKxEQhETz4kLVsTh95zzZ6T3Bs1qkecYp7HlOCHSJKYuXEq8lcalUFJlOUMxaVuocexq0JHOU4ElRVjetp6oWSL/RLR7ji7pt3hhj97kXOjaDyTO56X0tPUIxQhbmt08NMdYjz0X9HJZKmNZXFLrCkeCyrF+DqAxpL437xO9bE7ZN3QRoRE8EElnlUJ2Jk3ewsB+UstDP3sJ0Kk/tfOmaGCAW9rzc3cWHppZYayuhmucLQIDAQAB",
   "permissions": [
     "nativeMessaging",
-    "storage"
+    "storage",
+    "sidePanel"
   ],
   "optional_permissions": [
     "history",
@@ -21,5 +22,8 @@
   },
   "action": {
     "default_title": "Open Graphshell"
+  },
+  "side_panel": {
+    "default_path": "graph.html"
   }
 }

@@ -2105,13 +2105,22 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
                 frame_shared.dirty.set(true);
             }
             #[cfg(feature = "product")]
-            frame_shared.selection_locked.set(
-                ctx.runner
+            {
+                let locked = ctx
+                    .runner
                     .state()
                     .product
                     .as_ref()
-                    .is_some_and(|product| product.selection_locked()),
-            );
+                    .is_some_and(|product| product.selection_locked());
+                // The extension's writer hands over only while nothing is unsaved.
+                if frame_shared.selection_locked.replace(locked) != locked
+                    || !frame_shared.root.has_attribute("data-writer-busy")
+                {
+                    let _ = frame_shared
+                        .root
+                        .set_attribute("data-writer-busy", if locked { "true" } else { "false" });
+                }
+            }
             #[cfg(feature = "product")]
             if forme::owner_ready(ctx.runner.state()) {
                 ctx.runner.update(forme::poll_owner);

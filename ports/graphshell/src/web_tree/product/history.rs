@@ -32,15 +32,20 @@ pub(super) struct HistoryControls {
     completed: Rc<RefCell<Option<HistoryControlSummary>>>,
 }
 impl HistoryControls {
-    pub(super) async fn load(app: &mut App, mut store: IndexedDbBackend) -> Result<Self, String> {
+    /// `attribution` is the persona slot and device that capture records name.
+    pub(super) async fn load(
+        app: &mut App,
+        mut store: IndexedDbBackend,
+        attribution: (&str, &str),
+    ) -> Result<Self, String> {
         let input = initial_capture_input(&crate::window()?)?;
         let policy = input
             .as_ref()
             .map(|(policy, _)| policy.clone())
             .unwrap_or_else(HistoryCapturePolicy::disabled);
+        let (persona, device) = attribution;
         let capture =
-            apply_initial_capture(app, &mut store, input, FIXTURE_PERSONA_ADDRESS, now_secs())
-                .await?;
+            apply_initial_capture(app, &mut store, input, persona, device, now_secs()).await?;
         // The batch has committed; only now may the extension drop what it pulled.
         announce_capture(capture)?;
         let summary = apply_history_controls(app, &mut store, policy.clone(), now_secs()).await;

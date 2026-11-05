@@ -28,6 +28,7 @@ pub(super) mod promoted_links;
 mod query;
 pub(super) use query::QueryCompletion;
 mod scenes;
+mod share;
 pub(super) use commands::{focused_command_text, menu};
 use fields::TextField;
 pub(super) use fields::focused_text;
@@ -136,6 +137,9 @@ pub(super) struct SavedProduct {
     pub(super) forme_new_session: Option<Uuid>,
     operation_success: Option<String>,
     clip_member: Rc<Cell<Option<Uuid>>>,
+    /// The installed extension profile; `None` on reference and fixture routes.
+    local_profile: Option<graphshell::local_profile::LocalProfile>,
+    share_outcome: crate::web_share::Outcome,
 }
 
 /// The existing fixture and generated comparison routes remain unchanged.
@@ -175,7 +179,15 @@ async fn open_inner(root: &Element) -> Result<Option<SavedProduct>, String> {
     let retained_fixture = query_fixture
         || reading_fixture
         || params.get("fixture").as_deref() == Some("retained-content");
-    let database = if link_effects_fixture {
+    // The installed extension profile, unless a fixture route asked for its own store.
+    let local_profile = if params.get("fixture").is_some() {
+        None
+    } else {
+        crate::web_capture::local_profile_input(&super::super::window()?)?
+    };
+    let database = if local_profile.is_some() {
+        graphshell::local_profile::LOCAL_PROFILE_DATABASE
+    } else if link_effects_fixture {
         "graphshell-link-effects-p9-v1"
     } else if promoted_link_fixture {
         "graphshell-promoted-link-p7-v1"
@@ -204,7 +216,9 @@ async fn open_inner(root: &Element) -> Result<Option<SavedProduct>, String> {
         persona: FIXTURE_PERSONA_ADDRESS.into(),
         profile: "profile:graphshell-h3".into(),
     };
-    let mut app = if inspection_fixture {
+    let mut app = if let Some(profile) = &local_profile {
+        GraphshellApp::open_local(backend, profile, js_sys::Date::now() as u64).await
+    } else if inspection_fixture {
         GraphshellApp::open_or_field_inspection_fixture(backend, persona).await
     } else {
         GraphshellApp::open_or_fixture(backend, persona).await
@@ -236,7 +250,18 @@ async fn open_inner(root: &Element) -> Result<Option<SavedProduct>, String> {
             .seed_link_promotion_fixture()
             .map_err(|error| error.to_string())?;
     }
-    let history = history::HistoryControls::load(&mut app, capture_store).await?;
+    let attribution = local_profile.as_ref().map_or_else(
+        || {
+            (
+                FIXTURE_PERSONA_ADDRESS.to_string(),
+                graphshell::mere_host::FIXTURE_DEVICE_TWO_ADDRESS.to_string(),
+            )
+        },
+        |profile| (profile.scope(), profile.device()),
+    );
+    let history =
+        history::HistoryControls::load(&mut app, capture_store, (&attribution.0, &attribution.1))
+            .await?;
     app.host
         .persist(now_secs())
         .await
@@ -254,10 +279,11 @@ async fn open_inner(root: &Element) -> Result<Option<SavedProduct>, String> {
     app.mount_local().map_err(|error| error.to_string())?;
     let persistence = super::super::resolve_storage_persistence().await;
     let storage = graphshell::browser_storage::status_line(
-        if reopened {
-            "IndexedDB reopened"
-        } else {
-            "IndexedDB seeded"
+        match (local_profile.is_some(), reopened) {
+            (true, true) => "IndexedDB reopened · local profile",
+            (true, false) => "IndexedDB created · local profile",
+            (false, true) => "IndexedDB reopened",
+            (false, false) => "IndexedDB seeded",
         },
         &persistence,
     );
@@ -322,6 +348,8 @@ async fn open_inner(root: &Element) -> Result<Option<SavedProduct>, String> {
         forme_new_session: None,
         operation_success: None,
         clip_member: Rc::new(Cell::new(None)),
+        local_profile,
+        share_outcome: Rc::new(RefCell::new(None)),
     }))
 }
 
@@ -362,6 +390,7 @@ impl SavedProduct {
             || self.operation_completed.borrow().is_some()
             || self.link_visibility_completed.borrow().is_some()
             || self.assertion_visibility_completed.borrow().is_some()
+            || self.share_outcome.borrow().is_some()
             || self.projection.changed()
             || self.projection.needs_frame()
     }
@@ -1203,6 +1232,9 @@ impl SavedProduct {
 
     pub(super) fn poll(&mut self, canvas: &mut Canvas) -> bool {
         self.history.poll();
+        if let Some(status) = self.share_outcome.borrow_mut().take() {
+            self.status = status;
+        }
         self.keep_links(canvas);
         let projection_advanced = self.projection.advance();
         let projection_changed = self.projection.changed();
@@ -1706,6 +1738,7 @@ pub(super) fn controls(page: &TreePage) -> Child {
             "Object details",
             vec![DetailRow::new("Address", &product.address)],
         )]))];
+        fields.push(share::controls(product));
         if product.saving {
             fields.push(Box::new(el("p", "Saving changes…")));
         } else if product.pending_detail.is_some() {

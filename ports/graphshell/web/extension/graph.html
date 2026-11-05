@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en" class="full-page">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Graphshell</title>
+    <link rel="stylesheet" href="./styles.css?h3=1">
+    <link rel="stylesheet" href="./graph.css">
+  </head>
+  <body class="full-page">
+    <!-- The installed extension's workspace: the same component and host as
+         index.html, plus the browser's own consent and single-writer controls,
+         which only packaged extension code may drive. -->
+    <graphshell-view id="graphshell" data-owns-title data-appearance-application data-ready="false"></graphshell-view>
+
+    <!-- Shown instead of the workspace while another view of this profile
+         holds its one writer. -->
+    <section id="writer-standby" class="extension-note" role="region" aria-labelledby="writer-standby-title" hidden>
+      <h1 id="writer-standby-title">Graphshell is open in another view</h1>
+      <p id="writer-standby-status" role="status">One view edits this browser's graph at a time.</p>
+      <div class="button-row">
+        <button id="writer-show" type="button">Show that view</button>
+        <button id="writer-take" type="button">Use this view instead</button>
+      </div>
+    </section>
+
+    <details id="capture-panel" class="extension-panel" hidden>
+      <summary>Browser history</summary>
+      <p id="capture-status" role="status">Checking capture permission…</p>
+      <p>Visits are kept in this browser's local profile. Nothing is sent anywhere.</p>
+      <label for="capture-range">First import</label>
+      <select id="capture-range">
+        <option value="0">Live visits only</option>
+        <option value="1">Last day</option>
+        <option value="7" selected>Last 7 days</option>
+        <option value="30">Last 30 days</option>
+      </select>
+      <label class="check">
+        <input id="capture-strip-query" type="checkbox">
+        Remove query strings before storage
+      </label>
+      <label for="capture-exclusions">Excluded origins</label>
+      <textarea id="capture-exclusions" placeholder="https://private.example"></textarea>
+      <div class="button-row">
+        <button id="capture-enable" type="button">Enable capture</button>
+        <button id="capture-save" type="button">Save privacy settings</button>
+        <button id="capture-disable" type="button">Stop capture</button>
+      </div>
+    </details>
+
+    <section id="scenario-host" aria-hidden="true" hidden>
+      <pre id="scenario-log"></pre>
+      <pre id="scenario-result"></pre>
+      <div id="scenario-captures"></div>
+    </section>
+
+    <script type="module" src="./loader.js"></script>
+  </body>
+</html>
