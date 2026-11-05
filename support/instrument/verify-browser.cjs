@@ -50,12 +50,12 @@ async function main(){
   page.on('pageerror',e=>{errors.push(e.stack||e.message);fs.writeFileSync(path.join(out,'errors.json'),JSON.stringify(errors,null,2));});
   page.on('console',m=>{messages.push({type:m.type(),text:m.text()});fs.writeFileSync(path.join(out,'console.json'),JSON.stringify(messages,null,2));});
   async function mount(){await page.goto(origin+'/workspace.html?motion=normal&render_backend=webgpu');await page.bringToFront();await page.waitForFunction(()=>document.querySelector('graphshell-tree')?.dataset.ready==='true',null,{timeout:90000});assert.equal(new URL(page.url()).searchParams.get('app'),'local');assert.equal(await page.locator('graphshell-tree').getAttribute('data-selected-render-backend'),'webgpu');}
-  async function run(name,text){
+  async function run(name,text,{capturePNG=true}={}){
     await page.evaluate(async text=>{const m=await import('./pkg/graphshell_web.js');m.run_scenario(text)},text);
     await page.waitForFunction(()=>['ok','fail'].includes(document.body.dataset.scenario),null,{timeout:300000});
     const receipt=await page.evaluate(()=>({scenario:window.graphshellScenario(),host:window.graphshellReceipt(),semantic:window.graphshellSemanticTree(),hidden:document.hidden}));
-    fs.writeFileSync(path.join(out,name+'.json'),JSON.stringify({...receipt,errors},null,2));await page.screenshot({path:path.join(out,name+'.png')});checkBudget();
-    assert.equal(receipt.scenario.result?.result,'ok',JSON.stringify(receipt.scenario));assert.equal(receipt.scenario.gate_failures.length,0);assert.equal(errors.length,0);assert.equal(receipt.hidden,false);runs.push(name);console.log('PASS',name);return receipt;
+    fs.writeFileSync(path.join(out,name+'.json'),JSON.stringify({...receipt,errors},null,2));if(capturePNG)await page.screenshot({path:path.join(out,name+'.png')});checkBudget();
+    assert.equal(receipt.scenario.result?.result,'ok',JSON.stringify(receipt.scenario));assert.equal(receipt.scenario.gate_failures.length,0);assert.equal(errors.length,0);assert.equal(receipt.hidden,false);if(capturePNG)runs.push(name);console.log('PASS',name);return receipt;
   }
   await mount();
   const adapter=await page.evaluate(async()=>{const a=await navigator.gpu.requestAdapter();return a?{vendor:a.info.vendor,architecture:a.info.architecture,device:a.info.device}:null;});
@@ -70,7 +70,7 @@ async function main(){
   assert.equal(reopen.scenario.result.saved_graph.session,scene,'Entry and reopen preserve the real session');
   await run('open-reading','click role:button Read\nsettle 3\nassert snap shell-projection == Read\ncapture instrument_reading\n');
   await run('light-workbench','click role:button Appearance\nclick role:combobox Appearance mode\nsettle 1\nclick role:option Light\nsettle 4\nassert snap appearance-mode == light\ncapture instrument_light_workbench\n');
-  await page.getByRole('button',{name:'Appearance',exact:true}).click();
+  await run('close-appearance','click role:button Appearance\nsettle 1\n',{capturePNG:false});
   await page.setViewportSize({width:520,height:860});
   await run('narrow-workbench','settle 4\ncapture instrument_narrow_workbench\n');
   const narrow=await run('narrow-graph','click role:button Map\nsettle 4\ncapture instrument_narrow_graph\n');
