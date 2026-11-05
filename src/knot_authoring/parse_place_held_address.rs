@@ -3,21 +3,12 @@
 
 /// Split a place-held address into its holder and the path it names.
 ///
-/// `None` for every other Knot address, including `knot://vault/...`: a host
-/// that is not 64 hex characters is not a Personae root and must not be
-/// guessed at.
+/// The grammar is the shared release address (`gemot-address`); a place-held
+/// address is its log-key form, where the key is a Personae root. An edition
+/// pin is dropped: the holder serves its current path. `None` for every other
+/// Knot address, including `knot://vault/...` and Moot-anchored hosts: a host
+/// that is not a 64-hex key is not a holder root and must not be guessed at.
 pub fn parse_place_held_address(address: &str) -> Option<([u8; 32], String)> {
-    let rest = address
-        .get(..7)
-        .filter(|scheme| scheme.eq_ignore_ascii_case("knot://"))
-        .and_then(|_| address.get(7..))?;
-    let (host, path) = rest.split_once('/')?;
-    if host.len() != 64 || !host.bytes().all(|byte| byte.is_ascii_hexdigit()) || path.is_empty() {
-        return None;
-    }
-    let mut root = [0u8; 32];
-    for (slot, pair) in root.iter_mut().zip(host.as_bytes().chunks(2)) {
-        *slot = u8::from_str_radix(std::str::from_utf8(pair).ok()?, 16).ok()?;
-    }
-    Some((root, path.to_string()))
+    let parsed = gemot_address::KnotAddress::parse(address).ok()?;
+    Some((*parsed.log_key()?, parsed.path))
 }

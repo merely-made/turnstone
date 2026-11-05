@@ -345,6 +345,10 @@ use knot_projection_input_binding::knot_projection_input_binding;
 #[path = "knot_authoring/knot_runtime_source_binding.rs"]
 mod knot_runtime_source_binding;
 use knot_runtime_source_binding::knot_runtime_source_binding;
+#[path = "knot_authoring/clip_edition.rs"]
+mod clip_edition;
+#[allow(dead_code)] // The clip path signs once it holds a writer key (release log R7).
+pub use clip_edition::clip_edition;
 #[path = "knot_authoring/clip_knot_body.rs"]
 mod clip_knot_body;
 #[path = "knot_authoring/knot_clip_handle_same_admission.rs"]

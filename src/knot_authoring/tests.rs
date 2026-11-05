@@ -214,6 +214,8 @@ fn wait_for_clip_status(handle: &KnotClipHandle, expected: KnotClipStatus) {
     }
 }
 
+#[path = "tests/clip_edition_cases.rs"]
+mod clip_edition_cases;
 #[path = "tests/research_note_revision_grant_and_citation_control_refuse_cases.rs"]
 mod research_note_revision_grant_and_citation_control_refuse_cases;
 #[path = "tests/saved_selection_from_embedded_pool_pointer_gesture_cases.rs"]
