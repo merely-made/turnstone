@@ -6476,7 +6476,7 @@ dependencies = [
 [[package]]
 name = "netrender"
 version = "0.1.2"
-source = "git+https://github.com/merely-made/netrender.git?branch=main#6364e5d9df6453af72e6742a63807ed74d4852c8"
+source = "git+https://github.com/merely-made/netrender.git?branch=main#b14e8452bf34e5b5006422bb6f53f4c2e0ab1820"
 dependencies = [
  "glifo",
  "log",
@@ -6541,7 +6541,7 @@ dependencies = [
 [[package]]
 name = "netrender_device"
 version = "0.1.2"
-source = "git+https://github.com/merely-made/netrender.git?branch=main#6364e5d9df6453af72e6742a63807ed74d4852c8"
+source = "git+https://github.com/merely-made/netrender.git?branch=main#b14e8452bf34e5b5006422bb6f53f4c2e0ab1820"
 dependencies = [
  "log",
  "pollster",
@@ -7519,7 +7519,7 @@ dependencies = [
 [[package]]
 name = "paint_list_api"
 version = "0.1.2"
-source = "git+https://github.com/merely-made/netrender.git?branch=main#6364e5d9df6453af72e6742a63807ed74d4852c8"
+source = "git+https://github.com/merely-made/netrender.git?branch=main#b14e8452bf34e5b5006422bb6f53f4c2e0ab1820"
 dependencies = [
  "euclid",
  "serde",
@@ -7528,7 +7528,7 @@ dependencies = [
 [[package]]
 name = "paint_list_render"
 version = "0.1.2"
-source = "git+https://github.com/merely-made/netrender.git?branch=main#6364e5d9df6453af72e6742a63807ed74d4852c8"
+source = "git+https://github.com/merely-made/netrender.git?branch=main#b14e8452bf34e5b5006422bb6f53f4c2e0ab1820"
 dependencies = [
  "log",
  "netrender",
