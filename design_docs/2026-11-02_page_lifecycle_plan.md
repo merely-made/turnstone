@@ -141,3 +141,14 @@ existing place suite. Evidence stays within the 100 MB shared cap at
 `Code/testing/gemot/discovery-ui-20261104`. Native command, Genet widget and
 loopback-peer receipts are separate from headed, physical and remote-machine
 qualification.
+
+Qualification: public Turnstone `cb9bd91a` passes the complete 85-case place
+suite, including live later-invitee advertisement delivery, validated opening,
+withdrawal and the existing projection/session/revocation cases. The final
+native test executable separately passes four catalogue UI cases. An initial
+unconditional expiry timer prevented empty places from settling; timed refresh
+now runs only with active catalogue rows or outgoing intent, and the original
+quiet-state regression passes. The initial interrupted run and its overlapping
+Windows linker refusal remain non-acceptance receipts. Commit line-ceiling and
+locked all-target default Clippy checks pass. This retains the local verification
+boundaries stated above.
