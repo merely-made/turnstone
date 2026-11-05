@@ -26,6 +26,9 @@ const HISTORY_FILTER_STATE_KEY = "graphshell.history.filter.controls.v1";
 const HISTORY_FORGET_KEY = "graphshell.history.forget.pending.v1";
 const WRITER_LOCK = "graphshell.local-profile.writer.v1";
 const VIEWS_CHANNEL = "graphshell.local-profile.views.v1";
+// How long a follower leaves a vacant writer lock alone after the writer
+// announces it is unloading, so a reloaded page can claim it back first.
+const RELOAD_GRACE_MS = 3000;
 const LOCAL_PROFILE_GLOBAL = "graphshellLocalProfileJson";
 let pulledIds = [];
 let currentPolicy = model.defaultPolicy();
@@ -367,9 +370,16 @@ async function focusThisView(channel) {
 // The writer answers other views and tells them when a save has finished,
 // which is when the root's `data-writer-busy` returns to false. It hands over
 // only with nothing unsaved: reloading drops this document, the browser then
-// grants the queued view, and this one comes back following it.
+// grants the queued view, and this one comes back following it. Any other
+// unload is announced as `reloading`: followers wait a moment before taking
+// the vacant lock, so a reload keeps the role. A close looks the same, and
+// only delays the takeover by that moment.
 function serveViews() {
   const channel = new BroadcastChannel(VIEWS_CHANNEL);
+  let handingOver = false;
+  addEventListener("pagehide", () => {
+    if (!handingOver) channel.postMessage({ type: "reloading" });
+  });
   channel.onmessage = ({ data }) => {
     if (data?.type === "show") {
       focusThisView(channel).catch((error) => console.error("Graphshell focus", error));
@@ -377,6 +387,7 @@ function serveViews() {
       if (graphshellRoot()?.dataset.writerBusy === "true") {
         channel.postMessage({ type: "busy" });
       } else {
+        handingOver = true;
         channel.postMessage({ type: "released" });
         location.reload();
       }
@@ -415,6 +426,7 @@ function follow() {
   bar.hidden = false;
   const channel = new BroadcastChannel(VIEWS_CHANNEL);
   let request;
+  let holdUntil = 0;
   channel.onmessage = ({ data }) => {
     if (data?.type === "committed") {
       document.dispatchEvent(new Event("graphshell-committed"));
@@ -422,6 +434,8 @@ function follow() {
       status.textContent = data.where === "panel"
         ? "Editing happens in this browser's side panel."
         : "Switched to the view that edits.";
+    } else if (data?.type === "reloading") {
+      holdUntil = Date.now() + RELOAD_GRACE_MS;
     } else if (data?.type === "busy") {
       request?.abort();
       request = null;
@@ -459,6 +473,7 @@ function follow() {
   // When the writing view closes, the first follower to notice edits instead.
   const vacancy = setInterval(async () => {
     if (request || globalThis.graphshellViewRole !== "follower") return;
+    if (Date.now() < holdUntil) return;
     const { held } = await navigator.locks.query();
     if (held.some((lock) => lock.name === WRITER_LOCK)) return;
     navigator.locks.request(WRITER_LOCK, { ifAvailable: true }, granted)
