@@ -72,13 +72,30 @@ Receipts and exact runtime/source hashes are in
 `Code/testing/mere/closure-audit/batch-08-q465-owned-headless-probe.json` and
 `batch-08-q465-finalizer-controls.json` in the same directory.
 
-The full Instrument eight-case headed/product pilot remains separate. Its old
-browser package on Q-PC has 188/189 manifest-matching files; the Wasm and frozen
-native binary are missing, and current source no longer matches the old source
-manifest. Restore the original artifacts and exact source snapshot, or qualify a
-fresh candidate under its own source identity before claiming that pilot anew.
-Physical pointer, human AT, cross-app interoperability and other consumers retain
-their own gates. Active owner work is unchanged.
+On 2026-11-05, fresh WebAssembly/product and native packages at
+`1c064dfeff73e352c8e0c80fd92913c688407f2b` passed all eight headed Chrome/AMD
+WebGPU cases, both macOS native scenarios, collection and individual review of
+all 20 PNGs. Actual release includes all nine observed browser processes gone,
+temporary profile removal, listener-port reuse, both native processes gone,
+temporary bundles removed and the inhibitor closed. Q465's bounded Instrument
+pilot and closure qualification are complete at that source. The finalizer's
+five controls, release helper's five controls and nine Python controls pass.
+
+The [checkpoint](../../../../testing/mere/closure-audit/batch-11-checkpoint.md)
+binds successful builds, frozen packages and execution receipts. The earlier
+29 CPU tests, native workspace Clippy and viewer check at `4c82462ec` are reused
+only for unchanged input cohorts, with Git-object proof; the owning product
+WebAssembly Clippy and complete 1,437-package metadata audit were renewed at
+`1c064dfef`. The separate repository header audit still fails with 268 missing
+Exhibit A notices. No repository-wide licensing pass is claimed.
+
+Browser reading panes use seed nodes without document bodies; those captures
+qualify shell layout and Forme persistence, not browser article rendering.
+Native authored stylesheet and reading specimens have their own captures.
+Physical pointer, human AT, cross-app interoperability, other consumers and
+other platforms retain their own gates. October's missing Wasm/native inputs
+remain historical; these fresh packages do not relabel that evidence. Later
+integration commits are outside this exact-source runtime receipt.
 
 Controls: `python -m unittest discover -s support/instrument -p test_paths.py` and
 `node --test support/instrument/test_release.cjs`. Also run
