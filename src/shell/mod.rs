@@ -293,3 +293,6 @@ pub enum ShellEvent {
     ActorWake,
     NativeFrameReady,
 }
+
+#[cfg(all(test, feature = "peers", windows))]
+mod catalogue_headed;

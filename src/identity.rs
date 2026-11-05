@@ -82,6 +82,8 @@ pub fn app_declaration() -> ostiary::declaration::AppDeclaration {
                 SaltUse::persona(SaltPattern::Exact("mere/knot-publish/reader/v1".into())),
                 // The shared-place writers Turnstone authors under.
                 prefix("mere.gemot.membership.v1/"),
+                prefix("mere.gemot.objects.v1/"),
+                prefix("gemot/catalogue-advertisement/v1/"),
                 prefix("mere.commons.writer.v1/"),
                 prefix("mere.commons.chat.writer.v1/"),
                 prefix("stickleback/group-key-writer/v1/"),

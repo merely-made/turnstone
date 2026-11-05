@@ -158,3 +158,20 @@ covering the production binary and examples as well as tests. Mien is an
 explicit optional normal dependency of that feature; a test-only dependency
 must not supply the production admission API. Warnings remain existing style
 and documentation debt, rather than a warnings-clean claim.
+
+## Headed catalogue qualification, 2026-11-05
+
+An explicit ignored `catalogue_native_window` test hosts the real shell,
+palette and worker with a marked isolated profile and public synthetic seed.
+The native trial founds a place, advertises an abstract, browses its subject,
+excludes/restores the result by query, invokes validated opening, withdraws
+and shows an empty catalogue. Closing the window checks the signed withdrawal
+journal and the test passes. Document fetching is explicitly offline; opening
+uses the already focused synthetic URL. This is not an installed custody or
+remote-machine receipt. The source inspection also adds narrow custody salt
+declarations for the Gemot object writer and signed catalogue hints.
+
+Evidence: `Code/testing/gemot/headed-protected-20261105/headed-receipt.json`,
+window captures and the marked fixture. The lane now declares 200 MB, preserving
+preallocated native storage that exceeded its initial 100 MB estimate. The
+budget refinement is recorded; original evidence remains intact.

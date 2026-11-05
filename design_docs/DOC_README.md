@@ -236,3 +236,5 @@ The [page lifecycle plan](2026-11-02_page_lifecycle_plan.md#public-site-discover
 records Turnstone's public site advertisements, subject/abstract browsing,
 worker-validated opening and their local-peer qualification. Gemot owns the
 shared catalogue/workflow rules; Murm carries their bounded opaque hints.
+
+The page lifecycle plan records the November 5 native catalogue trial, its synthetic identity/offline boundaries, and the remaining protected-description work.
