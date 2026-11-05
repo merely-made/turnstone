@@ -16,6 +16,14 @@ const {release} = require('../instrument/release.cjs');
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 const sha = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 const write = (file, data) => fs.writeFileSync(file, JSON.stringify(data, null, 2) + '\n', {flag:'wx'});
+const commonSetup = 'assert snap shell-inspector-open == false\nassert snap shell-graph-controls == false\nclick role:button Inspector\nclick role:button Panes\nclick role:button Graph controls\nsettle 10\nassert snap shell-inspector-open == true\nassert snap shell-graph-controls == true\nassert snap shell-panes-open == false\n';
+const topologySetup = 'assert snap shell-inspector-open == false\nassert snap shell-graph-controls == false\nclick role:button Inspector\nsettle 10\nassert snap shell-inspector-open == true\nassert snap shell-graph-controls == false\n';
+
+async function runScenario(page, text) {
+  await page.evaluate(script => document.querySelector('graphshell-tree').graphshellModule.run_scenario(script), text);
+  await page.waitForFunction(() => ['ok', 'fail'].includes(document.body.dataset.scenario), null, {timeout:300000});
+  return page.evaluate(() => window.graphshellScenario());
+}
 
 function staticServer(packet) {
   const site = path.join(packet, 'site/ports/graphshell/web');
@@ -79,6 +87,8 @@ async function main(args) {
   const packet = fs.realpathSync(args[1]);
   const spec = JSON.parse(fs.readFileSync(path.join(packet, 'fresh.json')));
   assert.equal(spec.schema, 'fresh-link-family/v1');
+  assert(['ordinary', 'attachments', 'topology'].includes(spec.family));
+  const setupScript = spec.family === 'topology' ? topologySetup : commonSetup;
   const output = path.join(packet, 'browser-qualified');
   fs.mkdirSync(output); // Refuse a rerun over any previous evidence.
   const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'mere-link-qualification-'));
@@ -118,11 +128,19 @@ async function main(args) {
       const page = context.pages()[0] || await context.newPage();
       const pageErrors = [];
       page.on('pageerror', value => pageErrors.push(String(value)));
-      const query = new URLSearchParams({app:'local', fixture:scenario.fixture,
-        scenario:'scenarios/' + scenario.name + '.scn', render_backend:'webgpu'});
+      const query = new URLSearchParams({app:'local', fixture:scenario.fixture, render_backend:'webgpu'});
       await page.goto(`http://127.0.0.1:${port}/tree.html?${query}`, {timeout:120000});
       await page.bringToFront();
-      await page.waitForFunction(() => ['ok', 'fail'].includes(document.body.dataset.scenario), null, {timeout:300000});
+      await page.waitForFunction(() => document.querySelector('graphshell-tree')?.dataset.ready === 'true', null, {timeout:120000});
+      const folder = path.join(output, scenario.name);
+      fs.mkdirSync(folder);
+      // The current shell starts with Inspector closed. Establish the old test's
+      // visible-control precondition before it records its geometry baseline.
+      const setup = await runScenario(page, setupScript);
+      write(path.join(folder, 'setup.json'), {script:setupScript, sha256:sha(Buffer.from(setupScript)), scenario:setup});
+      assert.equal(setup.state, 'ok'); assert.deepEqual(setup.errors, []); assert.deepEqual(setup.gate_failures, []);
+      const input = fs.readFileSync(path.join(packet, 'site/ports/graphshell/web/scenarios', scenario.name + '.scn'));
+      await runScenario(page, input.toString('utf8'));
       const evidence = await page.evaluate(async () => {
         const root = document.querySelector('graphshell-tree');
         const gpu = await navigator.gpu.requestAdapter();
@@ -134,11 +152,10 @@ async function main(args) {
               device:info.device, description:info.description}},
           captures:[...document.querySelectorAll('#scenario-captures img')].map(img => ({name:img.dataset.capture, data:img.src}))};
       });
-      const folder = path.join(output, scenario.name);
-      fs.mkdirSync(folder);
       const captures = evidence.captures;
       delete evidence.captures;
       evidence.page_errors = pageErrors;
+      evidence.executed_scenario_sha256 = sha(input);
       write(path.join(folder, 'result.json'), evidence);
       for (const capture of captures) {
         assert(/^[a-z0-9_]+$/.test(capture.name));

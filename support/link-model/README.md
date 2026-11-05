@@ -66,6 +66,12 @@ Topology also retains the viewer-only Wasm check and port-boundary check.
 The macOS driver owns a fresh profile and loopback listener. It runs the original
 seed and reopen scenarios in distinct headed native Chrome processes at the same
 origin, forces WebGPU, records the AMD adapter and saves every scenario PNG.
+The shell now starts with Inspector and Graph controls closed. A separately
+recorded setup scenario opens Inspector. The P4 families also enable Graph controls
+through Panes before recording their baseline. P8 leaves Graph controls closed
+because its original script opens them. Setup settles each layout first.
+The original scenario bytes, assertions and
+tolerances remain intact; setup failures also fail qualification.
 It closes only its own resources and records process exits, profile removal and
 port reuse. It refuses an existing browser-output directory. Any failed run is
 retained; another attempt needs a new packet. Visual review must inspect and hash

@@ -16,6 +16,9 @@ import ordinary_paths as check
 import shared_attachments as attachments
 import counted_topology as topology
 
+BROWSER_SETUP = 'assert snap shell-inspector-open == false\nassert snap shell-graph-controls == false\nclick role:button Inspector\nclick role:button Panes\nclick role:button Graph controls\nsettle 10\nassert snap shell-inspector-open == true\nassert snap shell-graph-controls == true\nassert snap shell-panes-open == false\n'
+TOPOLOGY_SETUP = 'assert snap shell-inspector-open == false\nassert snap shell-graph-controls == false\nclick role:button Inspector\nsettle 10\nassert snap shell-inspector-open == true\nassert snap shell-graph-controls == false\n'
+
 
 def definition(family):
     values = {
@@ -106,6 +109,22 @@ def test_inventory(root, revision, role, inventory):
     return sum(names[0].values()), sum(names[1].values())
 
 
+def verify_browser_setup(root, scenario, result, family='ordinary'):
+    folder = root / 'browser-qualified' / scenario['name']
+    setup = check.read_json(folder / 'setup.json')
+    expected = TOPOLOGY_SETUP if family == 'topology' else BROWSER_SETUP
+    if (setup.get('script') != expected
+            or setup.get('sha256') != hashlib.sha256(expected.encode()).hexdigest()
+            or setup.get('scenario', {}).get('state') != 'ok'
+            or setup['scenario'].get('errors') != [] or setup['scenario'].get('gate_failures') != []
+            or setup['scenario'].get('captures') != []
+            or setup['scenario'].get('result', {}).get('result') != 'ok'):
+        check.fail('Inspector setup must pass before the original scenario')
+    path = root / 'site/ports/graphshell/web/scenarios' / (scenario['name'] + '.scn')
+    if result.get('executed_scenario_sha256') != check.sha256_file(path):
+        check.fail('executed scenario bytes differ from the sealed input')
+
+
 def verify(root, repo):
     fresh = check.read_json(root / 'fresh.json')
     if fresh.get('schema') != 'fresh-link-family/v1':
@@ -159,6 +178,8 @@ def verify(root, repo):
                 hashlib.sha256(git_blob(repo, revision, row['path'])).hexdigest() != row['sha256']):
             check.fail('executed scenario differs from committed source input')
     seed, reopened = [check.verify_browser_scenario(root, s['name'], set(s['captures'])) for s in scenarios]
+    for scenario, result in zip(scenarios, (seed, reopened)):
+        verify_browser_setup(root, scenario, result, fresh['family'])
     for result in (seed, reopened):
         if (result.get('page_errors') != [] or result.get('runtime', {}).get('visibility') != 'visible'
                 or result.get('runtime', {}).get('viewport') != [1600, 1000]

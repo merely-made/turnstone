@@ -13,6 +13,30 @@ import fresh
 
 
 class Fresh(unittest.TestCase):
+    def test_setup_and_executed_scenario_cannot_be_substituted(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp).resolve()
+            folder = root / 'browser-qualified/example'
+            folder.mkdir(parents=True)
+            source = root / 'site/ports/graphshell/web/scenarios/example.scn'
+            source.parent.mkdir(parents=True)
+            source.write_bytes(b'original assertions\n')
+            setup = {'script': fresh.BROWSER_SETUP,
+                     'sha256': hashlib.sha256(fresh.BROWSER_SETUP.encode()).hexdigest(),
+                     'scenario': {'state': 'ok', 'errors': [], 'gate_failures': [],
+                                  'captures': [], 'result': {'result': 'ok'}}}
+            (folder / 'setup.json').write_text(json.dumps(setup))
+            result = {'executed_scenario_sha256': fresh.check.sha256_file(source)}
+            fresh.verify_browser_setup(root, {'name': 'example'}, result)
+            with self.assertRaisesRegex(fresh.check.VerificationError, 'Inspector setup'):
+                fresh.verify_browser_setup(root, {'name': 'example'}, result, 'topology')
+            with self.assertRaisesRegex(fresh.check.VerificationError, 'scenario bytes'):
+                fresh.verify_browser_setup(root, {'name': 'example'}, {})
+            setup['scenario']['result']['result'] = 'fail'
+            (folder / 'setup.json').write_text(json.dumps(setup))
+            with self.assertRaisesRegex(fresh.check.VerificationError, 'Inspector setup'):
+                fresh.verify_browser_setup(root, {'name': 'example'}, result)
+
     def test_canvas_feature_and_complete_targets_cannot_be_omitted(self):
         valid = ['cargo', '+1.99.1', 'test', '--locked', '-p', 'pictograph', '--features', 'canvas', '-j', '2', '--', '--test-threads=1']
         fresh.complete_test_scope(valid, 'canvas', 'pictograph')
