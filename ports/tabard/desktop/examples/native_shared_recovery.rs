@@ -86,7 +86,9 @@ fn state_values(state: &WorkshopState) -> Value {
 fn seal(ctx: &Context<'_>) -> Result<Authority, String> {
     let state = ctx.runner.state();
     let dom = ctx.runner.dom();
-    let projection = ctx.a11y_projection().ok_or("production projection absent")?;
+    let projection = ctx
+        .a11y_projection()
+        .ok_or("production projection absent")?;
     let node = taproot::matching_prefer_exact_with_projection(
         &*dom.borrow(),
         &Selector::role("textbox").with_attr("data-field", "name"),
@@ -225,10 +227,13 @@ impl CaptureSlot {
 
 fn arm(host: &mut NativeHost, slot: Rc<RefCell<CaptureSlot>>) {
     let sealed = slot.clone();
-    host.s.pending_presentation_observer = Some(Box::new(move |ctx, stamp| {
-        let mut sealed = sealed.borrow_mut();
-        sealed.seal = Some(seal(ctx));
-        sealed.stamp = Some(stamp);
+    host.s.pending_presentation_observer = Some(Box::new(move |ctx, _proposed| {
+        let authority = seal(ctx);
+        cambium_rootstock::PreparedPresentationObserver::new(move |stamp| {
+            let mut sealed = sealed.borrow_mut();
+            sealed.seal = Some(authority);
+            sealed.stamp = Some(stamp);
+        })
     }));
     host.s.pending_stamped_capture = Some(Box::new(move |result| {
         // The observer runs before capture callbacks, so the stamp is here.
