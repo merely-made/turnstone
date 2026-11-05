@@ -39,6 +39,12 @@ def main():
             or browser['adapter']['architecture'] != args.expected_architecture):
         raise ValueError('Browser qualification or expected adapter mismatch')
     verify_release(read_json(browser_dir / 'release.json'))
+    runtime = read_json(browser_dir / 'runtime.json')
+    if (runtime.get('passed') is not True or runtime.get('owned_pids_remaining') != []
+            or not runtime.get('owned_pids_observed') or not runtime.get('temporary_profile_removed')
+            or not runtime.get('http_port_rebound') or len(runtime.get('spawned', [])) != 1
+            or runtime['spawned'][0].get('exit_observed') is not True):
+        raise ValueError('Actual owned browser/process/profile/port release did not pass')
     expected_runs = {'wide-entry', 'forme-original', 'forme-reopen', 'open-reading',
                      'light-workbench', 'narrow-workbench', 'narrow-graph', 'commands-focus'}
     if set(browser['runs']) != expected_runs:
@@ -47,7 +53,7 @@ def main():
         result = read_json(browser_dir / (run + '.json'))
         if (not (browser_dir / (run + '.png')).is_file()
                 or result['scenario']['result']['result'] != 'ok'
-                or result['scenario']['gate_failures'] or result['errors']):
+                or result['scenario']['gate_failures'] or result['errors'] or result['hidden']):
             raise ValueError('Missing browser capture or failed scenario: ' + run)
     for directory, filename in ((browser_dir, 'candidate.json'),
                                 (native_dir, 'native-candidate.json')):
@@ -63,6 +69,14 @@ def main():
     native = []
     for label in ('native-instrument', 'native-usability'):
         process = read_json(native_dir / label / 'process.json')
+        bundle = read_json(native_dir / label / 'bundle-release.json')
+        if bundle.get('removed') is not True or bundle.get('remaining') != [] or bundle.get('retained_bundle'):
+            raise ValueError('Owned native application bundle was not released: ' + label)
+        scenario = f'ports/tabard/desktop/scenarios/{label.removeprefix("native-")}.scn'
+        if (process['binary_sha256'] != native_candidate['binary_sha256']
+                or process['scenario_sha256'] != candidate['source_sha256'][scenario]
+                or not process.get('owned_pids_observed') or process.get('owned_pids_remaining') != []):
+            raise ValueError('Native executable/scenario identity or actual process release mismatch: ' + label)
         receipt = (native_dir / label / 'scenario.done').read_text()
         frames = re.search(r'frames: (\d+) captured, (\d+) blank, (\d+) distinct', receipt)
         presented = re.search(r'presentation: (\d+) frames, (\d+) redraws, (\d+) unpresented', receipt)

@@ -17,6 +17,7 @@ from common import (parser, fresh_output, read_json, write_json, verify_sources,
 def main():
     cli = parser(__doc__)
     cli.add_argument('--package', type=Path, required=True)
+    cli.add_argument('--launcher', type=Path, help='Explicit maintained launcher when tools and product source differ')
     args = cli.parse_args()
     if sys.platform != 'darwin':
         cli.error('This native runner qualifies macOS only')
@@ -35,8 +36,9 @@ def main():
                                    'candidate_sha256': sha(package / 'native-candidate.json')})
     profile = out / 'profile'
     profile.mkdir()
+    launcher = (args.launcher or repo / 'scripts/run_macos_scenario.py').resolve(strict=True)
     commands = [{'label': 'native-' + name, 'command': [
-        sys.executable, str(repo / 'scripts/run_macos_scenario.py'),
+        sys.executable, str(launcher),
         '--binary', manifest['binary'], '--prefix', 'TABARD',
         '--scenario', str(repo / f'ports/tabard/desktop/scenarios/{name}.scn'),
         '--output', str(out / ('native-' + name)), '--timeout', '120',
@@ -44,6 +46,7 @@ def main():
         '--', '--library', str(profile / (name + '.json'))]}
         for name in ('instrument', 'usability')]
     write_json(out / 'native-commands.json', commands)
+    write_json(out / 'launcher.json', {'path': str(launcher), 'sha256': sha(launcher)})
     inhibit = subprocess.Popen(['/usr/bin/caffeinate', '-i', '-s', '-t', '300'])
     started = time.monotonic()
     results, failure = [], None

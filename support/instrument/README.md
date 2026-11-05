@@ -13,7 +13,12 @@ failed runs separately. Default retained-byte cap is 100 MB per command; adjust
 1. `python support/instrument/run-cpu.py --repo REPO --target EXISTING_TARGET --output NEW_CPU`
    renews the bounded CPU/configuration gates with the checkout's toolchain and
    the existing stable Cargo target, including its `build` directory. This is
-   separate from browser/native execution.
+   separate from browser/native execution. For a machine's mandatory launcher,
+   pass `--cargo-wrapper BUILD_STORAGE_PY --cargo-lane EXISTING_LANE
+   --wrapper-python LAUNCHER_PYTHON`. Web checks run from the standalone web
+   crate so its committed target configuration applies; current scopes are
+   `presentation-webgpu` and `product,applets,presentation-webgpu`. Independent
+   gates continue after a failure, and the final exit remains nonzero.
 2. Build the web site/package and native binary under their owning lane. Run
    wasm-bindgen as that build requires before freezing; supply the complete site
    with `workspace.html`, `pkg/graphshell_web_bg.wasm` and scenario assets.
@@ -21,17 +26,31 @@ failed runs separately. Default retained-byte cap is 100 MB per command; adjust
    copies and hashes those artifacts. It checks committed source inputs and
    records the caller-declared build identity. It does not prove or run a build.
 3. In an owned, unlocked macOS headed lane:
-   `node support/instrument/verify-browser.cjs --repo REPO --package NEW_PACKAGE --output NEW_BROWSER --playwright MODULE_PATH`
+   `node --require ./support/instrument/observe-browser.cjs support/instrument/verify-browser.cjs --repo REPO --package NEW_PACKAGE --output NEW_BROWSER --playwright MODULE_PATH`
    retains the eight existing scenarios and real AMD adapter constraint. Node
    and Playwright must already be available. `--channel` defaults to `chrome`.
    The eight-minute run deadline and bounded close attempts remain separate.
+   Each scenario can use up to five minutes within that overall limit. The
+   observer records the launched Chrome child, sampled descendants, actual
+   exit, private-profile removal and reuse of the owned listener port. It does
+   not close resources. Forme action navigation uses today's Map/Read controls
+   and Panes/Read selected; the original assertions, captures and numeric
+   controls remain intact, with both script hashes and the exact adaptation
+   retained. Inspector and Graph controls are opened through public controls
+   before each initial/reopened baseline.
 4. In a separately owned, unlocked macOS native lane:
    `python support/instrument/run-native.py --repo REPO --package NEW_PACKAGE --output NEW_NATIVE`
    runs the two source-bound cases serially with fresh authored libraries,
    120-second scenario deadlines and a 300-second inhibitor ceiling.
+   `--launcher MAINTAINED_SCRIPT` explicitly selects a newer harness when the
+   frozen product source differs; its actual hash is recorded. The launcher
+   keeps its temporary application bundle until the observed owned app exits,
+   even when macOS `open -W` returns early. Timeouts retain bounded samples and
+   terminate only the exact owned executable. A surviving app retains its bundle.
 5. `python support/instrument/collect.py --repo REPO --package NEW_PACKAGE --browser NEW_BROWSER --native NEW_NATIVE --output NEW_COLLECTION`
    verifies candidate bindings, source/package hashes, actual scenario outputs,
-   PNGs, neutral-frame pixels and explicit release records. Pillow must already
+   PNGs, neutral-frame pixels, actual process/profile/port and bundle release,
+   executable/scenario hashes and explicit release records. Pillow must already
    be installed. The expected adapter remains `amd` / `gcn-5`; the two named
    options permit another lane to declare its own scope explicitly. Collection
    copies actual supplied runs and does not perform a replay. It does not copy
@@ -62,5 +81,9 @@ Physical pointer, human AT, cross-app interoperability and other consumers retai
 their own gates. Active owner work is unchanged.
 
 Controls: `python -m unittest discover -s support/instrument -p test_paths.py` and
-`node --test support/instrument/test_release.cjs`. Neither starts a browser or
-native application; the Node positive control closes one owned loopback server.
+`node --test support/instrument/test_release.cjs`. Also run
+`python -m unittest discover -s support/instrument -p test_native_launcher.py`
+for early-launcher-return and exact-owner controls, and
+`node support/instrument/test_finalizer.cjs` for the maintained finalizer's five
+source-bound positive/negative controls. These controls do not start a browser
+or native application; the Node positive control closes one owned loopback server.

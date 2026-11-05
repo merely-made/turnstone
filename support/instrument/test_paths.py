@@ -33,6 +33,9 @@ class Paths(unittest.TestCase):
             binary.write_bytes(b'unit control; never executed')
             source = {'source': revision, 'build_source': revision, 'compiler': 'unit-control',
                       'source_sha256': {'Cargo.toml': digest(repo / 'Cargo.toml')}}
+            for case in ('instrument', 'usability'):
+                scenario = f'ports/tabard/desktop/scenarios/{case}.scn'
+                source['source_sha256'][scenario] = digest(repo / scenario)
             assets = {}
             for name in ('workspace.html', 'app.js', 'app.wasm'):
                 (package / name).write_bytes(b'unit control; never executed')
@@ -51,14 +54,22 @@ class Paths(unittest.TestCase):
             release = {'schema': 'instrument-release/v2', 'context_closed': True,
                        'browser_closed': True, 'http_closed': True, 'close_errors': []}
             write(browser / 'release.json', release)
+            runtime = {'passed': True, 'owned_pids_remaining': [], 'owned_pids_observed': [47],
+                       'temporary_profile_removed': True, 'http_port_rebound': True,
+                       'spawned': [{'exit_observed': True}]}
+            write(browser / 'runtime.json', runtime)
             for run in runs:
                 write(browser / (run + '.json'), {'scenario': {'result': {'result': 'ok'},
-                      'gate_failures': []}, 'errors': []})
+                      'gate_failures': []}, 'errors': [], 'hidden': False})
                 image.save(browser / (run + '.png'))
             for label in ('native-instrument', 'native-usability'):
                 folder = native / label
                 folder.mkdir()
-                write(folder / 'process.json', {'success': True, 'timeout': False})
+                write(folder / 'bundle-release.json', {'removed': True, 'remaining': [], 'retained_bundle': None})
+                scenario = f'ports/tabard/desktop/scenarios/{label.removeprefix("native-")}.scn'
+                write(folder / 'process.json', {'success': True, 'timeout': False,
+                      'binary_sha256': digest(binary), 'scenario_sha256': source['source_sha256'][scenario],
+                      'owned_pids_observed': [48], 'owned_pids_remaining': []})
                 count = 2 if label == 'native-instrument' else 1
                 (folder / 'scenario.done').write_text(f'RESULT ok\nframes: {count} captured, 0 blank, {count} distinct\npresentation: 1 frames, 1 redraws, 0 unpresented\n')
                 if count == 2:
@@ -81,6 +92,11 @@ class Paths(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn(b'closure is unverified', result.stderr)
             self.assertFalse((root / 'rejected').exists())
+            write(browser / 'release.json', release)
+            write(browser / 'runtime.json', {**runtime, 'owned_pids_remaining': [47]})
+            result = subprocess.run(command + ['--output', str(root / 'live-process')], capture_output=True)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertFalse((root / 'live-process').exists())
 
     def test_macos_console_plists_preserve_locked_and_unknown_refusals(self):
         self.assertTrue(console_unlocked([{'IOConsoleUsers': [{'CGSSessionScreenIsLocked': False}]}]))
