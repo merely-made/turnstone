@@ -780,11 +780,11 @@ fn preview(page: &mut TreePage, target: Uuid, edge: workbench::Edge) {
                 .find(|cell| cell.member == target)
                 .map(|cell| (DropEffect::Split(edge), region.cell_world_bounds(cell)));
             pane.candidate = Some(candidate);
-            if let Ok(region) = forme_workspace::project_region(
-                pane.current(),
-                owner,
-                page.shared.canvas.borrow().graph(),
-            ) {
+            let projected = {
+                let canvas = page.shared.canvas.borrow();
+                forme_workspace::project_region(pane.current(), owner, canvas.graph())
+            };
+            if let Ok(region) = projected {
                 let _ = page.shared.canvas.borrow_mut().set_forme_region(region);
             }
             pane.status = "Preview ready · Apply move or cancel".into();
