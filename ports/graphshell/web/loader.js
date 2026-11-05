@@ -405,6 +405,7 @@ async function loadChronicleBindingReceipt(params) {
 try {
   if ((globalThis.browser ?? globalThis.chrome)?.runtime?.id) {
     await import("./capture-model.js");
+    await import("./follower-queue.js");
     const extensionProfile = await import("./extension-profile.js");
     // Another view may already write this profile; this one then follows it.
     const role = await extensionProfile.claimWriter();

@@ -29,6 +29,7 @@ mod query;
 pub(super) use query::QueryCompletion;
 mod scenes;
 mod follow;
+mod queue;
 mod share;
 pub(super) use commands::{focused_command_text, menu};
 use fields::TextField;
@@ -44,6 +45,8 @@ enum CompletedEdit {
     Metadata,
     Intake,
     Detail(Option<Uuid>),
+    /// A follower's edit, stored by this writer and then answered.
+    Admitted,
 }
 type Completion = (App, CompletedEdit, Result<NodeMetadata, String>);
 type OperationCompletion = (App, Option<PendingOperation>, Result<(), String>);
@@ -142,6 +145,8 @@ pub(super) struct SavedProduct {
     local_profile: Option<graphshell::local_profile::LocalProfile>,
     /// Set while another view holds the writer: this view reads its saves.
     following: Option<follow::Following>,
+    /// Edits a follower sends and a writer admits; absent on fixture routes.
+    queue: Option<queue::Queue>,
     share_outcome: crate::web_share::Outcome,
     /// A live capture batch holds the graph until it commits or fails.
     capture_pending: bool,
@@ -220,6 +225,13 @@ async fn open_inner(root: &Element) -> Result<Option<SavedProduct>, String> {
     let backend = IndexedDbBackend::open(database, "muniment")
         .await
         .map_err(|error| error.to_string())?;
+    // A follower reads the store through a handle that refuses every write;
+    // what it edits it sends to the writer instead.
+    let backend = if following {
+        backend.read_only()
+    } else {
+        backend
+    };
     let capture_store = backend.clone();
     let persona = SelectedPersonaRef {
         persona: FIXTURE_PERSONA_ADDRESS.into(),
@@ -372,6 +384,10 @@ async fn open_inner(root: &Element) -> Result<Option<SavedProduct>, String> {
         operation_success: None,
         clip_member: Rc::new(Cell::new(None)),
         following: following.then(follow::Following::new).transpose()?,
+        queue: local_profile
+            .is_some()
+            .then(|| queue::Queue::new(following))
+            .transpose()?,
         local_profile,
         share_outcome: Rc::new(RefCell::new(None)),
         capture_pending: false,
@@ -405,12 +421,14 @@ impl SavedProduct {
             .map(|app| app.host.graph().nodes().count())
     }
     pub(super) fn forme_source(&self) -> Option<(IndexedDbBackend, Uuid)> {
-        // A follower hands no store on: documents and panes write it directly.
-        if self.following() {
+        let app = self.app.as_ref()?;
+        let store = app.host.store();
+        // A follower hands on its read-only handle: documents and panes read,
+        // and a save through it is refused and shown. Never a writable one.
+        if self.following() && !store.is_read_only() {
             return None;
         }
-        let app = self.app.as_ref()?;
-        Some((app.host.store(), app.host.graph_session().id().0))
+        Some((store, app.host.graph_session().id().0))
     }
     pub(super) fn ready(&self) -> bool {
         self.forme_reconcile_session.is_some()
@@ -1017,8 +1035,8 @@ impl SavedProduct {
     }
 
     pub(super) fn save(&mut self) {
-        if let Err(refusal) = self.view_only() {
-            self.status = refusal;
+        if self.following() {
+            self.queue_metadata();
             return;
         }
         if self.selection_locked() {
@@ -1099,8 +1117,8 @@ impl SavedProduct {
     }
 
     fn add_address(&mut self) {
-        if let Err(refusal) = self.view_only() {
-            self.status = refusal;
+        if self.following() {
+            self.queue_address();
             return;
         }
         if self.selection_locked() {
@@ -1119,10 +1137,8 @@ impl SavedProduct {
     }
 
     pub(super) fn retained_store(&self) -> Option<IndexedDbBackend> {
-        if self.following() {
-            return None;
-        }
-        self.app.as_ref().map(|app| app.host.store())
+        let store = self.app.as_ref()?.host.store();
+        (!self.following() || store.is_read_only()).then_some(store)
     }
     pub(super) fn retained_scope(&self) -> Option<(Uuid, String)> {
         let app = self.app.as_ref()?;
@@ -1299,8 +1315,12 @@ impl SavedProduct {
         if self.finish_live_capture(canvas) || self.finish_refresh(canvas) {
             return true;
         }
+        let answered = self.collect_replies();
         self.start_live_capture();
         self.start_refresh();
+        if self.admit_next() || answered {
+            return true;
+        }
         self.keep_links(canvas);
         let projection_advanced = self.projection.advance();
         let projection_changed = self.projection.changed();
@@ -1520,6 +1540,10 @@ impl SavedProduct {
             self.restore_canvas_link_hides(canvas);
         }
         self.saving = false;
+        if matches!(edit, CompletedEdit::Admitted) {
+            self.finish_admission(result);
+            return true;
+        }
         match result {
             Ok(saved) => {
                 let refresh = match edit {
@@ -1557,6 +1581,8 @@ impl SavedProduct {
                         self.pending_detail = None;
                         refresh
                     },
+                    // Answered above, without touching this view's form.
+                    CompletedEdit::Admitted => Ok(()),
                 };
                 if matches!(edit, CompletedEdit::Metadata) || refresh.is_ok() {
                     self.title = TextInput::new(saved.title);
@@ -1564,13 +1590,15 @@ impl SavedProduct {
                 }
                 self.status = match refresh {
                     Ok(()) => match edit {
-                        CompletedEdit::Metadata | CompletedEdit::Detail(_) => {
-                            "Changes saved".into()
-                        },
+                        CompletedEdit::Metadata
+                        | CompletedEdit::Detail(_)
+                        | CompletedEdit::Admitted => "Changes saved".into(),
                         CompletedEdit::Intake => "Object added and saved".into(),
                     },
                     Err(error) => match edit {
-                        CompletedEdit::Metadata | CompletedEdit::Detail(_) => {
+                        CompletedEdit::Metadata
+                        | CompletedEdit::Detail(_)
+                        | CompletedEdit::Admitted => {
                             format!("Changes saved · canvas refresh failed: {error}")
                         },
                         CompletedEdit::Intake => format!(
@@ -1588,7 +1616,7 @@ impl SavedProduct {
                     CompletedEdit::Intake => format!(
                         "Intake save failed · {error} · new object remains in memory; retry intake to save it"
                     ),
-                    CompletedEdit::Detail(_) => {
+                    CompletedEdit::Detail(_) | CompletedEdit::Admitted => {
                         format!("Detail save failed · {error} · retry to save the pending edit")
                     },
                 };
@@ -1703,23 +1731,27 @@ fn intake_controls(page: &TreePage) -> Child {
                     }
                 },
             )));
-            fields.push(Box::new(open_file(
-                button("Choose a file", |page: &mut TreePage, _| {
-                    if let Some(product) = &mut page.product
-                        && !product.saving
-                        && product.pending_intake.is_none()
-                    {
-                        product.file_requested = true;
-                    }
-                }),
-                product.file_requested,
-                FileFilter::default(),
-                |page: &mut TreePage, event: FileEvent| {
-                    if let Some(product) = &mut page.product {
-                        product.receive_file(event);
-                    }
-                },
-            )));
+            if product.following() {
+                fields.push(Box::new(el("p", "Choosing a file · Viewing only")));
+            } else {
+                fields.push(Box::new(open_file(
+                    button("Choose a file", |page: &mut TreePage, _| {
+                        if let Some(product) = &mut page.product
+                            && !product.saving
+                            && product.pending_intake.is_none()
+                        {
+                            product.file_requested = true;
+                        }
+                    }),
+                    product.file_requested,
+                    FileFilter::default(),
+                    |page: &mut TreePage, event: FileEvent| {
+                        if let Some(product) = &mut page.product {
+                            product.receive_file(event);
+                        }
+                    },
+                )));
+            }
         }
         children.push(Box::new(
             el("section", fields)
@@ -1777,9 +1809,8 @@ pub(super) fn controls(page: &TreePage) -> Child {
             page.command(id);
         })));
     }
-    if editing {
-        children.push(intake_controls(page));
-    }
+    // A follower adds an object by sending it to the view that edits.
+    children.push(intake_controls(page));
     children.push(super::inspection::open_button(page));
     children.push(super::field_inspection::open_button(page));
     children.push(Box::new(button(
@@ -1807,11 +1838,7 @@ pub(super) fn controls(page: &TreePage) -> Child {
         },
     )));
     if product.detail_open {
-        let mut rows = vec![DetailRow::new("Address", &product.address)];
-        if !editing {
-            rows.push(DetailRow::new("Title", product.title.text()));
-            rows.push(DetailRow::new("Tags", product.tags.text()));
-        }
+        let rows = vec![DetailRow::new("Address", &product.address)];
         let mut fields: Vec<Child> = vec![Box::new(detail_panel(&[DetailSection::new(
             "Object details",
             rows,
@@ -1828,7 +1855,7 @@ pub(super) fn controls(page: &TreePage) -> Child {
                     }
                 },
             )));
-        } else if editing {
+        } else {
             fields.push(Box::new(el(
                 "label",
                 (
@@ -1854,33 +1881,41 @@ pub(super) fn controls(page: &TreePage) -> Child {
                 ),
             )));
             fields.push(Box::new(button(
-                "Save changes",
+                if editing { "Save changes" } else { "Send changes" },
                 |page: &mut TreePage, _| {
                     if let Some(product) = &mut page.product {
                         product.save();
                     }
                 },
             )));
-            let options: Vec<&'static str> = std::iter::once("As recipe")
-                .chain(Role::ALL.iter().map(|role| role.label()))
-                .collect();
-            fields.push(Box::new(el(
-                "label",
-                (
-                    "Item role",
-                    lens(
-                        move |state: &mut SelectState| cambium::select(state, &options),
-                        |page: &mut TreePage| {
-                            &mut page.product.as_mut().expect("local detail").role
-                        },
+            if !editing {
+                fields.push(Box::new(status_note(
+                    "",
+                    "Title and tags go to the view that edits · other changes: Viewing only",
+                )));
+            }
+            if editing {
+                let options: Vec<&'static str> = std::iter::once("As recipe")
+                    .chain(Role::ALL.iter().map(|role| role.label()))
+                    .collect();
+                fields.push(Box::new(el(
+                    "label",
+                    (
+                        "Item role",
+                        lens(
+                            move |state: &mut SelectState| cambium::select(state, &options),
+                            |page: &mut TreePage| {
+                                &mut page.product.as_mut().expect("local detail").role
+                            },
+                        ),
                     ),
-                ),
-            )));
-            fields.push(Box::new(button(
-                "Apply item role",
-                |page: &mut TreePage, _| apply_item_role(page),
-            )));
-            fields.push(detail::controls(page));
+                )));
+                fields.push(Box::new(button(
+                    "Apply item role",
+                    |page: &mut TreePage, _| apply_item_role(page),
+                )));
+                fields.push(detail::controls(page));
+            }
         }
         children.push(Box::new(
             el("section", fields)

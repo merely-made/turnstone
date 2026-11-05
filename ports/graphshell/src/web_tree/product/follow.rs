@@ -5,8 +5,9 @@
 // SPDX-License-Identifier: MPL-2.0
 
 //! A second view of the installed profile (P0): it observes the session the
-//! writer commits, refuses edits in its host, and reads the store again after
-//! each of the writer's saves.
+//! writer commits through a store handle that refuses writes, reads the store
+//! again after each of the writer's saves, and sends the edits `queue` can
+//! carry to the writer; every other storing action is refused here.
 use std::cell::Cell;
 
 use super::*;
@@ -46,6 +47,13 @@ impl SavedProduct {
             Err(VIEW_ONLY.into())
         } else {
             Ok(())
+        }
+    }
+
+    /// Read the store again, as if the writer had just saved.
+    pub(super) fn reread(&mut self) {
+        if let Some(follow) = &self.following {
+            follow.requested.set(true);
         }
     }
 

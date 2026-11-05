@@ -218,10 +218,7 @@ impl Admissions {
 pub fn answer(request: &Request, outcome: Result<Option<Uuid>, String>) -> Reply {
     match outcome {
         Ok(member) => Reply::admitted(request, member, ""),
-        Err(error) => Reply::refused(
-            request,
-            format!("{error} · not stored; the editing view keeps it pending"),
-        ),
+        Err(error) => Reply::refused(request, error),
     }
 }
 
