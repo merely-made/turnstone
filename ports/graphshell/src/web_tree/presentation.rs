@@ -44,6 +44,8 @@ pub(super) struct Pane {
     workspace: Option<RuleWorkspace>,
     backend: Option<IndexedDbBackend>,
     graph_id: Option<uuid::Uuid>,
+    /// The follower refresh the loaded rules belong to.
+    refreshed: u64,
     baseline: Option<Vec<u8>>,
     binding_generation: u64,
     owner_suspended: bool,
@@ -81,6 +83,7 @@ impl Pane {
             workspace: None,
             backend: None,
             graph_id: None,
+            refreshed: 0,
             baseline: None,
             binding_generation: 1,
             owner_suspended: false,
@@ -127,6 +130,7 @@ impl Pane {
             },
         };
         binding_changed(self.graph_id, observed)
+            || product.is_some_and(|p| p.refreshes() != self.refreshed)
             || (!self.owner_suspended
                 && matches!(observed, OwnerObservation::TemporarilyUnavailable))
             || (self.owner_suspended && matches!(observed, OwnerObservation::Graph(_)))
@@ -168,6 +172,7 @@ impl Pane {
     fn control_snapshot(&self) -> Snapshot {
         let workspace = self.workspace.as_ref();
         Snapshot {
+            read_only: self.backend.as_ref().is_some_and(IndexedDbBackend::is_read_only),
             available: self.backend.is_some() && self.graph_id.is_some() && !self.owner_suspended,
             editing: workspace.is_some_and(RuleWorkspace::editing),
             dirty: workspace.is_some_and(RuleWorkspace::dirty) || self.unstaged(),
@@ -512,9 +517,11 @@ impl Pane {
             return;
         };
         self.owner_suspended = false;
-        if self.graph_id == Some(graph_id) {
+        let refreshes = product.refreshes();
+        if self.graph_id == Some(graph_id) && self.refreshed == refreshes {
             return;
         }
+        self.refreshed = refreshes;
         self.binding_generation = self
             .binding_generation
             .checked_add(1)

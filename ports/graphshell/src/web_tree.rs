@@ -2031,13 +2031,17 @@ fn poll_saved_product(ctx: &mut AppCtx<TreePage, Logic, Child>, shared: &Shared)
         shared.dirty.set(true);
     }
     {
-        let locked = ctx
-            .runner
-            .state()
+        // A pane's own save counts too: followers read the store again when
+        // this view reports idle, and it hands over only while nothing is
+        // unsaved.
+        let page = ctx.runner.state();
+        let locked = page
             .product
             .as_ref()
-            .is_some_and(|product| product.selection_locked());
-        // The extension's writer hands over only while nothing is unsaved.
+            .is_some_and(|product| product.selection_locked())
+            || blocks::busy(page)
+            || page.forme.as_ref().is_some_and(|forme| forme.saving)
+            || page.presentation.busy();
         if shared.selection_locked.replace(locked) != locked
             || !shared.root.has_attribute("data-writer-busy")
         {

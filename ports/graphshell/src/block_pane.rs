@@ -65,6 +65,35 @@ pub trait Storage {
         expected: Option<Vec<u8>>,
         document: StoredDocument,
     ) -> Pin<Box<dyn Future<Output = Result<Vec<u8>, String>>>>;
+    /// A store that refuses every save: the pane shows the saved document and
+    /// offers nothing that edits it.
+    fn read_only(&self) -> bool {
+        false
+    }
+}
+
+/// What a read-only pane answers when asked to edit or save.
+pub const VIEW_ONLY: &str = "Viewing only · this view stores no document";
+
+/// A [`Storage`] that reads through `S` and refuses every save.
+pub struct ReadOnly<S>(pub S);
+
+impl<S: Storage> Storage for ReadOnly<S> {
+    fn load(&self, slot: &str)
+    -> Pin<Box<dyn Future<Output = Result<Option<(StoredDocument, Vec<u8>)>, String>>>> {
+        self.0.load(slot)
+    }
+    fn save(
+        &self,
+        _slot: &str,
+        _expected: Option<Vec<u8>>,
+        _document: StoredDocument,
+    ) -> Pin<Box<dyn Future<Output = Result<Vec<u8>, String>>>> {
+        Box::pin(async { Err(VIEW_ONLY.into()) })
+    }
+    fn read_only(&self) -> bool {
+        true
+    }
 }
 
 /// Any muniment backend is a [`Storage`].
@@ -116,6 +145,11 @@ pub trait PaneHost: 'static + Sized {
     fn available(&self) -> bool {
         true
     }
+    /// How many times the host has read its store again since the pane
+    /// loaded. A read-only pane reads its document again when this changes.
+    fn refreshes(&self) -> u64 {
+        0
+    }
 }
 
 const VIEW_KEY: u64 = 0x6773_6e74;
@@ -155,6 +189,7 @@ struct Display {
     generation: u64,
 }
 type Saved = Result<(Vec<u8>, String), String>;
+type Loaded = Result<Option<(StoredDocument, Vec<u8>)>, String>;
 
 /// Work the pane retries when the adapter's answer arrives.
 enum Pending {
@@ -206,6 +241,9 @@ pub struct Pane {
     refresh_key: Option<String>,
     /// Set by "Review block adapters"; the host that discloses adapters opens its review.
     review_requested: bool,
+    /// The host refresh a read-only pane last read its document at, and that read's answer.
+    refreshed: Option<u64>,
+    reloaded: Rc<RefCell<Option<Loaded>>>,
 }
 impl Pane {
     /// A pane over `storage` (the backend and the document's slot id), if the host has one.
@@ -251,6 +289,8 @@ impl Pane {
             wake: None,
             refresh_key: None,
             review_requested: false,
+            refreshed: None,
+            reloaded: Default::default(),
         };
         pane.install_defaults();
         if let Some(storage) = pane.storage.clone() {
@@ -259,6 +299,9 @@ impl Pane {
                     pane.document = Document::new(&stored.id, &stored.source);
                     pane.expected = Some(bytes);
                     pane.status = "Saved document reopened".into();
+                },
+                Ok(None) if storage.read_only() => {
+                    pane.status = "No saved document yet · viewing only".into()
                 },
                 Ok(None) => pane.status = "Example composition · Save to keep your edits".into(),
                 Err(error) => {
@@ -269,6 +312,43 @@ impl Pane {
             }
         }
         pane
+    }
+    /// Whether this pane stores nothing: it shows the saved source only.
+    pub fn read_only(&self) -> bool {
+        self.storage.as_ref().is_some_and(|storage| storage.read_only())
+    }
+    /// Read the stored document again; [`register`] adopts the answer.
+    fn reload(&mut self, refreshes: u64, wake: cambium_rootstock::HostWake) {
+        self.refreshed = Some(refreshes);
+        let Some(storage) = self.storage.clone() else {
+            return;
+        };
+        let (slot, done) = (self.slot.clone(), self.reloaded.clone());
+        self.ports.spawn(Box::pin(async move {
+            *done.borrow_mut() = Some(storage.load(&slot).await);
+            wake.wake();
+        }));
+    }
+    fn adopt_reload(&mut self, loaded: Loaded) {
+        match loaded {
+            Ok(Some((stored, bytes))) => {
+                if stored.source != self.document.editor.source() || stored.id != self.document.id
+                {
+                    self.document = Document::new(&stored.id, &stored.source);
+                    self.selected = self
+                        .selected
+                        .min(self.document.blocks().len().saturating_sub(1));
+                    self.selected_rows = None;
+                    self.preview = None;
+                    self.refresh_key = None;
+                }
+                self.expected = Some(bytes);
+                self.blocked = None;
+                self.status = "Saved document reopened".into();
+            },
+            Ok(None) => {},
+            Err(error) => self.status = format!("Document could not be read again: {error}"),
+        }
     }
     /// Give every registered adapter's pattern and argument fields their default text.
     fn install_defaults(&mut self) {
@@ -674,6 +754,9 @@ impl Pane {
         true
     }
     fn save(&mut self) -> Result<(), String> {
+        if self.read_only() {
+            return Err(VIEW_ONLY.into());
+        }
         if self.busy {
             return Err("Document save is pending".into());
         }
@@ -838,16 +921,39 @@ pub fn toolbar<P: PaneHost>(page: &P) -> Option<Child<P>> {
         return None;
     }
     let pane = page.pane();
+    let read_only = pane.read_only();
     let set = pane.commands();
     let commands = set.menu(&CommandChoices::default(), Some("block"), pane.query.text());
-    let mut children: Vec<Child<P>> = vec![
-        Box::new(
-            button("Return to graph", |p: &mut P, _| {
-                p.pane_mut().open = false
-            })
-            .attr("class", "blocks-close"),
-        ),
-        Box::new(
+    let export = button(
+        "Export document",
+        |p: &mut P, _| {
+            let pane = p.pane_mut();
+            match pane.ports.export(
+                pane.document.editor.source().as_bytes(),
+                "text/djot",
+                "composition.djot",
+            ) {
+                Ok(url) => {
+                    if let Some(old) = pane.export_url.replace(url) {
+                        pane.ports.release_export(&old);
+                    }
+                },
+                Err(error) => pane.status = error,
+            }
+        },
+    );
+    let mut children: Vec<Child<P>> = vec![Box::new(
+        button("Return to graph", |p: &mut P, _| {
+            p.pane_mut().open = false
+        })
+        .attr("class", "blocks-close"),
+    )];
+    if read_only {
+        // A read-only pane stores nothing, so it offers no save, edit or command.
+        children.push(Box::new(el("div", export).attr("class", "blocks-actions")));
+        children.push(Box::new(el("p", VIEW_ONLY)));
+    } else {
+        children.push(Box::new(
             el(
                 "div",
                 (
@@ -867,30 +973,13 @@ pub fn toolbar<P: PaneHost>(page: &P) -> Option<Child<P>> {
                         p.pane_mut().preview = None;
                     })
                     .attr("class", "blocks-redo"),
-                    button(
-                        "Export document",
-                        |p: &mut P, _| {
-                            let pane = p.pane_mut();
-                            match pane.ports.export(
-                                pane.document.editor.source().as_bytes(),
-                                "text/djot",
-                                "composition.djot",
-                            ) {
-                                Ok(url) => {
-                                    if let Some(old) = pane.export_url.replace(url) {
-                                        pane.ports.release_export(&old);
-                                    }
-                                },
-                                Err(error) => pane.status = error,
-                            }
-                        },
-                    ),
+                    export,
                 ),
             )
             .attr("class", "blocks-actions"),
-        ),
-    ];
-    for claim in pane.registry.examples() {
+        ));
+    }
+    for claim in pane.registry.examples().into_iter().filter(|_| !read_only) {
         let class = claim.class.clone();
         let aria_class = class.clone();
         let title = claim.example.as_ref().map(|e| e.title.trim().to_owned()).unwrap_or_default();
@@ -903,7 +992,7 @@ pub fn toolbar<P: PaneHost>(page: &P) -> Option<Child<P>> {
             .attr("class", "blocks-insert-example"),
         ));
     }
-    for command in commands {
+    for command in commands.into_iter().filter(|_| !read_only) {
         let id = command.id.to_string();
         let disabled = command.disabled_reason.is_some();
         children.push(Box::new(
@@ -929,9 +1018,10 @@ pub fn workspace<P: PaneHost>(page: &P) -> Option<Child<P>> {
         return None;
     }
     let pane = page.pane();
-    let mut children: Vec<Child<P>> = vec![
-        Box::new(el("h2", "Composition")),
-        Box::new(button(
+    let read_only = pane.read_only();
+    let mut children: Vec<Child<P>> = vec![Box::new(el("h2", "Composition"))];
+    if !read_only {
+        children.push(Box::new(button(
             "Create verse block from selected lines",
             |p: &mut P, _| {
                 action(p, |pane| {
@@ -954,7 +1044,9 @@ pub fn workspace<P: PaneHost>(page: &P) -> Option<Child<P>> {
                     Ok(())
                 })
             },
-        )),
+        )));
+    }
+    children.extend::<Vec<Child<P>>>(vec![
         Box::new(el(
             "p",
             format!(
@@ -962,6 +1054,8 @@ pub fn workspace<P: PaneHost>(page: &P) -> Option<Child<P>> {
                 "Composition",
                 if pane.document.editor.is_dirty() {
                     "Unsaved changes"
+                } else if pane.expected.is_none() && read_only {
+                    "No saved document yet"
                 } else if pane.expected.is_none() {
                     "Example composition · not saved"
                 } else {
@@ -970,21 +1064,29 @@ pub fn workspace<P: PaneHost>(page: &P) -> Option<Child<P>> {
             ),
         )),
         Box::new(status_note("blocks-status", pane.status.clone())),
-        Box::new(el(
-            "label",
-            (
-                SOURCE_LABEL,
-                lens(
-                    |input: &mut TextInput| {
-                        textarea_typed(input)
-                            .attr("aria-label", SOURCE_LABEL)
-                            .attr("class", "blocks-source")
-                    },
-                    |page: &mut P| page.pane_mut().document.editor.input_mut(),
+        if read_only {
+            Box::new(
+                el("pre", pane.document.editor.source().to_string())
+                    .attr("aria-label", SOURCE_LABEL)
+                    .attr("class", "blocks-source"),
+            )
+        } else {
+            Box::new(el(
+                "label",
+                (
+                    SOURCE_LABEL,
+                    lens(
+                        |input: &mut TextInput| {
+                            textarea_typed(input)
+                                .attr("aria-label", SOURCE_LABEL)
+                                .attr("class", "blocks-source")
+                        },
+                        |page: &mut P| page.pane_mut().document.editor.input_mut(),
+                    ),
                 ),
-            ),
-        )),
-    ];
+            ))
+        },
+    ]);
     let blocks = pane.document.blocks();
     let mut block_buttons: Vec<Child<P>> = Vec::new();
     for (index, block) in blocks.iter().enumerate() {
@@ -1097,6 +1199,7 @@ pub fn workspace<P: PaneHost>(page: &P) -> Option<Child<P>> {
                 .commands
                 .iter()
                 .filter(|c| c.kind != CommandKind::Choice && c.id != BACKDROP_SCENE)
+                .filter(|_| !read_only)
             {
                 let arg_key = format!("arg:{class}:{}", command.id);
                 if let Some(field) = &command.arg {
@@ -1132,7 +1235,7 @@ pub fn workspace<P: PaneHost>(page: &P) -> Option<Child<P>> {
         }
     }
     let mut preview_rows: Vec<Child<P>> = Vec::new();
-    if let Some(preview) = &pane.preview {
+    if let Some(preview) = pane.preview.as_ref().filter(|_| !read_only) {
         let class = pane.preview_class().unwrap_or_default();
         let stale = preview.source != pane.document.editor.source()
             || pane.preview_pattern != pane.field(&format!("pattern:{class}"));
@@ -1558,6 +1661,21 @@ impl TextureProducer for Producer {
     }
 }
 pub fn register<P: PaneHost>(ctx: &mut AppCtx<'_, P, Logic<P>, Child<P>>) {
+    // A read-only pane reads its document again after each of the host's
+    // refreshes, so it shows what the writing view last saved.
+    let refreshes = ctx.runner.state().refreshes();
+    match ctx.runner.state().pane().refreshed {
+        None => ctx.runner.update(|p| p.pane_mut().refreshed = Some(refreshes)),
+        Some(seen) if seen != refreshes && ctx.runner.state().pane().read_only() => {
+            let wake = ctx.wake.clone();
+            ctx.runner.update(|p| p.pane_mut().reload(refreshes, wake));
+        },
+        _ => {},
+    }
+    let reloaded = ctx.runner.state().pane().reloaded.borrow_mut().take();
+    if let Some(loaded) = reloaded {
+        ctx.runner.update(|p| p.pane_mut().adopt_reload(loaded));
+    }
     let completion = ctx.runner.state().pane().completed.borrow_mut().take();
     if let Some(completion) = completion {
         ctx.runner.update(|p| {

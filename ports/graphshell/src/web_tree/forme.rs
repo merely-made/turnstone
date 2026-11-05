@@ -97,6 +97,16 @@ impl Pane {
                 return;
             },
         };
+        if self.backend.is_read_only() {
+            // A follower keeps its arrangement for this view only.
+            self.status = match self.session.finish_save(proposal, Ok(())) {
+                Ok(()) => "Viewing only · this arrangement is not saved".into(),
+                Err(error) => error,
+            };
+            self.retry = None;
+            self.refresh_controls();
+            return;
+        }
         self.saving = true;
         self.status = "Saving workbench…".into();
         self.retry = Some(kind);
@@ -163,6 +173,7 @@ impl Pane {
     fn refresh_controls(&mut self) {
         self.controls
             .set_snapshot(mere_view::workbench_editor::Snapshot {
+                read_only: self.backend.is_read_only(),
                 editing: self.session.editing(),
                 dirty: self.session.dirty(),
                 busy: self.session.busy() || self.saving,
@@ -1215,7 +1226,8 @@ pub(super) fn section(page: &TreePage) -> Child {
                 p.shared.dirty.set(true);
             },
         )));
-        if !pane.model().locked {
+        let editable = !pane.backend.is_read_only();
+        if editable && !pane.model().locked {
             if let Some(tree) = pane.model().tile_tree(canvas.graph()) {
                 split_controls(&tree, Vec::new(), &mut children);
             }
@@ -1255,16 +1267,18 @@ pub(super) fn section(page: &TreePage) -> Child {
                 |p: &mut TreePage, _| finish_preview(p, false),
             )));
         }
-        children.push(Box::new(button(
-            "Retry workbench save",
-            |p: &mut TreePage, _| {
-                if let Some(f) = &mut p.forme {
-                    if let Some(kind) = f.retry.clone() {
-                        f.save(kind);
+        if editable {
+            children.push(Box::new(button(
+                "Retry workbench save",
+                |p: &mut TreePage, _| {
+                    if let Some(f) = &mut p.forme {
+                        if let Some(kind) = f.retry.clone() {
+                            f.save(kind);
+                        }
                     }
-                }
-            },
-        )));
+                },
+            )));
+        }
         if !pane.status.is_empty() {
             children.push(Box::new(status_note("", pane.status.clone())));
         }
@@ -1392,7 +1406,7 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
         )),
         Some(tree) => {
             let moving = pane.moving;
-            let locked = pane.model().locked;
+            let locked = pane.model().locked || pane.backend.is_read_only();
             let reading_shared = page.shared.clone();
             let reading_store = page.product.as_ref().and_then(|p| p.retained_store());
             let mut query_appearances = std::collections::BTreeMap::new();

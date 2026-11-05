@@ -8,7 +8,7 @@
 use super::*;
 use graphshell::block_editing::sheet_leaf::{ColorF, SheetTheme};
 use graphshell::block_pane::{
-    self, BackendStorage, PaneHost, PanePorts, Storage, SwatchStyle, Task,
+    self, BackendStorage, PaneHost, PanePorts, ReadOnly, Storage, SwatchStyle, Task,
 };
 
 pub(super) use block_pane::SHEET;
@@ -28,9 +28,17 @@ impl PanePorts for WebPorts {
 }
 
 pub(super) async fn load(product: Option<&product::SavedProduct>) -> Pane {
-    let storage = product
-        .and_then(|p| p.forme_source())
-        .map(|(backend, id)| (Rc::new(BackendStorage(backend)) as Rc<dyn Storage>, id.to_string()));
+    let storage = product.and_then(|p| p.forme_source()).map(|(backend, id)| {
+        // A follower's handle refuses writes; the pane shows it read-only.
+        let read_only = backend.is_read_only();
+        let storage = BackendStorage(backend);
+        let storage: Rc<dyn Storage> = if read_only {
+            Rc::new(ReadOnly(storage))
+        } else {
+            Rc::new(storage)
+        };
+        (storage, id.to_string())
+    });
     Pane::load(storage, Rc::new(WebPorts)).await
 }
 
@@ -71,6 +79,9 @@ impl PaneHost for TreePage {
     }
     fn available(&self) -> bool {
         self.product.is_some()
+    }
+    fn refreshes(&self) -> u64 {
+        self.product.as_ref().map_or(0, |product| product.refreshes())
     }
 }
 

@@ -20,6 +20,9 @@ pub(in crate::web_tree) const VIEW_ONLY: &str =
 pub(super) struct Following {
     requested: Rc<Cell<bool>>,
     refreshing: bool,
+    /// Counts adopted refreshes, so panes keyed on the unchanged session id
+    /// know to read the store again.
+    generation: u64,
     completed: Rc<RefCell<Option<Result<App, String>>>>,
     _listener: BatchListener,
 }
@@ -31,6 +34,7 @@ impl Following {
             _listener: listen_for_commits(requested.clone())?,
             requested,
             refreshing: false,
+            generation: 0,
             completed: Rc::new(RefCell::new(None)),
         })
     }
@@ -39,6 +43,11 @@ impl Following {
 impl SavedProduct {
     pub(in crate::web_tree) fn following(&self) -> bool {
         self.following.is_some()
+    }
+
+    /// How many refreshes this follower has adopted (0 when it is the writer).
+    pub(in crate::web_tree) fn refreshes(&self) -> u64 {
+        self.following.as_ref().map_or(0, |follow| follow.generation)
     }
 
     /// A follower's refusal of anything that would store a change.
@@ -98,6 +107,7 @@ impl SavedProduct {
         follow.refreshing = false;
         match observed {
             Ok(app) => {
+                follow.generation += 1;
                 let owner = app.host.graph_session().id().0;
                 graphshell::local_scene::adopt_host_graph(
                     canvas,
