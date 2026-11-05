@@ -36,8 +36,21 @@ function setStatus(message, state = "ready") {
   statusNode.dataset.state = state;
 }
 
+// Firefox rejects a message that reaches its event page while it suspends;
+// the next attempt wakes it. Other failures are not retried.
+const NO_RECEIVER = /Receiving end does not exist/;
+
 async function send(message) {
-  const response = await extensionApi.runtime.sendMessage(message);
+  let response;
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      response = await extensionApi.runtime.sendMessage(message);
+      break;
+    } catch (error) {
+      if (attempt >= 3 || !NO_RECEIVER.test(String(error))) throw error;
+      await new Promise((resolve) => setTimeout(resolve, 100 * (attempt + 1)));
+    }
+  }
   if (response?.error) {
     throw new Error(response.error);
   }

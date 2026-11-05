@@ -45,6 +45,29 @@ use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::JsFuture;
 use web_sys::{Document, Window};
 
+/// How long the mount waits for `persist()`. Firefox answers only when the
+/// person answers its prompt, and the workspace must not wait on that.
+#[cfg(feature = "product")]
+const PERSIST_ANSWER_MS: i32 = 1_500;
+
+/// `promise`, or `None` once `ms` pass without an answer; the request stays open.
+#[cfg(feature = "product")]
+async fn answered_within(promise: js_sys::Promise, ms: i32) -> Option<Result<JsValue, JsValue>> {
+    let unanswered = JsValue::from_str("graphshell.unanswered");
+    let marker = unanswered.clone();
+    let timer = js_sys::Promise::new(&mut |resolve, _| {
+        if let Ok(window) = window() {
+            let _ =
+                window.set_timeout_with_callback_and_timeout_and_arguments_1(&resolve, ms, &marker);
+        }
+    });
+    let raced = js_sys::Promise::race(&js_sys::Array::of2(&promise, &timer));
+    match JsFuture::from(raced).await {
+        Ok(value) if value == unanswered => None,
+        answer => Some(answer),
+    }
+}
+
 /// Ask the browser whether this origin's storage is kept, requesting it when
 /// it is not.
 ///
@@ -71,11 +94,12 @@ async fn resolve_storage_persistence() -> StoragePersistence {
     // answer is already yes; awaiting inside one needs the future built first.
     let requested = if matches!(persisted, Ok(false)) {
         match manager.persist() {
-            Ok(promise) => match JsFuture::from(promise).await {
-                Ok(value) => value
+            Ok(promise) => match answered_within(promise, PERSIST_ANSWER_MS).await {
+                Some(Ok(value)) => value
                     .as_bool()
                     .ok_or_else(|| "persist() did not answer with a boolean".to_string()),
-                Err(error) => Err(format!("persist() failed: {error:?}")),
+                Some(Err(error)) => Err(format!("persist() failed: {error:?}")),
+                None => Err("the browser has not answered the persistence request".to_string()),
             },
             Err(error) => Err(format!("persist() is unavailable: {error:?}")),
         }

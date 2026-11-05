@@ -5,7 +5,8 @@
   "description": "Open Graphshell's local graph and identity surfaces.",
   "permissions": [
     "nativeMessaging",
-    "storage"
+    "storage",
+    "unlimitedStorage"
   ],
   "optional_permissions": [
     "history",

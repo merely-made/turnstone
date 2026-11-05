@@ -70,7 +70,12 @@ release ids can replace the defaults through the installer.
 
 ## Permissions
 
-`nativeMessaging`, `storage` and (Chromium) `sidePanel` are installed permissions. `history`, `tabs`,
+`nativeMessaging`, `storage`, `unlimitedStorage` and (Chromium) `sidePanel` are
+installed permissions. `unlimitedStorage` keeps the local profile's store without
+a persistence prompt. In Firefox it also makes `navigator.storage.persisted()`
+true; Chromium still reports false. Elsewhere the mount waits at most 1.5 s for
+`persist()`, because Firefox holds that promise until a person answers its
+prompt; an unanswered request is reported as unknown. `history`, `tabs`,
 and `webNavigation` are optional; the portal's **Enable capture** control
 requests `history`. The default policy in `capture-model.js` has `enabled:
 false`. Visits are sanitized against the query-string and origin-exclusion
@@ -106,7 +111,9 @@ handover until it lands. It then writes `data-capture-batch` (the number),
 `data-capture-batch-error` and the batch's counts, and dispatches
 `graphshell-capture-batch-complete`. The page acknowledges only a batch that
 committed without error. A failed or malformed batch stays queued for the next
-notice or open. A standby view takes no visits.
+notice or open. A standby view takes no visits. Firefox can refuse a message
+that reaches its event page while it suspends ("Receiving end does not exist");
+the page retries that error three times and no other.
 
 Capture attribution comes from the `SelectedPersonaRef` and device reference
 injected by the composing host, not from the selected vault profile or a
