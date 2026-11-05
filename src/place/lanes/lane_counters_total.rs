@@ -16,7 +16,23 @@ impl LaneCounters {
             .iter()
             .map(|handle| handle.lock().map(|status| status.ops_received).unwrap_or(0))
             .sum();
+        // Only active catalogue state needs timed expiry/retry refreshes.
+        // An empty place must settle, just as it did before discovery.
+        let clock = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_secs())
+            .unwrap_or(0);
+        let clock = if self
+            .catalogue_clock
+            .load(std::sync::atomic::Ordering::Relaxed)
+        {
+            clock
+        } else {
+            0
+        };
         lanes
+            + self.catalogue.status().received
+            + clock
             + self
                 .projection
                 .as_ref()

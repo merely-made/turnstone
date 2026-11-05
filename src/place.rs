@@ -13,6 +13,7 @@
 use serde::{Deserialize, Serialize};
 
 pub(crate) mod captured_collection;
+pub mod catalogue;
 pub(crate) mod contract;
 pub mod invite;
 #[cfg(feature = "peers")]
@@ -144,6 +145,10 @@ pub struct OfflinePlaceSnapshot {
     pub captured_selection: CapturedCollectionSelection,
     /// Current authorized choices, independently of the selected version.
     pub collection_choices: Vec<PlaceCollectionChoice>,
+    pub catalogues: Vec<catalogue::DiscoveredSite>,
+    pub catalogue_error: Option<String>,
+    /// Consumed only by the matching command completion, never cached for replay.
+    pub catalogue_navigation: Option<String>,
     /// What the shared graph actually holds, as opposed to how much of it.
     /// Already authority-filtered: see [`projection::SharedGraph`].
     pub shared: projection::SharedGraph,

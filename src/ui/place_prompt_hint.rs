@@ -16,6 +16,7 @@ impl PlacePrompt {
             Self::Invite => "Enter a pre-key path, optionally \" for 10m\" (s|m|h|d), then Enter",
             Self::InviteReader => "Enter a pre-key path and press Enter to invite a reader",
             Self::Join => "Enter an invitation path and press Enter to join",
+            Self::AdvertiseSite {..} => "Describe the focused public site; Enter advertises its address and abstract to this place",
             Self::SendMessage => "Enter a message and press Enter to send it",
         }
     }

@@ -51,7 +51,7 @@ fn a_live_share_withdrawal_empties_the_receiver_selected_collection() {
         .unwrap();
     let host_transport = runtime
         .block_on(async {
-            P2pandaTransport::builder(&founder.master_keypair())
+            P2pandaTransport::builder_from_seed_ref(&founder.master_keypair().to_seed())
                 .gossip()
                 .bind()
                 .await
@@ -272,7 +272,7 @@ fn a_partition_heals_and_both_sides_converge() {
         .unwrap();
     let host_transport = runtime
         .block_on(async {
-            P2pandaTransport::builder(&founder.master_keypair())
+            P2pandaTransport::builder_from_seed_ref(&founder.master_keypair().to_seed())
                 .gossip()
                 .bind()
                 .await

@@ -327,11 +327,11 @@ pub enum Action {
     },
     /// Share the focused node's address into the place's shared graph.
     ShareFocusedNode,
+    Catalogue(crate::place::catalogue::CatalogueAction),
     /// Re-fold the active place's projections from what its lanes have drained
     /// in. Cheap and idempotent; it authors nothing.
     ResyncPlace,
-    /// Scope captured-page search to one exact Gemot collection version.
-    /// `None` clears the local choice and searches all effective contributions.
+    /// Search a pinned collection; `None` searches all effective contributions.
     SetPlaceCollection(Option<crate::place::PlaceCollectionVersion>),
     /// Open the local captured-page search field for the active place.
     SearchCapturedPages,

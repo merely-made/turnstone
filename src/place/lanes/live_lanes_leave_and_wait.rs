@@ -64,6 +64,8 @@ impl LiveLanes {
         handles.push(joined.chat.status_handle());
         handles.push(joined.group_keys.status_handle());
         LaneCounters {
+            catalogue: Arc::clone(&self.catalogue),
+            catalogue_clock: Arc::clone(&self.catalogue_clock),
             handles,
             projection: self
                 .projection

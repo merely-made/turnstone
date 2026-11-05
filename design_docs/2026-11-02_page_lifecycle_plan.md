@@ -95,3 +95,49 @@ The label for capture on an unkept node is unruled (L1167-1168; R1 shipped "Save
 ## Progress
 
 - 2026-11-02: plan cut from the page lifecycle plan; decisions D1 to D4 recorded. The evidence index and old-to-main hash table are in the receipts file.
+
+## Public site discovery controls, 2026-11-04
+
+Turnstone receives Gemot `89a5935` and Murm `2d5760a` as one source per shared
+package version. Renderer, storage and unrelated dependency records stay at the
+baseline. Gemot owns signed catalogue descriptions, exact collection versions,
+current provider/reader grants and persistent replay/withdrawal handling. Murm
+carries bounded opaque advertisements over the place's existing endpoint.
+Shared contracts and community-work scope live once in
+`repos/gemot/design_docs/2026-11-04_site_extraction_plan.md`, S4-S5.
+
+With peers enabled and a place open, the palette offers subject/abstract
+browsing, explicit public-site advertising and withdrawal of this profile's
+advertisements. Publication is host-only and requires the actual constitutional
+founder. It records a small public description in a dedicated collection, with
+narrow publisher and stable reader grants; this does not acquire or retain the
+website's bodies. A later invitation grants the new reader access to these
+public-description collections. Choosing a result returns to the place worker
+for current authorization; stale request, focus, session or generation cannot
+redirect a newer browsing context.
+
+New places explicitly use members-only admission, configurable through
+`PlaceWorkerSettings::founding_admission`; the worker otherwise lacks Standing
+facts to meet Gemot's general standing-floor default. Existing signed law is
+retained. A blocking admission policy refuses before granting scopes or writing
+a description. `TURNSTONE_CATALOGUE_LIFETIME_MS` selects hint lifetime (default
+ten minutes, ceiling one hour). Received hints are bounded to 128 entries and
+16 KiB per message, with a 3 MiB local journal ceiling. A damaged journal reports
+a catalogue error while ordinary place operations remain usable. Live refresh
+revalidates hints and repeats unexpired publication intent for later joiners;
+cold cache opening starts no network.
+
+Descriptions are explicitly public: the per-place metadata topic is separate
+from confidential content and is never derived from a subject class. Subject
+classes preserve Scroll's broad 0-9 suffix, rather than pretending to encode full
+UDC notation. Protected descriptions need an encrypted audience path. These
+controls do not close O1's selected-document transfer or the keeper's remote
+serving and protected-key distribution gates.
+
+Required local receipts are the owner/app command tests (including corrupt
+journal, standing refusal, expiry, restart and stale navigation), real product
+found/invite/join/advertise/open/withdraw across two live endpoints, and the
+existing place suite. Evidence stays within the 100 MB shared cap at
+`Code/testing/gemot/discovery-ui-20261104`. Native command, Genet widget and
+loopback-peer receipts are separate from headed, physical and remote-machine
+qualification.

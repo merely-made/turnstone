@@ -114,6 +114,7 @@ impl App {
             pending_place_artifact: None,
             next_place_generation: 0,
             next_place_request: 0,
+            catalogue_open: None,
             next_smolweb_submission: 0,
             active_smolweb_submission: None,
             micron_submission_sources: std::collections::HashMap::new(),

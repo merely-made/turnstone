@@ -7,6 +7,11 @@ impl Default for PlaceWorkerSettings {
     fn default() -> Self {
         Self {
             authority_clock: AuthorityClock::SystemTime,
+            #[cfg(feature = "peers")]
+            founding_admission: mien::Policy::MembersOnly {
+                rate_limit: 20,
+                rate_window_ms: 60_000,
+            },
             knot_root: crate::knot_authoring::env_path("TURNSTONE_KNOT_ROOT"),
             knot_max_source_bytes: std::env::var("TURNSTONE_KNOT_MAX_BYTES")
                 .ok()

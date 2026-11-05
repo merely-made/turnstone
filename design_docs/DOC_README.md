@@ -231,3 +231,8 @@ Receipts files for archived plans:
 [command palette open lag](archive_docs/receipts/2026-08-22_command_palette_open_lag_receipts.md).
 
 Foundation source adoption (2026-10-19): canonical promoted-family revisions and consumer source validation are recorded in `mere/design_docs/mere_docs/implementation_strategy/2026-10-28_family_promotion_plan.md`. Existing application and domain authority remain with their owning components.
+
+The [page lifecycle plan](2026-11-02_page_lifecycle_plan.md#public-site-discovery-controls-2026-11-04)
+records Turnstone's public site advertisements, subject/abstract browsing,
+worker-validated opening and their local-peer qualification. Gemot owns the
+shared catalogue/workflow rules; Murm carries their bounded opaque hints.

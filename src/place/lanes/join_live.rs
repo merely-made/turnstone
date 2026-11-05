@@ -33,6 +33,7 @@ pub(crate) fn join_live(
         sync_overlay_topic(binding.root.0),
         sync_overlay_topic(binding.chat.0),
         group_key_overlay(binding.moot.0),
+        catalogue_topic(binding.moot.0),
     ];
 
     let runtime = tokio::runtime::Builder::new_multi_thread()
@@ -41,8 +42,8 @@ pub(crate) fn join_live(
         .build()
         .map_err(|error| format!("build lane runtime: {error}"))?;
 
-    let (transport, local_rendezvous, moot_lanes, graph, chat, group_keys) =
-        runtime.block_on(async {
+    let (transport, local_rendezvous, moot_lanes, graph, chat, group_keys, catalogue) = runtime
+        .block_on(async {
             // Active mDNS so two peers on one LAN re-find each other by node id
             // after either restarts on a fresh port; a ticket fixes an address,
             // not an identity.
@@ -92,9 +93,18 @@ pub(crate) fn join_live(
             let group_keys = open
                 .group
                 .lane
-                .join(endpoint, gossip)
+                .join(endpoint, gossip.clone())
                 .await
                 .map_err(|error| format!("join group-key lane: {error}"))?;
+            let catalogue = murm_sync::advertisements::Advertisements::join(
+                gossip,
+                catalogue_topic(binding.moot.0),
+                murm_sync::advertisements::AdvertisementLimits {
+                    max_bytes: 16 * 1024,
+                    pending: 128,
+                },
+            )
+            .await?;
             Ok::<_, String>((
                 transport,
                 local_rendezvous,
@@ -102,11 +112,14 @@ pub(crate) fn join_live(
                 graph,
                 chat,
                 group_keys,
+                catalogue,
             ))
         })?;
 
     let mut lanes = LiveLanes {
         watcher: None,
+        catalogue: Arc::new(catalogue),
+        catalogue_clock: Arc::new(std::sync::atomic::AtomicBool::new(false)),
         local_rendezvous,
         dialed_rendezvous: tickets.len(),
         joined: Some(JoinedLanes {

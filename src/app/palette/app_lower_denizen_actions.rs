@@ -455,6 +455,7 @@ impl App {
             .iter()
             .map(|(label, action)| (label.to_string(), action.clone()))
             .collect();
+        if self.place.binding().is_some() {rows.extend(self.catalogue_actions());}
         // The status row shows an elided ticket, so the copy row is the only
         // route to the whole one. Offered only where there IS one: a row that
         // could only refuse would teach the palette to lie.

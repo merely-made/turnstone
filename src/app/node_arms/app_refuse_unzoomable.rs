@@ -1,6 +1,7 @@
 // Copyright 2026 Mark Alan Boykin
 // SPDX-License-Identifier: MPL-2.0
 
+use crate::place::catalogue::CatalogueAction as SiteAction;
 use super::*;
 
 impl App {
@@ -156,6 +157,7 @@ impl App {
         use crate::ui::PlacePrompt;
         let text = self.omnibar.text.trim().to_string();
         let action = match prompt {
+            PlacePrompt::AdvertiseSite {subject,expected_address} => Action::Catalogue(SiteAction::CommitSiteAdvertisement {subject,expected_address,abstract_text:text.clone()}),
             PlacePrompt::FoundPlace => Action::FoundPlace { name: text.clone() },
             PlacePrompt::ExportCard => Action::ExportPlaceCard { path: text.clone() },
             PlacePrompt::RefreshContact => Action::RefreshPlaceContact { path: text.clone() },
@@ -192,6 +194,7 @@ impl App {
             },
         };
         let label = match prompt {
+            PlacePrompt::AdvertiseSite {..} => "Advertise public site",
             PlacePrompt::FoundPlace => "Found place",
             PlacePrompt::ExportCard => "Export place card",
             PlacePrompt::RefreshContact => "Refresh place contact",

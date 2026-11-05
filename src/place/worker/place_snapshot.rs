@@ -190,6 +190,7 @@ pub(super) fn place_snapshot(
         .len();
     let (parked, evicted) = open.parking()?;
     let shared = crate::place::projection::SharedGraph::from_projection(&graph_projection);
+    let (catalogues,catalogue_error)=match catalogue::refresh(open,at_ms) {Ok(rows)=>(rows,None),Err(e)=>(Vec::new(),Some(e))};
     Ok(OfflinePlaceSnapshot {
         personae_root: open.subject,
         graph_digest: projection_digest(b"turnstone.place.graph-digest.v1", &shared),
@@ -232,6 +233,9 @@ pub(super) fn place_snapshot(
         captured,
         captured_selection,
         collection_choices,
+        catalogues,
+        catalogue_error,
+        catalogue_navigation: None,
         shared,
         sync: open.lanes.as_ref().map(|lanes| {
             let (local_rendezvous, dialed_rendezvous) = lanes.rendezvous();

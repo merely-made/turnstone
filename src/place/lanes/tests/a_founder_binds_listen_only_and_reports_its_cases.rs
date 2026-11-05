@@ -163,7 +163,7 @@ fn a_joiner_catches_up_on_a_live_place_over_one_ticket() {
         .unwrap();
     let host_transport = runtime
         .block_on(async {
-            P2pandaTransport::builder(&founder.master_keypair())
+            P2pandaTransport::builder_from_seed_ref(&founder.master_keypair().to_seed())
                 .gossip()
                 .bind()
                 .await

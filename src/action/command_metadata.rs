@@ -9,6 +9,7 @@
 //! confirmation flow. Effect class describes the semantic operation rather
 //! than incidental saving of local view state.
 
+use crate::place::catalogue::CatalogueAction as SiteAction;
 use super::Action;
 use cambium::EffectClass;
 
@@ -61,6 +62,9 @@ pub(crate) fn command_metadata(action: &Action) -> (EffectClass, bool) {
         | Action::CopyLocalRendezvous
         | Action::SendPlaceMessage { .. }
         | Action::ShareFocusedNode
+        | Action::Catalogue(SiteAction::CommitSiteAdvertisement {..})
+        | Action::Catalogue(SiteAction::WithdrawSite {..})
+        | Action::Catalogue(SiteAction::OpenDiscoveredSite {..})
         | Action::ResyncPlace
         | Action::ToggleNodeContent
         | Action::RepeatShellEntry(..)
@@ -154,6 +158,8 @@ pub(crate) fn command_metadata(action: &Action) -> (EffectClass, bool) {
         | Action::ShowPlaceStatus
         | Action::SetPlaceCollection(..)
         | Action::SearchCapturedPages
+        | Action::Catalogue(SiteAction::BeginAdvertiseSite {..})
+        | Action::Catalogue(SiteAction::BrowseSites {..})
         | Action::OmnibarOpen { .. }
         | Action::OmnibarClose
         | Action::OmnibarChar(..)

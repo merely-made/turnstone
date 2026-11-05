@@ -280,15 +280,14 @@ pub(super) fn spawn_place_worker_with(
                                         })
                                     })
                                     .and_then(|joiner_root| {
-                                        admit_member(
-                                            &open.moot,
+                                        catalogue::admit_member(
+                                            open,
                                             &binding,
                                             identity.as_ref(),
                                             joiner_root,
                                             access,
                                             now_ms,
                                             expires_at_ms,
-                                            open.offers_projection(),
                                         )
                                     })
                                     .and_then(|authored| {
@@ -543,6 +542,9 @@ pub(super) fn spawn_place_worker_with(
                         command,
                     } => {
                         let result = match &mut live {
+                            Some(_) if live_scope != Some((session, generation)) => Err(
+                                "command belongs to a departed place generation".to_string(),
+                            ),
                             Some(open) => {
                                 let binding = open.binding.clone();
                                 author_into_place(
@@ -552,7 +554,7 @@ pub(super) fn spawn_place_worker_with(
                                     &command,
                                     &settings,
                                 )
-                                .and_then(|()| place_snapshot(open, binding.moot.0, &settings))
+                                .and_then(|()| catalogue::snapshot(open,&command,&settings))
                             },
                             None => Err("no open place to author into".to_string()),
                         };

@@ -68,6 +68,9 @@ impl App {
             self.viewport.1 / chrome.layout_scale(0),
             chrome.appearance.ui_zoom,
         );
+        if let OmnibarMode::CatalogueSites {subject}=self.omnibar.mode {
+            self.recompute_catalogue_suggestions(subject,row_limit);return;
+        }
         if matches!(self.omnibar.mode, OmnibarMode::SavedSources) {
             self.recompute_saved_source_suggestions(row_limit);
             research_row_fit::fit(self, &chrome);

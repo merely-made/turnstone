@@ -2297,7 +2297,7 @@ dependencies = [
 [[package]]
 name = "commons-spine"
 version = "0.0.1"
-source = "git+https://www.github.com/merely-made/gemot.git?rev=3766de48777859d1571fef245c8c87a9e37df638#3766de48777859d1571fef245c8c87a9e37df638"
+source = "git+https://github.com/merely-made/gemot.git?rev=89a5935d75b8b9b62e625c823ab372dfbc05f9cb#89a5935d75b8b9b62e625c823ab372dfbc05f9cb"
 dependencies = [
  "chartulary",
  "gemot",
@@ -4644,7 +4644,7 @@ dependencies = [
 [[package]]
 name = "gemot"
 version = "0.1.1"
-source = "git+https://www.github.com/merely-made/gemot.git?rev=3766de48777859d1571fef245c8c87a9e37df638#3766de48777859d1571fef245c8c87a9e37df638"
+source = "git+https://github.com/merely-made/gemot.git?rev=89a5935d75b8b9b62e625c823ab372dfbc05f9cb#89a5935d75b8b9b62e625c823ab372dfbc05f9cb"
 dependencies = [
  "insigne",
  "mere-proofs",
@@ -4662,6 +4662,7 @@ dependencies = [
  "servitor",
  "stickleback",
  "thiserror 1.0.69",
+ "url",
 ]
 
 [[package]]
@@ -8453,7 +8454,7 @@ dependencies = [
 [[package]]
 name = "mere-transport"
 version = "0.0.2"
-source = "git+https://www.github.com/merely-made/murm.git?rev=ce53cebb2ae9f420de5a0dcaa5a9768c639910af#ce53cebb2ae9f420de5a0dcaa5a9768c639910af"
+source = "git+https://github.com/merely-made/murm.git?rev=2d5760aac0d9f77813b45bc9f7695b9f8c1e120e#2d5760aac0d9f77813b45bc9f7695b9f8c1e120e"
 dependencies = [
  "bytes",
  "hkdf 0.13.0",
@@ -8504,7 +8505,7 @@ dependencies = [
 [[package]]
 name = "mien"
 version = "0.0.1"
-source = "git+https://www.github.com/merely-made/gemot.git?rev=3766de48777859d1571fef245c8c87a9e37df638#3766de48777859d1571fef245c8c87a9e37df638"
+source = "git+https://github.com/merely-made/gemot.git?rev=89a5935d75b8b9b62e625c823ab372dfbc05f9cb#89a5935d75b8b9b62e625c823ab372dfbc05f9cb"
 dependencies = [
  "insigne",
  "muniment",
@@ -8591,7 +8592,7 @@ dependencies = [
 [[package]]
 name = "mooting"
 version = "0.1.0"
-source = "git+https://www.github.com/merely-made/gemot.git?rev=3766de48777859d1571fef245c8c87a9e37df638#3766de48777859d1571fef245c8c87a9e37df638"
+source = "git+https://github.com/merely-made/gemot.git?rev=89a5935d75b8b9b62e625c823ab372dfbc05f9cb#89a5935d75b8b9b62e625c823ab372dfbc05f9cb"
 dependencies = [
  "p2panda-core",
  "serde",
@@ -8877,8 +8878,9 @@ dependencies = [
 [[package]]
 name = "murm-sync"
 version = "0.0.1"
-source = "git+https://www.github.com/merely-made/murm.git?rev=ce53cebb2ae9f420de5a0dcaa5a9768c639910af#ce53cebb2ae9f420de5a0dcaa5a9768c639910af"
+source = "git+https://github.com/merely-made/murm.git?rev=2d5760aac0d9f77813b45bc9f7695b9f8c1e120e#2d5760aac0d9f77813b45bc9f7695b9f8c1e120e"
 dependencies = [
+ "getrandom 0.4.3",
  "mere-p2panda-net",
  "muniment",
  "p2panda-core",
@@ -8893,7 +8895,7 @@ dependencies = [
 [[package]]
 name = "murm-webrtc"
 version = "0.0.1"
-source = "git+https://www.github.com/merely-made/murm.git?rev=ce53cebb2ae9f420de5a0dcaa5a9768c639910af#ce53cebb2ae9f420de5a0dcaa5a9768c639910af"
+source = "git+https://github.com/merely-made/murm.git?rev=2d5760aac0d9f77813b45bc9f7695b9f8c1e120e#2d5760aac0d9f77813b45bc9f7695b9f8c1e120e"
 dependencies = [
  "blake3",
  "luggage",
@@ -8903,7 +8905,7 @@ dependencies = [
 [[package]]
 name = "murm-wire"
 version = "0.1.0"
-source = "git+https://www.github.com/merely-made/murm.git?rev=ce53cebb2ae9f420de5a0dcaa5a9768c639910af#ce53cebb2ae9f420de5a0dcaa5a9768c639910af"
+source = "git+https://github.com/merely-made/murm.git?branch=main#2d5760aac0d9f77813b45bc9f7695b9f8c1e120e"
 dependencies = [
  "bytes",
  "futures-util",
@@ -12450,7 +12452,7 @@ dependencies = [
 [[package]]
 name = "retinue"
 version = "0.3.0"
-source = "git+https://www.github.com/merely-made/murm.git?rev=ce53cebb2ae9f420de5a0dcaa5a9768c639910af#ce53cebb2ae9f420de5a0dcaa5a9768c639910af"
+source = "git+https://github.com/merely-made/murm.git?rev=2d5760aac0d9f77813b45bc9f7695b9f8c1e120e#2d5760aac0d9f77813b45bc9f7695b9f8c1e120e"
 dependencies = [
  "aes 0.9.3",
  "bzip2",
@@ -19699,6 +19701,11 @@ dependencies = [
 name = "peer-facts"
 version = "0.0.1"
 source = "git+https://www.github.com/merely-made/armillary.git?rev=08ebbc44f5d391bd263fcc26b6053edf72741954#08ebbc44f5d391bd263fcc26b6053edf72741954"
+
+[[patch.unused]]
+name = "murm-wire"
+version = "0.1.0"
+source = "git+https://github.com/merely-made/murm.git?rev=2d5760aac0d9f77813b45bc9f7695b9f8c1e120e#2d5760aac0d9f77813b45bc9f7695b9f8c1e120e"
 
 [[patch.unused]]
 name = "esp-testkit"

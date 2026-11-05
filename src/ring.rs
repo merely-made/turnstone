@@ -35,6 +35,7 @@
 //! shapes the install review's checkboxes; it never grants silently — the
 //! visible review stays the only place an ask becomes a grant.
 
+use crate::place::catalogue::CatalogueAction as SiteAction;
 use servitor::{AuthorityProvider, Cap, Mode, Subject};
 
 use crate::action::Action;
@@ -118,7 +119,7 @@ pub fn ring_of(action: &Action) -> Ring {
     }
     match action {
         // Moving through content.
-        OpenAddress(_) | OpenSavedSource(_) | NavBack | NavForward | Reload | Stop => Ring::Navigate,
+        OpenAddress(_) | OpenSavedSource(_) | Catalogue(SiteAction::OpenDiscoveredSite {..}) | NavBack | NavForward | Reload | Stop => Ring::Navigate,
 
         // Window / pane / workbench arrangement.
         NewWindow
@@ -195,6 +196,7 @@ pub fn ring_of(action: &Action) -> Ring {
         | ToggleSizeByRecency
         | ToggleNodeContent
         | SearchCapturedPages
+        | Catalogue(SiteAction::BrowseSites {..})
         | FocusCard(_)
         | Scope(_)
         | SelectScopeMere(_)
@@ -239,6 +241,7 @@ pub fn ring_of(action: &Action) -> Ring {
         // their words, so it is grantable but never implied by `session`.
         SendPlaceMessage { .. }
         | ShareFocusedNode
+        | Catalogue(SiteAction::WithdrawSite {..})
         | ResyncPlace
         | SetPlaceCollection(_) => Ring::Place,
 
@@ -335,6 +338,8 @@ pub fn ring_of(action: &Action) -> Ring {
         | BeginJoinPlaceFile
         | JoinPlaceFile { .. }
         | BeginSendPlaceMessage
+        | Catalogue(SiteAction::BeginAdvertiseSite {..})
+        | Catalogue(SiteAction::CommitSiteAdvertisement {..})
         // Revoking decides who stays in the community, the same trust act.
         | RevokePlaceMember { .. }
         // Leaving is still a host-owned session transition. A participant may not
@@ -389,6 +394,7 @@ pub fn emit_allowed(
             | Action::BeginInviteToPlaceAsReader
             | Action::InviteToPlace { .. }
             | Action::InviteToPlaceWithPrekey { .. } => "inviting to a place",
+            Action::Catalogue(SiteAction::BeginAdvertiseSite {..}) | Action::Catalogue(SiteAction::CommitSiteAdvertisement {..}) => "advertising a public site",
             Action::BeginSendPlaceMessage => "opening the place message prompt",
             Action::RevokePlaceMember { .. } => "revoking a place member",
             Action::LeavePlace => "leaving a place",

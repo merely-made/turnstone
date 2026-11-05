@@ -193,6 +193,7 @@ pub struct App {
     /// Monotonic id for authored place commands, so a late answer is
     /// attributable to the command that asked for it.
     pub(crate) next_place_request: u64,
+    catalogue_open: Option<(u64, command_invocation::Observation)>,
     /// Correlation id for explicit smolweb writes. Never reused within the
     /// process, so a late receipt cannot attach to a later composer.
     pub(crate) next_smolweb_submission: u64,
@@ -413,3 +414,5 @@ mod app_graph_pane_frame;
 mod app_shell_chrome_config;
 #[path = "app_write_note.rs"]
 mod app_write_note;
+
+mod catalogue;

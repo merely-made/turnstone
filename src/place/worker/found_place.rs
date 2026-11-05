@@ -38,7 +38,8 @@ pub fn found_place(
         .derive_keypair(&founding_salt(moot_id))
         .map_err(|error| format!("derive place founding key: {error}"))?;
     let founder_id = founding.public_key().to_bytes();
-    let rules = place_rules(founder_id, root, moot_id, now_ms, None);
+    let mut rules = place_rules(founder_id, root, moot_id, now_ms, None);
+    rules.admission = settings.founding_admission.clone();
 
     let stores = place_store_dir(directory);
     std::fs::create_dir_all(&stores).map_err(|error| format!("create place store: {error}"))?;

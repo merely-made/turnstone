@@ -265,17 +265,19 @@ impl App {
             Update::PlaceCommandDone {
                 session,
                 generation,
-                request: _,
+                request,
                 result,
             } => {
                 if session != self.session_id || self.place.generation() != Some(generation) {
                     return Vec::new();
                 }
+                let mut navigation=None;
                 match result {
                     // Authoring changed what the place projects, so the answer
                     // carries the re-folded snapshot rather than leaving the
                     // app with a stale view of state it just changed.
-                    Ok(snapshot) => {
+                    Ok(mut snapshot) => {
+                        navigation=snapshot.catalogue_navigation.take().and_then(|address|self.finish_catalogue_navigation(request,address));
                         if let Some(binding) = self.place.binding().cloned() {
                             self.reconcile_shared_graph(&snapshot.shared);
                             self.place = crate::place::PlaceState::Offline {
@@ -293,6 +295,7 @@ impl App {
                     },
                 }
                 self.reflow_omnibar();
+                if let Some(address)=navigation {self.next_place_request=self.next_place_request.wrapping_add(1);return self.update(crate::action::Action::OpenAddress(address));}
                 vec![Effect::Redraw]
             },
             Update::PlaceCollectionSet {

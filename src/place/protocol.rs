@@ -22,6 +22,9 @@ pub enum AuthorityClock {
 pub struct PlaceWorkerSettings {
     #[cfg(feature = "peers")]
     pub retention: gemot::moot::MootRetentionSettings,
+    /// Signed admission policy for newly founded places. Existing law is retained.
+    #[cfg(feature = "peers")]
+    pub founding_admission: mien::Policy,
     pub authority_clock: AuthorityClock,
     pub(crate) capture_library: crate::place::captured_collection::LocalCaptureLibrary,
     /// The Knot vault a live place serves by projection, or `None` when this
@@ -150,6 +153,9 @@ pub enum PlaceWorkerCommand {
 /// can post arbitrary operations has taken over authorship from the domain.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum PlaceCommand {
+    AdvertiseSite(super::catalogue::CatalogueSiteDraft),
+    WithdrawSite { collection: [u8;32] },
+    OpenCatalogue { digest: [u8;32] },
     SendMessage {
         channel: String,
         body: String,

@@ -234,3 +234,12 @@ Enable the commit checks with `prek install --allow-missing-config`; run
 `prek run --all-files` alongside the existing local gates. Check definitions
 live in `.pre-commit-config.yaml`, with source-size exclusions and exceptions
 in `line-ceiling.toml`. Shared house style and rollout: `mere/design_docs/mere_docs/implementation_strategy/2026-10-30_house_style_plan.md`.
+
+With `--features peers` and a place open, use the command palette's **Browse
+discovered sites** or subject rows to search public site descriptions. A place
+founder can choose **Advertise focused public site**, enter the public abstract,
+and later withdraw that advertisement. Opening a result rechecks current place
+access. `TURNSTONE_CATALOGUE_LIFETIME_MS` selects a lifetime up to one hour
+(default ten minutes). This advertises descriptions; it does not retain the
+website's content. Protected descriptions and remote keeper serving are separate
+gates in the Gemot site/workflow plan.

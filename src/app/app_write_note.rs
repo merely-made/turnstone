@@ -1,6 +1,7 @@
 // Copyright 2026 Mark Alan Boykin
 // SPDX-License-Identifier: MPL-2.0
 
+use crate::place::catalogue::CatalogueAction as SiteAction;
 use super::*;
 
 impl App {
@@ -38,6 +39,7 @@ impl App {
     /// woken body sees the world the action left rather than the one it found,
     /// and its own effects join the same return.
     pub fn update(&mut self, action: Action) -> Vec<Effect> {
+        if matches!(&action,Action::OpenAddress(_) | Action::OpenSavedSource(_) | Action::NavBack | Action::NavForward | Action::Reload | Action::Stop) {self.next_place_request=self.next_place_request.wrapping_add(1);}
         if self.session_load_refused()
             && !matches!(
                 &action,
@@ -274,6 +276,11 @@ impl App {
                     vec![Effect::Redraw]
                 },
             },
+            Action::Catalogue(SiteAction::BeginAdvertiseSite {subject})=>self.begin_advertise_site(subject),
+            Action::Catalogue(SiteAction::CommitSiteAdvertisement {expected_address,subject,abstract_text})=>self.commit_site_advertisement(expected_address,subject,abstract_text),
+            Action::Catalogue(SiteAction::BrowseSites {subject})=>self.browse_sites(subject),
+            Action::Catalogue(SiteAction::OpenDiscoveredSite {digest})=>self.open_catalogue_site(digest),
+            Action::Catalogue(SiteAction::WithdrawSite {collection})=>self.run_place_command(crate::place::worker::PlaceCommand::WithdrawSite {collection}),
             Action::ResyncPlace => self.resync_place(),
             Action::SetPlaceCollection(selection) => self.set_place_collection(selection),
             Action::SearchCapturedPages => self.open_captured_pages(),

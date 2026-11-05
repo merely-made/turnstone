@@ -306,3 +306,6 @@ pub use spawn_pending_place_worker::spawn_pending_place_worker;
 #[path = "worker/spawn_place_worker_with.rs"]
 mod spawn_place_worker_with;
 use spawn_place_worker_with::spawn_place_worker_with;
+
+#[path = "worker/catalogue.rs"]
+mod catalogue;

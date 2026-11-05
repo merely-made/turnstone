@@ -53,6 +53,8 @@ const LEAVE_BUDGET: std::time::Duration = std::time::Duration::from_secs(10);
 /// cancellation and endpoint close before this value's fields are dropped.
 pub(crate) struct LiveLanes {
     watcher: Option<tokio::task::JoinHandle<()>>,
+    pub(crate) catalogue: Arc<murm_sync::advertisements::Advertisements>,
+    pub(crate) catalogue_clock: Arc<std::sync::atomic::AtomicBool>,
     /// This bind's own dialable ticket(s), read once the endpoint is up.
     local_rendezvous: Vec<String>,
     /// How many peer tickets this bind dialed. Zero is a listen-only bind.
@@ -85,6 +87,8 @@ struct JoinedLanes {
 /// Shared counter handles across all ten lanes plus the projection host,
 /// sampled by the watcher.
 struct LaneCounters {
+    catalogue: Arc<murm_sync::advertisements::Advertisements>,
+    catalogue_clock: Arc<std::sync::atomic::AtomicBool>,
     handles: Vec<std::sync::Arc<std::sync::Mutex<murm_sync::SyncStatus>>>,
     /// None when this profile has no vault, so there is no host to count.
     projection: Option<ProjectionWatchCounters>,
@@ -148,3 +152,8 @@ use transport_salt::transport_salt;
 #[path = "lanes/join_live.rs"]
 mod join_live;
 pub(crate) use join_live::join_live;
+
+#[path = "lanes/catalogue.rs"]
+mod catalogue;
+
+use catalogue::catalogue_topic;

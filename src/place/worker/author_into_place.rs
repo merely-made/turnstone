@@ -24,7 +24,14 @@ pub(super) fn author_into_place(
 ) -> Result<(), String> {
     let at_ms = settings.authority_clock.now_ms();
     let subject = identity.master_public_key().to_bytes();
+    match command {
+        PlaceCommand::AdvertiseSite(draft)=>return catalogue::advertise(open,identity,draft,at_ms),
+        PlaceCommand::WithdrawSite {collection}=>return catalogue::withdraw(open,identity,*collection,at_ms),
+        PlaceCommand::OpenCatalogue {digest}=>return catalogue::open_address(open,*digest,at_ms).map(|_|()),
+        _=>{}
+    }
     let needed = match command {
+        PlaceCommand::AdvertiseSite(..) | PlaceCommand::WithdrawSite {..} | PlaceCommand::OpenCatalogue {..}=>unreachable!("handled above"),
         PlaceCommand::SendMessage { .. } => commons::chat::chat_write_capability(binding.chat.0),
         PlaceCommand::ShareNode { .. } => commons::commons_write_capability(binding.root.0),
         // Governance, not content: its own preflight is holding Manage.
@@ -119,6 +126,7 @@ pub(super) fn author_into_place(
                 lanes.publish_graph(operation)?;
             }
         },
+        PlaceCommand::AdvertiseSite(..) | PlaceCommand::WithdrawSite {..} | PlaceCommand::OpenCatalogue {..}=>unreachable!("handled above"),
         PlaceCommand::RevokeMember { .. } => unreachable!("returned above"),
     }
     Ok(())

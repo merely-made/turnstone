@@ -13,6 +13,7 @@ pub enum OmnibarMode {
     Address,
     /// Search only the currently projected captured-page cache for this place.
     CapturedPages,
+    CatalogueSites {subject:Option<u8>},
     /// Search private source captures attached in the current session.
     SavedSources,
     /// Filter the active place's local status observations.

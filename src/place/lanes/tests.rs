@@ -236,3 +236,6 @@ mod conformance_driver_f_o_u_n_d_e_r;
 mod impl_coop_lifecycle_driver_for_conformance;
 #[path = "tests/impl_drop_for_conformance_driver.rs"]
 mod impl_drop_for_conformance_driver;
+
+#[path = "tests/catalogue.rs"]
+mod catalogue;

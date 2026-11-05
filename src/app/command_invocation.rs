@@ -14,7 +14,7 @@ const SCHEMA: &str = "turnstone.command/v1";
 
 #[derive(serde::Serialize, serde::Deserialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
-struct Observation {
+pub(super) struct Observation {
     session: crate::panes::SessionId,
     pane: Option<crate::panes::PaneId>,
     graph: Option<crate::panes::GraphId>,
@@ -22,7 +22,7 @@ struct Observation {
 }
 
 impl App {
-    fn command_observation(&self) -> Observation {
+    pub(super) fn command_observation(&self) -> Observation {
         let pane = self.scene_command_pane();
         Observation {
             session: self.session_id.clone(),
