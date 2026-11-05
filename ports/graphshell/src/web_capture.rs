@@ -12,7 +12,12 @@ use graphshell::capture::{
 use graphshell::local_profile::LocalProfile;
 use muniment::IndexedDbBackend;
 use serde::Deserialize;
+use std::cell::RefCell;
+use std::collections::VecDeque;
+use std::rc::Rc;
+use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
+use wasm_bindgen::closure::Closure;
 use web_sys::Window;
 
 const CAPTURE_POLICY_GLOBAL: &str = "graphshellCapturePolicyJson";
@@ -24,13 +29,111 @@ const LOCAL_PROFILE_GLOBAL: &str = "graphshellLocalProfileJson";
 // The element `loader.js` reads the page's receipts from.
 const GRAPHSHELL_ROOT: &str = "graphshell-view, graphshell-tree";
 const CAPTURE_COMPLETE_EVENT: &str = "graphshell-capture-complete";
+// A batch the extension pulled while this view stays open, and its answer.
+const CAPTURE_BATCH_EVENT: &str = "graphshell-capture-batch";
+const CAPTURE_BATCH_COMPLETE_EVENT: &str = "graphshell-capture-batch-complete";
+// The extension keeps one batch in flight; more waiting means a misbehaving page.
+const MAX_WAITING_BATCHES: usize = 4;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
-pub(crate) struct InitialCaptureSummary {
+pub(crate) struct CaptureSummary {
     pub(crate) active: bool,
     pub(crate) accepted: usize,
     pub(crate) dropped: usize,
     pub(crate) buffered: usize,
+}
+
+impl CaptureSummary {
+    pub(crate) fn add(&mut self, other: &Self) {
+        self.active |= other.active;
+        self.accepted += other.accepted;
+        self.dropped += other.dropped;
+        self.buffered += other.buffered;
+    }
+}
+
+/// One delivery pulled from the extension's durable queue while the view is open.
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct LiveCaptureBatch {
+    pub(crate) batch: u64,
+    pub(crate) policy: HistoryCapturePolicy,
+    pub(crate) visits: Vec<BrowserVisit>,
+}
+
+/// Batches waiting for the graph to be free; a refused one keeps its number.
+pub(crate) type CaptureInbox = Rc<RefCell<VecDeque<Result<LiveCaptureBatch, (u64, String)>>>>;
+pub(crate) type BatchListener = Closure<dyn FnMut(web_sys::Event)>;
+
+fn parse_batch(detail: &str) -> Result<LiveCaptureBatch, (u64, String)> {
+    serde_json::from_str(detail).map_err(|error| {
+        let batch = serde_json::from_str::<serde_json::Value>(detail)
+            .ok()
+            .and_then(|value| value.get("batch")?.as_u64())
+            .unwrap_or(0);
+        (batch, format!("invalid capture batch: {error}"))
+    })
+}
+
+/// Queue each delivered batch for the frame loop, which applies it when no
+/// other save holds the graph. Keep the returned listener for the page's life.
+pub(crate) fn listen_for_batches(inbox: CaptureInbox) -> Result<BatchListener, String> {
+    let listener = Closure::<dyn FnMut(web_sys::Event)>::new(move |event: web_sys::Event| {
+        let detail = js_sys::Reflect::get(&event, &JsValue::from_str("detail"))
+            .ok()
+            .and_then(|detail| detail.as_string())
+            .unwrap_or_default();
+        let mut inbox = inbox.borrow_mut();
+        let parsed = match parse_batch(&detail) {
+            Ok(batch) if inbox.len() >= MAX_WAITING_BATCHES => {
+                Err((batch.batch, "too many capture batches waiting".into()))
+            },
+            parsed => parsed,
+        };
+        inbox.push_back(parsed);
+    });
+    crate::document()?
+        .add_event_listener_with_callback(CAPTURE_BATCH_EVENT, listener.as_ref().unchecked_ref())
+        .map_err(|_| "could not listen for capture batches".to_string())?;
+    Ok(listener)
+}
+
+fn graphshell_root() -> Result<web_sys::Element, String> {
+    crate::document()?
+        .query_selector(GRAPHSHELL_ROOT)
+        .map_err(|_| "could not look up the Graphshell root".to_string())?
+        .ok_or_else(|| "the Graphshell root is not in the page".to_string())
+}
+
+fn dispatch(name: &str) -> Result<(), String> {
+    let event =
+        web_sys::Event::new(name).map_err(|_| format!("could not create the {name} event"))?;
+    crate::document()?
+        .dispatch_event(&event)
+        .map_err(|_| format!("could not announce {name}"))?;
+    Ok(())
+}
+
+/// Answer a live batch on the Graphshell root. Only `Ok` lets the extension
+/// acknowledge it; an error leaves the visits queued for the next pull.
+pub(crate) fn announce_batch(
+    batch: u64,
+    result: &Result<CaptureSummary, String>,
+) -> Result<(), String> {
+    let root = graphshell_root()?;
+    let summary = result.as_ref().copied().unwrap_or_default();
+    let error = result.as_ref().err().cloned().unwrap_or_default();
+    for (name, value) in [
+        ("data-capture-batch", batch.to_string()),
+        ("data-capture-batch-error", error),
+        ("data-capture-batch-accepted", summary.accepted.to_string()),
+        ("data-capture-batch-dropped", summary.dropped.to_string()),
+        ("data-capture-batch-buffered", summary.buffered.to_string()),
+    ] {
+        root.set_attribute(name, &value)
+            .map_err(|_| format!("could not expose {name}"))?;
+    }
+    dispatch(CAPTURE_BATCH_COMPLETE_EVENT)
 }
 
 #[derive(Clone, Debug, Default, Deserialize)]
@@ -97,31 +200,31 @@ pub(crate) fn initial_capture_input(
     Ok(Some((policy, visits)))
 }
 
-pub(crate) async fn apply_initial_capture(
+pub(crate) async fn apply_capture(
     app: &mut GraphshellApp<IndexedDbBackend>,
     store: &mut IndexedDbBackend,
     input: Option<(HistoryCapturePolicy, Vec<BrowserVisit>)>,
     persona: &str,
     device: &str,
     now_secs: u64,
-) -> Result<InitialCaptureSummary, String> {
+) -> Result<CaptureSummary, String> {
     let Some((policy, visits)) = input else {
-        return Ok(InitialCaptureSummary::default());
+        return Ok(CaptureSummary::default());
     };
     let mut capture = BrowserHistoryCapture::load(store, policy)
         .await
         .map_err(|error| error.to_string())?;
     if visits.is_empty() {
-        return Ok(InitialCaptureSummary {
+        return Ok(CaptureSummary {
             active: capture.policy().enabled,
-            ..InitialCaptureSummary::default()
+            ..CaptureSummary::default()
         });
     }
     let outcomes = capture
         .ingest_batch(&mut app.host, store, visits, persona, device, now_secs)
         .await
         .map_err(|error| error.to_string())?;
-    Ok(InitialCaptureSummary {
+    Ok(CaptureSummary {
         active: capture.policy().enabled,
         accepted: outcomes
             .iter()
@@ -140,16 +243,12 @@ pub(crate) async fn apply_initial_capture(
 
 /// Expose a landed batch's counters on the Graphshell root, then announce it on
 /// the document so the extension acknowledges the visits it pulled. Call it only
-/// after `apply_initial_capture` returned Ok: a failed batch must stay queued.
-pub(crate) fn announce_capture(summary: InitialCaptureSummary) -> Result<(), String> {
+/// after `apply_capture` returned Ok: a failed batch must stay queued.
+pub(crate) fn announce_capture(summary: CaptureSummary) -> Result<(), String> {
     if !summary.active {
         return Ok(());
     }
-    let document = crate::document()?;
-    let root = document
-        .query_selector(GRAPHSHELL_ROOT)
-        .map_err(|_| "could not look up the Graphshell root".to_string())?
-        .ok_or("the Graphshell root is not in the page")?;
+    let root = graphshell_root()?;
     for (name, count) in [
         ("data-capture-accepted", summary.accepted),
         ("data-capture-dropped", summary.dropped),
@@ -158,12 +257,7 @@ pub(crate) fn announce_capture(summary: InitialCaptureSummary) -> Result<(), Str
         root.set_attribute(name, &count.to_string())
             .map_err(|_| format!("could not expose {name}"))?;
     }
-    let event = web_sys::Event::new(CAPTURE_COMPLETE_EVENT)
-        .map_err(|_| "could not create the capture completion event".to_string())?;
-    document
-        .dispatch_event(&event)
-        .map_err(|_| "could not announce the capture completion".to_string())?;
-    Ok(())
+    dispatch(CAPTURE_COMPLETE_EVENT)
 }
 
 pub(crate) fn history_control_input(

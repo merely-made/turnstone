@@ -27,6 +27,7 @@ let historyGranted = false;
 const fromTime = Date.now() - 2000;
 const toTime = Date.now() - 1000;
 
+const announced = [];
 const chrome = {
   action: { onClicked: actionClicked },
   tabs: { create: async () => {} },
@@ -34,6 +35,11 @@ const chrome = {
     id: "graphshell",
     getURL: (path) => `chrome-extension://graphshell/${path}`,
     onMessage: runtimeMessage,
+    // No view is open in this harness: the browser rejects the send.
+    async sendMessage(message) {
+      announced.push(message);
+      throw new Error("Could not establish connection. Receiving end does not exist.");
+    },
   },
   storage: {
     local: {
@@ -189,6 +195,8 @@ assert.deepEqual(Array.from(rapid.visits, (visit) => visit.visit_id), ["rapid-1"
 assert.equal(rapid.visits[1].parent.visit_id, "rapid-1");
 assert.equal(rapid.visits[1].original_unix_micros, (liveAt + 1) * 1000);
 await send({ type: "capture.ack", ids: rapid.ids });
+assert.ok(announced.length > 0 && announced.every((message) => message.type === "capture.available"),
+  "admitted live visits wake an open view; a missing receiver is not an error");
 
 // Worker restart restores source scope and the live observation floor.
 const restarted = vm.createContext({ chrome, console, URL,

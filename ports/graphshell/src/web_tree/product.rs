@@ -140,6 +140,9 @@ pub(super) struct SavedProduct {
     /// The installed extension profile; `None` on reference and fixture routes.
     local_profile: Option<graphshell::local_profile::LocalProfile>,
     share_outcome: crate::web_share::Outcome,
+    /// A live capture batch holds the graph until it commits or fails.
+    capture_pending: bool,
+    capture_completed: Rc<RefCell<Option<history::BatchCompletion>>>,
 }
 
 /// The existing fixture and generated comparison routes remain unchanged.
@@ -350,6 +353,8 @@ async fn open_inner(root: &Element) -> Result<Option<SavedProduct>, String> {
         clip_member: Rc::new(Cell::new(None)),
         local_profile,
         share_outcome: Rc::new(RefCell::new(None)),
+        capture_pending: false,
+        capture_completed: Rc::new(RefCell::new(None)),
     }))
 }
 
@@ -391,6 +396,7 @@ impl SavedProduct {
             || self.link_visibility_completed.borrow().is_some()
             || self.assertion_visibility_completed.borrow().is_some()
             || self.share_outcome.borrow().is_some()
+            || self.live_capture_ready()
             || self.projection.changed()
             || self.projection.needs_frame()
     }
@@ -399,6 +405,7 @@ impl SavedProduct {
     }
     pub(super) fn selection_locked(&self) -> bool {
         self.saving
+            || self.capture_pending
             || self.operation_pending
             || self.link_visibility_pending
             || self.link_visibility_uncertain_session.is_some()
@@ -1235,6 +1242,10 @@ impl SavedProduct {
         if let Some(status) = self.share_outcome.borrow_mut().take() {
             self.status = status;
         }
+        if self.finish_live_capture(canvas) {
+            return true;
+        }
+        self.start_live_capture();
         self.keep_links(canvas);
         let projection_advanced = self.projection.advance();
         let projection_changed = self.projection.changed();

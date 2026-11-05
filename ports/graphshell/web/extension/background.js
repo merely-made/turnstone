@@ -134,6 +134,17 @@ async function queueVisits(rawVisits) {
   });
 }
 
+// Tell an open writer view that visits are waiting. With no view open the
+// browser rejects the send; the queue keeps them for the next open.
+function announceQueued() {
+  try {
+    Promise.resolve(extensionApi.runtime.sendMessage({ type: "capture.available" }))
+      .catch(() => {});
+  } catch {
+    // No receiver: the visits stay queued.
+  }
+}
+
 function visitObservation(page, visit, scope, visitUrls) {
   const parentId = visit.referringVisitId && visit.referringVisitId !== "0"
     ? String(visit.referringVisitId) : null;
@@ -159,9 +170,10 @@ async function reconcileAddress(historyItem) {
   const scope = await sourceScope();
   // Reconcile every available visit. Durable admission deduplicates retries;
   // a latest timestamp cannot disambiguate rapid or out-of-order visits.
-  await queueVisits(visits.filter((visit) => Number.isFinite(visit.visitTime) && visit.visitId
-      && visit.visitTime >= (state.liveFrom ?? Date.now()))
+  const admitted = await queueVisits(visits.filter((visit) => Number.isFinite(visit.visitTime)
+      && visit.visitId && visit.visitTime >= (state.liveFrom ?? Date.now()))
     .map((visit) => visitObservation(historyItem, visit, scope, state.visitMap)));
+  if (admitted > 0) announceQueued();
 }
 
 function liveVisit(historyItem) {

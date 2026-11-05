@@ -7,8 +7,9 @@
 //! Capture and history controls over the durable access authority.
 use super::*;
 use crate::web_capture::{
-    HistoryControlSummary, HistoryForgetInput, InitialCaptureSummary, announce_capture,
-    apply_history_controls, apply_history_request, apply_initial_capture, initial_capture_input,
+    BatchListener, CaptureInbox, CaptureSummary, HistoryControlSummary, HistoryForgetInput,
+    LiveCaptureBatch, announce_batch, announce_capture, apply_capture, apply_history_controls,
+    apply_history_request, initial_capture_input, listen_for_batches,
 };
 use cambium::{button, checkbox, el, lens, text_field_typed};
 use graphshell::access::AccessRecordFilter;
@@ -28,9 +29,16 @@ pub(super) struct HistoryControls {
     store: IndexedDbBackend,
     policy: HistoryCapturePolicy,
     summary: HistoryControlSummary,
-    capture: InitialCaptureSummary,
+    capture: CaptureSummary,
     completed: Rc<RefCell<Option<HistoryControlSummary>>>,
+    /// The persona slot and device that capture records name.
+    attribution: (String, String),
+    pub(super) inbox: CaptureInbox,
+    _listener: BatchListener,
 }
+
+/// A live batch's graph returned with its number and committed counts.
+pub(super) type BatchCompletion = (App, u64, Result<CaptureSummary, String>);
 impl HistoryControls {
     /// `attribution` is the persona slot and device that capture records name.
     pub(super) async fn load(
@@ -44,11 +52,12 @@ impl HistoryControls {
             .map(|(policy, _)| policy.clone())
             .unwrap_or_else(HistoryCapturePolicy::disabled);
         let (persona, device) = attribution;
-        let capture =
-            apply_initial_capture(app, &mut store, input, persona, device, now_secs()).await?;
+        let capture = apply_capture(app, &mut store, input, persona, device, now_secs()).await?;
         // The batch has committed; only now may the extension drop what it pulled.
         announce_capture(capture)?;
         let summary = apply_history_controls(app, &mut store, policy.clone(), now_secs()).await;
+        let inbox = CaptureInbox::default();
+        let listener = listen_for_batches(inbox.clone())?;
         Ok(Self {
             open: false,
             inputs: LABELS.iter().map(|_| TextInput::new("")).collect(),
@@ -58,6 +67,9 @@ impl HistoryControls {
             summary,
             capture,
             completed: Rc::new(RefCell::new(None)),
+            attribution: (persona.to_owned(), device.to_owned()),
+            inbox,
+            _listener: listener,
         })
     }
     pub(super) fn poll(&mut self) {
@@ -67,6 +79,101 @@ impl HistoryControls {
     }
 }
 impl SavedProduct {
+    pub(super) fn live_capture_ready(&self) -> bool {
+        self.capture_completed.borrow().is_some()
+            || (self.app.is_some()
+                && !self.selection_locked()
+                && !self.history.inbox.borrow().is_empty())
+    }
+
+    /// Apply the next delivered batch once no other save holds the graph;
+    /// edits wait for it, as for any save.
+    pub(super) fn start_live_capture(&mut self) {
+        if self.app.is_none() || self.selection_locked() {
+            return;
+        }
+        let Some(next) = self.history.inbox.borrow_mut().pop_front() else {
+            return;
+        };
+        let LiveCaptureBatch {
+            batch,
+            policy,
+            visits,
+        } = match next {
+            Ok(batch) => batch,
+            Err((batch, error)) => {
+                if let Err(error) = announce_batch(batch, &Err(error)) {
+                    web_sys::console::error_1(&error.into());
+                }
+                return;
+            },
+        };
+        let mut app = self.app.take().expect("checked above");
+        let mut store = self.history.store.clone();
+        let (persona, device) = self.history.attribution.clone();
+        let completed = self.capture_completed.clone();
+        self.capture_pending = true;
+        wasm_bindgen_futures::spawn_local(async move {
+            let result = async {
+                let summary = apply_capture(
+                    &mut app,
+                    &mut store,
+                    Some((policy, visits)),
+                    &persona,
+                    &device,
+                    now_secs(),
+                )
+                .await?;
+                app.host
+                    .persist(now_secs())
+                    .await
+                    .map_err(|error| error.to_string())?;
+                Ok(summary)
+            }
+            .await;
+            *completed.borrow_mut() = Some((app, batch, result));
+        });
+    }
+
+    /// Show a finished batch and answer the extension; only a committed batch
+    /// is acknowledged, so a failed one stays in its durable queue.
+    pub(super) fn finish_live_capture(&mut self, canvas: &mut Canvas) -> bool {
+        let Some((app, batch, result)) = self.capture_completed.borrow_mut().take() else {
+            return false;
+        };
+        let owner = app.host.graph_session().id().0;
+        let owner_changed = self.session.parse().ok() != Some(owner);
+        graphshell::local_scene::adopt_host_graph(
+            canvas,
+            self.session.parse().ok(),
+            owner,
+            &app.host,
+        );
+        self.session = owner.to_string();
+        self.forme_reconcile_session = Some(owner);
+        self.app = Some(app);
+        self.capture_pending = false;
+        if owner_changed {
+            self.restore_canvas_link_hides(canvas);
+        }
+        match &result {
+            Ok(summary) => {
+                self.history.capture.add(summary);
+                if summary.accepted > 0 {
+                    self.status =
+                        format!("Captured {} visit(s) from this browser", summary.accepted);
+                }
+            },
+            Err(error) => {
+                self.status = format!("Capture not saved · {error} · the visits stay queued");
+            },
+        }
+        if let Err(error) = announce_batch(batch, &result) {
+            web_sys::console::error_1(&error.into());
+        }
+        true
+    }
+
     pub(in crate::web_tree) fn history_fields(&self, snapshot: ProbeSnapshot) -> ProbeSnapshot {
         snapshot
             .with_field(

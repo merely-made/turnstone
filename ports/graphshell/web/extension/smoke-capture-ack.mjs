@@ -41,7 +41,14 @@ const root = { dataset: {} };
 const status = { textContent: "", dataset: {} };
 const documentListeners = new Map();
 globalThis.chrome = chrome;
+globalThis.location = { search: "" };
+const batches = [];
 globalThis.document = {
+  dispatchEvent: (event) => {
+    assert.equal(event.type, "graphshell-capture-batch");
+    batches.push(JSON.parse(event.detail));
+    return true;
+  },
   querySelector: (selector) => selector === "#capture-status" ? status
     : selector === "graphshell-view, graphshell-tree" ? root : null,
   addEventListener: (name, listener, options) => documentListeners.set(name, { listener, once: options?.once }),
@@ -78,4 +85,38 @@ await settle();
 assert.equal((await send({ type: "capture.pull" })).visits.length, 0, "the announcement drains the queue");
 assert.equal(status.textContent, "Graph updated · 1 visits · 1 awaiting parents · 0 filtered",
   "the counters are read from the Graphshell root");
+
+// While the view stays open, a notice pulls one numbered batch at a time.
+assert.equal(batches.length, 0, "an empty queue sends no batch");
+const notice = () => listeners[1]({ type: "capture.available" }, { id: "graphshell" });
+const queued = async () => (await send({ type: "capture.pull" })).visits.length;
+stored["graphshell.capture.queue.v1"] = [visit("three", 3)];
+notice();
+await settle();
+assert.deepEqual(batches.map((batch) => [batch.batch, batch.visits.length]), [[1, 1]]);
+stored["graphshell.capture.queue.v1"] = [visit("three", 3), visit("four", 4)];
+notice();
+await settle();
+assert.equal(batches.length, 1, "a notice during a batch waits for its answer");
+
+// A failed batch is not acknowledged and is not retried until the next notice.
+Object.assign(root.dataset, { captureBatch: "1", captureBatchError: "store refused" });
+await globalThis.document.dispatch("graphshell-capture-batch-complete");
+await settle();
+assert.equal(await queued(), 2, "a failed batch stays queued");
+assert.match(status.textContent, /not saved · store refused/);
+assert.equal(batches.length, 1);
+
+notice();
+await settle();
+assert.deepEqual(batches.map((batch) => [batch.batch, batch.visits.length]), [[1, 1], [2, 2]]);
+Object.assign(root.dataset, { captureBatch: "1", captureBatchError: "" });
+await globalThis.document.dispatch("graphshell-capture-batch-complete");
+await settle();
+assert.equal(await queued(), 2, "a stale answer acknowledges nothing");
+Object.assign(root.dataset, { captureBatch: "2", captureBatchAccepted: "2", captureBatchBuffered: "0", captureBatchDropped: "0" });
+await globalThis.document.dispatch("graphshell-capture-batch-complete");
+await settle();
+assert.equal(await queued(), 0, "a committed batch is acknowledged");
+assert.match(status.textContent, /2 new visit/);
 console.log("Graphshell capture acknowledgement smoke passed");

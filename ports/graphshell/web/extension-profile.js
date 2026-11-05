@@ -227,6 +227,59 @@ async function disableCapture() {
 
 // The Graphshell root carries the host's capture counters, as `graphshellReceipt` reads them.
 const graphshellRoot = () => document.querySelector("graphshell-view, graphshell-tree");
+const LIVE_BATCH_EVENT = "graphshell-capture-batch";
+const LIVE_BATCH_COMPLETE_EVENT = "graphshell-capture-batch-complete";
+let liveBatch = null;
+let livePullAgain = false;
+let liveSequence = 0;
+
+// Visits queued while this view stays open. One batch is in flight at a
+// time; the queue keeps it until the graph reports it committed.
+async function pullLive() {
+  if (liveBatch) {
+    livePullAgain = true;
+    return;
+  }
+  const pulled = await send({ type: "capture.pull" });
+  if (!pulled.policy.enabled || pulled.visits.length === 0) return;
+  liveSequence += 1;
+  liveBatch = { batch: liveSequence, ids: pulled.ids };
+  document.dispatchEvent(new CustomEvent(LIVE_BATCH_EVENT, {
+    detail: JSON.stringify({ batch: liveSequence, policy: pulled.policy, visits: pulled.visits }),
+  }));
+}
+
+async function finishLive() {
+  const counts = graphshellRoot()?.dataset ?? {};
+  if (!liveBatch || Number(counts.captureBatch) !== liveBatch.batch) return;
+  const { ids } = liveBatch;
+  liveBatch = null;
+  if (counts.captureBatchError) {
+    // Not acknowledged: the next notice or open pulls it again.
+    livePullAgain = false;
+    setStatus(`Capture not saved · ${counts.captureBatchError} · the visits stay queued`, "failed");
+    return;
+  }
+  await send({ type: "capture.ack", ids });
+  setStatus(`Graph updated · ${counts.captureBatchAccepted || 0} new visit(s)`
+    + ` · ${counts.captureBatchBuffered || 0} awaiting parents · ${counts.captureBatchDropped || 0} filtered`);
+  if (livePullAgain) {
+    livePullAgain = false;
+    await pullLive();
+  }
+}
+
+function startLiveCapture() {
+  const failed = (error) => setStatus(`Live capture failed · ${error}`, "failed");
+  document.addEventListener(LIVE_BATCH_COMPLETE_EVENT, () => finishLive().catch(failed));
+  extensionApi.runtime.onMessage.addListener((message, sender) => {
+    if (sender?.id === extensionApi.runtime.id && message?.type === "capture.available") {
+      pullLive().catch(failed);
+    }
+  });
+  // Visits that arrived between the opening pull and now.
+  pullLive().catch(failed);
+}
 
 async function prepareCapture() {
   // The controls are optional: without them the queue is still pulled and acknowledged.
@@ -268,6 +321,8 @@ async function prepareCapture() {
       const dropped = Number(counts.captureDropped || 0);
       const buffered = Number(counts.captureBuffered || 0);
       setStatus(`Graph updated · ${accepted} visits · ${buffered} awaiting parents · ${dropped} filtered`);
+      // Only the writer of the installed profile takes visits while open.
+      if (!fixtureRoute()) startLiveCapture();
     },
     { once: true },
   );

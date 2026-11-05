@@ -95,6 +95,19 @@ The extension page acknowledges the visits it pulled when that event arrives and
 the queue drains. A failed batch dispatches nothing, so its visits stay queued;
 redelivery is absorbed as duplicates by the ledger.
 
+Visits also reach a view that stays open. When live visits are admitted,
+`background.js` sends `capture.available`. With no view open, the browser
+rejects that send and the visits wait for the next open. The writer view then
+pulls the queue and hands it to the host as one numbered
+`graphshell-capture-batch` event. Only one batch is in flight at a time, and
+notices that arrive meanwhile cause one more pull afterwards. The host applies
+the batch when no other save holds the graph, and the batch blocks edits and
+handover until it lands. It then writes `data-capture-batch` (the number),
+`data-capture-batch-error` and the batch's counts, and dispatches
+`graphshell-capture-batch-complete`. The page acknowledges only a batch that
+committed without error. A failed or malformed batch stays queued for the next
+notice or open. A standby view takes no visits.
+
 Capture attribution comes from the `SelectedPersonaRef` and device reference
 injected by the composing host, not from the selected vault profile or a
 device-roster entry. In the installed extension that is the local profile's
