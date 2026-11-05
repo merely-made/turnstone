@@ -1,4 +1,7 @@
 // Copyright 2026 Mark Alan Boykin
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 
 //! Command choices are session data; the retained menu is a shared widget view.
@@ -302,9 +305,7 @@ pub(in crate::web_tree) fn menu(page: &TreePage) -> Option<Child> {
     children.push(Box::new(button(
         "Close commands",
         |page: &mut TreePage, _| {
-            if let Some(product) = &mut page.product {
-                product.close_menu();
-            }
+            super::super::commands::close(page);
         },
     )));
     let x = at.0.min((page.size.0 as f32 - 340.0).max(8.0));
@@ -320,7 +321,7 @@ pub(in crate::web_tree) fn menu(page: &TreePage) -> Option<Child> {
             let rows = session.rows(&c.set, &c.choices).into_iter()
                 .filter(|row| !is_forme_command(&row.id) || has_forme).collect::<Vec<_>>();
             let command = match event.key {
-                Key::Named(NamedKey::Escape) => { product.close_menu(); None },
+                Key::Named(NamedKey::Escape) => { super::super::commands::close(page); None },
                 Key::Named(NamedKey::ArrowDown | NamedKey::ArrowUp) => {
                     session.step(if matches!(event.key, Key::Named(NamedKey::ArrowDown)) {1} else {-1}, rows.len());
                     None
