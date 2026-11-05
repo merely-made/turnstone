@@ -29,7 +29,7 @@
     id,
     view: "",
     status: "refused",
-    reason: "No answer from the view that edits. It may still store this edit; check the graph before trying again",
+    reason: "No answer from the view that edits. A view in a hidden tab applies edits when it is shown; check the graph before trying again",
   });
 
   // A follower's side. `post` sends on the channel, `schedule(run, ms)` returns
@@ -94,9 +94,13 @@
         }
       },
       // This view stops following (it took the writer): nothing more is sent.
+      // Answers the number of edits left unanswered, which this view's new
+      // writer cannot admit: they were made against the old writer's session.
       abandon() {
+        const left = open.size;
         for (const entry of open.values()) if (entry.timer) cancel(entry.timer);
         open.clear();
+        return left;
       },
       pending: () => open.size,
     };

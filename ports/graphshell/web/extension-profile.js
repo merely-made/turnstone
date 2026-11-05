@@ -482,7 +482,8 @@ function follow() {
   const granted = (lock) => {
     if (!lock) return null;
     clearInterval(vacancy);
-    sender.abandon();
+    const left = sender.abandon();
+    if (left) console.warn(`Graphshell: ${left} queued edit(s) were unanswered when this view took the writer; check the graph`);
     channel.close();
     becomeWriter(bar).catch((error) => {
       bar.hidden = false;

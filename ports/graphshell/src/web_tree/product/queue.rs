@@ -144,6 +144,22 @@ impl SavedProduct {
         }
     }
 
+    /// Whether an answer or an edit waits for the frame loop: an answer to
+    /// show, or an edit this writer can start now.
+    pub(super) fn queue_ready(&self) -> bool {
+        let Some(queue) = &self.queue else {
+            return false;
+        };
+        let answers = queue.replies.as_ref().is_some_and(|inbox| !inbox.borrow().is_empty());
+        let edits = queue.requests.as_ref().is_some_and(|inbox| !inbox.borrow().is_empty());
+        answers
+            || (edits
+                && queue.admitting.is_none()
+                && !self.following()
+                && !self.selection_locked()
+                && self.app.is_some())
+    }
+
     /// Show the writer's answers to this follower's edits.
     pub(super) fn collect_replies(&mut self) -> bool {
         let Some(inbox) = self.queue.as_ref().and_then(|queue| queue.replies.clone()) else {

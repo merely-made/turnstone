@@ -441,6 +441,7 @@ impl SavedProduct {
             || self.share_outcome.borrow().is_some()
             || self.live_capture_ready()
             || self.refresh_ready()
+            || self.queue_ready()
             || self.projection.changed()
             || self.projection.needs_frame()
     }
