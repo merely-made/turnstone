@@ -410,7 +410,6 @@ windows = { version = "0.62", features = ["Win32_Foundation"], optional = true }
 [patch.crates-io]
 genet-events = { git = "https://github.com/merely-made/genet.git", branch = "main" }
 ostiary = { git = "https://github.com/merely-made/armillary.git", branch = "main" }
-peer-facts = { git = "https://github.com/merely-made/armillary.git", branch = "main" }
 # Producer contracts use the same Mere source as the host.
 sceno = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 scenotime = { git = "https://github.com/merely-made/mere.git", branch = "main" }
@@ -456,9 +455,6 @@ muniment = { git = "https://github.com/merely-made/eidetic.git", branch = "main"
 # Genet and Mere share the maintained Classic 0.11 Vello
 # shader family. Root patches are not inherited from Mere or Genet, so keep
 # the renderer, encoding and shaders on the same immutable revision.
-netrender-vello = { git = "https://www.github.com/mark-ik/vello", rev = "dfb9b53b315561887761deff319afed08cc33ff0" }
-netrender-vello-encoding = { git = "https://www.github.com/mark-ik/vello", rev = "dfb9b53b315561887761deff319afed08cc33ff0" }
-netrender-vello-shaders = { git = "https://www.github.com/mark-ik/vello", rev = "dfb9b53b315561887761deff319afed08cc33ff0" }
 # SpiderMonkey's exact C API 2.1.2 release uses ICU ~2.1 internally. Its official
 # published-source commit keeps those path dependencies in a separate Git
 # family from Genet/Vano's required registry ICU >=2.2. No ICU Rust types cross
