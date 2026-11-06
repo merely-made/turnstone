@@ -142,6 +142,10 @@ class Chrome(Protocol):
         self.call("Target.activateTarget", {"targetId": target})
         return session
 
+    def activate(self, page):
+        target = self.call("Target.getTargetInfo", sessionId=page)["targetInfo"]["targetId"]
+        self.call("Target.activateTarget", {"targetId": target})
+
     def evaluate(self, page, expression):
         result = self.call("Runtime.evaluate", {
             "expression": expression, "returnByValue": True,
@@ -222,6 +226,13 @@ class Firefox(Protocol):
         self.call("browsingContext.activate", {"context": context})
         self.call("browsingContext.navigate", {"context": context, "url": url, "wait": "none"})
         return context
+
+    def activate(self, page):
+        # BiDi cannot activate a privileged extension context after navigation.
+        self.evaluate(page, """(
+          browser.tabs.getCurrent().then(tab => browser.tabs.update(tab.id, {active: true})),
+          true
+        )""")
 
     def evaluate(self, page, expression):
         result = self.call("script.evaluate", {
