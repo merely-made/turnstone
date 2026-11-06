@@ -59,6 +59,7 @@ pub(crate) fn summarize(body: &chirograph::CarrierResponseBody) -> String {
             format!("snapshot of {} item(s)", snapshot.scene.active_item_count())
         },
         B::Resource(_) => "resource".to_string(),
+        B::RetainedPages(pages) => format!("{} retained page(s)", pages.pages.len()),
         B::ResourceChunk(chunk) => format!(
             "resource chunk at {} of {} byte(s)",
             chunk.offset, chunk.total_len
