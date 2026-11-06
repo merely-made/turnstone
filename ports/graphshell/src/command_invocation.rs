@@ -4,7 +4,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 
-//! The local viewer's synchronous command receiver, shared by Mesquite and CPU
+//! The local viewer's synchronous command receiver, shared by Mandrake and CPU
 //! receiving tests. Current offers and canvas ownership remain host decisions.
 
 use crate::viewer_commands::{self, Action};

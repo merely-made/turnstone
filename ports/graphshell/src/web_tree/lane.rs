@@ -4,7 +4,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 
-//! Product observations and actions for Mesquite on the tree page.
+//! Product observations and actions for Mandrake on the tree page.
 use super::*;
 #[cfg(feature = "product")]
 mod link_attachment;
@@ -884,7 +884,7 @@ impl Product for TreeLane {
     }
     fn complete(
         &mut self,
-        ctx: &mut mesquite::Ctx<'_, Self>,
+        ctx: &mut mandrake::Ctx<'_, Self>,
         outcome: &taproot::Outcome,
     ) -> Result<(), String> {
         let mut lines = vec![format!("RESULT {}", if outcome.ok { "ok" } else { "fail" })];
@@ -1512,7 +1512,7 @@ impl Product for TreeLane {
     fn app_step(
         &mut self,
         ctx: &mut AppCtx<'_, TreePage, Logic, Child>,
-        _: mesquite::Checkpoints<'_>,
+        _: mandrake::Checkpoints<'_>,
         line: &str,
     ) -> Result<(), String> {
         if let Some(json) = line.strip_prefix("assert host ") {
@@ -2104,9 +2104,9 @@ impl Product for TreeLane {
 
     fn app_step_with_clicks(
         &mut self,
-        ctx: &mut mesquite::Ctx<'_, Self>,
-        checkpoints: mesquite::Checkpoints<'_>,
-        clicks: &mut mesquite::Clicks,
+        ctx: &mut mandrake::Ctx<'_, Self>,
+        checkpoints: mandrake::Checkpoints<'_>,
+        clicks: &mut mandrake::Clicks,
         line: &str,
     ) -> Result<(), String> {
         if let Some(action_spec) = line.strip_prefix("click-link-rest-assertion ") {
@@ -2197,7 +2197,7 @@ impl Product for TreeLane {
         self.app_step(ctx, checkpoints, line)
     }
 
-    fn act(&mut self, ctx: &mut mesquite::Ctx<'_, Self>, command: &str) -> bool {
+    fn act(&mut self, ctx: &mut mandrake::Ctx<'_, Self>, command: &str) -> bool {
         let mut handled = false;
         ctx.runner.update(|page| {
             handled = page.command(command);
@@ -2207,7 +2207,7 @@ impl Product for TreeLane {
 
     fn invoke(
         &mut self,
-        ctx: &mut mesquite::Ctx<'_, Self>,
+        ctx: &mut mandrake::Ctx<'_, Self>,
         invocation: &cambium::Invocation,
     ) -> Option<cambium::Outcome> {
         let mut outcome = cambium::Outcome::Stale;
@@ -2237,7 +2237,7 @@ impl Product for TreeLane {
     }
 
     /// Events emitted by the same command owners as the visible controls.
-    fn drain_events(&mut self, _ctx: &mut mesquite::Ctx<'_, Self>) -> Vec<String> {
+    fn drain_events(&mut self, _ctx: &mut mandrake::Ctx<'_, Self>) -> Vec<String> {
         let mut events = std::mem::take(&mut *self.shared.events.borrow_mut());
         #[cfg(feature = "remote")]
         events.extend(std::mem::take(&mut self.shared.remote.borrow_mut().events));

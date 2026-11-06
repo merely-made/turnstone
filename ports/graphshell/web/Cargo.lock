@@ -1075,7 +1075,7 @@ dependencies = [
  "genet-scripted-dom",
  "js-sys",
  "layout-dom-api",
- "mesquite",
+ "mandrake",
  "netrender",
  "paint_list_api",
  "paint_list_render",
@@ -3263,7 +3263,7 @@ dependencies = [
 [[package]]
 name = "gemot"
 version = "0.1.1"
-source = "git+https://www.github.com/merely-made/gemot.git?rev=bcfd40831253734d3e7ef954190d4d37e8fbaea2#bcfd40831253734d3e7ef954190d4d37e8fbaea2"
+source = "git+https://www.github.com/merely-made/gemot.git?rev=120bac79877be97ac9a7b1c79e7eb1b78238003a#120bac79877be97ac9a7b1c79e7eb1b78238003a"
 dependencies = [
  "insigne",
  "mere-proofs",
@@ -3891,13 +3891,13 @@ dependencies = [
  "graphshell-host",
  "js-sys",
  "layout-dom-api",
+ "mandrake",
  "mere",
  "mere-fleece",
  "mere-lanes",
  "mere-moot",
  "mere-overmap",
  "mere-view",
- "mesquite",
  "muniment",
  "netrender",
  "netrender_device",
@@ -5673,6 +5673,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d3d25b0e0b648a86960ac23b7ad4abb9717601dec6f66c165f5b037f3f03065f"
 
 [[package]]
+name = "mandrake"
+version = "0.1.0"
+dependencies = [
+ "apparatus-core",
+ "cambium",
+ "cambium-rootstock",
+ "genet-scripted-dom",
+ "paint_list_api",
+ "png 0.17.16",
+ "postcard",
+ "serde",
+ "serde_json",
+ "taproot",
+]
+
+[[package]]
 name = "markup5ever"
 version = "0.40.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5956,25 +5972,9 @@ dependencies = [
 ]
 
 [[package]]
-name = "mesquite"
-version = "0.1.0"
-dependencies = [
- "apparatus-core",
- "cambium",
- "cambium-rootstock",
- "genet-scripted-dom",
- "paint_list_api",
- "png 0.17.16",
- "postcard",
- "serde",
- "serde_json",
- "taproot",
-]
-
-[[package]]
 name = "mien"
 version = "0.0.1"
-source = "git+https://www.github.com/merely-made/gemot.git?rev=bcfd40831253734d3e7ef954190d4d37e8fbaea2#bcfd40831253734d3e7ef954190d4d37e8fbaea2"
+source = "git+https://www.github.com/merely-made/gemot.git?rev=120bac79877be97ac9a7b1c79e7eb1b78238003a#120bac79877be97ac9a7b1c79e7eb1b78238003a"
 dependencies = [
  "insigne",
  "muniment",
@@ -6065,7 +6065,7 @@ dependencies = [
 [[package]]
 name = "mooting"
 version = "0.1.0"
-source = "git+https://www.github.com/merely-made/gemot.git?rev=bcfd40831253734d3e7ef954190d4d37e8fbaea2#bcfd40831253734d3e7ef954190d4d37e8fbaea2"
+source = "git+https://www.github.com/merely-made/gemot.git?rev=120bac79877be97ac9a7b1c79e7eb1b78238003a#120bac79877be97ac9a7b1c79e7eb1b78238003a"
 dependencies = [
  "p2mere-core",
  "serde",

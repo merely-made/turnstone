@@ -35,7 +35,7 @@ graphshell-endpoint = { workspace = true, features = ["projection-door"] }
 # The route panel that fills the mere view (stack lift plan L14).
 mere-overmap = { workspace = true, features = ["view"] }
 mere-view.workspace = true
-mesquite.workspace = true
+mandrake.workspace = true
 pandect.workspace = true
 sceno.workspace = true
 scenotime.workspace = true

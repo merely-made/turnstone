@@ -22,7 +22,7 @@ use command::{decode_invocation, invocation_for};
 use mere_view::{
     HostAction, MereView, MereViewModel, MereViewRequest, MereViewState, StatusNote, ViewStatus,
 };
-use mesquite::{LaneConfig, Product};
+use mandrake::{LaneConfig, Product};
 use sprigging::ColorF;
 use std::{cell::RefCell, collections::HashMap, rc::Rc, sync::mpsc};
 use taproot::ProbeSnapshot;
@@ -558,7 +558,7 @@ impl Product for LaneProduct {
     fn app_step(
         &mut self,
         _ctx: &mut AppCtx<'_, App, Logic, Child>,
-        _: mesquite::Checkpoints<'_>,
+        _: mandrake::Checkpoints<'_>,
         line: &str,
     ) -> Result<(), String> {
         if let Some(json) = line.strip_prefix("await ") {
@@ -619,7 +619,7 @@ fn main() {
                 &std::fs::read_to_string(&config.scenario).expect("scenario file"),
             )
             .expect("scenario");
-            mesquite::Lane::new(
+            mandrake::Lane::new(
                 product,
                 Some(scenario),
                 config.receipt_path(),
@@ -627,7 +627,7 @@ fn main() {
                 Rc::new(std::cell::Cell::new(0)),
             )
         } else {
-            mesquite::Lane::from_config(config, product, cambium_genet_winit_host::read_file)
+            mandrake::Lane::from_config(config, product, cambium_genet_winit_host::read_file)
                 .expect("scenario")
         };
         lane
