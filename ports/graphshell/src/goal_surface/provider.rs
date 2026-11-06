@@ -33,17 +33,29 @@
 //! The snapshot is read from the stores once ([`RetainedPages::load`]); the
 //! provider itself holds no store handle and cannot fetch.
 
-use chartulary::Labeled;
+use super::facts::GraphFacts;
 use eidetic::{PageTextRef, PageTextStore, ResourceCaptureStore};
 use eidetic::models::recall::{RecallSourceId, RecallSourceKind, RetainedSourceText};
 use fleece::retained_traversal::{RetainedLink, RetainedObservation, RetainedProvider};
-use mere::kernel::graph::{Graph, RelationKind};
-use std::collections::{BTreeMap, BTreeSet, HashMap};
+use mere::kernel::graph::Graph;
+use std::collections::{BTreeMap, BTreeSet};
 use uuid::Uuid;
+
+/// What a retained page's text is.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum Origin {
+    /// Page text stored by `PageTextStore`.
+    #[default]
+    PageText,
+    /// The title and address the graph holds for a captured object. A browser
+    /// capture keeps no page body, so this is all the text there is to read.
+    Record,
+}
 
 /// One retained page: the address it was captured at and every version held.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct RetainedPage {
+    pub origin: Origin,
     pub url: String,
     pub title: Option<String>,
     /// Version (blake3 hex) of the page's current text.
@@ -94,6 +106,20 @@ impl RetainedPages {
         graph: &Graph,
         max_bytes: usize,
     ) -> Result<Self, String> {
+        Self::load_facts(owner, backend, &GraphFacts::read(graph), max_bytes, false).await
+    }
+
+    /// [`Self::load`] from facts already read off the graph, so a task need
+    /// not hold the graph across a store read. With `records`, every object
+    /// the graph shows that has no stored page text is a page of its own
+    /// title and address ([`Origin::Record`]).
+    pub async fn load_facts<B: muniment::Backend + Clone>(
+        owner: &str,
+        backend: &B,
+        facts: &GraphFacts,
+        max_bytes: usize,
+        records: bool,
+    ) -> Result<Self, String> {
         let text = PageTextStore::new(backend.clone());
         let captures = ResourceCaptureStore::new(backend);
         let mut out = Self {
@@ -101,7 +127,6 @@ impl RetainedPages {
             ..Self::default()
         };
         let mut budget = max_bytes;
-        let titles = titles_by_resource(graph);
         for entry in text.references().await.map_err(|e| e.to_string())? {
             let resource = chartulary::resource_id(&entry.url);
             let mut versions = BTreeMap::new();
@@ -141,60 +166,57 @@ impl RetainedPages {
             out.pages.insert(
                 resource,
                 RetainedPage {
+                    origin: Origin::PageText,
                     url: entry.url.clone(),
-                    title: titles.get(&resource).cloned().flatten(),
+                    title: facts.title(&resource),
                     current: entry.blob,
                     versions,
                 },
             );
         }
-        out.read_links(graph);
+        if records {
+            for (resource, (url, title)) in facts.records() {
+                if out.pages.contains_key(resource) {
+                    continue;
+                }
+                let body = record_text(url, title.as_deref());
+                if body.len() > budget {
+                    out.skipped_versions += 1;
+                    continue;
+                }
+                budget -= body.len();
+                let version = eidetic::Hash::of(body.as_bytes()).to_hex();
+                out.pages.insert(
+                    *resource,
+                    RetainedPage {
+                        origin: Origin::Record,
+                        url: url.clone(),
+                        title: title.clone(),
+                        current: version.clone(),
+                        versions: BTreeMap::from([(version, body)]),
+                    },
+                );
+            }
+        }
+        out.read_links(facts);
         Ok(out)
     }
 
-    fn read_links(&mut self, graph: &Graph) {
+    fn read_links(&mut self, facts: &GraphFacts) {
         let mut links: BTreeMap<Uuid, BTreeSet<(Uuid, Option<String>)>> = BTreeMap::new();
-        // Projected relations are surface edges plus resource-level assertions
-        // lifted to the surfaces showing their endpoints.
-        for (relation, row) in graph.projected_relations() {
-            if !matches!(
-                row.kind,
-                RelationKind::Semantic(_) | RelationKind::OpenPredicate | RelationKind::Traversal
-            ) {
+        for row in facts.links() {
+            if !self.pages.contains_key(&row.from) {
                 continue;
             }
-            let (Some(from), Some(to), Some(target)) = (
-                graph.shown_resource_id(row.from),
-                graph.shown_resource_id(row.to),
-                graph.get_node(row.to),
-            ) else {
-                continue;
-            };
-            if to == from || !self.pages.contains_key(&from) {
-                continue;
-            }
-            let edge_label = graph.get_relation(relation).and_then(|payload| {
-                payload.held_semantic_statements().find_map(|statement| match row.kind {
-                    RelationKind::Semantic(sub) if statement.recognized_sub_kind == Some(sub) => {
-                        Some(statement.label.clone().unwrap_or_else(|| format!("{sub:?}").to_lowercase()))
-                    },
-                    RelationKind::OpenPredicate if statement.recognized_sub_kind.is_none() => {
-                        Some(statement.label.clone().unwrap_or_else(|| statement.predicate.clone()))
-                    },
-                    _ => None,
-                })
-            });
-            let title = Labeled::title(target).map(str::to_owned);
-            let label = match (title.clone(), edge_label) {
-                (Some(t), Some(e)) => Some(format!("{t} {e}")),
-                (t, e) => t.or(e),
-            };
-            if !self.pages.contains_key(&to) {
+            if !self.pages.contains_key(&row.to) {
                 self.unretained
-                    .entry(to)
-                    .or_insert_with(|| (target.url().to_owned(), title));
+                    .entry(row.to)
+                    .or_insert_with(|| (row.to_url.clone(), row.to_title.clone()));
             }
-            links.entry(from).or_default().insert((to, label));
+            links
+                .entry(row.from)
+                .or_default()
+                .insert((row.to, row.label.clone()));
         }
         self.links = links
             .into_iter()
@@ -241,16 +263,13 @@ impl RetainedPages {
     }
 }
 
-fn titles_by_resource(graph: &Graph) -> HashMap<Uuid, Option<String>> {
-    graph
-        .nodes()
-        .filter_map(|(key, node)| {
-            Some((
-                graph.shown_resource_id(key)?,
-                Labeled::title(node).map(str::to_owned),
-            ))
-        })
-        .collect()
+/// The text of a captured object: its title and address, which is everything
+/// a browser capture keeps of it.
+pub fn record_text(url: &str, title: Option<&str>) -> String {
+    match title.map(str::trim).filter(|t| !t.is_empty()) {
+        Some(title) => format!("{title}. {url}"),
+        None => url.to_owned(),
+    }
 }
 
 /// [`RetainedProvider`] over a [`RetainedPages`] snapshot. A read of held

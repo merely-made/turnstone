@@ -15,19 +15,24 @@
 //! changes. It shows cited results and explanations only; proposals belong to
 //! a later slice and are not offered here.
 
+mod facts;
 mod model;
 mod provider;
+pub mod suggest;
 pub(crate) mod view;
 pub mod fixture;
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod suggest_tests;
 
 pub use model::{
     Budgets, GoalRunView, Outcome, Snippet, StepView, VisitView, failure_reason, selection_reason,
     snippet, stop_reason, verdict_label,
 };
 pub use fleece::retained_traversal::RetainedTraversalReceipt;
-pub use provider::{PagesProvider, RetainedPage, RetainedPages, resource_of, source_id};
+pub use facts::{ConceptFact, GraphFacts};
+pub use provider::{Origin, PagesProvider, RetainedPage, RetainedPages, record_text, resource_of, source_id};
 pub use view::{CSS, view};
 
 use cambium::TextInput;
