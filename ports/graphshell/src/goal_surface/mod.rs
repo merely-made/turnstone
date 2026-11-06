@@ -17,6 +17,14 @@
 
 mod facts;
 mod model;
+mod model_view;
+#[cfg(feature = "goal-surface-model")]
+pub mod model_path;
+#[cfg(feature = "goal-surface-model")]
+mod model_controls;
+mod view_model;
+#[cfg(all(test, feature = "goal-surface-model"))]
+mod model_tests;
 mod provider;
 pub mod suggest;
 pub(crate) mod view;
@@ -27,12 +35,13 @@ mod tests;
 mod suggest_tests;
 
 pub use model::{
-    Budgets, GoalRunView, Outcome, Passage, Segment, Snippet, StepView, VisitView, failure_reason, selection_reason,
+    Budgets, GoalRunView, ModelPick, ModelRun, ModelVisit, Outcome, Passage, Segment, Snippet, StepView, VisitView, failure_reason, selection_reason,
     passage, snippet, stop_reason, verdict_label,
 };
 pub use fleece::retained_traversal::RetainedTraversalReceipt;
 pub use facts::{ConceptFact, GraphFacts};
 pub use provider::{Origin, PagesProvider, RetainedPage, RetainedPages, record_text, resource_of, source_id};
+pub use model_view::score;
 pub use view::{CSS, view};
 
 use cambium::TextInput;
@@ -66,6 +75,9 @@ pub struct GoalSurface {
     pub intro: Option<String>,
     /// Whether the surface shows its own title; a host that titles it hides it.
     pub heading: bool,
+    /// The opt-in model path: toggle, worker and what it reported.
+    #[cfg(feature = "goal-surface-model")]
+    pub model: model_path::ModelPanel,
 }
 
 impl GoalSurface {
@@ -82,6 +94,8 @@ impl GoalSurface {
             notice: None,
             intro: None,
             heading: true,
+            #[cfg(feature = "goal-surface-model")]
+            model: model_path::ModelPanel::default(),
         }
     }
 
@@ -151,16 +165,25 @@ impl GoalSurface {
         if seeds.is_empty() {
             return self.notice = Some("Nothing is retained to start from.".into());
         }
+        let goal = self.goal.text().to_owned();
+        #[cfg(feature = "goal-surface-model")]
+        if self.model.enabled {
+            // Refuse an unsearchable goal now, as the ordinary path does.
+            if let Err(refusal) = eidetic_search::goal::GoalAssessor::new(&goal, GoalSettings::default()) {
+                return self.notice = Some(format!("The goal cannot be searched: {refusal}"));
+            }
+            if self.model.running {
+                return self.notice = Some("A model run is still going; wait for it.".into());
+            }
+            return self.run_with_model(model_path::Request { seeds, goal, policy, limits, budgets });
+        }
+        self.run_lexical(seeds, &goal, policy, limits, budgets);
+    }
+
+    /// The ordinary path: Eidetic's lexical assessor under Fleece's traversal.
+    fn run_lexical(&mut self, seeds: Vec<RetainedSeed>, goal: &str, policy: TraversalPolicy, limits: RetainedLimits, budgets: Budgets) {
         let mut provider = self.pages.provider();
-        match run_retained_traversal(
-            &mut provider,
-            seeds,
-            self.goal.text(),
-            GoalSettings::default(),
-            policy,
-            limits,
-            || false,
-        ) {
+        match run_retained_traversal(&mut provider, seeds, goal, GoalSettings::default(), policy, limits, || false) {
             Ok(report) => {
                 self.run = Some(GoalRunView::build(&report, &self.pages, budgets));
                 self.receipt = Some(report.receipt());

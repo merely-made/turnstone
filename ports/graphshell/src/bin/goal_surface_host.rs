@@ -14,6 +14,11 @@
 //! Input is state-level (the goal field's buffer is filled and the Find
 //! button's DOM click is dispatched); no physical pointer or keyboard is
 //! qualified.
+//!
+//! With feature `goal-surface-model`, the surface offers the opt-in model
+//! toggle; `GRAPHSHELL_GOAL_MODEL_DIR` names the local model folder. The
+//! receipt flag `--model` runs the model proof: a paraphrase goal that shares
+//! no term with any page, run first with the toggle off, then with the model.
 
 use cambium::{AnyView, GenetAppRunner, GenetCtx, GenetElement, PointerClick, lens};
 use cambium_genet_winit_host::{HostOptions, Init, ScrollAlign, inert_hooks, run};
@@ -64,27 +69,43 @@ fn main() {
     let (receipt, size) = match args.as_slice() {
         [] => (None, (1280., 920.)),
         [flag, path] if flag == "--receipt" => (Some(PathBuf::from(path)), (1280., 920.)),
-        [flag, path, size_flag, dimensions] if flag == "--receipt" && size_flag == "--size" => {
+        [flag, path, size_flag, dimensions] | [flag, path, size_flag, dimensions, _]
+            if flag == "--receipt" && size_flag == "--size" =>
+        {
             let (w, h) = dimensions.split_once('x').expect("WIDTHxHEIGHT");
             (
                 Some(PathBuf::from(path)),
                 (w.parse().expect("width"), h.parse().expect("height")),
             )
         },
-        _ => panic!("Usage: goal-surface-host [--receipt DIRECTORY [--size WIDTHxHEIGHT]]"),
+        _ => panic!("Usage: goal-surface-host [--receipt DIRECTORY [--size WIDTHxHEIGHT] [--model]]"),
     };
+    let with_model = args.last().is_some_and(|a| a == "--model");
+    #[cfg(not(feature = "goal-surface-model"))]
+    assert!(!with_model, "--model needs the goal-surface-model feature");
     if let Some(path) = &receipt {
         std::fs::create_dir_all(path).expect("receipt directory");
     }
     let pages = Rc::new(pollster::block_on(fixture::pages()));
-    let state = App {
+    #[allow(unused_mut)]
+    let mut state = App {
         surface: GoalSurface::new(pages.clone()),
     };
+    #[cfg(feature = "goal-surface-model")]
+    {
+        state.surface.model.dir = goal_surface::model_path::dir_from_env();
+    }
+    let max_frames: u32 = if with_model { 4000 } else { 500 };
+    let deadline = Duration::from_secs(if with_model { 180 } else { 35 });
     let finite = receipt.is_some();
     let started = Instant::now();
     let mut hooks = inert_hooks::<App, Logic, View>();
     hooks.after_wake = Box::new(move |ctx| {
-        if finite && started.elapsed() >= Duration::from_secs(35) {
+        #[cfg(feature = "goal-surface-model")]
+        ctx.runner.update(|app| {
+            app.surface.poll_model();
+        });
+        if finite && started.elapsed() >= deadline {
             eprintln!("[goal-proof] finite startup/presentation deadline reached");
             *ctx.close = true;
         }
@@ -97,6 +118,8 @@ fn main() {
             None::<(usize, PathBuf, cambium_rootstock::CaptureFrame)>,
         ));
         let (mut stage, mut frames, mut entered, mut armed) = (0_usize, 0_u32, 0_u32, false);
+        #[allow(unused_mut)]
+        let mut off_matched: Option<usize> = None;
         let start_index = pages
             .sources()
             .iter()
@@ -121,13 +144,13 @@ fn main() {
                 done.set(true);
             }
             frames += 1;
-            assert!(frames < 500, "bounded native receipt did not finish");
+            assert!(frames < max_frames, "bounded native receipt did not finish");
             if done.replace(false) {
                 armed = false;
                 stage += 1;
                 entered = frames;
-                let target = match stage {
-                    1 => {
+                let target = match (with_model, stage) {
+                    (false, 1) => {
                         ctx.runner.update(|app| {
                             app.surface.goal.insert_str(GOAL);
                             app.surface.start = Start::Source(start_index);
@@ -135,16 +158,35 @@ fn main() {
                         click(ctx.runner, "goal-run");
                         "goal-input"
                     },
-                    2 => "goal-steps",
+                    #[cfg(feature = "goal-surface-model")]
+                    (true, 1) => {
+                        ctx.runner.update(|app| {
+                            app.surface.goal.insert_str(fixture::GOAL_PARAPHRASE);
+                            app.surface.start = Start::Source(start_index);
+                        });
+                        click(ctx.runner, "goal-run");
+                        "goal-input"
+                    },
+                    #[cfg(feature = "goal-surface-model")]
+                    (true, 2) => {
+                        click(ctx.runner, "goal-model-toggle");
+                        "goal-input"
+                    },
+                    #[cfg(feature = "goal-surface-model")]
+                    (true, 3) => {
+                        click(ctx.runner, "goal-run");
+                        "goal-input"
+                    },
+                    (false, 2) | (true, 4) => "goal-steps",
                     _ => {
                         let app = ctx.runner.state();
                         let run = app.surface.run.as_ref().expect("a run");
-                        assert!(run.matches().count() >= 2, "cited results");
-                        let result = serde_json::json!({
+                        assert!(with_model || run.matches().count() >= 2, "cited results");
+                        let mut result = serde_json::json!({
                             "status": "passed",
                             "frames": frames,
                             "captures": *captured.borrow(),
-                            "goal": GOAL,
+                            "goal": if with_model { fixture::GOAL_PARAPHRASE } else { GOAL },
                             "start": fixture::INDEX,
                             "retained_pages": app.surface.pages().sources().len(),
                             "run": {
@@ -160,6 +202,23 @@ fn main() {
                             "network": false,
                             "graph_writes": false,
                         });
+                        #[cfg(feature = "goal-surface-model")]
+                        if with_model {
+                            use goal_surface::model_path::ModelState;
+                            let ModelState::Ready(loaded) = &app.surface.model.state else { panic!("model not ready") };
+                            result["provider"] = "eidetic_search::goal_model::ModelGoalAssessor (S1 plus all-MiniLM-L6-v2 via ESP/Burn CPU) under fleece::retained_traversal::run_retained_traversal_with".into();
+                            result["model"] = serde_json::json!({
+                                "dir": app.surface.model.dir,
+                                "artifacts_sha256": loaded.digests,
+                                "match_similarity_milli": loaded.threshold_milli,
+                                "threshold_note": loaded.threshold_note,
+                                "load_ms": loaded.load_ms,
+                                "rule": format!("{:?}", app.surface.model.rule),
+                                "lexical_matched": run.model.as_ref().map(|m| m.lexical_matched),
+                                "unavailable_steps": run.model.as_ref().map(|m| m.unavailable_steps),
+                                "off_run_matched": off_matched,
+                            });
+                        }
                         std::fs::write(out.join("qualification.json"), serde_json::to_vec_pretty(&result).unwrap()).unwrap();
                         println!("RESULT {result}");
                         *ctx.close = true;
@@ -172,10 +231,21 @@ fn main() {
             if armed || ctx.presentation.is_none() || frames < entered + 3 {
                 return;
             }
-            let ready = match stage {
-                0 => true,
-                1 => ctx.runner.state().surface.run.is_some(),
-                2 => true,
+            let ready = match (with_model, stage) {
+                (_, 0) | (false, 2) | (true, 4) => true,
+                (false, 1) => ctx.runner.state().surface.run.is_some(),
+                #[cfg(feature = "goal-surface-model")]
+                (true, 1) => {
+                    let ready = ctx.runner.state().surface.run.is_some();
+                    if ready && off_matched.is_none() {
+                        off_matched = ctx.runner.state().surface.run.as_ref().map(|r| r.matched);
+                    }
+                    ready
+                },
+                #[cfg(feature = "goal-surface-model")]
+                (true, 2) => matches!(ctx.runner.state().surface.model.state, goal_surface::model_path::ModelState::Ready(_)),
+                #[cfg(feature = "goal-surface-model")]
+                (true, 3) => ctx.runner.state().surface.run.as_ref().is_some_and(|r| r.model.is_some()),
                 _ => false,
             };
             if !ready {
@@ -204,6 +274,10 @@ fn main() {
             ..Default::default()
         },
         move |_, _, wake| {
+            #[cfg(feature = "goal-surface-model")]
+            {
+                state.surface.model.waker = Some(wake.callback());
+            }
             if finite {
                 let callback = wake.callback();
                 *timer_slot.borrow_mut() = Some(std::thread::spawn(move || {

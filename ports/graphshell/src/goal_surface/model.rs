@@ -11,6 +11,8 @@
 use super::provider::RetainedPages;
 use eidetic::models::recall::{PassageSelector, RecallSourceId};
 use eidetic_search::goal::{GoalAssessment, GoalVerdict, SelectionChoice, SelectionRule};
+use super::model_view::{model_pick, model_selection_reason, model_visit};
+use eidetic_search::goal_model::{ModelAssessRule, ModelStatus, SelectionWinner};
 use fleece::retained_traversal::{
     RetainedFailure, RetainedStop, RetainedTraversalReport, recall_source,
 };
@@ -60,9 +62,50 @@ pub struct Snippet {
     pub end: usize,
 }
 
+/// What the model said about one source beside the lexical answer.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ModelVisit {
+    pub s1_verdict: GoalVerdict,
+    pub s1_coverage_permille: u16,
+    /// Best chunk's cosine to the goal, in thousandths; `None` when the model
+    /// could not answer this step.
+    pub similarity_milli: Option<i16>,
+    pub threshold_milli: i16,
+    /// Which rule decided the verdict, in a plain sentence.
+    pub decided_by: String,
+    /// Why the model was unavailable for this step, when it was.
+    pub unavailable: Option<String>,
+}
+
+/// How a selection was made when a model ranked beside the lexical rule.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ModelPick {
+    pub winner: SelectionWinner,
+    /// The model's cosine for the candidate taken, in thousandths.
+    pub score_milli: Option<i16>,
+    /// What the lexical rule would have taken, and what the model would have.
+    pub lexical_pick: String,
+    pub model_pick: Option<String>,
+    pub unavailable: Option<String>,
+}
+
+/// The model's part of a run, shown with the run's own limits.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ModelRun {
+    pub rule: ModelAssessRule,
+    pub threshold_milli: i16,
+    /// Where the threshold came from, or why it is only a placeholder.
+    pub threshold_note: String,
+    /// Sources the lexical rule alone would have matched.
+    pub lexical_matched: usize,
+    /// Steps where the model could not answer (selections and assessments).
+    pub unavailable_steps: usize,
+}
+
 /// A source that was read.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct VisitView {
+    pub model: Option<ModelVisit>,
     pub requested_version: Option<String>,
     pub retained_version: String,
     pub text_hash: String,
@@ -94,6 +137,7 @@ pub struct StepView {
     /// Why this candidate was chosen over the other pending ones.
     pub reason: String,
     pub pending: usize,
+    pub model: Option<ModelPick>,
     pub depth: Option<u32>,
     pub outcome: Outcome,
 }
@@ -123,6 +167,8 @@ pub struct GoalRunView {
     pub steps: Vec<StepView>,
     /// Candidates the policy left out, by cause: (depth, fan-out, pending, repeat).
     pub omissions: [usize; 4],
+    /// Present when the model drove the run.
+    pub model: Option<ModelRun>,
 }
 
 pub fn stop_reason(stop: RetainedStop) -> &'static str {
@@ -239,6 +285,8 @@ fn visit_view(
     requested: Option<String>,
     version: &str,
     assessment: Option<&GoalAssessment>,
+    verdict: GoalVerdict,
+    model: Option<ModelVisit>,
     bytes: usize,
 ) -> VisitView {
     let text = pages.text_of(source, version).unwrap_or_default();
@@ -275,7 +323,8 @@ fn visit_view(
             .map(|a| a.text_hash.to_hex())
             .unwrap_or_default(),
         bytes,
-        verdict: assessment.map_or(GoalVerdict::Continue, |a| a.verdict),
+        verdict,
+        model,
         coverage_permille: assessment.map_or(0, |a| a.coverage_permille),
         matched_terms: assessment.map(|a| a.matched_terms.clone()).unwrap_or_default(),
         missing_terms: assessment.map(|a| a.missing_terms.clone()).unwrap_or_default(),
@@ -297,29 +346,44 @@ impl GoalRunView {
         let visits = &report.traversal.visits;
         let failures = &report.traversal.failures;
         let (mut next_visit, mut next_failure) = (vec![false; visits.len()], vec![false; failures.len()]);
+        let model = report.model.as_ref();
+        let threshold = model.map_or(0, |m| m.settings.match_similarity_milli);
+        let name = |source: &RecallSourceId| {
+            pages.describe(source).map_or_else(|| source.source.clone(), |(a, t)| t.unwrap_or(a))
+        };
         let mut steps = Vec::new();
-        for (index, choice) in report.goal.selections.iter().enumerate() {
+        for (index, trace) in report.selections.iter().enumerate() {
+            let choice = &report.goal.selections[index];
+            let source = trace.candidates[trace.chosen].clone();
             let visit = visits.iter().enumerate().find(|(i, v)| {
-                !next_visit[*i] && source_of(&v.candidate.reference).as_ref() == Some(&choice.source)
+                !next_visit[*i] && source_of(&v.candidate.reference).as_ref() == Some(&source)
             });
             let failure = failures.iter().enumerate().find(|(i, f)| {
-                !next_failure[*i] && source_of(&f.candidate.reference).as_ref() == Some(&choice.source)
+                !next_failure[*i] && source_of(&f.candidate.reference).as_ref() == Some(&source)
             });
-            let (address, title) = pages.describe(&choice.source).unwrap_or_else(|| {
-                (format!("unknown source {}", choice.source.source), None)
+            let (address, title) = pages.describe(&source).unwrap_or_else(|| {
+                (format!("unknown source {}", source.source), None)
             });
             let (depth, outcome) = match (visit, failure) {
                 (Some((i, v)), _) => {
                     next_visit[i] = true;
                     let content = &v.observation.content;
+                    let decided = match v.goal {
+                        fleece::traversal::GoalDecision::Continue => GoalVerdict::Continue,
+                        fleece::traversal::GoalDecision::Match => GoalVerdict::Match,
+                        fleece::traversal::GoalDecision::Satisfied => GoalVerdict::Satisfied,
+                    };
+                    let seen = model.and_then(|m| m.assessments.get(i)).map(|a| model_visit(a, threshold));
                     (
                         Some(v.candidate.depth),
                         Outcome::Visited(visit_view(
                             pages,
-                            &choice.source,
+                            &source,
                             v.candidate.reference.version.clone(),
                             &content.version,
                             report.goal.assessments.get(i),
+                            decided,
+                            seen,
                             content.text.len() + content.title.as_ref().map_or(0, String::len),
                         )),
                     )
@@ -330,18 +394,27 @@ impl GoalRunView {
                 },
                 (None, None) => (None, Outcome::Unrecorded),
             };
+            let picked = model.and_then(|m| m.selections.get(index));
             steps.push(StepView {
                 number: index + 1,
                 address,
                 title,
-                source: choice.source.clone(),
-                reason: selection_reason(choice),
+                source,
+                reason: picked.map_or_else(
+                    || selection_reason(choice),
+                    |p| model_selection_reason(p, trace, &name, &selection_reason(&p.s1)),
+                ),
                 pending: choice.pending,
+                model: picked.map(|p| model_pick(p, trace, &name)),
                 depth,
                 outcome,
             });
         }
         let o = report.traversal.omissions;
+        let unavailable_steps = model.map_or(0, |m| {
+            m.selections.iter().filter(|s| matches!(s.status, ModelStatus::Unavailable { .. })).count()
+                + m.assessments.iter().filter(|a| matches!(a.status, ModelStatus::Unavailable { .. })).count()
+        });
         Self {
             goal: report.goal.goal.clone(),
             terms: report.goal.terms.clone(),
@@ -351,12 +424,19 @@ impl GoalRunView {
             satisfy_after: report.goal.settings.satisfy_after,
             stop: report.stop,
             stop_reason: stop_reason(report.stop).into(),
-            matched: report.goal.matched,
+            matched: model.map_or(report.goal.matched, |m| m.matched),
             requests: report.requests,
             bytes: report.bytes,
             budgets,
             steps,
             omissions: [o.depth, o.fanout, o.pending, o.duplicates],
+            model: model.map(|m| ModelRun {
+                rule: m.settings.assess_rule,
+                threshold_milli: threshold,
+                threshold_note: String::new(),
+                lexical_matched: m.assessments.iter().filter(|a| a.s1_match).count(),
+                unavailable_steps,
+            }),
         }
     }
 

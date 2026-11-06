@@ -22,6 +22,8 @@ pub const OVEN: &str = "https://kitchen.example/oven-spring";
 pub const FLOUR: &str = "https://kitchen.example/flour-types";
 /// Linked from the index but never retained.
 pub const HOTEL: &str = "https://elsewhere.example/hotel-kitchens";
+/// A goal that shares no term with any fixture page; only a model can place it.
+pub const GOAL_PARAPHRASE: &str = "preserve my sourdough while I am on holiday";
 pub const STARTER_V1: &str = "Starter care. Feed the starter every day with equal parts flour and water and leave it somewhere warm.";
 
 const PAGES: [(&str, &str, &str); 5] = [

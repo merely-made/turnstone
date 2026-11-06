@@ -8,6 +8,7 @@
 //! only the Find button does.
 
 use super::model::{Outcome, Passage, Segment, StepView, short, verdict_label};
+use super::view_model::{model_chose, run_summary, visit_note};
 use super::{GoalRunView, GoalSurface, Start};
 use cambium::{AnyView, GenetCtx, GenetElement, TextInput, button, el, lens, text_field_typed};
 
@@ -84,6 +85,7 @@ fn cited(step: &StepView) -> Option<Child> {
             .attr("class", "goal-meta"),
         ),
     ];
+    children.extend(visit_note(v));
     children.extend(v.passages.iter().map(passage_line));
     if v.more_passages > 0 {
         children.push(Box::new(el("p", format!("{} more passages not shown.", v.more_passages)).attr("class", "goal-meta")));
@@ -112,17 +114,16 @@ fn explained(step: &StepView) -> Child {
         Outcome::Unrecorded => ("The walk ended before this lookup.".into(), "goal-step"),
     };
     let depth = step.depth.map_or(String::new(), |d| format!(" · depth {d}"));
-    Box::new(
-        el(
-            "li",
-            (
-                el("p", format!("{}{depth}", heading(step))),
-                el("p", format!("Chosen: {}", step.reason)),
-                el("p", outcome),
-            ),
-        )
-        .attr("class", class),
-    )
+    let by = if model_chose(step) { " [model]" } else { "" };
+    let mut lines: Vec<Child> = vec![
+        Box::new(el("p", format!("{}{depth}", heading(step)))),
+        Box::new(el("p", format!("Chosen{by}: {}", step.reason))),
+        Box::new(el("p", outcome)),
+    ];
+    if let Outcome::Visited(v) = &step.outcome {
+        lines.extend(visit_note(v));
+    }
+    Box::new(el("li", lines).attr("class", class))
 }
 
 fn results(run: &GoalRunView) -> Child {
@@ -165,6 +166,10 @@ fn results(run: &GoalRunView) -> Child {
     if let Some(left_out) = run.omission_summary() {
         meta.push(' ');
         meta.push_str(&left_out);
+    }
+    if let Some(model) = run_summary(run) {
+        meta.push(' ');
+        meta.push_str(&model);
     }
     children.push(Box::new(el("p", meta).attr("class", "goal-meta").attr("id", "goal-meta")));
     Box::new(el("section", children).attr("id", "goal-results"))
@@ -210,6 +215,10 @@ pub fn view(app: &GoalSurface) -> Child {
         field("Visits", "goal-visits", "goal-input goal-small", |s| &mut s.max_visits),
         field("Depth", "goal-depth", "goal-input goal-small", |s| &mut s.max_depth),
         starts(app),
+    ]);
+    #[cfg(feature = "goal-surface-model")]
+    children.push(super::model_controls::controls(app));
+    children.extend::<Vec<Child>>(vec![
         Box::new(button("Find", |s: &mut GoalSurface, _| s.run()).attr("id", "goal-run")),
     ]);
     if let Some(notice) = &app.notice {
