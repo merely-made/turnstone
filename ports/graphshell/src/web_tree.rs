@@ -1149,6 +1149,7 @@ fn tools_region(page: &TreePage) -> Child {
     #[cfg(feature = "product")]
     {
         children.push(product::find_section(page));
+        children.push(product::goal_section(page));
         children.push(product::scenes_section(page));
         children.push(product::projection_section(page));
         children.push(product::history_section(page));
@@ -2046,7 +2047,7 @@ fn poll_saved_product(ctx: &mut AppCtx<TreePage, Logic, Child>, shared: &Shared)
         .state()
         .product
         .as_ref()
-        .is_some_and(|product| product.queue_ready())
+        .is_some_and(|product| product.queue_ready() || product.goal_ready())
     {
         ctx.wake.wake();
     }
@@ -2671,7 +2672,7 @@ fn forme_workbench(page: &TreePage) -> Option<Child> {
 }
 fn forme_sheet() -> String {
     #[cfg(feature = "product")]
-    return format!("{}{}{}", cambium::FRISKET_CSS, forme::SHEET, blocks::SHEET);
+    return format!("{}{}{}{}", cambium::FRISKET_CSS, forme::SHEET, blocks::SHEET, product::GOAL_SHEET);
     #[cfg(not(feature = "product"))]
     String::new()
 }

@@ -193,15 +193,11 @@ fn accepting_cites_the_suggestion_and_is_idempotent() {
             .unwrap();
         let rows = suggest::rows(&suggest::read(store.clone()).await.unwrap(), &pages, &facts);
         let row = rows.iter().find(|r| r.address == B).unwrap();
-        assert_eq!(
-            suggest::accept_one(&mut app, store.clone(), OWNER, &row.id, 10, 4).await.unwrap(),
-            Accepted::Added
-        );
+        let (admission, member) = suggest::accept_one(&mut app, store.clone(), OWNER, &row.id, 10, 4).await.unwrap();
+        assert_eq!((admission, member), (Accepted::Added, b));
         assert_eq!(tags_of(&app, b), vec!["sourdough"]);
-        assert_eq!(
-            suggest::accept_one(&mut app, store.clone(), OWNER, &row.id, 11, 5).await.unwrap(),
-            Accepted::AlreadyHeld
-        );
+        let (again, _) = suggest::accept_one(&mut app, store.clone(), OWNER, &row.id, 11, 5).await.unwrap();
+        assert_eq!(again, Accepted::AlreadyHeld);
         // The statement cites the suggestion.
         let cited = format!("urn:eidetic:tag-suggestion:{}", row.id);
         let resource = app.host.graph().get_node_by_id(b).and_then(|(k, _)| app.host.graph().shown_resource_id(k)).unwrap();

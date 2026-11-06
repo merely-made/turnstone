@@ -36,6 +36,7 @@ use eidetic_search::{TagConcept, TagSuggestSettings, suggest_tags};
 use mere::kernel::graph::resource_tag_admission::{AcceptedTagSuggestion, TagAdmission};
 use muniment::Backend;
 use std::collections::BTreeSet;
+use uuid::Uuid;
 
 /// Suggestions a run may propose; more is a sign the concepts are too broad.
 pub const MAX_PER_RUN: usize = 200;
@@ -175,7 +176,8 @@ pub enum Accepted {
 
 /// Accept a held suggestion: admit the personal tag, save the graph, then
 /// append the review. `owner` is the page owner label the suggestion's subject
-/// was minted under.
+/// was minted under. Returns what the graph did and the object (surface) now
+/// carrying the tag.
 ///
 /// # Errors
 /// An unknown suggestion, a subject or concept the graph no longer holds, or
@@ -187,7 +189,7 @@ pub async fn accept_one<B: pandect::graph_session::LegacyTransactionBackend>(
     id: &str,
     at_unix_micros: i64,
     saved_at_secs: u64,
-) -> Result<Accepted, String> {
+) -> Result<(Accepted, Uuid), String> {
     let id = Hash::parse(id).map_err(|e| format!("{e:?}"))?;
     let mut ledger = SuggestionLedger::open(ledger_backend).await.map_err(|e| format!("{e:?}"))?;
     let held = ledger.get(&id).ok_or("that suggestion is not in the ledger")?.clone();
@@ -218,10 +220,20 @@ pub async fn accept_one<B: pandect::graph_session::LegacyTransactionBackend>(
     app.mount_local().map_err(|e| e.to_string())?;
     app.host.persist(saved_at_secs).await.map_err(|e| e.to_string())?;
     ledger.record_review(review).await.map_err(|e| format!("{e:?}"))?;
-    Ok(match admission {
-        TagAdmission::Added => Accepted::Added,
-        TagAdmission::AlreadyHeld => Accepted::AlreadyHeld,
-    })
+    let member = app
+        .host
+        .graph()
+        .surface_ids_showing_resource(resource)
+        .first()
+        .copied()
+        .ok_or("no object shows the tagged page")?;
+    Ok((
+        match admission {
+            TagAdmission::Added => Accepted::Added,
+            TagAdmission::AlreadyHeld => Accepted::AlreadyHeld,
+        },
+        member,
+    ))
 }
 
 /// One suggestion as the panel shows it.

@@ -11,6 +11,9 @@ use super::model::{Outcome, StepView, short, verdict_label};
 use super::{GoalRunView, GoalSurface, Start};
 use cambium::{AnyView, GenetCtx, GenetElement, TextInput, button, el, lens, text_field_typed};
 
+/// Start buttons listed; a large profile searches the rest without a button each.
+const MAX_STARTS: usize = 24;
+
 pub type Child = Box<dyn AnyView<GoalSurface, (), GenetCtx, GenetElement>>;
 
 /// Geometry and the highlight only; the host supplies theme and typography.
@@ -167,7 +170,9 @@ fn starts(app: &GoalSurface) -> Child {
             .attr("id", "goal-start-all")
             .attr("aria-pressed", (app.start == Start::All).to_string()),
     )];
-    for (i, (_, page)) in app.pages().sources().into_iter().enumerate() {
+    let all = app.pages().sources();
+    let hidden = all.len().saturating_sub(MAX_STARTS);
+    for (i, (_, page)) in all.into_iter().enumerate().take(MAX_STARTS) {
         let label = page.title.clone().unwrap_or_else(|| page.url.clone());
         buttons.push(Box::new(
             button(label.clone(), move |s: &mut GoalSurface, _| s.start = Start::Source(i))
@@ -175,29 +180,32 @@ fn starts(app: &GoalSurface) -> Child {
                 .attr("aria-pressed", (app.start == Start::Source(i)).to_string()),
         ));
     }
+    if hidden > 0 {
+        buttons.push(Box::new(el("span", format!("{hidden} more pages are searched but not listed here.")).attr("class", "goal-meta")));
+    }
     Box::new(el("div", buttons).attr("class", "goal-starts").attr("aria-label", "Start from"))
 }
 
 /// The surface: goal, limits, start, Find, then the last run's results.
 pub fn view(app: &GoalSurface) -> Child {
-    let mut children: Vec<Child> = vec![
-        Box::new(el("h1", "Find in what I kept")),
-        Box::new(
-            el(
-                "p",
-                format!(
-                    "Reads {} retained pages and the links between them. Nothing is fetched and the graph is not changed.",
-                    app.pages().sources().len()
-                ),
-            )
-            .attr("class", "goal-meta"),
-        ),
+    let intro = app.intro.clone().unwrap_or_else(|| {
+        format!(
+            "Reads {} retained pages and the links between them. Nothing is fetched and the graph is not changed.",
+            app.pages().sources().len()
+        )
+    });
+    let mut children: Vec<Child> = Vec::new();
+    if app.heading {
+        children.push(Box::new(el("h1", "Find in what I kept")));
+    }
+    children.push(Box::new(el("p", intro).attr("class", "goal-meta")));
+    children.extend::<Vec<Child>>(vec![
         field("Goal", "goal-input", "goal-input", |s| &mut s.goal),
         field("Visits", "goal-visits", "goal-input goal-small", |s| &mut s.max_visits),
         field("Depth", "goal-depth", "goal-input goal-small", |s| &mut s.max_depth),
         starts(app),
         Box::new(button("Find", |s: &mut GoalSurface, _| s.run()).attr("id", "goal-run")),
-    ];
+    ]);
     if let Some(notice) = &app.notice {
         children.push(Box::new(
             el("p", notice.clone()).attr("id", "goal-notice").attr("class", "goal-notice").attr("role", "alert"),

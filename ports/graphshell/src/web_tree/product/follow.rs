@@ -113,6 +113,7 @@ impl SavedProduct {
                     self.selected = None;
                 }
                 self.app = Some(app);
+                self.goal_stale();
             },
             Err(error) => self.status = format!("Could not read the other view's saves · {error}"),
         }

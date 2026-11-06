@@ -21,6 +21,7 @@ mod commands;
 mod detail;
 mod fields;
 mod find;
+mod goal;
 mod history;
 mod projection;
 pub(super) mod promoted_links;
@@ -35,6 +36,7 @@ pub(super) use commands::{focused_command_text, menu};
 use fields::TextField;
 pub(super) use fields::focused_text;
 pub(super) use find::section as find_section;
+pub(super) use goal::{SHEET as GOAL_SHEET, section as goal_section};
 pub(super) use history::section as history_section;
 pub(super) use projection::{editor as projection_editor, section as projection_section};
 pub(super) use scenes::section as scenes_section;
@@ -47,6 +49,8 @@ enum CompletedEdit {
     Detail(Option<Uuid>),
     /// A follower's edit, stored by this writer and then answered.
     Admitted,
+    /// A tag the person accepted from a suggestion, on this object.
+    Tag(Uuid),
 }
 type Completion = (App, CompletedEdit, Result<NodeMetadata, String>);
 type OperationCompletion = (App, Option<PendingOperation>, Result<(), String>);
@@ -114,6 +118,7 @@ pub(super) struct SavedProduct {
     pending_detail: Option<CompletedEdit>,
     detail: detail::DetailControls,
     find: find::FindControls,
+    goal: goal::GoalPanel,
     scenes: scenes::SceneControls,
     projection: projection::ProjectionControls,
     history: history::HistoryControls,
@@ -233,6 +238,7 @@ async fn open_inner(root: &Element) -> Result<Option<SavedProduct>, String> {
         backend
     };
     let capture_store = backend.clone();
+    let goal_store = backend.clone();
     let persona = SelectedPersonaRef {
         persona: FIXTURE_PERSONA_ADDRESS.into(),
         profile: "profile:graphshell-h3".into(),
@@ -357,6 +363,12 @@ async fn open_inner(root: &Element) -> Result<Option<SavedProduct>, String> {
         pending_detail: None,
         detail: detail::DetailControls::default(),
         find: find::FindControls::default(),
+        goal: goal::GoalPanel::new(
+            goal_store,
+            local_profile
+                .as_ref()
+                .map_or_else(|| "graphshell-reference".to_owned(), |profile| profile.scope()),
+        ),
         scenes: scenes::SceneControls::default(),
         projection: projection::ProjectionControls::default(),
         history,
@@ -442,6 +454,7 @@ impl SavedProduct {
             || self.live_capture_ready()
             || self.refresh_ready()
             || self.queue_ready()
+            || self.goal_ready()
             || self.projection.changed()
             || self.projection.needs_frame()
     }
@@ -1310,6 +1323,9 @@ impl SavedProduct {
 
     pub(super) fn poll(&mut self, canvas: &mut Canvas) -> bool {
         self.history.poll();
+        if self.goal_poll() {
+            return true;
+        }
         if let Some(status) = self.share_outcome.borrow_mut().take() {
             self.status = status;
         }
@@ -1541,8 +1557,13 @@ impl SavedProduct {
             self.restore_canvas_link_hides(canvas);
         }
         self.saving = false;
+        self.goal_stale();
         if matches!(edit, CompletedEdit::Admitted) {
             self.finish_admission(result);
+            return true;
+        }
+        if let CompletedEdit::Tag(member) = edit {
+            self.finish_tag(canvas, member, result);
             return true;
         }
         match result {
@@ -1583,7 +1604,7 @@ impl SavedProduct {
                         refresh
                     },
                     // Answered above, without touching this view's form.
-                    CompletedEdit::Admitted => Ok(()),
+                    CompletedEdit::Admitted | CompletedEdit::Tag(_) => Ok(()),
                 };
                 if matches!(edit, CompletedEdit::Metadata) || refresh.is_ok() {
                     self.title = TextInput::new(saved.title);
@@ -1593,13 +1614,15 @@ impl SavedProduct {
                     Ok(()) => match edit {
                         CompletedEdit::Metadata
                         | CompletedEdit::Detail(_)
-                        | CompletedEdit::Admitted => "Changes saved".into(),
+                        | CompletedEdit::Admitted
+                        | CompletedEdit::Tag(_) => "Changes saved".into(),
                         CompletedEdit::Intake => "Object added and saved".into(),
                     },
                     Err(error) => match edit {
                         CompletedEdit::Metadata
                         | CompletedEdit::Detail(_)
-                        | CompletedEdit::Admitted => {
+                        | CompletedEdit::Admitted
+                        | CompletedEdit::Tag(_) => {
                             format!("Changes saved · canvas refresh failed: {error}")
                         },
                         CompletedEdit::Intake => format!(
@@ -1617,7 +1640,7 @@ impl SavedProduct {
                     CompletedEdit::Intake => format!(
                         "Intake save failed · {error} · new object remains in memory; retry intake to save it"
                     ),
-                    CompletedEdit::Detail(_) | CompletedEdit::Admitted => {
+                    CompletedEdit::Detail(_) | CompletedEdit::Admitted | CompletedEdit::Tag(_) => {
                         format!("Detail save failed · {error} · retry to save the pending edit")
                     },
                 };

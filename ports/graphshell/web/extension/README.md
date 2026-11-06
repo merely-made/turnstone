@@ -16,6 +16,7 @@ resident device host.
 | `follower-queue.js` | `GraphshellFollowerQueue`: a following view's edit transport on the views channel (send, acknowledge, resend once to a new writer, give up), and the writer's side (in-flight dedupe, no handover mid-edit); `smoke-writer-handover.mjs` runs it |
 | `action-form.js` | `GraphshellActionForm`: builds an intent payload from an advertised `input_form` |
 | `bridge.html`, `bridge.css`, `bridge.js`, `resource-chunk.js` | The native surface: connects `org.mere.graphshell`, pulls bounded resource chunks, renders identity cards and advertised actions |
+| `qualify-goal-surface.py` | Headed Chrome qualification of the goal surface and durable tag suggestions on a fixture profile, with a cold reopen and a follower view (reuses the hidden-writer harness) |
 | `prepare-extension.ps1`, `prepare-extension.sh` | Assemble one unpacked extension directory |
 | `install-native-host.ps1`, `install-native-host.sh` | Register the native host for the current user |
 | `native-host.chromium.json.in`, `native-host.firefox.json.in` | Native-host manifest templates; `__GRAPHSHELL_NATIVE_HOST__` is replaced with the binary path |

@@ -17,6 +17,7 @@ pub(super) enum TextField {
     FacetJson,
     RelationTarget,
     Search,
+    Goal(usize),
     CommandSearch,
     Codicil,
     Projection(usize),
@@ -35,6 +36,7 @@ impl TextField {
             Self::FacetJson => &product.detail.facet_json,
             Self::RelationTarget => &product.detail.target,
             Self::Search => &product.find.query,
+            Self::Goal(index) => product.goal.input(index),
             Self::CommandSearch => &product.commands.query,
             Self::Codicil => &product.scenes.codicil,
             Self::Projection(index) => &product.projection.inputs[index],
@@ -52,6 +54,7 @@ impl TextField {
             Self::FacetJson => &mut product.detail.facet_json,
             Self::RelationTarget => &mut product.detail.target,
             Self::Search => &mut product.find.query,
+            Self::Goal(index) => product.goal.input_mut(index),
             Self::CommandSearch => &mut product.commands.query,
             Self::Codicil => &mut product.scenes.codicil,
             Self::Projection(index) => &mut product.projection.inputs[index],
@@ -75,6 +78,9 @@ pub(in crate::web_tree) fn focused_text(
     let field = [
         ("Title", TextField::Title, product.detail_open),
         ("Search", TextField::Search, product.find.open),
+        ("Goal", TextField::Goal(0), product.goal.shown()),
+        ("Visits", TextField::Goal(1), product.goal.shown()),
+        ("Depth", TextField::Goal(2), product.goal.shown()),
         (
             "Search commands",
             TextField::CommandSearch,

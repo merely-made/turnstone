@@ -62,6 +62,10 @@ pub struct GoalSurface {
     /// The serializable account of the last run, for a host that records evidence.
     pub receipt: Option<RetainedTraversalReceipt>,
     pub notice: Option<String>,
+    /// Replaces the opening sentence when the host knows better what it reads.
+    pub intro: Option<String>,
+    /// Whether the surface shows its own title; a host that titles it hides it.
+    pub heading: bool,
 }
 
 impl GoalSurface {
@@ -76,7 +80,21 @@ impl GoalSurface {
             run: None,
             receipt: None,
             notice: None,
+            intro: None,
+            heading: true,
         }
+    }
+
+    /// Swap in a fresh snapshot after a refresh, keeping what was typed and
+    /// the last result (which holds its own copies of what it cited).
+    pub fn replace_pages(&mut self, pages: Rc<RetainedPages>) {
+        if let Start::Source(i) = self.start {
+            if i >= pages.sources().len() {
+                self.start = Start::All;
+            }
+        }
+        self.pages = pages;
+        self.notice = None;
     }
 
     pub fn pages(&self) -> &RetainedPages {
