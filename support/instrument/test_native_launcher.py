@@ -61,7 +61,7 @@ class LauncherTests(unittest.TestCase):
             self.assertFalse(state['executable'].exists())
 
     def test_other_bundle_and_path_prefix_are_not_owned(self):
-        executable = Path('/tmp/mesquite-native-owner/App.app/Contents/MacOS/product')
+        executable = Path('/tmp/mandrake-native-owner/App.app/Contents/MacOS/product')
         self.assertTrue(launcher.owns_executable(str(executable) + ' --library own', executable))
         self.assertFalse(launcher.owns_executable(str(executable) + '-other', executable))
         self.assertFalse(launcher.owns_executable('/tmp/another/App.app/Contents/MacOS/product', executable))
