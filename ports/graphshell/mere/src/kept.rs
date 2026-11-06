@@ -28,8 +28,8 @@ use chirograph::{
 };
 use graphshell::goal_surface::{self, GoalSurface, door};
 use graphshell::kept_text::{
-    DEFAULT_KEPT_BYTES, KEEP_PAGES_INTENT, KEEP_SETTING_INTENT, KeepPagesV1, KeepSettingV1,
-    KeptPage,
+    DEFAULT_KEPT_BYTES, FetchRecordV1, KEEP_PAGES_INTENT, KEEP_SETTING_INTENT, KeepPagesV1,
+    KeepSettingV1, KeptPage,
 };
 use graphshell_endpoint::door::projection::AppBrokerClient;
 use mere_overmap::wire::MERE_GRAPH;
@@ -70,11 +70,15 @@ pub(super) struct Reply {
 /// The bounded text of one page at `address`, fetched once because the person
 /// asked. Declared HTML only; script and style are not text; the text is cut
 /// at the per-page bound on a character boundary.
-pub(super) fn capture(address: &str) -> Result<KeptPage, String> {
+pub(super) fn capture(address: &str) -> Result<(KeptPage, FetchRecordV1), String> {
     let parsed = url::Url::parse(address).map_err(|_| "That is not a web address.".to_string())?;
     if !matches!(parsed.scheme(), "http" | "https") {
         return Err("Only http and https pages can be kept.".into());
     }
+    let fetched_at_ms = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|elapsed| elapsed.as_millis() as u64)
+        .unwrap_or_default();
     let net = fetch::NetFetch::new(&fetch::Stores::in_memory())
         .map_err(|error| format!("Could not start the page fetch: {error}"))?;
     let body = <fetch::NetFetch as fetch::Fetch>::read_all(
@@ -98,12 +102,24 @@ pub(super) fn capture(address: &str) -> Result<KeptPage, String> {
         }
         text.truncate(end);
     }
-    Ok(KeptPage {
+    let record = FetchRecordV1 {
+        requested: address.to_owned(),
+        final_url: body.facts.final_url.clone(),
+        fetched_at_ms,
+        // Only a successful answer yields a body; anything else was refused above.
+        status: 200,
+        content_type: body.facts.content_type.clone(),
+        html_bytes: body.bytes.len() as u64,
+        text_bytes: text.len() as u64,
+        text_version: graphshell::kept_text::text_version(&text),
+    };
+    let page = KeptPage {
         url: body.facts.final_url,
         text,
         at_ms: 0,
         private: false,
-    })
+    };
+    Ok((page, record))
 }
 
 /// The viewer's side of one attached mere route.
@@ -183,7 +199,11 @@ impl<T: RouteTransport> Link<T> {
 
     /// Do one thing, then read what is kept now. The reply says what happened
     /// in the person's words; a failure to read is its own message.
-    pub(super) async fn run(&mut self, command: Command, page: Option<KeptPage>) -> Reply {
+    pub(super) async fn run(
+        &mut self,
+        command: Command,
+        page: Option<(KeptPage, FetchRecordV1)>,
+    ) -> Reply {
         let notice = match command {
             Command::Refresh => None,
             Command::SetKeep(enabled) => {
@@ -204,9 +224,12 @@ impl<T: RouteTransport> Link<T> {
             },
             Command::Keep(_) => Some(match page {
                 None => "Nothing was captured.".to_string(),
-                Some(page) => {
+                Some((page, record)) => {
                     let address = page.url.clone();
-                    let payload = serde_json::to_vec(&KeepPagesV1 { pages: vec![page] })
+                    let payload = serde_json::to_vec(&KeepPagesV1 {
+                        pages: vec![page],
+                        fetches: vec![record],
+                    })
                         .expect("page encodes");
                     match self.send(KEEP_PAGES_INTENT, payload).await {
                         Ok(IntentResult::Accepted) => format!("Kept the text of {address}."),

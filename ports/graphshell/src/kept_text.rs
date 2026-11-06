@@ -98,6 +98,46 @@ pub const KEEP_SETTING_INTENT: &str = "retained.setting/v1";
 #[serde(deny_unknown_fields)]
 pub struct KeepPagesV1 {
     pub pages: Vec<KeptPage>,
+    /// How each page was acquired, when it was fetched natively on a person's
+    /// request. The extension's pages arrive without one.
+    #[serde(default)]
+    pub fetches: Vec<FetchRecordV1>,
+}
+
+/// The record of one explicit fetch: the typed address, what answered, and
+/// what was kept of it. One address, fetched once, on the person's action;
+/// no link is followed.
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct FetchRecordV1 {
+    /// The address the person typed.
+    pub requested: String,
+    /// The address after redirects, which is the page's identity.
+    pub final_url: String,
+    /// Milliseconds since the epoch when the viewer fetched it.
+    pub fetched_at_ms: u64,
+    /// The HTTP status of the answer that was kept (a non-success answer is
+    /// refused before any record exists).
+    pub status: u16,
+    pub content_type: Option<String>,
+    /// Bytes of HTML read.
+    pub html_bytes: u64,
+    /// Bytes of text kept, and their BLAKE3 hex (the version).
+    pub text_bytes: u64,
+    pub text_version: String,
+}
+
+/// The version of a kept text: its BLAKE3 hex.
+pub fn text_version(text: &str) -> String {
+    eidetic::Hash::of(text.as_bytes()).to_hex()
+}
+
+/// Where fetch records live in the retained store: by final address, then time.
+pub fn fetch_record_key(final_url: &str, fetched_at_ms: u64) -> String {
+    format!(
+        "retained-text/fetch/v1/{}/{fetched_at_ms}",
+        eidetic::Hash::of(final_url.as_bytes()).to_hex()
+    )
 }
 
 /// The payload of [`KEEP_SETTING_INTENT`].

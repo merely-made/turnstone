@@ -151,13 +151,28 @@ async fn turning_keeping_on_and_keeping_a_page_send_the_owner_checked_intents() 
         at_ms: 0,
         private: false,
     };
-    panel.apply(link.run(Command::Keep(page.url.clone()), Some(page)).await);
+    let record = graphshell::kept_text::FetchRecordV1 {
+        requested: page.url.clone(),
+        final_url: page.url.clone(),
+        fetched_at_ms: 7,
+        status: 200,
+        content_type: Some("text/html".into()),
+        html_bytes: 99,
+        text_bytes: 9,
+        text_version: "v".into(),
+    };
+    panel.apply(
+        link.run(Command::Keep(page.url.clone()), Some((page, record)))
+            .await,
+    );
     assert_eq!(panel.notice, "Kept the text of http://127.0.0.1:1/a.");
     let sent: Vec<_> = link.transport.intents.iter().map(|(i, _)| i.as_str()).collect();
     assert_eq!(sent, [KEEP_SETTING_INTENT, KEEP_PAGES_INTENT]);
     let keep: KeepPagesV1 = serde_json::from_slice(&link.transport.intents[1].1).unwrap();
     assert_eq!(keep.pages.len(), 1);
     assert_eq!(keep.pages[0].text, "body text");
+    assert_eq!(keep.fetches.len(), 1, "the fetch travels with the page");
+    assert_eq!(keep.fetches[0].html_bytes, 99);
     // A refusal is the person's to read, verbatim, and does not hide the state.
     link.transport.answer = IntentResult::Rejected {
         reason: "Keeping page text is paused. The vault is locked.".into(),
@@ -210,7 +225,13 @@ fn a_capture_is_one_requested_address_with_visible_text_only() {
         ),
         ("/data", "application/json", "{\"a\":1}".into()),
     ]);
-    let page = capture(&format!("{base}/page")).expect("an HTML page is captured");
+    let (page, record) = capture(&format!("{base}/page")).expect("an HTML page is captured");
+    assert_eq!(record.requested, format!("{base}/page"));
+    assert_eq!(record.final_url, page.url);
+    assert_eq!(record.status, 200);
+    assert_eq!(record.text_bytes, page.text.len() as u64);
+    assert!(record.html_bytes > record.text_bytes && record.fetched_at_ms > 0);
+    assert_eq!(record.text_version, graphshell::kept_text::text_version(&page.text));
     assert!(page.text.contains("Spring tides follow the new moon."), "{}", page.text);
     assert!(!page.text.contains("hidden") && !page.text.contains("color:red"));
     assert!(page.url.ends_with("/page"));

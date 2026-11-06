@@ -636,18 +636,6 @@ impl Product for LaneProduct {
             self.awaiting = serde_json::from_str(json).map_err(|e| e.to_string())?;
             return Ok(());
         }
-        // State-level input for the kept-text fields (as the goal surface's
-        // headed proof does); no physical keyboard is qualified.
-        if let Some(text) = line.strip_prefix("type kept-address ") {
-            _ctx.runner
-                .update(|app| app.kept.address = cambium::TextInput::new(text));
-            return Ok(());
-        }
-        if let Some(text) = line.strip_prefix("type kept-goal ") {
-            _ctx.runner
-                .update(|app| app.kept.surface.goal = cambium::TextInput::new(text));
-            return Ok(());
-        }
         Err(format!("unknown step: {line}"))
     }
 }
