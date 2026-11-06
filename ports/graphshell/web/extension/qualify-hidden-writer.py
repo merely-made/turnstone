@@ -284,6 +284,9 @@ def field(label, value):
       if (!field) return false;
       if (field.textContent === {json.dumps(value)}) return true;
       field.focus();
+      field.dispatchEvent(new KeyboardEvent("keydown", {{
+        key: "a", metaKey: true, bubbles: true, cancelable: true,
+      }}));
       for (const key of {json.dumps(value)}) {{
         field.dispatchEvent(new KeyboardEvent("keydown", {{key, bubbles: true, cancelable: true}}));
       }}
@@ -371,6 +374,98 @@ def scenario(browser, url, receipt, out):
     (out / "follower-reread.png").write_bytes(base64.b64decode(browser.screenshot(follower)))
 
 
+    metadata_scenario(browser, writer, follower, receipt, out)
+
+
+def detail_field(label):
+    selector = json.dumps(f'[role="textbox"][aria-label="{label}"]')
+    return f"document.querySelector({selector})?.textContent"
+
+
+def select_object(title):
+    return f"""(() => {{
+      const node = [...document.querySelectorAll('[role="group"]')].find(
+        element => element.getAttribute("aria-label") === {json.dumps(title)});
+      const canvas = document.querySelector("canvas[data-graphshell-canvas]");
+      if (!node || !canvas) return false;
+      const bounds = node.getBoundingClientRect();
+      if (!bounds.width || !bounds.height) return false;
+      for (const [type, buttons] of [["pointerdown", 1], ["pointerup", 0]]) {{
+        canvas.dispatchEvent(new PointerEvent(type, {{
+          bubbles: true, cancelable: true, pointerType: "mouse", isPrimary: true,
+          pointerId: 1, button: 0, buttons,
+          clientX: bounds.x + bounds.width / 2, clientY: bounds.y + bounds.height / 2,
+        }}));
+      }}
+      return true;
+    }})()"""
+
+
+def open_details(browser, page, title):
+    wait("Select saved object", lambda: browser.evaluate(page, select_object(title)), timeout=12)
+    wait("Open object details", lambda: browser.evaluate(page, button("Open details")), timeout=12)
+    wait("Read saved title", lambda: browser.evaluate(page, detail_field("Title")) == title, timeout=12)
+
+
+def metadata_scenario(browser, writer, follower, receipt, out):
+    original = receipt["title"]
+    title = f"{original} renamed"
+    tags = ["headed", "hidden-writer"]
+    open_details(browser, follower, original)
+    # Delay the follower's refresh for one commit. This creates a stale
+    # observer deterministically while both actual save requests go through
+    # the normal form, transport and writer admission path.
+    browser.evaluate(follower, """(() => {
+      globalThis.deferCommitRefresh = event => event.stopImmediatePropagation();
+      document.addEventListener("graphshell-committed", deferCommitRefresh, true);
+    })()""")
+
+    def submit_edit(number, draft_title, draft_tags):
+        for label, value in [("Title", draft_title), ("Tags", ", ".join(draft_tags))]:
+            wait(f"Enter {label}", lambda: browser.evaluate(follower, field(label, value)), timeout=12)
+            wait(f"Confirm {label}", lambda: browser.evaluate(follower, detail_field(label)) == value,
+                 timeout=12)
+        wait("Send changes", lambda: browser.evaluate(follower, button("Send changes")), timeout=12)
+        state = observe(browser, follower, f"metadata_{number}_reply",
+                        lambda s: len(events(s, "graphshell-edit-reply")) == number + 1,
+                        receipt, timeout=25)
+        request = events(state, "graphshell-edit-submit")[-1]["detail"]
+        reply = events(state, "graphshell-edit-reply")[-1]["detail"]
+        require(reply["id"] == request["id"], "Metadata reply has wrong request ID")
+        edit = request["edit"]
+        require(edit["kind"] == "edit_node" and edit["title"] == draft_title
+                and edit["tags"] == draft_tags and edit["was_title"] == original
+                and edit["was_tags"] == [], f"Unexpected metadata edit: {edit}")
+        return request, reply
+
+    saved, admitted = submit_edit(1, title, tags)
+    require(admitted["status"] == "admitted", f"Metadata was not saved: {admitted}")
+    require(admitted["member"] == saved["edit"]["member"], "Saved the wrong object")
+    require(browser.evaluate(follower, STATE)["visibility"] == "visible", "Follower was hidden")
+    stale, refused = submit_edit(2, f"{original} stale draft", ["stale"])
+    require(stale["base"] == saved["base"] and stale["edit"]["member"] == saved["edit"]["member"],
+            "Stale edit targeted a different base or object")
+    require(refused["status"] == "refused" and "object changed" in refused["reason"],
+            f"Expected a stale object refusal: {refused}")
+    browser.evaluate(follower, """document.removeEventListener(
+      "graphshell-committed", globalThis.deferCommitRefresh, true)""")
+    refreshed = observe(browser, follower, "metadata_reread",
+                        lambda s: labels(s["semantic"], title) == 1, receipt)
+    require(labels(refreshed["semantic"], stale["edit"]["title"]) == 0,
+            "Stale draft reached the follower graph")
+    observed = observe(browser, writer, "writer_after_metadata",
+                       lambda s: ready(s, "writer", "hidden"), receipt)
+    require(len(events(observed, "visibilitychange")) == 1, "Writer visibility changed")
+    for name, request, reply in [("save", saved, admitted), ("stale", stale, refused)]:
+        for kind, detail in [("graphshell-edit-admit", request), ("graphshell-edit-admitted", reply)]:
+            matching = [event for event in events(observed, kind) if event["detail"] == detail]
+            require(len(matching) == 1 and matching[0]["visibility"] == "hidden"
+                    and matching[0]["role"] == "writer", f"{name} did not run once in hidden writer")
+    receipt["saved_title"] = title
+    receipt["saved_tags"] = tags
+    (out / "metadata-reread.png").write_bytes(base64.b64decode(browser.screenshot(follower)))
+
+
 def sha256(path):
     with path.open("rb") as stream:
         digest = hashlib.sha256()
@@ -385,7 +480,7 @@ def qualify(name, package, out, marker):
     token = uuid.uuid4().hex[:10]
     receipt = {
         "browser": name, "browser_app": str(app.parent), "headed": True,
-        "platform": platform.platform(), "scenario": "hidden-writer-follower-add-node",
+        "platform": platform.platform(), "scenario": "hidden-writer-follower-add-metadata-stale",
         "producer_marker": marker,
         "started_utc": datetime.now(timezone.utc).isoformat(), "package": str(package),
         "title": f"Hidden writer {token}", "address": f"https://qualification.invalid/{token}",
@@ -420,8 +515,18 @@ def qualify(name, package, out, marker):
                 page = browser.open(reopened_url)
                 reopened = observe(browser, page, "fresh_process_reopen",
                                    lambda s: ready(s, "writer", "visible")
-                                   and labels(s["semantic"], receipt["title"]), receipt)
-                require(labels(reopened["semantic"], receipt["title"]) == 1, "Reopen rendered duplicate objects")
+                                   and labels(s["semantic"], receipt["saved_title"]), receipt)
+                require(labels(reopened["semantic"], receipt["saved_title"]) == 1,
+                        "Reopen rendered duplicate objects")
+                wait("Open Panes", lambda: browser.evaluate(page, button("Panes")), timeout=12)
+                wait("Open Document tools", lambda: browser.evaluate(page, button("Document tools")), timeout=12)
+                open_details(browser, page, receipt["saved_title"])
+                reopened_tags = browser.evaluate(page, detail_field("Tags"))
+                require(reopened_tags == ", ".join(receipt["saved_tags"]),
+                        f"Reopen has wrong tags: {reopened_tags}")
+                receipt["reopened_fields"] = {
+                    "title": browser.evaluate(page, detail_field("Title")), "tags": reopened_tags,
+                }
                 (out / "fresh-process-reopen.png").write_bytes(base64.b64decode(browser.screenshot(page)))
         receipt["result"] = "pass"
     except Exception:
