@@ -2881,7 +2881,7 @@ dependencies = [
 [[package]]
 name = "esp"
 version = "0.1.0"
-source = "git+https://www.github.com/merely-made/distillery.git?rev=25db074e2f9d33103535d5b0638bd6aa1daab0d9#25db074e2f9d33103535d5b0638bd6aa1daab0d9"
+source = "git+https://www.github.com/merely-made/distillery.git?rev=a235cbdbca187aa7507739b3f6cf9a2f7846fcc0#a235cbdbca187aa7507739b3f6cf9a2f7846fcc0"
 dependencies = [
  "serde",
  "zeroize",
@@ -3275,7 +3275,7 @@ dependencies = [
 [[package]]
 name = "gemot"
 version = "0.1.1"
-source = "git+https://www.github.com/merely-made/gemot.git?rev=f4c1b60139c3315e921393ef72fda35b152b15b3#f4c1b60139c3315e921393ef72fda35b152b15b3"
+source = "git+https://www.github.com/merely-made/gemot.git?rev=73ae3633400109de7e8fd5a66393a12eb609f0d4#73ae3633400109de7e8fd5a66393a12eb609f0d4"
 dependencies = [
  "insigne",
  "mere-proofs",
@@ -5984,7 +5984,7 @@ dependencies = [
 [[package]]
 name = "mien"
 version = "0.0.1"
-source = "git+https://www.github.com/merely-made/gemot.git?rev=f4c1b60139c3315e921393ef72fda35b152b15b3#f4c1b60139c3315e921393ef72fda35b152b15b3"
+source = "git+https://www.github.com/merely-made/gemot.git?rev=73ae3633400109de7e8fd5a66393a12eb609f0d4#73ae3633400109de7e8fd5a66393a12eb609f0d4"
 dependencies = [
  "insigne",
  "muniment",
@@ -6075,7 +6075,7 @@ dependencies = [
 [[package]]
 name = "mooting"
 version = "0.1.0"
-source = "git+https://www.github.com/merely-made/gemot.git?rev=f4c1b60139c3315e921393ef72fda35b152b15b3#f4c1b60139c3315e921393ef72fda35b152b15b3"
+source = "git+https://www.github.com/merely-made/gemot.git?rev=73ae3633400109de7e8fd5a66393a12eb609f0d4#73ae3633400109de7e8fd5a66393a12eb609f0d4"
 dependencies = [
  "p2mere-core",
  "serde",
@@ -6137,7 +6137,7 @@ dependencies = [
 [[package]]
 name = "murm-sync"
 version = "0.0.1"
-source = "git+https://www.github.com/merely-made/murm.git?rev=98f79b4ef56168239eb93ceaae1dcdde465ee34d#98f79b4ef56168239eb93ceaae1dcdde465ee34d"
+source = "git+https://github.com/merely-made/murm.git?branch=main#6bd9789cf5218adb9515a6db52396a8ca9a634f9"
 dependencies = [
  "bytes",
  "futures-util",

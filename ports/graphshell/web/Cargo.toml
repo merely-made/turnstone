@@ -229,12 +229,8 @@ opt-level = 3
 # Canonical promoted families; keep registry and Git consumers type-identical.
 chartulary = { git = "https://www.github.com/merely-made/eidetic.git", rev = "86e78dd37914fd61f8ca336bf0ab2da716356fca" }
 eidetic = { git = "https://www.github.com/merely-made/eidetic.git", rev = "86e78dd37914fd61f8ca336bf0ab2da716356fca" }
-esp = { git = "https://www.github.com/merely-made/distillery.git", rev = "25db074e2f9d33103535d5b0638bd6aa1daab0d9" }
-gemot = { git = "https://www.github.com/merely-made/gemot.git", rev = "f4c1b60139c3315e921393ef72fda35b152b15b3" }
 luggage = { git = "https://www.github.com/merely-made/eidetic.git", rev = "86e78dd37914fd61f8ca336bf0ab2da716356fca" }
 mere-proofs = { git = "https://www.github.com/merely-made/eidetic.git", rev = "86e78dd37914fd61f8ca336bf0ab2da716356fca" }
-mien = { git = "https://www.github.com/merely-made/gemot.git", rev = "f4c1b60139c3315e921393ef72fda35b152b15b3" }
-mooting = { git = "https://www.github.com/merely-made/gemot.git", rev = "f4c1b60139c3315e921393ef72fda35b152b15b3" }
 servitor = { git = "https://www.github.com/merely-made/eidetic.git", rev = "86e78dd37914fd61f8ca336bf0ab2da716356fca" }
 stickleback = { git = "https://www.github.com/merely-made/eidetic.git", rev = "86e78dd37914fd61f8ca336bf0ab2da716356fca" }
 # Dramatis uses published muniment; the viewer and its applets share Mere's
@@ -265,10 +261,6 @@ sprigging = { path = "../../../crates/cambium/sprigging" }
 # Promoted sources shared with immutable older Mere suppliers.
 chartulary = { git = "https://www.github.com/merely-made/eidetic.git", rev = "86e78dd37914fd61f8ca336bf0ab2da716356fca" }
 eidetic = { git = "https://www.github.com/merely-made/eidetic.git", rev = "86e78dd37914fd61f8ca336bf0ab2da716356fca" }
-esp = { git = "https://www.github.com/merely-made/distillery.git", rev = "25db074e2f9d33103535d5b0638bd6aa1daab0d9" }
-gemot = { git = "https://www.github.com/merely-made/gemot.git", rev = "f4c1b60139c3315e921393ef72fda35b152b15b3" }
-mien = { git = "https://www.github.com/merely-made/gemot.git", rev = "f4c1b60139c3315e921393ef72fda35b152b15b3" }
-mooting = { git = "https://www.github.com/merely-made/gemot.git", rev = "f4c1b60139c3315e921393ef72fda35b152b15b3" }
 servitor = { git = "https://www.github.com/merely-made/eidetic.git", rev = "86e78dd37914fd61f8ca336bf0ab2da716356fca" }
 muniment = { git = "https://www.github.com/merely-made/eidetic.git", rev = "86e78dd37914fd61f8ca336bf0ab2da716356fca" }
 stickleback = { git = "https://www.github.com/merely-made/eidetic.git", rev = "86e78dd37914fd61f8ca336bf0ab2da716356fca" }
@@ -279,12 +271,8 @@ luggage = { git = "https://www.github.com/merely-made/eidetic.git", rev = "86e78
 [patch."https://www.github.com/merely-made/mere.git"]
 chartulary = { git = "https://www.github.com/merely-made/eidetic.git", rev = "86e78dd37914fd61f8ca336bf0ab2da716356fca" }
 eidetic = { git = "https://www.github.com/merely-made/eidetic.git", rev = "86e78dd37914fd61f8ca336bf0ab2da716356fca" }
-esp = { git = "https://www.github.com/merely-made/distillery.git", rev = "25db074e2f9d33103535d5b0638bd6aa1daab0d9" }
-gemot = { git = "https://www.github.com/merely-made/gemot.git", rev = "f4c1b60139c3315e921393ef72fda35b152b15b3" }
 luggage = { git = "https://www.github.com/merely-made/eidetic.git", rev = "86e78dd37914fd61f8ca336bf0ab2da716356fca" }
 mere-proofs = { git = "https://www.github.com/merely-made/eidetic.git", rev = "86e78dd37914fd61f8ca336bf0ab2da716356fca" }
-mien = { git = "https://www.github.com/merely-made/gemot.git", rev = "f4c1b60139c3315e921393ef72fda35b152b15b3" }
-mooting = { git = "https://www.github.com/merely-made/gemot.git", rev = "f4c1b60139c3315e921393ef72fda35b152b15b3" }
 muniment = { git = "https://www.github.com/merely-made/eidetic.git", rev = "86e78dd37914fd61f8ca336bf0ab2da716356fca" }
 servitor = { git = "https://www.github.com/merely-made/eidetic.git", rev = "86e78dd37914fd61f8ca336bf0ab2da716356fca" }
 stickleback = { git = "https://www.github.com/merely-made/eidetic.git", rev = "86e78dd37914fd61f8ca336bf0ab2da716356fca" }
@@ -317,6 +305,4 @@ too_many_lines = "warn"
 [lints]
 workspace = true
 
-[patch."https://github.com/merely-made/distillery.git"]
-esp = { git = "https://www.github.com/merely-made/distillery.git", rev = "25db074e2f9d33103535d5b0638bd6aa1daab0d9" }
 
