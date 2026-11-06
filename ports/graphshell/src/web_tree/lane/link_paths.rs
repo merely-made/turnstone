@@ -22,7 +22,7 @@ pub(super) fn source_receipt(canvas: &mere::canvas::Canvas) -> Option<serde_json
 
 pub(super) fn click(
     lane: &TreeLane,
-    ctx: &mut mesquite::Ctx<'_, TreeLane>,
+    ctx: &mut mandrake::Ctx<'_, TreeLane>,
     request: &str,
 ) -> Result<(), String> {
     use graphshell::mere_host::{

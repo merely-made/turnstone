@@ -159,7 +159,7 @@ pub fn connect_remote(signal_url: String, invite: Option<String>) -> Result<(), 
 }
 
 /// Parse and arm a scenario on the tree page; `loader.js` calls this from
-/// `?scenario=`. Mesquite owns stepping and observations on every public page.
+/// `?scenario=`. Mandrake owns stepping and observations on every public page.
 #[wasm_bindgen]
 pub fn run_scenario(text: &str) -> Result<(), JsValue> {
     web_tree::run(text).map_err(|error| JsValue::from_str(&error))

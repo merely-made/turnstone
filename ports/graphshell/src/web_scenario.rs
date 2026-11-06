@@ -4,7 +4,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 
-//! Publish Mesquite's retained-host result and original capture pixels.
+//! Publish Mandrake's retained-host result and original capture pixels.
 //! All scenario stepping belongs to the shared lane; this module owns only
 //! browser encoding and page-level receipt elements outside the component.
 

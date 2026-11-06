@@ -1,7 +1,7 @@
 // Copyright 2026 Mark Alan Boykin
 // SPDX-License-Identifier: MPL-2.0
 
-//! Read-only assertions against the current shared controls. Input still uses Mesquite.
+//! Read-only assertions against the current shared controls. Input still uses Mandrake.
 use super::*;
 use layout_dom_api::{LayoutDom, LocalName, Namespace};
 

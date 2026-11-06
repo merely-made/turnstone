@@ -16,7 +16,7 @@
 //! in the URL swap the fixture graph for a generated one, and a host history
 //! (`data-dataset`) replaces both, stepped by checkpoint (`history`).
 //!
-//! The page drives itself through Mesquite's scenario lane with the web
+//! The page drives itself through Mandrake's scenario lane with the web
 //! host's [`WebCapture`], and times its frames with the same
 //! [`FrameTiming`] as the main page, so the two are measured alike.
 
@@ -38,7 +38,7 @@ use layout_dom_api::{LayoutDom, LocalName, Namespace};
 use mere::canvas::Canvas;
 use mere::canvas::controls::CanvasCommand;
 use mere::kernel::graph::Graph;
-use mesquite::{CaptureRecord, Lane, Product};
+use mandrake::{CaptureRecord, Lane, Product};
 use muniment::MemoryBackend;
 use netrender::{ColorLoad, NetrenderOptions};
 use serde_json::json;

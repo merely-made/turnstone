@@ -367,7 +367,7 @@ required-features = ["personal-sync"]
 [dev-dependencies]
 chacha20poly1305 = "=0.10.1"
 scenograph = { workspace = true, features = ["editor"] }
-# The real Rhai request batch is received by the same viewer adapter as Mesquite.
+# The real Rhai request batch is received by the same viewer adapter as Mandrake.
 script-rhai = { workspace = true }
 # Tests and examples bind throwaway identities (vault lock plan, ruling 96).
 transport = { workspace = true, features = ["test-identity"] }
