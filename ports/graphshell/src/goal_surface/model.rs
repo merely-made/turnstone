@@ -9,7 +9,7 @@
 //! over; it holds citations and explanations, never a graph change.
 
 use super::provider::RetainedPages;
-use eidetic::models::recall::RecallSourceId;
+use eidetic::models::recall::{PassageSelector, RecallSourceId};
 use eidetic_search::goal::{GoalAssessment, GoalVerdict, SelectionChoice, SelectionRule};
 use fleece::retained_traversal::{
     RetainedFailure, RetainedStop, RetainedTraversalReport, recall_source,
@@ -152,17 +152,11 @@ pub fn short(hex: &str) -> String {
     hex.chars().take(12).collect()
 }
 
-/// Byte offsets for a half-open range of Unicode scalar positions, clamped to
-/// the text. Eidetic's `PassageSelector::to_byte_range` does the same once the
-/// pinned Eidetic carries it.
+/// Byte offsets for a half-open range of Unicode scalar positions; `None` when
+/// the range is reversed or reaches past the text.
 fn byte_range(text: &str, start: usize, end: usize) -> Option<(usize, usize)> {
-    if start > end {
-        return None;
-    }
-    let mut bytes = text.char_indices().map(|(b, _)| b).chain([text.len()]);
-    let start_byte = bytes.clone().nth(start)?;
-    let end_byte = bytes.nth(end)?;
-    Some((start_byte, end_byte))
+    let range = PassageSelector { start, end }.to_byte_range(text).ok()?;
+    Some((range.start, range.end))
 }
 
 /// Split `text` around the scalar range, with up to `context` scalars each side.

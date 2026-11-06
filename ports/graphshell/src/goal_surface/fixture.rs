@@ -22,7 +22,7 @@ pub const OVEN: &str = "https://kitchen.example/oven-spring";
 pub const FLOUR: &str = "https://kitchen.example/flour-types";
 /// Linked from the index but never retained.
 pub const HOTEL: &str = "https://elsewhere.example/hotel-kitchens";
-pub const STARTER_V1: &str = "Starter care. Feed the starter every day with equal parts flour and water and keep it warm.";
+pub const STARTER_V1: &str = "Starter care. Feed the starter every day with equal parts flour and water and leave it somewhere warm.";
 
 const PAGES: [(&str, &str, &str); 5] = [
     (INDEX, "Bread notes index", "Bread notes index. Pages on culture care, trips away, oven spring and flour types. Start here when planning a bake."),

@@ -100,9 +100,10 @@ fn a_run_over_the_fixture_graph_cites_sources_and_explains_its_choices() {
     s.run();
     assert_eq!(s.notice, None);
     let run = s.run.as_ref().unwrap();
-    for term in ["keep", "starter", "alive", "while", "travelling"] {
+    for term in ["keep", "starter", "alive", "travelling"] {
         assert!(run.terms.iter().any(|t| t == term), "{term} in {:?}", run.terms);
     }
+    assert!(!run.terms.iter().any(|t| t == "while" || t == "a"), "stop words are not goal terms: {:?}", run.terms);
     assert_eq!(run.stop, RetainedStop::Exhausted);
     let cited: Vec<_> = run.matches().map(|s| s.address.as_str()).collect();
     assert!(cited.contains(&TRAVEL) && cited.contains(&STARTER), "{cited:?}");
