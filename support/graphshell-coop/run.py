@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+
+# Copyright 2026 Mark Alan Boykin
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
+
 """Existing graph co-op, a Mac and a Linux ThinkPad, no forwarded data-plane ports."""
 import argparse
 import base64
