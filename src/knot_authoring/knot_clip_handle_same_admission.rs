@@ -8,6 +8,17 @@ impl KnotClipHandle {
         self.same_endpoint(other) && self.expected_base == other.expected_base
     }
 
+    /// Sign each accepted clip as an edition (release log R7).
+    pub fn with_signing(mut self, signing: Arc<ClipSigning>) -> Self {
+        self.signing = Some(signing);
+        self
+    }
+
+    /// The signer, to read what it issued.
+    pub fn signing(&self) -> Option<&Arc<ClipSigning>> {
+        self.signing.as_ref()
+    }
+
     pub(crate) fn same_endpoint(&self, other: &Self) -> bool {
         Arc::ptr_eq(&self.hub, &other.hub) && self.target == other.target
     }
@@ -102,6 +113,7 @@ impl KnotClipHandle {
             artifacts,
             fidelity,
             discovered_edges,
+            signing: self.signing.clone(),
         };
         *self.status.lock().map_err(|_| "clip status poisoned")? = KnotClipStatus::Sending;
         self.hub

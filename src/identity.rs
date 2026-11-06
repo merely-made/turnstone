@@ -41,6 +41,9 @@ use insigne::delegation::{DelegationCertificate, SignedDelegationCertificate};
 /// The name Turnstone is admitted to djinn's custody route under.
 pub const CUSTODY_APP: &str = "turnstone";
 
+/// The salt of the key an associated-tier clip edition is signed under.
+const CLIP_EDITION_SALT_TEXT: &str = "turnstone.clip-edition.v1";
+
 /// The resident inference lane's route, named without the optional
 /// `inference` feature's dependency.
 const INFERENCE_ASK_ROUTE: &str = "inference.ask";
@@ -78,6 +81,8 @@ pub fn app_declaration() -> ostiary::declaration::AppDeclaration {
                 prefix("turnstone.place."),
                 // Capsule-scoped Gemini client identities.
                 prefix("personae/gemini-client-identity/v1/"),
+                // The key an associated-tier clip edition is signed under.
+                SaltUse::persona(SaltPattern::Exact(CLIP_EDITION_SALT_TEXT.into())),
                 // The reader key Knot's published shares open with.
                 SaltUse::persona(SaltPattern::Exact("mere/knot-publish/reader/v1".into())),
                 // The shared-place writers Turnstone authors under.
@@ -328,5 +333,25 @@ mod tests {
             root_subject(&root),
             root_subject(&identity::InMemoryProvider::from_seed([3; 32]))
         );
+    }
+}
+
+/// Clip editions sign under the tier the publisher chose (release log D3).
+#[cfg(feature = "authoring")]
+impl crate::knot_authoring::ClipKeySource for RootIdentity {
+    fn clip_seed(&self, tier: identity::KeyTier) -> Result<zeroize::Zeroizing<[u8; 32]>, String> {
+        match tier {
+            identity::KeyTier::Associated => self
+                .derived_keypair(CLIP_EDITION_SALT_TEXT.as_bytes())
+                .map(|key| zeroize::Zeroizing::new(key.to_seed()))
+                .map_err(|e| e.to_string()),
+            // The custodian mints and holds these (djinn-custodian's
+            // `unassociated` operation), but the app door has no call for them
+            // yet, so a default-tier clip stays unsigned rather than falling
+            // back to a key that links to the persona.
+            identity::KeyTier::Unassociated => {
+                Err("the custodian's unassociated key route is not open to apps yet".into())
+            },
+        }
     }
 }

@@ -220,7 +220,10 @@ impl Shell {
             &app.data_root,
         ) {
             Ok(Some(mut engine)) => {
-                knot_clip = engine.clip_handle();
+                knot_clip = engine.clip_handle().map(|handle| match app.identity.clone() {
+                    Some(root) => handle.with_signing(crate::knot_authoring::ClipSigning::from_env(root)),
+                    None => handle,
+                });
                 knot_notes_root = engine.notes_root();
                 if let Some(source) = engine.take_publish_source() {
                     match app.identity.clone() {

@@ -149,6 +149,8 @@ struct PendingClip {
     artifacts: Vec<KnotClipArtifactV1>,
     fidelity: Vec<KnotClipFidelityV1>,
     discovered_edges: Vec<KnotClipObservedEdgeV1>,
+    /// Signs the clip as an edition once the Knot accepts it.
+    signing: Option<Arc<ClipSigning>>,
 }
 
 /// Last known result of the configured Inspector clip destination.
@@ -168,6 +170,7 @@ pub struct KnotClipHandle {
     hub: Arc<KnotHub>,
     target: String,
     status: Arc<Mutex<KnotClipStatus>>,
+    signing: Option<Arc<ClipSigning>>,
 }
 
 /// The effect grant a hosted endpoint carries, already parsed.
@@ -347,8 +350,10 @@ mod knot_runtime_source_binding;
 use knot_runtime_source_binding::knot_runtime_source_binding;
 #[path = "knot_authoring/clip_edition.rs"]
 mod clip_edition;
-#[allow(dead_code)] // The clip path signs once it holds a writer key (release log R7).
 pub use clip_edition::clip_edition;
+#[path = "knot_authoring/clip_signing.rs"]
+mod clip_signing;
+pub use clip_signing::{ClipKeySource, ClipSigning, SignedClip};
 #[path = "knot_authoring/clip_knot_body.rs"]
 mod clip_knot_body;
 #[path = "knot_authoring/knot_clip_handle_same_admission.rs"]

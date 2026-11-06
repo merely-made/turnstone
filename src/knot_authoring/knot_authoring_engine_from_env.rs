@@ -247,6 +247,7 @@ impl KnotAuthoringEngine {
             hub,
             target: target.clone(),
             status: Arc::new(Mutex::new(KnotClipStatus::Ready)),
+            signing: None,
         })
     }
 

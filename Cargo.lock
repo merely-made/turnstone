@@ -16843,6 +16843,7 @@ dependencies = [
  "windows",
  "winit",
  "workbench",
+ "zeroize",
 ]
 
 [[package]]

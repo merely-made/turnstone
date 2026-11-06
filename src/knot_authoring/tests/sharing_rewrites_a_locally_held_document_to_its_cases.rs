@@ -219,6 +219,7 @@ fn inspector_clip_crosses_the_typed_endpoint_action() {
             .expect("a connected fixture has a local hub"),
         target: address,
         status: Arc::new(Mutex::new(KnotClipStatus::Ready)),
+        signing: None,
     };
     handle
         .insert(inker::DocumentClip {
@@ -280,6 +281,7 @@ fn inspector_clip_retains_livery_source_evidence_end_to_end() {
             .expect("a connected fixture has a local hub"),
         target: address,
         status: Arc::new(Mutex::new(KnotClipStatus::Ready)),
+        signing: None,
     };
     handle.insert(source_clip).unwrap();
     wait_for_clip_status(&handle, KnotClipStatus::Saved);

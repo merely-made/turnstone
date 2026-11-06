@@ -202,6 +202,7 @@ impl KnotDocumentSession {
             hub: self.hub.clone(),
             target: self.address.clone(),
             status: Arc::new(Mutex::new(KnotClipStatus::Ready)),
+            signing: None,
         })
     }
 

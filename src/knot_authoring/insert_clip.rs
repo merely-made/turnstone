@@ -16,6 +16,21 @@ pub(super) fn insert_clip(
     wake: &Wake,
     visiting: bool,
 ) {
+    // Signed before the clip's fields move into the intent; kept only if the
+    // Knot accepts the clip.
+    let signed = clip.signing.clone().map(|signing| {
+        let created_ms = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .map_or(0, |d| d.as_millis() as u64);
+        let edition = signing.sign(
+            &clip.source_url,
+            clip.title.as_deref(),
+            clip.selector.as_deref(),
+            &clip.knot_body,
+            created_ms,
+        );
+        (signing, edition)
+    });
     let result = ensure_binding(retained, mounted, bindings, address).and_then(|binding| {
         if expected_base
             .as_ref()
@@ -88,6 +103,11 @@ pub(super) fn insert_clip(
         Ok(IntentResult::Rejected { reason }) => KnotClipStatus::Rejected(reason),
         Err(error) => KnotClipStatus::Rejected(error),
     };
+    if let Some((signing, edition)) = signed
+        && matches!(next, KnotClipStatus::Saved)
+    {
+        signing.record(edition);
+    }
     if let Ok(mut current) = status.lock() {
         *current = next;
     }
