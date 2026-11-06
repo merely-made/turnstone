@@ -91,7 +91,7 @@ fn a_browser_capture_retains_titles_and_addresses_and_no_page_text() {
         let (store, app, ..) = saved().await;
         let facts = GraphFacts::read(app.host.graph());
         let none = RetainedPages::load_facts(OWNER, &store, &facts, 1 << 20, false).await.unwrap();
-        assert!(none.sources().is_empty(), "nothing writes PageTextStore in the browser");
+        assert!(none.sources().is_empty(), "nothing writes PageTextStore unless the person keeps page text");
         let (pages, _) = pages_of(&store, &app).await;
         let sources = pages.sources();
         assert_eq!(sources.len(), 3);

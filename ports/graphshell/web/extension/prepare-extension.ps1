@@ -20,6 +20,7 @@ New-Item -ItemType Directory -Path $destinationPath -Force | Out-Null
 
 Copy-Item -LiteralPath (Join-Path $scriptRoot "background.js") -Destination $destinationPath
 Copy-Item -LiteralPath (Join-Path $scriptRoot "capture-model.js") -Destination $destinationPath
+Copy-Item -LiteralPath (Join-Path $scriptRoot "extension-keep.js") -Destination $destinationPath
 Copy-Item -LiteralPath (Join-Path $scriptRoot "follower-queue.js") -Destination $destinationPath
 Copy-Item -LiteralPath (Join-Path $scriptRoot "action-form.js") -Destination $destinationPath
 Copy-Item -LiteralPath (Join-Path $scriptRoot "resource-chunk.js") -Destination $destinationPath

@@ -11,7 +11,11 @@
   "optional_permissions": [
     "history",
     "tabs",
-    "webNavigation"
+    "webNavigation",
+    "scripting"
+  ],
+  "optional_host_permissions": [
+    "<all_urls>"
   ],
   "browser_specific_settings": {
     "gecko": {

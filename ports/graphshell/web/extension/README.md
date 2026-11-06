@@ -13,18 +13,20 @@ resident device host.
 | `background.js` | Browser action opens `graph.html`; the local profile record; history and permission listeners; the bounded `storage.local` capture queue; refuses messages from anything but its own pages |
 | `graph.html`, `graph.css` | The extension workspace: the shared Graphshell component, the browser-history consent panel and the second-view notice |
 | `capture-model.js` | `GraphshellCaptureModel`: default policy, visit sanitization, queue bounds, the ledger's conflict rule |
+| `../extension-keep.js` | The **Page text** panel of `graph.html`: the optional access request and refusal, the size limit, kept/failed/omitted counts and browser storage state; hands queued text to the app and acknowledges it on the app's word |
 | `follower-queue.js` | `GraphshellFollowerQueue`: a following view's edit transport on the views channel (send, acknowledge, resend once to a new writer, give up), and the writer's side (in-flight dedupe, no handover mid-edit); `smoke-writer-handover.mjs` runs it |
 | `action-form.js` | `GraphshellActionForm`: builds an intent payload from an advertised `input_form` |
 | `bridge.html`, `bridge.css`, `bridge.js`, `resource-chunk.js` | The native surface: connects `org.mere.graphshell`, pulls bounded resource chunks, renders identity cards and advertised actions |
+| `qualify-keep-content.py` | Headed Chrome qualification of kept page text on a fixture profile: a local test server, the control and its permission, loaded pages, a goal that only page bodies match, and a cold reopen |
 | `qualify-goal-surface.py` | Headed Chrome qualification of the goal surface and durable tag suggestions on a fixture profile, with a cold reopen and a follower view (reuses the hidden-writer harness) |
 | `prepare-extension.ps1`, `prepare-extension.sh` | Assemble one unpacked extension directory |
 | `install-native-host.ps1`, `install-native-host.sh` | Register the native host for the current user |
 | `native-host.chromium.json.in`, `native-host.firefox.json.in` | Native-host manifest templates; `__GRAPHSHELL_NATIVE_HOST__` is replaced with the binary path |
 | `fixtures/capture-conflicts.json` | Visit pairs with the encounter ledger's verdicts, written by `tests/capture_conflict_fixture.rs` |
-| `smoke-action-form.mjs`, `smoke-capture-model.mjs`, `smoke-capture-background.mjs`, `smoke-capture-ack.mjs`, `smoke-native-host.mjs`, `smoke-transfer-accept.mjs`, `smoke-resource-chunk.mjs` | Node smoke tests |
+| `smoke-action-form.mjs`, `smoke-capture-model.mjs`, `smoke-capture-background.mjs`, `smoke-capture-ack.mjs`, `smoke-native-host.mjs`, `smoke-transfer-accept.mjs`, `smoke-resource-chunk.mjs`, `smoke-keep-text.mjs` | Node smoke tests |
 
 `prepare-extension` also copies `graph.html`, `graph.css`, `styles.css`,
-`loader.js`, `mount.js`, `extension-profile.js`, the fonts and their notices
+`loader.js`, `mount.js`, `extension-profile.js`, `extension-keep.js`, the fonts and their notices
 (`IBMPlexSans-Regular.ttf`, `IBMPlexMono-Regular.ttf`, `Newsreader-Regular.ttf`,
 `NotoSansMath-Regular.ttf`, `OFL-IBMPlex.txt`, `OFL-Newsreader.txt`, `OFL-NotoSansMath.txt`), the segmenter dictionaries and their
 notice (`dictionaries/`, fetched only when reading text needs them), and
@@ -230,3 +232,28 @@ Register the built native host for the current user:
 ```text
 ./install-native-host.ps1 -BinaryPath /absolute/path/to/graphshell_native_host.exe
 ```
+
+## Keep page text
+
+An optional control, off by default and separate from remembering visits (the
+**Page text** panel; `keep.*` messages beside `capture.*`). Turning it on asks
+the browser for the optional `scripting` permission and optional access to all
+sites (`optional_host_permissions: <all_urls>`); a refusal leaves it off and
+says so, and removing either permission later turns it off and discards queued
+text. There are no content scripts and no background fetches: when a tab
+finishes loading, `background.js` runs `GraphshellCaptureModel.extractPageText`
+in that page with `scripting.executeScript`. It reads the visible text of
+`main`/`article` (else the body), skips scripts, styles, navigation, forms,
+hidden and embedded content, and returns nothing for a document that is not
+HTML. Private windows, an unaccepted scheme and the origins excluded under
+**Browser history** are not read. Text is bounded in UTF-8 bytes (32, 128 or
+256 KiB per page; `max_bytes`), queued in `storage.local` beside the visit
+queue (one pending text per address, 48 pages, 6 MiB; overflow is counted),
+and delivered a few pages at a time. The worker never opens IndexedDB. The
+writer view passes a delivery to the app, which records each page with
+`eidetic::PageTextStore` (`kept_text.rs`); only after it reports the counts is
+the delivery acknowledged. A store failure (quota included) is reported in the
+panel and the pages stay queued. Forgetting an address also forgets its kept
+text. The panel shows kept, unchanged, waiting, failed, omitted, cut-to-size
+and skipped counts, the last problem, and the browser's storage use,
+quota and persistence state.

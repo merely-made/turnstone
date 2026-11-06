@@ -9,7 +9,7 @@ use super::*;
 use crate::web_capture::{
     BatchListener, CaptureInbox, CaptureSummary, HistoryControlSummary, HistoryForgetInput,
     LiveCaptureBatch, announce_batch, announce_capture, apply_capture, apply_history_controls,
-    apply_history_request, initial_capture_input, listen_for_batches,
+    apply_history_request, initial_capture_input, initial_kept_input, listen_for_batches,
 };
 use cambium::{button, checkbox, el, lens, text_field_typed};
 use graphshell::access::AccessRecordFilter;
@@ -52,9 +52,11 @@ impl HistoryControls {
             .map(|(policy, _)| policy.clone())
             .unwrap_or_else(HistoryCapturePolicy::disabled);
         let (persona, device) = attribution;
-        let capture = apply_capture(app, &mut store, input, persona, device, now_secs()).await?;
+        let keep = initial_kept_input(&crate::window()?)?;
+        let capture =
+            apply_capture(app, &mut store, input, keep, persona, device, now_secs()).await?;
         // The batch has committed; only now may the extension drop what it pulled.
-        announce_capture(capture)?;
+        announce_capture(capture.clone())?;
         let summary = apply_history_controls(app, &mut store, policy.clone(), now_secs()).await;
         let inbox = CaptureInbox::default();
         let listener = listen_for_batches(inbox.clone())?;
@@ -116,6 +118,7 @@ impl SavedProduct {
             batch,
             policy,
             visits,
+            keep,
         } = match next {
             Ok(batch) => batch,
             Err((batch, error)) => {
@@ -136,6 +139,7 @@ impl SavedProduct {
                     &mut app,
                     &mut store,
                     Some((policy, visits)),
+                    keep,
                     &persona,
                     &device,
                     now_secs(),
@@ -176,6 +180,9 @@ impl SavedProduct {
         match &result {
             Ok(summary) => {
                 self.history.capture.add(summary);
+                if let Some(error) = &summary.kept.error {
+                    self.status = format!("Page text not kept · {error} · it stays queued");
+                }
                 if summary.accepted > 0 {
                     self.status =
                         format!("Captured {} visit(s) from this browser", summary.accepted);
@@ -217,6 +224,19 @@ impl SavedProduct {
             .with_field(
                 "capture-buffered",
                 self.history.capture.buffered.to_string(),
+            )
+            .with_field("keep-kept", self.history.capture.kept.kept.to_string())
+            .with_field(
+                "keep-unchanged",
+                self.history.capture.kept.unchanged.to_string(),
+            )
+            .with_field(
+                "keep-refused",
+                self.history.capture.kept.refused.to_string(),
+            )
+            .with_field(
+                "keep-error",
+                self.history.capture.kept.error.clone().unwrap_or_default(),
             )
     }
     fn history_action(&mut self, forget: bool) -> Result<(), String> {

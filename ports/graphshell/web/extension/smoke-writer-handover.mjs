@@ -12,6 +12,7 @@ import vm from "node:vm";
 // Web Lock manager and BroadcastChannel shared by every page in the "browser".
 // Each page runs the real source in its own context.
 const source = fs.readFileSync(new URL("../extension-profile.js", import.meta.url), "utf8")
+  .replace(/^import \{[^}]*\} from "\.\/extension-keep\.js";\s*$/m, "const prepareKeep = async () => ({ keys: [] }), pullKeep = async () => null, finishKeep = async () => ({ failed: false });") // handover never keeps text
   .replace(/^export \{[^}]*\};\s*$/m, "globalThis.api = { claimWriter };");
 assert.ok(source.includes("globalThis.api"), "the export line was rewritten");
 

@@ -50,6 +50,10 @@ pub mod capsule_applet;
 pub mod capture;
 #[cfg(all(test, feature = "web"))]
 mod capture_resources;
+#[cfg(feature = "web")]
+pub mod kept_text;
+#[cfg(all(test, feature = "web", feature = "goal-surface"))]
+mod kept_text_tests;
 #[cfg(all(feature = "personal-sync", not(target_arch = "wasm32")))]
 pub mod carriage;
 #[cfg(feature = "web")]

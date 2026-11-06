@@ -4,6 +4,8 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 
+import { finishKeep, prepareKeep, pullKeep } from "./extension-keep.js";
+
 const extensionApi = globalThis.browser ?? globalThis.chrome;
 const model = globalThis.GraphshellCaptureModel;
 const panel = document.querySelector("#capture-panel");
@@ -31,6 +33,7 @@ const VIEWS_CHANNEL = "graphshell.local-profile.views.v1";
 const RELOAD_GRACE_MS = 3000;
 const LOCAL_PROFILE_GLOBAL = "graphshellLocalProfileJson";
 let pulledIds = [];
+let pulledKeepKeys = [];
 let currentPolicy = model.defaultPolicy();
 
 function setStatus(message, state = "ready") {
@@ -257,28 +260,38 @@ async function pullLive() {
     return;
   }
   const pulled = await send({ type: "capture.pull" });
-  if (!pulled.policy.enabled || pulled.visits.length === 0) return;
+  const visits = pulled.policy.enabled ? pulled.visits : [];
+  // Kept page text is a separate control: it rides the same delivery when on.
+  const kept = await pullKeep();
+  if (visits.length === 0 && !kept) return;
   liveSequence += 1;
-  liveBatch = { batch: liveSequence, ids: pulled.ids };
+  liveBatch = { batch: liveSequence, ids: visits.length ? pulled.ids : [], keys: kept?.keys ?? [] };
   document.dispatchEvent(new CustomEvent(LIVE_BATCH_EVENT, {
-    detail: JSON.stringify({ batch: liveSequence, policy: pulled.policy, visits: pulled.visits }),
+    detail: JSON.stringify({
+      batch: liveSequence, policy: pulled.policy, visits,
+      keep: kept ? { policy: kept.policy, pages: kept.pages } : null,
+    }),
   }));
 }
 
 async function finishLive() {
   const counts = graphshellRoot()?.dataset ?? {};
   if (!liveBatch || Number(counts.captureBatch) !== liveBatch.batch) return;
-  const { ids } = liveBatch;
+  const { ids, keys } = liveBatch;
   liveBatch = null;
   if (counts.captureBatchError) {
     // Not acknowledged: the next notice or open pulls it again.
     livePullAgain = false;
-    setStatus(`Capture not saved · ${counts.captureBatchError} · the visits stay queued`, "failed");
+    setStatus(`Capture not saved · ${counts.captureBatchError} · the visits and page text stay queued`, "failed");
     return;
   }
-  await send({ type: "capture.ack", ids });
-  setStatus(`Graph updated · ${counts.captureBatchAccepted || 0} new visit(s)`
-    + ` · ${counts.captureBatchBuffered || 0} awaiting parents · ${counts.captureBatchDropped || 0} filtered`);
+  if (ids.length > 0) await send({ type: "capture.ack", ids });
+  const kept = await finishKeep(keys, counts, "keepBatch");
+  if (kept.failed) livePullAgain = false;
+  if (ids.length > 0) {
+    setStatus(`Graph updated · ${counts.captureBatchAccepted || 0} new visit(s)`
+      + ` · ${counts.captureBatchBuffered || 0} awaiting parents · ${counts.captureBatchDropped || 0} filtered`);
+  }
   if (livePullAgain) {
     livePullAgain = false;
     await pullLive();
@@ -315,6 +328,7 @@ async function prepareCapture() {
   }
 
   const status = await refreshStatus();
+  pulledKeepKeys = (await prepareKeep(send)).keys;
   const pulled =
     status.permission && status.policy.enabled
       ? await send({ type: "capture.pull" })
@@ -333,6 +347,8 @@ async function prepareCapture() {
         pulledIds = [];
       }
       const counts = graphshellRoot()?.dataset ?? {};
+      await finishKeep(pulledKeepKeys, counts, "keep");
+      pulledKeepKeys = [];
       const accepted = Number(counts.captureAccepted || 0);
       const dropped = Number(counts.captureDropped || 0);
       const buffered = Number(counts.captureBuffered || 0);

@@ -12,6 +12,7 @@ use graphshell::capture::{
     BROWSER_HISTORY_HANDLER_PREFIX, BrowserHistoryCapture, BrowserVisit, CaptureOutcome,
     ForgetMode, HistoryCapturePolicy,
 };
+use graphshell::kept_text::{KeptBatch, KeptSummary, forget_kept_text, record_kept_pages};
 use graphshell::local_profile::LocalProfile;
 use muniment::IndexedDbBackend;
 use serde::Deserialize;
@@ -25,6 +26,8 @@ use web_sys::Window;
 
 const CAPTURE_POLICY_GLOBAL: &str = "graphshellCapturePolicyJson";
 const CAPTURE_VISITS_GLOBAL: &str = "graphshellInitialVisitsJson";
+// The kept page text queued while this view was closed: policy and pages.
+const KEPT_PAGES_GLOBAL: &str = "graphshellInitialKeptJson";
 const HISTORY_FILTER_GLOBAL: &str = "graphshellHistoryFilterJson";
 const HISTORY_FORGET_GLOBAL: &str = "graphshellHistoryForgetJson";
 // The installed extension profile; absent on reference and fixture pages.
@@ -42,12 +45,14 @@ const CAPTURE_BATCH_COMPLETE_EVENT: &str = "graphshell-capture-batch-complete";
 // The extension keeps one batch in flight; more waiting means a misbehaving page.
 const MAX_WAITING_BATCHES: usize = 4;
 
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub(crate) struct CaptureSummary {
     pub(crate) active: bool,
     pub(crate) accepted: usize,
     pub(crate) dropped: usize,
     pub(crate) buffered: usize,
+    /// Page text the person chose to keep; independent of live remembering.
+    pub(crate) kept: KeptSummary,
 }
 
 impl CaptureSummary {
@@ -56,6 +61,13 @@ impl CaptureSummary {
         self.accepted += other.accepted;
         self.dropped += other.dropped;
         self.buffered += other.buffered;
+        self.kept.active |= other.kept.active;
+        self.kept.kept += other.kept.kept;
+        self.kept.unchanged += other.kept.unchanged;
+        self.kept.refused += other.kept.refused;
+        if other.kept.error.is_some() {
+            self.kept.error.clone_from(&other.kept.error);
+        }
     }
 }
 
@@ -66,6 +78,8 @@ pub(crate) struct LiveCaptureBatch {
     pub(crate) batch: u64,
     pub(crate) policy: HistoryCapturePolicy,
     pub(crate) visits: Vec<BrowserVisit>,
+    #[serde(default)]
+    pub(crate) keep: Option<KeptBatch>,
 }
 
 /// Batches waiting for the graph to be free; a refused one keeps its number.
@@ -128,7 +142,7 @@ pub(crate) fn announce_batch(
     result: &Result<CaptureSummary, String>,
 ) -> Result<(), String> {
     let root = graphshell_root()?;
-    let summary = result.as_ref().copied().unwrap_or_default();
+    let summary = result.as_ref().cloned().unwrap_or_default();
     let error = result.as_ref().err().cloned().unwrap_or_default();
     for (name, value) in [
         ("data-capture-batch", batch.to_string()),
@@ -136,6 +150,16 @@ pub(crate) fn announce_batch(
         ("data-capture-batch-accepted", summary.accepted.to_string()),
         ("data-capture-batch-dropped", summary.dropped.to_string()),
         ("data-capture-batch-buffered", summary.buffered.to_string()),
+        ("data-keep-batch-kept", summary.kept.kept.to_string()),
+        (
+            "data-keep-batch-unchanged",
+            summary.kept.unchanged.to_string(),
+        ),
+        ("data-keep-batch-refused", summary.kept.refused.to_string()),
+        (
+            "data-keep-batch-error",
+            summary.kept.error.clone().unwrap_or_default(),
+        ),
     ] {
         root.set_attribute(name, &value)
             .map_err(|_| format!("could not expose {name}"))?;
@@ -224,7 +248,42 @@ pub(crate) fn initial_capture_input(
     Ok(Some((policy, visits)))
 }
 
+/// The kept page text the extension queued while this view was closed.
+pub(crate) fn initial_kept_input(window: &Window) -> Result<Option<KeptBatch>, String> {
+    global_json(window, KEPT_PAGES_GLOBAL)?
+        .map(|json| {
+            serde_json::from_str(&json)
+                .map_err(|error| format!("invalid kept page text batch: {error}"))
+        })
+        .transpose()
+}
+
 pub(crate) async fn apply_capture(
+    app: &mut GraphshellApp<IndexedDbBackend>,
+    store: &mut IndexedDbBackend,
+    input: Option<(HistoryCapturePolicy, Vec<BrowserVisit>)>,
+    keep: Option<KeptBatch>,
+    persona: &str,
+    device: &str,
+    now_secs: u64,
+) -> Result<CaptureSummary, String> {
+    // Kept text and live remembering are separate controls: text lands under
+    // its own policy whether or not visits are being remembered, and a store
+    // failure there is reported, never allowed to hold back the visits.
+    let kept = match &keep {
+        Some(batch) if !batch.pages.is_empty() => record_kept_pages(&*store, batch).await,
+        Some(batch) => KeptSummary {
+            active: batch.policy.enabled,
+            ..KeptSummary::default()
+        },
+        None => KeptSummary::default(),
+    };
+    let mut summary = apply_visits(app, store, input, persona, device, now_secs).await?;
+    summary.kept = kept;
+    Ok(summary)
+}
+
+async fn apply_visits(
     app: &mut GraphshellApp<IndexedDbBackend>,
     store: &mut IndexedDbBackend,
     input: Option<(HistoryCapturePolicy, Vec<BrowserVisit>)>,
@@ -262,6 +321,7 @@ pub(crate) async fn apply_capture(
             .iter()
             .filter(|outcome| matches!(outcome, CaptureOutcome::Buffered { .. }))
             .count(),
+        kept: KeptSummary::default(),
     })
 }
 
@@ -269,7 +329,7 @@ pub(crate) async fn apply_capture(
 /// the document so the extension acknowledges the visits it pulled. Call it only
 /// after `apply_capture` returned Ok: a failed batch must stay queued.
 pub(crate) fn announce_capture(summary: CaptureSummary) -> Result<(), String> {
-    if !summary.active {
+    if !summary.active && !summary.kept.active {
         return Ok(());
     }
     let root = graphshell_root()?;
@@ -277,10 +337,18 @@ pub(crate) fn announce_capture(summary: CaptureSummary) -> Result<(), String> {
         ("data-capture-accepted", summary.accepted),
         ("data-capture-dropped", summary.dropped),
         ("data-capture-buffered", summary.buffered),
+        ("data-keep-kept", summary.kept.kept),
+        ("data-keep-unchanged", summary.kept.unchanged),
+        ("data-keep-refused", summary.kept.refused),
     ] {
         root.set_attribute(name, &count.to_string())
             .map_err(|_| format!("could not expose {name}"))?;
     }
+    root.set_attribute(
+        "data-keep-error",
+        summary.kept.error.as_deref().unwrap_or_default(),
+    )
+    .map_err(|_| "could not expose data-keep-error".to_string())?;
     dispatch(CAPTURE_COMPLETE_EVENT)
 }
 
@@ -359,6 +427,12 @@ pub(crate) async fn apply_history_request(
                 .await
         }
         .await;
+        // Forgetting an address forgets the text kept for it.
+        if result.is_ok()
+            && let Err(error) = forget_kept_text(&*store, &forget.url).await
+        {
+            summary.error = Some(error);
+        }
         match result {
             Ok(forgotten) => summary.forgotten = forgotten,
             Err(error) => summary.error = Some(error.to_string()),

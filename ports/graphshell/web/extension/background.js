@@ -16,6 +16,11 @@ const VISIT_MAP_KEY = "graphshell.capture.visit-map.v1";
 const SOURCE_SCOPE_KEY = "graphshell.capture.source-scope.v1";
 const COVERAGE_KEY = "graphshell.capture.coverage.v1";
 const LIVE_FROM_KEY = "graphshell.capture.live-from.v1";
+// "Keep page text": its own control, queue and counters, apart from the visit queue.
+const KEEP_POLICY_KEY = "graphshell.keep.policy.v1";
+const KEEP_QUEUE_KEY = "graphshell.keep.queue.v1";
+const KEEP_STATE_KEY = "graphshell.keep.state.v1";
+const KEEP_PERMISSIONS = { permissions: ["scripting"], origins: ["<all_urls>"] };
 // The installed profile's local, unassociated scope: no persona, no custody.
 const LOCAL_PROFILE_KEY = "graphshell.local-profile.v1";
 const LOCAL_PROFILE_SCHEMA = "graphshell.local-profile/v1";
@@ -53,7 +58,9 @@ function localProfile() {
   return localProfilePromise;
 }
 
-// Only this extension's own pages may drive capture; it has no content scripts.
+// Only this extension's own pages may drive capture. It registers no content
+// scripts: page text is read by an on-demand injection, only while the person
+// has switched "Keep page text" on and granted its optional access.
 function fromPackagedPage(sender) {
   return sender?.id === extensionApi.runtime.id
     && typeof sender.url === "string" && sender.url.startsWith(EXTENSION_ORIGIN);
@@ -264,6 +271,161 @@ function configureCapture(requested) {
   });
 }
 
+// ---- Keep page text ------------------------------------------------------
+// Queued like visits: the worker only extracts and queues; it never opens
+// IndexedDB. The writer view drains the queue under the writer lock and
+// records each page into Eidetic's PageTextStore.
+
+function emptyKeepState() {
+  return { kept: 0, unchanged: 0, refused: 0, failed: 0, omitted_queue: 0, truncated: 0,
+    skipped: 0, last_error: null, last_at_ms: null };
+}
+
+async function storedKeepState() {
+  const stored = await extensionApi.storage.local.get([KEEP_POLICY_KEY, KEEP_QUEUE_KEY, KEEP_STATE_KEY]);
+  return {
+    keep: model.normalizeKeepPolicy(stored[KEEP_POLICY_KEY]),
+    queue: Array.isArray(stored[KEEP_QUEUE_KEY]) ? stored[KEEP_QUEUE_KEY] : [],
+    counters: { ...emptyKeepState(), ...(stored[KEEP_STATE_KEY] ?? {}) },
+  };
+}
+
+function keepPermitted() {
+  return extensionApi.permissions.contains(KEEP_PERMISSIONS);
+}
+
+// Count something that did not become kept text, with the reason shown to the person.
+function noteKeep(change) {
+  return serializedQueueMutation(async () => {
+    const { counters } = await storedKeepState();
+    const next = { ...counters };
+    for (const [name, value] of Object.entries(change)) {
+      next[name] = typeof value === "number" ? (counters[name] ?? 0) + value : value;
+    }
+    await extensionApi.storage.local.set({ [KEEP_STATE_KEY]: next });
+  });
+}
+
+async function configureKeep(requested) {
+  const keep = model.normalizeKeepPolicy(requested);
+  if (keep.enabled && !(await keepPermitted())) {
+    throw new Error("Page text access has not been granted");
+  }
+  return serializedQueueMutation(async () => {
+    const state = await storedKeepState();
+    await extensionApi.storage.local.set({
+      [KEEP_POLICY_KEY]: keep,
+      // Turning it off discards text still waiting; nothing kept after the person said stop.
+      [KEEP_QUEUE_KEY]: keep.enabled ? state.queue : [],
+      ...(keep.enabled && !state.keep.enabled ? { [KEEP_STATE_KEY]: emptyKeepState() } : {}),
+    });
+    return { keep };
+  });
+}
+
+// A page the person loaded in a tab (a background fetch has no tab). Extract
+// what the page shows, bound and queue it.
+async function keepLoadedPage(tab) {
+  if (!tab?.url) return;
+  const state = await storedKeepState();
+  if (!state.keep.enabled) return;
+  if (tab.incognito) {
+    await noteKeep({ skipped: 1 });
+    return;
+  }
+  const capture = (await storedCaptureState()).policy;
+  if (!model.keepAddress(tab.url, capture)) {
+    await noteKeep({ skipped: 1 });
+    return;
+  }
+  if (!(await keepPermitted())) {
+    await noteKeep({ failed: 1, last_error: "Page text access is not granted" });
+    return;
+  }
+  let injected;
+  try {
+    injected = await extensionApi.scripting.executeScript({
+      target: { tabId: tab.id }, func: model.extractPageText, args: [state.keep.max_bytes],
+    });
+  } catch (error) {
+    // Pages the browser keeps from extensions (its store, internal pages) land here.
+    await noteKeep({ failed: 1, last_error: String(error?.message ?? error) });
+    return;
+  }
+  const read = injected?.[0]?.result;
+  if (!read) {
+    await noteKeep({ skipped: 1 });
+    return;
+  }
+  const page = model.sanitizeKeptPage({ url: read.url, text: read.text, at_ms: Date.now() },
+    state.keep, capture);
+  if (!page) {
+    await noteKeep({ skipped: 1 });
+    return;
+  }
+  await serializedQueueMutation(async () => {
+    const latest = await storedKeepState();
+    // Switched off while the page was being read.
+    if (!latest.keep.enabled) return;
+    const { queue, omitted } = model.mergeKeepQueue(latest.queue, [page]);
+    await extensionApi.storage.local.set({
+      [KEEP_QUEUE_KEY]: queue,
+      [KEEP_STATE_KEY]: { ...latest.counters,
+        omitted_queue: latest.counters.omitted_queue + omitted,
+        truncated: latest.counters.truncated + (page.truncated ? 1 : 0) },
+    });
+  });
+  announceQueued();
+}
+
+async function keepStatus() {
+  const state = await storedKeepState();
+  return {
+    policy: state.keep,
+    permission: await keepPermitted(),
+    queued: state.queue.length,
+    state: state.counters,
+  };
+}
+
+async function keepPull() {
+  const { keep, queue } = await storedKeepState();
+  const capture = (await storedCaptureState()).policy;
+  const pages = keep.enabled ? model.takeKeepDelivery(queue) : [];
+  return {
+    policy: { enabled: keep.enabled, max_bytes: keep.max_bytes, excluded_origins: capture.excluded_origins },
+    pages: pages.map(({ url, text, at_ms, private: isPrivate }) => ({ url, text, at_ms, private: isPrivate })),
+    keys: pages.map(model.keepKey),
+  };
+}
+
+async function keepAck(message) {
+  const keys = Array.isArray(message.keys) ? message.keys : [];
+  if (keys.length > model.DEFAULT_QUEUE_LIMIT || keys.some((key) => typeof key !== "string")) {
+    throw new Error("Invalid keep acknowledgement");
+  }
+  const done = new Set(keys);
+  const count = (value) => (Number.isInteger(value) && value > 0 ? Math.min(value, 1000) : 0);
+  await serializedQueueMutation(async () => {
+    const state = await storedKeepState();
+    await extensionApi.storage.local.set({
+      [KEEP_QUEUE_KEY]: state.queue.filter((page) => !done.has(model.keepKey(page))),
+      [KEEP_STATE_KEY]: { ...state.counters,
+        kept: state.counters.kept + count(message.kept),
+        unchanged: state.counters.unchanged + count(message.unchanged),
+        refused: state.counters.refused + count(message.refused),
+        last_error: null, last_at_ms: Date.now() },
+    });
+  });
+  return { acknowledged: done.size };
+}
+
+// The writer could not record the pages (a full store, for one): they stay queued.
+async function keepFail(message) {
+  await noteKeep({ failed: 1, last_error: String(message.error ?? "unknown").slice(0, 300) });
+  return { recorded: true };
+}
+
 async function handleMessage(message) {
   if (message?.type === "profile.local") {
     return localProfile();
@@ -310,6 +472,11 @@ async function handleMessage(message) {
     });
     return { acknowledged: acknowledged.size };
   }
+  if (message?.type === "keep.status") return keepStatus();
+  if (message?.type === "keep.configure") return configureKeep(message.policy);
+  if (message?.type === "keep.pull") return keepPull();
+  if (message?.type === "keep.ack") return keepAck(message);
+  if (message?.type === "keep.fail") return keepFail(message);
   throw new Error(`Unknown Graphshell extension message: ${message?.type}`);
 }
 
@@ -355,7 +522,20 @@ extensionApi.permissions.onAdded.addListener((added) => {
   }
 });
 
+function stopKeepingText() {
+  return serializedQueueMutation(async () => {
+    const state = await storedKeepState();
+    if (!state.keep.enabled) return;
+    await extensionApi.storage.local.set({
+      [KEEP_POLICY_KEY]: { ...state.keep, enabled: false },
+      [KEEP_QUEUE_KEY]: [],
+    });
+  }).catch((error) => console.error("Graphshell keep permission removal", error));
+}
+
 extensionApi.permissions.onRemoved.addListener((removed) => {
+  // Page text needs script injection and site access; losing either ends it.
+  if (removed.permissions?.includes("scripting") || removed.origins?.length) stopKeepingText();
   if (!removed.permissions?.includes("history")) {
     return;
   }
@@ -363,4 +543,12 @@ extensionApi.permissions.onRemoved.addListener((removed) => {
     const state = await storedCaptureState();
     await extensionApi.storage.local.set({ [POLICY_KEY]: { ...state.policy, enabled: false } });
   }).catch((error) => console.error("Graphshell permission removal", error));
+});
+
+// Registered at top level so a suspended worker wakes for it. Only a completed
+// load in a tab is read; the control and its access are checked on every one.
+extensionApi.tabs?.onUpdated?.addListener((tabId, change, tab) => {
+  if (change.status === "complete") {
+    keepLoadedPage({ ...tab, id: tabId }).catch((error) => console.error("Graphshell keep text", error));
+  }
 });
