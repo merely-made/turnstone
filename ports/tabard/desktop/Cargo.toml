@@ -13,7 +13,7 @@ tabard-workshop.workspace = true
 cambium = { workspace = true }
 cambium-desktop = { workspace = true }
 cambium-rootstock.workspace = true
-mesquite = { workspace = true }
+mandrake = { workspace = true }
 taproot = { workspace = true }
 layout_dom_api = { workspace = true }
 genet-presenter.workspace = true

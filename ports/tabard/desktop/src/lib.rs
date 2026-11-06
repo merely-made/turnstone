@@ -25,7 +25,7 @@ use cambium_genet_winit_host::{
     Init, Runner, WindowCommands, WindowFrame, inert_hooks, platform_caption_controls,
 };
 use layout_dom_api::{LayoutDom, LocalName, Namespace};
-use mesquite::{CaptureRecord, LaneConfig};
+use mandrake::{CaptureRecord, LaneConfig};
 use tabard_workshop::{
     ExportArtifact, GRAPH_LEAF_KEY, READER_LEAF_KEY, STYLESHEET_LEAF_KEY, StylesheetSpecimen,
     WorkshopState, WorkshopView, workshop_stylesheet, workshop_view, workshop_view_with_captions,
@@ -93,7 +93,7 @@ pub fn parse_arguments(arguments: impl IntoIterator<Item = OsString>) -> io::Res
     })
 }
 
-pub const USAGE: &str = "Tabard appearance workshop\n\nUsage: tabard-desktop [--library PATH]\n\nThe default authored library is mere/tabard/themes.json under the platform's\nlocal application data directory. --library selects a separate library file.\n\nTABARD_SCENARIO, TABARD_CAPTURE_DIR and TABARD_RECEIPT enable the headed\nMesquite acceptance lane. TABARD_WIDTH and TABARD_HEIGHT override window size.";
+pub const USAGE: &str = "Tabard appearance workshop\n\nUsage: tabard-desktop [--library PATH]\n\nThe default authored library is mere/tabard/themes.json under the platform's\nlocal application data directory. --library selects a separate library file.\n\nTABARD_SCENARIO, TABARD_CAPTURE_DIR and TABARD_RECEIPT enable the headed\nMandrake acceptance lane. TABARD_WIDTH and TABARD_HEIGHT override window size.";
 
 /// Portable initialization without native window controls.
 /// Native windows and their harness use [`initialize_with_commands`].
@@ -275,7 +275,7 @@ struct WorkshopLane {
     recovery: Rc<RefCell<recovery_control::RecoveryControl>>,
 }
 
-impl mesquite::Product for WorkshopLane {
+impl mandrake::Product for WorkshopLane {
     type State = WorkshopState;
     type Logic = Logic;
     type View = WorkshopView;
@@ -323,10 +323,10 @@ impl mesquite::Product for WorkshopLane {
         snapshot
     }
 
-    fn capture_observer(&self) -> Option<mesquite::CaptureObserver<Self>> {
+    fn capture_observer(&self) -> Option<mandrake::CaptureObserver<Self>> {
         let control = self.recovery.clone();
         let run = control.borrow().run.clone()?;
-        Some(mesquite::CaptureObserver {
+        Some(mandrake::CaptureObserver {
             run,
             observe: Box::new(move |ctx, presented| {
                 let mut fields = control.borrow().fields(ctx);
@@ -335,7 +335,7 @@ impl mesquite::Product for WorkshopLane {
                     "presentation_sequence".into(),
                     presented.sequence.to_string(),
                 );
-                Ok(mesquite::CaptureProjection {
+                Ok(mandrake::CaptureProjection {
                     fields,
                     viewport: None,
                     product: serde_json::json!({"kind": "owned-device-recovery", "injection": "after completed baseline capture", "producers": [READER_LEAF_KEY, STYLESHEET_LEAF_KEY]}),
@@ -349,11 +349,11 @@ impl mesquite::Product for WorkshopLane {
     }
 
     /// Keyboard delivery is the runner's event path; pointer clicks use
-    /// Mesquite's ordinary selector resolution and host pointer delivery.
+    /// Mandrake's ordinary selector resolution and host pointer delivery.
     fn app_step(
         &mut self,
         ctx: &mut Context<'_>,
-        _: mesquite::Checkpoints<'_>,
+        _: mandrake::Checkpoints<'_>,
         line: &str,
     ) -> Result<(), String> {
         if line == "device-destroy-owned" {
@@ -434,7 +434,7 @@ pub fn run(library: PathBuf) -> Result<(), Box<dyn std::error::Error>> {
     let receipt = config.as_ref().and_then(LaneConfig::receipt_path);
     let lane = config
         .map(|config| {
-            mesquite::Lane::from_config(
+            mandrake::Lane::from_config(
                 config,
                 WorkshopLane {
                     completion: completion.clone(),
