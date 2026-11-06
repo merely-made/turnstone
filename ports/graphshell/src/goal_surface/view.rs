@@ -7,7 +7,7 @@
 //! Cambium rendering of the goal surface. Building the view never runs a goal;
 //! only the Find button does.
 
-use super::model::{Outcome, StepView, short, verdict_label};
+use super::model::{Outcome, Passage, Segment, StepView, short, verdict_label};
 use super::{GoalRunView, GoalSurface, Start};
 use cambium::{AnyView, GenetCtx, GenetElement, TextInput, button, el, lens, text_field_typed};
 
@@ -16,8 +16,15 @@ const MAX_STARTS: usize = 24;
 
 pub type Child = Box<dyn AnyView<GoalSurface, (), GenetCtx, GenetElement>>;
 
+/// A highlight that starts a wrapped line paints as an empty box when the mark
+/// is an ordinary inline (the engine's inline layout drops the text of an
+/// inline box that begins on a continuation line). `inline-block` lays the word
+/// out as one unit, and `pre-wrap` on the snippet keeps the spaces beside it
+/// that an inline-block edge would otherwise collapse. Kept in both sheets.
+pub const HIGHLIGHT_RULES: [&str; 2] = [".goal-snippet{white-space:pre-wrap}", "mark{display:inline-block"];
+
 /// Geometry and the highlight only; the host supplies theme and typography.
-pub const CSS: &str = ".goal-surface{display:flex;flex-direction:column;gap:10px}.goal-surface label{display:flex;align-items:center;gap:8px}.goal-input{min-width:420px;min-height:28px;padding:4px;border:1px solid #6d7681;background:#fff;white-space:pre;overflow:hidden}.goal-small{min-width:60px}.goal-starts{display:flex;flex-wrap:wrap;gap:4px}.goal-surface button[aria-pressed=true]{border-color:#165bb0;font-weight:bold}.goal-surface mark{background:#ffd54a;color:#1b1b1b}.goal-surface ol{padding-left:22px}.goal-surface li{margin-bottom:8px}.goal-surface p{margin:2px 0;overflow-wrap:anywhere}.goal-meta{font-size:13px;color:#4a525a}.goal-notice{color:#9a4a00}.goal-cite{padding:6px;border:1px solid #9aa3ab;background:#fff}.goal-step-failed{color:#6b2a2a}";
+pub const CSS: &str = ".goal-surface{display:flex;flex-direction:column;gap:10px}.goal-surface label{display:flex;align-items:center;gap:8px}.goal-input{min-width:420px;min-height:28px;padding:4px;border:1px solid #6d7681;background:#fff;white-space:pre;overflow:hidden}.goal-small{min-width:60px}.goal-starts{display:flex;flex-wrap:wrap;gap:4px}.goal-surface button[aria-pressed=true]{border-color:#165bb0;font-weight:bold}.goal-snippet{white-space:pre-wrap}.goal-surface mark{display:inline-block;background:#ffd54a;color:#1b1b1b}.goal-surface ol{padding-left:22px}.goal-surface li{margin-bottom:8px}.goal-surface p{margin:2px 0;overflow-wrap:anywhere}.goal-meta{font-size:13px;color:#4a525a}.goal-notice{color:#9a4a00}.goal-cite{padding:6px;border:1px solid #9aa3ab;background:#fff}.goal-step-failed{color:#6b2a2a}";
 
 fn field(label: &'static str, id: &'static str, class: &'static str, pick: fn(&mut GoalSurface) -> &mut TextInput) -> Child {
     Box::new(el(
@@ -37,18 +44,17 @@ fn field(label: &'static str, id: &'static str, class: &'static str, pick: fn(&m
     ))
 }
 
-fn mark_line(before: &str, hit: &str, after: &str) -> Child {
-    Box::new(
-        el(
-            "p",
-            (
-                el("span", format!("…{before}")),
-                el("mark", hit.to_owned()),
-                el("span", format!("{after}…")),
-            ),
-        )
-        .attr("class", "goal-snippet"),
-    )
+/// One cited passage: plain runs as spans, each goal-term match as a mark.
+fn passage_line(passage: &Passage) -> Child {
+    // The ellipses are plain runs of their own, so a highlight's node holds
+    // exactly the matched word, even when it opens or closes the passage.
+    let run = |seg: &Segment| -> Child {
+        if seg.hit { Box::new(el("mark", seg.text.clone())) } else { Box::new(el("span", seg.text.clone())) }
+    };
+    let mut runs: Vec<Child> = vec![Box::new(el("span", "…"))];
+    runs.extend(passage.segments.iter().map(run));
+    runs.push(Box::new(el("span", "…")));
+    Box::new(el("p", runs).attr("class", "goal-snippet"))
 }
 
 fn heading(step: &StepView) -> String {
@@ -78,9 +84,9 @@ fn cited(step: &StepView) -> Option<Child> {
             .attr("class", "goal-meta"),
         ),
     ];
-    children.extend(v.snippets.iter().map(|s| mark_line(&s.before, &s.hit, &s.after)));
-    if v.more_snippets > 0 {
-        children.push(Box::new(el("p", format!("{} more passages not shown.", v.more_snippets)).attr("class", "goal-meta")));
+    children.extend(v.passages.iter().map(passage_line));
+    if v.more_passages > 0 {
+        children.push(Box::new(el("p", format!("{} more passages not shown.", v.more_passages)).attr("class", "goal-meta")));
     }
     Some(Box::new(el("li", children).attr("class", "goal-cite")))
 }

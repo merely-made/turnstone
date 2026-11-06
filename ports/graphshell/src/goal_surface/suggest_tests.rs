@@ -125,7 +125,7 @@ fn a_goal_runs_over_the_records_and_cites_exact_versions() {
             panic!("visited")
         };
         assert!(pages.text_of(&source_id(OWNER, chartulary::resource_id(B)), &v.retained_version).is_some());
-        assert!(!v.snippets.is_empty());
+        assert!(!v.passages.is_empty());
     });
 }
 

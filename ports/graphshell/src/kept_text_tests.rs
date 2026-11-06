@@ -11,7 +11,7 @@
 use super::kept_text::*;
 use crate::app::GraphshellApp;
 use crate::capture::{BrowserHistoryCapture, BrowserVisit, HistoryCapturePolicy};
-use crate::goal_surface::{GoalSurface, GraphFacts, Origin, Outcome, RetainedPages};
+use crate::goal_surface::{GoalSurface, GraphFacts, Origin, Outcome, Passage, RetainedPages};
 use crate::local_profile::{Browser, LocalProfile};
 use eidetic::{CaptureContent, Hash, PageTextStore, ResourceCaptureStore};
 use muniment::{Backend, MemoryBackend, StoreError, TransactFn, WriteOp};
@@ -457,9 +457,9 @@ fn a_goal_that_only_page_bodies_match_cites_the_kept_passage() {
         };
         assert!(visited.retained_version == Hash::of(BODY.as_bytes()).to_hex());
         let passage: String = visited
-            .snippets
+            .passages
             .iter()
-            .map(|s| format!("{}{}{}", s.before, s.hit, s.after))
+            .map(Passage::text)
             .collect();
         assert!(passage.contains("breaks down faster"), "{passage}");
     });

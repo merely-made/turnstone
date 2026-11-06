@@ -20,6 +20,35 @@ pub const CONTEXT_CHARS: usize = 48;
 /// Cited passages rendered per source; the rest are counted.
 pub const MAX_SNIPPETS: usize = 4;
 
+/// A run of a passage's text; `hit` marks a goal-term match.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Segment {
+    pub text: String,
+    pub hit: bool,
+}
+
+/// One cited passage: the retained text of an Eidetic passage selector, split
+/// into plain and matched runs so every goal term inside it is highlighted.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Passage {
+    pub segments: Vec<Segment>,
+    /// The passage, in Unicode scalar offsets of the retained text.
+    pub start: usize,
+    pub end: usize,
+}
+
+impl Passage {
+    /// The passage text with its highlights unmarked.
+    pub fn text(&self) -> String {
+        self.segments.iter().map(|s| s.text.as_str()).collect()
+    }
+
+    /// The highlighted runs, in order.
+    pub fn hits(&self) -> impl Iterator<Item = &str> {
+        self.segments.iter().filter(|s| s.hit).map(|s| s.text.as_str())
+    }
+}
+
 /// A cited passage: the retained text split around one selector's match.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Snippet {
@@ -42,8 +71,8 @@ pub struct VisitView {
     pub coverage_permille: u16,
     pub matched_terms: Vec<String>,
     pub missing_terms: Vec<String>,
-    pub snippets: Vec<Snippet>,
-    pub more_snippets: usize,
+    pub passages: Vec<Passage>,
+    pub more_passages: usize,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -175,6 +204,35 @@ pub fn snippet(text: &str, start: usize, end: usize, context: usize) -> Option<S
     })
 }
 
+/// One passage of `text`, with each of `matches` that lies inside it marked.
+/// `None` when the passage selector does not fit the text.
+pub fn passage(text: &str, selector: &PassageSelector, matches: &[PassageSelector]) -> Option<Passage> {
+    let (from, to) = byte_range(text, selector.start, selector.end)?;
+    let mut spans: Vec<(usize, usize)> = matches
+        .iter()
+        .filter(|m| m.start >= selector.start && m.end <= selector.end)
+        .filter_map(|m| byte_range(text, m.start, m.end))
+        .filter(|(a, b)| a < b)
+        .collect();
+    spans.sort_unstable();
+    let tidy = |s: &str| s.replace(['\n', '\r'], " ");
+    let (mut segments, mut at) = (Vec::new(), from);
+    for (a, b) in spans {
+        if a < at {
+            continue;
+        }
+        if a > at {
+            segments.push(Segment { text: tidy(&text[at..a]), hit: false });
+        }
+        segments.push(Segment { text: tidy(&text[a..b]), hit: true });
+        at = b;
+    }
+    if at < to {
+        segments.push(Segment { text: tidy(&text[at..to]), hit: false });
+    }
+    Some(Passage { segments, start: selector.start, end: selector.end })
+}
+
 fn visit_view(
     pages: &RetainedPages,
     source: &RecallSourceId,
@@ -184,17 +242,32 @@ fn visit_view(
     bytes: usize,
 ) -> VisitView {
     let text = pages.text_of(source, version).unwrap_or_default();
-    let selectors = assessment.map(|a| a.matches.as_slice()).unwrap_or_default();
-    // One cited passage per distinct matched word, first occurrence first, so
-    // a long source shows each goal term once rather than the same word four times.
-    let mut seen = std::collections::BTreeSet::new();
-    let snippets: Vec<Snippet> = selectors
+    let matches = assessment.map(|a| a.matches.as_slice()).unwrap_or_default();
+    // One cited snippet per passage (merged hits plus context), with every
+    // goal-term match inside it highlighted. Records without passages fall
+    // back to a padded window around each match.
+    let windows: Vec<PassageSelector> = match assessment {
+        Some(a) if !a.passages.is_empty() => a.passages.clone(),
+        _ => {
+            let total = text.chars().count();
+            matches
+                .iter()
+                .map(|m| PassageSelector {
+                    start: m.start.saturating_sub(CONTEXT_CHARS),
+                    end: (m.end + CONTEXT_CHARS).min(total),
+                })
+                .collect()
+        },
+    };
+    let passages: Vec<Passage> = windows
         .iter()
-        .filter_map(|s| snippet(text, s.start, s.end, CONTEXT_CHARS))
-        .filter(|s| seen.insert(s.hit.to_lowercase()))
+        .filter_map(|w| passage(text, w, matches))
         .take(MAX_SNIPPETS)
         .collect();
-    let more = selectors.len().saturating_sub(snippets.len());
+    let more = windows.len().saturating_sub(passages.len());
+    let truncated = assessment.is_some_and(|a| {
+        if a.passages.is_empty() { a.matches_truncated } else { a.passages_truncated }
+    });
     VisitView {
         requested_version: requested,
         retained_version: version.to_owned(),
@@ -206,8 +279,8 @@ fn visit_view(
         coverage_permille: assessment.map_or(0, |a| a.coverage_permille),
         matched_terms: assessment.map(|a| a.matched_terms.clone()).unwrap_or_default(),
         missing_terms: assessment.map(|a| a.missing_terms.clone()).unwrap_or_default(),
-        snippets,
-        more_snippets: more + usize::from(assessment.is_some_and(|a| a.matches_truncated)),
+        passages,
+        more_passages: more + usize::from(truncated),
     }
 }
 

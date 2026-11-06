@@ -27,8 +27,8 @@ mod tests;
 mod suggest_tests;
 
 pub use model::{
-    Budgets, GoalRunView, Outcome, Snippet, StepView, VisitView, failure_reason, selection_reason,
-    snippet, stop_reason, verdict_label,
+    Budgets, GoalRunView, Outcome, Passage, Segment, Snippet, StepView, VisitView, failure_reason, selection_reason,
+    passage, snippet, stop_reason, verdict_label,
 };
 pub use fleece::retained_traversal::RetainedTraversalReceipt;
 pub use facts::{ConceptFact, GraphFacts};

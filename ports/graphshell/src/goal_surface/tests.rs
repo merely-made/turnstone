@@ -113,12 +113,12 @@ fn a_run_over_the_fixture_graph_cites_sources_and_explains_its_choices() {
     assert_eq!(v.retained_version, s.pages().page(&starter.source).unwrap().current, "cites the current version");
     assert_eq!(v.text_hash, v.retained_version, "version is the text's content hash");
     assert!(v.matched_terms.contains(&"alive".to_owned()) && !v.missing_terms.is_empty());
-    let pass = v.snippets.iter().find(|p| p.hit.to_lowercase() == "alive").expect("cited passage");
-    assert!(pass.before.ends_with("keep a starter ") && pass.after.starts_with(" while"));
-    // The cited selector reproduces the highlighted text from the retained text exactly.
+    let pass = v.passages.iter().find(|p| p.hits().any(|h| h.to_lowercase() == "alive")).expect("cited passage");
+    assert!(pass.text().contains("keep a starter alive while"), "{}", pass.text());
+    // The cited selector reproduces the passage text from the retained text exactly.
     let text = s.pages().text_of(&starter.source, &v.retained_version).unwrap();
     let chars: String = text.chars().skip(pass.start).take(pass.end - pass.start).collect();
-    assert_eq!(chars, pass.hit);
+    assert_eq!(chars.replace('\n', " "), pass.text());
     // Traversal explanation: seed, then candidates chosen by label overlap.
     assert_eq!(run.steps[0].address, INDEX);
     assert!(run.steps[0].reason.contains("No pending label"), "{}", run.steps[0].reason);
@@ -242,8 +242,62 @@ fn the_view_renders_citations_highlights_and_the_walks_reasons() {
     marks(&dom, results, &mut highlighted);
     assert!(highlighted.iter().any(|m| m.eq_ignore_ascii_case("alive")), "{highlighted:?}");
     assert!(runner.state().run.is_some() && runner.state().notice.is_none());
+    // Every highlight carries its word in the DOM, and the DOM holds one
+    // snippet per passage, each with all of its hits.
+    assert!(highlighted.iter().all(|m| !m.trim().is_empty()), "empty mark in {highlighted:?}");
+    let mut lines = Vec::new();
+    snippet_nodes(&dom, results, &mut lines);
+    let run = runner.state().run.as_ref().unwrap();
+    let expected: Vec<Vec<String>> = run
+        .matches()
+        .flat_map(|s| match &s.outcome {
+            Outcome::Visited(v) => v.passages.iter().map(|p| p.hits().map(str::to_owned).collect()).collect::<Vec<_>>(),
+            _ => Vec::new(),
+        })
+        .collect();
+    assert_eq!(lines, expected, "one DOM snippet per passage");
+    assert!(expected.iter().any(|hits| hits.len() > 1), "a passage highlights several terms: {expected:?}");
+}
+
+fn snippet_nodes(dom: &ScriptedDom, node: NodeId, out: &mut Vec<Vec<String>>) {
+    if dom.attribute(node, &Namespace::from(""), &LocalName::from("class")) == Some("goal-snippet") {
+        let mut hits = Vec::new();
+        marks(dom, node, &mut hits);
+        out.push(hits);
+        return;
+    }
+    for child in dom.dom_children(node) {
+        snippet_nodes(dom, child, out);
+    }
+}
+
+#[test]
+fn passages_merge_nearby_hits_and_highlight_every_match() {
+    use eidetic::models::recall::PassageSelector as Sel;
+    let text = "Feed the starter daily.\nTo keep a starter alive, chill it. Much later, bake bread.";
+    let at = |needle: &str, n: usize| {
+        let byte = text.match_indices(needle).nth(n).unwrap().0;
+        let start = text[..byte].chars().count();
+        Sel { start, end: start + needle.chars().count() }
+    };
+    let matches = [at("starter", 0), at("keep", 0), at("starter", 1), at("alive", 0)];
+    let window = Sel { start: 0, end: text.chars().position(|c| c == ',').unwrap() };
+    let p = passage(text, &window, &matches).unwrap();
+    assert_eq!(p.hits().collect::<Vec<_>>(), ["starter", "keep", "starter", "alive"]);
+    assert_eq!(p.text(), "Feed the starter daily. To keep a starter alive");
+    // A match outside the window is not highlighted; a window off the text is refused.
+    let outside = at("bread", 0);
+    assert_eq!(passage(text, &window, &[outside]).unwrap().hits().count(), 0);
+    assert!(passage(text, &Sel { start: 5, end: 9999 }, &matches).is_none());
 }
 
 mod view_child {
     pub use crate::goal_surface::view::Child;
+}
+
+#[test]
+fn both_sheets_keep_highlights_unbroken_across_wrapped_lines() {
+    for rule in view::HIGHLIGHT_RULES {
+        assert!(view::CSS.contains(rule), "native sheet lacks {rule}");
+    }
 }

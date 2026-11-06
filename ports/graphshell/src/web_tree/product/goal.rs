@@ -25,7 +25,8 @@ pub(in crate::web_tree) const SHEET: &str = "\
     .goal-surface label { display:flex; flex-direction:row; align-items:center; gap:8px; } \
     .goal-starts { display:flex; flex-wrap:wrap; gap:4px; } \
     .goal-surface button[aria-pressed=true] { font-weight:bold; border-color:var(--tabard-color-focus, #d4e6b9); } \
-    .goal-surface mark, .goal-suggestions mark { background:var(--tabard-color-tertiary, #f0c674); color:#1b1b1b; } \
+    .goal-snippet { white-space:pre-wrap; } \
+    .goal-surface mark, .goal-suggestions mark { display:inline-block; background:var(--tabard-color-tertiary, #f0c674); color:#1b1b1b; } \
     .goal-surface ol, .goal-suggestions ol { margin:0; padding-left:22px; } \
     .goal-surface li, .goal-suggestions li { margin-bottom:8px; } \
     .goal-surface p, .goal-suggestions p, .goal-note { margin:2px 0; overflow-wrap:anywhere; } \
