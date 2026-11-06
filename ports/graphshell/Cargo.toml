@@ -56,6 +56,11 @@ coop-window = ["coop", "dep:cambium-desktop", "dep:mien", "dep:genet-scripted-do
 editable-blocks = ["web", "dep:knot-editor-host", "dep:illume", "dep:woodshedding"]
 query-views = ["web", "mere/query", "dep:cambium"]
 caller-owned-toolkit-bench = ["retained-content", "cambium-rootstock/embedding-egui", "cambium-rootstock/embedding-iced", "dep:image"]
+# Goal-directed traversal over retained page text and the graph's links: the
+# native goal surface (`goal_surface`). Lexical, model-free; reads, never fetches.
+goal-surface = ["web", "dep:cambium", "dep:fleece", "fleece/retained-traversal", "dep:eidetic-search"]
+# Finite headed native proof of the goal surface on the shared Cambium host.
+goal-surface-proof = ["goal-surface", "dep:cambium-desktop", "dep:pollster", "dep:genet-scripted-dom", "dep:layout_dom_api", "dep:image"]
 moot-resources = ["web", "webrtc-join", "dep:cambium", "dep:moot", "dep:gemot", "dep:eidetic", "dep:muniment"]
 default = ["native", "image-decode", "document-layout", "retained-content"]
 # Document-capable hosts retain Platen's document producer. Activating this
@@ -213,6 +218,7 @@ genet-presenter = { workspace = true, optional = true }
 cambium = { workspace = true, optional = true }
 moot = { package = "mere-moot", path = "../moot", features = ["resource-view", "presentation"], optional = true }
 fleece = { workspace = true, features = ["portable-clip", "page-links"], optional = true }
+eidetic-search = { workspace = true, optional = true }
 wgpu = { workspace = true, optional = true }
 pelt-core = { workspace = true, features = ["genet"], optional = true }
 inker = { workspace = true, optional = true }
@@ -322,6 +328,11 @@ zeroize = { version = "1", optional = true }
 name = "g1_receipt"
 path = "src/bin/g1_receipt.rs"
 required-features = ["native"]
+
+[[bin]]
+name = "goal-surface-host"
+path = "src/bin/goal_surface_host.rs"
+required-features = ["goal-surface-proof"]
 
 [[bin]]
 name = "moot-resource-host"

@@ -20,6 +20,8 @@ pub mod coop;
 #[cfg(any(feature = "native", feature = "alembic-workshop-private"))]
 pub mod declaration;
 
+#[cfg(feature = "goal-surface")]
+pub mod goal_surface;
 #[cfg(feature = "moot-resources")]
 pub mod moot_resources;
 #[cfg(feature = "query-views")]
