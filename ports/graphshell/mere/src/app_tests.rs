@@ -38,6 +38,7 @@ pub(super) fn app() -> (
             owner_form: Default::default(),
             owner_record: None,
             owner_waiting: false,
+            kept: kept::Panel::detached(),
         },
         answers,
         requests,

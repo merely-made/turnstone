@@ -13,6 +13,7 @@ mod browser;
 mod command;
 mod connection;
 mod coop;
+mod kept;
 mod owner_actions;
 use connection::Connection;
 #[cfg(test)]
@@ -68,6 +69,7 @@ struct App {
     owner_form: graphshell_client::ActionForm,
     owner_record: Option<String>,
     owner_waiting: bool,
+    kept: kept::Panel,
 }
 #[derive(Debug)]
 struct WorkerReply {
@@ -190,6 +192,7 @@ impl App {
         self.relayout();
     }
     fn drain(&mut self) {
+        self.kept.drain();
         if let Some(panel) = self.coop.as_mut()
             && panel.drain()
             && panel.guest
@@ -324,14 +327,17 @@ impl App {
             .find(|entry| entry.attached)
             .map(|entry| entry.id)
     }
+    /// Height the panels below the graph take, so the graph keeps the rest.
+    fn reserved(&self) -> u32 {
+        if self.kept.open {
+            // The kept-text panel replaces the co-op and record panels.
+            return 640;
+        }
+        if self.coop.is_some() { 470 } else { 220 }
+    }
     fn relayout(&mut self) {
-        self.view.lay_out(
-            &self.model,
-            self.size.0,
-            self.size
-                .1
-                .saturating_sub(if self.coop.is_some() { 470 } else { 220 }),
-        );
+        self.view
+            .lay_out(&self.model, self.size.0, self.size.1.saturating_sub(self.reserved()));
     }
     fn view_of(&self) -> MereView<'_> {
         MereView {
@@ -339,10 +345,7 @@ impl App {
             state: &self.view,
             leaf_key: LEAF,
             width: self.size.0,
-            height: self
-                .size
-                .1
-                .saturating_sub(if self.coop.is_some() { 470 } else { 220 }),
+            height: self.size.1.saturating_sub(self.reserved()),
         }
     }
 }
@@ -361,10 +364,43 @@ fn root(app: &App) -> Child {
             )) as Child
         })
         .collect();
+    let toggle: Child = Box::new(
+        cambium::button(
+            if app.kept.open {
+                "Back to the graph"
+            } else {
+                "Find in what I kept"
+            },
+            |app: &mut App, _| {
+                app.kept.open = !app.kept.open;
+                if app.kept.open && app.kept.keeping.is_none() {
+                    app.kept.send(kept::Command::Refresh);
+                }
+                app.relayout();
+            },
+        )
+        .attr("id", "kept-open"),
+    );
+    if app.kept.open {
+        return Box::new(el(
+            "main",
+            (
+                el("h1", "Graphshell"),
+                toggle,
+                mere_view::mere_view(
+                    app.view_of(),
+                    |app: &mut App, event| app.view.apply(event),
+                    |app: &mut App, request| app.request(request),
+                ),
+                kept::view(app),
+            ),
+        ));
+    }
     Box::new(el(
         "main",
         (
             el("h1", "Graphshell"),
+            toggle,
             mere_view::mere_view(
                 app.view_of(),
                 |app: &mut App, event| app.view.apply(event),
@@ -500,6 +536,41 @@ impl Product for LaneProduct {
                     .unwrap_or_default(),
             )
             .with_field("notice", app.model.notice.clone().unwrap_or_default())
+            .with_field("kept-open", app.kept.open.to_string())
+            .with_field("kept-state", app.kept.state_text())
+            .with_field("kept-pages", app.kept.kept_pages.to_string())
+            .with_field("kept-notice", app.kept.notice.clone())
+            .with_field("kept-busy", app.kept.busy.to_string())
+            .with_field(
+                "kept-found",
+                app.kept
+                    .surface
+                    .run
+                    .as_ref()
+                    .map(|run| {
+                        run.steps
+                            .iter()
+                            .filter_map(|step| match &step.outcome {
+                                graphshell::goal_surface::Outcome::Visited(v) => Some(format!(
+                                    "{} [{}]",
+                                    step.address,
+                                    graphshell::goal_surface::verdict_label(v.verdict)
+                                )),
+                                _ => None,
+                            })
+                            .collect::<Vec<_>>()
+                            .join("; ")
+                    })
+                    .unwrap_or_default(),
+            )
+            .with_field(
+                "kept-matched",
+                app.kept
+                    .surface
+                    .run
+                    .as_ref()
+                    .map_or(String::new(), |run| run.matched.to_string()),
+            )
             .with_field(
                 "record-data",
                 app.selected
@@ -565,6 +636,18 @@ impl Product for LaneProduct {
             self.awaiting = serde_json::from_str(json).map_err(|e| e.to_string())?;
             return Ok(());
         }
+        // State-level input for the kept-text fields (as the goal surface's
+        // headed proof does); no physical keyboard is qualified.
+        if let Some(text) = line.strip_prefix("type kept-address ") {
+            _ctx.runner
+                .update(|app| app.kept.address = cambium::TextInput::new(text));
+            return Ok(());
+        }
+        if let Some(text) = line.strip_prefix("type kept-goal ") {
+            _ctx.runner
+                .update(|app| app.kept.surface.goal = cambium::TextInput::new(text));
+            return Ok(());
+        }
         Err(format!("unknown step: {line}"))
     }
 }
@@ -612,7 +695,7 @@ fn main() {
                 cambium::GRAPH_CANVAS_SWATCH_CSS,
                 mere_view::MERE_VIEW_CSS,
                 CSS
-            ),
+            ) + "\n" + graphshell::goal_surface::CSS + "\n" + kept::CSS,
         };
         let lane = if std::env::var_os("GRAPHSHELL_MERE_JSON_RECEIPT").is_some() {
             let scenario = taproot::Scenario::parse(
@@ -690,8 +773,16 @@ fn main() {
             } else {
                 spawn_worker(domain.clone(), wake.clone())
             };
+            let (kept_sender, kept_receiver) = if visit.is_some() {
+                let (sender, _) = mpsc::channel();
+                let (_, receiver) = mpsc::channel();
+                (sender, receiver)
+            } else {
+                kept::spawn(domain.clone(), wake.clone())
+            };
             let panel = coop::Panel::new(domain, visit, wake.clone());
             let app = App {
+                kept: kept::Panel::new(kept_sender, kept_receiver),
                 coop: Some(panel),
                 model: MereViewModel {
                     title: "Connecting to resident".into(),
@@ -726,10 +817,12 @@ fn main() {
                 state: app,
                 logic: root as Logic,
                 sheet: format!(
-                    "{}\n{}\n{}",
+                    "{}\n{}\n{}\n{}\n{}",
                     cambium::GRAPH_CANVAS_SWATCH_CSS,
                     mere_view::MERE_VIEW_CSS,
-                    CSS
+                    CSS,
+                    graphshell::goal_surface::CSS,
+                    kept::CSS
                 ),
                 fonts: Vec::new(),
                 images: Vec::new(),

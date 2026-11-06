@@ -18,7 +18,7 @@ path = "src/main.rs"
 [dependencies]
 ostiary = { workspace = true, features = ["native"] }
 castellan-client = { workspace = true, features = ["client"] }
-graphshell = { path = "..", default-features = false, features = ["coop"] }
+graphshell = { path = "..", default-features = false, features = ["coop", "goal-surface"] }
 serde_json.workspace = true
 url = "2"
 uuid.workspace = true
@@ -37,6 +37,9 @@ mere-overmap = { workspace = true, features = ["view"] }
 mere-view.workspace = true
 mandrake.workspace = true
 pandect.workspace = true
+# The blocking fetch handle only (no actor, smolweb or cookies): one address, on request.
+fetch = { package = "mere-fetch", path = "../../../crates/system/fetch", version = "0.0.1", default-features = false }
+fleece = { workspace = true, features = ["article"] }
 sceno.workspace = true
 scenotime.workspace = true
 sprigging.workspace = true

@@ -33,6 +33,8 @@ pub mod fixture;
 #[cfg(test)]
 mod tests;
 #[cfg(test)]
+mod door_tests;
+#[cfg(test)]
 mod suggest_tests;
 
 pub use model::{
