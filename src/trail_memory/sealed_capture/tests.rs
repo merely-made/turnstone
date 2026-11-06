@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 use super::*;
+use crate::source_capture::SourceIdentity;
 use crate::trail_memory::sealed_memory_dir;
 use eidetic::Backend as _;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
@@ -75,37 +76,6 @@ impl PayloadSealer for EpochFenceSealer {
         Ok(clear)
     }
 }
-#[test]
-fn sealed_namespace_refuses_existing_unsealed_content_without_replacement() {
-    let root = tempfile::tempdir().unwrap();
-    let mut store = muniment::FjallStore::open(root.path()).unwrap();
-    let value = eidetic::models::OpaqueBlob(b"legacy-collision-canary".to_vec());
-    let id = pollster::block_on(eidetic::save_typed(
-        &mut store,
-        &value,
-        Vec::new(),
-        eidetic::PrivacyClass::LocalOnly,
-        eidetic::ProvenanceRecord {
-            origin: eidetic::ProvenanceOrigin::Generated,
-            upstream: Vec::new(),
-            tooling: None,
-            generated_at: eidetic::Timestamp(0),
-        },
-        eidetic::TrustEnvelope {
-            level: eidetic::TrustLevel::SelfAsserted,
-            signatures: Vec::new(),
-            moderation_state: eidetic::ModerationState::Unreviewed,
-        },
-        eidetic::Timestamp(0),
-    ))
-    .unwrap();
-    let key = format!("blob:{}", id.0.to_hex());
-    let before = pollster::block_on(store.get(&key)).unwrap();
-    let sealer = TestSealer(AtomicBool::new(true));
-    assert!(save(&mut store, &sealer, &value, 1).is_err());
-    assert_eq!(pollster::block_on(store.get(&key)).unwrap(), before);
-}
-
 #[test]
 fn private_capture_reopens_and_keeps_bytes_and_receipt_sealed() {
     let root = tempfile::tempdir().unwrap();

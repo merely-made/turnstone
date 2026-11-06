@@ -37,7 +37,7 @@
 //! eidetic's concrete types stop at this boundary: the app sees `RecallHit`s,
 //! the same rule the bin port follows with `DeletedNode`.
 
-use std::collections::{BTreeMap, HashMap, HashSet};
+use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::mpsc::Receiver;
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
@@ -45,11 +45,12 @@ use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 use armillary::{ActorHandle, Emitter, Wake, spawn_named};
 use eidetic::Backend as _;
 use eidetic::{
-    BrowsingMemory, BrowsingTrace, FrecencyConfig, PageFingerprint, PageRef, PageTable,
-    PageTextStore, PageTexts, TraceEvent, TraceTransition, bootstrap_browsing_schema,
-    frecency_by_page, page_table,
+    BrowsingMemory, BrowsingTrace, PageRef, PageTextStore, PageTexts, TraceEvent, TraceTransition,
+    bootstrap_browsing_schema,
 };
-use eidetic_search::{CandidateIndex, FusedHit, IndexConfig, Ranking, TrailIndex, fuse_many};
+use eidetic_search::recall_mint::{
+    MintObserver, MintPhase, MintedRecall, canonical_sources,
+};
 use muniment::FjallStore;
 
 use crate::action::{RecallHit, StoredSourceDocument, Update};
@@ -79,34 +80,7 @@ mod worker_research_source;
 /// is a meaningful corridor slice.
 const SEGMENT_SIZE: usize = 32;
 
-/// Standard reciprocal-rank damping. The ranking-relevant ratio is exposed
-/// instead: frecency, relative to BM25.
-const RRF_K: f64 = 60.0;
-
-/// Pull a wider head from each input before reducing to the omnibar row limit.
-const FUSION_CANDIDATE_MULTIPLIER: usize = 4;
-
-/// Frecency's fusion weight relative to BM25, on by default. Above 1.0 so a
-/// typed prefix the user has been to before outranks a page BM25 merely likes
-/// the title of — the behavioural lane's whole point (wiring plan W6b).
-const DEFAULT_FRECENCY_WEIGHT: f32 = 2.0;
-
-/// Live application settings consumed by the derived recall index.
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct RecallConfig {
-    frecency_weight: f32,
-}
-
-/// One application-owned title available to the derived recall index.
-///
-/// Graph and recycle-bin state remain authoritative for these labels. The
-/// trail actor uses them to fill titleless cloned [`PageRef`]s while minting an
-/// index; the stored [`BrowsingTrace`] is never mutated.
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub struct RecallSource {
-    url: String,
-    title: String,
-}
+pub use eidetic_search::recall_mint::{RecallConfig, RecallSource};
 
 /// Commands the trail-memory actor takes (the shell sends these; ordering on
 /// the one channel is the consistency story, the bin actor's exact shape).
@@ -276,22 +250,12 @@ pub struct MintReceipt {
     pub total: Duration,
 }
 
-/// One disposable projection over the authoritative trace corpus.
+/// One disposable projection over the authoritative trace corpus: Eidetic's
+/// minted recall index plus the cost receipt of minting it.
 struct RecallIndex {
-    lexical: TrailIndex,
-    /// The behavioural lane. Folded keyed by page fingerprint, so visits split
-    /// across a page's addresses sum into one score, then re-keyed to each
-    /// record's address — the string the other two lanes rank by. Folded at
-    /// mint against one reference `now`, so every query this index answers
-    /// decays from the same instant.
-    frecency: BTreeMap<String, f64>,
-    /// Which records a typed query could mean, by token prefix over each
-    /// record's addresses and title. The behavioural lane's narrowing step.
-    candidates: CandidateIndex<String>,
-    /// The same scores as `frecency`, by the candidate index's record id, so a
-    /// wide candidate set is scored by index rather than by key lookup.
-    frecency_by_id: Vec<f64>,
-    documents: BTreeMap<String, RecallHit>,
+    minted: MintedRecall,
+    /// Emitted at mint; kept for the tests and harnesses that read it back.
+    #[cfg(test)]
     receipt: MintReceipt,
 }
 
@@ -341,23 +305,14 @@ mod research_owner_tests;
 #[path = "trail_memory/m5_inspection.rs"]
 mod m5_inspection;
 
-#[path = "trail_memory/impl_default_for_recall_config.rs"]
-mod impl_default_for_recall_config;
 #[path = "trail_memory/memory_dir.rs"]
 mod memory_dir;
-#[path = "trail_memory/recall_config_with_frecency_weight.rs"]
-mod recall_config_with_frecency_weight;
-#[path = "trail_memory/recall_source_new.rs"]
-mod recall_source_new;
 #[path = "trail_memory/source_custody_snapshot.rs"]
 mod source_custody_snapshot;
 pub use memory_dir::memory_dir;
 #[path = "trail_memory/sealed_memory_dir.rs"]
 mod sealed_memory_dir;
 use sealed_memory_dir::sealed_memory_dir;
-#[path = "trail_memory/index_dir.rs"]
-mod index_dir;
-use index_dir::index_dir;
 #[path = "trail_memory/navigation.rs"]
 mod navigation;
 pub use navigation::navigation;
@@ -370,15 +325,6 @@ use open_memory::open_memory;
 #[path = "trail_memory/flush.rs"]
 mod flush;
 use flush::flush;
-#[path = "trail_memory/canonical_sources.rs"]
-mod canonical_sources;
-use canonical_sources::canonical_sources;
-#[path = "trail_memory/fill_title.rs"]
-mod fill_title;
-use fill_title::fill_title;
-#[path = "trail_memory/traces_with_titles.rs"]
-mod traces_with_titles;
-use traces_with_titles::traces_with_titles;
 #[path = "trail_memory/keep_page_text.rs"]
 mod keep_page_text;
 use keep_page_text::keep_page_text;
@@ -387,30 +333,17 @@ use keep_page_text::keep_page_text;
 mod capture_source_document;
 #[cfg(test)]
 use capture_source_document::capture_source_document;
-#[path = "trail_memory/capture_source_document_in.rs"]
-mod capture_source_document_in;
-pub(crate) use capture_source_document_in::capture_source_document_in;
-#[path = "trail_memory/preflight_source_artifact.rs"]
-mod preflight_source_artifact;
-use preflight_source_artifact::preflight_source_artifact;
-#[path = "trail_memory/verify_source_document.rs"]
-mod verify_source_document;
-pub(crate) use verify_source_document::{verify_source_document, verify_source_document_typed};
+#[path = "trail_memory/capture_core.rs"]
+mod capture_core;
+#[cfg(test)]
+#[path = "trail_memory/capture_golden_tests.rs"]
+mod capture_golden_tests;
+pub(crate) use capture_core::{capture_source_document_in, verify_source_document_typed};
+#[cfg(test)]
+pub(crate) use capture_core::verify_source_document;
 #[path = "trail_memory/stored_page_texts.rs"]
 mod stored_page_texts;
 use stored_page_texts::stored_page_texts;
-#[path = "trail_memory/page_table_of.rs"]
-mod page_table_of;
-use page_table_of::page_table_of;
-#[path = "trail_memory/recall_documents.rs"]
-mod recall_documents;
-use recall_documents::recall_documents;
-#[path = "trail_memory/page_corpus.rs"]
-mod page_corpus;
-use page_corpus::page_corpus;
-#[path = "trail_memory/corpus_size.rs"]
-mod corpus_size;
-use corpus_size::corpus_size;
 #[path = "trail_memory/mint_receipt_emit.rs"]
 mod mint_receipt_emit;
 #[path = "trail_memory/recall.rs"]

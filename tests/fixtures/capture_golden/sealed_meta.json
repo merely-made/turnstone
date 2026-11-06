@@ -1,0 +1,27 @@
+{
+  "document": {
+    "acquired_at_ms": 1700000000000,
+    "body": "<html><head><title>Synthetic golden page</title></head><body><main><p>Synthetic capture fixture alpha beta gamma.</p></main></body></html>",
+    "content_type": "text/html; charset=utf-8",
+    "effective_url": "https://fixture.example/golden"
+  },
+  "request": {
+    "graph": "00000000-0000-0000-0000-000000003001",
+    "id": "00000000-0000-0000-0000-000000001001",
+    "keep": true,
+    "node": "00000000-0000-0000-0000-000000004001",
+    "session": "00000000-0000-0000-0000-000000002001",
+    "source": {
+      "acquired_at_ms": 1700000000000,
+      "body_hash": "blake3:6edef87d23139f14146222416d2301557713883564da06df63a0dc3b392fe9b9",
+      "content_type": "text/html; charset=utf-8",
+      "effective_url": "https://fixture.example/golden",
+      "hash": "blake3:6edef87d23139f14146222416d2301557713883564da06df63a0dc3b392fe9b9"
+    },
+    "url": "https://fixture.example/golden"
+  },
+  "stored": {
+    "annotation_manifest": "sealed-v1:blake3:33583adc735bcfa51e75c4b9650814889e2a736968c26a2f544cf7d978547ed0",
+    "raw_manifest": "blake3:6edef87d23139f14146222416d2301557713883564da06df63a0dc3b392fe9b9"
+  }
+}

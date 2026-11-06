@@ -13,7 +13,12 @@ pub(super) fn recall(
 ) -> Result<Vec<RecallHit>, String> {
     if *stale || index.is_none() {
         flush(store, memory);
-        let traces = traces_with_titles(memory, request.sources);
+        let titles: HashMap<&str, &str> = request
+            .sources
+            .iter()
+            .map(|source| (source.url.as_str(), source.title.as_str()))
+            .collect();
+        let traces = memory.traces_with_titles(&titles);
         let texts = stored_page_texts(store);
         *index = Some(RecallIndex::mint(dir, &traces, &texts)?);
         *stale = false;

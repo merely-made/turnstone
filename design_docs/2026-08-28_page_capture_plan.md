@@ -560,3 +560,17 @@ Recorded here so they are not lost, and because each is independently closable:
   captures and independent hash/facet/selector checks prove A1 search/read and
   exact fresh reopen after the real origin exits and its TCP port refuses
   connections; A2 does not replace A1. Hosted P2, P4 and P5 remain separate.
+
+- **2026-11-06, capture core switched to Eidetic (memory-gates plan S6, D17):**
+  sealed and unsealed capture, verification, preflight, structured deposits,
+  recall minting and sealed results now run in `eidetic::capture`,
+  `eidetic_search::recall_mint` and `eidetic_search::records::sealed` (Eidetic
+  `98f2c69`). `trail_memory/capture_core.rs` holds Turnstone's side: the
+  `SourceAnnotator` over `fleece::FleeceAnnotationRecord`, the `From`
+  conversions to Eidetic's neutral capture types, and the sync entry points
+  the actor calls. Stored formats are unchanged. Eidetic's golden fixtures
+  (`tests/fixtures/capture_golden/`, copied from its rev `98f2c69`) are held to
+  Turnstone's real Fleece annotator by `capture_golden_tests`, so the
+  annotation is byte-identical too. `saved_sources`, the `*_receipts` codecs
+  and the `emit_*_recovery` publishers stay here until Eidetic exposes
+  `BoundedRead::list_inventory` and a sealed content reader.

@@ -123,11 +123,6 @@ fn two_urls_for_one_page_recall_once_with_one_frecency() {
         index.receipt.page_table > Duration::ZERO,
         "the fold is timed"
     );
-    assert_eq!(
-        index.lexical.doc_count().unwrap(),
-        1,
-        "one index document per page, not per event"
-    );
 
     let hits = index
         .search("gazette morning", 5, RecallConfig::default())
@@ -139,8 +134,11 @@ fn two_urls_for_one_page_recall_once_with_one_frecency() {
     );
 
     // One combined score, not three split ones — and it is the sum.
-    assert_eq!(index.frecency.len(), 1);
-    let combined = index.frecency[addresses[0]];
+    assert!(
+        index.minted.frecency_score(addresses[1]).is_none(),
+        "scored under the page's latest address only"
+    );
+    let combined = index.minted.frecency_score(addresses[0]).unwrap();
     let single = RecallIndex::mint(
         &temp_dir(),
         &traces[..1]
@@ -150,7 +148,9 @@ fn two_urls_for_one_page_recall_once_with_one_frecency() {
         &PageTexts::default(),
     )
     .unwrap()
-    .frecency[addresses[0]];
+    .minted
+    .frecency_score(addresses[0])
+    .unwrap();
     assert!(
         (combined - 3.0 * single).abs() < single * 0.01,
         "three typed visits to one page sum: {combined} vs 3 x {single}"

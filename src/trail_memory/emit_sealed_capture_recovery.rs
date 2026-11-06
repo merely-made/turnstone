@@ -35,7 +35,7 @@ pub(super) fn emit_sealed_capture_recovery(
                 }
                 if receipt.saved {
                     if let Some(stored) = receipt.stored {
-                        if let Err(error) = sealed_capture::verify_typed(
+                        if let Err(error) = sealed_capture::verify(
                             &mut bounded,
                             custody.sealer.as_ref(),
                             &receipt.request,

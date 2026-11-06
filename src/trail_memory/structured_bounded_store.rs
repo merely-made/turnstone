@@ -1,6 +1,7 @@
 // Copyright 2026 Mark Alan Boykin
 // SPDX-License-Identifier: MPL-2.0
 //! Structured reads share one operation-wide storage ledger.
+use eidetic::capture::BoundedRead;
 use muniment::{Backend, FjallStore, StoreError, WriteOp};
 
 pub(super) struct BoundedStore<'a> {
@@ -10,7 +11,7 @@ pub(super) struct BoundedStore<'a> {
     pub sync: &'a (dyn Fn(&FjallStore) -> Result<(), StoreError> + Sync),
 }
 // Recovery inventories need their domain limits before storage copies keys.
-pub(super) trait StructuredStore: Backend {
+pub(super) trait StructuredStore: Backend + Sync {
     fn get_limited(&self, key: &str, max_value_bytes: usize)
     -> Result<Option<Vec<u8>>, StoreError>;
     fn list_inventory(
@@ -19,6 +20,45 @@ pub(super) trait StructuredStore: Backend {
         max_items: usize,
         max_key_bytes: usize,
     ) -> Result<Vec<String>, StoreError>;
+}
+
+/// `eidetic::capture`'s view of a [`StructuredStore`]: the same ledger-charged
+/// reads, handed over as [`BoundedRead`]. `BoundedStore`, and the raw
+/// `FjallStore` the receipt fixtures use (a foreign trait cannot be
+/// implemented on it directly), reach Eidetic through this.
+pub(super) struct Bounded<'a, S: ?Sized>(pub &'a S);
+
+#[async_trait::async_trait]
+impl<S: StructuredStore + Sync + ?Sized> Backend for Bounded<'_, S> {
+    async fn get(&self, key: &str) -> Result<Option<Vec<u8>>, StoreError> {
+        Backend::get(self.0, key).await
+    }
+    async fn put(&self, key: &str, value: &[u8]) -> Result<(), StoreError> {
+        Backend::put(self.0, key, value).await
+    }
+    async fn delete(&self, key: &str) -> Result<(), StoreError> {
+        Backend::delete(self.0, key).await
+    }
+    async fn list(&self, prefix: &str) -> Result<Vec<String>, StoreError> {
+        Backend::list(self.0, prefix).await
+    }
+    async fn scan(&self, start: &str, end: &str) -> Result<Vec<String>, StoreError> {
+        Backend::scan(self.0, start, end).await
+    }
+    async fn apply(&self, ops: &[WriteOp]) -> Result<(), StoreError> {
+        Backend::apply(self.0, ops).await
+    }
+}
+
+#[async_trait::async_trait(?Send)]
+impl<S: StructuredStore + Sync + ?Sized> BoundedRead for Bounded<'_, S> {
+    async fn get_limited(
+        &self,
+        key: &str,
+        max_value_bytes: usize,
+    ) -> Result<Option<Vec<u8>>, StoreError> {
+        StructuredStore::get_limited(self.0, key, max_value_bytes)
+    }
 }
 
 impl StructuredStore for BoundedStore<'_> {

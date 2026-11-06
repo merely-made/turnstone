@@ -13,7 +13,8 @@
 
 use super::*;
 
-use std::collections::BTreeSet;
+use eidetic::{FrecencyConfig, PageFingerprint, PageTable, frecency_by_page, page_table};
+use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::path::Path;
 use std::time::Instant;
@@ -25,7 +26,7 @@ struct EvaluationCorpus {
     /// The page bodies the session kept (W6c); empty for a corpus captured
     /// before text was stored.
     texts: PageTexts,
-    documents: BTreeMap<String, RecallHit>,
+    documents: usize,
     trace_count: usize,
     traversal_count: usize,
     titled_documents: usize,
@@ -99,10 +100,19 @@ fn load_evaluation_corpus(source: &Path) -> Result<EvaluationCorpus, String> {
         .map_err(|error| format!("load copied browsing memory: {error}"))?;
     let trace_count = memory.traces().count();
     let traversal_count = memory.traces().map(|trace| trace.events.len()).sum();
-    let traces = traces_with_titles(&memory, &sources);
+    let titles: HashMap<&str, &str> = sources
+        .iter()
+        .map(|source| (source.url.as_str(), source.title.as_str()))
+        .collect();
+    let traces = memory.traces_with_titles(&titles);
     let texts = stored_page_texts(&store);
-    let documents = recall_documents(&page_table_of(&traces, &texts));
-    let titled_documents = documents.values().filter(|hit| hit.title.is_some()).count();
+    let table = page_table(&traces, texts.lookup());
+    let documents = table.records.len();
+    let titled_documents = table
+        .records
+        .values()
+        .filter(|record| record.title.is_some())
+        .count();
     let canonical = serde_json::to_vec(&traces)
         .map_err(|error| format!("serialize corpus receipt: {error}"))?;
     let digest = blake3::hash(&canonical).to_hex().to_string();
@@ -137,12 +147,13 @@ fn captured_trail_frecency_receipt() {
     let corpus = load_evaluation_corpus(&session).unwrap();
     let index_root = tempfile::tempdir().expect("frecency receipt index root");
     let index = RecallIndex::mint(index_root.path(), &corpus.traces, &corpus.texts).unwrap();
-    let behavioural = eidetic::browsing::frecency::ranked(&index.frecency);
+    let frecency = index.frecency_scores(&corpus.traces, &corpus.texts);
+    let behavioural = eidetic::browsing::frecency::ranked(&frecency);
     println!(
         "corpus digest={} source=captured pages={} scored_pages={} frecency_us={}",
         corpus.digest,
         index.receipt.pages,
-        index.frecency.values().filter(|s| **s > 0.0).count(),
+        frecency.values().filter(|s| **s > 0.0).count(),
         index.receipt.frecency.as_micros(),
     );
 
@@ -198,7 +209,7 @@ fn captured_trail_mint_receipt() {
         corpus.digest,
         corpus.trace_count,
         corpus.traversal_count,
-        corpus.documents.len(),
+        corpus.documents,
         corpus.titled_documents,
     );
     let index_root = tempfile::tempdir().expect("mint receipt index root");
@@ -401,7 +412,7 @@ fn run_firefox_history_receipt() -> Result<(), String> {
     println!("  mint {:?}", index.receipt);
 
     // (c) our behavioural fold against Firefox's own frecency.
-    let table = page_table_of(&stored, &texts);
+    let table = page_table(&stored, texts.lookup());
     let their_scores = firefox_by_page(&table, &firefox);
     let now = now_ms();
     let no_bonus = FrecencyConfig {

@@ -18,6 +18,8 @@ Current-source follow-ups for restored reader recovery and clipped research text
 are tracked in [the recovery plan](2026-11-01_retained_reader_recovery_plan.md).
 Later source tests do not extend the original native qualification.
 
+Capture core (2026-11-06): sealed and unsealed source capture, verification, recall minting and sealed structured results run in Eidetic (`eidetic::capture`, `eidetic_search::recall_mint`); Turnstone keeps the Fleece annotator and the receipt, saved-source and recovery files. Detail in [the page capture plan](2026-08-28_page_capture_plan.md).
+
 Rust policy (2026-10-13): working toolchain 1.99.1 and shared MSRV 1.97.1, qualified separately. Canonical policy: `mere/design_docs/2026-08-12_family_composition_thesis_brief.md`, section "Shared Rust toolchain and minimum version".
 
 Murm source adoption (2026-10-13) is tracked in
