@@ -218,7 +218,7 @@ cue-netrender = { workspace = true, optional = true }
 knot-editor-host = { workspace = true, optional = true }
 illume = { workspace = true, optional = true }
 # Canonical sibling owner; no dependency on Woodshed application or native host.
-woodshedding = { git = "https://github.com/merely-made/woodshed.git", rev = "a0ae58f97ca962b29fcd6ae08c9e6aec35d74c61", optional = true }
+woodshedding = { git = "https://github.com/merely-made/woodshed.git", branch = "main", optional = true }
 genet-presenter = { workspace = true, optional = true }
 cambium = { workspace = true, optional = true }
 moot = { package = "mere-moot", path = "../moot", features = ["resource-view", "presentation"], optional = true }
