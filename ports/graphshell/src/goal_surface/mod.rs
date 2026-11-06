@@ -26,6 +26,7 @@ mod view_model;
 #[cfg(all(test, feature = "goal-surface-model"))]
 mod model_tests;
 mod provider;
+pub mod door;
 pub mod suggest;
 pub(crate) mod view;
 pub mod fixture;
@@ -40,7 +41,7 @@ pub use model::{
 };
 pub use fleece::retained_traversal::RetainedTraversalReceipt;
 pub use facts::{ConceptFact, GraphFacts};
-pub use provider::{Origin, PagesProvider, RetainedPage, RetainedPages, record_text, resource_of, source_id};
+pub use provider::{LoadBounds, Origin, PagesProvider, RetainedPage, RetainedPages, record_text, resource_of, source_id};
 pub use model_view::score;
 pub use view::{CSS, view};
 

@@ -72,8 +72,32 @@ pub struct RetainedPages {
     links: BTreeMap<Uuid, Vec<(Uuid, Option<String>)>>,
     /// Addresses and titles of link targets nothing is retained for.
     unretained: BTreeMap<Uuid, (String, Option<String>)>,
-    /// Page versions left out because the load byte cap was reached.
+    /// Page versions left out because the load byte or version cap was reached.
     pub skipped_versions: usize,
+    /// Retained pages left out: past the page cap, or whose current text did
+    /// not fit the byte cap.
+    pub skipped_pages: usize,
+}
+
+/// What a bounded load may read.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct LoadBounds {
+    /// Pages to read, most recently stored first.
+    pub max_pages: usize,
+    /// Bytes of text across every page and version.
+    pub max_bytes: usize,
+    /// Versions per page, the current one first.
+    pub max_versions: usize,
+}
+
+impl LoadBounds {
+    pub const fn bytes(max_bytes: usize) -> Self {
+        Self {
+            max_pages: usize::MAX,
+            max_bytes,
+            max_versions: usize::MAX,
+        }
+    }
 }
 
 /// The source identity of a retained resource under `owner`.
@@ -120,6 +144,19 @@ impl RetainedPages {
         max_bytes: usize,
         records: bool,
     ) -> Result<Self, String> {
+        Self::load_bounded(owner, backend, facts, LoadBounds::bytes(max_bytes), records).await
+    }
+
+    /// [`Self::load_facts`] with page and version caps too. Pages are read
+    /// most recently stored first, so a cap keeps what the person kept last.
+    pub async fn load_bounded<B: muniment::Backend + Clone>(
+        owner: &str,
+        backend: &B,
+        facts: &GraphFacts,
+        bounds: LoadBounds,
+        records: bool,
+    ) -> Result<Self, String> {
+        let max_bytes = bounds.max_bytes;
         let text = PageTextStore::new(backend.clone());
         let captures = ResourceCaptureStore::new(backend);
         let mut out = Self {
@@ -127,7 +164,17 @@ impl RetainedPages {
             ..Self::default()
         };
         let mut budget = max_bytes;
-        for entry in text.references().await.map_err(|e| e.to_string())? {
+        let mut entries = text.references().await.map_err(|e| e.to_string())?;
+        entries.sort_by(|a, b| {
+            b.stored_at_ms
+                .cmp(&a.stored_at_ms)
+                .then_with(|| a.url.cmp(&b.url))
+        });
+        let total = entries.len();
+        for entry in entries {
+            if out.pages.len() >= bounds.max_pages {
+                break;
+            }
             let resource = chartulary::resource_id(&entry.url);
             let mut versions = BTreeMap::new();
             // Current first so a tight cap keeps what the page says now.
@@ -143,6 +190,11 @@ impl RetainedPages {
                         wanted.push(hex);
                     }
                 }
+            }
+            let keep = bounds.max_versions.max(1);
+            if wanted.len() > keep {
+                out.skipped_versions += wanted.len() - keep;
+                wanted.truncate(keep);
             }
             for blob in wanted {
                 let at = PageTextRef {
@@ -174,6 +226,7 @@ impl RetainedPages {
                 },
             );
         }
+        out.skipped_pages = total - out.pages.len();
         if records {
             for (resource, (url, title)) in facts.records() {
                 if out.pages.contains_key(resource) {
@@ -233,6 +286,38 @@ impl RetainedPages {
             .collect();
         all.sort_by(|a, b| a.1.url.cmp(&b.1.url));
         all
+    }
+
+    /// Rebuild a snapshot from parts a peer sent; see `door::from_wire`.
+    pub(super) fn from_parts(
+        owner: &str,
+        pages: BTreeMap<Uuid, RetainedPage>,
+        links: BTreeMap<Uuid, Vec<(Uuid, Option<String>)>>,
+        unretained: BTreeMap<Uuid, (String, Option<String>)>,
+        skipped_versions: usize,
+        skipped_pages: usize,
+    ) -> Self {
+        Self {
+            owner: owner.to_owned(),
+            pages,
+            links,
+            unretained,
+            skipped_versions,
+            skipped_pages,
+        }
+    }
+
+    /// Every retained link as (from, to, label), in stable order.
+    pub(super) fn link_rows(&self) -> Vec<(Uuid, Uuid, Option<String>)> {
+        self.links
+            .iter()
+            .flat_map(|(from, to)| to.iter().map(|(to, label)| (*from, *to, label.clone())))
+            .collect()
+    }
+
+    /// The address and title of a link target nothing is retained for.
+    pub(super) fn unretained_of(&self, resource: Uuid) -> Option<(String, Option<String>)> {
+        self.unretained.get(&resource).cloned()
     }
 
     pub fn owner(&self) -> &str {

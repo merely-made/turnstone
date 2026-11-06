@@ -21,7 +21,7 @@ use std::collections::BTreeSet;
 
 use eidetic::PageTextStore;
 use muniment::Backend;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use url::Url;
 
 /// The most text one page may keep, whatever the extension asked for.
@@ -43,7 +43,7 @@ pub struct KeepTextPolicy {
 }
 
 /// One loaded page's extracted text.
-#[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct KeptPage {
     pub url: String,
@@ -82,6 +82,48 @@ pub struct KeptSummary {
     pub unchanged: usize,
     pub refused: usize,
     pub error: Option<String>,
+}
+
+/// Keeping page text natively: the resident's two owner-checked intents on a
+/// mere's attached graph session. The store belongs to the reservoir, so the
+/// native capture never opens it; it sends the text it extracted and the
+/// resident writes it through [`record_kept_pages`] if the mere's own setting
+/// is on and its custody allows (`pandect::RetainedText`).
+pub const KEEP_PAGES_INTENT: &str = "retained.keep/v1";
+/// Change the mere's "Keep page text" setting. Off until a person turns it on.
+pub const KEEP_SETTING_INTENT: &str = "retained.setting/v1";
+
+/// The payload of [`KEEP_PAGES_INTENT`]. The resident stamps its own clock.
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct KeepPagesV1 {
+    pub pages: Vec<KeptPage>,
+}
+
+/// The payload of [`KEEP_SETTING_INTENT`].
+#[derive(Clone, Debug, Default, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct KeepSettingV1 {
+    pub enabled: bool,
+    #[serde(default)]
+    pub max_bytes: usize,
+    #[serde(default)]
+    pub excluded_origins: BTreeSet<String>,
+}
+
+impl KeptRefusal {
+    /// What to tell the person.
+    pub fn reason(self) -> &'static str {
+        match self {
+            Self::Disabled => "Keep page text is off for this mere.",
+            Self::Private => "Private pages are never kept.",
+            Self::Scheme => "Only http and https pages can be kept.",
+            Self::Excluded => "That site is excluded from kept page text.",
+            Self::Empty => "The page had no text to keep.",
+            Self::TooLarge => "The page text is larger than the per-page bound.",
+            Self::Excess => "Too many pages in one delivery.",
+        }
+    }
 }
 
 /// Whether `page` may be kept under `policy`.
