@@ -17,7 +17,7 @@ pub(super) struct WorkshopReceipt {
     sheet: String,
 }
 
-impl mesquite::Product for WorkshopReceipt {
+impl mandrake::Product for WorkshopReceipt {
     type State = WorkshopState;
     type Logic = WorkshopLogic;
     type View = WorkshopView;
@@ -27,7 +27,7 @@ impl mesquite::Product for WorkshopReceipt {
     fn sheet(&self) -> &str {
         &self.sheet
     }
-    fn snapshot(&self, ctx: &mesquite::Ctx<'_, Self>, _: usize, _: f32) -> taproot::ProbeSnapshot {
+    fn snapshot(&self, ctx: &mandrake::Ctx<'_, Self>, _: usize, _: f32) -> taproot::ProbeSnapshot {
         let state = ctx.runner.state();
         taproot::ProbeSnapshot::default()
             .with_field("theme", state.draft_theme().id.clone())
@@ -44,12 +44,12 @@ impl mesquite::Product for WorkshopReceipt {
                     .join(" | "),
             )
     }
-    fn busy_mut(&mut self, _: &mut mesquite::Ctx<'_, Self>, capture_pending: bool) -> Option<bool> {
+    fn busy_mut(&mut self, _: &mut mandrake::Ctx<'_, Self>, capture_pending: bool) -> Option<bool> {
         Some(capture_pending)
     }
     fn complete(
         &mut self,
-        _: &mut mesquite::Ctx<'_, Self>,
+        _: &mut mandrake::Ctx<'_, Self>,
         outcome: &taproot::Outcome,
     ) -> Result<(), String> {
         self.completion.set(Some(outcome.ok));
@@ -66,12 +66,12 @@ pub(super) fn workshop_hooks(
     ),
     String,
 > {
-    workshop_hooks_config(hooks, mesquite::LaneConfig::from_env("TURNSTONE_THEME"))
+    workshop_hooks_config(hooks, mandrake::LaneConfig::from_env("TURNSTONE_THEME"))
 }
 
 fn workshop_hooks_config(
     mut hooks: HostHooks<WorkshopState, WorkshopLogic, WorkshopView>,
-    config: Option<mesquite::LaneConfig>,
+    config: Option<mandrake::LaneConfig>,
 ) -> Result<
     (
         HostHooks<WorkshopState, WorkshopLogic, WorkshopView>,
@@ -83,7 +83,7 @@ fn workshop_hooks_config(
         return Ok((hooks, None));
     };
     let completion = Rc::new(Cell::new(None));
-    let lane = mesquite::Lane::from_config(
+    let lane = mandrake::Lane::from_config(
         config,
         WorkshopReceipt {
             completion: completion.clone(),
@@ -207,7 +207,7 @@ mod tests {
         ));
         let result = workshop_hooks_config(
             tabard_workshop::native_host::native_hooks(|_| None),
-            Some(mesquite::LaneConfig {
+            Some(mandrake::LaneConfig {
                 scenario: missing,
                 capture_dir: None,
                 receipt: None,

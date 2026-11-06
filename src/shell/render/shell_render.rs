@@ -27,7 +27,7 @@ impl Shell {
         for mut pending in diagnostics {
             match pending.frame.poll() {
                 Some(Ok(frame)) => {
-                    if let Err(error) = mesquite::write_png(&pending.path, &frame) {
+                    if let Err(error) = mandrake::write_png(&pending.path, &frame) {
                         self.main_receipt
                             .errors
                             .push(format!("native raster diagnostic: {error}"));

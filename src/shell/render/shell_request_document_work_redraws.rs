@@ -49,7 +49,7 @@ impl Shell {
         };
         match pending.frame.poll() {
             Some(Ok(frame)) => {
-                if let Err(error) = mesquite::write_png(&pending.path, &frame) {
+                if let Err(error) = mandrake::write_png(&pending.path, &frame) {
                     self.main_receipt
                         .errors
                         .push(format!("capture {}: {error}", pending.path.display()));
