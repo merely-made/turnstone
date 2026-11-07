@@ -185,9 +185,10 @@ web-sys = { version = "0.3", features = [
 # local paths. The root dropped its ipc-channel row as dead on 2026-09-23, and
 # so does this table.
 # The release build a host ships (mer3ly site canvas plan, Ruling 157): the
-# settings P0 measured the viewer cone with (`measure-release.sh`), pinned
-# here so every `cargo build --release --locked` of a commit makes the same
-# bundle. Receipts use the dev profile below.
+# settings P0 measured the viewer cone with (`measure-release.sh`). The same
+# commit builds byte-identical bundles at one checkout path but not across
+# paths (the 2026-11-07 audit found two size bands), so this profile is not a
+# reproducible one. Receipts use the dev profile below.
 [profile.release]
 opt-level = "s"
 lto = "thin"
