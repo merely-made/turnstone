@@ -30,6 +30,8 @@ mere = { workspace = true, features = ["graph", "canvas"] }
 genet-scripted-dom.workspace = true
 layout_dom_api.workspace = true
 pollster = "0.4"
+mandrake.workspace = true
+taproot.workspace = true
 serde_json.workspace = true
 eidetic = { workspace = true, features = ["pack-signing"] }
 
@@ -37,7 +39,6 @@ eidetic = { workspace = true, features = ["pack-signing"] }
 eidetic = { workspace = true, features = ["pack-signing"] }
 personae.workspace = true
 serde_json.workspace = true
-taproot.workspace = true
 # The headless render receipt (examples/render_view.rs).
 sprigging.workspace = true
 netrender = { workspace = true, features = ["vello-cpu"] }

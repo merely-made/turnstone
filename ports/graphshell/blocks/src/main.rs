@@ -14,8 +14,11 @@
 //! under wasmtime. "Review block adapters" in the pane opens that panel. The document is kept
 //! in `--data DIR` (default `./graphshell-blocks-data`).
 
-use cambium::{button, el, status_note};
-use cambium_genet_winit_host::{HostOptions, Init, inert_hooks, run};
+use cambium::{AnyView, GenetCtx, GenetElement, button, el, status_note};
+use cambium_genet_winit_host::{AppCtx, HostOptions, Init, inert_hooks, run};
+use mandrake::{LaneConfig, Product};
+use std::cell::RefCell;
+use taproot::ProbeSnapshot;
 use graphshell::block_editing::sheet_leaf::{ColorF, SheetTheme};
 use graphshell::block_pane::{
     self, BackendStorage, Pane, PaneHost, PanePorts, Storage, SwatchStyle, Task, Child,
@@ -185,6 +188,39 @@ fn adapters(app: &App) -> Child<App> {
     Box::new(el("section", children).attr("class", "blocks-adapters").attr("aria-label", "Block adapters"))
 }
 
+/// The scenario lane, as in `graphshell_mere`: `GRAPHSHELL_BLOCKS_SCENARIO` names a scenario, and
+/// `_CAPTURE_DIR` and `_RECEIPT` say where the window's own frame captures and receipt go.
+struct LaneProduct {
+    sheet: String,
+}
+impl Product for LaneProduct {
+    type State = App;
+    type Logic = Logic;
+    type View = Child<App>;
+    const KIND: &'static str = "graphshell-blocks";
+    const SURFACE: &'static str = "app";
+    const LOG_PREFIX: &'static str = "graphshell-blocks";
+    fn sheet(&self) -> &str {
+        &self.sheet
+    }
+    fn snapshot(&self, ctx: &AppCtx<'_, App, Logic, Child<App>>, _: usize, _dt: f32) -> ProbeSnapshot {
+        let app = ctx.runner.state();
+        app.pane.probe_fields().into_iter().fold(
+            ProbeSnapshot::default()
+                .with_field("panel-open", app.panel.to_string())
+                .with_field(
+                    "adapter-state",
+                    app.candidates.first().map(|c| c.state.clone()).unwrap_or_default(),
+                )
+                .with_field(
+                    "adapter-installed",
+                    app.candidates.iter().any(|c| c.installed).to_string(),
+                ),
+            |snapshot, (name, value)| snapshot.with_field(name, value),
+        )
+    }
+}
+
 fn has_label(dom: &genet_scripted_dom::ScriptedDom, node: genet_scripted_dom::NodeId, label: &str) -> bool {
     dom.attribute(node, &Namespace::default(), &LocalName::from("aria-label")) == Some(label)
         && dom
@@ -222,7 +258,41 @@ fn main() {
         .iter()
         .map(|(p, c)| read_candidate(p, c).unwrap_or_else(|e| panic!("{e}")))
         .collect();
+    let lane = LaneConfig::from_env("GRAPHSHELL_BLOCKS").map(|config| {
+        let product = LaneProduct {
+            sheet: format!("{CSS}\n{}", block_pane::SHEET),
+        };
+        let lane = if std::env::var_os("GRAPHSHELL_BLOCKS_JSON_RECEIPT").is_some() {
+            let scenario = taproot::Scenario::parse(
+                &std::fs::read_to_string(&config.scenario).expect("scenario file"),
+            )
+            .expect("scenario");
+            mandrake::Lane::new(
+                product,
+                Some(scenario),
+                config.receipt_path(),
+                None,
+                Rc::new(std::cell::Cell::new(0)),
+            )
+        } else {
+            mandrake::Lane::from_config(config, product, cambium_genet_winit_host::read_file)
+                .expect("scenario")
+        };
+        lane.with_presentation_timeout(std::time::Duration::from_secs(
+            std::env::var("GRAPHSHELL_BLOCKS_PRESENTATION_TIMEOUT_SECS")
+                .ok()
+                .and_then(|value| value.parse::<u64>().ok())
+                .unwrap_or(10)
+                .clamp(10, 60),
+        ))
+    });
+    let lane = Rc::new(RefCell::new(lane));
     let mut hooks = inert_hooks::<App, Logic, Child<App>>();
+    hooks.after_frame = Box::new(move |ctx| {
+        if let Some(lane) = lane.borrow_mut().as_mut() {
+            lane.after_frame(ctx);
+        }
+    });
     hooks.frame = Box::new(|ctx| {
         let size = (ctx.logical_size.0.round() as u32, ctx.logical_size.1.round() as u32);
         if size != ctx.runner.state().size {
