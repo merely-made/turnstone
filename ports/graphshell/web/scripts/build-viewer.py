@@ -29,8 +29,8 @@ import subprocess
 CAPS = {"wasm": 5242880, "glue": 20480, "mount": 8192, "history": 131072}
 # Route artifact name -> the viewer crate's features for that artifact.
 ARTIFACTS = {
-    "webgpu": ["presentation-webgpu"],
-    "webgl2": ["presentation-webgl2", "without-classic-vello"],
+    "webgpu": ["presentation-webgpu", "without-table-layout"],
+    "webgl2": ["presentation-webgl2", "without-classic-vello", "without-table-layout"],
 }
 
 
