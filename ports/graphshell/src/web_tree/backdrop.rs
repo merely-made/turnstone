@@ -10,10 +10,8 @@ use super::*;
 use cambium::{BackdropSceneEvent, backdrop_scene_reading, button, on_key};
 use mere::canvas::backdrop_surface::BackdropSurface;
 use scenomise::document::SceneDocument;
-use scenomise::{
-    backdrops::SceneInput,
-    span_edit::{SpanEdit, SpanEditIntent},
-};
+use sceno_backdrops::SceneInput;
+use scenomise::span_edit::{SpanEdit, SpanEditIntent};
 
 const KEY: u64 = 0x6261_636b;
 const RELATED_KEY: u64 = KEY + 1;
@@ -90,7 +88,7 @@ fn begin_import(pane: &Rc<RefCell<Pane>>) -> Result<(), String> {
         };
         let weak = weak.clone();
         wasm_bindgen_futures::spawn_local(async move {
-            let result = if file.size() > scenomise::backdrops::MAX_SCENE_INPUT_BYTES as f64 {
+            let result = if file.size() > sceno_backdrops::MAX_SCENE_INPUT_BYTES as f64 {
                 Err("Recipe exceeds one MiB".into())
             } else {
                 wasm_bindgen_futures::JsFuture::from(file.text())

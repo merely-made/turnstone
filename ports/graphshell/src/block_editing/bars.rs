@@ -7,8 +7,8 @@
 //! Musical coordinates and bar validation remain owned by `woodshedding`.
 use super::Change;
 use sceno::SourceRef;
-use scenomise::{
-    backdrops::{BACKDROP_SCENE_VERSION, SceneFacts, SceneInput},
+use sceno_backdrops::{
+    BACKDROP_SCENE_VERSION, SceneFacts, SceneInput,
     template::{
         Placement, SequenceTemplate, Span, TemplateGroup, TemplateOccurrence, TemplatedSequence,
     },

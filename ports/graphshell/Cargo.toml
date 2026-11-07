@@ -265,6 +265,7 @@ sporran = { workspace = true, optional = true }
 platen = { path = "../../crates/platen/platen", default-features = false, optional = true }
 scenograph.workspace = true
 sceno.workspace = true
+sceno-backdrops.workspace = true
 scenomise = { workspace = true, features = ["authoring"] }
 scenotime.workspace = true
 serde = { version = "1", features = ["derive"], optional = true }
