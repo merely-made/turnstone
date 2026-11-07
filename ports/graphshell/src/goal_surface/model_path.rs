@@ -17,7 +17,7 @@
 use super::{Budgets, GoalRunView, GoalSurface};
 use eidetic_search::goal::GoalSettings;
 use eidetic_search::goal_model::{EmbedRole, GoalEmbedder, ModelAssessRule, ModelGoalAssessor, ModelGoalSettings};
-use eidetic_search::goal_model_esp::{EspGoalEmbedder, recommended_match_similarity_milli};
+use esp::embed::goal_model::{EspGoalEmbedder, recommended_match_similarity_milli};
 use fleece::retained_traversal::{
     RetainedLimits, RetainedSeed, RetainedTraversalReceipt, run_retained_traversal_with,
 };

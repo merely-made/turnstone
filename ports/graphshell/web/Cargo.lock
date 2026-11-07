@@ -1212,7 +1212,7 @@ dependencies = [
 [[package]]
 name = "chartulary"
 version = "0.3.0"
-source = "git+https://github.com/merely-made/eidetic.git?branch=main#617f46a51412c5844b46c01887bfbcab698b6485"
+source = "git+https://github.com/merely-made/eidetic.git?branch=main#6b4ec493db9aad86b96510520ddc3ca1b1d14049"
 dependencies = [
  "muniment",
  "petgraph 0.8.3",
@@ -2643,7 +2643,7 @@ dependencies = [
 [[package]]
 name = "eidetic"
 version = "0.0.3"
-source = "git+https://github.com/merely-made/eidetic.git?branch=main#617f46a51412c5844b46c01887bfbcab698b6485"
+source = "git+https://github.com/merely-made/eidetic.git?branch=main#6b4ec493db9aad86b96510520ddc3ca1b1d14049"
 dependencies = [
  "async-trait",
  "blake3",
@@ -2660,7 +2660,7 @@ dependencies = [
 [[package]]
 name = "eidetic-search"
 version = "0.0.1"
-source = "git+https://github.com/merely-made/eidetic.git?branch=main#617f46a51412c5844b46c01887bfbcab698b6485"
+source = "git+https://github.com/merely-made/eidetic.git?branch=main#6b4ec493db9aad86b96510520ddc3ca1b1d14049"
 dependencies = [
  "eidetic",
  "genet-text",
@@ -2877,13 +2877,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
 dependencies = [
  "libc",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
 name = "esp"
 version = "0.1.0"
-source = "git+https://github.com/merely-made/distillery.git?branch=main#ea125ce74508597b304d4a5dec293d091b962861"
+source = "git+https://github.com/merely-made/distillery.git?branch=main#ca9334d1db00e9cfcdc21e6a863bbdb0f53020eb"
 dependencies = [
  "serde",
  "zeroize",
@@ -3999,6 +3999,10 @@ name = "hashbrown"
 version = "0.14.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e5274423e17b7c9fc20b6e7e208532f9b19825d82dfd615708b70edd83df41f1"
+dependencies = [
+ "ahash",
+ "allocator-api2 0.2.21",
+]
 
 [[package]]
 name = "hashbrown"
@@ -5664,7 +5668,7 @@ checksum = "4050469837a6ff301cd14c1f8f24f88549e6d548f24f64e2148eb0f72cebc51f"
 [[package]]
 name = "luggage"
 version = "0.1.0"
-source = "git+https://github.com/merely-made/eidetic.git?branch=main#617f46a51412c5844b46c01887bfbcab698b6485"
+source = "git+https://github.com/merely-made/eidetic.git?branch=main#6b4ec493db9aad86b96510520ddc3ca1b1d14049"
 dependencies = [
  "semver",
  "serde",
@@ -5923,7 +5927,7 @@ version = "0.0.1"
 [[package]]
 name = "mere-proofs"
 version = "0.1.0"
-source = "git+https://github.com/merely-made/eidetic.git?branch=main#617f46a51412c5844b46c01887bfbcab698b6485"
+source = "git+https://github.com/merely-made/eidetic.git?branch=main#6b4ec493db9aad86b96510520ddc3ca1b1d14049"
 dependencies = [
  "blake3",
  "serde",
@@ -6120,7 +6124,7 @@ dependencies = [
 [[package]]
 name = "muniment"
 version = "0.2.1"
-source = "git+https://github.com/merely-made/eidetic.git?branch=main#617f46a51412c5844b46c01887bfbcab698b6485"
+source = "git+https://github.com/merely-made/eidetic.git?branch=main#6b4ec493db9aad86b96510520ddc3ca1b1d14049"
 dependencies = [
  "async-trait",
  "blake3",
@@ -8116,7 +8120,7 @@ dependencies = [
  "combine",
  "downcast-rs 2.0.2",
  "dyn-clone",
- "hashbrown 0.17.1",
+ "hashbrown 0.14.5",
  "hi_sparse_bitset",
  "indexmap",
  "inventory",
@@ -9220,7 +9224,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys 0.12.1",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -9278,7 +9282,7 @@ dependencies = [
  "security-framework",
  "security-framework-sys",
  "webpki-root-certs",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -9577,7 +9581,7 @@ dependencies = [
 [[package]]
 name = "servitor"
 version = "0.0.3"
-source = "git+https://github.com/merely-made/eidetic.git?branch=main#617f46a51412c5844b46c01887bfbcab698b6485"
+source = "git+https://github.com/merely-made/eidetic.git?branch=main#6b4ec493db9aad86b96510520ddc3ca1b1d14049"
 dependencies = [
  "chartulary",
  "insigne",
@@ -10044,7 +10048,7 @@ checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 [[package]]
 name = "stickleback"
 version = "0.2.0"
-source = "git+https://github.com/merely-made/eidetic.git?branch=main#617f46a51412c5844b46c01887bfbcab698b6485"
+source = "git+https://github.com/merely-made/eidetic.git?branch=main#6b4ec493db9aad86b96510520ddc3ca1b1d14049"
 dependencies = [
  "blake3",
  "cbor-core",
@@ -10326,7 +10330,7 @@ dependencies = [
  "getrandom 0.4.3",
  "once_cell",
  "rustix 1.1.5",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -11022,7 +11026,7 @@ version = "2.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "86a801b3cea342a06d468c8710662aa29e5e05e4f5c0d62f00bbb7f2ad7941c2"
 dependencies = [
- "rand 0.10.3",
+ "rand 0.9.5",
 ]
 
 [[package]]

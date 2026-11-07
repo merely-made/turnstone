@@ -63,7 +63,7 @@ goal-surface = ["web", "dep:cambium", "dep:fleece", "fleece/retained-traversal",
 # native hosts. Off by default and not part of any web build: the browser
 # executor for the model is an open question. The model folder is local and
 # never downloaded.
-goal-surface-model = ["goal-surface", "eidetic-search/bert", "dep:esp", "dep:sha2"]
+goal-surface-model = ["goal-surface", "dep:esp", "esp/goal-model", "esp/bert", "dep:sha2"]
 # Finite headed native proof of the goal surface on the shared Cambium host.
 goal-surface-proof = ["goal-surface", "dep:cambium-desktop", "dep:pollster", "dep:genet-scripted-dom", "dep:layout_dom_api", "dep:image"]
 moot-resources = ["web", "webrtc-join", "dep:cambium", "dep:moot", "dep:gemot", "dep:eidetic", "dep:muniment"]
