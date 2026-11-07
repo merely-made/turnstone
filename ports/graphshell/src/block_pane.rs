@@ -1372,7 +1372,7 @@ fn view_panel<P: PaneHost>(page: &P, class: &str) -> Child<P> {
                         "aria-pressed",
                         (pane.event_selection() == (bar, event)).to_string(),
                     )
-                    .attr("class", "blocks-guest-event")
+                    .attr("class", format!("blocks-guest-event blocks-guest-event-{bar}-{event}"))
                     .attr(
                         "style",
                         format!(
@@ -1679,7 +1679,15 @@ impl Pane {
                 "blocks-view-mode",
                 class
                     .as_ref()
-                    .and_then(|c| pane.view_modes.get(c).cloned())
+                    .and_then(|c| {
+                        let id = pane.view_modes.get(c)?;
+                        let claim = pane.registry.get(c)?.claim();
+                        claim
+                            .views
+                            .iter()
+                            .find(|v| &v.id == id)
+                            .map(|v| v.label.clone())
+                    })
                     .unwrap_or_else(|| "Arrangement".into()),
             ),
             (

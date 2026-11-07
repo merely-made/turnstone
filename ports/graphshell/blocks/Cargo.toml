@@ -37,6 +37,7 @@ eidetic = { workspace = true, features = ["pack-signing"] }
 eidetic = { workspace = true, features = ["pack-signing"] }
 personae.workspace = true
 serde_json.workspace = true
+taproot.workspace = true
 # The headless render receipt (examples/render_view.rs).
 sprigging.workspace = true
 netrender = { workspace = true, features = ["vello-cpu"] }

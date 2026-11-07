@@ -1,9 +1,10 @@
 # Fresh origin: same source editor/history as the rhyme example.
 reveal role:button Editable document
 click role:button Editable document
+assert snap blocks-adapters == metre,progression
 remember original-document
-reveal .blocks-insert-progression
-click .blocks-insert-progression
+reveal .blocks-insert-example
+click .blocks-insert-example
 assert snap blocks-dirty == true
 remember inserted-document
 reveal .blocks-preview-command
@@ -40,8 +41,8 @@ click .blocks-save
 wait 180
 assert snap blocks-saving == false
 assert snap blocks-dirty == false
-reveal .blocks-export-plaintext
-click .blocks-export-plaintext
+reveal .blocks-command-export-plaintext
+click .blocks-command-export-plaintext
 same grouped-document blocks-source
 assert snap blocks-status == Plaintext chart exported · structured source retains timing and voicings
 reveal role:textbox Bar grouping

@@ -1,40 +1,41 @@
 # Fresh qualification origin. Full written-tempo range, then normal save/reopen.
 reveal role:button Editable document
 click role:button Editable document
-reveal .blocks-insert-progression
-click .blocks-insert-progression
+assert snap blocks-adapters == metre,progression
+reveal .blocks-insert-example
+click .blocks-insert-example
 remember cards-only
 reveal role:textbox Notation tempo (BPM)
 click role:textbox Notation tempo (BPM)
 input-text 0
-reveal .blocks-write-notation
-click .blocks-write-notation
+reveal .blocks-command-write-notation
+click .blocks-command-write-notation
 assert snap blocks-status == Notation tempo must be a whole number from 1 to 400 BPM
 same cards-only blocks-source
 reveal role:textbox Notation tempo (BPM)
 click role:textbox Notation tempo (BPM)
 input-text 401
-reveal .blocks-write-notation
-click .blocks-write-notation
+reveal .blocks-command-write-notation
+click .blocks-command-write-notation
 assert snap blocks-status == Notation tempo must be a whole number from 1 to 400 BPM
 same cards-only blocks-source
 reveal role:textbox Notation tempo (BPM)
 click role:textbox Notation tempo (BPM)
 input-text 1.5
-reveal .blocks-write-notation
-click .blocks-write-notation
+reveal .blocks-command-write-notation
+click .blocks-command-write-notation
 assert snap blocks-status == Enter a whole-number notation tempo from 1 to 400 BPM
 same cards-only blocks-source
 reveal role:textbox Notation tempo (BPM)
 click role:textbox Notation tempo (BPM)
 input-text 1
-reveal .blocks-write-notation
-click .blocks-write-notation
-assert snap blocks-notation-view == Chart
+reveal .blocks-command-write-notation
+click .blocks-command-write-notation
+assert snap blocks-view-mode == Chart
 remember written-notation
-reveal .blocks-reading-score
-click .blocks-reading-score
-reveal .blocks-notation-leaf
+reveal .blocks-view-score
+click .blocks-view-score
+reveal .blocks-guest-leaf
 wait 200
 capture one_bpm_score
 reveal .blocks-undo
