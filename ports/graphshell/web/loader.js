@@ -453,6 +453,20 @@ try {
     });
     await mountResourceOwner(module, params.get("resource-owner"));
   }
+  // Guest block adapters: `?block_adapters=<url of adapters.json>` discloses signed packs the person
+  // can review from the block pane's "Review block adapters" and load into a Worker after approving.
+  // The config and its host modules are produced by `applets/build_block_adapters.mjs`.
+  const adaptersConfig = params.get("block_adapters");
+  if (adaptersConfig) {
+    await new Promise((resolve) => {
+      const poll = () => graphshellRoot().dataset.ready === "true" ? resolve() : setTimeout(poll, 50);
+      poll();
+    });
+    const configURL = new URL(adaptersConfig, location.href);
+    const config = await (await fetch(configURL, { cache: "no-store" })).json();
+    const { mountBlockAdapters } = await import(new URL("block_adapters.mjs", configURL));
+    window.blockAdapters = await mountBlockAdapters(graphshellRoot(), module, { ...config, baseURL: configURL.href });
+  }
   // The scenario lane: `?scenario=<path>` names a script the page runs on
   // itself once the host reports ready. Results land in the DOM (see
   // src/web_scenario.rs); nothing here interprets them.

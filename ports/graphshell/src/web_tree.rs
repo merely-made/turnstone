@@ -216,6 +216,8 @@ struct Shared {
     command_request: RefCell<Option<commands::Request>>,
     #[cfg(feature = "applets")]
     applet: RefCell<applet::Pane>,
+    #[cfg(all(feature = "product", feature = "applets"))]
+    block_adapters: block_adapters::Handle,
     appearance: crate::web_appearance::Handle,
     appearance_revision: Cell<u64>,
 
@@ -1701,6 +1703,8 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
         command_request: RefCell::new(None),
         #[cfg(feature = "applets")]
         applet: RefCell::new(applet::Pane::default()),
+        #[cfg(all(feature = "product", feature = "applets"))]
+        block_adapters: Default::default(),
         appearance,
         appearance_revision,
 
@@ -2578,6 +2582,8 @@ impl NoRepulsionLane for mere::canvas::Canvas {
 mod appearance;
 #[cfg(feature = "applets")]
 mod applet;
+#[cfg(all(feature = "product", feature = "applets"))]
+mod block_adapters;
 #[cfg(feature = "product")]
 mod backdrop;
 #[cfg(feature = "product")]

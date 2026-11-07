@@ -97,7 +97,9 @@ pub(super) fn focused_text(
     })
 }
 pub(super) fn register(ctx: &mut AppCtx<'_, TreePage, Logic, Child>) {
-    block_pane::register(ctx)
+    block_pane::register(ctx);
+    #[cfg(feature = "applets")]
+    super::block_adapters::sync(ctx);
 }
 pub(super) fn fields(page: &TreePage, snapshot: ProbeSnapshot) -> ProbeSnapshot {
     page.blocks
