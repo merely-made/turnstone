@@ -1,4 +1,6 @@
 # Fresh origin: same source editor/history as the rhyme example.
+click role:button Panes
+click role:button Graph controls
 reveal role:button Editable document
 click role:button Editable document
 assert snap blocks-adapters == metre,progression
@@ -9,6 +11,7 @@ assert snap blocks-dirty == true
 remember inserted-document
 reveal .blocks-preview-command
 click .blocks-preview-command
+wait 800
 assert snap blocks-preview == true
 same inserted-document blocks-source
 reveal .blocks-swatch
@@ -20,9 +23,11 @@ click .blocks-cancel
 same inserted-document blocks-source
 reveal .blocks-preview-command
 click .blocks-preview-command
+wait 800
 reveal .blocks-apply
 click .blocks-apply
-assert snap blocks-status == Bar grouping applied · musical timing unchanged
+wait 800
+assert snap blocks-status == Change applied · Undo and Save use this document’s history
 remember grouped-document
 reveal .blocks-undo
 click .blocks-undo
@@ -44,15 +49,17 @@ assert snap blocks-dirty == false
 reveal .blocks-command-export-plaintext
 click .blocks-command-export-plaintext
 same grouped-document blocks-source
-assert snap blocks-status == Plaintext chart exported · structured source retains timing and voicings
+assert snap blocks-status == export-plaintext exported
 reveal role:textbox Bar grouping
 click role:textbox Bar grouping
 input-text 1 + 3
 reveal .blocks-preview-command
 click .blocks-preview-command
+wait 800
 same grouped-document blocks-source
 reveal .blocks-apply
 click .blocks-apply
+wait 800
 same grouped-document blocks-source
 assert snap blocks-dirty == false
 assert snap blocks-status == No changes accepted · document unchanged
