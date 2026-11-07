@@ -146,7 +146,7 @@ knot = { package = "knot-editor", git = "https://github.com/merely-made/knot-edi
 knot-composition = { git = "https://github.com/merely-made/knot-editor.git", branch = "main" }
 # The reusable one-document product surface. This stays separate from the
 # broad Knot port graph used by publishing and endpoint composition above.
-knot-document = { git = "https://github.com/merely-made/knot-editor.git", branch = "main" }
+knot-document = { git = "https://github.com/merely-made/knot-editor.git", branch = "main", features = ["engine"] }
 # The installed Distillery projection surface: the independent second provider
 # proving the contributed-surface seam (Knot shared-surface plan P0).
 distillery = { git = "https://github.com/merely-made/mere.git", branch = "main", default-features = false, optional = true, features = ["inference-wire"] }
@@ -265,9 +265,6 @@ genet-presenter = { git = "https://github.com/merely-made/genet.git", branch = "
 cambium = { version = "0.6.1", git = "https://github.com/merely-made/mere.git", branch = "main" }
 registry = { package = "mere-registry", git = "https://github.com/merely-made/mere.git", branch = "main", default-features = false, features = ["diagnostics"] }
 cambium-winit = { git = "https://github.com/merely-made/mere.git", branch = "main" }
-# Authority-free source buffer plus Knot highlighting/outline/folds/preview.
-# Storage, sync, grants, and keys stay in the endpoint process.
-knot-editor-host = { git = "https://github.com/merely-made/inker.git", branch = "main" }
 sprigging = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 # The application half of the former `genet-host-api`: the settings projection
 # and the product-surface admission vocabulary. The boundary plan (P1) split
@@ -548,13 +545,6 @@ murm-webrtc = { git = "https://github.com/merely-made/murm.git", branch = "main"
 
 distillery = { git = "https://github.com/merely-made/distillery.git", branch = "main" }
 mere-mesh = { git = "https://github.com/merely-made/distillery.git", branch = "main" }
-# Inker left Mere (engine split P1); Knot's pinned revision still names these
-# through mere.git. The rows leave when Knot takes them from inker.git.
-illume = { git = "https://github.com/merely-made/inker.git", branch = "main" }
-inker = { git = "https://github.com/merely-made/inker.git", branch = "main" }
-knot-editor-host = { git = "https://github.com/merely-made/inker.git", branch = "main" }
-nematic = { git = "https://github.com/merely-made/inker.git", branch = "main" }
-script-rhai = { git = "https://github.com/merely-made/inker.git", branch = "main" }
 # Woodshed's pinned revision names tinct through mere.git; it moved to
 # Graphshell's contract root (engine split D19).
 tinct = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }

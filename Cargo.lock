@@ -7506,7 +7506,7 @@ checksum = "e2db585e1d738fc771bf08a151420d3ed193d9d895a36df7f6f8a9456b911ddc"
 [[package]]
 name = "knot-capture"
 version = "0.0.1"
-source = "git+https://github.com/merely-made/knot-editor.git?branch=main#2c703c4397ee2b6ac4b84e1f1c0b7ecf7bb632ce"
+source = "git+https://github.com/merely-made/knot-editor.git?branch=main#a58ba28b6b52aa6f887667515c2d38f23c0432e6"
 dependencies = [
  "knot-catalog",
 ]
@@ -7514,7 +7514,7 @@ dependencies = [
 [[package]]
 name = "knot-catalog"
 version = "0.0.1"
-source = "git+https://github.com/merely-made/knot-editor.git?branch=main#2c703c4397ee2b6ac4b84e1f1c0b7ecf7bb632ce"
+source = "git+https://github.com/merely-made/knot-editor.git?branch=main#a58ba28b6b52aa6f887667515c2d38f23c0432e6"
 dependencies = [
  "muniment",
  "pollster 0.4.0",
@@ -7527,7 +7527,7 @@ dependencies = [
 [[package]]
 name = "knot-composition"
 version = "0.0.1"
-source = "git+https://github.com/merely-made/knot-editor.git?branch=main#2c703c4397ee2b6ac4b84e1f1c0b7ecf7bb632ce"
+source = "git+https://github.com/merely-made/knot-editor.git?branch=main#a58ba28b6b52aa6f887667515c2d38f23c0432e6"
 dependencies = [
  "blake3",
  "knot-capture",
@@ -7548,12 +7548,11 @@ dependencies = [
 [[package]]
 name = "knot-document"
 version = "0.0.1"
-source = "git+https://github.com/merely-made/knot-editor.git?branch=main#2c703c4397ee2b6ac4b84e1f1c0b7ecf7bb632ce"
+source = "git+https://github.com/merely-made/knot-editor.git?branch=main#a58ba28b6b52aa6f887667515c2d38f23c0432e6"
 dependencies = [
  "cambium",
  "illume",
  "inker",
- "knot-editor-host",
  "mere-edit",
  "mere-surface-api",
  "nematic",
@@ -7565,7 +7564,7 @@ dependencies = [
 [[package]]
 name = "knot-editor"
 version = "0.0.3"
-source = "git+https://github.com/merely-made/knot-editor.git?branch=main#2c703c4397ee2b6ac4b84e1f1c0b7ecf7bb632ce"
+source = "git+https://github.com/merely-made/knot-editor.git?branch=main#a58ba28b6b52aa6f887667515c2d38f23c0432e6"
 dependencies = [
  "base64 0.22.1",
  "blake3",
@@ -7623,17 +7622,6 @@ dependencies = [
  "uuid",
  "windows-sys 0.59.0",
  "zeroize",
-]
-
-[[package]]
-name = "knot-editor-host"
-version = "0.1.1"
-source = "git+https://github.com/merely-made/inker.git?branch=main#436c8413c0cac040c004782ab6749e2448773c58"
-dependencies = [
- "cambium",
- "illume",
- "inker",
- "nematic",
 ]
 
 [[package]]
@@ -8647,12 +8635,12 @@ dependencies = [
 [[package]]
 name = "mora"
 version = "0.1.0"
-source = "git+https://github.com/merely-made/knot-editor.git?branch=main#2c703c4397ee2b6ac4b84e1f1c0b7ecf7bb632ce"
+source = "git+https://github.com/merely-made/knot-editor.git?branch=main#a58ba28b6b52aa6f887667515c2d38f23c0432e6"
 
 [[package]]
 name = "mora-cmudict"
 version = "0.0.1"
-source = "git+https://github.com/merely-made/knot-editor.git?branch=main#2c703c4397ee2b6ac4b84e1f1c0b7ecf7bb632ce"
+source = "git+https://github.com/merely-made/knot-editor.git?branch=main#a58ba28b6b52aa6f887667515c2d38f23c0432e6"
 dependencies = [
  "mora",
 ]
@@ -12443,7 +12431,7 @@ dependencies = [
 [[package]]
 name = "reference-data"
 version = "0.0.1"
-source = "git+https://github.com/merely-made/knot-editor.git?branch=main#2c703c4397ee2b6ac4b84e1f1c0b7ecf7bb632ce"
+source = "git+https://github.com/merely-made/knot-editor.git?branch=main#a58ba28b6b52aa6f887667515c2d38f23c0432e6"
 dependencies = [
  "blake3",
  "serde",
@@ -16790,7 +16778,6 @@ dependencies = [
  "knot-composition",
  "knot-document",
  "knot-editor",
- "knot-editor-host",
  "layout-dom-api",
  "libc",
  "mandrake",

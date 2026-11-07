@@ -40,7 +40,7 @@ use inker::{
     SessionEngine, SessionError, SessionIme, SessionKey, SessionLink, SessionModifiers,
     SessionScrollKey, SessionSpawnRequest,
 };
-use knot_editor_host::KnotEditor;
+use knot_document::retained::KnotEditor;
 use netrender::Scene;
 use sceno::InstanceId;
 use scenograph::{
