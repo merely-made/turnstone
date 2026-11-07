@@ -22,9 +22,11 @@ import subprocess
 
 
 # R157's caps. Mark amended the Wasm cap to 3,460,300 B (3.30 MiB) on
-# 2026-10-15 and to 3,670,016 B (3.50 MiB) on 2026-10-16, applied to each
-# route artifact.
-CAPS = {"wasm": 3670016, "glue": 20480, "mount": 8192, "history": 131072}
+# 2026-10-15, to 3,670,016 B (3.50 MiB) on 2026-10-16, and to 5,242,880 B
+# (5.00 MiB) on 2026-11-07, applied to each route artifact. The 2026-11-07
+# amendment covers both build-path-dependent sizes of the same source (about
+# 3.62 and 3.71 MB gzip6 for webgpu; see the Graphshell host plan, T7).
+CAPS = {"wasm": 5242880, "glue": 20480, "mount": 8192, "history": 131072}
 # Route artifact name -> the viewer crate's features for that artifact.
 ARTIFACTS = {
     "webgpu": ["presentation-webgpu"],
