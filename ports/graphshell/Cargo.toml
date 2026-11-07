@@ -85,10 +85,11 @@ native = [
     "webrtc-join",
     "dep:blake3",
     "dep:ostiary",
-    "graphshell-endpoint/projection-door",
+    "graphshell-endpoint/projection",
+    "graphshell-door/projection-door",
     "dep:castellan-client",
     "castellan-client/client",
-    "graphshell-endpoint/profile",
+    "graphshell-door/profile",
     "graphshell-endpoint/network",
     "graphshell-endpoint/stdio",
     "graphshell-host/native",
@@ -241,8 +242,10 @@ base64.workspace = true
 chartulary = { workspace = true, optional = true }
 distillery = { workspace = true, optional = true }
 eidetic = { workspace = true, optional = true }
-graphshell-client = { version = "0.0.2", path = "../../crates/graphshell/graphshell-client" }
-graphshell-endpoint = { version = "0.0.3", path = "../../crates/graphshell/graphshell-endpoint" }
+graphshell-client.workspace = true
+graphshell-endpoint.workspace = true
+# Mere's side of the protocol: the application door client and identity profile.
+graphshell-door.workspace = true
 # The serving half (stack lift plan, L2): admission, the session loop, the
 # catalog and the projection host. `native` and the WebRTC features name its
 # halves; with none, it is the fixture endpoints the web tests use.
@@ -307,7 +310,7 @@ blake3 = { workspace = true, optional = true }
 # Graphshell no longer links castellan (dramatis repo plan, D4, D15): its
 # doors serve whatever `native::resident_identity::ResidentIdentity` djinn
 # hands them, and applications reach custody through
-# `graphshell_endpoint::door::custody_client`.
+# `graphshell_door::custody_client`.
 dramatis = { workspace = true, optional = true }
 p2panda-core = { package = "p2mere-core", version = "0.9", optional = true }
 p2panda-store = { package = "p2mere-store", version = "0.9", default-features = false, optional = true }

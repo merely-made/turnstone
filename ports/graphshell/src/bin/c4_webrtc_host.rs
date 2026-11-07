@@ -258,7 +258,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 "resident.divination",
                 "Resident divination mere",
                 move |_context| {
-                    graphshell_endpoint::door::resident_mere_proxy::ResidentMereProxy::divination(
+                    graphshell_door::resident_mere_proxy::ResidentMereProxy::divination(
                         &endpoint,
                         graphshell::declaration::declaration(),
                     )

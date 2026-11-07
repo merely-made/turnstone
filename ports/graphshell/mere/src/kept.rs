@@ -31,7 +31,7 @@ use graphshell::kept_text::{
     DEFAULT_KEPT_BYTES, FetchRecordV1, KEEP_PAGES_INTENT, KEEP_SETTING_INTENT, KeepPagesV1,
     KeepSettingV1, KeptPage,
 };
-use graphshell_endpoint::door::projection::AppBrokerClient;
+use graphshell_door::projection::AppBrokerClient;
 use mere_overmap::wire::MERE_GRAPH;
 use ostiary::app_admission::{AppId, AppRouteId};
 use sceno::InstanceId;

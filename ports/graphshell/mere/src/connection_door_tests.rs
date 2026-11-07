@@ -118,7 +118,7 @@ async fn application_door_resource_is_assembled_from_bounded_chunk_frames() {
     });
 
     let transfer = async {
-        let mut client = graphshell_endpoint::door::projection::AppBrokerClient::open_route_at(
+        let mut client = graphshell_door::projection::AppBrokerClient::open_route_at(
             &socket_path,
             AppId::new("graphshell"),
             AppRouteId::new("mere/native-test").unwrap(),

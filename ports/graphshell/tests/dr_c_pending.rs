@@ -29,7 +29,7 @@ async fn dr_c_graphshell_identity_stays_pending() {
                 !client.roster().await.unwrap().entries.is_empty(),
                 "public roster remains readable"
             );
-            let result = graphshell_endpoint::door::profile::GraphshellIdentity::from_djinn(
+            let result = graphshell_door::profile::GraphshellIdentity::from_djinn(
                 &mut client,
                 &["dr-c"],
             )

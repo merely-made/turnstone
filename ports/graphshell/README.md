@@ -6,7 +6,9 @@ loops, hosts resident endpoints, and renders projections.
 
 Package name `graphshell`. Embedders depend directly on `chirograph` for the
 protocol, `graphshell-client` for client state, and `graphshell-endpoint` for
-serving projections. These capabilities do not require the reference port.
+serving projections, all three in the
+[Graphshell repository](https://github.com/merely-made/graphshell), the protocol
+layer below Mere. These capabilities do not require the reference port.
 
 The native opt-in `moot-resources` module composes the existing Moot resource
 view with verified retained Graphshell session authority and current Gemot and
@@ -75,7 +77,7 @@ and its `graphshell_native_host` relay, the local session, the identity
 endpoint and its cards, `ResidentIdentity`, and the personal sync, carriage,
 graph key and transfer staging hosts) are Djinn's `door` and `sync` modules
 since the stack lift plan's P5. `ResidentMereProxy`, an endpoint forwarding
-over the application door, is `graphshell_endpoint::door::resident_mere_proxy`,
+over the application door, is `graphshell_door::resident_mere_proxy`,
 and the C4 WebRTC host fixture that serves it stays here (`c4_webrtc_host`,
 feature `webrtc-session`). The port's identity scene test reads the identity
 cards from `tests/fixtures/identity_cards.json`, which Djinn's identity
@@ -84,8 +86,8 @@ endpoint test keeps current.
 The application side of the first-party door (admission, the app client, custody and its
 clients, quarantine, the local endpoint, tracked tasks, the identity views,
 `GraphshellIdentity` and `env_profile`, the shared envelope and frames) is
-`graphshell_endpoint::door`, feature `door` (stack lift plan, L1,
-2026-10-15). Applications depend on that crate, not on this port.
+`graphshell_door`, features `projection-door` and `profile` (stack lift plan, L1,
+2026-10-15; split out of `graphshell-endpoint` on 2026-11-06). Applications depend on that crate, not on this port.
 
 Under `web` (portable, builds for `wasm32-unknown-unknown`):
 

@@ -71,15 +71,15 @@ mere = { path = "../../../crates/mere", default-features = false, features = ["g
 # which this crate hands to `GraphshellApp` as its backend. It lived here until
 # the duplicate showed up; muniment owns the backend family, so it owns this.
 muniment = { git = "https://github.com/merely-made/eidetic.git", branch = "main" }
-graphshell-client = { path = "../../../crates/graphshell/graphshell-client" }
+graphshell-client = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 # The remote board the pages draw (stack lift plan, P10).
 graphshell-host = { path = "../../../crates/graphshell/graphshell-host", default-features = false, features = ["board"] }
-chirograph = { path = "../../../crates/chirograph" }
+chirograph = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 workbench = { path = "../../../crates/cambium/workbench" }
-sceno = { path = "../../../crates/cambium/scenes/sceno" }
+sceno = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 scenograph = { path = "../../../crates/cambium/scenes/scenograph" }
 scenomise = { path = "../../../crates/cambium/scenes/scenomise", features = ["authoring"] }
-scenotime = { path = "../../../crates/cambium/scenes/scenotime" }
+scenotime = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 serde = { version = "1", features = ["derive"] }
 # A mere workspace member since 2026-09-03 (platform boundary plan, P2), so a
 # relative path like the other mere crates above, not a git pin.

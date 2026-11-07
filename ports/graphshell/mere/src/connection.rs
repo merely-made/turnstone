@@ -12,7 +12,7 @@ use chirograph::{
 };
 use graphshell_client::LineDriven;
 use ostiary::app_admission::{AppId, AppRouteId};
-use graphshell_endpoint::door::projection::AppBrokerClient;
+use graphshell_door::projection::AppBrokerClient;
 use mere_overmap::route_session::MereRouteSession;
 use mere_view::MereViewRequest;
 
