@@ -22,6 +22,9 @@ use serde::{Deserialize, Serialize};
 
 pub const VIEW: &str = "power:capsule-view";
 pub const NAVIGATE: &str = "power:navigate";
+/// The one power of a block adapter: it answers calls (describe, choices, apply, run, view) and
+/// emits no action. A pack that asks for it asks for nothing else.
+pub const BLOCK_ADAPTER: &str = "power:block-adapter";
 pub const MAX_COMPONENT_BYTES: usize = 16 * 1024 * 1024;
 pub const MAX_DISCLOSURE_BYTES: usize = 1024 * 1024;
 pub const MAX_ENTRIES: usize = 1024;
@@ -115,6 +118,57 @@ mod tests {
         mount.approve(vec![VIEW.into()]).unwrap();
         assert!(!mount.permits(NAVIGATE));
         assert!(mount.approve(vec![VIEW.into(), NAVIGATE.into()]).is_err());
+    }
+
+    fn adapter_fixture(asks: Vec<String>) -> (Vec<u8>, CapsuleDisclosure) {
+        let app = pack(3, "Adapter", COMPONENT, PackPartRole::WasmComponent, asks);
+        (
+            app,
+            CapsuleDisclosure {
+                moot: "moot:fixture".into(),
+                collection: "collection:adapters".into(),
+                revision: "disclosed-frontier".into(),
+                capsules: vec![],
+            },
+        )
+    }
+
+    #[test]
+    fn a_block_adapter_is_reviewed_once_and_granted_only_its_one_power() {
+        let (app, disclosure) = adapter_fixture(vec![BLOCK_ADAPTER.into()]);
+        let mut mount =
+            CapsuleMount::review(&app, &hash(&app), COMPONENT, disclosure).unwrap();
+        assert!(mount.is_block_adapter());
+        assert!(!mount.permits(BLOCK_ADAPTER), "review grants nothing");
+        assert!(mount.approve(vec![VIEW.into()]).is_err(), "not asked for");
+        assert!(
+            mount.approve(vec![BLOCK_ADAPTER.into(), NAVIGATE.into()]).is_err(),
+            "no other power"
+        );
+        mount.approve(vec![BLOCK_ADAPTER.into()]).unwrap();
+        assert!(mount.permits(BLOCK_ADAPTER));
+        assert!(mount.approve(vec![BLOCK_ADAPTER.into()]).is_err(), "a new grant needs a new review");
+        mount.revoke(BLOCK_ADAPTER);
+        assert!(!mount.permits(BLOCK_ADAPTER));
+        assert_eq!(mount.component_hash, hash(COMPONENT));
+    }
+
+    #[test]
+    fn a_block_adapter_emits_no_action_and_cannot_mix_powers() {
+        let (app, disclosure) = adapter_fixture(vec![BLOCK_ADAPTER.into()]);
+        let mut mount =
+            CapsuleMount::review(&app, &hash(&app), COMPONENT, disclosure.clone()).unwrap();
+        mount.approve(vec![BLOCK_ADAPTER.into()]).unwrap();
+        assert!(matches!(
+            mount.accept("capsule-library-view", "[]"),
+            Err(Refusal::Denied(_))
+        ));
+        let (mixed, disclosure) = adapter_fixture(vec![BLOCK_ADAPTER.into(), VIEW.into()]);
+        assert!(CapsuleMount::review(&mixed, &hash(&mixed), COMPONENT, disclosure).is_err());
+        // A library app cannot be granted the block power it did not ask for.
+        let mut library = reviewed();
+        assert!(library.approve(vec![BLOCK_ADAPTER.into()]).is_err());
+        assert!(!library.is_block_adapter());
     }
 
     #[test]
@@ -333,6 +387,10 @@ impl CapsuleMount {
         {
             return Err("Disclosure identity or size is invalid".into());
         }
+        let asks = &pack.manifest.requested_scopes;
+        if asks.iter().any(|a| a == BLOCK_ADAPTER) && asks.len() != 1 {
+            return Err("A block adapter asks for no other power".into());
+        }
         let mut seen = BTreeSet::new();
         for capsule in &disclosure.capsules {
             let entry = &capsule.entry;
@@ -369,7 +427,7 @@ impl CapsuleMount {
             return Err("A new grant requires a new review".into());
         }
         if grants.iter().any(|g| {
-            !matches!(g.as_str(), VIEW | NAVIGATE)
+            !matches!(g.as_str(), VIEW | NAVIGATE | BLOCK_ADAPTER)
                 || !self.pack.manifest.requested_scopes.contains(g)
         }) {
             return Err("Grant exceeds this host's dialect or the reviewed ask".into());
@@ -378,6 +436,11 @@ impl CapsuleMount {
         self.approved = true;
         self.execution += 1;
         Ok(())
+    }
+
+    /// Whether this pack is a block adapter (it asked for [`BLOCK_ADAPTER`] alone).
+    pub fn is_block_adapter(&self) -> bool {
+        self.pack.manifest.requested_scopes == [BLOCK_ADAPTER]
     }
 
     pub fn granted(&self) -> Vec<String> {
@@ -435,6 +498,9 @@ impl CapsuleMount {
     pub fn accept(&self, name: &str, payload: &str) -> Result<Proposal, Refusal> {
         if name == "confirm-install-participant" {
             return Err(Refusal::Denied("host-only".into()));
+        }
+        if self.is_block_adapter() {
+            return Err(Refusal::Denied("a block adapter emits no action".into()));
         }
         if payload.len() > MAX_DISCLOSURE_BYTES {
             return Err(Refusal::Malformed("Action exceeds size limit".into()));
