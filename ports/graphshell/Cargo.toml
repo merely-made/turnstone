@@ -53,7 +53,7 @@ alembic-workshop-private = ["alembic-workshop", "dep:castellan-client", "castell
 # One holder-owned graph with an explicitly invited guest.
 coop = ["native", "web", "muniment/redb", "dep:pollster", "graphshell-client/pump"]
 coop-window = ["coop", "dep:cambium-desktop", "dep:mien", "dep:genet-scripted-dom", "dep:layout_dom_api", "dep:image"]
-editable-blocks = ["web", "dep:knot-editor-host", "dep:illume", "dep:woodshedding"]
+editable-blocks = ["web", "dep:knot-editor-host", "dep:illume", "dep:woodshedding", "dep:vector-sheet", "dep:sprigging"]
 query-views = ["web", "mere/query", "dep:cambium"]
 caller-owned-toolkit-bench = ["retained-content", "cambium-rootstock/embedding-egui", "cambium-rootstock/embedding-iced", "dep:image"]
 # Goal-directed traversal over retained page text and the graph's links: the
@@ -217,6 +217,8 @@ alembic = { workspace = true, optional = true }
 wgpu-cue = { workspace = true, optional = true }
 cue-netrender = { workspace = true, optional = true }
 knot-editor-host = { workspace = true, optional = true }
+vector-sheet = { workspace = true, optional = true }
+sprigging = { workspace = true, optional = true }
 illume = { workspace = true, optional = true }
 # Canonical sibling owner; no dependency on Woodshed application or native host.
 woodshedding = { git = "https://github.com/merely-made/woodshed.git", branch = "main", optional = true }
