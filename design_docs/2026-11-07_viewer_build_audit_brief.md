@@ -282,7 +282,10 @@ Recorded in the Graphshell host plan, T7, with the ratchet schedule and the phys
 3. **One artifact or two: "Decide after receipts".** Option (c). Open until the headed receipts run the webgl2
    artifact on WebGPU hardware; leaning to one artifact (option (b)).
 4. **Genet-side work: "Both in Genet now".** The duplicate `ScriptedDom` pipeline (row 1) and the table gating
-   (row 5) are being done by another agent in the Genet repository. Not touched from Mere.
+   (row 5) are done in the Genet repository (`d634ee0c485`, 2026-11-07). The bands are gone: webgpu is one size on
+   every path, and the table gate measured 72.5 KB gzip6 per route against the 40 to 100 KB guessed above. The
+   viewer never lays out a table, so Mere turns the gate on for both routes. Causes, sizes and the C3 crash fix
+   (not a `currentColor` border) are in the host plan, T7, "Genet fixes landed".
 5. **Scene player: "One-page spike".** Option (b). Another agent is running the spike; not built here.
 
 **Stale claims fixed (2026-11-07).** The presentation plan's 3.30 MiB cap line, and the host plan's and the scenograph
