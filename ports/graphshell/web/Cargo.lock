@@ -3833,7 +3833,6 @@ dependencies = [
  "vector-sheet",
  "wgpu",
  "wgpu-cue",
- "woodshedding",
  "workbench",
 ]
 
@@ -3934,7 +3933,6 @@ dependencies = [
  "wasm-bindgen-futures",
  "web-sys",
  "wgpu",
- "woodshed-notation",
  "workbench",
 ]
 
@@ -12318,25 +12316,6 @@ dependencies = [
  "group",
  "hybrid-array",
  "primefield",
-]
-
-[[package]]
-name = "woodshed-notation"
-version = "0.1.0"
-source = "git+https://github.com/merely-made/woodshed.git?branch=main#93dad41443081870b08b791bd1c02e8bfe6f71a8"
-dependencies = [
- "sprigging",
- "ttf-parser",
- "woodshedding",
-]
-
-[[package]]
-name = "woodshedding"
-version = "0.1.0"
-source = "git+https://github.com/merely-made/woodshed.git?branch=main#93dad41443081870b08b791bd1c02e8bfe6f71a8"
-dependencies = [
- "roxmltree",
- "serde",
 ]
 
 [[package]]
