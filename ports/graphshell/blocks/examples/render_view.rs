@@ -23,6 +23,9 @@ use paint_list_render::{CompositeLayer, composite_paint_layers};
 use personae::{IdentityProvider, InMemoryProvider};
 use sprigging::{Leaf, PaintCx, Size};
 
+const LIGHT_PAGE: ColorF = ColorF { r: 0.97, g: 0.97, b: 0.95, a: 1.0 };
+const DARK_PAGE: ColorF = ColorF { r: 0.06, g: 0.08, b: 0.10, a: 1.0 };
+
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     let bytes = std::fs::read(&args[1]).expect("component");
@@ -72,20 +75,25 @@ fn main() {
             block.attrs = next;
         }
     }
-    let ink = ColorF { r: 0.08, g: 0.08, b: 0.10, a: 1.0 };
-    let accent = ColorF { r: 0.10, g: 0.40, b: 0.85, a: 1.0 };
+    // `RENDER_THEME=dark` paints the dark pane the web host shows by default.
+    let dark = std::env::var("RENDER_THEME").is_ok_and(|t| t == "dark");
+    let (page, ink, accent) = if dark {
+        (DARK_PAGE, ColorF { r: 0.91, g: 0.90, b: 0.88, a: 1.0 }, ColorF { r: 0.85, g: 0.72, b: 0.45, a: 1.0 })
+    } else {
+        (LIGHT_PAGE, ColorF { r: 0.08, g: 0.08, b: 0.10, a: 1.0 }, ColorF { r: 0.10, g: 0.40, b: 0.85, a: 1.0 })
+    };
     let theme = SheetTheme { ink, accent, muted: ColorF { r: 0.5, g: 0.5, b: 0.5, a: 1.0 } };
     for mode in &claim.views {
         let view = adapter
             .view(&block, &ViewAsk { mode: mode.id.clone(), width: 640.0, selected: Some((0, 1)) })
             .expect("view")
             .expect("a view");
-        let mut leaf = SheetLeaf::new(view.sheet.clone(), theme).expect("paints");
+        let mut leaf = SheetLeaf::new(view.sheet.clone(), theme).expect("paints").on_ground(page);
         let (w, h) = (view.width.ceil() as u32, view.height.ceil() as u32);
         let mut cmds = Vec::new();
         {
             let mut cx = PaintCx::new(&mut cmds, Size { width: w as f32, height: h as f32 });
-            cx.fill_rect(0.0, 0.0, w as f32, h as f32, ColorF { r: 0.97, g: 0.97, b: 0.95, a: 1.0 });
+            cx.fill_rect(0.0, 0.0, w as f32, h as f32, page);
         }
         leaf.paint(&mut PaintCx::new(&mut cmds, Size { width: w as f32, height: h as f32 }));
         let scene = composite_paint_layers(
@@ -105,5 +113,14 @@ fn main() {
             "{}: {}x{}, {} regions, {} text runs, {}",
             mode.id, w, h, view.regions().len(), leaf.texts().len(), view.description
         );
+        // This receipt paints paths only; a host draws the text runs over it in its own fonts.
+        // Print what each run would be drawn in, and how it reads against the page.
+        for run in leaf.texts() {
+            println!(
+                "  text {:?} at ({:.0},{:.0}) {} contrast {:.2}",
+                run.text, run.x, run.y, run.css_colour(),
+                graphshell::block_editing::sheet_leaf::contrast_ratio(run.colour, page)
+            );
+        }
     }
 }

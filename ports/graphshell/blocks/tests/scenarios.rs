@@ -55,3 +55,13 @@ fn the_scenarios_open_with_the_reviewed_adapter_installed() {
         }
     }
 }
+
+#[test]
+fn guest_text_is_drawn_in_its_role_colour_not_an_inherited_one() {
+    // The pane draws a sheet's text runs as its own spans over the leaf. A span with no colour
+    // takes the container's, which on the dark theme was near-black on near-black
+    // (guest_blocks_spike_20261106/web_headed/web_score_reading.png).
+    let overlay = PANE.split("for text in leaf.texts()").nth(1).expect("the pane draws text runs");
+    let overlay = &overlay[..overlay.find("source_revision").expect("end of the text overlay")];
+    assert!(overlay.contains("color:{}") && overlay.contains("text.css_colour()"), "{overlay}");
+}

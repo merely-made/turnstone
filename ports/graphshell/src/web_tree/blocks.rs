@@ -53,18 +53,10 @@ impl PaneHost for TreePage {
         self.size
     }
     fn sheet_theme(&self) -> SheetTheme {
-        let theme = self.shared.appearance.borrow().backdrop_theme();
-        let color = |a: [f32; 4]| ColorF {
-            r: a[0],
-            g: a[1],
-            b: a[2],
-            a: a[3],
-        };
-        SheetTheme {
-            ink: color(theme.text),
-            accent: color(theme.root),
-            muted: color(theme.guide),
-        }
+        SheetTheme::from_surface(&self.shared.appearance.borrow().backdrop_theme())
+    }
+    fn sheet_ground(&self) -> Option<ColorF> {
+        Some(SheetTheme::ground_of(&self.shared.appearance.borrow().backdrop_theme()))
     }
     fn swatch_style(&self) -> Rc<dyn Fn() -> SwatchStyle> {
         let appearance = self.shared.appearance.clone();

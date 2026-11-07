@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: MPL-2.0
 //! Graphshell's block pane in a native Cambium window.
 //!
-//! `graphshell-blocks [--data DIR] [--adapter PACK.json COMPONENT.wasm]...`
+//! `graphshell-blocks [--data DIR] [--adapter PACK.json COMPONENT.wasm]... [--moot-disclosure FILE]...`
 //!
 //! The pane is `graphshell::block_pane`, the same one the web page shows. Block adapters are
 //! signed component packs reviewed once: each `--adapter` pair is read and verified at start
@@ -13,6 +13,13 @@
 //! in the review panel, which grants the one `power:block-adapter` and loads the component
 //! under wasmtime. "Review block adapters" in the pane opens that panel. The document is kept
 //! in `--data DIR` (default `./graphshell-blocks-data`).
+//!
+//! This shell has no live Moot connection. `--adapter` is a development input, disclosed as
+//! "local-files". `--moot-disclosure FILE` reads the `moot-disclosure.json` that
+//! `ports/moot/examples/block_adapter_disclosure.rs` writes from a Moot collection (its packs
+//! and components sit beside it): each entry is reviewed against the disclosed pack address, and
+//! the panel names the Moot, collection and revision. The Moot's own checks (who contributed,
+//! that the collection selected it) were made by that example, not here.
 
 use cambium::{AnyView, GenetCtx, GenetElement, button, el, status_note};
 use cambium_genet_winit_host::{AppCtx, HostOptions, Init, inert_hooks, run};
@@ -61,6 +68,7 @@ struct Candidate {
     asks: Vec<String>,
     component_hash: String,
     size: usize,
+    disclosed_by: String,
     component: Vec<u8>,
     mount: CapsuleMount,
     state: String,
@@ -86,9 +94,10 @@ impl PaneHost for App {
         self.size
     }
     fn sheet_theme(&self) -> SheetTheme {
-        let t = SurfaceTheme::default();
-        let c = |a: [f32; 4]| ColorF { r: a[0], g: a[1], b: a[2], a: a[3] };
-        SheetTheme { ink: c(t.text), accent: c(t.root), muted: c(t.guide) }
+        SheetTheme::from_surface(&SurfaceTheme::default())
+    }
+    fn sheet_ground(&self) -> Option<ColorF> {
+        Some(SheetTheme::ground_of(&SurfaceTheme::default()))
     }
     fn swatch_style(&self) -> Rc<dyn Fn() -> SwatchStyle> {
         Rc::new(|| SwatchStyle { revision: 1, font_roles: String::new(), theme: SurfaceTheme::default() })
@@ -127,22 +136,63 @@ fn hash(bytes: &[u8]) -> String {
 }
 
 fn read_candidate(pack_path: &str, component_path: &str) -> Result<Candidate, String> {
+    read_candidate_as(pack_path, component_path, None, |pack| CapsuleDisclosure {
+        moot: "local-files".into(),
+        collection: "block adapters on this computer".into(),
+        revision: hash(pack),
+        capsules: vec![],
+    })
+}
+
+/// The entries a Moot disclosure file lists, each reviewed against its disclosed pack address.
+fn read_disclosed(file: &str) -> Result<Vec<Candidate>, String> {
+    let text = std::fs::read(file).map_err(|e| format!("{file}: {e}"))?;
+    let disclosed: serde_json::Value = serde_json::from_slice(&text).map_err(|e| format!("{file}: {e}"))?;
+    let field = |v: &serde_json::Value, name: &str| -> Result<String, String> {
+        v.get(name).and_then(|f| f.as_str()).map(str::to_owned).ok_or_else(|| format!("{file}: no {name}"))
+    };
+    let (moot, collection, revision) =
+        (field(&disclosed, "moot")?, field(&disclosed, "collection")?, field(&disclosed, "revision")?);
+    let entries = disclosed.get("entries").and_then(|e| e.as_array()).ok_or_else(|| format!("{file}: no entries"))?;
+    let dir = std::path::Path::new(file).parent().unwrap_or(std::path::Path::new("."));
+    entries
+        .iter()
+        .map(|entry| {
+            read_candidate_as(
+                &dir.join(field(entry, "pack_file")?).display().to_string(),
+                &dir.join(field(entry, "component_file")?).display().to_string(),
+                Some(&field(entry, "pack_hash")?),
+                |_| CapsuleDisclosure {
+                    moot: moot.clone(),
+                    collection: collection.clone(),
+                    revision: revision.clone(),
+                    capsules: vec![],
+                },
+            )
+        })
+        .collect()
+}
+
+fn read_candidate_as(
+    pack_path: &str,
+    component_path: &str,
+    disclosed_hash: Option<&str>,
+    disclosure: impl FnOnce(&[u8]) -> CapsuleDisclosure,
+) -> Result<Candidate, String> {
     let pack = std::fs::read(pack_path).map_err(|e| format!("{pack_path}: {e}"))?;
     let component = std::fs::read(component_path).map_err(|e| format!("{component_path}: {e}"))?;
     let signed: SignedPack = serde_json::from_slice(&pack).map_err(|e| format!("{pack_path}: {e}"))?;
-    let disclosure = CapsuleDisclosure {
-        moot: "local-files".into(),
-        collection: "block adapters on this computer".into(),
-        revision: hash(&pack),
-        capsules: vec![],
-    };
-    let mount = CapsuleMount::review(&pack, &hash(&pack), &component, disclosure)?;
+    let disclosure = disclosure(&pack);
+    let by = format!("{} · {} · {}", disclosure.moot, disclosure.collection, disclosure.revision);
+    let address = disclosed_hash.map_or_else(|| hash(&pack), str::to_owned);
+    let mount = CapsuleMount::review(&pack, &address, &component, disclosure)?;
     Ok(Candidate {
         name: signed.manifest.name.clone(),
         author: signed.manifest.author.clone(),
         asks: signed.manifest.requested_scopes.clone(),
         component_hash: mount.component_hash.clone(),
         size: component.len(),
+        disclosed_by: by,
         component,
         mount,
         state: "Reviewed: signature, address and size verified · not yet approved".into(),
@@ -175,6 +225,7 @@ fn adapters(app: &App) -> Child<App> {
     for (index, c) in app.candidates.iter().enumerate() {
         children.push(Box::new(el("p", format!("{} · author {}…", c.name, &c.author[..c.author.len().min(16)]))));
         children.push(Box::new(el("p", format!("asks: {} · component {} bytes · {}…", c.asks.join(", "), c.size, &c.component_hash[..c.component_hash.len().min(16)]))));
+        children.push(Box::new(el("p", format!("Disclosed by {}", c.disclosed_by))));
         children.push(Box::new(status_note("blocks-adapter-state", c.state.clone())));
         children.push(Box::new(
             button("Approve block adapter", move |app: &mut App, _| app.approve(index))
@@ -231,12 +282,17 @@ fn has_label(dom: &genet_scripted_dom::ScriptedDom, node: genet_scripted_dom::No
 fn main() {
     let mut data = PathBuf::from("graphshell-blocks-data");
     let mut packs: Vec<(String, String)> = Vec::new();
+    let mut moots: Vec<String> = Vec::new();
     let args: Vec<String> = std::env::args().skip(1).collect();
     let mut i = 0;
     while i < args.len() {
         match args[i].as_str() {
             "--data" => {
                 data = PathBuf::from(args.get(i + 1).expect("--data DIR"));
+                i += 2;
+            },
+            "--moot-disclosure" => {
+                moots.push(args.get(i + 1).expect("--moot-disclosure FILE").clone());
                 i += 2;
             },
             "--adapter" => {
@@ -246,7 +302,7 @@ fn main() {
                 ));
                 i += 3;
             },
-            other => panic!("unknown argument {other}; usage: graphshell-blocks [--data DIR] [--adapter PACK COMPONENT]..."),
+            other => panic!("unknown argument {other}; usage: graphshell-blocks [--data DIR] [--adapter PACK COMPONENT]... [--moot-disclosure FILE]..."),
         }
     }
     std::fs::create_dir_all(&data).expect("data directory");
@@ -254,10 +310,13 @@ fn main() {
     let storage: Rc<dyn Storage> = Rc::new(BackendStorage(backend));
     let ports = Rc::new(NativePorts { exports: data.join("exports") });
     let engine = Rc::new(GuestEngine::new().expect("guest engine"));
-    let candidates: Vec<Candidate> = packs
+    let mut candidates: Vec<Candidate> = packs
         .iter()
         .map(|(p, c)| read_candidate(p, c).unwrap_or_else(|e| panic!("{e}")))
         .collect();
+    for file in &moots {
+        candidates.extend(read_disclosed(file).unwrap_or_else(|e| panic!("{e}")));
+    }
     let lane = LaneConfig::from_env("GRAPHSHELL_BLOCKS").map(|config| {
         let product = LaneProduct {
             sheet: format!("{CSS}\n{}", block_pane::SHEET),
@@ -376,6 +435,35 @@ mod tests {
         let mut pane = pollster::block_on(Pane::load(Some((storage, "blocks".into())), ports));
         pane.set_open(true);
         App { pane, size: (1100, 800), engine: Rc::new(GuestEngine::new().unwrap()), candidates, panel: true }
+    }
+
+    #[test]
+    fn a_moot_disclosure_is_reviewed_at_its_disclosed_address_and_names_its_moot() {
+        let dir = std::env::temp_dir().join(format!("gsb-moot-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let (pack, component) = fixture_files(&dir);
+        let address = hash(&std::fs::read(&pack).unwrap());
+        let write = |address: &str| {
+            let file = dir.join("moot-disclosure.json");
+            std::fs::write(
+                &file,
+                serde_json::json!({
+                    "moot": "81", "collection": "82", "revision": "rev-1",
+                    "entries": [{ "pack_hash": address, "pack_file": "pack.json", "component_file": "guest.wasm" }],
+                })
+                .to_string(),
+            )
+            .unwrap();
+            file.display().to_string()
+        };
+        let candidates = read_disclosed(&write(&address)).unwrap();
+        assert_eq!(candidates.len(), 1);
+        assert_eq!(candidates[0].disclosed_by, "81 · 82 · rev-1");
+        assert_eq!(candidates[0].mount.disclosure.revision, "rev-1");
+        assert!(!candidates[0].installed, "disclosure loads nothing");
+        let _ = component;
+        // A pack served under another address than the one disclosed is not reviewed.
+        assert!(read_disclosed(&write(&"0".repeat(address.len()))).is_err());
     }
 
     #[test]

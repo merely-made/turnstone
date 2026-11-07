@@ -20,7 +20,7 @@ use crate::block_editing::{
         AdapterError, BACKDROP_SCENE, BlockAdapter, BlockInput, CommandKind, GuestView, Registry,
         Row, RunResult, ViewAsk, unclaimed_message,
     },
-    sheet_leaf::{SheetLeaf, SheetTheme},
+    sheet_leaf::{ColorF, SheetLeaf, SheetTheme},
     store::{self, DocumentStore, StoredDocument},
     worker::WorkerAdapter,
 };
@@ -139,6 +139,11 @@ pub trait PaneHost: 'static + Sized {
     /// The window's logical size.
     fn size(&self) -> (u32, u32);
     fn sheet_theme(&self) -> SheetTheme;
+    /// The pane's background colour, which a sheet's text must read against. A host that does
+    /// not say keeps each text role's colour as the theme gives it.
+    fn sheet_ground(&self) -> Option<ColorF> {
+        None
+    }
     /// A source of the swatch's style that outlives the borrow of the page.
     fn swatch_style(&self) -> Rc<dyn Fn() -> SwatchStyle>;
     /// Whether the pane may show at all (the web page needs its product loaded).
@@ -1074,12 +1079,16 @@ pub fn workspace<P: PaneHost>(page: &P) -> Option<Child<P>> {
             ),
         )),
         Box::new(status_note("blocks-status", pane.status.clone())),
+        // The label stays visible text: an aria-label would replace the source for readers.
         if read_only {
-            Box::new(
-                el("pre", pane.document.editor.source().to_string())
-                    .attr("aria-label", SOURCE_LABEL)
-                    .attr("class", "blocks-source"),
-            )
+            Box::new(el(
+                "div",
+                (
+                    el("p", SOURCE_LABEL),
+                    el("pre", pane.document.editor.source().to_string())
+                        .attr("class", "blocks-source"),
+                ),
+            ))
         } else {
             Box::new(el(
                 "label",
@@ -1154,7 +1163,7 @@ pub fn workspace<P: PaneHost>(page: &P) -> Option<Child<P>> {
             ));
             let claim = pane.adapter(&class).map(|a| a.claim().clone());
             if let Some(claim) = &claim {
-                if let Some(field) = &claim.pattern {
+                if let Some(field) = claim.pattern.as_ref().filter(|_| !read_only) {
                     let key = format!("pattern:{class}");
                     let label = field.label.clone();
                     let aria = label.clone();
@@ -1187,20 +1196,23 @@ pub fn workspace<P: PaneHost>(page: &P) -> Option<Child<P>> {
     } else {
         children.push(Box::new(el("p", "Use an attributed Djot block to offer domain commands. Unrecognized content remains editable.")));
     }
-    children.push(Box::new(el(
-        "label",
-        (
-            QUERY_LABEL,
-            lens(
-                |input: &mut TextInput| text_field_typed(input).attr("aria-label", QUERY_LABEL),
-                |p: &mut P| &mut p.pane_mut().query,
+    // A following view runs no block commands, so it offers no search for them.
+    if !read_only {
+        children.push(Box::new(el(
+            "label",
+            (
+                QUERY_LABEL,
+                lens(
+                    |input: &mut TextInput| text_field_typed(input).attr("aria-label", QUERY_LABEL),
+                    |p: &mut P| &mut p.pane_mut().query,
+                ),
             ),
-        ),
-    )));
-    let set = pane.commands();
-    for command in set.menu(&CommandChoices::default(), Some("block"), pane.query.text()) {
-        if let Some(reason) = &command.disabled_reason {
-            children.push(Box::new(el("p", reason.clone())));
+        )));
+        let set = pane.commands();
+        for command in set.menu(&CommandChoices::default(), Some("block"), pane.query.text()) {
+            if let Some(reason) = &command.disabled_reason {
+                children.push(Box::new(el("p", reason.clone())));
+            }
         }
     }
     if let Some(class) = &guest_class {
@@ -1459,12 +1471,16 @@ fn view_panel<P: PaneHost>(page: &P, class: &str) -> Child<P> {
             )];
             let theme = page.sheet_theme();
             if let Ok(leaf) = SheetLeaf::new(view.sheet.clone(), theme) {
+                let leaf = match page.sheet_ground() {
+                    Some(ground) => leaf.on_ground(ground),
+                    None => leaf,
+                };
                 for text in leaf.texts() {
                     overlay.push(Box::new(el("span", text.text.clone()).attr("aria-hidden", "true").attr(
                         "style",
                         format!(
-                            "position:absolute;left:{}px;top:{}px;font-size:{}px;pointer-events:none;",
-                            text.x, text.y, text.size
+                            "position:absolute;left:{}px;top:{}px;font-size:{}px;color:{};pointer-events:none;",
+                            text.x, text.y, text.size, text.css_colour()
                         ),
                     )));
                 }

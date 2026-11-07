@@ -13,7 +13,9 @@
 //   2. "Review" fetches a pack and its component and hands the exact bytes to
 //      `block_adapter_review`, which verifies the signature, the component's address and size,
 //      and that the pack asks for `power:block-adapter` alone. Nothing runs; the panel shows
-//      the pack's name, author key, ask, component address and size.
+//      the pack's name, author key, ask, component address and size, and the Moot, collection
+//      and revision that disclosed it (`build_block_adapters.mjs --moot` writes a real one;
+//      `--pack` writes a local-test disclosure that says so).
 //   3. "Approve block adapter" grants that one power (`block_adapter_approve`), starts the
 //      Worker (`block_worker.mjs`, which verifies everything again), asks the component to
 //      describe itself, and registers the class it claims (`block_adapter_install`).
@@ -96,6 +98,7 @@ export async function mountBlockAdapters(root, gs, supplied) {
       el('p', { textContent: `Author key: ${receipt.author}`, className: 'block-adapter-author' }),
       el('p', { textContent: `Asks for: ${receipt.asks.join(', ')}`, className: 'block-adapter-asks' }),
       el('p', { textContent: `Component: ${receipt.component_bytes} bytes · ${receipt.component_hash}`, className: 'block-adapter-component' }),
+      el('p', { textContent: `Disclosed by moot ${receipt.moot}, collection ${receipt.collection}, revision ${receipt.revision}`, className: 'block-adapter-disclosure' }),
       el('p', { textContent: 'Signature, component address and size verified. Nothing has run.' }),
       el('button', { type: 'button', textContent: 'Approve block adapter', className: 'block-adapter-approve', onclick: () => approve().catch(fail) }),
       el('button', { type: 'button', textContent: 'Decline', className: 'block-adapter-decline', onclick: () => { reviewed = undefined; detail.replaceChildren(); say('Declined; nothing was loaded.'); setState('declined'); } }));
