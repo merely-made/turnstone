@@ -21,3 +21,9 @@ sceno.workspace = true
 eidetic = { workspace = true, features = ["pack-signing"] }
 personae.workspace = true
 serde_json.workspace = true
+# The headless render receipt (examples/render_view.rs).
+sprigging.workspace = true
+netrender = { workspace = true, features = ["vello-cpu"] }
+paint_list_api.workspace = true
+paint_list_render.workspace = true
+png = "0.17"
