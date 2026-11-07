@@ -238,10 +238,11 @@ genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", branch 
 # Registry Webcue and Genet sessions share one input vocabulary, as at the root.
 document-session-api = { git = "https://github.com/merely-made/genet.git", branch = "main" }
 # Classic 0.11 and its owned repairs, kept in step with the root Scene aliases.
-# Standalone workspaces restate the complete encoding/shader trio.
+# Standalone workspaces restate the netrender-vello and encoding rows. A shaders row
+# was unused (cargo warned on every build): the graph takes shaders at the rev that
+# netrender-vello-encoding names, not from crates.io.
 netrender-vello = { git = "https://github.com/mark-ik/vello", rev = "dfb9b53b315561887761deff319afed08cc33ff0" }
 netrender-vello-encoding = { git = "https://github.com/mark-ik/vello", rev = "dfb9b53b315561887761deff319afed08cc33ff0" }
-netrender-vello-shaders = { git = "https://github.com/mark-ik/vello", rev = "dfb9b53b315561887761deff319afed08cc33ff0" }
 # CubeCL 0.11.1 supplies the resident lane without the retired runtime
 # persistence patch (migration plan 13.48). The burn-cubecl selector likewise
 # remains the registry implementation, qualified under ruling 410.
