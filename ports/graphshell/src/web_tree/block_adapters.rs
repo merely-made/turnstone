@@ -41,6 +41,8 @@ pub(super) struct Mailbox {
     review_requested: bool,
     /// Classes registered, for the receipt.
     installed: Vec<String>,
+    /// Open or close the block pane from outside the page's own controls.
+    open_request: Option<bool>,
 }
 
 pub(super) type Handle = Rc<RefCell<Mailbox>>;
@@ -178,6 +180,16 @@ pub fn block_adapter_remove(class: &str) -> Result<(), JsValue> {
     })
 }
 
+/// Open or close the block pane (the document editor) without the page's toolbar. The same pane
+/// that "Editable document" opens; its own "Return to graph" closes it.
+#[wasm_bindgen]
+pub fn block_pane_open(open: bool) -> Result<(), JsValue> {
+    with_mailbox(|m| {
+        m.open_request = Some(open);
+        Ok(())
+    })
+}
+
 /// Whether the pane asked for a review since the last call; clears the request.
 #[wasm_bindgen]
 pub fn block_adapter_review_requested() -> Result<bool, JsValue> {
@@ -203,7 +215,7 @@ pub fn block_adapter_receipt() -> Result<String, JsValue> {
 pub(super) fn sync(ctx: &mut AppCtx<'_, TreePage, Logic, Child>) {
     let mailbox = ctx.runner.state().shared.block_adapters.clone();
     let review = ctx.runner.state().blocks.review_requested();
-    let (installs, removals, replies) = {
+    let (installs, removals, replies, open) = {
         let mut m = mailbox.borrow_mut();
         if review {
             m.review_requested = true;
@@ -212,8 +224,12 @@ pub(super) fn sync(ctx: &mut AppCtx<'_, TreePage, Logic, Child>) {
             std::mem::take(&mut m.installs),
             std::mem::take(&mut m.removals),
             std::mem::take(&mut m.replies),
+            m.open_request.take(),
         )
     };
+    if let Some(open) = open {
+        ctx.runner.update(|p| p.blocks.set_open(open));
+    }
     if review {
         ctx.runner.update(|p| {
             p.blocks.take_review_request();

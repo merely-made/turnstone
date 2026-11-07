@@ -36,7 +36,7 @@ const el = (tag, props = {}, ...kids) => {
 
 export async function mountBlockAdapters(root, gs, supplied) {
   for (const name of ['block_adapter_review', 'block_adapter_approve', 'block_adapter_install',
-    'block_adapter_take_requests', 'block_adapter_reply', 'block_adapter_remove', 'block_adapter_review_requested']) {
+    'block_adapter_take_requests', 'block_adapter_reply', 'block_adapter_remove', 'block_adapter_review_requested', 'block_pane_open']) {
     if (typeof gs[name] !== 'function') throw new Error(`This Graphshell build has no ${name}; build the product with block adapters`);
   }
   if (hosts.has(root)) throw new Error('This root already has a block adapter host');
@@ -59,7 +59,7 @@ export async function mountBlockAdapters(root, gs, supplied) {
     el('button', { type: 'button', textContent: 'Close review', className: 'block-adapter-close', onclick: () => { panel.hidden = true; root.dataset.blockAdapterReview = 'closed'; } }));
   panel.setAttribute('role', 'dialog');
   panel.setAttribute('aria-label', 'Block adapters');
-  Object.assign(panel.style, { position: 'fixed', right: '12px', top: '12px', maxWidth: '420px', maxHeight: '90vh', overflow: 'auto', zIndex: 20, padding: '12px', background: '#16191d', color: '#e8e6e1', border: '1px solid #6d7783', font: '14px sans-serif' });
+  Object.assign(panel.style, { position: 'fixed', right: '12px', top: '12px', maxWidth: '420px', maxHeight: '90vh', overflow: 'auto', overflowWrap: 'anywhere', zIndex: 20, padding: '12px', background: '#16191d', color: '#e8e6e1', border: '1px solid #6d7783', font: '14px sans-serif' });
   document.body.append(panel);
   const say = text => { status.textContent = text; };
   const setState = state => { root.dataset.blockAdapterState = state; };
@@ -185,9 +185,14 @@ export async function mountBlockAdapters(root, gs, supplied) {
     }
     setTimeout(pump, 25);
   }
+  // A launcher for the document editor that does not depend on the page's toolbar.
+  const launcher = el('button', { type: 'button', textContent: 'Open block pane', className: 'block-pane-open', onclick: () => gs.block_pane_open(true) });
+  Object.assign(launcher.style, { position: 'fixed', right: '12px', bottom: '12px', zIndex: 19, padding: '6px 10px', background: '#22262c', color: '#e8e6e1', border: '1px solid #6d7783', font: '14px sans-serif' });
+  document.body.append(launcher);
   renderList();
   pump();
   return {
+    openPane: () => gs.block_pane_open(true),
     receipt: () => ({ ...(typeof gs.block_adapter_receipt === 'function' ? JSON.parse(gs.block_adapter_receipt()) : {}), transport: structuredClone(transport) }),
     // Test hooks that do what the buttons do.
     review: name => review(supplied.adapters.find(a => a.name === name) ?? supplied.adapters[0]),
@@ -198,6 +203,7 @@ export async function mountBlockAdapters(root, gs, supplied) {
       for (const runtime of runtimes.values()) runtime.close();
       runtimes.clear();
       panel.remove();
+      launcher.remove();
     },
   };
 }

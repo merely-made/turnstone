@@ -710,7 +710,9 @@ impl Pane {
         }));
         Ok(())
     }
-    fn refresh(&mut self) {
+    /// Rebuild the swatch for the selected block. Returns true when an adapter has not answered
+    /// yet, so the caller asks again next frame.
+    fn refresh(&mut self) -> bool {
         let result: Result<Option<SceneInput>, String> = (|| {
             let div = self.target()?;
             let source = self.document.editor.source();
@@ -754,6 +756,7 @@ impl Pane {
                 Err(AdapterError::Refused(text)) => Err(text),
             }
         })();
+        let pending = matches!(result, Ok(None));
         let mut display = self.display.borrow_mut();
         match result {
             Ok(Some(input)) if display.input.as_ref() != Some(&input) => {
@@ -784,6 +787,7 @@ impl Pane {
                 self.status = error;
             },
         }
+        pending
     }
 }
 /// The class tokens of a block's `class` attribute, in order.
@@ -1639,9 +1643,13 @@ pub fn register<P: PaneHost>(ctx: &mut AppCtx<'_, P, Logic<P>, Child<P>>) {
     if pane.refresh_key.as_ref() != Some(&refresh_key) {
         let wake = ctx.wake.clone();
         ctx.runner.update(|p| {
-            p.pane_mut().wake = Some(wake);
-            p.pane_mut().refresh_key = Some(refresh_key);
-            p.pane_mut().refresh();
+            let pane = p.pane_mut();
+            pane.wake = Some(wake);
+            pane.refresh_key = Some(refresh_key);
+            // An adapter that has not answered is asked again next frame.
+            if pane.refresh() {
+                pane.refresh_key = None;
+            }
         });
     }
     if ctx.runner.state().pane().display.borrow().surface.is_none() {
