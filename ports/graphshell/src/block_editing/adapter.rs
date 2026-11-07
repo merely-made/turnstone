@@ -30,11 +30,20 @@ pub enum CommandKind {
     Text,
 }
 
+/// A text field the pane shows for an adapter: a label and its default text.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Field {
+    pub label: String,
+    pub default: String,
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Command {
     pub id: String,
     pub label: String,
     pub kind: CommandKind,
+    /// A field whose text is sent as `run`'s argument.
+    pub arg: Option<Field>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -58,6 +67,8 @@ pub struct Claim {
     /// The attribute that carries its structured source, if it has one.
     pub source_key: Option<String>,
     pub source_versions: Vec<u32>,
+    /// The pane's pattern field for this class, sent as [`BlockInput::pattern`].
+    pub pattern: Option<Field>,
     pub commands: Vec<Command>,
     pub views: Vec<ViewMode>,
     pub example: Option<Example>,
@@ -122,7 +133,38 @@ pub struct GuestView {
     pub description: String,
 }
 
+/// The two payload version bytes a view carries (a version byte, then CBOR).
+pub const SCENE_PAYLOAD_VERSION: u8 = 1;
+
 impl GuestView {
+    /// Decode the two payloads a guest's view returns, refusing any that is over the 1 MiB cap
+    /// or has an unknown version byte. The sheet is validated.
+    pub fn decode(
+        scene: &[u8],
+        sheet: &[u8],
+        width: f32,
+        height: f32,
+        description: String,
+    ) -> Result<Self, String> {
+        if scene.len() > vector_sheet::MAX_PAYLOAD_BYTES {
+            return Err("The view's scene is over the 1 MiB payload cap".into());
+        }
+        let (version, body) = scene.split_first().ok_or("The view's scene is empty")?;
+        if *version != SCENE_PAYLOAD_VERSION {
+            return Err(format!("Unsupported scene version {version}"));
+        }
+        let scene: Scene = ciborium::from_reader(body)
+            .map_err(|e| format!("The view's scene did not decode: {e}"))?;
+        let sheet = VectorSheet::decode(sheet).map_err(|e| e.to_string())?;
+        Ok(Self {
+            scene,
+            sheet,
+            width,
+            height,
+            description,
+        })
+    }
+
     /// The event regions the scene names: one per region that has a label and a member item
     /// whose source id is `bar:<n>/event:<m>`. Items without that id are not events.
     pub fn regions(&self) -> Vec<EventRegion> {
@@ -363,10 +405,15 @@ impl RhymeAdapter {
                 class: Self::CLASS.into(),
                 source_key: Some("rhyme".into()),
                 source_versions: vec![1],
+                pattern: Some(Field {
+                    label: "Rhyme scheme".into(),
+                    default: "ABAB".into(),
+                }),
                 commands: vec![Command {
                     id: Self::SCHEME.into(),
                     label: "Apply rhyme scheme…".into(),
                     kind: CommandKind::Choice,
+                    arg: None,
                 }],
                 views: Vec::new(),
                 example: None,
@@ -556,6 +603,27 @@ mod tests {
             height: 80.0,
             description: String::new(),
         }
+    }
+
+    #[test]
+    fn a_view_decodes_from_its_two_payloads_and_refuses_bad_ones() {
+        let view = event_scene("bar:0/event:0", true);
+        let mut scene = vec![SCENE_PAYLOAD_VERSION];
+        ciborium::into_writer(&view.scene, &mut scene).unwrap();
+        let sheet = VectorSheet {
+            width: 10.0,
+            height: 10.0,
+            ops: vec![],
+        };
+        let sheet_bytes = sheet.encode().unwrap();
+        let decoded = GuestView::decode(&scene, &sheet_bytes, 10.0, 10.0, "d".into()).unwrap();
+        assert_eq!(decoded.scene, view.scene);
+        assert_eq!(decoded.regions().len(), 1);
+        assert!(GuestView::decode(&[], &sheet_bytes, 1.0, 1.0, String::new()).is_err());
+        assert!(GuestView::decode(&[9, 0], &sheet_bytes, 1.0, 1.0, String::new()).is_err());
+        assert!(GuestView::decode(&scene, &[1, 0xff], 1.0, 1.0, String::new()).is_err());
+        let huge = vec![1u8; vector_sheet::MAX_PAYLOAD_BYTES + 1];
+        assert!(GuestView::decode(&huge, &sheet_bytes, 1.0, 1.0, String::new()).is_err());
     }
 
     #[test]
