@@ -293,8 +293,15 @@ impl Pane {
             }
         }
     }
-    /// Register a guest's adapter, answered by `worker`. Two claims for one class are refused.
-    #[allow(dead_code)]
+    /// Register an adapter (a guest answering in process, or through a Worker). Two claims for
+    /// one class are refused.
+    pub fn add_adapter(&mut self, adapter: Box<dyn BlockAdapter>) -> Result<(), String> {
+        self.registry.register(adapter)?;
+        self.install_defaults();
+        self.status = "Block adapter installed".into();
+        Ok(())
+    }
+    /// Register a guest's adapter, answered by `worker`.
     pub fn add_worker(&mut self, worker: WorkerAdapter) -> Result<(), String> {
         self.registry.register(Box::new(worker.clone()))?;
         self.workers.push(worker);
@@ -303,7 +310,6 @@ impl Pane {
         Ok(())
     }
     /// A guest's adapter was revoked or stopped: blocks of its class return to plain text.
-    #[allow(dead_code)]
     pub fn remove_adapter(&mut self, class: &str) {
         self.registry.remove(class);
         self.workers.retain(|w| w.claim().class != class);
@@ -313,12 +319,33 @@ impl Pane {
         self.refresh_key = None;
     }
     /// Deliver a Worker's reply for `class`; true means the pane should wake.
-    #[allow(dead_code)]
     pub fn deliver(&self, class: &str, id: u64, reply: &str) -> bool {
         self.workers
             .iter()
             .find(|w| w.claim().class == class)
             .is_some_and(|w| w.deliver(id, reply))
+    }
+    pub fn open(&self) -> bool {
+        self.open
+    }
+    pub fn set_open(&mut self, open: bool) {
+        self.open = open;
+    }
+    /// Whether the user asked to review block adapters; reading it clears it.
+    pub fn take_review_request(&mut self) -> bool {
+        std::mem::take(&mut self.review_requested)
+    }
+    pub fn review_requested(&self) -> bool {
+        self.review_requested
+    }
+    pub fn set_status(&mut self, status: impl Into<String>) {
+        self.status = status.into();
+    }
+    pub fn status(&self) -> &str {
+        &self.status
+    }
+    pub fn classes(&self) -> Vec<&str> {
+        self.registry.classes()
     }
     fn field(&self, key: &str) -> &str {
         self.fields.get(key).map_or("", TextInput::text)

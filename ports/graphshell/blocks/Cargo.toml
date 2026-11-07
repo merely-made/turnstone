@@ -11,11 +11,27 @@ publish = false
 [lib]
 path = "src/lib.rs"
 
+# The native window: Graphshell's block pane in a Cambium desktop shell, in the style of
+# graphshell-alembic. `graphshell-blocks [--data DIR] [--adapter PACK COMPONENT]...`
+[[bin]]
+name = "graphshell-blocks"
+path = "src/main.rs"
+
 [dependencies]
 graphshell = { path = "..", default-features = false, features = ["editable-blocks", "applets"] }
 block-host.workspace = true
 vector-sheet.workspace = true
 sceno.workspace = true
+cambium.workspace = true
+cambium-desktop.workspace = true
+cambium-rootstock.workspace = true
+muniment = { workspace = true, features = ["directory"] }
+mere = { workspace = true, features = ["graph", "canvas"] }
+genet-scripted-dom.workspace = true
+layout_dom_api.workspace = true
+pollster = "0.4"
+serde_json.workspace = true
+eidetic = { workspace = true, features = ["pack-signing"] }
 
 [dev-dependencies]
 eidetic = { workspace = true, features = ["pack-signing"] }
