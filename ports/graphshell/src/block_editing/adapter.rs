@@ -215,6 +215,12 @@ pub enum AdapterError {
     Refused(String),
 }
 
+impl From<&str> for AdapterError {
+    fn from(text: &str) -> Self {
+        Self::Refused(text.to_owned())
+    }
+}
+
 impl From<String> for AdapterError {
     fn from(text: String) -> Self {
         Self::Refused(text)

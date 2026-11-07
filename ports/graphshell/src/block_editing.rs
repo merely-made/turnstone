@@ -20,6 +20,7 @@ pub mod adapter;
 pub mod bars;
 pub mod rhyme;
 pub mod sheet_leaf;
+pub mod worker;
 pub mod store;
 
 /// Maximum source size admitted by preview and structural apply operations.
