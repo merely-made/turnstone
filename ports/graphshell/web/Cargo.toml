@@ -191,9 +191,10 @@ web-sys = { version = "0.3", features = [
 # local paths. The root dropped its ipc-channel row as dead on 2026-09-23, and
 # so does this table.
 # The release build a host ships (mer3ly site canvas plan, Ruling 157): the
-# settings P0 measured the viewer cone with (`measure-release.sh`), pinned
-# here so every `cargo build --release --locked` of a commit makes the same
-# bundle. Receipts use the dev profile below.
+# settings P0 measured the viewer cone with (`measure-release.sh`). The same
+# commit builds byte-identical bundles at one checkout path but not across
+# paths (the 2026-11-07 audit found two size bands), so this profile is not a
+# reproducible one. Receipts use the dev profile below.
 [profile.release]
 opt-level = "s"
 lto = "thin"
@@ -244,10 +245,11 @@ genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", branch 
 # Registry Webcue and Genet sessions share one input vocabulary, as at the root.
 document-session-api = { git = "https://github.com/merely-made/genet.git", branch = "main" }
 # Classic 0.11 and its owned repairs, kept in step with the root Scene aliases.
-# Standalone workspaces restate the complete encoding/shader trio.
+# Standalone workspaces restate the netrender-vello and encoding rows. A shaders row
+# was unused (cargo warned on every build): the graph takes shaders at the rev that
+# netrender-vello-encoding names, not from crates.io.
 netrender-vello = { git = "https://github.com/mark-ik/vello", rev = "dfb9b53b315561887761deff319afed08cc33ff0" }
 netrender-vello-encoding = { git = "https://github.com/mark-ik/vello", rev = "dfb9b53b315561887761deff319afed08cc33ff0" }
-netrender-vello-shaders = { git = "https://github.com/mark-ik/vello", rev = "dfb9b53b315561887761deff319afed08cc33ff0" }
 # CubeCL 0.11.1 supplies the resident lane without the retired runtime
 # persistence patch (migration plan 13.48). The burn-cubecl selector likewise
 # remains the registry implementation, qualified under ruling 410.

@@ -22,11 +22,14 @@ import subprocess
 
 
 # R157's caps. Mark amended the Wasm cap to 3,460,300 B (3.30 MiB) on
-# 2026-10-15, to 3,670,016 B (3.50 MiB) on 2026-10-16, and to 5,242,880 B
-# (5.00 MiB) on 2026-11-07, applied to each route artifact. The 2026-11-07
-# amendment covers both build-path-dependent sizes of the same source (about
-# 3.62 and 3.71 MB gzip6 for webgpu; see the Graphshell host plan, T7).
-CAPS = {"wasm": 5242880, "glue": 20480, "mount": 8192, "history": 131072}
+# 2026-10-15, to 3,670,016 B (3.50 MiB) on 2026-10-16, to 5,242,880 B
+# (5.00 MiB) on 2026-11-07, and ruled "Ratchet down" the same day: 4,194,304 B
+# (4.00 MiB) now, applied to each route artifact. The ratchet schedule is in the
+# Graphshell host plan, T7: 3.50 MiB when physics leaves the first load and
+# Genet's duplicate fix lands, 3.25 MiB when the remaining stages land, each
+# step applied only after it measures green in both build modes (the same
+# source builds to about 3.62 or 3.71 MB gzip6 for webgpu, by checkout path).
+CAPS = {"wasm": 4194304, "glue": 20480, "mount": 8192, "history": 131072}
 # Route artifact name -> the viewer crate's features for that artifact.
 ARTIFACTS = {
     "webgpu": ["presentation-webgpu", "without-table-layout"],

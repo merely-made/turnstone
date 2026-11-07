@@ -284,14 +284,19 @@ The builder uses the standalone web lock, `--profile viewer` and
 LTO; the full application's release profile remains separate. It writes
 `viewer-delivery.json` with source, compiler, profile, asset hashes and sizes,
 then rejects a package that exceeds any interaction cap at gzip level 6 or 9:
-Wasm 5,242,880 B (5.00 MiB, per route artifact; Mark's 2026-11-07 ruling,
-after 3.50 MiB on 2026-10-16 and 3.30 MiB on 2026-10-15, amending R157's 3.25 MiB), glue 20 KiB, mount 8 KiB, and the site history
-fixture 128 KiB.
+Wasm 4,194,304 B (4.00 MiB, per route artifact; Mark's 2026-11-07 "Ratchet down"
+ruling, first step, after 5.00 MiB the same day, 3.50 MiB on 2026-10-16 and
+3.30 MiB on 2026-10-15, amending R157's 3.25 MiB; later steps are scheduled in
+the host plan's T7), glue 20 KiB, mount 8 KiB, and the site history fixture
+128 KiB.
 The report remains available when the gate refuses a package. `--target-dir`
 can keep a delivery lane's build artifacts isolated; `--offline` requires the
 locked dependencies to be available locally.
-The portable workflow's `viewer-delivery` job invokes this same builder and
-retains the package and report as `graphshell-viewer-delivery`.
+No CI job runs this gate: repository Actions are disabled and the tree holds
+no `viewer-delivery` workflow, so the gate is this builder plus
+`test_viewer_budget.py`, run by hand. The same source builds to different sizes
+at different checkout paths (about 3.62 or 3.71 MB gzip6 for webgpu), so the
+package is not a reproducible profile across paths; measure from two checkouts.
 
 Portable Platen excludes the unused document scene producer from this viewer.
 Retained Pelt content is an explicit `retained-content` capability, enabled by

@@ -20,7 +20,7 @@ use crate::block_editing::{
         AdapterError, BACKDROP_SCENE, BlockAdapter, BlockInput, CommandKind, GuestView, Registry,
         Row, RunResult, ViewAsk, unclaimed_message,
     },
-    sheet_leaf::{SheetLeaf, SheetTheme},
+    sheet_leaf::{ColorF, SheetLeaf, SheetTheme},
     store::{self, DocumentStore, StoredDocument},
     worker::WorkerAdapter,
 };
@@ -139,6 +139,11 @@ pub trait PaneHost: 'static + Sized {
     /// The window's logical size.
     fn size(&self) -> (u32, u32);
     fn sheet_theme(&self) -> SheetTheme;
+    /// The pane's background colour, which a sheet's text must read against. A host that does
+    /// not say keeps each text role's colour as the theme gives it.
+    fn sheet_ground(&self) -> Option<ColorF> {
+        None
+    }
     /// A source of the swatch's style that outlives the borrow of the page.
     fn swatch_style(&self) -> Rc<dyn Fn() -> SwatchStyle>;
     /// Whether the pane may show at all (the web page needs its product loaded).
@@ -1449,12 +1454,16 @@ fn view_panel<P: PaneHost>(page: &P, class: &str) -> Child<P> {
             )];
             let theme = page.sheet_theme();
             if let Ok(leaf) = SheetLeaf::new(view.sheet.clone(), theme) {
+                let leaf = match page.sheet_ground() {
+                    Some(ground) => leaf.on_ground(ground),
+                    None => leaf,
+                };
                 for text in leaf.texts() {
                     overlay.push(Box::new(el("span", text.text.clone()).attr("aria-hidden", "true").attr(
                         "style",
                         format!(
-                            "position:absolute;left:{}px;top:{}px;font-size:{}px;pointer-events:none;",
-                            text.x, text.y, text.size
+                            "position:absolute;left:{}px;top:{}px;font-size:{}px;color:{};pointer-events:none;",
+                            text.x, text.y, text.size, text.css_colour()
                         ),
                     )));
                 }

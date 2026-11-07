@@ -34,8 +34,8 @@ class DeliveryBudget(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, f"wasm: gzip6=.*cap={builder.CAPS['wasm']}"):
                 builder.require_budget(rows)
 
-    def test_wasm_cap_is_marks_2026_11_07_ruling(self):
-        self.assertEqual(builder.CAPS["wasm"], 5242880)
+    def test_wasm_cap_is_marks_2026_11_07_ratchet_step(self):
+        self.assertEqual(builder.CAPS["wasm"], 4194304)
 
     def test_each_route_artifact_is_held_to_the_wasm_cap(self):
         self.assertEqual(set(builder.ARTIFACTS), {"webgpu", "webgl2"})

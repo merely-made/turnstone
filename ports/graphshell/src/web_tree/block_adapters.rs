@@ -100,7 +100,9 @@ pub fn block_adapter_review(
         "component_hash": mount.component_hash,
         "component_bytes": component.len(),
         "pack_hash": mount.pack_hash,
+        "moot": mount.disclosure.moot,
         "collection": mount.disclosure.collection,
+        "revision": mount.disclosure.revision,
     });
     with_mailbox(|m| {
         m.mount = Some(mount);
