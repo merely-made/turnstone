@@ -1,7 +1,8 @@
 # Viewer build audit: what the Graphshell web viewer is for, what it pulls, and how to get far under the cap
 
-**Status:** 2026-11-07: brief, unreviewed. Research and measurement only; no product code changed, no ruling
-recorded, nothing proposed to a plan yet. Written for Mark's question of the same day.
+**Status:** 2026-11-07: brief. Research and measurement only; no product code changed by the audit itself.
+Mark's rulings on its five decisions are recorded in "Rulings" below and in the Graphshell host plan, T7. Written for
+Mark's question of the same day.
 
 **Question (Mark, 2026-11-07).** "Ideally, we'd be able to get far under that [the 5 MiB cap]. Or possibly
 reorganize what's going on here ... Probably most of the build's framing is stale, I'd wager. Might be worth a
@@ -267,3 +268,49 @@ Reference points: today 3.62 to 3.71 MB; the original 3.25 MiB target (3.41 MB) 
    `sceno::Scene` on Canvas 2D and reports bytes and what is missing, no commitment; (c) commit to a second viewer.
    *Recommend (b)*: the stop rules of the one-tree plan point the other way, and the numbers above are
    estimates until something is built.
+
+## Rulings (Mark, 2026-11-07)
+
+Recorded in the Graphshell host plan, T7, with the ratchet schedule and the physics seam design.
+
+1. **Cap and target policy: "Ratchet down".** Option (b). The Wasm cap moves from 5.00 MiB to 4.0 MiB (4,194,304 B)
+   now; 3.5 MiB when physics leaves the first load and Genet's duplicate fix lands; 3.25 MiB when the remaining
+   stages land. A step is applied only after it measures green in both build modes. Applied: `build-viewer.py`,
+   `test_viewer_budget.py`, both READMEs and the plans carry 4.0 MiB.
+2. **Physics in the first load: "Lazy Worker module".** Option (b). The seam is designed in T7; the implementation
+   is not done (see T7: it needs a `seiche` split and a command protocol, larger than one change).
+3. **One artifact or two: "Decide after receipts".** Option (c). Open until the headed receipts run the webgl2
+   artifact on WebGPU hardware; leaning to one artifact (option (b)).
+4. **Genet-side work: "Both in Genet now".** The duplicate `ScriptedDom` pipeline (row 1) and the table gating
+   (row 5) are being done by another agent in the Genet repository. Not touched from Mere.
+5. **Scene player: "One-page spike".** Option (b). Another agent is running the spike; not built here.
+
+**Stale claims fixed (2026-11-07).** The presentation plan's 3.30 MiB cap line, and the host plan's and the scenograph
+and physics-catalog plans' older cap figures, now read 4.0 MiB. The README no longer names a `viewer-delivery` CI job
+(none exists; Actions are disabled; the gate is `build-viewer.py` plus `test_viewer_budget.py` run by hand) and no
+longer implies a reproducible package. `web/Cargo.toml`'s profile comment drops "every build makes the same bundle".
+T7's "cambium default scripting, about 45 KB" is removed (no such cambium feature) and its "physics about 200 KB" now
+reads 290 to 364 KB gzip, as measured here.
+
+## Physics seam: options and costs (2026-11-07)
+
+The design is in the host plan's T7. It was not built, because making the main module engine-free is not one
+change. Estimates below are from reading the code, not from a build.
+
+- **A. Full lazy Worker module (the ruling).** (1) Split `seiche` into a rapier-free API crate and the engine; the
+  engine re-exports the API. (2) Make the command set data: `SetForces(Vec<Box<dyn Force>>)`,
+  `SetCouplingEntryHandler` (a closure) and `SetLaggedRepulsion` (a boxed GPU solver, off in the viewer) cannot cross
+  a message boundary, so the catalog's force construction (`composition.rs`, `physics_catalog.rs`, about 2,000
+  lines) moves to the engine side behind descriptors, and the force declarations that `DynamicsSpec::derive` reads
+  stay on the main side as data. (3) A `Physics::Remote` backend with a serializer, a new cdylib crate, a
+  `physics-engine` feature through four crates, a second package row in `build-viewer.py`, `viewer.js` glue, and an
+  asynchronous companion for the 17 physics receipts and the `seiche-repeat` determinism probe. Roughly 5 to 8
+  focused sessions, the riskiest being step (2). Saves 290 to 364 KB gzip from each route's first load; the Worker
+  artifact adds about 0.5 to 0.75 MiB gzip loaded later.
+- **B. Gate physics out of the viewer, precomputed positions (audit 6b).** Same saving, much cheaper (the `seed_cluster`
+  spiral or saved facets feed first paint; `Canvas` sees a no-op backend), but it removes live settle, drag and the
+  "Graph tools" physics section the receipts qualify. This contradicts the ruling's premise.
+- **C. A smaller first cut of A.** Do step (1) alone (the `seiche` split) as its own change: no behaviour change, the
+  engine re-exports the API, every consumer compiles unchanged, and it can be measured by itself. It makes the rest a
+  bounded sequence and is the recommended next change if A is to proceed.
+
