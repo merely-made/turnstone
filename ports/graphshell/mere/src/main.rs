@@ -430,7 +430,14 @@ fn root(app: &App) -> Child {
 struct LaneProduct {
     sheet: String,
     awaiting: std::collections::BTreeMap<String, String>,
+    /// When the current `await` began, so one that never matches ends visibly.
+    await_began: Option<std::time::Instant>,
+    /// Awaits that gave up, as "field expected X, was Y"; reported as the
+    /// `await-failed` field so a receipt cannot read as a pass or hang.
+    await_failed: std::cell::RefCell<Vec<String>>,
 }
+/// Longest an `await` waits before it fails (below the harness's own limit).
+const AWAIT_LIMIT: std::time::Duration = std::time::Duration::from_secs(20);
 impl Product for LaneProduct {
     type State = App;
     type Logic = Logic;
@@ -536,6 +543,7 @@ impl Product for LaneProduct {
                     .unwrap_or_default(),
             )
             .with_field("notice", app.model.notice.clone().unwrap_or_default())
+            .with_field("await-failed", self.await_failed.borrow().join("; "))
             .with_field("kept-open", app.kept.open.to_string())
             .with_field("kept-state", app.kept.state_text())
             .with_field("kept-pages", app.kept.kept_pages.to_string())
@@ -603,18 +611,33 @@ impl Product for LaneProduct {
     }
     fn busy_mut(&mut self, ctx: &mut AppCtx<'_, App, Logic, Child>, _: bool) -> Option<bool> {
         let snapshot = self.snapshot(ctx, 0, 1.0);
-        let waiting = self.awaiting.iter().any(|(field, value)| {
-            if field == "file" {
-                return !std::path::Path::new(value).exists();
-            }
-            snapshot.fields.get(field).is_none_or(|actual| {
-                if let Some(part) = value.strip_prefix('~') {
-                    !actual.contains(part)
-                } else {
-                    actual != value
+        let expired = self.await_began.is_some_and(|began| began.elapsed() > AWAIT_LIMIT);
+        let unmet: Vec<String> = self
+            .awaiting
+            .iter()
+            .filter(|(field, value)| {
+                if field.as_str() == "file" {
+                    return !std::path::Path::new(value.as_str()).exists();
                 }
+                snapshot.fields.get(field.as_str()).is_none_or(|actual| {
+                    if let Some(part) = value.strip_prefix('~') {
+                        !actual.contains(part)
+                    } else {
+                        actual != *value
+                    }
+                })
             })
-        });
+            .map(|(field, value)| {
+                let actual = snapshot.fields.get(field.as_str()).cloned().unwrap_or_default();
+                format!("{field} expected {value:?}, was {actual:?}")
+            })
+            .collect();
+        if expired && !unmet.is_empty() {
+            self.await_failed.borrow_mut().extend(unmet.clone());
+            self.awaiting.clear();
+            self.await_began = None;
+        }
+        let waiting = !unmet.is_empty() && !expired;
         Some(
             ctx.runner.state().pending
                 || waiting
@@ -634,6 +657,7 @@ impl Product for LaneProduct {
     ) -> Result<(), String> {
         if let Some(json) = line.strip_prefix("await ") {
             self.awaiting = serde_json::from_str(json).map_err(|e| e.to_string())?;
+            self.await_began = Some(std::time::Instant::now());
             return Ok(());
         }
         Err(format!("unknown step: {line}"))
@@ -678,6 +702,8 @@ fn main() {
     let lane = LaneConfig::from_env("GRAPHSHELL_MERE").map(|config| {
         let product = LaneProduct {
             awaiting: Default::default(),
+            await_began: None,
+            await_failed: Default::default(),
             sheet: format!(
                 "{}\n{}\n{}",
                 cambium::GRAPH_CANVAS_SWATCH_CSS,
