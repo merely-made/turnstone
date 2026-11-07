@@ -9484,10 +9484,20 @@ dependencies = [
  "numen",
  "petgraph 0.8.3",
  "rapier2d",
+ "seiche-model",
  "serde",
  "serde_path_to_error",
  "tracing",
  "wgpu",
+]
+
+[[package]]
+name = "seiche-model"
+version = "0.0.1"
+dependencies = [
+ "euclid",
+ "petgraph 0.8.3",
+ "serde",
 ]
 
 [[package]]
