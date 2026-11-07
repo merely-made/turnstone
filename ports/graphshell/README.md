@@ -280,7 +280,8 @@ python3 ports/graphshell/web/scripts/test_viewer_budget.py
 
 The builder uses the standalone web lock, `--profile viewer` and
 `--no-default-features`, once per presentation route: `webgpu/` and `webgl2/`
-(the latter without Classic Vello). `viewer.js` loads exactly one of them. The viewer profile selects size optimization and full
+(the latter without Classic Vello). Both are built with `without-table-layout`, which compiles
+Genet's table layout out (the viewer lays out no HTML table). `viewer.js` loads exactly one of them. The viewer profile selects size optimization and full
 LTO; the full application's release profile remains separate. It writes
 `viewer-delivery.json` with source, compiler, profile, asset hashes and sizes,
 then rejects a package that exceeds any interaction cap at gzip level 6 or 9:

@@ -28,12 +28,14 @@ import subprocess
 # Graphshell host plan, T7: 3.50 MiB when physics leaves the first load and
 # Genet's duplicate fix lands, 3.25 MiB when the remaining stages land, each
 # step applied only after it measures green in both build modes (the same
-# source builds to about 3.62 or 3.71 MB gzip6 for webgpu, by checkout path).
+# source built to about 3.62 or 3.71 MB gzip6 for webgpu, by checkout path;
+# Genet d634ee0c485 removed the duplicate, and both routes now build without
+# genet-livery's table layout, which the viewer never uses).
 CAPS = {"wasm": 4194304, "glue": 20480, "mount": 8192, "history": 131072}
 # Route artifact name -> the viewer crate's features for that artifact.
 ARTIFACTS = {
-    "webgpu": ["presentation-webgpu"],
-    "webgl2": ["presentation-webgl2", "without-classic-vello"],
+    "webgpu": ["presentation-webgpu", "without-table-layout"],
+    "webgl2": ["presentation-webgl2", "without-classic-vello", "without-table-layout"],
 }
 
 
