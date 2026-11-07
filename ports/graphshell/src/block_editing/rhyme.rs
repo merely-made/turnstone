@@ -11,7 +11,7 @@
 
 use super::Change;
 use sceno::SourceRef;
-use scenomise::backdrops::{MetreGrid, SceneFacts, SceneInput, Syllable, VerseLine};
+use sceno_backdrops::{MetreGrid, SceneFacts, SceneInput, Syllable, VerseLine};
 use std::collections::{BTreeMap, HashSet};
 
 const MAX_BODY_BYTES: usize = 64 * 1024;
@@ -144,7 +144,7 @@ pub fn scene(
         })
         .collect();
     let input = SceneInput {
-        version: scenomise::backdrops::BACKDROP_SCENE_VERSION,
+        version: sceno_backdrops::BACKDROP_SCENE_VERSION,
         source,
         revision: revision.to_owned(),
         title: "Authored rhyme expectations".into(),

@@ -77,6 +77,7 @@ graphshell-host = { path = "../../../crates/graphshell/graphshell-host", default
 chirograph = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 workbench = { path = "../../../crates/cambium/workbench" }
 sceno = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
+sceno-backdrops = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 scenograph = { path = "../../../crates/cambium/scenes/scenograph" }
 scenomise = { path = "../../../crates/cambium/scenes/scenomise", features = ["authoring"] }
 scenotime = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }

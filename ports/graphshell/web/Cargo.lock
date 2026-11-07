@@ -1031,6 +1031,7 @@ dependencies = [
  "mere-surface-api",
  "meristem",
  "sceno",
+ "sceno-backdrops",
  "scenograph",
  "scenomise",
  "serde",
@@ -3816,6 +3817,7 @@ dependencies = [
  "personae",
  "platen",
  "sceno",
+ "sceno-backdrops",
  "scenograph",
  "scenomise",
  "scenotime",
@@ -3918,6 +3920,7 @@ dependencies = [
  "pandect",
  "platen",
  "sceno",
+ "sceno-backdrops",
  "scenograph",
  "scenomise",
  "scenotime",
@@ -7472,7 +7475,7 @@ dependencies = [
  "oxiri",
  "oxrdf",
  "ryu-js",
- "thiserror 2.0.21",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
@@ -7484,8 +7487,8 @@ dependencies = [
  "oxilangtag",
  "oxiri",
  "oxsdatatypes",
- "rand 0.9.5",
- "thiserror 2.0.21",
+ "rand 0.8.8",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
@@ -7495,7 +7498,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "034779b2d182d5069cd28b1f921ba334cad708ab1340db9776312464b6874b78"
 dependencies = [
  "js-sys",
- "thiserror 2.0.21",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
@@ -7508,7 +7511,7 @@ dependencies = [
  "oxilangtag",
  "oxiri",
  "oxrdf",
- "thiserror 2.0.21",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
@@ -8033,6 +8036,7 @@ dependencies = [
  "pandect",
  "petgraph 0.8.3",
  "sceno",
+ "sceno-backdrops",
  "scenograph",
  "scenomise",
  "scenotime",
@@ -9357,6 +9361,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "sceno-backdrops"
+version = "0.0.1"
+source = "git+https://github.com/merely-made/graphshell.git?branch=main#40e8c8df15915d86377117842c08cf10fd13c987"
+dependencies = [
+ "sceno",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "scenograph"
 version = "0.0.6"
 dependencies = [
@@ -9374,6 +9388,7 @@ dependencies = [
  "backstep",
  "libm",
  "sceno",
+ "sceno-backdrops",
  "scenograph",
  "serde",
  "serde_json",
@@ -9884,7 +9899,7 @@ dependencies = [
  "memchr",
  "oxrdf",
  "quick-xml 0.37.5",
- "thiserror 2.0.21",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
@@ -9899,7 +9914,7 @@ dependencies = [
  "oxiri",
  "oxrdf",
  "oxsdatatypes",
- "rand 0.9.5",
+ "rand 0.8.8",
  "regex",
  "rustc-hash 2.1.3",
  "sha1",
@@ -9907,7 +9922,7 @@ dependencies = [
  "sparesults",
  "spargebra",
  "sparopt",
- "thiserror 2.0.21",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
@@ -9920,8 +9935,8 @@ dependencies = [
  "oxiri",
  "oxrdf",
  "peg",
- "rand 0.9.5",
- "thiserror 2.0.21",
+ "rand 0.8.8",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
@@ -9931,7 +9946,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8c1d1327a49bef5f6f294a2ddcf01635c5449a0654e9a35d3f50d7a45e4ecc78"
 dependencies = [
  "oxrdf",
- "rand 0.9.5",
+ "rand 0.8.8",
  "spargebra",
 ]
 
@@ -11026,7 +11041,7 @@ version = "2.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "86a801b3cea342a06d468c8710662aa29e5e05e4f5c0d62f00bbb7f2ad7941c2"
 dependencies = [
- "rand 0.9.5",
+ "rand 0.10.3",
 ]
 
 [[package]]

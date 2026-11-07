@@ -26,7 +26,7 @@ use graphshell::block_editing::{
 };
 use mere::canvas::backdrop_surface::BackdropSurface;
 use muniment::IndexedDbBackend;
-use scenomise::backdrops::SceneInput;
+use sceno_backdrops::SceneInput;
 use std::collections::BTreeMap;
 const VIEW_KEY: u64 = 0x6773_6e74;
 

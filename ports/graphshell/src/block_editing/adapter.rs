@@ -540,7 +540,7 @@ mod tests {
         let RunResult::Text(json) = adapter.run(&block, BACKDROP_SCENE, "doc#0").unwrap() else {
             panic!("text")
         };
-        let scene = scenomise::backdrops::SceneInput::parse(&json).unwrap();
+        let scene = sceno_backdrops::SceneInput::parse(&json).unwrap();
         assert_eq!(scene.revision, "r1");
         assert!(adapter.run(&block, "nope", "").is_err());
     }
