@@ -1,0 +1,23 @@
+[package]
+name = "graphshell-blocks"
+version = "0.0.1"
+rust-version = "1.97.1"
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Native host for guest block adapters: loads a reviewed component pack into Graphshell's block pane."
+publish = false
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+graphshell = { path = "..", default-features = false, features = ["editable-blocks", "applets"] }
+block-host.workspace = true
+vector-sheet.workspace = true
+sceno.workspace = true
+
+[dev-dependencies]
+eidetic = { workspace = true, features = ["pack-signing"] }
+personae.workspace = true
+serde_json.workspace = true

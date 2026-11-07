@@ -438,6 +438,11 @@ impl CapsuleMount {
         Ok(())
     }
 
+    /// Whether `bytes` are exactly the component this mount reviewed.
+    pub fn verify_component(&self, bytes: &[u8]) -> bool {
+        bytes.len() <= MAX_COMPONENT_BYTES && hash(bytes) == self.component_hash
+    }
+
     /// Whether this pack is a block adapter (it asked for [`BLOCK_ADAPTER`] alone).
     pub fn is_block_adapter(&self) -> bool {
         self.pack.manifest.requested_scopes == [BLOCK_ADAPTER]
