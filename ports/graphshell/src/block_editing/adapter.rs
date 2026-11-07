@@ -19,6 +19,11 @@ use sceno::{Footprint, Scene};
 use std::collections::{BTreeMap, HashMap};
 use vector_sheet::VectorSheet;
 
+/// The hidden text command a class offers to draw the swatch: `run`'s argument is the block's
+/// address and its result is a scene document (`SceneInput` JSON). It is never listed as a
+/// button.
+pub const BACKDROP_SCENE: &str = "backdrop-scene";
+
 /// What a command is for. Mirrors the WIT `command-kind`.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum CommandKind {
@@ -415,12 +420,20 @@ impl RhymeAdapter {
                     label: "Rhyme scheme".into(),
                     default: "ABAB".into(),
                 }),
-                commands: vec![Command {
-                    id: Self::SCHEME.into(),
-                    label: "Apply rhyme scheme…".into(),
-                    kind: CommandKind::Choice,
-                    arg: None,
-                }],
+                commands: vec![
+                    Command {
+                        id: Self::SCHEME.into(),
+                        label: "Apply rhyme scheme…".into(),
+                        kind: CommandKind::Choice,
+                        arg: None,
+                    },
+                    Command {
+                        id: BACKDROP_SCENE.into(),
+                        label: "Swatch scene".into(),
+                        kind: CommandKind::Text,
+                        arg: None,
+                    },
+                ],
                 views: Vec::new(),
                 example: None,
             },
@@ -472,8 +485,14 @@ impl BlockAdapter for RhymeAdapter {
         }
         Ok(rhyme::attributes(&block.body, &block.attrs, changes)?)
     }
-    fn run(&self, _block: &BlockInput, command: &str, _arg: &str) -> Answer<RunResult> {
-        Err(unknown(command))
+    fn run(&self, block: &BlockInput, command: &str, arg: &str) -> Answer<RunResult> {
+        if command != BACKDROP_SCENE {
+            return Err(unknown(command));
+        }
+        let input = rhyme::scene(arg, &block.revision, &block.body, &block.attrs)?;
+        serde_json::to_string(&input)
+            .map(RunResult::Text)
+            .map_err(|e| AdapterError::Refused(e.to_string()))
     }
     fn view(&self, _block: &BlockInput, _ask: &ViewAsk) -> Answer<Option<GuestView>> {
         Ok(None)
@@ -511,6 +530,19 @@ mod tests {
             attrs,
             rhyme::attributes(&block.body, &block.attrs, &direct).unwrap()
         );
+    }
+
+    #[test]
+    fn rhyme_offers_its_swatch_scene_as_a_hidden_text_command() {
+        let registry = Registry::with_builtins();
+        let adapter = registry.get("metre").unwrap();
+        let block = metre(vec![], "");
+        let RunResult::Text(json) = adapter.run(&block, BACKDROP_SCENE, "doc#0").unwrap() else {
+            panic!("text")
+        };
+        let scene = scenomise::backdrops::SceneInput::parse(&json).unwrap();
+        assert_eq!(scene.revision, "r1");
+        assert!(adapter.run(&block, "nope", "").is_err());
     }
 
     #[test]

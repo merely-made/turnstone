@@ -11,8 +11,9 @@
 //! A host paints the non-zero fill rule only, so a sheet that asks for another is refused
 //! at construction instead of being drawn wrongly.
 
+pub use sprigging::ColorF;
 use sprigging::{
-    ColorF, Leaf, PaintCx, Path, Size, SizeHint, StrokeCap, StrokeJoin, StrokeStyle,
+    Leaf, PaintCx, Path, Size, SizeHint, StrokeCap, StrokeJoin, StrokeStyle,
 };
 use vector_sheet::{Anchor, Cap, Face, FillRule, Join, Op, Paint, Role, Seg, VectorSheet};
 

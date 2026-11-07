@@ -4,20 +4,31 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 //! One ordinary source editor, contextual operations, and an independent preview.
+//!
+//! The pane edits Djot documents and offers each attributed block to the adapter that claims
+//! its class (`block_editing::adapter`). Rhyme is built in; any other adapter is a guest
+//! component loaded under review, answering through a [`WorkerAdapter`]. A block whose class
+//! no adapter claims stays editable as text, its command disabled and named.
 use super::*;
 use cambium::{
     Command, CommandChoices, CommandSet, TextCommand, TextInput, button, lens, text_field_typed,
     textarea_typed,
 };
 use graphshell::block_editing::{
-    Document, Preview, bars, rhyme,
+    Change, Document, Preview,
+    adapter::{
+        AdapterError, BACKDROP_SCENE, BlockAdapter, BlockInput, CommandKind, GuestView, Registry,
+        Row, RunResult, ViewAsk, unclaimed_message,
+    },
+    sheet_leaf::{SheetLeaf, SheetTheme},
     store::{self, StoredDocument},
+    worker::WorkerAdapter,
 };
 use mere::canvas::backdrop_surface::BackdropSurface;
 use muniment::IndexedDbBackend;
 use scenomise::backdrops::SceneInput;
-use woodshed_notation::{ColorF, NotationLeaf, NotationView};
-const NOTATION_KEY: u64 = 0x6773_6e74;
+use std::collections::BTreeMap;
+const VIEW_KEY: u64 = 0x6773_6e74;
 
 pub(super) const SHEET: &str = r#"
 .blocks-workspace { display:flex; flex-direction:row; gap:10px; padding:14px; min-width:0; min-height:0; flex:1; overflow:hidden; }
@@ -32,9 +43,9 @@ pub(super) const SHEET: &str = r#"
 .blocks-toolbar button, .blocks-workspace button { text-align:left; padding:7px 10px; border:1px solid var(--tabard-color-border); color:var(--tabard-color-text); background:var(--tabard-color-surface); white-space:normal; overflow-wrap:anywhere; }
 .blocks-workspace button[aria-pressed=true] { border-color:var(--tabard-color-accent); }
 .blocks-workspace button[aria-disabled=true] { opacity:0.5; }
-.blocks-notation-reading { display:flex; flex-direction:column; gap:10px; flex:none; }
-@media(max-width:900px) { .blocks-musical .blocks-preview { order:-1; } }
-.blocks-notation-event:focus-visible { outline:2px solid var(--tabard-color-primary); outline-offset:-2px; }
+.blocks-guest-reading { display:flex; flex-direction:column; gap:10px; flex:none; }
+@media(max-width:900px) { .blocks-guest-view .blocks-preview { order:-1; } }
+.blocks-guest-event:focus-visible { outline:2px solid var(--tabard-color-primary); outline-offset:-2px; }
 .blocks-row { display:block; width:100%; margin-block:3px; font-family:var(--workspace-font-reading,serif); }
 .blocks-review { display:flex; flex-direction:column; gap:6px; }
 .blocks-swatch { flex:none; max-width:100%; }
@@ -43,10 +54,8 @@ pub(super) const SHEET: &str = r#"
 
 const KEY: u64 = 0x626c_6f63;
 const SOURCE_LABEL: &str = "Document source";
-const PATTERN_LABEL: &str = "Rhyme scheme";
-const BAR_LABEL: &str = "Bar grouping";
-const TEMPO_LABEL: &str = "Notation tempo (BPM)";
 const QUERY_LABEL: &str = "Search block commands";
+const WAITING: &str = "Waiting for the block adapter…";
 const INITIAL: &str = "# Composition\n\n{#verse}\n::: metre\nThe path runs quiet through the night\nThe rain is gathering on the stone\nA window holds its little light\nAnd leaves the farthest field alone\n:::\n";
 
 #[derive(Default)]
@@ -56,6 +65,20 @@ struct Display {
     generation: u64,
 }
 type Saved = Result<(Vec<u8>, String), String>;
+
+/// Work the pane retries when the adapter's answer arrives.
+enum Pending {
+    Preview(String),
+    Apply,
+    Run(String, String),
+}
+
+/// The latest view an adapter returned for the selected block.
+struct ViewState {
+    view: Result<GuestView, String>,
+    generation: u64,
+}
+
 pub(super) struct Pane {
     document: Document,
     backend: Option<IndexedDbBackend>,
@@ -67,23 +90,31 @@ pub(super) struct Pane {
     open: bool,
     selected: usize,
     selected_rows: Option<Vec<usize>>,
-    pattern: TextInput,
+    /// Pattern and argument text fields, by key (`pattern:<class>`, `arg:<class>:<command>`).
+    fields: BTreeMap<String, TextInput>,
     query: TextInput,
-    bar_pattern: TextInput,
+    registry: Registry,
+    workers: Vec<WorkerAdapter>,
     preview: Option<Preview>,
+    preview_command: String,
     preview_pattern: String,
+    preview_rows: Vec<u32>,
+    pending: Option<Pending>,
     display: Rc<RefCell<Display>>,
     canvas: bool,
-    notation: Option<NotationView>,
-    notation_selected: (usize, usize),
-    notation_selected_revision: Option<String>,
-    notation_selected_block: usize,
-    notation_tempo: TextInput,
-    notation_signature: Option<String>,
+    /// The selected view mode per class; none shows the swatch.
+    view_modes: BTreeMap<String, String>,
+    view: Option<ViewState>,
+    view_leaf_signature: Option<String>,
+    event_selected: (usize, usize),
+    event_selected_revision: Option<String>,
+    event_selected_block: usize,
     status: String,
     export_url: Option<String>,
     wake: Option<cambium_rootstock::HostWake>,
     refresh_key: Option<String>,
+    /// Set by "Review block adapters"; the host that discloses adapters opens its review.
+    review_requested: bool,
 }
 impl Pane {
     pub(super) async fn load(product: Option<&product::SavedProduct>) -> Self {
@@ -105,24 +136,30 @@ impl Pane {
             open: false,
             selected: 0,
             selected_rows: None,
-            pattern: TextInput::new("ABAB"),
+            fields: BTreeMap::new(),
             query: TextInput::default(),
-            bar_pattern: TextInput::new("2 + 2"),
+            registry: Registry::with_builtins(),
+            workers: Vec::new(),
             preview: None,
+            preview_command: String::new(),
             preview_pattern: String::new(),
+            preview_rows: Vec::new(),
+            pending: None,
             display: Default::default(),
             canvas: false,
-            notation: None,
-            notation_selected: (usize::MAX, usize::MAX),
-            notation_selected_revision: None,
-            notation_selected_block: usize::MAX,
-            notation_tempo: TextInput::new("96"),
-            notation_signature: None,
+            view_modes: BTreeMap::new(),
+            view: None,
+            view_leaf_signature: None,
+            event_selected: (usize::MAX, usize::MAX),
+            event_selected_revision: None,
+            event_selected_block: usize::MAX,
             status: String::new(),
             export_url: None,
             wake: None,
             refresh_key: None,
+            review_requested: false,
         };
+        pane.install_defaults();
         if let Some(backend) = &pane.backend {
             match store::load(backend, &pane.slot).await {
                 Ok(Some((stored, bytes))) => {
@@ -140,6 +177,62 @@ impl Pane {
         }
         pane
     }
+    /// Give every registered adapter's pattern and argument fields their default text.
+    fn install_defaults(&mut self) {
+        let claims: Vec<_> = self
+            .registry
+            .classes()
+            .into_iter()
+            .filter_map(|c| self.registry.get(c).map(|a| a.claim().clone()))
+            .collect();
+        for claim in claims {
+            if let Some(field) = &claim.pattern {
+                self.fields
+                    .entry(format!("pattern:{}", claim.class))
+                    .or_insert_with(|| TextInput::new(&field.default));
+            }
+            for command in &claim.commands {
+                if let Some(field) = &command.arg {
+                    self.fields
+                        .entry(format!("arg:{}:{}", claim.class, command.id))
+                        .or_insert_with(|| TextInput::new(&field.default));
+                }
+            }
+        }
+    }
+    /// Register a guest's adapter, answered by `worker`. Two claims for one class are refused.
+    #[allow(dead_code)]
+    pub(super) fn add_worker(&mut self, worker: WorkerAdapter) -> Result<(), String> {
+        self.registry.register(Box::new(worker.clone()))?;
+        self.workers.push(worker);
+        self.install_defaults();
+        self.status = "Block adapter installed".into();
+        Ok(())
+    }
+    /// A guest's adapter was revoked or stopped: blocks of its class return to plain text.
+    #[allow(dead_code)]
+    pub(super) fn remove_adapter(&mut self, class: &str) {
+        self.registry.remove(class);
+        self.workers.retain(|w| w.claim().class != class);
+        self.view_modes.remove(class);
+        self.view = None;
+        self.preview = None;
+        self.refresh_key = None;
+    }
+    /// Deliver a Worker's reply for `class`; true means the pane should wake.
+    #[allow(dead_code)]
+    pub(super) fn deliver(&self, class: &str, id: u64, reply: &str) -> bool {
+        self.workers
+            .iter()
+            .find(|w| w.claim().class == class)
+            .is_some_and(|w| w.deliver(id, reply))
+    }
+    fn field(&self, key: &str) -> &str {
+        self.fields.get(key).map_or("", TextInput::text)
+    }
+    fn field_mut(&mut self, key: &str) -> &mut TextInput {
+        self.fields.entry(key.to_owned()).or_default()
+    }
     fn target(&self) -> Result<graphshell::block_editing::Div, String> {
         self.document
             .blocks()
@@ -147,129 +240,240 @@ impl Pane {
             .cloned()
             .ok_or("Select a current document block".into())
     }
-    fn rows(&self, body: &str) -> Vec<usize> {
-        self.selected_rows.clone().unwrap_or_else(|| {
-            body.lines()
-                .enumerate()
-                .filter_map(|(i, s)| (!s.trim().is_empty()).then_some(i))
-                .collect()
-        })
+    /// The first class of `div` that an adapter claims.
+    fn class_of(&self, div: &graphshell::block_editing::Div) -> Option<String> {
+        classes(div)
+            .into_iter()
+            .find(|c| self.registry.get(c).is_some())
     }
-    fn progression(&self) -> bool {
-        self.target().is_ok_and(|d| has_class(&d, "progression"))
-    }
-    fn pattern_text(&self) -> &str {
-        if self.progression() {
-            self.bar_pattern.text()
+    /// A class on `div` that no adapter claims, if the block names one.
+    fn unclaimed_class(&self, div: &graphshell::block_editing::Div) -> Option<String> {
+        if self.class_of(div).is_some() {
+            None
         } else {
-            self.pattern.text()
+            classes(div).into_iter().next()
         }
     }
-    fn selection(
+    fn current_class(&self) -> Option<String> {
+        self.target().ok().and_then(|d| self.class_of(&d))
+    }
+    fn adapter(&self, class: &str) -> Option<&dyn BlockAdapter> {
+        self.registry.get(class)
+    }
+    fn input(
         &self,
+        class: &str,
         div: &graphshell::block_editing::Div,
-        body: &str,
-    ) -> Result<Vec<usize>, String> {
-        if has_class(div, "progression") {
-            let rows = bars::rows(&div.attributes)?;
-            Ok(self
-                .selected_rows
-                .clone()
-                .unwrap_or_else(|| (0..rows.len()).collect()))
-        } else {
-            Ok(self.rows(body))
+        source: &str,
+        selected: Vec<u32>,
+    ) -> BlockInput {
+        BlockInput {
+            class: class.to_owned(),
+            body: source[div.body.clone()].to_owned(),
+            attrs: div.attributes.clone(),
+            revision: source_revision(source),
+            selected,
+            pattern: self.field(&format!("pattern:{class}")).to_owned(),
+        }
+    }
+    fn answered<T>(&mut self, answer: Result<T, AdapterError>, retry: Pending) -> Result<T, String> {
+        match answer {
+            Ok(value) => Ok(value),
+            Err(AdapterError::Pending) => {
+                self.pending = Some(retry);
+                Err(WAITING.into())
+            },
+            Err(AdapterError::Refused(text)) => Err(text),
+        }
+    }
+    /// The block's rows, or why there are none.
+    fn rows(&self, class: &str, div: &graphshell::block_editing::Div) -> Result<Vec<Row>, String> {
+        let adapter = self.adapter(class).ok_or_else(|| unclaimed_message(class))?;
+        let source = self.document.editor.source();
+        match adapter.rows(&self.input(class, div, source, Vec::new())) {
+            Ok(rows) => Ok(rows),
+            Err(AdapterError::Pending) => Err(WAITING.into()),
+            Err(AdapterError::Refused(text)) => Err(text),
+        }
+    }
+    /// The rows the user chose; every row until the user chooses.
+    fn selection(&self, class: &str, div: &graphshell::block_editing::Div) -> Result<Vec<u32>, String> {
+        match &self.selected_rows {
+            Some(rows) => Ok(rows.iter().map(|&r| r as u32).collect()),
+            None => Ok(self.rows(class, div)?.into_iter().map(|r| r.index).collect()),
         }
     }
     fn commands(&self) -> CommandSet {
         let mut set = CommandSet::new();
-        let (id, label) = if self.progression() {
-            ("woodshed:group-bars", "Apply bar grouping…")
-        } else {
-            ("rhyme:scheme", "Apply rhyme scheme…")
+        let Ok(div) = self.target() else {
+            return set;
         };
-        set.register(Command::new(id, label, "block", cambium::EffectClass::DomainTruth));
-        let reason = self.proposals().map(|_| ()).err();
-        set.set_disabled(id, reason);
+        if let Some(class) = self.unclaimed_class(&div) {
+            let id = "block:unclaimed";
+            set.register(Command::new(
+                id,
+                format!("Edit {class} block…"),
+                "block",
+                cambium::EffectClass::DomainTruth,
+            ));
+            set.set_disabled(id, Some(unclaimed_message(&class)));
+            return set;
+        }
+        let Some(class) = self.class_of(&div) else {
+            return set;
+        };
+        let Some(adapter) = self.adapter(&class) else {
+            return set;
+        };
+        for command in adapter
+            .claim()
+            .commands
+            .iter()
+            .filter(|c| c.kind == CommandKind::Choice)
+        {
+            set.register(Command::new(
+                command.id.clone(),
+                command.label.clone(),
+                "block",
+                cambium::EffectClass::DomainTruth,
+            ));
+            let reason = self.proposals(&command.id).map(|_| ()).err();
+            set.set_disabled(&command.id, reason);
+        }
         set
     }
-    fn proposals(&self) -> Result<Vec<graphshell::block_editing::Change>, String> {
+    fn proposals(&self, command: &str) -> Result<Vec<Change>, String> {
         let div = self.target()?;
+        let class = self
+            .class_of(&div)
+            .ok_or_else(|| "This block has no registered editing adapter".to_string())?;
         if !div.children.is_empty() {
             return Err("Select a leaf block; nested block contents need their own adapter".into());
         }
-        let body = &self.document.editor.source()[div.body.clone()];
-        let selected = self.selection(&div, body)?;
-        if has_class(&div, "progression") {
-            bars::choices(&div.attributes, &selected, self.bar_pattern.text())
-        } else if has_class(&div, "metre") {
-            rhyme::choices(body, &div.attributes, &selected, self.pattern.text())
-        } else {
-            Err("This block has no registered editing adapter".into())
+        let selected = self.selection(&class, &div)?;
+        let source = self.document.editor.source();
+        let input = self.input(&class, &div, source, selected);
+        match self.adapter(&class).ok_or("No adapter")?.choices(&input, command) {
+            Ok(changes) => Ok(changes),
+            Err(AdapterError::Pending) => Err(WAITING.into()),
+            Err(AdapterError::Refused(text)) => Err(text),
         }
     }
-    fn preview(&mut self) -> Result<(), String> {
-        let changes = self.proposals()?;
-        self.preview = Some(Preview::new(
-            self.document.editor.source(),
-            self.target()?,
-            changes,
-        )?);
-        self.preview_pattern = self.pattern_text().to_string();
+    fn preview(&mut self, command: &str) -> Result<(), String> {
+        let div = self.target()?;
+        let class = self
+            .class_of(&div)
+            .ok_or_else(|| "This block has no registered editing adapter".to_string())?;
+        let rows = self.selection(&class, &div)?;
+        let answer = self.proposals(command);
+        let changes = match answer {
+            Err(text) if text == WAITING => {
+                self.pending = Some(Pending::Preview(command.to_owned()));
+                return Err(text);
+            },
+            other => other?,
+        };
+        self.preview = Some(Preview::new(self.document.editor.source(), div, changes)?);
+        self.preview_command = command.to_owned();
+        self.preview_pattern = self.field(&format!("pattern:{class}")).to_owned();
+        self.preview_rows = rows;
         self.status = "Preview only · review changes, then Apply".into();
         Ok(())
     }
-    fn preview_attributes(
-        &self,
-        preview: &Preview,
-    ) -> Result<std::collections::BTreeMap<String, String>, String> {
-        let body = &preview.source[preview.block.body.clone()];
-        if has_class(&preview.block, "progression") {
-            bars::attributes(
-                &preview.block.attributes,
-                &self.selection(&preview.block, body)?,
-                &preview.changes,
-            )
-        } else {
-            rhyme::attributes(body, &preview.block.attributes, &preview.changes)
-        }
+    fn preview_class(&self) -> Option<String> {
+        self.preview.as_ref().and_then(|p| self.class_of(&p.block))
     }
     fn apply(&mut self) -> Result<(), String> {
-        if self.pattern_text() != self.preview_pattern {
+        let class = self.preview_class().ok_or("Preview a change first")?;
+        if self.field(&format!("pattern:{class}")) != self.preview_pattern {
             return Err("Pattern changed; preview it again before applying".into());
         }
-        let preview = self.preview.as_ref().ok_or("Preview a change first")?;
-        let attrs = self.preview_attributes(preview)?;
+        let preview = self.preview.clone().ok_or("Preview a change first")?;
+        let input = self.input(&class, &preview.block, &preview.source, self.preview_rows.clone());
+        let answer = self
+            .adapter(&class)
+            .ok_or("No adapter")?
+            .apply(&input, &self.preview_command, &preview.changes);
+        let attrs = self.answered(answer, Pending::Apply)?;
         let changed = attrs != preview.block.attributes;
-        let progression = has_class(&preview.block, "progression");
-        self.document.apply(preview, attrs)?;
+        self.document.apply(&preview, attrs)?;
         self.preview = None;
-        self.status = if !changed {
-            "No changes accepted · document unchanged"
-        } else if progression {
-            "Bar grouping applied · musical timing unchanged"
+        self.status = if changed {
+            "Change applied · Undo and Save use this document’s history"
         } else {
-            "Rhyme scheme applied · Undo and Save use this document’s history"
+            "No changes accepted · document unchanged"
         }
         .into();
         Ok(())
     }
-    fn insert_progression(&mut self) -> Result<(), String> {
+    /// An explicit write or text export of the selected block's adapter.
+    fn run_command(&mut self, command: &str, arg: &str) -> Result<(), String> {
+        if self.preview.is_some() {
+            return Err("Apply or cancel the current preview first".into());
+        }
+        let div = self.target()?;
+        let class = self
+            .class_of(&div)
+            .ok_or_else(|| "This block has no registered editing adapter".to_string())?;
+        if !div.children.is_empty() {
+            return Err("Select a leaf block".into());
+        }
+        let selected = self.selection(&class, &div).unwrap_or_default();
+        let source = self.document.editor.source().to_owned();
+        let input = self.input(&class, &div, &source, selected);
+        let answer = self
+            .adapter(&class)
+            .ok_or("No adapter")?
+            .run(&input, command, arg);
+        match self.answered(answer, Pending::Run(command.to_owned(), arg.to_owned()))? {
+            RunResult::Attrs(attrs) => {
+                let preview = Preview::new(&source, div, Vec::new())?;
+                self.document.apply(&preview, attrs)?;
+                self.view = None;
+                self.event_selected = (usize::MAX, usize::MAX);
+                self.status = format!("{command} written · Save document to keep it");
+            },
+            RunResult::Text(text) => {
+                let url = backdrop::export_material(
+                    text.as_bytes(),
+                    "text/plain",
+                    &format!("{class}-{command}.txt"),
+                )?;
+                if let Some(old) = self.export_url.replace(url) {
+                    let _ = web_sys::Url::revoke_object_url(&old);
+                }
+                self.status = format!("{command} exported");
+            },
+        }
+        Ok(())
+    }
+    /// Try the work an adapter's late answer was needed for.
+    fn retry_pending(&mut self) {
+        let Some(pending) = self.pending.take() else {
+            return;
+        };
+        let result = match &pending {
+            Pending::Preview(command) => self.preview(command),
+            Pending::Apply => self.apply(),
+            Pending::Run(command, arg) => self.run_command(command, arg),
+        };
+        match result {
+            Ok(()) => {},
+            Err(text) if text == WAITING => {},
+            Err(text) => self.status = text,
+        }
+    }
+    /// Insert the example the class's adapter offers, at the end of the document.
+    fn insert_example(&mut self, class: &str) -> Result<(), String> {
         use cambium::{CaretAffinity, CaretPosition, CaretSelection};
-        let attrs = std::collections::BTreeMap::from([
-            ("class".into(), "progression".into()),
-            ("id".into(), format!("progression-{}", uuid::Uuid::new_v4())),
-            (
-                bars::SOURCE.into(),
-                serde_json::from_str::<serde_json::Value>(include_str!(
-                    "../../support/woodshed-block-example.json"
-                ))
-                .map_err(|e| e.to_string())?
-                .to_string(),
-            ),
-        ]);
-        bars::rows(&attrs)?;
-        let block =
-            graphshell::block_editing::wrap(&attrs, "Woodshed ii–V–I · structured arrangement\n");
+        let example = self
+            .adapter(class)
+            .and_then(|a| a.claim().example.clone())
+            .ok_or("This adapter offers no example")?;
+        let mut attrs = example.attrs.clone();
+        attrs.insert("class".into(), class.to_owned());
+        attrs.insert("id".into(), format!("{class}-{}", uuid::Uuid::new_v4()));
+        let block = graphshell::block_editing::wrap(&attrs, &example.body);
         let end = self.document.editor.source().len();
         if end + block.len() + 2 > graphshell::block_editing::MAX_DOCUMENT_BYTES {
             return Err("Document exceeds one MiB".into());
@@ -290,62 +494,64 @@ impl Pane {
         self.selected = self.document.blocks().len() - 1;
         self.selected_rows = None;
         self.preview = None;
-        self.status =
-            "Inserted an independent Woodshed example · 4/4 is authored in its source".into();
+        self.status = format!("Inserted the {class} example");
         Ok(())
     }
-    fn write_notation(&mut self) -> Result<(), String> {
-        if self.preview.is_some() {
-            return Err("Apply or cancel the current preview before writing notation".into());
-        }
-        let div = self.target()?;
-        if !has_class(&div, "progression") || !div.children.is_empty() {
-            return Err("Select a progression leaf block".into());
-        }
-        let bpm = self
-            .notation_tempo
-            .text()
-            .trim()
-            .parse::<u16>()
-            .map_err(|_| "Enter a whole-number notation tempo from 1 to 400 BPM")?;
-        let attributes = bars::write_music(&div.attributes, bpm)?;
-        let preview = Preview::new(self.document.editor.source(), div, Vec::new())?;
-        self.document.apply(&preview, attributes)?;
-        self.notation = Some(NotationView::Chart);
-        self.notation_selected = (usize::MAX, usize::MAX);
-        self.status = "Notation written · saved MusicXML drives Chart, Tab and Score · Save document to keep it".into();
-        Ok(())
-    }
-    fn notation_selection(&self) -> (usize, usize) {
-        if self.notation_selected_block == self.selected
-            && self.notation_selected_revision.as_ref()
+    fn event_selection(&self) -> (usize, usize) {
+        if self.event_selected_block == self.selected
+            && self.event_selected_revision.as_ref()
                 == Some(&source_revision(self.document.editor.source()))
         {
-            self.notation_selected
+            self.event_selected
         } else {
             (usize::MAX, usize::MAX)
         }
     }
-    fn notation_leaf(
-        &self,
-        width: f32,
-        ink: ColorF,
-        accent: ColorF,
-    ) -> Result<NotationLeaf, String> {
-        let div = self.target()?;
-        if !has_class(&div, "progression") || !div.children.is_empty() {
-            return Err("Select a progression leaf block".into());
-        }
-        let score = bars::music(&div.attributes)?
-            .ok_or("This Set has no written notation. Choose a tempo, then Write notation.")?;
-        Ok(NotationLeaf::new(
-            score,
-            self.notation.ok_or("Select a notation reading")?,
-            self.notation_selection(),
+    /// Ask the selected block's adapter for the view in the chosen mode. Returns true when a
+    /// new result replaced the old one. A pending answer keeps the previous view as stale.
+    fn refresh_view(&mut self, width: f32) -> bool {
+        let Ok(div) = self.target() else {
+            return self.view.take().is_some();
+        };
+        let Some(class) = self.class_of(&div) else {
+            return self.view.take().is_some();
+        };
+        let Some(mode) = self.view_modes.get(&class).cloned() else {
+            return self.view.take().is_some();
+        };
+        let selected = self.selection(&class, &div).unwrap_or_default();
+        let source = self.document.editor.source();
+        let input = self.input(&class, &div, source, selected);
+        let (bar, event) = self.event_selection();
+        let ask = ViewAsk {
+            mode,
             width,
-            ink,
-            accent,
-        ))
+            selected: (bar != usize::MAX).then_some((bar as u32, event as u32)),
+        };
+        let answer = self.adapter(&class).map(|a| a.view(&input, &ask));
+        let fresh = match answer {
+            None | Some(Ok(None)) => return self.view.take().is_some(),
+            Some(Err(AdapterError::Pending)) => return false,
+            Some(Ok(Some(view))) => Ok(view),
+            Some(Err(AdapterError::Refused(text))) => Err(text),
+        };
+        let same = self
+            .view
+            .as_ref()
+            .is_some_and(|v| match (&v.view, &fresh) {
+                (Ok(a), Ok(b)) => a == b,
+                (Err(a), Err(b)) => a == b,
+                _ => false,
+            });
+        if same {
+            return false;
+        }
+        let generation = self.view.as_ref().map_or(1, |v| v.generation + 1);
+        self.view = Some(ViewState {
+            view: fresh,
+            generation,
+        });
+        true
     }
     fn save(&mut self) -> Result<(), String> {
         if self.busy {
@@ -384,34 +590,52 @@ impl Pane {
         Ok(())
     }
     fn refresh(&mut self) {
-        let result = (|| {
+        let result: Result<Option<SceneInput>, String> = (|| {
             let div = self.target()?;
             let source = self.document.editor.source();
             let mut attrs = div.attributes.clone();
+            let class = self
+                .class_of(&div)
+                .ok_or_else(|| "No scene adapter for this block. Its source stays editable.".to_string())?;
             if let Some(preview) = &self.preview {
                 if preview.source != source || preview.block != div {
                     return Err("Document changed since this preview. Cancel or preview again before applying.".into());
                 }
-                attrs = self.preview_attributes(preview)?;
+                let input = self.input(&class, &preview.block, &preview.source, self.preview_rows.clone());
+                match self
+                    .adapter(&class)
+                    .ok_or("No adapter")?
+                    .apply(&input, &self.preview_command, &preview.changes)
+                {
+                    Ok(next) => attrs = next,
+                    Err(AdapterError::Pending) => return Ok(None),
+                    Err(AdapterError::Refused(text)) => return Err(text),
+                }
             }
             if !div.children.is_empty() {
                 return Err(
                     "Select a leaf block; nested block contents need their own adapter".into(),
                 );
             }
+            let adapter = self.adapter(&class).ok_or("No adapter")?;
+            if !adapter.claim().commands.iter().any(|c| c.id == BACKDROP_SCENE) {
+                return Err("No scene adapter for this block. Its source stays editable.".into());
+            }
+            let mut input = self.input(&class, &div, source, Vec::new());
+            input.attrs = attrs;
             let address = format!("{}#{}", self.document.id, self.selected);
-            let revision = source_revision(source);
-            if has_class(&div, "progression") {
-                bars::scene(&address, &revision, &attrs)
-            } else if has_class(&div, "metre") {
-                rhyme::scene(&address, &revision, &source[div.body], &attrs)
-            } else {
-                Err("No scene adapter for this block. Its source stays editable.".into())
+            match adapter.run(&input, BACKDROP_SCENE, &address) {
+                Ok(RunResult::Text(json)) => SceneInput::parse(&json)
+                    .map(Some)
+                    .map_err(|e| e.to_string()),
+                Ok(RunResult::Attrs(_)) => Err("The scene command returned attributes".into()),
+                Err(AdapterError::Pending) => Ok(None),
+                Err(AdapterError::Refused(text)) => Err(text),
             }
         })();
         let mut display = self.display.borrow_mut();
         match result {
-            Ok(input) if display.input.as_ref() != Some(&input) => {
+            Ok(Some(input)) if display.input.as_ref() != Some(&input) => {
                 let accepted = if let Some(surface) = &mut display.surface {
                     surface.replace(&input).map_err(|e| e.to_string())
                 } else {
@@ -441,10 +665,12 @@ impl Pane {
         }
     }
 }
-fn has_class(div: &graphshell::block_editing::Div, class: &str) -> bool {
+/// The class tokens of a block's `class` attribute, in order.
+fn classes(div: &graphshell::block_editing::Div) -> Vec<String> {
     div.attributes
         .get("class")
-        .is_some_and(|s| s.split_whitespace().any(|s| s == class))
+        .map(|s| s.split_whitespace().map(str::to_owned).collect())
+        .unwrap_or_default()
 }
 fn source_revision(source: &str) -> String {
     format!(
@@ -457,7 +683,11 @@ fn source_revision(source: &str) -> String {
 }
 fn action(page: &mut TreePage, change: impl FnOnce(&mut Pane) -> Result<(), String>) {
     if let Err(error) = change(&mut page.blocks) {
-        page.blocks.status = error;
+        if error != WAITING {
+            page.blocks.status = error;
+        } else {
+            page.blocks.status = WAITING.into();
+        }
     }
 }
 pub(super) fn control(page: &TreePage) -> Child {
@@ -531,22 +761,29 @@ pub(super) fn toolbar(page: &TreePage) -> Option<Child> {
             )
             .attr("class", "blocks-actions"),
         ),
-        Box::new(
-            button("Insert Woodshed example", |p: &mut TreePage, _| {
-                action(p, Pane::insert_progression)
-            })
-            .attr("class", "blocks-insert-progression"),
-        ),
     ];
-    for command in commands {
+    for claim in pane.registry.examples() {
+        let class = claim.class.clone();
+        let aria_class = class.clone();
+        let title = claim.example.as_ref().map(|e| e.title.trim().to_owned()).unwrap_or_default();
         children.push(Box::new(
-            button(command.label.clone(), |p: &mut TreePage, _| {
-                action(p, Pane::preview)
+            button(format!("Insert {class} example"), move |p: &mut TreePage, _| {
+                let class = class.clone();
+                action(p, move |pane| pane.insert_example(&class))
             })
-            .attr(
-                "aria-disabled",
-                command.disabled_reason.is_some().to_string(),
-            )
+            .attr("aria-label", format!("Insert {aria_class} example · {title}"))
+            .attr("class", "blocks-insert-example"),
+        ));
+    }
+    for command in commands {
+        let id = command.id.to_string();
+        let disabled = command.disabled_reason.is_some();
+        children.push(Box::new(
+            button(command.label.clone(), move |p: &mut TreePage, _| {
+                let id = id.clone();
+                action(p, move |pane| pane.preview(&id))
+            })
+            .attr("aria-disabled", disabled.to_string())
             .attr("class", "blocks-preview-command"),
         ));
     }
@@ -604,9 +841,7 @@ pub(super) fn workspace(page: &TreePage) -> Option<Child> {
                 }
             ),
         )),
-        Box::new(
-            status_note("blocks-status", pane.status.clone()),
-        ),
+        Box::new(status_note("blocks-status", pane.status.clone())),
         Box::new(el(
             "label",
             (
@@ -625,14 +860,13 @@ pub(super) fn workspace(page: &TreePage) -> Option<Child> {
     let blocks = pane.document.blocks();
     let mut block_buttons: Vec<Child> = Vec::new();
     for (index, block) in blocks.iter().enumerate() {
-        let label = if has_class(block, "progression") {
-            format!("Woodshed progression {}", index + 1)
-        } else {
-            block
+        let label = match classes(block).first() {
+            Some(class) if class != "metre" => format!("{class} block {}", index + 1),
+            _ => block
                 .attributes
                 .get("id")
                 .cloned()
-                .unwrap_or_else(|| format!("Block {}", index + 1))
+                .unwrap_or_else(|| format!("Block {}", index + 1)),
         };
         block_buttons.push(Box::new(
             button(label, move |p: &mut TreePage, _| {
@@ -647,132 +881,138 @@ pub(super) fn workspace(page: &TreePage) -> Option<Child> {
     children.push(Box::new(
         el("div", block_buttons).attr("class", "blocks-actions"),
     ));
+    let mut guest_class: Option<String> = None;
     if let Ok(div) = pane.target() {
-        let body = &pane.document.editor.source()[div.body.clone()];
-        let selected = pane.selection(&div, body).unwrap_or_default();
-        let mut rows: Vec<Child> = Vec::new();
-        let lines: Vec<(usize, String)> = if has_class(&div, "progression") {
-            bars::rows(&div.attributes)
-                .unwrap_or_default()
-                .into_iter()
-                .enumerate()
-                .collect()
-        } else {
-            body.lines()
-                .enumerate()
-                .filter(|(_, s)| !s.trim().is_empty())
-                .map(|(i, s)| (i, s.to_string()))
-                .collect()
-        };
-        for (index, line) in lines {
-            rows.push(Box::new(
-                button(
-                    if has_class(&div, "progression") {
-                        line
-                    } else {
-                        format!("{} · {}", index + 1, line)
-                    },
-                    move |p: &mut TreePage, _| {
+        if let Some(class) = pane.class_of(&div) {
+            guest_class = Some(class.clone());
+            let selected = pane.selection(&class, &div).unwrap_or_default();
+            let mut rows: Vec<Child> = Vec::new();
+            for row in pane.rows(&class, &div).unwrap_or_default() {
+                let index = row.index;
+                let class = class.clone();
+                rows.push(Box::new(
+                    button(row.label, move |p: &mut TreePage, _| {
                         if let Ok(div) = p.blocks.target() {
-                            let mut selected = p
-                                .blocks
-                                .selection(
-                                    &div,
-                                    &p.blocks.document.editor.source()[div.body.clone()],
-                                )
-                                .unwrap_or_default();
+                            let mut selected = p.blocks.selection(&class, &div).unwrap_or_default();
                             if selected.contains(&index) {
                                 selected.retain(|i| *i != index);
                             } else {
                                 selected.push(index);
                                 selected.sort();
                             }
-                            p.blocks.selected_rows = Some(selected);
+                            p.blocks.selected_rows =
+                                Some(selected.into_iter().map(|i| i as usize).collect());
                             p.blocks.preview = None;
                         }
-                    },
-                )
-                .attr("aria-pressed", selected.contains(&index).to_string())
-                .attr("class", format!("blocks-row blocks-row-{index}")),
-            ));
-        }
-        children.push(Box::new(el("div", rows).attr(
-            "aria-label",
-            if pane.progression() {
-                "Select bars"
-            } else {
-                "Select composition lines"
-            },
-        )));
-        let pattern_label = if pane.progression() {
-            BAR_LABEL
-        } else {
-            PATTERN_LABEL
-        };
-        children.push(Box::new(el(
-            "label",
-            (
-                if pane.progression() {
-                    BAR_LABEL
-                } else {
-                    PATTERN_LABEL
-                },
-                lens(
-                    move |input: &mut TextInput| {
-                        text_field_typed(input).attr("aria-label", pattern_label)
-                    },
-                    |p: &mut TreePage| {
-                        if p.blocks.progression() {
-                            &mut p.blocks.bar_pattern
-                        } else {
-                            &mut p.blocks.pattern
-                        }
-                    },
-                ),
-            ),
-        )));
-        children.push(Box::new(el(
-            "label",
-            (
-                QUERY_LABEL,
-                lens(
-                    |input: &mut TextInput| text_field_typed(input).attr("aria-label", QUERY_LABEL),
-                    |p: &mut TreePage| &mut p.blocks.query,
-                ),
-            ),
-        )));
-        let set = pane.commands();
-        for command in set.menu(&CommandChoices::default(), Some("block"), pane.query.text()) {
-            if let Some(reason) = &command.disabled_reason {
-                children.push(Box::new(el("p", reason.clone())));
+                    })
+                    .attr("aria-pressed", selected.contains(&index).to_string())
+                    .attr("class", format!("blocks-row blocks-row-{index}")),
+                ));
             }
-        }
-        if pane.progression() {
-            children.push(Box::new(button("Export bar-line plaintext",|p:&mut TreePage,_|{
-            action(p,|pane|{
-                let text=bars::plaintext(&pane.target()?.attributes)?;
-                let url=backdrop::export_material(text.as_bytes(),"text/plain","progression.txt")?;
-                if let Some(old)=pane.export_url.replace(url){let _=web_sys::Url::revoke_object_url(&old);}
-                pane.status="Plaintext chart exported · structured source retains timing and voicings".into();Ok(())
-            });
-        }).attr("class","blocks-export-plaintext")));
+            children.push(Box::new(
+                el("div", rows).attr("aria-label", "Select rows"),
+            ));
+            let claim = pane.adapter(&class).map(|a| a.claim().clone());
+            if let Some(claim) = &claim {
+                if let Some(field) = &claim.pattern {
+                    let key = format!("pattern:{class}");
+                    let label = field.label.clone();
+                    let aria = label.clone();
+                    children.push(Box::new(el(
+                        "label",
+                        (
+                            label,
+                            lens(
+                                move |input: &mut TextInput| {
+                                    text_field_typed(input).attr("aria-label", aria.clone())
+                                },
+                                move |p: &mut TreePage| p.blocks.field_mut(&key),
+                            ),
+                        ),
+                    )));
+                }
+            }
+        } else if let Some(class) = pane.unclaimed_class(&div) {
+            children.push(Box::new(
+                status_note("blocks-unclaimed", unclaimed_message(&class)),
+            ));
+            children.push(Box::new(
+                button("Review block adapters", |p: &mut TreePage, _| {
+                    p.blocks.review_requested = true;
+                    p.blocks.status = "Review requested · the host that discloses block adapters opens it".into();
+                })
+                .attr("class", "blocks-review-adapters"),
+            ));
         }
     } else {
         children.push(Box::new(el("p", "Use an attributed Djot block to offer domain commands. Unrecognized content remains editable.")));
     }
+    children.push(Box::new(el(
+        "label",
+        (
+            QUERY_LABEL,
+            lens(
+                |input: &mut TextInput| text_field_typed(input).attr("aria-label", QUERY_LABEL),
+                |p: &mut TreePage| &mut p.blocks.query,
+            ),
+        ),
+    )));
+    let set = pane.commands();
+    for command in set.menu(&CommandChoices::default(), Some("block"), pane.query.text()) {
+        if let Some(reason) = &command.disabled_reason {
+            children.push(Box::new(el("p", reason.clone())));
+        }
+    }
+    if let Some(class) = &guest_class {
+        if let Some(claim) = pane.adapter(class).map(|a| a.claim().clone()) {
+            for command in claim
+                .commands
+                .iter()
+                .filter(|c| c.kind != CommandKind::Choice && c.id != BACKDROP_SCENE)
+            {
+                let arg_key = format!("arg:{class}:{}", command.id);
+                if let Some(field) = &command.arg {
+                    let label = field.label.clone();
+                    let aria = label.clone();
+                    let key = arg_key.clone();
+                    children.push(Box::new(el(
+                        "label",
+                        (
+                            label,
+                            lens(
+                                move |input: &mut TextInput| {
+                                    text_field_typed(input).attr("aria-label", aria.clone())
+                                },
+                                move |p: &mut TreePage| p.blocks.field_mut(&key),
+                            ),
+                        ),
+                    )));
+                }
+                let id = command.id.clone();
+                children.push(Box::new(
+                    button(command.label.clone(), move |p: &mut TreePage, _| {
+                        let id = id.clone();
+                        let key = arg_key.clone();
+                        action(p, move |pane| {
+                            let arg = pane.field(&key).to_owned();
+                            pane.run_command(&id, &arg)
+                        })
+                    })
+                    .attr("class", format!("blocks-command-{}", command.id)),
+                ));
+            }
+        }
+    }
     let mut preview_rows: Vec<Child> = Vec::new();
     if let Some(preview) = &pane.preview {
+        let class = pane.preview_class().unwrap_or_default();
         let stale = preview.source != pane.document.editor.source()
-            || pane.preview_pattern != pane.pattern_text();
+            || pane.preview_pattern != pane.field(&format!("pattern:{class}"));
         for (index, change) in preview.changes.iter().enumerate() {
             let label = format!(
                 "{} · {} → {} · {}",
                 change.label,
-                change.before.as_deref().unwrap_or(if pane.progression() {
-                    "Ungrouped"
-                } else {
-                    "No expected rhyme"
-                }),
+                change.before.as_deref().unwrap_or("Not set"),
                 change.after,
                 if change.use_update {
                     "Use update"
@@ -818,13 +1058,15 @@ pub(super) fn workspace(page: &TreePage) -> Option<Child> {
         el("div", preview_rows).attr("class", "blocks-review"),
     ));
     let mut surface_children: Vec<Child> = Vec::new();
-    surface_children.push(Box::new(el("p", if pane.progression(){"Bars follow Woodshed’s authored time-signature map. Grouping changes neither Card order nor musical timing. Plaintext export omits exact timing, voicings and identities."}else{"Rhyme labels are authored expectations. Unknown pronunciation and stress remain unknown. Unselected lines keep their existing expectations; an unset expectation is shown as ‘No expected rhyme’."})));
-    if pane.progression() {
-        surface_children.push(notation_readings(page));
+    if let Some(class) = &guest_class {
+        surface_children.push(view_panel(page, class));
     }
+    let showing_view = guest_class
+        .as_ref()
+        .is_some_and(|c| pane.view_modes.contains_key(c));
     let display = pane.display.borrow();
     if let Some(surface) = &display.surface
-        && (!pane.progression() || pane.notation.is_none())
+        && !showing_view
     {
         let available = if page.size.0 > 900 {
             page.size.0.saturating_sub(64) / 2
@@ -901,8 +1143,8 @@ pub(super) fn workspace(page: &TreePage) -> Option<Child> {
         )
         .attr(
             "class",
-            if pane.progression() {
-                "blocks-workspace blocks-musical"
+            if showing_view {
+                "blocks-workspace blocks-guest-view"
             } else {
                 "blocks-workspace"
             },
@@ -911,155 +1153,150 @@ pub(super) fn workspace(page: &TreePage) -> Option<Child> {
     ))
 }
 
-fn notation_width(page: &TreePage) -> f32 {
+fn view_width(page: &TreePage) -> f32 {
     if page.size.0 > 900 {
         page.size.0.saturating_sub(64) as f32 / 2.0
     } else {
         page.size.0.saturating_sub(44) as f32
     }
-    .max(240.0)
 }
-fn notation_colors(page: &TreePage) -> (ColorF, ColorF) {
+
+fn sheet_theme(page: &TreePage) -> SheetTheme {
     let theme = page.shared.appearance.borrow().backdrop_theme();
-    let color = |a: [f32; 4]| ColorF {
+    let color = |a: [f32; 4]| graphshell::block_editing::sheet_leaf::ColorF {
         r: a[0],
         g: a[1],
         b: a[2],
         a: a[3],
     };
-    (color(theme.text), color(theme.root))
+    SheetTheme {
+        ink: color(theme.text),
+        accent: color(theme.root),
+        muted: color(theme.guide),
+    }
 }
-fn notation_readings(page: &TreePage) -> Child {
+
+/// The view modes an adapter offers, and the selected one's drawing with its event regions.
+fn view_panel(page: &TreePage, class: &str) -> Child {
     let pane = &page.blocks;
+    let Some(claim) = pane.adapter(class).map(|a| a.claim().clone()) else {
+        return Box::new(el("div", ()));
+    };
     let mut children: Vec<Child> = Vec::new();
-    let mut readings: Vec<Child> = Vec::new();
-    for (view, label, key) in [
-        (None, "Arrangement", "arrangement"),
-        (Some(NotationView::Chart), "Chart", "chart"),
-        (Some(NotationView::Tab), "Tab", "tab"),
-        (Some(NotationView::Score), "Score", "score"),
-    ] {
-        readings.push(Box::new(
-            button(label, move |p: &mut TreePage, _| {
-                p.blocks.notation = view;
+    if claim.views.is_empty() {
+        return Box::new(el("div", ()));
+    }
+    let selected_mode = pane.view_modes.get(class).cloned();
+    let mut buttons: Vec<Child> = Vec::new();
+    for mode in &claim.views {
+        let id = mode.id.clone();
+        let class_owned = class.to_owned();
+        let is_selected = selected_mode.as_deref() == Some(mode.id.as_str());
+        buttons.push(Box::new(
+            button(mode.label.clone(), move |p: &mut TreePage, _| {
+                if is_selected {
+                    p.blocks.view_modes.remove(&class_owned);
+                } else {
+                    p.blocks.view_modes.insert(class_owned.clone(), id.clone());
+                }
+                p.blocks.view = None;
+                p.blocks.event_selected = (usize::MAX, usize::MAX);
             })
-            .attr("aria-pressed", (pane.notation == view).to_string())
-            .attr("class", format!("blocks-reading-{key}")),
+            .attr("aria-pressed", is_selected.to_string())
+            .attr("class", format!("blocks-view-{}", mode.id)),
         ));
     }
-    children.push(Box::new(
-        el("div", readings)
-            .attr("class", "blocks-actions")
-            .attr("aria-label", "Musical reading"),
-    ));
-    let music = pane.target().and_then(|d| bars::music(&d.attributes));
-    match music {
-        Ok(None) => {
-            children.push(Box::new(el("p", "Chart, Tab and Score read the Set’s written MusicXML. Write notation explicitly from the authored arrangement and selected Card shapes. The tempo below applies where a Card has no tempo.")));
-            children.push(Box::new(el(
-                "label",
-                (
-                    TEMPO_LABEL,
-                    lens(
-                        |input: &mut TextInput| {
-                            text_field_typed(input).attr("aria-label", TEMPO_LABEL)
-                        },
-                        |p: &mut TreePage| &mut p.blocks.notation_tempo,
+    children.push(Box::new(el("div", buttons).attr("class", "blocks-actions")));
+    match (&selected_mode, &pane.view) {
+        (None, _) => children.push(Box::new(el(
+            "p",
+            format!("Choose a reading to see the {class} block drawn by its adapter."),
+        ))),
+        (Some(_), None) => children.push(Box::new(status_note("blocks-view-status", WAITING))),
+        (Some(_), Some(ViewState { view: Err(error), .. })) => children.push(Box::new(
+            status_note("blocks-view-status", format!("View unavailable: {error}. Source retained.")),
+        )),
+        (Some(mode), Some(ViewState { view: Ok(view), .. })) => {
+            let label = claim
+                .views
+                .iter()
+                .find(|m| &m.id == mode)
+                .map_or(mode.clone(), |m| m.label.clone());
+            let mut overlay: Vec<Child> = vec![Box::new(
+                custom_leaf::<TreePage, ()>(
+                    VIEW_KEY,
+                    view.width.ceil() as u32,
+                    view.height.ceil() as u32,
+                )
+                .attr("aria-label", format!("{label} · {}", view.description))
+                .attr("class", "blocks-guest-leaf"),
+            )];
+            let theme = sheet_theme(page);
+            if let Ok(leaf) = SheetLeaf::new(view.sheet.clone(), theme) {
+                for text in leaf.texts() {
+                    overlay.push(Box::new(el("span", text.text.clone()).attr("aria-hidden", "true").attr(
+                        "style",
+                        format!(
+                            "position:absolute;left:{}px;top:{}px;font-size:{}px;pointer-events:none;",
+                            text.x, text.y, text.size
+                        ),
+                    )));
+                }
+            }
+            let revision = source_revision(pane.document.editor.source());
+            let block_index = pane.selected;
+            for region in view.regions() {
+                let revision = revision.clone();
+                let (bar, event) = (region.bar as usize, region.event as usize);
+                overlay.push(Box::new(
+                    button(region.label.clone(), move |p: &mut TreePage, _| {
+                        if p.blocks.selected == block_index
+                            && source_revision(p.blocks.document.editor.source()) == revision
+                        {
+                            p.blocks.event_selected = (bar, event);
+                            p.blocks.event_selected_revision = Some(revision.clone());
+                            p.blocks.event_selected_block = block_index;
+                        }
+                    })
+                    .attr("aria-label", region.label.clone())
+                    .attr(
+                        "aria-pressed",
+                        (pane.event_selection() == (bar, event)).to_string(),
+                    )
+                    .attr("class", "blocks-guest-event")
+                    .attr(
+                        "style",
+                        format!(
+                            "position:absolute;left:{}px;top:{}px;width:{}px;height:{}px;opacity:0.01;",
+                            region.x, region.y, region.w, region.h
+                        ),
+                    ),
+                ));
+            }
+            children.push(Box::new(
+                el("div", overlay).attr("class", "blocks-guest").attr(
+                    "style",
+                    format!(
+                        "position:relative;width:{}px;height:{}px;flex:none;",
+                        view.width, view.height
                     ),
                 ),
-            )));
-            children.push(Box::new(
-                button("Write notation", |p: &mut TreePage, _| {
-                    action(p, Pane::write_notation)
-                })
-                .attr("class", "blocks-write-notation")
-                .attr("aria-disabled", pane.preview.is_some().to_string()),
             ));
-        },
-        Err(error) => children.push(Box::new(
-            status_note("", format!("Notation unavailable: {error}. Source retained.")),
-        )),
-        Ok(Some(score)) if pane.notation.is_some() => {
-            let (ink, accent) = notation_colors(page);
-            match pane.notation_leaf(notation_width(page), ink, accent) {
-                Ok(leaf) => {
-                    let size = leaf.intrinsic_size();
-                    let mut overlay: Vec<Child> = vec![Box::new(
-                        custom_leaf::<TreePage, ()>(
-                            NOTATION_KEY,
-                            size.width as u32,
-                            size.height.ceil() as u32,
-                        )
-                        .attr(
-                            "aria-label",
-                            format!(
-                                "{} notation · {}",
-                                pane.notation.unwrap().label(),
-                                score.title
-                            ),
-                        )
-                        .attr("class", "blocks-notation-leaf"),
-                    )];
-                    for label in leaf.labels() {
-                        overlay.push(Box::new(
-                            el("span", label.text).attr("aria-hidden", "true").attr(
-                                "style",
-                                format!(
-                                    "position:absolute;left:{}px;top:{}px;pointer-events:none;",
-                                    label.x, label.y
-                                ),
-                            ),
-                        ));
-                    }
-                    let revision = source_revision(pane.document.editor.source());
-                    let block_index = pane.selected;
-                    for (bar, event, (x, y, width, height)) in leaf.event_rects() {
-                        let revision = revision.clone();
-                        let note = &score.measures[bar].events[event];
-                        let label = format!(
-                            "Bar {}, event {} · {} · {}",
-                            bar + 1,
-                            event + 1,
-                            note.value.label(),
-                            if note.rest {
-                                "Rest".into()
-                            } else {
-                                note.notes
-                                    .iter()
-                                    .map(|n| format!("string {} fret {}", n.string, n.fret))
-                                    .collect::<Vec<_>>()
-                                    .join(", ")
-                            }
-                        );
-                        overlay.push(Box::new(button(label.clone(),move |p: &mut TreePage,_| {
-                            if p.blocks.selected == block_index && source_revision(p.blocks.document.editor.source()) == revision {
-                                p.blocks.notation_selected = (bar,event);
-                                p.blocks.notation_selected_revision = Some(revision.clone());
-                                p.blocks.notation_selected_block = block_index;
-                            }
-                        }).attr("aria-label",label).attr("aria-pressed",(pane.notation_selection()==(bar,event)).to_string()).attr("class",format!("blocks-notation-event blocks-notation-event-{bar}-{event}")).attr("style",format!("position:absolute;left:{x}px;top:{y}px;width:{width}px;height:{height}px;padding:0;border:0;background:transparent;color:transparent;"))));
-                    }
-                    children.push(Box::new(
-                        el("div", overlay).attr("class", "blocks-notation").attr(
-                            "style",
-                            format!(
-                                "position:relative;width:{}px;height:{}px;flex:none;",
-                                size.width, size.height
-                            ),
-                        ),
-                    ));
-                    let selection = score
-                        .measures
-                        .get(pane.notation_selection().0)
-                        .and_then(|m| m.events.get(pane.notation_selection().1));
-                    children.push(Box::new(status_note("blocks-notation-selection", selection.map_or_else(|| "Select an event to carry attention across Chart, Tab and Score.".into(), |e|format!("Selected bar {}, event {} · {}{}", pane.notation_selected.0+1,pane.notation_selected.1+1,e.value.label(),if e.rest {" rest"} else {""})))));
+            children.push(Box::new(status_note(
+                "blocks-guest-selection",
+                if pane.event_selection().0 == usize::MAX {
+                    "Select an event to carry attention across the readings".to_string()
+                } else {
+                    format!(
+                        "Selected bar {}, event {}",
+                        pane.event_selection().0 + 1,
+                        pane.event_selection().1 + 1
+                    )
                 },
-                Err(error) => children.push(Box::new(el("p", error))),
-            }
+            )));
         },
-        Ok(Some(_)) => {},
     }
-    Box::new(el("div", children).attr("class", "blocks-notation-reading"))
+    Box::new(el("div", children).attr("class", "blocks-guest-reading"))
 }
 
 pub(super) fn focused_text(
@@ -1071,30 +1308,43 @@ pub(super) fn focused_text(
     let node = runner.focus()?;
     let dom = runner.dom();
     let dom = dom.borrow();
-    let index = [
-        SOURCE_LABEL,
-        PATTERN_LABEL,
-        QUERY_LABEL,
-        BAR_LABEL,
-        TEMPO_LABEL,
-    ]
-    .iter()
-    .position(|label| focused_field_has_label(&dom, node, label))?;
+    let pane = &runner.state().blocks;
+    let mut labels: Vec<(String, Option<String>)> = vec![
+        (SOURCE_LABEL.to_owned(), None),
+        (QUERY_LABEL.to_owned(), None),
+    ];
+    if let Some(class) = pane.current_class() {
+        if let Some(claim) = pane.adapter(&class).map(|a| a.claim().clone()) {
+            if let Some(field) = &claim.pattern {
+                labels.push((field.label.clone(), Some(format!("pattern:{class}"))));
+            }
+            for command in &claim.commands {
+                if let Some(field) = &command.arg {
+                    labels.push((field.label.clone(), Some(format!("arg:{class}:{}", command.id))));
+                }
+            }
+        }
+    }
+    let (index, key) = labels
+        .iter()
+        .enumerate()
+        .find(|(_, (label, _))| focused_field_has_label(&dom, node, label))
+        .map(|(i, (_, key))| (i, key.clone()))?;
+    let key_get = key.clone();
+    let key_set = key;
     Some(cambium_rootstock::FocusedTextSlot {
         node,
-        get: Box::new(move |p| match index {
-            0 => p.blocks.document.editor.input(),
-            1 => &p.blocks.pattern,
-            2 => &p.blocks.query,
-            3 => &p.blocks.bar_pattern,
-            _ => &p.blocks.notation_tempo,
+        get: Box::new(move |p| match (index, &key_get) {
+            (0, _) => p.blocks.document.editor.input(),
+            (1, _) => &p.blocks.query,
+            (_, Some(key)) => p.blocks.fields.get(key).unwrap_or(&p.blocks.query),
+            _ => &p.blocks.query,
         }),
-        get_mut: Box::new(move |p| match index {
-            0 => p.blocks.document.editor.input_mut(),
-            1 => &mut p.blocks.pattern,
-            2 => &mut p.blocks.query,
-            3 => &mut p.blocks.bar_pattern,
-            _ => &mut p.blocks.notation_tempo,
+        get_mut: Box::new(move |p| match (index, &key_set) {
+            (0, _) => p.blocks.document.editor.input_mut(),
+            (1, _) => &mut p.blocks.query,
+            (_, Some(key)) => p.blocks.fields.entry(key.clone()).or_default(),
+            _ => &mut p.blocks.query,
         }),
     })
 }
@@ -1206,33 +1456,49 @@ pub(super) fn register(ctx: &mut AppCtx<'_, TreePage, Logic, Child>) {
             }
         });
     }
+    if ctx.runner.state().blocks.pending.is_some() {
+        ctx.runner.update(|p| p.blocks.retry_pending());
+    }
     let page = ctx.runner.state();
-    let visible = page.blocks.open && page.blocks.progression() && page.blocks.notation.is_some();
-    let signature = format!(
-        "{}:{}:{:?}:{:?}:{}:{}",
-        page.blocks.selected,
-        source_revision(page.blocks.document.editor.source()),
-        page.blocks.notation,
-        page.blocks.notation_selected,
-        notation_width(page),
-        page.shared.appearance.borrow().revision
-    );
-    if visible && page.blocks.notation_signature.as_ref() != Some(&signature) {
-        let (ink, accent) = notation_colors(page);
-        match page.blocks.notation_leaf(notation_width(page), ink, accent) {
-            Ok(leaf) => {
-                ctx.leaves.insert(NOTATION_KEY, Box::new(leaf));
-            },
-            Err(_) => {
-                ctx.leaves.remove(&NOTATION_KEY);
-            },
+    let visible = page.blocks.open
+        && page
+            .blocks
+            .current_class()
+            .is_some_and(|c| page.blocks.view_modes.contains_key(&c));
+    if visible {
+        let width = view_width(page);
+        let changed = {
+            let mut changed = false;
+            ctx.runner.update(|p| changed = p.blocks.refresh_view(width));
+            changed
+        };
+        let page = ctx.runner.state();
+        let signature = format!(
+            "{}:{}",
+            page.blocks.view.as_ref().map_or(0, |v| v.generation),
+            page.shared.appearance.borrow().revision
+        );
+        if (changed || page.blocks.view_leaf_signature.as_ref() != Some(&signature))
+            && let Some(ViewState { view: Ok(view), .. }) = &page.blocks.view
+        {
+            match SheetLeaf::new(view.sheet.clone(), sheet_theme(page)) {
+                Ok(leaf) => {
+                    ctx.leaves.insert(VIEW_KEY, Box::new(leaf));
+                },
+                Err(_) => {
+                    ctx.leaves.remove(&VIEW_KEY);
+                },
+            }
+            ctx.runner
+                .update(|p| p.blocks.view_leaf_signature = Some(signature));
         }
-        ctx.runner
-            .update(|p| p.blocks.notation_signature = Some(signature));
-    } else if !visible {
-        ctx.leaves.remove(&NOTATION_KEY);
-        if page.blocks.notation_signature.is_some() {
-            ctx.runner.update(|p| p.blocks.notation_signature = None);
+    } else {
+        ctx.leaves.remove(&VIEW_KEY);
+        if ctx.runner.state().blocks.view_leaf_signature.is_some() {
+            ctx.runner.update(|p| {
+                p.blocks.view_leaf_signature = None;
+                p.blocks.view = None;
+            });
         }
     }
     if !ctx.runner.state().blocks.open {
@@ -1293,19 +1559,25 @@ impl Drop for Pane {
 
 pub(super) fn fields(page: &TreePage, snapshot: ProbeSnapshot) -> ProbeSnapshot {
     let pane = &page.blocks;
+    let class = pane.current_class();
     snapshot
         .with_field(
-            "blocks-notation-view",
-            pane.notation.map_or("Arrangement", NotationView::label),
+            "blocks-view-mode",
+            class
+                .as_ref()
+                .and_then(|c| pane.view_modes.get(c).cloned())
+                .unwrap_or_else(|| "Arrangement".into()),
         )
         .with_field(
-            "blocks-notation-selected",
+            "blocks-event-selected",
             format!(
                 "{}:{}",
-                pane.notation_selection().0,
-                pane.notation_selection().1
+                pane.event_selection().0,
+                pane.event_selection().1
             ),
         )
+        .with_field("blocks-adapters", pane.registry.classes().join(","))
+        .with_field("blocks-review-requested", pane.review_requested.to_string())
         .with_field("blocks-open", pane.open.to_string())
         .with_field("blocks-source", pane.document.editor.source().to_string())
         .with_field("blocks-dirty", pane.document.editor.is_dirty().to_string())
