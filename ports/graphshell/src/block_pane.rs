@@ -1069,12 +1069,16 @@ pub fn workspace<P: PaneHost>(page: &P) -> Option<Child<P>> {
             ),
         )),
         Box::new(status_note("blocks-status", pane.status.clone())),
+        // The label stays visible text: an aria-label would replace the source for readers.
         if read_only {
-            Box::new(
-                el("pre", pane.document.editor.source().to_string())
-                    .attr("aria-label", SOURCE_LABEL)
-                    .attr("class", "blocks-source"),
-            )
+            Box::new(el(
+                "div",
+                (
+                    el("p", SOURCE_LABEL),
+                    el("pre", pane.document.editor.source().to_string())
+                        .attr("class", "blocks-source"),
+                ),
+            ))
         } else {
             Box::new(el(
                 "label",
@@ -1149,7 +1153,7 @@ pub fn workspace<P: PaneHost>(page: &P) -> Option<Child<P>> {
             ));
             let claim = pane.adapter(&class).map(|a| a.claim().clone());
             if let Some(claim) = &claim {
-                if let Some(field) = &claim.pattern {
+                if let Some(field) = claim.pattern.as_ref().filter(|_| !read_only) {
                     let key = format!("pattern:{class}");
                     let label = field.label.clone();
                     let aria = label.clone();
@@ -1182,20 +1186,23 @@ pub fn workspace<P: PaneHost>(page: &P) -> Option<Child<P>> {
     } else {
         children.push(Box::new(el("p", "Use an attributed Djot block to offer domain commands. Unrecognized content remains editable.")));
     }
-    children.push(Box::new(el(
-        "label",
-        (
-            QUERY_LABEL,
-            lens(
-                |input: &mut TextInput| text_field_typed(input).attr("aria-label", QUERY_LABEL),
-                |p: &mut P| &mut p.pane_mut().query,
+    // A following view runs no block commands, so it offers no search for them.
+    if !read_only {
+        children.push(Box::new(el(
+            "label",
+            (
+                QUERY_LABEL,
+                lens(
+                    |input: &mut TextInput| text_field_typed(input).attr("aria-label", QUERY_LABEL),
+                    |p: &mut P| &mut p.pane_mut().query,
+                ),
             ),
-        ),
-    )));
-    let set = pane.commands();
-    for command in set.menu(&CommandChoices::default(), Some("block"), pane.query.text()) {
-        if let Some(reason) = &command.disabled_reason {
-            children.push(Box::new(el("p", reason.clone())));
+        )));
+        let set = pane.commands();
+        for command in set.menu(&CommandChoices::default(), Some("block"), pane.query.text()) {
+            if let Some(reason) = &command.disabled_reason {
+                children.push(Box::new(el("p", reason.clone())));
+            }
         }
     }
     if let Some(class) = &guest_class {
