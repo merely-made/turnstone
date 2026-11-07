@@ -1,3 +1,5 @@
+click role:button Panes
+click role:button Graph controls
 reveal role:button Editable document
 click role:button Editable document
 assert snap blocks-adapters == metre,progression
@@ -10,6 +12,7 @@ reveal .blocks-view-score
 click .blocks-view-score
 same reopened-notation blocks-source
 assert snap blocks-dirty == false
+wait 800
 reveal .blocks-guest-leaf
 wait 200
 capture reopened_score
@@ -17,6 +20,7 @@ reveal .blocks-view-tab
 click .blocks-view-tab
 same reopened-notation blocks-source
 assert snap blocks-dirty == false
+wait 800
 reveal .blocks-guest-leaf
 wait 200
 capture reopened_tab

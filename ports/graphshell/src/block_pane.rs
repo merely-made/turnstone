@@ -383,7 +383,6 @@ impl Pane {
     pub fn add_adapter(&mut self, adapter: Box<dyn BlockAdapter>) -> Result<(), String> {
         self.registry.register(adapter)?;
         self.install_defaults();
-        self.status = "Block adapter installed".into();
         Ok(())
     }
     /// Register a guest's adapter, answered by `worker`.
@@ -391,7 +390,6 @@ impl Pane {
         self.registry.register(Box::new(worker.clone()))?;
         self.workers.push(worker);
         self.install_defaults();
-        self.status = "Block adapter installed".into();
         Ok(())
     }
     /// A guest's adapter was revoked or stopped: blocks of its class return to plain text.
@@ -412,6 +410,14 @@ impl Pane {
     }
     pub fn open(&self) -> bool {
         self.open
+    }
+    /// Whether an adapter has been asked something it has not answered yet: work waiting to be
+    /// retried, or a chosen reading with no view yet. A scenario's waits settle on this.
+    pub fn awaiting_adapter(&self) -> bool {
+        self.pending.is_some()
+            || (self.open
+                && self.current_class().is_some_and(|c| self.view_modes.contains_key(&c))
+                && self.view.is_none())
     }
     pub fn set_open(&mut self, open: bool) {
         self.open = open;
@@ -634,6 +640,10 @@ impl Pane {
             RunResult::Attrs(attrs) => {
                 let preview = Preview::new(&source, div, Vec::new())?;
                 self.document.apply(&preview, attrs)?;
+                // A write that gives the block something to show shows the adapter's first view.
+                if let Some(first) = self.adapter(&class).and_then(|a| a.claim().views.first().cloned()) {
+                    self.view_modes.insert(class.clone(), first.id);
+                }
                 self.view = None;
                 self.event_selected = (usize::MAX, usize::MAX);
                 self.status = format!("{command} written · Save document to keep it");
@@ -1016,7 +1026,7 @@ pub fn toolbar<P: PaneHost>(page: &P) -> Option<Child<P>> {
     ))
 }
 pub fn busy<P: PaneHost>(page: &P) -> bool {
-    page.pane().busy
+    page.pane().busy || page.pane().awaiting_adapter()
 }
 pub fn workspace<P: PaneHost>(page: &P) -> Option<Child<P>> {
     if !page.available() || !page.pane().open {
@@ -1427,8 +1437,8 @@ fn view_panel<P: PaneHost>(page: &P, class: &str) -> Child<P> {
                 } else {
                     p.pane_mut().view_modes.insert(class_owned.clone(), id.clone());
                 }
+                // The selected event carries across the readings.
                 p.pane_mut().view = None;
-                p.pane_mut().event_selected = (usize::MAX, usize::MAX);
             })
             .attr("aria-pressed", is_selected.to_string())
             .attr("class", format!("blocks-view-{}", mode.id)),
@@ -1499,7 +1509,7 @@ fn view_panel<P: PaneHost>(page: &P, class: &str) -> Child<P> {
                     .attr(
                         "style",
                         format!(
-                            "position:absolute;left:{}px;top:{}px;width:{}px;height:{}px;opacity:0.01;",
+                            "position:absolute;left:{}px;top:{}px;width:{}px;height:{}px;color:transparent;background:transparent;border-color:transparent;padding:0;",
                             region.x, region.y, region.w, region.h
                         ),
                     ),
