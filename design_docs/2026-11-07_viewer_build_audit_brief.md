@@ -51,7 +51,7 @@ which is outside the repository.
 the Inspector and ordinary controls as Cambium elements, a "Graph tools" panel with arrangement recipes and
 physics, camera pan and zoom, selection, drag, and the Fold/history view. The qualification runs counted 24 command
 cases, 11 presenter cases, 17 physics receipts and 4 pointer/keyboard assertions
-(`archive_docs/2026-10-28/2026-09-25_graphshell_one_tree_plan.md:1263-1264`). It is read-only in the sense of no
+(`archive_docs/2026-10-28/2026-09-25_graphshell_one_tree_plan.md:1255-1258,1284`). It is read-only in the sense of no
 saved state, product panes or remote board, not in the sense of static: it runs live physics. The viewer carries
 Latin and Greek text only (Arabic, CJK and Thai glyphs are missing; T7 says so).
 
@@ -222,7 +222,7 @@ does not use the page's, so **about 150 to 400 KB gzip** (a JS-only painter unde
 viewer, so the 24 command, 11 presenter and 17 physics receipts, the AccessKit-derived accessibility and Tabard
 theming do not carry over (a DOM inspector would arguably improve accessibility, but nothing has been qualified);
 the one-tree plan's stop rules say "no Graphshell-only UI pieces" and "the canvas's rendering, physics and picking
-stay pictograph's" (`archive_docs/2026-10-28/2026-09-25_graphshell_one_tree_plan.md:1313-1318`), which this
+stay pictograph's" (`archive_docs/2026-10-28/2026-09-25_graphshell_one_tree_plan.md:1315-1321`), which this
 contradicts; and it needs a payload the host produces, which the current host dataset is not. It is a product
 decision, not a trim.
 
