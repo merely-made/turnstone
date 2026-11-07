@@ -213,7 +213,7 @@ fn reader_placements_share_source_and_retain_independent_scroll_after_hide() {
     );
     assert_eq!(
         reader(&contents, &second).reading_preferences(),
-        tabard::ReadingPreferences {
+        mere_document_lanes::ReadingPreferences {
             text_size: 20,
             column_em: 32
         }

@@ -14,6 +14,7 @@ use std::sync::Arc;
 use crate::surface::{Rect, SurfaceId, SurfaceKind};
 
 use super::Shell;
+use super::reading_edge::{tabard_anchor, tabard_preferences};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(super) enum ReaderAppearanceRole {
@@ -137,7 +138,8 @@ impl Shell {
                     session
                         .downcast_ref::<mere_document_lanes::SmolwebDocumentSession>()
                         .and_then(|d| d.document().reading_anchor())
-                });
+                })
+                .map(tabard_anchor);
             if let Some(anchor) = anchor {
                 changed |= self.app.retain_scope_anchor(target, &anchor);
                 if let Some(trail) = self.app.reading.trails.get_mut(&target.pane) {
@@ -185,7 +187,7 @@ impl Shell {
                         reader.viewport(),
                         reader.scroll_y(),
                         layout_scale,
-                        reader.reading_preferences(),
+                        tabard_preferences(reader.reading_preferences()),
                         reader.source_document(),
                     )
                 })

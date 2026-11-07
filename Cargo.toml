@@ -62,7 +62,7 @@ fetch = { package = "mere-fetch", git = "https://github.com/merely-made/mere.git
 # Pelt's browsing controller and the sans-IO page load (SC, 2026-10-07): each
 # node's document is a PeltContent, and each node's load is a PageLoad.
 pelt-core = { git = "https://github.com/merely-made/mere.git", branch = "main", features = ["genet", "image-decode", "cue"] }
-page-load = { package = "mere-pageload", git = "https://github.com/merely-made/mere.git", branch = "main" }
+page-load = { package = "mere-pageload", git = "https://github.com/merely-made/inker.git", branch = "main" }
 # Session persistence: the flat single-session `graph.json` beside the data
 # root (session_graph_store's blessed single-session shape). App-side
 # material that moves here with the port, like fetch.
@@ -195,16 +195,16 @@ rfd = "0.17.2"
 # The engine contracts + the content lanes as session engines (session-engines
 # plan phase 4: turnstone's content port spawns through the registry; the static
 # lane's netfetch feature gives LocalFetcher its https branch).
-inker = { git = "https://github.com/merely-made/mere.git", branch = "main" }
+inker = { git = "https://github.com/merely-made/inker.git", branch = "main" }
 genet-documents = { git = "https://github.com/merely-made/genet.git", branch = "main", features = ["livery"] }
 # The Mere half of the former `genet-documents` (boundary plan P1): the
 # reader and smolweb lanes, and the remote fetcher that supplies the http(s)
 # schemes Genet's `LocalFetcher` no longer branches on. The two compose at
 # `LocalFetcher::with_fallback`, which is the seam the split introduced.
-mere-lanes = { git = "https://github.com/merely-made/mere.git", branch = "main", features = ["netfetch", "smolweb", "retained-clips"] }
+mere-lanes = { git = "https://github.com/merely-made/inker.git", branch = "main", features = ["netfetch", "smolweb", "retained-clips"] }
 # The source-preserving Micron native projection. Turnstone adapts
 # its portable EngineDocument into the existing retained document session.
-nematic = { git = "https://github.com/merely-made/mere.git", branch = "main" }
+nematic = { git = "https://github.com/merely-made/inker.git", branch = "main" }
 # Native Reticulum page transport.  The NomadNet adapter owns only the public
 # destination and opaque page bytes; Turnstone owns navigation and rendering.
 # Optional: Retinue carries Reticulum-licensed terms, so the `nomadnet` feature
@@ -227,7 +227,7 @@ app-host = { git = "https://github.com/merely-made/mere.git", branch = "main", o
 # Store limits for a component instance (the same wasmtime the host uses).
 wasmtime = { version = "45", optional = true }
 # Clip/capture capability, with lightweight Genet extraction reexported.
-fleece = { package = "mere-fleece", git = "https://github.com/merely-made/mere.git", branch = "main", features = ["clip", "eidetic-bridge", "portable-clip"] }
+fleece = { package = "mere-fleece", git = "https://github.com/merely-made/inker.git", branch = "main", features = ["clip", "eidetic-bridge", "portable-clip"] }
 genet-static-dom = { git = "https://github.com/merely-made/genet.git", branch = "main" }
 # Turnstone owns pane retention and composition; Genet supplies the clean-room
 # Livery cascade/Buckram layout state.
@@ -267,7 +267,7 @@ registry = { package = "mere-registry", git = "https://github.com/merely-made/me
 cambium-winit = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 # Authority-free source buffer plus Knot highlighting/outline/folds/preview.
 # Storage, sync, grants, and keys stay in the endpoint process.
-knot-editor-host = { git = "https://github.com/merely-made/mere.git", branch = "main" }
+knot-editor-host = { git = "https://github.com/merely-made/inker.git", branch = "main" }
 sprigging = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 # The application half of the former `genet-host-api`: the settings projection
 # and the product-surface admission vocabulary. The boundary plan (P1) split
@@ -279,7 +279,7 @@ mere-surface-api = { git = "https://github.com/merely-made/mere.git", branch = "
 workbench = { git = "https://github.com/merely-made/mere.git", branch = "main", features = ["serde"] }
 # Chromium surface-engine adapter. `weld-engine` is the neutral inker bridge;
 # the CEF runtime remains opt-in because it carries a bundled browser runtime.
-weld-engine = { git = "https://github.com/merely-made/mere.git", branch = "main", features = ["welding-0-15"], optional = true }
+weld-engine = { git = "https://github.com/merely-made/inker.git", branch = "main", features = ["welding-0-15"], optional = true }
 # Pins match mere's workspace so the shared subtrees unify.
 winit = "0.30.13"
 # PNG encode for the scenario lane's GPU self-capture (composed-frame
@@ -334,7 +334,7 @@ redshank-storage = { git = "https://github.com/merely-made/woodshed.git", branch
 wgpu-cue = { version = "=0.1.3" }
 
 # The offscreen Servo host is reusable on macOS, Linux and Windows.
-graft-engine = { git = "https://github.com/merely-made/mere.git", branch = "main", optional = true }
+graft-engine = { git = "https://github.com/merely-made/inker.git", branch = "main", optional = true }
 servo = { git = "https://github.com/servo/servo", rev = "aac43a3f31a259f04a574f5ec4e959c943ad7cc7", optional = true }
 rustls = { version = "0.23.37", features = ["aws_lc_rs"], optional = true }
 grafting-servo = { git = "https://github.com/merely-made/wgpu-graft.git", branch = "main", default-features = false, features = ["wgpu-30", "servo"], optional = true }
@@ -396,7 +396,7 @@ servo = [ "dep:graft-engine", "dep:servo", "dep:grafting-servo", "dep:grafting",
 [target.'cfg(windows)'.dependencies]
 # ANGLE EGL DLL selection is Windows-only; macOS uses Surfman CGL.
 servo = { git = "https://github.com/servo/servo", rev = "aac43a3f31a259f04a574f5ec4e959c943ad7cc7", features = ["no-wgl"], optional = true }
-scrying-engine = { git = "https://github.com/merely-made/mere.git", branch = "main", optional = true }
+scrying-engine = { git = "https://github.com/merely-made/inker.git", branch = "main", optional = true }
 # Select a process crypto provider before Servo network construction.
 webview2-com = { version = "=0.39.1", optional = true }
 # Weld owns CEF's callback-time copy; Grafting owns the generic DX12 shared
@@ -548,6 +548,16 @@ murm-webrtc = { git = "https://github.com/merely-made/murm.git", branch = "main"
 
 distillery = { git = "https://github.com/merely-made/distillery.git", branch = "main" }
 mere-mesh = { git = "https://github.com/merely-made/distillery.git", branch = "main" }
+# Inker left Mere (engine split P1); Knot's pinned revision still names these
+# through mere.git. The rows leave when Knot takes them from inker.git.
+illume = { git = "https://github.com/merely-made/inker.git", branch = "main" }
+inker = { git = "https://github.com/merely-made/inker.git", branch = "main" }
+knot-editor-host = { git = "https://github.com/merely-made/inker.git", branch = "main" }
+nematic = { git = "https://github.com/merely-made/inker.git", branch = "main" }
+script-rhai = { git = "https://github.com/merely-made/inker.git", branch = "main" }
+# Woodshed's pinned revision names tinct through mere.git; it moved to
+# Graphshell's contract root (engine split D19).
+tinct = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 
 [workspace.package]
 rust-version = "1.97.1"

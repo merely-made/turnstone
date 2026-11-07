@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 use super::*;
+use crate::shell::reading_edge::lanes_anchor;
 
 impl Shell {
     pub(super) fn effect_control_content(&mut self, effect: Effect) {
@@ -261,11 +262,11 @@ impl Shell {
                         if let Some(reader) =
                             session.downcast_mut::<mere_document_lanes::ReaderDocumentSession>()
                         {
-                            reader.restore_reading_anchor(anchor.clone());
+                            reader.restore_reading_anchor(lanes_anchor(anchor.clone()));
                         } else if let Some(doc) =
                             session.downcast_mut::<mere_document_lanes::SmolwebDocumentSession>()
                         {
-                            doc.document_mut().restore_reading_anchor(anchor.clone());
+                            doc.document_mut().restore_reading_anchor(lanes_anchor(anchor.clone()));
                         }
                     }
                 }

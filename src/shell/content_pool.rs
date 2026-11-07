@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 //! Host identities and Reader appearance custody over the shared Pelt pool.
+use super::reading_edge::{lanes_anchor, lanes_preferences};
 use crate::surface::{Surface, SurfaceId};
 use netrender::Scene;
 use pelt_core::{PeltContent, PeltControllerPool};
@@ -218,7 +219,7 @@ impl NodeDocuments {
                             if let Some(reader) = reader {
                                 let mut appearance = reader.new_appearance((1, 1));
                                 if let Some(anchor) = host.reading_anchor.clone() {
-                                    appearance.restore_reading_anchor(anchor);
+                                    appearance.restore_reading_anchor(lanes_anchor(anchor));
                                 }
                                 appearance.set_fonts(vec![READING_SYMBOL_FONT.to_vec()]);
                                 appearance.set_font_family("serif, sans-serif, \"Noto Sans Math\"");
@@ -226,7 +227,7 @@ impl NodeDocuments {
                             } else {
                                 let mut appearance = portable.unwrap().new_appearance((1, 1));
                                 if let Some(anchor) = host.reading_anchor.clone() {
-                                    appearance.document_mut().restore_reading_anchor(anchor);
+                                    appearance.document_mut().restore_reading_anchor(lanes_anchor(anchor));
                                 }
                                 Box::new(appearance)
                             };
@@ -257,14 +258,14 @@ impl NodeDocuments {
                     session
                         .downcast_ref::<mere_document_lanes::ReaderDocumentSession>()
                         .is_some_and(|reader| {
-                            reader.reading_preferences() != host.reading_preferences
+                            reader.reading_preferences() != lanes_preferences(host.reading_preferences)
                                 || reader.color_mode() != host.color_mode
                         })
                         || session
                             .downcast_ref::<mere_document_lanes::SmolwebDocumentSession>()
                             .is_some_and(|document| {
                                 let document = document.document();
-                                document.reading_preferences() != host.reading_preferences
+                                document.reading_preferences() != lanes_preferences(host.reading_preferences)
                                     || document.color_mode() != host.color_mode
                             })
                 });
@@ -279,14 +280,14 @@ impl NodeDocuments {
                         .as_any()
                         .downcast_mut::<mere_document_lanes::ReaderDocumentSession>()
                     {
-                        let _ = reader.set_reading_preferences(host.reading_preferences);
+                        let _ = reader.set_reading_preferences(lanes_preferences(host.reading_preferences));
                         reader.set_color_mode(host.color_mode);
                     } else if let Some(document) = session
                         .as_any()
                         .downcast_mut::<mere_document_lanes::SmolwebDocumentSession>(
                     ) {
                         let document = document.document_mut();
-                        let _ = document.set_reading_preferences(host.reading_preferences);
+                        let _ = document.set_reading_preferences(lanes_preferences(host.reading_preferences));
                         document.set_color_mode(host.color_mode);
                     }
                 }
