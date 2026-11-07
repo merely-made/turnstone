@@ -85,10 +85,9 @@ mod tests {
                 captured_at: eidetic::Timestamp(1),
             };
             let mut store = eidetic::MemoryBackend::new();
-            let selected = serde_json::from_str(include_str!(
-                "../../../../crates/fleece/tests/fixtures/portable_clip/knot.json"
-            ))
-            .unwrap();
+            let selected =
+                serde_json::from_str(include_str!("../../tests/fixtures/portable_clip/knot.json"))
+                    .unwrap();
             let clip = fleece::portable_clip::retain_knot_export(
                 &mut store, None, &selected, None, &context, limits,
             )

@@ -51,26 +51,22 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         };
         let id = if voice {
             let selected = serde_json::from_str(include_str!(
-                "../../../crates/fleece/tests/fixtures/portable_clip/redshank.json"
+                "../tests/fixtures/portable_clip/redshank.json"
             ))
             .unwrap();
             fleece::portable_clip::retain_redshank_export(
                 &mut store,
                 None,
                 &selected,
-                Some(
-                    include_bytes!("../../../crates/fleece/tests/fixtures/portable_clip/voice.wav")
-                        .to_vec(),
-                ),
+                Some(include_bytes!("../tests/fixtures/portable_clip/voice.wav").to_vec()),
                 &context,
                 limits,
             )
             .await?
         } else {
-            let selected = serde_json::from_str(include_str!(
-                "../../../crates/fleece/tests/fixtures/portable_clip/knot.json"
-            ))
-            .unwrap();
+            let selected =
+                serde_json::from_str(include_str!("../tests/fixtures/portable_clip/knot.json"))
+                    .unwrap();
             fleece::portable_clip::retain_knot_export(
                 &mut store,
                 None,

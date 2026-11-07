@@ -233,10 +233,9 @@ fn selected_clip_admission_survives_owner_reopen_and_uses_verified_custody() {
             captured_at: eidetic::Timestamp(7),
         };
         let mut source = eidetic::MemoryBackend::new();
-        let selected = serde_json::from_str(include_str!(
-            "../../../../crates/fleece/tests/fixtures/portable_clip/knot.json"
-        ))
-        .unwrap();
+        let selected =
+            serde_json::from_str(include_str!("../../tests/fixtures/portable_clip/knot.json"))
+                .unwrap();
         let id = fleece::portable_clip::retain_knot_export(
             &mut source,
             None,
