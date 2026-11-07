@@ -63,6 +63,14 @@ pub struct Claim {
     pub example: Option<Example>,
 }
 
+/// One selectable row of a block: a bar of a progression, a line of a verse. `index` is what
+/// [`BlockInput::selected`] and [`Change::index`] refer to; it need not be dense.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Row {
+    pub index: u32,
+    pub label: String,
+}
+
 /// A copied snapshot of one block; never a handle into the document.
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct BlockInput {
@@ -185,6 +193,8 @@ pub type Answer<T> = Result<T, AdapterError>;
 /// An adapter for one block class.
 pub trait BlockAdapter {
     fn claim(&self) -> &Claim;
+    /// The block's selectable rows, in order.
+    fn rows(&self, block: &BlockInput) -> Answer<Vec<Row>>;
     /// Proposed edits for the selection; `command` is a [`CommandKind::Choice`] command.
     fn choices(&self, block: &BlockInput, command: &str) -> Answer<Vec<Change>>;
     /// The complete desired attribute map after the user's decisions.
@@ -379,6 +389,18 @@ impl BlockAdapter for RhymeAdapter {
     fn claim(&self) -> &Claim {
         &self.claim
     }
+    fn rows(&self, block: &BlockInput) -> Answer<Vec<Row>> {
+        Ok(block
+            .body
+            .lines()
+            .enumerate()
+            .filter(|(_, line)| !line.trim().is_empty())
+            .map(|(i, line)| Row {
+                index: i as u32,
+                label: format!("{} · {}", i + 1, line),
+            })
+            .collect())
+    }
     fn choices(&self, block: &BlockInput, command: &str) -> Answer<Vec<Change>> {
         if command != Self::SCHEME {
             return Err(unknown(command));
@@ -435,6 +457,21 @@ mod tests {
         assert_eq!(
             attrs,
             rhyme::attributes(&block.body, &block.attrs, &direct).unwrap()
+        );
+    }
+
+    #[test]
+    fn rhyme_rows_are_the_nonblank_lines_numbered_from_one() {
+        let registry = Registry::with_builtins();
+        let mut block = metre(vec![], "");
+        block.body = "one\n\ntwo\n".into();
+        let rows = registry.get("metre").unwrap().rows(&block).unwrap();
+        assert_eq!(
+            rows,
+            vec![
+                Row { index: 0, label: "1 · one".into() },
+                Row { index: 2, label: "3 · two".into() },
+            ]
         );
     }
 
