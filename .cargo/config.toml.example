@@ -72,7 +72,6 @@ p2panda-sync = { path = "../../crates/p2panda/p2panda-sync" }
 "cambium-winit" = { path = "../mere/crates/cambium/cambium-winit" }
 "castellan" = { path = "../mere/ports/castellan" }
 "chartulary" = { path = "../mere/crates/eidetic/chartulary" }
-"chirograph" = { path = "../mere/crates/chirograph" }
 "commons-spine" = { path = "../mere/crates/moot/commons" }
 "distillery" = { path = "../mere/ports/distillery" }
 "document-canvas" = { path = "../mere/crates/inker/document-canvas" }
@@ -83,8 +82,7 @@ p2panda-sync = { path = "../../crates/p2panda/p2panda-sync" }
 "esp" = { path = "../mere/crates/intel/esp" }
 "gemot" = { path = "../mere/crates/moot/gemot" }
 "graphshell" = { path = "../mere/ports/graphshell" }
-"graphshell-client" = { path = "../mere/crates/graphshell/graphshell-client" }
-"graphshell-endpoint" = { path = "../mere/crates/graphshell/graphshell-endpoint" }
+"graphshell-door" = { path = "../mere/crates/graphshell/graphshell-door" }
 "graphshell-local" = { path = "../mere/crates/graphshell/graphshell-local" }
 "graphshell-network" = { path = "../mere/crates/graphshell/graphshell-network" }
 "graphshell-stdio" = { path = "../mere/crates/graphshell/graphshell-stdio" }
@@ -132,10 +130,8 @@ p2panda-sync = { path = "../../crates/p2panda/p2panda-sync" }
 "platen" = { path = "../mere/crates/platen/platen" }
 "register-lens" = { path = "../mere/crates/system/registry/register-lens" }
 "register-theme" = { path = "../mere/crates/system/registry/register-theme" }
-"sceno" = { path = "../mere/crates/cambium/scenes/sceno" }
 "scenograph" = { path = "../mere/crates/cambium/scenes/scenograph" }
 "scenomise" = { path = "../mere/crates/cambium/scenes/scenomise" }
-"scenotime" = { path = "../mere/crates/cambium/scenes/scenotime" }
 "script-rhai" = { path = "../mere/crates/script/rhai" }
 "seiche" = { path = "../mere/crates/conatus/seiche" }
 "servitor" = { path = "../mere/crates/servitor" }
@@ -152,6 +148,18 @@ p2panda-sync = { path = "../../crates/p2panda/p2panda-sync" }
 "mesquite" = { path = "../mere/crates/cambium/mesquite" }
 "cambium-genet-winit-host" = { path = "../mere/crates/cambium/cambium-genet-winit-host" }
 "cambium-rootstock" = { path = "../mere/crates/cambium/cambium-rootstock" }
+
+# The host/guest contract crates live in the graphshell repository (bottom
+# protocol layer), beside this checkout as `../graphshell`.
+[patch."https://github.com/merely-made/graphshell.git"]
+"chirograph" = { path = "../graphshell/crates/chirograph" }
+"graphshell-client" = { path = "../graphshell/crates/graphshell-client" }
+"graphshell-endpoint" = { path = "../graphshell/crates/graphshell-endpoint" }
+"hest" = { path = "../graphshell/crates/hest" }
+"sceno" = { path = "../graphshell/crates/sceno" }
+"scenotime" = { path = "../graphshell/crates/scenotime" }
+"script-wire" = { path = "../graphshell/crates/script-wire" }
+"script-witgen" = { path = "../graphshell/crates/script-witgen" }
 
 [patch."https://github.com/merely-made/genet.git"]
 "browsing-context-api" = { path = "../genet/components/shared/browsing-context" }

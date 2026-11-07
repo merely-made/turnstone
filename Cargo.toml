@@ -111,9 +111,9 @@ blake3 = "1"
 
 # The portable projection score stored beside a Turnstone session. The app maps
 # browser graph truth into it; Scenograph itself stays product-free.
-sceno = { git = "https://github.com/merely-made/mere.git", branch = "main" }
+sceno = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 scenomise = { git = "https://github.com/merely-made/mere.git", branch = "main" }
-scenotime = { git = "https://github.com/merely-made/mere.git", branch = "main" }
+scenotime = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 # The authored projection definition and source-binding types Knot authoring
 # builds. Graphshell's `projection_editor` re-exported them until P3 (2026-10-15).
 scenograph = { git = "https://github.com/merely-made/mere.git", branch = "main" }
@@ -150,19 +150,21 @@ knot-document = { git = "https://github.com/merely-made/knot-editor.git", branch
 # The installed Distillery projection surface: the independent second provider
 # proving the contributed-surface seam (Knot shared-surface plan P0).
 distillery = { git = "https://github.com/merely-made/mere.git", branch = "main", default-features = false, optional = true, features = ["inference-wire"] }
-graphshell-client = { git = "https://github.com/merely-made/mere.git", branch = "main", features = ["accesskit"] }
-graphshell-endpoint = { git = "https://github.com/merely-made/mere.git", branch = "main", features = ["projection-door", "local", "stdio"] }
+graphshell-client = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
+graphshell-endpoint = { git = "https://github.com/merely-made/graphshell.git", branch = "main", features = ["local", "stdio"] }
+# The projection door (broker client, offer, provider) left graphshell-endpoint for Mere.
+graphshell-door = { git = "https://github.com/merely-made/mere.git", branch = "main", features = ["projection-door"] }
 ostiary = { version = "0.0.1", git = "https://github.com/merely-made/armillary.git", branch = "main", features = ["native"] }
 castellan-client = { version = "0.0.2", git = "https://github.com/merely-made/dramatis.git", branch = "main", features = ["client"] }
 dramatis = { git = "https://github.com/merely-made/dramatis.git", branch = "main" }
-chirograph = { git = "https://github.com/merely-made/mere.git", branch = "main" }
+chirograph = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 # The pane model (rung 5 slice C) is no longer a dependency at all: it folded
 # into `src/panes` on 2026-07-25. One consumer wants no package, and the name
 # `frisket` went to `cambium::frisket`, the shared pane frame this app consumes.
 # The a11y/automation tree vocabulary (rung 5 slice F): UxTree + stitch +
 # stable path-derived ids. Not facade-re-exported by mere (a named facade
 # gap), so a direct git dep.
-uxtree = { git = "https://github.com/merely-made/mere.git", branch = "main" }
+uxtree = { git = "https://github.com/merely-made/mere.git", branch = "main", features = ["frozen"] }
 # Navigation vocabulary (the r3-owed Back/Forward/Reload): chrome's History
 # is the cursor over visited addresses. Not facade-re-exported; direct dep
 # like uxtree.
@@ -411,20 +413,20 @@ windows = { version = "0.62", features = ["Win32_Foundation"], optional = true }
 genet-events = { git = "https://github.com/merely-made/genet.git", branch = "main" }
 ostiary = { git = "https://github.com/merely-made/armillary.git", branch = "main" }
 # Producer contracts use the same Mere source as the host.
-sceno = { git = "https://github.com/merely-made/mere.git", branch = "main" }
-scenotime = { git = "https://github.com/merely-made/mere.git", branch = "main" }
+sceno = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
+scenotime = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 scenograph = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 scenomise = { git = "https://github.com/merely-made/mere.git", branch = "main" }
-graphshell-endpoint = { git = "https://github.com/merely-made/mere.git", branch = "main" }
+graphshell-endpoint = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 incipit = { git = "https://github.com/merely-made/mere.git", branch = "main" }
-chirograph = { git = "https://github.com/merely-made/mere.git", branch = "main" }
+chirograph = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 mere-surface-api = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 cambium = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 workbench = { git = "https://github.com/merely-made/mere.git", branch = "main" }
-hest = { git = "https://github.com/merely-made/mere.git", branch = "main" }
+hest = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 sprigging = { git = "https://github.com/merely-made/mere.git", branch = "main" }
-script-wire = { git = "https://github.com/merely-made/mere.git", branch = "main" }
-script-witgen = { git = "https://github.com/merely-made/mere.git", branch = "main" }
+script-wire = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
+script-witgen = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 # Registry Webcue and native Genet sessions use the same document contract.
 document-session-api = { git = "https://github.com/merely-made/genet.git", branch = "main" }
 # Promoted sources shared with immutable older Mere suppliers.

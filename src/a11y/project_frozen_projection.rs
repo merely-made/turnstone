@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 use super::*;
+use uxtree::frozen::FrozenUxTree;
 
 /// The Frozen Projection pane's subtree: the same AccessKit tree
 /// `graphshell_client::frozen` builds for any host, over the same scene the

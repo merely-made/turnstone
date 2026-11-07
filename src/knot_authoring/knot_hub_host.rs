@@ -200,7 +200,7 @@ impl KnotHub {
                 let retained = (|| {
                     let route = ostiary::app_admission::AppRouteId::new("knot")
                         .map_err(|error| format!("invalid resident Knot route: {error}"))?;
-                    let carrier = graphshell_endpoint::door::projection::AppRouteCarrier::open_declared(
+                    let carrier = graphshell_door::projection::AppRouteCarrier::open_declared(
                         ostiary::app_admission::AppId::new(crate::identity::CUSTODY_APP),
                         route,
                         crate::identity::app_declaration(),
