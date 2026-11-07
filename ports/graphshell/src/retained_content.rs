@@ -298,16 +298,19 @@ impl ContentSlot {
         let session=self.content.document()?.session().as_any_ref();
         session.downcast_ref::<mere_document_lanes::ReaderDocumentSession>().and_then(|r|r.reading_anchor())
             .or_else(||session.downcast_ref::<mere_document_lanes::SmolwebDocumentSession>().and_then(|d|d.document().reading_anchor()))
+            .map(anchor_from_lanes)
     }
     pub fn restore_reading_anchor(&mut self, anchor:tabard::ReadingAnchor) {
         if let Some(controller)=self.content.document_mut() {
             let session=controller.session_mut().as_any();
+            let anchor=anchor_to_lanes(anchor);
             if let Some(reader)=session.downcast_mut::<mere_document_lanes::ReaderDocumentSession>() {reader.restore_reading_anchor(anchor);}
             else if let Some(doc)=session.downcast_mut::<mere_document_lanes::SmolwebDocumentSession>() {doc.document_mut().restore_reading_anchor(anchor);}
         }
         self.revision=self.revision.wrapping_add(1);
     }
     pub fn reading_preferences(&mut self, value: tabard::ReadingPreferences) -> Result<bool, String> {
+        let value = mere_document_lanes::ReadingPreferences { text_size: value.text_size, column_em: value.column_em };
         let session = self.content.document_mut().ok_or("No retained document")?.session_mut().as_any();
         let changed = if let Some(reader) = session.downcast_mut::<mere_document_lanes::ReaderDocumentSession>() {
             reader.set_reading_preferences(value)?
@@ -680,3 +683,12 @@ fn lane_dictionaries(
 mod tests;
 
 pub use inker::DocumentFindDirection as ReadFindDirection;
+
+// The lanes own their reading types (engine split D16); the port persists Tabard's
+// and converts here, at the edge.
+fn anchor_to_lanes(a: tabard::ReadingAnchor) -> mere_document_lanes::ReadingAnchor {
+    mere_document_lanes::ReadingAnchor { source: a.source, revision: a.revision, text: a.text, offset: a.offset, exact: a.exact, prefix: a.prefix, suffix: a.suffix, line_offset: a.line_offset, fallback_y: a.fallback_y }
+}
+fn anchor_from_lanes(a: mere_document_lanes::ReadingAnchor) -> tabard::ReadingAnchor {
+    tabard::ReadingAnchor { source: a.source, revision: a.revision, text: a.text, offset: a.offset, exact: a.exact, prefix: a.prefix, suffix: a.suffix, line_offset: a.line_offset, fallback_y: a.fallback_y }
+}
