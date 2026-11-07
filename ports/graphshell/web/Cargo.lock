@@ -1368,6 +1368,7 @@ dependencies = [
 [[package]]
 name = "conatus"
 version = "0.1.0"
+source = "git+https://github.com/merely-made/seiche.git?branch=main#a6b86413d82b891af81889c54867adf91868ccdd"
 dependencies = [
  "bytemuck",
  "cubecl",
@@ -6959,6 +6960,7 @@ dependencies = [
 [[package]]
 name = "numen"
 version = "0.2.1"
+source = "git+https://github.com/merely-made/seiche.git?branch=main#a6b86413d82b891af81889c54867adf91868ccdd"
 dependencies = [
  "serde",
  "strum 0.28.0",
@@ -9485,6 +9487,7 @@ dependencies = [
 [[package]]
 name = "seiche"
 version = "0.0.6"
+source = "git+https://github.com/merely-made/seiche.git?branch=main#a6b86413d82b891af81889c54867adf91868ccdd"
 dependencies = [
  "armillary",
  "conatus",
@@ -9502,6 +9505,7 @@ dependencies = [
 [[package]]
 name = "seiche-model"
 version = "0.0.1"
+source = "git+https://github.com/merely-made/seiche.git?branch=main#a6b86413d82b891af81889c54867adf91868ccdd"
 dependencies = [
  "euclid",
  "petgraph 0.8.3",
