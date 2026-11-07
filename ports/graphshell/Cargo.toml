@@ -53,7 +53,7 @@ alembic-workshop-private = ["alembic-workshop", "dep:castellan-client", "castell
 # One holder-owned graph with an explicitly invited guest.
 coop = ["native", "web", "muniment/redb", "dep:pollster", "graphshell-client/pump"]
 coop-window = ["coop", "dep:cambium-desktop", "dep:mien", "dep:genet-scripted-dom", "dep:layout_dom_api", "dep:image"]
-editable-blocks = ["web", "dep:knot-editor-host", "dep:illume", "dep:vector-sheet", "dep:sprigging", "dep:ciborium"]
+editable-blocks = ["web", "dep:knot-editor-host", "dep:illume", "dep:vector-sheet", "dep:sprigging", "dep:ciborium", "dep:netrender", "dep:wgpu", "dep:uuid", "uuid/v4"]
 query-views = ["web", "mere/query", "dep:cambium"]
 caller-owned-toolkit-bench = ["retained-content", "cambium-rootstock/embedding-egui", "cambium-rootstock/embedding-iced", "dep:image"]
 # Goal-directed traversal over retained page text and the graph's links: the

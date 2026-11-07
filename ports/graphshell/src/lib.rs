@@ -14,6 +14,8 @@ pub mod alembic_workshop;
 
 #[cfg(feature = "editable-blocks")]
 pub mod block_editing;
+#[cfg(feature = "editable-blocks")]
+pub mod block_pane;
 pub mod bound_actions;
 #[cfg(all(feature = "coop", not(target_arch = "wasm32")))]
 pub mod coop;

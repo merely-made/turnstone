@@ -1583,7 +1583,7 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
         product::open(&root).await?
     };
     #[cfg(feature = "product")]
-    let blocks = blocks::Pane::load(product.as_ref()).await;
+    let blocks = blocks::load(product.as_ref()).await;
     #[cfg(feature = "product")]
     let (mut forme, mut forme_error) = match &product {
         Some(p) => match forme::Pane::open(p).await {
