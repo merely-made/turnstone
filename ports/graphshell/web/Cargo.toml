@@ -35,6 +35,12 @@ default = ["product", "remote", "canvas-gpu", "image-decode", "presentation-webg
 presentation-webgpu = ["cambium-web/webgpu", "cambium-web/portable"]
 presentation-webgl2 = ["cambium-web/webgl"]
 without-classic-vello = ["genet-presenter/without-classic-vello"]
+# The read-only viewer lays out no HTML table: its content is the graph canvas
+# (pictograph faces are divs), Cambium controls and the Inspector, none of which
+# uses `display: table*`. This compiles genet-livery's table pipeline out; a
+# `display: table*` value would lay out as a block. Off by default, so the full
+# page keeps tables. The viewer builds turn it on (`scripts/build-viewer.py`).
+without-table-layout = ["genet-render/without-table-layout"]
 # What a page saves: IndexedDB, saved scenes, the tree's product mode,
 # retained product panes and the practice workspace.
 product = ["dep:mere-view", "mere-view/query-editor", "mere-view/workbench-editor", "mere-view/presentation-editor", "dep:platen", "muniment/indexeddb", "dep:pandect", "dep:sha2", "graphshell/document-layout", "graphshell/workspace-editor", "graphshell/retained-content", "graphshell/query-views", "graphshell/editable-blocks", "applets", "graphshell/goal-surface", "mere/query", "dep:mere-lanes", "dep:fleece"]

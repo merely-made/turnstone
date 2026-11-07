@@ -466,6 +466,18 @@ try {
     const config = await (await fetch(configURL, { cache: "no-store" })).json();
     const { mountBlockAdapters } = await import(new URL("block_adapters.mjs", configURL));
     window.blockAdapters = await mountBlockAdapters(graphshellRoot(), module, { ...config, baseURL: configURL.href });
+    // Headed qualification only: a scenario cannot press the review panel's buttons, so a run that
+    // names both `scenario` and `block_adapters_approve=<adapter name>` reviews and approves that
+    // adapter before the scenario starts. Without `scenario` this is ignored and the person reviews.
+    const approve = params.get("block_adapters_approve");
+    if (approve && params.has("scenario")) {
+      await window.blockAdapters.review(approve);
+      await window.blockAdapters.approve();
+      await new Promise((resolve) => {
+        const poll = () => graphshellRoot().dataset.blockAdapterClasses ? resolve() : setTimeout(poll, 50);
+        poll();
+      });
+    }
   }
   // The scenario lane: `?scenario=<path>` names a script the page runs on
   // itself once the host reports ready. Results land in the DOM (see
