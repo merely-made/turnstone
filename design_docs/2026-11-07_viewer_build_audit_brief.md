@@ -328,8 +328,11 @@ Recorded in the Graphshell host plan, T7. Receipts and numbers: `Code/testing/me
    time within 10% of WebGPU at 21 and about 200 nodes on the same Mac (the 2,000-node case does not gate). Result:
    17 of 17 physics receipts pass on WebGL2, all six presentation routes pass, and the median frame interval is no slower on WebGL2 at any size (ratios 1.00, 0.54, 0.84, 0.79). The viewer ships
    `webgl2/` only; the probe, the remount and the webgpu cap row are removed; `webgpu/` is an opt-in comparison build.
-   The folder keeps its name. Caveats recorded in T7: a 10-pixel Metal-ANGLE difference in the compare images, and
-   WebGL2 uses more page CPU time per frame than WebGPU.
+   The folder keeps its name. Mark, after the receipts: "Keep one build" (cycle-breaks D22). Caveats recorded in T7: a
+   10-pixel Metal-ANGLE difference in the compare images (two overlapping diamonds in one pictograph glyph draw in the
+   other order; WebGL2 on SwiftShader matches WebGPU, so the cause is ANGLE's Metal rasteriser), and WebGL2 uses 1.4 to
+   1.85 times WebGPU's page CPU time per frame (21 nodes 5.0 against 2.7 ms paused and 17.4 against 9.8 live; 200 nodes
+   11.0 against 6.8 and 36.1 against 25.6), so a slower device has less headroom than the measured Mac.
 6. **Browser support.** Serve current evergreen Chrome, Edge, Firefox and Safari, on desktop and mobile, including
    versions and devices without WebGPU. A WebGL2 path is required.
 7. **Scene player: not now.** The spike measured 163,246 B gzip6 wasm (115 KB with CBOR only, 237 KB with the backdrop
