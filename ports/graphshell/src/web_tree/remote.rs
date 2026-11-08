@@ -87,7 +87,7 @@ impl TreeRemote {
             status: "no link".to_string(),
             form: ActionForm::new("Ready"),
             events: Vec::new(),
-            board: RemoteBoard::new(),
+            board: RemoteBoard::when_needed(crate::web_physics_worker::transport),
             text: {
                 let mut text = BoardText::new();
                 text.register_font(include_bytes!("../../web/IBMPlexSans-Regular.ttf").to_vec());
