@@ -1368,7 +1368,7 @@ dependencies = [
 [[package]]
 name = "conatus"
 version = "0.1.0"
-source = "git+https://github.com/merely-made/seiche.git?branch=main#a1efef6255f5a1ee7c0c7f4cb1b7b28cacc84c16"
+source = "git+https://github.com/merely-made/seiche.git?branch=main#d6f44d8313e48fb4916774091dc931b19f5f0d78"
 dependencies = [
  "bytemuck",
  "cubecl",
@@ -4006,10 +4006,6 @@ name = "hashbrown"
 version = "0.14.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e5274423e17b7c9fc20b6e7e208532f9b19825d82dfd615708b70edd83df41f1"
-dependencies = [
- "ahash",
- "allocator-api2 0.2.21",
-]
 
 [[package]]
 name = "hashbrown"
@@ -6964,7 +6960,7 @@ dependencies = [
 [[package]]
 name = "numen"
 version = "0.2.1"
-source = "git+https://github.com/merely-made/seiche.git?branch=main#a1efef6255f5a1ee7c0c7f4cb1b7b28cacc84c16"
+source = "git+https://github.com/merely-made/seiche.git?branch=main#d6f44d8313e48fb4916774091dc931b19f5f0d78"
 dependencies = [
  "serde",
  "strum 0.28.0",
@@ -8136,7 +8132,7 @@ dependencies = [
  "combine",
  "downcast-rs 2.0.2",
  "dyn-clone",
- "hashbrown 0.14.5",
+ "hashbrown 0.17.1",
  "hi_sparse_bitset",
  "indexmap",
  "inventory",
@@ -8149,7 +8145,7 @@ dependencies = [
  "rustc_apfloat",
  "slotmap",
  "smallvec",
- "spin 0.9.9",
+ "spin 0.10.1",
  "thiserror 2.0.21",
  "utf8-chars",
 ]
@@ -9491,7 +9487,7 @@ dependencies = [
 [[package]]
 name = "seiche"
 version = "0.0.6"
-source = "git+https://github.com/merely-made/seiche.git?branch=main#a1efef6255f5a1ee7c0c7f4cb1b7b28cacc84c16"
+source = "git+https://github.com/merely-made/seiche.git?branch=main#d6f44d8313e48fb4916774091dc931b19f5f0d78"
 dependencies = [
  "armillary",
  "conatus",
@@ -9509,7 +9505,7 @@ dependencies = [
 [[package]]
 name = "seiche-model"
 version = "0.0.1"
-source = "git+https://github.com/merely-made/seiche.git?branch=main#a1efef6255f5a1ee7c0c7f4cb1b7b28cacc84c16"
+source = "git+https://github.com/merely-made/seiche.git?branch=main#d6f44d8313e48fb4916774091dc931b19f5f0d78"
 dependencies = [
  "euclid",
  "petgraph 0.8.3",
@@ -9999,6 +9995,9 @@ name = "spin"
 version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "023a211cb3138dbc438680b32560ad89f699977624c9f8dbb95a47d5b4c07dd3"
+dependencies = [
+ "lock_api",
+]
 
 [[package]]
 name = "spin"
@@ -11898,7 +11897,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.61.2",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]
