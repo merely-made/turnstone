@@ -274,7 +274,6 @@ sprigging = { path = "../../../crates/cambium/sprigging" }
 # the root patch table also redirects; serve it from this tree.
 backstep = { path = "../../../crates/cambium/backstep" }
 cambium = { path = "../../../crates/cambium/cambium" }
-mere-curation = { path = "../../../crates/forme/curation" }
 # knot-document (the retained Knot editor, engine split D17) names mere-edit
 # through mere.git; serve it from this tree as the root does.
 mere-edit = { path = "../../../crates/system/source-edit" }
