@@ -46,6 +46,13 @@ self.onmessage = (event) => {
   else waiting.push(event.data);
 };
 
-await init();
-core = new PhysicsWorker();
+// A wasm that does not load is reported to the page as a string (the page reads
+// every other message as bytes), so it can say its physics is unavailable.
+try {
+  await init();
+  core = new PhysicsWorker();
+} catch (error) {
+  postMessage(`physics worker wasm did not load: ${error?.message ?? error}`);
+  throw error;
+}
 for (const data of waiting.splice(0)) handle(data);

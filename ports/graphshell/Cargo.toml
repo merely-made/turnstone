@@ -23,7 +23,7 @@ required-features = ["caller-owned-toolkit-bench"]
 
 [[example]]
 name = "projection_dynamics_receipt"
-required-features = ["web"]
+required-features = ["web", "physics-engine"]
 
 [[test]]
 name = "alembic_workshop_process"

@@ -65,6 +65,44 @@ export async function viewerArtifact(choice) {
   return { artifact, module: await loadArtifact(artifact) };
 }
 
+// A build without the force engine runs its physics only in the Worker. When the
+// page says it has none (`data-physics-backend="unavailable"`, with the reason in
+// `data-physics-unavailable`: the Worker did not start, or died), the element
+// says so itself, visibly and to assistive technology, instead of leaving a graph
+// that silently does not move. The graph stays where it was first drawn.
+function watchPhysics(element) {
+  element._physicsWatch?.disconnect();
+  const show = () => {
+    let note = element.querySelector(":scope > [data-physics-notice]");
+    if (element.getAttribute("data-physics-backend") !== "unavailable") {
+      note?.remove();
+      return;
+    }
+    if (!note) {
+      note = document.createElement("div");
+      note.setAttribute("data-physics-notice", "");
+      note.setAttribute("role", "status");
+      note.setAttribute("aria-live", "polite");
+      note.style.cssText =
+        "position:absolute;left:8px;right:8px;top:8px;z-index:2;padding:8px 12px;" +
+        "font:14px/1.4 sans-serif;background:#2a1d08;color:#ffe3b3;border:1px solid #b8873a;" +
+        "border-radius:4px;pointer-events:none";
+      if (getComputedStyle(element).position === "static") element.style.position = "relative";
+      element.append(note);
+    }
+    const reason = element.getAttribute("data-physics-unavailable");
+    note.textContent =
+      "Physics unavailable: this page could not start its layout worker, so the graph stays " +
+      "where it was first drawn. Reload to try again." + (reason ? ` (${reason})` : "");
+  };
+  element._physicsWatch = new MutationObserver(show);
+  element._physicsWatch.observe(element, {
+    attributes: true,
+    attributeFilter: ["data-physics-backend", "data-physics-unavailable"],
+  });
+  show();
+}
+
 // A WebGPU-only artifact reports Auto's second attempt as not compiled in.
 const WEBGPU_ONLY_REFUSAL = "WebGL2: not compiled into this host";
 
@@ -87,6 +125,7 @@ export function defineElements(source) {
           // Where the physics Worker's script is, for a page that runs its
           // simulation there (`?physics=worker`).
           this.setAttribute("data-physics-worker", new URL("./pkg/physics/worker.js", import.meta.url).href);
+          watchPhysics(this);
           const epoch = this._mountEpoch = (this._mountEpoch ?? 0) + 1;
           try {
             const choice = new URLSearchParams(location.search).get("render_backend")
@@ -129,6 +168,7 @@ export function defineElements(source) {
         disconnectedCallback() {
           this._mountEpoch = (this._mountEpoch ?? 0) + 1;
           this._fallback?.disconnect();
+          this._physicsWatch?.disconnect();
           this.graphshellModule?.dispose_tree?.(this);
           delete this.dataset.mounted;
           this.removeAttribute("data-ready");

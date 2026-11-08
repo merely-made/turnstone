@@ -47,6 +47,12 @@ class DeliveryBudget(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, f"wasm:webgl2: gzip6=.*cap={builder.CAPS['wasm']}"):
                 builder.require_budget(rows)
 
+    def test_the_engine_free_configuration_names_no_engine(self):
+        for features in builder.ARTIFACTS.values():
+            self.assertNotIn("physics-engine", features)
+        self.assertEqual(builder.ENGINE, ["physics-engine"])
+        self.assertNotIn("physics-engine", builder.ENGINE_FREE)
+
     def test_the_physics_worker_module_has_its_own_cap_outside_the_first_load(self):
         self.assertIn("physics", builder.CAPS)
         self.assertLess(builder.CAPS["physics"], builder.CAPS["wasm"])

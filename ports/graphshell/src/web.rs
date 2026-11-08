@@ -132,14 +132,14 @@ pub fn start() {
 
 /// Optional F195 receipt export. It uses the same compiler and runner as the
 /// native example and is absent from ordinary bundles.
-#[cfg(feature = "dynamics-receipt")]
+#[cfg(all(feature = "dynamics-receipt", feature = "physics-engine"))]
 #[wasm_bindgen]
 pub fn projection_dynamics_receipt(bound: u32) -> Result<String, JsValue> {
     graphshell::projection_dynamics_receipt::catalog_receipt(bound)
         .map_err(|e| JsValue::from_str(&e))
 }
 
-#[cfg(feature = "dynamics-receipt")]
+#[cfg(all(feature = "dynamics-receipt", feature = "physics-engine"))]
 #[wasm_bindgen]
 pub fn projection_coordinates_receipt(bound: u32) -> Result<String, JsValue> {
     graphshell::projection_dynamics_receipt::catalog_receipt_for(bound, "geographic")

@@ -41,9 +41,20 @@ CAPS = {"wasm": 4194304, "glue": 20480, "mount": 8192, "history": 131072,
         "physics": 655360}
 # Route artifact name -> the viewer crate's features for that artifact.
 ARTIFACTS = {
-    "webgpu": ["presentation-webgpu", "without-table-layout", "physics-engine"],
-    "webgl2": ["presentation-webgl2", "without-classic-vello", "without-table-layout", "physics-engine"],
+    "webgpu": ["presentation-webgpu", "without-table-layout"],
+    "webgl2": ["presentation-webgl2", "without-classic-vello", "without-table-layout"],
 }
+# The engine-in-the-main-module configuration: the force engine (rapier and
+# `seiche`'s simulation) is linked into the route artifact, and the page can run
+# its physics in process. `--engine-free` leaves it out: the main module then
+# holds physics only as a transport to the Worker module (`physics/`), which is
+# the only place the engine is. The default stays engine-on until the headed
+# receipts have passed in Worker mode on the engine-free build (host plan, T7).
+ENGINE = ["physics-engine"]
+# The engine-free viewer asks for the Worker unless the page says otherwise; with
+# no engine in the page there is nothing else to ask for, so the default needs
+# no feature, but the build still names it so the intent is on the command line.
+ENGINE_FREE = ["physics-worker-default"]
 
 
 def build_physics_worker(args, web, target, out, assets, commands):
@@ -103,6 +114,8 @@ def main():
     parser.add_argument("--terser", default="terser", help="Terser CLI; install pinned scripts/package-lock.json dependencies")
     parser.add_argument("--target-dir", type=Path)
     parser.add_argument("--offline", action="store_true")
+    parser.add_argument("--engine-free", action="store_true",
+                        help="build the route artifacts without the force engine (physics only in the Worker module)")
     args = parser.parse_args()
     web = Path(__file__).resolve().parents[1]
     repo = web.parents[2]
@@ -113,6 +126,7 @@ def main():
     minifiers = {}
     assets = {}
     for artifact, features in ARTIFACTS.items():
+        features = features + (ENGINE_FREE if args.engine_free else ENGINE)
         command = [args.cargo, "build", "--locked", "--profile", "viewer",
                    "--target", "wasm32-unknown-unknown", "--no-default-features",
                    "--features", ",".join(features),
@@ -144,6 +158,7 @@ def main():
     report = {"source": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repo,
                                                 text=True).strip(),
               "profile": "viewer", "artifacts": ARTIFACTS,
+              "engine_free": args.engine_free,
               "commands": commands, "rustc": subprocess.check_output(
                   [os.environ.get("RUSTC", "rustc"), "--version"], text=True).strip(),
               "manifest_sha256": hashlib.sha256((web / "Cargo.toml").read_bytes()).hexdigest(),

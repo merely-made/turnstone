@@ -133,9 +133,9 @@ pub mod practice_workspace;
 pub mod projection_compare;
 #[cfg(any(feature = "native", feature = "web"))]
 pub mod projection_compile;
-#[cfg(feature = "web")]
+#[cfg(all(feature = "web", feature = "physics-engine"))]
 pub mod projection_dynamics_compare;
-#[cfg(feature = "web")]
+#[cfg(all(feature = "web", feature = "physics-engine"))]
 pub mod projection_dynamics_receipt;
 #[cfg(any(feature = "native", feature = "web"))]
 pub mod projection_save;
