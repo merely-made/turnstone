@@ -3804,7 +3804,7 @@ dependencies = [
  "illume",
  "inker",
  "insigne",
- "knot-editor-host",
+ "knot-document",
  "mere",
  "mere-comms",
  "mere-fleece",
@@ -5224,12 +5224,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e2db585e1d738fc771bf08a151420d3ed193d9d895a36df7f6f8a9456b911ddc"
 
 [[package]]
-name = "knot-editor-host"
-version = "0.1.1"
-source = "git+https://github.com/merely-made/inker.git?branch=main#31099423b0990874c025981623c2bc4757995bd5"
+name = "knot-document"
+version = "0.0.1"
+source = "git+https://github.com/merely-made/knot-editor.git?branch=main#a58ba28b6b52aa6f887667515c2d38f23c0432e6"
 dependencies = [
  "cambium",
  "illume",
+ "mere-edit",
+ "mere-surface-api",
+ "same-file",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -5821,6 +5825,13 @@ dependencies = [
 [[package]]
 name = "mere-curation"
 version = "0.1.1"
+dependencies = [
+ "serde",
+]
+
+[[package]]
+name = "mere-edit"
+version = "0.1.0"
 dependencies = [
  "serde",
 ]
@@ -12038,6 +12049,15 @@ name = "windows-sys"
 version = "0.52.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "282be5f36a8ce781fad8c8ae18fa3f9beff57ec1b52cb3de0789201425d9a33d"
+dependencies = [
+ "windows-targets 0.52.6",
+]
+
+[[package]]
+name = "windows-sys"
+version = "0.59.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1e38bc4d79ed67fd075bcc251a1c39b32a1776bbe92e5bef1f0bf1f8c531853b"
 dependencies = [
  "windows-targets 0.52.6",
 ]

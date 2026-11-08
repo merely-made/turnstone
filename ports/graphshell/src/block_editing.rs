@@ -11,7 +11,7 @@
 
 use cambium::{CaretAffinity, CaretPosition, CaretSelection, TextCommand};
 use illume::blocks;
-use knot_editor_host::KnotEditor;
+use knot_document::retained::KnotEditor;
 use std::collections::BTreeMap;
 
 pub use illume::blocks::{Div, wrap};
