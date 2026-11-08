@@ -214,6 +214,10 @@ fn root(app: &App) -> Child<App> {
     Box::new(el("main", children))
 }
 
+fn approve_offered(candidate: &Candidate) -> bool {
+    !candidate.installed
+}
+
 fn adapters(app: &App) -> Child<App> {
     let mut children: Vec<Child<App>> = vec![Box::new(el("h2", "Block adapters"))];
     if app.candidates.is_empty() {
@@ -227,11 +231,13 @@ fn adapters(app: &App) -> Child<App> {
         children.push(Box::new(el("p", format!("asks: {} · component {} bytes · {}…", c.asks.join(", "), c.size, &c.component_hash[..c.component_hash.len().min(16)]))));
         children.push(Box::new(el("p", format!("Disclosed by {}", c.disclosed_by))));
         children.push(Box::new(status_note("blocks-adapter-state", c.state.clone())));
-        children.push(Box::new(
-            button("Approve block adapter", move |app: &mut App, _| app.approve(index))
-                .attr("aria-disabled", c.installed.to_string())
-                .attr("class", "blocks-approve-adapter"),
-        ));
+        // Approval is done once the adapter is loaded; there is nothing left to approve.
+        if approve_offered(c) {
+            children.push(Box::new(
+                button("Approve block adapter", move |app: &mut App, _| app.approve(index))
+                    .attr("class", "blocks-approve-adapter"),
+            ));
+        }
     }
     children.push(Box::new(
         button("Close review", |app: &mut App, _| app.panel = false).attr("class", "blocks-close-review"),
@@ -262,6 +268,10 @@ impl Product for LaneProduct {
                 .with_field(
                     "adapter-state",
                     app.candidates.first().map(|c| c.state.clone()).unwrap_or_default(),
+                )
+                .with_field(
+                    "adapter-approve-offered",
+                    app.candidates.iter().any(approve_offered).to_string(),
                 )
                 .with_field(
                     "adapter-installed",
@@ -480,6 +490,7 @@ mod tests {
         assert_eq!(app.pane.classes(), ["metre", "fixture"]);
         assert!(app.candidates[0].installed);
         assert!(app.candidates[0].state.contains("loaded"));
+        assert!(!approve_offered(&app.candidates[0]), "a loaded pack offers no Approve");
         app.approve(0);
         assert_eq!(app.pane.classes().len(), 2, "approving twice installs nothing more");
         // A tampered component is not even reviewed.

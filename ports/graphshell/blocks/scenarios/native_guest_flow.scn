@@ -5,6 +5,7 @@ assert snap blocks-adapters == metre
 capture before_approval
 click .blocks-approve-adapter
 assert snap adapter-installed == true
+assert snap adapter-approve-offered == false
 assert snap blocks-adapters == metre,progression
 capture approved
 click .blocks-insert-example
