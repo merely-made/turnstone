@@ -5235,7 +5235,7 @@ checksum = "e2db585e1d738fc771bf08a151420d3ed193d9d895a36df7f6f8a9456b911ddc"
 [[package]]
 name = "knot-document"
 version = "0.0.1"
-source = "git+https://github.com/merely-made/knot-editor.git?branch=main#a58ba28b6b52aa6f887667515c2d38f23c0432e6"
+source = "git+https://github.com/merely-made/knot-editor.git?branch=main#189487c18e19c7cb37b076f5463f79a1b6d86f5b"
 dependencies = [
  "cambium",
  "illume",
