@@ -49,8 +49,11 @@ settle 1
 release-at
 settle 3
 # The release window is read on the first frame after the release that
-# executed physics steps, not a render frame count.
-assert snap drag-return-step-world <= 20
+# executed physics steps, per tick: the distance from the drop point divided
+# by the ticks that frame ran (inline 2, a Worker folds 6 to 13), so the bound
+# means the same on either backend. 10 and 30 world units per tick are the
+# earlier 20 and 60 over the inline frame's 2 steps.
+assert snap drag-return-tick-world <= 10
 settle 300
 assert snap drag-return-world >= 40
 assert snap layout-overlaps == 0
@@ -80,8 +83,11 @@ settle 1
 release-at
 settle 3
 # The release window is read on the first frame after the release that
-# executed physics steps, not a render frame count.
-assert snap drag-return-step-world <= 20
+# executed physics steps, per tick: the distance from the drop point divided
+# by the ticks that frame ran (inline 2, a Worker folds 6 to 13), so the bound
+# means the same on either backend. 10 and 30 world units per tick are the
+# earlier 20 and 60 over the inline frame's 2 steps.
+assert snap drag-return-tick-world <= 10
 settle 300
 assert snap drag-return-world >= 40
 assert snap layout-overlaps == 0
@@ -109,8 +115,11 @@ settle 1
 release-at
 settle 3
 # The release window is read on the first frame after the release that
-# executed physics steps, not a render frame count.
-assert snap drag-return-step-world <= 20
+# executed physics steps, per tick: the distance from the drop point divided
+# by the ticks that frame ran (inline 2, a Worker folds 6 to 13), so the bound
+# means the same on either backend. 10 and 30 world units per tick are the
+# earlier 20 and 60 over the inline frame's 2 steps.
+assert snap drag-return-tick-world <= 10
 settle 300
 assert snap drag-return-world >= 40
 assert snap layout-overlaps == 0
@@ -138,8 +147,11 @@ settle 1
 release-at
 settle 3
 # The release window is read on the first frame after the release that
-# executed physics steps, not a render frame count.
-assert snap drag-return-step-world <= 20
+# executed physics steps, per tick: the distance from the drop point divided
+# by the ticks that frame ran (inline 2, a Worker folds 6 to 13), so the bound
+# means the same on either backend. 10 and 30 world units per tick are the
+# earlier 20 and 60 over the inline frame's 2 steps.
+assert snap drag-return-tick-world <= 10
 settle 300
 assert snap drag-return-world >= 40
 assert snap layout-overlaps == 0
@@ -167,9 +179,12 @@ settle 1
 release-at
 settle 3
 # The release window is read on the first frame after the release that
-# executed physics steps, not a render frame count.
+# executed physics steps, per tick: the distance from the drop point divided
+# by the ticks that frame ran (inline 2, a Worker folds 6 to 13), so the bound
+# means the same on either backend. 10 and 30 world units per tick are the
+# earlier 20 and 60 over the inline frame's 2 steps.
 # A moving law carries the node within its first stepped frame.
-assert snap drag-return-step-world <= 60
+assert snap drag-return-tick-world <= 30
 settle 120
 assert snap physics-energy >= 1
 
@@ -196,9 +211,12 @@ settle 1
 release-at
 settle 3
 # The release window is read on the first frame after the release that
-# executed physics steps, not a render frame count.
+# executed physics steps, per tick: the distance from the drop point divided
+# by the ticks that frame ran (inline 2, a Worker folds 6 to 13), so the bound
+# means the same on either backend. 10 and 30 world units per tick are the
+# earlier 20 and 60 over the inline frame's 2 steps.
 # A moving law carries the node within its first stepped frame.
-assert snap drag-return-step-world <= 60
+assert snap drag-return-tick-world <= 30
 settle 120
 assert snap physics-energy >= 1
 
@@ -225,9 +243,12 @@ settle 1
 release-at
 settle 3
 # The release window is read on the first frame after the release that
-# executed physics steps, not a render frame count.
+# executed physics steps, per tick: the distance from the drop point divided
+# by the ticks that frame ran (inline 2, a Worker folds 6 to 13), so the bound
+# means the same on either backend. 10 and 30 world units per tick are the
+# earlier 20 and 60 over the inline frame's 2 steps.
 # A moving law carries the node within its first stepped frame.
-assert snap drag-return-step-world <= 60
+assert snap drag-return-tick-world <= 30
 settle 120
 assert snap physics-energy >= 1
 
@@ -254,9 +275,12 @@ settle 1
 release-at
 settle 3
 # The release window is read on the first frame after the release that
-# executed physics steps, not a render frame count.
+# executed physics steps, per tick: the distance from the drop point divided
+# by the ticks that frame ran (inline 2, a Worker folds 6 to 13), so the bound
+# means the same on either backend. 10 and 30 world units per tick are the
+# earlier 20 and 60 over the inline frame's 2 steps.
 # A moving law carries the node within its first stepped frame.
-assert snap drag-return-step-world <= 60
+assert snap drag-return-tick-world <= 30
 settle 120
 assert snap physics-energy >= 1
 
@@ -283,9 +307,12 @@ settle 1
 release-at
 settle 3
 # The release window is read on the first frame after the release that
-# executed physics steps, not a render frame count.
+# executed physics steps, per tick: the distance from the drop point divided
+# by the ticks that frame ran (inline 2, a Worker folds 6 to 13), so the bound
+# means the same on either backend. 10 and 30 world units per tick are the
+# earlier 20 and 60 over the inline frame's 2 steps.
 # A moving law carries the node within its first stepped frame.
-assert snap drag-return-step-world <= 60
+assert snap drag-return-tick-world <= 30
 settle 120
 assert snap physics-energy >= 1
 
@@ -312,9 +339,12 @@ settle 1
 release-at
 settle 3
 # The release window is read on the first frame after the release that
-# executed physics steps, not a render frame count.
+# executed physics steps, per tick: the distance from the drop point divided
+# by the ticks that frame ran (inline 2, a Worker folds 6 to 13), so the bound
+# means the same on either backend. 10 and 30 world units per tick are the
+# earlier 20 and 60 over the inline frame's 2 steps.
 # A moving law carries the node within its first stepped frame.
-assert snap drag-return-step-world <= 60
+assert snap drag-return-tick-world <= 30
 # Anneal cools rather than holding an energy: what it owes is displacement.
 settle 300
 assert snap drag-return-world >= 40
@@ -343,8 +373,11 @@ settle 1
 release-at
 settle 3
 # The release window is read on the first frame after the release that
-# executed physics steps, not a render frame count.
-assert snap drag-return-step-world <= 20
+# executed physics steps, per tick: the distance from the drop point divided
+# by the ticks that frame ran (inline 2, a Worker folds 6 to 13), so the bound
+# means the same on either backend. 10 and 30 world units per tick are the
+# earlier 20 and 60 over the inline frame's 2 steps.
+assert snap drag-return-tick-world <= 10
 settle 300
 assert snap drag-return-world <= 5
 assert snap physics-energy <= 1

@@ -625,6 +625,19 @@ impl TreeLane {
                     .map(|distance| format!("{distance:.1}"))
                     .unwrap_or_default(),
             )
+            // The same world-unit distance divided by the ticks the stepped
+            // frame ran (`drag-return-steps`): a per-tick reading, the same
+            // quantity whether the frame ran 2 steps inline or folded 13
+            // ticks from a remote backend.
+            .with_field(
+                "drag-return-tick-world",
+                self.shared
+                    .release_step_world
+                    .get()
+                    .zip(self.shared.release_step.get())
+                    .map(|(distance, (_, steps))| format!("{:.2}", distance / steps.max(1) as f32))
+                    .unwrap_or_default(),
+            )
             .with_field(
                 "drag-return-world",
                 self.drop_world
