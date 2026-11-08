@@ -4671,9 +4671,12 @@ checksum = "6e44b0a4eaa4c82f441d50a963f2d5f05a787240aeee097597033e72accfd22f"
 
 [[package]]
 name = "incipit"
-version = "0.2.2"
+version = "0.2.3"
 dependencies = [
+ "petgraph 0.8.3",
  "serde",
+ "serde_json",
+ "taffy",
  "uuid",
 ]
 
@@ -5798,8 +5801,8 @@ name = "mere"
 version = "0.0.2"
 dependencies = [
  "accesskit",
+ "incipit",
  "inker",
- "mere-forme",
  "mere-kernel",
  "mere-rdf",
  "netrender",
@@ -5850,17 +5853,6 @@ dependencies = [
  "serde",
  "serde_json",
  "url",
-]
-
-[[package]]
-name = "mere-forme"
-version = "0.2.0"
-dependencies = [
- "incipit",
- "serde",
- "serde_json",
- "taffy",
- "uuid",
 ]
 
 [[package]]
@@ -8046,7 +8038,6 @@ dependencies = [
  "layout-dom-api",
  "libm",
  "mere-cartography",
- "mere-forme",
  "mere-kernel",
  "netrender",
  "numen",
@@ -8122,8 +8113,8 @@ dependencies = [
  "accesskit",
  "backstep",
  "document-canvas",
+ "incipit",
  "inker",
- "mere-forme",
  "mere-kernel",
  "serde",
  "serde_json",
