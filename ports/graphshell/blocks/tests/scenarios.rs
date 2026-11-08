@@ -65,3 +65,13 @@ fn guest_text_is_drawn_in_its_role_colour_not_an_inherited_one() {
     let overlay = &overlay[..overlay.find("source_revision").expect("end of the text overlay")];
     assert!(overlay.contains("color:{}") && overlay.contains("text.css_colour()"), "{overlay}");
 }
+
+#[test]
+fn a_disabled_toolbar_command_is_drawn_dimmed_like_a_disabled_workspace_button() {
+    // "Edit progression block…" sits in the toolbar, outside `.blocks-workspace`; its
+    // aria-disabled state was styled only inside the workspace, so it looked live.
+    assert!(
+        PANE.contains(".blocks-toolbar button[aria-disabled=true]"),
+        "the toolbar's disabled commands need the dimmed style"
+    );
+}

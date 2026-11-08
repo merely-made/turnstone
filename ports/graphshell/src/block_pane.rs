@@ -171,7 +171,7 @@ pub const SHEET: &str = r#"
 .blocks-toolbar { padding:8px 14px; border-bottom:1px solid var(--tabard-color-border); }
 .blocks-toolbar button, .blocks-workspace button { text-align:left; padding:7px 10px; border:1px solid var(--tabard-color-border); color:var(--tabard-color-text); background:var(--tabard-color-surface); white-space:normal; overflow-wrap:anywhere; }
 .blocks-workspace button[aria-pressed=true] { border-color:var(--tabard-color-accent); }
-.blocks-workspace button[aria-disabled=true] { opacity:0.5; }
+.blocks-toolbar button[aria-disabled=true], .blocks-workspace button[aria-disabled=true] { opacity:0.5; }
 .blocks-guest-reading { display:flex; flex-direction:column; gap:10px; flex:none; }
 @media(max-width:900px) { .blocks-guest-view .blocks-preview { order:-1; } }
 .blocks-guest-event:focus-visible { outline:2px solid var(--tabard-color-primary); outline-offset:-2px; }
@@ -184,6 +184,8 @@ pub const SHEET: &str = r#"
 pub const SWATCH_KEY: u64 = 0x626c_6f63;
 const SOURCE_LABEL: &str = "Document source";
 const QUERY_LABEL: &str = "Search block commands";
+/// The disabled command offered for a block whose class no adapter claims.
+const UNCLAIMED_COMMAND: &str = "block:unclaimed";
 const WAITING: &str = "Waiting for the block adapter…";
 const INITIAL: &str = "# Composition\n\n{#verse}\n::: metre\nThe path runs quiet through the night\nThe rain is gathering on the stone\nA window holds its little light\nAnd leaves the farthest field alone\n:::\n";
 
@@ -520,7 +522,7 @@ impl Pane {
             return set;
         };
         if let Some(class) = self.unclaimed_class(&div) {
-            let id = "block:unclaimed";
+            let id = UNCLAIMED_COMMAND;
             set.register(Command::new(
                 id,
                 format!("Edit {class} block…"),
@@ -552,6 +554,24 @@ impl Pane {
             set.set_disabled(&command.id, reason);
         }
         set
+    }
+    /// Why each disabled block command is disabled, as the pane says it. The unclaimed command's
+    /// reason is left out: the unclaimed note beside it already says so.
+    fn command_reasons(&self) -> Vec<String> {
+        self.commands()
+            .menu(&CommandChoices::default(), Some("block"), self.query.text())
+            .into_iter()
+            .filter(|command| command.id != UNCLAIMED_COMMAND)
+            .filter_map(|command| command.disabled_reason.clone())
+            .collect()
+    }
+    /// How many times the pane tells the person the selected block's class is unclaimed.
+    fn unclaimed_notices(&self) -> usize {
+        let Some(class) = self.target().ok().and_then(|d| self.unclaimed_class(&d)) else {
+            return 0;
+        };
+        let message = unclaimed_message(&class);
+        1 + self.command_reasons().iter().filter(|r| **r == message).count()
     }
     fn proposals(&self, command: &str) -> Result<Vec<Change>, String> {
         let div = self.target()?;
@@ -1208,11 +1228,8 @@ pub fn workspace<P: PaneHost>(page: &P) -> Option<Child<P>> {
                 ),
             ),
         )));
-        let set = pane.commands();
-        for command in set.menu(&CommandChoices::default(), Some("block"), pane.query.text()) {
-            if let Some(reason) = &command.disabled_reason {
-                children.push(Box::new(el("p", reason.clone())));
-            }
+        for reason in pane.command_reasons() {
+            children.push(Box::new(el("p", reason)));
         }
     }
     if let Some(class) = &guest_class {
@@ -1847,6 +1864,7 @@ impl Pane {
                 format!("{}:{}", pane.event_selection().0, pane.event_selection().1),
             ),
             ("blocks-adapters", pane.registry.classes().join(",")),
+            ("blocks-unclaimed-notices", pane.unclaimed_notices().to_string()),
             ("blocks-review-requested", pane.review_requested.to_string()),
             ("blocks-open", pane.open.to_string()),
             ("blocks-source", pane.document.editor.source().to_string()),
