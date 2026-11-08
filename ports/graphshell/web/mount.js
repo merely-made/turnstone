@@ -30,11 +30,12 @@ export async function loadHostDataset(root) {
   }
 }
 
-// The read-only viewer ships one artifact per presentation route (`pkg/webgpu`,
-// `pkg/webgl2`), so a page loads only the renderer it presents with. An
-// explicit policy loads that route. Auto loads WebGPU when an adapter and a
-// device are actually available, else WebGL2; if the WebGPU artifact still
-// refuses at boot, the element remounts on WebGL2, as Auto does in one bundle.
+// The read-only viewer ships one artifact, `pkg/webgl2/` (the WebGL2 presenter,
+// built without Classic Vello), for every browser, with or without WebGPU
+// (Mark, 2026-11-08, after the WebGL2 receipts: see the host plan, T7). Auto,
+// `webgl2` and the element's own policy all load it. `pkg/webgpu/` exists only as
+// an opt-in comparison build (`build-viewer.py --with-webgpu`), loaded only by an
+// explicit `?render_backend=webgpu`; without it that request fails to load.
 const artifacts = new Map();
 export function loadArtifact(name) {
   if (!artifacts.has(name)) {
@@ -48,20 +49,11 @@ export function loadArtifact(name) {
   }
   return artifacts.get(name);
 }
-export async function chooseArtifact(choice) {
-  if (choice === "webgpu" || choice === "webgl2") return choice;
-  try {
-    const adapter = await navigator.gpu?.requestAdapter();
-    const device = await adapter?.requestDevice();
-    if (device) {
-      device.destroy();
-      return "webgpu";
-    }
-  } catch {}
-  return "webgl2";
+export function chooseArtifact(choice) {
+  return choice === "webgpu" ? "webgpu" : "webgl2";
 }
 export async function viewerArtifact(choice) {
-  const artifact = await chooseArtifact(choice);
+  const artifact = chooseArtifact(choice);
   return { artifact, module: await loadArtifact(artifact) };
 }
 
@@ -103,14 +95,11 @@ function watchPhysics(element) {
   show();
 }
 
-// A WebGPU-only artifact reports Auto's second attempt as not compiled in.
-const WEBGPU_ONLY_REFUSAL = "WebGL2: not compiled into this host";
-
 // Two elements, one retained tree. `mount` remains the full bundle's public
 // compatibility entry and delegates to `mount_tree`; the viewer-only bundle
 // exposes `mount_tree`. Each fetches its dataset, if it names one, before it
 // mounts. Elements already in the document upgrade on define. `source` is a
-// loaded module, or `viewerArtifact`, which chooses and loads a route
+// loaded module, or `viewerArtifact`, which loads the viewer's
 // artifact per element policy (and so defines only `graphshell-tree`).
 export function defineElements(source) {
   const loads = typeof source === "function";
@@ -150,24 +139,10 @@ export function defineElements(source) {
         _attach({ module, artifact }, choice, epoch) {
           this.graphshellModule = module;
           if (artifact) this.setAttribute("data-viewer-artifact", artifact);
-          if (artifact === "webgpu" && choice === "auto") {
-            this._fallback?.disconnect();
-            this._fallback = new MutationObserver(async () => {
-              const error = this.getAttribute("data-mount-error") ?? "";
-              if (!error.includes(WEBGPU_ONLY_REFUSAL) || this._mountEpoch !== epoch) return;
-              this._fallback.disconnect();
-              module.dispose_tree?.(this);
-              this.removeAttribute("data-mount-error");
-              const webgl2 = await source("webgl2");
-              if (this.isConnected && this._mountEpoch === epoch) this._attach(webgl2, choice, epoch);
-            });
-            this._fallback.observe(this, { attributes: true, attributeFilter: ["data-mount-error"] });
-          }
           module[entry](this);
         }
         disconnectedCallback() {
           this._mountEpoch = (this._mountEpoch ?? 0) + 1;
-          this._fallback?.disconnect();
           this._physicsWatch?.disconnect();
           this.graphshellModule?.dispose_tree?.(this);
           delete this.dataset.mounted;

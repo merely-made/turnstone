@@ -7,9 +7,12 @@
 
 """Build and package the read-only viewer, enforcing R157's delivery caps.
 
-The viewer ships one artifact per presentation route, and `mount.js` loads
-exactly one of them per page: `webgpu/` and `webgl2/` (the latter without
-Classic Vello). Each artifact's Wasm and glue is held to the unchanged caps.
+The viewer ships one artifact, `webgl2/` (the WebGL2 presenter, built without
+Classic Vello), to every browser, and `mount.js` loads it whatever the browser's
+WebGPU support (Mark, 2026-11-08, after the WebGL2 receipts: host plan, T7). The
+WebGPU route artifact (`webgpu/`, with Classic Vello) is an opt-in comparison
+build, `--with-webgpu`, loaded only by an explicit `?render_backend=webgpu`. An
+artifact's Wasm and glue are held to the unchanged caps.
 The physics Worker module (`physics/`, one for both routes) is built beside
 them and held to its own cap.
 """
@@ -40,16 +43,22 @@ import subprocess
 # gzip6 and 491,246 B gzip9, 75% of the cap).
 CAPS = {"wasm": 3670016, "glue": 20480, "mount": 8192, "history": 131072,
         "physics": 655360}
-# Route artifact name -> the viewer crate's features for that artifact. The
+# Artifact name -> the viewer crate's features for that artifact. The
 # viewer is engine-free: the force engine (rapier and `seiche`'s simulation) is
 # not linked into the route artifact, whose physics is a transport to the Worker
 # module (`physics/`), the only place the engine is. `physics-worker-default`
 # makes the Worker the default backend; with no engine in the page there is
 # nothing else to ask for (`?physics=inline` is ignored with a console warning).
 ARTIFACTS = {
-    "webgpu": ["presentation-webgpu", "without-table-layout", "physics-worker-default"],
     "webgl2": ["presentation-webgl2", "without-classic-vello", "without-table-layout",
                "physics-worker-default"],
+}
+# The opt-in comparison route (`--with-webgpu`): the WebGPU presenter with Classic
+# Vello, for frame-time and visual comparison against the one shipped artifact.
+# It is not what ships (the 2026-11-08 ruling, T7) and `mount.js` loads it only on
+# an explicit `?render_backend=webgpu`.
+WEBGPU_COMPARISON = {
+    "webgpu": ["presentation-webgpu", "without-table-layout", "physics-worker-default"],
 }
 # The explicit opt-in (`--with-engine`): the engine linked into the route
 # artifact, so a page can run its physics in process (`?physics=inline`), as the
@@ -115,6 +124,9 @@ def main():
     parser.add_argument("--terser", default="terser", help="Terser CLI; install pinned scripts/package-lock.json dependencies")
     parser.add_argument("--target-dir", type=Path)
     parser.add_argument("--offline", action="store_true")
+    parser.add_argument("--with-webgpu", action="store_true",
+                        help="opt in: also build the WebGPU comparison artifact (`webgpu/`); "
+                             "the viewer ships only `webgl2/`")
     parser.add_argument("--with-engine", action="store_true",
                         help="opt in: link the force engine into the route artifacts (inline physics possible); "
                              "the default viewer is engine-free, its physics only in the Worker module")
@@ -127,7 +139,8 @@ def main():
     commands = {}
     minifiers = {}
     assets = {}
-    for artifact, features in ARTIFACTS.items():
+    artifacts = {**ARTIFACTS, **(WEBGPU_COMPARISON if args.with_webgpu else {})}
+    for artifact, features in artifacts.items():
         features = features + (ENGINE if args.with_engine else [])
         command = [args.cargo, "build", "--locked", "--profile", "viewer",
                    "--target", "wasm32-unknown-unknown", "--no-default-features",
@@ -159,7 +172,7 @@ def main():
     rows = measure_assets(assets)
     report = {"source": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repo,
                                                 text=True).strip(),
-              "profile": "viewer", "artifacts": ARTIFACTS,
+              "profile": "viewer", "artifacts": artifacts,
               "engine_free": not args.with_engine,
               "commands": commands, "rustc": subprocess.check_output(
                   [os.environ.get("RUSTC", "rustc"), "--version"], text=True).strip(),

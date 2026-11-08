@@ -37,8 +37,12 @@ class DeliveryBudget(unittest.TestCase):
     def test_wasm_cap_is_marks_2026_11_08_ratchet_step(self):
         self.assertEqual(builder.CAPS["wasm"], 3670016)
 
-    def test_each_route_artifact_is_held_to_the_wasm_cap(self):
-        self.assertEqual(set(builder.ARTIFACTS), {"webgpu", "webgl2"})
+    def test_the_viewer_ships_one_artifact_and_webgpu_is_only_an_opt_in_comparison(self):
+        self.assertEqual(set(builder.ARTIFACTS), {"webgl2"})
+        self.assertIn("without-classic-vello", builder.ARTIFACTS["webgl2"])
+        self.assertEqual(set(builder.WEBGPU_COMPARISON), {"webgpu"})
+
+    def test_each_artifact_is_held_to_the_wasm_cap(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "payload"
             path.write_bytes(random.Random(158).randbytes(builder.CAPS["wasm"] + 4096))
@@ -48,7 +52,7 @@ class DeliveryBudget(unittest.TestCase):
                 builder.require_budget(rows)
 
     def test_the_viewer_is_engine_free_and_worker_default_unless_engine_is_asked_for(self):
-        for features in builder.ARTIFACTS.values():
+        for features in [*builder.ARTIFACTS.values(), *builder.WEBGPU_COMPARISON.values()]:
             self.assertNotIn("physics-engine", features)
             self.assertIn("physics-worker-default", features)
         self.assertEqual(builder.ENGINE, ["physics-engine"])

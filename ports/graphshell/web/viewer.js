@@ -14,7 +14,7 @@
 //
 // A page that loads the viewer on first interaction imports this module then;
 // elements added later mount when they connect.
-// The bundle is one of two route artifacts, chosen per policy in `mount.js`.
+// The bundle is the one WebGL2 artifact (`mount.js` names the opt-in exception).
 import { defineElements, viewerArtifact } from "./mount.js";
 
 defineElements(viewerArtifact);
