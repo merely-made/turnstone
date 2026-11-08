@@ -34,8 +34,8 @@ class DeliveryBudget(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, f"wasm: gzip6=.*cap={builder.CAPS['wasm']}"):
                 builder.require_budget(rows)
 
-    def test_wasm_cap_is_marks_2026_11_07_ratchet_step(self):
-        self.assertEqual(builder.CAPS["wasm"], 4194304)
+    def test_wasm_cap_is_marks_2026_11_08_ratchet_step(self):
+        self.assertEqual(builder.CAPS["wasm"], 3670016)
 
     def test_each_route_artifact_is_held_to_the_wasm_cap(self):
         self.assertEqual(set(builder.ARTIFACTS), {"webgpu", "webgl2"})
@@ -47,11 +47,11 @@ class DeliveryBudget(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, f"wasm:webgl2: gzip6=.*cap={builder.CAPS['wasm']}"):
                 builder.require_budget(rows)
 
-    def test_the_engine_free_configuration_names_no_engine(self):
+    def test_the_viewer_is_engine_free_and_worker_default_unless_engine_is_asked_for(self):
         for features in builder.ARTIFACTS.values():
             self.assertNotIn("physics-engine", features)
+            self.assertIn("physics-worker-default", features)
         self.assertEqual(builder.ENGINE, ["physics-engine"])
-        self.assertNotIn("physics-engine", builder.ENGINE_FREE)
 
     def test_the_physics_worker_module_has_its_own_cap_outside_the_first_load(self):
         self.assertIn("physics", builder.CAPS)
