@@ -306,7 +306,7 @@ locked dependencies to be available locally.
 No CI job runs this gate: repository Actions are disabled and the tree holds
 no `viewer-delivery` workflow, so the gate is this builder plus
 `test_viewer_budget.py`, run by hand. The same source builds to different sizes
-at different checkout paths (about 3.62 or 3.71 MB gzip6 for webgpu), so the
+at different checkout paths (the engine-free webgpu artifact, 3,145,112 or 3,147,406 B gzip6 at two paths), so the
 package is not a reproducible profile across paths; measure from two checkouts.
 
 Portable Platen excludes the unused document scene producer from this viewer.
