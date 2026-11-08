@@ -279,21 +279,25 @@ python3 ports/graphshell/web/scripts/test_viewer_budget.py
 ```
 
 The builder uses the standalone web lock, `--profile viewer` and
-`--no-default-features`, once per presentation route: `webgpu/` and `webgl2/`
-(the latter without Classic Vello). Both are built with `without-table-layout`, which compiles
-Genet's table layout out (the viewer lays out no HTML table). `viewer.js` loads exactly one of them. The viewer profile selects size optimization and full
+`--no-default-features`, once: the one artifact, `webgl2/`, the WebGL2 presenter
+without Classic Vello, which every browser loads whether or not it has WebGPU (Mark,
+2026-11-08, after the WebGL2 receipts; the host plan's T7 has the evidence and the
+browser-support ruling). It is built with `without-table-layout`, which compiles
+Genet's table layout out (the viewer lays out no HTML table). `--with-webgpu` also builds
+`webgpu/` (the WebGPU presenter with Classic Vello) as a comparison build, which
+`viewer.js` loads only for an explicit `?render_backend=webgpu`. The viewer profile selects size optimization and full
 LTO; the full application's release profile remains separate. It writes
 `viewer-delivery.json` with source, compiler, profile, asset hashes and sizes,
 then rejects a package that exceeds any interaction cap at gzip level 6 or 9:
-Wasm 3,670,016 B (3.50 MiB, per route artifact; Mark's 2026-11-07 "Ratchet down"
+Wasm 3,670,016 B (3.50 MiB, per artifact; Mark's 2026-11-07 "Ratchet down"
 ruling, second step, applied 2026-11-08 once the viewer's main module left the
 physics engine behind; 4.00 MiB was the first step, after 5.00 MiB the same day,
 3.50 MiB on 2026-10-16 and 3.30 MiB on 2026-10-15, amending R157's 3.25 MiB; the
 next step is scheduled in the host plan's T7), glue 20 KiB, mount 8 KiB, and the site history fixture
 128 KiB. The build also packages the physics Worker module (`pkg/physics/`:
-`graphshell_physics_bg.wasm`, its glue and `worker.js`, one for both routes)
+`graphshell_physics_bg.wasm`, its glue and `worker.js`, one for every page)
 with its own cap, Wasm 655,360 B (0.625 MiB) gzip, outside the route's first
-load. The viewer is engine-free (its route artifacts link no rapier or force
+load. The viewer is engine-free (its artifact links no rapier or force
 engine) and runs its physics in that Worker by default (`physics-worker-default`);
 `?physics=inline` is ignored there, with a console warning and
 `data-physics-inline-ignored` on the element. `--with-engine` builds the old
@@ -306,7 +310,7 @@ locked dependencies to be available locally.
 No CI job runs this gate: repository Actions are disabled and the tree holds
 no `viewer-delivery` workflow, so the gate is this builder plus
 `test_viewer_budget.py`, run by hand. The same source builds to different sizes
-at different checkout paths (the engine-free webgpu artifact, 3,145,112 or 3,147,406 B gzip6 at two paths), so the
+at different checkout paths (the one webgl2 artifact, 3,011,023 or 3,012,846 B gzip6 at two paths), so the
 package is not a reproducible profile across paths; measure from two checkouts.
 
 Portable Platen excludes the unused document scene producer from this viewer.
