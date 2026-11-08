@@ -34,10 +34,11 @@ import subprocess
 # Genet d634ee0c485 removed the duplicate, and both routes now build without
 # genet-livery's table layout, which the viewer never uses).
 # The physics Worker module (`physics/`, loaded lazily into a Web Worker by
-# `physics/worker.js`, not part of a route's first load) has its own cap, set
-# from its first measurement.
+# `physics/worker.js`, not part of a route's first load) has its own cap: 0.625
+# MiB, set from its first measurement (2026-11-08, both checkout paths: 493,109 B
+# gzip6 and 491,246 B gzip9, 75% of the cap).
 CAPS = {"wasm": 4194304, "glue": 20480, "mount": 8192, "history": 131072,
-        "physics": 786432}
+        "physics": 655360}
 # Route artifact name -> the viewer crate's features for that artifact.
 ARTIFACTS = {
     "webgpu": ["presentation-webgpu", "without-table-layout"],

@@ -289,7 +289,12 @@ Wasm 4,194,304 B (4.00 MiB, per route artifact; Mark's 2026-11-07 "Ratchet down"
 ruling, first step, after 5.00 MiB the same day, 3.50 MiB on 2026-10-16 and
 3.30 MiB on 2026-10-15, amending R157's 3.25 MiB; later steps are scheduled in
 the host plan's T7), glue 20 KiB, mount 8 KiB, and the site history fixture
-128 KiB.
+128 KiB. The build also packages the physics Worker module (`pkg/physics/`:
+`graphshell_physics_bg.wasm`, its glue and `worker.js`, one for both routes)
+with its own cap, Wasm 655,360 B (0.625 MiB) gzip, outside the route's first
+load. A page runs its physics there with `?physics=worker` (`?physics=inline`
+keeps it in the page, the default; `data-physics-backend` on the element says
+which a page has); see T7, step 3.
 The report remains available when the gate refuses a package. `--target-dir`
 can keep a delivery lane's build artifacts isolated; `--offline` requires the
 locked dependencies to be available locally.
