@@ -33,7 +33,9 @@ key Tab
 key Tab
 key Tab
 key Tab
-# Seven remaining overlays and four source pickers precede Apply: twelve Tabs.
+# Seven remaining overlays, four source pickers, and the Role groups field with its Apply button precede Apply: fourteen Tabs.
+key Tab
+key Tab
 key Tab
 settle 1
 assert snap focus-kind == button
