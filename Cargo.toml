@@ -547,10 +547,6 @@ mere-mesh = { git = "https://github.com/merely-made/distillery.git", branch = "m
 # Woodshed's pinned revision names tinct through mere.git; it moved to
 # Graphshell's contract root (engine split D19).
 tinct = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
-# Knot's pinned revision names seiche through mere.git; numen and seiche left
-# for merely-made/seiche (engine split P2).
-numen = { git = "https://github.com/merely-made/seiche.git", branch = "main" }
-seiche = { git = "https://github.com/merely-made/seiche.git", branch = "main" }
 
 [workspace.package]
 rust-version = "1.97.1"
