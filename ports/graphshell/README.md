@@ -285,23 +285,28 @@ Genet's table layout out (the viewer lays out no HTML table). `viewer.js` loads 
 LTO; the full application's release profile remains separate. It writes
 `viewer-delivery.json` with source, compiler, profile, asset hashes and sizes,
 then rejects a package that exceeds any interaction cap at gzip level 6 or 9:
-Wasm 4,194,304 B (4.00 MiB, per route artifact; Mark's 2026-11-07 "Ratchet down"
-ruling, first step, after 5.00 MiB the same day, 3.50 MiB on 2026-10-16 and
-3.30 MiB on 2026-10-15, amending R157's 3.25 MiB; later steps are scheduled in
-the host plan's T7), glue 20 KiB, mount 8 KiB, and the site history fixture
+Wasm 3,670,016 B (3.50 MiB, per route artifact; Mark's 2026-11-07 "Ratchet down"
+ruling, second step, applied 2026-11-08 once the viewer's main module left the
+physics engine behind; 4.00 MiB was the first step, after 5.00 MiB the same day,
+3.50 MiB on 2026-10-16 and 3.30 MiB on 2026-10-15, amending R157's 3.25 MiB; the
+next step is scheduled in the host plan's T7), glue 20 KiB, mount 8 KiB, and the site history fixture
 128 KiB. The build also packages the physics Worker module (`pkg/physics/`:
 `graphshell_physics_bg.wasm`, its glue and `worker.js`, one for both routes)
 with its own cap, Wasm 655,360 B (0.625 MiB) gzip, outside the route's first
-load. A page runs its physics there with `?physics=worker` (`?physics=inline`
-keeps it in the page, the default; `data-physics-backend` on the element says
-which a page has); see T7, step 3.
+load. The viewer is engine-free (its route artifacts link no rapier or force
+engine) and runs its physics in that Worker by default (`physics-worker-default`);
+`?physics=inline` is ignored there, with a console warning and
+`data-physics-inline-ignored` on the element. `--with-engine` builds the old
+engine-linked artifacts as an explicit opt-in, where `?physics=inline` runs the
+engine in the page; `data-physics-backend` on the element says which a page has;
+see T7, step 3.
 The report remains available when the gate refuses a package. `--target-dir`
 can keep a delivery lane's build artifacts isolated; `--offline` requires the
 locked dependencies to be available locally.
 No CI job runs this gate: repository Actions are disabled and the tree holds
 no `viewer-delivery` workflow, so the gate is this builder plus
 `test_viewer_budget.py`, run by hand. The same source builds to different sizes
-at different checkout paths (about 3.62 or 3.71 MB gzip6 for webgpu), so the
+at different checkout paths (the engine-free webgpu artifact, 3,145,112 or 3,147,406 B gzip6 at two paths), so the
 package is not a reproducible profile across paths; measure from two checkouts.
 
 Portable Platen excludes the unused document scene producer from this viewer.

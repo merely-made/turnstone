@@ -25,36 +25,37 @@ import subprocess
 
 # R157's caps. Mark amended the Wasm cap to 3,460,300 B (3.30 MiB) on
 # 2026-10-15, to 3,670,016 B (3.50 MiB) on 2026-10-16, to 5,242,880 B
-# (5.00 MiB) on 2026-11-07, and ruled "Ratchet down" the same day: 4,194,304 B
-# (4.00 MiB) now, applied to each route artifact. The ratchet schedule is in the
-# Graphshell host plan, T7: 3.50 MiB when physics leaves the first load and
-# Genet's duplicate fix lands, 3.25 MiB when the remaining stages land, each
-# step applied only after it measures green in both build modes (the same
-# source built to about 3.62 or 3.71 MB gzip6 for webgpu, by checkout path;
-# Genet d634ee0c485 removed the duplicate, and both routes now build without
-# genet-livery's table layout, which the viewer never uses).
+# (5.00 MiB) on 2026-11-07, ruled "Ratchet down" the same day (4,194,304 B,
+# 4.00 MiB, applied to each route artifact), and, on 2026-11-08, "Fix the
+# reading, then flip": 3,670,016 B (3.50 MiB) now, once the viewer's main module
+# left the engine behind (the Worker module holds it). The ratchet schedule is in
+# the Graphshell host plan, T7: 3.25 MiB when the remaining stages land, applied
+# only after it measures green in both build modes (the same source built to
+# different sizes by checkout path; Genet d634ee0c485 removed the duplicate, and
+# both routes build without genet-livery's table layout, which the viewer never
+# uses).
 # The physics Worker module (`physics/`, loaded lazily into a Web Worker by
 # `physics/worker.js`, not part of a route's first load) has its own cap: 0.625
 # MiB, set from its first measurement (2026-11-08, both checkout paths: 493,109 B
 # gzip6 and 491,246 B gzip9, 75% of the cap).
-CAPS = {"wasm": 4194304, "glue": 20480, "mount": 8192, "history": 131072,
+CAPS = {"wasm": 3670016, "glue": 20480, "mount": 8192, "history": 131072,
         "physics": 655360}
-# Route artifact name -> the viewer crate's features for that artifact.
+# Route artifact name -> the viewer crate's features for that artifact. The
+# viewer is engine-free: the force engine (rapier and `seiche`'s simulation) is
+# not linked into the route artifact, whose physics is a transport to the Worker
+# module (`physics/`), the only place the engine is. `physics-worker-default`
+# makes the Worker the default backend; with no engine in the page there is
+# nothing else to ask for (`?physics=inline` is ignored with a console warning).
 ARTIFACTS = {
-    "webgpu": ["presentation-webgpu", "without-table-layout"],
-    "webgl2": ["presentation-webgl2", "without-classic-vello", "without-table-layout"],
+    "webgpu": ["presentation-webgpu", "without-table-layout", "physics-worker-default"],
+    "webgl2": ["presentation-webgl2", "without-classic-vello", "without-table-layout",
+               "physics-worker-default"],
 }
-# The engine-in-the-main-module configuration: the force engine (rapier and
-# `seiche`'s simulation) is linked into the route artifact, and the page can run
-# its physics in process. `--engine-free` leaves it out: the main module then
-# holds physics only as a transport to the Worker module (`physics/`), which is
-# the only place the engine is. The default stays engine-on until the headed
-# receipts have passed in Worker mode on the engine-free build (host plan, T7).
+# The explicit opt-in (`--with-engine`): the engine linked into the route
+# artifact, so a page can run its physics in process (`?physics=inline`), as the
+# viewer did before 2026-11-08. It is bigger (about 0.4 MB gzip) and exists for
+# comparison and as the inline fallback; it is not what ships.
 ENGINE = ["physics-engine"]
-# The engine-free viewer asks for the Worker unless the page says otherwise; with
-# no engine in the page there is nothing else to ask for, so the default needs
-# no feature, but the build still names it so the intent is on the command line.
-ENGINE_FREE = ["physics-worker-default"]
 
 
 def build_physics_worker(args, web, target, out, assets, commands):
@@ -114,8 +115,9 @@ def main():
     parser.add_argument("--terser", default="terser", help="Terser CLI; install pinned scripts/package-lock.json dependencies")
     parser.add_argument("--target-dir", type=Path)
     parser.add_argument("--offline", action="store_true")
-    parser.add_argument("--engine-free", action="store_true",
-                        help="build the route artifacts without the force engine (physics only in the Worker module)")
+    parser.add_argument("--with-engine", action="store_true",
+                        help="opt in: link the force engine into the route artifacts (inline physics possible); "
+                             "the default viewer is engine-free, its physics only in the Worker module")
     args = parser.parse_args()
     web = Path(__file__).resolve().parents[1]
     repo = web.parents[2]
@@ -126,7 +128,7 @@ def main():
     minifiers = {}
     assets = {}
     for artifact, features in ARTIFACTS.items():
-        features = features + (ENGINE_FREE if args.engine_free else ENGINE)
+        features = features + (ENGINE if args.with_engine else [])
         command = [args.cargo, "build", "--locked", "--profile", "viewer",
                    "--target", "wasm32-unknown-unknown", "--no-default-features",
                    "--features", ",".join(features),
@@ -158,7 +160,7 @@ def main():
     report = {"source": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repo,
                                                 text=True).strip(),
               "profile": "viewer", "artifacts": ARTIFACTS,
-              "engine_free": args.engine_free,
+              "engine_free": not args.with_engine,
               "commands": commands, "rustc": subprocess.check_output(
                   [os.environ.get("RUSTC", "rustc"), "--version"], text=True).strip(),
               "manifest_sha256": hashlib.sha256((web / "Cargo.toml").read_bytes()).hexdigest(),

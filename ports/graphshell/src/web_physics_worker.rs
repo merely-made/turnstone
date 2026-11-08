@@ -11,15 +11,19 @@
 //! `?physics=worker` (or `data-physics="worker"` on the element) puts the
 //! canvas's simulation in `physics/worker.js`, a module Worker the mount
 //! script names in `data-physics-worker`; `?physics=inline` keeps it in the
-//! page. Neither is the build's default (`physics-worker-default`, off until
-//! the headed receipts passed in Worker mode). A page that asks for the Worker
-//! and cannot start it keeps the inline backend and says which it has in
-//! `data-physics-backend` on the element, so a receipt can check.
+//! page. The read-only viewer's builds start in Worker mode
+//! (`physics-worker-default`, named by `build-viewer.py`'s feature lists, after
+//! the headed receipts passed in Worker mode); the web crate's own default
+//! features keep the engine and start inline. A page that asks for the Worker
+//! and cannot start it keeps the inline backend (where the build has one) and
+//! says which it has in `data-physics-backend` on the element, so a receipt can
+//! check.
 //!
 //! A build without `physics-engine` (the viewer's engine-free configuration)
 //! has no inline backend: it always asks for the Worker, `?physics=inline` is
-//! not honoured, and a Worker that cannot start, or that fails after it
-//! started, leaves the page with no physics. The page then says so:
+//! ignored with a console warning and `data-physics-inline-ignored` on the
+//! element (the Worker runs), and a Worker that cannot start, or that fails
+//! after it started, leaves the page with no physics. The page then says so:
 //! `data-physics-backend="unavailable"` and `data-physics-unavailable` (the
 //! reason) on the element, which `mount.js` turns into a visible
 //! `role="status"` notice; the graph stays where it was first drawn. Nothing
@@ -64,7 +68,19 @@ fn requested(host: Option<&Element>) -> bool {
         .as_deref()
     {
         Some("worker") => true,
-        Some("inline") => !INLINE_AVAILABLE,
+        Some("inline") if !INLINE_AVAILABLE => {
+            // This build has no engine to run in the page: say so, where a
+            // person (the console) and a receipt (the element) can see it,
+            // and use the Worker, the only physics there is.
+            web_sys::console::warn_1(
+                &"?physics=inline is not available: this build links no physics engine, so its physics runs in the Worker".into(),
+            );
+            if let Some(host) = host {
+                let _ = host.set_attribute("data-physics-inline-ignored", "no engine in this build");
+            }
+            true
+        },
+        Some("inline") => false,
         _ => DEFAULT_WORKER,
     }
 }

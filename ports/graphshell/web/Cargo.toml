@@ -29,7 +29,8 @@ path = "../src/web.rs"
 moot-resources = ["graphshell/moot-resources", "dep:moot"]
 dynamics-receipt = []
 # Start in Worker mode (physics in `physics/worker.js`) unless the page says
-# `?physics=inline`. Off until the headed receipts have passed in Worker mode.
+# `?physics=inline`. The viewer's builds (`scripts/build-viewer.py`) turn it on;
+# the crate's own `default` does not, so the product page keeps its engine inline.
 physics-worker-default = []
 default = ["product", "remote", "canvas-gpu", "image-decode", "presentation-webgpu", "presentation-webgl2", "physics-engine"]
 # The force engine in the main module. The viewer's own feature list leaves it
