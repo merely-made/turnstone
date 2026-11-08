@@ -31,7 +31,11 @@ dynamics-receipt = []
 # Start in Worker mode (physics in `physics/worker.js`) unless the page says
 # `?physics=inline`. Off until the headed receipts have passed in Worker mode.
 physics-worker-default = []
-default = ["product", "remote", "canvas-gpu", "image-decode", "presentation-webgpu", "presentation-webgl2"]
+default = ["product", "remote", "canvas-gpu", "image-decode", "presentation-webgpu", "presentation-webgl2", "physics-engine"]
+# The force engine in the main module. The viewer's own feature list leaves it
+# off (and `canvas-gpu`, which implies it): its physics runs in the lazily
+# loaded Worker module, and the main module links no rapier.
+physics-engine = ["graphshell/physics-engine", "mere/physics-engine", "graphshell-host/physics-engine"]
 # Browser presentation routes. The full page carries both and Auto chooses at
 # boot. The read-only viewer ships one artifact per route, chosen by
 # `mount.js` before loading: `presentation-webgpu`, or `presentation-webgl2`

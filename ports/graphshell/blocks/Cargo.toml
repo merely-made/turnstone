@@ -18,7 +18,7 @@ name = "graphshell-blocks"
 path = "src/main.rs"
 
 [dependencies]
-graphshell = { path = "..", default-features = false, features = ["editable-blocks", "applets"] }
+graphshell = { path = "..", default-features = false, features = ["editable-blocks", "applets", "physics-engine"] }
 block-host.workspace = true
 vector-sheet.workspace = true
 sceno.workspace = true

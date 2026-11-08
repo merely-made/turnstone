@@ -67,7 +67,11 @@ goal-surface-model = ["goal-surface", "dep:esp", "esp/goal-model", "esp/bert", "
 # Finite headed native proof of the goal surface on the shared Cambium host.
 goal-surface-proof = ["goal-surface", "dep:cambium-desktop", "dep:pollster", "dep:genet-scripted-dom", "dep:layout_dom_api", "dep:image"]
 moot-resources = ["web", "webrtc-join", "dep:cambium", "dep:moot", "dep:gemot", "dep:eidetic", "dep:muniment"]
-default = ["native", "image-decode", "document-layout", "retained-content"]
+default = ["native", "image-decode", "document-layout", "retained-content", "physics-engine"]
+# The canvas's and the board's force engine in this process. The browser
+# viewer's main module leaves it off and runs physics in a Worker; every other
+# host that names this crate without its defaults lists it.
+physics-engine = ["mere?/physics-engine", "graphshell-host/physics-engine"]
 # Document-capable hosts retain Platen's document producer. Activating this
 # feature also activates the optional dependency before forwarding the feature.
 document-layout = ["dep:platen", "platen/document-layout"]

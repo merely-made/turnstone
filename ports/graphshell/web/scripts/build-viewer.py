@@ -41,8 +41,8 @@ CAPS = {"wasm": 4194304, "glue": 20480, "mount": 8192, "history": 131072,
         "physics": 655360}
 # Route artifact name -> the viewer crate's features for that artifact.
 ARTIFACTS = {
-    "webgpu": ["presentation-webgpu", "without-table-layout"],
-    "webgl2": ["presentation-webgl2", "without-classic-vello", "without-table-layout"],
+    "webgpu": ["presentation-webgpu", "without-table-layout", "physics-engine"],
+    "webgl2": ["presentation-webgl2", "without-classic-vello", "without-table-layout", "physics-engine"],
 }
 
 

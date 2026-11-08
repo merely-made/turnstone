@@ -18,7 +18,7 @@ path = "src/main.rs"
 [dependencies]
 ostiary = { workspace = true, features = ["native"] }
 castellan-client = { workspace = true, features = ["client"] }
-graphshell = { path = "..", default-features = false, features = ["coop", "goal-surface"] }
+graphshell = { path = "..", default-features = false, features = ["coop", "goal-surface", "physics-engine"] }
 serde_json.workspace = true
 url = "2"
 uuid.workspace = true
@@ -49,7 +49,7 @@ tokio = { version = "1", features = ["io-std", "io-util", "macros", "net", "rt-m
 [dev-dependencies]
 genet-scripted-dom.workspace = true
 layout_dom_api.workspace = true
-mere = { path = "../../../crates/mere", default-features = false, features = ["graph", "canvas"] }
+mere = { path = "../../../crates/mere", default-features = false, features = ["graph", "canvas", "physics-engine"] }
 serde_json.workspace = true
 tempfile = "3"
 uuid.workspace = true
