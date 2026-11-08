@@ -544,9 +544,6 @@ murm-webrtc = { git = "https://github.com/merely-made/murm.git", branch = "main"
 
 distillery = { git = "https://github.com/merely-made/distillery.git", branch = "main" }
 mere-mesh = { git = "https://github.com/merely-made/distillery.git", branch = "main" }
-# Woodshed's pinned revision names tinct through mere.git; it moved to
-# Graphshell's contract root (engine split D19).
-tinct = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 
 [workspace.package]
 rust-version = "1.97.1"

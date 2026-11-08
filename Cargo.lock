@@ -889,7 +889,7 @@ checksum = "1254ebf6529f3763c491acfb5ab6e960809e3c75a38584cc664f8c5667fb7107"
 [[package]]
 name = "audio-primitives"
 version = "0.1.0"
-source = "git+https://github.com/merely-made/woodshed.git?branch=main#93dad41443081870b08b791bd1c02e8bfe6f71a8"
+source = "git+https://github.com/merely-made/woodshed.git?branch=main#648ae5654a1504e2b8f390f07eb97753345f5f09"
 
 [[package]]
 name = "audioadapter"
@@ -12353,7 +12353,7 @@ dependencies = [
 [[package]]
 name = "redshank-model"
 version = "0.0.0"
-source = "git+https://github.com/merely-made/woodshed.git?branch=main#93dad41443081870b08b791bd1c02e8bfe6f71a8"
+source = "git+https://github.com/merely-made/woodshed.git?branch=main#648ae5654a1504e2b8f390f07eb97753345f5f09"
 dependencies = [
  "serde",
  "serde_json",
@@ -12363,7 +12363,7 @@ dependencies = [
 [[package]]
 name = "redshank-playback"
 version = "0.0.0"
-source = "git+https://github.com/merely-made/woodshed.git?branch=main#93dad41443081870b08b791bd1c02e8bfe6f71a8"
+source = "git+https://github.com/merely-made/woodshed.git?branch=main#648ae5654a1504e2b8f390f07eb97753345f5f09"
 dependencies = [
  "anyhow",
  "audio-primitives",
@@ -12379,7 +12379,7 @@ dependencies = [
 [[package]]
 name = "redshank-storage"
 version = "0.0.0"
-source = "git+https://github.com/merely-made/woodshed.git?branch=main#93dad41443081870b08b791bd1c02e8bfe6f71a8"
+source = "git+https://github.com/merely-made/woodshed.git?branch=main#648ae5654a1504e2b8f390f07eb97753345f5f09"
 dependencies = [
  "redshank-model",
  "serde_json",
@@ -12388,7 +12388,7 @@ dependencies = [
 [[package]]
 name = "redshank-surfaces"
 version = "0.0.0"
-source = "git+https://github.com/merely-made/woodshed.git?branch=main#93dad41443081870b08b791bd1c02e8bfe6f71a8"
+source = "git+https://github.com/merely-made/woodshed.git?branch=main#648ae5654a1504e2b8f390f07eb97753345f5f09"
 dependencies = [
  "cambium",
  "genet-scripted-dom",
@@ -16196,7 +16196,7 @@ dependencies = [
 [[package]]
 name = "timed-text"
 version = "0.1.0"
-source = "git+https://github.com/merely-made/woodshed.git?branch=main#93dad41443081870b08b791bd1c02e8bfe6f71a8"
+source = "git+https://github.com/merely-made/woodshed.git?branch=main#648ae5654a1504e2b8f390f07eb97753345f5f09"
 
 [[package]]
 name = "tinct"
