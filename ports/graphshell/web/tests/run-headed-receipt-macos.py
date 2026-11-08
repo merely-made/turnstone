@@ -13,8 +13,9 @@ time.sleep(1.5)
 url = f'{origin}/tree.html?scenario=scenarios/{scenario}.scn&sink={origin}/scenario-receipt&{query}'
 chrome = subprocess.Popen(['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', f'--user-data-dir={profile}', f'--remote-debugging-port={port+1}', '--no-first-run', '--no-default-browser-check', '--new-window', '--window-size=1400,900', '--enable-unsafe-webgpu', url], stdout=open(out / 'chrome.log', 'w'), stderr=subprocess.STDOUT, start_new_session=True)
 started = time.monotonic(); status = 'timeout'
+timeout = float(os.environ.get('RECEIPT_TIMEOUT', '120'))  # long settles (density, drag) need more on a dev build
 try:
-    while time.monotonic() - started < 120:
+    while time.monotonic() - started < timeout:
         if (out / 'scenario.done').exists(): status = 'done'; break
         if chrome.poll() is not None: status = 'chrome-exited'; break
         time.sleep(1)

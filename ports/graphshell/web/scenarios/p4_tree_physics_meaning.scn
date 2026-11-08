@@ -2,6 +2,11 @@
 # build takes the lexical fallback, and one content earns one embedding run.
 # Then Group pull by cluster through the Groups picker (F37).
 assert snap ready == true
+# The viewer toolbar now hides the Graph tools region: open View controls, then Graph tools.
+click role:button View controls
+settle 1
+click role:button Graph tools
+settle 1
 click role:button Play physics
 settle 1
 assert snap physics-paused == false

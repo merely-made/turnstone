@@ -7,6 +7,11 @@
 # and picking Density greys the overlays it refuses with the law's reason
 # (it takes Hub room, Centre and Tide converted, F73 and F81).
 assert snap ready == true
+# The viewer toolbar now hides the Graph tools region: open View controls, then Graph tools.
+click role:button View controls
+settle 1
+click role:button Graph tools
+settle 1
 # The boot arrangement pauses the canvas, so the law is set and applied with
 # nothing moving: its start is the boot layout, the control's too.
 assert snap physics-paused == true

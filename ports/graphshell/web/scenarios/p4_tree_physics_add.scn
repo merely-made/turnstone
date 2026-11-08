@@ -5,6 +5,11 @@
 # ends up with bodies on top of each other. Under Still the reheat holds
 # everything, the newcomer included.
 assert snap ready == true
+# The viewer toolbar now hides the Graph tools region: open View controls, then Graph tools.
+click role:button View controls
+settle 1
+click role:button Graph tools
+settle 1
 # The boot arrangement pauses the canvas; the receipt wants the law running.
 click role:button Play physics
 settle 1

@@ -5,6 +5,11 @@
 # F81), so
 # Centre stays ticked.
 assert snap ready == true
+# The viewer toolbar now hides the Graph tools region: open View controls, then Graph tools.
+click role:button View controls
+settle 1
+click role:button Graph tools
+settle 1
 click role:combobox Physics law
 settle 1
 click role:option Anneal
