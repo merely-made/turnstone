@@ -6,6 +6,7 @@
 
 //! Copy link and Open in this browser for the selected object (S1).
 use super::*;
+use backstep::{ClipboardEvent, ClipboardRequest};
 use cambium::{button, el};
 use graphshell::handlers::{
     ATTACHED_BROWSER_HANDLER, ReferenceReach, attached_browser_target, prepare_reference,
@@ -24,14 +25,19 @@ impl SavedProduct {
             ReferenceReach::Network => "",
             ReferenceReach::ThisDevice => " · only this device can open it",
         };
-        if let Err(error) = crate::web_share::copy(
-            &link.address,
-            self.share_outcome.clone(),
-            format!("Copied link · {}{reach}", link.address),
-            "Copy failed · select the address above to copy it".into(),
-        ) {
-            self.status = format!("Copy failed · {error} · select the address above to copy it");
-        }
+        let outcome = self.share_outcome.clone();
+        let done = format!("Copied link · {}{reach}", link.address);
+        let write = ClipboardRequest::Write(link.address);
+        crate::web_share::clipboard(write, move |event| {
+            let failure = match event {
+                ClipboardEvent::Written(Ok(())) => None,
+                ClipboardEvent::Written(Err(error)) => Some(error.to_string()),
+                ClipboardEvent::Read(_) => Some("the browser answered a read".into()),
+            };
+            *outcome.borrow_mut() = Some(failure.map_or(done, |error| {
+                format!("Copy failed · {error} · select the address above to copy it")
+            }));
+        });
     }
 
     fn open_in_browser(&mut self) {
