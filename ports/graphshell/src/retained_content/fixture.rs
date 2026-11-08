@@ -21,10 +21,8 @@ pub async fn seed<B: pandect::graph_session::LegacyTransactionBackend + Clone>(
         captured_at: eidetic::Timestamp(7),
     };
     let mut source = eidetic::MemoryBackend::new();
-    let text = serde_json::from_str(include_str!(
-        "../../../../crates/fleece/tests/fixtures/portable_clip/knot.json"
-    ))
-    .map_err(|e| e.to_string())?;
+    let text = serde_json::from_str(include_str!("../../tests/fixtures/portable_clip/knot.json"))
+        .map_err(|e| e.to_string())?;
     let text_id = fleece::portable_clip::retain_knot_export(
         &mut source,
         None,
@@ -36,17 +34,14 @@ pub async fn seed<B: pandect::graph_session::LegacyTransactionBackend + Clone>(
     .await
     .map_err(|e| e.to_string())?;
     let voice = serde_json::from_str(include_str!(
-        "../../../../crates/fleece/tests/fixtures/portable_clip/redshank.json"
+        "../../tests/fixtures/portable_clip/redshank.json"
     ))
     .map_err(|e| e.to_string())?;
     let voice_id = fleece::portable_clip::retain_redshank_export(
         &mut source,
         None,
         &voice,
-        Some(
-            include_bytes!("../../../../crates/fleece/tests/fixtures/portable_clip/voice.wav")
-                .to_vec(),
-        ),
+        Some(include_bytes!("../../tests/fixtures/portable_clip/voice.wav").to_vec()),
         &context,
         limits,
     )

@@ -60,8 +60,8 @@ platen = { path = "../../../crates/platen/platen", default-features = false, fea
 mere-overmap = { path = "../../../crates/cambium/mere-overmap", optional = true }
 # The saved-scene shapes the scene page reads (`pandect::saved_scene`).
 pandect = { path = "../../../crates/system/pandect", optional = true }
-mere-lanes = { path = "../../../crates/system/document-lanes", features = ["retained-clips"], optional = true }
-fleece = { package = "mere-fleece", path = "../../../crates/fleece", features = ["portable-clip", "page-links"], optional = true }
+mere-lanes = { git = "https://github.com/merely-made/inker.git", branch = "main", features = ["retained-clips"], optional = true }
+fleece = { package = "mere-fleece", git = "https://github.com/merely-made/inker.git", branch = "main", features = ["portable-clip", "page-links"], optional = true }
 eidetic = { default-features = false, git = "https://github.com/merely-made/eidetic.git", branch = "main" }
 moot = { package = "mere-moot", path = "../../moot", default-features = false, features = ["presentation"], optional = true }
 # `webrtc-browser` is the C4 door's peer half (`webrtc_browser`, `webrtc_join`)
@@ -263,6 +263,16 @@ rust-version = "1.97.1"
 # workspace when Murm's carrier names its published compatibility dependency.
 [patch."https://github.com/merely-made/mere.git"]
 sprigging = { path = "../../../crates/cambium/sprigging" }
+# Inker (merely-made/inker) names the Cambium family through mere.git, as
+# the root patch table also redirects; serve it from this tree.
+backstep = { path = "../../../crates/cambium/backstep" }
+cambium = { path = "../../../crates/cambium/cambium" }
+mere-curation = { path = "../../../crates/forme/curation" }
+mere-surface-api = { path = "../../../crates/system/surface-api" }
+meristem = { path = "../../../crates/cambium/meristem" }
+scenograph = { path = "../../../crates/cambium/scenes/scenograph" }
+scenomise = { path = "../../../crates/cambium/scenes/scenomise" }
+workbench = { path = "../../../crates/cambium/workbench" }
 # Promoted sources shared with immutable older Mere suppliers.
 chartulary = { git = "https://github.com/merely-made/eidetic.git", branch = "main" }
 eidetic = { git = "https://github.com/merely-made/eidetic.git", branch = "main" }
