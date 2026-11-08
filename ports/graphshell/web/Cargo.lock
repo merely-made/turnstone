@@ -4666,7 +4666,7 @@ checksum = "6e44b0a4eaa4c82f441d50a963f2d5f05a787240aeee097597033e72accfd22f"
 
 [[package]]
 name = "incipit"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "serde",
  "uuid",
@@ -5827,13 +5827,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "mere-curation"
-version = "0.1.1"
-dependencies = [
- "serde",
-]
-
-[[package]]
 name = "mere-edit"
 version = "0.1.0"
 dependencies = [
@@ -5858,7 +5851,7 @@ dependencies = [
 name = "mere-forme"
 version = "0.2.0"
 dependencies = [
- "mere-curation",
+ "incipit",
  "serde",
  "serde_json",
  "taffy",
@@ -5993,7 +5986,6 @@ dependencies = [
  "incipit",
  "mere",
  "mere-cartography",
- "mere-curation",
  "mere-kernel",
  "pictograph",
  "platen",
@@ -7735,7 +7727,6 @@ dependencies = [
  "hex",
  "incipit",
  "insigne",
- "mere-curation",
  "mere-kernel",
  "muniment",
  "notochord",
@@ -8046,10 +8037,10 @@ dependencies = [
  "euclid",
  "genet-livery",
  "genet-scripted-dom",
+ "incipit",
  "layout-dom-api",
  "libm",
  "mere-cartography",
- "mere-curation",
  "mere-forme",
  "mere-kernel",
  "netrender",
@@ -9398,7 +9389,7 @@ name = "scenograph"
 version = "0.0.6"
 dependencies = [
  "backstep",
- "mere-curation",
+ "incipit",
  "sceno",
  "serde",
  "serde_json",
