@@ -157,7 +157,7 @@ pub(crate) fn open_view(dir: &Path, graph: GraphId, canvas: &mut Canvas) -> Open
     }
     let mut records = Vec::new();
     for raw in raw_folds {
-        match serde_json::from_value::<curation::FoldRecord>(raw.clone()) {
+        match serde_json::from_value::<incipit::curation::FoldRecord>(raw.clone()) {
             Ok(record) if record.source_scope == scope(graph) && record.validate().is_ok() => {
                 records.push(record)
             },

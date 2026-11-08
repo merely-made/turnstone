@@ -26,7 +26,6 @@ path = "src/main.rs"
 [dependencies]
 murm-sync = { version = "0.0.1", git = "https://github.com/merely-made/murm.git", branch = "main", optional = true }
 async-trait = "=0.1.92"
-curation = { package = "mere-curation", git = "https://github.com/merely-made/mere.git", branch = "main" }
 # Product-redacted, bounded observations; the portable values live in Armillary.
 apparatus-core = { version = "0.1.0", git = "https://github.com/merely-made/armillary.git", branch = "main", default-features = false, features = ["serde"] }
 # Presentable proof data/checks; Personae retains keys and issuing. The
@@ -291,7 +290,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 # workspace ids its leaves carry. Both arrived with the folded frisket crate,
 # which had carried them itself.
 serde = { version = "1", features = ["derive"] }
-incipit = { git = "https://github.com/merely-made/mere.git", branch = "main" }
+incipit = { version = "0.2.2", git = "https://github.com/merely-made/mere.git", branch = "main" }
 serde_json = { version = "1", features = ["float_roundtrip"] }
 # T5a's civil-day boundary is application policy. Jiff supplies civil types
 # and IANA-zone rules needed to distinguish 23-, 24-, and 25-hour local dates.
@@ -548,6 +547,10 @@ mere-mesh = { git = "https://github.com/merely-made/distillery.git", branch = "m
 # Woodshed's pinned revision names tinct through mere.git; it moved to
 # Graphshell's contract root (engine split D19).
 tinct = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
+# Knot's pinned revision names seiche through mere.git; numen and seiche left
+# for merely-made/seiche (engine split P2).
+numen = { git = "https://github.com/merely-made/seiche.git", branch = "main" }
+seiche = { git = "https://github.com/merely-made/seiche.git", branch = "main" }
 
 [workspace.package]
 rust-version = "1.97.1"
