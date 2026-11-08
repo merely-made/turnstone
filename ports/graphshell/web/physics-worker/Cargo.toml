@@ -17,6 +17,6 @@ path = "src/lib.rs"
 [dependencies]
 # The engine without the actor: a Worker runs the simulation itself and no
 # thread is spawned (`armillary` is not linked).
-seiche = { git = "https://github.com/merely-made/seiche.git", branch = "main", default-features = false }
+seiche = { git = "https://github.com/merely-made/seiche.git", branch = "main", default-features = false, features = ["engine"] }
 wasm-bindgen = "=0.2.129"
 console_error_panic_hook = "0.1"
