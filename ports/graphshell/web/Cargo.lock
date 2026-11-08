@@ -1368,7 +1368,7 @@ dependencies = [
 [[package]]
 name = "conatus"
 version = "0.1.0"
-source = "git+https://github.com/merely-made/seiche.git?branch=main#a12a52c5aa67e862c49d098bb5b230e24606a4c7"
+source = "git+https://github.com/merely-made/seiche.git?branch=main#f0e18dd9dc82aed8d15dcaa4791d48f93bdb2e84"
 dependencies = [
  "bytemuck",
  "cubecl",
@@ -3887,6 +3887,15 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror 1.0.69",
+]
+
+[[package]]
+name = "graphshell-physics-worker"
+version = "0.1.0"
+dependencies = [
+ "console_error_panic_hook",
+ "seiche",
+ "wasm-bindgen",
 ]
 
 [[package]]
@@ -6971,7 +6980,7 @@ dependencies = [
 [[package]]
 name = "numen"
 version = "0.2.1"
-source = "git+https://github.com/merely-made/seiche.git?branch=main#a12a52c5aa67e862c49d098bb5b230e24606a4c7"
+source = "git+https://github.com/merely-made/seiche.git?branch=main#f0e18dd9dc82aed8d15dcaa4791d48f93bdb2e84"
 dependencies = [
  "serde",
  "strum 0.28.0",
@@ -9498,7 +9507,7 @@ dependencies = [
 [[package]]
 name = "seiche"
 version = "0.0.6"
-source = "git+https://github.com/merely-made/seiche.git?branch=main#a12a52c5aa67e862c49d098bb5b230e24606a4c7"
+source = "git+https://github.com/merely-made/seiche.git?branch=main#f0e18dd9dc82aed8d15dcaa4791d48f93bdb2e84"
 dependencies = [
  "armillary",
  "conatus",
@@ -9516,7 +9525,7 @@ dependencies = [
 [[package]]
 name = "seiche-model"
 version = "0.0.1"
-source = "git+https://github.com/merely-made/seiche.git?branch=main#a12a52c5aa67e862c49d098bb5b230e24606a4c7"
+source = "git+https://github.com/merely-made/seiche.git?branch=main#f0e18dd9dc82aed8d15dcaa4791d48f93bdb2e84"
 dependencies = [
  "euclid",
  "numen",

@@ -28,6 +28,7 @@ mod web_command_catalog;
 mod web_dataset;
 mod web_graphs;
 mod web_period_worker;
+mod web_physics_worker;
 #[cfg(feature = "product")]
 mod web_practice;
 #[cfg(feature = "remote")]

@@ -47,6 +47,17 @@ class DeliveryBudget(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, f"wasm:webgl2: gzip6=.*cap={builder.CAPS['wasm']}"):
                 builder.require_budget(rows)
 
+    def test_the_physics_worker_module_has_its_own_cap_outside_the_first_load(self):
+        self.assertIn("physics", builder.CAPS)
+        self.assertLess(builder.CAPS["physics"], builder.CAPS["wasm"])
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "payload"
+            path.write_bytes(random.Random(159).randbytes(builder.CAPS["physics"] + 4096))
+            rows = builder.measure_assets({"physics:wasm": path})
+            self.assertEqual(rows["physics:wasm"]["cap_bytes"], builder.CAPS["physics"])
+            with self.assertRaisesRegex(RuntimeError, f"physics:wasm: gzip6=.*cap={builder.CAPS['physics']}"):
+                builder.require_budget(rows)
+
 
 if __name__ == "__main__":
     unittest.main()

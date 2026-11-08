@@ -1,0 +1,22 @@
+[package]
+rust-version = "1.97.1"
+name = "graphshell-physics-worker"
+version = "0.1.0"
+edition = "2024"
+publish = false
+description = "The viewer's physics as its own wasm, loaded lazily into a Web Worker: seiche's engine behind a postMessage-sized API (the seam in the Graphshell host plan, T7)."
+
+# A member of the viewer's own workspace (the empty `[workspace]` in the parent
+# manifest names it), so it shares that lock and the `viewer` profile.
+
+[lib]
+name = "graphshell_physics"
+crate-type = ["cdylib"]
+path = "src/lib.rs"
+
+[dependencies]
+# The engine without the actor: a Worker runs the simulation itself and no
+# thread is spawned (`armillary` is not linked).
+seiche = { git = "https://github.com/merely-made/seiche.git", branch = "main", default-features = false }
+wasm-bindgen = "=0.2.129"
+console_error_panic_hook = "0.1"

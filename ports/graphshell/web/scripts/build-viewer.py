@@ -10,6 +10,8 @@
 The viewer ships one artifact per presentation route, and `mount.js` loads
 exactly one of them per page: `webgpu/` and `webgl2/` (the latter without
 Classic Vello). Each artifact's Wasm and glue is held to the unchanged caps.
+The physics Worker module (`physics/`, one for both routes) is built beside
+them and held to its own cap.
 """
 
 import argparse
@@ -31,12 +33,44 @@ import subprocess
 # source built to about 3.62 or 3.71 MB gzip6 for webgpu, by checkout path;
 # Genet d634ee0c485 removed the duplicate, and both routes now build without
 # genet-livery's table layout, which the viewer never uses).
-CAPS = {"wasm": 4194304, "glue": 20480, "mount": 8192, "history": 131072}
+# The physics Worker module (`physics/`, loaded lazily into a Web Worker by
+# `physics/worker.js`, not part of a route's first load) has its own cap, set
+# from its first measurement.
+CAPS = {"wasm": 4194304, "glue": 20480, "mount": 8192, "history": 131072,
+        "physics": 786432}
 # Route artifact name -> the viewer crate's features for that artifact.
 ARTIFACTS = {
     "webgpu": ["presentation-webgpu", "without-table-layout"],
     "webgl2": ["presentation-webgl2", "without-classic-vello", "without-table-layout"],
 }
+
+
+def build_physics_worker(args, web, target, out, assets, commands):
+    """Build the physics Worker's wasm (seiche's engine, no actor) and package it
+    with `physics/worker.js` as `<out>/physics/`, beside the route artifacts."""
+    command = [args.cargo, "build", "--locked", "--profile", "viewer",
+               "-p", "graphshell-physics-worker", "--target", "wasm32-unknown-unknown",
+               "--target-dir", str(target), "-j1"]
+    if args.offline:
+        command.append("--offline")
+    subprocess.run(command, cwd=web, check=True)
+    commands["physics"] = command
+    raw = target / "wasm32-unknown-unknown/viewer/graphshell_physics.wasm"
+    physics_out = out / "physics"
+    physics_out.mkdir(parents=True, exist_ok=True)
+    subprocess.run([args.wasm_bindgen, "--target", "web", "--remove-name-section",
+                    "--out-name", "graphshell_physics", "--out-dir", str(physics_out), str(raw)],
+                   check=True)
+    glue = physics_out / "graphshell_physics.js"
+    compact = physics_out / "graphshell_physics.min.js"
+    subprocess.run([args.terser, str(glue), "--module", "--compress", "--mangle",
+                    "--output", str(compact)], check=True)
+    compact.replace(glue)
+    worker = physics_out / "worker.js"
+    worker.write_bytes((web / "physics/worker.js").read_bytes())
+    assets["physics:wasm"] = physics_out / "graphshell_physics_bg.wasm"
+    assets["glue:physics"] = glue
+    assets["glue:physics-worker"] = worker
 
 
 def measure_assets(assets):
@@ -102,6 +136,7 @@ def main():
         minifiers[artifact] = {"command": minify_command, "input_sha256": glue_input_sha256}
         assets[f"wasm:{artifact}"] = artifact_out / "graphshell_web_bg.wasm"
         assets[f"glue:{artifact}"] = glue
+    build_physics_worker(args, web, target, out, assets, commands)
     assets["mount"] = web / "viewer.js"
     assets["history"] = web / "fixtures/site-repository-host-history.json"
     rows = measure_assets(assets)

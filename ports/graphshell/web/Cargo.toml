@@ -15,6 +15,7 @@ publish = false
 # from `workspace.dependencies`, and any `[patch]` the root manifest carries has
 # to be restated at the bottom of this file.
 [workspace]
+members = ["physics-worker"]
 
 [lib]
 name = "graphshell_web"
@@ -27,6 +28,9 @@ path = "../src/web.rs"
 [features]
 moot-resources = ["graphshell/moot-resources", "dep:moot"]
 dynamics-receipt = []
+# Start in Worker mode (physics in `physics/worker.js`) unless the page says
+# `?physics=inline`. Off until the headed receipts have passed in Worker mode.
+physics-worker-default = []
 default = ["product", "remote", "canvas-gpu", "image-decode", "presentation-webgpu", "presentation-webgl2"]
 # Browser presentation routes. The full page carries both and Auto chooses at
 # boot. The read-only viewer ships one artifact per route, chosen by
@@ -178,6 +182,9 @@ web-sys = { version = "0.3", features = [
     "WheelEventInit",
     "Window",
     "Worker",
+    # The physics Worker's module type (src/web_physics_worker.rs).
+    "WorkerOptions",
+    "WorkerType",
 ] }
 
 # Standalone manifests do not inherit Mere's root patch table, so the ones

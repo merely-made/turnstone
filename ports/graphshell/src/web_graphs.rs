@@ -106,6 +106,15 @@ pub(crate) fn generated(nodes: usize, seed: u64, links: Links) -> Graph {
     graph
 }
 
+/// A canvas over `graph` with its simulation where the page asked for it: in a
+/// physics Worker (`?physics=worker`), else in the page.
+fn graph_canvas(graph: Graph) -> Canvas {
+    match crate::web_physics_worker::transport() {
+        Some(transport) => Canvas::with_graph_remote(graph, transport),
+        None => Canvas::with_graph(graph),
+    }
+}
+
 /// A canvas holding `graph` at `positions`, a placement already made (a host
 /// dataset's compiled arrangement), fitted to `width` by `height`.
 pub(crate) fn placed_canvas(
@@ -114,7 +123,7 @@ pub(crate) fn placed_canvas(
     width: u32,
     height: u32,
 ) -> Canvas {
-    let mut canvas = Canvas::with_graph(graph);
+    let mut canvas = graph_canvas(graph);
     canvas.resize(width, height);
     canvas.set_layout_strategy(Some(LAYOUT.to_string()));
     canvas.apply_strategy_positions(positions);
@@ -127,7 +136,7 @@ pub(crate) fn placed_canvas(
 
 /// A canvas holding `graph`, arranged and fitted to `width` by `height`.
 pub(crate) fn prepared_canvas(graph: Graph, width: u32, height: u32) -> Canvas {
-    let mut canvas = Canvas::with_graph(graph);
+    let mut canvas = graph_canvas(graph);
     canvas.resize(width, height);
     canvas.set_layout_strategy(Some(LAYOUT.to_string()));
     // The canvas passes its own registry (dynamics grammar plan, F87).

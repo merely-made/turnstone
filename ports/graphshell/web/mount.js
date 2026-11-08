@@ -84,6 +84,9 @@ export function defineElements(source) {
         async connectedCallback() {
           if (this.dataset.mounted) return;
           this.dataset.mounted = "true";
+          // Where the physics Worker's script is, for a page that runs its
+          // simulation there (`?physics=worker`).
+          this.setAttribute("data-physics-worker", new URL("./pkg/physics/worker.js", import.meta.url).href);
           const epoch = this._mountEpoch = (this._mountEpoch ?? 0) + 1;
           try {
             const choice = new URLSearchParams(location.search).get("render_backend")
