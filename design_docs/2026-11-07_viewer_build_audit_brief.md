@@ -61,8 +61,8 @@ Latin and Greek text only (Arabic, CJK and Thai glyphs are missing; T7 says so).
 | Claim | Where | Verdict |
 |---|---|---|
 | The viewer replaces the site's sandbox, loaded on interaction, the frozen first reading kept, with a 64 KiB first-load cap | one-tree plan `:1203-1221,1300-1302`; T7; presentation plan | **Current as intent; unverified as state.** Site-side deployment is T7's open gate; the repo cannot show it. |
-| Two routes, `webgpu/` and `webgl2/`, "Classic Vello dropped" | one-tree plan; README; `build-viewer.py` `ARTIFACTS` | **Current, half-true.** Classic Vello is dropped only from the webgl2 artifact. The webgpu artifact still links `vello`, `vello_encoding`, `vello_shaders` and 23 compute shaders (section 2). |
-| Non-WebGPU fallback: Auto loads webgpu if a device exists, else remounts on webgl2 | `mount.js` `chooseArtifact`, `WEBGPU_ONLY_REFUSAL`; tests README | **Current in code and in the six-route runner.** Whether it is still a live need depends on WebGPU availability in the browsers the site must serve, which this audit did not verify. |
+| Two routes, `webgpu/` and `webgl2/`, "Classic Vello dropped" | one-tree plan; README; `build-viewer.py` `ARTIFACTS` | **Superseded 2026-11-08: one route, `webgl2/`.** At the time of this audit: current, half-true. Classic Vello is dropped only from the webgl2 artifact. The webgpu artifact still links `vello`, `vello_encoding`, `vello_shaders` and 23 compute shaders (section 2). |
+| Non-WebGPU fallback: Auto loads webgpu if a device exists, else remounts on webgl2 | `mount.js` `chooseArtifact`, `WEBGPU_ONLY_REFUSAL`; tests README | **Removed 2026-11-08.** It was current in code and in the six-route runner when this audit was written; the one-artifact ruling below deleted the probe and the remount. |
 | Wasm cap 3.25, then 3.30, 3.50 MiB | one-tree plan `:1213-1219`; presentation plan `:25` | **Superseded** by the 5.00 MiB ruling (T7, 2026-11-07). The presentation plan's Constraints still say 3.30 MiB; it needs the same amendment. |
 | "Select a reproducible shipping profile"; "every `cargo build --release --locked` of a commit makes the same bundle" | one-tree plan `:1229-1230`; `web/Cargo.toml` profile comment | **Stale.** Same path gives identical bytes; different paths give 3.62 or 3.71 MB (section 3). |
 | "An automated regression gate"; "the portable workflow's `viewer-delivery` job" | one-tree plan `:1298-1306`; README | **Stale.** The tree holds no such workflow (the only workflow file is `crates/cambium/.github/workflows/ci.yml`), Actions are disabled, so the gate is `build-viewer.py` plus `test_viewer_budget.py` run by hand. |
@@ -280,7 +280,10 @@ Recorded in the Graphshell host plan, T7, with the ratchet schedule and the phys
 2. **Physics in the first load: "Lazy Worker module".** Option (b). The seam is designed in T7; the implementation
    is not done (see T7: it needs a `seiche` split and a command protocol, larger than one change).
 3. **One artifact or two: "Decide after receipts".** Option (c). Open until the headed receipts run the webgl2
-   artifact on WebGPU hardware; leaning to one artifact (option (b)).
+   artifact on WebGPU hardware; leaning to one artifact (option (b)). **Decided 2026-11-08: one artifact (option (b)).**
+   The receipts ran on this Mac (six routes, the 17 physics receipts with `render_backend=webgl2`, frame times at 21 and
+   200 nodes); WebGL2's frame interval was within the 10% bar at both sizes. See the rulings of 2026-11-08 below and
+   the host plan, T7.
 4. **Genet-side work: "Both in Genet now".** The duplicate `ScriptedDom` pipeline (row 1) and the table gating
    (row 5) are done in the Genet repository (`d634ee0c485`, 2026-11-07). The bands are gone: webgpu is one size on
    every path, and the table gate measured 72.5 KB gzip6 per route against the 40 to 100 KB guessed above. The
@@ -317,3 +320,18 @@ change. Estimates below are from reading the code, not from a build.
   engine re-exports the API, every consumer compiles unchanged, and it can be measured by itself. It makes the rest a
   bounded sequence and is the recommended next change if A is to proceed.
 
+## Rulings (Mark, 2026-11-08)
+
+Recorded in the Graphshell host plan, T7. Receipts and numbers: `Code/testing/mere/viewer_webgl2_artifact_20261108/RESULTS.md`.
+
+3. **One artifact or two: decided, one.** Ruled: run WebGL2 receipts, then decide; no regression means WebGL2 frame
+   time within 10% of WebGPU at 21 and about 200 nodes on the same Mac (the 2,000-node case does not gate). Result:
+   17 of 17 physics receipts pass on WebGL2, all six presentation routes pass, and the median frame interval is no slower on WebGL2 at any size (ratios 1.00, 0.54, 0.84, 0.79). The viewer ships
+   `webgl2/` only; the probe, the remount and the webgpu cap row are removed; `webgpu/` is an opt-in comparison build.
+   The folder keeps its name. Caveats recorded in T7: a 10-pixel Metal-ANGLE difference in the compare images, and
+   WebGL2 uses more page CPU time per frame than WebGPU.
+6. **Browser support.** Serve current evergreen Chrome, Edge, Firefox and Safari, on desktop and mobile, including
+   versions and devices without WebGPU. A WebGL2 path is required.
+7. **Scene player: not now.** The spike measured 163,246 B gzip6 wasm (115 KB with CBOR only, 237 KB with the backdrop
+   compiler, 4.6 KB glue; worktree `scene-player-spike-20261107`, not in main). It reopens when a consumer page is named.
+8. **Cap: hold at 3.5 MiB.** No ratchet to 3.25 MiB with this change.
