@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.82"
 name = "mozjs_icu_collator"
-version = "153.3.0"
+version = "153.6.0"
 authors = ["The ICU4X Project Developers"]
 build = false
 include = [
@@ -95,13 +95,13 @@ version = "0.2.3"
 default-features = false
 
 [dependencies.icu_collator_data]
-version = "=153.3.0"
+version = "=153.6.0"
 optional = true
 default-features = false
 package = "mozjs_icu_collator_data"
 
 [dependencies.icu_collections]
-version = "=153.3.0"
+version = "=153.6.0"
 default-features = false
 package = "mozjs_icu_collections"
 
@@ -116,7 +116,7 @@ features = ["alloc"]
 default-features = false
 
 [dependencies.icu_normalizer]
-version = "=153.3.0"
+version = "=153.6.0"
 default-features = false
 package = "mozjs_icu_normalizer"
 
@@ -152,13 +152,13 @@ optional = true
 default-features = false
 
 [dependencies.utf16_iter]
-version = "=153.3.0"
+version = "=153.6.0"
 features = ["icu_collections"]
 default-features = false
 package = "mozjs_utf16_iter"
 
 [dependencies.utf8_iter]
-version = "=153.3.0"
+version = "=153.6.0"
 features = ["icu_collections"]
 default-features = false
 package = "mozjs_utf8_iter"

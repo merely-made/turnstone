@@ -1,9 +1,9 @@
 # Mozilla ICU collator compatibility candidate
 
-Unqualified copy of the published `mozjs_icu_collator` 153.3.0 crate,
-archive SHA-256 `e483fdb5592a4f52c2d0e3c419935acfb98a5b578154b93999b92dedbf170e0d`.
+Unqualified copy of the published `mozjs_icu_collator` 153.6.0 crate,
+archive SHA-256 `00b76d0de5caa407560685c101a9823a58902008b3d9e6c062c4315c66917945`.
 Published provenance is servo/mozjs commit
-`f295442b3eb803b06674790d338b8151d9ca9980`.
+`f02d3753d1027aee5714ffef182d34caea3be4eb`.
 
 Only normalized `Cargo.toml` production requirements for `icu_locale` and
 `icu_properties` change from `~2.1.1` to `^2.1.1`. Published Rust, data, license,

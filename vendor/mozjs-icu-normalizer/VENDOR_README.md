@@ -1,9 +1,9 @@
 # Mozilla ICU normalizer compatibility candidate
 
-Unqualified copy of the published `mozjs_icu_normalizer` 153.3.0 crate,
-archive SHA-256 `362f589e9c5f836baade5fe90d587ffcab715c4e6bc01d6e2f266f939529876d`.
+Unqualified copy of the published `mozjs_icu_normalizer` 153.6.0 crate,
+archive SHA-256 `f4c5c74ab2d167ca63b41b7e8b6fce2ecc047e8342a90208c422c73d6bc9a099`.
 Published provenance is servo/mozjs commit
-`f295442b3eb803b06674790d338b8151d9ca9980`.
+`f02d3753d1027aee5714ffef182d34caea3be4eb`.
 
 Only normalized `Cargo.toml`'s optional production `icu_properties` requirement
 changes from `~2.1.1` to `^2.1.1`. Published Rust, data, license, README, original
