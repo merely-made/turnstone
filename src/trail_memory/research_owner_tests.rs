@@ -63,6 +63,7 @@ fn independently_inspect_exited_research_notes() {
                 .block_on(
                     retained
                         .blob_store()
+                        .expect("exited profile has a local evidence blob store")
                         .get_bytes(reference.blob_hash().unwrap()),
                 )
                 .unwrap();

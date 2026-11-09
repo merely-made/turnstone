@@ -2470,7 +2470,7 @@ dependencies = [
 [[package]]
 name = "commons-spine"
 version = "0.0.1"
-source = "git+https://github.com/merely-made/gemot.git?branch=main#cddf0e54d62b34781c3313ea408f3a4c21fce526"
+source = "git+https://github.com/merely-made/gemot.git?branch=main#d23224de1d98f21f21cae8c260062009df993810"
 dependencies = [
  "chartulary",
  "gemot",
@@ -4907,7 +4907,7 @@ dependencies = [
 [[package]]
 name = "gemot"
 version = "0.1.1"
-source = "git+https://github.com/merely-made/gemot.git?branch=main#cddf0e54d62b34781c3313ea408f3a4c21fce526"
+source = "git+https://github.com/merely-made/gemot.git?branch=main#d23224de1d98f21f21cae8c260062009df993810"
 dependencies = [
  "insigne",
  "mere-proofs",
@@ -4931,12 +4931,12 @@ dependencies = [
 [[package]]
 name = "gemot-address"
 version = "0.1.0"
-source = "git+https://github.com/merely-made/gemot.git?branch=main#cddf0e54d62b34781c3313ea408f3a4c21fce526"
+source = "git+https://github.com/merely-made/gemot.git?branch=main#d23224de1d98f21f21cae8c260062009df993810"
 
 [[package]]
 name = "gemot-site"
 version = "0.1.0"
-source = "git+https://github.com/merely-made/gemot.git?branch=main#cddf0e54d62b34781c3313ea408f3a4c21fce526"
+source = "git+https://github.com/merely-made/gemot.git?branch=main#d23224de1d98f21f21cae8c260062009df993810"
 dependencies = [
  "blake3",
  "gemot-address",
@@ -8998,6 +8998,7 @@ dependencies = [
  "p2mere-core",
  "p2mere-net",
  "personae",
+ "retinue",
  "sha2 0.11.1",
  "snow",
  "thiserror 1.0.69",
@@ -9018,7 +9019,7 @@ dependencies = [
 [[package]]
 name = "mien"
 version = "0.0.1"
-source = "git+https://github.com/merely-made/gemot.git?branch=main#cddf0e54d62b34781c3313ea408f3a4c21fce526"
+source = "git+https://github.com/merely-made/gemot.git?branch=main#d23224de1d98f21f21cae8c260062009df993810"
 dependencies = [
  "insigne",
  "muniment",
@@ -9105,7 +9106,7 @@ dependencies = [
 [[package]]
 name = "mooting"
 version = "0.1.0"
-source = "git+https://github.com/merely-made/gemot.git?branch=main#cddf0e54d62b34781c3313ea408f3a4c21fce526"
+source = "git+https://github.com/merely-made/gemot.git?branch=main#d23224de1d98f21f21cae8c260062009df993810"
 dependencies = [
  "p2mere-core",
  "serde",

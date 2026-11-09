@@ -100,6 +100,16 @@ pub enum PlaceWorkerCommand {
         session: SessionId,
         generation: u64,
     },
+    /// Run one Reticulum catch-up round for an already enrolled peer. Open the
+    /// cached place first. A successful round also emits `Update::PlaceOpened`.
+    #[cfg(feature = "place-reticulum")]
+    CatchUpGraph {
+        session: SessionId,
+        generation: u64,
+        route: super::worker::ReticulumGraphRoute,
+        peer: super::worker::ReticulumGraphContact,
+        reply: std::sync::mpsc::Sender<Result<(), String>>,
+    },
     /// Set or clear the exact local collection version used for captured search.
     SetCollection {
         session: SessionId,

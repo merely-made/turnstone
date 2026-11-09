@@ -363,6 +363,7 @@ default = []
 # supplier `peers` feature. This does not install Turnstone's peer workers.
 authoring = ["dep:knot", "knot/peers", "dep:gemot-site"]
 peers = ["authoring", "graphshell-host/native", "dep:transport", "dep:commons", "dep:gemot", "moot-port/captured-web", "dep:stickleback", "dep:murm-sync", "dep:mien"]
+place-reticulum = ["peers", "transport/reticulum", "transport/sync-lane"]
 peer-tests = ["peers", "transport/test-identity"]
 endpoint-process = ["authoring", "graphshell-host/native"]
 inference = ["dep:distillery"]

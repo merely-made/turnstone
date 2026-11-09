@@ -83,6 +83,16 @@ const DEFAULT_KNOT_MAX_SOURCE_BYTES: u64 = 8 * 1024 * 1024;
 
 pub use super::protocol::*;
 
+#[cfg(feature = "place-reticulum")]
+#[path = "worker/reticulum_graph.rs"]
+mod reticulum_graph;
+#[cfg(feature = "place-reticulum")]
+pub use reticulum_graph::{ReticulumGraphContact, ReticulumGraphRoute};
+
+#[path = "worker/open_joined_place.rs"]
+mod open_joined_place;
+use open_joined_place::open_joined_place;
+
 pub(crate) struct OpenPlace {
     /// Session-owned view sidecars are written only by this worker.
     pub(crate) directory: PathBuf,

@@ -110,42 +110,13 @@ pub(super) fn spawn_place_worker_with(
                         // the same path every later boot will use.
                         live = None;
                         live_scope = None;
-                        let joined =
-                            admit_invitation(&directory, &invite, identity.as_ref(), &settings)
-                                .and_then(|admitted| {
-                                    crate::place::rendezvous::save_admitted_rendezvous(
-                                        &directory, &invite,
-                                    )?;
-                                    open_cached_place(
-                                        &directory,
-                                        &admitted.binding,
-                                        identity.as_ref(),
-                                        &settings,
-                                    )
-                                    .map(|(opened, snapshot)| (admitted.binding, opened, snapshot))
-                                })
-                                .and_then(|(binding, mut opened, snapshot)| {
-                                    // Dial whatever the envelope offered. A ticketless
-                                    // invitation still admits: the place is real and
-                                    // offline, which Degraded-vs-Offline surfaces.
-                                    let tickets: Vec<String> =
-                                        invite.dialable().map(|entry| entry.hint.clone()).collect();
-                                    if !tickets.is_empty() {
-                                        opened.lanes = Some(crate::place::lanes::join_live(
-                                            &opened,
-                                            &binding,
-                                            identity.as_ref(),
-                                            &tickets,
-                                            settings.projection_setup(&binding, identity.as_ref()),
-                                            // The watcher reports arrivals under THIS
-                                            // open's generation, so a nudge from a
-                                            // departed place is dropped by the same
-                                            // guard every other answer passes.
-                                            Some((out.clone(), session, generation)),
-                                        )?);
-                                    }
-                                    Ok((binding, opened, snapshot))
-                                });
+                        let joined = open_joined_place(
+                            &directory,
+                            &invite,
+                            identity.as_ref(),
+                            &settings,
+                            (out.clone(), session, generation),
+                        );
                         match joined {
                             Ok((binding, opened, snapshot)) => {
                                 live_scope = Some((session, generation));
@@ -500,6 +471,34 @@ pub(super) fn spawn_place_worker_with(
                             generation,
                             result,
                         });
+                    },
+                    #[cfg(feature = "place-reticulum")]
+                    PlaceWorkerCommand::CatchUpGraph {
+                        session,
+                        generation,
+                        route,
+                        peer,
+                        reply,
+                    } => {
+                        let result = match &mut live {
+                            Some(_) if live_scope != Some((session, generation)) => {
+                                Err("graph catch-up belongs to a departed place generation".into())
+                            },
+                            Some(open) => {
+                                reticulum_graph::catch_up(open, identity.as_ref(), route, &peer)
+                                    .and_then(|()| {
+                                        place_snapshot(open, open.binding.moot.0, &settings)
+                                    })
+                            },
+                            None => Err("no open place for graph catch-up".into()),
+                        };
+                        let _ = reply.send(result.map(|snapshot| {
+                            out.emit(Update::PlaceOpened {
+                                session,
+                                generation,
+                                result: Ok(snapshot),
+                            });
+                        }));
                     },
                     PlaceWorkerCommand::SetCollection {
                         session,

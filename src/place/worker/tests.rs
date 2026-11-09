@@ -40,6 +40,9 @@ const COLLECTION_GRANT: [u8; 32] = [0x68; 32];
 /// passing run never waits it out.
 const ANSWER: std::time::Duration = std::time::Duration::from_secs(60);
 
+#[cfg(feature = "place-reticulum")]
+#[path = "tests/reticulum_graph.rs"]
+mod reticulum_graph;
 #[path = "tests/a_place_with_only_a_plaintext_graph_is_cases.rs"]
 mod a_place_with_only_a_plaintext_graph_is_cases;
 #[path = "tests/a_revoked_member_reaches_no_projected_place_state_cases.rs"]
