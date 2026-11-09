@@ -329,10 +329,12 @@ redshank-storage = { git = "https://github.com/merely-made/woodshed.git", branch
 # Shared browser controls and both presentation directions use Wgpu Cue main.
 wgpu-cue = { git = "https://github.com/merely-made/wgpu-cue.git", branch = "main" }
 
-# The offscreen Servo host is reusable on macOS, Linux and Windows.
+# The offscreen Servo host is reusable on macOS, Linux and Windows. The producer
+# lives in wgpu-graft and is adapted by graft-engine's `servo` feature; the
+# `grafting-servo` row only turns on its `servo` feature (graft-engine cannot
+# forward it without dragging Servo into the inker lock). Servo's revision is
+# wgpu-graft's alone.
 graft-engine = { git = "https://github.com/merely-made/inker.git", branch = "main", optional = true }
-servo = { git = "https://github.com/servo/servo", rev = "aac43a3f31a259f04a574f5ec4e959c943ad7cc7", optional = true }
-rustls = { version = "0.23.37", features = ["aws_lc_rs"], optional = true }
 grafting-servo = { git = "https://github.com/merely-made/wgpu-graft.git", branch = "main", default-features = false, features = ["wgpu-30", "servo"], optional = true }
 grafting = { git = "https://github.com/merely-made/wgpu-graft.git", branch = "main", default-features = false, features = ["wgpu-30"], optional = true }
 
@@ -387,11 +389,12 @@ weld = ["dep:weld-engine", "dep:welding", "dep:grafting", "dep:windows"]
 scry = ["dep:scrying-engine", "dep:windows", "dep:webview2-com"]
 # Upstream Servo views share one named process profile and import through Graft
 # on the existing host device. The shared receiving host also runs on Metal.
-servo = [ "dep:graft-engine", "dep:servo", "dep:grafting-servo", "dep:grafting", "dep:windows", "dep:rustls", "accesskit/serde"]
+servo = ["dep:graft-engine", "graft-engine/servo", "dep:grafting-servo", "dep:grafting", "dep:windows"]
 
 [target.'cfg(windows)'.dependencies]
-# ANGLE EGL DLL selection is Windows-only; macOS uses Surfman CGL.
-servo = { git = "https://github.com/servo/servo", rev = "aac43a3f31a259f04a574f5ec4e959c943ad7cc7", features = ["no-wgl"], optional = true }
+# ANGLE EGL DLL selection is Windows-only; macOS uses Surfman CGL. The adapter
+# forwards `no-wgl` to Servo, so no Servo row (or revision) lives here.
+grafting-servo = { git = "https://github.com/merely-made/wgpu-graft.git", branch = "main", default-features = false, features = ["no-wgl"], optional = true }
 scrying-engine = { git = "https://github.com/merely-made/inker.git", branch = "main", optional = true }
 # Select a process crypto provider before Servo network construction.
 webview2-com = { version = "=0.39.1", optional = true }

@@ -1,12 +1,14 @@
 // Copyright 2026 Mark Alan Boykin
 // SPDX-License-Identifier: MPL-2.0
 
-//! Upstream Servo views on Turnstone's existing wgpu device.
+//! Turnstone's host glue for upstream Servo views on its existing wgpu device.
 //!
-//! The process root lives on the UI thread, including between the last closed
-//! view and a later reopen. Upstream options and JS initialization are process
-//! scoped. Each view has its own rendering context and one ordered delegate
-//! queue. The shell must release producers and cached frames before shutdown.
+//! The engine itself (process root, `WebView` and delegate, input, cursor,
+//! accessibility and navigation translation, frame import) lives in
+//! wgpu-graft's `grafting-servo` and inker's `graft-engine`. This module owns
+//! only what is Turnstone's: the `TURNSTONE_SERVO_*` process settings, the
+//! profile naming handed in by the shell, and the Cue presentation below.
+//! Hosts reach Servo only through `graft_engine::servo`, never by revision.
 
 #[cfg(target_os = "macos")]
 #[path = "servo_cue.rs"]
@@ -17,41 +19,17 @@ pub mod cue;
 #[path = "servo_cue_capabilities.rs"]
 mod cue_capabilities;
 
-use graft_engine::{GraftFrame, GraftProducerFactory, GraftSurface};
-use grafting::{DiagnosticGpuSync, ImportedTexture, TextureOrigin};
-use inker::{
-    CursorShape, DragEvent, DragOperationSet, FocusReason, KeyboardEvent, MouseButton, MouseEvent,
-    MouseEventKind, NativeTextureHandle, NavigationEvent, OwnedSurfaceFrame, PhysicalPosition,
-    PointerEvent, PointerPhase, PointerType, SurfaceAccessibilityActionRequest,
-    SurfaceAccessibilityTreeId, SurfaceAccessibilityUpdate, SurfaceError, SurfaceSettings,
-    SurfaceSpawnRequest, SurfaceSyncHandle, SurfaceTextureFormat, WebFeatureStatus,
-    WebFrameTransportMode, WebMessage, WebSurfaceCapabilities, WebSurfaceEvent,
-};
-use servo::{
-    DevicePoint, EventLoopWaker, InputEvent, Key, KeyState, LoadStatus, Location, Modifiers,
-    MouseButtonAction, MouseButtonEvent, MouseMoveEvent, NamedKey, Opts, PermissionRequest,
-    Preferences, Servo, ServoBuilder, WebView, WebViewBuilder, WebViewDelegate, WebViewPoint,
-    WheelDelta, WheelEvent, WheelMode,
-};
-#[cfg(target_os = "linux")]
-use servo_wgpu_interop_adapter::ServoDmaBufAdapter;
-#[cfg(not(target_os = "linux"))]
-use servo_wgpu_interop_adapter::ServoWgpuInteropAdapter;
-use std::{
-    cell::{Cell, RefCell},
-    collections::{HashMap, VecDeque},
-    path::PathBuf,
-    rc::Rc,
-    sync::{Arc, OnceLock},
-    thread::ThreadId,
-};
-use url::Url;
-use winit::dpi::PhysicalSize;
+use graft_engine::servo::{A11yFocusPolicy, ServoGraftFactory, ServoProducerConfig};
+use inker::SurfaceError;
+use std::{path::PathBuf, sync::Arc};
 
-#[cfg(not(target_os = "linux"))]
-pub(crate) const FRAME_KIND: &str = "turnstone.servo.imported-frame";
+pub(crate) use graft_engine::servo::{FRAME_KIND, active_views, pump, shutdown};
 #[cfg(target_os = "linux")]
-pub(crate) const FRAME_KIND: &str = "turnstone.servo.native-dmabuf-frame";
+pub(crate) use graft_engine::servo::GraftDmaBufFrame as ServoDmaBufFrame;
+#[cfg(not(target_os = "linux"))]
+pub(crate) use graft_engine::servo::GraftImportedFrame as ServoImportedFrame;
+
+pub(crate) type TurnstoneServoFactory = ServoGraftFactory;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) struct ServoHostOptions {
@@ -59,137 +37,106 @@ pub(crate) struct ServoHostOptions {
     pub profile_dir: PathBuf,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-enum A11yFocusPolicy {
-    Upstream,
-    DocumentRoot,
+impl ServoHostOptions {
+    /// Build the process factory: the named profile plus the diagnostics the
+    /// environment selects. Construct exactly once on the UI thread.
+    pub(crate) fn into_factory(
+        self,
+        device: wgpu::Device,
+        queue: wgpu::Queue,
+        wake: Arc<dyn Fn() + Send + Sync>,
+    ) -> Result<TurnstoneServoFactory, SurfaceError> {
+        // Refuse unknown settings before touching upstream process globals.
+        let mut config = ServoProducerConfig::new(self.profile_name, self.profile_dir);
+        config.a11y_focus = requested_a11y_focus_policy()?;
+        config.gpu_sync = requested_gpu_sync()?;
+        ServoGraftFactory::new(config, device, queue, wake)
+    }
 }
 
-static PROCESS_OWNER: OnceLock<ThreadId> = OnceLock::new();
-thread_local! {
-    static ROOT: RefCell<Option<Rc<ProcessRoot>>> = const { RefCell::new(None) };
-    static INITIALIZED: Cell<bool> = const { Cell::new(false) };
+fn spawn_error(detail: impl Into<String>) -> SurfaceError {
+    SurfaceError::SpawnFailed(detail.into())
 }
 
-struct ProcessRoot {
-    servo: Servo,
-    options: ServoHostOptions,
-    views: Cell<usize>,
-    wake: Arc<dyn Fn() + Send + Sync>,
-    a11y_focus_policy: A11yFocusPolicy,
+fn env_option(name: &str) -> Result<Option<String>, SurfaceError> {
+    match std::env::var(name) {
+        Ok(value) => Ok(Some(value)),
+        Err(std::env::VarError::NotPresent) => Ok(None),
+        Err(_) => Err(spawn_error(format!("{name} must be Unicode"))),
+    }
 }
 
-#[derive(Clone)]
-struct Waker(Arc<dyn Fn() + Send + Sync>);
-
-pub(crate) struct TurnstoneServoFactory {
-    owner: ThreadId,
-    options: ServoHostOptions,
-    device: wgpu::Device,
-    queue: wgpu::Queue,
-    a11y_focus_policy: A11yFocusPolicy,
+fn requested_a11y_focus_policy() -> Result<A11yFocusPolicy, SurfaceError> {
+    let value = env_option("TURNSTONE_SERVO_A11Y_FOCUS")?;
+    A11yFocusPolicy::parse(value.as_deref()).map_err(|_| {
+        spawn_error("TURNSTONE_SERVO_A11Y_FOCUS must be upstream or document-root")
+    })
 }
 
-#[derive(Debug)]
-pub(crate) struct ServoImportedFrame {
-    pub imported: ImportedTexture,
-    pub device: wgpu::Device,
-    pub queue: wgpu::Queue,
-    pub resource_epoch: u64,
-}
-
-#[cfg(target_os = "linux")]
-#[derive(Debug)]
-pub(crate) struct ServoDmaBufFrame {
-    pub frame: wgpu_cue::webcue::OwnedNativeFrame,
-}
-
-struct Delegate {
-    events: RefCell<VecDeque<WebSurfaceEvent>>,
-    cursors: RefCell<VecDeque<CursorShape>>,
-    accessibility_updates: RefCell<VecDeque<SurfaceAccessibilityUpdate>>,
-    accessibility_active: Cell<bool>,
-    accessibility_focus_provenance: Cell<u32>,
-    ready: Cell<bool>,
-    animating: Cell<bool>,
-    requested_url: RefCell<String>,
-    wake: Arc<dyn Fn() + Send + Sync>,
-}
-
-struct TurnstoneServoSurface {
-    view: Option<WebView>,
-    #[cfg(not(target_os = "linux"))]
-    interop: Option<ServoWgpuInteropAdapter>,
-    #[cfg(target_os = "linux")]
-    interop: Option<ServoDmaBufAdapter>,
-    delegate: Rc<Delegate>,
-    root: Rc<ProcessRoot>,
-    frame_epoch: u64,
-    device: wgpu::Device,
-    queue: wgpu::Queue,
-    pressed_keys: HashMap<u32, Key>,
+fn requested_gpu_sync() -> Result<graft_engine::servo::grafting::DiagnosticGpuSync, SurfaceError> {
+    let mode = env_option("TURNSTONE_SERVO_GPU_SYNC")?;
+    let timeout = env_option("TURNSTONE_SERVO_GPU_SYNC_TIMEOUT_MS")?
+        .map(|value| value.parse::<u64>())
+        .transpose()
+        .map_err(|_| spawn_error("Servo GPU diagnostic timeout must be positive milliseconds"))?
+        .unwrap_or(5000);
+    if timeout == 0 {
+        return Err(spawn_error(
+            "Servo GPU diagnostic timeout must be positive milliseconds",
+        ));
+    }
+    graft_engine::servo::parse_gpu_sync(
+        mode.as_deref().unwrap_or("existing"),
+        std::time::Duration::from_millis(timeout),
+    )
+    .map_err(|_| {
+        spawn_error(
+            "TURNSTONE_SERVO_GPU_SYNC must be existing, producer, normalization or both",
+        )
+    })
 }
 
 #[cfg(test)]
-#[path = "servo/tests.rs"]
-mod tests;
+mod tests {
+    use super::*;
+    use accesskit::{Action, Node, NodeId, Rect, Role, TreeId, TreeInfo, Uuid};
+    use graft_engine::servo::servo::accesskit as servo_ak;
 
-#[path = "servo/surface_update_from_servo.rs"]
-mod surface_update_from_servo;
-use surface_update_from_servo::surface_update_from_servo;
-#[path = "servo/a11y_focus_policy_name.rs"]
-mod a11y_focus_policy_name;
-#[path = "servo/parse_a11y_focus_policy.rs"]
-mod parse_a11y_focus_policy;
-use parse_a11y_focus_policy::parse_a11y_focus_policy;
-#[path = "servo/requested_a11y_focus_policy.rs"]
-mod requested_a11y_focus_policy;
-use requested_a11y_focus_policy::requested_a11y_focus_policy;
-#[path = "servo/impl_event_loop_waker_for_waker.rs"]
-mod impl_event_loop_waker_for_waker;
-#[path = "servo/pump.rs"]
-mod pump;
-#[path = "servo/turnstone_servo_factory_profile_name.rs"]
-mod turnstone_servo_factory_profile_name;
-pub(crate) use pump::pump;
-#[path = "servo/active_views.rs"]
-mod active_views;
-pub(crate) use active_views::active_views;
-#[path = "servo/shutdown.rs"]
-mod shutdown;
-pub(crate) use shutdown::shutdown;
-#[path = "servo/delegate_push.rs"]
-mod delegate_push;
-#[path = "servo/impl_drop_for_turnstone_servo_surface.rs"]
-mod impl_drop_for_turnstone_servo_surface;
-#[path = "servo/impl_graft_producer_factory_for_turnstone.rs"]
-mod impl_graft_producer_factory_for_turnstone;
-#[path = "servo/impl_graft_surface_for_turnstone_servo.rs"]
-mod impl_graft_surface_for_turnstone_servo;
-#[path = "servo/impl_owned_surface_frame_for_servo.rs"]
-mod impl_owned_surface_frame_for_servo;
-#[path = "servo/impl_owned_surface_frame_for_servo_2.rs"]
-#[cfg(target_os = "linux")]
-mod impl_owned_surface_frame_for_servo_2;
-#[path = "servo/impl_web_view_delegate_for_delegate.rs"]
-mod impl_web_view_delegate_for_delegate;
-#[path = "servo/logical_key.rs"]
-mod logical_key;
-#[path = "servo/turnstone_servo_surface_view.rs"]
-mod turnstone_servo_surface_view;
-use logical_key::logical_key;
-#[path = "servo/require_owner.rs"]
-mod require_owner;
-use require_owner::require_owner;
-#[path = "servo/spawn_error.rs"]
-mod spawn_error;
-use spawn_error::spawn_error;
-#[path = "servo/requested_gpu_sync.rs"]
-mod requested_gpu_sync;
-use requested_gpu_sync::requested_gpu_sync;
-#[path = "servo/parse_gpu_sync.rs"]
-mod parse_gpu_sync;
-use parse_gpu_sync::parse_gpu_sync;
-#[path = "servo/unsupported.rs"]
-mod unsupported;
-use unsupported::unsupported;
+    /// Servo's AccessKit and the surface contract's differ in version; the
+    /// serialized form must cross unchanged.
+    #[test]
+    fn servo_updates_convert_to_the_surface_contract_unchanged() {
+        let mut root = servo_ak::Node::new(servo_ak::Role::RootWebArea);
+        root.set_children(vec![servo_ak::NodeId(2)]);
+        root.set_tree_id(servo_ak::TreeId(servo_ak::Uuid::from_u64_pair(0, 110)));
+        let mut child = servo_ak::Node::new(servo_ak::Role::Button);
+        child.set_label("supplier node");
+        child.add_action(servo_ak::Action::Click);
+        child.set_bounds(servo_ak::Rect::new(1.0, 2.0, 30.0, 40.0));
+        let servo_update = servo_ak::TreeUpdate {
+            nodes: vec![(servo_ak::NodeId(1), root), (servo_ak::NodeId(2), child)],
+            tree: Some(servo_ak::Tree::new(servo_ak::NodeId(1))),
+            tree_id: servo_ak::TreeId(servo_ak::Uuid::from_u64_pair(0, 109)),
+            focus: servo_ak::NodeId(2),
+        };
+
+        let mut root = Node::new(Role::RootWebArea);
+        root.set_children(vec![NodeId(2)]);
+        root.set_tree_id(TreeId(Uuid::from_u64_pair(0, 110)));
+        let mut child = Node::new(Role::Button);
+        child.set_label("supplier node");
+        child.add_action(Action::Click);
+        child.set_bounds(Rect::new(1.0, 2.0, 30.0, 40.0));
+        let expected = inker::SurfaceAccessibilityUpdate {
+            nodes: vec![(NodeId(1), root), (NodeId(2), child)],
+            tree: Some(TreeInfo::new(NodeId(1))),
+            tree_id: TreeId(Uuid::from_u64_pair(0, 109)),
+            focus: NodeId(2),
+        };
+        let value = serde_json::to_value(&servo_update).unwrap();
+        assert_eq!(
+            graft_engine::servo::surface_update_from_value(value).unwrap(),
+            expected
+        );
+    }
+}

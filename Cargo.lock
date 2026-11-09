@@ -3154,7 +3154,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c54e03a951783e8b327515db3f2a2fd0e3bed362a96b066f341ce66ed49b4ead"
 dependencies = [
  "data-encoding",
- "syn 3.0.9",
+ "syn 1.0.109",
 ]
 
 [[package]]
@@ -3439,7 +3439,7 @@ dependencies = [
 [[package]]
 name = "document-canvas"
 version = "0.1.0"
-source = "git+https://github.com/merely-made/inker.git?branch=main#20815afb0ddc85f4957d33c0455a828e70fdbbc9"
+source = "git+https://github.com/merely-made/inker.git?branch=main#7740e8ba66fe937c324917d5966b9f7e00c05d8d"
 dependencies = [
  "genet-parley",
  "inker",
@@ -5238,16 +5238,20 @@ dependencies = [
 [[package]]
 name = "graft-engine"
 version = "0.2.0"
-source = "git+https://github.com/merely-made/inker.git?branch=main#20815afb0ddc85f4957d33c0455a828e70fdbbc9"
+source = "git+https://github.com/merely-made/inker.git?branch=main#7740e8ba66fe937c324917d5966b9f7e00c05d8d"
 dependencies = [
+ "accesskit 0.25.1",
+ "grafting-servo",
  "inker",
+ "serde_json",
  "tracing",
+ "wgpu",
 ]
 
 [[package]]
 name = "grafting"
-version = "0.6.1"
-source = "git+https://github.com/merely-made/wgpu-graft.git?branch=main#d903cfacf6ee663ddcc31e14539448dae3794c48"
+version = "0.6.2"
+source = "git+https://github.com/merely-made/wgpu-graft.git?branch=main#6af6735216ef70ffc877856bb63e90d13886089d"
 dependencies = [
  "ash",
  "dpi",
@@ -5274,7 +5278,7 @@ dependencies = [
 [[package]]
 name = "grafting-frame"
 version = "0.1.1"
-source = "git+https://github.com/merely-made/wgpu-graft.git?branch=main#d903cfacf6ee663ddcc31e14539448dae3794c48"
+source = "git+https://github.com/merely-made/wgpu-graft.git?branch=main#6af6735216ef70ffc877856bb63e90d13886089d"
 dependencies = [
  "objc2 0.6.5",
  "objc2-core-foundation",
@@ -5286,8 +5290,9 @@ dependencies = [
 [[package]]
 name = "grafting-servo"
 version = "0.1.0"
-source = "git+https://github.com/merely-made/wgpu-graft.git?branch=main#d903cfacf6ee663ddcc31e14539448dae3794c48"
+source = "git+https://github.com/merely-made/wgpu-graft.git?branch=main#6af6735216ef70ffc877856bb63e90d13886089d"
 dependencies = [
+ "accesskit 0.24.1",
  "dpi",
  "euclid",
  "gleam",
@@ -5295,8 +5300,11 @@ dependencies = [
  "grafting",
  "image",
  "rustls",
+ "serde_json",
  "servo",
  "surfman",
+ "tracing",
+ "url",
  "wgpu",
  "winit",
 ]
@@ -6610,7 +6618,7 @@ dependencies = [
 [[package]]
 name = "illume"
 version = "0.0.3"
-source = "git+https://github.com/merely-made/inker.git?branch=main#20815afb0ddc85f4957d33c0455a828e70fdbbc9"
+source = "git+https://github.com/merely-made/inker.git?branch=main#7740e8ba66fe937c324917d5966b9f7e00c05d8d"
 dependencies = [
  "jotdown",
  "logos",
@@ -6729,7 +6737,7 @@ dependencies = [
 [[package]]
 name = "inker"
 version = "0.1.1"
-source = "git+https://github.com/merely-made/inker.git?branch=main#20815afb0ddc85f4957d33c0455a828e70fdbbc9"
+source = "git+https://github.com/merely-made/inker.git?branch=main#7740e8ba66fe937c324917d5966b9f7e00c05d8d"
 dependencies = [
  "accesskit 0.25.1",
  "document-session-api",
@@ -8304,7 +8312,7 @@ dependencies = [
 [[package]]
 name = "mere-fleece"
 version = "0.0.1"
-source = "git+https://github.com/merely-made/inker.git?branch=main#20815afb0ddc85f4957d33c0455a828e70fdbbc9"
+source = "git+https://github.com/merely-made/inker.git?branch=main#7740e8ba66fe937c324917d5966b9f7e00c05d8d"
 dependencies = [
  "eidetic",
  "fleece",
@@ -8346,7 +8354,7 @@ dependencies = [
 [[package]]
 name = "mere-lanes"
 version = "0.1.0"
-source = "git+https://github.com/merely-made/inker.git?branch=main#20815afb0ddc85f4957d33c0455a828e70fdbbc9"
+source = "git+https://github.com/merely-made/inker.git?branch=main#7740e8ba66fe937c324917d5966b9f7e00c05d8d"
 dependencies = [
  "bytes",
  "document-canvas",
@@ -8431,7 +8439,7 @@ dependencies = [
 [[package]]
 name = "mere-pageload"
 version = "0.0.1"
-source = "git+https://github.com/merely-made/inker.git?branch=main#20815afb0ddc85f4957d33c0455a828e70fdbbc9"
+source = "git+https://github.com/merely-made/inker.git?branch=main#7740e8ba66fe937c324917d5966b9f7e00c05d8d"
 
 [[package]]
 name = "mere-proofs"
@@ -9099,7 +9107,7 @@ dependencies = [
 [[package]]
 name = "nematic"
 version = "0.1.1"
-source = "git+https://github.com/merely-made/inker.git?branch=main#20815afb0ddc85f4957d33c0455a828e70fdbbc9"
+source = "git+https://github.com/merely-made/inker.git?branch=main#7740e8ba66fe937c324917d5966b9f7e00c05d8d"
 dependencies = [
  "errand",
  "genet-static-dom",
@@ -10578,7 +10586,7 @@ checksum = "08037a3c3cf580d065caec6a864cf97f51be219862d95c691a48c7543406d675"
 dependencies = [
  "oxilangtag",
  "oxiri",
- "rand 0.9.5",
+ "rand 0.8.8",
  "thiserror 2.0.21",
 ]
 
@@ -13033,7 +13041,7 @@ source = "git+https://github.com/merely-made/genet.git?branch=main#78f454efe83d5
 [[package]]
 name = "script-rhai"
 version = "0.0.1"
-source = "git+https://github.com/merely-made/inker.git?branch=main#20815afb0ddc85f4957d33c0455a828e70fdbbc9"
+source = "git+https://github.com/merely-made/inker.git?branch=main#7740e8ba66fe937c324917d5966b9f7e00c05d8d"
 dependencies = [
  "hest",
  "inker",
@@ -13105,7 +13113,7 @@ dependencies = [
 [[package]]
 name = "scrying-engine"
 version = "0.2.0"
-source = "git+https://github.com/merely-made/inker.git?branch=main#20815afb0ddc85f4957d33c0455a828e70fdbbc9"
+source = "git+https://github.com/merely-made/inker.git?branch=main#7740e8ba66fe937c324917d5966b9f7e00c05d8d"
 dependencies = [
  "dpi",
  "inker",
@@ -16741,7 +16749,6 @@ dependencies = [
  "redshank-surfaces",
  "retinue",
  "rfd",
- "rustls",
  "sceno",
  "scenograph",
  "scenomise",
@@ -16751,7 +16758,6 @@ dependencies = [
  "serde",
  "serde_json",
  "servitor",
- "servo",
  "sporran",
  "sprigging",
  "stickleback",
@@ -17949,7 +17955,7 @@ dependencies = [
 [[package]]
 name = "webcue"
 version = "0.1.3"
-source = "git+https://github.com/merely-made/wgpu-cue.git?branch=main#2825481e2e62fe2c9e9b1444523d997fae9272d8"
+source = "git+https://github.com/merely-made/wgpu-cue.git?branch=main#10cdfe0470936a82edacf7766ca6d8db1e5739b1"
 dependencies = [
  "accesskit 0.25.1",
  "document-session-api",
@@ -18105,7 +18111,7 @@ checksum = "a28ac98ddc8b9274cb41bb4d9d4d5c425b6020c50c46f25559911905610b4a88"
 [[package]]
 name = "weld-engine"
 version = "0.2.0"
-source = "git+https://github.com/merely-made/inker.git?branch=main#20815afb0ddc85f4957d33c0455a828e70fdbbc9"
+source = "git+https://github.com/merely-made/inker.git?branch=main#7740e8ba66fe937c324917d5966b9f7e00c05d8d"
 dependencies = [
  "dpi",
  "inker",

@@ -43,15 +43,11 @@ impl ServoCueHost {
             ));
         }
         Ok(Self {
-            factory: TurnstoneServoFactory::new(
-                ServoHostOptions {
-                    profile_name: "cue".into(),
-                    profile_dir,
-                },
-                handles.device.clone(),
-                handles.queue.clone(),
-                wake,
-            )
+            factory: ServoHostOptions {
+                profile_name: "cue".into(),
+                profile_dir,
+            }
+            .into_factory(handles.device.clone(), handles.queue.clone(), wake)
             .map_err(backend)?,
             handles,
         })
@@ -60,8 +56,8 @@ impl ServoCueHost {
     /// cannot be transferred to a different queue merely by retaining it.
     pub fn importer(&self) -> ServoCueImporter {
         ServoCueImporter {
-            device: self.factory.device.clone(),
-            queue: self.factory.queue.clone(),
+            device: self.factory.device().clone(),
+            queue: self.factory.queue().clone(),
             inner: wgpu_cue::GraftMetalImporter,
         }
     }
@@ -80,8 +76,7 @@ impl ServoCueHost {
             profile: EngineProfileBinding {
                 user_data_dir: self
                     .factory
-                    .options
-                    .profile_dir
+                    .profile_dir()
                     .to_string_lossy()
                     .into_owned(),
             },
@@ -106,7 +101,7 @@ impl ServoCueHost {
             scope,
             viewport,
             capabilities()?,
-            frame_reader(self.factory.device.clone(), self.factory.queue.clone()),
+            frame_reader(self.factory.device().clone(), self.factory.queue().clone()),
         )?
         .with_engine_turn(|_| super::pump().map_err(backend));
         Ok(PeltSharedContent::from_browser(route, surface))

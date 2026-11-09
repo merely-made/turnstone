@@ -108,11 +108,11 @@ impl Shell {
         })?)?;
         let proxy = self.proxy.clone();
         let factory = Arc::new(
-            servo::TurnstoneServoFactory::new(
-                servo::ServoHostOptions {
-                    profile_name,
-                    profile_dir: profile.clone(),
-                },
+            servo::ServoHostOptions {
+                profile_name,
+                profile_dir: profile.clone(),
+            }
+            .into_factory(
                 host.device().clone(),
                 host.queue().clone(),
                 Arc::new(move || {
