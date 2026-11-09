@@ -7,12 +7,18 @@
 //!
 //! A preview records the exact editor source and one parser-produced Djot div.
 //! Applying it replaces only that div's attribute opening through the same
-//! `KnotEditor` buffer and undo journal used for ordinary text edits.
+//! editor buffer and undo journal used for ordinary text edits.
+//!
+//! The buffer is a [`BlockEditor`]. Graphshell ships a small default
+//! ([`BufferEditor`], a cambium `TextInput` with its undo journal) and names no
+//! application's editor; a host that owns a richer one (Knot's `KnotEditor`)
+//! registers a factory once with [`register_editor`] before any pane opens.
 
 use cambium::{CaretAffinity, CaretPosition, CaretSelection, TextCommand};
 use illume::blocks;
-use knot_document::retained::KnotEditor;
+use cambium::TextInput;
 use std::collections::BTreeMap;
+use std::sync::OnceLock;
 
 pub use illume::blocks::{Div, wrap};
 
@@ -61,16 +67,110 @@ impl Preview {
     }
 }
 
+/// What changed when one command was applied to a [`BlockEditor`].
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct EditOutcome {
+    pub state_changed: bool,
+    pub source_changed: bool,
+}
+
+/// The text buffer a block document edits through: a source string, a caret,
+/// an undo journal and a saved baseline. The pane draws and drives its text
+/// widget through [`BlockEditor::input_mut`].
+pub trait BlockEditor: Send {
+    fn source(&self) -> &str;
+    fn selection(&self) -> CaretSelection;
+    fn apply(&mut self, command: TextCommand) -> EditOutcome;
+    fn input(&self) -> &TextInput;
+    fn input_mut(&mut self) -> &mut TextInput;
+    /// Whether the source differs from the last accepted (saved) source.
+    fn is_dirty(&self) -> bool;
+    /// Record the exact source an external authority accepted. Later local
+    /// edits stay dirty.
+    fn accept_saved_source(&mut self, source: &str);
+}
+
+/// Graphshell's own buffer: the default when no host registered an editor.
+pub struct BufferEditor {
+    original: String,
+    input: TextInput,
+}
+
+impl BufferEditor {
+    pub fn new(source: &str) -> Self {
+        Self {
+            original: source.to_owned(),
+            input: TextInput::new(source.to_owned()),
+        }
+    }
+}
+
+impl BlockEditor for BufferEditor {
+    fn source(&self) -> &str {
+        self.input.text()
+    }
+
+    fn selection(&self) -> CaretSelection {
+        self.input.caret_selection()
+    }
+
+    fn apply(&mut self, command: TextCommand) -> EditOutcome {
+        let before = self.input.text().to_string();
+        let state_changed = self.input.apply(command);
+        EditOutcome {
+            state_changed,
+            source_changed: self.input.text() != before,
+        }
+    }
+
+    fn input(&self) -> &TextInput {
+        &self.input
+    }
+
+    fn input_mut(&mut self) -> &mut TextInput {
+        &mut self.input
+    }
+
+    fn is_dirty(&self) -> bool {
+        self.input.text() != self.original
+    }
+
+    fn accept_saved_source(&mut self, source: &str) {
+        self.original = source.to_owned();
+    }
+}
+
+/// Makes the editor for a document: its id and its source.
+pub type EditorFactory = fn(&str, &str) -> Box<dyn BlockEditor>;
+
+static EDITOR: OnceLock<EditorFactory> = OnceLock::new();
+
+/// Register the host's editor for every document opened from now on. The
+/// first registration wins; a second is handed back.
+pub fn register_editor(factory: EditorFactory) -> Result<(), EditorFactory> {
+    EDITOR.set(factory)
+}
+
 pub struct Document {
     pub id: String,
-    pub editor: KnotEditor,
+    pub editor: Box<dyn BlockEditor>,
 }
 
 impl Document {
+    /// A document over the registered editor, or Graphshell's own buffer.
     pub fn new(id: &str, source: &str) -> Self {
+        let editor = match EDITOR.get() {
+            Some(factory) => factory(id, source),
+            None => Box::new(BufferEditor::new(source)),
+        };
+        Self::with_editor(id, editor)
+    }
+
+    /// A document over an editor the caller made.
+    pub fn with_editor(id: &str, editor: Box<dyn BlockEditor>) -> Self {
         Self {
             id: id.to_owned(),
-            editor: KnotEditor::scratch(id, source),
+            editor,
         }
     }
 
