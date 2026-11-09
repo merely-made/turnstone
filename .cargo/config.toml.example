@@ -122,10 +122,10 @@ p2panda-sync = { path = "../../crates/p2panda/p2panda-sync" }
 "mora-cmudict" = { path = "../mere/crates/intel/mora-cmudict" }
 "muniment" = { path = "../mere/crates/eidetic/muniment" }
 "nematic" = { path = "../mere/crates/nematic/nematic" }
-"notochord" = { git = "https://github.com/merely-made/dramatis.git", rev = "c1d620764315b4c750fcffea30b8c898b8bb73bc" }
+"notochord" = { git = "https://github.com/merely-made/dramatis.git", branch = "main" }
 "numen" = { path = "../mere/crates/conatus/numen" }
 "pandect" = { path = "../mere/crates/system/pandect" }
-"personae" = { git = "https://github.com/merely-made/dramatis.git", rev = "c1d620764315b4c750fcffea30b8c898b8bb73bc" }
+"personae" = { git = "https://github.com/merely-made/dramatis.git", branch = "main" }
 "pictograph" = { path = "../mere/crates/canvas/pictograph" }
 "platen" = { path = "../mere/crates/platen/platen" }
 "register-lens" = { path = "../mere/crates/system/registry/register-lens" }

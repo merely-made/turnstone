@@ -244,7 +244,7 @@ taproot = { version = "0.1.0", git = "https://github.com/merely-made/genet.git",
 # The shared clipboard service. The system backend lives behind the shell so
 # neither the app nor the place worker ever holds a clipboard handle.
 genet-clipboard = { git = "https://github.com/merely-made/genet.git", branch = "main" }
-layout-dom-api = { version = "=0.1.1", git = "https://github.com/merely-made/genet.git", branch = "main" }
+layout-dom-api = { version = "0.1.1", git = "https://github.com/merely-made/genet.git", branch = "main" }
 paint_list_api = { git = "https://github.com/merely-made/netrender.git", branch = "main" }
 paint_list_render = { git = "https://github.com/merely-made/netrender.git", branch = "main" }
 # Suggestion rows key node identity by the graph's stable UUIDs.
@@ -478,7 +478,7 @@ genet-paint-types = { git = "https://github.com/merely-made/genet.git", branch =
 genet-livery = { version = ">=0.0.3, <0.0.5", git = "https://github.com/merely-made/genet.git", branch = "main" }
 genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", branch = "main" }
 genet-static-dom = { git = "https://github.com/merely-made/genet.git", branch = "main" }
-layout-dom-api = { version = "=0.1.1", git = "https://github.com/merely-made/genet.git", branch = "main" }
+layout-dom-api = { version = "0.1.1", git = "https://github.com/merely-made/genet.git", branch = "main" }
 # The renderer family is published, but Turnstone also consumes its current git
 # surface directly. Patch the four runtime crates together so Mere Canvas and
 # the host cannot receive source-distinct `Scene` or paint vocabulary types.
@@ -559,11 +559,6 @@ objc2 = "0.6.3"
 name = "cue_surfaces"
 path = "examples/cue_surfaces.rs"
 required-features = ["servo"]
-
-# Both Graft's legacy native envelope and Webcue use the published custody
-# vocabulary. A consumer's root patch is needed for the Git adapter source.
-[patch."https://github.com/merely-made/wgpu-graft.git"]
-grafting-frame = { version = "=0.1.1" }
 
 # Suppliers that still name eidetic aa94fe22 (Gemot, Murm, Mere at the locked
 # revision) follow the cohort: the www form of each URL is the same repository
