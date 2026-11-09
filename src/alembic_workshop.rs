@@ -7,8 +7,8 @@
 //! Legacy and unverified private captures remain unavailable.
 
 use crate::saved_sources::{self, Admission, Entry, Key, Target};
-use alembic::workshop::{Owner, Passage, Source};
-use alembic::workshop_surface::SourceChoice;
+use athanor::alembic::workshop::{Owner, Passage, Source};
+use athanor::alembic::workshop_surface::SourceChoice;
 use athanor::workshop_seal::Protection;
 use mere::kernel::graph::{Graph, apply::GraphDelta};
 use mere::kernel::persistence::PersistedResourceRecord;
@@ -26,24 +26,24 @@ struct Example {
 const EXAMPLES: [Example; 3] = [
     Example {
         id: Uuid::from_u128(0xa1eb_1c00_0000_0000_0000_0000_0000_0001),
-        family: alembic::workshop::PUBLIC_EXAMPLE[0].0,
-        version: alembic::workshop::PUBLIC_EXAMPLE[0].1,
-        title: alembic::workshop::PUBLIC_EXAMPLE[0].2,
-        body: alembic::workshop::PUBLIC_EXAMPLE[0].3,
+        family: athanor::alembic::workshop::PUBLIC_EXAMPLE[0].0,
+        version: athanor::alembic::workshop::PUBLIC_EXAMPLE[0].1,
+        title: athanor::alembic::workshop::PUBLIC_EXAMPLE[0].2,
+        body: athanor::alembic::workshop::PUBLIC_EXAMPLE[0].3,
     },
     Example {
         id: Uuid::from_u128(0xa1eb_1c00_0000_0000_0000_0000_0000_0002),
-        family: alembic::workshop::PUBLIC_EXAMPLE[1].0,
-        version: alembic::workshop::PUBLIC_EXAMPLE[1].1,
-        title: alembic::workshop::PUBLIC_EXAMPLE[1].2,
-        body: alembic::workshop::PUBLIC_EXAMPLE[1].3,
+        family: athanor::alembic::workshop::PUBLIC_EXAMPLE[1].0,
+        version: athanor::alembic::workshop::PUBLIC_EXAMPLE[1].1,
+        title: athanor::alembic::workshop::PUBLIC_EXAMPLE[1].2,
+        body: athanor::alembic::workshop::PUBLIC_EXAMPLE[1].3,
     },
     Example {
         id: Uuid::from_u128(0xa1eb_1c00_0000_0000_0000_0000_0000_0003),
-        family: alembic::workshop::PUBLIC_EXAMPLE[2].0,
-        version: alembic::workshop::PUBLIC_EXAMPLE[2].1,
-        title: alembic::workshop::PUBLIC_EXAMPLE[2].2,
-        body: alembic::workshop::PUBLIC_EXAMPLE[2].3,
+        family: athanor::alembic::workshop::PUBLIC_EXAMPLE[2].0,
+        version: athanor::alembic::workshop::PUBLIC_EXAMPLE[2].1,
+        title: athanor::alembic::workshop::PUBLIC_EXAMPLE[2].2,
+        body: athanor::alembic::workshop::PUBLIC_EXAMPLE[2].3,
     },
 ];
 

@@ -7,8 +7,8 @@ pub(crate) fn authority_for_destination(
     owner: &Owner,
     installation: [u8; 16],
     human: [u8; 32],
-    destination: &alembic::workshop::Destination,
-    sources: &[alembic::workshop::Source],
+    destination: &athanor::alembic::workshop::Destination,
+    sources: &[athanor::alembic::workshop::Source],
     now_ms: u64,
 ) -> servitor::GrantTable {
     fixture_authority(

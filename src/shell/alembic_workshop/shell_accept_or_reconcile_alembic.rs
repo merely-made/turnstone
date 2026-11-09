@@ -147,8 +147,8 @@ impl Shell {
                 let acceptance = if reconcile {
                     match &view.review {
                         Some(
-                            alembic::workshop::Review::Applying(a)
-                            | alembic::workshop::Review::Reconciling(a),
+                            athanor::alembic::workshop::Review::Applying(a)
+                            | athanor::alembic::workshop::Review::Reconciling(a),
                         ) => a.clone(),
                         _ => {
                             return Err(

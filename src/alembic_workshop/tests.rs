@@ -3,7 +3,7 @@
 
 use super::*;
 use crate::saved_sources::Content;
-use alembic::workshop::{InstallationStatus, Proposal, RunStatus, Usage, WorkshopView};
+use athanor::alembic::workshop::{InstallationStatus, Proposal, RunStatus, Usage, WorkshopView};
 use mere::kernel::graph::apply::{GraphDeltaResult, apply_graph_delta};
 use std::sync::atomic::{AtomicU64, Ordering};
 

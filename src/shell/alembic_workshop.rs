@@ -4,9 +4,9 @@
 //! Turnstone's window and owner service for the shared Alembic surface.
 
 use super::Shell;
-use alembic::workshop::{Control, Destination, Owner, Review};
-use alembic::workshop_native::{NativeHost, native_hooks, native_init};
-use alembic::workshop_surface::{RetainedReading, SourceChoice, SurfaceAction, SurfaceState};
+use athanor::alembic::workshop::{Control, Destination, Owner, Review};
+use athanor::alembic::workshop_native::{NativeHost, native_hooks, native_init};
+use athanor::alembic::workshop_surface::{RetainedReading, SourceChoice, SurfaceAction, SurfaceState};
 use athanor::workshop_driver::Driver;
 use cambium_genet_winit_host::{CloseRequest, HostOptions, WindowFrame, WinitHost};
 use cambium_rootstock::IdlePolicy;

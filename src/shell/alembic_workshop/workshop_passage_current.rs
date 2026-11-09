@@ -7,7 +7,7 @@ pub(super) fn workshop_passage_current(
     app: &crate::app::App,
     owner: &Owner,
     protection: Option<&dyn athanor::workshop_seal::Protection>,
-    passage: &alembic::workshop::Passage,
+    passage: &athanor::alembic::workshop::Passage,
 ) -> bool {
     if passage.public {
         crate::alembic_workshop::passage_current(app, owner, passage)

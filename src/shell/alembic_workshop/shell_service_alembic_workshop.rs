@@ -131,7 +131,7 @@ impl Shell {
                         .custody_binding
                         .as_ref()
                         .map(|binding| binding.protection.clone());
-                    let source_gate = |passage: &alembic::workshop::Passage| {
+                    let source_gate = |passage: &athanor::alembic::workshop::Passage| {
                         workshop_passage_current(&self.app, &owner, protection.as_deref(), passage)
                     };
                     let result = pollster::block_on(driver.poll(&authority, &now, &source_gate));
@@ -201,7 +201,7 @@ impl Shell {
 
     pub(super) fn alembic_workshop_choices(
         &self,
-        owner: &alembic::workshop::Owner,
+        owner: &athanor::alembic::workshop::Owner,
     ) -> Vec<SourceChoice> {
         if owner.session != self.app.session_id.as_uuid().to_string()
             || owner.workspace != self.app.graph_runtimes.active_graph().as_uuid().to_string()

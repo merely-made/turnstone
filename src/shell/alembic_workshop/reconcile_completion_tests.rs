@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 use super::*;
-use alembic::workshop::{Destination, Review};
+use athanor::alembic::workshop::{Destination, Review};
 use athanor::{
     workshop::{Workshop, evaluate},
     workshop_destination as destination,

@@ -8,11 +8,11 @@ use super::*;
 /// proposal digest and one of its owner-routed immutable source identities.
 pub(crate) fn proposal_reading(
     owner: &Owner,
-    view: &alembic::workshop::WorkshopView,
-    requested_proposal: alembic::workshop::Digest,
-    requested_source: &alembic::workshop::Source,
+    view: &athanor::alembic::workshop::WorkshopView,
+    requested_proposal: athanor::alembic::workshop::Digest,
+    requested_source: &athanor::alembic::workshop::Source,
     protection: Option<&dyn Protection>,
-) -> Result<alembic::workshop_surface::RetainedReading, String> {
+) -> Result<athanor::alembic::workshop_surface::RetainedReading, String> {
     let proposal = view
         .proposal
         .as_ref()
@@ -83,7 +83,7 @@ pub(crate) fn proposal_reading(
             );
         }
     }
-    Ok(alembic::workshop_surface::RetainedReading {
+    Ok(athanor::alembic::workshop_surface::RetainedReading {
         title: passage.source.title.clone(),
         version: passage.source.version.clone(),
         text: passage.text.clone(),

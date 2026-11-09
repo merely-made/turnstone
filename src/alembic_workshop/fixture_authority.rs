@@ -7,8 +7,8 @@ pub(super) fn fixture_authority(
     owner: &Owner,
     installation: [u8; 16],
     human: [u8; 32],
-    sources: &[alembic::workshop::Source],
-    destination: Option<&alembic::workshop::Destination>,
+    sources: &[athanor::alembic::workshop::Source],
+    destination: Option<&athanor::alembic::workshop::Destination>,
     now_ms: u64,
 ) -> servitor::GrantTable {
     use servitor::{AuthorityProvider, Grant, GrantTable, Mode, Subject};

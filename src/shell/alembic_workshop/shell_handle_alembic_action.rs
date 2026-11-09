@@ -309,7 +309,7 @@ impl Shell {
         );
         let now = || crate::denizen::now_ms();
         let app = &self.app;
-        let source_gate = |passage: &alembic::workshop::Passage| {
+        let source_gate = |passage: &athanor::alembic::workshop::Passage| {
             workshop_passage_current(app, &owner, Some(protection.as_ref()), passage)
         };
         let (started, busy) = if let Some(driver) = window.driver.as_mut() {
@@ -368,7 +368,7 @@ impl Shell {
                     &inputs,
                     crate::denizen::now_ms(),
                 );
-                let gate = |p: &alembic::workshop::Passage| {
+                let gate = |p: &athanor::alembic::workshop::Passage| {
                     workshop_passage_current(
                         &self.app,
                         &owner,

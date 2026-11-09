@@ -37,7 +37,6 @@ apparatus-core = { version = "0.1.0", git = "https://github.com/merely-made/armi
 # dramatis pin names the revision mere's workspace names, or personae splits.
 insigne = { git = "https://github.com/merely-made/dramatis.git", branch = "main", features = ["verify"] }
 athanor = { package = "mere-athanor", git = "https://github.com/merely-made/mere.git", branch = "main", default-features = false, features = ["workshop-sealed", "workshop-destination"] }
-alembic = { package = "mere-alembic", git = "https://github.com/merely-made/mere.git", branch = "main", default-features = false }
 tabard = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 tabard-workshop = { git = "https://github.com/merely-made/graphshell.git", branch = "main", features = ["native-host"] }
 mandrake = { git = "https://github.com/merely-made/mere.git", branch = "main" }
@@ -367,7 +366,7 @@ peers = ["authoring", "graphshell-host/native", "dep:transport", "dep:commons", 
 peer-tests = ["peers", "transport/test-identity"]
 endpoint-process = ["authoring", "graphshell-host/native"]
 inference = ["dep:distillery"]
-workshop = ["athanor/workshop-worker", "athanor/workshop-destination", "alembic/workshop", "alembic/workshop-surface", "alembic/workshop-native"]
+workshop = ["athanor/workshop-worker", "athanor/workshop-destination", "athanor/workshop-native"]
 sky = ["dep:cleromancy-sky"]
 diagnostics = []
 full-services = ["sky", "endpoint-process", "audio", "authoring", "peers", "inference", "workshop", "diagnostics"]
