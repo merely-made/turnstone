@@ -1,0 +1,9 @@
+RESULT ok
+Narrow workshop preview remains reachable
+captured narrow_editor
+captured narrow_scrolled
+captured narrow_specimens
+capture narrow_editor 1280x1560 digest=7806f2d22277ac3a file=/Users/markik/Code/tabard-workshop-receipts/2026-10-07/narrow-preview/narrow_editor.png
+capture narrow_scrolled 1280x1560 digest=32780570cf635df0 file=/Users/markik/Code/tabard-workshop-receipts/2026-10-07/narrow-preview/narrow_scrolled.png
+capture narrow_specimens 1280x1560 digest=60601a374190fd4c file=/Users/markik/Code/tabard-workshop-receipts/2026-10-07/narrow-preview/narrow_specimens.png
+frames: 3 captured, 0 blank, 3 distinct digests

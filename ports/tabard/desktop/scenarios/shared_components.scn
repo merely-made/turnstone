@@ -1,0 +1,54 @@
+# Run against a fresh --library path. These are real shared reader/syntax/graph
+# components; the scenario never mutates their models directly.
+log Shared component specimens follow the authored draft and explicit mode
+settle 4
+assert snap mode == light
+assert snap graph_selected == 2
+remember original
+capture shared_light
+
+click role:button @data-mode=dark
+settle 3
+assert snap mode == dark
+same original name theme primary
+capture shared_dark
+
+click role:button @data-mode=hc_light
+settle 3
+assert snap mode == hc_light
+same original name theme primary
+capture shared_hc_light
+
+click role:button @data-mode=hc_dark
+settle 3
+assert snap mode == hc_dark
+same original name theme primary
+capture shared_hc_dark
+
+click role:button @data-key=tabard-notes
+settle 3
+assert snap graph_selected == 1
+same original name theme primary
+capture graph_selected
+
+key tab-until aria-label=Primary hue
+key ArrowRight
+settle 3
+differs original primary
+same original name theme
+capture shared_seed_edited
+
+click role:button @data-action=undo
+settle 3
+same original name theme primary
+capture shared_undone
+
+resize 640 780
+settle 3
+click .reader-canvas
+settle 3
+capture shared_narrow_reader
+click role:button @data-key=tabard-notes
+settle 3
+assert snap graph_selected == 1
+capture shared_narrow_graph

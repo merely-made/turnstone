@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "source_format": "Mesquite text receipt",
+  "source_receipt": "diagnostic-presentation.done",
+  "kind": "tabard-native-presentation-wait",
+  "case": "diagnostic",
+  "ok": false,
+  "frames": 0,
+  "redraws": 129,
+  "unpresented_redraws": 129,
+  "captures": [],
+  "errors": [
+    "native presentation stalled for 10000 ms (129 redraws, 0 presented frames)"
+  ],
+  "capture_guard": "independent continuous native presentation deadline",
+  "deadline_ms": 10000,
+  "native_window": {
+    "application_active": false,
+    "application_hidden": false,
+    "activation_policy": "Regular",
+    "finished_launching": true,
+    "visible": true,
+    "key": false,
+    "can_become_key": true,
+    "on_active_space": true,
+    "minimized": false,
+    "occlusion_state": 8192,
+    "visible_bit": 2,
+    "frame": {
+      "x": 690,
+      "y": 320,
+      "width": 1180,
+      "height": 800
+    }
+  }
+}

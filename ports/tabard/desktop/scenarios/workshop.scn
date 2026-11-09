@@ -1,0 +1,55 @@
+# Run against a fresh --library path. Controls are exercised by the runner's
+# keyboard path and the real host's selector/pointer delivery.
+log Tabard authoring: preview, history, persistence and reopen
+settle 3
+assert snap mode == light
+assert snap dirty == true
+remember original
+capture initial
+
+key tab-until aria-label=Primary hue
+key ArrowRight
+settle 2
+differs original primary
+capture seed_edited
+
+click role:button @data-mode=dark
+settle 2
+assert snap mode == dark
+capture dark
+
+key tab-until data-action=undo
+key Enter
+settle 2
+same original primary
+capture undone
+
+key tab-until aria-label=Primary hue
+key ArrowRight
+settle 2
+differs original primary
+click role:button @data-action=discard
+settle 2
+same original primary
+capture discarded
+
+key tab-until aria-label=Primary hue
+key ArrowRight
+settle 2
+differs original primary
+remember authored
+click role:button @data-action=save
+settle 2
+assert snap dirty == false
+capture saved
+
+click role:button @data-action=reopen
+settle 2
+assert snap dirty == false
+same authored primary name theme
+capture reopened
+
+
+resize 640 780
+settle 3
+capture narrow

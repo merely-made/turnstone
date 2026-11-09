@@ -1,0 +1,5 @@
+RESULT fail
+Reopen an authored library in a fresh desktop process
+captured reopened_process
+frames: 0 captured, 0 blank, 0 distinct digests
+FAIL: capture reopened_process never landed after 120 frames

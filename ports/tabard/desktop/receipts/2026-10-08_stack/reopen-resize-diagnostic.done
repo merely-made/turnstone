@@ -1,0 +1,5 @@
+RESULT fail
+Diagnostic: saved authored library after actual native resize
+captured usable_resize_reopen
+frames: 0 captured, 0 blank, 0 distinct digests
+FAIL: capture usable_resize_reopen never landed after 120 frames

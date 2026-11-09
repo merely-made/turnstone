@@ -1,0 +1,49 @@
+[cambium-winit] window-frame backend=macos policy=App decorated=true transparent=false
+[genet-render-host] surface acquire skipped: Occluded
+[cambium-winit] accessibility Installed, 197 nodes projected
+[cambium-host] initial reveal visible=true focused=false minimized=Some(false)
+[genet-render-host] surface acquire skipped: Occluded
+[cambium-host] unpresented redraw visible=Some(true) focused=false minimized=Some(false)
+[genet-render-host] surface acquire skipped: Occluded
+[cambium-host] unpresented redraw visible=Some(true) focused=false minimized=Some(false)
+[genet-render-host] surface acquire skipped: Occluded
+[cambium-host] unpresented redraw visible=Some(true) focused=false minimized=Some(false)
+[genet-render-host] surface acquire skipped: Occluded
+[cambium-host] unpresented redraw visible=Some(true) focused=false minimized=Some(false)
+[genet-render-host] surface acquire skipped: Occluded
+[cambium-host] unpresented redraw visible=Some(true) focused=false minimized=Some(false)
+[genet-render-host] surface acquire skipped: Occluded
+[cambium-host] unpresented redraw visible=Some(true) focused=false minimized=Some(false)
+[genet-render-host] surface acquire skipped: Occluded
+[cambium-host] unpresented redraw visible=Some(true) focused=false minimized=Some(false)
+[genet-render-host] surface acquire skipped: Occluded
+[cambium-host] unpresented redraw visible=Some(true) focused=false minimized=Some(false)
+[genet-render-host] surface acquire skipped: Occluded
+[cambium-host] unpresented redraw visible=Some(true) focused=false minimized=Some(false)
+[genet-render-host] surface acquire skipped: Occluded
+[cambium-host] unpresented redraw visible=Some(true) focused=false minimized=Some(false)
+# 361 repeated middle lines elided; full log SHA256 676fc084f438e720e3c558c3224f9d474c3c7fe497123b41acf3eb49a7caf524
+[cambium-host] unpresented redraw visible=Some(true) focused=false minimized=Some(false)
+[genet-render-host] surface acquire skipped: Occluded
+[cambium-host] unpresented redraw visible=Some(true) focused=false minimized=Some(false)
+[genet-render-host] surface acquire skipped: Occluded
+[cambium-host] unpresented redraw visible=Some(true) focused=false minimized=Some(false)
+[genet-render-host] surface acquire skipped: Occluded
+[cambium-host] unpresented redraw visible=Some(true) focused=false minimized=Some(false)
+[genet-render-host] surface acquire skipped: Occluded
+[cambium-host] unpresented redraw visible=Some(true) focused=false minimized=Some(false)
+[genet-render-host] surface acquire skipped: Occluded
+[cambium-host] unpresented redraw visible=Some(true) focused=false minimized=Some(false)
+[genet-render-host] surface acquire skipped: Occluded
+[cambium-host] unpresented redraw visible=Some(true) focused=false minimized=Some(false)
+[genet-render-host] surface acquire skipped: Occluded
+[cambium-host] unpresented redraw visible=Some(true) focused=false minimized=Some(false)
+[genet-render-host] surface acquire skipped: Occluded
+[cambium-host] unpresented redraw visible=Some(true) focused=false minimized=Some(false)
+[genet-render-host] surface acquire skipped: Occluded
+[cambium-host] unpresented redraw visible=Some(true) focused=false minimized=Some(false)
+[genet-render-host] surface acquire skipped: Occluded
+[cambium-host] unpresented redraw visible=Some(true) focused=false minimized=Some(false)
+tabard: FAIL: native presentation stalled for 10000 ms (201 redraws, 0 presented frames)
+tabard: RESULT fail (0 frames, 0 captures)
+tabard: The Tabard acceptance scenario failed or did not complete.

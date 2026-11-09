@@ -1,0 +1,38 @@
+# Dedicated TABARD_CONTROLLED_DEVICE_LOSS=1 and fresh TABARD_RECOVERY_RUN
+# opt in. Controlled destruction of this process's owned device, not a driver reset.
+log Native device recovery preserves the actual workshop and preview sources
+resize 1280 1100
+settle 4
+key tab-until aria-label=Primary hue
+key ArrowRight
+key tab-until data-mode=dark
+key Space
+key tab-until data-field=name
+input-text Device-recovery-draft
+key tab-until data-mode=dark
+settle 4
+assert snap dirty == true
+assert snap name == Device-recovery-draft
+assert snap mode == dark
+assert snap graph_selected == 2
+remember authored
+capture before_loss
+device-destroy-owned
+settle 4
+device-recovery-verify
+same authored theme_json mode name dirty status graph_selected focus focus_node name_selection zoom
+assert snap recovery_ready == true
+assert snap owner_same == true
+assert snap old_core_released == true
+assert snap reader_source_same == true
+assert snap stylesheet_source_same == true
+capture after_loss
+key tab-until aria-label=Primary hue
+key ArrowRight
+settle 3
+differs authored primary
+capture after_input
+resize 960 780
+settle 4
+same authored name mode dirty graph_selected
+capture after_resize

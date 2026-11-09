@@ -1,0 +1,9 @@
+RESULT fail
+Narrow workshop preview remains reachable
+captured narrow_editor
+FAIL: capture 'narrow_scrolled' failed
+FAIL: capture 'narrow_specimens' failed
+frames: 0 captured, 0 blank, 0 distinct digests
+FAIL: capture narrow_editor never landed after 120 frames
+FAIL: another capture is still pending
+FAIL: another capture is still pending

@@ -1,0 +1,5 @@
+RESULT ok
+Usable authoring survives a fresh process
+captured usable_fresh_process
+capture usable_fresh_process 2360x1600 digest=57afb7c2c8759503 file=/tmp/tabard-usable-native-final-20261008/usable_fresh_process.png
+frames: 1 captured, 0 blank, 1 distinct digests

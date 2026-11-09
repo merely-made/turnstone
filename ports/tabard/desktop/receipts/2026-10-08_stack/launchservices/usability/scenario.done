@@ -1,0 +1,14 @@
+RESULT ok
+Usable authoring: hex, authored default, exact CSS, save and reopen
+captured usable_initial
+captured authored_stylesheet
+captured usable_reopened
+captured derived_restored
+captured usable_narrow
+capture usable_initial 2360x1600 digest=63e66c1b1b53785e file=/Users/markik/Code/output/tabard-visual-acceptance/tabard-matrix/usability/usable_initial.png
+capture authored_stylesheet 2360x1600 digest=0debc3ab51c6d14f file=/Users/markik/Code/output/tabard-visual-acceptance/tabard-matrix/usability/authored_stylesheet.png
+capture usable_reopened 2360x1600 digest=28cd89c064dd23f4 file=/Users/markik/Code/output/tabard-visual-acceptance/tabard-matrix/usability/usable_reopened.png
+capture derived_restored 2360x1600 digest=f7f553125be06aab file=/Users/markik/Code/output/tabard-visual-acceptance/tabard-matrix/usability/derived_restored.png
+capture usable_narrow 1280x1560 digest=062ce2c0932dcc62 file=/Users/markik/Code/output/tabard-visual-acceptance/tabard-matrix/usability/usable_narrow.png
+frames: 5 captured, 0 blank, 5 distinct digests
+presentation: 95 frames, 97 redraws, 2 unpresented redraws

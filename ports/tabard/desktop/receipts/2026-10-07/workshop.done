@@ -1,0 +1,19 @@
+RESULT ok
+Tabard authoring: preview, history, persistence and reopen
+captured initial
+captured seed_edited
+captured dark
+captured undone
+captured discarded
+captured saved
+captured reopened
+captured narrow
+capture initial 2360x1600 digest=7fbfa063e24fb8f2 file=/Users/markik/Code/tabard-workshop-receipts/2026-10-07/initial.png
+capture seed_edited 2360x1600 digest=f91bc08134eeb2aa file=/Users/markik/Code/tabard-workshop-receipts/2026-10-07/seed_edited.png
+capture dark 2360x1600 digest=fd2ddd39027ee59e file=/Users/markik/Code/tabard-workshop-receipts/2026-10-07/dark.png
+capture undone 2360x1600 digest=5c5c09425c71991b file=/Users/markik/Code/tabard-workshop-receipts/2026-10-07/undone.png
+capture discarded 2360x1600 digest=b0fe264d0ab8daea file=/Users/markik/Code/tabard-workshop-receipts/2026-10-07/discarded.png
+capture saved 2360x1600 digest=70ec5d5a13c74e66 file=/Users/markik/Code/tabard-workshop-receipts/2026-10-07/saved.png
+capture reopened 2360x1600 digest=94aa3e478a7b6627 file=/Users/markik/Code/tabard-workshop-receipts/2026-10-07/reopened.png
+capture narrow 1280x1560 digest=ab53a45ff3fb12d9 file=/Users/markik/Code/tabard-workshop-receipts/2026-10-07/narrow.png
+frames: 8 captured, 0 blank, 8 distinct digests

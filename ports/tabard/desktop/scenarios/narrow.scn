@@ -1,0 +1,13 @@
+# The normal Mesquite selector click reveals the actual mode control through
+# the host's scroll-into-view path before pointer delivery.
+log Narrow workshop preview remains reachable
+resize 640 780
+settle 3
+capture narrow_editor
+click role:button @data-mode=dark
+settle 3
+assert snap mode == dark
+capture narrow_scrolled
+click .chrome-specimen
+settle 3
+capture narrow_specimens

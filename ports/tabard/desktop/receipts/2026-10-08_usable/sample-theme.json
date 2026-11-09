@@ -1,0 +1,53 @@
+{
+  "id": "theme:untitled",
+  "name": "Untitled theme",
+  "source": "User",
+  "seeds": {
+    "primary": {
+      "r": 47,
+      "g": 127,
+      "b": 255,
+      "a": 255
+    },
+    "secondary": {
+      "r": 46,
+      "g": 157,
+      "b": 166,
+      "a": 255
+    },
+    "tertiary": {
+      "r": 224,
+      "g": 168,
+      "b": 70,
+      "a": 255
+    },
+    "neutral": {
+      "r": 16,
+      "g": 20,
+      "b": 34,
+      "a": 255
+    },
+    "text_header": null,
+    "text_body": null,
+    "success": {
+      "r": 79,
+      "g": 179,
+      "b": 110,
+      "a": 255
+    },
+    "danger": {
+      "r": 213,
+      "g": 78,
+      "b": 78,
+      "a": 255
+    },
+    "dark": true
+  },
+  "high_contrast": true,
+  "harmony": "Custom",
+  "mode_sheets": {
+    "hc_dark": [
+      ":root{--tabard-color-bg:#142238;--tabard-color-surface:#1B2E49;--tabard-color-surface-2:#243D5E;--tabard-color-text:#EAF2FF;--tabard-color-text-header:#9CD5FF;--tabard-color-text-dim:#C0D5F2;--tabard-color-primary:#2F7FFF;--tabard-color-on-primary:white;--tabard-syntax-link:#9CD5FF;--tabard-syntax-keyword:#9CD5FF;--tabard-syntax-string:#B0DFC1;--tabard-syntax-number:#F5CE7A;--tabard-syntax-emphasis:#EAF2FF;}"
+    ]
+  }
+}

@@ -1,0 +1,6 @@
+RESULT ok
+Usable authoring survives a fresh process
+captured usable_fresh_process
+capture usable_fresh_process 2360x1600 digest=f242385c6b411584 file=/Users/markik/Code/output/tabard-visual-acceptance/tabard-matrix/reopen/usable_fresh_process.png
+frames: 1 captured, 0 blank, 1 distinct digests
+presentation: 18 frames, 23 redraws, 5 unpresented redraws
