@@ -73,7 +73,7 @@ mere-overmap = { path = "../../../crates/cambium/mere-overmap", optional = true 
 pandect = { path = "../../../crates/system/pandect", optional = true }
 mere-lanes = { git = "https://github.com/merely-made/inker.git", branch = "main", features = ["retained-clips"], optional = true }
 fleece = { package = "mere-fleece", git = "https://github.com/merely-made/inker.git", branch = "main", features = ["portable-clip", "page-links"], optional = true }
-eidetic = { default-features = false, git = "https://github.com/merely-made/eidetic.git", branch = "main" }
+eidetic = { default-features = false, features = ["product"], git = "https://github.com/merely-made/eidetic.git", branch = "main" }
 moot = { package = "mere-moot", path = "../../moot", default-features = false, features = ["presentation"], optional = true }
 # `webrtc-browser` is the C4 door's peer half (`webrtc_browser`, `webrtc_join`)
 # and needs `--cfg getrandom_backend="wasm_js"` in this target's rustflags:

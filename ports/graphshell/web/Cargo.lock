@@ -1097,6 +1097,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "catchment"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "dirs 5.0.1",
+ "eidetic",
+ "muniment",
+ "personae",
+ "serde",
+ "serde_json",
+ "sporran",
+ "uuid",
+]
+
+[[package]]
 name = "cbor-core"
 version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1214,7 +1229,7 @@ dependencies = [
 [[package]]
 name = "chartulary"
 version = "0.3.0"
-source = "git+https://github.com/merely-made/eidetic.git?branch=main#71188bb66d15bdd3618db12f148bc42e5cbef284"
+source = "git+https://github.com/merely-made/eidetic.git?branch=main#76481186083aff0a6afd5a09420b96b697f86926"
 dependencies = [
  "muniment",
  "petgraph 0.8.3",
@@ -1369,7 +1384,7 @@ dependencies = [
 [[package]]
 name = "conatus"
 version = "0.1.0"
-source = "git+https://github.com/merely-made/seiche.git?branch=main#58e050035d0c69d4f9c81645a6928184076fbe6a"
+source = "git+https://github.com/merely-made/seiche.git?branch=main#b386a8b3ea328df88f01593fdb2242d8a0910328"
 dependencies = [
  "bytemuck",
  "cubecl",
@@ -2647,7 +2662,7 @@ dependencies = [
 [[package]]
 name = "eidetic"
 version = "0.0.3"
-source = "git+https://github.com/merely-made/eidetic.git?branch=main#71188bb66d15bdd3618db12f148bc42e5cbef284"
+source = "git+https://github.com/merely-made/eidetic.git?branch=main#76481186083aff0a6afd5a09420b96b697f86926"
 dependencies = [
  "async-trait",
  "blake3",
@@ -2664,7 +2679,7 @@ dependencies = [
 [[package]]
 name = "eidetic-search"
 version = "0.0.1"
-source = "git+https://github.com/merely-made/eidetic.git?branch=main#71188bb66d15bdd3618db12f148bc42e5cbef284"
+source = "git+https://github.com/merely-made/eidetic.git?branch=main#76481186083aff0a6afd5a09420b96b697f86926"
 dependencies = [
  "eidetic",
  "genet-text",
@@ -3811,6 +3826,7 @@ dependencies = [
  "mere-lanes",
  "mere-moot",
  "mere-overmap",
+ "mere-view",
  "muniment",
  "murm-webrtc",
  "netrender",
@@ -4016,6 +4032,10 @@ name = "hashbrown"
 version = "0.14.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e5274423e17b7c9fc20b6e7e208532f9b19825d82dfd615708b70edd83df41f1"
+dependencies = [
+ "ahash",
+ "allocator-api2 0.2.21",
+]
 
 [[package]]
 name = "hashbrown"
@@ -4706,6 +4726,7 @@ checksum = "6e44b0a4eaa4c82f441d50a963f2d5f05a787240aeee097597033e72accfd22f"
 name = "incipit"
 version = "0.2.3"
 dependencies = [
+ "catchment",
  "petgraph 0.8.3",
  "serde",
  "serde_json",
@@ -5718,7 +5739,7 @@ checksum = "4050469837a6ff301cd14c1f8f24f88549e6d548f24f64e2148eb0f72cebc51f"
 [[package]]
 name = "luggage"
 version = "0.1.0"
-source = "git+https://github.com/merely-made/eidetic.git?branch=main#71188bb66d15bdd3618db12f148bc42e5cbef284"
+source = "git+https://github.com/merely-made/eidetic.git?branch=main#76481186083aff0a6afd5a09420b96b697f86926"
 dependencies = [
  "semver",
  "serde",
@@ -5832,7 +5853,6 @@ dependencies = [
  "incipit",
  "inker",
  "mere-kernel",
- "mere-rdf",
  "netrender",
  "pictograph",
  "serde",
@@ -5889,7 +5909,6 @@ dependencies = [
  "infer",
  "mime_guess",
  "muniment",
- "numen",
  "petgraph 0.8.3",
  "rkyv",
  "serde",
@@ -5963,7 +5982,7 @@ source = "git+https://github.com/merely-made/inker.git?branch=main#20815afb0ddc8
 [[package]]
 name = "mere-proofs"
 version = "0.1.0"
-source = "git+https://github.com/merely-made/eidetic.git?branch=main#71188bb66d15bdd3618db12f148bc42e5cbef284"
+source = "git+https://github.com/merely-made/eidetic.git?branch=main#76481186083aff0a6afd5a09420b96b697f86926"
 dependencies = [
  "blake3",
  "serde",
@@ -5976,7 +5995,6 @@ version = "0.0.1"
 dependencies = [
  "getrandom 0.2.17",
  "getrandom 0.3.4",
- "inker",
  "mere-kernel",
  "oxjsonld",
  "oxrdf",
@@ -6002,11 +6020,13 @@ version = "0.1.0"
 dependencies = [
  "cambium",
  "incipit",
- "mere",
  "mere-cartography",
  "mere-kernel",
+ "mere-rdf",
  "pictograph",
  "platen",
+ "serde",
+ "serde_json",
  "sprigging",
  "uuid",
 ]
@@ -6181,7 +6201,7 @@ dependencies = [
 [[package]]
 name = "muniment"
 version = "0.2.1"
-source = "git+https://github.com/merely-made/eidetic.git?branch=main#71188bb66d15bdd3618db12f148bc42e5cbef284"
+source = "git+https://github.com/merely-made/eidetic.git?branch=main#76481186083aff0a6afd5a09420b96b697f86926"
 dependencies = [
  "async-trait",
  "blake3",
@@ -6971,10 +6991,10 @@ dependencies = [
 [[package]]
 name = "numen"
 version = "0.2.1"
-source = "git+https://github.com/merely-made/seiche.git?branch=main#58e050035d0c69d4f9c81645a6928184076fbe6a"
+source = "git+https://github.com/merely-made/seiche.git?branch=main#b386a8b3ea328df88f01593fdb2242d8a0910328"
 dependencies = [
+ "chartulary",
  "serde",
- "strum 0.28.0",
  "uuid",
 ]
 
@@ -7721,10 +7741,10 @@ version = "0.2.0"
 dependencies = [
  "async-trait",
  "blake3",
+ "catchment",
  "chacha20poly1305 0.11.0",
  "chartulary",
  "ciborium",
- "dirs 5.0.1",
  "eidetic",
  "getrandom 0.3.4",
  "hest",
@@ -8141,7 +8161,7 @@ dependencies = [
  "combine",
  "downcast-rs 2.0.2",
  "dyn-clone",
- "hashbrown 0.17.1",
+ "hashbrown 0.14.5",
  "hi_sparse_bitset 0.10.0",
  "indexmap",
  "inventory",
@@ -8154,7 +8174,7 @@ dependencies = [
  "rustc_apfloat",
  "slotmap",
  "smallvec",
- "spin 0.12.3",
+ "spin 0.10.1",
  "thiserror 2.0.21",
  "utf8-chars",
 ]
@@ -8515,7 +8535,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b570b25f7617e43d59005d0990ccb79e950a423952cea19671b7a876da390adf"
 dependencies = [
  "anyhow",
- "itertools 0.14.0",
+ "itertools 0.13.0",
  "proc-macro2",
  "quote",
  "syn 2.0.119",
@@ -9447,7 +9467,7 @@ dependencies = [
 [[package]]
 name = "seiche"
 version = "0.0.6"
-source = "git+https://github.com/merely-made/seiche.git?branch=main#58e050035d0c69d4f9c81645a6928184076fbe6a"
+source = "git+https://github.com/merely-made/seiche.git?branch=main#b386a8b3ea328df88f01593fdb2242d8a0910328"
 dependencies = [
  "armillary",
  "conatus",
@@ -9465,7 +9485,7 @@ dependencies = [
 [[package]]
 name = "seiche-model"
 version = "0.0.1"
-source = "git+https://github.com/merely-made/seiche.git?branch=main#58e050035d0c69d4f9c81645a6928184076fbe6a"
+source = "git+https://github.com/merely-made/seiche.git?branch=main#b386a8b3ea328df88f01593fdb2242d8a0910328"
 dependencies = [
  "euclid",
  "numen",
@@ -9578,7 +9598,7 @@ dependencies = [
 [[package]]
 name = "servitor"
 version = "0.0.3"
-source = "git+https://github.com/merely-made/eidetic.git?branch=main#71188bb66d15bdd3618db12f148bc42e5cbef284"
+source = "git+https://github.com/merely-made/eidetic.git?branch=main#76481186083aff0a6afd5a09420b96b697f86926"
 dependencies = [
  "chartulary",
  "insigne",
@@ -9957,6 +9977,9 @@ name = "spin"
 version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "023a211cb3138dbc438680b32560ad89f699977624c9f8dbb95a47d5b4c07dd3"
+dependencies = [
+ "lock_api",
+]
 
 [[package]]
 name = "spin"
@@ -10045,7 +10068,7 @@ checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 [[package]]
 name = "stickleback"
 version = "0.2.0"
-source = "git+https://github.com/merely-made/eidetic.git?branch=main#71188bb66d15bdd3618db12f148bc42e5cbef284"
+source = "git+https://github.com/merely-made/eidetic.git?branch=main#76481186083aff0a6afd5a09420b96b697f86926"
 dependencies = [
  "blake3",
  "cbor-core",
@@ -11872,7 +11895,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.61.2",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]
@@ -12733,7 +12756,3 @@ checksum = "27bc9d5b815bc103f142aa054f561d9187d191692ec7c2d1e2b4737f8dbd7296"
 dependencies = [
  "zune-core",
 ]
-
-[[patch.unused]]
-name = "mere-edit"
-version = "0.1.0"
