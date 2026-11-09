@@ -1,0 +1,29 @@
+[package]
+name = "graphshell-dramatis-pane"
+version = "0.0.1"
+rust-version = "1.97.1"
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "The Dramatis pane: a host's view of Dramatis's projection surface (personae, quarantine review, vault lock and passphrase change)."
+publish = false
+
+[dependencies]
+cambium.workspace = true
+cambium-desktop.workspace = true
+cambium-rootstock.workspace = true
+chirograph.workspace = true
+dramatis-surface.workspace = true
+graphshell-client.workspace = true
+graphshell-endpoint.workspace = true
+sceno.workspace = true
+
+[dev-dependencies]
+castellan-client.workspace = true
+chatelaine.workspace = true
+dramatis.workspace = true
+personae.workspace = true
+taproot = { workspace = true, features = ["estimated-probe-fixtures"] }
+
+[lints]
+workspace = true

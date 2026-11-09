@@ -7,12 +7,13 @@
 //! Native Graphshell mere viewer over the admitted resident route. This host
 //! owns presentation only; its worker never opens persona files.
 use cambium::{AnyView, GenetCtx, GenetElement, el};
-use cambium_genet_winit_host::{AppCtx, HostOptions, Init, inert_hooks, run};
+use cambium_genet_winit_host::{AppCtx, HostOptions, Init, run};
 use chirograph::PortableCardV1;
 mod browser;
 mod command;
 mod connection;
 mod coop;
+mod dramatis;
 mod kept;
 mod owner_actions;
 use connection::Connection;
@@ -70,6 +71,7 @@ struct App {
     owner_record: Option<String>,
     owner_waiting: bool,
     kept: kept::Panel,
+    dramatis: dramatis::Panel,
 }
 #[derive(Debug)]
 struct WorkerReply {
@@ -193,6 +195,7 @@ impl App {
     }
     fn drain(&mut self) {
         self.kept.drain();
+        self.dramatis.drain();
         if let Some(panel) = self.coop.as_mut()
             && panel.drain()
             && panel.guest
@@ -329,8 +332,8 @@ impl App {
     }
     /// Height the panels below the graph take, so the graph keeps the rest.
     fn reserved(&self) -> u32 {
-        if self.kept.open {
-            // The kept-text panel replaces the co-op and record panels.
+        if self.kept.open || self.dramatis.open {
+            // The kept-text and Dramatis panels replace the co-op and record panels.
             return 640;
         }
         if self.coop.is_some() { 470 } else { 220 }
@@ -373,6 +376,9 @@ fn root(app: &App) -> Child {
             },
             |app: &mut App, _| {
                 app.kept.open = !app.kept.open;
+                if app.kept.open {
+                    app.dramatis.open = false;
+                }
                 if app.kept.open && app.kept.keeping.is_none() {
                     app.kept.send(kept::Command::Refresh);
                 }
@@ -381,6 +387,21 @@ fn root(app: &App) -> Child {
         )
         .attr("id", "kept-open"),
     );
+    if app.dramatis.open {
+        return Box::new(el(
+            "main",
+            (
+                el("h1", "Graphshell"),
+                dramatis::toggle(app),
+                mere_view::mere_view(
+                    app.view_of(),
+                    |app: &mut App, event| app.view.apply(event),
+                    |app: &mut App, request| app.request(request),
+                ),
+                dramatis::pane_view(app),
+            ),
+        ));
+    }
     if app.kept.open {
         return Box::new(el(
             "main",
@@ -401,6 +422,7 @@ fn root(app: &App) -> Child {
         (
             el("h1", "Graphshell"),
             toggle,
+            dramatis::toggle(app),
             mere_view::mere_view(
                 app.view_of(),
                 |app: &mut App, event| app.view.apply(event),
@@ -709,7 +731,7 @@ fn main() {
                 cambium::GRAPH_CANVAS_SWATCH_CSS,
                 mere_view::MERE_VIEW_CSS,
                 CSS
-            ) + "\n" + graphshell::goal_surface::CSS + "\n" + kept::CSS,
+            ) + "\n" + graphshell::goal_surface::CSS + "\n" + kept::CSS + "\n" + &dramatis::css(),
         };
         let lane = if std::env::var_os("GRAPHSHELL_MERE_JSON_RECEIPT").is_some() {
             let scenario = taproot::Scenario::parse(
@@ -740,7 +762,7 @@ fn main() {
             ))
     });
     let lane = Rc::new(RefCell::new(lane));
-    let mut hooks = inert_hooks::<App, Logic, Child>();
+    let mut hooks = graphshell_dramatis_pane::follow_focus_hooks::<App, Logic, Child>();
     hooks.after_wake = Box::new(|ctx| ctx.runner.update(|app| app.drain()));
     hooks.frame = Box::new(|ctx| {
         let size = (
@@ -797,6 +819,7 @@ fn main() {
             let panel = coop::Panel::new(domain, visit, wake.clone());
             let app = App {
                 kept: kept::Panel::new(kept_sender, kept_receiver),
+                dramatis: dramatis::Panel::new(Some(wake.clone())),
                 coop: Some(panel),
                 model: MereViewModel {
                     title: "Connecting to resident".into(),
@@ -837,7 +860,7 @@ fn main() {
                     CSS,
                     graphshell::goal_surface::CSS,
                     kept::CSS
-                ),
+                ) + "\n" + &dramatis::css(),
                 fonts: Vec::new(),
                 images: Vec::new(),
             }
