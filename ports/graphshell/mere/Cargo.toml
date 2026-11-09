@@ -28,6 +28,8 @@ cambium-desktop.workspace = true
 # `HostWake`; image decoding as the viewer had it inside Graphshell.
 cambium-rootstock = { workspace = true, features = ["image-decode"] }
 chirograph.workspace = true
+dramatis-surface.workspace = true
+graphshell-dramatis-pane = { path = "../dramatis-pane" }
 graphshell-client.workspace = true
 hest.workspace = true
 # The app side of the first-party door: `AppBrokerClient`.
@@ -47,6 +49,8 @@ taproot.workspace = true
 tokio = { version = "1", features = ["io-std", "io-util", "macros", "net", "rt-multi-thread", "sync", "time", "process"] }
 
 [dev-dependencies]
+dramatis.workspace = true
+personae.workspace = true
 genet-scripted-dom.workspace = true
 layout_dom_api.workspace = true
 mere = { path = "../../../crates/mere", default-features = false, features = ["graph", "canvas", "physics-engine"] }

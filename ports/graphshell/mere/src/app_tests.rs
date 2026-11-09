@@ -39,6 +39,7 @@ pub(super) fn app() -> (
             owner_record: None,
             owner_waiting: false,
             kept: kept::Panel::detached(),
+            dramatis: dramatis::Panel::new(None),
         },
         answers,
         requests,
