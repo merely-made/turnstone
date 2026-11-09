@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: MPL-2.0
 use super::*;
 use graphshell::query_views::QueryFreezeCorrelation;
-use mere::query_view::QueryProjection;
-use mere::query_view::editor::{Completion, RequestId, SaveRequest, SaveResult, Scope};
+use mere_view::query::QueryProjection;
+use mere_view::query::editor::{Completion, RequestId, SaveRequest, SaveResult, Scope};
 
 /// The owner keeps this across an unconfirmed store write. Retry persists the
 /// same operation; it never repeats query creation or allocates another access.
@@ -142,7 +142,7 @@ impl SavedProduct {
                     Ok(())
                         if same_owner
                             && self.source_graph().is_ok_and(|graph| {
-                                mere::query_view::read_spec(graph, owner).as_ref()
+                                mere_view::query::read_spec(graph, owner).as_ref()
                                     == Ok(&request.spec)
                             }) =>
                     {

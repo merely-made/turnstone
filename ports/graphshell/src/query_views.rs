@@ -6,8 +6,8 @@
 //! Query definitions are shared Resources, written through the current owner journal.
 use crate::app::GraphshellApp;
 use mere::kernel::graph::GraphStratum;
-use mere::query_view as model;
-use mere::query_view::{self, QueryNodeId, QueryProjection, QueryViewSpec};
+use mere_view::query as model;
+use mere_view::query::{self as query_view, QueryNodeId, QueryProjection, QueryViewSpec};
 use muniment::Backend;
 use sceno::{LinkKey, LinkMarks, LinkStratum};
 use std::collections::{BTreeMap, BTreeSet};
@@ -471,7 +471,7 @@ mod grouping_tests {
     use mere::kernel::graph::{ContainmentSubKind, SemanticStatement, SemanticSubKind};
     use mere::kernel::types::AssertionWithdrawal;
     use mere::kernel::types::GraphScope;
-    use mere::query_view::{QueryNode, QueryRelation};
+    use mere_view::query::{QueryNode, QueryRelation};
 
     fn statement(id: &str, kind: SemanticSubKind) -> SemanticStatement {
         let predicate = match kind {

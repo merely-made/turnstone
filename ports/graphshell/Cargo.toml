@@ -54,7 +54,7 @@ alembic-workshop-private = ["alembic-workshop", "dep:castellan-client", "castell
 coop = ["native", "web", "muniment/redb", "dep:pollster", "graphshell-client/pump"]
 coop-window = ["coop", "dep:cambium-desktop", "dep:mien", "dep:genet-scripted-dom", "dep:layout_dom_api", "dep:image"]
 editable-blocks = ["web", "dep:illume", "dep:vector-sheet", "dep:sprigging", "dep:ciborium", "dep:netrender", "dep:wgpu", "dep:uuid", "uuid/v4"]
-query-views = ["web", "mere/query", "dep:cambium"]
+query-views = ["web", "dep:mere-view", "mere-view/query", "dep:cambium"]
 caller-owned-toolkit-bench = ["retained-content", "cambium-rootstock/embedding-egui", "cambium-rootstock/embedding-iced", "dep:image"]
 # Goal-directed traversal over retained page text and the graph's links: the
 # native goal surface (`goal_surface`). Lexical, model-free; reads, never fetches.
@@ -234,6 +234,7 @@ pelt-core = { workspace = true, features = ["genet"], optional = true }
 inker = { workspace = true, optional = true }
 netrender = { workspace = true, optional = true }
 mere-lanes = { workspace = true, features = ["retained-clips"], optional = true }
+mere-view = { workspace = true, default-features = false, optional = true }
 hest = { workspace = true, optional = true }
 # A node that names a correspondent opens Comms (`comms_open`); the model alone, no adapters.
 comms = { workspace = true, optional = true }
