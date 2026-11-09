@@ -104,7 +104,7 @@ impl App {
             focus: FocusTarget::Graph(crate::panes::PaneId(0)),
             link_preview: None,
             frisket: FrisketLayout::default(),
-            history: chrome::nav::History::new(String::new()),
+            history: backstep::nav::History::new(String::new()),
             active_pane: None,
             browser: pandect::browser_node_state::BrowserNodeStates::new(),
             physics_refusal: None,

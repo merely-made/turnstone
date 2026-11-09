@@ -383,7 +383,7 @@ impl App {
         }
         // The history seeds from wherever the session opens (the focused
         // node's url, or an empty sentinel Back can never step past).
-        self.history = chrome::nav::History::new(
+        self.history = backstep::nav::History::new(
             self.graph_runtimes
                 .focused_url()
                 .map(str::to_string)

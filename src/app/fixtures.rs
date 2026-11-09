@@ -121,7 +121,7 @@ impl App {
             focus: FocusTarget::Graph(crate::panes::PaneId(0)),
             link_preview: None,
             frisket,
-            history: chrome::nav::History::new(""),
+            history: backstep::nav::History::new(""),
             active_pane: None,
             browser: pandect::browser_node_state::BrowserNodeStates::new(),
             physics_refusal: None,

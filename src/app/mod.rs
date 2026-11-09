@@ -216,7 +216,7 @@ pub struct App {
     pub frisket: FrisketLayout,
     /// Cross-node visit memory for recall/trail suggestions. Browser Back and
     /// Forward use each focused node's own durable lineage instead.
-    pub history: chrome::nav::History,
+    pub history: backstep::nav::History,
     /// The active pane — the anchor a summon splits from and a close removes.
     /// `None` means the canvas (the Orrery leaf).
     pub active_pane: Option<PaneId>,

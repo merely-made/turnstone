@@ -164,10 +164,10 @@ chirograph = { git = "https://github.com/merely-made/graphshell.git", branch = "
 # stable path-derived ids. Not facade-re-exported by mere (a named facade
 # gap), so a direct git dep.
 uxtree = { git = "https://github.com/merely-made/mere.git", branch = "main", features = ["frozen"] }
-# Navigation vocabulary (the r3-owed Back/Forward/Reload): chrome's History
-# is the cursor over visited addresses. Not facade-re-exported; direct dep
-# like uxtree.
-chrome = { package = "mere-chrome", git = "https://github.com/merely-made/mere.git", branch = "main" }
+# Navigation vocabulary (the r3-owed Back/Forward/Reload): backstep's History
+# is the cursor over visited addresses (Mere dissolved chrome into it). Not
+# facade-re-exported; direct dep like uxtree.
+backstep = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 # AccessKit node vocabulary for the projection (matches mere's 0.25 pin).
 accesskit = "0.25"
 # The actor-kernel runtime: the physics + fetch actors wake this shell's
@@ -326,8 +326,8 @@ redshank-playback = { git = "https://github.com/merely-made/woodshed.git", branc
 # Turnstone's own session directory.
 redshank-storage = { git = "https://github.com/merely-made/woodshed.git", branch = "main" }
 
-# Shared browser controls and both presentation directions use the published core.
-wgpu-cue = { version = "=0.1.3" }
+# Shared browser controls and both presentation directions use Wgpu Cue main.
+wgpu-cue = { git = "https://github.com/merely-made/wgpu-cue.git", branch = "main" }
 
 # The offscreen Servo host is reusable on macOS, Linux and Windows.
 graft-engine = { git = "https://github.com/merely-made/inker.git", branch = "main", optional = true }
