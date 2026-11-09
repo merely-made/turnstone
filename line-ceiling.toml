@@ -4,3 +4,11 @@ ceiling = 600
 [[exclude]]
 path = "vendor/"
 reason = "Vendored upstream sources; their module layout is maintained with the imported dependency."
+
+[[exception]]
+path = "ports/pelt/viewer.rs"
+reason = "Standalone Pelt reference-host entrypoint. Existing source-size debt; a responsibility split must preserve SelectedEngine and existing module visibility."
+
+[[exception]]
+path = "ports/tabard/desktop/examples/native_shared_recovery.rs"
+reason = "Explicit, finite two-independent-window shared-device recovery gate. Existing source-size debt; a responsibility split must preserve NativeHost, Context, Authority and existing module visibility."

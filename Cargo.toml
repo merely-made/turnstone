@@ -5,7 +5,11 @@
 # second crate-type on this package's own `[lib]`, which would give the
 # cdylib and the `turnstone` `[[bin]]` the same output name and collide on
 # `turnstone.pdb` in the shared target directory (cargo#6313).
-members = [".", "sandbox_bootstrap_win"]
+#
+# `ports/pelt` and `ports/tabard/desktop` are the Pelt and Tabard binaries, from Mere
+# (engine split D36): their libraries are Graphshell's (`pelt-desktop`,
+# `tabard-workshop`) or still Mere's (`pelt-core`).
+members = [".", "sandbox_bootstrap_win", "ports/pelt", "ports/tabard/desktop"]
 exclude = ["vendor/mozjs-icu-collator", "vendor/mozjs-icu-normalizer"]
 
 [package]
@@ -35,7 +39,7 @@ insigne = { git = "https://github.com/merely-made/dramatis.git", branch = "main"
 athanor = { package = "mere-athanor", git = "https://github.com/merely-made/mere.git", branch = "main", default-features = false, features = ["workshop-sealed", "workshop-destination"] }
 alembic = { package = "mere-alembic", git = "https://github.com/merely-made/mere.git", branch = "main", default-features = false }
 tabard = { git = "https://github.com/merely-made/mere.git", branch = "main" }
-tabard-workshop = { git = "https://github.com/merely-made/mere.git", branch = "main", features = ["native-host"] }
+tabard-workshop = { git = "https://github.com/merely-made/graphshell.git", branch = "main", features = ["native-host"] }
 mandrake = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 cambium-desktop = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 cambium-rootstock = { git = "https://github.com/merely-made/mere.git", branch = "main" }
@@ -547,6 +551,30 @@ mere-mesh = { git = "https://github.com/merely-made/distillery.git", branch = "m
 
 [workspace.package]
 rust-version = "1.97.1"
+edition = "2024"
+license = "MPL-2.0"
+repository = "https://github.com/merely-made/turnstone"
+authors = ["Mark AB (markik)"]
+
+# Rows the Pelt and Tabard binaries inherit (engine split D36), at the sources
+# this root already names.
+[workspace.dependencies]
+cambium = { version = "0.6.1", git = "https://github.com/merely-made/mere.git", branch = "main" }
+cambium-desktop = { git = "https://github.com/merely-made/mere.git", branch = "main" }
+cambium-rootstock = { git = "https://github.com/merely-made/mere.git", branch = "main", default-features = false }
+genet-host-api = { git = "https://github.com/merely-made/genet.git", branch = "main" }
+genet-presenter = { git = "https://github.com/merely-made/genet.git", branch = "main" }
+inker = { version = "0.1.1", git = "https://github.com/merely-made/inker.git", branch = "main" }
+layout_dom_api = { package = "layout-dom-api", version = "0.1.1", git = "https://github.com/merely-made/genet.git", branch = "main" }
+mandrake = { git = "https://github.com/merely-made/mere.git", branch = "main" }
+netrender = { git = "https://github.com/merely-made/netrender.git", branch = "main" }
+pelt-core = { git = "https://github.com/merely-made/mere.git", branch = "main" }
+pelt-desktop = { git = "https://github.com/merely-made/graphshell.git", branch = "main", default-features = false }
+serde_json = "1"
+tabard-workshop = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
+taproot = { version = "0.1.0", git = "https://github.com/merely-made/genet.git", branch = "main", default-features = false, features = ["accesskit"] }
+wgpu = "30.0.1"
+winit = "0.30.13"
 
 # Compatibility source keys for immutable suppliers published before the
 # repository rename. Targets and current direct dependencies use Murm.

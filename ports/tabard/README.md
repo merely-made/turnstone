@@ -1,12 +1,14 @@
 # Tabard appearance workshop
 
 Tabard is the standalone appearance workshop. [`desktop`](desktop) mounts the
-shared [`tabard-workshop`](workshop) surface in a native window. Its retained
+shared [`tabard-workshop`](https://github.com/merely-made/graphshell/tree/main/host/ports/tabard/workshop) surface in a native window. Its retained
 authoring state, controls, specimens, tests and fixtures live in that package,
 beside this host since 2026-10-26, so other applications can embed the same
 workshop by workspace path. The shared theme, draft and file-library APIs live in
-[`crates/system/tabard`](../../crates/system/tabard). See the
-[embedding guide](workshop/README.md) for host seams.
+[`crates/system/tabard`](https://github.com/merely-made/mere/tree/main/crates/system/tabard). See the
+[embedding guide](https://github.com/merely-made/graphshell/blob/main/host/ports/tabard/workshop/README.md) for host seams.
+The workshop library moved to Graphshell's host layer and this desktop host to
+Turnstone (engine split D36).
 
 The workshop edits an isolated user draft. Pick a primary, secondary, tertiary
 or neutral seed, adjust its hue/saturation/lightness, or enter a six-digit RGB
@@ -35,8 +37,8 @@ a CSS field; **Apply to preview** applies its exact text to the selected mode,
 and **Clear to derived** removes the override. Save also applies staged CSS.
 Ordinary selectors such as `body`, `.toolbar`, `.address-field`, `button`,
 `h1`, `p`, `a` and `.token-keyword` target the checked-in
-[application fixture](../../crates/cambium/tabard-workshop/fixtures/application.html). Its
-[fixture rules](../../crates/cambium/tabard-workshop/fixtures/application.css) consume `--tabard-color-*` and
+[application fixture](https://github.com/merely-made/graphshell/blob/main/host/ports/tabard/workshop/fixtures/application.html). Its
+[fixture rules](https://github.com/merely-made/graphshell/blob/main/host/ports/tabard/workshop/fixtures/application.css) consume `--tabard-color-*` and
 `--tabard-syntax-*` properties with neutral fallbacks. Without an override,
 Tabard supplies the selected mode's derived properties. With an override,
 the exact authored sheet replaces that derived sheet and follows the fixture
