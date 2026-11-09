@@ -260,6 +260,11 @@ layout-dom-api = { git = "https://github.com/merely-made/genet.git", branch = "m
 genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", branch = "main", version = "=0.1.2" }
 # Registry Webcue and Genet sessions share one input vocabulary, as at the root.
 document-session-api = { git = "https://github.com/merely-made/genet.git", branch = "main" }
+# Webcue and Wgpu Cue from their repository, as at the root (one copy of each, one document-session-api).
+webcue = { git = "https://github.com/merely-made/wgpu-cue.git", branch = "main" }
+wgpu-cue = { git = "https://github.com/merely-made/wgpu-cue.git", branch = "main" }
+grafting = { git = "https://github.com/merely-made/wgpu-graft.git", branch = "main" }
+grafting-frame = { git = "https://github.com/merely-made/wgpu-graft.git", branch = "main" }
 # Classic 0.11 and its owned repairs, kept in step with the root Scene aliases.
 # Standalone workspaces restate the netrender-vello and encoding rows. A shaders row
 # was unused (cargo warned on every build): the graph takes shaders at the rev that
