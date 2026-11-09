@@ -12,13 +12,12 @@
 //! The buffer is a [`BlockEditor`]. Graphshell ships a small default
 //! ([`BufferEditor`], a cambium `TextInput` with its undo journal) and names no
 //! application's editor; a host that owns a richer one (Knot's `KnotEditor`)
-//! registers a factory once with [`register_editor`] before any pane opens.
+//! passes an [`EditorFactory`] to each pane it opens.
 
 use cambium::{CaretAffinity, CaretPosition, CaretSelection, TextCommand};
 use illume::blocks;
 use cambium::TextInput;
 use std::collections::BTreeMap;
-use std::sync::OnceLock;
 
 pub use illume::blocks::{Div, wrap};
 
@@ -140,15 +139,32 @@ impl BlockEditor for BufferEditor {
     }
 }
 
-/// Makes the editor for a document: its id and its source.
-pub type EditorFactory = fn(&str, &str) -> Box<dyn BlockEditor>;
+/// Makes the editor for a document: its id and its source. A host passes one
+/// to each pane it opens, so panes in one process may edit through different
+/// editors; there is no process-wide registration.
+pub trait EditorFactory {
+    fn open(&self, id: &str, source: &str) -> Box<dyn BlockEditor>;
+}
 
-static EDITOR: OnceLock<EditorFactory> = OnceLock::new();
+/// Any closure over an id and a source is a factory.
+impl<F> EditorFactory for F
+where
+    F: Fn(&str, &str) -> Box<dyn BlockEditor>,
+{
+    fn open(&self, id: &str, source: &str) -> Box<dyn BlockEditor> {
+        self(id, source)
+    }
+}
 
-/// Register the host's editor for every document opened from now on. The
-/// first registration wins; a second is handed back.
-pub fn register_editor(factory: EditorFactory) -> Result<(), EditorFactory> {
-    EDITOR.set(factory)
+/// Graphshell's own buffer for every document: what a host gets when it
+/// passes no factory.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct DefaultEditors;
+
+impl EditorFactory for DefaultEditors {
+    fn open(&self, _id: &str, source: &str) -> Box<dyn BlockEditor> {
+        Box::new(BufferEditor::new(source))
+    }
 }
 
 pub struct Document {
@@ -157,13 +173,14 @@ pub struct Document {
 }
 
 impl Document {
-    /// A document over the registered editor, or Graphshell's own buffer.
+    /// A document over Graphshell's own buffer.
     pub fn new(id: &str, source: &str) -> Self {
-        let editor = match EDITOR.get() {
-            Some(factory) => factory(id, source),
-            None => Box::new(BufferEditor::new(source)),
-        };
-        Self::with_editor(id, editor)
+        Self::open(id, source, &DefaultEditors)
+    }
+
+    /// A document over the editor `editors` makes for it.
+    pub fn open(id: &str, source: &str, editors: &dyn EditorFactory) -> Self {
+        Self::with_editor(id, editors.open(id, source))
     }
 
     /// A document over an editor the caller made.

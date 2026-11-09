@@ -27,6 +27,7 @@ use mandrake::{LaneConfig, Product};
 use std::cell::RefCell;
 use taproot::ProbeSnapshot;
 use graphshell::block_editing::sheet_leaf::{ColorF, SheetTheme};
+use graphshell::block_editing::{DefaultEditors, EditorFactory};
 use graphshell::block_pane::{
     self, BackendStorage, Pane, PaneHost, PanePorts, Storage, SwatchStyle, Task, Child,
 };
@@ -385,7 +386,7 @@ fn main() {
             ..Default::default()
         },
         move |_, _, _wake| {
-            let mut pane = pollster::block_on(Pane::load(Some((storage, "blocks".into())), ports));
+            let mut pane = pollster::block_on(Pane::load_with(Some((storage, "blocks".into())), ports, editors()));
             pane.set_open(true);
             let panel = !candidates.is_empty();
             Init {
@@ -442,7 +443,7 @@ mod tests {
         let backend = DirectoryBackend::open(dir.join(format!("d{}", candidates.len()))).unwrap();
         let storage: Rc<dyn Storage> = Rc::new(BackendStorage(backend));
         let ports = Rc::new(NativePorts { exports: dir.join("exports") });
-        let mut pane = pollster::block_on(Pane::load(Some((storage, "blocks".into())), ports));
+        let mut pane = pollster::block_on(Pane::load_with(Some((storage, "blocks".into())), ports, editors()));
         pane.set_open(true);
         App { pane, size: (1100, 800), engine: Rc::new(GuestEngine::new().unwrap()), candidates, panel: true }
     }
@@ -507,4 +508,11 @@ mod tests {
         let _ = root(&app);
         assert!(app.pane.open());
     }
+}
+
+/// The editors this binary's pane edits through: Graphshell's own buffer. A
+/// product that composes the pane with another editor (Knot's, through its
+/// `KnotBlockEditor::factory`) passes that factory here instead.
+fn editors() -> Rc<dyn EditorFactory> {
+    Rc::new(DefaultEditors)
 }

@@ -15,7 +15,7 @@
 //! big the window is and what colours to use, and supplies the effects the pane cannot perform
 //! itself ([`PanePorts`]: storage, exporting a file, running a future).
 use crate::block_editing::{
-    Change, Document, Preview,
+    Change, DefaultEditors, Document, EditorFactory, Preview,
     adapter::{
         AdapterError, BACKDROP_SCENE, BlockAdapter, BlockInput, CommandKind, GuestView, Registry,
         Row, RunResult, ViewAsk, unclaimed_message,
@@ -213,6 +213,8 @@ struct ViewState {
 
 pub struct Pane {
     document: Document,
+    /// Makes the editor behind every document this pane opens.
+    editors: Rc<dyn EditorFactory>,
     storage: Option<Rc<dyn Storage>>,
     ports: Rc<dyn PanePorts>,
     slot: String,
@@ -255,12 +257,22 @@ pub struct Pane {
 impl Pane {
     /// A pane over `storage` (the backend and the document's slot id), if the host has one.
     pub async fn load(storage: Option<(Rc<dyn Storage>, String)>, ports: Rc<dyn PanePorts>) -> Self {
+        Self::load_with(storage, ports, Rc::new(DefaultEditors)).await
+    }
+    /// [`Self::load`], editing through the editors `editors` makes.
+    pub async fn load_with(
+        storage: Option<(Rc<dyn Storage>, String)>,
+        ports: Rc<dyn PanePorts>,
+        editors: Rc<dyn EditorFactory>,
+    ) -> Self {
         let source = storage;
         let mut pane = Self {
-            document: Document::new(
+            document: Document::open(
                 &format!("graphshell:document/{}", uuid::Uuid::new_v4()),
                 INITIAL,
+                editors.as_ref(),
             ),
+            editors,
             storage: source.as_ref().map(|(b, _)| b.clone()),
             ports,
             slot: source.map_or_else(
@@ -303,7 +315,7 @@ impl Pane {
         if let Some(storage) = pane.storage.clone() {
             match storage.load(&pane.slot).await {
                 Ok(Some((stored, bytes))) => {
-                    pane.document = Document::new(&stored.id, &stored.source);
+                    pane.document = Document::open(&stored.id, &stored.source, pane.editors.as_ref());
                     pane.expected = Some(bytes);
                     pane.status = "Saved document reopened".into();
                 },
@@ -341,7 +353,7 @@ impl Pane {
             Ok(Some((stored, bytes))) => {
                 if stored.source != self.document.editor.source() || stored.id != self.document.id
                 {
-                    self.document = Document::new(&stored.id, &stored.source);
+                    self.document = Document::open(&stored.id, &stored.source, self.editors.as_ref());
                     self.selected = self
                         .selected
                         .min(self.document.blocks().len().saturating_sub(1));
@@ -1873,5 +1885,92 @@ impl Pane {
             ("blocks-preview", pane.preview.is_some().to_string()),
             ("blocks-status", pane.status.clone()),
         ]
+    }
+}
+
+#[cfg(test)]
+mod editor_tests {
+    use super::*;
+    use crate::block_editing::{BlockEditor, BufferEditor, EditOutcome};
+    use cambium::{CaretSelection, TextCommand};
+    use std::future::Future;
+
+    struct NoPorts;
+    impl PanePorts for NoPorts {
+        fn spawn(&self, _task: Task) {}
+        fn export(&self, _bytes: &[u8], _mime: &str, _name: &str) -> Result<String, String> {
+            Err("no exports".into())
+        }
+        fn release_export(&self, _handle: &str) {}
+    }
+
+    /// A buffer that always reports itself dirty: distinguishable from the default.
+    struct AlwaysDirty(BufferEditor);
+    impl BlockEditor for AlwaysDirty {
+        fn source(&self) -> &str {
+            self.0.source()
+        }
+        fn selection(&self) -> CaretSelection {
+            self.0.selection()
+        }
+        fn apply(&mut self, command: TextCommand) -> EditOutcome {
+            self.0.apply(command)
+        }
+        fn input(&self) -> &TextInput {
+            self.0.input()
+        }
+        fn input_mut(&mut self) -> &mut TextInput {
+            self.0.input_mut()
+        }
+        fn is_dirty(&self) -> bool {
+            true
+        }
+        fn accept_saved_source(&mut self, source: &str) {
+            self.0.accept_saved_source(source)
+        }
+    }
+
+    fn always_dirty() -> Rc<dyn EditorFactory> {
+        Rc::new(|_: &str, source: &str| -> Box<dyn BlockEditor> {
+            Box::new(AlwaysDirty(BufferEditor::new(source)))
+        })
+    }
+
+    fn block_on<T>(future: impl Future<Output = T>) -> T {
+        let mut future = std::pin::pin!(future);
+        let mut context = std::task::Context::from_waker(std::task::Waker::noop());
+        loop {
+            if let std::task::Poll::Ready(value) = future.as_mut().poll(&mut context) {
+                return value;
+            }
+        }
+    }
+
+    fn pane(editors: Option<Rc<dyn EditorFactory>>) -> Pane {
+        let ports: Rc<dyn PanePorts> = Rc::new(NoPorts);
+        match editors {
+            Some(editors) => block_on(Pane::load_with(None, ports, editors)),
+            None => block_on(Pane::load(None, ports)),
+        }
+    }
+
+    #[test]
+    fn two_panes_in_one_process_edit_through_different_editors() {
+        let custom = pane(Some(always_dirty()));
+        let default = pane(None);
+        assert!(custom.document.editor.is_dirty(), "the passed editor is the custom one");
+        assert!(!default.document.editor.is_dirty(), "the other pane keeps the default buffer");
+        assert_eq!(custom.document.editor.source(), default.document.editor.source());
+    }
+
+    #[test]
+    fn no_editor_choice_leaks_between_panes_or_documents() {
+        // A custom pane opened first does not change what later panes or bare
+        // documents are made of: there is no process-wide editor.
+        let _custom = pane(Some(always_dirty()));
+        assert!(!pane(None).document.editor.is_dirty());
+        assert!(!Document::new("memory:fresh", "text").editor.is_dirty());
+        assert!(Document::open("memory:custom", "text", always_dirty().as_ref()).editor.is_dirty());
+        assert!(!Document::new("memory:after", "text").editor.is_dirty());
     }
 }
