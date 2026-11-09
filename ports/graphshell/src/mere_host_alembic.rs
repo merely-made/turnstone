@@ -7,7 +7,7 @@
 //! Workshop proposals enter the existing Graphshell owner, never another writer.
 
 use super::*;
-use alembic::workshop::{Acceptance, Owner, Passage, Proposal, Receipt};
+use athanor::alembic::workshop::{Acceptance, Owner, Passage, Proposal, Receipt};
 use athanor::workshop_destination as destination;
 use servitor::AuthorityProvider;
 
@@ -318,7 +318,7 @@ fn sealed_operation_commitment(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use alembic::workshop::{Destination, Owner, Passage, Review};
+    use athanor::alembic::workshop::{Destination, Owner, Passage, Review};
     use athanor::workshop::{Workshop, evaluate};
     use muniment::{MemoryBackend, TransactFn, WriteOp};
     use servitor::{Cap, Mode, Subject};

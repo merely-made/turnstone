@@ -46,7 +46,7 @@ name = "moot_resources_reopen"
 required-features = ["moot-resources"]
 
 [features]
-alembic-workshop = ["web", "dep:athanor", "athanor/workshop-destination", "athanor/workshop-worker", "athanor/workshop-sealed", "dep:alembic", "alembic/workshop-native", "muniment/directory", "dep:pollster", "dep:cambium-desktop", "dep:servitor", "dep:blake3"]
+alembic-workshop = ["web", "dep:athanor", "athanor/workshop-destination", "athanor/workshop-worker", "athanor/workshop-sealed", "athanor/workshop-native", "muniment/directory", "dep:pollster", "dep:cambium-desktop", "dep:servitor", "dep:blake3"]
 # Explicit synthetic/private receiving mode; normal public workshop startup does
 # not connect to custody or automatically admit a real user's retained sources.
 alembic-workshop-private = ["alembic-workshop", "dep:castellan-client", "castellan-client/client", "dep:eidetic"]
@@ -217,7 +217,6 @@ personal-sync = [
 ostiary = { workspace = true, optional = true }
 castellan-client = { workspace = true, optional = true }
 athanor = { package = "mere-athanor", path = "../distillery/athanor", default-features = false, optional = true }
-alembic = { workspace = true, optional = true }
 wgpu-cue = { workspace = true, optional = true }
 cue-netrender = { workspace = true, optional = true }
 vector-sheet = { workspace = true, optional = true }

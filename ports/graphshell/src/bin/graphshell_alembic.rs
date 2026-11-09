@@ -8,7 +8,7 @@
 //! The graph/workshop owner is constructed on one service thread. The native
 //! event loop exchanges DTOs only; it performs no journal or destination I/O.
 
-use alembic::{
+use athanor::alembic::{
     workshop_native::{native_hooks, native_init},
     workshop_surface::{SurfaceAction, SurfaceState},
 };
@@ -388,7 +388,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 /// Fresh-process persistence diagnostics drive the same owner requests as the
 /// native controls. They establish storage behavior, not headed UI evidence.
 fn probe(root: PathBuf, stage: &str) -> Result<(), Box<dyn std::error::Error>> {
-    use alembic::workshop::{Control, Review};
+    use athanor::alembic::workshop::{Control, Review};
     use std::time::{Duration, Instant};
     let mut owner = pollster::block_on(GraphshellWorkshop::open(&root, Arc::new(|| {})))?;
     let mut state = SurfaceState::new();
@@ -451,12 +451,12 @@ mod tests {
     fn private_surface(status: &str) -> SurfaceState {
         let mut state = SurfaceState::new();
         state.status = status.into();
-        state.reading = Some(alembic::workshop_surface::RetainedReading {
+        state.reading = Some(athanor::alembic::workshop_surface::RetainedReading {
             title: "Private retained source".into(),
             version: "immutable-1".into(),
             text: "PRIVATE-QUEUED-SOURCE-CANARY café".into(),
         });
-        state.choices = vec![alembic::workshop_surface::SourceChoice {
+        state.choices = vec![athanor::alembic::workshop_surface::SourceChoice {
             key: "retained-private-source".into(),
             title: "PRIVATE-QUEUED-SOURCE-TITLE".into(),
             version: "immutable-1".into(),
@@ -469,8 +469,8 @@ mod tests {
     fn private_citation() -> SurfaceAction {
         SurfaceAction::OpenSource {
             proposal: [8; 32],
-            source: alembic::workshop::Source {
-                owner: alembic::workshop::Owner {
+            source: athanor::alembic::workshop::Source {
+                owner: athanor::alembic::workshop::Owner {
                     host: "graphshell".into(),
                     workspace: "graph".into(),
                     session: "session".into(),
@@ -605,7 +605,7 @@ fn private_probe(
     stage: &str,
     endpoint: String,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    use alembic::workshop::{Control, Review};
+    use athanor::alembic::workshop::{Control, Review};
     use std::time::{Duration, Instant};
     let (mut owner, custody) =
         open_owner(&root, Arc::new(|| {}), &OwnerMode::Private { endpoint })?;

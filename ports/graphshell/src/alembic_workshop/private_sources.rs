@@ -8,7 +8,7 @@
 //! Titles, selected ranges and source bytes are sealed together. Graph journals
 //! receive ciphertext deltas only; no unsealed Resource is a private fallback.
 
-use alembic::workshop::{Owner, Passage, Source};
+use athanor::alembic::workshop::{Owner, Passage, Source};
 use athanor::workshop::{self, Error};
 use athanor::workshop_seal::Protection;
 use mere::kernel::{

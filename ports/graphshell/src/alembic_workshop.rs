@@ -11,7 +11,7 @@ use crate::{
     access::AccessContext,
     mere_host::{MereHost, SelectedPersonaRef, fixture_handlers},
 };
-use alembic::{
+use athanor::alembic::{
     workshop::*,
     workshop_surface::{RetainedReading, SourceChoice, SurfaceAction, SurfaceState},
 };
