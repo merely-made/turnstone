@@ -15,7 +15,7 @@ use chirograph::{
     RetainedTruncation,
 };
 use graphshell::goal_surface::{GraphFacts, RetainedPages, fixture};
-use graphshell::kept_text::KeptPage;
+use eidetic::kept_text::KeptPage;
 use sceno::{Arrangement, Score};
 use std::io::{Read, Write};
 
@@ -151,7 +151,7 @@ async fn turning_keeping_on_and_keeping_a_page_send_the_owner_checked_intents() 
         at_ms: 0,
         private: false,
     };
-    let record = graphshell::kept_text::FetchRecordV1 {
+    let record = eidetic::kept_text::FetchRecordV1 {
         requested: page.url.clone(),
         final_url: page.url.clone(),
         fetched_at_ms: 7,
@@ -231,7 +231,7 @@ fn a_capture_is_one_requested_address_with_visible_text_only() {
     assert_eq!(record.status, 200);
     assert_eq!(record.text_bytes, page.text.len() as u64);
     assert!(record.html_bytes > record.text_bytes && record.fetched_at_ms > 0);
-    assert_eq!(record.text_version, graphshell::kept_text::text_version(&page.text));
+    assert_eq!(record.text_version, eidetic::kept_text::text_version(&page.text));
     assert!(page.text.contains("Spring tides follow the new moon."), "{}", page.text);
     assert!(!page.text.contains("hidden") && !page.text.contains("color:red"));
     assert!(page.url.ends_with("/page"));

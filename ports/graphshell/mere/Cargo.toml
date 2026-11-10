@@ -28,6 +28,7 @@ cambium-desktop.workspace = true
 # `HostWake`; image decoding as the viewer had it inside Graphshell.
 cambium-rootstock = { workspace = true, features = ["image-decode"] }
 chirograph.workspace = true
+eidetic.workspace = true
 dramatis-surface.workspace = true
 graphshell-dramatis-pane = { path = "../dramatis-pane" }
 graphshell-client.workspace = true

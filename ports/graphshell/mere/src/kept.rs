@@ -27,7 +27,7 @@ use chirograph::{
     RetainedPagesRequest, RetainedPagesResponse, SessionOpen,
 };
 use graphshell::goal_surface::{self, GoalSurface, door};
-use graphshell::kept_text::{
+use eidetic::kept_text::{
     DEFAULT_KEPT_BYTES, FetchRecordV1, KEEP_PAGES_INTENT, KEEP_SETTING_INTENT, KeepPagesV1,
     KeepSettingV1, KeptPage,
 };
@@ -111,7 +111,7 @@ pub(super) fn capture(address: &str) -> Result<(KeptPage, FetchRecordV1), String
         content_type: body.facts.content_type.clone(),
         html_bytes: body.bytes.len() as u64,
         text_bytes: text.len() as u64,
-        text_version: graphshell::kept_text::text_version(&text),
+        text_version: eidetic::kept_text::text_version(&text),
     };
     let page = KeptPage {
         url: body.facts.final_url,

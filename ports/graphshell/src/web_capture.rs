@@ -12,7 +12,7 @@ use graphshell::capture::{
     BROWSER_HISTORY_HANDLER_PREFIX, BrowserHistoryCapture, BrowserVisit, CaptureOutcome,
     ForgetMode, HistoryCapturePolicy,
 };
-use graphshell::kept_text::{KeptBatch, KeptSummary, forget_kept_text, record_kept_pages};
+use eidetic::kept_text::{KeptBatch, KeptSummary, forget_kept_text, record_kept_pages};
 use graphshell::local_profile::LocalProfile;
 use muniment::IndexedDbBackend;
 use serde::Deserialize;
