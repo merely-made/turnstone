@@ -20,7 +20,7 @@ pub mod bound_actions;
 #[cfg(all(feature = "coop", not(target_arch = "wasm32")))]
 pub mod coop;
 #[cfg(any(feature = "native", feature = "alembic-workshop-private"))]
-pub mod declaration;
+pub use graphshell_door::declaration;
 
 #[cfg(feature = "goal-surface")]
 pub mod goal_surface;
@@ -56,8 +56,6 @@ mod capture_resources;
 pub mod kept_text;
 #[cfg(all(test, feature = "web", feature = "goal-surface"))]
 mod kept_text_tests;
-#[cfg(all(feature = "personal-sync", not(target_arch = "wasm32")))]
-pub mod carriage;
 #[cfg(feature = "web")]
 pub mod command_invocation;
 #[cfg(feature = "workspace-editor")]

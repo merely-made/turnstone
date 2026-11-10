@@ -49,7 +49,7 @@ required-features = ["moot-resources"]
 alembic-workshop = ["web", "dep:athanor", "athanor/workshop-destination", "athanor/workshop-worker", "athanor/workshop-sealed", "athanor/workshop-native", "muniment/directory", "dep:pollster", "dep:cambium-desktop", "dep:servitor", "dep:blake3"]
 # Explicit synthetic/private receiving mode; normal public workshop startup does
 # not connect to custody or automatically admit a real user's retained sources.
-alembic-workshop-private = ["alembic-workshop", "dep:castellan-client", "castellan-client/client", "dep:eidetic"]
+alembic-workshop-private = ["alembic-workshop", "graphshell-door/declaration", "dep:castellan-client", "castellan-client/client", "dep:eidetic"]
 # One holder-owned graph with an explicitly invited guest.
 coop = ["native", "web", "muniment/redb", "dep:pollster", "graphshell-client/pump"]
 coop-window = ["coop", "dep:cambium-desktop", "dep:mien", "dep:genet-scripted-dom", "dep:layout_dom_api", "dep:image"]
@@ -91,6 +91,7 @@ native = [
     "dep:ostiary",
     "graphshell-endpoint/projection",
     "graphshell-door/projection-door",
+    "graphshell-door/declaration",
     "dep:castellan-client",
     "castellan-client/client",
     "graphshell-door/profile",
