@@ -10,6 +10,119 @@ const ALICE_EDIT: &str = "https://label.example/release";
 const BOB_EDIT: &str = "https://archive.example/correction";
 
 #[test]
+fn reticulum_place_catches_up_across_rotation_and_refuses_the_removed_member() {
+    let directory = tempfile::tempdir().unwrap();
+    let alice = Arc::new(RootIdentity::Local(InMemoryProvider::from_seed([0x71; 32])));
+    let bob = Arc::new(RootIdentity::Local(InMemoryProvider::from_seed([0x72; 32])));
+    let charlie = Arc::new(RootIdentity::Local(InMemoryProvider::from_seed([0x73; 32])));
+    let [alice_dir, bob_dir, charlie_dir] =
+        ["alice", "bob", "charlie"].map(|name| directory.path().join(name));
+    let settings = settings();
+    let (binding, charlie_invite) = enroll(&alice_dir, &charlie_dir, &alice, &charlie, &settings);
+    let bob_invite = invite_writer(&alice_dir, &bob_dir, &alice, &bob, &binding, &settings);
+    let [alice_contact, bob_contact, charlie_contact] = [&alice, &bob, &charlie]
+        .map(|root| ReticulumGraphContact::for_graph(root.as_ref(), binding.root).unwrap());
+    let removed_root = charlie.master_public_key().to_bytes();
+    let alice = AutoPeer::new(alice, alice_dir, binding.clone(), settings.clone());
+    let bob_identity = bob.clone();
+    let bob = AutoPeer::new(bob, bob_dir, binding.clone(), settings.clone());
+    let charlie = AutoPeer::new(charlie, charlie_dir, binding.clone(), settings.clone());
+    alice.open_offline(1);
+    let bob_before = bob.join(bob_invite);
+    charlie.join(charlie_invite);
+
+    let addr = TcpListener::bind("127.0.0.1:0")
+        .unwrap()
+        .local_addr()
+        .unwrap();
+    alice.configure(ReticulumGraphRoute::Listen(addr), charlie_contact);
+    charlie.configure(ReticulumGraphRoute::Dial(addr), alice_contact.clone());
+    alice.share(1, 1, ALICE_EDIT);
+    alice.reconnect(2);
+    charlie.reconnect(2);
+    let old_graph = charlie.await_graph(2, &[ALICE_EDIT]);
+    charlie.open_offline(3);
+
+    let removed = alice.author(
+        2,
+        2,
+        PlaceCommand::RevokeMember {
+            member: removed_root,
+        },
+    );
+    assert_eq!(removed.moot.members, 2);
+    assert_eq!(removed.group.members, 2);
+    assert!(removed.group.epochs > bob_before.group.epochs);
+    const ROTATED_EDIT: &str = "https://label.example/after-rotation";
+    alice.share(2, 3, ROTATED_EDIT);
+
+    // Same route and signed contact as the positive control. Charlie still
+    // holds its old invitation and keys and attempts a graph round directly.
+    let (reply, refused) = mpsc::channel();
+    charlie.worker.command(PlaceWorkerCommand::CatchUpGraph {
+        session: charlie.session,
+        generation: 3,
+        route: ReticulumGraphRoute::Dial(addr),
+        peer: alice_contact.clone(),
+        reply,
+    });
+    let error = refused.recv_timeout(ANSWER).unwrap().unwrap_err();
+    assert!(error.starts_with("catch up Commons graph:"), "{error}");
+    let stale = charlie.open_offline(4);
+    assert_eq!(stale.graph_digest, old_graph);
+    assert_eq!(stale.group.parked_records, 0);
+    assert!(
+        stale
+            .members
+            .iter()
+            .any(|member| member.root == removed_root)
+    );
+
+    // Bob still has the old epoch. The ordinary reconnect reconciles
+    // membership, delegation revocation, key frames, and both writers' edits.
+    bob.share(1, 1, BOB_EDIT);
+    alice.configure(ReticulumGraphRoute::Listen(addr), bob_contact);
+    bob.configure(ReticulumGraphRoute::Dial(addr), alice_contact);
+    alice.reconnect(3);
+    bob.reconnect(2);
+    let expected = [ALICE_EDIT, BOB_EDIT, ROTATED_EDIT];
+    assert_eq!(
+        alice.await_graph(3, &expected),
+        bob.await_graph(2, &expected)
+    );
+    let retained = bob.open_offline(3);
+    assert_eq!(retained.moot.members, 2);
+    assert!(
+        !retained
+            .members
+            .iter()
+            .any(|member| member.root == removed_root)
+    );
+    assert_eq!(retained.group.members, 2);
+    assert!(retained.group.epochs > bob_before.group.epochs);
+    assert_eq!(retained.group.pending_frames, 0);
+    assert_eq!(retained.group.parked_records, 0);
+    alice.release();
+    bob.release();
+    charlie.release();
+
+    let (reopened, _) =
+        open_cached_place(&bob.directory, &binding, bob_identity.as_ref(), &settings).unwrap();
+    let snapshot = pollster::block_on(reopened.moot.snapshot()).unwrap();
+    let delegations = pollster::block_on(reopened.moot.delegations()).unwrap();
+    assert!(
+        delegations
+            .projections(
+                binding.moot.0,
+                &snapshot.governance.rules,
+                settings.authority_clock.now_ms()
+            )
+            .iter()
+            .any(|grant| grant.subject == removed_root && grant.directly_revoked)
+    );
+}
+
+#[test]
 fn reticulum_graph_automatically_catches_up_on_reconnect_and_after_either_writer_edits() {
     let directory = tempfile::tempdir().unwrap();
     let alice = Arc::new(RootIdentity::Local(InMemoryProvider::from_seed([0x61; 32])));
@@ -23,16 +136,7 @@ fn reticulum_graph_automatically_catches_up_on_reconnect_and_after_either_writer
     let alice = AutoPeer::new(alice, alice_dir, binding.clone(), settings.clone());
     let bob = AutoPeer::new(bob, bob_dir, binding.clone(), settings);
     alice.open_offline(1);
-    bob.worker.command(PlaceWorkerCommand::Join {
-        session: bob.session,
-        generation: 1,
-        directory: bob.directory.clone(),
-        invite: Box::new(invite),
-    });
-    let Update::PlaceJoined { result, .. } = bob.updates.recv_timeout(ANSWER).unwrap() else {
-        panic!("the ticketless enrollment did not answer");
-    };
-    assert!(result.unwrap().1.sync.is_none());
+    bob.join(invite);
     assert_eq!(alice.share(1, 1, ALICE_EDIT).graph.nodes, 1);
     assert_eq!(bob.share(1, 1, BOB_EDIT).graph.nodes, 1);
 
@@ -91,6 +195,10 @@ impl AutoPeer {
         binding: PlaceBindingV1,
         settings: PlaceWorkerSettings,
     ) -> Self {
+        let _ = tracing_subscriber::fmt()
+            .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
+            .with_test_writer()
+            .try_init();
         let (worker, updates) = spawn_place_worker(Arc::new(|| {}), identity, settings);
         Self {
             worker,
@@ -115,7 +223,7 @@ impl AutoPeer {
         .unwrap();
     }
 
-    fn open_offline(&self, generation: u64) {
+    fn open_offline(&self, generation: u64) -> OfflinePlaceSnapshot {
         self.worker.command(PlaceWorkerCommand::Open {
             session: self.session,
             generation,
@@ -124,6 +232,22 @@ impl AutoPeer {
         });
         let snapshot = expect_open(&self.updates, generation);
         assert!(snapshot.sync.is_none() && !snapshot.reticulum_graph_active);
+        snapshot
+    }
+
+    fn join(&self, invite: PlaceInviteV1) -> OfflinePlaceSnapshot {
+        self.worker.command(PlaceWorkerCommand::Join {
+            session: self.session,
+            generation: 1,
+            directory: self.directory.clone(),
+            invite: Box::new(invite),
+        });
+        let Update::PlaceJoined { result, .. } = self.updates.recv_timeout(ANSWER).unwrap() else {
+            panic!("the ticketless enrollment did not answer");
+        };
+        let (_, snapshot) = result.expect("ticketless enrollment");
+        assert!(snapshot.sync.is_none());
+        snapshot
     }
 
     fn reconnect(&self, generation: u64) {
@@ -137,13 +261,21 @@ impl AutoPeer {
     }
 
     fn share(&self, generation: u64, request: u64, address: &str) -> OfflinePlaceSnapshot {
+        self.author(
+            generation,
+            request,
+            PlaceCommand::ShareNode {
+                address: address.into(),
+            },
+        )
+    }
+
+    fn author(&self, generation: u64, request: u64, command: PlaceCommand) -> OfflinePlaceSnapshot {
         self.worker.command(PlaceWorkerCommand::Author {
             session: self.session,
             generation,
             request,
-            command: PlaceCommand::ShareNode {
-                address: address.into(),
-            },
+            command,
         });
         let deadline = std::time::Instant::now() + ANSWER;
         loop {
@@ -157,7 +289,9 @@ impl AutoPeer {
                 .unwrap()
             {
                 assert_eq!(completed, request);
-                return result.expect("enrolled peer authors locally");
+                let snapshot = result.expect("enrolled peer authors locally");
+                assert!(snapshot.sync.is_none());
+                return snapshot;
             }
         }
     }
@@ -335,12 +469,24 @@ fn enroll(
     settings: &PlaceWorkerSettings,
 ) -> (PlaceBindingV1, PlaceInviteV1) {
     let binding = found_place(alice_dir, alice, "Reticulum Commons", settings).unwrap();
+    let invite = invite_writer(alice_dir, bob_dir, alice, bob, &binding, settings);
+    (binding, invite)
+}
+
+fn invite_writer(
+    alice_dir: &Path,
+    bob_dir: &Path,
+    alice: &RootIdentity,
+    bob: &RootIdentity,
+    binding: &PlaceBindingV1,
+    settings: &PlaceWorkerSettings,
+) -> PlaceInviteV1 {
     let prekey = prepare_group_identity(bob_dir, bob, binding.moot.0).unwrap();
-    let (mut open, _) = open_cached_place(alice_dir, &binding, alice, settings).unwrap();
+    let (mut open, _) = open_cached_place(alice_dir, binding, alice, settings).unwrap();
     let now = settings.authority_clock.now_ms();
     admit_member(
         &open.moot,
-        &binding,
+        binding,
         alice,
         bob.master_public_key().to_bytes(),
         Writer,
@@ -353,7 +499,7 @@ fn enroll(
         &open.moot,
         &mut open.group,
         alice_dir,
-        &binding,
+        binding,
         alice,
         &prekey,
         now + 1_000,
@@ -361,7 +507,7 @@ fn enroll(
         None,
     )
     .unwrap();
-    (binding, invite)
+    invite
 }
 
 fn expect_open(updates: &mpsc::Receiver<Update>, expected_generation: u64) -> OfflinePlaceSnapshot {

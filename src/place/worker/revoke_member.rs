@@ -104,5 +104,9 @@ pub(super) fn revoke_member(
         lanes.publish_membership(removal)?;
         lanes.withdraw_projection_grants(&withdrawn)?;
     }
+    #[cfg(feature = "place-reticulum")]
+    if let Some(sync) = open.reticulum.as_mut() {
+        sync.authority_changed();
+    }
     Ok(())
 }

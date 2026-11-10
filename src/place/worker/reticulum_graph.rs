@@ -7,8 +7,12 @@ use std::path::Path;
 use std::sync::mpsc::{Receiver, RecvTimeoutError, TryRecvError};
 use std::time::{Duration, Instant};
 
+use gemot::moot::MootGroupExt;
+use gemot::moot::delegation::MootDelegationExt;
 use insigne::DerivedKeyAttestation;
-use murm_sync::{StreamSyncLimits, StreamSyncOutcome};
+use murm_sync::{StreamSession, StreamSync, StreamSyncError, StreamSyncLimits, StreamSyncOutcome};
+use stickleback::{GroupKeyAdmission, GroupKeyExt, Operation, group_key_sync_topic};
+use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
 use transport::security::SetupLimits;
 use transport::sync_lane::{SyncLane, SyncLaneError};
 use transport::{
@@ -25,9 +29,30 @@ use crate::place::SharedContainerId;
 const CARRIER_SALT: &[u8] = b"turnstone.commons.reticulum.v1/";
 const NOISE_SALT: &[u8] = b"turnstone.commons.noise.v1/";
 const ACCEPT_DEADLINE: Duration = Duration::from_secs(10);
+const POLL_SETUP: Duration = Duration::from_secs(3);
 const TICK: Duration = Duration::from_millis(50);
 
-/// The TCP interface for one graph catch-up round.
+#[derive(Clone, Copy, Debug)]
+#[repr(u8)]
+enum PlaceLane {
+    Membership = 0,
+    Delegations = 1,
+    Keys = 2,
+    Graph = 3,
+}
+
+impl PlaceLane {
+    const ORDER: [Self; 4] = [Self::Membership, Self::Delegations, Self::Keys, Self::Graph];
+}
+
+#[derive(Clone, Copy, Debug)]
+enum SyncMode {
+    Dial(PlaceLane),
+    Listen,
+    ListenGraph,
+}
+
+/// The TCP interface for place catch-up.
 #[derive(Clone, Copy, Debug, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum ReticulumGraphRoute {
@@ -38,7 +63,8 @@ pub enum ReticulumGraphRoute {
 /// The optional per-place route read when the worker reconnects.
 pub const RETICULUM_GRAPH_FILE: &str = "place-reticulum-graph.json";
 
-/// Host-selected contact and polling interval for an already enrolled graph.
+/// Host-selected contact and polling interval for an already enrolled place.
+/// Automatic catch-up reconciles membership, delegations, and group keys before the graph.
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct ReticulumGraphConfig {
@@ -112,24 +138,30 @@ pub(super) fn catch_up(
     }
     let expected = authorize(open, identity, peer)?;
     let link = GraphTransport::bind(open.binding.root, identity, route, peer)?;
-    let inbound = match route {
-        ReticulumGraphRoute::Listen(_) => Some(link.runtime.block_on(async {
-            tokio::time::timeout(
-                ACCEPT_DEADLINE,
-                link.transport.accept(link.protocol.clone()),
-            )
-            .await
-            .map_err(|_| "Reticulum graph accept timed out".to_string())?
-            .map_err(|error| format!("accept Reticulum graph route: {error}"))
-        })?),
-        ReticulumGraphRoute::Dial(_) => None,
+    let (mode, inbound) = match route {
+        ReticulumGraphRoute::Listen(_) => {
+            let stream = link.runtime.block_on(async {
+                tokio::time::timeout(
+                    ACCEPT_DEADLINE,
+                    link.transport.accept(link.protocol.clone()),
+                )
+                .await
+                .map_err(|_| "Reticulum graph accept timed out".to_string())?
+                .map_err(|error| format!("accept Reticulum graph route: {error}"))
+            })?;
+            (SyncMode::ListenGraph, Some(stream))
+        },
+        ReticulumGraphRoute::Dial(_) => (SyncMode::Dial(PlaceLane::Graph), None),
     };
     let outcome = link
         .round(
-            open,
             expected,
             inbound,
-            StreamSyncLimits::default(),
+            PlaceSync {
+                open,
+                mode,
+                limits: StreamSyncLimits::default(),
+            },
             ACCEPT_DEADLINE,
         )
         .map_err(|error| format!("catch up Commons graph: {error}"))?;
@@ -205,11 +237,11 @@ impl GraphTransport {
             .enable_all()
             .build()
             .map_err(|error| format!("start graph catch-up runtime: {error}"))?;
-        let protocol = Alpn::new("mere/commons-graph-sync/v1");
         let interface = match route {
             ReticulumGraphRoute::Listen(bind) => ReticulumInterface::TcpServer { bind },
             ReticulumGraphRoute::Dial(addr) => ReticulumInterface::TcpClient { addr },
         };
+        let protocol = Alpn::new("mere/commons-place-sync/v1");
         let transport = runtime
             .block_on(async {
                 ReticulumTransport::builder_for(&carrier)
@@ -242,10 +274,9 @@ impl GraphTransport {
 
     fn round(
         &self,
-        open: &OpenPlace,
         expected: PeerID,
         inbound: Option<AcceptedSession<ReticulumStream>>,
-        limits: StreamSyncLimits,
+        session: impl StreamSession,
         setup_timeout: Duration,
     ) -> Result<StreamSyncOutcome, SyncLaneError> {
         let lane = SyncLane::new(
@@ -256,7 +287,6 @@ impl GraphTransport {
                 ..SetupLimits::default()
             },
         );
-        let session = open.graph.stream_sync(limits);
         self.runtime.block_on(async {
             match inbound {
                 Some(accepted) => {
@@ -287,6 +317,7 @@ pub(super) struct AutoGraphSync {
     config: ReticulumGraphConfig,
     transport: GraphTransport,
     due: Instant,
+    phase: usize,
     error: Option<String>,
 }
 
@@ -306,6 +337,7 @@ impl AutoGraphSync {
             config,
             transport,
             due: Instant::now(),
+            phase: 0,
             error: None,
         })
     }
@@ -314,17 +346,23 @@ impl AutoGraphSync {
         self.due = Instant::now();
     }
 
+    pub(super) fn authority_changed(&mut self) {
+        self.phase = 0;
+        self.edited();
+    }
+
     fn poll(
         &mut self,
         open: &mut OpenPlace,
         identity: &dyn IdentityProvider,
     ) -> Result<bool, String> {
-        let inbound = match self.config.route {
+        let (mode, inbound) = match self.config.route {
             ReticulumGraphRoute::Listen(_) => match self.transport.take_inbound()? {
-                Some(stream) => Some(stream),
+                Some(stream) => (SyncMode::Listen, Some(stream)),
                 None => return Ok(false),
             },
             ReticulumGraphRoute::Dial(_) => {
+                let lane = PlaceLane::ORDER[self.phase];
                 if Instant::now() < self.due
                     || !self
                         .transport
@@ -334,36 +372,143 @@ impl AutoGraphSync {
                 {
                     return Ok(false);
                 }
-                None
+                (SyncMode::Dial(lane), None)
             },
         };
-        let expected = authorize(open, identity, &self.config.peer);
-        let result = expected.map(|expected| {
-            let limits = StreamSyncLimits::new(1 << 20, 64 << 20, Duration::from_secs(5))
-                .expect("valid automatic graph sync limits");
-            self.transport
-                .round(open, expected, inbound, limits, Duration::from_secs(3))
+        tracing::debug!(?mode, "Reticulum place sync round");
+        let phase = std::mem::take(&mut self.phase);
+        let limits = StreamSyncLimits::new(1 << 20, 64 << 20, Duration::from_secs(5))
+            .expect("valid automatic place sync limits");
+        let result = authorize(open, identity, &self.config.peer).map(|expected| {
+            self.transport.round(
+                expected,
+                inbound,
+                PlaceSync { open, mode, limits },
+                POLL_SETUP,
+            )
         });
         self.due = Instant::now() + Duration::from_millis(self.config.poll_ms);
-        match result? {
+        let result = result?;
+        tracing::debug!(?mode, ?result, "Reticulum place sync round finished");
+        if matches!(mode, SyncMode::Listen | SyncMode::Dial(PlaceLane::Keys)) {
+            // Even a failed round can have stored a usable prefix.
+            open.follow_group_keys(identity)?;
+        }
+        match result {
+            Ok(outcome) if outcome.lagged != 0 => {
+                self.report_failure("Reticulum place catch-up fell behind; retrying".into());
+                Ok(outcome.received != 0)
+            },
             Ok(outcome) => {
-                self.error = None;
+                if matches!(mode, SyncMode::Dial(lane) if !matches!(lane, PlaceLane::Graph)) {
+                    // Let queued worker commands run before the next lane.
+                    self.phase = phase + 1;
+                    self.due = Instant::now();
+                }
+                if matches!(mode, SyncMode::Listen | SyncMode::Dial(PlaceLane::Graph)) {
+                    self.error = None;
+                }
                 Ok(outcome.received != 0)
             },
             Err(SyncLaneError::Sync(error)) => {
                 // Admission may already have stored operations when the round
                 // failed. Publish the retained state and let the next poll retry.
-                self.report_failure(error.to_string());
+                self.report_failure(format!("{mode:?}: {error}"));
                 Ok(true)
             },
-            Err(error) => Err(format!("catch up Commons graph: {error}")),
+            Err(error) => Err(format!("catch up Reticulum place {mode:?}: {error}")),
         }
     }
 
     fn report_failure(&mut self, error: String) {
         if self.error.as_deref() != Some(&error) {
-            tracing::warn!(%error, "Reticulum graph catch-up failed");
+            tracing::warn!(%error, "Reticulum place catch-up failed");
             self.error = Some(error);
+        }
+    }
+}
+
+struct PlaceSync<'a> {
+    open: &'a OpenPlace,
+    mode: SyncMode,
+    limits: StreamSyncLimits,
+}
+
+impl StreamSession for PlaceSync<'_> {
+    async fn run<S>(self, mut stream: S) -> Result<StreamSyncOutcome, StreamSyncError>
+    where
+        S: AsyncRead + AsyncWrite + Unpin,
+    {
+        let Self { open, mode, limits } = self;
+        // One Reticulum announcement covers all lanes. Select one domain per
+        // stream, after Murm has authenticated and admitted the peer.
+        let lane = tokio::time::timeout(POLL_SETUP, async {
+            if let SyncMode::Dial(lane) = mode {
+                stream.write_u8(lane as u8).await?;
+                stream.flush().await?;
+                Ok(lane)
+            } else {
+                let id = stream.read_u8().await?;
+                PlaceLane::ORDER
+                    .into_iter()
+                    .find(|lane| *lane as u8 == id)
+                    .filter(|lane| {
+                        !matches!(mode, SyncMode::ListenGraph) || matches!(lane, PlaceLane::Graph)
+                    })
+                    .ok_or_else(|| std::io::Error::other("unknown or disabled place lane"))
+            }
+        })
+        .await
+        .map_err(|_| StreamSyncError::Deadline)?
+        .map_err(|error| StreamSyncError::Protocol(error.to_string()))?;
+        let moot = open.binding.moot.0;
+        match lane {
+            PlaceLane::Membership => {
+                let store = open.moot.membership_store().clone();
+                let session = StreamSync::<_, u64, _, _>::new(
+                    moot,
+                    store.sync_store(),
+                    limits,
+                    move |operation: Operation<MootGroupExt>| {
+                        let store = store.clone();
+                        async move { matches!(store.accept(&operation).await, Ok(true)) }
+                    },
+                );
+                session.run(stream).await
+            },
+            PlaceLane::Delegations => {
+                let store = open.moot.delegation_store().clone();
+                let session = StreamSync::<_, u64, _, _>::new(
+                    moot,
+                    store.sync_store(),
+                    limits,
+                    move |operation: Operation<MootDelegationExt>| {
+                        let store = store.clone();
+                        async move { matches!(store.accept(&operation).await, Ok(true)) }
+                    },
+                );
+                session.run(stream).await
+            },
+            PlaceLane::Keys => {
+                let lane = &open.group.lane;
+                let receiver = lane.receiver();
+                let session = StreamSync::<_, u64, _, _>::new(
+                    group_key_sync_topic(lane.group()),
+                    lane.sync_store(),
+                    limits,
+                    move |operation: Operation<GroupKeyExt>| {
+                        let receiver = receiver.clone();
+                        async move {
+                            matches!(
+                                receiver.accept(&operation).await,
+                                Ok(GroupKeyAdmission::Inserted { .. })
+                            )
+                        }
+                    },
+                );
+                session.run(stream).await
+            },
+            PlaceLane::Graph => open.graph.stream_sync(limits).run(stream).await,
         }
     }
 }
