@@ -273,7 +273,7 @@ muniment = { workspace = true, optional = true }
 # §7 item 26).
 pandect = { workspace = true, optional = true }
 # The view state MereHost reads and writes through the session (engine split D78).
-incipit = { workspace = true, features = ["view"], optional = true }
+incipit = { workspace = true, features = ["view", "graph"], optional = true }
 sporran = { workspace = true, optional = true }
 platen = { path = "../../crates/platen/platen", default-features = false, optional = true }
 scenograph.workspace = true

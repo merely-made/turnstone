@@ -81,6 +81,7 @@ moot = { package = "mere-moot", path = "../../moot", default-features = false, f
 # feature is inert without the cfg. The cfg is committed in .cargo/config.toml.
 graphshell = { path = "..", default-features = false, features = ["web"] }
 mere = { path = "../../../crates/mere", default-features = false, features = ["graph", "canvas"] }
+incipit = { path = "../../../crates/incipit", features = ["graph"] }
 # `indexeddb` supplies the browser realization of muniment's byte-store seam,
 # which this crate hands to `GraphshellApp` as its backend. It lived here until
 # the duplicate showed up; muniment owns the backend family, so it owns this.

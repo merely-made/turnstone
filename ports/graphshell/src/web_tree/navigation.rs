@@ -7,7 +7,7 @@
 //! A disclosure over the current document's canonical graph relationships.
 use super::*;
 use cambium::{ShellControl, shell_control, shell_navigation_item, shell_paged_list};
-use mere::navigation::{
+use incipit::navigation::{
     NO_RELATIONSHIPS, RELATIONSHIPS_NOUN, RELATIONSHIPS_PAGE_SIZE, RelationshipRow,
     relationship_detail, relationships,
 };

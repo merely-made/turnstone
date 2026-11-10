@@ -6,7 +6,7 @@
 
 //! Graphshell's opt-in graph browser policy and generic Cambium mechanics.
 pub use cambium::scope_navigation::{ScopeCamera, ScopeControls, ScopeDirection};
-pub use mere::navigation::browser::{ScopeContext, ScopeDestination, ScopeLevel, ScopePlace};
+pub use incipit::navigation::browser::{ScopeContext, ScopeDestination, ScopeLevel, ScopePlace};
 pub type Place = ScopePlace<uuid::Uuid, uuid::Uuid>;
 pub type Destination = ScopeDestination<uuid::Uuid, uuid::Uuid>;
 pub type ScopeCommand = cambium::scope_navigation::ScopeCommand<Destination>;

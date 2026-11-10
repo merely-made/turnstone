@@ -374,7 +374,7 @@ fn apply(page: &mut TreePage, visit: &Visit) -> bool {
             if canvas.graph().get_node_by_id(root).is_none() {
                 return false;
             }
-            let Some(members) = mere::navigation::neighborhood_members(canvas.graph(), root) else {
+            let Some(members) = incipit::navigation::neighborhood_members(canvas.graph(), root) else {
                 return false;
             };
             canvas.scope_to_exact_members(members);
@@ -425,7 +425,7 @@ pub(super) fn refresh(page: &TreePage) {
         return;
     };
     let mut canvas = page.shared.canvas.borrow_mut();
-    let Some(members) = mere::navigation::neighborhood_members(canvas.graph(), root) else {
+    let Some(members) = incipit::navigation::neighborhood_members(canvas.graph(), root) else {
         return;
     };
     if canvas.scope_members().as_ref() != Some(&members) {

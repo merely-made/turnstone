@@ -8,7 +8,7 @@
 //! never a copied graph object or a second reading runtime.
 use super::*;
 use graphshell::scope_policy::{Place, ScopeCommand, ScopeDestination, ScopeLevel};
-use mere::navigation::{RelationshipTarget, relationships};
+use incipit::navigation::{RelationshipTarget, relationships};
 use uuid::Uuid;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -194,7 +194,7 @@ fn enter_forme(page: &mut TreePage, target: Target) {
     page.instrument.cards.deck.peek = None;
     super::scope_navigation::command(
         page,
-        ScopeCommand::To(mere::navigation::browser::ScopeDestination::Place(context)),
+        ScopeCommand::To(incipit::navigation::browser::ScopeDestination::Place(context)),
     );
 }
 
@@ -369,7 +369,7 @@ fn scoped_swatch(
     }
     let canvas = page.shared.canvas.borrow();
     let graph = canvas.graph();
-    let mut members = mere::navigation::scope_members(graph, place)?;
+    let mut members = incipit::navigation::scope_members(graph, place)?;
     members.sort();
     if let Some(i) = members.iter().position(|m| Some(*m) == place.focus) {
         members.swap(0, i);
@@ -622,7 +622,7 @@ pub(super) fn view(page: &TreePage) -> Option<Child> {
             ))
         };
         let subtitle = if let Some(swatch) = &swatch {
-            let total = mere::navigation::scope_members(
+            let total = incipit::navigation::scope_members(
                 page.shared.canvas.borrow().graph(),
                 t.scope.as_ref().unwrap(),
             )
