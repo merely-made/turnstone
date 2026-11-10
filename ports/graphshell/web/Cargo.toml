@@ -125,6 +125,9 @@ js-sys = "0.3"
 netrender = { git = "https://github.com/merely-made/netrender.git", branch = "main" }
 netrender_device = { git = "https://github.com/merely-made/netrender.git", branch = "main" }
 serde_json = "1"
+# The contract half of the guest block adapter (no `guest`, so no wasmtime).
+# `web_tree/block_adapters.rs` names it, and this crate compiles that module itself.
+block-adapter = { path = "../../../crates/script/block-adapter", default-features = false }
 # The remote link's outbound queue: the host enqueues lines synchronously,
 # a task drains them onto the channel.
 futures-channel = { version = "0.3", optional = true }

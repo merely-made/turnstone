@@ -3942,6 +3942,7 @@ name = "graphshell-web"
 version = "0.1.0"
 dependencies = [
  "backstep",
+ "block-adapter",
  "cambium",
  "cambium-rootstock",
  "cambium-web",
