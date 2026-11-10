@@ -352,6 +352,11 @@ mien = { git = "https://github.com/merely-made/gemot.git", branch = "main" }
 # The cookie custody test speaks the jar's own types. Same Genet revision as
 # every other genet.git row here, so it adds no package to the graph.
 netfetcher = { git = "https://github.com/merely-made/genet.git", branch = "main" }
+# The MCP adapter over a live mere route (engine split D82: its test moved from the resident).
+graphshell-mcp = { git = "https://github.com/merely-made/mere.git", branch = "main" }
+mere-resident = { git = "https://github.com/merely-made/mere.git", branch = "main", default-features = false, features = ["test-fixtures"] }
+mere-overmap = { git = "https://github.com/merely-made/mere.git", branch = "main" }
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 
 # A parallel place suite outgrows the 1024 open files Linux allows by
 # default; the tests raise their own soft limit. Already in the graph.
