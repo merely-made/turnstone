@@ -37,6 +37,7 @@ use pandect::access::{
     AccessTransition, access_history, bootstrap_access_record_schema, query_access_records,
     record_observation, save_access_record,
 };
+use crate::capture::{ACCESS_RECORD_TOOLING, ACCESS_SCHEMA_TOOLING};
 use crate::local_locations;
 use graphshell_host::mere_host::MereHost;
 use crate::product::{CONTENT_FACET, ExportRequest, ProductError};
@@ -380,9 +381,9 @@ where
 
     attach_transfer_content(host, manifest, &id_map)?;
 
-    bootstrap_access_record_schema(destination_authority).await?;
+    bootstrap_access_record_schema(destination_authority, ACCESS_SCHEMA_TOOLING).await?;
     for record in &manifest.access_records {
-        save_access_record(destination_authority, record).await?;
+        save_access_record(destination_authority, record, ACCESS_RECORD_TOOLING).await?;
         if manifest.operation == TransferOperation::Replicate {
             attach_existing_access_record(host, record)?;
         }
@@ -437,7 +438,7 @@ where
             })
             .map_err(|error| TransferError::InvalidManifest(error.to_string()))?
             .map_err(|error| TransferError::InvalidManifest(error.to_string()))?;
-        save_access_record(destination_authority, &record).await?;
+        save_access_record(destination_authority, &record, ACCESS_RECORD_TOOLING).await?;
         destination_access_records.push(record.record_id);
     }
 
@@ -1051,10 +1052,12 @@ mod tests {
             .unwrap()
             .unwrap();
         let mut authority = backend.clone();
-        bootstrap_access_record_schema(&mut authority)
+        bootstrap_access_record_schema(&mut authority, ACCESS_SCHEMA_TOOLING)
             .await
             .unwrap();
-        save_access_record(&mut authority, &record).await.unwrap();
+        save_access_record(&mut authority, &record, ACCESS_RECORD_TOOLING)
+            .await
+            .unwrap();
         host.persist(1_700_000_000).await.unwrap();
 
         Fixture {
@@ -1182,7 +1185,9 @@ mod tests {
                     .mutate_product_graph(|graph| record_observation(graph, key, &observation))
                     .unwrap()
                     .unwrap();
-                save_access_record(&mut authority, &record).await.unwrap();
+                save_access_record(&mut authority, &record, ACCESS_RECORD_TOOLING)
+                    .await
+                    .unwrap();
             }
             let blobs = BlobStore::new(source.backend.clone());
             let manifest = prepare_transfer(

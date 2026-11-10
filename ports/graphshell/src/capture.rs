@@ -37,6 +37,12 @@ use pandect::access::{
     AccessTransition, bootstrap_access_record_schema, record_observation, save_access_record,
 };
 use graphshell_host::mere_host::{MereHost, MereHostError};
+
+/// The provenance label this app stamps on the access record schema it stores
+/// (engine split D89: the caller names itself, not pandect).
+pub const ACCESS_SCHEMA_TOOLING: &str = concat!("graphshell/", env!("CARGO_PKG_VERSION"));
+/// The provenance label on each access record this app saves.
+pub const ACCESS_RECORD_TOOLING: &str = concat!("graphshell-access/", env!("CARGO_PKG_VERSION"));
 use crate::product::ProductError;
 
 pub const BROWSER_HISTORY_FACET: &str = "graphshell.browser-history/v1";
@@ -621,7 +627,7 @@ impl BrowserHistoryCapture {
         bootstrap_browsing_schema(store)
             .await
             .map_err(|error| CaptureError::Store(error.to_string()))?;
-        bootstrap_access_record_schema(store)
+        bootstrap_access_record_schema(store, ACCESS_SCHEMA_TOOLING)
             .await
             .map_err(|error| CaptureError::Store(error.to_string()))?;
         let memory = BrowsingMemory::load(store, policy.segment_size)
@@ -695,7 +701,7 @@ impl BrowserHistoryCapture {
         let key = encounter_key(host);
         let landed = async {
             for record in &records {
-                save_access_record(&mut batch, record)
+                save_access_record(&mut batch, record, ACCESS_RECORD_TOOLING)
                     .await
                     .map_err(|error| CaptureError::Store(error.to_string()))?;
             }
