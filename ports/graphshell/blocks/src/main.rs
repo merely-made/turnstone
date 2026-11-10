@@ -36,7 +36,7 @@ use graphshell::capsule_applet::{BLOCK_ADAPTER, CapsuleDisclosure, CapsuleMount,
 use block_adapter::GuestEngine;
 use graphshell_blocks::attach_reviewed;
 use layout_dom_api::{LayoutDom, LocalName, Namespace};
-use mere::canvas::backdrop_surface::SurfaceTheme;
+use pictograph::canvas::backdrop_surface::SurfaceTheme;
 use muniment::DirectoryBackend;
 use std::path::PathBuf;
 use std::rc::Rc;
