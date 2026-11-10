@@ -391,12 +391,6 @@ name = "n4_policy_receipt"
 path = "src/bin/n4_policy_receipt.rs"
 required-features = ["native"]
 
-[[bin]]
-name = "receipt_ingest"
-path = "src/bin/receipt_ingest.rs"
-# Needs the personal-graph event vocabulary and muniment's redb backend, both
-# of which arrive with personal-sync.
-required-features = ["personal-sync"]
 [dev-dependencies]
 chacha20poly1305 = "=0.10.1"
 scenograph = { workspace = true, features = ["editor"] }
