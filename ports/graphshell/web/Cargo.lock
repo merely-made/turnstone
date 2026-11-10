@@ -3890,11 +3890,14 @@ name = "graphshell-host"
 version = "0.0.2"
 dependencies = [
  "base64 0.22.1",
+ "chartulary",
  "chirograph",
+ "eidetic",
  "getrandom 0.3.4",
  "graphshell-client",
  "graphshell-endpoint",
  "insigne",
+ "mere-fleece",
  "mere-kernel",
  "mere-overmap",
  "muniment",
@@ -3909,6 +3912,7 @@ dependencies = [
  "serde_json",
  "thiserror 1.0.69",
  "url",
+ "uuid",
 ]
 
 [[package]]

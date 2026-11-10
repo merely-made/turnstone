@@ -22,9 +22,8 @@
 //! Only the writer runs these; a follower reads the ledger through a handle
 //! that refuses writes.
 
-use super::facts::GraphFacts;
+use graphshell_host::goal_surface::{GraphFacts, RetainedPages, resource_of, source_id};
 use super::model::{CONTEXT_CHARS, Snippet, snippet};
-use super::provider::{RetainedPages, resource_of, source_id};
 use crate::app::GraphshellApp;
 use eidetic::Hash;
 use eidetic::models::recall::{RecallSourceId, RetainedSourceText};

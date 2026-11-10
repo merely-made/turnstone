@@ -14,7 +14,8 @@
 use super::*;
 use cambium::{button, el, lens};
 use graphshell::goal_surface::suggest::{self, Held, Review, SuggestionRow};
-use graphshell::goal_surface::{GoalSurface, GraphFacts, Origin, RetainedPages, Snippet};
+use graphshell::goal_surface::{GoalSurface, Snippet};
+use graphshell_host::goal_surface::{GraphFacts, Origin, RetainedPages};
 use std::collections::BTreeSet;
 
 /// The most retained text one load reads.

@@ -4,8 +4,9 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 
-use super::fixture::{self, HOTEL, INDEX, OWNER, STARTER, STARTER_V1, TRAVEL};
+use graphshell_host::goal_surface::fixture::{self, HOTEL, INDEX, OWNER, STARTER, STARTER_V1, TRAVEL};
 use super::*;
+use graphshell_host::goal_surface::{RetainedPages, resource_of, source_id};
 use chartulary::resource_id;
 use eidetic::models::recall::{RecallSourceId, RecallSourceKind};
 use eidetic_search::goal::GoalVerdict;

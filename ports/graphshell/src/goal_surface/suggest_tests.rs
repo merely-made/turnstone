@@ -15,6 +15,7 @@ use crate::local_edit::{metadata, save_metadata};
 use crate::local_intake::{create_address, persist_intake};
 use crate::local_profile::{Browser, LocalProfile};
 use eidetic::PageTextStore;
+use graphshell_host::goal_surface::{GraphFacts, Origin, RetainedPages, record_text, source_id};
 use eidetic::records::SuggestionLedger;
 use muniment::{Backend, MemoryBackend, StoreError, TransactFn, WriteOp};
 use uuid::Uuid;

@@ -26,7 +26,8 @@ use chirograph::{
     PresentationCapability, ProjectionSession, RetainedKeeping, RetainedPagesLimits,
     RetainedPagesRequest, RetainedPagesResponse, SessionOpen,
 };
-use graphshell::goal_surface::{self, GoalSurface, door};
+use graphshell::goal_surface::{self, GoalSurface};
+use graphshell_host::goal_surface::door;
 use eidetic::kept_text::{
     DEFAULT_KEPT_BYTES, FetchRecordV1, KEEP_PAGES_INTENT, KEEP_SETTING_INTENT, KeepPagesV1,
     KeepSettingV1, KeptPage,

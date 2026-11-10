@@ -9,7 +9,8 @@
 
 use crate::app::GraphshellApp;
 use crate::capture::{BrowserHistoryCapture, BrowserVisit, HistoryCapturePolicy};
-use crate::goal_surface::{GoalSurface, GraphFacts, Origin, Outcome, Passage, RetainedPages};
+use crate::goal_surface::{GoalSurface, Outcome, Passage};
+use graphshell_host::goal_surface::{GraphFacts, Origin, RetainedPages};
 use crate::local_profile::{Browser, LocalProfile};
 use eidetic::Hash;
 use eidetic::kept_text::{KeepTextPolicy, KeptBatch, KeptPage, record_kept_pages};

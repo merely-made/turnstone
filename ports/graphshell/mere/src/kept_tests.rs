@@ -14,7 +14,7 @@ use chirograph::{
     CarrierNotice, EndpointDescriptor, ProjectionOffer, ProjectionRequest, ProtocolVersion,
     RetainedTruncation,
 };
-use graphshell::goal_surface::{GraphFacts, RetainedPages, fixture};
+use graphshell_host::goal_surface::{GraphFacts, RetainedPages, fixture};
 use eidetic::kept_text::KeptPage;
 use sceno::{Arrangement, Score};
 use std::io::{Read, Write};

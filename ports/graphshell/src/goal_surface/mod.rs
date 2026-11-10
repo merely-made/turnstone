@@ -15,7 +15,6 @@
 //! changes. It shows cited results and explanations only; proposals belong to
 //! a later slice and are not offered here.
 
-mod facts;
 mod model;
 mod model_view;
 #[cfg(feature = "goal-surface-model")]
@@ -25,11 +24,8 @@ mod model_controls;
 mod view_model;
 #[cfg(all(test, feature = "goal-surface-model"))]
 mod model_tests;
-mod provider;
-pub mod door;
 pub mod suggest;
 pub(crate) mod view;
-pub mod fixture;
 #[cfg(test)]
 mod tests;
 #[cfg(test)]
@@ -42,12 +38,11 @@ pub use model::{
     passage, snippet, stop_reason, verdict_label,
 };
 pub use fleece::retained_traversal::RetainedTraversalReceipt;
-pub use facts::{ConceptFact, GraphFacts};
-pub use provider::{LoadBounds, Origin, PagesProvider, RetainedPage, RetainedPages, record_text, resource_of, source_id};
 pub use model_view::score;
 pub use view::{CSS, view};
 
 use cambium::TextInput;
+use graphshell_host::goal_surface::RetainedPages;
 use eidetic_search::goal::GoalSettings;
 use fleece::retained_traversal::{RetainedLimits, RetainedSeed, run_retained_traversal};
 use fleece::traversal::TraversalPolicy;

@@ -7,7 +7,7 @@
 //! The model path with a stub embedder: no weights, no network. One ignored
 //! test runs the real MiniLM folder.
 
-use super::fixture::{self, INDEX, OWNER, TRAVEL};
+use graphshell_host::goal_surface::fixture::{self, INDEX, OWNER, TRAVEL};
 use super::model_path::{Embedder, ModelState, calibrated, real_loader};
 use super::*;
 use chartulary::resource_id;

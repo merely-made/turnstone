@@ -8,7 +8,7 @@
 //! assert on. Built from a traversal report and the retained snapshot it ran
 //! over; it holds citations and explanations, never a graph change.
 
-use super::provider::RetainedPages;
+use graphshell_host::goal_surface::RetainedPages;
 use eidetic::models::recall::{PassageSelector, RecallSourceId};
 use eidetic_search::goal::{GoalAssessment, GoalVerdict, SelectionChoice, SelectionRule};
 use super::model_view::{model_pick, model_selection_reason, model_visit};

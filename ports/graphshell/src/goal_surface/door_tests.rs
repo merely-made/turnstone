@@ -4,12 +4,11 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 
-use super::door::{bounds, from_wire, to_wire};
-use super::fixture::{self, STARTER};
+use graphshell_host::goal_surface::door::{bounds, from_wire, to_wire};
+use graphshell_host::goal_surface::fixture::{self, STARTER};
 use super::*;
-use chirograph::{
-    ProjectionSession, RETAINED_PAGES_CEILING, RetainedKeeping, RetainedPagesLimits,
-};
+use graphshell_host::goal_surface::{GraphFacts, RetainedPages};
+use chirograph::{ProjectionSession, RetainedKeeping, RetainedPagesLimits};
 use std::rc::Rc;
 
 async fn wire_with(limits: RetainedPagesLimits) -> chirograph::RetainedPagesResponse {
@@ -55,37 +54,3 @@ fn the_goal_surface_runs_unchanged_over_pages_rebuilt_from_the_door_reply() {
     assert_eq!(wire_page.versions[0].version, wire_page.current);
 }
 
-#[test]
-fn limits_apply_before_the_wire_and_every_omission_is_counted() {
-    let reply = pollster::block_on(wire_with(RetainedPagesLimits {
-        max_pages: 2,
-        max_versions: 1,
-        max_links: 3,
-        ..Default::default()
-    }));
-    assert_eq!(reply.pages.len(), 2);
-    assert_eq!(reply.truncated.pages_omitted, 3);
-    assert!(reply.pages.iter().all(|p| p.versions.len() == 1));
-    assert!(reply.links.len() <= 3);
-    let rebuilt = from_wire("graphshell-mere", &reply).unwrap();
-    assert_eq!(rebuilt.skipped_pages, 3, "the viewer keeps the count");
-    // A request can never exceed the ceiling.
-    let greedy = pollster::block_on(wire_with(RetainedPagesLimits {
-        max_pages: u32::MAX,
-        max_bytes: u64::MAX,
-        max_versions: u32::MAX,
-        max_links: u32::MAX,
-    }));
-    assert_eq!(greedy.applied, RETAINED_PAGES_CEILING);
-}
-
-#[test]
-fn a_reply_whose_text_does_not_match_its_version_is_refused() {
-    let mut reply = pollster::block_on(wire_with(RetainedPagesLimits::default()));
-    reply.pages[0].versions[0].text.push_str(" tampered");
-    let refusal = from_wire("graphshell-mere", &reply).unwrap_err();
-    assert!(refusal.contains("does not match its text"), "{refusal}");
-    let mut reply = pollster::block_on(wire_with(RetainedPagesLimits::default()));
-    reply.pages[0].current = "not-held".into();
-    assert!(from_wire("graphshell-mere", &reply).is_err());
-}

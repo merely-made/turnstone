@@ -23,7 +23,8 @@
 use cambium::{AnyView, GenetAppRunner, GenetCtx, GenetElement, PointerClick, lens};
 use cambium_genet_winit_host::{HostOptions, Init, ScrollAlign, inert_hooks, run};
 use genet_scripted_dom::NodeId;
-use graphshell::goal_surface::{self, GoalSurface, Start, fixture};
+use graphshell::goal_surface::{GoalSurface, Start};
+use graphshell_host::goal_surface::{self, fixture};
 use layout_dom_api::{LayoutDom, LocalName, Namespace};
 use std::{
     cell::{Cell, RefCell},
