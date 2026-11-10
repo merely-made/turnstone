@@ -332,7 +332,7 @@ fn sealed_graphshell_sources_refuse_wrong_owner_range_collision_and_tamper() {
     let last = sealed.len() - 1;
     sealed[last] ^= 1;
     r.facets[0].value_json = serde_json::to_string(&sealed).unwrap();
-    let tampered = mere::kernel::graph::Graph::try_from_recorded_snapshot(&snapshot).unwrap();
+    let tampered = kernel::graph::Graph::try_from_recorded_snapshot(&snapshot).unwrap();
     let affected = private_sources::surfaces(&tampered)
         .into_iter()
         .filter(|id| {

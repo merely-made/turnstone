@@ -7,8 +7,8 @@
 //! Codicil open and graph reconciliation around the canvas's saved scene
 //! (`Canvas::capture_scene` and `Canvas::restore_scene`, shared with Turnstone).
 use crate::product::ProductHost;
-use mere::canvas::Canvas;
-use mere::kernel::graph::Graph;
+use pictograph::canvas::Canvas;
+use kernel::graph::Graph;
 use pandect::SavedSceneV3;
 
 /// A successful import is authority even if its optional view cannot restore.

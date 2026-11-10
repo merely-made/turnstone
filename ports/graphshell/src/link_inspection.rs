@@ -9,11 +9,11 @@
 //! Rule-derived display marks need their own owner adapter; these are held facts.
 use std::collections::BTreeSet;
 
-use mere::kernel::graph::{
+use kernel::graph::{
     CoverageLayer, CoverageLimit, CoverageNote, EdgeFamily, Graph, GraphStratum, RelationKey,
     SemanticStatement, SemanticSubKind,
 };
-use mere::kernel::types::GraphScope;
+use kernel::types::GraphScope;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 #[cfg(test)]
@@ -263,13 +263,13 @@ pub fn inspect_link_with_source(
             )),
         }
     }
-    let reading = mere::canvas::link_reading::read_link_with_options(
+    let reading = pictograph::canvas::link_reading::read_link_with_options(
         graph,
         target.first,
         target.second,
         source,
-        mere::canvas::link_reading::LinkReadOptions {
-            scope: mere::canvas::link_reading::LinkReadScope::Held,
+        pictograph::canvas::link_reading::LinkReadOptions {
+            scope: pictograph::canvas::link_reading::LinkReadScope::Held,
             include_legacy_summaries: true,
         },
     )?;
@@ -404,7 +404,7 @@ pub fn inspect_link_history_with_source(
         }
     }
     let reading =
-        mere::canvas::link_reading::read_link_history(graph, target.first, target.second, source)?;
+        pictograph::canvas::link_reading::read_link_history(graph, target.first, target.second, source)?;
     let mut entries = Vec::new();
     for link in reading.links {
         let stratum = match link.key.stratum {
@@ -604,11 +604,11 @@ mod tests;
 #[cfg(test)]
 mod owner_bound_statement_tests {
     use super::*;
-    use mere::kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta};
-    use mere::kernel::persistence::{
+    use kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta};
+    use kernel::persistence::{
         PersistedEdge, PersistedEdgeFamily, PersistedSemanticStatement,
     };
-    use mere::kernel::types::{AssertionWithdrawal, GraphScope};
+    use kernel::types::{AssertionWithdrawal, GraphScope};
 
     fn graph() -> (Graph, Uuid, Uuid, Uuid) {
         let mut graph = Graph::new();
@@ -663,7 +663,7 @@ mod owner_bound_statement_tests {
         from: Uuid,
         to: Uuid,
         edges: Vec<PersistedEdge>,
-    ) -> mere::kernel::graph::apply::GraphDeltaResult {
+    ) -> kernel::graph::apply::GraphDeltaResult {
         apply_graph_delta(
             graph,
             GraphDelta::ReplaySetEdgesByIds {
@@ -753,7 +753,7 @@ mod owner_bound_statement_tests {
                     false,
                 )],
             ),
-            mere::kernel::graph::apply::GraphDeltaResult::Refused(_)
+            kernel::graph::apply::GraphDeltaResult::Refused(_)
         ));
         assert_eq!(serde_json::to_value(graph.to_snapshot()).unwrap(), before_collision);
         assert_eq!(

@@ -34,7 +34,7 @@ use cambium::{
 use cambium_rootstock::{
     AppCtx, NodeId, ScriptedDom, ProducedTexture, ProducerContext, SourceAlpha, SourceEncoding, TextureProducer,
 };
-use mere::canvas::backdrop_surface::{BackdropSurface, SurfaceTheme};
+use pictograph::canvas::backdrop_surface::{BackdropSurface, SurfaceTheme};
 use netrender::ColorLoad;
 use sceno_backdrops::SceneInput;
 use std::cell::RefCell;

@@ -6,7 +6,7 @@
 
 //! Workspace-owned source rules for Graphshell's single Inspector.
 //! They select an existing access; they never copy document or graph content.
-use mere::kernel::graph::Graph;
+use kernel::graph::Graph;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -52,7 +52,7 @@ impl InspectorSource {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mere::kernel::graph::apply::add_node;
+    use kernel::graph::apply::add_node;
 
     #[test]
     fn follows_the_requested_projection_and_never_substitutes_for_an_unavailable_source() {

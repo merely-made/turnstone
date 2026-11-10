@@ -7,11 +7,11 @@
 //! Promoted link Resources: journaled captures and read-only live comparison.
 use crate::app::GraphshellApp;
 use graphshell_host::mere_host::SelectedPersonaRef;
-use mere::kernel::graph::{
+use kernel::graph::{
     Author, FrozenLink, FrozenLinkSource, Graph, GraphStratum, SemanticStatement,
 };
-use mere::kernel::persistence::PersistedSemanticStatement;
-use mere::kernel::types::{GraphScope, NodeProperty};
+use kernel::persistence::PersistedSemanticStatement;
+use kernel::types::{GraphScope, NodeProperty};
 use muniment::Backend;
 use scenograph::link::{LinkKey, LinkSource, LinkStratum};
 use serde::{Deserialize, Serialize};
@@ -73,7 +73,7 @@ impl LinkDrift {
 pub struct PromotedLinkInspection {
     pub owner: Uuid,
     pub frozen: FrozenLink,
-    pub coverage: mere::kernel::graph::CoverageNote,
+    pub coverage: kernel::graph::CoverageNote,
     pub drift: LinkDrift,
     pub comments: Vec<NodeProperty>,
 }
@@ -312,7 +312,7 @@ pub fn own_statement(actor: &str, claim: &SemanticStatement) -> bool {
 
 /// The pair gesture's withdraw rule for `persona`: it withdraws only what
 /// [`can_withdraw`] allows at the statement and reports what it left.
-pub fn withdraw_policy(persona: &SelectedPersonaRef) -> mere::canvas::WithdrawPolicy {
+pub fn withdraw_policy(persona: &SelectedPersonaRef) -> pictograph::canvas::WithdrawPolicy {
     let actor = Author::person(persona.persona.clone()).asserter_iri();
     Box::new(move |claim| own_statement(&actor, claim))
 }

@@ -528,7 +528,7 @@ fn start() -> Result<(), String> {
             );
         } else {
             let mut graph = sessions.begin(
-                mere::kernel::graph::Author::person(format!(
+                kernel::graph::Author::person(format!(
                     "personae:{}",
                     coop::hex(&identity.master_public_key().to_bytes())
                 ))

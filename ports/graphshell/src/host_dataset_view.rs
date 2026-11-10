@@ -20,12 +20,12 @@
 
 use std::collections::BTreeMap;
 
-use mere::kernel::geometry::PortablePoint;
-use mere::kernel::graph::apply::{
+use kernel::geometry::PortablePoint;
+use kernel::graph::apply::{
     GraphDelta, add_node, apply_graph_delta, assert_semantic_predicate_in_scope,
 };
-use mere::kernel::graph::{Graph, NodeKey};
-use mere::kernel::types::GraphScope;
+use kernel::graph::{Graph, NodeKey};
+use kernel::types::GraphScope;
 use scenomise::host_dataset::HostDatasetV1;
 pub use scenomise::host_dataset::folds::FoldViewState;
 use uuid::Uuid;
@@ -341,7 +341,7 @@ impl GroupedHostDataset {
     /// current coordinates of every visible source identity. Physics pauses.
     pub fn apply_to_canvas(
         &mut self,
-        canvas: &mut mere::canvas::Canvas,
+        canvas: &mut pictograph::canvas::Canvas,
     ) -> Result<Vec<ViewedRelation>, String> {
         self.apply_to_canvas_with(canvas, |_| {})
     }
@@ -350,7 +350,7 @@ impl GroupedHostDataset {
     /// checkpoint changes, on the fresh view before it reaches the canvas.
     pub fn apply_to_canvas_with(
         &mut self,
-        canvas: &mut mere::canvas::Canvas,
+        canvas: &mut pictograph::canvas::Canvas,
         decorate: impl FnOnce(&mut HostDatasetView),
     ) -> Result<Vec<ViewedRelation>, String> {
         self.remember_positions(canvas.graph().nodes().filter_map(|(key, node)| {
@@ -470,7 +470,7 @@ mod tests {
             view.relations.len()
         );
         let positions: std::collections::HashMap<_, _> = view.positions.iter().copied().collect();
-        let projection = mere::canvas::underlay::projection_from_positions(&view.graph, |key| {
+        let projection = pictograph::canvas::underlay::projection_from_positions(&view.graph, |key| {
             positions.get(&key).copied()
         });
         assert_eq!(projection.nodes.len(), positions.len());
@@ -614,7 +614,7 @@ mod tests {
         let view = grouped.view().unwrap();
         let selected = ["repo:genet", "repo:woodshed"]
             .map(|id| view.graph.get_node(view.occurrences[id]).unwrap().id);
-        let mut canvas = mere::canvas::Canvas::with_graph(view.graph);
+        let mut canvas = pictograph::canvas::Canvas::with_graph(view.graph);
         canvas.set_physics_paused(true);
         canvas.land_paused_positions(&view.positions);
         canvas.set_selected_members(&selected);
@@ -640,7 +640,7 @@ mod tests {
         .unwrap();
         let mut grouped = GroupedHostDataset::new(envelope, "contains").unwrap();
         let view = grouped.view().unwrap();
-        let mut canvas = mere::canvas::Canvas::with_graph(view.graph);
+        let mut canvas = pictograph::canvas::Canvas::with_graph(view.graph);
         canvas.set_physics_paused(true);
         let key = view.occurrences["repo:genet"];
         let mut positions = view.positions;

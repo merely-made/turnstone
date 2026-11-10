@@ -341,8 +341,8 @@ mod tests {
     use std::collections::BTreeSet;
 
     use chirograph::IntentResult;
-    use mere::kernel::address::AddressKind;
-    use mere::kernel::graph::{EdgeFamily, Graph, RelationKind};
+    use kernel::address::AddressKind;
+    use kernel::graph::{EdgeFamily, Graph, RelationKind};
     use muniment::MemoryBackend;
     use serde_json::json;
 
@@ -778,7 +778,7 @@ mod tests {
             ),
         }
         ;
-        let scene = mere::canvas::saved_scene::scene_from_v2(scene).expect("the flat scene converts");
+        let scene = pictograph::canvas::saved_scene::scene_from_v2(scene).expect("the flat scene converts");
         app.host
             .save_product_scene("mere://scene/h4-identity-access", &scene)
             .expect("save mixed scene");

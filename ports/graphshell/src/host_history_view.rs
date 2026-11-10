@@ -22,7 +22,7 @@
 //! removed items included, for a reader. Nothing here interprets a revision:
 //! it is shown as the host wrote it.
 
-use mere::kernel::graph::apply::{GraphDelta, apply_graph_delta};
+use kernel::graph::apply::{GraphDelta, apply_graph_delta};
 pub use scenomise::history::Change;
 use scenomise::history::RevisionChanges;
 use scenomise::host_dataset::{

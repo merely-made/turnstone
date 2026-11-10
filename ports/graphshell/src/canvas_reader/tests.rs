@@ -24,7 +24,7 @@ use cambium_rootstock::{KeyPress, NamedKey as PressKey, ProducedAction, Producer
 use cambium_winit_a11y::A11yAction;
 use chirograph::{CapabilityProfile, IntentReference, PresentationCapability};
 use graphshell_client::LocalActionError;
-use mere::canvas::{
+use pictograph::canvas::{
     Canvas, DESCRIBED_ITEMS, DRAG_INTENT, PIN_INTENT, PhysicsChoice, Role as ItemRole, Speed,
 };
 
@@ -306,7 +306,7 @@ fn recycled_slot_fixture(
 ) -> (
     Harness<Page, Logic, View>,
     Rc<RefCell<Canvas>>,
-    mere::canvas::DescribedItem,
+    pictograph::canvas::DescribedItem,
     ProducedAction,
     uuid::Uuid,
 ) {
@@ -326,7 +326,7 @@ fn recycled_slot_fixture(
     let replacement = uuid::Uuid::from_u128(0x6f6c645f616374696f6e5f726570726f);
     let mut replacement_slot = None;
     assert!(canvas.borrow_mut().ingest_graph(|graph| {
-        use mere::kernel::graph::apply::{GraphDelta, GraphDeltaResult, apply_graph_delta};
+        use kernel::graph::apply::{GraphDelta, GraphDeltaResult, apply_graph_delta};
         assert!(matches!(
             apply_graph_delta(graph, GraphDelta::RemoveNode { key: old_slot }),
             GraphDeltaResult::NodeRemoved(true)
@@ -337,7 +337,7 @@ fn recycled_slot_fixture(
                 GraphDelta::AddNode {
                     id: Some(replacement),
                     url: "https://stale-action-replacement.example/".into(),
-                    position: mere::kernel::geometry::PortablePoint::zero(),
+                    position: kernel::geometry::PortablePoint::zero(),
                 },
             ) {
                 GraphDeltaResult::NodeAdded(key) => key,
@@ -361,7 +361,7 @@ fn recycled_slot_fixture(
 
 #[test]
 fn captured_pin_cannot_follow_same_member_restoration_between_semantic_reads() {
-    use mere::kernel::graph::apply::{GraphDelta, GraphDeltaResult, apply_graph_delta};
+    use kernel::graph::apply::{GraphDelta, GraphDeltaResult, apply_graph_delta};
     let canvas = sample_canvas();
     let mut host = harness(canvas.clone(), Plant::None);
     let old = canvas.borrow().describe_items(DESCRIBED_ITEMS).items[0].clone();
@@ -477,14 +477,14 @@ fn captured_action_for_survivor_remains_valid_after_unrelated_graph_change() {
         .find(|action| action.key == item.key && action.id == PIN_INTENT)
         .expect("survivor Pin is described");
     assert!(canvas.borrow_mut().ingest_graph(|graph| {
-        use mere::kernel::graph::apply::{GraphDelta, GraphDeltaResult, apply_graph_delta};
+        use kernel::graph::apply::{GraphDelta, GraphDeltaResult, apply_graph_delta};
         matches!(
             apply_graph_delta(
                 graph,
                 GraphDelta::AddNode {
                     id: Some(uuid::Uuid::from_u128(0x756e72656c617465645f6d7574617469)),
                     url: "https://unrelated-mutation.example/".into(),
-                    position: mere::kernel::geometry::PortablePoint::zero(),
+                    position: kernel::geometry::PortablePoint::zero(),
                 }
             ),
             GraphDeltaResult::NodeAdded(_)
@@ -593,7 +593,7 @@ fn the_clients_tree_lists_the_boards_drag_and_pin_through_the_local_route() {
     board.sync(
         app.client.mounted(&session),
         revision,
-        Some(&mere::canvas::PhysicsChoice::default().into_spec()),
+        Some(&pictograph::canvas::PhysicsChoice::default().into_spec()),
         Speed::REAL_TIME,
     );
     let profile = CapabilityProfile::new([
@@ -654,7 +654,7 @@ fn the_clients_tree_lists_the_boards_drag_and_pin_through_the_local_route() {
 
 #[test]
 fn same_call_recreation_must_retire_old_pin() {
-    use mere::kernel::graph::apply::{GraphDelta, GraphDeltaResult, apply_graph_delta};
+    use kernel::graph::apply::{GraphDelta, GraphDeltaResult, apply_graph_delta};
     let canvas = sample_canvas();
     let mut host = harness(canvas.clone(), Plant::None);
     let old = canvas.borrow().describe_items(DESCRIBED_ITEMS).items[0].clone();
@@ -716,7 +716,7 @@ fn same_call_recreation_must_retire_old_pin() {
 
 #[test]
 fn same_call_recreation_retires_old_drag_and_keeps_other_members_actions() {
-    use mere::kernel::graph::apply::{GraphDelta, GraphDeltaResult, apply_graph_delta};
+    use kernel::graph::apply::{GraphDelta, GraphDeltaResult, apply_graph_delta};
     let canvas = sample_canvas();
     let mut host = harness(canvas.clone(), Plant::None);
     let items = canvas.borrow().describe_items(DESCRIBED_ITEMS).items;

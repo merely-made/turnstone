@@ -66,7 +66,7 @@ fn failed_source_replacement_keeps_the_actual_held_session() {
 
 #[test]
 fn a_guest_link_naming_a_graph_node_shows_its_face_and_others_do_not() {
-    use mere::canvas::{DerivedFacePalette, InlineFaces, TextFacePalette};
+    use pictograph::canvas::{DerivedFacePalette, InlineFaces, TextFacePalette};
     let mentions = std::sync::Arc::new(std::sync::RwLock::new(super::mentions::Mentions {
         addresses: ["https://held.example/node".to_owned()].into_iter().collect(),
         faces: std::sync::Arc::new(InlineFaces::new(TextFacePalette::new(

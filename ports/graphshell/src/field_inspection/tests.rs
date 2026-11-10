@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: MPL-2.0
 
 use super::*;
-use mere::kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta};
-use mere::kernel::graph::{FieldLifecycle, NodeSelector, ScalarField, VectorField};
+use kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta};
+use kernel::graph::{FieldLifecycle, NodeSelector, ScalarField, VectorField};
 
 fn fid(n: u128) -> FieldId {
     FieldId::from_uuid(Uuid::from_u128(n))

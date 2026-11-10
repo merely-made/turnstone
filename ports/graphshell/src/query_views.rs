@@ -6,7 +6,7 @@
 //! Query definitions are shared Resources, written through the current owner journal.
 use crate::product::ProductHost;
 use crate::app::GraphshellApp;
-use mere::kernel::graph::GraphStratum;
+use kernel::graph::GraphStratum;
 use mere_view::query as model;
 use mere_view::query::{self as query_view, QueryNodeId, QueryProjection, QueryViewSpec};
 use muniment::Backend;
@@ -56,7 +56,7 @@ pub fn save_with_access<B: Backend>(
     access_nonce: Uuid,
     spec: &QueryViewSpec,
 ) -> Result<(Uuid, Uuid), String> {
-    let apply = |graph: &mut mere::kernel::graph::Graph| -> Result<(Uuid, Uuid), String> {
+    let apply = |graph: &mut kernel::graph::Graph| -> Result<(Uuid, Uuid), String> {
         let id = query_view::save_spec(graph, owner, expected, nonce, spec)?;
         let iri = graph
             .resource(id)
@@ -74,7 +74,7 @@ pub fn save_with_access<B: Backend>(
             });
         Ok((id, access))
     };
-    mere::kernel::graph::with_isolated_capture(|| apply(&mut app.host.graph().clone()))?;
+    kernel::graph::with_isolated_capture(|| apply(&mut app.host.graph().clone()))?;
     app.host
         .mutate_product_graph(apply)
         .map_err(|error| error.to_string())?
@@ -244,15 +244,15 @@ pub async fn seed_fixture<B: pandect::graph_session::LegacyTransactionBackend + 
         .map_err(|e| e.to_string())?;
     app.host
         .mutate_product_graph(|graph| {
-            let key = mere::kernel::graph::apply::add_node(
+            let key = kernel::graph::apply::add_node(
                 graph,
                 Some(Uuid::new_v4()),
                 "https://query.example/source".into(),
                 Default::default(),
             );
-            mere::kernel::graph::apply::apply_graph_delta(
+            kernel::graph::apply::apply_graph_delta(
                 graph,
-                mere::kernel::graph::apply::GraphDelta::SetNodeTitle {
+                kernel::graph::apply::GraphDelta::SetNodeTitle {
                     key,
                     title: "Independent source access".into(),
                 },
@@ -265,9 +265,9 @@ pub async fn seed_fixture<B: pandect::graph_session::LegacyTransactionBackend + 
         .map_err(|e| e.to_string())?;
     app.host
         .mutate_product_graph(|graph| -> Result<(), String> {
-            use mere::kernel::graph::apply::{GraphDelta, apply_graph_delta};
-            use mere::kernel::graph::resource_tags::TagConcept;
-            use mere::kernel::graph::{EdgeAssertion, SemanticSubKind};
+            use kernel::graph::apply::{GraphDelta, apply_graph_delta};
+            use kernel::graph::resource_tags::TagConcept;
+            use kernel::graph::{EdgeAssertion, SemanticSubKind};
             let from = graph.get_node_key_by_id(a).ok_or("Missing source")?;
             let to = graph.get_node_key_by_id(b).ok_or("Missing target")?;
             let resource = graph
@@ -469,9 +469,9 @@ pub fn presented_links(projection: &QueryProjection) -> Vec<PresentedLink> {
 #[cfg(test)]
 mod grouping_tests {
     use super::*;
-    use mere::kernel::graph::{ContainmentSubKind, SemanticStatement, SemanticSubKind};
-    use mere::kernel::types::AssertionWithdrawal;
-    use mere::kernel::types::GraphScope;
+    use kernel::graph::{ContainmentSubKind, SemanticStatement, SemanticSubKind};
+    use kernel::types::AssertionWithdrawal;
+    use kernel::types::GraphScope;
     use mere_view::query::{QueryNode, QueryRelation};
 
     fn statement(id: &str, kind: SemanticSubKind) -> SemanticStatement {

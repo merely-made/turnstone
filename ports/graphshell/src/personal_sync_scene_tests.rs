@@ -8,7 +8,7 @@
 //! stayed here when `personal_sync` moved to pandect (engine split D69): the
 //! spec is the canvas's, and the canvas depends on pandect.
 
-use mere::canvas::saved_scene;
+use pictograph::canvas::saved_scene;
 use p2panda_core::cbor::{decode_cbor_strict, encode_cbor};
 use pandect::personal_sync::{PersonalGraphEvent, PersonalGraphRecord};
 use pandect::{CartographyGeometry, SavedSceneV2};
@@ -66,7 +66,7 @@ fn cbor_nesting(bytes: &[u8]) -> usize {
 /// record's CBOR (cbor-core's recursion limit, 200); derive refuses 33.
 #[test]
 fn a_depth_32_dynamics_spec_round_trips_through_the_record_cbor() {
-    use mere::canvas::dynamics_spec::{DynamicsSpec, Node, Stage, Stop};
+    use pictograph::canvas::dynamics_spec::{DynamicsSpec, Node, Stage, Stop};
     let chain = |depth: usize| {
         let mut node = Node::preset("spring.rapier");
         for _ in 1..depth {
@@ -141,7 +141,7 @@ fn a_depth_32_dynamics_spec_round_trips_through_the_record_cbor() {
 /// decodes; the spec rides opaque, and that scene's open alone fails.
 #[test]
 fn a_refused_spec_fails_its_scenes_open_not_the_record() {
-    use mere::canvas::dynamics_spec::{DynamicsSpec, Node};
+    use pictograph::canvas::dynamics_spec::{DynamicsSpec, Node};
     let spec = DynamicsSpec::new(Node::preset("spring.rapier"));
     let mut newer = serde_json::to_value(&spec).unwrap();
     newer["version"] = serde_json::json!(2);

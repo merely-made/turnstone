@@ -6,7 +6,7 @@
 
 //! Read-only access / Resource inspection of the owner's currently held graph.
 //! Addresses are labels, never a substitute for the recorded association.
-use mere::kernel::graph::{CoverageNote, Graph, Node, NodeKey};
+use kernel::graph::{CoverageNote, Graph, Node, NodeKey};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use uuid::Uuid;
@@ -121,9 +121,9 @@ pub fn inspect_access(graph: &Graph, member: Uuid) -> Result<AccessInspection, S
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mere::kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta};
-    use mere::kernel::graph::{CoverageLayer, CoverageLimit, ResourceNode};
-    use mere::kernel::persistence::{PersistedResourceFacet, PersistedResourceRecord};
+    use kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta};
+    use kernel::graph::{CoverageLayer, CoverageLimit, ResourceNode};
+    use kernel::persistence::{PersistedResourceFacet, PersistedResourceRecord};
 
     fn graph() -> (Graph, Uuid, Uuid) {
         let mut graph = Graph::new();

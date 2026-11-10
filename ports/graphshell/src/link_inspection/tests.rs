@@ -5,13 +5,13 @@
 // SPDX-License-Identifier: MPL-2.0
 
 use super::*;
-use mere::kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta, assert_relation};
-use mere::kernel::graph::{
+use kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta, assert_relation};
+use kernel::graph::{
     ArrangementSubKind, ContainmentSubKind, CoverageLayer, CoverageLimit, EdgeAssertion,
     ImportedSubKind, NavigationTrigger, ProvenanceSubKind, RelationKind, SemanticStatement,
     SemanticStatementSpec, predicate_iri,
 };
-use mere::kernel::types::{AssertionBasis, AssertionMethod};
+use kernel::types::{AssertionBasis, AssertionMethod};
 
 fn fixture() -> (Graph, [Uuid; 4]) {
     let mut graph = Graph::new();

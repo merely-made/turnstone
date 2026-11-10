@@ -24,8 +24,8 @@ use eidetic::import::encounters::{
     BrowserSourceScope,
 };
 use eidetic::{NoFetcher, PrivacyClass, list_typed, load_typed, manifest::delete_manifest};
-use mere::kernel::graph::apply::{GraphDelta, apply_graph_delta};
-use mere::kernel::graph::{EdgeFamily, NavigationTrigger, RelationKind, RelationSelector};
+use kernel::graph::apply::{GraphDelta, apply_graph_delta};
+use kernel::graph::{EdgeFamily, NavigationTrigger, RelationKind, RelationSelector};
 use muniment::{Backend, StoreError, WriteOp};
 use pandect::graph_session::{CommitExtra, LegacyTransactionBackend};
 use serde::{Deserialize, Serialize};
@@ -1392,7 +1392,7 @@ mod tests {
 
     use pandect::access::AccessContext;
     use pandect::access::{AccessRecordFilter, query_access_records};
-    use mere::kernel::graph::Author;
+    use kernel::graph::Author;
     use muniment::MemoryBackend;
 
     use super::*;

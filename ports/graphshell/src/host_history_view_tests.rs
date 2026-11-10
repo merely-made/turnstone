@@ -34,7 +34,7 @@ fn title_of(view: &HostDatasetView, occurrence: &str) -> String {
 #[test]
 fn folded_checkpoints_retain_surviving_choices_positions_and_complete_change_evidence() {
     use crate::host_dataset_view::GroupedHostDataset;
-    use mere::kernel::geometry::PortablePoint;
+    use kernel::geometry::PortablePoint;
     let history =
         parse_host_history(include_str!("../web/fixtures/grouped-host-history.json")).unwrap();
     let mut grouped =
@@ -102,7 +102,7 @@ fn changing_fold_disclosure_reapplies_checkpoint_marks_once_and_keeps_camera() {
     let mut grouped =
         GroupedHostDataset::new(revision_envelope(&history, 1).unwrap(), "contains").unwrap();
     let changes = history.changes_at(1).unwrap();
-    let mut canvas = mere::canvas::Canvas::new();
+    let mut canvas = pictograph::canvas::Canvas::new();
     canvas.resize(800, 600);
     let viewport = canvas.viewport();
     for expanded in [true, false, true] {

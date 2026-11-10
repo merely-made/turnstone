@@ -7,7 +7,7 @@
 //! Exact held occurrences and disclosed view inputs for presentation decisions.
 //! No source writes, field evaluation, URL identity or synthetic assertions.
 use crate::link_inspection::{LinkTarget, inspect_link_with_source};
-use mere::kernel::graph::{FieldDefinition, FieldExtent, FieldId, Graph};
+use kernel::graph::{FieldDefinition, FieldExtent, FieldId, Graph};
 use scenograph::presentation::{
     Context, Effect, InputAvailability, PrimitiveKind, Property, Resolution, Scalar, ViewState,
 };

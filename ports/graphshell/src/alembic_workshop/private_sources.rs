@@ -11,7 +11,7 @@
 use athanor::alembic::workshop::{Owner, Passage, Source};
 use athanor::workshop::{self, Error};
 use athanor::workshop_seal::Protection;
-use mere::kernel::{
+use kernel::{
     graph::{Graph, apply::GraphDelta},
     persistence::{PersistedResourceFacet, PersistedResourceRecord},
 };

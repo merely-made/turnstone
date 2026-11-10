@@ -23,7 +23,7 @@
 use cambium_rootstock::{ProducerAction, ProducerNode, ProducerRole, ProducerSemantics};
 use chirograph::AdvertisedAction;
 use graphshell_client::{LocalActionTarget, LocalActions};
-use mere::canvas::{
+use pictograph::canvas::{
     ArrangementAction, Canvas, CanvasDescription, DESCRIBED_ITEMS, DRAG_INTENT, PIN_INTENT,
     PhysicsBoard, Role,
 };

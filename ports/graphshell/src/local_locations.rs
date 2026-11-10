@@ -17,8 +17,8 @@
 
 use std::collections::HashSet;
 
-use mere::kernel::address::{Address, address_from_url};
-use mere::kernel::persistence::{GraphSnapshot, PersistedAddress};
+use kernel::address::{Address, address_from_url};
+use kernel::persistence::{GraphSnapshot, PersistedAddress};
 use serde_json::Value;
 
 use pandect::access::{AccessHistory, AccessRecord};

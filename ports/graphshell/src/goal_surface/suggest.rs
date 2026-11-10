@@ -32,7 +32,7 @@ use eidetic::records::{
     TagSuggestionReviewV1, TagSuggestionV1, accept, reject, review_state,
 };
 use eidetic_search::{TagConcept, TagSuggestSettings, suggest_tags};
-use mere::kernel::graph::resource_tag_admission::{AcceptedTagSuggestion, TagAdmission};
+use kernel::graph::resource_tag_admission::{AcceptedTagSuggestion, TagAdmission};
 use muniment::Backend;
 use std::collections::BTreeSet;
 use uuid::Uuid;

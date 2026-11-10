@@ -15,7 +15,7 @@ use athanor::alembic::{
     workshop_surface::{RetainedReading, SourceChoice, SurfaceAction, SurfaceState},
 };
 use athanor::{workshop, workshop_driver::Driver};
-use mere::kernel::graph::apply::GraphDelta;
+use kernel::graph::apply::GraphDelta;
 use muniment::DirectoryBackend;
 use servitor::{Grant, GrantTable, Mode, Subject};
 use std::{
@@ -216,7 +216,7 @@ impl GraphshellWorkshop {
     pub fn owner(&self) -> &Owner {
         &self.owner
     }
-    pub fn graph(&self) -> &mere::kernel::graph::Graph {
+    pub fn graph(&self) -> &kernel::graph::Graph {
         self.host.graph()
     }
     pub fn busy(&self) -> bool {

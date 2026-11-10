@@ -17,7 +17,7 @@
 
 use std::time::Duration;
 
-use mere::canvas::TICK_DT;
+use pictograph::canvas::TICK_DT;
 
 /// The share of the lesser term the bar asks for.
 pub const BAR_SHARE: f32 = 0.5;

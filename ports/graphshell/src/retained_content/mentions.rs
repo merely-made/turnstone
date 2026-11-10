@@ -15,7 +15,7 @@ use std::collections::{BTreeMap, HashSet};
 use std::sync::{Arc, RwLock};
 
 use layout_dom_api::{LayoutDom, LocalName, Namespace, NodeKind};
-use mere::canvas::{InlineFaces, inline_face_style, inline_face_url};
+use pictograph::canvas::{InlineFaces, inline_face_style, inline_face_url};
 use pelt_core::native::{LiveryHostLayer, LiveryHostLayerFn};
 
 /// The graph's node addresses and the faces to draw them with, refreshed by
@@ -94,7 +94,7 @@ fn css_string(text: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    use mere::canvas::{DerivedFacePalette, TextFacePalette};
+    use pictograph::canvas::{DerivedFacePalette, TextFacePalette};
 
     use super::*;
 

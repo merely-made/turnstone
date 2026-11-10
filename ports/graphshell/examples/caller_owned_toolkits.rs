@@ -246,7 +246,7 @@ fn evidence(output: &Path, name: &str, pixels: &[u8], placement: Placement) {
     .unwrap();
 }
 struct GraphPane {
-    canvas: mere::canvas::Canvas,
+    canvas: pictograph::canvas::Canvas,
     source: u64,
     revision: u64,
 }
@@ -390,7 +390,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             )
             .is_none()
     );
-    let mut canvas = mere::canvas::Canvas::with_graph(app.host.graph().clone());
+    let mut canvas = pictograph::canvas::Canvas::with_graph(app.host.graph().clone());
     canvas.set_physics_paused(true);
     let positions: Vec<_> = app
         .host
@@ -400,7 +400,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .map(|(n, (key, _))| {
             (
                 key,
-                mere::kernel::geometry::PortablePoint::new(
+                kernel::geometry::PortablePoint::new(
                     (n % 4) as f32 * 90.,
                     (n / 4) as f32 * 60.,
                 ),

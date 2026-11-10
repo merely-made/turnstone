@@ -14,11 +14,11 @@
 
 use std::collections::BTreeMap;
 
-use mere::canvas::responsive_link_adapter::{
+use pictograph::canvas::responsive_link_adapter::{
     AppearanceCompatibility, FieldRegistry, PathField, ResponsivePath, ResponsivePathConfig,
     ScalarField, SourceBucketRef, VectorField, eval_vector, evaluate_link_appearances,
 };
-use mere::kernel::graph::{Graph, GraphStratum, SemanticStatement, apply::add_node};
+use kernel::graph::{Graph, GraphStratum, SemanticStatement, apply::add_node};
 use scenograph::link::{LinkKey, LinkPairReading, LinkSource, LinkSourceRevision, LinkStratum};
 use scenograph::{PublicSourceRevision, SourceBinding};
 use uuid::Uuid;
@@ -110,7 +110,7 @@ pub enum ResponsiveLinksFixtureError {
     GraphConstruction,
     MissingEndpoint,
     MissingFixtureAssertion,
-    Adapter(mere::canvas::responsive_link_adapter::ResponsiveLinkAdapterError),
+    Adapter(pictograph::canvas::responsive_link_adapter::ResponsiveLinkAdapterError),
 }
 
 impl ResponsiveLinksFixture {
@@ -173,10 +173,10 @@ impl ResponsiveLinksFixture {
                         predicate: PREDICATE.into(),
                         recognized_sub_kind: None,
                         label: Some(format!("Reference link {}", index + 1)),
-                        basis: mere::kernel::types::AssertionBasis::default(),
+                        basis: kernel::types::AssertionBasis::default(),
                         first_asserted_ms: Some(1_791_000_000_000 + index as u64),
                         withdrawn: None,
-                        graph_scope: mere::kernel::types::GraphScope::Custom(
+                        graph_scope: kernel::types::GraphScope::Custom(
                             "urn:graphshell:responsive-link-fixture".into(),
                         ),
                         provenance_iri: Some(FIXTURE_AUTHORITY.into()),
@@ -184,7 +184,7 @@ impl ResponsiveLinksFixture {
                     },
                 )
                 .map_err(|_| ResponsiveLinksFixtureError::GraphConstruction)?;
-            let mut reading = mere::canvas::link_reading::read_link(
+            let mut reading = pictograph::canvas::link_reading::read_link(
                 &graph,
                 endpoints[from_index].id,
                 endpoints[to_index].id,

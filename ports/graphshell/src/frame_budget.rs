@@ -30,7 +30,7 @@
 use std::collections::VecDeque;
 use std::time::Duration;
 
-use mere::canvas::{FALLBACK_DISPLAY_PERIOD, StepBudget};
+use pictograph::canvas::{FALLBACK_DISPLAY_PERIOD, StepBudget};
 
 /// The longest the display's period is taken to be, and the period assumed
 /// until the page has measured an interval: 60 Hz's.

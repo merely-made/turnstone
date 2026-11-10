@@ -10,8 +10,8 @@
 //! leaves that member pending in the same app; retry persists it without
 //! creating another object.
 use crate::product::ProductHost;
-use mere::canvas::Canvas;
-use mere::kernel::graph::Graph;
+use pictograph::canvas::Canvas;
+use kernel::graph::Graph;
 use muniment::Backend;
 use sha2::{Digest, Sha256};
 use uuid::Uuid;

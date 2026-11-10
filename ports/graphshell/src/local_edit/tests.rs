@@ -331,8 +331,8 @@ fn refused_detail_facet_write_retains_an_explicit_retry() {
 
 #[test]
 fn canvas_metadata_refresh_preserves_geometry_camera_selection_and_play_state() {
-    use mere::kernel::graph::Author;
-    use mere::kernel::graph::apply::{GraphDelta, apply_graph_delta};
+    use kernel::graph::Author;
+    use kernel::graph::apply::{GraphDelta, apply_graph_delta};
     let mut app = GraphshellApp::fixture(MemoryBackend::new(), persona()).unwrap();
     let id = app
         .host
@@ -371,7 +371,7 @@ fn canvas_metadata_refresh_preserves_geometry_camera_selection_and_play_state() 
         .collect::<Vec<_>>();
     canvas.seed_cartography(positions);
     canvas.set_selected_members(&[id]);
-    canvas.set_camera(mere::canvas::CameraView {
+    canvas.set_camera(pictograph::canvas::CameraView {
         offset: (31.0, 23.0),
         zoom: 1.4,
     });
@@ -413,9 +413,9 @@ fn canvas_metadata_refresh_preserves_geometry_camera_selection_and_play_state() 
 #[test]
 fn hosted_canvas_metadata_keeps_exact_tag_claims_peer_sources_and_navigation_resources() {
     use kernel::graph::fixtures::GraphFixtures;
-    use mere::kernel::graph::apply::{GraphDelta, apply_graph_delta};
-    use mere::kernel::graph::resource::TAGGED_WITH_IRI;
-    use mere::kernel::graph::{Author, CapturedDelta};
+    use kernel::graph::apply::{GraphDelta, apply_graph_delta};
+    use kernel::graph::resource::TAGGED_WITH_IRI;
+    use kernel::graph::{Author, CapturedDelta};
     let mut app = GraphshellApp::fixture(MemoryBackend::new(), persona()).unwrap();
     let first = app
         .host
@@ -451,7 +451,7 @@ fn hosted_canvas_metadata_keeps_exact_tag_claims_peer_sources_and_navigation_res
     assert_eq!(saved.tags, ["Peer"]);
     sync_canvas_metadata_from_graph(&mut canvas, app.host.graph(), &saved).unwrap();
     let resource = app.host.graph().shown_resource_id(key).unwrap().to_string();
-    let tag_claims = |graph: &mere::kernel::graph::Graph, resource: &str| {
+    let tag_claims = |graph: &kernel::graph::Graph, resource: &str| {
         graph
             .to_snapshot()
             .resource_edges
@@ -466,7 +466,7 @@ fn hosted_canvas_metadata_keeps_exact_tag_claims_peer_sources_and_navigation_res
     for collision in [false, true] {
         let mut carried = canvas.graph().clone();
         let mut property =
-            mere::kernel::types::NodeProperty::new("urn:test:predicate".into(), "exact".into())
+            kernel::types::NodeProperty::new("urn:test:predicate".into(), "exact".into())
                 .with_metadata(Some("urn:test:source".into()), Some(42));
         property.statement_id = if collision {
             expected[0].statement_id.clone()
@@ -477,7 +477,7 @@ fn hosted_canvas_metadata_keeps_exact_tag_claims_peer_sources_and_navigation_res
             .facets_mut()
             .set(
                 first,
-                chartulary::FacetId::new(mere::kernel::graph::node_facets::SEMANTIC_PROPERTIES),
+                chartulary::FacetId::new(kernel::graph::node_facets::SEMANTIC_PROPERTIES),
                 serde_json::to_value(vec![property.clone(), property]).unwrap(),
                 &chartulary::AcceptAll,
             )

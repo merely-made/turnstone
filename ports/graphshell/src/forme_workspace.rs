@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 //! Graphshell's host-owned Forme preferences and Canvas projection adapter.
-use mere::kernel::graph::Graph;
+use kernel::graph::Graph;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use uuid::Uuid;
@@ -85,14 +85,14 @@ pub fn slot(graph: Uuid) -> String {
 
 pub(crate) fn canvas_region(
     region: Option<platen::workspace::WorkspaceRegion>,
-) -> Option<mere::canvas::FormeRegion> {
-    region.map(|region| mere::canvas::FormeRegion {
+) -> Option<pictograph::canvas::FormeRegion> {
+    region.map(|region| pictograph::canvas::FormeRegion {
         id: region.id,
         bounds: region.bounds,
         cells: region
             .cells
             .into_iter()
-            .map(|cell| mere::canvas::FormeCell {
+            .map(|cell| pictograph::canvas::FormeCell {
                 member: cell.member,
                 bounds: cell.bounds,
             })
@@ -106,7 +106,7 @@ pub fn project_region(
     workspace: &FormeWorkspace,
     owner: Uuid,
     graph: &Graph,
-) -> Result<Option<mere::canvas::FormeRegion>, String> {
+) -> Result<Option<pictograph::canvas::FormeRegion>, String> {
     workspace.project_region(owner, graph).map(canvas_region)
 }
 

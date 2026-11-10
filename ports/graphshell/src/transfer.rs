@@ -21,12 +21,12 @@ use eidetic::{
     ProvenanceRecord, TimeBounds, Timestamp, TrustEnvelope, TrustLevel, TypedPayload, save_schema,
     save_typed, validate_payload,
 };
-use mere::kernel::geometry::PortablePoint;
-use mere::kernel::graph::node_facets::{
+use kernel::geometry::PortablePoint;
+use kernel::graph::node_facets::{
     ARRANGEMENT_FRAME_LAYOUT, ARRANGEMENT_PIN, ARRANGEMENT_SPLIT_OFFER_SUPPRESSED,
     PROVENANCE_DERIVATIONS, PROVENANCE_IMPORT, VISIT_HISTORY,
 };
-use mere::kernel::graph::{Graph, NodeFacetStore};
+use kernel::graph::{Graph, NodeFacetStore};
 use muniment::{Backend, BlobStore};
 use pandect::graph_placement::materialize_snapshot;
 use sha2::{Digest, Sha256};
@@ -50,7 +50,7 @@ use pandect::transfer::{
     TransferManifestV1, TransferOperation, TransferReceiptV1, TransferResult, TransferRouteV1,
     TransferredIdV1, transfer_receipt_schema,
 };
-use mere::canvas::saved_scene;
+use pictograph::canvas::saved_scene;
 use pandect::{
     SAVED_SCENE_FACET, SAVED_SCENE_FACET_V2, SAVED_SCENE_FACET_V3, SavedDynamics, SavedRolesV1,
     SavedSceneV2, SavedSceneV3,
@@ -938,7 +938,7 @@ mod tests {
     use std::fs;
 
     use eidetic::{NoFetcher, load_typed};
-    use mere::kernel::graph::{ProvenanceSubKind, RelationKind, SemanticSubKind};
+    use kernel::graph::{ProvenanceSubKind, RelationKind, SemanticSubKind};
     use muniment::MemoryBackend;
 
     use super::*;
@@ -1137,10 +1137,10 @@ mod tests {
         let (handle, payload) = graph.projected_relations_between(from, to).next().unwrap();
         assert!(matches!(
             handle,
-            mere::kernel::graph::RelationKey::Resource(_)
+            kernel::graph::RelationKey::Resource(_)
         ));
         assert!(
-            payload.has_relation(mere::kernel::graph::RelationSelector::Semantic(
+            payload.has_relation(kernel::graph::RelationSelector::Semantic(
                 SemanticSubKind::Cites
             ))
         );
@@ -1148,7 +1148,7 @@ mod tests {
         assert!(payload.semantic_statements()[0].provenance_iri.is_some());
         assert_eq!(
             payload.semantic_statements()[0].graph_scope,
-            mere::kernel::types::GraphScope::Default
+            kernel::types::GraphScope::Default
         );
     }
 
@@ -1470,7 +1470,7 @@ mod tests {
     #[test]
     fn copy_keeps_resource_identity_and_remaps_only_shown_surfaces() {
         pollster::block_on(async {
-            use mere::kernel::persistence::{
+            use kernel::persistence::{
                 PersistedEdge, PersistedEdgeFamily, PersistedResourceRecord,
                 PersistedSemanticStatement, PersistedShownResource,
             };
@@ -1496,14 +1496,14 @@ mod tests {
                 semantic: None,
                 assertions: Some(vec![PersistedSemanticStatement {
                     statement_id: "copied-tag-handle".into(),
-                    predicate: mere::kernel::graph::resource::TAGGED_WITH_IRI.into(),
+                    predicate: kernel::graph::resource::TAGGED_WITH_IRI.into(),
                     recognized_sub_kind: None,
                     label: Some("tag".into()),
-                    basis: mere::kernel::types::AssertionBasis {
+                    basis: kernel::types::AssertionBasis {
                         note: Some("tag".into()),
                         ..Default::default()
                     },
-                    graph_scope: mere::kernel::types::GraphScope::Default,
+                    graph_scope: kernel::types::GraphScope::Default,
                     provenance_iri: Some("https://tagger.test/".into()),
                     asserted_at_ms: Some(23),
                     first_asserted_ms: Some(23),
@@ -1659,7 +1659,7 @@ mod tests {
             product.placement = Some(PlacementProfile::RecordedStrataV1);
             let original_facets = product.facets.clone();
             let mut property =
-                mere::kernel::types::NodeProperty::new("urn:test:predicate".into(), "exact".into())
+                kernel::types::NodeProperty::new("urn:test:predicate".into(), "exact".into())
                     .with_metadata(Some("urn:test:source".into()), Some(42));
             property.statement_id = product
                 .graph
@@ -1674,7 +1674,7 @@ mod tests {
                 .facets
                 .set(
                     source.file,
-                    FacetId::new(mere::kernel::graph::node_facets::SEMANTIC_PROPERTIES),
+                    FacetId::new(kernel::graph::node_facets::SEMANTIC_PROPERTIES),
                     serde_json::to_value(vec![property]).unwrap(),
                     &AcceptAll,
                 )
@@ -1722,25 +1722,25 @@ mod tests {
             collision_snapshot.resources = [collision_resource, target_resource]
                 .into_iter()
                 .map(
-                    |canonical_iri| mere::kernel::persistence::PersistedResourceRecord {
+                    |canonical_iri| kernel::persistence::PersistedResourceRecord {
                         canonical_iri: canonical_iri.into(),
                         facets: Vec::new(),
                     },
                 )
                 .collect();
-            collision_snapshot.resource_edges = vec![mere::kernel::persistence::PersistedEdge {
+            collision_snapshot.resource_edges = vec![kernel::persistence::PersistedEdge {
                 from_node_id: collision_resource_id,
                 to_node_id: target_resource_id,
-                families: vec![mere::kernel::persistence::PersistedEdgeFamily::Semantic],
+                families: vec![kernel::persistence::PersistedEdgeFamily::Semantic],
                 semantic: None,
                 assertions: Some(vec![
-                    mere::kernel::persistence::PersistedSemanticStatement {
+                    kernel::persistence::PersistedSemanticStatement {
                         statement_id: "destination-resource-only".into(),
                         predicate: "urn:test:predicate".into(),
                         recognized_sub_kind: None,
                         label: Some("destination resource claim".into()),
-                        basis: mere::kernel::types::AssertionBasis::default(),
-                        graph_scope: mere::kernel::types::GraphScope::Default,
+                        basis: kernel::types::AssertionBasis::default(),
+                        graph_scope: kernel::types::GraphScope::Default,
                         provenance_iri: Some("urn:test:destination".into()),
                         asserted_at_ms: Some(17),
                         first_asserted_ms: Some(17),
@@ -1759,14 +1759,14 @@ mod tests {
                 .begin_profiled_session(collision_graph, Some(PlacementProfile::RecordedStrataV1))
                 .unwrap();
             let mut property =
-                mere::kernel::types::NodeProperty::new("urn:test:predicate".into(), "exact".into())
+                kernel::types::NodeProperty::new("urn:test:predicate".into(), "exact".into())
                     .with_metadata(Some("urn:test:source".into()), Some(42));
             property.statement_id = "destination-resource-only".into();
             product
                 .facets
                 .set(
                     source.file,
-                    FacetId::new(mere::kernel::graph::node_facets::SEMANTIC_PROPERTIES),
+                    FacetId::new(kernel::graph::node_facets::SEMANTIC_PROPERTIES),
                     serde_json::to_value(vec![property]).unwrap(),
                     &AcceptAll,
                 )
@@ -1816,7 +1816,7 @@ mod tests {
             );
             product.facets.remove(
                 &source.file,
-                &FacetId::new(mere::kernel::graph::node_facets::SEMANTIC_PROPERTIES),
+                &FacetId::new(kernel::graph::node_facets::SEMANTIC_PROPERTIES),
             );
             replace_payload(&mut manifest, &product);
             apply_transfer(
@@ -1933,9 +1933,9 @@ mod tests {
                 .as_mut()
                 .unwrap()
                 .push(carried.clone());
-            let record = mere::kernel::persistence::PersistedResourceRecord {
+            let record = kernel::persistence::PersistedResourceRecord {
                 canonical_iri: "urn:mere:replicated-note".into(),
-                facets: vec![mere::kernel::persistence::PersistedResourceFacet {
+                facets: vec![kernel::persistence::PersistedResourceFacet {
                     facet: "extension.origin-note".into(),
                     value_json: "{\"exact\":true}".into(),
                 }],
@@ -2225,7 +2225,7 @@ mod tests {
             assert!(product.graph.resource_edges.iter().any(|edge| {
                 edge.retained_assertions().iter().any(|statement| {
                     statement.recognized_sub_kind
-                        == Some(mere::kernel::persistence::PersistedSemanticSubKind::Cites)
+                        == Some(kernel::persistence::PersistedSemanticSubKind::Cites)
                 })
             }));
             assert_eq!(offer.blobs, manifest.blobs.len() as u64);
@@ -2246,8 +2246,8 @@ mod tests {
     /// under the copy's new ids, as the scene's own item roles are (F105).
     #[test]
     fn a_copy_remaps_the_spec_targets_item_roles() {
-        use mere::canvas::Role;
-        use mere::canvas::dynamics_spec::{DynamicsSpec, Node, Target};
+        use pictograph::canvas::Role;
+        use pictograph::canvas::dynamics_spec::{DynamicsSpec, Node, Target};
         let (kept, left, minted) = (Uuid::from_u128(1), Uuid::from_u128(2), Uuid::from_u128(3));
         let mut spec = DynamicsSpec::new(Node::preset("spring.rapier"));
         spec.target = Some(Target {
@@ -2273,8 +2273,8 @@ mod tests {
     /// any other facet is copied as it was.
     #[test]
     fn a_copied_scene_facet_is_remapped() {
-        use mere::canvas::Role;
-        use mere::canvas::dynamics_spec::{DynamicsSpec, Node, Target};
+        use pictograph::canvas::Role;
+        use pictograph::canvas::dynamics_spec::{DynamicsSpec, Node, Target};
         let (kept, minted) = (Uuid::from_u128(1), Uuid::from_u128(3));
         let ids = HashMap::from([(kept, minted)]);
         let mut spec = DynamicsSpec::new(Node::preset("spring.rapier"));

@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: MPL-2.0
 
 use eidetic::{CaptureContent, PageTextStore, ResourceCaptureStore};
-use mere::kernel::graph::Graph;
-use mere::kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta};
+use kernel::graph::Graph;
+use kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta};
 use muniment::MemoryBackend;
 
 #[test]

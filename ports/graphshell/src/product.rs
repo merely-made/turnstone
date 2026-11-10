@@ -10,19 +10,19 @@ use std::collections::{BTreeMap, BTreeSet, HashSet};
 
 use chartulary::AcceptAll;
 use chirograph::{PortableCardV1, Sha256NamedInformation};
-use mere::canvas::saved_scene::{self, SceneReadError};
-use mere::kernel::geometry::PortablePoint;
-use mere::kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta, assert_relation};
-use mere::kernel::graph::capture::{CapturedDelta, replay_captured_deltas_onto_checked};
-use mere::kernel::graph::node_facets::SEMANTIC_PROPERTIES;
-use mere::kernel::graph::predicate_declarations::PREDICATE_DECLARATIONS_FACET;
-use mere::kernel::graph::resource::TAGGED_WITH_IRI;
-use mere::kernel::graph::{
+use pictograph::canvas::saved_scene::{self, SceneReadError};
+use kernel::geometry::PortablePoint;
+use kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta, assert_relation};
+use kernel::graph::capture::{CapturedDelta, replay_captured_deltas_onto_checked};
+use kernel::graph::node_facets::SEMANTIC_PROPERTIES;
+use kernel::graph::predicate_declarations::PREDICATE_DECLARATIONS_FACET;
+use kernel::graph::resource::TAGGED_WITH_IRI;
+use kernel::graph::{
     ArrangementSubKind, ContainmentSubKind, EdgeAssertion, EdgeFamily, Graph, NodeFacetStore,
     NodeKey, RelationKind, SemanticSubKind, import_edits,
 };
-use mere::kernel::persistence::GraphSnapshot;
-use mere::kernel::types::NodeProperty;
+use kernel::persistence::GraphSnapshot;
+use kernel::types::NodeProperty;
 use muniment::Backend;
 use pandect::graph_placement::{PlacementProfile, materialize_snapshot};
 use pandect::{
@@ -45,7 +45,7 @@ use scenomise::projection::ProjectionSnapshot;
 /// What an undo kept because another author changed it since, in words for
 /// a status line (Scenograph editor plan, SE21). `None` when nothing was kept.
 pub fn kept_summary(kept: &[pandect::Kept]) -> Option<String> {
-    use mere::kernel::graph::Part;
+    use kernel::graph::Part;
     if kept.is_empty() {
         return None;
     }
@@ -750,7 +750,7 @@ pub(crate) fn product_import_edits(
     {
         for statement in edge.retained_assertions_mut() {
             statement.provenance_iri.get_or_insert_with(|| {
-                mere::kernel::graph::edge_data::UNKNOWN_LEGACY_ASSERTER_IRI.into()
+                kernel::graph::edge_data::UNKNOWN_LEGACY_ASSERTER_IRI.into()
             });
         }
     }
@@ -1075,14 +1075,14 @@ pub(crate) fn decode_codicil(bytes: &[u8]) -> Result<ProductCodicilV3, ProductEr
 
 #[cfg(test)]
 mod tests {
-    use mere::kernel::graph::{Author, ProvenanceSubKind, RelationKind};
+    use kernel::graph::{Author, ProvenanceSubKind, RelationKind};
     use muniment::MemoryBackend;
     use scenotime::ProjectionClock;
 
     use super::*;
     use pandect::access::AccessContext;
-    use mere::canvas::dynamics_spec::DynamicsSpec;
-    use mere::canvas::saved_scene::SavedRoles;
+    use pictograph::canvas::dynamics_spec::DynamicsSpec;
+    use pictograph::canvas::saved_scene::SavedRoles;
 
     /// The scene reads the canvas owns, as these tests call them.
     trait SceneReads {
@@ -1550,8 +1550,8 @@ mod tests {
         }));
     }
 
-    fn resource_selection_graph() -> (Graph, Vec<Uuid>, mere::kernel::persistence::PersistedEdge) {
-        use mere::kernel::persistence::{
+    fn resource_selection_graph() -> (Graph, Vec<Uuid>, kernel::persistence::PersistedEdge) {
+        use kernel::persistence::{
             PersistedEdge, PersistedEdgeFamily, PersistedResourceRecord,
             PersistedSemanticStatement, PersistedShownResource,
         };
@@ -1608,11 +1608,11 @@ mod tests {
                 predicate: predicate.into(),
                 recognized_sub_kind: None,
                 label: Some("retained relation".into()),
-                basis: mere::kernel::types::AssertionBasis {
+                basis: kernel::types::AssertionBasis {
                     note: Some("retained relation".into()),
                     ..Default::default()
                 },
-                graph_scope: mere::kernel::types::GraphScope::Default,
+                graph_scope: kernel::types::GraphScope::Default,
                 provenance_iri: Some("https://tagger.test/".into()),
                 asserted_at_ms: Some(23),
                 first_asserted_ms: Some(23),
@@ -1646,7 +1646,7 @@ mod tests {
 
     #[test]
     fn direct_selection_and_family_readers_lift_content_without_losing_surface_relations() {
-        use mere::kernel::persistence::{PersistedEdgeFamily, PersistedTraversalEdgeData};
+        use kernel::persistence::{PersistedEdgeFamily, PersistedTraversalEdgeData};
         let (mut graph, surfaces, _) = resource_selection_graph();
         let mut extras = Vec::new();
         for name in ["traversal", "layout", "unrelated"] {
@@ -1888,11 +1888,11 @@ mod tests {
 
     #[test]
     fn selection_keeps_statement_and_literal_declarations_to_a_fixed_point() {
-        use mere::kernel::graph::predicate_declarations::{
+        use kernel::graph::predicate_declarations::{
             PredicateDeclaration, PredicateDeclarations,
         };
-        use mere::kernel::graph::{Author, GraphStratum};
-        use mere::kernel::persistence::{PersistedResourceFacet, PersistedResourceRecord};
+        use kernel::graph::{Author, GraphStratum};
+        use kernel::persistence::{PersistedResourceFacet, PersistedResourceRecord};
 
         const SURFACE: &str = "https://vocab.test/predicates#surface";
         const RESOURCE: &str = "https://vocab.test/predicates#resource";
@@ -2152,7 +2152,7 @@ mod tests {
         let journal = host.graph_session().journal().entries().len();
         for collision in [false, true] {
             let mut property =
-                mere::kernel::types::NodeProperty::new("urn:test:predicate".into(), "exact".into())
+                kernel::types::NodeProperty::new("urn:test:predicate".into(), "exact".into())
                     .with_metadata(Some("urn:test:source".into()), Some(42));
             property.statement_id = if collision {
                 held.clone()
@@ -2394,11 +2394,11 @@ mod tests {
 
     #[test]
     fn product_import_preserves_distinct_handles_and_rejects_collisions_atomically() {
-        use mere::kernel::graph::GraphStratum;
-        use mere::kernel::graph::predicate_declarations::{
+        use kernel::graph::GraphStratum;
+        use kernel::graph::predicate_declarations::{
             PredicateDeclaration, PredicateDeclarations,
         };
-        use mere::kernel::persistence::{PersistedResourceFacet, PersistedResourceRecord};
+        use kernel::persistence::{PersistedResourceFacet, PersistedResourceRecord};
         const IMPORT_PREDICATE: &str = "https://vocab.test/import#custom";
         let (graph, surfaces, tag) = resource_selection_graph();
         let mut codicil = ProductCodicilV3 {
@@ -2458,7 +2458,7 @@ mod tests {
         assert_eq!(resource.id(), resource_id);
         assert_eq!(resource.canonical_iri(), IMPORT_PREDICATE);
         assert_eq!(
-            mere::kernel::graph::predicate_declarations::predicate_declarations_from_record(record)
+            kernel::graph::predicate_declarations::predicate_declarations_from_record(record)
                 .unwrap(),
             Some(declarations),
             "all declaration variants, authors, times and selection survive"
@@ -2580,7 +2580,7 @@ mod tests {
             .unwrap();
         assert_eq!(
             legacy_claim.provenance_iri.as_deref(),
-            Some(mere::kernel::graph::edge_data::UNKNOWN_LEGACY_ASSERTER_IRI)
+            Some(kernel::graph::edge_data::UNKNOWN_LEGACY_ASSERTER_IRI)
         );
         assert_eq!(legacy_claim.asserted_at_ms, Some(23));
         let known_claim = normalized
@@ -2634,48 +2634,48 @@ mod tests {
             "cartography": CartographyGeometry::default(),
         });
         let scene: SavedSceneV2 = serde_json::from_value(legacy).expect("a legacy scene opens");
-        assert_eq!(scene.physics_law, mere::canvas::PhysicsLaw::Springs.id());
+        assert_eq!(scene.physics_law, pictograph::canvas::PhysicsLaw::Springs.id());
         assert!(scene.physics_overlays.is_empty());
         assert_eq!(
             scene.physics_kind_source,
-            mere::canvas::PhysicsKindSource::Site.id()
+            pictograph::canvas::PhysicsKindSource::Site.id()
         );
         assert_eq!(
             scene.physics_group_source,
-            mere::canvas::PhysicsKindSource::Site.id(),
+            pictograph::canvas::PhysicsKindSource::Site.id(),
             "a scene saved before the groups channel pulls by site, as it did"
         );
         assert_eq!(
             scene.physics_mass_source,
-            mere::canvas::PhysicsMassSource::Degree.id()
+            pictograph::canvas::PhysicsMassSource::Degree.id()
         );
         assert_eq!(
             scene.physics_depth_source,
-            mere::canvas::PhysicsDepthSource::Roots.id()
+            pictograph::canvas::PhysicsDepthSource::Roots.id()
         );
 
         let chosen = SavedSceneV2 {
-            physics_law: mere::canvas::PhysicsLaw::Kinds.id().to_string(),
+            physics_law: pictograph::canvas::PhysicsLaw::Kinds.id().to_string(),
             physics_overlays: vec![
-                mere::canvas::PhysicsOverlay::Tide.id().to_string(),
-                mere::canvas::PhysicsOverlay::GridSnap.id().to_string(),
+                pictograph::canvas::PhysicsOverlay::Tide.id().to_string(),
+                pictograph::canvas::PhysicsOverlay::GridSnap.id().to_string(),
             ],
-            physics_kind_source: mere::canvas::PhysicsKindSource::Cluster.id().to_string(),
-            physics_group_source: mere::canvas::PhysicsKindSource::Meaning.id().to_string(),
-            physics_mass_source: mere::canvas::PhysicsMassSource::PageRank.id().to_string(),
-            physics_depth_source: mere::canvas::PhysicsDepthSource::Focus.id().to_string(),
+            physics_kind_source: pictograph::canvas::PhysicsKindSource::Cluster.id().to_string(),
+            physics_group_source: pictograph::canvas::PhysicsKindSource::Meaning.id().to_string(),
+            physics_mass_source: pictograph::canvas::PhysicsMassSource::PageRank.id().to_string(),
+            physics_depth_source: pictograph::canvas::PhysicsDepthSource::Focus.id().to_string(),
             ..scene
         };
         let json = serde_json::to_string(&chosen).expect("encodes");
         let back: SavedSceneV2 = serde_json::from_str(&json).expect("decodes");
         assert_eq!(back, chosen);
         assert_eq!(
-            mere::canvas::PhysicsLaw::parse(&back.physics_law),
-            Some(mere::canvas::PhysicsLaw::Kinds)
+            pictograph::canvas::PhysicsLaw::parse(&back.physics_law),
+            Some(pictograph::canvas::PhysicsLaw::Kinds)
         );
         assert_eq!(
-            mere::canvas::PhysicsKindSource::parse(&back.physics_group_source),
-            Some(mere::canvas::PhysicsKindSource::Meaning)
+            pictograph::canvas::PhysicsKindSource::parse(&back.physics_group_source),
+            Some(pictograph::canvas::PhysicsKindSource::Meaning)
         );
     }
 
@@ -2685,7 +2685,7 @@ mod tests {
     /// and an unknown role id fails rather than falling back.
     #[test]
     fn saved_scene_roles_read_old_pulls_as_they_behaved_and_round_trip() {
-        use mere::canvas::Role;
+        use pictograph::canvas::Role;
         let legacy = |pull: f32| {
             serde_json::json!({
                 "name": "Before the roles",
@@ -2717,7 +2717,7 @@ mod tests {
             unpulled.roles().unwrap(),
             (
                 SavedRoles::uniform(Role::Seeded),
-                mere::canvas::DEFAULT_ANCHOR_STIFFNESS
+                pictograph::canvas::DEFAULT_ANCHOR_STIFFNESS
             ),
             "no pull was the seed-only reading"
         );
@@ -2879,7 +2879,7 @@ mod tests {
         let target = reopened.dynamics_spec().unwrap().target.unwrap();
         assert_eq!(
             (target.default_role, target.anchored_pull, target.groups),
-            (mere::canvas::Role::Anchored, 12.0, None),
+            (pictograph::canvas::Role::Anchored, 12.0, None),
             "anchored at its old pull"
         );
         assert_eq!(
@@ -2956,10 +2956,10 @@ mod tests {
             .unwrap();
         assert!(matches!(
             handle,
-            mere::kernel::graph::RelationKey::Resource(_)
+            kernel::graph::RelationKey::Resource(_)
         ));
         assert!(
-            payload.has_relation(mere::kernel::graph::RelationSelector::Semantic(
+            payload.has_relation(kernel::graph::RelationSelector::Semantic(
                 SemanticSubKind::Cites
             ))
         );
@@ -2967,7 +2967,7 @@ mod tests {
         assert!(reopened.graph().projected_relations().any(|(_, relation)| {
             relation.kind == RelationKind::Provenance(ProvenanceSubKind::GeneratedFrom)
         }));
-        let normalized_edges = |edges: &[mere::kernel::persistence::PersistedEdge]| {
+        let normalized_edges = |edges: &[kernel::persistence::PersistedEdge]| {
             let mut edges: Vec<_> = edges
                 .iter()
                 .map(|edge| serde_json::to_string(edge).unwrap())
@@ -3003,10 +3003,10 @@ mod tests {
     mod dynamics {
         use std::collections::BTreeMap;
 
-        use mere::canvas::dynamics_spec::{
+        use pictograph::canvas::dynamics_spec::{
             Bar, DynamicsSpec, GroupRoles, Node, Observable, Realization, Stage, Stop, Target,
         };
-        use mere::canvas::{PhysicsLaw, PhysicsOverlay, Role};
+        use pictograph::canvas::{PhysicsLaw, PhysicsOverlay, Role};
 
         use super::*;
 
@@ -3268,7 +3268,7 @@ mod tests {
             assert_eq!(spec.root, law(PhysicsLaw::Springs));
             assert_eq!(
                 spec.channels,
-                mere::canvas::PhysicsChoice::default().into_spec().channels
+                pictograph::canvas::PhysicsChoice::default().into_spec().channels
             );
             let target = spec.target.unwrap();
             assert_eq!(target.arrangement, DEFAULT_ARRANGEMENT);
@@ -3290,7 +3290,7 @@ mod tests {
                 (target.default_role, target.anchored_pull),
                 (
                     Role::Seeded,
-                    f64::from(mere::canvas::DEFAULT_ANCHOR_STIFFNESS)
+                    f64::from(pictograph::canvas::DEFAULT_ANCHOR_STIFFNESS)
                 )
             );
         }
@@ -3424,7 +3424,7 @@ mod tests {
             let mut host = host();
             let web = web(&host);
             let spec = runnable(web);
-            mere::canvas::dynamics_spec::bind(&spec).expect("a runnable spec binds");
+            pictograph::canvas::dynamics_spec::bind(&spec).expect("a runnable spec binds");
             let scene = SavedSceneV3 {
                 selected: vec![web],
                 // Fractional positions from the headed Save failure must survive
@@ -3666,7 +3666,7 @@ mod tests {
                     saved_scene::read_dynamics(&codicil.scene.unwrap().dynamics),
                     Ok(spec.clone())
                 );
-                let refusal = mere::canvas::dynamics_spec::derive(&spec)
+                let refusal = pictograph::canvas::dynamics_spec::derive(&spec)
                     .unwrap_err()
                     .to_string();
                 if depth == 33 {
@@ -3730,7 +3730,7 @@ mod tests {
         /// objects on two sites in a ring, and a scene whose spec runs
         /// Charge between the sites' groups and Springs within.
         fn grouping_codicil() -> ProductCodicilV3 {
-            use mere::kernel::graph::EdgeAssertion;
+            use kernel::graph::EdgeAssertion;
             let mut graph = Graph::new();
             let keys: Vec<_> = (0..8u128)
                 .map(|i| {
@@ -3764,11 +3764,11 @@ mod tests {
                 weight: 1.0,
                 overlays: Vec::new(),
             });
-            spec.channels = mere::canvas::PhysicsChoice::default().into_spec().channels;
+            spec.channels = pictograph::canvas::PhysicsChoice::default().into_spec().channels;
             spec.realization = Realization::Integrate { damping: Some(0.7) };
             spec.target = Some(Target {
                 arrangement: "grid.default".into(),
-                anchored_pull: f64::from(mere::canvas::DEFAULT_ANCHOR_STIFFNESS),
+                anchored_pull: f64::from(pictograph::canvas::DEFAULT_ANCHOR_STIFFNESS),
                 default_role: Role::Seeded,
                 groups: None,
                 items: BTreeMap::new(),

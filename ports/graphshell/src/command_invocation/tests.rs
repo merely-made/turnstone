@@ -28,7 +28,7 @@ fn request(commands: &CommandSet, id: &str) -> Invocation {
     serde_json::from_slice(&serde_json::to_vec(&invocation).unwrap()).unwrap()
 }
 
-fn state(canvas: &Canvas) -> (mere::canvas::CameraView, bool, bool) {
+fn state(canvas: &Canvas) -> (pictograph::canvas::CameraView, bool, bool) {
     (
         canvas.camera(),
         canvas.physics_paused(),
@@ -211,7 +211,7 @@ fn zoom_limits_do_not_report_done_or_stop_layout_following() {
     let mut canvas = fixture();
     let (low, high) = canvas.zoom_range();
     for (zoom, id) in [(high, ids::VIEW_ZOOM_IN), (low, ids::VIEW_ZOOM_OUT)] {
-        canvas.set_camera(mere::canvas::CameraView {
+        canvas.set_camera(pictograph::canvas::CameraView {
             zoom,
             offset: (12.0, 18.0),
         });

@@ -9,9 +9,9 @@
 use athanor::alembic::workshop::{Acceptance, Owner, Passage, Proposal, Receipt};
 use athanor::workshop_destination as destination;
 use graphshell_host::mere_host::{MereHost, MereHostError};
-use mere::kernel::graph::Author;
-use mere::kernel::graph::apply::GraphDelta;
-use mere::kernel::time::wall_clock_now;
+use kernel::graph::Author;
+use kernel::graph::apply::GraphDelta;
+use kernel::time::wall_clock_now;
 use servitor::AuthorityProvider;
 
 /// The alembic workshop's owner operations over [`MereHost`] (engine split

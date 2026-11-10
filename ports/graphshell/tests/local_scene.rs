@@ -7,7 +7,7 @@
 
 use graphshell::app::GraphshellApp;
 use graphshell_host::mere_host::{FIXTURE_PERSONA_ADDRESS, FIXTURE_WEB_ADDRESS, SelectedPersonaRef};
-use mere::canvas::{CameraView, Canvas, Face, Role};
+use pictograph::canvas::{CameraView, Canvas, Face, Role};
 use muniment::MemoryBackend;
 
 #[test]

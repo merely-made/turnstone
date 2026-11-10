@@ -11,7 +11,7 @@
 //! A host paints the non-zero fill rule only, so a sheet that asks for another is refused
 //! at construction instead of being drawn wrongly.
 
-use mere::canvas::backdrop_surface::SurfaceTheme;
+use pictograph::canvas::backdrop_surface::SurfaceTheme;
 pub use sprigging::ColorF;
 use sprigging::{
     Leaf, PaintCx, Path, Size, SizeHint, StrokeCap, StrokeJoin, StrokeStyle,

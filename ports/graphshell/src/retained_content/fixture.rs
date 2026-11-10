@@ -72,7 +72,7 @@ pub async fn seed<B: pandect::graph_session::LegacyTransactionBackend + Clone>(
         .get_node_key_by_id(member)
         .ok_or("Missing fixture member")?;
     app.host.mutate_product_graph(|graph| {
-        use mere::kernel::graph::apply::{apply_graph_delta, GraphDelta};
+        use kernel::graph::apply::{apply_graph_delta, GraphDelta};
         apply_graph_delta(graph, GraphDelta::SetNodeMimeHint { key, mime_hint: Some("text/html".into()) });
         apply_graph_delta(graph, GraphDelta::SetNodeBody { key, body: Some("<!doctype html><html><head><style>body{background:#faf8ef;color:#18292a;font-family:sans-serif;padding:18px}h1{color:#126975}a{color:#165bb0}</style></head><body><h1>Native retained content</h1><p>This saved HTML is rendered by Genet inside Graphshell's Pelt tile.</p><a href='https://retained.example/notes'>Held local link</a><p>Source bytes stay in this Mere. Browsing this view issues no page fetch.</p></body></html>".into()) });
     }).map_err(|e| e.to_string())?;
@@ -118,7 +118,7 @@ pub async fn seed_reading<B: pandect::graph_session::LegacyTransactionBackend + 
     let member = crate::local_intake::create_address(app, address, "Reading from the graph")?;
     let key = app.host.graph().get_node_key_by_id(member).ok_or("Missing reading fixture member")?;
     app.host.mutate_product_graph(|graph| {
-        use mere::kernel::graph::apply::{apply_graph_delta, GraphDelta};
+        use kernel::graph::apply::{apply_graph_delta, GraphDelta};
         apply_graph_delta(graph, GraphDelta::SetNodeMimeHint { key, mime_hint: Some("application/vnd.mere.document+json".into()) });
         apply_graph_delta(graph, GraphDelta::SetNodeBody { key, body: Some(body) });
     }).map_err(|e| e.to_string())?;
@@ -133,7 +133,7 @@ pub async fn seed_reading<B: pandect::graph_session::LegacyTransactionBackend + 
     let other=crate::local_intake::create_address(app,related_address,"Relationship field notes")?;
     let other_key=app.host.graph().get_node_key_by_id(other).ok_or("Missing related fixture member")?;
     app.host.mutate_product_graph(|graph| {
-        use mere::kernel::graph::{apply::{apply_graph_delta,GraphDelta,assert_relation},EdgeAssertion,SemanticSubKind};
+        use kernel::graph::{apply::{apply_graph_delta,GraphDelta,assert_relation},EdgeAssertion,SemanticSubKind};
         apply_graph_delta(graph,GraphDelta::SetNodeMimeHint{key:other_key,mime_hint:Some("application/vnd.mere.document+json".into())});
         apply_graph_delta(graph,GraphDelta::SetNodeBody{key:other_key,body:Some(related_body)});
         assert_relation(graph,key,other_key,EdgeAssertion::Semantic{sub_kind:SemanticSubKind::Cites,label:None}).expect("fixture endpoints");

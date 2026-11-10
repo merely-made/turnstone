@@ -119,7 +119,7 @@ fn snapshot(
     for (index, (adapter, id, title, media)) in sources.iter().enumerate() {
         let bytes = if *adapter == wire::SESSION_ITEM_SOURCE {
             card(title, &[], media.clone())
-        } else if *adapter == mere::canvas::MERE_GRAPH_ADAPTER {
+        } else if *adapter == pictograph::canvas::MERE_GRAPH_ADAPTER {
             card(title, &[("Address", ADDRESS)], media.clone())
         } else {
             card(title, &[], media.clone())
@@ -205,7 +205,7 @@ fn fixture_with_state(
 ) -> (FixtureTransport, SessionId) {
     let id = SessionId(uuid::Uuid::from_u128(id));
     let material_bytes = if with_material {
-        let graph = mere::kernel::graph::Graph::new().to_snapshot();
+        let graph = kernel::graph::Graph::new().to_snapshot();
         let mut view = incipit::view::ViewIntent::default();
         view.focus = focus.map(str::to_owned);
         view.strategy = strategy.map(str::to_owned);
@@ -239,7 +239,7 @@ fn fixture_with_state(
                     vec![]
                 },
             ),
-            (mere::canvas::MERE_GRAPH_ADAPTER, RECORD, "One", vec![]),
+            (pictograph::canvas::MERE_GRAPH_ADAPTER, RECORD, "One", vec![]),
         ],
     );
     if with_material {

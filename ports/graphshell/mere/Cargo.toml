@@ -56,7 +56,8 @@ dramatis.workspace = true
 personae.workspace = true
 genet-scripted-dom.workspace = true
 layout_dom_api.workspace = true
-mere = { path = "../../../crates/mere", default-features = false, features = ["graph", "canvas", "physics-engine"] }
+kernel.workspace = true
+pictograph = { workspace = true, features = ["canvas", "physics-engine"] }
 serde_json.workspace = true
 tempfile = "3"
 uuid.workspace = true

@@ -9,7 +9,7 @@
 use crate::access_inspection::AccessSummary;
 #[cfg(feature = "workspace-editor")]
 use crate::forme_workspace::FormeWorkspace;
-use mere::kernel::graph::{
+use kernel::graph::{
     Coupling, CouplingId, CouplingResponse, CoverageNote, Field, FieldDefinition, FieldExtent,
     FieldId, Graph,
 };

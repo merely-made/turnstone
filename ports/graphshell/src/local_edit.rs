@@ -6,7 +6,7 @@
 
 //! Typed local detail edits, independent of a browser form or presenter.
 use crate::product::ProductHost;
-use mere::canvas::Canvas;
+use pictograph::canvas::Canvas;
 use muniment::Backend;
 use uuid::Uuid;
 
@@ -162,12 +162,12 @@ pub fn sync_canvas_metadata(canvas: &mut Canvas, saved: &NodeMetadata) -> Result
 /// Copy hosted tagging claims exactly instead of minting claims from display labels.
 pub fn sync_canvas_metadata_from_graph(
     canvas: &mut Canvas,
-    source: &mere::kernel::graph::Graph,
+    source: &kernel::graph::Graph,
     saved: &NodeMetadata,
 ) -> Result<(), String> {
-    use mere::kernel::graph::CapturedDelta;
-    use mere::kernel::graph::resource::TAGGED_WITH_IRI;
-    use mere::kernel::persistence::PersistedEdge;
+    use kernel::graph::CapturedDelta;
+    use kernel::graph::resource::TAGGED_WITH_IRI;
+    use kernel::persistence::PersistedEdge;
     use std::collections::BTreeSet;
     let (key, node) = source
         .get_node_by_id(saved.member)
@@ -241,12 +241,12 @@ pub fn sync_canvas_metadata_from_graph(
 }
 
 fn select_metadata_edge(
-    mut edge: mere::kernel::persistence::PersistedEdge,
+    mut edge: kernel::persistence::PersistedEdge,
     tags: bool,
-) -> Option<mere::kernel::persistence::PersistedEdge> {
-    use mere::kernel::graph::resource::TAGGED_WITH_IRI;
-    use mere::kernel::graph::{EdgeFamily, RelationKind};
-    use mere::kernel::persistence::PersistedEdgeFamily;
+) -> Option<kernel::persistence::PersistedEdge> {
+    use kernel::graph::resource::TAGGED_WITH_IRI;
+    use kernel::graph::{EdgeFamily, RelationKind};
+    use kernel::persistence::PersistedEdgeFamily;
     use std::collections::BTreeSet;
 
     let mut assertions = edge.retained_assertions().to_vec();
@@ -301,11 +301,11 @@ mod tests;
 #[cfg(test)]
 mod exact_record_adapter_tests {
     use super::*;
-    use mere::kernel::graph::{ContainmentSubKind, EdgeFamily, RelationKind};
-    use mere::kernel::persistence::{
+    use kernel::graph::{ContainmentSubKind, EdgeFamily, RelationKind};
+    use kernel::persistence::{
         PersistedEdge, PersistedEdgeFamily, PersistedSemanticStatement,
     };
-    use mere::kernel::types::{AssertionBasis, GraphScope};
+    use kernel::types::{AssertionBasis, GraphScope};
 
     fn assertion(id: &str, predicate: &str) -> PersistedSemanticStatement {
         PersistedSemanticStatement {
@@ -341,7 +341,7 @@ mod exact_record_adapter_tests {
             imported: None,
             provenance: None,
             assertions: Some(vec![
-                assertion("tag-1", mere::kernel::graph::resource::TAGGED_WITH_IRI),
+                assertion("tag-1", kernel::graph::resource::TAGGED_WITH_IRI),
                 assertion("containment-1", containment),
                 assertion("containment-2", containment),
             ]),

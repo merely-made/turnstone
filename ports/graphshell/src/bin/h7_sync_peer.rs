@@ -26,7 +26,7 @@ use pandect::personal_sync::{
     BlobAvailabilityObservation, PersonalGraphEvent, PersonalGraphReplica, SyncProjection,
     SyncRoster, SyncSelection, accept_into,
 };
-use mere::kernel::graph::{EdgeAssertion, RelationKind, SemanticSubKind};
+use kernel::graph::{EdgeAssertion, RelationKind, SemanticSubKind};
 use muniment::RedbBackend;
 use personae::{IdentityProvider, InMemoryProvider};
 use serde::Serialize;
