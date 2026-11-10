@@ -939,7 +939,6 @@ impl SavedProduct {
         let intent = app
             .host
             .view(graphshell::mere_host::GRAPHSHELL, "canvas")
-            .cloned()
             .unwrap_or_default();
         let canvas_hidden: std::collections::BTreeSet<_> =
             canvas.hidden_link_keys().into_iter().collect();

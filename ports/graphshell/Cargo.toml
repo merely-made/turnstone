@@ -106,6 +106,7 @@ native = [
     "dep:rand_core",
     "dep:serde",
     "dep:pandect",
+    "dep:incipit",
     "dep:sporran",
     "dep:signature",
     "dep:ssh-agent-lib",
@@ -187,6 +188,7 @@ web = [
     "dep:mere-overmap",
     "dep:muniment",
     "dep:pandect",
+    "dep:incipit",
     "dep:sporran",
     "dep:serde",
     "dep:sha2",
@@ -265,6 +267,8 @@ muniment = { workspace = true, optional = true }
 # too, so it sits here rather than in the native-only table (reservoir plan
 # §7 item 26).
 pandect = { workspace = true, optional = true }
+# The view state MereHost reads and writes through the session (engine split D78).
+incipit = { workspace = true, features = ["view"], optional = true }
 sporran = { workspace = true, optional = true }
 platen = { path = "../../crates/platen/platen", default-features = false, optional = true }
 scenograph.workspace = true

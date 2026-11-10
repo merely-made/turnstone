@@ -120,7 +120,7 @@ impl<B: pandect::graph_session::LegacyTransactionBackend + Clone> MereHost<B> {
         let author = author_of(&self.selected_persona, via);
         let key = ViewKey::new(via, view)?;
         self.graph_session
-            .transact_view(author, key, state, wall_clock_now())
+            .transact_view(author, key, super::encode_view(&state), wall_clock_now())
             .await?;
         self.projection_revision = self.projection_revision.wrapping_add(1);
         Ok(())
@@ -302,7 +302,7 @@ mod tests {
             );
             assert_eq!(
                 host.view("cleromancy", "reading"),
-                Some(&ViewIntent::default())
+                Some(ViewIntent::default())
             );
             assert_eq!(host.projection_revision(), view_revision);
             assert_eq!(bytes(&store.inner).await, before);

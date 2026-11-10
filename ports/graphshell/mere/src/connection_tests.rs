@@ -206,7 +206,7 @@ fn fixture_with_state(
     let id = SessionId(uuid::Uuid::from_u128(id));
     let material_bytes = if with_material {
         let graph = mere::kernel::graph::Graph::new().to_snapshot();
-        let mut view = pandect::ViewIntent::default();
+        let mut view = incipit::view::ViewIntent::default();
         view.focus = focus.map(str::to_owned);
         view.strategy = strategy.map(str::to_owned);
         serde_json::to_vec(&SessionGraphV1 {

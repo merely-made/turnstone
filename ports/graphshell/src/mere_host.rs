@@ -26,11 +26,12 @@ use mere::kernel::persistence::GraphSnapshot;
 use mere::kernel::time::wall_clock_now;
 use muniment::{Backend, JsonSlots, StoreError};
 /// The view types a host writes through [`MereHost::set_view_now`].
-pub use pandect::ViewIntent as SessionViewIntent;
+pub use incipit::view::ViewIntent as SessionViewIntent;
+use incipit::view::{VIEW_INTENT_SCHEMA, ViewIntent};
 use pandect::graph_placement::{PlacementProfile, materialize_snapshot};
 use pandect::graph_session::{CommitExtra, LegacyTransactionBackend};
 use pandect::{
-    GraphSession, MereSessions, Pending, Reverted, SessionError, SessionId, ViewIntent, ViewKey,
+    GraphSession, MereSessions, Pending, Reverted, SessionError, SessionId, ViewKey, ViewState,
 };
 use sceno::{
     Arrangement, Footprint, InstanceId, LinkKey, LinkStratum, ProjectedItem, Rect, Representation,
@@ -277,6 +278,12 @@ pub(crate) struct Candidate<B> {
 
 fn saved_at(saved_at_secs: u64) -> SystemTime {
     SystemTime::UNIX_EPOCH + Duration::from_secs(saved_at_secs)
+}
+
+/// A view intent as the session stores it: an opaque state under incipit's
+/// schema (engine split D44, D78).
+fn encode_view(state: &ViewIntent) -> ViewState {
+    ViewState::encode(VIEW_INTENT_SCHEMA, state).expect("a view intent encodes as JSON")
 }
 
 fn author_of(persona: &SelectedPersonaRef, via: &str) -> Author {
@@ -968,14 +975,16 @@ impl<B: Backend> MereHost<B> {
     ) -> Result<(), MereHostError> {
         let key = ViewKey::new(via, view)?;
         let author = author_of(&self.selected_persona, via);
-        self.graph_session.set_view(author, key, state).await?;
+        self.graph_session
+            .set_view(author, key, encode_view(&state))
+            .await?;
         Ok(())
     }
 
     /// `via`'s view named `view`, if it has one.
-    pub fn view(&self, via: &str, view: &str) -> Option<&ViewIntent> {
+    pub fn view(&self, via: &str, view: &str) -> Option<ViewIntent> {
         let key = ViewKey::new(via, view).ok()?;
-        self.graph_session.view(&key)
+        self.graph_session.view(&key)?.decode(VIEW_INTENT_SCHEMA)
     }
 
     /// [`set_view`](Self::set_view), not stored until the next batch.
@@ -987,7 +996,8 @@ impl<B: Backend> MereHost<B> {
     ) -> Result<(), MereHostError> {
         let key = ViewKey::new(via, view)?;
         let author = author_of(&self.selected_persona, via);
-        self.graph_session.set_view_now(author, key, state)?;
+        self.graph_session
+            .set_view_now(author, key, encode_view(&state))?;
         Ok(())
     }
 
@@ -1136,7 +1146,9 @@ impl<B: Backend> MereHost<B> {
                     .graph_session
                     .views()
                     .filter(|(key, _)| key.app() == self.via)
-                    .map(|(key, state)| (key.view().to_owned(), state.clone()))
+                    .filter_map(|(key, state)| {
+                        Some((key.view().to_owned(), state.decode(VIEW_INTENT_SCHEMA)?))
+                    })
                     .collect(),
                 session: self.graph_session.id(),
                 read_only: self.graph_session.manifest().codicil_read_only,
