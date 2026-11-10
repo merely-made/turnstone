@@ -99,9 +99,11 @@ fn composition_test_view(state: &SettingsState) -> SettingsView {
 
 fn pane(root: &std::path::Path) -> SettingsPane {
     let initial = ApplicationSettings {
-        theme: Some(tabard::theme::choice::ThemeChoice::new(
-            tabard::theme::registry::THEME_ID_HIGH_CONTRAST,
-            None,
+        theme: Some(crate::appearance::stored_of(
+            &tabard::theme::choice::ThemeChoice::new(
+                tabard::theme::registry::THEME_ID_HIGH_CONTRAST,
+                None,
+            ),
         )),
         ..ApplicationSettings::default()
     };

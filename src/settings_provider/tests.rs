@@ -80,7 +80,7 @@ fn theme_and_mode_edits_preserve_family_requests_through_reopening() {
         serde_json::from_str(r#"{"interface":["Absent face","serif"],"reading":["monospace"]}"#)
             .unwrap();
     let mut settings = ApplicationSettings::default();
-    settings.theme = Some(choice.clone());
+    settings.theme = Some(crate::appearance::stored_of(&choice));
     let mut provider = ApplicationSettingsProvider::from_settings(&root, settings);
     let reference = SettingsRef(APPLICATION_REFERENCE.into());
     provider
@@ -104,7 +104,7 @@ fn theme_and_mode_edits_preserve_family_requests_through_reopening() {
         )
         .unwrap();
     assert_eq!(
-        provider.settings().theme.as_ref().unwrap().fonts,
+        crate::appearance::choice_of(provider.settings().theme.as_ref().unwrap()).fonts,
         choice.fonts
     );
     let reopened = ApplicationSettingsProvider::load(&root).unwrap();
@@ -146,11 +146,16 @@ fn saved_workshop_definition_becomes_available_without_selecting_it_until_apply(
     let reopened = ApplicationSettingsProvider::load(&root)
         .unwrap()
         .with_theme_library(&library);
-    assert_eq!(reopened.settings().theme, Some(saved));
+    assert_eq!(
+        reopened.settings().theme,
+        Some(crate::appearance::stored_of(&saved))
+    );
     assert_eq!(
         reopened
             .catalog()
-            .resolve(reopened.settings().theme.as_ref().unwrap())
+            .resolve(&crate::appearance::choice_of(
+                reopened.settings().theme.as_ref().unwrap()
+            ))
             .unwrap()
             .resolved
             .theme_mode,
@@ -168,7 +173,7 @@ fn missing_identity_and_custom_mode_remain_stored_while_visible_fallback_is_used
         Some(Mode::Custom("concert".into())),
     );
     let settings = ApplicationSettings {
-        theme: Some(requested.clone()),
+        theme: Some(crate::appearance::stored_of(&requested)),
         ..Default::default()
     };
     let mut provider =
@@ -187,7 +192,10 @@ fn missing_identity_and_custom_mode_remain_stored_while_visible_fallback_is_used
     let reopened = ApplicationSettingsProvider::load(&root)
         .unwrap()
         .with_theme_library(&library);
-    assert_eq!(reopened.settings().theme, Some(requested));
+    assert_eq!(
+        reopened.settings().theme,
+        Some(crate::appearance::stored_of(&requested))
+    );
 }
 
 #[test]
@@ -313,7 +321,9 @@ fn authored_custom_modes_are_offered_only_by_the_selected_definition() {
         .unwrap();
     let resolved = provider
         .catalog()
-        .resolve(provider.settings().theme.as_ref().unwrap())
+        .resolve(&crate::appearance::choice_of(
+            provider.settings().theme.as_ref().unwrap(),
+        ))
         .unwrap();
     assert_eq!(
         resolved.presentation,
@@ -427,7 +437,10 @@ fn legacy_mode_without_id_survives_load_and_an_unrelated_write() {
     let mut provider = ApplicationSettingsProvider::load(&root).unwrap();
     assert_eq!(
         provider.settings().theme,
-        Some(ThemeChoice::new("", Some(Mode::Light)))
+        Some(crate::appearance::stored_of(&ThemeChoice::new(
+            "",
+            Some(Mode::Light)
+        )))
     );
     let snapshot = crate::settings_pane::ChromeSettings::from(provider.settings());
     assert_eq!(snapshot.theme_id(), None);
@@ -464,7 +477,10 @@ fn theme_id_and_mode_edits_preserve_the_other_value() {
         .unwrap();
     assert_eq!(
         provider.settings().theme,
-        Some(ThemeChoice::new("", Some(Mode::Light)))
+        Some(crate::appearance::stored_of(&ThemeChoice::new(
+            "",
+            Some(Mode::Light)
+        )))
     );
     provider
         .apply(
@@ -475,7 +491,10 @@ fn theme_id_and_mode_edits_preserve_the_other_value() {
         .unwrap();
     assert_eq!(
         provider.settings().theme,
-        Some(ThemeChoice::new("theme:dark", Some(Mode::Light)))
+        Some(crate::appearance::stored_of(&ThemeChoice::new(
+            "theme:dark",
+            Some(Mode::Light)
+        )))
     );
     provider
         .apply(&reference, "theme.mode", SettingValue::Text("dark".into()))
@@ -485,7 +504,10 @@ fn theme_id_and_mode_edits_preserve_the_other_value() {
         .unwrap();
     assert_eq!(
         provider.settings().theme,
-        Some(ThemeChoice::new("", Some(Mode::Dark)))
+        Some(crate::appearance::stored_of(&ThemeChoice::new(
+            "",
+            Some(Mode::Dark)
+        )))
     );
     let restored = ApplicationSettingsProvider::load(&root).unwrap();
     assert_eq!(restored.settings().theme, provider.settings().theme);
@@ -519,7 +541,10 @@ fn theme_id_and_mode_edits_preserve_the_other_value() {
         .unwrap();
     assert_eq!(
         provider.settings().theme,
-        Some(ThemeChoice::new("theme:dark", None))
+        Some(crate::appearance::stored_of(&ThemeChoice::new(
+            "theme:dark",
+            None
+        )))
     );
     let _ = std::fs::remove_dir_all(root);
 }

@@ -449,7 +449,10 @@ fn same_value_explicit_theme_apply_advances_choice_revision_and_preserves_choice
 
     let temporary = tempfile::tempdir().unwrap();
     let mut settings = ApplicationSettings::default();
-    settings.theme = Some(ThemeChoice::new("theme:dark", Some(Mode::Dark)));
+    settings.theme = Some(crate::appearance::stored_of(&ThemeChoice::new(
+        "theme:dark",
+        Some(Mode::Dark),
+    )));
     let owner = SharedApplicationSettingsOwner::new(ApplicationSettingsProvider::from_settings(
         temporary.path(),
         settings.clone(),

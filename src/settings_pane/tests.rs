@@ -171,7 +171,10 @@ fn saved_same_identity_waits_for_explicit_apply_and_reopens_latest_definition() 
     pane.runner
         .update(|state| apply_value(state, "theme.mode", SettingValue::Text("dark".into())));
     assert_eq!(live.snapshot(), restarted.snapshot());
-    assert_eq!(pane.settings().theme, Some(choice));
+    assert_eq!(
+        pane.settings().theme,
+        Some(crate::appearance::stored_of(&choice))
+    );
 }
 
 #[test]
@@ -253,7 +256,7 @@ fn stale_settings_panes_cannot_apply_saved_definition_or_overwrite_selected_them
                 .unwrap()
                 .settings()
                 .theme,
-            Some(choice)
+            Some(crate::appearance::stored_of(&choice))
         );
         stale
             .runner
@@ -269,9 +272,11 @@ fn stale_settings_panes_cannot_apply_saved_definition_or_overwrite_selected_them
 #[test]
 fn snapshot_projects_every_live_application_axis_to_chrome() {
     let settings = ApplicationSettings {
-        theme: Some(tabard::theme::choice::ThemeChoice::new(
-            "theme:night",
-            Some(tabard::theme::registry::Mode::Light),
+        theme: Some(crate::appearance::stored_of(
+            &tabard::theme::choice::ThemeChoice::new(
+                "theme:night",
+                Some(tabard::theme::registry::Mode::Light),
+            ),
         )),
         ui_zoom: 1.75,
         shellbar_edge: ShellbarEdge::Bottom,
@@ -421,7 +426,7 @@ fn painted_settings_targets_drive_physical_edit_and_apply_at_wide_and_narrow_siz
             .unwrap()
             .unwrap();
         assert_eq!(
-            saved.theme.unwrap(),
+            crate::appearance::choice_of(&saved.theme.unwrap()),
             tabard::theme::choice::ThemeChoice::new(
                 tabard::theme::registry::THEME_ID_HIGH_CONTRAST,
                 Some(tabard::theme::registry::Mode::HcLight)
@@ -485,9 +490,8 @@ fn mode_radio_keyboard_stays_in_its_group_and_enter_applies_only_after_tab() {
             .as_ref()
             .unwrap()
             .theme_mode
-            .as_ref()
-            .unwrap()
-            .as_key(),
+            .as_deref()
+            .unwrap(),
         "dark"
     );
     // Repeat the visible group entry, then two ArrowUp presses choose Light.
@@ -513,7 +517,10 @@ fn mode_radio_keyboard_stays_in_its_group_and_enter_applies_only_after_tab() {
 fn a_saved_system_theme_wears_the_os_preference() {
     use tabard::theme::{choice::ThemeChoice, registry::THEME_ID_DEFAULT};
     let settings = ApplicationSettings {
-        theme: Some(ThemeChoice::new(THEME_ID_DEFAULT, None)),
+        theme: Some(crate::appearance::stored_of(&ThemeChoice::new(
+            THEME_ID_DEFAULT,
+            None,
+        ))),
         ..ApplicationSettings::default()
     };
     let snapshot = ChromeSettings::from(&settings);

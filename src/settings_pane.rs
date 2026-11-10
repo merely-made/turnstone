@@ -68,16 +68,16 @@ impl ChromeSettings {
         settings: &ApplicationSettings,
         catalog: &crate::appearance::ThemeCatalog,
     ) -> Self {
+        let theme = settings.theme.as_ref().map(crate::appearance::choice_of);
         let resolve = |mode: Option<tabard::theme::registry::Mode>| {
-            let choice = settings.theme.as_ref()?;
+            let choice = theme.as_ref()?;
             let choice = tabard::theme::choice::ThemeChoice {
                 theme_mode: mode.or_else(|| choice.theme_mode.clone()),
                 ..choice.clone()
             };
             catalog.resolve(&choice).ok()
         };
-        let system = settings
-            .theme
+        let system = theme
             .as_ref()
             .is_some_and(|choice| choice.theme_mode.is_none());
         let (resolved, light) = if system {
@@ -87,13 +87,11 @@ impl ChromeSettings {
             (resolve(None), None)
         };
         Self {
-            theme_id: settings
-                .theme
+            theme_id: theme
                 .as_ref()
                 .map(|theme| theme.theme_id.clone())
                 .filter(|id| !id.is_empty()),
-            theme_mode: settings
-                .theme
+            theme_mode: theme
                 .as_ref()
                 .and_then(|theme| theme.theme_mode.as_ref())
                 .map(|mode| mode.as_key()),
@@ -101,8 +99,7 @@ impl ChromeSettings {
                 .as_ref()
                 .map(|r| r.theme.typography.clone())
                 .unwrap_or_default(),
-            interface_font_properties: settings
-                .theme
+            interface_font_properties: theme
                 .as_ref()
                 .map(|choice| catalog.interface_font_properties(&choice.fonts))
                 .unwrap_or_default(),

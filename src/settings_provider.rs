@@ -29,6 +29,8 @@ mod binding;
 #[cfg(test)]
 #[path = "settings_provider/receiving_tests.rs"]
 mod receiving_tests;
+#[cfg(test)]
+mod stored_theme_tests;
 pub(crate) use binding::{SettingsBinding, SettingsBindingError};
 
 #[cfg(test)]
@@ -117,7 +119,7 @@ impl ApplicationSettingsProvider {
                     if let Some(mode) = legacy.theme_mode.as_deref().and_then(Mode::from_key) {
                         let mut choice = ThemeChoice::new("", Some(mode));
                         choice.fonts = legacy.fonts;
-                        settings.theme = Some(choice);
+                        settings.theme = Some(crate::appearance::stored_of(&choice));
                     }
                 }
                 settings
@@ -177,7 +179,8 @@ impl ApplicationSettingsProvider {
     }
 
     pub(crate) fn appearance_notice(&self) -> String {
-        self.theme_catalog.notice(self.settings.theme.as_ref())
+        let theme = self.settings.theme.as_ref().map(crate::appearance::choice_of);
+        self.theme_catalog.notice(theme.as_ref())
     }
 
     pub(crate) fn reload_themes(&mut self) {
@@ -206,7 +209,7 @@ impl ApplicationSettingsProvider {
             });
         }
         let mut candidate = self.current_write_base()?;
-        candidate.theme = Some(choice);
+        candidate.theme = Some(crate::appearance::stored_of(&choice));
         self.save_candidate(&candidate)?;
         self.settings = candidate;
         Ok(())
@@ -241,25 +244,21 @@ impl ApplicationSettingsProvider {
                 });
             }
         }
+        let theme = self.settings.theme.as_ref().map(crate::appearance::choice_of);
         let mut modes = vec![SettingOption {
             value: "system".into(),
             label: "Theme default / system".into(),
         }];
         modes.extend(
             self.theme_catalog
-                .modes(self.settings.theme.as_ref())
+                .modes(theme.as_ref())
                 .into_iter()
                 .map(|mode| SettingOption {
                     value: mode.as_key(),
                     label: mode.label(),
                 }),
         );
-        if let Some(mode) = self
-            .settings
-            .theme
-            .as_ref()
-            .and_then(|choice| choice.theme_mode.as_ref())
-        {
+        if let Some(mode) = theme.as_ref().and_then(|choice| choice.theme_mode.as_ref()) {
             if !modes.iter().any(|option| option.value == mode.as_key()) {
                 modes.push(SettingOption {
                     value: mode.as_key(),
@@ -293,8 +292,7 @@ impl ApplicationSettingsProvider {
                 security: SettingSecurity::Ordinary,
                 control: SettingControl::Choice { options: modes },
                 value: SettingValue::Text(
-                    self.settings
-                        .theme
+                    theme
                         .as_ref()
                         .and_then(|choice| choice.theme_mode.as_ref())
                         .map(Mode::as_key)
@@ -440,20 +438,14 @@ impl SettingsProvider for ApplicationSettingsProvider {
                         message: "Choose an available theme".into(),
                     });
                 }
-                let mode = candidate
-                    .theme
-                    .as_ref()
-                    .and_then(|theme| theme.theme_mode.clone());
-                let fonts = candidate
-                    .theme
-                    .as_ref()
-                    .map(|t| t.fonts.clone())
-                    .unwrap_or_default();
+                let current = candidate.theme.as_ref().map(crate::appearance::choice_of);
+                let mode = current.as_ref().and_then(|theme| theme.theme_mode.clone());
+                let fonts = current.map(|t| t.fonts).unwrap_or_default();
                 candidate.theme =
                     (!value.is_empty() || mode.is_some() || !fonts.is_empty()).then(|| {
                         let mut choice = ThemeChoice::new(value, mode);
                         choice.fonts = fonts;
-                        choice
+                        crate::appearance::stored_of(&choice)
                     });
             },
             ("theme.mode", SettingValue::Text(value)) => {
@@ -463,7 +455,7 @@ impl SettingsProvider for ApplicationSettingsProvider {
                 if value != "system"
                     && !self
                         .theme_catalog
-                        .modes(candidate.theme.as_ref())
+                        .modes(candidate.theme.as_ref().map(crate::appearance::choice_of).as_ref())
                         .iter()
                         .any(|mode| mode.as_key() == value)
                 {
@@ -478,13 +470,13 @@ impl SettingsProvider for ApplicationSettingsProvider {
                 let fonts = candidate
                     .theme
                     .as_ref()
-                    .map(|t| t.fonts.clone())
+                    .map(|t| crate::appearance::choice_of(t).fonts)
                     .unwrap_or_default();
                 candidate.theme =
                     (!id.is_empty() || mode.is_some() || !fonts.is_empty()).then(|| {
                         let mut choice = ThemeChoice::new(id, mode);
                         choice.fonts = fonts;
-                        choice
+                        crate::appearance::stored_of(&choice)
                     });
             },
             ("ui.zoom", SettingValue::Number(value))

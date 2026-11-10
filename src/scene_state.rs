@@ -8,7 +8,7 @@
 //! (`Canvas::capture_scene`: dynamics spec, selection, camera, pause and the
 //! cartography geometry) rides one `graphshell.saved-scene/v4` facet on the
 //! graph's container node in `facets.json`; the rest of the view (folds, the
-//! command menu) is a `pandect::ViewIntent` in `view-intent.json`. A session
+//! command menu) is an `incipit::view::ViewIntent` in `view-intent.json`. A session
 //! saved before this (`arrangement.*` and `scene.*` facets, a flat
 //! `view-intent.json`, `folds.json`) is read once, carried into the same shapes
 //! and rewritten by the next save.
@@ -21,7 +21,8 @@ use mere::canvas::saved_scene::{self, SceneReadError};
 use mere::canvas::{
     Canvas, PhysicsDepthSource, PhysicsKindSource, PhysicsLaw, PhysicsMassSource, PhysicsOverlay,
 };
-use pandect::{NodeFacetStore, SavedSceneV3, ViewIntent};
+use incipit::view::ViewIntent;
+use pandect::{NodeFacetStore, SavedSceneV3};
 use serde::Deserialize;
 use serde_json::{Value, json};
 use uuid::Uuid;

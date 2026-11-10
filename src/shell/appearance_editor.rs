@@ -12,7 +12,6 @@ use cambium_genet_winit_host::{CloseRequest, HostOptions, WindowFrame, WinitHost
 use cambium_rootstock::IdlePolicy;
 use mere_surface_api::settings::RevisionedSettingsProvider;
 use std::sync::Arc;
-use tabard::theme::choice::ThemeChoice;
 use tabard_workshop::{
     WorkshopState,
     native_host::{WorkshopHost, native_hooks, native_init},
@@ -57,8 +56,9 @@ impl Shell {
                     let choice = provider
                         .settings()
                         .theme
-                        .clone()
-                        .unwrap_or_else(ThemeChoice::default);
+                        .as_ref()
+                        .map(crate::appearance::choice_of)
+                        .unwrap_or_default();
                     let resolved = provider.catalog().resolve(&choice)?;
                     let mut state = WorkshopState::load(provider.catalog().path.clone())
                         .map_err(|error| error.to_string())?;

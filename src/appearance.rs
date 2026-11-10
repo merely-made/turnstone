@@ -16,6 +16,54 @@ use tabard::theme::{
     registry::{Mode, THEME_ID_DEFAULT, ThemeRegistry},
 };
 
+/// Application settings keep the chosen theme as plain values (engine split
+/// D79); these two convert at the edge. The stored and Tabard forms serialize
+/// to the same bytes. An unknown mode key, role or family reads as unset, as
+/// `ThemeChoice` always read one.
+pub(crate) fn choice_of(stored: &pandect::StoredTheme) -> ThemeChoice {
+    let mut choice = ThemeChoice::new(
+        stored.theme_id.clone(),
+        stored.theme_mode.as_deref().and_then(Mode::from_key),
+    );
+    for (role, stack) in &stored.fonts.0 {
+        if let Some(role) = tabard::FontRole::ALL
+            .into_iter()
+            .find(|candidate| candidate.key() == role)
+        {
+            let families = stack
+                .iter()
+                .filter_map(|name| tabard::FontFamily::new(name.clone()).ok())
+                .collect();
+            choice.fonts.0.insert(role, families);
+        }
+    }
+    choice
+}
+
+pub(crate) fn stored_of(choice: &ThemeChoice) -> pandect::StoredTheme {
+    let mut stored = pandect::StoredTheme::new(
+        choice.theme_id.clone(),
+        choice.theme_mode.as_ref().map(Mode::as_key),
+    );
+    stored.fonts = pandect::FontStacks(
+        choice
+            .fonts
+            .0
+            .iter()
+            .map(|(role, stack)| {
+                (
+                    role.key().to_owned(),
+                    stack
+                        .iter()
+                        .map(|family| family.name().to_owned())
+                        .collect(),
+                )
+            })
+            .collect(),
+    );
+    stored
+}
+
 #[derive(Clone, PartialEq)]
 pub(crate) struct ThemeCatalog {
     pub path: PathBuf,

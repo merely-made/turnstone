@@ -45,9 +45,11 @@ fn identity_regression_view(state: &SettingsState) -> SettingsView {
 
 fn identity_test_pane(root: &std::path::Path, status: &str) -> SettingsPane {
     let initial = ApplicationSettings {
-        theme: Some(tabard::theme::choice::ThemeChoice::new(
-            tabard::theme::registry::THEME_ID_HIGH_CONTRAST,
-            None,
+        theme: Some(crate::appearance::stored_of(
+            &tabard::theme::choice::ThemeChoice::new(
+                tabard::theme::registry::THEME_ID_HIGH_CONTRAST,
+                None,
+            ),
         )),
         ..ApplicationSettings::default()
     };
@@ -162,7 +164,7 @@ fn keyed_settings_rows_keep_drafts_and_apply_to_the_original_id_after_insertion(
     let saved = ApplicationSettingsProvider::load(root.path()).unwrap();
     assert_eq!(
         saved.settings().theme.as_ref().unwrap().theme_mode,
-        Some(tabard::theme::registry::Mode::HcLight),
+        Some(tabard::theme::registry::Mode::HcLight.as_key()),
         "the retained draft must remain on and apply through theme.mode"
     );
     assert_eq!(
@@ -203,7 +205,7 @@ fn keyed_settings_rows_keep_drafts_on_the_original_id_when_sibling_reorders() {
     let saved = ApplicationSettingsProvider::load(root.path()).unwrap();
     assert_eq!(
         saved.settings().theme.as_ref().unwrap().theme_mode,
-        Some(tabard::theme::registry::Mode::HcLight)
+        Some(tabard::theme::registry::Mode::HcLight.as_key())
     );
     assert_eq!(
         saved.settings().theme.as_ref().unwrap().theme_id,

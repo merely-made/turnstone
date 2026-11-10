@@ -209,9 +209,11 @@ fn configured_row_limit_applies_to_the_live_omnibar_projection() {
 #[test]
 fn live_settings_snapshot_reconfigures_the_running_chrome_value_once() {
     let settings = pandect::ApplicationSettings {
-        theme: Some(tabard::theme::choice::ThemeChoice::new(
-            "theme:night",
-            Some(tabard::theme::registry::Mode::Light),
+        theme: Some(crate::appearance::stored_of(
+            &tabard::theme::choice::ThemeChoice::new(
+                "theme:night",
+                Some(tabard::theme::registry::Mode::Light),
+            ),
         )),
         ui_zoom: 1.5,
         shellbar_edge: pandect::ShellbarEdge::Top,
