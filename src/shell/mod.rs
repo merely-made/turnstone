@@ -168,6 +168,8 @@ use scry_construction_availability::scry_construction_availability;
 #[path = "smolweb_inline_media_policy.rs"]
 mod smolweb_inline_media_policy;
 use smolweb_inline_media_policy::smolweb_inline_media_policy;
+#[path = "routing.rs"]
+pub(crate) mod routing;
 #[path = "standard_route_policy.rs"]
 mod standard_route_policy;
 use standard_route_policy::standard_route_policy;

@@ -47,7 +47,7 @@ fn saved_selection_from_embedded_pool_pointer_gesture() {
         Clock,
         Box::new(session),
     );
-    let decision = mere::routing::route_policy().route(&inker::EngineRouteRequest {
+    let decision = crate::shell::routing::route_policy().route(&inker::EngineRouteRequest {
         workspace_id: inker::WorkspaceRouteId::new("embedded-knot-drag"),
         view: None,
         node: None,
