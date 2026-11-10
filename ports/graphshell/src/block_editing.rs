@@ -9,14 +9,17 @@
 //! Applying it replaces only that div's attribute opening through the same
 //! editor buffer and undo journal used for ordinary text edits.
 //!
-//! The buffer is a [`BlockEditor`]. Graphshell ships a small default
+//! The buffer is a cambium [`BlockEditor`]: messages only, the pane owns the
+//! text widget. Graphshell ships a small default
 //! ([`BufferEditor`], a cambium `TextInput` with its undo journal) and names no
 //! application's editor; a host that owns a richer one (Knot's `KnotEditor`)
 //! passes an [`EditorFactory`] to each pane it opens.
 
-use cambium::{CaretAffinity, CaretPosition, CaretSelection, TextCommand};
+use cambium::{
+    BlockEditor, CaretAffinity, CaretPosition, CaretSelection, EditOutcome, EditorFactory,
+    TextCommand, TextInput,
+};
 use illume::blocks;
-use cambium::TextInput;
 use std::collections::BTreeMap;
 
 pub use illume::blocks::{Div, wrap};
@@ -66,29 +69,6 @@ impl Preview {
     }
 }
 
-/// What changed when one command was applied to a [`BlockEditor`].
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct EditOutcome {
-    pub state_changed: bool,
-    pub source_changed: bool,
-}
-
-/// The text buffer a block document edits through: a source string, a caret,
-/// an undo journal and a saved baseline. The pane draws and drives its text
-/// widget through [`BlockEditor::input_mut`].
-pub trait BlockEditor: Send {
-    fn source(&self) -> &str;
-    fn selection(&self) -> CaretSelection;
-    fn apply(&mut self, command: TextCommand) -> EditOutcome;
-    fn input(&self) -> &TextInput;
-    fn input_mut(&mut self) -> &mut TextInput;
-    /// Whether the source differs from the last accepted (saved) source.
-    fn is_dirty(&self) -> bool;
-    /// Record the exact source an external authority accepted. Later local
-    /// edits stay dirty.
-    fn accept_saved_source(&mut self, source: &str);
-}
-
 /// Graphshell's own buffer: the default when no host registered an editor.
 pub struct BufferEditor {
     original: String,
@@ -122,37 +102,12 @@ impl BlockEditor for BufferEditor {
         }
     }
 
-    fn input(&self) -> &TextInput {
-        &self.input
-    }
-
-    fn input_mut(&mut self) -> &mut TextInput {
-        &mut self.input
-    }
-
     fn is_dirty(&self) -> bool {
         self.input.text() != self.original
     }
 
     fn accept_saved_source(&mut self, source: &str) {
         self.original = source.to_owned();
-    }
-}
-
-/// Makes the editor for a document: its id and its source. A host passes one
-/// to each pane it opens, so panes in one process may edit through different
-/// editors; there is no process-wide registration.
-pub trait EditorFactory {
-    fn open(&self, id: &str, source: &str) -> Box<dyn BlockEditor>;
-}
-
-/// Any closure over an id and a source is a factory.
-impl<F> EditorFactory for F
-where
-    F: Fn(&str, &str) -> Box<dyn BlockEditor>,
-{
-    fn open(&self, id: &str, source: &str) -> Box<dyn BlockEditor> {
-        self(id, source)
     }
 }
 
@@ -207,7 +162,11 @@ impl Document {
         let source = self.editor.source();
         ensure_bounded(source)?;
         blocks::validate_attributes(&attributes)?;
-        let (a, b) = self.editor.input().selection_bytes();
+        let selection = self.editor.selection();
+        let (a, b) = (
+            selection.anchor.byte.min(selection.focus.byte),
+            selection.anchor.byte.max(selection.focus.byte),
+        );
         if a == b || a > b || b > source.len() {
             return Err("Select composition text in the source editor first".into());
         }
@@ -317,7 +276,7 @@ fn flatten(nodes: &[Div], output: &mut Vec<Div>) {
     }
 }
 
-fn minimal_replacement(before: &str, after: &str) -> (usize, usize, String) {
+pub(crate) fn minimal_replacement(before: &str, after: &str) -> (usize, usize, String) {
     let prefix = before
         .chars()
         .zip(after.chars())

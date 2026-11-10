@@ -27,7 +27,8 @@ use mandrake::{LaneConfig, Product};
 use std::cell::RefCell;
 use taproot::ProbeSnapshot;
 use graphshell::block_editing::sheet_leaf::{ColorF, SheetTheme};
-use graphshell::block_editing::{DefaultEditors, EditorFactory};
+use cambium::EditorFactory;
+use graphshell::block_editing::DefaultEditors;
 use graphshell::block_pane::{
     self, BackendStorage, Pane, PaneHost, PanePorts, Storage, SwatchStyle, Task, Child,
 };

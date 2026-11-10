@@ -15,7 +15,7 @@
 //! big the window is and what colours to use, and supplies the effects the pane cannot perform
 //! itself ([`PanePorts`]: storage, exporting a file, running a future).
 use crate::block_editing::{
-    Change, DefaultEditors, Document, EditorFactory, Preview,
+    Change, DefaultEditors, Document, Preview, minimal_replacement,
     adapter::{
         AdapterError, BACKDROP_SCENE, BlockAdapter, BlockInput, CommandKind, GuestView, Registry,
         Row, RunResult, ViewAsk, unclaimed_message,
@@ -25,7 +25,9 @@ use crate::block_editing::{
     worker::WorkerAdapter,
 };
 use cambium::{
-    AnyView, Command, CommandChoices, CommandSet, GenetCtx, GenetElement, TextCommand, TextInput,
+    AnyView, CaretAffinity, CaretPosition, CaretSelection, Command, CommandChoices, CommandSet,
+    EditorFactory, GenetCtx, GenetElement, TextCommand,
+    TextInput,
     button, custom_leaf, el, lens, status_note, text_field_typed, textarea_typed,
 };
 use cambium_rootstock::{
@@ -211,8 +213,13 @@ struct ViewState {
     generation: u64,
 }
 
+mod source_input;
+
 pub struct Pane {
     document: Document,
+    /// The source text widget. The pane owns it; the document's editor is told of
+    /// its edits as messages ([`Self::push_input`]) and read back ([`Self::pull_input`]).
+    source_input: TextInput,
     /// Makes the editor behind every document this pane opens.
     editors: Rc<dyn EditorFactory>,
     storage: Option<Rc<dyn Storage>>,
@@ -266,12 +273,14 @@ impl Pane {
         editors: Rc<dyn EditorFactory>,
     ) -> Self {
         let source = storage;
+        let document = Document::open(
+            &format!("graphshell:document/{}", uuid::Uuid::new_v4()),
+            INITIAL,
+            editors.as_ref(),
+        );
         let mut pane = Self {
-            document: Document::open(
-                &format!("graphshell:document/{}", uuid::Uuid::new_v4()),
-                INITIAL,
-                editors.as_ref(),
-            ),
+            source_input: TextInput::new(document.editor.source().to_owned()),
+            document,
             editors,
             storage: source.as_ref().map(|(b, _)| b.clone()),
             ports,
@@ -316,6 +325,7 @@ impl Pane {
             match storage.load(&pane.slot).await {
                 Ok(Some((stored, bytes))) => {
                     pane.document = Document::open(&stored.id, &stored.source, pane.editors.as_ref());
+                    pane.reset_input();
                     pane.expected = Some(bytes);
                     pane.status = "Saved document reopened".into();
                 },
@@ -351,9 +361,10 @@ impl Pane {
     fn adopt_reload(&mut self, loaded: Loaded) {
         match loaded {
             Ok(Some((stored, bytes))) => {
-                if stored.source != self.document.editor.source() || stored.id != self.document.id
+                if stored.source != self.source() || stored.id != self.document.id
                 {
                     self.document = Document::open(&stored.id, &stored.source, self.editors.as_ref());
+                    self.reset_input();
                     self.selected = self
                         .selected
                         .min(self.document.blocks().len().saturating_sub(1));
@@ -514,7 +525,7 @@ impl Pane {
     /// The block's rows, or why there are none.
     fn rows(&self, class: &str, div: &crate::block_editing::Div) -> Result<Vec<Row>, String> {
         let adapter = self.adapter(class).ok_or_else(|| unclaimed_message(class))?;
-        let source = self.document.editor.source();
+        let source = self.source();
         match adapter.rows(&self.input(class, div, source, Vec::new())) {
             Ok(rows) => Ok(rows),
             Err(AdapterError::Pending) => Err(WAITING.into()),
@@ -594,7 +605,7 @@ impl Pane {
             return Err("Select a leaf block; nested block contents need their own adapter".into());
         }
         let selected = self.selection(&class, &div)?;
-        let source = self.document.editor.source();
+        let source = self.source();
         let input = self.input(&class, &div, source, selected);
         match self.adapter(&class).ok_or("No adapter")?.choices(&input, command) {
             Ok(changes) => Ok(changes),
@@ -616,7 +627,7 @@ impl Pane {
             },
             other => other?,
         };
-        self.preview = Some(Preview::new(self.document.editor.source(), div, changes)?);
+        self.preview = Some(Preview::new(self.source(), div, changes)?);
         self.preview_command = command.to_owned();
         self.preview_pattern = self.field(&format!("pattern:{class}")).to_owned();
         self.preview_rows = rows;
@@ -639,7 +650,7 @@ impl Pane {
             .apply(&input, &self.preview_command, &preview.changes);
         let attrs = self.answered(answer, Pending::Apply)?;
         let changed = attrs != preview.block.attributes;
-        self.document.apply(&preview, attrs)?;
+        self.edit(|d| d.apply(&preview, attrs))?;
         self.preview = None;
         self.status = if changed {
             "Change applied · Undo and Save use this document’s history"
@@ -662,7 +673,7 @@ impl Pane {
             return Err("Select a leaf block".into());
         }
         let selected = self.selection(&class, &div).unwrap_or_default();
-        let source = self.document.editor.source().to_owned();
+        let source = self.source().to_owned();
         let input = self.input(&class, &div, &source, selected);
         let answer = self
             .adapter(&class)
@@ -671,7 +682,7 @@ impl Pane {
         match self.answered(answer, Pending::Run(command.to_owned(), arg.to_owned()))? {
             RunResult::Attrs(attrs) => {
                 let preview = Preview::new(&source, div, Vec::new())?;
-                self.document.apply(&preview, attrs)?;
+                self.edit(|d| d.apply(&preview, attrs))?;
                 // A write that gives the block something to show shows the adapter's first view.
                 if let Some(first) = self.adapter(&class).and_then(|a| a.claim().views.first().cloned()) {
                     self.view_modes.insert(class.clone(), first.id);
@@ -712,7 +723,6 @@ impl Pane {
     }
     /// Insert the example the class's adapter offers, at the end of the document.
     fn insert_example(&mut self, class: &str) -> Result<(), String> {
-        use cambium::{CaretAffinity, CaretPosition, CaretSelection};
         let example = self
             .adapter(class)
             .and_then(|a| a.claim().example.clone())
@@ -721,7 +731,7 @@ impl Pane {
         attrs.insert("class".into(), class.to_owned());
         attrs.insert("id".into(), format!("{class}-{}", uuid::Uuid::new_v4()));
         let block = crate::block_editing::wrap(&attrs, &example.body);
-        let end = self.document.editor.source().len();
+        let end = self.source().len();
         if end + block.len() + 2 > crate::block_editing::MAX_DOCUMENT_BYTES {
             return Err("Document exceeds one MiB".into());
         }
@@ -747,7 +757,7 @@ impl Pane {
     fn event_selection(&self) -> (usize, usize) {
         if self.event_selected_block == self.selected
             && self.event_selected_revision.as_ref()
-                == Some(&source_revision(self.document.editor.source()))
+                == Some(&source_revision(self.source()))
         {
             self.event_selected
         } else {
@@ -767,7 +777,7 @@ impl Pane {
             return self.view.take().is_some();
         };
         let selected = self.selection(&class, &div).unwrap_or_default();
-        let source = self.document.editor.source();
+        let source = self.source();
         let input = self.input(&class, &div, source, selected);
         let (bar, event) = self.event_selection();
         let ask = ViewAsk {
@@ -817,7 +827,7 @@ impl Pane {
         let document = StoredDocument {
             version: 1,
             id: self.document.id.clone(),
-            source: self.document.editor.source().into(),
+            source: self.source().into(),
         };
         document.validate()?;
         let expected = self.expected.clone();
@@ -845,7 +855,7 @@ impl Pane {
     fn refresh(&mut self) -> bool {
         let result: Result<Option<SceneInput>, String> = (|| {
             let div = self.target()?;
-            let source = self.document.editor.source();
+            let source = self.source();
             let mut attrs = div.attributes.clone();
             let class = self
                 .class_of(&div)
@@ -976,7 +986,7 @@ pub fn toolbar<P: PaneHost>(page: &P) -> Option<Child<P>> {
         |p: &mut P, _| {
             let pane = p.pane_mut();
             match pane.ports.export(
-                pane.document.editor.source().as_bytes(),
+                pane.source().as_bytes(),
                 "text/djot",
                 "composition.djot",
             ) {
@@ -1011,12 +1021,12 @@ pub fn toolbar<P: PaneHost>(page: &P) -> Option<Child<P>> {
                         )
                         .attr("class", "blocks-save"),
                     button("Undo document edit", |p: &mut P, _| {
-                        p.pane_mut().document.editor.apply(TextCommand::Undo);
+                        p.pane_mut().edit(|d| d.editor.apply(TextCommand::Undo));
                         p.pane_mut().preview = None;
                     })
                     .attr("class", "blocks-undo"),
                     button("Redo document edit", |p: &mut P, _| {
-                        p.pane_mut().document.editor.apply(TextCommand::Redo);
+                        p.pane_mut().edit(|d| d.editor.apply(TextCommand::Redo));
                         p.pane_mut().preview = None;
                     })
                     .attr("class", "blocks-redo"),
@@ -1073,11 +1083,12 @@ pub fn workspace<P: PaneHost>(page: &P) -> Option<Child<P>> {
             |p: &mut P, _| {
                 action(p, |pane| {
                     let id = format!("verse-{}", uuid::Uuid::new_v4());
-                    pane.document
-                        .wrap_selection(std::collections::BTreeMap::from([
+                    pane.edit(|d| {
+                        d.wrap_selection(std::collections::BTreeMap::from([
                             ("class".into(), "metre".into()),
                             ("id".into(), id.clone()),
-                        ]))?;
+                        ]))
+                    })?;
                     pane.selected = pane
                         .document
                         .blocks()
@@ -1099,7 +1110,7 @@ pub fn workspace<P: PaneHost>(page: &P) -> Option<Child<P>> {
             format!(
                 "{} · {}",
                 "Composition",
-                if pane.document.editor.is_dirty() {
+                if pane.dirty() {
                     "Unsaved changes"
                 } else if pane.expected.is_none() && read_only {
                     "No saved document yet"
@@ -1117,7 +1128,7 @@ pub fn workspace<P: PaneHost>(page: &P) -> Option<Child<P>> {
                 "div",
                 (
                     el("p", SOURCE_LABEL),
-                    el("pre", pane.document.editor.source().to_string())
+                    el("pre", pane.source().to_string())
                         .attr("class", "blocks-source"),
                 ),
             ))
@@ -1132,7 +1143,7 @@ pub fn workspace<P: PaneHost>(page: &P) -> Option<Child<P>> {
                                 .attr("aria-label", SOURCE_LABEL)
                                 .attr("class", "blocks-source")
                         },
-                        |page: &mut P| page.pane_mut().document.editor.input_mut(),
+                        |page: &mut P| &mut page.pane_mut().source_input,
                     ),
                 ),
             ))
@@ -1288,7 +1299,7 @@ pub fn workspace<P: PaneHost>(page: &P) -> Option<Child<P>> {
     let mut preview_rows: Vec<Child<P>> = Vec::new();
     if let Some(preview) = pane.preview.as_ref().filter(|_| !read_only) {
         let class = pane.preview_class().unwrap_or_default();
-        let stale = preview.source != pane.document.editor.source()
+        let stale = preview.source != pane.source()
             || pane.preview_pattern != pane.field(&format!("pattern:{class}"));
         for (index, change) in preview.changes.iter().enumerate() {
             let label = format!(
@@ -1514,7 +1525,7 @@ fn view_panel<P: PaneHost>(page: &P, class: &str) -> Child<P> {
                     )));
                 }
             }
-            let revision = source_revision(pane.document.editor.source());
+            let revision = source_revision(pane.source());
             let block_index = pane.selected;
             for region in view.regions() {
                 let revision = revision.clone();
@@ -1522,7 +1533,7 @@ fn view_panel<P: PaneHost>(page: &P, class: &str) -> Child<P> {
                 overlay.push(Box::new(
                     button(region.label.clone(), move |p: &mut P, _| {
                         if p.pane_mut().selected == block_index
-                            && source_revision(p.pane_mut().document.editor.source()) == revision
+                            && source_revision(p.pane_mut().source()) == revision
                         {
                             p.pane_mut().event_selected = (bar, event);
                             p.pane_mut().event_selected_revision = Some(revision.clone());
@@ -1609,13 +1620,13 @@ pub fn focused_text<P: PaneHost>(
     Some(cambium_rootstock::FocusedTextSlot {
         node,
         get: Box::new(move |p| match (index, &key_get) {
-            (0, _) => p.pane().document.editor.input(),
+            (0, _) => &p.pane().source_input,
             (1, _) => &p.pane().query,
             (_, Some(key)) => p.pane().fields.get(key).unwrap_or(&p.pane().query),
             _ => &p.pane().query,
         }),
         get_mut: Box::new(move |p| match (index, &key_set) {
-            (0, _) => p.pane_mut().document.editor.input_mut(),
+            (0, _) => &mut p.pane_mut().source_input,
             (1, _) => &mut p.pane_mut().query,
             (_, Some(key)) => p.pane_mut().fields.entry(key.clone()).or_default(),
             _ => &mut p.pane_mut().query,
@@ -1738,7 +1749,7 @@ pub fn register<P: PaneHost>(ctx: &mut AppCtx<'_, P, Logic<P>, Child<P>>) {
             match completion {
                 Ok((bytes, source)) => {
                     p.pane_mut().expected = Some(bytes);
-                    p.pane_mut().document.editor.accept_saved_source(&source);
+                    p.pane_mut().edit(|d| d.editor.accept_saved_source(&source));
                     p.pane_mut().status = "Document saved".into();
                 },
                 Err(error) => p.pane_mut().status = error,
@@ -1797,7 +1808,7 @@ pub fn register<P: PaneHost>(ctx: &mut AppCtx<'_, P, Logic<P>, Child<P>>) {
     let pane = ctx.runner.state().pane();
     let refresh_key = format!(
         "{}:{}:{}:{}",
-        source_revision(pane.document.editor.source()),
+        source_revision(pane.source()),
         pane.selected,
         pane.preview
             .as_ref()
@@ -1879,8 +1890,8 @@ impl Pane {
             ("blocks-unclaimed-notices", pane.unclaimed_notices().to_string()),
             ("blocks-review-requested", pane.review_requested.to_string()),
             ("blocks-open", pane.open.to_string()),
-            ("blocks-source", pane.document.editor.source().to_string()),
-            ("blocks-dirty", pane.document.editor.is_dirty().to_string()),
+            ("blocks-source", pane.source().to_string()),
+            ("blocks-dirty", pane.dirty().to_string()),
             ("blocks-saving", pane.busy.to_string()),
             ("blocks-preview", pane.preview.is_some().to_string()),
             ("blocks-status", pane.status.clone()),
@@ -1889,10 +1900,10 @@ impl Pane {
 }
 
 #[cfg(test)]
-mod editor_tests {
+pub(super) mod editor_tests {
     use super::*;
-    use crate::block_editing::{BlockEditor, BufferEditor, EditOutcome};
-    use cambium::{CaretSelection, TextCommand};
+    use crate::block_editing::BufferEditor;
+    use cambium::{BlockEditor, CaretSelection, EditOutcome, TextCommand};
     use std::future::Future;
 
     struct NoPorts;
@@ -1915,12 +1926,6 @@ mod editor_tests {
         }
         fn apply(&mut self, command: TextCommand) -> EditOutcome {
             self.0.apply(command)
-        }
-        fn input(&self) -> &TextInput {
-            self.0.input()
-        }
-        fn input_mut(&mut self) -> &mut TextInput {
-            self.0.input_mut()
         }
         fn is_dirty(&self) -> bool {
             true
@@ -1946,7 +1951,7 @@ mod editor_tests {
         }
     }
 
-    fn pane(editors: Option<Rc<dyn EditorFactory>>) -> Pane {
+    pub(super) fn pane(editors: Option<Rc<dyn EditorFactory>>) -> Pane {
         let ports: Rc<dyn PanePorts> = Rc::new(NoPorts);
         match editors {
             Some(editors) => block_on(Pane::load_with(None, ports, editors)),
