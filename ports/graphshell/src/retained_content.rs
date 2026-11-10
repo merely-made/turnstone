@@ -32,6 +32,7 @@ pub use view::{content_view, filling_content_view};
 mod producer;
 pub use producer::ContentProducer;
 mod export;
+pub mod mentions;
 pub mod fixture;
 pub use export::ClipExportScope;
 
@@ -493,13 +494,24 @@ impl ContentHost {
         families: Vec<String>,
         generic_fonts: Vec<(String, Vec<u8>)>,
     ) -> Self {
+        Self::with_mentions(fonts, families, generic_fonts, None)
+    }
+    /// [`with_native_font_roles`](Self::with_native_font_roles), and guest
+    /// links naming a graph node show its face ([`mentions`]).
+    pub fn with_mentions(
+        fonts: Vec<Vec<u8>>,
+        families: Vec<String>,
+        generic_fonts: Vec<(String, Vec<u8>)>,
+        mentions: Option<std::sync::Arc<std::sync::RwLock<mentions::Mentions>>>,
+    ) -> Self {
         Self::new(
             pelt_core::PeltRegistries::new(
-                pelt_core::native::sessions_with_generic_fonts(
+                pelt_core::native::sessions_with_host_layer(
                     pelt_core::native::HeldResources::default(),
                     fonts,
                     families,
                     generic_fonts,
+                    mentions.map(mentions::host_layer),
                 ),
                 inker::SurfaceEngineRegistry::new(),
                 pelt_core::native::route_policy(),

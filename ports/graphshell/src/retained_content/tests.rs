@@ -65,6 +65,39 @@ fn failed_source_replacement_keeps_the_actual_held_session() {
 }
 
 #[test]
+fn a_guest_link_naming_a_graph_node_shows_its_face_and_others_do_not() {
+    use mere::canvas::{DerivedFacePalette, InlineFaces, TextFacePalette};
+    let mentions = std::sync::Arc::new(std::sync::RwLock::new(super::mentions::Mentions {
+        addresses: ["https://held.example/node".to_owned()].into_iter().collect(),
+        faces: std::sync::Arc::new(InlineFaces::new(TextFacePalette::new(
+            DerivedFacePalette::default(),
+            &[],
+        ))),
+        scale: 1.0,
+    }));
+    let mut host = ContentHost::with_mentions(Vec::new(), Vec::new(), Vec::new(), Some(mentions));
+    let access = Uuid::new_v4();
+    let source = HeldContent {
+        address: "https://held.example/source".into(),
+        title: "Held HTML".into(),
+        media_type: "text/html".into(),
+        bytes: b"<!doctype html><html><body><p><a href='node'>Same words</a></p><p><a href='plain'>Same words</a></p></body></html>".to_vec(),
+        engine: None,
+        media: None,
+    };
+    let slot = host.open(access, source.clone()).unwrap();
+    host.show_only(&[access]);
+    slot.borrow_mut().frame(640., 400., 1.).unwrap();
+    let links = slot.borrow().content.document().unwrap().links();
+    let width = |end: &str| links.iter().find(|l| l.url.ends_with(end)).unwrap().rect[2];
+    assert!(
+        width("/node") > width("/plain"),
+        "the node's link carries a face: {links:?}"
+    );
+    assert_eq!(slot.borrow().source().bytes, source.bytes, "the guest bytes are untouched");
+}
+
+#[test]
 fn actual_genet_link_becomes_a_host_request_without_loading_the_destination() {
     let mut host = ContentHost::default();
     let access = Uuid::new_v4();

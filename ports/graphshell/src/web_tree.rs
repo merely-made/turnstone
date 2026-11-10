@@ -225,7 +225,7 @@ struct Shared {
     canvas: RefCell<Canvas>,
     /// Faces beside node names in tabs, rows and text, in the canvas's face
     /// palette held against the page (iconography T4).
-    inline_faces: RefCell<Rc<mere::canvas::InlineFaces>>,
+    inline_faces: RefCell<std::sync::Arc<mere::canvas::InlineFaces>>,
     /// Input or a new graph since the producer last drew.
     dirty: Cell<bool>,
     /// Fit once the producer has the real canvas aperture, not the full page.
@@ -1716,7 +1716,7 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
         appearance,
         appearance_revision,
 
-        inline_faces: RefCell::new(Rc::new(mere::canvas::InlineFaces::new(
+        inline_faces: RefCell::new(std::sync::Arc::new(mere::canvas::InlineFaces::new(
             mere::canvas::TextFacePalette::new(Default::default(), &[]),
         ))),
         canvas: RefCell::new({
@@ -1773,7 +1773,7 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
         .borrow()
         .apply_canvas(&mut shared.canvas.borrow_mut());
     *shared.inline_faces.borrow_mut() =
-        Rc::new(shared.appearance.borrow().inline_faces(&shared.canvas.borrow()));
+        std::sync::Arc::new(shared.appearance.borrow().inline_faces(&shared.canvas.borrow()));
     if shared.reduced_motion() {
         shared.canvas.borrow_mut().set_physics_paused(true);
     }
@@ -2162,7 +2162,7 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
                 if frame_shared.appearance_revision.get() != appearance.revision {
                     appearance.apply_canvas(&mut frame_shared.canvas.borrow_mut());
                     *frame_shared.inline_faces.borrow_mut() =
-                        Rc::new(appearance.inline_faces(&frame_shared.canvas.borrow()));
+                        std::sync::Arc::new(appearance.inline_faces(&frame_shared.canvas.borrow()));
                     frame_shared.appearance_revision.set(appearance.revision);
                     *ctx.set_sheet = Some(tree_stylesheet(&appearance.sheet()));
                     frame_shared.dirty.set(true);

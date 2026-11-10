@@ -70,6 +70,8 @@ impl Drop for MediaPlayer {
 }
 pub(super) struct Reading {
     host: ContentHost,
+    /// What the reading pane's guest pages put faces beside (iconography D3).
+    mentions: std::sync::Arc<std::sync::RwLock<graphshell::retained_content::mentions::Mentions>>,
     lifecycle: mere_document_lanes::reading_lifecycle::ReadingLifecycle<
         mere::kernel::graph::SurfaceNodeLifetime,
     >,
@@ -179,8 +181,18 @@ async fn fetch_bytes(url: &str) -> Result<Vec<u8>, String> {
 
 impl Default for Reading {
     fn default() -> Self {
+        let mentions = std::sync::Arc::new(std::sync::RwLock::new(
+            graphshell::retained_content::mentions::Mentions {
+                addresses: Default::default(),
+                faces: std::sync::Arc::new(mere::canvas::InlineFaces::new(
+                    mere::canvas::TextFacePalette::new(Default::default(), &[]),
+                )),
+                scale: 1.0,
+            },
+        ));
         Self {
-            host: ContentHost::with_native_font_roles(
+            mentions: mentions.clone(),
+            host: ContentHost::with_mentions(
                 vec![
                     include_bytes!("../../web/Newsreader-Regular.ttf").to_vec(),
                     include_bytes!("../../web/IBMPlexSans-Regular.ttf").to_vec(),
@@ -206,6 +218,7 @@ impl Default for Reading {
                         include_bytes!("../../web/IBMPlexMono-Regular.ttf").to_vec(),
                     ),
                 ],
+                Some(mentions),
             ),
             lifecycle: Default::default(),
             bindings: Default::default(),
@@ -983,7 +996,29 @@ pub(super) enum Appearance {
         status: String,
     },
 }
+/// Bring the guest-page mentions current with the graph and the faces before
+/// a document spawns: a page reads them once, when it opens.
+fn refresh_mentions(shared: &Rc<Shared>) {
+    let addresses = shared
+        .canvas
+        .borrow()
+        .graph()
+        .nodes()
+        .map(|(_, node)| node.url().to_owned())
+        .collect();
+    let scale = web_sys::window().map_or(1.0, |window| window.device_pixel_ratio() as f32);
+    let reading = shared.reading.borrow();
+    let mut mentions = reading
+        .mentions
+        .write()
+        .unwrap_or_else(|poison| poison.into_inner());
+    mentions.addresses = addresses;
+    mentions.faces = std::sync::Arc::clone(&shared.inline_faces.borrow());
+    mentions.scale = scale;
+}
+
 pub(super) fn appearance(shared: &Rc<Shared>, member: Uuid, source: HeldContent) -> Appearance {
+    refresh_mentions(shared);
     let (key, slot) = match shared.reading.borrow_mut().open(member, source) {
         Ok(binding) => binding,
         Err(error) => return Appearance::Message(error),

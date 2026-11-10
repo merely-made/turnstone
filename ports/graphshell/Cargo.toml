@@ -80,7 +80,7 @@ document-layout = ["dep:platen", "platen/document-layout"]
 workspace-editor = ["web", "dep:platen", "dep:comms", "platen/workspace-editor", "scenograph/editor"]
 # Retained document sessions belong to the application host, not the read-only
 # graph viewer. Product web builds opt in explicitly; native defaults retain it.
-retained-content = ["web", "document-layout", "dep:genet-presenter", "dep:cambium", "dep:fleece", "dep:wgpu", "dep:pelt-core", "pelt-core/cue", "dep:wgpu-cue", "dep:cue-netrender", "dep:inker", "dep:netrender", "dep:mere-lanes"]
+retained-content = ["web", "document-layout", "dep:genet-presenter", "dep:cambium", "dep:fleece", "dep:wgpu", "dep:pelt-core", "pelt-core/cue", "dep:wgpu-cue", "dep:cue-netrender", "dep:inker", "dep:netrender", "dep:mere-lanes", "dep:layout_dom_api", "dep:url"]
 # Forwards genet-livery's image decoding (mer3ly Ruling 111); on by default.
 image-decode = ["cambium-rootstock?/image-decode", "mere?/image-decode", "pelt-core?/image-decode"]
 # Existing admitted sessions, transports, Personae composition, and receipt
@@ -289,6 +289,8 @@ tabard = { workspace = true }
 sha2 = { workspace = true, optional = true }
 uuid = { workspace = true, features = ["v5"], optional = true }
 url = { version = "2", optional = true }
+# The DOM walk guest-page mentions read at spawn (`retained_content::mentions`).
+layout_dom_api = { workspace = true, optional = true }
 
 # Wasm-clean, and declared here rather than in the native-only table below so
 # the browser build can reach them: the identity core (`personae` without
@@ -314,7 +316,6 @@ proofs = { workspace = true, optional = true }
 servitor = { workspace = true, optional = true }
 pollster = { version = "0.4", optional = true }
 genet-scripted-dom = { workspace = true, optional = true }
-layout_dom_api = { workspace = true, optional = true }
 image = { version = "0.25", default-features = false, features = ["png"], optional = true }
 cambium = { workspace = true, optional = true }
 moot = { package = "mere-moot", path = "../moot", features = ["resource-owner"], optional = true }
