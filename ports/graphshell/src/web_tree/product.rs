@@ -70,7 +70,7 @@ type AssertionVisibilityCompletion = (
 );
 
 pub(super) enum CouplingOperation {
-    Apply(mere::coupling_edit::StrengthDraft),
+    Apply(graphshell_host::coupling_edit::StrengthDraft),
     History(CouplingId, bool),
 }
 

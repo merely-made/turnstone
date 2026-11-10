@@ -3909,7 +3909,6 @@ dependencies = [
  "graphshell-endpoint",
  "incipit",
  "insigne",
- "mere",
  "mere-fleece",
  "mere-kernel",
  "mere-overmap",
@@ -5870,18 +5869,12 @@ dependencies = [
 name = "mere"
 version = "0.0.2"
 dependencies = [
- "accesskit",
  "incipit",
- "inker",
  "mere-kernel",
- "netrender",
  "pictograph",
  "serde",
  "serde_json",
- "tabard",
- "tracing",
  "uuid",
- "uxtree",
 ]
 
 [[package]]

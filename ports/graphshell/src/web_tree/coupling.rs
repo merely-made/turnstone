@@ -8,7 +8,7 @@
 use super::product::CouplingOperation;
 use super::*;
 use cambium::{TextInput, button, lens, text_field_typed};
-use mere::coupling_edit::StrengthDraft;
+use graphshell_host::coupling_edit::StrengthDraft;
 
 pub(super) struct Pane {
     draft: Option<StrengthDraft>,
