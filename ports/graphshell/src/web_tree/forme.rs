@@ -1347,6 +1347,31 @@ struct ReadingTile {
     tags: Vec<String>,
 }
 
+/// Each tile showing a graph node, with its node's face (iconography T4).
+fn tile_faces(
+    tree: &TileTree,
+    metadata: &std::collections::BTreeMap<Uuid, ReadingTile>,
+    out: &mut std::collections::HashMap<workbench::TileId, String>,
+) {
+    match tree {
+        TileTree::Stack(stack) => {
+            for tile in &stack.tabs {
+                if let ContentSource::Open { id, .. } = &tile.content
+                    && let Ok(member) = id.parse::<Uuid>()
+                    && let Some(reading) = metadata.get(&member)
+                {
+                    out.insert(tile.id, mere::canvas::inline_face_url(&reading.address));
+                }
+            }
+        },
+        TileTree::Split { children, .. } => {
+            for child in children {
+                tile_faces(&child.tree, metadata, out);
+            }
+        },
+    }
+}
+
 fn tile_members(tree: &TileTree, out: &mut Vec<Uuid>) {
     match tree {
         TileTree::Stack(stack) => {
@@ -1405,6 +1430,8 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
             "No arranged documents. Select a document in Map, then choose Panes and Read selected.",
         )),
         Some(tree) => {
+            let mut faces = std::collections::HashMap::new();
+            tile_faces(&tree, &tile_metadata, &mut faces);
             let moving = pane.moving;
             let locked = pane.model().locked || pane.backend.is_read_only();
             let reading_shared = page.shared.clone();
@@ -1580,10 +1607,11 @@ pub(super) fn workbench(page: &TreePage) -> Option<Child> {
                 cambium::on_key(
                     el(
                         "div",
-                        cambium::frisket_with_tab_policy(
+                        cambium::frisket_with_faces(
                             &tree,
                             None,
                             &|_| None,
+                            &|tile| faces.get(&tile).cloned(),
                             cambium::TabStripPolicy::Multiple,
                             tile_event,
                             reading,

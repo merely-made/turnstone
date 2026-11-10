@@ -201,6 +201,8 @@ pub struct GroupedHostDataset {
     pub state: scenomise::host_dataset::folds::FoldViewState,
     positions: BTreeMap<String, PortablePoint>,
     labels: BTreeMap<String, String>,
+    /// Each occurrence's node address, the key its face derives from.
+    addresses: BTreeMap<String, String>,
 }
 
 impl GroupedHostDataset {
@@ -224,17 +226,31 @@ impl GroupedHostDataset {
             .iter()
             .map(|(id, key)| (id.clone(), complete.graph.node_display_label(*key)))
             .collect();
+        let addresses = complete
+            .occurrences
+            .iter()
+            .filter_map(|(id, key)| {
+                let node = complete.graph.get_node(*key)?;
+                Some((id.clone(), node.url().to_owned()))
+            })
+            .collect();
         Ok(Self {
             envelope,
             hierarchy,
             state: Default::default(),
             positions,
             labels,
+            addresses,
         })
     }
 
     pub fn label(&self, id: &str) -> &str {
         &self.labels[id]
+    }
+
+    /// The node address of occurrence `id`, as the canvas keys its face.
+    pub fn address(&self, id: &str) -> Option<&str> {
+        self.addresses.get(id).map(String::as_str)
     }
 
     /// Recompile a checkpoint of the same authority. Surviving groups retain
@@ -576,6 +592,11 @@ mod tests {
         grouped.state.entered = Some("workspace:mere:root".into());
         let projected = grouped.projection().unwrap();
         assert_eq!(projected.breadcrumbs, ["repo:mere", "workspace:mere:root"]);
+        // Each crumb's face keys on the address its canvas node carries.
+        let address = grouped.address("workspace:mere:root").unwrap();
+        assert_eq!(address, "urn:host-dataset:workspace:mere:root");
+        let view = grouped.view().unwrap();
+        assert!(view.graph.nodes().any(|(_, node)| node.url() == address));
         assert_eq!(projected.boundary.len(), 2);
         assert!(projected.visible.contains("crate:mere:scenomise"));
         assert!(projected.visible.contains("repo:genet"));

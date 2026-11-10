@@ -197,10 +197,11 @@ fn tree_stylesheet(appearance: &str) -> String {
     #[cfg(not(feature = "remote"))]
     let reservoir_sheet = "";
     format!(
-        "{SHEET}\n{}\n{}\n{workspace_sheet}\n{applet_sheet}\n{reservoir_sheet}\n{}\n{appearance}",
+        "{SHEET}\n{}\n{}\n{workspace_sheet}\n{applet_sheet}\n{reservoir_sheet}\n{}\n{}\n{appearance}",
         format!("{}\n{}", commands::SHEET, presenter::SHEET),
         forme_sheet(),
-        cambium::BACKDROP_SCENE_CSS
+        cambium::BACKDROP_SCENE_CSS,
+        mere::canvas::InlineFaces::rule(cambium::FACE_CLASS)
     )
 }
 
@@ -222,6 +223,9 @@ struct Shared {
     appearance_revision: Cell<u64>,
 
     canvas: RefCell<Canvas>,
+    /// Faces beside node names in tabs, rows and text, in the canvas's face
+    /// palette held against the page (iconography T4).
+    inline_faces: RefCell<Rc<mere::canvas::InlineFaces>>,
     /// Input or a new graph since the producer last drew.
     dirty: Cell<bool>,
     /// Fit once the producer has the real canvas aperture, not the full page.
@@ -1712,6 +1716,9 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
         appearance,
         appearance_revision,
 
+        inline_faces: RefCell::new(Rc::new(mere::canvas::InlineFaces::new(
+            mere::canvas::TextFacePalette::new(Default::default(), &[]),
+        ))),
         canvas: RefCell::new({
             let mut canvas = match &placed {
                 Some(positions) => web_graphs::placed_canvas(graph, positions, width, height),
@@ -1765,6 +1772,8 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
         .appearance
         .borrow()
         .apply_canvas(&mut shared.canvas.borrow_mut());
+    *shared.inline_faces.borrow_mut() =
+        Rc::new(shared.appearance.borrow().inline_faces(&shared.canvas.borrow()));
     if shared.reduced_motion() {
         shared.canvas.borrow_mut().set_physics_paused(true);
     }
@@ -1805,6 +1814,12 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
         // does, rather than resampling a producer texture at fractional scale.
         wgpu_portable_scene: true,
         title: "Graphshell, one tree".into(),
+        vector_images: {
+            let shared = shared.clone();
+            Some(Rc::new(move |url: &str, scale: f32| {
+                shared.inline_faces.borrow().resolve_image(url, scale)
+            }))
+        },
         netrender: Box::new(|| NetrenderOptions {
             tile_cache_size: Some(1024),
             enable_vello: true,
@@ -2146,6 +2161,8 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
                 }
                 if frame_shared.appearance_revision.get() != appearance.revision {
                     appearance.apply_canvas(&mut frame_shared.canvas.borrow_mut());
+                    *frame_shared.inline_faces.borrow_mut() =
+                        Rc::new(appearance.inline_faces(&frame_shared.canvas.borrow()));
                     frame_shared.appearance_revision.set(appearance.revision);
                     *ctx.set_sheet = Some(tree_stylesheet(&appearance.sheet()));
                     frame_shared.dirty.set(true);

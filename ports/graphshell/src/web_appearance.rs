@@ -256,6 +256,24 @@ impl Session {
             canvas.set_palette(self.colors[0], self.colors[1]);
         }
     }
+    /// Faces for text on this appearance's page: the canvas's face palette,
+    /// each entry held at 3:1 against the page ground, ringed in the text
+    /// colour where it cannot be.
+    pub fn inline_faces(&self, canvas: &mere::canvas::Canvas) -> mere::canvas::InlineFaces {
+        use mere::canvas::{InlineFaces, TextFacePalette, palette::ThemeColor};
+        let byte = |channel: f32| (channel.clamp(0.0, 1.0) * 255.0).round() as u8;
+        let grounds: Vec<ThemeColor> = self
+            .colors
+            .first()
+            .map(|[r, g, b, _]| ThemeColor::rgb(byte(*r), byte(*g), byte(*b)))
+            .into_iter()
+            .collect();
+        let faces = InlineFaces::new(TextFacePalette::new(canvas.derived_face_palette(), &grounds));
+        match self.colors.get(2) {
+            Some(text) => faces.with_outline(text.map(byte)),
+            None => faces,
+        }
+    }
     /// Embedded instances observe only inherited shared roles, never storage.
     pub fn refresh(&mut self, force: bool) -> Result<bool, String> {
         let mut inherited = String::new();

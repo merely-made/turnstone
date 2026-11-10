@@ -30,10 +30,19 @@ pub(super) fn controls(page: &TreePage) -> Option<Child> {
         }))];
     for id in &projection.breadcrumbs {
         let label = grouped.label(id).to_owned();
+        let face = grouped
+            .address(id)
+            .map(|address| cambium::face(mere::canvas::inline_face_url(address)));
         let id = id.clone();
-        breadcrumbs.push(Box::new(button(label, move |page: &mut TreePage, _| {
-            page.change_group(|state| state.entered = Some(id.clone()));
-        })));
+        breadcrumbs.push(Box::new(
+            cambium::button_with(
+                (face, el("span", label.clone())),
+                move |page: &mut TreePage, _| {
+                    page.change_group(|state| state.entered = Some(id.clone()));
+                },
+            )
+            .attr("aria-label", label),
+        ));
     }
     children.push(Box::new(
         el("nav", breadcrumbs).attr("aria-label", "Graph location"),

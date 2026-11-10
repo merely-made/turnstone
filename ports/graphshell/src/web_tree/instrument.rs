@@ -307,21 +307,31 @@ pub(super) fn document_rail(page: &TreePage) -> Option<Child> {
                             .enumerate()
                             .map(|(index, member)| {
                                 let member = *member;
-                                let title = graph
-                                    .get_node_by_id(member)
-                                    .map(|(key, _)| graph.node_display_label(key))
-                                    .unwrap_or_else(|| "Unavailable document".into());
-                                shell_control(
-                                    title.clone(),
-                                    title,
-                                    ShellControl {
-                                        pressed: Some(slot.active == index),
-                                        ..Default::default()
+                                let state = ShellControl {
+                                    pressed: Some(slot.active == index),
+                                    ..Default::default()
+                                };
+                                let activate = move |p: &mut TreePage, _| {
+                                    super::forme::activate_from_rail(p, member);
+                                };
+                                match graph.get_node_by_id(member) {
+                                    Some((key, node)) => {
+                                        let title = graph.node_display_label(key);
+                                        cambium::shell_face_control(
+                                            mere::canvas::inline_face_url(node.url()),
+                                            title.clone(),
+                                            title,
+                                            state,
+                                            activate,
+                                        )
                                     },
-                                    move |p: &mut TreePage, _| {
-                                        super::forme::activate_from_rail(p, member);
-                                    },
-                                )
+                                    None => shell_control(
+                                        "Unavailable document",
+                                        "Unavailable document",
+                                        state,
+                                        activate,
+                                    ),
+                                }
                             })
                             .collect(),
                     )
