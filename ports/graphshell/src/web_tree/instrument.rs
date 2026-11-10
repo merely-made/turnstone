@@ -318,7 +318,7 @@ pub(super) fn document_rail(page: &TreePage) -> Option<Child> {
                                     Some((key, node)) => {
                                         let title = graph.node_display_label(key);
                                         cambium::shell_face_control(
-                                            mere::canvas::inline_face_url(node.url()),
+                                            pictograph::canvas::inline_face_url(node.url()),
                                             title.clone(),
                                             title,
                                             state,

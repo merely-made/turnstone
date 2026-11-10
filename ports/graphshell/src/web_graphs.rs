@@ -16,10 +16,10 @@
 //! the boundary alone, for receipts that measure repulsion (a linked random
 //! graph packs into a ball under Springs, its long edges pulling inward).
 
-use mere::canvas::{Canvas, project_canvas_strategy};
-use mere::kernel::geometry::PortablePoint;
-use mere::kernel::graph::apply::{add_node, assert_relation};
-use mere::kernel::graph::{EdgeAssertion, Graph, SemanticSubKind};
+use pictograph::canvas::{Canvas, project_canvas_strategy};
+use kernel::geometry::PortablePoint;
+use kernel::graph::apply::{add_node, assert_relation};
+use kernel::graph::{EdgeAssertion, Graph, SemanticSubKind};
 use uuid::Uuid;
 
 /// The arrangement both pages open with.
@@ -119,7 +119,7 @@ fn graph_canvas(graph: Graph) -> Canvas {
 /// dataset's compiled arrangement), fitted to `width` by `height`.
 pub(crate) fn placed_canvas(
     graph: Graph,
-    positions: &[(mere::kernel::graph::NodeKey, PortablePoint)],
+    positions: &[(kernel::graph::NodeKey, PortablePoint)],
     width: u32,
     height: u32,
 ) -> Canvas {

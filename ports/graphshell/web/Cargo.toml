@@ -36,7 +36,7 @@ default = ["product", "remote", "canvas-gpu", "image-decode", "presentation-webg
 # The force engine in the main module. The viewer's own feature list leaves it
 # off (and `canvas-gpu`, which implies it): its physics runs in the lazily
 # loaded Worker module, and the main module links no rapier.
-physics-engine = ["graphshell/physics-engine", "mere/physics-engine", "graphshell-host/physics-engine"]
+physics-engine = ["graphshell/physics-engine", "pictograph/physics-engine", "graphshell-host/physics-engine"]
 # Browser presentation routes. The full page carries both and Auto chooses at
 # boot. The read-only viewer ships one artifact per route, chosen by
 # `mount.js` before loading: `presentation-webgpu`, or `presentation-webgl2`
@@ -60,9 +60,9 @@ applets = ["graphshell/applets", "muniment/indexeddb"]
 # remote board.
 remote = ["graphshell/webrtc-browser", "dep:mere-overmap", "dep:mere-view", "dep:futures-channel", "dep:futures-util"]
 # The canvas's repulsion on the page's own WebGPU device (physics catalog P5c).
-canvas-gpu = ["graphshell/canvas-gpu", "mere/canvas-gpu", "graphshell-host/board-gpu"]
+canvas-gpu = ["graphshell/canvas-gpu", "pictograph/gpu", "graphshell-host/board-gpu"]
 # Forwards genet-livery's image decoding (mer3ly Ruling 111); on by default.
-image-decode = ["genet-render/image-decode", "taproot/image-decode", "cambium-rootstock/image-decode", "mandrake/image-decode", "cambium-web/image-decode", "graphshell/image-decode", "mere/image-decode"]
+image-decode = ["genet-render/image-decode", "taproot/image-decode", "cambium-rootstock/image-decode", "mandrake/image-decode", "cambium-web/image-decode", "graphshell/image-decode", "pictograph/image-decode"]
 
 [dependencies]
 mere-view = { path="../../../crates/cambium/mere-view", optional=true }
@@ -80,7 +80,8 @@ moot = { package = "mere-moot", path = "../../moot", default-features = false, f
 # personae's wasm32 identity stack sits on getrandom 0.3, whose `wasm_js`
 # feature is inert without the cfg. The cfg is committed in .cargo/config.toml.
 graphshell = { path = "..", default-features = false, features = ["web"] }
-mere = { path = "../../../crates/mere", default-features = false, features = ["graph", "canvas"] }
+kernel = { package = "mere-kernel", path = "../../../crates/graph/graph-kernel" }
+pictograph = { path = "../../../crates/canvas/pictograph", default-features = false, features = ["canvas"] }
 incipit = { path = "../../../crates/incipit", features = ["graph"] }
 # `indexeddb` supplies the browser realization of muniment's byte-store seam,
 # which this crate hands to `GraphshellApp` as its backend. It lived here until

@@ -11,7 +11,7 @@ use graphshell::link_inspection::{
     HeldStatement, LinkHistoryInspection, LinkInspection, LinkOwner, LinkTarget,
     StatementInspection,
 };
-use mere::kernel::graph::{GraphStratum, SemanticSubKind};
+use kernel::graph::{GraphStratum, SemanticSubKind};
 use uuid::Uuid;
 
 fn read(page: &TreePage) -> Result<LinkInspection, String> {
@@ -552,7 +552,7 @@ pub(super) fn section(page: &TreePage) -> Child {
             if let Some(pair) = page.inspected_link {
                 dynamics_inspection::choose(
                     page,
-                    mere::canvas::DynamicsTarget::Pair {
+                    pictograph::canvas::DynamicsTarget::Pair {
                         first: pair.first,
                         second: pair.second,
                     },

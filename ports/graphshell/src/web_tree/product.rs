@@ -13,8 +13,8 @@ use graphshell::local_edit::{
 use graphshell::local_intake::{
     create_address, create_file, create_link, persist_intake, sync_canvas_intake,
 };
-use mere::canvas::Role;
-use mere::kernel::graph::CouplingId;
+use pictograph::canvas::Role;
+use kernel::graph::CouplingId;
 use muniment::IndexedDbBackend;
 use uuid::Uuid;
 mod commands;
@@ -114,7 +114,7 @@ pub(super) struct SavedProduct {
     /// A created but unacknowledged member. Retrying stores this same object.
     pending_intake: Option<Uuid>,
     /// Suggested links the person kept, written one at a time as their own.
-    kept_links: std::collections::VecDeque<mere::canvas::link_suggestions::KeptLink>,
+    kept_links: std::collections::VecDeque<pictograph::canvas::link_suggestions::KeptLink>,
     pending_detail: Option<CompletedEdit>,
     detail: detail::DetailControls,
     find: find::FindControls,
@@ -419,7 +419,7 @@ fn link_key_is_present(
     let source = scenograph::link::LinkSource::Unavailable {
         reason: "Graphshell is validating a local view target".into(),
     };
-    mere::canvas::link_reading::read_link(graph, pair.0, pair.1, source)
+    pictograph::canvas::link_reading::read_link(graph, pair.0, pair.1, source)
         .is_ok_and(|reading| reading.links.iter().any(|link| &link.key == expected))
 }
 
@@ -525,8 +525,8 @@ impl SavedProduct {
         &self,
     ) -> Option<
         Vec<(
-            mere::kernel::graph::NodeKey,
-            mere::kernel::geometry::PortablePoint,
+            kernel::graph::NodeKey,
+            kernel::geometry::PortablePoint,
         )>,
     > {
         (self.link_rest_fixture || self.link_family_assertion_fixture)
@@ -595,9 +595,9 @@ impl SavedProduct {
             .as_ref()
             .ok_or("Link reading will resume when the current save finishes")?;
         let read = if history {
-            mere::canvas::link_reading::read_link_history
+            pictograph::canvas::link_reading::read_link_history
         } else {
-            mere::canvas::link_reading::read_link
+            pictograph::canvas::link_reading::read_link
         };
         read(
             app.host.graph(),
@@ -642,7 +642,7 @@ impl SavedProduct {
     pub(super) fn inspect_statement_at_owner(
         &self,
         statement_id: &str,
-        stratum: mere::kernel::graph::GraphStratum,
+        stratum: kernel::graph::GraphStratum,
         from: Uuid,
         to: Uuid,
     ) -> Result<graphshell::link_inspection::StatementInspection, String> {

@@ -18,9 +18,9 @@ use graphshell::projection_dynamics_compare::{
     DynamicsComparison, compare_arrangements_dynamics, compare_dynamics,
 };
 use graphshell::projection_save::{PendingSave, SaveAck};
-use mere::canvas::PhysicsLaw;
-use mere::canvas::dynamics_recipe::preset_slot;
-use mere::canvas::projection_dynamics::ProjectionDynamics;
+use pictograph::canvas::PhysicsLaw;
+use pictograph::canvas::dynamics_recipe::preset_slot;
+use pictograph::canvas::projection_dynamics::ProjectionDynamics;
 use sceno::InstanceId;
 use scenograph::Channel;
 use scenomise::authoring::{EditorAction, ProjectionEditor, ProjectionPanel};

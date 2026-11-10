@@ -81,7 +81,7 @@ impl CanvasProducer {
                 remote
                     .text
                     .set_font_roles(&shared.appearance.borrow().font_roles());
-                let empty = mere::canvas::BoardScene::default();
+                let empty = pictograph::canvas::BoardScene::default();
                 let painted = if remote.mounted().is_some() {
                     remote.board.scene()
                 } else {
@@ -115,7 +115,7 @@ impl CanvasProducer {
                 None => canvas.frame_profiled(size.0, size.1, now_ms),
             };
             shared.timing.borrow_mut().stages(
-                mere::canvas::CanvasFrameProfile::STAGES
+                pictograph::canvas::CanvasFrameProfile::STAGES
                     .into_iter()
                     .zip(sample.stage_ms),
             );
@@ -172,7 +172,7 @@ impl CanvasProducer {
             );
             shared.release_log.borrow_mut().push(format!(
                 "release-step {} {distance:.1} px after {} steps ({from_press:.1} px from the press point, zoom {:.2})",
-                mere::canvas::PhysicsChoice::live(&canvas).law.id(),
+                pictograph::canvas::PhysicsChoice::live(&canvas).law.id(),
                 report.steps,
                 canvas.camera().zoom
             ));

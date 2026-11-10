@@ -8,7 +8,7 @@ use super::*;
 use cambium::{DetailRow, DetailSection, button, detail_panel};
 use graphshell::node_presentation::{MAX_LIVE_NODES, NodeRuntime, Representation};
 use graphshell::presentation_binding::{BoundContext, Occurrence, ViewInputs, bind};
-use mere::canvas::Role;
+use pictograph::canvas::Role;
 use scenograph::presentation::{Effect, PrimitiveKind, RuleSet};
 #[derive(Default)]
 pub(super) struct Pane {

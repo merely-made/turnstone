@@ -91,7 +91,7 @@ impl SavedProduct {
     }
     pub(in crate::web_tree) fn open_menu(
         &mut self,
-        request: mere::canvas::ContextRequest,
+        request: pictograph::canvas::ContextRequest,
         canvas: &mut Canvas,
     ) {
         if self.selection_locked() {

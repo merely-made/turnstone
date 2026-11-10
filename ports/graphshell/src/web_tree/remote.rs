@@ -19,7 +19,7 @@ use cambium::{DisclosureState, SelectState, button, disclosure, lens, select};
 use graphshell_host::board::RemoteBoard;
 use graphshell_client::remote::ActionForm;
 use graphshell_client::{ActionDraftSemantics, MountedScene};
-use mere::canvas::{BoardFit, BoardText};
+use pictograph::canvas::{BoardFit, BoardText};
 
 use super::super::web_rtc_link::{self, LiveRemote, RemoteHost};
 
@@ -229,8 +229,8 @@ impl TreeRemote {
     /// it to the scene.
     pub(super) fn sync_board(
         &mut self,
-        stage: Option<mere::canvas::dynamics_spec::DynamicsSpec>,
-        speed: mere::canvas::Speed,
+        stage: Option<pictograph::canvas::dynamics_spec::DynamicsSpec>,
+        speed: pictograph::canvas::Speed,
     ) {
         let revision = self.revision();
         let identity = self

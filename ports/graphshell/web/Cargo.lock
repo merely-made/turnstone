@@ -3832,9 +3832,9 @@ dependencies = [
  "inker",
  "insigne",
  "layout-dom-api",
- "mere",
  "mere-comms",
  "mere-fleece",
+ "mere-kernel",
  "mere-lanes",
  "mere-moot",
  "mere-overmap",
@@ -3846,6 +3846,7 @@ dependencies = [
  "pandect",
  "pelt-core",
  "personae",
+ "pictograph",
  "platen",
  "sceno",
  "sceno-backdrops",
@@ -3961,8 +3962,8 @@ dependencies = [
  "js-sys",
  "layout-dom-api",
  "mandrake",
- "mere",
  "mere-fleece",
+ "mere-kernel",
  "mere-lanes",
  "mere-moot",
  "mere-overmap",
@@ -3971,6 +3972,7 @@ dependencies = [
  "netrender",
  "netrender_device",
  "pandect",
+ "pictograph",
  "platen",
  "sceno",
  "sceno-backdrops",
@@ -5863,18 +5865,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "488016bfae457b036d996092f6cb448677611ce4449e970ceaf42695203f218a"
 dependencies = [
  "autocfg",
-]
-
-[[package]]
-name = "mere"
-version = "0.0.2"
-dependencies = [
- "incipit",
- "mere-kernel",
- "pictograph",
- "serde",
- "serde_json",
- "uuid",
 ]
 
 [[package]]

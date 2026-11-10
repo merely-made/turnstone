@@ -10,7 +10,7 @@
 //! The Cambium web host claims every wheel notch and pointer on its canvas,
 //! which would trap an embedding page's scroll. These listeners sit on the
 //! mount root in the capture phase, ahead of the host's, and keep from it
-//! what belongs to the page, by `mere::canvas::gestures`' policy: a
+//! what belongs to the page, by `pictograph::canvas::gestures`' policy: a
 //! wheel follows the view preference (pointer zoom by default); one finger
 //! on empty canvas scrolls the page and one on a node
 //! drags it; two fingers pan and pinch. Outside the graph leaf (the toolbar,
@@ -19,7 +19,7 @@
 use std::collections::HashSet;
 
 use cambium_genet_web_host::{WHEEL_LINE_PX, WHEEL_PAGE_PX, wheel_delta_from_dom};
-use mere::canvas::gestures::{
+use pictograph::canvas::gestures::{
     Fingers, TouchUse, WheelMode, WheelUse, touch_use, two_finger, wheel_use, wheel_zoom,
 };
 use web_sys::{AddEventListenerOptions, PointerEvent, TouchEvent, TouchList};
@@ -226,7 +226,7 @@ impl Listeners {
                 canvas.set_ctrl(event.ctrl_key());
                 canvas.set_shift(event.shift_key());
                 canvas.set_alt(event.alt_key());
-                canvas.pointer_down(mere::canvas::PointerButton::Right, at.0, at.1);
+                canvas.pointer_down(pictograph::canvas::PointerButton::Right, at.0, at.1);
                 canvas.set_ctrl(false);
                 canvas.set_shift(false);
                 canvas.set_alt(false);
@@ -277,7 +277,7 @@ impl Listeners {
                 canvas.set_shift(event.shift_key());
                 canvas.set_alt(event.alt_key());
                 if ends {
-                    canvas.pointer_up(mere::canvas::PointerButton::Right, at.0, at.1);
+                    canvas.pointer_up(pictograph::canvas::PointerButton::Right, at.0, at.1);
                     let request = canvas.take_context_request();
                     *self.shared.command_request.borrow_mut() =
                         Some(match request.filter(|_| event.type_() == "pointerup") {

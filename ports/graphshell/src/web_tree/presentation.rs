@@ -13,7 +13,7 @@ use graphshell::presentation_binding::{
 };
 use graphshell::presentation_store;
 use graphshell::presentation_store::{Loaded, OwnerObservation, SaveFailure, binding_changed};
-use mere::canvas::Role;
+use pictograph::canvas::Role;
 use mere_view::presentation_editor::{
     self as controls, Effect as ControlEffect, PresentationEditor, Snapshot,
 };

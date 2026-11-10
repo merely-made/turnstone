@@ -479,7 +479,7 @@ pub(super) fn edit(
     page: &mut TreePage,
     key: Option<String>,
     auto_open: bool,
-    change: impl FnOnce(&mut FormeWorkspace, &mere::kernel::graph::Graph) -> Result<(), String>,
+    change: impl FnOnce(&mut FormeWorkspace, &kernel::graph::Graph) -> Result<(), String>,
 ) {
     let Some(pane) = &mut page.forme else {
         return;
@@ -1033,12 +1033,12 @@ pub(super) fn pointer(page: &mut TreePage, event: &cambium::PointerEvent) -> boo
             } else {
                 let mut canvas = page.shared.canvas.borrow_mut();
                 canvas.pointer_down(
-                    mere::canvas::PointerButton::Left,
+                    pictograph::canvas::PointerButton::Left,
                     event.local.0,
                     event.local.1,
                 );
                 canvas.pointer_up(
-                    mere::canvas::PointerButton::Left,
+                    pictograph::canvas::PointerButton::Left,
                     event.local.0,
                     event.local.1,
                 );
@@ -1202,7 +1202,7 @@ pub(super) fn section(page: &TreePage) -> Child {
                     .graph()
                     .get_node_key_by_id(c.member)
                     .is_some_and(|key| {
-                        canvas.arrangement_role_of(key) == mere::canvas::Role::Pinned
+                        canvas.arrangement_role_of(key) == pictograph::canvas::Role::Pinned
                     })
             })
             .count();
@@ -1360,7 +1360,7 @@ fn tile_faces(
                     && let Ok(member) = id.parse::<Uuid>()
                     && let Some(reading) = metadata.get(&member)
                 {
-                    out.insert(tile.id, mere::canvas::inline_face_url(&reading.address));
+                    out.insert(tile.id, pictograph::canvas::inline_face_url(&reading.address));
                 }
             }
         },

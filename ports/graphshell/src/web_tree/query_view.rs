@@ -7,7 +7,7 @@
 use super::*;
 use cambium::{button, lens};
 use graphshell::query_views::{PresentedLink, QueryFreezeCorrelation, presented_links};
-use mere::kernel::graph::GraphStratum;
+use kernel::graph::GraphStratum;
 use mere_view::query::editor::{Completion, Effect, SaveResult, Scope};
 use mere_view::query::{self as model, *};
 use mere_view::query_editor::{FIELD_LABELS, QueryEditor};
@@ -121,7 +121,7 @@ pub(super) fn poll(page: &mut TreePage) {
                     let term = serde_json::to_string(resource.canonical_iri())
                         .expect("IRI string serializes");
                     pane.tags.push((format!("Use tag: {} ({})", concept.label, concept.owner_iri),
-                        format!("SELECT ?member WHERE {{ ?member <{}> ?tag . FILTER(STR(?tag) = {term}) }}", mere::kernel::graph::resource::TAGGED_WITH_IRI)));
+                        format!("SELECT ?member WHERE {{ ?member <{}> ?tag . FILTER(STR(?tag) = {term}) }}", kernel::graph::resource::TAGGED_WITH_IRI)));
                 }
             }
         }

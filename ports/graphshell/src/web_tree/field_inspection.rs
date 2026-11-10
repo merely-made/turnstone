@@ -13,7 +13,7 @@ use graphshell::field_inspection::{
     self as model, CouplingInspection, FieldTarget, ForceEligibility, FormeInspection,
     RegionCandidate,
 };
-use mere::kernel::graph::{CouplingId, FieldId, Graph};
+use kernel::graph::{CouplingId, FieldId, Graph};
 
 #[derive(Default)]
 pub(super) struct Pane {

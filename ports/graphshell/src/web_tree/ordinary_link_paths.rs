@@ -12,11 +12,11 @@
 
 use super::*;
 use cambium::button;
-use mere::canvas::responsive_link_adapter::ResponsivePathConfig;
-use mere::kernel::graph::{FieldDefinition, FieldExtent, FieldId, ScalarField, VectorField};
+use pictograph::canvas::responsive_link_adapter::ResponsivePathConfig;
+use kernel::graph::{FieldDefinition, FieldExtent, FieldId, ScalarField, VectorField};
 use scenograph::link::LinkKey;
 
-use mere::canvas::responsive_links::{LinkPathResponse, LinkPathResponseReport, LinkPathState};
+use pictograph::canvas::responsive_links::{LinkPathResponse, LinkPathResponseReport, LinkPathState};
 
 const MIN_FIELD_STRENGTH: f32 = 1.0;
 const MAX_FIELD_STRENGTH: f32 = 10_000.0;
@@ -246,8 +246,8 @@ fn status(report: &LinkPathResponseReport) -> String {
     }
 }
 
-fn failure_message(failure: &mere::canvas::responsive_links::LinkPathFailure) -> &'static str {
-    use mere::canvas::responsive_links::LinkPathFailure;
+fn failure_message(failure: &pictograph::canvas::responsive_links::LinkPathFailure) -> &'static str {
+    use pictograph::canvas::responsive_links::LinkPathFailure;
     match failure {
         LinkPathFailure::MissingField(_) => "the selected graph field is unavailable",
         LinkPathFailure::RetiredField(_) => "the selected graph field is retired",
@@ -421,7 +421,7 @@ pub(super) fn fields(page: &TreePage, snapshot: ProbeSnapshot) -> ProbeSnapshot 
     observation::fields(page, snapshot)
 }
 
-fn max_bend(paths: &[mere::canvas::responsive_links::EvaluatedLinkPath]) -> f32 {
+fn max_bend(paths: &[pictograph::canvas::responsive_links::EvaluatedLinkPath]) -> f32 {
     paths
         .iter()
         .map(|path| path.max_bend())

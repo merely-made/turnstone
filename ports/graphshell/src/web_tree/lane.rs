@@ -218,7 +218,7 @@ fn link_rest_fields(canvas: &Canvas, snapshot: ProbeSnapshot) -> ProbeSnapshot {
                 .with_field("link-rest-summaries", "")
                 .with_field("link-rest-source-assertion-ids", "");
         };
-        let reading = match mere::canvas::link_reading::read_link_history(
+        let reading = match pictograph::canvas::link_reading::read_link_history(
             graph,
             graph.get_node(from).expect("resolved fixture node").id,
             graph.get_node(to).expect("resolved fixture node").id,
@@ -435,7 +435,7 @@ impl TreeLane {
     ) -> ProbeSnapshot {
         let page = ctx.runner.state();
         let canvas = self.shared.canvas.borrow();
-        let choice = mere::canvas::PhysicsChoice::live(&canvas);
+        let choice = pictograph::canvas::PhysicsChoice::live(&canvas);
         // The authored grouping partition belongs to the grouped root. It is
         // independent of Group pull (`choice.groups`) and the role target's
         // group source, both of which can be edited on this panel.
@@ -443,7 +443,7 @@ impl TreeLane {
             .dynamics_spec()
             .ok()
             .and_then(|spec| match spec.root {
-                mere::canvas::dynamics_spec::Node::Grouped { partition, .. } => Some(partition),
+                pictograph::canvas::dynamics_spec::Node::Grouped { partition, .. } => Some(partition),
                 _ => None,
             })
             .unwrap_or_default();
@@ -451,7 +451,7 @@ impl TreeLane {
             let projection = ctx.a11y_projection();
             let dom = ctx.runner.dom();
             let dom = dom.borrow();
-            mere::canvas::CANVAS_PHYSICS_OVERLAYS
+            pictograph::canvas::CANVAS_PHYSICS_OVERLAYS
                 .iter()
                 .filter(|(_, label)| {
                     projection.as_ref().is_some_and(|projection| {
@@ -474,7 +474,7 @@ impl TreeLane {
             let projection = ctx.a11y_projection();
             let dom = ctx.runner.dom();
             let dom = dom.borrow();
-            mere::canvas::CANVAS_PHYSICS_OVERLAYS
+            pictograph::canvas::CANVAS_PHYSICS_OVERLAYS
                 .iter()
                 .filter(|(_, label)| {
                     projection.as_ref().is_some_and(|projection| {
@@ -521,7 +521,7 @@ impl TreeLane {
             )
             .with_field(
                 "physics-profile",
-                mere::canvas::physics_controls::profile_id(&canvas),
+                pictograph::canvas::physics_controls::profile_id(&canvas),
             )
             .with_field("physics-kind-source", choice.kind.id())
             .with_field("physics-group-source", choice.groups.id())
@@ -677,7 +677,7 @@ impl TreeLane {
                 .with_field("layout-spread", format!("{:.0}", stats.spread))
                 .with_field("layout-overlaps", stats.overlaps.to_string());
         }
-        for (name, value) in mere::canvas::physics_controls::framing_fields(&canvas) {
+        for (name, value) in pictograph::canvas::physics_controls::framing_fields(&canvas) {
             snapshot = snapshot.with_field(name, value);
         }
         // The composing editors' controls, applied or not.
@@ -797,7 +797,7 @@ impl TreeLane {
             )
             .with_field(
                 "remote-physics-law",
-                mere::canvas::PhysicsChoice::view(remote.board.board().stage())
+                pictograph::canvas::PhysicsChoice::view(remote.board.board().stage())
                     .map(|view| view.law.id())
                     .unwrap_or_default(),
             )
@@ -1071,8 +1071,8 @@ impl Product for TreeLane {
                 "physics-composition",
                 match canvas.physics_composition() {
                     None => "none",
-                    Some(mere::canvas::PhysicsComposition::Mix(_)) => "mix",
-                    Some(mere::canvas::PhysicsComposition::Grouped(_)) => "grouped",
+                    Some(pictograph::canvas::PhysicsComposition::Mix(_)) => "mix",
+                    Some(pictograph::canvas::PhysicsComposition::Grouped(_)) => "grouped",
                 },
             )
             .with_field("camera-centered", {
@@ -1365,7 +1365,7 @@ impl Product for TreeLane {
                     .graph()
                     .nodes()
                     .filter(|(key, _)| {
-                        canvas.arrangement_role_of(*key) == mere::canvas::Role::Pinned
+                        canvas.arrangement_role_of(*key) == pictograph::canvas::Role::Pinned
                     })
                     .map(|(key, _)| canvas.graph().node_display_label(key))
                     .collect::<Vec<_>>()
@@ -1642,7 +1642,7 @@ impl Product for TreeLane {
                 let canvas = self.shared.canvas.borrow();
                 let start = ctx.runner.state().physics.law_start;
                 self.shared.physics_log.borrow_mut().push(
-                    mere::canvas::physics_controls::layout_line(
+                    pictograph::canvas::physics_controls::layout_line(
                         rest.trim(),
                         &canvas,
                         start.as_ref(),
@@ -1657,7 +1657,7 @@ impl Product for TreeLane {
                 let canvas = self.shared.canvas.borrow();
                 let stats = canvas.layout_stats_without_stretch();
                 let lane = canvas.repulsion_stats().unwrap_or_default();
-                let framing = mere::canvas::physics_controls::framing_fields(&canvas)
+                let framing = pictograph::canvas::physics_controls::framing_fields(&canvas)
                     .map(|(name, value)| format!("{name} {value}"))
                     .join(" ");
                 let answers = self
@@ -1671,7 +1671,7 @@ impl Product for TreeLane {
                      device {} device-steps {} cpu-steps {} submissions {} answers {} failures {} \
                      waiting {} stale {} mismatched {} last-age {} {framing}",
                     rest.trim(),
-                    mere::canvas::PhysicsChoice::live(&canvas).law.id(),
+                    pictograph::canvas::PhysicsChoice::live(&canvas).law.id(),
                     canvas.graph().node_count(),
                     stats.energy,
                     stats.spread,
@@ -1733,7 +1733,7 @@ impl Product for TreeLane {
             // `measure-faces <label>`: each face in view against its drawn
             // body, into the snapshot and the receipt.
             "measure-faces" => {
-                let faces = mere::canvas::face_alignment::FaceAlignment::measure(
+                let faces = pictograph::canvas::face_alignment::FaceAlignment::measure(
                     &*self.shared.canvas.borrow(),
                     self.shared.size.get(),
                 );

@@ -251,9 +251,9 @@ fn action_button(label: &'static str, action: &'static str) -> Child {
         page.physics.sync(&canvas);
         if let Some(product) = &page.product {
             if let Some(scene) = &product.scenes.saved {
-                if let Ok(layout) = mere::canvas::saved_scene::scene_arrangement(scene) {
+                if let Ok(layout) = pictograph::canvas::saved_scene::scene_arrangement(scene) {
                     page.physics.arrangement.selected =
-                        mere::canvas::physics_controls::arrangement_choices()
+                        pictograph::canvas::physics_controls::arrangement_choices()
                             .position(|(id, _)| id == layout)
                             .unwrap_or(0);
                     page.physics.layout_id = layout;

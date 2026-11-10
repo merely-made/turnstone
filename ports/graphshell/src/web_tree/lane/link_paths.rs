@@ -9,7 +9,7 @@ use super::*;
 
 /// Retain the actual source observations with the opt-in scenario receipt so
 /// an external driver can compare independent page/process runs.
-pub(super) fn source_receipt(canvas: &mere::canvas::Canvas) -> Option<serde_json::Value> {
+pub(super) fn source_receipt(canvas: &pictograph::canvas::Canvas) -> Option<serde_json::Value> {
     let snapshot = super::link_rest_fields(canvas, ProbeSnapshot::default());
     if snapshot.field("link-rest-ready") != Some("true") {
         return None;

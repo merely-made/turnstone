@@ -19,8 +19,8 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::Duration;
 
 pub(crate) use graphshell::frame_budget::{FrameBudget, Period};
-use mere::canvas::physics_controls::{MAX_SPEED, speed_label};
-use mere::canvas::{Canvas, DEFAULT_BUDGET_SHARE, ElapsedStepConfig, Speed};
+use pictograph::canvas::physics_controls::{MAX_SPEED, speed_label};
+use pictograph::canvas::{Canvas, DEFAULT_BUDGET_SHARE, ElapsedStepConfig, Speed};
 
 use crate::web_timing::now_ms;
 
