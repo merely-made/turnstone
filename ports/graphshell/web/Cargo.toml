@@ -87,7 +87,7 @@ mere = { path = "../../../crates/mere", default-features = false, features = ["g
 muniment = { git = "https://github.com/merely-made/eidetic.git", branch = "main" }
 graphshell-client = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 # The remote board the pages draw (stack lift plan, P10).
-graphshell-host = { path = "../../../crates/graphshell/graphshell-host", default-features = false, features = ["board"] }
+graphshell-host = { path = "../../../crates/graphshell/graphshell-host", default-features = false, features = ["board", "mere-host"] }
 chirograph = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 workbench = { path = "../../../crates/cambium/workbench" }
 sceno = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }

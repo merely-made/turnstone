@@ -8,7 +8,7 @@
 use super::*;
 use backstep::{ClipboardEvent, ClipboardRequest};
 use cambium::{button, el};
-use graphshell::handlers::{
+use graphshell_host::handlers::{
     ATTACHED_BROWSER_HANDLER, ReferenceReach, attached_browser_target, prepare_reference,
 };
 

@@ -67,8 +67,6 @@ pub mod forme_workspace;
 #[cfg(feature = "web")]
 pub mod frame_budget;
 #[cfg(feature = "web")]
-pub mod handlers;
-#[cfg(feature = "web")]
 pub mod host_dataset_view;
 #[cfg(feature = "web")]
 pub mod host_history_view;
@@ -114,8 +112,6 @@ pub mod resident_host;
 pub mod responsive_links;
 #[cfg(feature = "web")]
 pub mod retained_policy;
-#[cfg(feature = "web")]
-pub mod session_item;
 #[cfg(feature = "web")]
 pub mod speed_bar;
 #[cfg(feature = "web")]

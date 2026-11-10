@@ -173,6 +173,8 @@ canvas-gpu = ["web", "mere/canvas-gpu", "graphshell-host/board-gpu"]
 web = [
     # The remote board the browser pages draw (stack lift plan, P10).
     "graphshell-host/board",
+    # The mere endpoint closure (engine split D68).
+    "graphshell-host/mere-host",
     # Promoted links name Cambium's link-member target; the web crate links
     # Cambium anyway, so the viewer pays nothing for it.
     "dep:cambium",

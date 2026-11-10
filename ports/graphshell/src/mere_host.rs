@@ -18,6 +18,10 @@ use chirograph::{
     ProjectionSnapshot, ProtocolVersion, ResourceRequest, ResourceResponse, SemanticRole,
 };
 use graphshell_endpoint::{IntentSink, PresentationSource, ProjectionCatalog, ProjectionSource};
+use graphshell_host::handlers::{
+    HandlerOffer, HandlerRegistry, OpenAddressV1, handler_from_intent, intent_id,
+};
+use graphshell_host::session_item;
 use mere::kernel::graph::apply::{GraphDelta, apply_graph_delta};
 use mere::kernel::graph::{
     Author, CapturedDelta, Graph, NodeFacetStore, NodeKey, RelationKey, RelationKind,
@@ -44,10 +48,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 use pandect::access::{AccessContext, AccessError, AccessHistory, access_history, record_access};
-use crate::handlers::{
-    HandlerOffer, HandlerRegistry, OpenAddressV1, handler_from_intent, intent_id,
-};
-use crate::session_item;
 use mere_overmap::wire;
 
 /// The session item's instance in resident mode (§7 item 31).
@@ -1630,7 +1630,7 @@ fn relation_kind_label(kind: RelationKind) -> &'static str {
 pub fn fixture_handlers() -> HandlerRegistry {
     use mere::kernel::address::AddressKind;
     HandlerRegistry::new(vec![
-        crate::handlers::inspect_handler(),
+        graphshell_host::handlers::inspect_handler(),
         HandlerOffer {
             id: "system.default".to_string(),
             label: "Open in another application".to_string(),

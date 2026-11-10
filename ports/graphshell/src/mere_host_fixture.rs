@@ -11,6 +11,7 @@
 //! record that the demo and the tests read back, and keeping it here leaves
 //! the host module about what the host does.
 
+use graphshell_host::handlers::HandlerRegistry;
 use mere::kernel::geometry::PortablePoint;
 use mere::kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta, assert_relation};
 use mere::kernel::graph::{
@@ -25,7 +26,6 @@ use muniment::Backend;
 use serde_json::json;
 
 use pandect::access::{AccessContext, record_access};
-use crate::handlers::HandlerRegistry;
 use crate::mere_host::{
     FIXTURE_DEVICE_ONE_ADDRESS, FIXTURE_DEVICE_TWO_ADDRESS, FIXTURE_FILE_ADDRESS,
     FIXTURE_GRANT_ADDRESS, FIXTURE_KEY_ADDRESS, FIXTURE_NON_WEB_ADDRESS, FIXTURE_PERSONA_ADDRESS,

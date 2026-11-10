@@ -292,7 +292,7 @@ fn valid_explicit_session_material_supplies_saved_view_and_read_only_state() {
 #[test]
 fn selected_record_offers_use_owner_item_after_the_hidden_session_item() {
     let (mut transport, _) = fixture(false, true);
-    let action = graphshell::handlers::HandlerOffer {
+    let action = graphshell_host::handlers::HandlerOffer {
         id: "fixture".into(),
         label: "Open with fixture".into(),
         explanation: "Configured by the owner".into(),
@@ -325,7 +325,7 @@ fn selected_record_offers_use_owner_item_after_the_hidden_session_item() {
     assert_eq!(offered, vec![action.clone()]);
     assert_eq!(reading.owner_offers.len(), 1);
     let command = action.command_invocation(
-        serde_json::to_vec(&graphshell::handlers::OpenAddressV1 {
+        serde_json::to_vec(&graphshell_host::handlers::OpenAddressV1 {
             address: ADDRESS.into(),
             handler: "fixture".into(),
         })
@@ -568,7 +568,7 @@ fn browser_connection() -> (
     chirograph::AdvertisedAction,
 ) {
     let (mut transport, _) = fixture(false, true);
-    let action = graphshell::handlers::web_browser_handler().advertised_action();
+    let action = graphshell_host::handlers::web_browser_handler().advertised_action();
     for response in &mut transport.responses {
         if let Ok(CarrierResponseBody::Snapshot(snapshot)) = response
             && snapshot.session.0 == wire::MERE_GRAPH
@@ -623,9 +623,9 @@ fn only_exact_owner_acceptance_dispatches_the_browser_once() {
         let (refresh, _) = fixture(false, true);
         connection.transport.responses.extend(refresh.responses);
         let command = action.command_invocation(
-            serde_json::to_vec(&graphshell::handlers::OpenAddressV1 {
+            serde_json::to_vec(&graphshell_host::handlers::OpenAddressV1 {
                 address: ADDRESS.into(),
-                handler: graphshell::handlers::SYSTEM_DEFAULT_HANDLER.into(),
+                handler: graphshell_host::handlers::SYSTEM_DEFAULT_HANDLER.into(),
             })
             .unwrap(),
         );
@@ -658,9 +658,9 @@ fn browser_failure_is_reported_separately_from_owner_acceptance() {
     let (refresh, _) = fixture(false, true);
     connection.transport.responses.extend(refresh.responses);
     let command = action.command_invocation(
-        serde_json::to_vec(&graphshell::handlers::OpenAddressV1 {
+        serde_json::to_vec(&graphshell_host::handlers::OpenAddressV1 {
             address: ADDRESS.into(),
-            handler: graphshell::handlers::SYSTEM_DEFAULT_HANDLER.into(),
+            handler: graphshell_host::handlers::SYSTEM_DEFAULT_HANDLER.into(),
         })
         .unwrap(),
     );
@@ -690,9 +690,9 @@ fn a_reading_cannot_authorize_browser_dispatch_and_non_web_urls_are_refused() {
         "https://",
     ] {
         let command = action.command_invocation(
-            serde_json::to_vec(&graphshell::handlers::OpenAddressV1 {
+            serde_json::to_vec(&graphshell_host::handlers::OpenAddressV1 {
                 address: address.into(),
-                handler: graphshell::handlers::SYSTEM_DEFAULT_HANDLER.into(),
+                handler: graphshell_host::handlers::SYSTEM_DEFAULT_HANDLER.into(),
             })
             .unwrap(),
         );

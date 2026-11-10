@@ -12,12 +12,12 @@ use chirograph::{
 };
 use graphshell_client::{ClientState, PresentationResolution, ResolvedContent};
 use graphshell_endpoint::{IntentSink, PresentationSource, ProjectionSource};
+use graphshell_host::handlers::{OpenAddressV1, intent_id, local_profile_handlers};
 use muniment::Backend;
 use pandect::MereSessions;
 use sceno::InstanceId;
 
 use pandect::access::AccessContext;
-use crate::handlers::{OpenAddressV1, intent_id, local_profile_handlers};
 use crate::local_profile::LocalProfile;
 use crate::mere_host::{
     FIXTURE_DEVICE_TWO_ADDRESS, FIXTURE_PERSONA_ADDRESS, HOST_SLOT, MereHost, MereHostError,

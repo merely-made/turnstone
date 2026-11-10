@@ -6,7 +6,7 @@
 
 //! Native web handoff after an exact owner acceptance, never from a reading.
 use chirograph::IntentInvocation;
-use graphshell::handlers::{OpenAddressV1, SYSTEM_DEFAULT_HANDLER, intent_id};
+use graphshell_host::handlers::{OpenAddressV1, SYSTEM_DEFAULT_HANDLER, intent_id};
 
 pub(super) trait Browser {
     async fn open(&mut self, address: &str) -> Result<(), String>;

@@ -423,7 +423,7 @@ fn owner_reading(bounded: bool) -> Reading {
             label: "Address".into(),
             value: "https://owner.test/record".into(),
         });
-    let mut action = graphshell::handlers::HandlerOffer {
+    let mut action = graphshell_host::handlers::HandlerOffer {
         id: "fixture".into(),
         label: "Open with fixture".into(),
         explanation: "Owner supplied".into(),
@@ -484,8 +484,8 @@ fn selected_owner_action_uses_existing_address_contract_and_exact_target() {
     assert_eq!(target.target, sceno::InstanceId(42));
     assert_eq!(target.observed_revision, scenotime::Revision(9));
     assert_eq!(command.id, action.intent.0);
-    assert_eq!(command.schema_id, graphshell::handlers::OPEN_ADDRESS_SCHEMA);
-    let payload: graphshell::handlers::OpenAddressV1 =
+    assert_eq!(command.schema_id, graphshell_host::handlers::OPEN_ADDRESS_SCHEMA);
+    let payload: graphshell_host::handlers::OpenAddressV1 =
         serde_json::from_slice(&command.arguments).unwrap();
     assert_eq!(payload.address, "https://owner.test/record");
     assert_eq!(payload.handler, "fixture");

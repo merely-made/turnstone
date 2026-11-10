@@ -8,8 +8,8 @@
 use super::*;
 use cambium::button;
 use chirograph::AdvertisedAction;
-use graphshell::handlers::{OPEN_ADDRESS_SCHEMA, OpenAddressV1, handler_from_intent};
 use graphshell_client::ActionDraftTarget;
+use graphshell_host::handlers::{OPEN_ADDRESS_SCHEMA, OpenAddressV1, handler_from_intent};
 
 pub(super) type OwnerOffers = HashMap<String, (ActionDraftTarget, Vec<AdvertisedAction>)>;
 
