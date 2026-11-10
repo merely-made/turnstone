@@ -153,6 +153,7 @@ fn snapshot(
                 payload_schema: wire::SET_VIEW_SCHEMA.into(),
                 input_form: None,
                 effect: IntentEffect::Curation,
+                icon: None,
             }]
         } else {
             vec![]

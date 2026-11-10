@@ -133,6 +133,7 @@ const SHEET: &str = "\
     .tree-tools label { display:block; margin:3px 0; } \
     .tree-tools .tools-caption { display:block; color:var(--tabard-color-text-dim, #9fb0bb); font-size:12px; } \
     .tree-tools button { background:var(--tabard-color-surface-2, #263640); color:var(--tabard-color-text, #dce3e8); padding:3px 10px; margin:2px 0 4px; border:1px solid var(--tabard-color-border-strong, #637581); } \
+    img.action-symbol { width:1em;height:1em;vertical-align:middle;margin-right:.35em; } \
     .tools-overlays { display:flex; flex-wrap:wrap; margin:2px 0; } \
     .tools-overlays label { width:136px; margin:1px 0; } \
     .tools-overlays label.disabled { opacity:.45; } \
@@ -1817,6 +1818,15 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
         vector_images: {
             let shared = shared.clone();
             Some(Rc::new(move |url: &str, scale: f32| {
+                if let Some(symbol) = url
+                    .strip_prefix("action-symbol:")
+                    .and_then(pictograph::symbols::Symbol::named)
+                {
+                    let ink = shared.appearance.borrow().chrome_ink();
+                    return Some(std::sync::Arc::new(pictograph::symbols::SymbolImage::new(
+                        symbol, ink, scale,
+                    )) as std::sync::Arc<dyn cambium_rootstock::VectorImage>);
+                }
                 shared.inline_faces.borrow().resolve_image(url, scale)
             }))
         },

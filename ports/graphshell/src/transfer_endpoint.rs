@@ -193,6 +193,7 @@ impl TransferSourceEndpoint {
                         payload_schema: TRANSFER_BEGIN_SCHEMA.to_string(),
                         input_form: None,
                         effect: IntentEffect::ExternalEffect,
+                        icon: None,
                     }],
                 },
             }],

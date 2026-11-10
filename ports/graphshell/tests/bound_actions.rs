@@ -100,6 +100,7 @@ fn fixture() -> (
                             ),
                         )),
                         effect: IntentEffect::DomainTruth,
+                        icon: None,
                     }],
                 },
             }],

@@ -108,6 +108,7 @@ impl Route {
                             payload_schema: "notes.append/v1".into(),
                             input_form: None,
                             effect: IntentEffect::DomainTruth,
+                            icon: None,
                         }],
                     },
                 }],

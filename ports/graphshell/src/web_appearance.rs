@@ -256,6 +256,13 @@ impl Session {
             canvas.set_palette(self.colors[0], self.colors[1]);
         }
     }
+    /// The resolved text role used by the remote action controls.
+    pub fn chrome_ink(&self) -> [u8; 4] {
+        self.colors.get(2).map_or([220, 227, 232, 255], |color| {
+            color.map(|channel| (channel.clamp(0.0, 1.0) * 255.0).round() as u8)
+        })
+    }
+
     /// Faces for text on this appearance's page: the canvas's face palette,
     /// each entry held at 3:1 against the page ground, ringed in the text
     /// colour where it cannot be.

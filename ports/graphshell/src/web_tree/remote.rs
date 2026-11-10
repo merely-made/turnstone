@@ -15,7 +15,7 @@
 //! button per advertised intent, the draft form for an intent with inputs,
 //! the link's disconnect, reconnect and nudge, and the action status.
 use super::*;
-use cambium::{DisclosureState, SelectState, button, disclosure, lens, select};
+use cambium::{DisclosureState, SelectState, button, button_with, disclosure, lens, select};
 use graphshell_host::board::RemoteBoard;
 use graphshell_client::remote::ActionForm;
 use graphshell_client::{ActionDraftSemantics, MountedScene};
@@ -211,8 +211,8 @@ impl TreeRemote {
         }
     }
 
-    /// The labels and descriptions of the advertised intents, in order.
-    pub(super) fn actions(&self) -> Vec<(String, String)> {
+    /// The advertised intents, in invocation order.
+    pub(super) fn actions(&self) -> Vec<chirograph::AdvertisedAction> {
         if self.reservoir.is_some() {
             return Vec::new();
         }
@@ -220,7 +220,7 @@ impl TreeRemote {
             live.session
                 .actions()
                 .into_iter()
-                .map(|(_, action)| (action.label, action.explanation))
+                .map(|(_, action)| action)
                 .collect()
         })
     }
@@ -625,11 +625,23 @@ pub(super) fn section(page: &TreePage) -> Child {
         .actions()
         .into_iter()
         .enumerate()
-        .map(|(index, (label, explanation))| {
-            Box::new(
-                button(label, move |page: &mut TreePage, _| page.invoke(index))
-                    .attr("aria-description", explanation),
-            ) as Child
+        .map(|(index, action)| {
+            let invoke = move |page: &mut TreePage, _| page.invoke(index);
+            if let Some(symbol) = graphshell_host::view::guest_action_symbol(action.icon.as_ref()) {
+                let image = el("img", ())
+                    .attr("class", "action-symbol")
+                    .attr("src", format!("action-symbol:{}", symbol.id()))
+                    .attr("alt", "")
+                    .attr("aria-hidden", "true");
+                Box::new(
+                    button_with((image, action.label), invoke)
+                        .attr("aria-description", action.explanation),
+                ) as Child
+            } else {
+                Box::new(
+                    button(action.label, invoke).attr("aria-description", action.explanation),
+                ) as Child
+            }
         })
         .collect();
     if !actions.is_empty() {

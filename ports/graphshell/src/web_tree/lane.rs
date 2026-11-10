@@ -791,7 +791,7 @@ impl TreeLane {
                 remote
                     .actions()
                     .into_iter()
-                    .map(|(label, _)| label)
+                    .map(|action| action.label)
                     .collect::<Vec<_>>()
                     .join("|"),
             )
