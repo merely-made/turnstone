@@ -94,21 +94,25 @@ Under `web` (portable, builds for `wasm32-unknown-unknown`):
 | Module | Contents |
 |---|---|
 | `app` | `GraphshellApp`, `AppError`: local and remote projections through one `ClientState` |
-| `mere_host` | `MereHost`, `SelectedPersonaRef`: Mere graph truth as a Graphshell endpoint |
 | `product` | Graph-product operations and facets: `TransferScope`, `RelationFamilyFilter`, `EditableRelation` |
 | `retained_content` | Pelt-backed held HTML/text/image/selected-clip sessions, portable content input and a shared-device texture/scene producer |
-| `handlers` | `HandlerRegistry`, `HandlerOffer`, `OpenAddressV1` |
-| `access` | `AccessRecord`, `AccessObservation`, `AccessTransition`, `save_access_record` |
 | `capture` | `HistoryCapturePolicy`, `BrowserVisit`, `NormalizedVisit`, `CaptureBackend` |
 | `browser_storage` | `StoragePersistence`, `decide`, `status_line` |
 | `transfer` | `prepare_transfer`, `apply_transfer`, `TransferRequest`, `TransferAuthorization`, the content facet; the records are `pandect::transfer` (engine split D70) |
 | `transfer_endpoint` | `TransferSourceEndpoint`, `TransferBeginV1` |
+| `goal_surface` | The goal surface's view, model and `suggest`; its provider, facts and door are `graphshell_host::goal_surface` |
 
-Under `personal-sync`:
+Modules that were once here and moved out (engine split, slices 1 and 2):
 
-| Module | Contents |
+| Was | Now |
 |---|---|
-| `personal_sync` | `PersonalGraphEvent`, `PersonalGraphRecord`, `PersonalGraphExt`, `PersonalEncryption` |
+| `access` | `pandect::access` |
+| `personal_sync` | `pandect::personal_sync` (feature `personal-sync`) |
+| `kept_text` | `eidetic::kept_text` |
+| `mere_host`, `handlers`, `session_item`, `resident_host` | `graphshell_host` modules of the same names |
+| `coop` | `graphshell_host::coop` |
+| `declaration` | `graphshell_door::declaration` |
+| `receipts`, `carriage` | the resident's `sync` modules (`ports/mere-resident/src/sync`) |
 
 ## Features
 
