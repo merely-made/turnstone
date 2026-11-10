@@ -187,7 +187,7 @@ fn gather_recent(app: &App) -> Vec<SectionRow> {
         .into_iter()
         .map(|url| SectionRow {
             id: None,
-            text: mere::trail::short_url(&url),
+            text: incipit::trail::short_url(&url),
             activate: Some(SectionActivate::Open(url)),
         })
         .collect()
@@ -227,7 +227,7 @@ fn gather_removed(app: &App) -> Vec<SectionRow> {
             // The affordance IS the label, as in the Trail: a Removed row must
             // not read identically to the same url's Recent row, or a
             // text-addressed click cannot tell recover from navigate.
-            text: format!("Recover {}", mere::trail::short_url(&r.url)),
+            text: format!("Recover {}", incipit::trail::short_url(&r.url)),
             activate: Some(SectionActivate::Recover(r.node_id)),
         })
         .collect()

@@ -294,7 +294,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 # which had carried them itself.
 serde = { version = "1", features = ["derive"] }
 # `view`: the scene's ViewIntent left pandect for incipit (Mere engine split D78).
-incipit = { version = "0.2.2", git = "https://github.com/merely-made/mere.git", branch = "main", features = ["view"] }
+incipit = { version = "0.2.2", git = "https://github.com/merely-made/mere.git", branch = "main", features = ["view", "graph"] }
 serde_json = { version = "1", features = ["float_roundtrip"] }
 # T5a's civil-day boundary is application policy. Jiff supplies civil types
 # and IANA-zone rules needed to distinguish 23-, 24-, and 25-hour local dates.

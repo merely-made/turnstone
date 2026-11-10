@@ -34,7 +34,7 @@ use layout_dom_api::LayoutDom;
 use crate::app::App;
 use crate::roster_view::{RosterGridRow, roster_grid_rows_for_pane};
 
-/// The Roster's tabs — `mere::roster`'s four data views over one grid. Only
+/// The Roster's tabs — `incipit::roster`'s four data views over one grid. Only
 /// Nodes has a gatherer today; the rest render an honest empty state until
 /// theirs land (Links needs the edge families walked into `build_link_rows`).
 const ROSTER_TABS: [&str; 4] = ["Nodes", "Links", "Graphlets", "Fields"];

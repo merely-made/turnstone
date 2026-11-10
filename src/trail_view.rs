@@ -8,7 +8,7 @@
 //! host affordances a click lowers. Rung 5 slice D — the first non-canvas pane
 //! with real content.
 //!
-//! `mere::trail` is the neutral vocabulary (`TrailInput` in, `TrailItem` out, on
+//! `incipit::trail` is the neutral vocabulary (`TrailInput` in, `TrailItem` out, on
 //! the P8 pattern); this host half gathers the inputs from the canvas graph and
 //! maps the items onto rows the pane renders and a click acts on. meerkat maps
 //! its Row items inert; turnstone makes them navigable, attaching the full url each
@@ -17,7 +17,7 @@
 //! bin behind the bin port) minus nodes present in the graph; a Recover click
 //! restores the node's ORIGINAL identity (`Action::RecoverDeletedNode`).
 
-use mere::trail::{TrailInput, TrailItem, TrailRemoved, build_trail_items};
+use incipit::trail::{TrailInput, TrailItem, TrailRemoved, build_trail_items};
 
 use crate::app::App;
 

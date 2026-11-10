@@ -7,7 +7,7 @@
 //! The Roster pane's rows: the graph's node manifest, off graph truth. Rung 5
 //! slice D — the second real pane, after Trail.
 //!
-//! `mere::roster` is the neutral vocabulary (`NodeRowInput` in, content-bucketed
+//! `incipit::roster` is the neutral vocabulary (`NodeRowInput` in, content-bucketed
 //! `RosterRow` out, on the P8 pattern). The Roster is the data-view counterpart
 //! to the canvas's space-view: every node, sectioned by content type. This host
 //! half gathers the inputs from the canvas graph and flattens the rows (a section
@@ -15,9 +15,9 @@
 //! Unlike Trail's neutral `Row`, `RosterRow` carries the url, so no re-attaching.
 //!
 //! Slice D renders the Nodes tab (the manifest's default). The Links, Graphlets,
-//! and Fields tabs `mere::roster` also models are a follow-on.
+//! and Fields tabs `incipit::roster` also models are a follow-on.
 
-use mere::roster::{NodeRowInput, build_node_rows};
+use incipit::roster::{NodeRowInput, build_node_rows};
 
 use crate::app::App;
 use crate::content::NodeContent;
