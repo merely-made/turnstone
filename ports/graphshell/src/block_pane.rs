@@ -15,7 +15,7 @@
 //! big the window is and what colours to use, and supplies the effects the pane cannot perform
 //! itself ([`PanePorts`]: storage, exporting a file, running a future).
 use crate::block_editing::{
-    Change, DefaultEditors, Document, Preview, minimal_replacement,
+    Change, DefaultEditors, Document, Preview,
     adapter::{
         AdapterError, BACKDROP_SCENE, BlockAdapter, BlockInput, CommandKind, GuestView, Registry,
         Row, RunResult, ViewAsk, unclaimed_message,
@@ -284,7 +284,7 @@ impl Pane {
             editors.as_ref(),
         );
         let mut pane = Self {
-            source_input: TextInput::new(document.editor.source().to_owned()),
+            source_input: Pane::fresh_input(document.editor.as_ref()),
             document,
             editors,
             storage: source.as_ref().map(|(b, _)| b.clone()),
@@ -1745,6 +1745,10 @@ impl TextureProducer for Producer {
     }
 }
 pub fn register<P: PaneHost>(ctx: &mut AppCtx<'_, P, Logic<P>, Child<P>>) {
+    // The person's keys reach the editor, and an undo or redo comes back.
+    if ctx.runner.state().pane().has_pending_input() {
+        ctx.runner.update(|p| p.pane_mut().sync_input());
+    }
     // A read-only pane reads its document again after each of the host's
     // refreshes, so it shows what the writing view last saved.
     let refreshes = ctx.runner.state().refreshes();
