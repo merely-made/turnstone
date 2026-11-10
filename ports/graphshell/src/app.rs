@@ -16,7 +16,7 @@ use muniment::Backend;
 use pandect::MereSessions;
 use sceno::InstanceId;
 
-use crate::access::AccessContext;
+use pandect::access::AccessContext;
 use crate::handlers::{OpenAddressV1, intent_id, local_profile_handlers};
 use crate::local_profile::LocalProfile;
 use crate::mere_host::{

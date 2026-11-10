@@ -12,7 +12,7 @@ use crate::web_capture::{
     apply_history_request, initial_capture_input, initial_kept_input, listen_for_batches,
 };
 use cambium::{button, checkbox, el, lens, text_field_typed};
-use graphshell::access::AccessRecordFilter;
+use pandect::access::AccessRecordFilter;
 use graphshell::capture::HistoryCapturePolicy;
 
 pub(super) const LABELS: [&str; 5] = [

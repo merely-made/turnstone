@@ -43,7 +43,7 @@ use scenotime::{Revision, SceneEpoch, SceneSnapshot};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::access::{AccessContext, AccessError, AccessHistory, access_history, record_access};
+use pandect::access::{AccessContext, AccessError, AccessHistory, access_history, record_access};
 use crate::handlers::{
     HandlerOffer, HandlerRegistry, OpenAddressV1, handler_from_intent, intent_id,
 };

@@ -24,7 +24,7 @@ use mere::kernel::types::{AssertionBasis, AssertionMethod, GraphScope};
 use muniment::Backend;
 use serde_json::json;
 
-use crate::access::{AccessContext, record_access};
+use pandect::access::{AccessContext, record_access};
 use crate::handlers::HandlerRegistry;
 use crate::mere_host::{
     FIXTURE_DEVICE_ONE_ADDRESS, FIXTURE_DEVICE_TWO_ADDRESS, FIXTURE_FILE_ADDRESS,

@@ -11,7 +11,7 @@ use std::path::Path;
 use std::sync::RwLock;
 
 use eidetic::PrivacyClass;
-use graphshell::access::AccessContext;
+use pandect::access::AccessContext;
 use graphshell::mere_host::{MereHost, SelectedPersonaRef, fixture_handlers};
 use graphshell::product::{EditableRelation, ExportRequest, LocalFileMetadata, TransferScope};
 use graphshell::transfer::{

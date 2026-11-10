@@ -37,7 +37,7 @@ use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use uuid::Uuid;
 
-use crate::personal_sync::{BlobAvailabilityObservation, PersonalGraphEvent};
+use pandect::personal_sync::{BlobAvailabilityObservation, PersonalGraphEvent};
 use crate::receipts::manifest::{
     FACET_ARTIFACTS, FACET_RUN, RECEIPT_NAMESPACE, ReceiptError, ReceiptManifest,
 };

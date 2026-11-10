@@ -975,7 +975,7 @@ fn owner_lifecycle_reentered_actual_a_waits_for_retired_a_write_before_loading_o
                 profile: "profile:forme-lifecycle".into(),
             },
             crate::mere_host::fixture_handlers(),
-            crate::access::AccessContext {
+            pandect::access::AccessContext {
                 persona: FIXTURE_PERSONA_ADDRESS.into(),
                 device: crate::mere_host::FIXTURE_DEVICE_TWO_ADDRESS.into(),
                 at_ms: 30,

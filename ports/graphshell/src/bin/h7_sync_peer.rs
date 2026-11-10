@@ -21,8 +21,8 @@ use std::path::{Path, PathBuf};
 use std::time::Duration;
 
 use eidetic::PrivacyClass;
-use graphshell::access::{AccessAction, AccessRecord, AccessTransition};
-use graphshell::personal_sync::{
+use pandect::access::{AccessAction, AccessRecord, AccessTransition};
+use pandect::personal_sync::{
     BlobAvailabilityObservation, PersonalGraphEvent, PersonalGraphReplica, SyncProjection,
     SyncRoster, SyncSelection, accept_into,
 };

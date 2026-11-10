@@ -6,7 +6,7 @@
 
 //! Browser capture input and durable history access, independent of a presenter.
 use crate::window;
-use graphshell::access::{AccessRecord, AccessRecordFilter, query_access_records};
+use pandect::access::{AccessRecord, AccessRecordFilter, query_access_records};
 use graphshell::app::GraphshellApp;
 use graphshell::capture::{
     BROWSER_HISTORY_HANDLER_PREFIX, BrowserHistoryCapture, BrowserVisit, CaptureOutcome,

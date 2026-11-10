@@ -27,7 +27,7 @@ use eidetic::Hash;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::personal_sync::{PersonalGraphEvent, SyncProjection, SyntheticAddressRule};
+use pandect::personal_sync::{PersonalGraphEvent, SyncProjection, SyntheticAddressRule};
 use crate::product::decode_profiled_codicil;
 use crate::transfer::{TransferEndpointV1, TransferManifestV1, TransferOperation};
 
@@ -82,7 +82,7 @@ pub fn transfer_offer_rule() -> SyntheticAddressRule {
 /// Deliberately not hex-only: a device address is `personae://device/<key>`
 /// and hosts use both raw keys and friendly names there.
 ///
-/// [`SyncSelection::with_local_device`]: crate::personal_sync::SyncSelection::with_local_device
+/// [`SyncSelection::with_local_device`]: pandect::personal_sync::SyncSelection::with_local_device
 pub fn device_segment(device: &str) -> Option<&str> {
     let key = device.rsplit('/').next()?.trim();
     (!key.is_empty() && !key.contains(char::is_whitespace)).then_some(key)
@@ -188,7 +188,7 @@ fn short(device: &str) -> &str {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::personal_sync::{PersonalGraphReplica, SyncRoster, SyncSelection};
+    use pandect::personal_sync::{PersonalGraphReplica, SyncRoster, SyncSelection};
     use eidetic::PrivacyClass;
     use muniment::MemoryBackend;
     use p2panda_core::SigningKey;

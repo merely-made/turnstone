@@ -32,8 +32,6 @@ pub mod query_views;
 pub mod retained_content;
 
 #[cfg(feature = "web")]
-pub mod access;
-#[cfg(feature = "web")]
 pub mod access_inspection;
 #[cfg(feature = "web")]
 pub mod app;
@@ -100,8 +98,10 @@ mod mere_host_fixture;
 pub mod node_presentation;
 #[cfg(feature = "web")]
 pub mod pane_source;
-#[cfg(all(feature = "personal-sync", not(target_arch = "wasm32")))]
-pub mod personal_sync;
+// Scene-spec cases of the personal graph record, which need the canvas
+// (pandect::personal_sync cannot name it: pictograph depends on pandect).
+#[cfg(all(test, feature = "personal-sync", not(target_arch = "wasm32")))]
+mod personal_sync_scene_tests;
 #[cfg(feature = "web")]
 pub mod presentation_binding;
 #[cfg(feature = "workspace-editor")]

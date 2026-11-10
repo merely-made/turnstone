@@ -43,7 +43,7 @@ pub use manifest::{
     ADDRESS_PREFIX, FACET_ARTIFACTS, FACET_RUN, ManifestArtifact, ReceiptError, ReceiptManifest,
 };
 
-use crate::personal_sync::SyntheticAddressRule;
+use pandect::personal_sync::SyntheticAddressRule;
 
 /// The facets a replica must select for receipts to arrive with their
 /// provenance.

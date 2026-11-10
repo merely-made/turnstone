@@ -31,7 +31,7 @@ use serde::{Deserialize, Serialize};
 use url::Url;
 use uuid::Uuid;
 
-use crate::access::{
+use pandect::access::{
     ACCESS_HISTORY_FACET, AccessAction, AccessHistory, AccessObservation, AccessRecord,
     AccessTransition, bootstrap_access_record_schema, record_observation, save_access_record,
 };
@@ -1347,8 +1347,8 @@ mod tests {
     use std::sync::Arc;
     use std::sync::atomic::{AtomicBool, Ordering};
 
-    use crate::access::AccessContext;
-    use crate::access::{AccessRecordFilter, query_access_records};
+    use pandect::access::AccessContext;
+    use pandect::access::{AccessRecordFilter, query_access_records};
     use mere::kernel::graph::Author;
     use muniment::MemoryBackend;
 
@@ -1421,7 +1421,7 @@ mod tests {
                     backend.clone(),
                     selected(),
                     crate::mere_host::fixture_handlers(),
-                    crate::access::AccessContext {
+                    pandect::access::AccessContext {
                         persona: PERSONA.into(),
                         device: DEVICE.into(),
                         at_ms: 9000,
@@ -1824,7 +1824,7 @@ mod tests {
                 backend.clone(),
                 selected(),
                 crate::mere_host::fixture_handlers(),
-                crate::access::AccessContext {
+                pandect::access::AccessContext {
                     persona: PERSONA.into(),
                     device: DEVICE.into(),
                     at_ms: 3000,
@@ -2131,7 +2131,7 @@ mod tests {
                 backend.clone(),
                 selected(),
                 crate::mere_host::fixture_handlers(),
-                crate::access::AccessContext {
+                pandect::access::AccessContext {
                     persona: PERSONA.into(),
                     device: DEVICE.into(),
                     at_ms: 4000,

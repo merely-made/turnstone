@@ -210,6 +210,7 @@ personal-sync = [
     "native",
     "web",
     "muniment/redb",
+    "pandect/personal-sync",
     "dep:p2panda-core",
     "dep:p2panda-store",
     "dep:stickleback",

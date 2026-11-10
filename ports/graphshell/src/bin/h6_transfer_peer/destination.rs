@@ -15,7 +15,7 @@ use chirograph::{
     ResourceResponse, ResumeReply, ResumeRequest, SessionOpen,
 };
 use eidetic::PrivacyClass;
-use graphshell::access::AccessContext;
+use pandect::access::AccessContext;
 use graphshell::mere_host::{MereHost, SelectedPersonaRef, fixture_handlers};
 use graphshell::product::ProductCodicilV3;
 use graphshell::transfer::{

@@ -33,7 +33,7 @@ use sceno::SourceRef;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::access::ACCESS_HISTORY_FACET;
+use pandect::access::ACCESS_HISTORY_FACET;
 use crate::local_locations;
 use crate::mere_host::{MereHost, MereHostError};
 use scenomise::projection::ProjectionSnapshot;
@@ -1113,7 +1113,7 @@ mod tests {
     use scenotime::ProjectionClock;
 
     use super::*;
-    use crate::access::AccessContext;
+    use pandect::access::AccessContext;
     use mere::canvas::dynamics_spec::DynamicsSpec;
     use mere::canvas::saved_scene::SavedRoles;
 
@@ -1336,7 +1336,7 @@ mod tests {
     #[test]
     fn exporting_without_local_file_locations_strips_a_file_address_from_the_node_its_url_and_its_access_history()
      {
-        use crate::access::{
+        use pandect::access::{
             AccessAction, AccessHistory, AccessObservation, AccessTransition, record_observation,
         };
         const LOCAL: &str = "file:///Users/mark/private/notes.md";

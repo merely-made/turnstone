@@ -368,10 +368,10 @@ fn export_retry_reuses_exact_grant_and_write_permission_is_signed() {
 #[test]
 fn attached_ordinary_host_is_the_only_writer_and_reopens_with_guest_authorship() {
     use crate::{
-        access::AccessContext,
         handlers::HandlerRegistry,
         mere_host::{MereHost, SelectedPersonaRef},
     };
+    use pandect::access::AccessContext;
     struct Attached(Arc<Mutex<MereHost<muniment::MemoryBackend>>>);
     impl GraphAuthority for Attached {
         fn read(&self) -> GraphReading {

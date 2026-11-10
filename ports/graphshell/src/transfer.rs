@@ -34,7 +34,7 @@ use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use uuid::Uuid;
 
-use crate::access::{
+use pandect::access::{
     ACCESS_HISTORY_FACET, AccessAction, AccessObservation, AccessRecord, AccessRecordFilter,
     AccessTransition, access_history, bootstrap_access_record_schema, query_access_records,
     record_observation, save_access_record,
@@ -600,7 +600,7 @@ where
                     .records
                     .into_iter()
                     .find(|existing| existing.record_id == record_id)
-                    .ok_or(crate::access::AccessError::UnknownNode)
+                    .ok_or(pandect::access::AccessError::UnknownNode)
             })
             .map_err(|error| TransferError::InvalidManifest(error.to_string()))?
             .map_err(|error| TransferError::InvalidManifest(error.to_string()))?;
@@ -1108,7 +1108,7 @@ mod tests {
     use muniment::MemoryBackend;
 
     use super::*;
-    use crate::access::{
+    use pandect::access::{
         AccessContext, bootstrap_access_record_schema, query_access_records, save_access_record,
     };
     use crate::mere_host::{
@@ -2360,7 +2360,7 @@ mod tests {
     #[cfg(all(feature = "personal-sync", not(target_arch = "wasm32")))]
     #[test]
     fn an_offer_summarizes_the_manifest_it_names() {
-        use crate::personal_sync::PersonalGraphEvent;
+        use pandect::personal_sync::PersonalGraphEvent;
 
         pollster::block_on(async {
             let source = source_fixture().await;
