@@ -127,6 +127,8 @@ pub struct OfflinePlaceSnapshot {
     /// Local lane observations at the last worker refresh, not peer liveness
     /// or message delivery. None means this open has no sync lanes.
     pub sync: Option<PlaceSyncSnapshot>,
+    /// This worker has opened the configured Reticulum graph route.
+    pub reticulum_graph_active: bool,
     /// Local authority evaluation at refresh. Every write checks again.
     pub permissions: Option<PlacePermissionSnapshot>,
     /// What, if anything, has been withdrawn from this profile.

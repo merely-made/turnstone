@@ -237,6 +237,10 @@ pub(super) fn place_snapshot(
         catalogue_error,
         catalogue_navigation: None,
         shared,
+        #[cfg(feature = "place-reticulum")]
+        reticulum_graph_active: open.reticulum.is_some(),
+        #[cfg(not(feature = "place-reticulum"))]
+        reticulum_graph_active: false,
         sync: open.lanes.as_ref().map(|lanes| {
             let (local_rendezvous, dialed_rendezvous) = lanes.rendezvous();
             crate::place::PlaceSyncSnapshot {

@@ -42,6 +42,8 @@ pub(crate) fn open_cached_place(
     let mut open = OpenPlace {
         directory: directory.to_path_buf(),
         lanes: None,
+        #[cfg(feature = "place-reticulum")]
+        reticulum: None,
         binding: binding.clone(),
         subject: identity.master_public_key().to_bytes(),
         capture_directory: crate::trail_memory::memory_dir(directory),

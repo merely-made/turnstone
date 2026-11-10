@@ -125,6 +125,10 @@ pub(super) fn author_into_place(
             if let Some(lanes) = &open.lanes {
                 lanes.publish_graph(operation)?;
             }
+            #[cfg(feature = "place-reticulum")]
+            if let Some(sync) = open.reticulum.as_mut() {
+                sync.edited();
+            }
         },
         PlaceCommand::AdvertiseSite(..) | PlaceCommand::WithdrawSite {..} | PlaceCommand::OpenCatalogue {..}=>unreachable!("handled above"),
         PlaceCommand::RevokeMember { .. } => unreachable!("returned above"),

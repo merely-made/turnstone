@@ -10,6 +10,194 @@ const ALICE_EDIT: &str = "https://label.example/release";
 const BOB_EDIT: &str = "https://archive.example/correction";
 
 #[test]
+fn reticulum_graph_automatically_catches_up_on_reconnect_and_after_either_writer_edits() {
+    let directory = tempfile::tempdir().unwrap();
+    let alice = Arc::new(RootIdentity::Local(InMemoryProvider::from_seed([0x61; 32])));
+    let bob = Arc::new(RootIdentity::Local(InMemoryProvider::from_seed([0x62; 32])));
+    let alice_dir = directory.path().join("alice");
+    let bob_dir = directory.path().join("bob");
+    let settings = settings();
+    let (binding, invite) = enroll(&alice_dir, &bob_dir, &alice, &bob, &settings);
+    let alice_contact = ReticulumGraphContact::for_graph(alice.as_ref(), binding.root).unwrap();
+    let bob_contact = ReticulumGraphContact::for_graph(bob.as_ref(), binding.root).unwrap();
+    let alice = AutoPeer::new(alice, alice_dir, binding.clone(), settings.clone());
+    let bob = AutoPeer::new(bob, bob_dir, binding.clone(), settings);
+    alice.open_offline(1);
+    bob.worker.command(PlaceWorkerCommand::Join {
+        session: bob.session,
+        generation: 1,
+        directory: bob.directory.clone(),
+        invite: Box::new(invite),
+    });
+    let Update::PlaceJoined { result, .. } = bob.updates.recv_timeout(ANSWER).unwrap() else {
+        panic!("the ticketless enrollment did not answer");
+    };
+    assert!(result.unwrap().1.sync.is_none());
+    assert_eq!(alice.share(1, 1, ALICE_EDIT).graph.nodes, 1);
+    assert_eq!(bob.share(1, 1, BOB_EDIT).graph.nodes, 1);
+
+    let addr = TcpListener::bind("127.0.0.1:0")
+        .unwrap()
+        .local_addr()
+        .unwrap();
+    alice.configure(ReticulumGraphRoute::Listen(addr), bob_contact);
+    bob.configure(ReticulumGraphRoute::Dial(addr), alice_contact);
+    alice.reconnect(2);
+    bob.reconnect(2);
+    let mut expected = vec![ALICE_EDIT, BOB_EDIT];
+    assert_eq!(
+        alice.await_graph(2, &expected),
+        bob.await_graph(2, &expected)
+    );
+
+    // Each remote projection advances after the other peer's ordinary
+    // authoring command. The test never asks either worker to sync or refresh.
+    const LISTENER_EDIT: &str = "https://label.example/listener-edit";
+    alice.share(2, 2, LISTENER_EDIT);
+    expected.push(LISTENER_EDIT);
+    bob.await_graph(2, &expected);
+    const DIALER_EDIT: &str = "https://archive.example/dialer-edit";
+    bob.share(2, 2, DIALER_EDIT);
+    expected.push(DIALER_EDIT);
+    alice.await_graph(2, &expected);
+
+    // Drop the listener's carrier by opening it offline. The dialer keeps
+    // running while the listener edits, then rediscovers its returning peer.
+    alice.open_offline(3);
+    const DISCONNECTED_EDIT: &str = "https://label.example/disconnected-edit";
+    alice.share(3, 3, DISCONNECTED_EDIT);
+    expected.push(DISCONNECTED_EDIT);
+    alice.reconnect(4);
+    assert_eq!(
+        alice.await_graph(4, &expected),
+        bob.await_graph(2, &expected)
+    );
+    alice.release();
+    bob.release();
+}
+
+struct AutoPeer {
+    worker: ActorHandle<PlaceWorkerCommand>,
+    updates: mpsc::Receiver<Update>,
+    session: SessionId,
+    directory: PathBuf,
+    binding: PlaceBindingV1,
+}
+
+impl AutoPeer {
+    fn new(
+        identity: Arc<RootIdentity>,
+        directory: PathBuf,
+        binding: PlaceBindingV1,
+        settings: PlaceWorkerSettings,
+    ) -> Self {
+        let (worker, updates) = spawn_place_worker(Arc::new(|| {}), identity, settings);
+        Self {
+            worker,
+            updates,
+            session: SessionId::new(),
+            directory,
+            binding,
+        }
+    }
+
+    fn configure(&self, route: ReticulumGraphRoute, peer: ReticulumGraphContact) {
+        let config = ReticulumGraphConfig {
+            container: self.binding.root,
+            route,
+            peer,
+            poll_ms: 500,
+        };
+        std::fs::write(
+            self.directory.join(RETICULUM_GRAPH_FILE),
+            serde_json::to_vec(&config).unwrap(),
+        )
+        .unwrap();
+    }
+
+    fn open_offline(&self, generation: u64) {
+        self.worker.command(PlaceWorkerCommand::Open {
+            session: self.session,
+            generation,
+            directory: self.directory.clone(),
+            binding: self.binding.clone(),
+        });
+        let snapshot = expect_open(&self.updates, generation);
+        assert!(snapshot.sync.is_none() && !snapshot.reticulum_graph_active);
+    }
+
+    fn reconnect(&self, generation: u64) {
+        self.worker.command(PlaceWorkerCommand::Reconnect {
+            session: self.session,
+            generation,
+            directory: self.directory.clone(),
+            binding: self.binding.clone(),
+            contact: None,
+        });
+    }
+
+    fn share(&self, generation: u64, request: u64, address: &str) -> OfflinePlaceSnapshot {
+        self.worker.command(PlaceWorkerCommand::Author {
+            session: self.session,
+            generation,
+            request,
+            command: PlaceCommand::ShareNode {
+                address: address.into(),
+            },
+        });
+        let deadline = std::time::Instant::now() + ANSWER;
+        loop {
+            if let Update::PlaceCommandDone {
+                request: completed,
+                result,
+                ..
+            } = self
+                .updates
+                .recv_timeout(deadline.saturating_duration_since(std::time::Instant::now()))
+                .unwrap()
+            {
+                assert_eq!(completed, request);
+                return result.expect("enrolled peer authors locally");
+            }
+        }
+    }
+
+    fn await_graph(&self, generation: u64, addresses: &[&str]) -> String {
+        let deadline = std::time::Instant::now() + ANSWER;
+        loop {
+            if let Update::PlaceOpened {
+                generation: current,
+                result,
+                ..
+            } = self
+                .updates
+                .recv_timeout(deadline.saturating_duration_since(std::time::Instant::now()))
+                .unwrap()
+            {
+                assert_eq!(current, generation);
+                let snapshot = result.expect("Reticulum place snapshot");
+                assert!(snapshot.sync.is_none(), "an iroh lane was started");
+                assert!(snapshot.reticulum_graph_active);
+                let nodes = &snapshot.shared.nodes;
+                if nodes.len() == addresses.len()
+                    && addresses
+                        .iter()
+                        .all(|address| nodes.iter().any(|node| node.address == *address))
+                {
+                    return snapshot.graph_digest;
+                }
+            }
+        }
+    }
+
+    fn release(&self) {
+        let (reply, released) = mpsc::sync_channel(1);
+        self.worker.command(PlaceWorkerCommand::Release(reply));
+        released.recv_timeout(ANSWER).unwrap();
+    }
+}
+
+#[test]
 fn place_workers_catch_up_offline_graph_edits_over_reticulum_without_iroh() {
     let directory = tempfile::tempdir().unwrap();
     let alice_dir = directory.path().join("alice");

@@ -87,11 +87,16 @@ pub use super::protocol::*;
 #[path = "worker/reticulum_graph.rs"]
 mod reticulum_graph;
 #[cfg(feature = "place-reticulum")]
-pub use reticulum_graph::{ReticulumGraphContact, ReticulumGraphRoute};
+pub use reticulum_graph::{
+    RETICULUM_GRAPH_FILE, ReticulumGraphConfig, ReticulumGraphContact, ReticulumGraphRoute,
+};
 
 #[path = "worker/open_joined_place.rs"]
 mod open_joined_place;
 use open_joined_place::open_joined_place;
+#[path = "worker/reopen_connected_place.rs"]
+mod reopen_connected_place;
+use reopen_connected_place::reopen_connected_place;
 
 pub(crate) struct OpenPlace {
     /// Session-owned view sidecars are written only by this worker.
@@ -99,6 +104,8 @@ pub(crate) struct OpenPlace {
     /// Live lane handles, when this open dialed. First live field: the
     /// lane tasks must stop before the stores they drain into close.
     pub(crate) lanes: Option<crate::place::lanes::LiveLanes>,
+    #[cfg(feature = "place-reticulum")]
+    reticulum: Option<reticulum_graph::AutoGraphSync>,
     /// The binding this place was opened under, so a later command names the
     /// same scopes the projections fold from.
     pub(crate) binding: PlaceBindingV1,

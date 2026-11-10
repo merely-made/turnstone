@@ -21,9 +21,15 @@ pub(super) fn spawn_place_worker_with(
             loop {
                 let command = match adopted.is_some().then(|| waiting.pop_front()).flatten() {
                     Some(command) => command,
-                    None => match commands.recv() {
-                        Ok(command) => command,
-                        Err(_) => break,
+                    None => {
+                        #[cfg(feature = "place-reticulum")]
+                        let next = reticulum_graph::next_command(
+                            &commands, live.as_mut(), live_scope, adopted.as_deref(), &settings, &out,
+                        );
+                        #[cfg(not(feature = "place-reticulum"))]
+                        let next = commands.recv().ok();
+                        let Some(command) = next else { break };
+                        command
                     },
                 };
                 let command = match command {
@@ -346,56 +352,14 @@ pub(super) fn spawn_place_worker_with(
                         }
                         live = None;
                         live_scope = None;
-                        let reconnected =
-                            reopen_cached_place(&directory, &binding, identity.as_ref(), &settings)
-                                .and_then(|(mut opened, _cached)| {
-                                    let local_root = identity.master_public_key().to_bytes();
-                                    let membership = pollster::block_on(opened.moot.snapshot())
-                                        .map_err(|error| {
-                                            format!("materialize retained Moot: {error}")
-                                        })?;
-                                    if !membership
-                                        .membership
-                                        .members
-                                        .iter()
-                                        .any(|member| member.member == local_root)
-                                    {
-                                        return Err(
-                                    "this identity is no longer a member in retained place state"
-                                        .into(),
-                                );
-                                    }
-                                    let tickets = match &contact {
-                                        Some(card) => {
-                                            crate::place::rendezvous::card_tickets(&binding, card)?
-                                        },
-                                        None => crate::place::rendezvous::load_rendezvous(
-                                            &directory,
-                                            &binding,
-                                            settings.authority_clock.now_ms(),
-                                        )?,
-                                    };
-                                    opened.lanes = Some(crate::place::lanes::join_live(
-                                        &opened,
-                                        &binding,
-                                        identity.as_ref(),
-                                        &tickets,
-                                        settings.projection_setup(&binding, identity.as_ref()),
-                                        Some((out.clone(), session, generation)),
-                                    )?);
-                                    // A card carries contact metadata, never admission. Persist
-                                    // only after retained membership and transport parsing pass.
-                                    if let Some(card) = &contact {
-                                        crate::place::rendezvous::save_card_rendezvous(
-                                            &directory,
-                                            &binding,
-                                            card,
-                                            settings.authority_clock.now_ms(),
-                                        )?;
-                                    }
-                                    place_snapshot(&opened, binding.moot.0, &settings)
-                                        .map(|snapshot| (opened, snapshot))
-                                });
+                        let reconnected = reopen_connected_place(
+                            &directory,
+                            &binding,
+                            identity.as_ref(),
+                            &settings,
+                            contact.as_deref(),
+                            (out.clone(), session, generation),
+                        );
                         match reconnected {
                             Ok((opened, snapshot)) => {
                                 live_scope = Some((session, generation));

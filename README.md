@@ -117,6 +117,16 @@ parses and the Micron projection still renders saved source, and a page request
 answers with a typed refusal. `scripts/check_default_links.py` keeps the default
 free of Reticulum engines.
 
+The optional `place-reticulum` feature enables Commons graph catch-up for two
+already enrolled place members with current group keys. In each place's session
+directory, save a `place-reticulum-graph.json` containing the shared `container`
+ID, a `route` (`{"listen":"IP:PORT"}` or `{"dial":"IP:PORT"}`), and the other
+member's signed `peer` contact from `ReticulumGraphContact::for_graph`. The
+optional `poll_ms` defaults to 2000 and accepts 250 to 60000. Use **Reconnect
+place** to activate the saved route. The dialer starts catch-up rounds after
+reconnect and after its own edits. The listener's edits travel on the next poll.
+This route uses Reticulum/TCP with Noise and carries the encrypted graph lane.
+
 The local Windows system-webview implementation is optional:
 `cargo run --features scry`. It requires the WebView2 runtime and a D3D12 host;
 construction failures are reported by the browser. Two-page native qualification

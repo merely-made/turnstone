@@ -18,9 +18,15 @@ impl PlaceState {
                 retained.graph_nodes, retained.chat_messages
             )],
             Self::Offline { snapshot, .. } => {
-                let mut rows = vec![match &snapshot.sync {
-                    None => "Last refresh: retained data only; no local sync lanes opened".into(),
-                    Some(_) => {
+                let mut rows = vec![match (snapshot.reticulum_graph_active, &snapshot.sync) {
+                    (true, _) => {
+                        "Last refresh: Reticulum graph catch-up active; peer reachability unknown"
+                            .into()
+                    },
+                    (false, None) => {
+                        "Last refresh: retained data only; no local sync lanes opened".into()
+                    },
+                    (false, Some(_)) => {
                         "Last refresh: local sync lanes opened; peer reachability unknown".into()
                     },
                 }];
