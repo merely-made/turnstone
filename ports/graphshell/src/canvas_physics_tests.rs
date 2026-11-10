@@ -680,7 +680,8 @@ fn codicil_with_scene<B: muniment::Backend + Clone>(
     member: uuid::Uuid,
     scene: &pandect::SavedSceneV3,
 ) -> Vec<u8> {
-    use crate::product::{ExportRequest, TransferScope};
+    use crate::product::ExportRequest;
+    use pandect::product_codicil::TransferScope;
 
     host.export_product_codicil(ExportRequest {
         focused: member,

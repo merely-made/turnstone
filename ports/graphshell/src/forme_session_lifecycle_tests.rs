@@ -44,8 +44,9 @@ async fn load<B: Backend>(
 }
 use crate::{
     app::GraphshellApp,
-    product::{ExportRequest, TransferScope},
+    product::ExportRequest,
 };
+use pandect::product_codicil::TransferScope;
 use graphshell_host::mere_host::{
     FIXTURE_PERSONA_ADDRESS, FIXTURE_WEB_ADDRESS, GRAPHSHELL, SelectedPersonaRef,
 };

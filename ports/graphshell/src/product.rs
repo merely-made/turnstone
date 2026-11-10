@@ -34,6 +34,10 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use pandect::access::ACCESS_HISTORY_FACET;
+use pandect::product_codicil::{
+    InvalidCodicil, PRODUCT_CODICIL_SCHEMA, ProductCodicilV3, ProfiledProductCodicil,
+    TransferScope, decode_profiled_codicil, profiled_codicil_graph,
+};
 use crate::local_locations;
 use graphshell_host::mere_host::{MereHost, MereHostError};
 use scenomise::projection::ProjectionSnapshot;
@@ -76,39 +80,6 @@ pub const PROJECTION_DEFINITION_FACET: &str = "graphshell.projection-definition/
 /// The channel the projection editor's saves come through, so its Undo save
 /// reaches only them and Graphshell's session undo never does (SE18).
 pub const PROJECTION_EDITOR_VIA: &str = "graphshell.projection-editor";
-/// A codicil carrying a version-4 scene ([`ProductCodicilV3`], F159).
-pub const PRODUCT_CODICIL_SCHEMA: &str = "graphshell.graph-codicil/v3";
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "kebab-case")]
-pub enum TransferScope {
-    ObjectOnly,
-    DirectRelations,
-    SelectedSubgraph,
-    SavedScene,
-}
-
-impl TransferScope {
-    pub fn code(self) -> &'static str {
-        match self {
-            Self::ObjectOnly => "object-only",
-            Self::DirectRelations => "direct-relations",
-            Self::SelectedSubgraph => "selected-subgraph",
-            Self::SavedScene => "saved-scene",
-        }
-    }
-
-    pub fn from_code(code: &str) -> Option<Self> {
-        match code {
-            "object-only" => Some(Self::ObjectOnly),
-            "direct-relations" => Some(Self::DirectRelations),
-            "selected-subgraph" => Some(Self::SelectedSubgraph),
-            "saved-scene" => Some(Self::SavedScene),
-            _ => None,
-        }
-    }
-}
-
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum RelationFamilyFilter {
     All,
@@ -236,39 +207,6 @@ pub struct PinnedProjectionCardV1 {
     pub card: PortableCardV1,
 }
 
-/// A graph selection, with a version-4 scene when it carries one (F159).
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct ProductCodicilV3 {
-    pub schema: String,
-    pub scope: TransferScope,
-    pub exported_at_ms: u64,
-    pub graph: GraphSnapshot,
-    pub facets: NodeFacetStore,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub scene: Option<SavedSceneV3>,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub(crate) struct ProfiledProductCodicil {
-    #[serde(flatten)]
-    pub product: ProductCodicilV3,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub placement: Option<PlacementProfile>,
-}
-
-impl std::ops::Deref for ProfiledProductCodicil {
-    type Target = ProductCodicilV3;
-    fn deref(&self) -> &Self::Target {
-        &self.product
-    }
-}
-
-impl std::ops::DerefMut for ProfiledProductCodicil {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.product
-    }
-}
-
 #[derive(Clone, Debug)]
 pub struct ExportRequest {
     pub focused: Uuid,
@@ -322,6 +260,12 @@ impl std::error::Error for ProductError {}
 impl From<MereHostError> for ProductError {
     fn from(value: MereHostError) -> Self {
         Self::Host(value)
+    }
+}
+
+impl From<InvalidCodicil> for ProductError {
+    fn from(value: InvalidCodicil) -> Self {
+        Self::InvalidCodicil(value.0)
     }
 }
 
@@ -788,20 +732,7 @@ impl<B: Backend> ProductHost for MereHost<B> {
 /// A codicil's graph with its facet store laid in whole: no codicil carries
 /// legacy column data, so nothing the snapshot's columns import is kept.
 fn codicil_graph(snapshot: GraphSnapshot, facets: NodeFacetStore) -> Result<Graph, ProductError> {
-    profiled_codicil_graph(snapshot, facets, None)
-}
-
-fn profiled_codicil_graph(
-    snapshot: GraphSnapshot,
-    facets: NodeFacetStore,
-    placement: Option<PlacementProfile>,
-) -> Result<Graph, ProductError> {
-    let mut graph = materialize_snapshot(&snapshot, placement)
-        .map_err(|error| ProductError::InvalidCodicil(error.to_string()))?;
-    graph
-        .install_facets(facets)
-        .map_err(|error| ProductError::InvalidCodicil(error.to_string()))?;
-    Ok(graph)
+    Ok(profiled_codicil_graph(snapshot, facets, None)?)
 }
 
 pub(crate) fn product_import_edits(
@@ -1140,44 +1071,6 @@ fn filtered_facets(
 
 pub(crate) fn decode_codicil(bytes: &[u8]) -> Result<ProductCodicilV3, ProductError> {
     Ok(decode_profiled_codicil(bytes)?.product)
-}
-
-pub(crate) fn decode_profiled_codicil(
-    bytes: &[u8],
-) -> Result<ProfiledProductCodicil, ProductError> {
-    #[derive(Deserialize)]
-    struct Head {
-        schema: String,
-        #[serde(default)]
-        placement: Option<PlacementProfile>,
-    }
-    let invalid = |error: serde_json::Error| ProductError::InvalidCodicil(error.to_string());
-    let Head { schema, placement } = serde_json::from_slice(bytes).map_err(invalid)?;
-    if schema != PRODUCT_CODICIL_SCHEMA {
-        return Err(ProductError::InvalidCodicil(format!(
-            "expected {PRODUCT_CODICIL_SCHEMA}, found {schema}"
-        )));
-    }
-    let codicil = serde_json::from_slice::<ProductCodicilV3>(bytes).map_err(invalid)?;
-    let ids: HashSet<_> = codicil
-        .graph
-        .nodes
-        .iter()
-        .map(|node| node.node_id.as_str())
-        .collect();
-    if codicil.graph.edges.iter().any(|edge| {
-        !ids.contains(edge.from_node_id.as_str()) || !ids.contains(edge.to_node_id.as_str())
-    }) {
-        return Err(ProductError::InvalidCodicil(
-            "a relation names an object outside the codicil".to_string(),
-        ));
-    }
-    let input = ProfiledProductCodicil {
-        product: codicil,
-        placement,
-    };
-    profiled_codicil_graph(input.graph.clone(), input.facets.clone(), input.placement)?;
-    Ok(input)
 }
 
 #[cfg(test)]

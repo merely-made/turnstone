@@ -13,15 +13,13 @@
 
 use crate::product::ProductHost;
 use std::collections::{BTreeMap, HashMap, HashSet};
-use std::sync::LazyLock;
 
 use chartulary::{AcceptAll, FacetId};
 use chirograph::Sha256NamedInformation;
 use eidetic::{
-    BlobSource, Codicil, Hash, ManifestId, MereNativeFieldSpec, MereNativeSchemaBuilder,
-    ModerationState, PrivacyClass, ProvenanceOrigin, ProvenanceRecord, SchemaDefinition, SchemaRef,
-    TimeBounds, Timestamp, TrustEnvelope, TrustLevel, TypedPayload, save_schema, save_typed,
-    validate_payload,
+    BlobSource, Codicil, Hash, ManifestId, ModerationState, PrivacyClass, ProvenanceOrigin,
+    ProvenanceRecord, TimeBounds, Timestamp, TrustEnvelope, TrustLevel, TypedPayload, save_schema,
+    save_typed, validate_payload,
 };
 use mere::kernel::geometry::PortablePoint;
 use mere::kernel::graph::node_facets::{
@@ -31,7 +29,6 @@ use mere::kernel::graph::node_facets::{
 use mere::kernel::graph::{Graph, NodeFacetStore};
 use muniment::{Backend, BlobStore};
 use pandect::graph_placement::materialize_snapshot;
-use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use uuid::Uuid;
 
@@ -42,9 +39,15 @@ use pandect::access::{
 };
 use crate::local_locations;
 use graphshell_host::mere_host::MereHost;
-use crate::product::{
-    CONTENT_FACET, ExportRequest, ProductCodicilV3, ProductError, ProfiledProductCodicil,
-    decode_profiled_codicil,
+use crate::product::{CONTENT_FACET, ExportRequest, ProductError};
+use pandect::product_codicil::{
+    InvalidCodicil, ProductCodicilV3, ProfiledProductCodicil, decode_profiled_codicil,
+    product_codicil_schema, schema_ref,
+};
+use pandect::transfer::{
+    AccessTransferPolicy, TRANSFER_MANIFEST_SCHEMA, TransferBlobV1, TransferEndpointV1,
+    TransferManifestV1, TransferOperation, TransferReceiptV1, TransferResult, TransferRouteV1,
+    TransferredIdV1, transfer_receipt_schema,
 };
 use mere::canvas::saved_scene;
 use pandect::{
@@ -52,119 +55,7 @@ use pandect::{
     SavedSceneV2, SavedSceneV3,
 };
 
-pub const TRANSFER_MANIFEST_SCHEMA: &str = "graphshell.transfer-manifest/v1";
 pub const TRANSFER_CONTENT_FACET: &str = "graphshell.transfer-content/v1";
-
-static PRODUCT_CODICIL_SCHEMA_REF: LazyLock<SchemaRef> =
-    LazyLock::new(|| schema_ref(&product_codicil_schema()));
-static TRANSFER_RECEIPT_SCHEMA_REF: LazyLock<SchemaRef> =
-    LazyLock::new(|| schema_ref(&transfer_receipt_schema()));
-
-fn schema_ref(definition: &SchemaDefinition) -> SchemaRef {
-    let bytes = serde_json::to_vec(definition).expect("Graphshell schema always serializes");
-    SchemaRef::from_id(ManifestId::from_hash(Hash::of(&bytes)))
-}
-
-pub(crate) fn product_codicil_schema() -> SchemaDefinition {
-    MereNativeSchemaBuilder::new("graphshell.GraphCodicil/v3")
-        .description("A closed graph or scene selection with portable facets.")
-        .field("schema", MereNativeFieldSpec::String, true)
-        .field(
-            "scope",
-            MereNativeFieldSpec::Enum {
-                values: vec![
-                    "object-only".to_string(),
-                    "direct-relations".to_string(),
-                    "selected-subgraph".to_string(),
-                    "saved-scene".to_string(),
-                ],
-            },
-            true,
-        )
-        .field("exported_at_ms", MereNativeFieldSpec::U64, true)
-        .field("graph", MereNativeFieldSpec::Object, true)
-        .field("facets", MereNativeFieldSpec::Object, true)
-        .field("scene", MereNativeFieldSpec::Object, false)
-        .build()
-}
-
-fn transfer_receipt_schema() -> SchemaDefinition {
-    MereNativeSchemaBuilder::new("graphshell.TransferReceipt/v1")
-        .description("The durable result of applying one graph selection transfer.")
-        .field("transfer_id", MereNativeFieldSpec::String, true)
-        .field(
-            "operation",
-            MereNativeFieldSpec::Enum {
-                values: vec!["replicate".to_string(), "copy".to_string()],
-            },
-            true,
-        )
-        .field("source", MereNativeFieldSpec::Object, true)
-        .field("destination", MereNativeFieldSpec::Object, true)
-        .field("route", MereNativeFieldSpec::Object, true)
-        .field("authorization_grant", MereNativeFieldSpec::String, true)
-        .field("manifest_hash", MereNativeFieldSpec::String, true)
-        .field("selection_hash", MereNativeFieldSpec::String, true)
-        .field("blob_hashes", MereNativeFieldSpec::Array, true)
-        .field("id_map", MereNativeFieldSpec::Array, true)
-        .field("nodes", MereNativeFieldSpec::U64, true)
-        .field("relations", MereNativeFieldSpec::U64, true)
-        .field(
-            "destination_access_records",
-            MereNativeFieldSpec::Array,
-            true,
-        )
-        .field("completed_at_ms", MereNativeFieldSpec::U64, true)
-        .field(
-            "result",
-            MereNativeFieldSpec::Enum {
-                values: vec!["completed".to_string()],
-            },
-            true,
-        )
-        .build()
-}
-
-impl TypedPayload for ProductCodicilV3 {
-    fn schema_ref() -> SchemaRef {
-        *PRODUCT_CODICIL_SCHEMA_REF
-    }
-}
-
-impl TypedPayload for ProfiledProductCodicil {
-    fn schema_ref() -> SchemaRef {
-        *PRODUCT_CODICIL_SCHEMA_REF
-    }
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "kebab-case")]
-pub enum TransferOperation {
-    Replicate,
-    Copy,
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "kebab-case")]
-pub enum AccessTransferPolicy {
-    ExcludeSourceHistory,
-    IncludeSourceHistory,
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct TransferEndpointV1 {
-    pub graph: String,
-    pub persona: String,
-    pub device: String,
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct TransferRouteV1 {
-    pub carrier: String,
-    pub peer: String,
-}
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct TransferAuthorization {
@@ -190,71 +81,6 @@ pub struct TransferBlobInput {
     pub role: String,
     pub media_type: String,
     pub bytes: Vec<u8>,
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct TransferBlobV1 {
-    pub node_id: Uuid,
-    pub role: String,
-    pub media_type: String,
-    pub content_hash: Hash,
-    pub byte_len: u64,
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct TransferManifestV1 {
-    pub schema: String,
-    pub transfer_id: Uuid,
-    pub operation: TransferOperation,
-    pub source: TransferEndpointV1,
-    pub destination: TransferEndpointV1,
-    pub route: TransferRouteV1,
-    pub selection_schema: SchemaDefinition,
-    pub selection: Codicil,
-    pub blobs: Vec<TransferBlobV1>,
-    pub access_policy: AccessTransferPolicy,
-    pub access_records: Vec<AccessRecord>,
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct TransferredIdV1 {
-    pub source: Uuid,
-    pub destination: Uuid,
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "kebab-case")]
-pub enum TransferResult {
-    Completed,
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct TransferReceiptV1 {
-    pub transfer_id: Uuid,
-    pub operation: TransferOperation,
-    pub source: TransferEndpointV1,
-    pub destination: TransferEndpointV1,
-    pub route: TransferRouteV1,
-    pub authorization_grant: String,
-    pub manifest_hash: Hash,
-    pub selection_hash: Hash,
-    pub blob_hashes: Vec<Hash>,
-    pub id_map: Vec<TransferredIdV1>,
-    pub nodes: u64,
-    pub relations: u64,
-    pub destination_access_records: Vec<Uuid>,
-    pub completed_at_ms: u64,
-    pub result: TransferResult,
-}
-
-impl TypedPayload for TransferReceiptV1 {
-    fn schema_ref() -> SchemaRef {
-        *TRANSFER_RECEIPT_SCHEMA_REF
-    }
 }
 
 #[derive(Clone, Debug)]
@@ -306,6 +132,12 @@ impl std::error::Error for TransferError {}
 impl From<ProductError> for TransferError {
     fn from(value: ProductError) -> Self {
         Self::Product(value)
+    }
+}
+
+impl From<InvalidCodicil> for TransferError {
+    fn from(value: InvalidCodicil) -> Self {
+        Self::Product(value.into())
     }
 }
 
@@ -670,7 +502,7 @@ where
 async fn bootstrap_transfer_receipt_schema<B: Backend>(
     store: &mut B,
 ) -> Result<(), eidetic::Error> {
-    if eidetic::manifest::load_manifest(store, TRANSFER_RECEIPT_SCHEMA_REF.0)
+    if eidetic::manifest::load_manifest(store, TransferReceiptV1::schema_ref().0)
         .await?
         .is_some()
     {
@@ -694,7 +526,7 @@ async fn bootstrap_transfer_receipt_schema<B: Backend>(
         Timestamp::ZERO,
     )
     .await?;
-    debug_assert_eq!(id, TRANSFER_RECEIPT_SCHEMA_REF.0);
+    debug_assert_eq!(id, TransferReceiptV1::schema_ref().0);
     Ok(())
 }
 
@@ -1116,7 +948,8 @@ mod tests {
         FIXTURE_DEVICE_ONE_ADDRESS, FIXTURE_DEVICE_TWO_ADDRESS, FIXTURE_PERSONA_ADDRESS,
         SelectedPersonaRef, fixture_handlers,
     };
-    use crate::product::{EditableRelation, LocalFileMetadata, TransferScope};
+    use crate::product::{EditableRelation, LocalFileMetadata};
+    use pandect::product_codicil::TransferScope;
 
     fn selected(persona: &str) -> SelectedPersonaRef {
         SelectedPersonaRef {
@@ -2367,7 +2200,7 @@ mod tests {
             let source = source_fixture().await;
             let manifest = package(&source, TransferOperation::Copy, FIXTURE_PERSONA_ADDRESS).await;
             let manifest_bytes = serde_json::to_vec(&manifest).unwrap();
-            let offer = crate::transfer_offer::offer_for(
+            let offer = pandect::transfer_offer::offer_for(
                 &manifest,
                 Hash::of(&manifest_bytes),
                 manifest_bytes.len() as u64,
@@ -2395,7 +2228,7 @@ mod tests {
             assert_eq!(offer.transfer_id, manifest.transfer_id);
             assert_eq!(offer.destination.device, FIXTURE_DEVICE_TWO_ADDRESS);
 
-            let events = crate::transfer_offer::offer_events(&offer).unwrap();
+            let events = pandect::transfer_offer::offer_events(&offer).unwrap();
             assert!(matches!(
                 &events[0],
                 PersonalGraphEvent::AddNode { id, address, .. }

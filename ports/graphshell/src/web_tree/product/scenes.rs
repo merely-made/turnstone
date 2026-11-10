@@ -8,7 +8,8 @@
 use graphshell::product::ProductHost;
 use super::*;
 use cambium::{button, checkbox, el, lens, select, textarea_typed};
-use graphshell::product::{ExportRequest, TransferScope};
+use graphshell::product::ExportRequest;
+use pandect::product_codicil::TransferScope;
 use pandect::{SAVED_SCENE_FACET, SAVED_SCENE_FACET_V2, SAVED_SCENE_FACET_V3, SavedSceneV3};
 const ADDRESS: &str = "mere://scene/graphshell-h3";
 const SCOPES: [(TransferScope, &str); 4] = [

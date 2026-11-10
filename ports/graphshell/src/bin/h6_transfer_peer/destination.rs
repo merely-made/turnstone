@@ -17,11 +17,9 @@ use chirograph::{
 use eidetic::PrivacyClass;
 use pandect::access::AccessContext;
 use graphshell_host::mere_host::{MereHost, SelectedPersonaRef, fixture_handlers};
-use graphshell::product::ProductCodicilV3;
-use graphshell::transfer::{
-    ApplyTransferContext, TransferAuthorization, TransferManifestV1, TransferOperation,
-    apply_transfer,
-};
+use graphshell::transfer::{ApplyTransferContext, TransferAuthorization, apply_transfer};
+use pandect::product_codicil::ProductCodicilV3;
+use pandect::transfer::{TransferManifestV1, TransferOperation};
 use graphshell::transfer_endpoint::{TRANSFER_BEGIN_INTENT, TransferBeginV1};
 use graphshell_host::admission::open_session;
 use graphshell_host::carrier::projection_alpn;
@@ -452,7 +450,7 @@ async fn verify_destination(
     host: &MereHost<MemoryBackend>,
     blobs: &BlobStore<MemoryBackend>,
     manifest: &TransferManifestV1,
-    receipt: &graphshell::transfer::TransferReceiptV1,
+    receipt: &pandect::transfer::TransferReceiptV1,
 ) -> Result<(), String> {
     let carried: ProductCodicilV3 =
         serde_json::from_slice(&manifest.selection.payload).map_err(|error| error.to_string())?;

@@ -31,7 +31,8 @@ use scenotime::{Revision, SceneEpoch, SceneSnapshot};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::transfer::{TransferManifestV1, verify_manifest};
+use crate::transfer::verify_manifest;
+use pandect::transfer::TransferManifestV1;
 
 pub const TRANSFER_BEGIN_INTENT: &str = "graphshell.transfer.begin";
 pub const TRANSFER_BEGIN_SCHEMA: &str = "graphshell.transfer.begin/v1";
@@ -359,10 +360,12 @@ mod tests {
     use mere::kernel::graph::{Graph, NodeFacetStore};
 
     use super::*;
-    use crate::product::{PRODUCT_CODICIL_SCHEMA, ProductCodicilV3, TransferScope};
-    use crate::transfer::{
+    use pandect::product_codicil::{
+        PRODUCT_CODICIL_SCHEMA, ProductCodicilV3, TransferScope, product_codicil_schema,
+    };
+    use pandect::transfer::{
         AccessTransferPolicy, TransferBlobV1, TransferEndpointV1, TransferOperation,
-        TransferRouteV1, product_codicil_schema,
+        TransferRouteV1,
     };
 
     fn manifest(bytes: &[u8]) -> TransferManifestV1 {
@@ -386,7 +389,7 @@ mod tests {
         let selection_schema = product_codicil_schema();
         let schema_bytes = serde_json::to_vec(&selection_schema).unwrap();
         TransferManifestV1 {
-            schema: crate::transfer::TRANSFER_MANIFEST_SCHEMA.to_string(),
+            schema: pandect::transfer::TRANSFER_MANIFEST_SCHEMA.to_string(),
             transfer_id,
             operation: TransferOperation::Replicate,
             source: TransferEndpointV1 {

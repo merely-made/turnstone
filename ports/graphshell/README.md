@@ -101,7 +101,7 @@ Under `web` (portable, builds for `wasm32-unknown-unknown`):
 | `access` | `AccessRecord`, `AccessObservation`, `AccessTransition`, `save_access_record` |
 | `capture` | `HistoryCapturePolicy`, `BrowserVisit`, `NormalizedVisit`, `CaptureBackend` |
 | `browser_storage` | `StoragePersistence`, `decide`, `status_line` |
-| `transfer` | `TransferRequest`, `TransferRouteV1`, `TransferAuthorization`, manifest and content facets |
+| `transfer` | `prepare_transfer`, `apply_transfer`, `TransferRequest`, `TransferAuthorization`, the content facet; the records are `pandect::transfer` (engine split D70) |
 | `transfer_endpoint` | `TransferSourceEndpoint`, `TransferBeginV1` |
 
 Under `personal-sync`:
@@ -109,7 +109,6 @@ Under `personal-sync`:
 | Module | Contents |
 |---|---|
 | `personal_sync` | `PersonalGraphEvent`, `PersonalGraphRecord`, `PersonalGraphExt`, `PersonalEncryption` |
-| `transfer_offer` | `TransferOfferV1`, `transfer_offer_rule`, `offer_address` |
 
 ## Features
 

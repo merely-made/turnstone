@@ -14,10 +14,11 @@ use std::sync::RwLock;
 use eidetic::PrivacyClass;
 use pandect::access::AccessContext;
 use graphshell_host::mere_host::{MereHost, SelectedPersonaRef, fixture_handlers};
-use graphshell::product::{EditableRelation, ExportRequest, LocalFileMetadata, TransferScope};
-use graphshell::transfer::{
-    AccessTransferPolicy, TransferBlobInput, TransferEndpointV1, TransferOperation,
-    TransferRequest, TransferRouteV1, prepare_transfer,
+use graphshell::product::{EditableRelation, ExportRequest, LocalFileMetadata};
+use graphshell::transfer::{TransferBlobInput, TransferRequest, prepare_transfer};
+use pandect::product_codicil::TransferScope;
+use pandect::transfer::{
+    AccessTransferPolicy, TransferEndpointV1, TransferOperation, TransferRouteV1,
 };
 use graphshell::transfer_endpoint::TransferSourceEndpoint;
 use graphshell_endpoint::ResumableProjectionSource;
