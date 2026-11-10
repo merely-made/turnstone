@@ -5,7 +5,7 @@
 //! Co-op controls beside the ordinary MereView canvas. The window owns no store.
 use super::*;
 use cambium::{TextInput, button, lens, text_field_typed};
-use graphshell::coop::{self, Contact, Data, Operation, control, network};
+use graphshell_host::coop::{self, Contact, Data, Operation, control, network};
 use ostiary::app_admission::{AppId, AppRouteId};
 use graphshell_door::projection::AppBrokerClient;
 use std::{path::PathBuf, time::Duration};

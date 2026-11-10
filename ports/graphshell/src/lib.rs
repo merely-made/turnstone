@@ -17,8 +17,8 @@ pub mod block_editing;
 #[cfg(feature = "editable-blocks")]
 pub mod block_pane;
 pub mod bound_actions;
-#[cfg(all(feature = "coop", not(target_arch = "wasm32")))]
-pub mod coop;
+#[cfg(all(test, feature = "coop", not(target_arch = "wasm32")))]
+mod coop_attached_tests;
 #[cfg(any(feature = "native", feature = "alembic-workshop-private"))]
 pub use graphshell_door::declaration;
 

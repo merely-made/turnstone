@@ -51,7 +51,7 @@ alembic-workshop = ["web", "dep:athanor", "athanor/workshop-destination", "athan
 # not connect to custody or automatically admit a real user's retained sources.
 alembic-workshop-private = ["alembic-workshop", "graphshell-door/declaration", "dep:castellan-client", "castellan-client/client", "dep:eidetic"]
 # One holder-owned graph with an explicitly invited guest.
-coop = ["native", "web", "muniment/redb", "dep:pollster", "graphshell-client/pump"]
+coop = ["native", "web", "muniment/redb", "dep:pollster", "graphshell-client/pump", "graphshell-host/coop"]
 coop-window = ["coop", "dep:cambium-desktop", "dep:mien", "dep:genet-scripted-dom", "dep:layout_dom_api", "dep:image"]
 editable-blocks = ["web", "dep:illume", "dep:vector-sheet", "dep:sprigging", "dep:ciborium", "dep:netrender", "dep:wgpu", "dep:uuid", "uuid/v4"]
 query-views = ["web", "dep:mere-view", "mere-view/query", "dep:cambium"]

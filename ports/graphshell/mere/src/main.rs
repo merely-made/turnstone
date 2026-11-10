@@ -689,10 +689,10 @@ fn main() {
     let args = std::env::args().skip(1).collect::<Vec<_>>();
     if args.first().map(String::as_str) == Some("--contact") {
         assert!(args.len() == 2, "graphshell_mere --contact FILE");
-        let identity = graphshell::coop::network::identity().expect("unlock identity");
-        graphshell::coop::network::write_json(
+        let identity = graphshell_host::coop::network::identity().expect("unlock identity");
+        graphshell_host::coop::network::write_json(
             std::path::Path::new(&args[1]),
-            &graphshell::coop::Contact::create(&*identity, &graphshell::coop::TERMS).expect("contact attestation"),
+            &graphshell_host::coop::Contact::create(&*identity, &graphshell_host::coop::TERMS).expect("contact attestation"),
         )
         .expect("save public contact");
         return;

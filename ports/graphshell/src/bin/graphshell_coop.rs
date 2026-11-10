@@ -9,7 +9,7 @@ use cambium::{
     AnyView, GenetCtx, GenetElement, PointerClick, TextInput, button, el, lens, text_field_typed,
 };
 use cambium_genet_winit_host::{HostOptions, Init, ScrollAlign, inert_hooks, run};
-use graphshell::coop::{
+use graphshell_host::coop::{
     self, Contact, Data, Edit, Invitation, Operation, Owner,
     network::{self, Guest},
 };

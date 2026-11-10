@@ -35,6 +35,7 @@ graphshell-client.workspace = true
 hest.workspace = true
 # The app side of the first-party door: `AppBrokerClient`.
 graphshell-door = { workspace = true, features = ["projection-door"] }
+graphshell-host = { workspace = true, features = ["coop"] }
 # The route panel that fills the mere view (stack lift plan L14).
 mere-overmap = { workspace = true, features = ["view"] }
 mere-view.workspace = true
