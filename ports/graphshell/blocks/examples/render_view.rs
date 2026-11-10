@@ -13,10 +13,11 @@
 
 use eidetic::pack::{PackManifest, PackPart, PackPartRole, sign_pack};
 use eidetic::{ManifestId, TrustEnvelope};
-use graphshell::block_editing::adapter::{BlockAdapter, BlockInput, CommandKind, RunResult, ViewAsk};
+use block_adapter::{BlockAdapter, BlockInput, CommandKind, RunResult, ViewAsk};
 use graphshell::block_editing::sheet_leaf::{ColorF, SheetLeaf, SheetTheme};
 use graphshell::capsule_applet::{BLOCK_ADAPTER, CapsuleDisclosure, CapsuleMount, SignedPack};
-use graphshell_blocks::{GuestAdapter, GuestEngine};
+use block_adapter::GuestEngine;
+use graphshell_blocks::attach_reviewed;
 use netrender::vello_backends::{CpuSession, SparseResourceLimits};
 use paint_list_api::DeviceIntSize;
 use paint_list_render::{CompositeLayer, composite_paint_layers};
@@ -56,7 +57,7 @@ fn main() {
     .unwrap();
     mount.approve(vec![BLOCK_ADAPTER.into()]).unwrap();
     let engine = GuestEngine::new().unwrap();
-    let adapter = GuestAdapter::attach(&engine, &mount, &bytes).unwrap();
+    let adapter = attach_reviewed(&engine, &mount, &bytes).unwrap();
     let claim = adapter.claim().clone();
     let example = claim.example.clone().expect("example");
     let mut attrs = example.attrs.clone();

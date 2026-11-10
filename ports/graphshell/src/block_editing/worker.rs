@@ -16,10 +16,10 @@
 //!
 //! [`deliver`]: WorkerAdapter::deliver
 
-use super::Change;
-use super::adapter::{
-    Answer, AdapterError, BlockAdapter, BlockInput, Claim, Command, CommandKind, Example,
-    Field, GuestView, Lookup, Memo, Row, RunResult, ViewAsk, ViewMode,
+use super::adapter::{Lookup, Memo};
+use block_adapter::{
+    AdapterError, Answer, BlockAdapter, BlockInput, Change, Claim, Command, CommandKind, Example,
+    Field, GuestView, Row, RunResult, ViewAsk, ViewMode,
 };
 use base64::Engine as _;
 use serde_json::{Value, json};

@@ -809,6 +809,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "block-adapter"
+version = "0.0.1"
+dependencies = [
+ "ciborium",
+ "sceno",
+ "vector-sheet",
+]
+
+[[package]]
 name = "block-buffer"
 version = "0.10.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3801,6 +3810,7 @@ version = "0.0.2"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
+ "block-adapter",
  "cambium",
  "cambium-rootstock",
  "chartulary",

@@ -33,7 +33,8 @@ use graphshell::block_pane::{
     self, BackendStorage, Pane, PaneHost, PanePorts, Storage, SwatchStyle, Task, Child,
 };
 use graphshell::capsule_applet::{BLOCK_ADAPTER, CapsuleDisclosure, CapsuleMount, SignedPack};
-use graphshell_blocks::{GuestAdapter, GuestEngine};
+use block_adapter::GuestEngine;
+use graphshell_blocks::attach_reviewed;
 use layout_dom_api::{LayoutDom, LocalName, Namespace};
 use mere::canvas::backdrop_surface::SurfaceTheme;
 use muniment::DirectoryBackend;
@@ -118,7 +119,7 @@ impl App {
         let result = c
             .mount
             .approve(vec![BLOCK_ADAPTER.into()])
-            .and_then(|()| GuestAdapter::attach(&engine, &c.mount, &c.component))
+            .and_then(|()| attach_reviewed(&engine, &c.mount, &c.component))
             .and_then(|adapter| self.pane.add_adapter(Box::new(adapter)));
         match result {
             Ok(()) => {

@@ -18,7 +18,7 @@
 //! until `block_adapter_approve`.
 
 use super::*;
-use graphshell::block_editing::adapter::BlockAdapter;
+use block_adapter::BlockAdapter;
 use graphshell::block_editing::worker::{Transport, WorkerAdapter};
 use graphshell::capsule_applet::{
     BLOCK_ADAPTER, CapsuleDisclosure, CapsuleMount, MAX_DISCLOSURE_BYTES,

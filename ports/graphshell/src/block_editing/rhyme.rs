@@ -9,7 +9,7 @@
 //! This module records authored expectations only. It does not infer rhyme
 //! from spelling, pronunciation, or sound.
 
-use super::Change;
+use block_adapter::Change;
 use sceno::SourceRef;
 use sceno_backdrops::{MetreGrid, SceneFacts, SceneInput, Syllable, VerseLine};
 use std::collections::{BTreeMap, HashSet};

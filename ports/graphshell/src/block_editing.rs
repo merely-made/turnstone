@@ -19,6 +19,7 @@ use cambium::{
     BlockEditor, CaretAffinity, CaretPosition, CaretSelection, EditOutcome, EditorFactory,
     TextCommand, TextInput,
 };
+use block_adapter::Change;
 use illume::blocks;
 use std::collections::BTreeMap;
 
@@ -32,16 +33,6 @@ pub mod store;
 
 /// Maximum source size admitted by preview and structural apply operations.
 pub const MAX_DOCUMENT_BYTES: usize = 1024 * 1024;
-
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Change {
-    pub index: usize,
-    pub label: String,
-    pub before: Option<String>,
-    pub after: String,
-    pub conflict: bool,
-    pub use_update: bool,
-}
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Preview {

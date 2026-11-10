@@ -9,11 +9,13 @@
 
 use eidetic::pack::{PackManifest, PackPart, PackPartRole, sign_pack};
 use eidetic::{ManifestId, TrustEnvelope};
-use graphshell::block_editing::adapter::{
-    AdapterError, BlockAdapter, BlockInput, CommandKind, Registry, RunResult, ViewAsk,
+use block_adapter::{
+    AdapterError, BlockAdapter, BlockInput, CommandKind, RunResult, ViewAsk,
 };
+use graphshell::block_editing::adapter::Registry;
 use graphshell::capsule_applet::{BLOCK_ADAPTER, CapsuleDisclosure, CapsuleMount, SignedPack};
-use graphshell_blocks::{GuestAdapter, GuestEngine};
+use block_adapter::GuestEngine;
+use graphshell_blocks::attach_reviewed;
 use personae::{IdentityProvider, InMemoryProvider};
 use std::collections::BTreeMap;
 
@@ -87,12 +89,12 @@ fn an_unapproved_or_substituted_component_is_not_attached() {
     let engine = GuestEngine::new().unwrap();
     let bytes = component();
     let unapproved = review(&bytes, false);
-    assert!(GuestAdapter::attach(&engine, &unapproved, &bytes).is_err(), "review grants nothing");
+    assert!(attach_reviewed(&engine, &unapproved, &bytes).is_err(), "review grants nothing");
     let approved = review(&bytes, true);
     let mut other = bytes.clone();
     other.push(0);
-    assert!(GuestAdapter::attach(&engine, &approved, &other).is_err(), "not the reviewed bytes");
-    assert!(GuestAdapter::attach(&engine, &approved, &bytes).is_ok());
+    assert!(attach_reviewed(&engine, &approved, &other).is_err(), "not the reviewed bytes");
+    assert!(attach_reviewed(&engine, &approved, &bytes).is_ok());
 }
 
 #[test]
@@ -100,7 +102,7 @@ fn a_reviewed_guest_registers_by_class_and_answers_every_call() {
     let engine = GuestEngine::new().unwrap();
     let bytes = component();
     let mount = review(&bytes, true);
-    let adapter = GuestAdapter::attach(&engine, &mount, &bytes).unwrap();
+    let adapter = attach_reviewed(&engine, &mount, &bytes).unwrap();
     assert_eq!(adapter.claim().class, "fixture");
     assert_eq!(adapter.claim().pattern.as_ref().unwrap().default, "xx");
     assert_eq!(adapter.claim().commands[0].kind, CommandKind::Choice);
@@ -126,7 +128,7 @@ fn a_reviewed_guest_registers_by_class_and_answers_every_call() {
         Err(AdapterError::Refused("Unknown command nope".into()))
     );
     assert!(registry.register(Box::new(
-        GuestAdapter::attach(&engine, &mount, &bytes).unwrap()
+        attach_reviewed(&engine, &mount, &bytes).unwrap()
     )).is_err(), "one adapter per class");
 }
 
@@ -134,7 +136,7 @@ fn a_reviewed_guest_registers_by_class_and_answers_every_call() {
 fn a_guest_view_decodes_into_regions_and_a_painted_sheet() {
     let engine = GuestEngine::new().unwrap();
     let bytes = component();
-    let adapter = GuestAdapter::attach(&engine, &review(&bytes, true), &bytes).unwrap();
+    let adapter = attach_reviewed(&engine, &review(&bytes, true), &bytes).unwrap();
     let view = adapter
         .view(&block(vec![]), &ViewAsk { mode: "plain".into(), width: 200.0, selected: Some((0, 1)) })
         .unwrap()
@@ -160,9 +162,47 @@ fn a_guest_view_decodes_into_regions_and_a_painted_sheet() {
 fn a_spinning_guest_turn_is_refused_and_does_not_hang_the_pane() {
     let engine = GuestEngine::new().unwrap();
     let bytes = component();
-    let adapter = GuestAdapter::attach(&engine, &review(&bytes, true), &bytes).unwrap();
+    let adapter = attach_reviewed(&engine, &review(&bytes, true), &bytes).unwrap();
     let started = std::time::Instant::now();
     let answer = adapter.run(&block(vec![]), "spin", "");
     assert!(matches!(answer, Err(AdapterError::Refused(text)) if text.contains("stopped")));
     assert!(started.elapsed() < std::time::Duration::from_secs(10));
+}
+
+#[test]
+fn a_returned_attribute_map_changes_only_that_block_in_one_undo_step() {
+    use graphshell::block_editing::{Document, Preview, wrap};
+    let engine = GuestEngine::new().unwrap();
+    let bytes = component();
+    let adapter = attach_reviewed(&engine, &review(&bytes, true), &bytes).unwrap();
+    let attrs = BTreeMap::from([
+        ("class".to_owned(), "fixture".to_owned()),
+        ("id".to_owned(), "fixture-test".to_owned()),
+    ]);
+    let source = format!("# Chart\n\n{}", wrap(&attrs, "one\ntwo\n"));
+    let mut doc = Document::new("conformance", &source);
+    let before = doc.editor.source().to_owned();
+    let div = doc.blocks().into_iter().next().expect("one block");
+    let input = BlockInput {
+        class: "fixture".into(),
+        body: before[div.body.clone()].to_owned(),
+        attrs: div.attributes.clone(),
+        revision: "r1".into(),
+        selected: vec![0, 1],
+        pattern: "xx".into(),
+    };
+    let changes = adapter.choices(&input, "mark").unwrap();
+    let returned = adapter.apply(&input, "mark", &changes).unwrap();
+    let differing: Vec<_> = returned
+        .iter()
+        .filter(|(k, v)| div.attributes.get(*k) != Some(*v))
+        .map(|(k, _)| k.as_str())
+        .collect();
+    assert_eq!(differing, ["fixture"], "only the source attribute changes");
+    let preview = Preview::new(doc.editor.source(), div, changes).unwrap();
+    doc.apply(&preview, returned).unwrap();
+    assert_ne!(doc.editor.source(), before);
+    assert!(doc.editor.source().starts_with("# Chart\n\n"), "text outside the block is untouched");
+    doc.editor.apply(cambium::TextCommand::Undo);
+    assert_eq!(doc.editor.source(), before, "one undo restores the document byte for byte");
 }

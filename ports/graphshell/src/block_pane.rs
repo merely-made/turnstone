@@ -15,14 +15,15 @@
 //! big the window is and what colours to use, and supplies the effects the pane cannot perform
 //! itself ([`PanePorts`]: storage, exporting a file, running a future).
 use crate::block_editing::{
-    Change, DefaultEditors, Document, Preview,
-    adapter::{
-        AdapterError, BACKDROP_SCENE, BlockAdapter, BlockInput, CommandKind, GuestView, Registry,
-        Row, RunResult, ViewAsk, unclaimed_message,
-    },
+    DefaultEditors, Document, Preview,
+    adapter::{Registry, unclaimed_message},
     sheet_leaf::{ColorF, SheetLeaf, SheetTheme},
     store::{self, DocumentStore, StoredDocument},
     worker::WorkerAdapter,
+};
+use block_adapter::{
+    AdapterError, BACKDROP_SCENE, BlockAdapter, BlockInput, Change, CommandKind, GuestView, Row,
+    RunResult, ViewAsk,
 };
 use cambium::{
     AnyView, CaretAffinity, CaretPosition, CaretSelection, Command, CommandChoices, CommandSet,
