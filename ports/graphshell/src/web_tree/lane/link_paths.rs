@@ -25,7 +25,7 @@ pub(super) fn click(
     ctx: &mut mandrake::Ctx<'_, TreeLane>,
     request: &str,
 ) -> Result<(), String> {
-    use graphshell::mere_host::{
+    use graphshell_host::mere_host::{
         LINK_REST_A1_ADDRESS, LINK_REST_A2_ADDRESS, LINK_REST_B1_ADDRESS, LINK_REST_B2_ADDRESS,
     };
     let words = request.split_whitespace().collect::<Vec<_>>();
@@ -114,7 +114,7 @@ pub(super) fn fields(canvas: &Canvas, snapshot: ProbeSnapshot) -> ProbeSnapshot 
     let selected_pair = selected
         .first()
         .and_then(|key| canvas.link_appearance_pair(key));
-    use graphshell::mere_host::{
+    use graphshell_host::mere_host::{
         LINK_REST_A1_ADDRESS, LINK_REST_A2_ADDRESS, LINK_REST_B1_ADDRESS, LINK_REST_B2_ADDRESS,
     };
     let selected_pair_tag = [

@@ -7,7 +7,8 @@
 //! Graphshell's evidence-brief embedding through its sole MereHost graph writer.
 //! Private receiving is explicit, sealed, and bound to one live custody epoch.
 
-use crate::mere_host::{MereHost, SelectedPersonaRef, fixture_handlers};
+use crate::mere_host_alembic::WorkshopHost;
+use graphshell_host::mere_host::{MereHost, SelectedPersonaRef, fixture_handlers};
 use pandect::access::AccessContext;
 use athanor::alembic::{
     workshop::*,

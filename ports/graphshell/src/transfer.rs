@@ -11,6 +11,7 @@
 //! package is explicit about identity: replicate preserves container ids;
 //! copy mints stable-per-transfer ids and records `CopiedFrom` provenance.
 
+use crate::product::ProductHost;
 use std::collections::{BTreeMap, HashMap, HashSet};
 use std::sync::LazyLock;
 
@@ -40,7 +41,7 @@ use pandect::access::{
     record_observation, save_access_record,
 };
 use crate::local_locations;
-use crate::mere_host::MereHost;
+use graphshell_host::mere_host::MereHost;
 use crate::product::{
     CONTENT_FACET, ExportRequest, ProductCodicilV3, ProductError, ProfiledProductCodicil,
     decode_profiled_codicil,
@@ -1111,7 +1112,7 @@ mod tests {
     use pandect::access::{
         AccessContext, bootstrap_access_record_schema, query_access_records, save_access_record,
     };
-    use crate::mere_host::{
+    use graphshell_host::mere_host::{
         FIXTURE_DEVICE_ONE_ADDRESS, FIXTURE_DEVICE_TWO_ADDRESS, FIXTURE_PERSONA_ADDRESS,
         SelectedPersonaRef, fixture_handlers,
     };
@@ -1733,7 +1734,7 @@ mod tests {
             .await;
             let mut product = verify_manifest(&manifest).unwrap();
             assert_eq!(product.placement, Some(PlacementProfile::RecordedStrataV1));
-            let mut held = crate::mere_host::placement_test_graph()
+            let mut held = graphshell_host::mere_host::placement_test_graph()
                 .to_snapshot()
                 .edges
                 .remove(0);

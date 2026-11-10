@@ -33,7 +33,7 @@ use cambium_rootstock::{
     Init, ProducedTexture, ProducerContext, SourceAlpha, SourceEncoding, TextureProducer,
 };
 use graphshell::app::GraphshellApp;
-use graphshell::mere_host::{FIXTURE_PERSONA_ADDRESS, FIXTURE_WEB_ADDRESS, SelectedPersonaRef};
+use graphshell_host::mere_host::{FIXTURE_PERSONA_ADDRESS, FIXTURE_WEB_ADDRESS, SelectedPersonaRef};
 use layout_dom_api::{LayoutDom, LocalName, Namespace};
 use mere::canvas::Canvas;
 use mere::canvas::controls::CanvasCommand;

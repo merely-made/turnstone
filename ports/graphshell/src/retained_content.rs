@@ -6,6 +6,7 @@
 
 //! Pelt content inside a Mere projection. The caller supplies admitted held
 //! bytes; reading never acquires a remote document or changes graph authority.
+use crate::product::ProductHost;
 use inker::{
     Block, DocumentProvenance, DocumentTrustState, EngineDocument, EngineProfileBinding,
     InlineSpan, SessionSpawnRequest,

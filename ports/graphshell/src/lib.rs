@@ -17,8 +17,6 @@ pub mod block_editing;
 #[cfg(feature = "editable-blocks")]
 pub mod block_pane;
 pub mod bound_actions;
-#[cfg(all(test, feature = "coop", not(target_arch = "wasm32")))]
-mod coop_attached_tests;
 #[cfg(any(feature = "native", feature = "alembic-workshop-private"))]
 pub use graphshell_door::declaration;
 
@@ -86,10 +84,8 @@ pub mod local_profile;
 pub mod local_projection;
 #[cfg(feature = "web")]
 pub mod local_scene;
-#[cfg(feature = "web")]
-pub mod mere_host;
-#[cfg(feature = "web")]
-mod mere_host_fixture;
+#[cfg(feature = "alembic-workshop")]
+pub mod mere_host_alembic;
 #[cfg(feature = "web")]
 pub mod node_presentation;
 #[cfg(feature = "web")]
@@ -106,8 +102,6 @@ pub mod presentation_store;
 pub mod product;
 #[cfg(feature = "web")]
 pub mod promoted_links;
-#[cfg(feature = "web")]
-pub mod resident_host;
 #[cfg(feature = "web")]
 pub mod responsive_links;
 #[cfg(feature = "web")]

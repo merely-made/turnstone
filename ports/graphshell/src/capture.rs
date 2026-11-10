@@ -10,6 +10,7 @@
 //! event shape, configurable privacy policy, graph projection, durable batch
 //! boundary, and forget operation.
 
+use crate::product::ProductHost;
 use std::collections::{BTreeSet, HashMap, HashSet};
 use std::sync::Mutex;
 
@@ -35,7 +36,7 @@ use pandect::access::{
     ACCESS_HISTORY_FACET, AccessAction, AccessHistory, AccessObservation, AccessRecord,
     AccessTransition, bootstrap_access_record_schema, record_observation, save_access_record,
 };
-use crate::mere_host::{MereHost, MereHostError};
+use graphshell_host::mere_host::{MereHost, MereHostError};
 use crate::product::ProductError;
 
 pub const BROWSER_HISTORY_FACET: &str = "graphshell.browser-history/v1";
@@ -460,10 +461,19 @@ pub enum BrowserRelationKind {
     Reload,
 }
 
-impl<B: Backend> MereHost<B> {
+/// Browser capture's reading over [`MereHost`] (engine split D93).
+pub trait CaptureHost {
     /// Inspect exact encounter evidence for a directed document pair. The
     /// facet is a projection; the source encounters remain in the ledger.
-    pub fn browser_relations(
+    fn browser_relations(
+        &self,
+        from: &str,
+        to: &str,
+    ) -> Result<Vec<BrowserDocumentRelation>, CaptureError>;
+}
+
+impl<B: Backend> CaptureHost for MereHost<B> {
+    fn browser_relations(
         &self,
         from: &str,
         to: &str,
@@ -1060,7 +1070,36 @@ fn clean_optional(value: Option<String>) -> Option<String> {
         .filter(|value| !value.is_empty())
 }
 
-impl<B: Backend> MereHost<B> {
+/// Capture's own projection steps over [`MereHost`], private to this module.
+trait CaptureSteps {
+    fn forget_related_browser_evidence(&mut self, address: &str) -> Result<(), CaptureError>;
+
+    /// Project one visit, its edits authored via the extension that captured
+    /// it (reservoir plan §7 item 23).
+    fn project_browser_visit(
+        &mut self,
+        visit: &NormalizedVisit,
+        persona: &str,
+        device: &str,
+        relation: Option<&BrowserDocumentRelation>,
+    ) -> Result<ProjectedVisit, CaptureError>;
+
+    fn project_visit(
+        &mut self,
+        visit: &NormalizedVisit,
+        persona: &str,
+        device: &str,
+        relation: Option<&BrowserDocumentRelation>,
+    ) -> Result<ProjectedVisit, CaptureError>;
+
+    fn forget_browser_history(
+        &mut self,
+        address: &str,
+        mode: ForgetMode,
+    ) -> Result<(), CaptureError>;
+}
+
+impl<B: Backend> CaptureSteps for MereHost<B> {
     fn forget_related_browser_evidence(&mut self, address: &str) -> Result<(), CaptureError> {
         let nodes: Vec<_> = self
             .graph()
@@ -1113,8 +1152,6 @@ impl<B: Backend> MereHost<B> {
         Ok(())
     }
 
-    /// Project one visit, its edits authored via the extension that captured
-    /// it (reservoir plan §7 item 23).
     fn project_browser_visit(
         &mut self,
         visit: &NormalizedVisit,
@@ -1353,7 +1390,7 @@ mod tests {
     use muniment::MemoryBackend;
 
     use super::*;
-    use crate::mere_host::{FIXTURE_PERSONA_ADDRESS, FIXTURE_WEB_ADDRESS, SelectedPersonaRef};
+    use graphshell_host::mere_host::{FIXTURE_PERSONA_ADDRESS, FIXTURE_WEB_ADDRESS, SelectedPersonaRef};
 
     const PERSONA: &str = "personae://persona/capture";
     const DEVICE: &str = "personae://device/browser";
@@ -1412,7 +1449,7 @@ mod tests {
                 MereHost::fixture(
                     backend.clone(),
                     selected(),
-                    crate::mere_host::fixture_handlers(),
+                    graphshell_host::mere_host::fixture_handlers(),
                 )
                 .unwrap()
             } else {
@@ -1420,7 +1457,7 @@ mod tests {
                 MereHost::open(
                     backend.clone(),
                     selected(),
-                    crate::mere_host::fixture_handlers(),
+                    graphshell_host::mere_host::fixture_handlers(),
                     pandect::access::AccessContext {
                         persona: PERSONA.into(),
                         device: DEVICE.into(),
@@ -1552,7 +1589,7 @@ mod tests {
             let mut host = MereHost::fixture(
                 backend.clone(),
                 selected(),
-                crate::mere_host::fixture_handlers(),
+                graphshell_host::mere_host::fixture_handlers(),
             )
             .unwrap();
             let mut capture =
@@ -1652,7 +1689,7 @@ mod tests {
             let mut host = MereHost::fixture(
                 backend.clone(),
                 selected(),
-                crate::mere_host::fixture_handlers(),
+                graphshell_host::mere_host::fixture_handlers(),
             )
             .unwrap();
             let mut capture = BrowserHistoryCapture::load(&mut store, delivery.policy)
@@ -1710,7 +1747,7 @@ mod tests {
             let mut host = MereHost::fixture(
                 backend.clone(),
                 selected(),
-                crate::mere_host::fixture_handlers(),
+                graphshell_host::mere_host::fixture_handlers(),
             )
             .unwrap();
             let nav_before = host
@@ -1823,7 +1860,7 @@ mod tests {
             let reopened = MereHost::open(
                 backend.clone(),
                 selected(),
-                crate::mere_host::fixture_handlers(),
+                graphshell_host::mere_host::fixture_handlers(),
                 pandect::access::AccessContext {
                     persona: PERSONA.into(),
                     device: DEVICE.into(),
@@ -1914,7 +1951,7 @@ mod tests {
             let mut host = MereHost::fixture(
                 backend.clone(),
                 selected(),
-                crate::mere_host::fixture_handlers(),
+                graphshell_host::mere_host::fixture_handlers(),
             )
             .unwrap();
             let mut policy = HistoryCapturePolicy::consented();
@@ -1995,7 +2032,7 @@ mod tests {
             let mut host = MereHost::fixture(
                 backend.clone(),
                 selected(),
-                crate::mere_host::fixture_handlers(),
+                graphshell_host::mere_host::fixture_handlers(),
             )
             .unwrap();
             let mut capture =
@@ -2064,7 +2101,7 @@ mod tests {
             let mut host = MereHost::fixture(
                 backend.clone(),
                 selected(),
-                crate::mere_host::fixture_handlers(),
+                graphshell_host::mere_host::fixture_handlers(),
             )
             .unwrap();
             host.persist(1).await.unwrap();
@@ -2130,7 +2167,7 @@ mod tests {
             let reopened = MereHost::open(
                 backend.clone(),
                 selected(),
-                crate::mere_host::fixture_handlers(),
+                graphshell_host::mere_host::fixture_handlers(),
                 pandect::access::AccessContext {
                     persona: PERSONA.into(),
                     device: DEVICE.into(),
@@ -2258,7 +2295,7 @@ mod tests {
             let mut host = MereHost::fixture(
                 backend.clone(),
                 selected(),
-                crate::mere_host::fixture_handlers(),
+                graphshell_host::mere_host::fixture_handlers(),
             )
             .unwrap();
             let mut capture =
@@ -2335,7 +2372,7 @@ mod tests {
             let reopened = MereHost::open(
                 backend.clone(),
                 selected(),
-                crate::mere_host::fixture_handlers(),
+                graphshell_host::mere_host::fixture_handlers(),
                 AccessContext {
                     persona: PERSONA.to_string(),
                     device: DEVICE.to_string(),
@@ -2467,7 +2504,7 @@ mod tests {
             let mut host = MereHost::fixture(
                 backend.clone(),
                 selected(),
-                crate::mere_host::fixture_handlers(),
+                graphshell_host::mere_host::fixture_handlers(),
             )
             .unwrap();
             let mut capture =
@@ -2530,7 +2567,7 @@ mod tests {
             let reopened = MereHost::open(
                 backend.clone(),
                 selected(),
-                crate::mere_host::fixture_handlers(),
+                graphshell_host::mere_host::fixture_handlers(),
                 AccessContext {
                     persona: PERSONA.to_string(),
                     device: DEVICE.to_string(),

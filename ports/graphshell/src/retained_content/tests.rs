@@ -257,8 +257,8 @@ fn selected_clip_admission_survives_owner_reopen_and_uses_verified_custody() {
         .unwrap();
         let wire = serde_json::to_vec(&package).unwrap();
         let backend = muniment::MemoryBackend::default();
-        let persona = crate::mere_host::SelectedPersonaRef {
-            persona: crate::mere_host::FIXTURE_PERSONA_ADDRESS.into(),
+        let persona = graphshell_host::mere_host::SelectedPersonaRef {
+            persona: graphshell_host::mere_host::FIXTURE_PERSONA_ADDRESS.into(),
             profile: "fixture".into(),
         };
         let mut app = crate::app::GraphshellApp::fixture(backend.clone(), persona.clone()).unwrap();
@@ -580,8 +580,8 @@ fn verified_voice_controls_emit_host_play_and_stop_requests() {
             max_record_bytes: 128 * 1024,
         };
         let mut store = muniment::MemoryBackend::default();
-        let persona = crate::mere_host::SelectedPersonaRef {
-            persona: crate::mere_host::FIXTURE_PERSONA_ADDRESS.into(),
+        let persona = graphshell_host::mere_host::SelectedPersonaRef {
+            persona: graphshell_host::mere_host::FIXTURE_PERSONA_ADDRESS.into(),
             profile: "fixture".into(),
         };
         let mut app = crate::app::GraphshellApp::fixture(store.clone(), persona).unwrap();

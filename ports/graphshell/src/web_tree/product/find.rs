@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 //! Find scopes the canvas using the saved graph owner's relation vocabulary.
+use graphshell::product::ProductHost;
 use super::*;
 use cambium::{button, el, lens, select, text_field_typed};
 use graphshell::product::RelationFamilyFilter;

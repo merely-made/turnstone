@@ -9,6 +9,7 @@
 //! pictograph (Graphshell stack lift plan, P2 and L5); these tests drive
 //! `GraphshellApp`, so they stay with the host.
 
+use crate::product::ProductHost;
 use mere::canvas::physics_controls::*;
 use mere::canvas::{Canvas, PhysicsChoice, PhysicsKindSource, PhysicsLaw};
 use mere::kernel::graph::NodeKey;
@@ -18,8 +19,8 @@ use mere::kernel::graph::NodeKey;
 #[test]
 #[ignore = "diagnostic: prints the fixture topology"]
 fn print_fixture_topology() {
-    let persona = crate::mere_host::SelectedPersonaRef {
-        persona: crate::mere_host::FIXTURE_PERSONA_ADDRESS.to_string(),
+    let persona = graphshell_host::mere_host::SelectedPersonaRef {
+        persona: graphshell_host::mere_host::FIXTURE_PERSONA_ADDRESS.to_string(),
         profile: "profile:graphshell-tree".to_string(),
     };
     let app = crate::app::GraphshellApp::fixture(muniment::MemoryBackend::new(), persona)
@@ -47,7 +48,7 @@ const TREE_CANVAS: (u32, u32) = (982, 627);
 /// Spiral, fitted to the canvas.
 fn p2_fixture_canvas() -> Canvas {
     use crate::app::GraphshellApp;
-    use crate::mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef};
+    use graphshell_host::mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef};
     const SPIRAL: &str = "phyllotaxis.default";
     let persona = SelectedPersonaRef {
         persona: FIXTURE_PERSONA_ADDRESS.to_string(),
@@ -360,7 +361,7 @@ fn orbit_stays_bound_and_orbiting_on_the_p2_fixture_at_no_damping() {
 
 #[test]
 fn authored_mix_survives_the_canonical_v4_scene_facet_and_reopen() {
-        use crate::mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef};
+        use graphshell_host::mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef};
     use pandect::SAVED_SCENE_FACET;
 
     let persona = SelectedPersonaRef {
@@ -404,7 +405,7 @@ fn authored_mix_survives_the_canonical_v4_scene_facet_and_reopen() {
 
 #[test]
 fn authored_grouping_preserves_the_v4_record_and_reopens_exactly() {
-        use crate::mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef};
+        use graphshell_host::mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef};
     use pandect::SAVED_SCENE_FACET;
     use mere::canvas::Role;
     use mere::canvas::dynamics_spec::{Bar, GroupRoles, Observable, Realization, Target};
@@ -675,7 +676,7 @@ fn numeric_spec(
 }
 
 fn codicil_with_scene<B: muniment::Backend + Clone>(
-    host: &crate::mere_host::MereHost<B>,
+    host: &graphshell_host::mere_host::MereHost<B>,
     member: uuid::Uuid,
     scene: &pandect::SavedSceneV3,
 ) -> Vec<u8> {
@@ -695,7 +696,7 @@ fn codicil_with_scene<B: muniment::Backend + Clone>(
 #[test]
 fn v4_codicil_refuses_f64_values_that_do_not_survive_canvas_binding_atomically() {
     use crate::local_scene::open_codicil;
-    use crate::mere_host::{FIXTURE_PERSONA_ADDRESS, FIXTURE_WEB_ADDRESS, SelectedPersonaRef};
+    use graphshell_host::mere_host::{FIXTURE_PERSONA_ADDRESS, FIXTURE_WEB_ADDRESS, SelectedPersonaRef};
     use mere::canvas::saved_scene;
     use pandect::SAVED_SCENE_FACET;
 
@@ -769,7 +770,7 @@ fn v4_codicil_refuses_f64_values_that_do_not_survive_canvas_binding_atomically()
 
 #[test]
 fn v4_scene_save_reopen_preserves_zero_subnormal_and_exact_decimal_f64_values() {
-        use crate::mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef};
+        use graphshell_host::mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef};
     use mere::canvas::saved_scene;
     use pandect::SAVED_SCENE_FACET;
 
@@ -827,7 +828,7 @@ fn v4_scene_save_reopen_preserves_zero_subnormal_and_exact_decimal_f64_values() 
 
 #[test]
 fn role_target_edits_preserve_the_v4_mix_and_nonempty_group_roles() {
-        use crate::mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef};
+        use graphshell_host::mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef};
     use pandect::SAVED_SCENE_FACET;
     use mere::canvas::Role;
     use mere::canvas::dynamics_spec::GroupRoles;
@@ -1053,7 +1054,7 @@ fn role_target_edits_preserve_the_v4_mix_and_nonempty_group_roles() {
 
 #[test]
 fn authored_two_stage_schedule_survives_v4_reopen_capture_progress_and_refusal() {
-        use crate::mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef};
+        use graphshell_host::mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef};
     use pandect::SAVED_SCENE_FACET;
     use mere::canvas::dynamics_spec::{GroupRoles, Node, Target};
     use mere::canvas::physics_controls::{

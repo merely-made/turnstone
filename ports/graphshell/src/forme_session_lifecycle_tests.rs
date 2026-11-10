@@ -3,6 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
+use crate::product::ProductHost;
 use super::*;
 use crate::forme_workspace::{
     GraphshellFormeSession as FormeSession, GraphshellPreparedSave as PreparedSave,
@@ -43,8 +44,10 @@ async fn load<B: Backend>(
 }
 use crate::{
     app::GraphshellApp,
-    mere_host::{FIXTURE_PERSONA_ADDRESS, FIXTURE_WEB_ADDRESS, GRAPHSHELL, SelectedPersonaRef},
     product::{ExportRequest, TransferScope},
+};
+use graphshell_host::mere_host::{
+    FIXTURE_PERSONA_ADDRESS, FIXTURE_WEB_ADDRESS, GRAPHSHELL, SelectedPersonaRef,
 };
 use mere::canvas::Canvas;
 use muniment::MemoryBackend;
@@ -967,17 +970,17 @@ fn owner_lifecycle_reentered_actual_a_waits_for_retired_a_write_before_loading_o
         let b_loaded = load(&backend, b, app.host.graph()).await.unwrap();
         assert_eq!(b_loaded.committed().document.graph_id, b);
         app.host.persist(2).await.unwrap();
-        let host_a = crate::mere_host::MereHost::open_session(
+        let host_a = graphshell_host::mere_host::MereHost::open_session(
             backend.clone(),
             a_id,
             SelectedPersonaRef {
                 persona: FIXTURE_PERSONA_ADDRESS.into(),
                 profile: "profile:forme-lifecycle".into(),
             },
-            crate::mere_host::fixture_handlers(),
+            graphshell_host::mere_host::fixture_handlers(),
             pandect::access::AccessContext {
                 persona: FIXTURE_PERSONA_ADDRESS.into(),
-                device: crate::mere_host::FIXTURE_DEVICE_TWO_ADDRESS.into(),
+                device: graphshell_host::mere_host::FIXTURE_DEVICE_TWO_ADDRESS.into(),
                 at_ms: 30,
             },
         )
@@ -1176,7 +1179,7 @@ fn owner_lifecycle_actual_button_preview_projects_missing_cell_and_checks_owner(
     let target = app
         .host
         .graph()
-        .get_node_by_url(crate::mere_host::FIXTURE_GRANT_ADDRESS)
+        .get_node_by_url(graphshell_host::mere_host::FIXTURE_GRANT_ADDRESS)
         .unwrap()
         .1
         .id;
@@ -1881,7 +1884,7 @@ fn owner_lifecycle_same_topology_refresh_refuses_relation_changes_and_key_remaps
     let target = app
         .host
         .graph()
-        .get_node_by_url(crate::mere_host::FIXTURE_GRANT_ADDRESS)
+        .get_node_by_url(graphshell_host::mere_host::FIXTURE_GRANT_ADDRESS)
         .unwrap()
         .1
         .id;

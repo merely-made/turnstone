@@ -4,6 +4,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 //! Query definitions are shared Resources, written through the current owner journal.
+use crate::product::ProductHost;
 use crate::app::GraphshellApp;
 use mere::kernel::graph::GraphStratum;
 use mere_view::query as model;
@@ -95,7 +96,7 @@ pub fn freeze<B: Backend>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef};
+    use graphshell_host::mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef};
     use muniment::MemoryBackend;
 
     #[test]

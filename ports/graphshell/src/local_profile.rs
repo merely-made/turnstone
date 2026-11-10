@@ -15,7 +15,7 @@ use serde::Deserialize;
 use uuid::Uuid;
 
 use pandect::access::AccessContext;
-use crate::mere_host::SelectedPersonaRef;
+use graphshell_host::mere_host::SelectedPersonaRef;
 
 pub const LOCAL_PROFILE_SCHEMA: &str = "graphshell.local-profile/v1";
 /// The installed profile's one IndexedDB database; fixture routes keep theirs.

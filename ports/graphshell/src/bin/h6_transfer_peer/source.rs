@@ -6,13 +6,14 @@
 
 //! H6 source: prepare one transfer and keep it alive across three admissions.
 
+use graphshell::product::ProductHost;
 use personae::delegation::Issue;
 use std::path::Path;
 use std::sync::RwLock;
 
 use eidetic::PrivacyClass;
 use pandect::access::AccessContext;
-use graphshell::mere_host::{MereHost, SelectedPersonaRef, fixture_handlers};
+use graphshell_host::mere_host::{MereHost, SelectedPersonaRef, fixture_handlers};
 use graphshell::product::{EditableRelation, ExportRequest, LocalFileMetadata, TransferScope};
 use graphshell::transfer::{
     AccessTransferPolicy, TransferBlobInput, TransferEndpointV1, TransferOperation,

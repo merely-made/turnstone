@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 //! The projection editor and its two views share one typed draft and occurrence selection.
+use graphshell::product::ProductHost;
 use super::*;
 use cambium::{
     TabBar, TabBarNames, TabItem, button, disclosure_trigger, el, lens, tab_bar_view,

@@ -283,7 +283,7 @@ async fn open_inner(root: &Element) -> Result<Option<SavedProduct>, String> {
         || {
             (
                 FIXTURE_PERSONA_ADDRESS.to_string(),
-                graphshell::mere_host::FIXTURE_DEVICE_TWO_ADDRESS.to_string(),
+                graphshell_host::mere_host::FIXTURE_DEVICE_TWO_ADDRESS.to_string(),
             )
         },
         |profile| (profile.scope(), profile.device()),
@@ -747,12 +747,12 @@ impl SavedProduct {
         }
         let hidden = app
             .host
-            .view(graphshell::mere_host::GRAPHSHELL, "canvas")
+            .view(graphshell_host::mere_host::GRAPHSHELL, "canvas")
             .map(|view| view.hidden_links.clone())
             .unwrap_or_else(std::collections::BTreeSet::new);
         let hidden_assertions = app
             .host
-            .view(graphshell::mere_host::GRAPHSHELL, "canvas")
+            .view(graphshell_host::mere_host::GRAPHSHELL, "canvas")
             .map(|view| view.hidden_assertions.clone())
             .unwrap_or_else(std::collections::BTreeSet::new);
         let count = hidden.len();
@@ -892,7 +892,7 @@ impl SavedProduct {
         &mut self,
         owner: Uuid,
         desired: std::collections::BTreeSet<String>,
-        intent: graphshell::mere_host::SessionViewIntent,
+        intent: graphshell_host::mere_host::SessionViewIntent,
     ) -> Result<(), String> {
         let Some(mut app) = self.app.take() else {
             return Err("The local graph is unavailable".into());
@@ -910,7 +910,7 @@ impl SavedProduct {
         self.spawn_storage_task(async move {
             let result = app
                 .host
-                .set_view(graphshell::mere_host::GRAPHSHELL, "canvas", intent)
+                .set_view(graphshell_host::mere_host::GRAPHSHELL, "canvas", intent)
                 .await
                 .map_err(|error| error.to_string());
             *completed.borrow_mut() = Some((app, owner, desired, result));
@@ -927,7 +927,7 @@ impl SavedProduct {
     fn link_visibility_intent_for_canvas(
         &self,
         canvas: &Canvas,
-    ) -> Result<(Uuid, graphshell::mere_host::SessionViewIntent), String> {
+    ) -> Result<(Uuid, graphshell_host::mere_host::SessionViewIntent), String> {
         let app = self.app.as_ref().ok_or("The local graph is unavailable")?;
         let owner = app.host.graph_session().id().0;
         if self.session.parse().ok() != Some(owner) {
@@ -938,7 +938,7 @@ impl SavedProduct {
         }
         let intent = app
             .host
-            .view(graphshell::mere_host::GRAPHSHELL, "canvas")
+            .view(graphshell_host::mere_host::GRAPHSHELL, "canvas")
             .unwrap_or_default();
         let canvas_hidden: std::collections::BTreeSet<_> =
             canvas.hidden_link_keys().into_iter().collect();
@@ -963,7 +963,7 @@ impl SavedProduct {
         owner: Uuid,
         desired: std::collections::BTreeSet<scenograph::link::LinkKey>,
         clear_selected_links: bool,
-        intent: graphshell::mere_host::SessionViewIntent,
+        intent: graphshell_host::mere_host::SessionViewIntent,
     ) -> Result<(), String> {
         let Some(mut app) = self.app.take() else {
             return Err("The local graph is unavailable".into());
@@ -981,7 +981,7 @@ impl SavedProduct {
         self.spawn_storage_task(async move {
             let result = app
                 .host
-                .set_view(graphshell::mere_host::GRAPHSHELL, "canvas", intent)
+                .set_view(graphshell_host::mere_host::GRAPHSHELL, "canvas", intent)
                 .await
                 .map_err(|error| error.to_string());
             *completed.borrow_mut() = Some((app, owner, desired, clear_selected_links, result));
@@ -1396,7 +1396,7 @@ impl SavedProduct {
                 owner == requested_owner && self.session.parse().ok() == Some(owner);
             let persisted = app
                 .host
-                .view(graphshell::mere_host::GRAPHSHELL, "canvas")
+                .view(graphshell_host::mere_host::GRAPHSHELL, "canvas")
                 .map(|view| view.hidden_links.clone())
                 .unwrap_or_default();
             let confirmed = result.is_ok() && owner_matches && persisted == desired;
@@ -1448,7 +1448,7 @@ impl SavedProduct {
                 owner == requested_owner && self.session.parse().ok() == Some(owner);
             let persisted = app
                 .host
-                .view(graphshell::mere_host::GRAPHSHELL, "canvas")
+                .view(graphshell_host::mere_host::GRAPHSHELL, "canvas")
                 .map(|view| view.hidden_assertions.clone())
                 .unwrap_or_default();
             let confirmed = result.is_ok() && owner_matches && persisted == desired;

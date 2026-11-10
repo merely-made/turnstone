@@ -6,6 +6,7 @@
 
 //! Graphshell's reference-host composition over local and remote projections.
 
+use crate::product::ProductHost;
 use chirograph::{
     CacheRetention, CapabilityProfile, ContentHash, IntentInvocation, IntentResult,
     PresentationCapability, ProjectionSession, ProjectionSnapshot, ResourceRequest,
@@ -19,7 +20,7 @@ use sceno::InstanceId;
 
 use pandect::access::AccessContext;
 use crate::local_profile::LocalProfile;
-use crate::mere_host::{
+use graphshell_host::mere_host::{
     FIXTURE_DEVICE_TWO_ADDRESS, FIXTURE_PERSONA_ADDRESS, HOST_SLOT, MereHost, MereHostError,
     SelectedPersonaRef, fixture_handlers,
 };
@@ -346,7 +347,7 @@ mod tests {
     use serde_json::json;
 
     use super::*;
-    use crate::mere_host::{
+    use graphshell_host::mere_host::{
         FIXTURE_FILE_ADDRESS, FIXTURE_GRANT_ADDRESS, FIXTURE_KEY_ADDRESS, FIXTURE_NON_WEB_ADDRESS,
         FIXTURE_PERSONA_ADDRESS, FIXTURE_RECEIPT_ADDRESS, FIXTURE_REMOTE_ADDRESS,
         FIXTURE_SCENE_ADDRESS, FIXTURE_WEB_ADDRESS, UNKNOWN_FIXTURE_FACET, fixture_handlers,

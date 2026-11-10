@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 //! Saved scenes and transfers use the same MereHost facets and codicil operations.
+use graphshell::product::ProductHost;
 use super::*;
 use cambium::{button, checkbox, el, lens, select, textarea_typed};
 use graphshell::product::{ExportRequest, TransferScope};

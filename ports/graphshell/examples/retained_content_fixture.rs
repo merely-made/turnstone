@@ -8,8 +8,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if std::env::args().nth(1).as_deref() == Some("catalog") {
         let mut app = graphshell::app::GraphshellApp::fixture(
             muniment::MemoryBackend::default(),
-            graphshell::mere_host::SelectedPersonaRef {
-                persona: graphshell::mere_host::FIXTURE_PERSONA_ADDRESS.into(),
+            graphshell_host::mere_host::SelectedPersonaRef {
+                persona: graphshell_host::mere_host::FIXTURE_PERSONA_ADDRESS.into(),
                 profile: "fixture".into(),
             },
         )?;

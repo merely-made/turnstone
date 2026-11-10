@@ -316,7 +316,7 @@ fn field_and_exact_coupling_roundtrip_with_source_snapshot() {
 #[test]
 fn dedicated_fixture_reopens_and_normal_reference_fixture_stays_separate() {
     use crate::app::GraphshellApp;
-    use crate::mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef};
+    use graphshell_host::mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef};
     use muniment::MemoryBackend;
     let persona = || SelectedPersonaRef {
         persona: FIXTURE_PERSONA_ADDRESS.into(),

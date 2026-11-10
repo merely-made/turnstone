@@ -6,6 +6,7 @@
 
 //! Codicil open and graph reconciliation around the canvas's saved scene
 //! (`Canvas::capture_scene` and `Canvas::restore_scene`, shared with Turnstone).
+use crate::product::ProductHost;
 use mere::canvas::Canvas;
 use mere::kernel::graph::Graph;
 use pandect::SavedSceneV3;
@@ -37,7 +38,7 @@ pub(crate) fn install_accepted_codicil(
 }
 /// The retained Scene Open operation, shared with native lifecycle tests.
 pub fn open_codicil<B: muniment::Backend + Clone>(
-    host: &mut crate::mere_host::MereHost<B>,
+    host: &mut graphshell_host::mere_host::MereHost<B>,
     canvas: &mut Canvas,
     bytes: &[u8],
     viewport: (u32, u32),
@@ -65,7 +66,7 @@ pub fn adopt_host_graph<B: muniment::Backend + Clone>(
     canvas: &mut Canvas,
     previous_owner: Option<uuid::Uuid>,
     actual_owner: uuid::Uuid,
-    host: &crate::mere_host::MereHost<B>,
+    host: &graphshell_host::mere_host::MereHost<B>,
 ) {
     canvas.set_withdraw_policy(Some(crate::promoted_links::withdraw_policy(
         host.selected_persona(),

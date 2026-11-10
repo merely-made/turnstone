@@ -189,7 +189,7 @@ fn leaf_rect(ctx: &AppCtx<'_, TreePage, Logic, Child>) -> Option<(f32, f32, f32,
 /// Source-backed observations for the isolated P4 fixture. This deliberately
 /// uses the same reader as the opened-link inspector and Canvas adapter.
 fn link_rest_fields(canvas: &Canvas, snapshot: ProbeSnapshot) -> ProbeSnapshot {
-    use graphshell::mere_host::{
+    use graphshell_host::mere_host::{
         LINK_REST_A1_ADDRESS, LINK_REST_A2_ADDRESS, LINK_REST_B1_ADDRESS, LINK_REST_B2_ADDRESS,
     };
     use scenograph::link::{LinkPairReading, LinkSource};
@@ -1899,7 +1899,7 @@ impl Product for TreeLane {
                 link_attachment::apply(&self.shared, profile)
             },
             "click-link-rest" => {
-                use graphshell::mere_host::{
+                use graphshell_host::mere_host::{
                     LINK_REST_A1_ADDRESS, LINK_REST_A2_ADDRESS, LINK_REST_B1_ADDRESS,
                     LINK_REST_B2_ADDRESS,
                 };

@@ -16,7 +16,7 @@ use chirograph::{
 };
 use eidetic::PrivacyClass;
 use pandect::access::AccessContext;
-use graphshell::mere_host::{MereHost, SelectedPersonaRef, fixture_handlers};
+use graphshell_host::mere_host::{MereHost, SelectedPersonaRef, fixture_handlers};
 use graphshell::product::ProductCodicilV3;
 use graphshell::transfer::{
     ApplyTransferContext, TransferAuthorization, TransferManifestV1, TransferOperation,

@@ -6,6 +6,7 @@
 
 //! Real authenticated cipher and real directory/GraphSession writes. Process
 //! custody and headed/native input are independent receiving gates.
+use crate::mere_host_alembic::WorkshopHost;
 use super::*;
 use chacha20poly1305::{
     ChaCha20Poly1305, KeyInit, Nonce,

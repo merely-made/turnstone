@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 use super::*;
-use crate::mere_host::{FIXTURE_PERSONA_ADDRESS, FIXTURE_WEB_ADDRESS, SelectedPersonaRef};
+use graphshell_host::mere_host::{FIXTURE_PERSONA_ADDRESS, FIXTURE_WEB_ADDRESS, SelectedPersonaRef};
 use crate::product::LOCAL_FILE_FACET;
 use mere::canvas::{CameraView, Face, PhysicsChoice, PhysicsLaw, Role};
 use muniment::{Backend, MemoryBackend, StoreError, TransactFn, WriteOp};

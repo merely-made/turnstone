@@ -10,7 +10,7 @@ use cambium::{
     Command, CommandChoices, CommandSet, EffectClass, MenuSession, button, lens, on_key,
     request_focus, text_field_typed,
 };
-use graphshell::mere_host::{GRAPHSHELL, SessionViewIntent};
+use graphshell_host::mere_host::{GRAPHSHELL, SessionViewIntent};
 
 pub(super) struct Commands {
     set: CommandSet,

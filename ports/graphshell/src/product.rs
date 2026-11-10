@@ -35,7 +35,7 @@ use uuid::Uuid;
 
 use pandect::access::ACCESS_HISTORY_FACET;
 use crate::local_locations;
-use crate::mere_host::{MereHost, MereHostError};
+use graphshell_host::mere_host::{MereHost, MereHostError};
 use scenomise::projection::ProjectionSnapshot;
 
 /// What an undo kept because another author changed it since, in words for
@@ -344,8 +344,99 @@ pub(crate) fn add_address(graph: &mut Graph, id: Uuid, address: &str, title: &st
     key
 }
 
-impl<B: Backend> MereHost<B> {
-    pub fn create_address(&mut self, address: &str, title: &str) -> Result<Uuid, ProductError> {
+/// The reference app's product edits over [`MereHost`]'s public mutation
+/// interface (engine split D93); `product` stays the app's (D70).
+pub trait ProductHost {
+    /// The host's store; only [`replace_with_product_codicil`](Self::replace_with_product_codicil)
+    /// needs it cloneable.
+    type Store;
+
+    fn create_address(&mut self, address: &str, title: &str) -> Result<Uuid, ProductError>;
+
+    /// Add `address` as an object `origin` links to, in one change: a kept
+    /// suggestion from that page's links. An address already held only gains
+    /// the link.
+    fn create_linked_address(
+        &mut self,
+        origin: Uuid,
+        address: &str,
+        title: &str,
+    ) -> Result<Uuid, ProductError>;
+
+    fn create_file_metadata(
+        &mut self,
+        metadata: LocalFileMetadata,
+    ) -> Result<Uuid, ProductError>;
+
+    fn edit_node(
+        &mut self,
+        id: Uuid,
+        title: &str,
+        tags: impl IntoIterator<Item = String>,
+    ) -> Result<(), ProductError>;
+
+    fn set_product_facet(
+        &mut self,
+        id: Uuid,
+        facet: &str,
+        json_value: &str,
+    ) -> Result<(), ProductError>;
+
+    fn assert_product_relation(
+        &mut self,
+        from: Uuid,
+        to: Uuid,
+        relation: EditableRelation,
+    ) -> Result<(), ProductError>;
+
+    fn matching_members(&self, query: &str, family: RelationFamilyFilter) -> Vec<Uuid>;
+
+    /// Save `scene` at `address` under [`SAVED_SCENE_FACET`] (F142: every
+    /// save writes version 4).
+    fn save_product_scene(
+        &mut self,
+        address: &str,
+        scene: &SavedSceneV3,
+    ) -> Result<Uuid, ProductError>;
+
+    /// Save a projection definition, with its selected occurrence, into the
+    /// session as one change through [`PROJECTION_EDITOR_VIA`]: the node at
+    /// its [`projection_address`] is made on the first save, and its facet
+    /// replaced on each one after.
+    fn save_projection(&mut self, snapshot: &ProjectionSnapshot) -> Result<Uuid, ProductError>;
+
+    /// The projection saved for `definition_id`, if the session holds one.
+    fn saved_projection(
+        &self,
+        definition_id: &str,
+    ) -> Result<Option<ProjectionSnapshot>, ProductError>;
+
+    /// The scene saved at `address`: a version-4 scene, else a version-3 or
+    /// version-2 one, converted (F142). A scene whose spec is refused, or
+    /// whose conversion meets an unknown id, does not open (F97, F143, F154).
+    fn product_scene(&self, address: &str) -> Result<SavedSceneV3, ProductError>;
+
+    fn export_product_codicil(&self, request: ExportRequest) -> Result<Vec<u8>, ProductError>;
+
+    /// Import a codicil into the graph as one journaled change: its new nodes
+    /// arrive whole, its relations join the graph's, and its facets overwrite
+    /// (reservoir plan §7 item 27).
+    fn import_product_codicil(&mut self, bytes: &[u8]) -> Result<ImportReceipt, ProductError>;
+
+    /// Open a codicil as a new session begun from its graph, leaving the
+    /// current session in the mere (reservoir plan §7 item 27).
+    fn replace_with_product_codicil(
+        &mut self,
+        bytes: &[u8],
+    ) -> Result<(ImportReceipt, Option<SavedSceneV3>), ProductError>
+    where
+        Self::Store: Clone;
+}
+
+impl<B: Backend> ProductHost for MereHost<B> {
+    type Store = B;
+
+    fn create_address(&mut self, address: &str, title: &str) -> Result<Uuid, ProductError> {
         if let Some((_, node)) = self.graph().get_node_by_url(address) {
             return Ok(node.id);
         }
@@ -354,10 +445,7 @@ impl<B: Backend> MereHost<B> {
         Ok(id)
     }
 
-    /// Add `address` as an object `origin` links to, in one change: a kept
-    /// suggestion from that page's links. An address already held only gains
-    /// the link.
-    pub fn create_linked_address(
+    fn create_linked_address(
         &mut self,
         origin: Uuid,
         address: &str,
@@ -379,7 +467,7 @@ impl<B: Backend> MereHost<B> {
         Ok(id)
     }
 
-    pub fn create_file_metadata(
+    fn create_file_metadata(
         &mut self,
         metadata: LocalFileMetadata,
     ) -> Result<Uuid, ProductError> {
@@ -422,7 +510,7 @@ impl<B: Backend> MereHost<B> {
         Ok(id)
     }
 
-    pub fn edit_node(
+    fn edit_node(
         &mut self,
         id: Uuid,
         title: &str,
@@ -473,7 +561,7 @@ impl<B: Backend> MereHost<B> {
         Ok(())
     }
 
-    pub fn set_product_facet(
+    fn set_product_facet(
         &mut self,
         id: Uuid,
         facet: &str,
@@ -489,7 +577,7 @@ impl<B: Backend> MereHost<B> {
         Ok(())
     }
 
-    pub fn assert_product_relation(
+    fn assert_product_relation(
         &mut self,
         from: Uuid,
         to: Uuid,
@@ -509,7 +597,7 @@ impl<B: Backend> MereHost<B> {
         Ok(())
     }
 
-    pub fn matching_members(&self, query: &str, family: RelationFamilyFilter) -> Vec<Uuid> {
+    fn matching_members(&self, query: &str, family: RelationFamilyFilter) -> Vec<Uuid> {
         let query = query.trim().to_lowercase();
         let related: HashSet<_> = self
             .graph()
@@ -544,9 +632,7 @@ impl<B: Backend> MereHost<B> {
             .collect()
     }
 
-    /// Save `scene` at `address` under [`SAVED_SCENE_FACET`] (F142: every
-    /// save writes version 4).
-    pub fn save_product_scene(
+    fn save_product_scene(
         &mut self,
         address: &str,
         scene: &SavedSceneV3,
@@ -560,11 +646,7 @@ impl<B: Backend> MereHost<B> {
         Ok(id)
     }
 
-    /// Save a projection definition, with its selected occurrence, into the
-    /// session as one change through [`PROJECTION_EDITOR_VIA`]: the node at
-    /// its [`projection_address`] is made on the first save, and its facet
-    /// replaced on each one after.
-    pub fn save_projection(&mut self, snapshot: &ProjectionSnapshot) -> Result<Uuid, ProductError> {
+    fn save_projection(&mut self, snapshot: &ProjectionSnapshot) -> Result<Uuid, ProductError> {
         let address = projection_address(&snapshot.definition.id);
         let title = snapshot.definition.label.trim().to_string();
         let value = serde_json::to_value(snapshot)
@@ -599,8 +681,7 @@ impl<B: Backend> MereHost<B> {
         Ok(id)
     }
 
-    /// The projection saved for `definition_id`, if the session holds one.
-    pub fn saved_projection(
+    fn saved_projection(
         &self,
         definition_id: &str,
     ) -> Result<Option<ProjectionSnapshot>, ProductError> {
@@ -615,10 +696,7 @@ impl<B: Backend> MereHost<B> {
         .transpose()
     }
 
-    /// The scene saved at `address`: a version-4 scene, else a version-3 or
-    /// version-2 one, converted (F142). A scene whose spec is refused, or
-    /// whose conversion meets an unknown id, does not open (F97, F143, F154).
-    pub fn product_scene(&self, address: &str) -> Result<SavedSceneV3, ProductError> {
+    fn product_scene(&self, address: &str) -> Result<SavedSceneV3, ProductError> {
         let stored = StoredScene::find(|facet| self.facet_value(address, facet))
             .ok_or_else(|| ProductError::UnknownAddress(address.to_string()))?;
         saved_scene::read_scene(stored).map_err(|error| match error {
@@ -627,7 +705,7 @@ impl<B: Backend> MereHost<B> {
         })
     }
 
-    pub fn export_product_codicil(&self, request: ExportRequest) -> Result<Vec<u8>, ProductError> {
+    fn export_product_codicil(&self, request: ExportRequest) -> Result<Vec<u8>, ProductError> {
         let members = transfer_members(self.graph(), &request)?;
         if members.is_empty() {
             return Err(ProductError::EmptySelection);
@@ -658,10 +736,7 @@ impl<B: Backend> MereHost<B> {
         .map_err(|error| ProductError::InvalidCodicil(error.to_string()))
     }
 
-    /// Import a codicil into the graph as one journaled change: its new nodes
-    /// arrive whole, its relations join the graph's, and its facets overwrite
-    /// (reservoir plan §7 item 27).
-    pub fn import_product_codicil(&mut self, bytes: &[u8]) -> Result<ImportReceipt, ProductError> {
+    fn import_product_codicil(&mut self, bytes: &[u8]) -> Result<ImportReceipt, ProductError> {
         let input = decode_profiled_codicil(bytes)?;
         let codicil = input.product;
         let mut known: HashSet<String> = self
@@ -684,15 +759,14 @@ impl<B: Backend> MereHost<B> {
         self.apply_edits(edits)?;
         Ok(receipt)
     }
-}
 
-impl<B: Backend + Clone> MereHost<B> {
-    /// Open a codicil as a new session begun from its graph, leaving the
-    /// current session in the mere (reservoir plan §7 item 27).
-    pub fn replace_with_product_codicil(
+    fn replace_with_product_codicil(
         &mut self,
         bytes: &[u8],
-    ) -> Result<(ImportReceipt, Option<SavedSceneV3>), ProductError> {
+    ) -> Result<(ImportReceipt, Option<SavedSceneV3>), ProductError>
+    where
+        B: Clone,
+    {
         let input = decode_profiled_codicil(bytes)?;
         let codicil = input.product;
         if let Some(scene) = &codicil.scene {
@@ -1138,7 +1212,7 @@ mod tests {
             saved_scene::v2_roles(self)
         }
     }
-    use crate::mere_host::{
+    use graphshell_host::mere_host::{
         FIXTURE_DEVICE_TWO_ADDRESS, FIXTURE_GRANT_ADDRESS, FIXTURE_PERSONA_ADDRESS,
         FIXTURE_RECEIPT_ADDRESS, FIXTURE_WEB_ADDRESS, GRAPHSHELL, SelectedPersonaRef,
         fixture_handlers,
@@ -1495,7 +1569,7 @@ mod tests {
 
     #[test]
     fn product_profiles_preserve_held_surface_truth_and_refuse_legacy_before_mutation() {
-        let original = crate::mere_host::placement_test_graph();
+        let original = graphshell_host::mere_host::placement_test_graph();
         let product = ProductCodicilV3 {
             schema: PRODUCT_CODICIL_SCHEMA.into(),
             scope: TransferScope::SelectedSubgraph,
@@ -1693,7 +1767,7 @@ mod tests {
         }
         let mut snapshot = graph.to_snapshot();
         snapshot.edges.clear();
-        let mut traversal = crate::mere_host::placement_test_graph()
+        let mut traversal = graphshell_host::mere_host::placement_test_graph()
             .to_snapshot()
             .edges
             .remove(0);

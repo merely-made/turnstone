@@ -6,45 +6,113 @@
 
 //! Workshop proposals enter the existing Graphshell owner, never another writer.
 
-use super::*;
 use athanor::alembic::workshop::{Acceptance, Owner, Passage, Proposal, Receipt};
 use athanor::workshop_destination as destination;
+use graphshell_host::mere_host::{MereHost, MereHostError};
+use mere::kernel::graph::Author;
+use mere::kernel::graph::apply::GraphDelta;
+use mere::kernel::time::wall_clock_now;
 use servitor::AuthorityProvider;
 
-impl<B: pandect::graph_session::LegacyTransactionBackend + Clone> MereHost<B> {
+/// The alembic workshop's owner operations over [`MereHost`] (engine split
+/// D94): app code over the host's public interface.
+#[allow(async_fn_in_trait)]
+pub trait WorkshopHost {
     /// The workshop creates a recorded graph only when the store has never
     /// held a session. Replace the unpersisted empty placeholder without
     /// retiring it: saving two fresh sessions would make latest-live ambiguous.
-    pub async fn workshop_initialize_recorded(&mut self) -> Result<(), MereHostError> {
-        if self.reopened {
+    async fn workshop_initialize_recorded(&mut self) -> Result<(), MereHostError>;
+
+    fn workshop_owner(&self) -> Owner;
+
+    fn workshop_revision(&self) -> Result<String, athanor::workshop::Error>;
+
+    fn workshop_capture_public(
+        &self,
+        surface: uuid::Uuid,
+        start: u64,
+        end: u64,
+        public: impl FnOnce(uuid::Uuid, uuid::Uuid) -> bool,
+    ) -> Result<Passage, athanor::workshop::Error>;
+
+    async fn workshop_query(
+        &self,
+        acceptance: &Acceptance,
+        proposed: &Proposal,
+    ) -> Result<Option<Receipt>, athanor::workshop::Error>;
+
+    /// Recover both the receipt and the canonical graph after a lost storage
+    /// reply. The caller retains its sole-writer lease across this operation.
+    async fn workshop_reconcile(
+        &mut self,
+        acceptance: &Acceptance,
+        proposed: &Proposal,
+    ) -> Result<Option<Receipt>, athanor::workshop::Error>;
+
+    async fn workshop_commit(
+        &mut self,
+        acceptance: &Acceptance,
+        proposed: &Proposal,
+        human: [u8; 32],
+        authority: &impl AuthorityProvider,
+        now_ms: u64,
+        custody_open: bool,
+    ) -> Result<Receipt, athanor::workshop::Error>;
+
+    /// The independent GraphSession ledger stores a content commitment, never
+    /// the private proposal. The encrypted request facet and note share its
+    /// journal/publication transaction. This owner holds the writer lease.
+    async fn workshop_reconcile_sealed(
+        &mut self,
+        acceptance: &Acceptance,
+        proposed: &Proposal,
+        protection: &dyn athanor::workshop_seal::Protection,
+    ) -> Result<Option<Receipt>, athanor::workshop::Error>;
+
+    async fn workshop_commit_sealed(
+        &mut self,
+        acceptance: &Acceptance,
+        proposed: &Proposal,
+        human: [u8; 32],
+        authority: &impl AuthorityProvider,
+        now_ms: u64,
+        protection: std::sync::Arc<dyn athanor::workshop_seal::Protection>,
+    ) -> Result<Receipt, athanor::workshop::Error>;
+
+    async fn workshop_seed(&mut self, deltas: Vec<GraphDelta>) -> Result<(), MereHostError>;
+}
+
+impl<B: pandect::graph_session::LegacyTransactionBackend + Clone> WorkshopHost for MereHost<B> {
+    async fn workshop_initialize_recorded(&mut self) -> Result<(), MereHostError> {
+        if self.is_reopened() {
             return Ok(());
         }
-        if !self.sessions.list().await?.is_empty()
-            || !self.retired.is_empty()
+        if !self.sessions().list().await?.is_empty()
+            || self.has_retired()
             || self.graph().nodes().next().is_some()
         {
             return Err(MereHostError::OwnershipUnproven);
         }
-        self.graph_session = self.sessions.begin_recorded(self.author(), None);
+        self.begin_recorded_session();
         Ok(())
     }
-    pub fn workshop_owner(&self) -> Owner {
+    fn workshop_owner(&self) -> Owner {
         Owner {
             host: "graphshell".into(),
             workspace: self
-                .graph_session
+                .graph_session()
                 .manifest()
                 .root_graph_id
                 .as_uuid()
                 .to_string(),
-            session: self.graph_session.id().as_uuid().to_string(),
+            session: self.graph_session().id().as_uuid().to_string(),
         }
     }
-    pub fn workshop_revision(&self) -> Result<String, athanor::workshop::Error> {
-        destination::revision(&self.graph_session)
+    fn workshop_revision(&self) -> Result<String, athanor::workshop::Error> {
+        destination::revision(self.graph_session())
     }
 
-    pub fn workshop_capture_public(
+    fn workshop_capture_public(
         &self,
         surface: uuid::Uuid,
         start: u64,
@@ -52,7 +120,7 @@ impl<B: pandect::graph_session::LegacyTransactionBackend + Clone> MereHost<B> {
         public: impl FnOnce(uuid::Uuid, uuid::Uuid) -> bool,
     ) -> Result<Passage, athanor::workshop::Error> {
         destination::capture_public_source(
-            &self.graph_session,
+            self.graph_session(),
             &self.workshop_owner(),
             surface,
             start,
@@ -60,22 +128,20 @@ impl<B: pandect::graph_session::LegacyTransactionBackend + Clone> MereHost<B> {
             public,
         )
     }
-    pub async fn workshop_query(
+    async fn workshop_query(
         &self,
         acceptance: &Acceptance,
         proposed: &Proposal,
     ) -> Result<Option<Receipt>, athanor::workshop::Error> {
         destination::query(
-            &self.graph_session,
+            self.graph_session(),
             &self.workshop_owner(),
             acceptance,
             proposed,
         )
         .await
     }
-    /// Recover both the receipt and the canonical graph after a lost storage
-    /// reply. The caller retains its sole-writer lease across this operation.
-    pub async fn workshop_reconcile(
+    async fn workshop_reconcile(
         &mut self,
         acceptance: &Acceptance,
         proposed: &Proposal,
@@ -84,7 +150,7 @@ impl<B: pandect::graph_session::LegacyTransactionBackend + Clone> MereHost<B> {
             return Ok(None);
         };
         let Some((_, current_generation)) = self
-            .graph_session
+            .graph_session_mut()
             .reconcile_operation(acceptance.operation)
             .await
             .map_err(|error| athanor::workshop::Error::Store(error.to_string()))?
@@ -95,12 +161,11 @@ impl<B: pandect::graph_session::LegacyTransactionBackend + Clone> MereHost<B> {
         if recovered.as_ref() != Some(&expected) {
             return Err(athanor::workshop::Error::Conflict);
         }
-        self.resident_generation = Some(current_generation);
-        self.projection_revision = self.projection_revision.wrapping_add(1);
+        self.install_published_generation(current_generation);
         Ok(recovered)
     }
 
-    pub async fn workshop_commit(
+    async fn workshop_commit(
         &mut self,
         acceptance: &Acceptance,
         proposed: &Proposal,
@@ -109,7 +174,7 @@ impl<B: pandect::graph_session::LegacyTransactionBackend + Clone> MereHost<B> {
         now_ms: u64,
         custody_open: bool,
     ) -> Result<Receipt, athanor::workshop::Error> {
-        if !self.resident_publication || human != acceptance.human {
+        if !self.resident_publication() || human != acceptance.human {
             return Err(athanor::workshop::Error::Unauthorized);
         }
         // A prior target write may have committed even when its acknowledgement
@@ -123,12 +188,12 @@ impl<B: pandect::graph_session::LegacyTransactionBackend + Clone> MereHost<B> {
                 .ok_or(athanor::workshop::Error::Conflict);
         }
         let before = self
-            .graph_session
+            .graph_session_mut()
             .operation_revision()
             .map_err(|error| athanor::workshop::Error::Store(error.to_string()))?;
         let owner = self.workshop_owner();
         let receipt = destination::commit(
-            &mut self.graph_session,
+            self.graph_session_mut(),
             &owner,
             acceptance,
             proposed,
@@ -139,21 +204,17 @@ impl<B: pandect::graph_session::LegacyTransactionBackend + Clone> MereHost<B> {
         )
         .await?;
         if self
-            .graph_session
+            .graph_session_mut()
             .operation_revision()
             .map_err(|error| athanor::workshop::Error::Store(error.to_string()))?
             != before
         {
-            self.resident_generation = Some(receipt.storage_witness.clone());
-            self.projection_revision = self.projection_revision.wrapping_add(1);
+            self.install_published_generation(receipt.storage_witness.clone());
         }
         Ok(receipt)
     }
 
-    /// The independent GraphSession ledger stores a content commitment, never
-    /// the private proposal. The encrypted request facet and note share its
-    /// journal/publication transaction. This owner holds the writer lease.
-    pub async fn workshop_reconcile_sealed(
+    async fn workshop_reconcile_sealed(
         &mut self,
         acceptance: &Acceptance,
         proposed: &Proposal,
@@ -162,7 +223,7 @@ impl<B: pandect::graph_session::LegacyTransactionBackend + Clone> MereHost<B> {
         use athanor::workshop::Error;
         let epoch = protection.epoch().ok_or(Error::Unauthorized)?;
         let Some(record) = self
-            .graph_session
+            .graph_session_mut()
             .operation_receipt(acceptance.operation)
             .await
             .map_err(|e| Error::Store(e.to_string()))?
@@ -176,15 +237,14 @@ impl<B: pandect::graph_session::LegacyTransactionBackend + Clone> MereHost<B> {
         // Reload the authoritative complete graph even when the first save
         // committed but the caller never installed its acknowledgement.
         let Some((_, generation)) = self
-            .graph_session
+            .graph_session_mut()
             .reconcile_operation(acceptance.operation)
             .await
             .map_err(|e| Error::Store(e.to_string()))?
         else {
             return Err(Error::Conflict);
         };
-        self.resident_generation = Some(generation);
-        self.projection_revision = self.projection_revision.wrapping_add(1);
+        self.install_published_generation(generation);
         let owner = self.workshop_owner();
         let receipt = athanor::workshop_sealed_destination::query_graph(
             self.graph(),
@@ -201,7 +261,7 @@ impl<B: pandect::graph_session::LegacyTransactionBackend + Clone> MereHost<B> {
         Ok(Some(receipt))
     }
 
-    pub async fn workshop_commit_sealed(
+    async fn workshop_commit_sealed(
         &mut self,
         acceptance: &Acceptance,
         proposed: &Proposal,
@@ -211,12 +271,12 @@ impl<B: pandect::graph_session::LegacyTransactionBackend + Clone> MereHost<B> {
         protection: std::sync::Arc<dyn athanor::workshop_seal::Protection>,
     ) -> Result<Receipt, athanor::workshop::Error> {
         use athanor::{workshop::Error, workshop_sealed_destination as sealed};
-        if !self.resident_publication || human != acceptance.human {
+        if !self.resident_publication() || human != acceptance.human {
             return Err(Error::Unauthorized);
         }
         let epoch = protection.epoch().ok_or(Error::Unauthorized)?;
         if self
-            .graph_session
+            .graph_session_mut()
             .operation_receipt(acceptance.operation)
             .await
             .map_err(|e| Error::Store(e.to_string()))?
@@ -255,7 +315,7 @@ impl<B: pandect::graph_session::LegacyTransactionBackend + Clone> MereHost<B> {
         let verify_proposed = proposed.clone();
         let verify_protection = protection.clone();
         let record = self
-            .graph_session
+            .graph_session_mut()
             .transact_operation_published_checked(
                 acceptance.operation,
                 commitment,
@@ -283,25 +343,23 @@ impl<B: pandect::graph_session::LegacyTransactionBackend + Clone> MereHost<B> {
             .map_err(|e| Error::Store(e.to_string()))?;
         // Install the saved generation before checking custody again. A write
         // admitted before lock may be durable and must not be overwritten.
-        self.resident_generation = Some(record.generation);
-        self.projection_revision = self.projection_revision.wrapping_add(1);
+        self.install_published_generation(record.generation);
         if protection.epoch() != Some(epoch) {
             return Err(Error::Unauthorized);
         }
         Ok(receipt)
     }
 
-    pub async fn workshop_seed(&mut self, deltas: Vec<GraphDelta>) -> Result<(), MereHostError> {
-        if !self.resident_publication {
+    async fn workshop_seed(&mut self, deltas: Vec<GraphDelta>) -> Result<(), MereHostError> {
+        if !self.resident_publication() {
             return Err(MereHostError::OwnershipUnproven);
         }
-        let author = author_of(&self.selected_persona, "alembic-public-example");
+        let author = Author::person(self.selected_persona().persona.clone()).via("alembic-public-example");
         let (_, generation) = self
-            .graph_session
+            .graph_session_mut()
             .transact_deltas_published(author, deltas, wall_clock_now())
             .await?;
-        self.resident_generation = Some(generation);
-        self.projection_revision = self.projection_revision.wrapping_add(1);
+        self.install_published_generation(generation);
         Ok(())
     }
 }
@@ -318,6 +376,9 @@ fn sealed_operation_commitment(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use graphshell_host::mere_host::{SelectedPersonaRef, fixture_handlers};
+    use muniment::{Backend, StoreError};
+    use pandect::access::AccessContext;
     use athanor::alembic::workshop::{Destination, Owner, Passage, Review};
     use athanor::workshop::{Workshop, evaluate};
     use muniment::{MemoryBackend, TransactFn, WriteOp};
@@ -446,7 +507,7 @@ mod tests {
                 .await
                 .unwrap();
             let original_count = host.graph().node_count();
-            let before_generation = host.resident_generation.clone();
+            let before_generation = host.resident_generation().map(str::to_owned);
             backend.fail_after_commit.store(true, Ordering::SeqCst);
             assert!(
                 host.workshop_commit(&acceptance, &proposal, [8; 32], &Granted, 21, true)
@@ -458,7 +519,7 @@ mod tests {
                 original_count,
                 "lost acknowledgement leaves the original in-memory writer unchanged"
             );
-            assert_eq!(host.resident_generation, before_generation);
+            assert_eq!(host.resident_generation().map(str::to_owned), before_generation);
             let durable = host
                 .workshop_query(&acceptance, &proposal)
                 .await
@@ -487,7 +548,7 @@ mod tests {
             let surface = destination::result_surface(&acceptance);
             assert!(host.graph().get_node_by_id(surface).is_some());
             assert_eq!(
-                host.resident_generation.as_deref(),
+                host.resident_generation(),
                 Some(recovered.storage_witness.as_str())
             );
             workshop.acknowledge(1, recovered.clone()).await.unwrap();
@@ -505,14 +566,14 @@ mod tests {
             }])
             .await
             .unwrap();
-            let current_generation = host.resident_generation.clone();
+            let current_generation = host.resident_generation().map(str::to_owned);
             let current_nodes = host.graph().node_count();
             let old = host
                 .workshop_commit(&acceptance, &proposal, [8; 32], &Granted, u64::MAX, false)
                 .await
                 .unwrap();
             assert_eq!(old, recovered);
-            assert_eq!(host.resident_generation, current_generation);
+            assert_eq!(host.resident_generation().map(str::to_owned), current_generation);
             assert_eq!(host.graph().node_count(), current_nodes);
         });
     }

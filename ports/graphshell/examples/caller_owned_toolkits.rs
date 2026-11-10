@@ -14,9 +14,9 @@ use cambium_rootstock::{
 use embedding::{egui, iced};
 use graphshell::{
     app::GraphshellApp,
-    mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef},
     retained_content::{ContentHost, ContentProducer, HeldContent},
 };
+use graphshell_host::mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef};
 use iced::backend::primitive::{Pipeline as _, Primitive as _};
 use netrender::SceneOp;
 use std::{path::Path, sync::mpsc};

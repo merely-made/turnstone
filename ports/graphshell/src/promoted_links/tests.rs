@@ -6,7 +6,7 @@
 
 use super::*;
 use crate::app::GraphshellApp;
-use crate::mere_host::{
+use graphshell_host::mere_host::{
     FIXTURE_PERSONA_ADDRESS, LINK_REST_A1_ADDRESS, LINK_REST_B1_ADDRESS, LINK_REST_B2_ADDRESS,
     SelectedPersonaRef,
 };

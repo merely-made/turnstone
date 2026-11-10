@@ -11,8 +11,8 @@ use cambium::EffectClass;
 const SIZE: (u32, u32) = (800, 600);
 
 fn fixture() -> Canvas {
-    let persona = crate::mere_host::SelectedPersonaRef {
-        persona: crate::mere_host::FIXTURE_PERSONA_ADDRESS.into(),
+    let persona = graphshell_host::mere_host::SelectedPersonaRef {
+        persona: graphshell_host::mere_host::FIXTURE_PERSONA_ADDRESS.into(),
         profile: "profile:graphshell-tree".into(),
     };
     let app = crate::app::GraphshellApp::fixture(muniment::MemoryBackend::new(), persona).unwrap();

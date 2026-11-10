@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 //! Typed local detail edits, independent of a browser form or presenter.
+use crate::product::ProductHost;
 use mere::canvas::Canvas;
 use muniment::Backend;
 use uuid::Uuid;

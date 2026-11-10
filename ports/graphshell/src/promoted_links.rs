@@ -6,7 +6,7 @@
 
 //! Promoted link Resources: journaled captures and read-only live comparison.
 use crate::app::GraphshellApp;
-use crate::mere_host::SelectedPersonaRef;
+use graphshell_host::mere_host::SelectedPersonaRef;
 use mere::kernel::graph::{
     Author, FrozenLink, FrozenLinkSource, Graph, GraphStratum, SemanticStatement,
 };
