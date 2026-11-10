@@ -82,14 +82,14 @@ fn adopting_foreign_run_records_clears_the_live_table_without_rewriting_them() {
 fn default_policy_records_two_completed_invocations_without_replaying_them() {
     let (mut app, member) = installed_app("repeat", "mere.open('https://resident.example/repeat')");
     let subject = app.denizens.residents[&member].subject;
-    let participant_author = mere::kernel::graph::Author::script(
+    let participant_author = kernel::graph::Author::script(
         subject.to_hex(),
         blake3::Hash::from(app.denizens.residents[&member].binding.revision.0)
             .to_hex()
             .to_string(),
     )
     .via("turnstone");
-    let prior_author = mere::kernel::graph::Author::rule("before-run", "7").via("other-route");
+    let prior_author = kernel::graph::Author::rule("before-run", "7").via("other-route");
     app.journal.lock().unwrap().set_author(prior_author.clone());
     let before_seq = app.journal.lock().unwrap().high_water();
     app.take_events();

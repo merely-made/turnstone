@@ -50,7 +50,7 @@ impl GraphRuntimePool {
         canvas: &mut Canvas,
         edit: impl FnOnce(&mut PhysicsChoice),
     ) -> Result<(), OverlayRefusal> {
-        let write = mere::canvas::physics_controls::edit_physics(canvas, edit);
+        let write = pictograph::canvas::physics_controls::edit_physics(canvas, edit);
         if let Some(error) = write.error {
             tracing::warn!(%error, "the canvas refused the physics change");
         }

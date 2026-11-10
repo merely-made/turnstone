@@ -14,10 +14,10 @@ use super::*;
 /// The legacy favicon is raw RGBA with no container; encode it once here so
 /// every durable image blob has the same PNG format.
 pub(super) fn externalize_legacy_images(
-    snapshot: &mut mere::kernel::persistence::GraphSnapshot,
+    snapshot: &mut kernel::persistence::GraphSnapshot,
     data_root: &Path,
 ) -> std::io::Result<usize> {
-    use mere::kernel::types::{ImageRef, ImageRole};
+    use kernel::types::{ImageRef, ImageRole};
 
     let mut written = 0usize;
     for node in &mut snapshot.nodes {

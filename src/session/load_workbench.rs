@@ -9,19 +9,19 @@ use super::*;
 pub fn load_workbench(
     data_root: &Path,
     present: &std::collections::HashSet<uuid::Uuid>,
-) -> mere::platen::Workbench {
+) -> platen::Workbench {
     let path = data_root.join(WORKBENCH_FILE);
     let Ok(json) = std::fs::read_to_string(&path) else {
-        return mere::platen::Workbench::new();
+        return platen::Workbench::new();
     };
-    match mere::platen::Workbench::from_persisted_json(&json, present) {
+    match platen::Workbench::from_persisted_json(&json, present) {
         Some(wb) => {
             tracing::info!(path = ?path, tiles = wb.tile_count(), "workbench tiling restored");
             wb
         },
         None => {
             tracing::warn!(path = ?path, "failed to parse the workbench sidecar; starting empty");
-            mere::platen::Workbench::new()
+            platen::Workbench::new()
         },
     }
 }

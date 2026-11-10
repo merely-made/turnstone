@@ -306,7 +306,7 @@ fn a_summarizer_writes_a_note_when_its_neighborhood_changes() {
     assert!(
         wrote.iter().any(|delta| matches!(
             delta,
-            mere::kernel::graph::capture::CapturedDelta::ReplaySetNodeBodyById { .. }
+            kernel::graph::capture::CapturedDelta::ReplaySetNodeBodyById { .. }
         )),
         "and the body write is in the journal under the summarizer"
     );

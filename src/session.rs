@@ -19,7 +19,7 @@ use image::ImageEncoder;
 // The frame-sidecar store is frisket's own since meerkat's deletion (it moved
 // out of pandect with the pane model).
 use crate::panes::store as frisket_store;
-use mere::kernel::graph::Graph;
+use kernel::graph::Graph;
 use pandect::{GraphSessionManifest, ManifestStore, session_graph_store};
 use sceno::Score;
 

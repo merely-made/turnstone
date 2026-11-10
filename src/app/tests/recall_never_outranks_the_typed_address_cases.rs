@@ -71,7 +71,7 @@ fn recall_keeps_a_footing_inside_the_row_budget() {
         text: "node".to_string(),
         ..crate::ui::OmnibarState::default()
     };
-    let mut canvas = mere::canvas::Canvas::new();
+    let mut canvas = pictograph::canvas::Canvas::new();
     for i in 0..6 {
         canvas.visit(&format!("https://node{i}.example/"));
     }

@@ -10,7 +10,7 @@ use super::*;
 pub enum AppEvent {
     /// A physics law applied while refusing overlays, or an overlay request
     /// was refused without changing the force set.
-    PhysicsRefused(mere::canvas::OverlayRefusal),
+    PhysicsRefused(pictograph::canvas::OverlayRefusal),
     AddressOpened(String),
     /// A live navigable committed a new resource in the same graph member.
     ContentNavigated {

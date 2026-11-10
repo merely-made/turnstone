@@ -10,7 +10,7 @@
 
 use std::collections::HashMap;
 
-use mere::canvas::{NodeState, palette};
+use pictograph::canvas::{NodeState, palette};
 use sprigging::ColorF;
 use uuid::Uuid;
 
@@ -146,7 +146,7 @@ fn overmap_gather(app: &App) -> SwatchModel {
 
     // Depth by lineage: the CopiedFrom edge points child -> parent.
     let mut parent_of: HashMap<Uuid, Uuid> = HashMap::new();
-    let mut by_key: HashMap<mere::kernel::graph::NodeKey, Uuid> = HashMap::new();
+    let mut by_key: HashMap<kernel::graph::NodeKey, Uuid> = HashMap::new();
     for (key, node) in graph.nodes() {
         by_key.insert(key, node.id);
     }
@@ -246,7 +246,7 @@ fn overmap_gather(app: &App) -> SwatchModel {
                 .and_then(|node| overmap::session_of_url(node.url()))
         };
         let kind = match (session(rel.from), session(rel.to)) {
-            _ if matches!(rel.kind, mere::kernel::graph::RelationKind::Containment(_)) => None,
+            _ if matches!(rel.kind, kernel::graph::RelationKind::Containment(_)) => None,
             (Some(child), Some(parent)) => lineage
                 .iter()
                 .find(|(c, p, _)| *c == child && *p == parent)

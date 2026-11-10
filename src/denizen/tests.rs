@@ -104,7 +104,7 @@ fn a_legacy_binding_rebuilds_and_asks_for_a_heal() {
         )
         .unwrap();
 
-    let graph = mere::kernel::graph::Graph::new();
+    let graph = kernel::graph::Graph::new();
     let provider = identity::InMemoryProvider::from_seed([5u8; 32]);
     let denizens = rebuild(
         &store,

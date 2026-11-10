@@ -29,7 +29,7 @@ use genet_scripted_dom::{NodeId as DomNodeId, ScriptedDom};
 use layout_dom_api::{
     AttributeView, LayoutDom, LayoutDomMut, LocalName, Namespace, NodeKind, QualName,
 };
-use mere::canvas::Canvas;
+use pictograph::canvas::Canvas;
 use paint_list_api::{DeviceIntSize, PaintCmd, PaintList};
 use paint_list_render::{CompositeLayer, composite_paint_layers};
 use uuid::Uuid;

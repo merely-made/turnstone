@@ -39,7 +39,7 @@ fn replacing_the_live_canvas_cannot_complete_an_earlier_click_on_the_same_docume
     let mut activation = cambium::scope_navigation::NodeActivation::default();
     activation.press(Some((before, a)), (0., 0.), false);
     assert_eq!(activation.release(Some((before, a)), (0., 0.), 10.), None);
-    let canvas = mere::canvas::Canvas::new();
+    let canvas = pictograph::canvas::Canvas::new();
     app.graph_runtimes.replace_active_canvas(canvas);
     let after = app.graph_runtimes.get(graph).unwrap().instance;
     assert_ne!(before, after);
@@ -174,12 +174,12 @@ fn fixture() -> (App, Uuid, Uuid, Uuid) {
         canvas.ingest_graph(|graph| {
             let ak = graph.get_node_by_id(a).unwrap().0;
             let bk = graph.get_node_by_id(b).unwrap().0;
-            mere::kernel::graph::apply::assert_relation(
+            kernel::graph::apply::assert_relation(
                 graph,
                 ak,
                 bk,
-                mere::kernel::graph::EdgeAssertion::Semantic {
-                    sub_kind: mere::kernel::graph::SemanticSubKind::Cites,
+                kernel::graph::EdgeAssertion::Semantic {
+                    sub_kind: kernel::graph::SemanticSubKind::Cites,
                     label: None,
                 },
             )
@@ -257,7 +257,7 @@ fn camera_is_restored_per_scope_and_routes_survive_cold_load() {
     let (mut app, _, _, _) = fixture();
     command(&mut app, ScopeDirection::Up);
     let pane = app.active_pane.unwrap();
-    let camera = mere::canvas::CameraView {
+    let camera = pictograph::canvas::CameraView {
         offset: (120.0, 70.0),
         zoom: 2.0,
     };
@@ -315,12 +315,12 @@ fn neighborhood_is_live_and_does_not_leak_to_a_second_pane() {
     canvas.ingest_graph(|graph| {
         let ak = graph.get_node_by_id(a).unwrap().0;
         let ck = graph.get_node_by_id(outside).unwrap().0;
-        mere::kernel::graph::apply::assert_relation(
+        kernel::graph::apply::assert_relation(
             graph,
             ak,
             ck,
-            mere::kernel::graph::EdgeAssertion::Semantic {
-                sub_kind: mere::kernel::graph::SemanticSubKind::Cites,
+            kernel::graph::EdgeAssertion::Semantic {
+                sub_kind: kernel::graph::SemanticSubKind::Cites,
                 label: None,
             },
         )

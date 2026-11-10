@@ -108,11 +108,11 @@ impl App {
             .and_then(|donor| crate::scene_state::read_scene(self.graph_runtimes.facets(), donor))
         {
             let ids = copy.id_remap.iter().copied().collect();
-            let carried = mere::canvas::saved_scene::remap_scene(&scene, &ids);
+            let carried = pictograph::canvas::saved_scene::remap_scene(&scene, &ids);
             pandect::write_saved_scene(&mut fork_facets, *fork_graph_id.as_uuid(), &carried);
         }
         let derivation_facet =
-            chartulary::FacetId::new(mere::kernel::graph::node_facets::PROVENANCE_DERIVATIONS);
+            chartulary::FacetId::new(kernel::graph::node_facets::PROVENANCE_DERIVATIONS);
         let copied_derivations = copy
             .id_remap
             .iter()
@@ -129,7 +129,7 @@ impl App {
             return vec![Effect::Redraw];
         }
         let import_facet =
-            chartulary::FacetId::new(mere::kernel::graph::node_facets::PROVENANCE_IMPORT);
+            chartulary::FacetId::new(kernel::graph::node_facets::PROVENANCE_IMPORT);
         if let Err(error) = crate::graph_facets::edit_graph_facets(&mut fork_graph, |facets| {
             for (_, minted) in &copy.id_remap {
                 facets.remove(minted, &import_facet);

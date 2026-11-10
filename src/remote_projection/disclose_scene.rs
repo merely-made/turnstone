@@ -10,7 +10,7 @@ use super::*;
 /// freeze exactly what a remote peer would be served, rather than a second
 /// recipe that drifts from the first.
 pub(crate) fn disclose_scene(
-    graph: &mere::kernel::graph::Graph,
+    graph: &kernel::graph::Graph,
     focused: Option<NodeKey>,
     card_extent: (f32, f32),
     spiral: sceno::Spiral,
@@ -20,7 +20,7 @@ pub(crate) fn disclose_scene(
     // The spiral reads keyed signals, most recent first (Mere F132). A
     // disclosure is a one-off projection with no canvas behind it, so it
     // takes a fresh registry for this graph.
-    let signals = mere::canvas::ChannelRegistry::new().disclose(
+    let signals = pictograph::canvas::ChannelRegistry::new().disclose(
         graph,
         &[cartography::ORDER_RECENCY, cartography::WEIGHT_RECENCY],
         focused,

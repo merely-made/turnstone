@@ -5,7 +5,7 @@ use super::*;
 
 #[test]
 fn relationship_menu_keeps_direction_and_pages_past_twelve_neighbors() {
-    use mere::kernel::graph::{EdgeAssertion, SemanticSubKind, apply::assert_relation};
+    use kernel::graph::{EdgeAssertion, SemanticSubKind, apply::assert_relation};
     let mut app = App::test_stub();
     app.update(Action::OpenAddress("https://example.test/root".into()));
     let pane = app.default_graph_pane();

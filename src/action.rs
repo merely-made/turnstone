@@ -34,7 +34,7 @@ mod command_metadata;
 pub(crate) use command_metadata::command_metadata;
 
 use crate::panes::{PaneKindId, PaneSource};
-use mere::canvas::controls::CanvasCommand;
+use pictograph::canvas::controls::CanvasCommand;
 
 /// One admitted Settings pane composition/view save request.
 pub type SettingsPaneRecordIntent = (
@@ -68,7 +68,7 @@ pub struct FetchedPage {
 /// Host-written facts for one completed download.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct StoredDownload {
-    pub content: mere::kernel::graph::ContentHash,
+    pub content: kernel::graph::ContentHash,
     pub destination: String,
     pub byte_size: u64,
 }

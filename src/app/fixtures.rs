@@ -10,7 +10,7 @@
 
 use std::path::PathBuf;
 
-use mere::canvas::Canvas;
+use pictograph::canvas::Canvas;
 
 use crate::content::ContentStates;
 use crate::panes::{FrisketLayout, GraphId, SessionId};
@@ -52,7 +52,7 @@ impl App {
         let graph_id = GraphId::from_uuid(*session_id.as_uuid());
         let mut frisket = FrisketLayout::default();
         frisket.retag_graph_bound(graph_id);
-        mere::kernel::graph::set_captured_delta_hook(None);
+        kernel::graph::set_captured_delta_hook(None);
         let journal = crate::host_journal::shared_journal();
         let mut graph_runtimes = super::GraphRuntimePool::with_journal(
             graph_id,
@@ -61,7 +61,7 @@ impl App {
             journal.clone(),
         );
         graph_runtimes.adopt_graph(
-            mere::kernel::graph::Graph::new(),
+            kernel::graph::Graph::new(),
             crate::session_persistence::SessionPersistence::writable(
                 crate::session::session_dir(&data_root, session_id),
                 None,
@@ -165,9 +165,9 @@ impl App {
 
     /// Deterministic live graph truth for Graphshell's headed G3 receipt.
     pub(crate) fn projection_fixture() -> Self {
-        use mere::kernel::geometry::PortablePoint;
-        use mere::kernel::graph::apply::{add_node, assert_relation};
-        use mere::kernel::graph::{EdgeAssertion, Graph, SemanticSubKind};
+        use kernel::geometry::PortablePoint;
+        use kernel::graph::apply::{add_node, assert_relation};
+        use kernel::graph::{EdgeAssertion, Graph, SemanticSubKind};
 
         let mut app = Self::isolated(std::env::temp_dir().join("turnstone-graphshell-g3"));
         let mut graph = Graph::new();

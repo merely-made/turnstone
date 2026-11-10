@@ -21,7 +21,7 @@ use super::*;
 /// admission state, which needs a verified chain.
 pub fn rebuild(
     app_facets: &pandect::NodeFacetStore,
-    graph: &mere::kernel::graph::Graph,
+    graph: &kernel::graph::Graph,
     session_dir: &Path,
     root: Option<[u8; 32]>,
 ) -> Denizens {

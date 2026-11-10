@@ -28,8 +28,8 @@
 //! pick record existed carry `parent_session` and still read as forks.
 //! `sub_graph_refs` render as containment (`CollectionMember`).
 
-use mere::kernel::graph::apply::{self as graph_apply, GraphDelta, apply_graph_delta};
-use mere::kernel::graph::{ContainmentSubKind, EdgeAssertion, Graph, NodeKey, ProvenanceSubKind};
+use kernel::graph::apply::{self as graph_apply, GraphDelta, apply_graph_delta};
+use kernel::graph::{ContainmentSubKind, EdgeAssertion, Graph, NodeKey, ProvenanceSubKind};
 use pandect::ManifestStore;
 use std::collections::HashMap;
 

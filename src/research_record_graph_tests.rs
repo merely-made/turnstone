@@ -1,16 +1,16 @@
 // Copyright 2026 Mark Alan Boykin
 // SPDX-License-Identifier: MPL-2.0
 use super::*;
-use mere::kernel::graph::Graph;
+use kernel::graph::Graph;
 
 #[test]
 fn model_free_graph_binding_survives_save_and_exact_withdrawal() {
     let root = tempfile::tempdir().unwrap();
     let path = root.path().join("graph.json");
     let mut graph = Graph::new();
-    let (journal, hook) = mere::kernel::graph::journal_capture_hook();
+    let (journal, hook) = kernel::graph::journal_capture_hook();
     graph.set_recorder(Some(hook.clone()));
-    let node = mere::kernel::graph::apply::add_node(
+    let node = kernel::graph::apply::add_node(
         &mut graph,
         Some(uuid::Uuid::new_v4()),
         "https://example.test/entity".into(),
@@ -53,7 +53,7 @@ fn model_free_graph_binding_survives_save_and_exact_withdrawal() {
 #[test]
 fn model_free_recovery_restores_exact_statement_without_replacing_existing_assertions() {
     let mut original = Graph::new();
-    let node = mere::kernel::graph::apply::add_node(
+    let node = kernel::graph::apply::add_node(
         &mut original,
         Some(uuid::Uuid::new_v4()),
         "https://example.test/recovery".into(),
@@ -75,7 +75,7 @@ fn model_free_recovery_restores_exact_statement_without_replacing_existing_asser
         eidetic::ManifestId::of_blob(b"other"),
     )
     .unwrap();
-    let unrelated_node = mere::kernel::graph::apply::add_node(
+    let unrelated_node = kernel::graph::apply::add_node(
         &mut reopened,
         Some(uuid::Uuid::new_v4()),
         "https://example.test/unrelated".into(),
@@ -86,7 +86,7 @@ fn model_free_recovery_restores_exact_statement_without_replacing_existing_asser
         .try_assert_semantic_statement_by_resource_ids(
             unrelated,
             unrelated,
-            mere::kernel::graph::SemanticStatementSpec {
+            kernel::graph::SemanticStatementSpec {
                 predicate: "urn:example:unrelated".into(),
                 recognized_sub_kind: None,
                 label: None,
@@ -131,7 +131,7 @@ fn model_free_recovery_restores_exact_statement_without_replacing_existing_asser
 #[test]
 fn model_free_graph_enumeration_refuses_limits_and_reserved_surface_tombstones() {
     let mut graph = Graph::new();
-    let node = mere::kernel::graph::apply::add_node(
+    let node = kernel::graph::apply::add_node(
         &mut graph,
         Some(uuid::Uuid::new_v4()),
         "https://example.test/limited".into(),
@@ -144,16 +144,16 @@ fn model_free_graph_enumeration_refuses_limits_and_reserved_surface_tombstones()
     assert!(bindings_limited(&graph, false, &mut Budget::new(&settings)).is_err());
 
     let mut graph = Graph::new();
-    let node = mere::kernel::graph::apply::add_node(
+    let node = kernel::graph::apply::add_node(
         &mut graph,
         Some(uuid::Uuid::new_v4()),
         "https://example.test/surface".into(),
         Default::default(),
     );
     graph
-        .declare_predicate(PREDICATE, mere::kernel::graph::GraphStratum::Surface)
+        .declare_predicate(PREDICATE, kernel::graph::GraphStratum::Surface)
         .unwrap();
-    let spec = mere::kernel::graph::SemanticStatementSpec {
+    let spec = kernel::graph::SemanticStatementSpec {
         predicate: PREDICATE.into(),
         recognized_sub_kind: None,
         label: None,

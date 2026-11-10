@@ -122,7 +122,7 @@ impl App {
     /// Record the actual receiving viewport without replacing that geometry
     /// with a projection measured from fresh, transient selection/footprints.
     /// Subsequent viewport, graph or footprint changes use the normal gate.
-    pub(super) fn prime_restored_layout(canvas: &mut mere::canvas::Canvas, w: u32, h: u32) -> bool {
+    pub(super) fn prime_restored_layout(canvas: &mut pictograph::canvas::Canvas, w: u32, h: u32) -> bool {
         let Some(id) = canvas.layout_strategy().map(str::to_owned) else {
             return false;
         };
@@ -138,7 +138,7 @@ impl App {
     /// view installed. The strategy sees selection only through that pane's
     /// temporary view state; it never chooses a global active pane.
     pub(super) fn drive_layout_strategy_for(
-        canvas: &mut mere::canvas::Canvas,
+        canvas: &mut pictograph::canvas::Canvas,
         w: u32,
         h: u32,
     ) -> bool {
@@ -240,7 +240,7 @@ impl App {
             .filter(|content| content.follows_active_graph())?;
         Some(FormeRuntimeKey {
             graph,
-            forme: mere::forme::FormeRef::Identity(*graph.as_uuid()),
+            forme: incipit::forme::FormeRef::Identity(*graph.as_uuid()),
         })
     }
 
@@ -252,7 +252,7 @@ impl App {
     }
 
     /// Read the Workbench arrangement named by a pane's graph/Forme source.
-    pub fn workbench_for_pane(&self, pane: PaneId) -> Option<&mere::platen::Workbench> {
+    pub fn workbench_for_pane(&self, pane: PaneId) -> Option<&platen::Workbench> {
         let key = self.forme_for_pane(pane)?;
         self.forme_runtimes
             .get(key.graph, key.forme)
@@ -261,7 +261,7 @@ impl App {
 
     /// Create or reuse the Workbench arrangement named by a pane's graph/Forme
     /// source. This is the A3 mutation entrance for Workbench state.
-    pub fn workbench_for_pane_mut(&mut self, pane: PaneId) -> Option<&mut mere::platen::Workbench> {
+    pub fn workbench_for_pane_mut(&mut self, pane: PaneId) -> Option<&mut platen::Workbench> {
         let key = self.ensure_identity_forme_for_pane(pane)?;
         Some(
             &mut self
@@ -271,7 +271,7 @@ impl App {
         )
     }
 
-    pub fn active_workbench(&self) -> Option<&mere::platen::Workbench> {
+    pub fn active_workbench(&self) -> Option<&platen::Workbench> {
         self.workbench_owner_pane()
             .and_then(|pane| self.workbench_for_pane(pane))
     }
@@ -371,14 +371,14 @@ impl App {
     pub fn with_graph_pane<R>(
         &mut self,
         pane: PaneId,
-        operation: impl FnOnce(&mut mere::canvas::Canvas) -> R,
+        operation: impl FnOnce(&mut pictograph::canvas::Canvas) -> R,
     ) -> Option<R> {
         let graph = self.graph_for_pane(pane)?;
         self.graph_views.bind_graph(pane, graph);
         if let Some(id) = self.graph_views.installed_forme(pane).or_else(|| {
             self.forme_for_pane(pane).map(|key| match key.forme {
-                mere::forme::FormeRef::Identity(id) => id,
-                mere::forme::FormeRef::Stored(id) => id.as_uuid(),
+                incipit::forme::FormeRef::Identity(id) => id,
+                incipit::forme::FormeRef::Stored(id) => id.as_uuid(),
             })
         }) {
             let place = crate::scope_navigation::ScopePlace {
@@ -442,7 +442,7 @@ impl App {
 
     /// The Map's theme, resolved from the live appearance; `None` until a
     /// presentation exists, when the canvas keeps its own colours.
-    pub fn map_theme(&mut self) -> Option<mere::canvas::CanvasTheme> {
+    pub fn map_theme(&mut self) -> Option<pictograph::canvas::CanvasTheme> {
         self.map_theme.resolve(&self.shell.chrome().appearance)
     }
 }

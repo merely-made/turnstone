@@ -169,13 +169,13 @@ impl Shell {
                     .ok_or("fold badge absent")?;
                 self.app.graph_pane_pointer_down(
                     pane,
-                    mere::canvas::PointerButton::Left,
+                    pictograph::canvas::PointerButton::Left,
                     badge.at.0,
                     badge.at.1,
                 );
                 self.release_graph_pointer(
                     pane,
-                    mere::canvas::PointerButton::Left,
+                    pictograph::canvas::PointerButton::Left,
                     badge.at.0,
                     badge.at.1,
                 );

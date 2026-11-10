@@ -11,7 +11,7 @@ pub enum Origin {
     Node,
     Forme {
         reader: crate::panes::PaneId,
-        forme: mere::forme::FormeRef,
+        forme: incipit::forme::FormeRef,
     },
     Scope(crate::scope_navigation::ScopePlace<GraphId, Uuid>),
     Relationship(crate::relationship_navigation::RelationshipTarget),
@@ -234,7 +234,7 @@ impl App {
                 let graph = self.graph_runtimes.canvas(target.graph)?.graph();
                 if let Origin::Scope(place) = &target.origin {
                     if place.level != crate::scope_navigation::ScopeLevel::Document {
-                        let mut members = mere::navigation::scope_members(graph, place)?;
+                        let mut members = incipit::navigation::scope_members(graph, place)?;
                         let total = members.len();
                         members.sort();
                         if let Some(i) = members.iter().position(|m| Some(*m) == place.focus) {

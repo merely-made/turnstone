@@ -15,7 +15,7 @@ use super::*;
 /// This does not reconstruct mappings or ancestry from before the dispatch.
 pub(super) fn touched_surface_ids(graph: &Graph, delta: &CapturedDelta) -> Vec<String> {
     use CapturedDelta as D;
-    use mere::kernel::graph::resource::TAGGED_WITH_IRI;
+    use kernel::graph::resource::TAGGED_WITH_IRI;
 
     let mut resources = HashSet::new();
     match delta {

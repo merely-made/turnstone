@@ -13,9 +13,9 @@ use super::*;
 // integrated as an exact, coordinated supplier set. These are product read
 // and recycle-label checks, not an attributed recovery receipt.
 fn resource_content_fixture() -> (App, uuid::Uuid, uuid::Uuid, uuid::Uuid) {
-    use mere::kernel::graph::apply::add_node;
-    use mere::kernel::graph::resource_tags::{TagConcept, tag_concept_iri};
-    use mere::kernel::graph::{Author, Graph};
+    use kernel::graph::apply::add_node;
+    use kernel::graph::resource_tags::{TagConcept, tag_concept_iri};
+    use kernel::graph::{Author, Graph};
 
     let mut graph = Graph::new();
     let first = uuid::Uuid::from_u128(101);
@@ -66,8 +66,8 @@ fn resource_content_fixture() -> (App, uuid::Uuid, uuid::Uuid, uuid::Uuid) {
 }
 
 #[cfg(any(feature = "piccolo", feature = "wasm"))]
-fn participant_author(resident: &crate::denizen::Resident) -> mere::kernel::graph::Author {
-    mere::kernel::graph::Author::script(
+fn participant_author(resident: &crate::denizen::Resident) -> kernel::graph::Author {
+    kernel::graph::Author::script(
         resident.subject.to_hex(),
         blake3::Hash::from(resident.binding.revision.0)
             .to_hex()

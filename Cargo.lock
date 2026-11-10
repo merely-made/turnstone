@@ -8313,12 +8313,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "json-event-parser"
-version = "0.2.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "574b0cd5e90ee2ba03a66d0611fc9a09c9a0c28b2ecc2dc8a181dd31a53ca5d7"
-
-[[package]]
 name = "jsonschema"
 version = "0.18.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -9098,22 +9092,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "mere"
-version = "0.0.2"
-source = "git+https://github.com/merely-made/mere.git?branch=main#28e2350a2852a09de580890feda081e6ed1b6912"
-dependencies = [
- "incipit",
- "mere-kernel",
- "mere-rdf",
- "pictograph",
- "platen",
- "serde",
- "serde_json",
- "uuid 1.29.2",
- "workbench",
-]
-
-[[package]]
 name = "mere-athanor"
 version = "0.0.1"
 source = "git+https://github.com/merely-made/mere.git?branch=main#28e2350a2852a09de580890feda081e6ed1b6912"
@@ -9379,21 +9357,6 @@ dependencies = [
  "blake3",
  "serde",
  "thiserror 1.0.69",
-]
-
-[[package]]
-name = "mere-rdf"
-version = "0.0.1"
-source = "git+https://github.com/merely-made/mere.git?branch=main#28e2350a2852a09de580890feda081e6ed1b6912"
-dependencies = [
- "getrandom 0.3.4",
- "mere-kernel",
- "oxjsonld",
- "oxrdf",
- "oxttl",
- "serde_json",
- "time",
- "uuid 1.29.2",
 ]
 
 [[package]]
@@ -11854,59 +11817,6 @@ dependencies = [
  "oxc_span",
  "phf 0.13.1",
  "unicode-id-start",
-]
-
-[[package]]
-name = "oxilangtag"
-version = "0.1.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5d3b4eb570abd4a1dcb062c31fd37b832264d9dc7292c3e69acfe926c87b063f"
-dependencies = [
- "serde",
-]
-
-[[package]]
-name = "oxiri"
-version = "0.2.11"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "54b4ed3a7192fa19f5f48f99871f2755047fabefd7f222f12a1df1773796a102"
-
-[[package]]
-name = "oxjsonld"
-version = "0.2.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f1554d73123a75723a4e0a4d400a3fb19ca09673563a2557090267729622fcb2"
-dependencies = [
- "json-event-parser",
- "oxiri",
- "oxrdf",
- "ryu-js",
- "thiserror 2.0.21",
-]
-
-[[package]]
-name = "oxrdf"
-version = "0.3.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "08037a3c3cf580d065caec6a864cf97f51be219862d95c691a48c7543406d675"
-dependencies = [
- "oxilangtag",
- "oxiri",
- "rand 0.9.5",
- "thiserror 2.0.21",
-]
-
-[[package]]
-name = "oxttl"
-version = "0.2.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c2f5a5c0e82734bb66c9e2a82839bafca5cc129531c51b92f428a4f43405793d"
-dependencies = [
- "memchr",
- "oxilangtag",
- "oxiri",
- "oxrdf",
- "thiserror 2.0.21",
 ]
 
 [[package]]
@@ -18933,11 +18843,11 @@ dependencies = [
  "layout-dom-api",
  "libc",
  "mandrake",
- "mere",
  "mere-athanor",
  "mere-cartography",
  "mere-fetch",
  "mere-fleece",
+ "mere-kernel",
  "mere-lanes",
  "mere-moot",
  "mere-overmap",
@@ -18961,6 +18871,8 @@ dependencies = [
  "pandect",
  "pelt-core",
  "personae",
+ "pictograph",
+ "platen",
  "pollster 0.4.0",
  "rcgen 0.14.10",
  "redshank-model",

@@ -110,7 +110,7 @@ fn provenance_scene_places_real_derivation_steps_after_their_sources() {
             x(members[3]),
             x(members[0]),
             x(members[2]),
-            mere::canvas::scene_axes::derivation_columns(canvas.graph())
+            pictograph::canvas::scene_axes::derivation_columns(canvas.graph())
         );
         assert!(x(members[0]) < x(members[2]), "extraction precedes rewrite");
     });
@@ -274,7 +274,7 @@ fn arrange_controls_and_physics_resolve_their_window_graph_with_a_different_acti
     app.update(Action::TogglePhysics);
     let b = app.graph_runtimes.canvas(graph_b).unwrap();
     assert_eq!(
-        mere::canvas::PhysicsChoice::live(b).law.id(),
+        pictograph::canvas::PhysicsChoice::live(b).law.id(),
         "orbit.gravity"
     );
     assert_eq!(b.layout_strategy(), Some("mosaic.default"));
@@ -282,8 +282,8 @@ fn arrange_controls_and_physics_resolve_their_window_graph_with_a_different_acti
     assert_eq!(b.physics_paused(), !paused);
     let a = app.graph_runtimes.canvas(graph_a).unwrap();
     assert_eq!(
-        mere::canvas::PhysicsChoice::live(a).law,
-        mere::canvas::PhysicsLaw::Springs
+        pictograph::canvas::PhysicsChoice::live(a).law,
+        pictograph::canvas::PhysicsLaw::Springs
     );
     assert_eq!(a.layout_strategy(), None);
     assert!(!a.has_saved_seed());

@@ -5,7 +5,7 @@ use super::*;
 
 #[test]
 fn typed_journal_authors_preserve_no_self_wake_subject_matching() {
-    use mere::kernel::graph::Author;
+    use kernel::graph::Author;
     let app = App::test_stub();
     let subject = Subject::new([0x31; 32]);
     let node = uuid::Uuid::new_v4().to_string();
@@ -130,10 +130,10 @@ fn a_malformed_id_yields_no_scope_rather_than_a_bogus_one() {
 
 fn resource_views() -> (
     Graph,
-    mere::kernel::graph::NodeKey,
-    mere::kernel::graph::NodeKey,
+    kernel::graph::NodeKey,
+    kernel::graph::NodeKey,
 ) {
-    use mere::kernel::graph::apply::add_node;
+    use kernel::graph::apply::add_node;
     let mut graph = Graph::new();
     let a = add_node(
         &mut graph,
@@ -151,7 +151,7 @@ fn resource_views() -> (
     (graph, a, b)
 }
 
-fn surface_names(graph: &Graph, keys: &[mere::kernel::graph::NodeKey]) -> Vec<String> {
+fn surface_names(graph: &Graph, keys: &[kernel::graph::NodeKey]) -> Vec<String> {
     let mut ids: Vec<_> = keys
         .iter()
         .map(|key| graph.get_node(*key).unwrap().id.to_string())
@@ -182,12 +182,12 @@ fn resource_record_wakes_each_current_view_without_resource_uuid_scopes() {
 
 #[test]
 fn concept_record_changes_wake_incoming_tag_sources_even_after_facet_removal() {
-    use mere::kernel::graph::apply::{
+    use kernel::graph::apply::{
         GraphDelta, add_node, apply_graph_delta, assert_semantic_predicate_in_scope,
     };
-    use mere::kernel::graph::resource::ResourceNode;
-    use mere::kernel::graph::resource_tags::TagConcept;
-    use mere::kernel::persistence::PersistedResourceRecord;
+    use kernel::graph::resource::ResourceNode;
+    use kernel::graph::resource_tags::TagConcept;
+    use kernel::persistence::PersistedResourceRecord;
     let (mut graph, a, b) = resource_views();
     let resource = graph.shown_resource_id(a).unwrap();
     let concept_iri = "https://vocabulary.test/tags#Research";
@@ -260,9 +260,9 @@ fn concept_record_changes_wake_incoming_tag_sources_even_after_facet_removal() {
 
 #[test]
 fn retracted_resource_pair_still_wakes_both_endpoint_views_once() {
-    use mere::kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta};
-    use mere::kernel::graph::resource::ResourceNode;
-    use mere::kernel::graph::resource_tags::TagConcept;
+    use kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta};
+    use kernel::graph::resource::ResourceNode;
+    use kernel::graph::resource_tags::TagConcept;
     let (mut graph, a, b) = resource_views();
     let resource = graph.shown_resource_id(a).unwrap();
     let concept_iri = "https://vocabulary.test/tags#Research";
@@ -296,7 +296,7 @@ fn retracted_resource_pair_still_wakes_both_endpoint_views_once() {
         to_resource_id: concept.to_string(),
         edges: Vec::new(),
     };
-    let mere::kernel::graph::capture::Replay::Apply(replay) = delta.replay() else {
+    let kernel::graph::capture::Replay::Apply(replay) = delta.replay() else {
         panic!("resource pair replay record must produce a graph delta");
     };
     apply_graph_delta(&mut graph, replay);
@@ -322,7 +322,7 @@ fn retracted_resource_pair_still_wakes_both_endpoint_views_once() {
 
 #[test]
 fn shown_resource_changes_keep_the_surface_even_after_detach_or_removal() {
-    use mere::kernel::graph::apply::{GraphDelta, apply_graph_delta};
+    use kernel::graph::apply::{GraphDelta, apply_graph_delta};
     let (mut graph, a, b) = resource_views();
     let resource = graph.shown_resource_id(a).unwrap();
     let a_id = graph.get_node(a).unwrap().id;
@@ -334,7 +334,7 @@ fn shown_resource_changes_keep_the_surface_even_after_detach_or_removal() {
         surface_id: a_id.to_string(),
         resource_id: None,
     };
-    let mere::kernel::graph::capture::Replay::Apply(replay) = detach.replay() else {
+    let kernel::graph::capture::Replay::Apply(replay) = detach.replay() else {
         panic!("detach replay record must produce a graph delta");
     };
     apply_graph_delta(&mut graph, replay);
@@ -358,7 +358,7 @@ fn shown_resource_changes_keep_the_surface_even_after_detach_or_removal() {
 
 #[test]
 fn resource_projection_preserves_journal_author_and_no_self_wake() {
-    use mere::kernel::graph::Author;
+    use kernel::graph::Author;
     let (graph, a, b) = resource_views();
     let resource = graph.shown_resource_id(a).unwrap();
     let expected = surface_names(&graph, &[a, b]);
@@ -367,7 +367,7 @@ fn resource_projection_preserves_journal_author_and_no_self_wake() {
     app.graph_runtimes.activate_or_insert(
         graph_id,
         Some(app.session_id),
-        mere::canvas::Canvas::with_graph(graph),
+        pictograph::canvas::Canvas::with_graph(graph),
     );
     app.bind_behavior_journal().unwrap();
     let cursor = journal_high_water(&app);
@@ -411,8 +411,8 @@ fn resource_projection_preserves_journal_author_and_no_self_wake() {
 
 #[test]
 fn resource_and_surface_containment_both_contribute_current_watch_ancestry() {
-    use mere::kernel::graph::apply::{add_node, assert_relation};
-    use mere::kernel::graph::{ContainmentSubKind, EdgeAssertion};
+    use kernel::graph::apply::{add_node, assert_relation};
+    use kernel::graph::{ContainmentSubKind, EdgeAssertion};
     let (mut graph, a, _) = resource_views();
     let parent = add_node(
         &mut graph,

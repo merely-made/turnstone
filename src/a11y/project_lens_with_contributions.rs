@@ -15,7 +15,7 @@ pub(crate) fn project_lens_with_contributions(
     let panes = crate::panes::project_frisket_with(layout, |content, pane| match content {
         PaneContent::Workbench => app
             .workbench_for_pane(pane)
-            .map(mere::platen::project_tile_layout),
+            .map(platen::project_tile_layout),
         PaneContent::Orrery => {
             let mut root = Node::new(Role::Group);
             let count = app

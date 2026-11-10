@@ -19,7 +19,7 @@ pub(super) fn verify_missing_capture_copy() {
 
 /// Inspect only an already complete modern graph. Never acquire a writer
 /// lease or invoke migration, recovery, or image externalization.
-fn strict_inspection_graph(root: &std::path::Path) -> Result<mere::kernel::graph::Graph, String> {
+fn strict_inspection_graph(root: &std::path::Path) -> Result<kernel::graph::Graph, String> {
     let facets_path = pandect::node_facets_path(root);
     if !crate::session_persistence::require_complete_file(&facets_path)
         .map_err(|e| e.to_string())?
@@ -531,8 +531,8 @@ mod strict_graph_tests {
         std::fs::write(&graph_path, b"{bad graph").unwrap();
         assert!(strict_inspection_graph(root.path()).is_err());
         assert_eq!(std::fs::read(&graph_path).unwrap(), b"{bad graph");
-        let mut graph = mere::kernel::graph::Graph::new();
-        mere::kernel::graph::apply::add_node(
+        let mut graph = kernel::graph::Graph::new();
+        kernel::graph::apply::add_node(
             &mut graph,
             None,
             "https://fixture.test".into(),

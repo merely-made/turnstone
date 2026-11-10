@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 use super::*;
-use mere::platen::{TreeBranch, Workbench};
+use platen::{TreeBranch, Workbench};
 
 fn area() -> Rect {
     Rect::new(0.0, 0.0, 800.0, 600.0)

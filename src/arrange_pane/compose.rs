@@ -3,7 +3,7 @@
 
 //! The Arrange pane's composing controls: role, role groups, two-law mix,
 //! grouping, two-stage schedule and speed, drawn from
-//! `mere::canvas::physics_form`, the model the web host's tools region draws
+//! `pictograph::canvas::physics_form`, the model the web host's tools region draws
 //! too. The model owns the fields, their choices, defaults, read-back and
 //! validation; this file turns each field into a `cambium::setting_row` and
 //! each button press into an [`ArrangeIntent`]. Role, role groups and speed
@@ -11,7 +11,7 @@
 //! model's form until their button applies them, and follow the canvas when
 //! what it authored changes, not on every frame.
 
-use mere::canvas::physics_form::{Command, Control, Field, FieldId, FormAction, Readback, Section};
+use pictograph::canvas::physics_form::{Command, Control, Field, FieldId, FormAction, Readback, Section};
 use mere_surface_api::settings::{SettingControl, SettingValue};
 
 use super::{

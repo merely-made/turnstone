@@ -6,7 +6,7 @@ use crate::action::Update;
 
 fn gloss_pane_on_sample_graph() -> (SwatchPane, App) {
     let mut app = App::test_stub();
-    *app.graph_runtimes.active_canvas_mut() = mere::canvas::Canvas::with_sample_graph();
+    *app.graph_runtimes.active_canvas_mut() = pictograph::canvas::Canvas::with_sample_graph();
     let mut pane = SwatchPane::new(GLOSS_MINIMAP);
     pane.sync(&app, 480.0, 400.0);
     let _ = pane.scene(480, 400, 1.0);

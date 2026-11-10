@@ -5,11 +5,11 @@
 //! Direction and kind are retained even when several relations share a member.
 use crate::{action::Effect, app::App, panes::GraphId};
 #[cfg(test)]
-use mere::kernel::graph::{RelationKind, SemanticSubKind};
+use kernel::graph::{RelationKind, SemanticSubKind};
 
-pub type RelationshipTarget = mere::navigation::RelationshipTarget<GraphId>;
-pub type RelationshipRow = mere::navigation::RelationshipRow<GraphId>;
-pub use mere::navigation::relationships;
+pub type RelationshipTarget = incipit::navigation::RelationshipTarget<GraphId>;
+pub type RelationshipRow = incipit::navigation::RelationshipRow<GraphId>;
+pub use incipit::navigation::relationships;
 
 impl App {
     pub(crate) fn valid_relationship(&self, target: RelationshipTarget) -> bool {
@@ -33,7 +33,7 @@ impl App {
 mod tests {
     use super::*;
     use crate::action::Action;
-    use mere::kernel::graph::EdgeAssertion;
+    use kernel::graph::EdgeAssertion;
 
     fn setup() -> (App, GraphId, uuid::Uuid, uuid::Uuid) {
         let mut app = App::test_stub();
@@ -54,7 +54,7 @@ mod tests {
                     (ak, bk, SemanticSubKind::Cites),
                     (bk, ak, SemanticSubKind::Quotes),
                 ] {
-                    mere::kernel::graph::apply::assert_relation(
+                    kernel::graph::apply::assert_relation(
                         graph,
                         from,
                         to,
@@ -96,7 +96,7 @@ mod tests {
         use crate::panes::{PaneContent, PaneId, PaneNode, SplitAxis};
         let (mut app, first, a, _) = setup();
         let second = GraphId::from_uuid(uuid::Uuid::new_v4());
-        let mut clone = mere::canvas::Canvas::new();
+        let mut clone = pictograph::canvas::Canvas::new();
         clone.set_graph(app.graph_runtimes.canvas(first).unwrap().graph().clone());
         app.graph_runtimes.activate_or_insert(second, None, clone);
         app.frisket.root = PaneNode::Split {

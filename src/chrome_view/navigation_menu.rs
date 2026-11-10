@@ -143,11 +143,11 @@ pub(super) fn append_navigation_menu(
                     state.focused_node.map(ChromeIntent::RevealMember),
                 ));
                 rows.extend(cambium::shell_paged_list(
-                    mere::navigation::RELATIONSHIPS_NOUN,
-                    mere::navigation::NO_RELATIONSHIPS,
+                    incipit::navigation::RELATIONSHIPS_NOUN,
+                    incipit::navigation::NO_RELATIONSHIPS,
                     &state.connections,
                     state.relationships_start,
-                    mere::navigation::RELATIONSHIPS_PAGE_SIZE,
+                    incipit::navigation::RELATIONSHIPS_PAGE_SIZE,
                     |row| {
                         let target = state
                             .relation_targets
@@ -156,7 +156,7 @@ pub(super) fn append_navigation_menu(
                             .map(|(_, t)| t.clone());
                         cambium::shell_navigation_item(
                             row.title.clone(),
-                            mere::navigation::relationship_detail(row),
+                            incipit::navigation::relationship_detail(row),
                             Default::default(),
                             move |_: &mut ChromeState, _| {
                                 target

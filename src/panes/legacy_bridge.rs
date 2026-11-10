@@ -121,7 +121,7 @@ fn project_spec(id: PaneId, content: &PaneContent, graph: super::GraphId) -> Pan
     let source = match content {
         PaneContent::Workbench | PaneContent::Orrery => SourceRef::Forme {
             graph,
-            forme: mere::forme::FormeRef::Identity(graph.0),
+            forme: incipit::forme::FormeRef::Identity(graph.0),
         },
         PaneContent::Tile(member) => SourceRef::Member {
             graph,

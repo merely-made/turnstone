@@ -102,7 +102,7 @@ impl GraphRuntimePool {
 
     pub(crate) fn adopt_graph(
         &mut self,
-        graph: mere::kernel::graph::Graph,
+        graph: kernel::graph::Graph,
         state: crate::session_persistence::SessionPersistence<
             pandect::graph_placement::PlacementProfile,
         >,
@@ -120,7 +120,7 @@ impl GraphRuntimePool {
 
     /// Unqualified graph replacement revokes any prior placement. It cannot
     /// unlock a refused destination. Adoption carries graph and state together.
-    pub fn set_graph(&mut self, graph: mere::kernel::graph::Graph) {
+    pub fn set_graph(&mut self, graph: kernel::graph::Graph) {
         let runtime = self.runtimes.get_mut(&self.active).expect("active runtime");
         runtime.persistence.clear_placement();
         runtime.scene_transition = None;
@@ -182,7 +182,7 @@ impl GraphRuntimePool {
     /// Edit the active graph's runtime facets through validated graph deltas.
     pub(crate) fn edit_facets<R>(
         &mut self,
-        edit: impl FnOnce(&mut mere::kernel::graph::NodeFacetStore) -> R,
+        edit: impl FnOnce(&mut kernel::graph::NodeFacetStore) -> R,
     ) -> Result<R, String> {
         let active = self.active;
         let runtime = self

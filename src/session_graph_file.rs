@@ -11,8 +11,8 @@ use std::io::{self, Write};
 use std::path::Path;
 use std::sync::atomic::{AtomicU64, Ordering};
 
-use mere::kernel::graph::Graph;
-use mere::kernel::persistence::GraphSnapshot;
+use kernel::graph::Graph;
+use kernel::persistence::GraphSnapshot;
 use pandect::graph_placement::{PlacementProfile, materialize_snapshot};
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]

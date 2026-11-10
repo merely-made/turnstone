@@ -263,7 +263,7 @@ fn denizen_runs_attributed() {
     );
     assert_eq!(
         journal.author(),
-        &mere::kernel::graph::Author::user(),
+        &kernel::graph::Author::user(),
         "the author scope restored after the run"
     );
     let _ = std::fs::remove_dir_all(&app.data_root);
@@ -300,7 +300,7 @@ fn fork_session_snapshots_the_component_with_its_facets() {
     app.update(Action::OpenAddress("https://fork.example/b".to_string()));
     let _bystander = {
         let mut g = app.graph_runtimes.graph().clone();
-        let k = mere::kernel::graph::apply::add_node(
+        let k = kernel::graph::apply::add_node(
             &mut g,
             Some(uuid::Uuid::from_u128(0x10e)),
             "https://lone.example".to_string(),
@@ -380,10 +380,10 @@ fn fork_session_snapshots_the_component_with_its_facets() {
         web.get(fork_a).is_some_and(|s| s.content_on),
         "web.content carried onto the remapped id"
     );
-    let damping = mere::canvas::saved_scene::scene_spec(&scene)
+    let damping = pictograph::canvas::saved_scene::scene_spec(&scene)
         .unwrap()
         .realization;
-    let mere::canvas::dynamics_spec::Realization::Integrate { damping } = damping;
+    let pictograph::canvas::dynamics_spec::Realization::Integrate { damping } = damping;
     assert_eq!(
         damping,
         Some(f64::from(4.75_f32)),

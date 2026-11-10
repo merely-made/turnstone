@@ -7,7 +7,7 @@ use super::*;
 /// pair (the live `Pane` tree is a derived cache, never serde;
 /// `to_persisted_json` debug-asserts `canonical_roundtrips` — platen's
 /// persistence discipline, preserved verbatim). Best-effort, like the rest.
-pub fn save_workbench(data_root: &Path, workbench: &mere::platen::Workbench) {
+pub fn save_workbench(data_root: &Path, workbench: &platen::Workbench) {
     match workbench.to_persisted_json() {
         Ok(json) => {
             let path = data_root.join(WORKBENCH_FILE);

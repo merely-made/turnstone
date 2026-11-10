@@ -6,7 +6,7 @@
 
 //! Read descriptive tags from the resource shown by a surface.
 
-use mere::kernel::graph::{Graph, NodeKey};
+use kernel::graph::{Graph, NodeKey};
 use std::collections::HashSet;
 
 pub(crate) fn content_tags(graph: &Graph, key: NodeKey) -> HashSet<String> {

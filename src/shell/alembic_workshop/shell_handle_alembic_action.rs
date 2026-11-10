@@ -185,8 +185,8 @@ impl Shell {
         }
         candidate.set_recorder(None);
         for delta in crate::alembic_workshop::example_seed_deltas(&candidate) {
-            if let mere::kernel::graph::apply::GraphDeltaResult::Refused(error) =
-                mere::kernel::graph::apply::apply_graph_delta(&mut candidate, delta)
+            if let kernel::graph::apply::GraphDeltaResult::Refused(error) =
+                kernel::graph::apply::apply_graph_delta(&mut candidate, delta)
             {
                 self.status_alembic(
                     "The public example could not be staged safely.",

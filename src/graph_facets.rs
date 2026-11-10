@@ -6,13 +6,13 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use chartulary::FacetId;
-use mere::canvas::Canvas;
-use mere::kernel::graph::Graph;
-use mere::kernel::graph::apply::{GraphDelta, GraphDeltaResult, apply_graph_delta};
+use pictograph::canvas::Canvas;
+use kernel::graph::Graph;
+use kernel::graph::apply::{GraphDelta, GraphDeltaResult, apply_graph_delta};
 
 pub(crate) fn edit_canvas_facets<R>(
     canvas: &mut Canvas,
-    edit: impl FnOnce(&mut mere::kernel::graph::NodeFacetStore) -> R,
+    edit: impl FnOnce(&mut kernel::graph::NodeFacetStore) -> R,
 ) -> Result<R, String> {
     let mut result = None;
     canvas.ingest_graph(|graph| {
@@ -24,7 +24,7 @@ pub(crate) fn edit_canvas_facets<R>(
 
 pub(crate) fn try_edit_canvas_facets<R, E>(
     canvas: &mut Canvas,
-    edit: impl FnOnce(&mut mere::kernel::graph::NodeFacetStore) -> Result<R, E>,
+    edit: impl FnOnce(&mut kernel::graph::NodeFacetStore) -> Result<R, E>,
 ) -> Result<Result<R, E>, String> {
     let mut result = None;
     canvas.ingest_graph(|graph| {
@@ -43,7 +43,7 @@ pub(crate) fn try_edit_canvas_facets<R, E>(
 
 pub(crate) fn edit_graph_facets<R>(
     graph: &mut Graph,
-    edit: impl FnOnce(&mut mere::kernel::graph::NodeFacetStore) -> R,
+    edit: impl FnOnce(&mut kernel::graph::NodeFacetStore) -> R,
 ) -> Result<R, String> {
     let before = graph.facets().clone();
     let mut after = before.clone();
@@ -89,8 +89,8 @@ pub(crate) fn edit_graph_facets<R>(
 
 fn facet_deltas(
     graph: &Graph,
-    before: &mere::kernel::graph::NodeFacetStore,
-    after: &mere::kernel::graph::NodeFacetStore,
+    before: &kernel::graph::NodeFacetStore,
+    after: &kernel::graph::NodeFacetStore,
 ) -> Vec<GraphDelta> {
     let mut node_ids = BTreeSet::new();
     node_ids.extend(before.iter().map(|(node, _)| *node));
@@ -137,7 +137,7 @@ fn facet_deltas(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mere::kernel::graph::apply::{GraphDelta, apply_graph_delta};
+    use kernel::graph::apply::{GraphDelta, apply_graph_delta};
     use uuid::Uuid;
 
     #[test]

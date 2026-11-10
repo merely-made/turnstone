@@ -25,7 +25,7 @@ fn model_free_limit_refusal_binds_the_attempt_and_current_scope() {
         .unwrap()
         .canvas
         .ingest_graph(|graph| {
-            let node = mere::kernel::graph::apply::add_node(
+            let node = kernel::graph::apply::add_node(
                 graph,
                 Some(uuid::Uuid::new_v4()),
                 "https://fixture.test/a".into(),
@@ -271,7 +271,7 @@ fn model_free_late_inspection_and_replay_results_never_install_after_graph_or_se
         .unwrap()
         .canvas
         .ingest_graph(|graph| {
-            mere::kernel::graph::apply::add_node(
+            kernel::graph::apply::add_node(
                 graph,
                 Some(uuid::Uuid::new_v4()),
                 "https://fixture.test/change".into(),
@@ -330,7 +330,7 @@ fn model_free_failed_graph_save_and_ack_never_install_a_successful_result() {
         .unwrap()
         .canvas
         .ingest_graph(|graph| {
-            let node = mere::kernel::graph::apply::add_node(
+            let node = kernel::graph::apply::add_node(
                 graph,
                 Some(uuid::Uuid::new_v4()),
                 "https://fixture.test/entity".into(),

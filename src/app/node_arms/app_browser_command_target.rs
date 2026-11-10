@@ -273,7 +273,7 @@ impl App {
             }
             let _ = self.graph_runtimes.set_node_nested_for(
                 member,
-                Some(mere::kernel::graph::LogId::new(log_id.clone())),
+                Some(kernel::graph::LogId::new(log_id.clone())),
             );
             self.denizens = crate::denizen::rebuild(
                 self.graph_runtimes.facets(),

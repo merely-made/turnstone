@@ -143,7 +143,7 @@ fn graph_views_workbenches_and_followers_are_pane_scoped() {
     };
 
     let graph_b = crate::panes::GraphId::from_uuid(uuid::Uuid::from_u128(0xb));
-    let mut canvas_b = mere::canvas::Canvas::new();
+    let mut canvas_b = pictograph::canvas::Canvas::new();
     let member_b = {
         let key = canvas_b.visit("mere://graph-b");
         canvas_b.graph().get_node(key).unwrap().id
@@ -379,7 +379,7 @@ fn workbench_persists_and_restores_pruned() {
     let dir = std::env::temp_dir().join(format!("turnstone-wb-test-{}", uuid::Uuid::new_v4()));
     std::fs::create_dir_all(&dir).unwrap();
     let (a, b) = (uuid::Uuid::new_v4(), uuid::Uuid::new_v4());
-    let mut wb = mere::platen::Workbench::new();
+    let mut wb = platen::Workbench::new();
     wb.ensure_tiled();
     wb.open_tile(a);
     wb.open_tile(b);

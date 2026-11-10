@@ -21,7 +21,7 @@
 //! divider band sits between each adjacent pair and a drag re-weights exactly
 //! that pair (the others keep their shares).
 
-use mere::platen::{Axis, TreeGeometry};
+use platen::{Axis, TreeGeometry};
 use uuid::Uuid;
 
 use crate::surface::Rect;

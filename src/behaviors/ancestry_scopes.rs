@@ -20,7 +20,7 @@ pub fn ancestry_scopes(graph: &Graph, id: &str) -> Vec<ScopePath> {
     // Containment runs member -> container, so a node's containers are its
     // outgoing containment targets.
     let mut paths: Vec<Vec<String>> = Vec::new();
-    let mut frontier: Vec<(Vec<String>, mere::kernel::graph::NodeKey, HashSet<String>)> = {
+    let mut frontier: Vec<(Vec<String>, kernel::graph::NodeKey, HashSet<String>)> = {
         let mut seen = HashSet::new();
         seen.insert(id.to_string());
         vec![(vec![id.to_string()], key, seen)]

@@ -14,7 +14,7 @@
 //! ports (the fetch and physics actors, the persistence store) and folds their
 //! typed answers back through [`turnstone::app::App::apply_update`]. Continuous
 //! canvas gestures map onto
-//! `mere::canvas`'s semantic input methods directly — the canvas is hosted,
+//! `pictograph::canvas`'s semantic input methods directly — the canvas is hosted,
 //! not wrapped.
 //!
 //! Run with an address to open it (the graph remembers across launches), or

@@ -5,7 +5,7 @@ use super::App;
 use crate::action::{Action, Effect};
 use crate::session;
 use crate::session_persistence::SessionPersistence;
-use mere::kernel::graph::{Graph, apply::add_node};
+use kernel::graph::{Graph, apply::add_node};
 use pandect::graph_placement::PlacementProfile;
 
 #[path = "session_persistence_tests/host_session_refusal_blocks_save_fork_background_and_cases.rs"]

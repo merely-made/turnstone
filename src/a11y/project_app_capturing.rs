@@ -31,7 +31,7 @@ pub(super) fn project_app_capturing(
     });
     let panes = crate::panes::project_frisket_with(&app.frisket, |content, id| match content {
         PaneContent::Workbench => app.workbench_for_pane(id).map(|workbench| {
-            let layout = mere::platen::project_tile_layout(workbench);
+            let layout = platen::project_tile_layout(workbench);
             if visible_canvas {
                 return layout;
             }

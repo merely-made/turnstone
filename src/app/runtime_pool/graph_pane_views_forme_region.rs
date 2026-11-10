@@ -4,7 +4,7 @@
 use super::*;
 
 impl GraphPaneViews {
-    pub(crate) fn forme_region(&self, pane: PaneId) -> Option<&mere::canvas::FormeRegion> {
+    pub(crate) fn forme_region(&self, pane: PaneId) -> Option<&pictograph::canvas::FormeRegion> {
         self.forme_regions.get(&pane)
     }
 
@@ -29,7 +29,7 @@ impl GraphPaneViews {
     pub(crate) fn set_forme_region(
         &mut self,
         pane: PaneId,
-        region: Option<mere::canvas::FormeRegion>,
+        region: Option<pictograph::canvas::FormeRegion>,
     ) {
         if let Some(region) = region {
             self.forme_regions.insert(pane, region);
@@ -85,7 +85,7 @@ impl GraphPaneViews {
         }
         if let Some(root) = self.neighborhoods.get(&pane) {
             canvas.scope_to_exact_members(
-                mere::navigation::neighborhood_members(canvas.graph(), *root).unwrap_or_default(),
+                incipit::navigation::neighborhood_members(canvas.graph(), *root).unwrap_or_default(),
             );
         }
         if let Some(viewport) = self.viewports.get(&pane).copied() {

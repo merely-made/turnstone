@@ -4,9 +4,9 @@
 //! Full-host controls for graph capture and session-bound behavior delivery.
 use super::*;
 use crate::host_journal::{RuntimeOrigin, restore_table};
-use mere::kernel::graph::apply::{add_node, assert_relation};
-use mere::kernel::graph::{Author, Graph, capture::CapturedDelta};
-use mere::kernel::graph::{ContainmentSubKind, EdgeAssertion};
+use kernel::graph::apply::{add_node, assert_relation};
+use kernel::graph::{Author, Graph, capture::CapturedDelta};
+use kernel::graph::{ContainmentSubKind, EdgeAssertion};
 use servitor::{ScopePath, Subject, Watch};
 
 fn paired_graph(extra_view: bool, parent: u128) -> (Graph, uuid::Uuid) {
@@ -72,7 +72,7 @@ fn equal_resource_and_surface_ids_cannot_transfer_scopes_across_runtimes() {
     let cursor = app.journal.lock().unwrap().high_water();
     let graph_b = GraphId::from_uuid(uuid::Uuid::from_u128(2));
     app.graph_runtimes
-        .activate_or_insert(graph_b, None, mere::canvas::Canvas::with_graph(b));
+        .activate_or_insert(graph_b, None, pictograph::canvas::Canvas::with_graph(b));
     let origin_b = app.graph_runtimes.get(graph_b).unwrap().origin().unwrap();
     record_resource(&app, origin_b, resource_b);
     let foreign = crate::behaviors::entries_since(&app, cursor);
@@ -200,7 +200,7 @@ fn sample_canvas_replacement_rebinds_once_and_retains_display_budget() {
     let old = app.behavior_origin().unwrap();
     app.graph_runtimes.set_physics_display_rate(Some(144_000));
     app.graph_runtimes
-        .replace_active_canvas(mere::canvas::Canvas::with_sample_graph());
+        .replace_active_canvas(pictograph::canvas::Canvas::with_sample_graph());
     assert!(app.behavior_origin().is_none());
     app.bind_behavior_journal().unwrap();
     let new = app.behavior_origin().unwrap();
@@ -222,9 +222,9 @@ fn scratch_fork_assembly_cannot_record_into_live_stream() {
     let mut scratch = app.graph_runtimes.graph().clone();
     assert!(!scratch.is_recording());
     let count = app.journal.lock().unwrap().entries().len();
-    mere::kernel::graph::apply::apply_graph_delta(
+    kernel::graph::apply::apply_graph_delta(
         &mut scratch,
-        mere::kernel::graph::apply::GraphDelta::ReplaySetNodeTitleById {
+        kernel::graph::apply::GraphDelta::ReplaySetNodeTitleById {
             node_id: member,
             title: "fork edit".into(),
         },
@@ -284,7 +284,7 @@ fn foreign_only_tail_advances_without_waking_authorized_local_body() {
     let graph_b = GraphId::from_uuid(uuid::Uuid::from_u128(22));
     let copy = app.graph_runtimes.graph().clone();
     app.graph_runtimes
-        .activate_or_insert(graph_b, None, mere::canvas::Canvas::with_graph(copy));
+        .activate_or_insert(graph_b, None, pictograph::canvas::Canvas::with_graph(copy));
     let origin_b = app.graph_runtimes.get(graph_b).unwrap().origin().unwrap();
     app.graph_runtimes.activate(origin_a.graph);
     app.take_events();

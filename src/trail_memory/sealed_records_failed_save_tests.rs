@@ -18,8 +18,8 @@ fn model_free_failed_save_keeps_pending_and_restores_exact_binding_without_losin
         pandect::graph_placement::PlacementProfile,
     >::writable(directory.clone(), None)
     .unwrap();
-    let mut graph = mere::kernel::graph::Graph::new();
-    let node = mere::kernel::graph::apply::add_node(
+    let mut graph = kernel::graph::Graph::new();
+    let node = kernel::graph::apply::add_node(
         &mut graph,
         Some(uuid::Uuid::new_v4()),
         "https://fixture.test/entity".into(),

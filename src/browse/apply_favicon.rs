@@ -28,7 +28,7 @@ pub fn apply_favicon(
     // the session's blob directory (so every image role has one durable
     // format). The digest is over exactly what is stored.
     let digest = *eidetic::Hash::of(&png).as_bytes();
-    let image = mere::kernel::types::ImageRef::new(digest, decoded.width, decoded.height);
+    let image = kernel::types::ImageRef::new(digest, decoded.width, decoded.height);
     let changed = canvas.set_node_favicon_for(node, image);
     canvas.register_resolved_image(digest, decoded.rgba, decoded.width, decoded.height);
     let mut effects = vec![Effect::StoreImage {

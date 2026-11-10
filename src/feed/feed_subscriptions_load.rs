@@ -340,7 +340,7 @@ impl FeedSubscriptions {
         changed
     }
 
-    pub fn reconcile(&mut self, graph: &mere::kernel::graph::Graph) {
+    pub fn reconcile(&mut self, graph: &kernel::graph::Graph) {
         self.in_flight.clear();
         self.subscriptions.retain(|source, subscription| {
             graph

@@ -8,7 +8,7 @@
 use super::*;
 use crate::action::FetchedPage;
 use crate::surface_controls::{self, Control};
-use mere::kernel::graph::{Graph, apply::add_node};
+use kernel::graph::{Graph, apply::add_node};
 use uuid::Uuid;
 fn fixture() -> (App, Uuid, Uuid, Uuid) {
     let mut graph = Graph::new();
@@ -67,7 +67,7 @@ fn surface_controls_keep_is_local_idempotent_and_durable() {
 }
 #[test]
 fn surface_controls_resource_label_is_not_membership_evidence() {
-    use mere::kernel::graph::{
+    use kernel::graph::{
         Author,
         resource_tags::{TagConcept, tag_concept_iri},
     };

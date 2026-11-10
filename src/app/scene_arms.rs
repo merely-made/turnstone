@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: MPL-2.0
 
 use super::*;
-use mere::canvas::controls::CanvasCommand;
-use mere::canvas::physics_form::{FieldId, PhysicsForm};
-use mere::canvas::{PhysicsChoice, PhysicsOverlay};
+use pictograph::canvas::controls::CanvasCommand;
+use pictograph::canvas::physics_form::{FieldId, PhysicsForm};
+use pictograph::canvas::{PhysicsChoice, PhysicsOverlay};
 
 impl App {
     /// Arrange controls prefer a graph pane in their own window. A sole

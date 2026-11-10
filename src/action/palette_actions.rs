@@ -138,7 +138,7 @@ pub fn palette_actions() -> Vec<(String, Action)> {
         .iter()
         .position(|(_, action)| matches!(action, Action::SetLayoutStrategy(None)))
         .unwrap_or(rows.len());
-    for (offset, (id, display_name)) in mere::canvas::CANVAS_LAYOUT_STRATEGIES.iter().enumerate() {
+    for (offset, (id, display_name)) in pictograph::canvas::CANVAS_LAYOUT_STRATEGIES.iter().enumerate() {
         rows.insert(
             anchor + offset,
             (
@@ -158,10 +158,10 @@ pub fn palette_actions() -> Vec<(String, Action)> {
         .map(|i| i + 1)
         .unwrap_or(rows.len());
     let mut physics: Vec<(String, Action)> = Vec::new();
-    for (id, label) in mere::canvas::CANVAS_PHYSICS_LAWS {
+    for (id, label) in pictograph::canvas::CANVAS_PHYSICS_LAWS {
         physics.push((format!("Physics: {label}"), Action::SetPhysicsLaw(id)));
     }
-    for (id, label) in mere::canvas::CANVAS_PHYSICS_OVERLAYS {
+    for (id, label) in pictograph::canvas::CANVAS_PHYSICS_OVERLAYS {
         physics.push((
             format!("Overlay on: {label}"),
             Action::SetPhysicsOverlay(id, true),
@@ -171,35 +171,35 @@ pub fn palette_actions() -> Vec<(String, Action)> {
             Action::SetPhysicsOverlay(id, false),
         ));
     }
-    for profile in mere::canvas::CANVAS_PHYSICS_PROFILES {
+    for profile in pictograph::canvas::CANVAS_PHYSICS_PROFILES {
         physics.push((
             format!("Profile: {}", profile.label),
             Action::ApplyPhysicsProfile(profile.id),
         ));
     }
-    for (id, label) in mere::canvas::CANVAS_PHYSICS_KIND_SOURCES {
+    for (id, label) in pictograph::canvas::CANVAS_PHYSICS_KIND_SOURCES {
         physics.push((format!("Kinds: {label}"), Action::SetPhysicsKindSource(id)));
     }
-    for (id, label) in mere::canvas::CANVAS_PHYSICS_MASS_SOURCES {
+    for (id, label) in pictograph::canvas::CANVAS_PHYSICS_MASS_SOURCES {
         physics.push((format!("Mass: {label}"), Action::SetPhysicsMassSource(id)));
     }
-    for (id, label) in mere::canvas::CANVAS_PHYSICS_DEPTH_SOURCES {
+    for (id, label) in pictograph::canvas::CANVAS_PHYSICS_DEPTH_SOURCES {
         physics.push((format!("Depth: {label}"), Action::SetPhysicsDepthSource(id)));
     }
-    for role in mere::canvas::Role::ALL {
+    for role in pictograph::canvas::Role::ALL {
         physics.push((
             format!("Role: {}", role.label()),
             Action::SetPhysicsRole(role.id()),
         ));
     }
-    for (id, label) in mere::canvas::CANVAS_PHYSICS_KIND_SOURCES {
+    for (id, label) in pictograph::canvas::CANVAS_PHYSICS_KIND_SOURCES {
         physics.push((
             format!("Role groups: {label}"),
             Action::SetPhysicsRoleGroups(id),
         ));
     }
     physics.push(("Physics: Use single law".into(), Action::UseSingleLaw));
-    for (id, label) in mere::canvas::physics_controls::SPEED_PRESETS {
+    for (id, label) in pictograph::canvas::physics_controls::SPEED_PRESETS {
         physics.push((format!("Speed: {label}"), Action::SetPhysicsSpeed(id)));
     }
     for (offset, row) in physics.into_iter().enumerate() {

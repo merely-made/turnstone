@@ -148,7 +148,7 @@ impl App {
         }
         self.with_graph_pane(pane, |canvas| {
             if let Some(camera) = visit.camera {
-                canvas.set_camera(mere::canvas::CameraView {
+                canvas.set_camera(pictograph::canvas::CameraView {
                     offset: (camera.x, camera.y),
                     zoom: camera.zoom,
                 });

@@ -27,7 +27,7 @@ impl App {
         let journal = crate::host_journal::shared_journal();
         // Each installed graph records once. Scratch/migration graphs are quiet.
 
-        mere::kernel::graph::set_captured_delta_hook(None);
+        kernel::graph::set_captured_delta_hook(None);
         let mut sessions = session::load_manifests(&data_root);
         // Pre-overmap manifests minted nil root_graph_ids; the container id
         // must be real (scene.* facet key + overmap identity), so heal at boot.

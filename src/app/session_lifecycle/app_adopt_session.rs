@@ -56,7 +56,7 @@ impl App {
                         input
                             .map(|input| (input.graph, input.placement))
                             .unwrap_or_else(|| {
-                                (mere::kernel::graph::Graph::new(),
+                                (kernel::graph::Graph::new(),
                             Some(pandect::graph_placement::PlacementProfile::RecordedStrataV1))
                             });
                     self.graph_runtimes.adopt_graph(
@@ -308,7 +308,7 @@ impl App {
         for (member, log_id) in std::mem::take(&mut self.denizens.legacy_heals) {
             let _ = self
                 .graph_runtimes
-                .set_node_nested_for(member, Some(mere::kernel::graph::LogId::new(log_id)));
+                .set_node_nested_for(member, Some(kernel::graph::LogId::new(log_id)));
             if let Some(binding) =
                 pandect::read_denizen_binding(self.graph_runtimes.facets(), member)
             {

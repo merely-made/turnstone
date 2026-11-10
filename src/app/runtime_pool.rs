@@ -15,12 +15,12 @@
 use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
 
-use mere::canvas::{
+use pictograph::canvas::{
     Canvas, OverlayRefusal, PhysicsChoice, PhysicsDepthSource, PhysicsKindSource, PhysicsLaw,
     PhysicsMassSource, PhysicsOverlay, Viewport,
 };
-use mere::forme::FormeRef;
-use mere::platen::Workbench;
+use incipit::forme::FormeRef;
+use platen::Workbench;
 
 use crate::panes::{GraphId, PaneId, SessionId};
 
@@ -37,7 +37,7 @@ pub struct GraphRuntime {
     pub canvas: Canvas,
     pub(crate) scene_save_pending: bool,
     pub(crate) scene_restore_pending: bool,
-    pub(crate) scene_transition: Option<mere::canvas::physics_controls::ArrangementTransition>,
+    pub(crate) scene_transition: Option<pictograph::canvas::physics_controls::ArrangementTransition>,
     /// What the last composing physics control came to, for the Arrange pane.
     pub(crate) physics_status: Option<String>,
     pub(crate) view: crate::scene_state::ViewState,
@@ -70,7 +70,7 @@ pub struct GraphPaneViews {
     pending_fits: std::collections::HashSet<PaneId>,
     scopes: HashMap<PaneId, Option<Vec<uuid::Uuid>>>,
     neighborhoods: HashMap<PaneId, uuid::Uuid>,
-    forme_regions: HashMap<PaneId, mere::canvas::FormeRegion>,
+    forme_regions: HashMap<PaneId, pictograph::canvas::FormeRegion>,
     forme_scopes: HashMap<PaneId, uuid::Uuid>,
     viewports: HashMap<PaneId, Viewport>,
     selections: HashMap<PaneId, Vec<uuid::Uuid>>,

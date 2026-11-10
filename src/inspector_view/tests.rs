@@ -12,7 +12,7 @@ const WELD_PAGE_ZOOM_DETAIL: &str = "the requested scale is applied as a CEF zoo
 
 #[test]
 fn only_a_person_with_the_ui_id_renders_as_you() {
-    use mere::kernel::graph::Author;
+    use kernel::graph::Author;
     let app = App::test_stub();
     assert_eq!(journal_author_label(&app, &Author::user()), "you");
     for author in [

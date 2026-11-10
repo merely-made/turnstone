@@ -1,8 +1,8 @@
 // Copyright 2026 Mark Alan Boykin
 // SPDX-License-Identifier: MPL-2.0
 //! Reserved immutable references in the existing graph assertion owner.
-use mere::kernel::graph::{Graph, SemanticStatementSpec};
-use mere::kernel::types::{AssertionBasis, AssertionMethod, GraphScope};
+use kernel::graph::{Graph, SemanticStatementSpec};
+use kernel::types::{AssertionBasis, AssertionMethod, GraphScope};
 use std::collections::BTreeMap;
 
 const PREDICATE: &str = "https://merely.computer/ns/research#property-record-v1";
@@ -252,7 +252,7 @@ pub(crate) fn assertion_for(
     if matches.next().is_some() || statement.recognized_sub_kind.is_some() {
         return Err("Attached property assertion is ambiguous or unsupported".into());
     }
-    let persisted = mere::kernel::persistence_edge::PersistedSemanticStatement {
+    let persisted = kernel::persistence_edge::PersistedSemanticStatement {
         statement_id: statement.statement_id.clone(),
         predicate: statement.predicate.clone(),
         recognized_sub_kind: None,
@@ -386,8 +386,8 @@ pub(crate) fn restore(
     result: bool,
     settings: &eidetic::records::RecordSettings,
 ) -> Result<(), String> {
-    use mere::kernel::graph::apply::{GraphDelta, GraphDeltaResult, apply_graph_delta};
-    use mere::kernel::persistence_edge::{PersistedEdge, PersistedSemanticStatement};
+    use kernel::graph::apply::{GraphDelta, GraphDeltaResult, apply_graph_delta};
+    use kernel::persistence_edge::{PersistedEdge, PersistedSemanticStatement};
     let statement: PersistedSemanticStatement =
         serde_json::from_value(assertion.clone()).map_err(|_| "Recovery assertion invalid")?;
     let (predicate, method, reference) = if result {

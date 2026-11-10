@@ -53,9 +53,9 @@ fn unchanged_unbound_entry_gets_an_explicit_view_without_adopting_a_sibling() {
     let entry_view = Uuid::new_v4();
     let source_url = "https://feed-repair.test/feed";
     let entry_url = "https://feed-repair.test/entry";
-    let mut graph = mere::kernel::graph::Graph::new();
+    let mut graph = kernel::graph::Graph::new();
     for (id, url) in [(source, source_url), (sibling, entry_url)] {
-        mere::kernel::graph::apply::add_node(&mut graph, Some(id), url.into(), Default::default());
+        kernel::graph::apply::add_node(&mut graph, Some(id), url.into(), Default::default());
     }
     let mut feeds = FeedSubscriptions::default();
     feeds.subscribe(source, source_url.into(), servitor::Period::Hour);
@@ -106,8 +106,8 @@ fn unread_entry_missing_binding_retains_status_through_restart_and_repair() {
     let root = tempfile::tempdir().unwrap();
     let source = Uuid::new_v4();
     let entry = Uuid::new_v4();
-    let mut graph = mere::kernel::graph::Graph::new();
-    mere::kernel::graph::apply::add_node(
+    let mut graph = kernel::graph::Graph::new();
+    kernel::graph::apply::add_node(
         &mut graph,
         Some(source),
         "https://unread-repair.test/feed".into(),

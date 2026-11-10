@@ -86,7 +86,7 @@ mod sharing_tests {
     }
 }
 
-fn assert_graph_ref(graph: &mere::kernel::graph::Graph, admission: &crate::saved_sources::Admission) {
+fn assert_graph_ref(graph: &kernel::graph::Graph, admission: &crate::saved_sources::Admission) {
     assert!(admission.error.is_none() && admission.key.is_sealed());
     let (_, node) = graph.get_node_by_id(admission.key.node).expect("source node missing");
     let facet = graph.facets().get(&node.id, &chartulary::FacetId::new(

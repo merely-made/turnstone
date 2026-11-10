@@ -193,7 +193,7 @@ fn revoking_only_the_watch_scope_refuses_the_wake_but_keeps_base_authority() {
     app.update(Action::ConfirmInstallDenizen);
     let member = *app.denizens.residents.keys().next().unwrap();
     let subject = app.denizens.residents[&member].subject;
-    let participant_author = mere::kernel::graph::Author::script(
+    let participant_author = kernel::graph::Author::script(
         subject.to_hex(),
         blake3::Hash::from(app.denizens.residents[&member].binding.revision.0)
             .to_hex()

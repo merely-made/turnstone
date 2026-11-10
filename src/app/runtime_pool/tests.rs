@@ -13,7 +13,7 @@ fn display_budget_survives_graph_replacement_and_unknown_rate() {
     let b = graph(902);
     let assert_budget = |pool: &GraphRuntimePool, id, rate| {
         let actual = pool.canvas(id).unwrap().physics_step_budget().unwrap();
-        let expected = mere::canvas::StepBudget::for_display(rate);
+        let expected = pictograph::canvas::StepBudget::for_display(rate);
         assert_eq!(actual.per_frame, expected.per_frame);
         assert_eq!(actual.margin, expected.margin);
     };
@@ -120,7 +120,7 @@ fn pane_selections_do_not_alias_on_one_graph() {
 fn forme_runtime_key_keeps_graph_and_forme_separate() {
     let graph_a = graph(1);
     let graph_b = graph(2);
-    let forme = FormeRef::Stored(mere::forme::FormeId::from_uuid(uuid::Uuid::from_u128(7)));
+    let forme = FormeRef::Stored(incipit::forme::FormeId::from_uuid(uuid::Uuid::from_u128(7)));
     let mut pool = FormeRuntimePool::default();
 
     pool.get_or_create(graph_a, forme);
@@ -135,7 +135,7 @@ fn forme_runtime_key_keeps_graph_and_forme_separate() {
 fn workbenches_are_owned_by_their_forme_runtime() {
     let graph_a = graph(1);
     let graph_b = graph(2);
-    let forme = FormeRef::Stored(mere::forme::FormeId::from_uuid(uuid::Uuid::from_u128(7)));
+    let forme = FormeRef::Stored(incipit::forme::FormeId::from_uuid(uuid::Uuid::from_u128(7)));
     let member = uuid::Uuid::from_u128(42);
     let mut pool = FormeRuntimePool::default();
 

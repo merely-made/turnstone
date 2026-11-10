@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 use super::*;
-use mere::kernel::graph::{CoverageLayer, CoverageLimit, CoverageNote};
+use kernel::graph::{CoverageLayer, CoverageLimit, CoverageNote};
 
 fn scoped_coverage() -> CoverageNote {
     let layers = [

@@ -11,7 +11,7 @@ impl App {
         error: String,
     ) {
         self.graph_runtimes.adopt_graph(
-            mere::kernel::graph::Graph::new(),
+            kernel::graph::Graph::new(),
             crate::session_persistence::SessionPersistence::refused(directory, error.clone()),
         );
         self.next_place_generation = self.next_place_generation.wrapping_add(1);

@@ -44,8 +44,8 @@
 
 use std::collections::{HashMap, HashSet};
 
-use mere::kernel::graph::Graph;
-use mere::kernel::graph::capture::CapturedDelta;
+use kernel::graph::Graph;
+use kernel::graph::capture::CapturedDelta;
 use servitor::cascade::{Cascade, CascadeBudget, CascadeOutcome, CommittedEntry, run_cascade};
 use servitor::{AuthorityProvider, Mode, ScopePath, Subject};
 

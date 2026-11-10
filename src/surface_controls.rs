@@ -6,9 +6,9 @@
 
 //! Product controls belong to one Surface independently of shown content.
 use chartulary::{AcceptAll, FacetId};
-use mere::canvas::Canvas;
-use mere::kernel::graph::{Graph, NodeFacetStore};
-use mere::kernel::persistence::GraphSnapshot;
+use pictograph::canvas::Canvas;
+use kernel::graph::{Graph, NodeFacetStore};
+use kernel::persistence::GraphSnapshot;
 use serde_json::Value;
 use uuid::Uuid;
 const LEGACY_LABELS: &str = "turnstone.controls.v1.legacy-labels";
@@ -158,7 +158,7 @@ pub(crate) fn preserve_recycle_labels(canvas: &mut Canvas, member: Uuid, tags: &
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mere::kernel::graph::apply::add_node;
+    use kernel::graph::apply::add_node;
     #[test]
     fn legacy_surface_labels_preserve_evidence_and_canonical_false() {
         let mut graph = Graph::new();

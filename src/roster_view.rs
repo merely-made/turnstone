@@ -130,7 +130,7 @@ pub fn roster_grid_rows_for_pane(app: &App, pane: crate::panes::PaneId) -> Vec<R
 
 fn roster_grid_rows_for_context(
     app: &App,
-    canvas: Option<&mere::canvas::Canvas>,
+    canvas: Option<&pictograph::canvas::Canvas>,
     focused: Option<uuid::Uuid>,
 ) -> Vec<RosterGridRow> {
     let Some(canvas) = canvas else {

@@ -84,7 +84,7 @@ fn resource_content_recycle_capture_keeps_exact_labels_and_live_sibling() {
     assert_eq!(graph.shown_resource_id(sibling_key), Some(resource));
     assert_eq!(graph.surface_ids_showing_resource(resource), vec![second]);
     assert_eq!(graph.resource_tag_labels(resource).len(), 2);
-    let reloaded = mere::kernel::graph::Graph::try_from_snapshot(&graph.to_snapshot())
+    let reloaded = kernel::graph::Graph::try_from_snapshot(&graph.to_snapshot())
         .expect("persisted live sibling association");
     let key = reloaded.get_node_by_id(second).unwrap().0;
     assert_eq!(reloaded.shown_resource_id(key), Some(resource));
@@ -115,28 +115,28 @@ fn session_restore_applies_law_before_overlays_and_records_refusal() {
     let session_id = app.session_id;
     let session_dir = session::session_dir(dir.path(), session_id);
     // The flat view intent this host wrote before the saved scene.
-    let write_intent = |law: mere::canvas::PhysicsLaw| {
+    let write_intent = |law: pictograph::canvas::PhysicsLaw| {
         std::fs::create_dir_all(&session_dir).unwrap();
         std::fs::write(
             session::view_intent_path(&session_dir),
             serde_json::json!({
                 "physics_law": law.id(),
-                "physics_overlays": [mere::canvas::PhysicsOverlay::GridSnap.id()],
+                "physics_overlays": [pictograph::canvas::PhysicsOverlay::GridSnap.id()],
             })
             .to_string(),
         )
         .unwrap();
     };
-    write_intent(mere::canvas::PhysicsLaw::Density);
+    write_intent(pictograph::canvas::PhysicsLaw::Density);
     app.adopt_session(session_id);
     assert_eq!(
         app.graph_runtimes.physics_law(),
-        mere::canvas::PhysicsLaw::Density
+        pictograph::canvas::PhysicsLaw::Density
     );
     assert!(app.graph_runtimes.physics_overlays().is_empty());
     assert_eq!(
         app.physics_refusal().unwrap().refused,
-        vec![mere::canvas::PhysicsOverlay::GridSnap]
+        vec![pictograph::canvas::PhysicsOverlay::GridSnap]
     );
     assert!(
         app.take_events()
@@ -144,11 +144,11 @@ fn session_restore_applies_law_before_overlays_and_records_refusal() {
             .any(|event| matches!(event, AppEvent::PhysicsRefused(_)))
     );
 
-    write_intent(mere::canvas::PhysicsLaw::Springs);
+    write_intent(pictograph::canvas::PhysicsLaw::Springs);
     app.adopt_session(session_id);
     assert_eq!(
         app.graph_runtimes.physics_overlays(),
-        &[mere::canvas::PhysicsOverlay::GridSnap]
+        &[pictograph::canvas::PhysicsOverlay::GridSnap]
     );
     assert!(app.physics_refusal().is_none());
 }
@@ -330,7 +330,7 @@ fn binary_page_response_becomes_durable_download_custody() {
     assert_eq!(pending["status"], "storing");
     assert_eq!(pending["byte_size"], bytes.len() as u64);
 
-    let content = mere::kernel::graph::ContentHash::of(&bytes);
+    let content = kernel::graph::ContentHash::of(&bytes);
     let destination = "C:\\Downloads\\archive.bin".to_string();
     let complete = app.apply_update(Update::DownloadStored {
         node,

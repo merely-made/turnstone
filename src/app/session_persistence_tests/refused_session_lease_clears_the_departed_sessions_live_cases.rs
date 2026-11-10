@@ -157,7 +157,7 @@ fn canonical_false_control_survives_legacy_label_migration_without_default_facet
     snapshot.nodes[0].tags = vec!["keep".into()];
     let path = root.path().join(pandect::session_graph_store::GRAPH_FILE);
     std::fs::write(&path, serde_json::to_vec(&snapshot).unwrap()).unwrap();
-    let mut canonical = mere::kernel::graph::NodeFacetStore::new();
+    let mut canonical = kernel::graph::NodeFacetStore::new();
     crate::surface_controls::set_facets(
         &mut canonical,
         member,
@@ -179,7 +179,7 @@ fn canonical_false_control_survives_legacy_label_migration_without_default_facet
             .facets()
             .get(
                 &member,
-                &chartulary::FacetId::new(mere::kernel::graph::node_facets::VISIT_HISTORY)
+                &chartulary::FacetId::new(kernel::graph::node_facets::VISIT_HISTORY)
             )
             .is_none(),
         "migration cannot invent a visit absent from the authoritative sidecar"
@@ -237,7 +237,7 @@ fn writer_lease_survives_same_session_readoption_and_switch_back() {
 
 #[test]
 fn host_session_fork_preserves_resource_records_and_tag_assertions() {
-    use mere::kernel::graph::{
+    use kernel::graph::{
         Author,
         resource_tags::{TagConcept, tag_concept_iri},
     };

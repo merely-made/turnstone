@@ -302,7 +302,7 @@ pub fn snapshot(app: &App) -> Snapshot {
         workbench_cells: workbench_cells(app),
         workbench_fractions: app
             .active_workbench()
-            .map(mere::platen::Workbench::weights)
+            .map(platen::Workbench::weights)
             .unwrap_or_default(),
         a11y: crate::a11y::a11y_lines(app),
         can_back: app.focused_can_back(),

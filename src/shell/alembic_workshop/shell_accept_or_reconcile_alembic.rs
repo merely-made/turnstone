@@ -267,8 +267,8 @@ impl Shell {
                 let should_persist = deltas.is_some();
                 if let Some(deltas) = deltas {
                     for delta in deltas {
-                        if let mere::kernel::graph::apply::GraphDeltaResult::Refused(error) =
-                            mere::kernel::graph::apply::apply_graph_delta(&mut candidate, delta)
+                        if let kernel::graph::apply::GraphDeltaResult::Refused(error) =
+                            kernel::graph::apply::apply_graph_delta(&mut candidate, delta)
                         {
                             return Err(error.to_string());
                         }

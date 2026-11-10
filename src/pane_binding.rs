@@ -506,7 +506,7 @@ mod tests {
         let (mut app, map, inspector, _) = setup();
         choose(&mut app, inspector, "Pin this document");
         app.with_graph_pane(map, |canvas| {
-            canvas.set_graph(mere::kernel::graph::Graph::new())
+            canvas.set_graph(kernel::graph::Graph::new())
         });
         app.active_pane = Some(map);
         app.update(Action::OpenAddress(

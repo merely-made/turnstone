@@ -70,10 +70,10 @@ pub(crate) fn inspector_member(app: &App, pane: crate::panes::PaneId) -> Option<
 
 fn inspector_sections_for_context(
     app: &App,
-    canvas: Option<&mere::canvas::Canvas>,
+    canvas: Option<&pictograph::canvas::Canvas>,
     member: Option<uuid::Uuid>,
 ) -> Vec<InspectorSection> {
-    let graph = canvas.map(mere::canvas::Canvas::graph);
+    let graph = canvas.map(pictograph::canvas::Canvas::graph);
     let focused = member.and_then(|member| graph.and_then(|graph| graph.get_node_by_id(member)));
 
     let node_rows = match focused {
@@ -257,8 +257,8 @@ fn journal_rows(app: &App) -> Vec<(String, String)> {
         .collect()
 }
 
-fn journal_author_label(app: &App, author: &mere::kernel::graph::Author) -> String {
-    use mere::kernel::graph::{AuthorKind, USER_AUTHOR};
+fn journal_author_label(app: &App, author: &kernel::graph::Author) -> String {
+    use kernel::graph::{AuthorKind, USER_AUTHOR};
     if author.kind == AuthorKind::Person && author.id == USER_AUTHOR {
         return "you".to_string();
     }
@@ -420,8 +420,8 @@ fn summarize_strings<'a>(values: impl Iterator<Item = &'a str>) -> String {
 }
 
 fn summarize_import_provenance(
-    graph: &mere::kernel::graph::Graph,
-    key: mere::kernel::graph::NodeKey,
+    graph: &kernel::graph::Graph,
+    key: kernel::graph::NodeKey,
 ) -> String {
     let provenance = graph.node_import_provenance(key).unwrap_or_default();
     if provenance.is_empty() {
@@ -437,8 +437,8 @@ fn summarize_import_provenance(
 }
 
 fn summarize_classifications(
-    graph: &mere::kernel::graph::Graph,
-    key: mere::kernel::graph::NodeKey,
+    graph: &kernel::graph::Graph,
+    key: kernel::graph::NodeKey,
 ) -> String {
     let classifications = graph.node_classifications(key).unwrap_or_default();
     if classifications.is_empty() {

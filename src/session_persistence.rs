@@ -1,7 +1,7 @@
 // Copyright 2026 Mark Alan Boykin
 // SPDX-License-Identifier: MPL-2.0
 //! Host-owned session write authority, independent of graph contents.
-use mere::kernel::graph::Graph;
+use kernel::graph::Graph;
 use std::fs::{File, OpenOptions};
 use std::io;
 use std::path::{Path, PathBuf};

@@ -9,7 +9,7 @@ use crate::{
     panes::{GraphId, PaneContent, PaneId},
     scope_navigation::{ScopeLevel, ScopePlace},
 };
-use mere::forme::FormeRef;
+use incipit::forme::FormeRef;
 use uuid::Uuid;
 
 fn identity(forme: FormeRef) -> Uuid {
@@ -115,7 +115,7 @@ impl App {
     pub(crate) fn scope_forme_region(
         &self,
         place: &ScopePlace<GraphId, Uuid>,
-    ) -> Option<mere::canvas::FormeRegion> {
+    ) -> Option<pictograph::canvas::FormeRegion> {
         let reader = self.scope_forme_reader(place)?;
         let key = self.forme_for_pane(reader)?;
         let (tree, members) = self.forme_preview_tree(reader)?;
@@ -132,14 +132,14 @@ impl App {
                     focused: false,
                 })
         });
-        Some(mere::canvas::FormeRegion {
+        Some(pictograph::canvas::FormeRegion {
             id: identity(key.forme),
             bounds: [-400.0, -240.0, 400.0, 240.0],
             cells: swatch
                 .cells
                 .iter()
                 .filter_map(|c| {
-                    c.tabs.get(c.active).map(|t| mere::canvas::FormeCell {
+                    c.tabs.get(c.active).map(|t| pictograph::canvas::FormeCell {
                         member: t.id,
                         bounds: c.bounds,
                     })

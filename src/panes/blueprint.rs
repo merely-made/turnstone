@@ -12,7 +12,7 @@
 
 use std::collections::{HashMap, HashSet};
 
-use mere::forme::{FormeRef, GraphMemberId};
+use incipit::forme::{FormeRef, GraphMemberId};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 

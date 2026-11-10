@@ -7,7 +7,7 @@ use athanor::{
     workshop::{Workshop, evaluate},
     workshop_destination as destination,
 };
-use mere::kernel::graph::{
+use kernel::graph::{
     Graph,
     apply::{GraphDeltaResult, apply_graph_delta},
 };

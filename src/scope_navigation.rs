@@ -12,7 +12,7 @@ use crate::{
 use cambium::scope_navigation::{
     NodeActivation, ScopeCamera, ScopeControls, ScopeDirection, ScopeVisit,
 };
-pub use mere::navigation::browser::{ScopeContext, ScopeDestination, ScopeLevel, ScopePlace};
+pub use incipit::navigation::browser::{ScopeContext, ScopeDestination, ScopeLevel, ScopePlace};
 pub type Destination = ScopeDestination<GraphId, Uuid>;
 pub type ScopeCommand = cambium::scope_navigation::ScopeCommand<Destination>;
 pub type ScopeCrumb = cambium::scope_navigation::ScopeCrumb<Destination>;

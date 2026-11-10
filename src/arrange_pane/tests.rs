@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MPL-2.0
 
 use super::*;
-use mere::canvas::physics_controls::{read_two_law_mix, speed_preset};
-use mere::canvas::{PhysicsLaw, Role};
+use pictograph::canvas::physics_controls::{read_two_law_mix, speed_preset};
+use pictograph::canvas::{PhysicsLaw, Role};
 
 #[test]
 fn refused_overlays_are_visible_and_keep_the_applied_law() {
@@ -192,8 +192,8 @@ fn composing_intents_lower_and_reach_the_canvas() {
 
 #[test]
 fn flat_and_composed_profiles_follow_shared_root_aware_readback() {
-    use mere::canvas::StageStop;
-    use mere::canvas::physics_controls::{StageDraft, TwoLawGrouping, TwoLawMix, TwoStageSchedule};
+    use pictograph::canvas::StageStop;
+    use pictograph::canvas::physics_controls::{StageDraft, TwoLawGrouping, TwoLawMix, TwoStageSchedule};
 
     let mut flat = App::test_stub();
     for overlay in PhysicsOverlay::ALL {
@@ -209,7 +209,7 @@ fn flat_and_composed_profiles_follow_shared_root_aware_readback() {
         second_share: 1.0,
     };
     let grouping = TwoLawGrouping {
-        partition: mere::canvas::PhysicsKindSource::Component,
+        partition: pictograph::canvas::PhysicsKindSource::Component,
         outer: PhysicsLaw::Charge,
         inner: PhysicsLaw::Springs,
         outer_share: 1.0,

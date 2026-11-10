@@ -7,7 +7,7 @@
 //! The Arrange pane: the graph's arrangement and its physics, as controls.
 //!
 //! The native counterpart of the web host's arrangement-and-physics section,
-//! which calls the same `mere::canvas::physics_controls` actions and labels
+//! which calls the same `pictograph::canvas::physics_controls` actions and labels
 //! its canvas verbs with `CanvasCommand::label`: one
 //! choice row for the arrangement (the canvas's analytic strategies, or
 //! Free — physics alone), one for the physics **law**, a toggle per
@@ -39,10 +39,10 @@ use cambium::{
 };
 use genet_scripted_dom::ScriptedDom;
 use layout_dom_api::LayoutDom;
-use mere::canvas::controls::CanvasCommand;
-use mere::canvas::physics_controls::{SPEED_PRESETS, TwoLawGrouping, TwoLawMix, TwoStageSchedule};
-use mere::canvas::physics_form::{Control, FieldId, PhysicsForm, Readback};
-use mere::canvas::{CANVAS_LAYOUT_STRATEGIES, PhysicsOverlay};
+use pictograph::canvas::controls::CanvasCommand;
+use pictograph::canvas::physics_controls::{SPEED_PRESETS, TwoLawGrouping, TwoLawMix, TwoStageSchedule};
+use pictograph::canvas::physics_form::{Control, FieldId, PhysicsForm, Readback};
+use pictograph::canvas::{CANVAS_LAYOUT_STRATEGIES, PhysicsOverlay};
 use mere_surface_api::settings::{
     SettingControl, SettingMovement, SettingMutability, SettingOption, SettingScope,
     SettingSecurity, SettingSpec, SettingValue,

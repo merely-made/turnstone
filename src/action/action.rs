@@ -189,7 +189,7 @@ pub enum Action {
     /// host wiring of the analytic catalog (projection-engine proof 1).
     SetLayoutStrategy(Option<&'static str>),
     /// Switch the physics law the graph moves under, by catalog id
-    /// (`mere::canvas::PhysicsLaw::id`). (Physics catalog — P2.)
+    /// (`pictograph::canvas::PhysicsLaw::id`). (Physics catalog — P2.)
     SetPhysicsLaw(&'static str),
     /// Turn one physics overlay on or off, by catalog id.
     SetPhysicsOverlay(&'static str, bool),
@@ -202,16 +202,16 @@ pub enum Action {
     /// Apply a named physics profile (a law plus overlays), by id.
     ApplyPhysicsProfile(&'static str),
     /// The role every item takes unless a group or the item says otherwise,
-    /// by `mere::canvas::Role::id`.
+    /// by `pictograph::canvas::Role::id`.
     SetPhysicsRole(&'static str),
     /// Which groups channel role overrides read, by kind-source id.
     SetPhysicsRoleGroups(&'static str),
     /// Replace the law with one bounded two-law force mix.
-    ApplyPhysicsMix(mere::canvas::physics_controls::TwoLawMix),
+    ApplyPhysicsMix(pictograph::canvas::physics_controls::TwoLawMix),
     /// Replace the law with one bounded grouped composition.
-    ApplyPhysicsGrouping(mere::canvas::physics_controls::TwoLawGrouping),
+    ApplyPhysicsGrouping(pictograph::canvas::physics_controls::TwoLawGrouping),
     /// Replace the law with a two-stage schedule and start it.
-    ApplyPhysicsSchedule(mere::canvas::physics_controls::TwoStageSchedule),
+    ApplyPhysicsSchedule(pictograph::canvas::physics_controls::TwoStageSchedule),
     /// Return from a composition to the single law the canvas is running.
     UseSingleLaw,
     /// Run the simulation at a speed preset, by `SPEED_PRESETS` id.

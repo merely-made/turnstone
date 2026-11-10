@@ -7,7 +7,7 @@ use sceno::{Arrangement, Spiral};
 // Future-supplier controls: these require the coordinated immutable
 // resource supplier. They cover only load and migration re-save placement.
 fn recorded_session_fixture() -> Graph {
-    use mere::kernel::graph::apply::add_node;
+    use kernel::graph::apply::add_node;
     let mut graph = Graph::new();
     add_node(
         &mut graph,
@@ -94,7 +94,7 @@ fn session_profile_migration_write_failure_preserves_raw_control_evidence() {
 
 #[test]
 fn session_profile_recorded_load_and_migration_preserve_held_relations() {
-    use mere::kernel::types::ImageRole;
+    use kernel::types::ImageRole;
     use pandect::graph_placement::PlacementProfile;
     for image_migration in [false, true] {
         let root = tempfile::tempdir().unwrap();
@@ -148,7 +148,7 @@ fn session_profile_recorded_load_and_migration_preserve_held_relations() {
 
 #[test]
 fn session_profile_invalid_resource_and_declared_legacy_refuse_without_rewrite() {
-    use mere::kernel::persistence::PersistedShownResource;
+    use kernel::persistence::PersistedShownResource;
     use pandect::graph_placement::PlacementProfile;
     let root = tempfile::tempdir().unwrap();
     let path = root.path().join(session_graph_store::GRAPH_FILE);
@@ -469,7 +469,7 @@ fn unsupported_place_binding_stays_a_visible_error() {
 #[test]
 fn legacy_node_columns_migrate_on_load_and_existing_facets_win() {
     let root = temp_root("node-facet-migration");
-    let mut canvas = mere::canvas::Canvas::new();
+    let mut canvas = pictograph::canvas::Canvas::new();
     let key = canvas.visit("https://legacy.example/");
     let node_id = canvas.graph().get_node(key).unwrap().id;
     save_session_graph(&root, canvas.graph());
@@ -489,7 +489,7 @@ fn legacy_node_columns_migrate_on_load_and_existing_facets_win() {
     facets
         .set(
             node_id,
-            chartulary::FacetId::new(mere::kernel::graph::node_facets::ARRANGEMENT_PIN),
+            chartulary::FacetId::new(kernel::graph::node_facets::ARRANGEMENT_PIN),
             serde_json::json!(false),
             &chartulary::AcceptAll,
         )
@@ -513,7 +513,7 @@ fn legacy_node_columns_migrate_on_load_and_existing_facets_win() {
     assert_eq!(
         persisted.get(
             &node_id,
-            &chartulary::FacetId::new(mere::kernel::graph::node_facets::ARRANGEMENT_PIN,),
+            &chartulary::FacetId::new(kernel::graph::node_facets::ARRANGEMENT_PIN,),
         ),
         Some(&serde_json::json!(false))
     );
@@ -522,13 +522,13 @@ fn legacy_node_columns_migrate_on_load_and_existing_facets_win() {
 #[test]
 fn image_gc_keeps_live_blobs_and_drops_only_hash_named_orphans() {
     let root = temp_root("image-gc");
-    let live = mere::kernel::types::ImageRef::new([1; 32], 1, 1);
-    let orphan = mere::kernel::types::ImageRef::new([2; 32], 1, 1);
+    let live = kernel::types::ImageRef::new([1; 32], 1, 1);
+    let orphan = kernel::types::ImageRef::new([2; 32], 1, 1);
     save_image_blob(&root, &live.hex(), b"live");
     save_image_blob(&root, &orphan.hex(), b"orphan");
     std::fs::write(images_dir(&root).join("README"), b"not a blob").unwrap();
 
-    let mut canvas = mere::canvas::Canvas::new();
+    let mut canvas = pictograph::canvas::Canvas::new();
     let key = canvas.visit("https://live.example/");
     let node = canvas.graph().get_node(key).unwrap().id;
     assert!(canvas.set_node_favicon_for(node, live));

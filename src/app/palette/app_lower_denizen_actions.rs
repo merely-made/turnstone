@@ -35,7 +35,7 @@ impl App {
         let member = uuid::Uuid::from_bytes(ticket.binding.id.0);
         // The admitted body supplies the version; the host supplies the route.
         // Both interpreted and component bodies are participant scripts.
-        let author = mere::kernel::graph::Author::script(
+        let author = kernel::graph::Author::script(
             subject.to_hex(),
             blake3::Hash::from(ticket.binding.revision.0)
                 .to_hex()

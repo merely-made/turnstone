@@ -43,16 +43,18 @@ mandrake = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 cambium-desktop = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 cambium-rootstock = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 
-# The library this app is the reference host for: graph truth + the
-# composition tier, consumed through the `mere` facade (kernel, canvas,
-# forme, platen, glossary, ...). Git sibling per workspace convention; a
-# local checkout is picked up via the gitignored `.cargo/config.toml`
-# patches (mirrors mere's own sibling handling). Of the facade's twelve
-# re-exports only two are compatibility scaffolding, `platen` and
-# `workbench`: those move INTO this repo as the port proceeds. Canvas
-# STAYS in mere (the 2026-07-09 amendment reversed its move); the crate
-# was called `orrery` at turnstone's founding. Boundary pass plan, 2026-07-09.
-mere = { git = "https://github.com/merely-made/mere.git", branch = "main" }
+# The library this app is the reference host for: graph truth and the
+# composition tier, each consumed by the crate that owns it (engine split D58:
+# the `mere` facade is dissolved). The kernel is `mere-kernel` (lib name
+# `kernel`); the canvas is `pictograph::canvas`; forme, navigation, roster and
+# trail are incipit's (`arrangement`/`graph`); `platen` and `workbench` are
+# below. Git siblings per workspace convention; a local checkout is picked up
+# via the gitignored `.cargo/config.toml` patches.
+kernel = { package = "mere-kernel", git = "https://github.com/merely-made/mere.git", branch = "main" }
+# `canvas` is the graph canvas; the default features (physics-engine,
+# image-decode) are what the facade forwarded.
+pictograph = { git = "https://github.com/merely-made/mere.git", branch = "main", features = ["canvas"] }
+platen = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 # Mere's graph-to-Scenograph adapter remains kernel-aware and product-owned.
 # G3 consumes its existing score + scene lowering directly.
 cartography = { package = "mere-cartography", git = "https://github.com/merely-made/mere.git", branch = "main" }

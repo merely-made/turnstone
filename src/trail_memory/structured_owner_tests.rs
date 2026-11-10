@@ -129,8 +129,8 @@ fn model_free_owner_enumeration_deduplicates_projection_and_refuses_ambiguous_no
     }));
     let (_, revision) = bridge.context_revision().unwrap();
     let selected = Some(vec![Member::Capture(admission.key.clone())]);
-    let mut graph = mere::kernel::graph::Graph::new();
-    let node = mere::kernel::graph::apply::add_node(
+    let mut graph = kernel::graph::Graph::new();
+    let node = kernel::graph::apply::add_node(
         &mut graph,
         Some(uuid::Uuid::new_v4()),
         "https://fixture.test/entity".into(),

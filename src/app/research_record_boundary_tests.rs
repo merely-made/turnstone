@@ -93,7 +93,7 @@ fn model_free_recovery_inventory_available_after_unrelated_graph_growth() {
         .unwrap()
         .canvas
         .ingest_graph(|graph| {
-            mere::kernel::graph::apply::add_node(
+            kernel::graph::apply::add_node(
                 graph,
                 Some(uuid::Uuid::new_v4()),
                 "https://fixture.test/later".into(),

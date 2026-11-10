@@ -64,7 +64,7 @@ pub(super) fn output(
 }
 
 pub(super) fn graph_members(
-    graph: &mere::kernel::graph::Graph,
+    graph: &kernel::graph::Graph,
     session: uuid::Uuid,
     graph_id: uuid::Uuid,
     admissions: &[crate::saved_sources::Admission],
@@ -350,8 +350,8 @@ mod tests {
     fn model_free_graph_inventory_counts_occurrences_and_checks_selection() {
         let session = crate::panes::SessionId::from_uuid(uuid::Uuid::new_v4());
         let graph_id = crate::panes::GraphId::from_uuid(uuid::Uuid::new_v4());
-        let mut graph = mere::kernel::graph::Graph::new();
-        let key = mere::kernel::graph::apply::add_node(
+        let mut graph = kernel::graph::Graph::new();
+        let key = kernel::graph::apply::add_node(
             &mut graph,
             None,
             "https://source.test".into(),

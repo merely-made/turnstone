@@ -4,8 +4,8 @@
 //! Process-local behavior capture. Origin is supplied by each installed graph,
 //! never recovered from focus or from the IDs a delta happens to name.
 use crate::panes::{GraphId, SessionId};
-use mere::kernel::graph::capture::{CapturedDelta, DeltaRecorder};
-use mere::kernel::graph::{AttributedDelta, Author};
+use kernel::graph::capture::{CapturedDelta, DeltaRecorder};
+use kernel::graph::{AttributedDelta, Author};
 use std::ops::Deref;
 use std::sync::{Arc, Mutex};
 
@@ -236,7 +236,7 @@ impl Drop for AuthorRestore {
 #[cfg(test)]
 mod journal_tests {
     use super::*;
-    use mere::kernel::graph::{Author, capture::CapturedDelta};
+    use kernel::graph::{Author, capture::CapturedDelta};
     fn graph(n: u128) -> GraphId {
         GraphId::from_uuid(uuid::Uuid::from_u128(n))
     }
@@ -327,7 +327,7 @@ mod journal_tests {
     }
     #[test]
     fn graph_owned_recorder_records_once_and_clone_scratch_is_silent() {
-        use mere::kernel::graph::{
+        use kernel::graph::{
             Graph,
             apply::{GraphDelta, add_node, apply_graph_delta},
         };

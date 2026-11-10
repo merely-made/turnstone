@@ -18,7 +18,7 @@ pub(super) fn app_entries(app: &App, author_from: Option<(usize, &str)>) -> Vec<
             let index = base + offset;
             let author = match author_from {
                 Some((from, subject)) if index >= from => subject,
-                _ => mere::kernel::graph::USER_AUTHOR,
+                _ => kernel::graph::USER_AUTHOR,
             };
             let scope = app_event_scope(event)?;
             let ordinal = app.events_base() + index as u64 + 1;

@@ -10,8 +10,8 @@ use crate::saved_sources::{self, Admission, Entry, Key, Target};
 use athanor::alembic::workshop::{Owner, Passage, Source};
 use athanor::alembic::workshop_surface::SourceChoice;
 use athanor::workshop_seal::Protection;
-use mere::kernel::graph::{Graph, apply::GraphDelta};
-use mere::kernel::persistence::PersistedResourceRecord;
+use kernel::graph::{Graph, apply::GraphDelta};
+use kernel::persistence::PersistedResourceRecord;
 use uuid::Uuid;
 
 #[derive(Clone, Copy)]

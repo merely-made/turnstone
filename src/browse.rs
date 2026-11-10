@@ -21,7 +21,7 @@ use std::collections::HashMap;
 
 use fetch::{FetchCommand, FetchUpdate};
 use layout_dom_api::LayoutDom;
-use mere::canvas::Canvas;
+use pictograph::canvas::Canvas;
 use uuid::Uuid;
 
 use crate::action::{Effect, FetchedPage, Update};

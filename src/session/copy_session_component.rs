@@ -11,11 +11,11 @@ pub(crate) fn copy_session_component(
     source: &Graph,
     seed: uuid::Uuid,
     source_graph: Option<String>,
-) -> Result<(Graph, mere::kernel::graph::ComponentCopy), String> {
+) -> Result<(Graph, kernel::graph::ComponentCopy), String> {
     use std::collections::{HashMap, HashSet};
     let members = source.component_members(seed, &[]);
     let mut graph = Graph::new();
-    let mut copy = mere::kernel::graph::ComponentCopy::default();
+    let mut copy = kernel::graph::ComponentCopy::default();
     let mut remap = HashMap::new();
     let mut resources = HashSet::new();
     for member in members {
