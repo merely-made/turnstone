@@ -743,6 +743,10 @@ type Child = Box<dyn AnyView<TreePage, (), GenetCtx, GenetElement>>;
 type Logic = fn(&TreePage) -> Child;
 
 fn view(page: &TreePage) -> Child {
+    #[cfg(feature = "product")]
+    if let Some(proof) = blocks::woodshed_passage(page) {
+        return proof;
+    }
     if let Some(view) = responsive_links::view(page) {
         return view;
     }
@@ -1585,7 +1589,7 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
         product::open(&root).await?
     };
     #[cfg(feature = "product")]
-    let blocks = blocks::load(product.as_ref()).await;
+    let blocks = blocks::load(product.as_ref(), root.has_attribute("data-n2-woodshed")).await;
     #[cfg(feature = "product")]
     let (mut forme, mut forme_error) = match &product {
         Some(p) => match forme::Pane::open(p).await {

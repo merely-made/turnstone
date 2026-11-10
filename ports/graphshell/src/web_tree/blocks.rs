@@ -11,7 +11,7 @@ use graphshell::block_pane::{
     self, BackendStorage, PaneHost, PanePorts, ReadOnly, Storage, SwatchStyle, Task,
 };
 
-pub(super) use block_pane::SHEET;
+pub(super) use block_pane::{SHEET, woodshed_passage};
 pub(super) type Pane = block_pane::Pane;
 
 struct WebPorts;
@@ -27,7 +27,12 @@ impl PanePorts for WebPorts {
     }
 }
 
-pub(super) async fn load(product: Option<&product::SavedProduct>) -> Pane {
+pub(super) async fn load(product: Option<&product::SavedProduct>, proof: bool) -> Pane {
+    if proof {
+        let mut pane = Pane::load(None, Rc::new(WebPorts)).await;
+        pane.enable_woodshed_passage_proof();
+        return pane;
+    }
     let storage = product.and_then(|p| p.forme_source()).map(|(backend, id)| {
         // A follower's handle refuses writes; the pane shows it read-only.
         let read_only = backend.is_read_only();
@@ -70,7 +75,7 @@ impl PaneHost for TreePage {
         })
     }
     fn available(&self) -> bool {
-        self.product.is_some()
+        self.product.is_some() || self.blocks.woodshed_passage_proof()
     }
     fn refreshes(&self) -> u64 {
         self.product.as_ref().map_or(0, |product| product.refreshes())

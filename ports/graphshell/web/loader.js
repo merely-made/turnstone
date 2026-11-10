@@ -417,6 +417,8 @@ try {
   // The host dataset (scenomise.host-dataset/v1 or a v2 history; mer3ly site
   // canvas plan, S1 and S3): fetched before mounting so the viewer and the
   // practice proof read one input, the root's `data-dataset`.
+  const params = new URLSearchParams(location.search);
+  if (params.has("n2-woodshed")) graphshellRoot()?.setAttribute("data-n2-woodshed", "");
   await loadHostDataset(graphshellRoot());
   // Two ways in, one component. `mountGraphshell(element)` is the plain
   // entry; both custom elements use the retained tree. The shared mount
@@ -426,7 +428,6 @@ try {
   // The remote link: `?signal=<url>` joins a host over WebRTC through its
   // signaling server (`GET /invite` unless `?invite=` is given, `POST
   // /offer`). Without it the in-process fixture stays mounted.
-  const params = new URLSearchParams(location.search);
   const signal = params.get("signal");
   if (signal) {
     await new Promise((resolve) => {

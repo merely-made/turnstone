@@ -42,6 +42,9 @@ use std::future::Future;
 use std::pin::Pin;
 use std::rc::Rc;
 
+mod woodshed_passage;
+pub use woodshed_passage::woodshed_passage;
+
 /// The retained canvas's clear colour, independent of any presentation adapter.
 const SHELL_CLEAR: wgpu::Color = wgpu::Color {
     r: 0.027,
@@ -162,6 +165,7 @@ pub trait PaneHost: 'static + Sized {
 const VIEW_KEY: u64 = 0x6773_6e74;
 
 pub const SHEET: &str = r#"
+.n2-woodshed-passage { display:flex; flex-direction:column; flex:1; min-height:0; overflow:auto; padding:14px; }
 .blocks-workspace { display:flex; flex-direction:row; gap:10px; padding:14px; min-width:0; min-height:0; flex:1; overflow:hidden; }
 .blocks-editor, .blocks-preview { display:flex; flex-direction:column; gap:10px; flex:1; min-width:0; min-height:0; overflow:auto; }
 @media(max-width:900px) { .blocks-workspace { flex-direction:column; overflow:auto; } .blocks-editor, .blocks-preview { flex:none; overflow:visible; } }
@@ -230,6 +234,7 @@ pub struct Pane {
     completed: Rc<RefCell<Option<Saved>>>,
     busy: bool,
     open: bool,
+    woodshed_passage_proof: bool,
     selected: usize,
     selected_rows: Option<Vec<usize>>,
     /// Pattern and argument text fields, by key (`pattern:<class>`, `arg:<class>:<command>`).
@@ -293,6 +298,7 @@ impl Pane {
             completed: Default::default(),
             busy: false,
             open: false,
+            woodshed_passage_proof: false,
             selected: 0,
             selected_rows: None,
             fields: BTreeMap::new(),
@@ -445,7 +451,9 @@ impl Pane {
                 && self.view.is_none())
     }
     pub fn set_open(&mut self, open: bool) {
-        self.open = open;
+        if !self.woodshed_passage_proof {
+            self.open = open;
+        }
     }
     /// Whether the user asked to review block adapters; reading it clears it.
     pub fn take_review_request(&mut self) -> bool {
@@ -689,7 +697,11 @@ impl Pane {
                 }
                 self.view = None;
                 self.event_selected = (usize::MAX, usize::MAX);
-                self.status = format!("{command} written · Save document to keep it");
+                self.status = if self.woodshed_passage_proof {
+                    format!("{command} written · Kept for this session")
+                } else {
+                    format!("{command} written · Save document to keep it")
+                };
             },
             RunResult::Text(text) => {
                 let url = self.ports.export(
@@ -1000,9 +1012,14 @@ pub fn toolbar<P: PaneHost>(page: &P) -> Option<Child<P>> {
         },
     );
     let mut children: Vec<Child<P>> = vec![Box::new(
-        button("Return to graph", |p: &mut P, _| {
-            p.pane_mut().open = false
-        })
+        button(
+            if pane.woodshed_passage_proof {
+                "Return to passage"
+            } else {
+                "Return to graph"
+            },
+            |p: &mut P, _| p.pane_mut().open = false,
+        )
         .attr("class", "blocks-close"),
     )];
     if read_only {
@@ -1017,7 +1034,8 @@ pub fn toolbar<P: PaneHost>(page: &P) -> Option<Child<P>> {
                     button("Save document", |p: &mut P, _| action(p, Pane::save))
                         .attr(
                             "aria-disabled",
-                            (pane.busy || pane.blocked.is_some()).to_string(),
+                            (pane.busy || pane.blocked.is_some() || pane.woodshed_passage_proof)
+                                .to_string(),
                         )
                         .attr("class", "blocks-save"),
                     button("Undo document edit", |p: &mut P, _| {
@@ -1866,7 +1884,7 @@ impl Pane {
     pub fn probe_fields(&self) -> Vec<(&'static str, String)> {
         let pane = self;
         let class = pane.current_class();
-        vec![
+        let mut fields = vec![
             (
                 "blocks-view-mode",
                 class
@@ -1895,7 +1913,11 @@ impl Pane {
             ("blocks-saving", pane.busy.to_string()),
             ("blocks-preview", pane.preview.is_some().to_string()),
             ("blocks-status", pane.status.clone()),
-        ]
+        ];
+        if self.woodshed_passage_proof {
+            fields.extend(woodshed_passage::probe_fields(self));
+        }
+        fields
     }
 }
 

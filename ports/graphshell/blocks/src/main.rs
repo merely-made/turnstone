@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: MPL-2.0
 //! Graphshell's block pane in a native Cambium window.
 //!
-//! `graphshell-blocks [--data DIR] [--adapter PACK.json COMPONENT.wasm]... [--moot-disclosure FILE]...`
+//! `graphshell-blocks [--n2-woodshed] [--data DIR] [--adapter PACK.json COMPONENT.wasm]... [--moot-disclosure FILE]...`
 //!
 //! The pane is `graphshell::block_pane`, the same one the web page shows. Block adapters are
 //! signed component packs reviewed once: each `--adapter` pair is read and verified at start
@@ -204,11 +204,11 @@ fn read_candidate_as(
 
 fn root(app: &App) -> Child<App> {
     let mut children: Vec<Child<App>> = Vec::new();
-    if let Some(toolbar) = block_pane::toolbar(app) {
-        children.push(toolbar);
-    }
-    if let Some(workspace) = block_pane::workspace(app) {
-        children.push(workspace);
+    if let Some(proof) = block_pane::woodshed_passage(app) {
+        children.push(proof);
+    } else {
+        children.extend(block_pane::toolbar(app));
+        children.extend(block_pane::workspace(app));
     }
     if app.panel {
         children.push(adapters(app));
@@ -262,6 +262,12 @@ impl Product for LaneProduct {
     fn sheet(&self) -> &str {
         &self.sheet
     }
+    fn busy(&self, ctx: &AppCtx<'_, App, Logic, Child<App>>, capture_pending: bool) -> Option<bool> {
+        let app = ctx.runner.state();
+        app.pane
+            .woodshed_passage_proof()
+            .then(|| capture_pending || block_pane::busy(app))
+    }
     fn snapshot(&self, ctx: &AppCtx<'_, App, Logic, Child<App>>, _: usize, _dt: f32) -> ProbeSnapshot {
         let app = ctx.runner.state();
         app.pane.probe_fields().into_iter().fold(
@@ -295,10 +301,15 @@ fn main() {
     let mut data = PathBuf::from("graphshell-blocks-data");
     let mut packs: Vec<(String, String)> = Vec::new();
     let mut moots: Vec<String> = Vec::new();
+    let mut woodshed_passage = false;
     let args: Vec<String> = std::env::args().skip(1).collect();
     let mut i = 0;
     while i < args.len() {
         match args[i].as_str() {
+            "--n2-woodshed" => {
+                woodshed_passage = true;
+                i += 1;
+            },
             "--data" => {
                 data = PathBuf::from(args.get(i + 1).expect("--data DIR"));
                 i += 2;
@@ -314,7 +325,7 @@ fn main() {
                 ));
                 i += 3;
             },
-            other => panic!("unknown argument {other}; usage: graphshell-blocks [--data DIR] [--adapter PACK COMPONENT]... [--moot-disclosure FILE]..."),
+            other => panic!("unknown argument {other}; usage: graphshell-blocks [--n2-woodshed] [--data DIR] [--adapter PACK COMPONENT]... [--moot-disclosure FILE]..."),
         }
     }
     std::fs::create_dir_all(&data).expect("data directory");
@@ -387,8 +398,13 @@ fn main() {
             ..Default::default()
         },
         move |_, _, _wake| {
-            let mut pane = pollster::block_on(Pane::load_with(Some((storage, "blocks".into())), ports, editors()));
-            pane.set_open(true);
+            let storage = (!woodshed_passage).then(|| (storage, "blocks".into()));
+            let mut pane = pollster::block_on(Pane::load_with(storage, ports, editors()));
+            if woodshed_passage {
+                pane.enable_woodshed_passage_proof();
+            } else {
+                pane.set_open(true);
+            }
             let panel = !candidates.is_empty();
             Init {
                 state: App { pane, size: (1100, 800), engine, candidates, panel },

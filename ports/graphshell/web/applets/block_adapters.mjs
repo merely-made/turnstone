@@ -191,7 +191,7 @@ export async function mountBlockAdapters(root, gs, supplied) {
   // A launcher for the document editor that does not depend on the page's toolbar.
   const launcher = el('button', { type: 'button', textContent: 'Open block pane', className: 'block-pane-open', onclick: () => gs.block_pane_open(true) });
   Object.assign(launcher.style, { position: 'fixed', right: '12px', bottom: '12px', zIndex: 19, padding: '6px 10px', background: '#22262c', color: '#e8e6e1', border: '1px solid #6d7783', font: '14px sans-serif' });
-  document.body.append(launcher);
+  if (!root.hasAttribute('data-n2-woodshed')) document.body.append(launcher);
   renderList();
   pump();
   return {

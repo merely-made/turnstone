@@ -1,0 +1,32 @@
+# Run after the signed Woodshed pack has been reviewed and approved.
+assert snap blocks-adapters == metre,progression
+assert snap n2-passage == n2-rehearsal-bridge
+remember passage-origin
+capture passage
+click .n2-open-woodshed
+assert snap n2-tune == graphshell:fixture/woodshed-tune
+assert snap n2-provenance == Woodshed adapter example · opened from Rehearsal notes · Bridge
+assert text Chart source revision
+remember opened-tune
+capture tune
+click .blocks-command-write-notation
+wait 1500
+assert snap blocks-view-mode == Chart
+assert snap blocks-dirty == true
+assert text write-notation written
+differs opened-tune n2-chart-revision
+remember written-chart
+click .blocks-guest-event-1-1
+assert snap blocks-event-selected == 1:1
+capture chart
+click .blocks-close
+assert snap blocks-open == false
+same passage-origin n2-passage
+assert text Rehearsal notes · Bridge
+capture returned
+# Returning restores the passage's link focus, so Enter opens the same edited chart.
+key Enter
+assert snap blocks-open == true
+same written-chart n2-chart-revision
+click .blocks-close
+same passage-origin n2-passage
