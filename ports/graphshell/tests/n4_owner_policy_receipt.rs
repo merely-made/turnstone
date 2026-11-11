@@ -22,7 +22,7 @@ fn committed_n4_receipt_matches_the_live_policy_scenario() {
 
     assert_eq!(
         rendered,
-        include_str!("../docs/receipts/n4_owner_policy.html")
+        include_str!("fixtures/n4_owner_policy.html")
     );
     std::fs::remove_dir_all(root).expect("remove scratch");
 }

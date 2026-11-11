@@ -348,7 +348,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             address: "mere://held/toolkit-image".into(),
             title: "Retained image".into(),
             media_type: "image/png".into(),
-            bytes: include_bytes!("../docs/receipts/co_op_member.png").to_vec(),
+            bytes: include_bytes!("../tests/fixtures/co_op_member.png").to_vec(),
             engine: None,
             media: None,
         },

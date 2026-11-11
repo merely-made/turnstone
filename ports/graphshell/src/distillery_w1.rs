@@ -500,7 +500,7 @@ mod tests {
         assert_eq!(value["endpoint_label"], "Distillery Chronicle");
         assert_eq!(
             json,
-            include_str!("../docs/receipts/distillery_chronicle_w1.json").trim()
+            include_str!("../tests/fixtures/distillery_chronicle_w1.json").trim()
         );
         assert_eq!(receipt.snapshot_revision, 11);
         assert!(receipt.rediscovered_same_session);

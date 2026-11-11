@@ -15,13 +15,13 @@ use graphshell_host::view::render_g1_receipt;
 
 #[test]
 fn committed_receipt_matches_the_live_loopback_view() {
-    let committed = include_str!("../docs/receipts/g1_loopback.html").replace("\r\n", "\n");
+    let committed = include_str!("fixtures/g1_loopback.html").replace("\r\n", "\n");
     assert_eq!(render_g1_receipt().unwrap(), committed);
 }
 
 #[test]
 fn committed_g4_receipt_contains_both_products_and_all_three_sessions() {
-    let html = include_str!("../docs/receipts/g4_session_switch.html");
+    let html = include_str!("fixtures/g4_session_switch.html");
     assert_eq!(html.matches("role=\"tab\"").count(), 3);
     assert_eq!(html.matches("<iframe").count(), 3);
     assert!(html.contains("Turnstone · Browsing graph"));
