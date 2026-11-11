@@ -15,40 +15,7 @@ use scenomise::span_edit::{SpanEdit, SpanEditIntent};
 
 const KEY: u64 = 0x6261_636b;
 const RELATED_KEY: u64 = KEY + 1;
-const SAMPLES: [(&str, &str); 7] = [
-    (
-        "Metre grid",
-        include_str!("../../../../support/design-studies/backdrops/metre.json"),
-    ),
-    (
-        "Progression in C",
-        include_str!("../../../../support/design-studies/backdrops/templates/progression.json"),
-    ),
-    (
-        "Progression in G",
-        include_str!("../../../../support/design-studies/backdrops/templates/progression-g.json"),
-    ),
-    (
-        "Regular arrangement",
-        include_str!(
-            "../../../../support/design-studies/backdrops/templates/arrangement-regular.json"
-        ),
-    ),
-    (
-        "Varied arrangement",
-        include_str!(
-            "../../../../support/design-studies/backdrops/templates/arrangement-varied.json"
-        ),
-    ),
-    (
-        "Fretboard",
-        include_str!("../../../../support/design-studies/backdrops/fretboard.json"),
-    ),
-    (
-        "Terrain and coverage",
-        include_str!("../../../../support/design-studies/backdrops/terrain.json"),
-    ),
-];
+use cartography::canvas::backdrop_surface::samples::SAMPLES;
 struct ImportPicker {
     input: web_sys::HtmlInputElement,
     _changed: wasm_bindgen::closure::Closure<dyn FnMut(web_sys::Event)>,

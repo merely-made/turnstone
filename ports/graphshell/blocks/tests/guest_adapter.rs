@@ -4,8 +4,8 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 //! A signed component pack, reviewed once, answering the pane's adapter calls natively.
-//! The component is the fixture guest Mere builds for block-host; no other project's guest
-//! is loaded by a Mere test.
+//! The component is the fixture guest block-host builds and exposes under its `test-support`
+//! feature (engine split D121); no path points into another repository.
 
 use eidetic::pack::{PackManifest, PackPart, PackPartRole, sign_pack};
 use eidetic::{ManifestId, TrustEnvelope};
@@ -20,14 +20,7 @@ use personae::{IdentityProvider, InMemoryProvider};
 use std::collections::BTreeMap;
 
 fn component() -> Vec<u8> {
-    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../../crates/script/block-host/guest/target/wasm32-wasip2/release/block_fixture_guest.wasm");
-    std::fs::read(&path).unwrap_or_else(|_| {
-        panic!(
-            "fixture guest missing at {}. Build it with `cargo build -p block-host`",
-            path.display()
-        )
-    })
+    block_host::test_support::fixture_guest_wasm().unwrap_or_else(|err| panic!("{err}"))
 }
 
 fn pack(component: &[u8], asks: Vec<String>) -> Vec<u8> {

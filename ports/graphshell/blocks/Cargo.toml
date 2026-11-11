@@ -41,6 +41,8 @@ serde_json.workspace = true
 eidetic = { workspace = true, features = ["pack-signing"] }
 
 [dev-dependencies]
+# block-host's fixture guest for the adapter tests, exposed by its owner (engine split D121).
+block-host = { workspace = true, features = ["test-support"] }
 eidetic = { workspace = true, features = ["pack-signing"] }
 personae.workspace = true
 serde_json.workspace = true

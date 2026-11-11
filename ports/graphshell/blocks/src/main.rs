@@ -428,11 +428,8 @@ mod tests {
     use personae::{IdentityProvider, InMemoryProvider};
 
     fn fixture_files(dir: &std::path::Path) -> (String, String) {
-        let component = std::fs::read(
-            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-                .join("../../../crates/script/block-host/guest/target/wasm32-wasip2/release/block_fixture_guest.wasm"),
-        )
-        .expect("build the fixture guest with `cargo build -p block-host`");
+        let component = block_host::test_support::fixture_guest_wasm()
+            .unwrap_or_else(|err| panic!("{err}"));
         let author = InMemoryProvider::from_seed([5; 32]);
         let manifest = PackManifest {
             name: "fixture-adapter".into(),

@@ -15,6 +15,5 @@ ports/graphshell/tests/fixtures/g1_loopback.html text eol=lf
 ports/graphshell/tests/fixtures/g4_session_switch.html text eol=lf
 ports/graphshell/tests/fixtures/n4_owner_policy.html text eol=lf
 ports/graphshell/tests/fixtures/distillery_chronicle_w1.json text eol=lf
-ports/graphshell/tests/fixtures/identity_cards.json text eol=lf
 # Fixtures whose digests graphshell's web tests pin (site export, practice dataset).
 ports/graphshell/web/fixtures/** text eol=lf

@@ -3,3 +3,6 @@
 # consumes those same subtrees through the facade).
 [toolchain]
 channel = "1.99.1"
+# wasm32-wasip2: block-host builds its fixture guest for the app's blocks tests;
+# wasm32-unknown-unknown: the app's web root. As in Graphshell's toolchain file.
+targets = ["wasm32-wasip2", "wasm32-unknown-unknown"]

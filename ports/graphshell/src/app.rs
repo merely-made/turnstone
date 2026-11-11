@@ -665,28 +665,15 @@ mod tests {
         });
     }
 
-    /// The identity projection Djinn's identity endpoint serves for a keeper
-    /// with one profile, one leased device, its grant and one signing record,
-    /// after the device's revocation: its snapshot and card resources.
-    /// Djinn's `door::identity_endpoint` test produces it and fails when it
-    /// drifts, since the endpoint is Djinn's (stack lift plan, after P5) and
-    /// this port cannot depend on Djinn.
-    #[derive(serde::Deserialize)]
-    struct IdentityCardsFixture {
-        snapshot: chirograph::ProjectionSnapshot,
-        resources: Vec<chirograph::ResourceResponse>,
-    }
-
     #[tokio::test]
     async fn h4_exportable_identity_cards_and_access_survive_scene_reopen_as_projections() {
         use pandect::CartographyGeometry;
 
-        let fixture: IdentityCardsFixture =
-            serde_json::from_str(include_str!("../tests/fixtures/identity_cards.json"))
-                .expect("the identity cards fixture reads");
+        // Built live from the resident's identity endpoint (engine split U4, F8 ruling).
+        let (snapshot, resources) =
+            mere_resident::door::identity_endpoint::test_support::identity_cards_projection();
         let device_id = uuid::Uuid::from_u128(0x45);
         let device_source = format!("identity:device:{device_id}");
-        let snapshot = fixture.snapshot;
         assert_eq!(snapshot.cache_policy.retention, CacheRetention::Exportable);
         let identity_session = snapshot.session.clone();
         let wanted_sources = [
@@ -709,7 +696,7 @@ mod tests {
         let backend = MemoryBackend::new();
         let mut app = GraphshellApp::fixture(backend.clone(), selected()).expect("fixture");
         app.mount_remote(snapshot).expect("mount identity");
-        for resource in fixture.resources {
+        for resource in resources {
             app.client
                 .apply_resource(resource)
                 .expect("cache identity card");
