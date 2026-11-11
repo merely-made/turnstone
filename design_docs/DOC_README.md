@@ -143,9 +143,12 @@ set.
 - [Pane registry, graph views and shell composition: open work](2026-11-02_pane_registry_and_graph_panes_plan.md): draft. A2 (partly built), A3, A4/A5 acceptance, A7, A8, deferred decisions and the reader CPU/FPS item.
 - [Page lifecycle: open work](2026-11-02_page_lifecycle_plan.md): draft. The named-recipient gate, L-P2 to L-P6, platforms and durability.
 - [Browser surfaces implementation: open work](2026-11-02_browser_surface_implementation_plan.md): draft. A0, S0 (shallows), X0, the E0 tails, default Servo correctness, accessibility and Cue platform qualification.
+- [Graphshell reference host](2026-10-28_graphshell_host_plan.md): the reference app's open phases (graph portal, Personae surface, companion, launcher) and its one-tree cutover; moved from Mere with the app (engine split D113), unedited apart from paths.
+- [Graphshell tree migration inventory](2026-09-27_graphshell_tree_migration_inventory.md): the app's migration onto one Cambium tree; moved from Mere with the app (D113).
 
 ## Current architecture, audits, and design records
 
+- [Viewer build audit](2026-11-07_viewer_build_audit_brief.md): what the app's web viewer is for, what it pulls, and its build rulings of 2026-11-07 and 11-08; moved from Mere with the app (D113).
 - [Redshank episode surface](2026-09-14_redshank_episode_surface_plan.md):
   Turnstone as the listening port's second host — the contributed compact dock
   as an episode tile, enclosure routing, one app-owned audio and model
