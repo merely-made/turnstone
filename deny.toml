@@ -1,0 +1,20 @@
+# cargo-deny configuration for turnstone, the same as graphshell.git's (engine split D120).
+#
+# One rule, the custody boundary (dramatis repo plan, rulings D4 and D16):
+# castellan keeps every secret at rest and in hand. Its independently launched
+# custodian links it; apps and workers call an authenticated custody route.
+# The resident and the custodian may link it (the resident only through its
+# in-process test feature, which this rule sees because every feature is on);
+# Turnstone and the reference app may not.
+#
+#   cargo deny check bans
+
+[graph]
+all-features = true
+
+[bans]
+multiple-versions = "allow"
+wildcards = "allow"
+deny = [
+  { crate = "castellan", wrappers = ["mere-resident", "dramatis-resident", "djinn-custodian"], reason = "castellan is secret custody; the custodian and explicit in-process test hosts may link it; production resident/service graphs, applications and workers may not" },
+]

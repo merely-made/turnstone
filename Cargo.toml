@@ -606,7 +606,12 @@ required-features = ["servo"]
 
 # Keep actor and observation types coherent across retained older suppliers.esp-testkit = { git = "https://github.com/merely-made/distillery.git", branch = "main" }
 
+# Graphshell's lint table (engine split D120): unsafe code and clippy::all warn too.
+[workspace.lints.rust]
+unsafe_code = "warn"
+
 [workspace.lints.clippy]
+all = "warn"
 missing_errors_doc = "warn"
 missing_panics_doc = "warn"
 missing_safety_doc = "warn"
