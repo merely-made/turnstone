@@ -378,8 +378,8 @@ impl Shell {
                 // per window); off-tile falls through to the camera pan below.
                 let (dx, dy) = match delta {
                     MouseScrollDelta::LineDelta(x, y) => (
-                        x * pictograph::canvas::WHEEL_PAN_SCALE,
-                        y * pictograph::canvas::WHEEL_PAN_SCALE,
+                        x * cartography::canvas::WHEEL_PAN_SCALE,
+                        y * cartography::canvas::WHEEL_PAN_SCALE,
                     ),
                     MouseScrollDelta::PixelDelta(p) => (p.x as f32, p.y as f32),
                 };
@@ -465,8 +465,8 @@ impl Shell {
             WindowEvent::MouseWheel { delta, .. } => {
                 let (dx, dy) = match delta {
                     MouseScrollDelta::LineDelta(x, y) => (
-                        x * pictograph::canvas::WHEEL_PAN_SCALE,
-                        y * pictograph::canvas::WHEEL_PAN_SCALE,
+                        x * cartography::canvas::WHEEL_PAN_SCALE,
+                        y * cartography::canvas::WHEEL_PAN_SCALE,
                     ),
                     MouseScrollDelta::PixelDelta(p) => (p.x as f32, p.y as f32),
                 };

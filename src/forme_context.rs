@@ -115,7 +115,7 @@ impl App {
     pub(crate) fn scope_forme_region(
         &self,
         place: &ScopePlace<GraphId, Uuid>,
-    ) -> Option<pictograph::canvas::FormeRegion> {
+    ) -> Option<cartography::canvas::FormeRegion> {
         let reader = self.scope_forme_reader(place)?;
         let key = self.forme_for_pane(reader)?;
         let (tree, members) = self.forme_preview_tree(reader)?;
@@ -132,14 +132,14 @@ impl App {
                     focused: false,
                 })
         });
-        Some(pictograph::canvas::FormeRegion {
+        Some(cartography::canvas::FormeRegion {
             id: identity(key.forme),
             bounds: [-400.0, -240.0, 400.0, 240.0],
             cells: swatch
                 .cells
                 .iter()
                 .filter_map(|c| {
-                    c.tabs.get(c.active).map(|t| pictograph::canvas::FormeCell {
+                    c.tabs.get(c.active).map(|t| cartography::canvas::FormeCell {
                         member: t.id,
                         bounds: c.bounds,
                     })

@@ -128,7 +128,7 @@ impl Shell {
     pub(in super::super) fn release_graph_pointer(
         &mut self,
         pane: crate::panes::PaneId,
-        button: pictograph::canvas::PointerButton,
+        button: cartography::canvas::PointerButton,
         x: f32,
         y: f32,
     ) -> bool {

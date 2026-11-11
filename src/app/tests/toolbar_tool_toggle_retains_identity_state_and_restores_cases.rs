@@ -143,7 +143,7 @@ fn graph_views_workbenches_and_followers_are_pane_scoped() {
     };
 
     let graph_b = crate::panes::GraphId::from_uuid(uuid::Uuid::from_u128(0xb));
-    let mut canvas_b = pictograph::canvas::Canvas::new();
+    let mut canvas_b = cartography::canvas::Canvas::new();
     let member_b = {
         let key = canvas_b.visit("mere://graph-b");
         canvas_b.graph().get_node(key).unwrap().id

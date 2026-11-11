@@ -158,7 +158,7 @@ fn classify(node: &kernel::graph::Node, is_download: bool) -> Option<BuiltinClas
 
 /// Reconcile Turnstone's built-in class declarations and required profile
 /// facets against the live graph. Returns changed nodes.
-pub(crate) fn reconcile(canvas: &mut pictograph::canvas::Canvas) -> Result<usize, FacetError> {
+pub(crate) fn reconcile(canvas: &mut cartography::canvas::Canvas) -> Result<usize, FacetError> {
     let builtins = BuiltinContentClasses::new();
     let class_facet = FacetId::new(CLASS_FACET);
     let web_facet = FacetId::new(WEB_PAGE_FACET);
@@ -283,7 +283,7 @@ pub(crate) struct DownloadFacetRecord<'a> {
 
 /// Write the durable response record and declare the node's download class.
 pub(crate) fn set_download_record(
-    canvas: &mut pictograph::canvas::Canvas,
+    canvas: &mut cartography::canvas::Canvas,
     node: uuid::Uuid,
     record: DownloadFacetRecord<'_>,
 ) -> Result<(), FacetError> {
@@ -338,7 +338,7 @@ mod tests {
 
     #[test]
     fn web_and_note_classes_coexist_and_are_admitted_in_one_graph() {
-        let mut canvas = pictograph::canvas::Canvas::new();
+        let mut canvas = cartography::canvas::Canvas::new();
         let web = canvas.visit("https://example.com/");
         let note = canvas.visit("mere://field-notes");
         let note_id = canvas.graph().get_node(note).unwrap().id;
@@ -367,7 +367,7 @@ mod tests {
 
     #[test]
     fn reconciliation_is_idempotent() {
-        let mut canvas = pictograph::canvas::Canvas::new();
+        let mut canvas = cartography::canvas::Canvas::new();
         canvas.visit("https://example.com/");
         assert_eq!(reconcile(&mut canvas).unwrap(), 1);
         assert_eq!(reconcile(&mut canvas).unwrap(), 0);
@@ -375,7 +375,7 @@ mod tests {
 
     #[test]
     fn download_record_displaces_the_generic_web_page_class() {
-        let mut canvas = pictograph::canvas::Canvas::new();
+        let mut canvas = cartography::canvas::Canvas::new();
         let key = canvas.visit("https://example.com/archive.bin");
         let node = canvas.graph().get_node(key).unwrap().id;
         reconcile(&mut canvas).unwrap();

@@ -70,10 +70,10 @@ pub(crate) fn inspector_member(app: &App, pane: crate::panes::PaneId) -> Option<
 
 fn inspector_sections_for_context(
     app: &App,
-    canvas: Option<&pictograph::canvas::Canvas>,
+    canvas: Option<&cartography::canvas::Canvas>,
     member: Option<uuid::Uuid>,
 ) -> Vec<InspectorSection> {
-    let graph = canvas.map(pictograph::canvas::Canvas::graph);
+    let graph = canvas.map(cartography::canvas::Canvas::graph);
     let focused = member.and_then(|member| graph.and_then(|graph| graph.get_node_by_id(member)));
 
     let node_rows = match focused {

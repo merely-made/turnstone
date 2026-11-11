@@ -8,7 +8,7 @@
 //! the same mapping Graphshell applies to its canvas.
 
 use crate::shell_services::AppearanceConfig;
-use pictograph::canvas::CanvasTheme;
+use cartography::canvas::CanvasTheme;
 use tabard::ThemePresentation;
 use tabard::theme::registry::Mode;
 

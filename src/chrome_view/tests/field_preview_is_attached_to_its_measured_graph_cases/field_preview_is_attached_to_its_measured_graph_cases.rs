@@ -13,7 +13,7 @@ fn field_preview_is_attached_to_its_measured_graph_aperture_and_keeps_graph_stat
     let pane = app.active_pane.unwrap();
     app.graph_pane_frame(pane, 800, 420).unwrap();
     app.with_graph_pane(pane, |c| {
-        c.set_camera(pictograph::canvas::CameraView {
+        c.set_camera(cartography::canvas::CameraView {
             offset: (120., 90.),
             zoom: 0.5,
         })

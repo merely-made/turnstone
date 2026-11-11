@@ -3,13 +3,13 @@
 
 //! The physics controls that compose rather than pick: role, mix, grouping,
 //! schedule, single law and speed. Each carries out the same
-//! `pictograph::canvas::physics_form::FormAction` the web host's form makes and keeps
+//! `cartography::canvas::physics_form::FormAction` the web host's form makes and keeps
 //! its status line on the graph runtime for the Arrange pane to read.
 
 use super::*;
-use pictograph::canvas::physics_controls::SPEED_PRESETS;
-use pictograph::canvas::physics_form::FormAction;
-use pictograph::canvas::{PhysicsChoice, PhysicsKindSource, Role};
+use cartography::canvas::physics_controls::SPEED_PRESETS;
+use cartography::canvas::physics_form::FormAction;
+use cartography::canvas::{PhysicsChoice, PhysicsKindSource, Role};
 
 impl App {
     pub(super) fn compose_graph_physics(&mut self, action: Action) -> Vec<Effect> {

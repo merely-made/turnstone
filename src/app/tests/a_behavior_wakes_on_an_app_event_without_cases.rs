@@ -380,10 +380,10 @@ fn fork_session_snapshots_the_component_with_its_facets() {
         web.get(fork_a).is_some_and(|s| s.content_on),
         "web.content carried onto the remapped id"
     );
-    let damping = pictograph::canvas::saved_scene::scene_spec(&scene)
+    let damping = cartography::canvas::saved_scene::scene_spec(&scene)
         .unwrap()
         .realization;
-    let pictograph::canvas::dynamics_spec::Realization::Integrate { damping } = damping;
+    let cartography::canvas::dynamics_spec::Realization::Integrate { damping } = damping;
     assert_eq!(
         damping,
         Some(f64::from(4.75_f32)),

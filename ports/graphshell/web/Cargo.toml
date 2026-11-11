@@ -66,52 +66,52 @@ canvas-gpu = ["graphshell/canvas-gpu", "cartography/gpu", "graphshell-host/board
 image-decode = ["genet-render/image-decode", "taproot/image-decode", "cambium-rootstock/image-decode", "mandrake/image-decode", "cambium-web/image-decode", "graphshell/image-decode", "cartography/image-decode"]
 
 [dependencies]
-mere-view = { path="../../../crates/cambium/mere-view", optional=true }
-platen = { path = "../../../crates/platen/platen", default-features = false, features = ["workspace-editor"], optional = true }
+mere-view = { git = "https://github.com/merely-made/graphshell.git", branch = "main", optional=true }
+platen = { git = "https://github.com/merely-made/graphshell.git", branch = "main", default-features = false, features = ["workspace-editor"], optional = true }
 # The shared mere panel over the remote board's admitted route (stack lift plan L14).
-mere-overmap = { path = "../../../crates/cambium/mere-overmap", optional = true }
+mere-overmap = { git = "https://github.com/merely-made/graphshell.git", branch = "main", optional = true }
 # The saved-scene shapes the scene page reads (`pandect::saved_scene`).
-pandect = { path = "../../../crates/system/pandect", optional = true }
+pandect = { git = "https://github.com/merely-made/mere.git", branch = "main", optional = true }
 mere-lanes = { git = "https://github.com/merely-made/inker.git", branch = "main", features = ["retained-clips"], optional = true }
 fleece = { package = "mere-fleece", git = "https://github.com/merely-made/inker.git", branch = "main", features = ["portable-clip", "page-links"], optional = true }
 eidetic = { default-features = false, features = ["product"], git = "https://github.com/merely-made/eidetic.git", branch = "main" }
-moot = { package = "mere-moot", path = "../../moot", default-features = false, features = ["presentation"], optional = true }
+moot = { package = "mere-moot", git = "https://github.com/merely-made/graphshell.git", branch = "main", default-features = false, features = ["presentation"], optional = true }
 # `webrtc-browser` is the C4 door's peer half (`webrtc_browser`, `webrtc_join`)
 # and needs `--cfg getrandom_backend="wasm_js"` in this target's rustflags:
 # personae's wasm32 identity stack sits on getrandom 0.3, whose `wasm_js`
 # feature is inert without the cfg. The cfg is committed in .cargo/config.toml.
 graphshell = { path = "..", default-features = false, features = ["web"] }
-kernel = { package = "mere-kernel", path = "../../../crates/graph/graph-kernel" }
+kernel = { package = "mere-kernel", git = "https://github.com/merely-made/mere.git", branch = "main" }
 # The graph canvas (engine split D38); pictograph for the authored symbols.
-cartography = { package = "mere-cartography", path = "../../../crates/canvas/cartography", features = ["canvas"] }
-pictograph = { path = "../../../crates/canvas/pictograph", default-features = false }
-incipit = { path = "../../../crates/incipit", features = ["graph"] }
+cartography = { package = "mere-cartography", git = "https://github.com/merely-made/graphshell.git", branch = "main", features = ["canvas"] }
+pictograph = { git = "https://github.com/merely-made/emblem.git", branch = "main", default-features = false }
+incipit = { git = "https://github.com/merely-made/graphshell.git", branch = "main", features = ["graph"] }
 # `indexeddb` supplies the browser realization of muniment's byte-store seam,
 # which this crate hands to `GraphshellApp` as its backend. It lived here until
 # the duplicate showed up; muniment owns the backend family, so it owns this.
 muniment = { git = "https://github.com/merely-made/eidetic.git", branch = "main" }
 graphshell-client = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 # The remote board the pages draw (stack lift plan, P10).
-graphshell-host = { path = "../../../crates/graphshell/graphshell-host", default-features = false, features = ["board", "mere-host"] }
+graphshell-host = { git = "https://github.com/merely-made/graphshell.git", branch = "main", default-features = false, features = ["board", "mere-host"] }
 chirograph = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
-workbench = { path = "../../../crates/cambium/workbench" }
+workbench = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 sceno = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 sceno-backdrops = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
-scenograph = { path = "../../../crates/cambium/scenes/scenograph" }
-scenomise = { path = "../../../crates/cambium/scenes/scenomise", features = ["authoring"] }
+scenograph = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
+scenomise = { git = "https://github.com/merely-made/graphshell.git", branch = "main", features = ["authoring"] }
 scenotime = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 serde = { version = "1", features = ["derive"] }
 # A mere workspace member since 2026-09-03 (platform boundary plan, P2), so a
 # relative path like the other mere crates above, not a git pin.
-cambium = { path = "../../../crates/cambium/cambium" }
+cambium = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 # The clipboard request/completion pair the share gesture carries (engine-split D27).
-backstep = { path = "../../../crates/cambium/backstep" }
-tabard = { path = "../../../crates/system/tabard" }
+backstep = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
+tabard = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 # The one-tree page (`src/web_tree.rs`): Cambium's web host mounts the tree,
 # and rootstock carries the host types and the canvas's texture producer.
-cambium-web = { path = "../../../crates/cambium/cambium-genet-web-host", default-features = false }
-cambium-rootstock = { path = "../../../crates/cambium/cambium-rootstock", default-features = false }
-mandrake = { path = "../../../crates/cambium/mandrake", default-features = false }
+cambium-web = { git = "https://github.com/merely-made/graphshell.git", branch = "main", default-features = false }
+cambium-rootstock = { git = "https://github.com/merely-made/graphshell.git", branch = "main", default-features = false }
+mandrake = { git = "https://github.com/merely-made/graphshell.git", branch = "main", default-features = false }
 genet-render = { git = "https://github.com/merely-made/genet.git", branch = "main", default-features = false, features = ["livery", "accesskit"] }
 # The present core, shared with every winit host. Booting wgpu, picking a
 # non-sRGB surface format, and rasterizing a Scene are not browser-specific, so
@@ -132,7 +132,7 @@ netrender_device = { git = "https://github.com/merely-made/netrender.git", branc
 serde_json = "1"
 # The contract half of the guest block adapter (no `guest`, so no wasmtime).
 # `web_tree/block_adapters.rs` names it, and this crate compiles that module itself.
-block-adapter = { path = "../../../crates/script/block-adapter", default-features = false }
+block-adapter = { git = "https://github.com/merely-made/graphshell.git", branch = "main", default-features = false }
 # The remote link's outbound queue: the host enqueues lines synchronously,
 # a task drains them onto the channel.
 futures-channel = { version = "0.3", optional = true }
@@ -286,20 +286,10 @@ netrender-vello-encoding = { git = "https://github.com/mark-ik/vello", branch = 
 [workspace.package]
 rust-version = "1.97.1"
 
-# The standalone host uses the same release-identity contract as the parent
-# workspace when Murm's carrier names its published compatibility dependency.
+# Promoted sources shared with immutable older Mere suppliers. (The rows that served
+# sprigging and the Cambium family to Inker and Murm's carrier from Mere's tree left
+# with the app: Inker relocks onto graphshell.git first, engine split D121.)
 [patch."https://github.com/merely-made/mere.git"]
-sprigging = { path = "../../../crates/cambium/sprigging" }
-# Inker (merely-made/inker) names the Cambium family through mere.git, as
-# the root patch table also redirects; serve it from this tree.
-backstep = { path = "../../../crates/cambium/backstep" }
-cambium = { path = "../../../crates/cambium/cambium" }
-mere-surface-api = { path = "../../../crates/system/surface-api" }
-meristem = { path = "../../../crates/cambium/meristem" }
-scenograph = { path = "../../../crates/cambium/scenes/scenograph" }
-scenomise = { path = "../../../crates/cambium/scenes/scenomise" }
-workbench = { path = "../../../crates/cambium/workbench" }
-# Promoted sources shared with immutable older Mere suppliers.
 chartulary = { git = "https://github.com/merely-made/eidetic.git", branch = "main" }
 eidetic = { git = "https://github.com/merely-made/eidetic.git", branch = "main" }
 servitor = { git = "https://github.com/merely-made/eidetic.git", branch = "main" }

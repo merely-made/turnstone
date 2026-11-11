@@ -19,7 +19,7 @@ use winit::window::CursorIcon;
 
 use crate::panes::PaneContent;
 use inker::{SessionClick, SessionScrollKey};
-use pictograph::canvas::PointerButton;
+use cartography::canvas::PointerButton;
 use taproot::AutomatableExt as _;
 
 use crate::action::{Action, CaretMove};

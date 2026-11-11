@@ -16,9 +16,9 @@
 use std::io;
 use std::path::Path;
 
-use pictograph::canvas::physics_controls::FREE_ARRANGEMENT;
-use pictograph::canvas::saved_scene::{self, SceneReadError};
-use pictograph::canvas::{
+use cartography::canvas::physics_controls::FREE_ARRANGEMENT;
+use cartography::canvas::saved_scene::{self, SceneReadError};
+use cartography::canvas::{
     Canvas, PhysicsDepthSource, PhysicsKindSource, PhysicsLaw, PhysicsMassSource, PhysicsOverlay,
 };
 use incipit::view::ViewIntent;
@@ -300,11 +300,11 @@ pub(crate) struct Restored {
     pub(crate) paused: Option<bool>,
     /// The refusals met applying a session's earlier physics choice, in
     /// order, for the host to record.
-    pub(crate) refusals: Vec<Result<(), pictograph::canvas::OverlayRefusal>>,
+    pub(crate) refusals: Vec<Result<(), cartography::canvas::OverlayRefusal>>,
 }
 
 impl Restored {
-    fn none(refusals: Vec<Result<(), pictograph::canvas::OverlayRefusal>>) -> Self {
+    fn none(refusals: Vec<Result<(), cartography::canvas::OverlayRefusal>>) -> Self {
         Self {
             positions: false,
             paused: None,
@@ -359,7 +359,7 @@ fn carry_legacy(
     pool: &mut GraphRuntimePool,
     container: Option<Uuid>,
     legacy: Option<&LegacyIntent>,
-    refusals: &mut Vec<Result<(), pictograph::canvas::OverlayRefusal>>,
+    refusals: &mut Vec<Result<(), cartography::canvas::OverlayRefusal>>,
 ) -> Option<SavedSceneV3> {
     let facets = pool.facets();
     let scene_facets = container

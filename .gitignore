@@ -17,3 +17,9 @@ scenarios/fixtures/document_a11y/__pycache__/
 
 # Local output directory for run receipts; tracked receipts live in Code/testing/turnstone/receipts/.
 /docs/receipts/
+
+# The reference app (from Mere): its local host receipt (machine addresses, key
+# fingerprints), and its receipt binaries' default output directory, kept local like
+# /docs/receipts/ above.
+ports/graphshell/docs/2026-07-28_h4f_resident_device_host_receipt.md
+/ports/graphshell/docs/receipts/

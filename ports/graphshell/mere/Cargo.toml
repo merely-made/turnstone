@@ -43,7 +43,7 @@ mandrake.workspace = true
 pandect.workspace = true
 incipit = { workspace = true, features = ["view"] }
 # The blocking fetch handle only (no actor, smolweb or cookies): one address, on request.
-fetch = { package = "mere-fetch", path = "../../../crates/system/fetch", version = "0.0.1", default-features = false }
+fetch = { package = "mere-fetch", git = "https://github.com/merely-made/graphshell.git", branch = "main", version = "0.0.1", default-features = false }
 fleece = { workspace = true, features = ["article"] }
 sceno.workspace = true
 scenotime.workspace = true

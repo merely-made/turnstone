@@ -20,7 +20,7 @@ use std::sync::Arc;
 
 use fetch::FetchUpdate;
 use genet_winit_host::SurfaceHost;
-use pictograph::canvas::WHEEL_PAN_SCALE;
+use cartography::canvas::WHEEL_PAN_SCALE;
 use netrender::NetrenderOptions;
 use winit::dpi::PhysicalSize;
 

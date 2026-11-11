@@ -49,14 +49,14 @@ fn arrange_buttons_follow_the_unique_torn_out_graph_without_using_the_active_cur
     }
     app.update(Action::SetPhysicsLaw("orbit.gravity"));
     assert_eq!(
-        pictograph::canvas::PhysicsChoice::live(app.graph_runtimes.canvas(owner).unwrap())
+        cartography::canvas::PhysicsChoice::live(app.graph_runtimes.canvas(owner).unwrap())
             .law
             .id(),
         "orbit.gravity"
     );
     assert_eq!(
-        pictograph::canvas::PhysicsChoice::live(app.graph_runtimes.canvas(unrelated).unwrap()).law,
-        pictograph::canvas::PhysicsLaw::Springs
+        cartography::canvas::PhysicsChoice::live(app.graph_runtimes.canvas(unrelated).unwrap()).law,
+        cartography::canvas::PhysicsLaw::Springs
     );
     assert_eq!(app.graph_runtimes.active_graph(), unrelated);
 }
@@ -86,17 +86,17 @@ fn arrange_refuses_ambiguous_foreign_graph_panes_instead_of_guessing_their_selec
         let canvas = app.graph_runtimes.canvas(graph).unwrap();
         assert!(!canvas.has_saved_seed());
         assert_eq!(
-            pictograph::canvas::PhysicsChoice::live(canvas).law,
-            pictograph::canvas::PhysicsLaw::Springs
+            cartography::canvas::PhysicsChoice::live(canvas).law,
+            cartography::canvas::PhysicsLaw::Springs
         );
     }
 }
 
 #[test]
 fn role_and_composition_choices_reopen_from_the_saved_scene_into_the_form() {
-    use pictograph::canvas::physics_controls::{StageDraft, TwoLawGrouping, TwoLawMix, TwoStageSchedule};
-    use pictograph::canvas::physics_form::{FieldId, PhysicsForm, Readback, Slot};
-    use pictograph::canvas::{PhysicsKindSource, PhysicsLaw, PhysicsOverlay, Role, StageStop};
+    use cartography::canvas::physics_controls::{StageDraft, TwoLawGrouping, TwoLawMix, TwoStageSchedule};
+    use cartography::canvas::physics_form::{FieldId, PhysicsForm, Readback, Slot};
+    use cartography::canvas::{PhysicsKindSource, PhysicsLaw, PhysicsOverlay, Role, StageStop};
 
     let mix = TwoLawMix {
         first: PhysicsLaw::Charge,

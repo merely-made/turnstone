@@ -80,7 +80,7 @@ use genet_documents::LocalFetcher;
 use genet_winit_host::SurfaceHost;
 use image::ImageEncoder;
 use inker::{DocumentSession, SessionClick, SessionRegistry, SessionSpawnRequest};
-use pictograph::canvas::WHEEL_PAN_SCALE;
+use cartography::canvas::WHEEL_PAN_SCALE;
 use mere_document_lanes::{
     ReaderSessionEngine, RemoteFetcher, SmolwebInlineMediaPolicy, SmolwebSessionEngine,
     SmolwebTheme,

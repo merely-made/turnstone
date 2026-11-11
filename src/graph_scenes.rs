@@ -4,7 +4,7 @@
 //! What a native graph scene shows, for observation. The scene itself is saved
 //! and restored by `scene_state`; attention remains transient.
 
-use pictograph::canvas::Canvas;
+use cartography::canvas::Canvas;
 
 #[derive(Clone, Debug, PartialEq, serde::Serialize)]
 pub struct Facts {

@@ -6,7 +6,7 @@
 
 //! Product controls belong to one Surface independently of shown content.
 use chartulary::{AcceptAll, FacetId};
-use pictograph::canvas::Canvas;
+use cartography::canvas::Canvas;
 use kernel::graph::{Graph, NodeFacetStore};
 use kernel::persistence::GraphSnapshot;
 use serde_json::Value;

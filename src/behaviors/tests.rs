@@ -367,7 +367,7 @@ fn resource_projection_preserves_journal_author_and_no_self_wake() {
     app.graph_runtimes.activate_or_insert(
         graph_id,
         Some(app.session_id),
-        pictograph::canvas::Canvas::with_graph(graph),
+        cartography::canvas::Canvas::with_graph(graph),
     );
     app.bind_behavior_journal().unwrap();
     let cursor = journal_high_water(&app);

@@ -15,7 +15,7 @@ pub(in super::super) fn decode_sprite(path: &Path) -> Option<(String, Vec<(f32, 
         .thumbnail(SPRITE_MAX, SPRITE_MAX)
         .to_rgba8();
     let (w, h) = rgba.dimensions();
-    let hull = pictograph::canvas::sprite_hull::trace_sprite_hull(rgba.as_raw(), w, h);
+    let hull = cartography::canvas::sprite_hull::trace_sprite_hull(rgba.as_raw(), w, h);
     let mut png = Vec::new();
     image::codecs::png::PngEncoder::new(&mut png)
         .write_image(rgba.as_raw(), w, h, image::ExtendedColorType::Rgba8)

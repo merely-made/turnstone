@@ -112,7 +112,7 @@ fn adopt_session_restores_the_saved_canvas_layout_from_facets() {
         (size - 96.0).abs() < 0.001,
         "the size override rode the facets too, got {size}"
     );
-    let pictograph::canvas::dynamics_spec::Realization::Integrate { damping } =
+    let cartography::canvas::dynamics_spec::Realization::Integrate { damping } =
         app.graph_runtimes.dynamics_spec().unwrap().realization;
     assert_eq!(
         damping,

@@ -10,7 +10,7 @@
 
 use std::path::PathBuf;
 
-use pictograph::canvas::Canvas;
+use cartography::canvas::Canvas;
 
 use crate::content::ContentStates;
 use crate::panes::{FrisketLayout, GraphId, SessionId};

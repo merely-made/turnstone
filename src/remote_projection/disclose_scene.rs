@@ -20,7 +20,7 @@ pub(crate) fn disclose_scene(
     // The spiral reads keyed signals, most recent first (Mere F132). A
     // disclosure is a one-off projection with no canvas behind it, so it
     // takes a fresh registry for this graph.
-    let signals = pictograph::canvas::ChannelRegistry::new().disclose(
+    let signals = cartography::canvas::ChannelRegistry::new().disclose(
         graph,
         &[cartography::ORDER_RECENCY, cartography::WEIGHT_RECENCY],
         focused,

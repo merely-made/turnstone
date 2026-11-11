@@ -39,7 +39,7 @@ fn replacing_the_live_canvas_cannot_complete_an_earlier_click_on_the_same_docume
     let mut activation = cambium::scope_navigation::NodeActivation::default();
     activation.press(Some((before, a)), (0., 0.), false);
     assert_eq!(activation.release(Some((before, a)), (0., 0.), 10.), None);
-    let canvas = pictograph::canvas::Canvas::new();
+    let canvas = cartography::canvas::Canvas::new();
     app.graph_runtimes.replace_active_canvas(canvas);
     let after = app.graph_runtimes.get(graph).unwrap().instance;
     assert_ne!(before, after);
@@ -257,7 +257,7 @@ fn camera_is_restored_per_scope_and_routes_survive_cold_load() {
     let (mut app, _, _, _) = fixture();
     command(&mut app, ScopeDirection::Up);
     let pane = app.active_pane.unwrap();
-    let camera = pictograph::canvas::CameraView {
+    let camera = cartography::canvas::CameraView {
         offset: (120.0, 70.0),
         zoom: 2.0,
     };

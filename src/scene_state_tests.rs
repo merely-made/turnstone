@@ -3,9 +3,9 @@
 
 use crate::panes::GraphId;
 use crate::scene_state::{self, ViewState};
-use pictograph::canvas::Canvas;
-use pictograph::canvas::controls::CanvasCommand;
-use pictograph::canvas::mosaic::MosaicTarget;
+use cartography::canvas::Canvas;
+use cartography::canvas::controls::CanvasCommand;
+use cartography::canvas::mosaic::MosaicTarget;
 use kernel::graph::Graph;
 use pandect::{CartographyGeometry, SavedMosaic, SavedRegion};
 use serde_json::{Value, json};
@@ -123,7 +123,7 @@ fn scene_state_round_trips_through_the_real_facet_file_into_a_fresh_canvas() {
 #[test]
 fn camera_selection_and_pause_ride_the_scene_as_graphshell_saves_them() {
     let (mut source, members) = fixture();
-    source.set_camera(pictograph::canvas::CameraView {
+    source.set_camera(cartography::canvas::CameraView {
         offset: (120.0, -45.0),
         zoom: 1.75,
     });

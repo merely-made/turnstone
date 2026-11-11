@@ -42,7 +42,7 @@ impl App {
                 canvas.take_stop_return();
             }
             let id = canvas.layout_strategy().unwrap_or("free").to_owned();
-            pictograph::canvas::physics_controls::advance_arrangement(
+            cartography::canvas::physics_controls::advance_arrangement(
                 canvas,
                 &mut transition,
                 &id,
@@ -66,7 +66,7 @@ impl App {
         self.graph_views.focused_member(pane).or_else(|| {
             self.graph_for_pane(pane)
                 .and_then(|graph| self.graph_runtimes.canvas(graph))
-                .and_then(pictograph::canvas::Canvas::focused_member)
+                .and_then(cartography::canvas::Canvas::focused_member)
         })
     }
 
@@ -122,7 +122,7 @@ impl App {
     pub fn graph_pane_pointer_down(
         &mut self,
         pane: PaneId,
-        button: pictograph::canvas::PointerButton,
+        button: cartography::canvas::PointerButton,
         x: f32,
         y: f32,
     ) -> bool {
@@ -140,7 +140,7 @@ impl App {
             .activation
             .entry(pane)
             .or_default()
-            .press(member, (x, y), button != pictograph::canvas::PointerButton::Left);
+            .press(member, (x, y), button != cartography::canvas::PointerButton::Left);
         if let Some(graph) = self.graph_for_pane(pane) {
             self.graph_runtimes.get_mut(graph).unwrap().scene_transition = None;
         }
@@ -156,7 +156,7 @@ impl App {
     pub fn graph_pane_take_context_request(
         &mut self,
         pane: PaneId,
-    ) -> Option<pictograph::canvas::ContextRequest> {
+    ) -> Option<cartography::canvas::ContextRequest> {
         self.with_graph_pane(pane, |canvas| canvas.take_context_request())
             .flatten()
     }
@@ -164,7 +164,7 @@ impl App {
     pub fn graph_pane_pointer_up(
         &mut self,
         pane: PaneId,
-        button: pictograph::canvas::PointerButton,
+        button: cartography::canvas::PointerButton,
         x: f32,
         y: f32,
     ) -> bool {
@@ -186,7 +186,7 @@ impl App {
             .elapsed()
             .as_secs_f64()
             * 1000.0;
-        if button == pictograph::canvas::PointerButton::Left {
+        if button == cartography::canvas::PointerButton::Left {
             if let Some(member) = self
                 .reading
                 .scope
@@ -261,7 +261,7 @@ impl App {
         std::mem::take(&mut self.events)
     }
 
-    pub fn physics_refusal(&self) -> Option<&pictograph::canvas::OverlayRefusal> {
+    pub fn physics_refusal(&self) -> Option<&cartography::canvas::OverlayRefusal> {
         self.physics_refusal.as_ref().and_then(|(graph, refusal)| {
             (*graph == self.graph_runtimes.active_graph()).then_some(refusal)
         })
@@ -269,7 +269,7 @@ impl App {
 
     pub(super) fn record_physics_result(
         &mut self,
-        result: Result<(), pictograph::canvas::OverlayRefusal>,
+        result: Result<(), cartography::canvas::OverlayRefusal>,
     ) {
         self.physics_refusal = match result {
             Ok(()) => None,

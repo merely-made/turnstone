@@ -225,7 +225,7 @@ pub struct App {
     /// The graph stays correct without it (the sidecar's charter).
     pub browser: pandect::browser_node_state::BrowserNodeStates,
     /// Latest typed refusal for one graph's physics controls, not persisted.
-    physics_refusal: Option<(GraphId, pictograph::canvas::OverlayRefusal)>,
+    physics_refusal: Option<(GraphId, cartography::canvas::OverlayRefusal)>,
     /// A maximized pane takes the whole pane area (a host view state; frisket
     /// has no maximize op). Not persisted; resets on restart.
     pub maximized: Option<PaneId>,

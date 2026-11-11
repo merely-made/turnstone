@@ -7,7 +7,7 @@ use crate::action::{Action, Effect, Update};
 use crate::saved_sources::{Admission, Content, Entry, Key, Selector, Target};
 use crate::{session, source_capture};
 use chartulary::FacetId;
-use pictograph::canvas::Canvas;
+use cartography::canvas::Canvas;
 use std::path::Path;
 
 fn app_at(root: &Path) -> App {

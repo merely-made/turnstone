@@ -34,7 +34,7 @@ mod command_metadata;
 pub(crate) use command_metadata::command_metadata;
 
 use crate::panes::{PaneKindId, PaneSource};
-use pictograph::canvas::controls::CanvasCommand;
+use cartography::canvas::controls::CanvasCommand;
 
 /// One admitted Settings pane composition/view save request.
 pub type SettingsPaneRecordIntent = (

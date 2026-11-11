@@ -5,7 +5,7 @@ use super::*;
 
 #[test]
 fn app_adoption_reopens_saved_mosaic_seed_regions_and_pause_before_the_next_layout_pass() {
-    use pictograph::canvas::mosaic::MosaicTarget;
+    use cartography::canvas::mosaic::MosaicTarget;
     use std::collections::BTreeMap;
 
     let dir = tempfile::tempdir().unwrap();
@@ -263,7 +263,7 @@ fn graph_scene_persistence_writes_the_explicit_owner_and_preserves_the_active_se
     assert_eq!(seed, expected_seed.into_iter().collect());
     assert!(!scene.cartography.regions().is_empty());
     assert_eq!(
-        pictograph::canvas::saved_scene::scene_arrangement(&scene).unwrap(),
+        cartography::canvas::saved_scene::scene_arrangement(&scene).unwrap(),
         "mosaic.default"
     );
     assert!(scene.physics_paused);
@@ -314,7 +314,7 @@ fn resizing_mosaic_tiles_cancels_both_pending_and_running_reset_returns() {
             let graph = app.graph_for_pane(pane).unwrap();
             let mut transition = None;
             app.with_graph_pane(pane, |canvas| {
-                pictograph::canvas::physics_controls::advance_arrangement(
+                cartography::canvas::physics_controls::advance_arrangement(
                     canvas,
                     &mut transition,
                     "mosaic.default",
@@ -404,7 +404,7 @@ fn summoned_arrange_pane_binds_its_graph_and_routes_actual_seed_buttons_and_phys
         .unwrap();
     app.update(physics);
     assert_eq!(
-        pictograph::canvas::PhysicsChoice::live(app.graph_runtimes.canvas(graph).unwrap())
+        cartography::canvas::PhysicsChoice::live(app.graph_runtimes.canvas(graph).unwrap())
             .law
             .id(),
         "orbit.gravity"

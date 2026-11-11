@@ -6,7 +6,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use chartulary::FacetId;
-use pictograph::canvas::Canvas;
+use cartography::canvas::Canvas;
 use kernel::graph::Graph;
 use kernel::graph::apply::{GraphDelta, GraphDeltaResult, apply_graph_delta};
 

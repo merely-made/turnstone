@@ -13,7 +13,7 @@
 
 use std::path::PathBuf;
 
-use pictograph::canvas::Canvas;
+use cartography::canvas::Canvas;
 use uuid::Uuid;
 
 use crate::action::Effect;

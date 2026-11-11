@@ -223,7 +223,7 @@ personal-sync = [
 [dependencies]
 ostiary = { workspace = true, optional = true }
 castellan-client = { workspace = true, optional = true }
-athanor = { package = "mere-athanor", path = "../distillery/athanor", default-features = false, optional = true }
+athanor = { package = "mere-athanor", git = "https://github.com/merely-made/distillery.git", branch = "main", default-features = false, optional = true }
 wgpu-cue = { workspace = true, optional = true }
 cue-netrender = { workspace = true, optional = true }
 vector-sheet = { workspace = true, optional = true }
@@ -233,7 +233,7 @@ sprigging = { workspace = true, optional = true }
 illume = { workspace = true, optional = true }
 genet-presenter = { workspace = true, optional = true }
 cambium = { workspace = true, optional = true }
-moot = { package = "mere-moot", path = "../moot", features = ["resource-view", "presentation"], optional = true }
+moot = { package = "mere-moot", git = "https://github.com/merely-made/graphshell.git", branch = "main", features = ["resource-view", "presentation"], optional = true }
 fleece = { workspace = true, features = ["portable-clip", "page-links"], optional = true }
 eidetic-search = { workspace = true, optional = true }
 esp = { workspace = true, optional = true }
@@ -261,7 +261,7 @@ graphshell-door.workspace = true
 # The serving half (stack lift plan, L2): admission, the session loop, the
 # catalog and the projection host. `native` and the WebRTC features name its
 # halves; with none, it is the fixture endpoints the web tests use.
-graphshell-host = { version = "0.0.2", path = "../../crates/graphshell/graphshell-host", default-features = false }
+graphshell-host = { version = "0.0.2", git = "https://github.com/merely-made/graphshell.git", branch = "main", default-features = false }
 chirograph.workspace = true
 kernel = { workspace = true, optional = true }
 # The graph canvas (engine split D38: `cartography::canvas`); pictograph for
@@ -280,7 +280,7 @@ pandect = { workspace = true, optional = true }
 # The view state MereHost reads and writes through the session (engine split D78).
 incipit = { workspace = true, features = ["view", "graph"], optional = true }
 sporran = { workspace = true, optional = true }
-platen = { path = "../../crates/platen/platen", default-features = false, optional = true }
+platen = { git = "https://github.com/merely-made/graphshell.git", branch = "main", default-features = false, optional = true }
 scenograph.workspace = true
 sceno.workspace = true
 sceno-backdrops.workspace = true
@@ -323,7 +323,7 @@ pollster = { version = "0.4", optional = true }
 genet-scripted-dom = { workspace = true, optional = true }
 image = { version = "0.25", default-features = false, features = ["png"], optional = true }
 cambium = { workspace = true, optional = true }
-moot = { package = "mere-moot", path = "../moot", features = ["resource-owner"], optional = true }
+moot = { package = "mere-moot", git = "https://github.com/merely-made/graphshell.git", branch = "main", features = ["resource-owner"], optional = true }
 gemot = { workspace = true, optional = true }
 blake3 = { workspace = true, optional = true }
 # The identity read model and intents (`identity`, `identity_projection`).
@@ -405,7 +405,7 @@ script-rhai = { workspace = true }
 # Tests and examples bind throwaway identities (vault lock plan, ruling 96).
 transport = { workspace = true, features = ["test-identity"] }
 # Co-op tests sign as an in-memory owner (stack-lift D4: tests only).
-graphshell-host = { version = "0.0.2", path = "../../crates/graphshell/graphshell-host", default-features = false, features = ["test-signer", "test-support"] }
+graphshell-host = { version = "0.0.2", git = "https://github.com/merely-made/graphshell.git", branch = "main", default-features = false, features = ["test-signer", "test-support"] }
 # The native accessibility receipt (dynamics grammar plan, F67): the canvas's
 # producer semantics through cambium-winit-a11y's AccessKit lowering, driven
 # by the headless harness, its view built with Cambium, the tree read in

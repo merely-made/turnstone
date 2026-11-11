@@ -13,7 +13,7 @@ fn display_budget_survives_graph_replacement_and_unknown_rate() {
     let b = graph(902);
     let assert_budget = |pool: &GraphRuntimePool, id, rate| {
         let actual = pool.canvas(id).unwrap().physics_step_budget().unwrap();
-        let expected = pictograph::canvas::StepBudget::for_display(rate);
+        let expected = cartography::canvas::StepBudget::for_display(rate);
         assert_eq!(actual.per_frame, expected.per_frame);
         assert_eq!(actual.margin, expected.margin);
     };

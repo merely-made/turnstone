@@ -10,7 +10,7 @@
 
 use std::collections::HashMap;
 
-use pictograph::canvas::{NodeState, palette};
+use cartography::canvas::{NodeState, palette};
 use sprigging::ColorF;
 use uuid::Uuid;
 

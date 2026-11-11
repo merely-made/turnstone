@@ -393,7 +393,7 @@ fn reader_pin_uses_held_html_and_switching_back_restores_original_rendering() {
 /// canvas's viewport seam keeps a pan in one lens out of the other.
 #[test]
 fn lens_viewports_stay_distinct() {
-    let mut canvas = pictograph::canvas::Canvas::with_sample_graph();
+    let mut canvas = cartography::canvas::Canvas::with_sample_graph();
     canvas.resize(800, 600);
     let a = canvas.viewport();
     // Drive "window B": install, pan, stash.

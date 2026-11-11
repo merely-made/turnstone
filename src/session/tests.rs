@@ -469,7 +469,7 @@ fn unsupported_place_binding_stays_a_visible_error() {
 #[test]
 fn legacy_node_columns_migrate_on_load_and_existing_facets_win() {
     let root = temp_root("node-facet-migration");
-    let mut canvas = pictograph::canvas::Canvas::new();
+    let mut canvas = cartography::canvas::Canvas::new();
     let key = canvas.visit("https://legacy.example/");
     let node_id = canvas.graph().get_node(key).unwrap().id;
     save_session_graph(&root, canvas.graph());
@@ -528,7 +528,7 @@ fn image_gc_keeps_live_blobs_and_drops_only_hash_named_orphans() {
     save_image_blob(&root, &orphan.hex(), b"orphan");
     std::fs::write(images_dir(&root).join("README"), b"not a blob").unwrap();
 
-    let mut canvas = pictograph::canvas::Canvas::new();
+    let mut canvas = cartography::canvas::Canvas::new();
     let key = canvas.visit("https://live.example/");
     let node = canvas.graph().get_node(key).unwrap().id;
     assert!(canvas.set_node_favicon_for(node, live));

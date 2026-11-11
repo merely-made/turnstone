@@ -108,7 +108,7 @@ impl App {
             .and_then(|donor| crate::scene_state::read_scene(self.graph_runtimes.facets(), donor))
         {
             let ids = copy.id_remap.iter().copied().collect();
-            let carried = pictograph::canvas::saved_scene::remap_scene(&scene, &ids);
+            let carried = cartography::canvas::saved_scene::remap_scene(&scene, &ids);
             pandect::write_saved_scene(&mut fork_facets, *fork_graph_id.as_uuid(), &carried);
         }
         let derivation_facet =

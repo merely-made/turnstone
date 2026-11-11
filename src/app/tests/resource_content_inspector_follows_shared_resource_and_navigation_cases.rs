@@ -115,28 +115,28 @@ fn session_restore_applies_law_before_overlays_and_records_refusal() {
     let session_id = app.session_id;
     let session_dir = session::session_dir(dir.path(), session_id);
     // The flat view intent this host wrote before the saved scene.
-    let write_intent = |law: pictograph::canvas::PhysicsLaw| {
+    let write_intent = |law: cartography::canvas::PhysicsLaw| {
         std::fs::create_dir_all(&session_dir).unwrap();
         std::fs::write(
             session::view_intent_path(&session_dir),
             serde_json::json!({
                 "physics_law": law.id(),
-                "physics_overlays": [pictograph::canvas::PhysicsOverlay::GridSnap.id()],
+                "physics_overlays": [cartography::canvas::PhysicsOverlay::GridSnap.id()],
             })
             .to_string(),
         )
         .unwrap();
     };
-    write_intent(pictograph::canvas::PhysicsLaw::Density);
+    write_intent(cartography::canvas::PhysicsLaw::Density);
     app.adopt_session(session_id);
     assert_eq!(
         app.graph_runtimes.physics_law(),
-        pictograph::canvas::PhysicsLaw::Density
+        cartography::canvas::PhysicsLaw::Density
     );
     assert!(app.graph_runtimes.physics_overlays().is_empty());
     assert_eq!(
         app.physics_refusal().unwrap().refused,
-        vec![pictograph::canvas::PhysicsOverlay::GridSnap]
+        vec![cartography::canvas::PhysicsOverlay::GridSnap]
     );
     assert!(
         app.take_events()
@@ -144,11 +144,11 @@ fn session_restore_applies_law_before_overlays_and_records_refusal() {
             .any(|event| matches!(event, AppEvent::PhysicsRefused(_)))
     );
 
-    write_intent(pictograph::canvas::PhysicsLaw::Springs);
+    write_intent(cartography::canvas::PhysicsLaw::Springs);
     app.adopt_session(session_id);
     assert_eq!(
         app.graph_runtimes.physics_overlays(),
-        &[pictograph::canvas::PhysicsOverlay::GridSnap]
+        &[cartography::canvas::PhysicsOverlay::GridSnap]
     );
     assert!(app.physics_refusal().is_none());
 }

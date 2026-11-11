@@ -30,8 +30,8 @@ use cambium::{
 };
 use genet_scripted_dom::{NodeId, ScriptedDom};
 use layout_dom_api::LayoutDom;
-use pictograph::canvas::NodeState;
-use pictograph::canvas::palette;
+use cartography::canvas::NodeState;
+use cartography::canvas::palette;
 use sprigging::{ColorF, LeafRegistry, RenderedLeaves};
 use uuid::Uuid;
 

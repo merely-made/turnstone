@@ -4,7 +4,7 @@
 use super::*;
 
 impl GraphPaneViews {
-    pub(crate) fn forme_region(&self, pane: PaneId) -> Option<&pictograph::canvas::FormeRegion> {
+    pub(crate) fn forme_region(&self, pane: PaneId) -> Option<&cartography::canvas::FormeRegion> {
         self.forme_regions.get(&pane)
     }
 
@@ -29,7 +29,7 @@ impl GraphPaneViews {
     pub(crate) fn set_forme_region(
         &mut self,
         pane: PaneId,
-        region: Option<pictograph::canvas::FormeRegion>,
+        region: Option<cartography::canvas::FormeRegion>,
     ) {
         if let Some(region) = region {
             self.forme_regions.insert(pane, region);

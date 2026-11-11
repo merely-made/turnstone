@@ -96,7 +96,7 @@ mod tests {
         use crate::panes::{PaneContent, PaneId, PaneNode, SplitAxis};
         let (mut app, first, a, _) = setup();
         let second = GraphId::from_uuid(uuid::Uuid::new_v4());
-        let mut clone = pictograph::canvas::Canvas::new();
+        let mut clone = cartography::canvas::Canvas::new();
         clone.set_graph(app.graph_runtimes.canvas(first).unwrap().graph().clone());
         app.graph_runtimes.activate_or_insert(second, None, clone);
         app.frisket.root = PaneNode::Split {

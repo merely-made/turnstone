@@ -25,6 +25,14 @@ repos:
         language: system
         files: '(^|/)(Cargo\.(toml|lock)|[^/]+\.rs)$'
         pass_filenames: false
+      # The app's query-views feature (mere-view's query feature) is off in the workspace
+      # build; this is Graphshell's clippy-query hook for the app's half (engine split D120).
+      - id: clippy-query
+        name: clippy (query feature)
+        entry: cargo clippy --locked --all-targets -p graphshell --features graphshell/query-views
+        language: system
+        files: '(^|/)(Cargo\.(toml|lock)|[^/]+\.rs)$'
+        pass_filenames: false
       - id: dependency-bans
         name: dependency bans
         entry: cargo deny --locked check bans

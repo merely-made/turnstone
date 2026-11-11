@@ -140,7 +140,7 @@ mod tests {
         let owner = app.graph_for_pane(app.default_graph_pane()).unwrap();
         let other = GraphId::from_uuid(uuid::Uuid::new_v4());
         app.graph_runtimes
-            .activate_or_insert(other, None, pictograph::canvas::Canvas::new());
+            .activate_or_insert(other, None, cartography::canvas::Canvas::new());
         let effects = app.update(Action::FoldSelection);
         assert!(
             effects

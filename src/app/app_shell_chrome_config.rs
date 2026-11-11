@@ -122,7 +122,7 @@ impl App {
     /// Record the actual receiving viewport without replacing that geometry
     /// with a projection measured from fresh, transient selection/footprints.
     /// Subsequent viewport, graph or footprint changes use the normal gate.
-    pub(super) fn prime_restored_layout(canvas: &mut pictograph::canvas::Canvas, w: u32, h: u32) -> bool {
+    pub(super) fn prime_restored_layout(canvas: &mut cartography::canvas::Canvas, w: u32, h: u32) -> bool {
         let Some(id) = canvas.layout_strategy().map(str::to_owned) else {
             return false;
         };
@@ -138,7 +138,7 @@ impl App {
     /// view installed. The strategy sees selection only through that pane's
     /// temporary view state; it never chooses a global active pane.
     pub(super) fn drive_layout_strategy_for(
-        canvas: &mut pictograph::canvas::Canvas,
+        canvas: &mut cartography::canvas::Canvas,
         w: u32,
         h: u32,
     ) -> bool {
@@ -371,7 +371,7 @@ impl App {
     pub fn with_graph_pane<R>(
         &mut self,
         pane: PaneId,
-        operation: impl FnOnce(&mut pictograph::canvas::Canvas) -> R,
+        operation: impl FnOnce(&mut cartography::canvas::Canvas) -> R,
     ) -> Option<R> {
         let graph = self.graph_for_pane(pane)?;
         self.graph_views.bind_graph(pane, graph);
@@ -442,7 +442,7 @@ impl App {
 
     /// The Map's theme, resolved from the live appearance; `None` until a
     /// presentation exists, when the canvas keeps its own colours.
-    pub fn map_theme(&mut self) -> Option<pictograph::canvas::CanvasTheme> {
+    pub fn map_theme(&mut self) -> Option<cartography::canvas::CanvasTheme> {
         self.map_theme.resolve(&self.shell.chrome().appearance)
     }
 }

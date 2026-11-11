@@ -120,6 +120,7 @@ impl TurnstoneEndpoint {
                 explanation: "Frame the disclosed Turnstone graph without changing it.".into(),
                 payload_schema: r#"{"type":"null"}"#.into(),
                 input_form: None,
+                icon: None,
                 effect: IntentEffect::Curation,
             },
             AdvertisedAction {
@@ -128,6 +129,7 @@ impl TurnstoneEndpoint {
                 explanation: "Ask Turnstone to add or select an address in graph truth.".into(),
                 payload_schema: r#"{"type":"string","format":"uri"}"#.into(),
                 input_form: None,
+                icon: None,
                 effect: IntentEffect::DomainTruth,
             },
         ]

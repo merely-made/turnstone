@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 use super::*;
-use pictograph::canvas::Canvas;
+use cartography::canvas::Canvas;
 use kernel::geometry::PortablePoint;
 use kernel::graph::{EdgeAssertion, ProvenanceSubKind};
 use scenograph::attention::Attention;

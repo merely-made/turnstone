@@ -239,7 +239,7 @@ fn the_highlighted_command_toggles_with_ctrl_d() {
 /// right-drag past it selects and asks for nothing (SE26).
 #[test]
 fn a_right_click_asks_for_the_menu_and_a_right_drag_does_not() {
-    use pictograph::canvas::PointerButton;
+    use cartography::canvas::PointerButton;
     let mut app = App::test_stub();
     app.update(Action::OpenAddress("mere://alpha".into()));
     let pane = app.default_graph_pane();
