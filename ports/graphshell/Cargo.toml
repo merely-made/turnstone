@@ -216,7 +216,6 @@ personal-sync = [
     "muniment/redb",
     "pandect/personal-sync",
     "dep:p2panda-core",
-    "dep:p2panda-store",
     "dep:stickleback",
     "dep:murm-sync",
 ]
@@ -334,7 +333,6 @@ blake3 = { workspace = true, optional = true }
 # `graphshell_door::custody_client`.
 dramatis = { workspace = true, optional = true }
 p2panda-core = { package = "p2mere-core", version = "0.10", optional = true }
-p2panda-store = { package = "p2mere-store", version = "0.10", default-features = false, optional = true }
 rand_core = { version = "0.6", features = ["getrandom"], optional = true }
 signature = { version = "2", optional = true }
 ssh-agent-lib = { version = "0.6", optional = true }

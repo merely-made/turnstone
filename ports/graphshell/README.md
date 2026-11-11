@@ -120,7 +120,7 @@ Modules that were once here and moved out (engine split, slices 1 and 2):
 |---|---|---|
 | `native` (default) | Admitted sessions, native transports, Personae composition, the binaries | `graphshell-endpoint` (`network`, `stdio`), `notochord`, `transport`, `personae`, `session-runtime`, `ssh-agent-lib`, `ssh-key`, `light-file-dialog`, Tokio |
 | `web` | The portable graph and canvas cone | `mere` (`graph`, `canvas`), `chartulary`, `eidetic`, `muniment`, `url`, `sha2` |
-| `personal-sync` | `native` + `web` + device synchronization | `muniment/redb`, `p2panda-core`, `p2panda-store`, `stickleback` |
+| `personal-sync` | `native` + `web` + device synchronization | `muniment/redb`, `p2panda-core`, `stickleback` |
 | `coop` | One chosen graph, owner and named guest; standalone or attached to an existing resident host | `native`, `web`, `muniment/redb`, `graphshell-client/pump` |
 
 Crates under `crates/` may not depend on this package.
