@@ -20,7 +20,7 @@ impl PanePorts for WebPorts {
         wasm_bindgen_futures::spawn_local(task);
     }
     fn export(&self, bytes: &[u8], mime: &str, name: &str) -> Result<String, String> {
-        backdrop::export_material(bytes, mime, name)
+        download::export_material(bytes, mime, name)
     }
     fn release_export(&self, handle: &str) {
         let _ = web_sys::Url::revoke_object_url(handle);

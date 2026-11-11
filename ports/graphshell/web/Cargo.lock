@@ -2794,8 +2794,7 @@ checksum = "edd0f118536f44f5ccd48bcb8b111bdc3de888b58c74639dfb034a357d0f206d"
 [[package]]
 name = "emblem"
 version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d12e04cca0dd88d231c840c3ffec8862b8cc235df91386c1773b201ec8accfb6"
+source = "git+https://github.com/merely-made/emblem.git?rev=4630fab62cca1a6f48dae920c29d6d43a54b01b6#4630fab62cca1a6f48dae920c29d6d43a54b01b6"
 
 [[package]]
 name = "ena"

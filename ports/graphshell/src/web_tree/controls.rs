@@ -97,6 +97,10 @@ pub(super) fn toolbar(page: &TreePage) -> Child {
             Box::new(control) as Child
         })
         .collect();
+    #[cfg(feature = "content-backdrop")]
+    if !resident {
+        super::content_backdrop::append_controls(page, &mut buttons);
+    }
     if resident {
         buttons.push(Box::new(status_note(
             "",

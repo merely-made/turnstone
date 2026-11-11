@@ -100,6 +100,7 @@ const SHEET: &str = "\
     .tree-status { margin: 4px 12px 8px; } \
     .tree-controls { display:flex; gap:6px; padding:6px 12px; flex-wrap:wrap; } \
     .tree-controls button { background:var(--tabard-color-surface-2, #263640); color:var(--tabard-color-text, #dce3e8); padding:5px 10px; border:1px solid var(--tabard-color-border-strong, #637581); } \
+    .tree-controls .content-backdrop-toggle[aria-pressed=true] { background:var(--tabard-color-tertiary, #2d5a63); color:var(--tabard-color-on-tertiary, #dce3e8); border-color:var(--tabard-color-primary, #79a9be); } \
     .tree-controls button[disabled] { opacity:.45; } \
     .tree-grouping { max-height:180px; overflow-y:auto; padding:4px 12px; border-bottom:1px solid var(--tabard-color-border, #2c3b44); } \
     .tree-grouping h2 { font-size:14px; margin:2px 0; } \
@@ -486,6 +487,8 @@ pub(crate) struct TreePage {
     #[cfg(feature = "moot-resources")]
     moot_resources_seen: u64,
     commands: commands::State,
+    #[cfg(feature = "content-backdrop")]
+    content_backdrop: content_backdrop::Controls,
     presenter: Option<presenter::Pane>,
     #[cfg(feature = "product")]
     forme: Option<forme::Pane>,
@@ -1850,6 +1853,8 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
                 #[cfg(feature = "moot-resources")]
                 moot_resources_seen: 0,
                 commands: commands::State::default(),
+                #[cfg(feature = "content-backdrop")]
+                content_backdrop: content_backdrop::Controls::default(),
                 presenter,
                 #[cfg(feature = "product")]
                 forme,
@@ -2627,6 +2632,10 @@ mod commands;
 #[cfg(feature = "product")]
 mod comms_pane;
 mod controls;
+#[cfg(feature = "content-backdrop")]
+mod content_backdrop;
+#[cfg(any(feature = "product", feature = "content-backdrop"))]
+mod download;
 #[cfg(feature = "product")]
 mod coupling;
 #[cfg(feature = "product")]

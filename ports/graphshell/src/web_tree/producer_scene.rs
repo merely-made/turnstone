@@ -63,6 +63,8 @@ impl CanvasProducer {
             ),
             shared.speed.plant_owed,
         );
+        #[cfg(feature = "content-backdrop")]
+        canvas.set_content_backdrop_device_scale(frame.layout_scale);
         let profile = shared.timing.borrow().active();
         #[cfg(feature = "remote")]
         if shared.remote_is_shown() {

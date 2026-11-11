@@ -28,6 +28,7 @@ path = "../src/web.rs"
 [features]
 moot-resources = ["graphshell/moot-resources", "dep:moot"]
 dynamics-receipt = []
+content-backdrop = ["pictograph/backdrop-svg"]
 # Start in Worker mode (physics in `physics/worker.js`) unless the page says
 # `?physics=inline`. The viewer's builds (`scripts/build-viewer.py`) turn it on;
 # the crate's own `default` does not, so the product page keeps its engine inline.
@@ -54,7 +55,7 @@ without-table-layout = ["genet-render/without-table-layout"]
 # retained product panes and the practice workspace.
 # The product build keeps the force engine: the projection editor previews a
 # recipe's dynamics in process (`ProjectionDynamics`), which runs a simulation.
-product = ["physics-engine", "dep:mere-view", "mere-view/query-editor", "mere-view/workbench-editor", "mere-view/presentation-editor", "dep:platen", "muniment/indexeddb", "dep:pandect", "dep:sha2", "graphshell/document-layout", "graphshell/workspace-editor", "graphshell/retained-content", "graphshell/query-views", "graphshell/editable-blocks", "applets", "graphshell/goal-surface", "dep:mere-lanes", "dep:fleece"]
+product = ["physics-engine", "content-backdrop", "dep:mere-view", "mere-view/query-editor", "mere-view/workbench-editor", "mere-view/presentation-editor", "dep:platen", "muniment/indexeddb", "dep:pandect", "dep:sha2", "graphshell/document-layout", "graphshell/workspace-editor", "graphshell/retained-content", "graphshell/query-views", "graphshell/editable-blocks", "applets", "graphshell/goal-surface", "dep:mere-lanes", "dep:fleece"]
 applets = ["graphshell/applets", "muniment/indexeddb"]
 # The WebRTC door and the remote board: `web_remote`, `web_rtc_link`, the tree's
 # remote board.
