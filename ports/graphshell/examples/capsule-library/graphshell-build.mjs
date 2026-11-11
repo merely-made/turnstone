@@ -13,6 +13,7 @@ import { blake3 } from '@noble/hashes/blake3.js';
 
 if (!process.argv[2] || !process.argv[3]) throw new Error('Pass the proof site and built graphshell_web.wasm');
 const here = dirname(fileURLToPath(import.meta.url));
+// Turnstone's repository root: the app's sources and this root's Cargo.toml and lock.
 const root = resolve(here, '../../../..');
 const site = resolve(process.argv[2]);
 const digest = bytes => Buffer.from(blake3(bytes)).toString('hex');
@@ -50,13 +51,14 @@ for (const path of [
   'ports/graphshell/src/appearance.rs', 'ports/graphshell/src/web_appearance.rs',
   'ports/graphshell/web/styles.css',
   'ports/graphshell/src/capsule_applet/readings.rs',
-  'crates/cambium/cambium-genet-web-host/src/input.rs',
-  'crates/cambium/cambium-genet-web-host/src/lib.rs',
-  'crates/cambium/cambium-rootstock/src/lib.rs',
-  'crates/cambium/cambium-rootstock/src/owned_layout.rs',
   'ports/graphshell/src/web_tree/applet.rs', 'ports/graphshell/Cargo.toml',
   'ports/graphshell/web/Cargo.toml', 'ports/graphshell/web/Cargo.lock',
 ]) sources[path] = digest(await readFile(join(root, path)));
+// The four toolkit sources live in Graphshell; its half of the build writes their
+// digests into the site's bindings.json, keyed by their Graphshell paths (engine split D122).
+const { toolkit_sources } = JSON.parse(await readFile(join(site, 'bindings.json'), 'utf8'));
+if (!toolkit_sources || Object.keys(toolkit_sources).length !== 4) throw new Error('bindings.json lacks the four toolkit_sources digests; rebuild the site with the build.mjs in Graphshell.');
+Object.assign(sources, toolkit_sources);
 const files = {};
 for (const name of await readdir(join(site, 'graphshell'))) {
   const bytes = await readFile(join(site, 'graphshell', name));

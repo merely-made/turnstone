@@ -1,0 +1,13 @@
+{
+  "name": "graphshell-capsule-library-proof",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node graphshell-build.mjs",
+    "check": "node graphshell-check.mjs"
+  },
+  "devDependencies": {
+    "@noble/hashes": "2.4.0",
+    "playwright": "1.62.1"
+  }
+}
