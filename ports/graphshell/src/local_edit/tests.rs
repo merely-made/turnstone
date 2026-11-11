@@ -371,7 +371,7 @@ fn canvas_metadata_refresh_preserves_geometry_camera_selection_and_play_state() 
         .collect::<Vec<_>>();
     canvas.seed_cartography(positions);
     canvas.set_selected_members(&[id]);
-    canvas.set_camera(pictograph::canvas::CameraView {
+    canvas.set_camera(cartography::canvas::CameraView {
         offset: (31.0, 23.0),
         zoom: 1.4,
     });

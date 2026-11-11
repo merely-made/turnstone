@@ -13,7 +13,7 @@ use graphshell::local_edit::{
 use graphshell::local_intake::{
     create_address, create_file, create_link, persist_intake, sync_canvas_intake,
 };
-use pictograph::canvas::Role;
+use cartography::canvas::Role;
 use kernel::graph::CouplingId;
 use muniment::IndexedDbBackend;
 use uuid::Uuid;
@@ -114,7 +114,7 @@ pub(super) struct SavedProduct {
     /// A created but unacknowledged member. Retrying stores this same object.
     pending_intake: Option<Uuid>,
     /// Suggested links the person kept, written one at a time as their own.
-    kept_links: std::collections::VecDeque<pictograph::canvas::link_suggestions::KeptLink>,
+    kept_links: std::collections::VecDeque<cartography::canvas::link_suggestions::KeptLink>,
     pending_detail: Option<CompletedEdit>,
     detail: detail::DetailControls,
     find: find::FindControls,
@@ -419,7 +419,7 @@ fn link_key_is_present(
     let source = scenograph::link::LinkSource::Unavailable {
         reason: "Graphshell is validating a local view target".into(),
     };
-    pictograph::canvas::link_reading::read_link(graph, pair.0, pair.1, source)
+    cartography::canvas::link_reading::read_link(graph, pair.0, pair.1, source)
         .is_ok_and(|reading| reading.links.iter().any(|link| &link.key == expected))
 }
 
@@ -595,9 +595,9 @@ impl SavedProduct {
             .as_ref()
             .ok_or("Link reading will resume when the current save finishes")?;
         let read = if history {
-            pictograph::canvas::link_reading::read_link_history
+            cartography::canvas::link_reading::read_link_history
         } else {
-            pictograph::canvas::link_reading::read_link
+            cartography::canvas::link_reading::read_link
         };
         read(
             app.host.graph(),

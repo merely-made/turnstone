@@ -85,14 +85,14 @@ pub fn slot(graph: Uuid) -> String {
 
 pub(crate) fn canvas_region(
     region: Option<platen::workspace::WorkspaceRegion>,
-) -> Option<pictograph::canvas::FormeRegion> {
-    region.map(|region| pictograph::canvas::FormeRegion {
+) -> Option<cartography::canvas::FormeRegion> {
+    region.map(|region| cartography::canvas::FormeRegion {
         id: region.id,
         bounds: region.bounds,
         cells: region
             .cells
             .into_iter()
-            .map(|cell| pictograph::canvas::FormeCell {
+            .map(|cell| cartography::canvas::FormeCell {
                 member: cell.member,
                 bounds: cell.bounds,
             })
@@ -106,7 +106,7 @@ pub fn project_region(
     workspace: &FormeWorkspace,
     owner: Uuid,
     graph: &Graph,
-) -> Result<Option<pictograph::canvas::FormeRegion>, String> {
+) -> Result<Option<cartography::canvas::FormeRegion>, String> {
     workspace.project_region(owner, graph).map(canvas_region)
 }
 

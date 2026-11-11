@@ -28,7 +28,7 @@ cambium-desktop.workspace = true
 cambium-rootstock.workspace = true
 muniment = { workspace = true, features = ["directory"] }
 kernel.workspace = true
-pictograph = { workspace = true, features = ["canvas", "image-decode", "physics-engine"] }
+cartography = { workspace = true, features = ["canvas", "image-decode", "physics-engine"] }
 # Complex-script shaping in the block window. It came through the mere facade's
 # defaults (platen -> document-canvas); kept on directly (engine split D58).
 parley = { workspace = true, features = ["complex-scripts"] }

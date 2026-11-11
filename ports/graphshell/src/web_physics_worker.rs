@@ -38,7 +38,7 @@
 use std::{cell::RefCell, collections::VecDeque, rc::Rc};
 
 use js_sys::{Array, Uint8Array};
-use pictograph::canvas::{PhysicsTransport, UnavailableTransport};
+use cartography::canvas::{PhysicsTransport, UnavailableTransport};
 use wasm_bindgen::{JsCast, prelude::*};
 use web_sys::{Element, MessageEvent, Worker, WorkerOptions, WorkerType};
 

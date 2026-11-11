@@ -217,8 +217,8 @@ impl Session {
     pub fn font_roles(&self) -> String {
         self.appearance.font_roles()
     }
-    pub fn backdrop_theme(&self) -> pictograph::canvas::backdrop_surface::SurfaceTheme {
-        use pictograph::canvas::backdrop_surface::SurfaceTheme;
+    pub fn backdrop_theme(&self) -> cartography::canvas::backdrop_surface::SurfaceTheme {
+        use cartography::canvas::backdrop_surface::SurfaceTheme;
         if self.colors.len() != PAINT.len() {
             return SurfaceTheme::default();
         }
@@ -234,8 +234,8 @@ impl Session {
             warning: self.colors[9],
         }
     }
-    pub fn apply_canvas(&self, canvas: &mut pictograph::canvas::Canvas) {
-        use pictograph::canvas::{CanvasRoles, CanvasTheme, palette::ThemeColor};
+    pub fn apply_canvas(&self, canvas: &mut cartography::canvas::Canvas) {
+        use cartography::canvas::{CanvasRoles, CanvasTheme, palette::ThemeColor};
         if self.colors.len() == PAINT.len() {
             let role = |index: usize| {
                 let [r, g, b, a] = self.colors[index].map(|channel| (channel * 255.0).round() as u8);
@@ -266,8 +266,8 @@ impl Session {
     /// Faces for text on this appearance's page: the canvas's face palette,
     /// each entry held at 3:1 against the page ground, ringed in the text
     /// colour where it cannot be.
-    pub fn inline_faces(&self, canvas: &pictograph::canvas::Canvas) -> pictograph::canvas::InlineFaces {
-        use pictograph::canvas::{InlineFaces, TextFacePalette, palette::ThemeColor};
+    pub fn inline_faces(&self, canvas: &cartography::canvas::Canvas) -> cartography::canvas::InlineFaces {
+        use cartography::canvas::{InlineFaces, TextFacePalette, palette::ThemeColor};
         let byte = |channel: f32| (channel.clamp(0.0, 1.0) * 255.0).round() as u8;
         let grounds: Vec<ThemeColor> = self
             .colors

@@ -71,7 +71,7 @@ default = ["native", "image-decode", "document-layout", "retained-content", "phy
 # The canvas's and the board's force engine in this process. The browser
 # viewer's main module leaves it off and runs physics in a Worker; every other
 # host that names this crate without its defaults lists it.
-physics-engine = ["pictograph?/physics-engine", "graphshell-host/physics-engine"]
+physics-engine = ["cartography?/physics-engine", "graphshell-host/physics-engine"]
 # Document-capable hosts retain Platen's document producer. Activating this
 # feature also activates the optional dependency before forwarding the feature.
 document-layout = ["dep:platen", "platen/document-layout"]
@@ -82,7 +82,7 @@ workspace-editor = ["web", "dep:platen", "dep:comms", "platen/workspace-editor",
 # graph viewer. Product web builds opt in explicitly; native defaults retain it.
 retained-content = ["web", "document-layout", "dep:genet-presenter", "dep:cambium", "dep:fleece", "dep:wgpu", "dep:pelt-core", "pelt-core/cue", "dep:wgpu-cue", "dep:cue-netrender", "dep:inker", "dep:netrender", "dep:mere-lanes", "dep:layout_dom_api", "dep:url"]
 # Forwards genet-livery's image decoding (mer3ly Ruling 111); on by default.
-image-decode = ["cambium-rootstock?/image-decode", "pictograph?/image-decode", "pelt-core?/image-decode"]
+image-decode = ["cambium-rootstock?/image-decode", "cartography?/image-decode", "pelt-core?/image-decode"]
 # Existing admitted sessions, transports, Personae composition, and receipt
 # binaries. This remains the default so current native callers keep working.
 native = [
@@ -168,8 +168,8 @@ webrtc-join = [
 # is `src/web.rs`), and it names its own JS bindings; the IndexedDB backend it
 # stores through belongs to muniment, beside the redb and zip realizations.
 # The web host's canvas and remote board stage repulsion on the page's GPU
-# (physics catalog plan, P5c; pictograph `gpu`, ruled 2026-10-02).
-canvas-gpu = ["web", "pictograph/gpu", "graphshell-host/board-gpu"]
+# (physics catalog plan, P5c; the canvas's `gpu`, ruled 2026-10-02).
+canvas-gpu = ["web", "cartography/gpu", "graphshell-host/board-gpu"]
 web = [
     # The remote board the browser pages draw (stack lift plan, P10).
     "graphshell-host/board",
@@ -186,6 +186,7 @@ web = [
     "dep:chartulary",
     "dep:eidetic",
     "dep:kernel",
+    "dep:cartography",
     "dep:pictograph",
     # The mere route's wire vocabulary `mere_host` serves (`mere-overmap`
     # without its view).
@@ -264,7 +265,10 @@ graphshell-door.workspace = true
 graphshell-host = { version = "0.0.2", path = "../../crates/graphshell/graphshell-host", default-features = false }
 chirograph.workspace = true
 kernel = { workspace = true, optional = true }
-pictograph = { workspace = true, features = ["canvas"], optional = true }
+# The graph canvas (engine split D38: `cartography::canvas`); pictograph for
+# the authored symbols.
+cartography = { workspace = true, features = ["canvas"], optional = true }
+pictograph = { workspace = true, optional = true }
 # The mere route's wire vocabulary (stack lift plan L14). The native viewer
 # that hosts its route panel is the `graphshell-mere` package.
 mere-overmap = { workspace = true, optional = true }

@@ -35,8 +35,8 @@ use cambium_rootstock::{
 use graphshell::app::GraphshellApp;
 use graphshell_host::mere_host::{FIXTURE_PERSONA_ADDRESS, FIXTURE_WEB_ADDRESS, SelectedPersonaRef};
 use layout_dom_api::{LayoutDom, LocalName, Namespace};
-use pictograph::canvas::Canvas;
-use pictograph::canvas::controls::CanvasCommand;
+use cartography::canvas::Canvas;
+use cartography::canvas::controls::CanvasCommand;
 use kernel::graph::Graph;
 use mandrake::{CaptureRecord, Lane, Product};
 use muniment::MemoryBackend;
@@ -203,7 +203,7 @@ fn tree_stylesheet(appearance: &str) -> String {
         format!("{}\n{}", commands::SHEET, presenter::SHEET),
         forme_sheet(),
         cambium::BACKDROP_SCENE_CSS,
-        pictograph::canvas::InlineFaces::rule(cambium::FACE_CLASS)
+        cartography::canvas::InlineFaces::rule(cambium::FACE_CLASS)
     )
 }
 
@@ -215,7 +215,7 @@ struct Shared {
     reading: RefCell<reading::Reading>,
     #[cfg(feature = "moot-resources")]
     moot_resources: RefCell<graphshell::moot_resources::Host>,
-    wheel_mode: Cell<pictograph::canvas::gestures::WheelMode>,
+    wheel_mode: Cell<cartography::canvas::gestures::WheelMode>,
     command_request: RefCell<Option<commands::Request>>,
     #[cfg(feature = "applets")]
     applet: RefCell<applet::Pane>,
@@ -227,7 +227,7 @@ struct Shared {
     canvas: RefCell<Canvas>,
     /// Faces beside node names in tabs, rows and text, in the canvas's face
     /// palette held against the page (iconography T4).
-    inline_faces: RefCell<std::sync::Arc<pictograph::canvas::InlineFaces>>,
+    inline_faces: RefCell<std::sync::Arc<cartography::canvas::InlineFaces>>,
     /// Input or a new graph since the producer last drew.
     dirty: Cell<bool>,
     /// Fit once the producer has the real canvas aperture, not the full page.
@@ -241,7 +241,7 @@ struct Shared {
     /// timing marks are written on them.
     gpu: RefCell<Option<(wgpu::Device, wgpu::Queue)>>,
     timing: RefCell<FrameTiming>,
-    physics_config: pictograph::canvas::ElapsedStepConfig,
+    physics_config: cartography::canvas::ElapsedStepConfig,
     /// The page's simulation speed and budget, and the frames the receipts read.
     speed: crate::web_speed::SpeedOptions,
     pace: RefCell<speed::PaceWindow>,
@@ -272,7 +272,7 @@ struct Shared {
     /// Lines `log-physics` recorded, for the receipt.
     physics_log: RefCell<Vec<String>>,
     /// The last `measure-faces` reading, for the snapshot.
-    faces: Cell<Option<pictograph::canvas::face_alignment::FaceAlignment>>,
+    faces: Cell<Option<cartography::canvas::face_alignment::FaceAlignment>>,
     /// The remote session; its channel's pumps reach it from outside the runner.
     #[cfg(feature = "remote")]
     remote: Rc<RefCell<remote::TreeRemote>>,
@@ -325,7 +325,7 @@ impl Shared {
     fn pan(&self, dx: f32, dy: f32) {
         let mut canvas = self.canvas.borrow_mut();
         if self.reduced_motion() {
-            pictograph::canvas::gestures::pan_at_once(&mut *canvas, dx, dy);
+            cartography::canvas::gestures::pan_at_once(&mut *canvas, dx, dy);
         } else {
             CanvasCommand::Pan { dx, dy }.apply(&mut *canvas, self.size.get());
         }
@@ -365,7 +365,7 @@ fn attach_gpu(shared: &Shared, core: &genet_render_host::RenderCore) {
             return;
         };
         Some(
-            pictograph::canvas::physics_device_for(&renderer.wgpu_device.core)
+            cartography::canvas::physics_device_for(&renderer.wgpu_device.core)
                 .with_threshold(options.threshold)
                 .with_max_stale_steps(options.max_stale_steps),
         )
@@ -1720,8 +1720,8 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
         appearance,
         appearance_revision,
 
-        inline_faces: RefCell::new(std::sync::Arc::new(pictograph::canvas::InlineFaces::new(
-            pictograph::canvas::TextFacePalette::new(Default::default(), &[]),
+        inline_faces: RefCell::new(std::sync::Arc::new(cartography::canvas::InlineFaces::new(
+            cartography::canvas::TextFacePalette::new(Default::default(), &[]),
         ))),
         canvas: RefCell::new({
             let mut canvas = match &placed {
@@ -2575,7 +2575,7 @@ fn publish(ok: bool, text: &str, shared: &Shared, saved: Option<serde_json::Valu
 }
 
 #[cfg(feature = "canvas-gpu")]
-use pictograph::canvas::PhysicsDevice;
+use cartography::canvas::PhysicsDevice;
 
 /// Without `canvas-gpu` the page never has a physics device.
 #[cfg(not(feature = "canvas-gpu"))]
@@ -2613,7 +2613,7 @@ trait NoRepulsionLane {
 }
 
 #[cfg(not(feature = "canvas-gpu"))]
-impl NoRepulsionLane for pictograph::canvas::Canvas {
+impl NoRepulsionLane for cartography::canvas::Canvas {
     fn repulsion_stats(&self) -> Option<RepulsionStats> {
         None
     }

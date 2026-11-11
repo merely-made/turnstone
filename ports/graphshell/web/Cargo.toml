@@ -28,7 +28,7 @@ path = "../src/web.rs"
 [features]
 moot-resources = ["graphshell/moot-resources", "dep:moot"]
 dynamics-receipt = []
-content-backdrop = ["pictograph/backdrop-svg"]
+content-backdrop = ["cartography/backdrop-svg"]
 # Start in Worker mode (physics in `physics/worker.js`) unless the page says
 # `?physics=inline`. The viewer's builds (`scripts/build-viewer.py`) turn it on;
 # the crate's own `default` does not, so the product page keeps its engine inline.
@@ -37,7 +37,7 @@ default = ["product", "remote", "canvas-gpu", "image-decode", "presentation-webg
 # The force engine in the main module. The viewer's own feature list leaves it
 # off (and `canvas-gpu`, which implies it): its physics runs in the lazily
 # loaded Worker module, and the main module links no rapier.
-physics-engine = ["graphshell/physics-engine", "pictograph/physics-engine", "graphshell-host/physics-engine"]
+physics-engine = ["graphshell/physics-engine", "cartography/physics-engine", "graphshell-host/physics-engine"]
 # Browser presentation routes. The full page carries both and Auto chooses at
 # boot. The read-only viewer ships one artifact per route, chosen by
 # `mount.js` before loading: `presentation-webgpu`, or `presentation-webgl2`
@@ -61,9 +61,9 @@ applets = ["graphshell/applets", "muniment/indexeddb"]
 # remote board.
 remote = ["graphshell/webrtc-browser", "dep:mere-overmap", "dep:mere-view", "dep:futures-channel", "dep:futures-util"]
 # The canvas's repulsion on the page's own WebGPU device (physics catalog P5c).
-canvas-gpu = ["graphshell/canvas-gpu", "pictograph/gpu", "graphshell-host/board-gpu"]
+canvas-gpu = ["graphshell/canvas-gpu", "cartography/gpu", "graphshell-host/board-gpu"]
 # Forwards genet-livery's image decoding (mer3ly Ruling 111); on by default.
-image-decode = ["genet-render/image-decode", "taproot/image-decode", "cambium-rootstock/image-decode", "mandrake/image-decode", "cambium-web/image-decode", "graphshell/image-decode", "pictograph/image-decode"]
+image-decode = ["genet-render/image-decode", "taproot/image-decode", "cambium-rootstock/image-decode", "mandrake/image-decode", "cambium-web/image-decode", "graphshell/image-decode", "cartography/image-decode"]
 
 [dependencies]
 mere-view = { path="../../../crates/cambium/mere-view", optional=true }
@@ -82,7 +82,9 @@ moot = { package = "mere-moot", path = "../../moot", default-features = false, f
 # feature is inert without the cfg. The cfg is committed in .cargo/config.toml.
 graphshell = { path = "..", default-features = false, features = ["web"] }
 kernel = { package = "mere-kernel", path = "../../../crates/graph/graph-kernel" }
-pictograph = { path = "../../../crates/canvas/pictograph", default-features = false, features = ["canvas"] }
+# The graph canvas (engine split D38); pictograph for the authored symbols.
+cartography = { package = "mere-cartography", path = "../../../crates/canvas/cartography", features = ["canvas"] }
+pictograph = { path = "../../../crates/canvas/pictograph", default-features = false }
 incipit = { path = "../../../crates/incipit", features = ["graph"] }
 # `indexeddb` supplies the browser realization of muniment's byte-store seam,
 # which this crate hands to `GraphshellApp` as its backend. It lived here until

@@ -8,7 +8,7 @@
 //! are shared; this module owns only admission, view state and host effects.
 use super::*;
 use cambium::{BackdropSceneEvent, backdrop_scene_reading, button, on_key};
-use pictograph::canvas::backdrop_surface::BackdropSurface;
+use cartography::canvas::backdrop_surface::BackdropSurface;
 use scenomise::document::SceneDocument;
 use sceno_backdrops::SceneInput;
 use scenomise::span_edit::{SpanEdit, SpanEditIntent};

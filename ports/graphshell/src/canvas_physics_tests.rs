@@ -4,14 +4,14 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 
-//! Host acceptance tests of `pictograph::canvas::physics_controls` on Graphshell's
+//! Host acceptance tests of `cartography::canvas::physics_controls` on Graphshell's
 //! reference fixture, as its tree page opens it. The actions moved to
 //! pictograph (Graphshell stack lift plan, P2 and L5); these tests drive
 //! `GraphshellApp`, so they stay with the host.
 
 use crate::product::ProductHost;
-use pictograph::canvas::physics_controls::*;
-use pictograph::canvas::{Canvas, PhysicsChoice, PhysicsKindSource, PhysicsLaw};
+use cartography::canvas::physics_controls::*;
+use cartography::canvas::{Canvas, PhysicsChoice, PhysicsKindSource, PhysicsLaw};
 use kernel::graph::NodeKey;
 
 /// Prints the reference fixture's relations as node-index pairs, for a
@@ -60,7 +60,7 @@ fn p2_fixture_canvas() -> Canvas {
     canvas.resize(width, height);
     canvas.set_layout_strategy(Some(SPIRAL.to_string()));
     let (registry, graph) = canvas.registry_and_graph();
-    let positions = pictograph::canvas::project_canvas_strategy(
+    let positions = cartography::canvas::project_canvas_strategy(
         registry, SPIRAL, graph, None, width, height, None, None, true,
     );
     canvas.apply_strategy_positions(&positions);
@@ -162,7 +162,7 @@ fn diag_law_framing_on_the_p2_fixture() {
         probe.graph().relations().count(),
         sizes
     );
-    for (id, _) in pictograph::canvas::CANVAS_PHYSICS_LAWS {
+    for (id, _) in cartography::canvas::CANVAS_PHYSICS_LAWS {
         let law = PhysicsLaw::parse(id).unwrap();
         let mut canvas = p2_fixture_canvas();
         let fitted = canvas.layout_framing(0.0);
@@ -392,13 +392,13 @@ fn authored_mix_survives_the_canonical_v4_scene_facet_and_reopen() {
     apply_single_law(&mut subject, &choice).unwrap();
     assert!(matches!(
         subject.dynamics_spec().unwrap().root,
-        pictograph::canvas::dynamics_spec::Node::Preset { .. }
+        cartography::canvas::dynamics_spec::Node::Preset { .. }
     ));
     let reopened = app.host.product_scene(ADDRESS).unwrap();
     subject.restore_scene(app.host.graph(), &reopened, TREE_CANVAS).unwrap();
     assert_eq!(
         subject.dynamics_spec().unwrap(),
-        pictograph::canvas::saved_scene::scene_spec(&saved).unwrap()
+        cartography::canvas::saved_scene::scene_spec(&saved).unwrap()
     );
     assert_eq!(subject.graph().node_count(), app.host.graph().node_count());
 }
@@ -407,9 +407,9 @@ fn authored_mix_survives_the_canonical_v4_scene_facet_and_reopen() {
 fn authored_grouping_preserves_the_v4_record_and_reopens_exactly() {
         use graphshell_host::mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef};
     use pandect::SAVED_SCENE_FACET;
-    use pictograph::canvas::Role;
-    use pictograph::canvas::dynamics_spec::{Bar, GroupRoles, Observable, Realization, Target};
-    use pictograph::canvas::{Channel, PhysicsOverlay};
+    use cartography::canvas::Role;
+    use cartography::canvas::dynamics_spec::{Bar, GroupRoles, Observable, Realization, Target};
+    use cartography::canvas::{Channel, PhysicsOverlay};
     use std::collections::BTreeMap;
 
     let persona = SelectedPersonaRef {
@@ -449,7 +449,7 @@ fn authored_grouping_preserves_the_v4_record_and_reopens_exactly() {
     original
         .root
         .overlays_mut()
-        .push(pictograph::canvas::dynamics_spec::Node::preset(
+        .push(cartography::canvas::dynamics_spec::Node::preset(
             PhysicsOverlay::GravityLocus.id(),
         ));
     original.target = Some(Target {
@@ -476,7 +476,7 @@ fn authored_grouping_preserves_the_v4_record_and_reopens_exactly() {
     .unwrap();
     let grouped = subject.dynamics_spec().unwrap();
     let authored_root = grouped.root.clone();
-    let pictograph::canvas::dynamics_spec::Node::Grouped {
+    let cartography::canvas::dynamics_spec::Node::Grouped {
         partition,
         outer,
         inner,
@@ -547,7 +547,7 @@ fn authored_grouping_preserves_the_v4_record_and_reopens_exactly() {
     assert_eq!(subject.arrangement_role_of(item_member), Role::Pinned);
 
     let saved = subject.capture_scene("Graphshell working scene", "phyllotaxis.default", "page").unwrap();
-    let saved_spec = pictograph::canvas::saved_scene::scene_spec(&saved).unwrap();
+    let saved_spec = cartography::canvas::saved_scene::scene_spec(&saved).unwrap();
     const ADDRESS: &str = "mere://scene/g4b2-grouping";
     app.host.save_product_scene(ADDRESS, &saved).unwrap();
     // Clone the canonical facet before the later write replaces its stored
@@ -575,7 +575,7 @@ fn authored_grouping_preserves_the_v4_record_and_reopens_exactly() {
     apply_single_law(&mut subject, &choice).unwrap();
     assert!(matches!(
         subject.dynamics_spec().unwrap().root,
-        pictograph::canvas::dynamics_spec::Node::Preset { .. }
+        cartography::canvas::dynamics_spec::Node::Preset { .. }
     ));
     subject.restore_scene(app.host.graph(), &reopened, TREE_CANVAS).unwrap();
     assert_eq!(subject.dynamics_spec().unwrap(), saved_spec);
@@ -615,11 +615,11 @@ impl NarrowedNumber {
 }
 
 fn numeric_spec(
-    mut spec: pictograph::canvas::dynamics_spec::DynamicsSpec,
+    mut spec: cartography::canvas::dynamics_spec::DynamicsSpec,
     field: NarrowedNumber,
     value: f64,
-) -> pictograph::canvas::dynamics_spec::DynamicsSpec {
-    use pictograph::canvas::dynamics_spec::{Node, Realization, Stage, Stop};
+) -> cartography::canvas::dynamics_spec::DynamicsSpec {
+    use cartography::canvas::dynamics_spec::{Node, Realization, Stage, Stop};
 
     fn weighted_law(value: f64) -> Node {
         Node::Preset {
@@ -698,7 +698,7 @@ fn codicil_with_scene<B: muniment::Backend + Clone>(
 fn v4_codicil_refuses_f64_values_that_do_not_survive_canvas_binding_atomically() {
     use crate::local_scene::open_codicil;
     use graphshell_host::mere_host::{FIXTURE_PERSONA_ADDRESS, FIXTURE_WEB_ADDRESS, SelectedPersonaRef};
-    use pictograph::canvas::saved_scene;
+    use cartography::canvas::saved_scene;
     use pandect::SAVED_SCENE_FACET;
 
     let fields = [
@@ -733,8 +733,8 @@ fn v4_codicil_refuses_f64_values_that_do_not_survive_canvas_binding_atomically()
                 .facet_value(ADDRESS, SAVED_SCENE_FACET)
                 .unwrap()
                 .clone();
-            let spec = numeric_spec(pictograph::canvas::saved_scene::scene_spec(&scene).unwrap(), field, value);
-            scene.dynamics = pictograph::canvas::saved_scene::saved_dynamics(&spec);
+            let spec = numeric_spec(cartography::canvas::saved_scene::scene_spec(&scene).unwrap(), field, value);
+            scene.dynamics = cartography::canvas::saved_scene::saved_dynamics(&spec);
             let session = app.host.graph_session().id().0;
             let graph = serde_json::to_value(app.host.graph().to_snapshot_at(0)).unwrap();
             let record = canvas.dynamics_spec().unwrap();
@@ -772,7 +772,7 @@ fn v4_codicil_refuses_f64_values_that_do_not_survive_canvas_binding_atomically()
 #[test]
 fn v4_scene_save_reopen_preserves_zero_subnormal_and_exact_decimal_f64_values() {
         use graphshell_host::mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef};
-    use pictograph::canvas::saved_scene;
+    use cartography::canvas::saved_scene;
     use pandect::SAVED_SCENE_FACET;
 
     let persona = SelectedPersonaRef {
@@ -795,10 +795,10 @@ fn v4_scene_save_reopen_preserves_zero_subnormal_and_exact_decimal_f64_values() 
     for field in fields {
         for value in values {
             let baseline = canvas.capture_scene("Graphshell working scene", "phyllotaxis.default", "page").unwrap();
-            let spec = numeric_spec(pictograph::canvas::saved_scene::scene_spec(&baseline).unwrap(), field, value);
+            let spec = numeric_spec(cartography::canvas::saved_scene::scene_spec(&baseline).unwrap(), field, value);
             let expected = spec.clone();
             let mut scene = baseline;
-            scene.dynamics = pictograph::canvas::saved_scene::saved_dynamics(&spec);
+            scene.dynamics = cartography::canvas::saved_scene::saved_dynamics(&spec);
             app.host.save_product_scene(ADDRESS, &scene).unwrap();
 
             let facet = app
@@ -813,7 +813,7 @@ fn v4_scene_save_reopen_preserves_zero_subnormal_and_exact_decimal_f64_values() 
             );
             let reopened = app.host.product_scene(ADDRESS).unwrap();
             assert_eq!(
-                pictograph::canvas::saved_scene::scene_spec(&reopened).unwrap(),
+                cartography::canvas::saved_scene::scene_spec(&reopened).unwrap(),
                 expected,
                 "{field:?} {value}"
             );
@@ -831,9 +831,9 @@ fn v4_scene_save_reopen_preserves_zero_subnormal_and_exact_decimal_f64_values() 
 fn role_target_edits_preserve_the_v4_mix_and_nonempty_group_roles() {
         use graphshell_host::mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef};
     use pandect::SAVED_SCENE_FACET;
-    use pictograph::canvas::Role;
-    use pictograph::canvas::dynamics_spec::GroupRoles;
-    use pictograph::canvas::physics_controls;
+    use cartography::canvas::Role;
+    use cartography::canvas::dynamics_spec::GroupRoles;
+    use cartography::canvas::physics_controls;
     use std::collections::BTreeMap;
 
     let persona = SelectedPersonaRef {
@@ -959,7 +959,7 @@ fn role_target_edits_preserve_the_v4_mix_and_nonempty_group_roles() {
     assert_eq!(root_value["parts"][0]["weight"], 0.1);
     assert_eq!(root_value["parts"][1]["weight"], 0.3);
     let saved = subject.capture_scene("Graphshell working scene", "phyllotaxis.default", "page").unwrap();
-    let saved_spec = pictograph::canvas::saved_scene::scene_spec(&saved).unwrap();
+    let saved_spec = cartography::canvas::saved_scene::scene_spec(&saved).unwrap();
     assert_eq!(
         saved_spec.target.as_ref().unwrap().arrangement,
         "phyllotaxis.default"
@@ -1021,7 +1021,7 @@ fn role_target_edits_preserve_the_v4_mix_and_nonempty_group_roles() {
     let unknown_error = subject.set_dynamics_spec(&unknown).unwrap_err();
     assert!(matches!(
         unknown_error,
-        pictograph::canvas::dynamics_spec::BindError::Unbound { ref place, ref reason }
+        cartography::canvas::dynamics_spec::BindError::Unbound { ref place, ref reason }
             if place == "target.groups.channel" && reason.contains("groups.unknown")
     ));
     assert_eq!(subject.dynamics_spec().unwrap(), before_bad);
@@ -1057,11 +1057,11 @@ fn role_target_edits_preserve_the_v4_mix_and_nonempty_group_roles() {
 fn authored_two_stage_schedule_survives_v4_reopen_capture_progress_and_refusal() {
         use graphshell_host::mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef};
     use pandect::SAVED_SCENE_FACET;
-    use pictograph::canvas::dynamics_spec::{GroupRoles, Node, Target};
-    use pictograph::canvas::physics_controls::{
+    use cartography::canvas::dynamics_spec::{GroupRoles, Node, Target};
+    use cartography::canvas::physics_controls::{
         StageDraft, TwoStageSchedule, apply_two_stage_schedule, read_two_stage_schedule,
     };
-    use pictograph::canvas::{Channel, PhysicsOverlay, Role, StageStop};
+    use cartography::canvas::{Channel, PhysicsOverlay, Role, StageStop};
     use std::collections::BTreeMap;
 
     let persona = SelectedPersonaRef {
@@ -1160,7 +1160,7 @@ fn authored_two_stage_schedule_survives_v4_reopen_capture_progress_and_refusal()
     assert!(subject.physics_paused());
 
     let saved = subject.capture_scene("Graphshell working scene", "phyllotaxis.default", "page").unwrap();
-    let saved_spec = pictograph::canvas::saved_scene::scene_spec(&saved).unwrap();
+    let saved_spec = cartography::canvas::saved_scene::scene_spec(&saved).unwrap();
     let Node::Schedule { stages, .. } = &saved_spec.root else {
         panic!("saved v4 scene keeps the authored schedule recipe")
     };

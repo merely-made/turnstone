@@ -50,7 +50,7 @@ use pandect::transfer::{
     TransferManifestV1, TransferOperation, TransferReceiptV1, TransferResult, TransferRouteV1,
     TransferredIdV1, transfer_receipt_schema,
 };
-use pictograph::canvas::saved_scene;
+use cartography::canvas::saved_scene;
 use pandect::{
     SAVED_SCENE_FACET, SAVED_SCENE_FACET_V2, SAVED_SCENE_FACET_V3, SavedDynamics, SavedRolesV1,
     SavedSceneV2, SavedSceneV3,
@@ -2246,8 +2246,8 @@ mod tests {
     /// under the copy's new ids, as the scene's own item roles are (F105).
     #[test]
     fn a_copy_remaps_the_spec_targets_item_roles() {
-        use pictograph::canvas::Role;
-        use pictograph::canvas::dynamics_spec::{DynamicsSpec, Node, Target};
+        use cartography::canvas::Role;
+        use cartography::canvas::dynamics_spec::{DynamicsSpec, Node, Target};
         let (kept, left, minted) = (Uuid::from_u128(1), Uuid::from_u128(2), Uuid::from_u128(3));
         let mut spec = DynamicsSpec::new(Node::preset("spring.rapier"));
         spec.target = Some(Target {
@@ -2273,8 +2273,8 @@ mod tests {
     /// any other facet is copied as it was.
     #[test]
     fn a_copied_scene_facet_is_remapped() {
-        use pictograph::canvas::Role;
-        use pictograph::canvas::dynamics_spec::{DynamicsSpec, Node, Target};
+        use cartography::canvas::Role;
+        use cartography::canvas::dynamics_spec::{DynamicsSpec, Node, Target};
         let (kept, minted) = (Uuid::from_u128(1), Uuid::from_u128(3));
         let ids = HashMap::from([(kept, minted)]);
         let mut spec = DynamicsSpec::new(Node::preset("spring.rapier"));

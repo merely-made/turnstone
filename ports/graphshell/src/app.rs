@@ -778,7 +778,7 @@ mod tests {
             ),
         }
         ;
-        let scene = pictograph::canvas::saved_scene::scene_from_v2(scene).expect("the flat scene converts");
+        let scene = cartography::canvas::saved_scene::scene_from_v2(scene).expect("the flat scene converts");
         app.host
             .save_product_scene("mere://scene/h4-identity-access", &scene)
             .expect("save mixed scene");

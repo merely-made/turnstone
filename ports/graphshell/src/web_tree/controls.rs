@@ -250,9 +250,9 @@ impl TreePage {
             return;
         }
         let button = match event.button {
-            PointerButton::Primary => pictograph::canvas::PointerButton::Left,
-            PointerButton::Secondary => pictograph::canvas::PointerButton::Right,
-            PointerButton::Auxiliary => pictograph::canvas::PointerButton::Middle,
+            PointerButton::Primary => cartography::canvas::PointerButton::Left,
+            PointerButton::Secondary => cartography::canvas::PointerButton::Right,
+            PointerButton::Auxiliary => cartography::canvas::PointerButton::Middle,
         };
         let (x, y) = event.local;
         let mut canvas = self.shared.canvas.borrow_mut();
@@ -436,8 +436,8 @@ pub(super) fn reader_plant() -> Result<graphshell::canvas_reader::Plant, String>
     }
 }
 
-pub(super) fn physics_config() -> Result<pictograph::canvas::ElapsedStepConfig, String> {
-    let mut config = pictograph::canvas::ElapsedStepConfig::default();
+pub(super) fn physics_config() -> Result<cartography::canvas::ElapsedStepConfig, String> {
+    let mut config = cartography::canvas::ElapsedStepConfig::default();
     let search = web_sys::window()
         .ok_or("no window")?
         .location()

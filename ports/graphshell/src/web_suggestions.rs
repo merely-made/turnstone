@@ -9,8 +9,8 @@
 //! change. A saved value overlays the host defaults field by field, so a
 //! setting added later takes its default.
 
-use pictograph::canvas::Canvas;
-use pictograph::canvas::controls::CanvasCommand;
+use cartography::canvas::Canvas;
+use cartography::canvas::controls::CanvasCommand;
 use scenograph::suggestion::SuggestionSettings;
 
 pub(crate) const SUGGESTIONS_STORAGE_KEY: &str = "graphshell.suggestions";

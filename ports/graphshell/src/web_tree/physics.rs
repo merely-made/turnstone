@@ -7,7 +7,7 @@
 //! The "Graph tools" side region's first section: arrangement and physics.
 //!
 //! Cambium controls hold the form; a button reads them into
-//! `pictograph::canvas::physics_form`, the model Turnstone's Arrange pane drives
+//! `cartography::canvas::physics_form`, the model Turnstone's Arrange pane drives
 //! too. The model owns the composing fields (role, role groups, two-law mix,
 //! grouping, two-stage schedule, speed): their choices, defaults, read-back,
 //! validation and refusals, and the edit each Apply makes. This file draws
@@ -17,14 +17,14 @@ use cambium::{
     SelectState, TextInput, button, checkbox, checkbox_disabled, disclosure, lens, select,
     text_field_typed,
 };
-use pictograph::canvas::physics_controls::{
+use cartography::canvas::physics_controls::{
     self, ArrangementTransition, CUSTOM_PROFILE, LawStart, arrangement_choices,
 };
-use pictograph::canvas::physics_form::{
+use cartography::canvas::physics_form::{
     Command, Control, Field, FieldId, FormAction, Group, PhysicsForm, Readback, STOP_FRAMES,
     STOP_LAW, Section, Slot,
 };
-use pictograph::canvas::{
+use cartography::canvas::{
     CANVAS_PHYSICS_DEPTH_SOURCES, CANVAS_PHYSICS_KIND_SOURCES, CANVAS_PHYSICS_LAWS,
     CANVAS_PHYSICS_MASS_SOURCES, CANVAS_PHYSICS_OVERLAYS, CANVAS_PHYSICS_PROFILES, PhysicsChoice,
     PhysicsDepthSource, PhysicsKindSource, PhysicsLaw, PhysicsMassSource, PhysicsOverlay,
@@ -128,7 +128,7 @@ impl PhysicsPanel {
             selects,
             inputs,
             ticks,
-            applied_speed: pictograph::canvas::physics_controls::speed_preset(canvas),
+            applied_speed: cartography::canvas::physics_controls::speed_preset(canvas),
             speed_note: None,
         };
         panel.push();

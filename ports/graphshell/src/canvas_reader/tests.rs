@@ -24,7 +24,7 @@ use cambium_rootstock::{KeyPress, NamedKey as PressKey, ProducedAction, Producer
 use cambium_winit_a11y::A11yAction;
 use chirograph::{CapabilityProfile, IntentReference, PresentationCapability};
 use graphshell_client::LocalActionError;
-use pictograph::canvas::{
+use cartography::canvas::{
     Canvas, DESCRIBED_ITEMS, DRAG_INTENT, PIN_INTENT, PhysicsChoice, Role as ItemRole, Speed,
 };
 
@@ -306,7 +306,7 @@ fn recycled_slot_fixture(
 ) -> (
     Harness<Page, Logic, View>,
     Rc<RefCell<Canvas>>,
-    pictograph::canvas::DescribedItem,
+    cartography::canvas::DescribedItem,
     ProducedAction,
     uuid::Uuid,
 ) {
@@ -593,7 +593,7 @@ fn the_clients_tree_lists_the_boards_drag_and_pin_through_the_local_route() {
     board.sync(
         app.client.mounted(&session),
         revision,
-        Some(&pictograph::canvas::PhysicsChoice::default().into_spec()),
+        Some(&cartography::canvas::PhysicsChoice::default().into_spec()),
         Speed::REAL_TIME,
     );
     let profile = CapabilityProfile::new([

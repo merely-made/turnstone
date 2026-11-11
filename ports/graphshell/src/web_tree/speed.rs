@@ -15,7 +15,7 @@ use std::collections::VecDeque;
 use std::time::Duration;
 
 use graphshell::speed_bar::{self, BudgetFit, FitFrame};
-use pictograph::canvas::{Canvas, Speed};
+use cartography::canvas::{Canvas, Speed};
 use kernel::graph::NodeKey;
 use taproot::ProbeSnapshot;
 

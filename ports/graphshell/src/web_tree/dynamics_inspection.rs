@@ -6,7 +6,7 @@
 //! Independent exact-target reads; no controller stepping or source writes.
 use super::*;
 use cambium::{DetailRow, DetailSection, button, detail_panel};
-use pictograph::canvas::{DynamicsInspection, DynamicsSubject, DynamicsTarget};
+use cartography::canvas::{DynamicsInspection, DynamicsSubject, DynamicsTarget};
 
 mod explanation;
 
@@ -111,10 +111,10 @@ pub(super) fn section(page: &TreePage) -> Child {
                 if pane.details {
                     if let Some(count) = report.pair_controller_edges {
                         let source_name = match report.topology_mode {
-                            pictograph::canvas::DynamicsTopologyMode::RelationRows => {
+                            cartography::canvas::DynamicsTopologyMode::RelationRows => {
                                 "visible relation rows"
                             },
-                            pictograph::canvas::DynamicsTopologyMode::OccurrenceController => {
+                            cartography::canvas::DynamicsTopologyMode::OccurrenceController => {
                                 "disclosed occurrence inputs"
                             },
                         };
@@ -156,10 +156,10 @@ pub(super) fn section(page: &TreePage) -> Child {
                             DetailRow::new(
                                 "Topology mode",
                                 match report.topology_mode {
-                                    pictograph::canvas::DynamicsTopologyMode::RelationRows => {
+                                    cartography::canvas::DynamicsTopologyMode::RelationRows => {
                                         "relation rows"
                                     },
-                                    pictograph::canvas::DynamicsTopologyMode::OccurrenceController => {
+                                    cartography::canvas::DynamicsTopologyMode::OccurrenceController => {
                                         "disclosed occurrence inputs"
                                     },
                                 },
@@ -374,8 +374,8 @@ pub(super) fn fields(page: &TreePage, snapshot: ProbeSnapshot) -> ProbeSnapshot 
         .with_field(
             "dynamics-inspector-topology-mode",
             report.map_or_else(String::new, |report| match report.topology_mode {
-                pictograph::canvas::DynamicsTopologyMode::RelationRows => "relation_rows".into(),
-                pictograph::canvas::DynamicsTopologyMode::OccurrenceController => {
+                cartography::canvas::DynamicsTopologyMode::RelationRows => "relation_rows".into(),
+                cartography::canvas::DynamicsTopologyMode::OccurrenceController => {
                     "occurrence_controller".into()
                 },
             }),

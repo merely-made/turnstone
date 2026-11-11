@@ -7,7 +7,7 @@
 //! Codicil open and graph reconciliation around the canvas's saved scene
 //! (`Canvas::capture_scene` and `Canvas::restore_scene`, shared with Turnstone).
 use crate::product::ProductHost;
-use pictograph::canvas::Canvas;
+use cartography::canvas::Canvas;
 use kernel::graph::Graph;
 use pandect::SavedSceneV3;
 

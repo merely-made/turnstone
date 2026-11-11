@@ -7,7 +7,7 @@
 //! Arrangement columns and a user-supplied dynamics axis. Scope is an input
 //! to this matrix, not silently substituted for its second axis (SE54).
 
-use pictograph::canvas::projection_dynamics::ProjectionDynamics;
+use cartography::canvas::projection_dynamics::ProjectionDynamics;
 use scenograph::swatch::{
     Axis, AxisKind, AxisScale, Facet, FacetCell, Followed, Scope, Swatch, SwatchMode,
 };
@@ -22,11 +22,11 @@ use scenomise::projection::ProjectionDataset;
 #[cfg(test)]
 use scenomise::projection::ProjectionValue;
 
-fn end_label(end: pictograph::canvas::dynamics_recipe::SettleEnd) -> &'static str {
+fn end_label(end: cartography::canvas::dynamics_recipe::SettleEnd) -> &'static str {
     match end {
-        pictograph::canvas::dynamics_recipe::SettleEnd::Rested => "At rest",
-        pictograph::canvas::dynamics_recipe::SettleEnd::LawFinished => "Law finished",
-        pictograph::canvas::dynamics_recipe::SettleEnd::StepLimit => "Step limit reached",
+        cartography::canvas::dynamics_recipe::SettleEnd::Rested => "At rest",
+        cartography::canvas::dynamics_recipe::SettleEnd::LawFinished => "Law finished",
+        cartography::canvas::dynamics_recipe::SettleEnd::StepLimit => "Step limit reached",
     }
 }
 
@@ -39,7 +39,7 @@ fn step_label(label: &str, steps: u64) -> String {
     )
 }
 
-fn stop_label(report: &pictograph::canvas::dynamics_recipe::SettleReport) -> String {
+fn stop_label(report: &cartography::canvas::dynamics_recipe::SettleReport) -> String {
     step_label(end_label(report.end), u64::from(report.steps))
 }
 
@@ -312,7 +312,7 @@ pub fn compare_dynamics(
 mod tests {
     use super::*;
     use crate::projection_compile::default_definition;
-    use pictograph::canvas::dynamics_recipe::preset_slot;
+    use cartography::canvas::dynamics_recipe::preset_slot;
     use scenomise::authoring::{EditorAction, ProjectionEditor};
 
     fn fixture() -> (ProjectionDraft, ProjectionDataset) {
@@ -472,7 +472,7 @@ mod tests {
             let definition = variant.to_definition().unwrap();
             let compiled = compiler.compile(&definition, &data).unwrap();
             let mut accepted = 0;
-            for law in pictograph::canvas::PhysicsLaw::ALL {
+            for law in cartography::canvas::PhysicsLaw::ALL {
                 let slot = preset_slot(law.id()).unwrap();
                 let mut preview = match ProjectionDynamics::new(&definition, &compiled, &slot) {
                     Ok(preview) => preview,

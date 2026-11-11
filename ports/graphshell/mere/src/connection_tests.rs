@@ -119,7 +119,7 @@ fn snapshot(
     for (index, (adapter, id, title, media)) in sources.iter().enumerate() {
         let bytes = if *adapter == wire::SESSION_ITEM_SOURCE {
             card(title, &[], media.clone())
-        } else if *adapter == pictograph::canvas::MERE_GRAPH_ADAPTER {
+        } else if *adapter == cartography::canvas::MERE_GRAPH_ADAPTER {
             card(title, &[("Address", ADDRESS)], media.clone())
         } else {
             card(title, &[], media.clone())
@@ -240,7 +240,7 @@ fn fixture_with_state(
                     vec![]
                 },
             ),
-            (pictograph::canvas::MERE_GRAPH_ADAPTER, RECORD, "One", vec![]),
+            (cartography::canvas::MERE_GRAPH_ADAPTER, RECORD, "One", vec![]),
         ],
     );
     if with_material {

@@ -7,7 +7,7 @@
 use super::*;
 use graphshell_host::mere_host::{FIXTURE_PERSONA_ADDRESS, FIXTURE_WEB_ADDRESS, SelectedPersonaRef};
 use crate::product::LOCAL_FILE_FACET;
-use pictograph::canvas::{CameraView, Face, PhysicsChoice, PhysicsLaw, Role};
+use cartography::canvas::{CameraView, Face, PhysicsChoice, PhysicsLaw, Role};
 use muniment::{Backend, MemoryBackend, StoreError, TransactFn, WriteOp};
 use std::sync::{
     Arc,

@@ -10,7 +10,7 @@
 //! leaves that member pending in the same app; retry persists it without
 //! creating another object.
 use crate::product::ProductHost;
-use pictograph::canvas::Canvas;
+use cartography::canvas::Canvas;
 use kernel::graph::Graph;
 use muniment::Backend;
 use sha2::{Digest, Sha256};

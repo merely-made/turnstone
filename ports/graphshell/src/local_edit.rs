@@ -6,7 +6,7 @@
 
 //! Typed local detail edits, independent of a browser form or presenter.
 use crate::product::ProductHost;
-use pictograph::canvas::Canvas;
+use cartography::canvas::Canvas;
 use muniment::Backend;
 use uuid::Uuid;
 

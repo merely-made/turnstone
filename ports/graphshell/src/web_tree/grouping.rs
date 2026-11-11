@@ -32,7 +32,7 @@ pub(super) fn controls(page: &TreePage) -> Option<Child> {
         let label = grouped.label(id).to_owned();
         let face = grouped
             .address(id)
-            .map(|address| cambium::face(pictograph::canvas::inline_face_url(address)));
+            .map(|address| cambium::face(cartography::canvas::inline_face_url(address)));
         let id = id.clone();
         breadcrumbs.push(Box::new(
             cambium::button_with(

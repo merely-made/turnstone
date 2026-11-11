@@ -312,7 +312,7 @@ pub fn own_statement(actor: &str, claim: &SemanticStatement) -> bool {
 
 /// The pair gesture's withdraw rule for `persona`: it withdraws only what
 /// [`can_withdraw`] allows at the statement and reports what it left.
-pub fn withdraw_policy(persona: &SelectedPersonaRef) -> pictograph::canvas::WithdrawPolicy {
+pub fn withdraw_policy(persona: &SelectedPersonaRef) -> cartography::canvas::WithdrawPolicy {
     let actor = Author::person(persona.persona.clone()).asserter_iri();
     Box::new(move |claim| own_statement(&actor, claim))
 }

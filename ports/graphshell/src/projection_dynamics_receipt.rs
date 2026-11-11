@@ -8,7 +8,7 @@
 //! occurrence adapter. Floating-point words are recorded without rounding.
 
 use crate::projection_compile::{default_definition, practice_compiler};
-use pictograph::canvas::{
+use cartography::canvas::{
     PhysicsLaw, dynamics_recipe::preset_slot, projection_dynamics::ProjectionDynamics,
 };
 use scenomise::projection::{ProjectionDataset, ProjectionValue};

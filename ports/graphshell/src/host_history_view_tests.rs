@@ -102,7 +102,7 @@ fn changing_fold_disclosure_reapplies_checkpoint_marks_once_and_keeps_camera() {
     let mut grouped =
         GroupedHostDataset::new(revision_envelope(&history, 1).unwrap(), "contains").unwrap();
     let changes = history.changes_at(1).unwrap();
-    let mut canvas = pictograph::canvas::Canvas::new();
+    let mut canvas = cartography::canvas::Canvas::new();
     canvas.resize(800, 600);
     let viewport = canvas.viewport();
     for expanded in [true, false, true] {

@@ -14,7 +14,7 @@
 
 use std::collections::BTreeMap;
 
-use pictograph::canvas::responsive_link_adapter::{
+use cartography::canvas::responsive_link_adapter::{
     AppearanceCompatibility, FieldRegistry, PathField, ResponsivePath, ResponsivePathConfig,
     ScalarField, SourceBucketRef, VectorField, eval_vector, evaluate_link_appearances,
 };
@@ -110,7 +110,7 @@ pub enum ResponsiveLinksFixtureError {
     GraphConstruction,
     MissingEndpoint,
     MissingFixtureAssertion,
-    Adapter(pictograph::canvas::responsive_link_adapter::ResponsiveLinkAdapterError),
+    Adapter(cartography::canvas::responsive_link_adapter::ResponsiveLinkAdapterError),
 }
 
 impl ResponsiveLinksFixture {
@@ -184,7 +184,7 @@ impl ResponsiveLinksFixture {
                     },
                 )
                 .map_err(|_| ResponsiveLinksFixtureError::GraphConstruction)?;
-            let mut reading = pictograph::canvas::link_reading::read_link(
+            let mut reading = cartography::canvas::link_reading::read_link(
                 &graph,
                 endpoints[from_index].id,
                 endpoints[to_index].id,

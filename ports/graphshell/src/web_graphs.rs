@@ -16,7 +16,7 @@
 //! the boundary alone, for receipts that measure repulsion (a linked random
 //! graph packs into a ball under Springs, its long edges pulling inward).
 
-use pictograph::canvas::{Canvas, project_canvas_strategy};
+use cartography::canvas::{Canvas, project_canvas_strategy};
 use kernel::geometry::PortablePoint;
 use kernel::graph::apply::{add_node, assert_relation};
 use kernel::graph::{EdgeAssertion, Graph, SemanticSubKind};

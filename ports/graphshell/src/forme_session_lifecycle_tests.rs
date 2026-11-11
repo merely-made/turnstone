@@ -50,7 +50,7 @@ use pandect::product_codicil::TransferScope;
 use graphshell_host::mere_host::{
     FIXTURE_PERSONA_ADDRESS, FIXTURE_WEB_ADDRESS, GRAPHSHELL, SelectedPersonaRef,
 };
-use pictograph::canvas::Canvas;
+use cartography::canvas::Canvas;
 use muniment::MemoryBackend;
 
 type App = GraphshellApp<MemoryBackend>;
@@ -647,7 +647,7 @@ fn owner_lifecycle_actual_codicil_new_app_owner_has_empty_model_and_preserves_ol
         let mut invalid_scene = canvas
             .capture_scene(
                 "Graphshell working scene",
-                pictograph::canvas::physics_controls::FREE_ARRANGEMENT,
+                cartography::canvas::physics_controls::FREE_ARRANGEMENT,
                 "",
             )
             .unwrap();
@@ -1088,7 +1088,7 @@ fn owner_lifecycle_real_scene_restore_reprojects_same_owner_and_failed_restore_p
     let scene = canvas
         .capture_scene(
             "Graphshell working scene",
-            pictograph::canvas::physics_controls::FREE_ARRANGEMENT,
+            cartography::canvas::physics_controls::FREE_ARRANGEMENT,
             "",
         )
         .unwrap();
@@ -1279,7 +1279,7 @@ fn owner_lifecycle_actual_open_rejects_invalid_camera_before_owner_or_canvas_cha
         let mut scene = canvas
             .capture_scene(
                 "Graphshell working scene",
-                pictograph::canvas::physics_controls::FREE_ARRANGEMENT,
+                cartography::canvas::physics_controls::FREE_ARRANGEMENT,
                 "",
             )
             .unwrap();
@@ -1360,7 +1360,7 @@ fn owner_lifecycle_postaccepted_view_error_cannot_leave_previous_canvas_graph() 
     let mut invalid = canvas
         .capture_scene(
             "Graphshell working scene",
-            pictograph::canvas::physics_controls::FREE_ARRANGEMENT,
+            cartography::canvas::physics_controls::FREE_ARRANGEMENT,
             "",
         )
         .unwrap();
@@ -1443,7 +1443,7 @@ fn owner_lifecycle_actual_history_forget_completion_updates_canvas_before_projec
             .unwrap();
         let before = serde_json::to_vec(session.view()).unwrap();
         let mut canvas = Canvas::with_graph(app.host.graph().clone());
-        canvas.set_camera(pictograph::canvas::CameraView {
+        canvas.set_camera(cartography::canvas::CameraView {
             offset: (71.0, -22.0),
             zoom: 1.7,
         });
@@ -1586,7 +1586,7 @@ fn owner_lifecycle_failed_real_intake_persistence_still_reconciles_returned_app(
             )
             .unwrap();
         let before = canvas.forme_region().unwrap().clone();
-        canvas.set_camera(pictograph::canvas::CameraView {
+        canvas.set_camera(cartography::canvas::CameraView {
             offset: (11.0, 26.0),
             zoom: 1.3,
         });
@@ -1654,7 +1654,7 @@ fn owner_lifecycle_failed_real_detail_persistence_reconciles_facet_and_preserves
             .1
             .id;
         let mut canvas = Canvas::with_graph(app.host.graph().clone());
-        canvas.set_camera(pictograph::canvas::CameraView {
+        canvas.set_camera(cartography::canvas::CameraView {
             offset: (39.0, -18.0),
             zoom: 1.4,
         });
@@ -1718,7 +1718,7 @@ fn unpaused_parked_fixture() -> (RejectWrites, GraphshellApp<RejectWrites>, Canv
         .1
         .id;
     let mut canvas = Canvas::with_graph(app.host.graph().clone());
-    canvas.set_camera(pictograph::canvas::CameraView {
+    canvas.set_camera(cartography::canvas::CameraView {
         offset: (24.0, -16.0),
         zoom: 1.6,
     });

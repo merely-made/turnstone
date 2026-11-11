@@ -22,7 +22,7 @@ use graphshell::{
     },
     projection_compile::{PRACTICE_CARD, default_definition, practice_compiler},
 };
-use pictograph::canvas::{ArrangementAction, Axes, BoardItem, PermittedActions, PhysicsBoard};
+use cartography::canvas::{ArrangementAction, Axes, BoardItem, PermittedActions, PhysicsBoard};
 use scenograph::{Channel, ProjectionDefinition};
 use scenomise::{host_dataset::HostDatasetV1, projection::CompiledProjection};
 use serde::{Deserialize, Serialize};

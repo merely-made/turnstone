@@ -10,7 +10,7 @@ use std::collections::{BTreeMap, BTreeSet, HashSet};
 
 use chartulary::AcceptAll;
 use chirograph::{PortableCardV1, Sha256NamedInformation};
-use pictograph::canvas::saved_scene::{self, SceneReadError};
+use cartography::canvas::saved_scene::{self, SceneReadError};
 use kernel::geometry::PortablePoint;
 use kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta, assert_relation};
 use kernel::graph::capture::{CapturedDelta, replay_captured_deltas_onto_checked};
@@ -1081,8 +1081,8 @@ mod tests {
 
     use super::*;
     use pandect::access::AccessContext;
-    use pictograph::canvas::dynamics_spec::DynamicsSpec;
-    use pictograph::canvas::saved_scene::SavedRoles;
+    use cartography::canvas::dynamics_spec::DynamicsSpec;
+    use cartography::canvas::saved_scene::SavedRoles;
 
     /// The scene reads the canvas owns, as these tests call them.
     trait SceneReads {
@@ -2634,48 +2634,48 @@ mod tests {
             "cartography": CartographyGeometry::default(),
         });
         let scene: SavedSceneV2 = serde_json::from_value(legacy).expect("a legacy scene opens");
-        assert_eq!(scene.physics_law, pictograph::canvas::PhysicsLaw::Springs.id());
+        assert_eq!(scene.physics_law, cartography::canvas::PhysicsLaw::Springs.id());
         assert!(scene.physics_overlays.is_empty());
         assert_eq!(
             scene.physics_kind_source,
-            pictograph::canvas::PhysicsKindSource::Site.id()
+            cartography::canvas::PhysicsKindSource::Site.id()
         );
         assert_eq!(
             scene.physics_group_source,
-            pictograph::canvas::PhysicsKindSource::Site.id(),
+            cartography::canvas::PhysicsKindSource::Site.id(),
             "a scene saved before the groups channel pulls by site, as it did"
         );
         assert_eq!(
             scene.physics_mass_source,
-            pictograph::canvas::PhysicsMassSource::Degree.id()
+            cartography::canvas::PhysicsMassSource::Degree.id()
         );
         assert_eq!(
             scene.physics_depth_source,
-            pictograph::canvas::PhysicsDepthSource::Roots.id()
+            cartography::canvas::PhysicsDepthSource::Roots.id()
         );
 
         let chosen = SavedSceneV2 {
-            physics_law: pictograph::canvas::PhysicsLaw::Kinds.id().to_string(),
+            physics_law: cartography::canvas::PhysicsLaw::Kinds.id().to_string(),
             physics_overlays: vec![
-                pictograph::canvas::PhysicsOverlay::Tide.id().to_string(),
-                pictograph::canvas::PhysicsOverlay::GridSnap.id().to_string(),
+                cartography::canvas::PhysicsOverlay::Tide.id().to_string(),
+                cartography::canvas::PhysicsOverlay::GridSnap.id().to_string(),
             ],
-            physics_kind_source: pictograph::canvas::PhysicsKindSource::Cluster.id().to_string(),
-            physics_group_source: pictograph::canvas::PhysicsKindSource::Meaning.id().to_string(),
-            physics_mass_source: pictograph::canvas::PhysicsMassSource::PageRank.id().to_string(),
-            physics_depth_source: pictograph::canvas::PhysicsDepthSource::Focus.id().to_string(),
+            physics_kind_source: cartography::canvas::PhysicsKindSource::Cluster.id().to_string(),
+            physics_group_source: cartography::canvas::PhysicsKindSource::Meaning.id().to_string(),
+            physics_mass_source: cartography::canvas::PhysicsMassSource::PageRank.id().to_string(),
+            physics_depth_source: cartography::canvas::PhysicsDepthSource::Focus.id().to_string(),
             ..scene
         };
         let json = serde_json::to_string(&chosen).expect("encodes");
         let back: SavedSceneV2 = serde_json::from_str(&json).expect("decodes");
         assert_eq!(back, chosen);
         assert_eq!(
-            pictograph::canvas::PhysicsLaw::parse(&back.physics_law),
-            Some(pictograph::canvas::PhysicsLaw::Kinds)
+            cartography::canvas::PhysicsLaw::parse(&back.physics_law),
+            Some(cartography::canvas::PhysicsLaw::Kinds)
         );
         assert_eq!(
-            pictograph::canvas::PhysicsKindSource::parse(&back.physics_group_source),
-            Some(pictograph::canvas::PhysicsKindSource::Meaning)
+            cartography::canvas::PhysicsKindSource::parse(&back.physics_group_source),
+            Some(cartography::canvas::PhysicsKindSource::Meaning)
         );
     }
 
@@ -2685,7 +2685,7 @@ mod tests {
     /// and an unknown role id fails rather than falling back.
     #[test]
     fn saved_scene_roles_read_old_pulls_as_they_behaved_and_round_trip() {
-        use pictograph::canvas::Role;
+        use cartography::canvas::Role;
         let legacy = |pull: f32| {
             serde_json::json!({
                 "name": "Before the roles",
@@ -2717,7 +2717,7 @@ mod tests {
             unpulled.roles().unwrap(),
             (
                 SavedRoles::uniform(Role::Seeded),
-                pictograph::canvas::DEFAULT_ANCHOR_STIFFNESS
+                cartography::canvas::DEFAULT_ANCHOR_STIFFNESS
             ),
             "no pull was the seed-only reading"
         );
@@ -2879,7 +2879,7 @@ mod tests {
         let target = reopened.dynamics_spec().unwrap().target.unwrap();
         assert_eq!(
             (target.default_role, target.anchored_pull, target.groups),
-            (pictograph::canvas::Role::Anchored, 12.0, None),
+            (cartography::canvas::Role::Anchored, 12.0, None),
             "anchored at its old pull"
         );
         assert_eq!(
@@ -3003,10 +3003,10 @@ mod tests {
     mod dynamics {
         use std::collections::BTreeMap;
 
-        use pictograph::canvas::dynamics_spec::{
+        use cartography::canvas::dynamics_spec::{
             Bar, DynamicsSpec, GroupRoles, Node, Observable, Realization, Stage, Stop, Target,
         };
-        use pictograph::canvas::{PhysicsLaw, PhysicsOverlay, Role};
+        use cartography::canvas::{PhysicsLaw, PhysicsOverlay, Role};
 
         use super::*;
 
@@ -3268,7 +3268,7 @@ mod tests {
             assert_eq!(spec.root, law(PhysicsLaw::Springs));
             assert_eq!(
                 spec.channels,
-                pictograph::canvas::PhysicsChoice::default().into_spec().channels
+                cartography::canvas::PhysicsChoice::default().into_spec().channels
             );
             let target = spec.target.unwrap();
             assert_eq!(target.arrangement, DEFAULT_ARRANGEMENT);
@@ -3290,7 +3290,7 @@ mod tests {
                 (target.default_role, target.anchored_pull),
                 (
                     Role::Seeded,
-                    f64::from(pictograph::canvas::DEFAULT_ANCHOR_STIFFNESS)
+                    f64::from(cartography::canvas::DEFAULT_ANCHOR_STIFFNESS)
                 )
             );
         }
@@ -3424,7 +3424,7 @@ mod tests {
             let mut host = host();
             let web = web(&host);
             let spec = runnable(web);
-            pictograph::canvas::dynamics_spec::bind(&spec).expect("a runnable spec binds");
+            cartography::canvas::dynamics_spec::bind(&spec).expect("a runnable spec binds");
             let scene = SavedSceneV3 {
                 selected: vec![web],
                 // Fractional positions from the headed Save failure must survive
@@ -3666,7 +3666,7 @@ mod tests {
                     saved_scene::read_dynamics(&codicil.scene.unwrap().dynamics),
                     Ok(spec.clone())
                 );
-                let refusal = pictograph::canvas::dynamics_spec::derive(&spec)
+                let refusal = cartography::canvas::dynamics_spec::derive(&spec)
                     .unwrap_err()
                     .to_string();
                 if depth == 33 {
@@ -3764,11 +3764,11 @@ mod tests {
                 weight: 1.0,
                 overlays: Vec::new(),
             });
-            spec.channels = pictograph::canvas::PhysicsChoice::default().into_spec().channels;
+            spec.channels = cartography::canvas::PhysicsChoice::default().into_spec().channels;
             spec.realization = Realization::Integrate { damping: Some(0.7) };
             spec.target = Some(Target {
                 arrangement: "grid.default".into(),
-                anchored_pull: f64::from(pictograph::canvas::DEFAULT_ANCHOR_STIFFNESS),
+                anchored_pull: f64::from(cartography::canvas::DEFAULT_ANCHOR_STIFFNESS),
                 default_role: Role::Seeded,
                 groups: None,
                 items: BTreeMap::new(),

@@ -9,7 +9,7 @@ use super::*;
 use cambium::{button, el, lens, select, text_field_typed, textarea_typed};
 use graphshell::local_edit::{DetailAction, apply_detail_action, relation_target};
 use graphshell::product::EditableRelation;
-use pictograph::canvas::Face;
+use cartography::canvas::Face;
 
 const RELATIONS: [(EditableRelation, &str); 5] = [
     (EditableRelation::UserGrouped, "Grouped with"),

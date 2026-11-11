@@ -10,7 +10,7 @@
 //! qualification inputs, not ordinary user controls or persisted settings.
 
 use super::*;
-use pictograph::canvas::{NodeShape, responsive_links::LinkPathResponse};
+use cartography::canvas::{NodeShape, responsive_links::LinkPathResponse};
 use scenograph::suggestion::{SuggestionMark, SuggestionSettings};
 use std::collections::HashMap;
 
@@ -321,8 +321,8 @@ pub(super) fn fields(page: &TreePage, snapshot: ProbeSnapshot) -> ProbeSnapshot 
 
 fn strict_reentry(
     world_points: &[(f32, f32)],
-    canvas: &pictograph::canvas::Canvas,
-    billboard: pictograph::canvas::node_billboard::NodeBillboard,
+    canvas: &cartography::canvas::Canvas,
+    billboard: cartography::canvas::node_billboard::NodeBillboard,
     allow_initial_stem_exit: bool,
 ) -> usize {
     let points = world_points
@@ -348,7 +348,7 @@ fn strict_reentry(
     violations
 }
 
-fn current_profile_label(canvas: &pictograph::canvas::Canvas) -> &'static str {
+fn current_profile_label(canvas: &cartography::canvas::Canvas) -> &'static str {
     if canvas.suggestion_settings().on {
         return "suggestion";
     }

@@ -184,8 +184,8 @@ impl Default for Reading {
         let mentions = std::sync::Arc::new(std::sync::RwLock::new(
             graphshell::retained_content::mentions::Mentions {
                 addresses: Default::default(),
-                faces: std::sync::Arc::new(pictograph::canvas::InlineFaces::new(
-                    pictograph::canvas::TextFacePalette::new(Default::default(), &[]),
+                faces: std::sync::Arc::new(cartography::canvas::InlineFaces::new(
+                    cartography::canvas::TextFacePalette::new(Default::default(), &[]),
                 )),
                 scale: 1.0,
             },

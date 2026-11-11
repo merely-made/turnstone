@@ -263,13 +263,13 @@ pub fn inspect_link_with_source(
             )),
         }
     }
-    let reading = pictograph::canvas::link_reading::read_link_with_options(
+    let reading = cartography::canvas::link_reading::read_link_with_options(
         graph,
         target.first,
         target.second,
         source,
-        pictograph::canvas::link_reading::LinkReadOptions {
-            scope: pictograph::canvas::link_reading::LinkReadScope::Held,
+        cartography::canvas::link_reading::LinkReadOptions {
+            scope: cartography::canvas::link_reading::LinkReadScope::Held,
             include_legacy_summaries: true,
         },
     )?;
@@ -404,7 +404,7 @@ pub fn inspect_link_history_with_source(
         }
     }
     let reading =
-        pictograph::canvas::link_reading::read_link_history(graph, target.first, target.second, source)?;
+        cartography::canvas::link_reading::read_link_history(graph, target.first, target.second, source)?;
     let mut entries = Vec::new();
     for link in reading.links {
         let stratum = match link.key.stratum {

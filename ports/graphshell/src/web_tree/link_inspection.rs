@@ -552,7 +552,7 @@ pub(super) fn section(page: &TreePage) -> Child {
             if let Some(pair) = page.inspected_link {
                 dynamics_inspection::choose(
                     page,
-                    pictograph::canvas::DynamicsTarget::Pair {
+                    cartography::canvas::DynamicsTarget::Pair {
                         first: pair.first,
                         second: pair.second,
                     },

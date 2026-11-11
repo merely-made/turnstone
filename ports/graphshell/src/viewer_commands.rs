@@ -11,7 +11,7 @@ use hest::{
     menu::{Command, CommandSet},
 };
 
-use pictograph::canvas::{controls::CanvasCommand, gestures::WheelMode};
+use cartography::canvas::{controls::CanvasCommand, gestures::WheelMode};
 
 #[derive(Clone, Copy, Debug, Default)]
 pub struct Availability {

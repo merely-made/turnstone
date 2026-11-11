@@ -193,7 +193,7 @@ pub(super) fn open(page: &mut TreePage, request: Request) {
         // local command owner as retained HostPointer delivery.
         page.commands.open = None;
         let mut canvas = page.shared.canvas.borrow_mut();
-        product.open_menu(pictograph::canvas::ContextRequest { at, node }, &mut canvas);
+        product.open_menu(cartography::canvas::ContextRequest { at, node }, &mut canvas);
         page.picked = canvas.focused_url().map(str::to_owned);
         product.select(canvas.selected_members().first().copied());
         page.commands.focus_graph = false;

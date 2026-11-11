@@ -385,7 +385,7 @@ fn apply(page: &mut TreePage, visit: &Visit) -> bool {
             canvas.select_member(member);
         }
         if let Some(camera) = visit.camera {
-            canvas.set_camera(pictograph::canvas::CameraView {
+            canvas.set_camera(cartography::canvas::CameraView {
                 offset: (camera.x, camera.y),
                 zoom: camera.zoom,
             });

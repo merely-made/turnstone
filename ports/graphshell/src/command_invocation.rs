@@ -9,7 +9,7 @@
 
 use crate::viewer_commands::{self, Action};
 use cambium::{CommandSet, Invocation, Outcome, catalogue::ids};
-use pictograph::canvas::{Canvas, camera_host::CameraHost, controls::CanvasCommand};
+use cartography::canvas::{Canvas, camera_host::CameraHost, controls::CanvasCommand};
 
 /// This host's zero-argument viewer schema. Other hosts own their schemas.
 pub const SCHEMA: &str = "graphshell.viewer/v1";
