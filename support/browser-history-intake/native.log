@@ -1,0 +1,1311 @@
+warning: patch `boa_engine v1.0.0-dev (https://github.com/mark-ik/boa.git?branch=genet#52cfb6ff)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://github.com/mark-ik/boa.git
+warning: patch `boa_gc v1.0.0-dev (https://github.com/mark-ik/boa.git?branch=genet#52cfb6ff)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://github.com/mark-ik/boa.git
+warning: unused imports: `astar`, `dijkstra`, `has_path_connecting`, and `kosaraju_scc`
+  --> crates\graph\graph-kernel\src\graph\mod.rs:21:22
+   |
+21 | use petgraph::algo::{astar, dijkstra, has_path_connecting, kosaraju_scc};
+   |                      ^^^^^  ^^^^^^^^  ^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused imports: `Archived`, `Place`, and `Resolver`
+  --> crates\graph\graph-kernel\src\graph\mod.rs:25:21
+   |
+25 | use rkyv::{Archive, Archived, Deserialize, Place, Resolver, Serialize, rancor::Fallible};
+   |                     ^^^^^^^^               ^^^^^  ^^^^^^^^
+
+warning: unused import: `HashSet`
+  --> crates\graph\graph-kernel\src\graph\mod.rs:26:43
+   |
+26 | use std::collections::{BTreeMap, HashMap, HashSet};
+   |                                           ^^^^^^^
+
+warning: unused imports: `GraphSnapshot`, `PersistedAddress`, `PersistedArrangementEdgeData`, `PersistedArrangementSubKind`, `PersistedContainmentEdgeData`, `PersistedContainmentSubKind`, `PersistedEdgeFamily`, `PersistedEdge`, `PersistedImportedEdgeData`, `PersistedImportedSubKind`, `PersistedNavigationTrigger`, `PersistedNodeSessionState`, `PersistedNode`, `PersistedProvenanceEdgeData`, `PersistedProvenanceSubKind`, `PersistedSemanticEdgeData`, `PersistedSemanticSubKind`, `PersistedTraversalEdgeData`, `PersistedTraversalMetrics`, and `PersistedTraversalRecord`
+  --> crates\graph\graph-kernel\src\graph\mod.rs:35:5
+   |
+35 |     GraphSnapshot, PersistedAddress, PersistedArrangementEdgeData, PersistedArrangementSubKind,
+   |     ^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+36 |     PersistedContainmentEdgeData, PersistedContainmentSubKind, PersistedEdge, PersistedEdgeFamily,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^
+37 |     PersistedImportedEdgeData, PersistedImportedSubKind, PersistedNavigationTrigger, PersistedNode,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^
+38 |     PersistedNodeSessionState, PersistedProvenanceEdgeData, PersistedProvenanceSubKind,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^
+39 |     PersistedSemanticEdgeData, PersistedSemanticSubKind, PersistedTraversalEdgeData,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^
+40 |     PersistedTraversalMetrics, PersistedTraversalRecord,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `NodeTagPresentationState`
+  --> crates\graph\graph-kernel\src\graph\node_facets.rs:17:54
+   |
+17 | use crate::types::{NodeClassification, NodeProperty, NodeTagPresentationState};
+   |                                                      ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `EdgeRef`
+  --> crates\graph\graph-kernel\src\graph\mod.rs:24:23
+   |
+24 | use petgraph::visit::{EdgeRef, IntoEdgeReferences};
+   |                       ^^^^^^^
+
+warning: unused import: `rancor::Fallible`
+  --> crates\graph\graph-kernel\src\graph\mod.rs:25:72
+   |
+25 | use rkyv::{Archive, Archived, Deserialize, Place, Resolver, Serialize, rancor::Fallible};
+   |                                                                        ^^^^^^^^^^^^^^^^
+
+warning: methods `navigate_node`, `branch_history`, `node_history_back`, and `node_history_forward` are never used
+   --> crates\graph\graph-kernel\src\graph\mod.rs:707:19
+    |
+404 | impl Graph {
+    | ---------- methods in this implementation
+...
+707 |     pub(crate) fn navigate_node(&mut self, key: NodeKey, url: &str) {
+    |                   ^^^^^^^^^^^^^
+...
+721 |     pub(crate) fn branch_history(&mut self, child: NodeKey, parent: NodeKey) {
+    |                   ^^^^^^^^^^^^^^
+...
+733 |     pub(crate) fn node_history_back(&mut self, key: NodeKey) -> Option<String> {
+    |                   ^^^^^^^^^^^^^^^^^
+...
+743 |     pub(crate) fn node_history_forward(&mut self, key: NodeKey) -> Option<String> {
+    |                   ^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: methods `assert_semantic_predicate`, `assert_semantic_relation_in_scope`, and `assert_semantic_predicate_in_scope` are never used
+   --> crates\graph\graph-kernel\src\graph\edge_payload.rs:258:19
+    |
+ 45 | impl EdgePayload {
+    | ---------------- methods in this implementation
+...
+258 |     pub(crate) fn assert_semantic_predicate(&mut self, predicate: String) -> bool {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+262 |     pub(crate) fn assert_semantic_relation_in_scope(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+271 |     pub(crate) fn assert_semantic_predicate_in_scope(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `LogIdAsString` is never constructed
+   --> crates\graph\graph-kernel\src\graph\identity.rs:160:19
+    |
+160 | pub(crate) struct LogIdAsString;
+    |                   ^^^^^^^^^^^^^
+
+warning: multiple methods are never used
+   --> crates\graph\graph-kernel\src\graph\resource_content.rs:86:19
+    |
+ 85 | impl Graph {
+    | ---------- methods in this implementation
+ 86 |     pub(crate) fn insert_node_tag(&mut self, key: NodeKey, tag: String) -> bool {
+    |                   ^^^^^^^^^^^^^^^
+...
+ 89 |     pub(crate) fn remove_node_tag(&mut self, key: NodeKey, tag: &str) -> bool {
+    |                   ^^^^^^^^^^^^^^^
+...
+ 92 |     pub(crate) fn append_node_property(&mut self, key: NodeKey, property: NodeProperty) -> bool {
+    |                   ^^^^^^^^^^^^^^^^^^^^
+...
+ 95 |     pub(crate) fn add_node_classification(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^
+...
+102 |     pub(crate) fn remove_node_classification(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+116 |     pub(crate) fn set_node_classification_status(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+131 |     pub(crate) fn set_node_primary_classification(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: multiple methods are never used
+   --> crates\graph\graph-kernel\src\graph\edge_ops.rs:177:19
+    |
+ 32 | impl Graph {
+    | ---------- methods in this implementation
+...
+177 |     pub(crate) fn assert_semantic_predicate(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+244 |     pub(crate) fn replay_assert_relation_by_ids(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+261 |     pub(crate) fn replay_set_edge_semantic_predicate_by_ids(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+279 |     pub(crate) fn replay_assert_semantic_predicate_by_ids(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+307 |     pub(crate) fn dissolve_remove_node_collect_traversals(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+418 |     pub(crate) fn assert_surface_persisted_semantic_statement(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+601 |     pub(crate) fn set_edge_semantic_predicate(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: method `get_node_mut` is never used
+   --> crates\graph\graph-kernel\src\graph\query.rs:227:19
+    |
+220 | impl Graph {
+    | ---------- method in this implementation
+...
+227 |     pub(crate) fn get_node_mut(&mut self, key: NodeKey) -> Option<&mut Node> {
+    |                   ^^^^^^^^^^^^
+
+warning: `mere-kernel` (lib) generated 13 warnings (run `cargo fix --lib -p mere-kernel` to apply 5 suggestions)
+warning: missing documentation for an associated function
+   --> crates\murm\transport\src\p2panda_transport.rs:629:5
+    |
+629 |     pub fn builder_from_seed_ref(signing_seed: &[u8; 32]) -> P2pandaTransportBuilder<'static> {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+note: the lint level is defined here
+   --> crates\murm\transport\src\lib.rs:46:9
+    |
+ 46 | #![warn(missing_docs)]
+    |         ^^^^^^^^^^^^
+
+   Compiling eidetic v0.0.2 (C:\Users\mark_\Code\repos\mere\crates\eidetic\eidetic-core)
+warning: `mere-transport` (lib) generated 1 warning
+warning: function `build_affinity_spring` is never used
+  --> crates\canvas\pictograph\src\canvas.rs:66:4
+   |
+66 | fn build_affinity_spring(scores: &crate::signals::AffinityScores) -> AffinitySpring {
+   |    ^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `pictograph` (lib) generated 1 warning
+warning: unused import: `async_trait::async_trait`
+ --> crates\eidetic\eidetic-core\src\browsing\tests.rs:9:5
+  |
+9 | use async_trait::async_trait;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `std::collections::HashMap`
+  --> crates\eidetic\eidetic-core\src\browsing\tests.rs:10:5
+   |
+10 | use std::collections::HashMap;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `async_trait::async_trait`
+   --> crates\eidetic\eidetic-core\src\bundle.rs:189:9
+    |
+189 |     use async_trait::async_trait;
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::collections::HashMap`
+   --> crates\eidetic\eidetic-core\src\bundle.rs:190:9
+    |
+190 |     use std::collections::HashMap;
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `async_trait::async_trait`
+   --> crates\eidetic\eidetic-core\src\deleted.rs:149:9
+    |
+149 |     use async_trait::async_trait;
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::collections::HashMap`
+   --> crates\eidetic\eidetic-core\src\deleted.rs:150:9
+    |
+150 |     use std::collections::HashMap;
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `async_trait::async_trait`
+  --> crates\eidetic\eidetic-core\src\schema_def\tests.rs:10:5
+   |
+10 | use async_trait::async_trait;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::collections::HashMap`
+  --> crates\eidetic\eidetic-core\src\schema_def\tests.rs:11:5
+   |
+11 | use std::collections::HashMap;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `async_trait::async_trait`
+   --> crates\eidetic\eidetic-core\src\typed.rs:213:9
+    |
+213 |     use async_trait::async_trait;
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::collections::HashMap`
+   --> crates\eidetic\eidetic-core\src\typed.rs:215:9
+    |
+215 |     use std::collections::HashMap;
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+   Compiling pandect v0.1.1 (C:\Users\mark_\Code\repos\mere\crates\system\pandect)
+warning: unused import: `std::io`
+  --> crates\system\pandect\src\wallet_grant\pairing.rs:10:5
+   |
+10 | use std::io;
+   |     ^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `std::io`
+  --> crates\system\pandect\src\wallet_grant\records.rs:10:5
+   |
+10 | use std::io;
+   |     ^^^^^^^
+
+warning: unused import: `std::path::Path`
+  --> crates\system\pandect\src\wallet_grant\records.rs:11:5
+   |
+11 | use std::path::Path;
+   |     ^^^^^^^^^^^^^^^
+
+warning: unused imports: `Ed25519Keypair`, `IdentityProvider`, `InMemoryProvider`, and `PersonaId`
+  --> crates\system\pandect\src\wallet_grant\records.rs:13:16
+   |
+13 | use identity::{Ed25519Keypair, IdentityProvider, InMemoryProvider, PersonaId};
+   |                ^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^
+
+warning: unused import: `Ed25519Signature`
+  --> crates\system\pandect\src\wallet_grant\types.rs:14:16
+   |
+14 | use identity::{Ed25519Signature, PersonaId};
+   |                ^^^^^^^^^^^^^^^^
+
+warning: unused imports: `DEVICE_GRANT_SCHEMA_VERSION` and `DeviceGrantError`
+  --> crates\system\pandect\src\wallet_grant\types.rs:19:5
+   |
+19 |     DEVICE_GRANT_SCHEMA_VERSION, DeviceExposure, DeviceGrantError, DeviceId, DevicePublicKey,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^                  ^^^^^^^^^^^^^^^^
+
+warning: method `into_graph` is never used
+   --> crates\system\pandect\src\graph_codicil.rs:149:19
+    |
+148 | impl GraphCodicil {
+    | ----------------- method in this implementation
+149 |     pub(crate) fn into_graph(self) -> Result<Graph> {
+    |                   ^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+   Compiling distillery v0.0.1 (C:\Users\mark_\Code\repos\mere\ports\distillery)
+warning: `eidetic` (lib test) generated 10 warnings (run `cargo fix --lib -p eidetic --tests` to apply 10 suggestions)
+warning: missing documentation for a variant
+  --> ports\distillery\src\mesh_host\courier.rs:42:5
+   |
+42 |     MalformedDigest,
+   |     ^^^^^^^^^^^^^^^
+   |
+note: the lint level is defined here
+  --> ports\distillery\src\lib.rs:45:9
+   |
+45 | #![warn(missing_docs)]
+   |         ^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> ports\distillery\src\mesh_host\courier.rs:44:5
+   |
+44 |     Store(String),
+   |     ^^^^^
+
+warning: missing documentation for a method
+   --> ports\distillery\src\mesh_host\courier.rs:131:5
+    |
+131 |     pub async fn has(&self, blob: &BlobRef) -> bool {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for an associated function
+   --> ports\distillery\src\mesh_host\courier.rs:219:5
+    |
+219 |     pub fn new(transport: Arc<P2pandaTransport>, blobs: Arc<BlobStore>) -> Self {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+  --> ports\distillery\src\mesh_host\host.rs:32:5
+   |
+32 |     fn as_source(&self) -> &dyn BlobSource;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+  --> ports\distillery\src\mesh_host\host.rs:33:5
+   |
+33 |     fn as_sink(&self) -> &dyn BlobSink;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> ports\distillery\src\mesh_host\host.rs:47:5
+   |
+47 |     pub registry: ResourceRegistry,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> ports\distillery\src\mesh_host\host.rs:48:5
+   |
+48 |     pub blobs: Arc<dyn BlobSpace>,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> ports\distillery\src\mesh_host\host.rs:51:5
+   |
+51 |     pub clock: Arc<dyn Clock>,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> ports\distillery\src\mesh_host\host.rs:52:5
+   |
+52 |     pub conditions: Arc<dyn ConditionSource>,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> ports\distillery\src\mesh_host\host.rs:53:5
+   |
+53 |     pub facts: HostFacts,
+   |     ^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> ports\distillery\src\mesh_host\host.rs:54:5
+   |
+54 |     pub policy: DevicePolicy,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> ports\distillery\src\mesh_host\host.rs:55:5
+   |
+55 |     pub lease: LeasePolicy,
+   |     ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> ports\distillery\src\mesh_host\host.rs:83:5
+   |
+83 |     Claimed {
+   |     ^^^^^^^
+
+warning: missing documentation for a struct field
+  --> ports\distillery\src\mesh_host\host.rs:84:9
+   |
+84 |         job: JobId,
+   |         ^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> ports\distillery\src\mesh_host\host.rs:86:5
+   |
+86 |     Granted {
+   |     ^^^^^^^
+
+warning: missing documentation for a struct field
+  --> ports\distillery\src\mesh_host\host.rs:87:9
+   |
+87 |         job: JobId,
+   |         ^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> ports\distillery\src\mesh_host\host.rs:88:9
+   |
+88 |         epoch: u32,
+   |         ^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> ports\distillery\src\mesh_host\host.rs:89:9
+   |
+89 |         lease: LeaseId,
+   |         ^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> ports\distillery\src\mesh_host\host.rs:91:5
+   |
+91 |     Heartbeat {
+   |     ^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> ports\distillery\src\mesh_host\host.rs:92:9
+   |
+92 |         job: JobId,
+   |         ^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> ports\distillery\src\mesh_host\host.rs:93:9
+   |
+93 |         lease: LeaseId,
+   |         ^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> ports\distillery\src\mesh_host\host.rs:94:9
+   |
+94 |         progress: LeaseProgress,
+   |         ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> ports\distillery\src\mesh_host\host.rs:98:9
+   |
+98 |         job: JobId,
+   |         ^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> ports\distillery\src\mesh_host\host.rs:99:9
+   |
+99 |         lease: Option<LeaseId>,
+   |         ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+   --> ports\distillery\src\mesh_host\host.rs:101:5
+    |
+101 |     Completed {
+    |     ^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> ports\distillery\src\mesh_host\host.rs:102:9
+    |
+102 |         job: JobId,
+    |         ^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> ports\distillery\src\mesh_host\host.rs:103:9
+    |
+103 |         lease: Option<LeaseId>,
+    |         ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+   --> ports\distillery\src\mesh_host\host.rs:105:5
+    |
+105 |     Released {
+    |     ^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> ports\distillery\src\mesh_host\host.rs:106:9
+    |
+106 |         job: JobId,
+    |         ^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> ports\distillery\src\mesh_host\host.rs:107:9
+    |
+107 |         lease: LeaseId,
+    |         ^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> ports\distillery\src\mesh_host\host.rs:108:9
+    |
+108 |         reason: ReleaseReason,
+    |         ^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> ports\distillery\src\mesh_host\host.rs:113:9
+    |
+113 |         job: JobId,
+    |         ^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> ports\distillery\src\mesh_host\host.rs:118:9
+    |
+118 |         job: JobId,
+    |         ^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> ports\distillery\src\mesh_host\host.rs:119:9
+    |
+119 |         lease: LeaseId,
+    |         ^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> ports\distillery\src\mesh_host\host.rs:120:9
+    |
+120 |         reason: ReclaimReason,
+    |         ^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> ports\distillery\src\mesh_host\host.rs:121:9
+    |
+121 |         stopped_at: LeaseProgress,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> ports\distillery\src\mesh_host\host.rs:127:9
+    |
+127 |         job: JobId,
+    |         ^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> ports\distillery\src\mesh_host\host.rs:128:9
+    |
+128 |         lease: LeaseId,
+    |         ^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+   --> ports\distillery\src\mesh_host\host.rs:130:5
+    |
+130 |     Idle,
+    |     ^^^^
+
+warning: missing documentation for a variant
+   --> ports\distillery\src\mesh_host\host.rs:137:5
+    |
+137 |     Sync(#[from] MeshSyncError),
+    |     ^^^^
+
+warning: missing documentation for a variant
+   --> ports\distillery\src\mesh_host\host.rs:139:5
+    |
+139 |     Store(#[from] MeshStoreError),
+    |     ^^^^^
+
+warning: missing documentation for an associated function
+   --> ports\distillery\src\mesh_host\host.rs:157:5
+    |
+157 |     pub fn new(synced: SyncedMesh<B>, keypair: Ed25519Keypair, config: HostConfig) -> Self {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+   --> ports\distillery\src\mesh_host\host.rs:168:5
+    |
+168 |     pub fn me(&self) -> [u8; 32] {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+   --> ports\distillery\src\mesh_host\host.rs:172:5
+    |
+172 |     pub fn synced(&self) -> &SyncedMesh<B> {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+   --> ports\distillery\src\mesh_host\host.rs:186:5
+    |
+186 |     pub fn policy(&self) -> &DevicePolicy {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> ports\distillery\src\mesh_host\inflight.rs:30:5
+   |
+30 |     pub reason: ReclaimReason,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> ports\distillery\src\mesh_host\inflight.rs:41:5
+   |
+41 |     pub handle: JobControlHandle,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> ports\distillery\src\mesh_host\inflight.rs:42:5
+   |
+42 |     pub task: JoinHandle<Result<RunOutcome, RunError>>,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> ports\distillery\src\mesh_host\inflight.rs:45:5
+   |
+45 |     pub reclaim: Option<Reclaiming>,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+  --> ports\distillery\src\mesh_host\sense.rs:27:5
+   |
+27 |     fn now_ms(&self) -> u64;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for an associated function
+  --> ports\distillery\src\mesh_host\sense.rs:52:5
+   |
+52 |     pub fn at(now_ms: u64) -> Self {
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+  --> ports\distillery\src\mesh_host\sense.rs:58:5
+   |
+58 |     pub fn set(&self, now_ms: u64) {
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+  --> ports\distillery\src\mesh_host\sense.rs:62:5
+   |
+62 |     pub fn advance(&self, by_ms: u64) {
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+  --> ports\distillery\src\mesh_host\sense.rs:80:5
+   |
+80 |     fn conditions(&self) -> DeviceConditions;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for an associated function
+  --> ports\distillery\src\mesh_host\sense.rs:91:5
+   |
+91 |     pub fn new(conditions: DeviceConditions) -> Self {
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+   --> ports\distillery\src\mesh_host\sense.rs:102:5
+    |
+102 |     pub fn set(&self, conditions: DeviceConditions) {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `distillery` (lib) generated 57 warnings
+warning: `pandect` (lib) generated 7 warnings (run `cargo fix --lib -p pandect` to apply 6 suggestions)
+   Compiling graphshell v0.0.2 (C:\Users\mark_\Code\repos\mere\ports\graphshell)
+warning: unused import: `RelationKind`
+   --> ports\graphshell\src\app.rs:308:50
+    |
+308 |     use mere::kernel::graph::{EdgeFamily, Graph, RelationKind};
+    |                                                  ^^^^^^^^^^^^
+    |
+    = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused imports: `PINNED_PROJECTION_FACET`, `PinnedProjectionAuthorityV1`, `PinnedProjectionCardV1`, and `SavedSceneV2`
+   --> ports\graphshell\src\app.rs:319:9
+    |
+319 |         PINNED_PROJECTION_FACET, PinnedProjectionAuthorityV1, PinnedProjectionCardV1, SavedSceneV2,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^
+
+warning: unused import: `PhysicsChoice`
+  --> ports\graphshell\src\canvas_reader\tests.rs:28:55
+   |
+28 |     Canvas, DESCRIBED_ITEMS, DRAG_INTENT, PIN_INTENT, PhysicsChoice, Role as ItemRole, Speed,
+   |                                                       ^^^^^^^^^^^^^
+
+warning: unused import: `RelationKind`
+    --> ports\graphshell\src\transfer.rs:1230:50
+     |
+1230 |     use mere::kernel::graph::{ProvenanceSubKind, RelationKind, SemanticSubKind};
+     |                                                  ^^^^^^^^^^^^
+
+warning: method `begin_session` is never used
+   --> ports\graphshell\src\mere_host.rs:386:19
+    |
+225 | impl<B: Backend + Clone> MereHost<B> {
+    | ------------------------------------ method in this implementation
+...
+386 |     pub(crate) fn begin_session(&mut self, graph: Graph) {
+    |                   ^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused `Result` that must be used
+   --> ports\graphshell\src\local_edit\tests.rs:191:5
+    |
+191 | /     app.host.mutate_product_graph(|graph| {
+192 | |         graph.write_as(Author::person("urn:mere:canvas-metadata-peer"), |graph| {
+193 | |             apply_graph_delta(
+194 | |                 graph,
+...   |
+200 | |         });
+201 | |     });
+    | |______^
+    |
+    = note: this `Result` may be an `Err` variant, which should be handled
+    = note: `#[warn(unused_must_use)]` (part of `#[warn(unused)]`) on by default
+help: use `let _ = ...` to ignore the resulting value
+    |
+191 |     let _ = app.host.mutate_product_graph(|graph| {
+    |     +++++++
+
+warning: unused `Result` that must be used
+   --> ports\graphshell\src\local_edit\tests.rs:276:5
+    |
+276 | /     app.host.mutate_product_graph(|graph| {
+277 | |         graph.write_as(Author::person("urn:mere:metadata-peer"), |graph| {
+278 | |             apply_graph_delta(
+279 | |                 graph,
+...   |
+285 | |         })
+286 | |     });
+    | |______^
+    |
+    = note: this `Result` may be an `Err` variant, which should be handled
+help: use `let _ = ...` to ignore the resulting value
+    |
+276 |     let _ = app.host.mutate_product_graph(|graph| {
+    |     +++++++
+
+warning: unused `Result` that must be used
+   --> ports\graphshell\src\local_edit\tests.rs:397:5
+    |
+397 | /     app.host.mutate_product_graph(|graph| {
+398 | |         apply_graph_delta(
+399 | |             graph,
+400 | |             GraphDelta::NavigateNode {
+...   |
+405 | |     });
+    | |______^
+    |
+    = note: this `Result` may be an `Err` variant, which should be handled
+help: use `let _ = ...` to ignore the resulting value
+    |
+397 |     let _ = app.host.mutate_product_graph(|graph| {
+    |     +++++++
+
+warning: unused `Result` that must be used
+    --> ports\graphshell\src\mere_host.rs:1659:9
+     |
+1659 | /         host.mutate_product_graph(|graph| {
+1660 | |             apply_graph_delta(
+1661 | |                 graph,
+1662 | |                 GraphDelta::ReplaySetShownResourceById {
+...    |
+1667 | |         });
+     | |__________^
+     |
+     = note: this `Result` may be an `Err` variant, which should be handled
+help: use `let _ = ...` to ignore the resulting value
+     |
+1659 |         let _ = host.mutate_product_graph(|graph| {
+     |         +++++++
+
+warning: unused `Result` that must be used
+    --> ports\graphshell\src\mere_host.rs:1693:9
+     |
+1693 | /         host.mutate_product_graph(|graph| {
+1694 | |             apply_graph_delta(
+1695 | |                 graph,
+1696 | |                 GraphDelta::NavigateNode {
+...    |
+1701 | |         });
+     | |__________^
+     |
+     = note: this `Result` may be an `Err` variant, which should be handled
+help: use `let _ = ...` to ignore the resulting value
+     |
+1693 |         let _ = host.mutate_product_graph(|graph| {
+     |         +++++++
+
+warning: unused `Result` that must be used
+    --> ports\graphshell\src\product.rs:2074:9
+     |
+2074 | /         host.mutate_product_graph(|graph| {
+2075 | |             graph.write_as(Author::person("urn:mere:peer-test"), |graph| {
+2076 | |                 for label in ["Shared", "PeerOnly"] {
+2077 | |                     apply_graph_delta(
+...    |
+2085 | |             })
+2086 | |         });
+     | |__________^
+     |
+     = note: this `Result` may be an `Err` variant, which should be handled
+help: use `let _ = ...` to ignore the resulting value
+     |
+2074 |         let _ = host.mutate_product_graph(|graph| {
+     |         +++++++
+
+warning: `graphshell` (lib test) generated 11 warnings (run `cargo fix --lib -p graphshell --tests` to apply 4 suggestions)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 53.43s
+     Running unittests src\lib.rs (C:\t\cargo-targets\mere\debug\deps\chartulary-6b823fe0ad5ab76a.exe)
+
+running 67 tests
+test canonical::tests::nonhierarchical_addresses_keep_their_shape_except_fragment ... ok
+test canonical::tests::authority_preserves_userinfo_and_ipv6_brackets ... ok
+test canonical::tests::aliases_share_an_address_but_meaningful_parameters_do_not ... ok
+test canonical::tests::implied_ports_and_empty_paths_collapse_but_other_paths_stay ... ok
+test canonical::tests::resource_identity_preserves_meaningful_address_differences ... ok
+test commit::tests::concurrent_node_edits_are_whole_node_last_writer_wins ... ok
+test canonical::tests::surviving_query_case_encoding_and_order_carry_meaning ... ok
+test commit::tests::a_committed_batch_reads_back_attributed_with_minted_edges ... ok
+test commit::tests::batch_local_inserts_are_connectable_and_removable ... ok
+test commit::tests::a_concurrent_insert_that_sorts_later_resurrects_a_removed_node ... ok
+test commit::tests::a_batch_applies_atomically_or_not_at_all ... ok
+test commit::tests::a_legacy_bare_counter_deserializes_as_a_local_id ... ok
+test commit::tests::concurrent_edits_to_different_facets_both_survive ... ok
+test commit::tests::effects_enqueue_only_after_a_commit_lands ... ok
+test commit::tests::a_merged_journal_addresses_both_writers_edges ... ok
+test canonical::tests::resource_aliases_share_the_pinned_url_namespace_identity ... ok
+test commit::tests::node_removal_suppresses_a_concurrent_facet_edit_in_either_order ... ok
+test commit::tests::remove_wins_over_a_concurrent_connect_in_either_order ... ok
+test commit::tests::replaying_a_peers_edits_does_not_advance_our_counter ... ok
+test commit::tests::a_pre_gate_edit_log_migrates_on_load ... ok
+test commit::tests::stale_revision_is_refused_with_the_current_revision ... ok
+test commit::tests::two_offline_writers_mint_distinct_edge_ids ... ok
+test content_class::tests::a_class_admits_a_valid_member_and_rejects_a_missing_or_invalid_facet ... ok
+test content_class::tests::a_class_definition_round_trips_as_data ... ok
+test content_class::tests::a_nodes_class_is_queryable ... ok
+test content_class::tests::an_unknown_class_is_inert_not_an_error ... ok
+test facet::tests::a_facet_sets_and_reads_back ... ok
+test facet::tests::absent_slot_loads_an_empty_store ... ok
+test facet::tests::expiring_facets_are_live_before_the_revision_boundary_only ... ok
+test facet::tests::an_unknown_facet_id_survives_a_round_trip ... ok
+test facet::tests::overlay_replaces_matching_values_and_preserves_foreign_facets ... ok
+test facet::tests::removing_a_facet_prunes_an_emptied_node ... ok
+test facet::tests::the_validator_seam_refuses_and_stores_nothing ... ok
+test graph::tests::builds_and_counts ... ok
+test graph::tests::filter_by_tag_via_labeled_capability ... ok
+test graph::tests::insert_upserts_on_identity ... ok
+test graph::tests::lookup_by_identity ... ok
+test graph::tests::query_neighbors_and_out_edges ... ok
+test graph::tests::remove_drops_node_and_deindexes ... ok
+test nested::tests::a_node_cannot_bear_the_graph_it_lives_in ... ok
+test graph::tests::serde_round_trip_rebuilds_the_id_index ... ok
+test nested::tests::pre_nesting_containers_still_deserialize ... ok
+test nested::tests::a_crash_between_archive_and_parent_save_recovers_idempotently ... ok
+test rdf::tests::a_node_without_an_address_skolemizes ... ok
+test nested::tests::bearing_node_round_trips_persist_and_replay ... ok
+test nested::tests::removing_a_bearing_node_archives_never_orphans ... ok
+test rdf::tests::app_private_edges_do_not_project ... ok
+test rdf::tests::jsonld_shapes_the_expanded_form ... ok
+test rdf::tests::nquads_emits_the_cites_triple ... ok
+test rdf::tests::semantic_edges_project_and_literals_come_from_labels ... ok
+test spine::tests::derivation_records_survive_round_trip ... ok
+test spine::tests::edge_ids_stay_stable_across_reload ... ok
+test spine::tests::fork_carries_history_and_provenance_then_diverges ... ok
+test spine::tests::removing_a_node_reaps_its_edges_on_replay ... ok
+test spine::tests::replay_reconstructs_the_live_graph ... ok
+test stemma::tests::deleting_last_owner_collects_ownerless_branch ... ok
+test spine::tests::writer_scoped_counter_resumes_after_full_replay ... ok
+test stemma::tests::entry_deduplicates_by_key_but_allows_contextual_duplicates ... ok
+test stemma::tests::deleting_a_spawned_owner_leaves_a_serializable_snapshot ... ok
+test stemma::tests::explicit_parent_admission_preserves_a_live_cursor_and_forward_choice ... ok
+test spine::tests::checkpointed_load_equals_full_replay ... ok
+test stemma::tests::forward_child_is_owner_scoped_on_shared_visit ... ok
+test stemma::tests::owner_branch_projection_reports_alternate_children ... ok
+test stemma::tests::repeated_navigation_creates_distinct_visits_and_aggregates_edges ... ok
+test stemma::tests::spawned_owner_origin_attaches_under_creator_current_visit ... ok
+test taxonomy::tests::recognized_iri_round_trips ... ok
+test taxonomy::tests::semantic_ring_projects_app_families_do_not ... ok
+
+test result: ok. 67 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\lib.rs (C:\t\cargo-targets\mere\debug\deps\eidetic-02de2dffe1080031.exe)
+
+running 132 tests
+test browsing::frecency::tests::recency_decays_on_the_half_life ... ok
+test browsing::frecency::tests::redirects_and_reloads_contribute_near_zero ... ok
+test browsing::frecency::tests::transition_weights_order_the_kinds ... ok
+test browsing::frecency::tests::dwell_past_the_threshold_promotes ... ok
+test browsing::tests::adopted_traces_join_reads_but_not_quota ... ok
+test browsing::page::tests::tracking_params_and_fragment_collapse_to_one_record ... ok
+test browsing::page::tests::frecency_by_fingerprint_sums_the_collapsed_urls ... ok
+test browsing::captures::tests::aliases_share_versions_and_reopen_keeps_earlier_resources ... ok
+test browsing::tests::bootstrap_is_idempotent ... ok
+test browsing::tests::per_owner_segments_flush_into_per_owner_traces ... ok
+test browsing::tests::reads_answer_over_flushed_and_open_segments_together ... ok
+test browsing::captures::tests::text_is_distinct_evidence_and_damaged_reference_is_refused ... ok
+test browsing::text::tests::put_then_text_for_round_trips_through_the_canonical_key ... ok
+test browsing::tests::load_reconstructs_memory_from_the_store ... ok
+test browsing::text::tests::a_second_page_leaves_the_first_slot_alone ... ok
+test browsing::tests::forget_url_removes_every_trace_mentioning_it ... ok
+test browsing::page::tests::url_fallback_source_is_visible ... ok
+test bundle::tests::member_lookup_finds_kind ... ok
+test browsing::tests::a_trace_round_trips_as_a_localonly_typed_payload ... ok
+test browsing::tests::quota_ages_out_the_oldest_stored_traces ... ok
+test bundle::tests::schema_ref_is_stable ... ok
+test bundle::tests::verify_required_members_errors_listing_missing ... ok
+test browsing::text::tests::the_snapshot_supplies_page_tables_text ... ok
+test browsing::text::tests::the_body_is_stored_once_however_many_addresses_reach_it ... ok
+test bundle::tests::save_then_load_bundle_round_trips ... ok
+test codicil::tests::codicil_id_equals_manifest_id_of_payload ... ok
+test browsing::page::tests::identical_text_under_different_urls_collapses ... ok
+test codicil::tests::invalid_time_bounds_are_rejected ... ok
+test browsing::page::tests::unrelated_text_stays_apart ... ok
+test bundle::tests::verify_required_members_passes_when_all_present ... ok
+test codicil::tests::codicil_round_trips_through_serde_and_keeps_integrity ... ok
+test codicil::tests::legacy_engram_loads_with_default_version_when_field_missing ... ok
+test codicil::tests::new_codicil_passes_integrity_check ... ok
+test codicil::tests::tampered_payload_fails_integrity_check ... ok
+test content_store::tests::absent_url_loads_to_none ... ok
+test content_store::tests::body_only_round_trips_with_no_content_type ... ok
+test content_store::tests::evict_drops_cached_content ... ok
+test content_store::tests::round_trips_body_and_content_type ... ok
+test deleted::tests::list_deleted_is_empty_on_a_fresh_store ... ok
+test image_content::tests::existing_image_namespace_and_content_identity_are_preserved ... ok
+test import::history::tests::transitions_map_onto_the_frecency_weights_they_were_chosen_for ... ok
+test import::encounters::tests::missing_parent_cycle_and_conflict_are_retained_or_refused ... ok
+test import::history::tests::visits_become_ordered_events_with_referrers_and_dwell ... ok
+test import::history::tests::segments_chunk_the_way_a_captured_corpus_does ... ok
+test import::tests::detects_chrome_json_bookmark_file ... ok
+test browsing::page::tests::near_duplicate_text_collapses_at_the_default_threshold ... ok
+test deleted::tests::purge_forgets_one_node_and_clear_empties_the_bin ... ok
+test deleted::tests::recorded_tombstones_list_newest_first ... ok
+test import::tests::legacy_history_payload_without_dwell_deserializes_unchanged ... ok
+test import::tests::netscape_intake_reports_a_skipped_anchor_and_preserves_its_source ... ok
+test import::tests::parses_chrome_json_bookmarks_into_folder_paths ... ok
+test import::encounters::tests::late_parent_branches_replay_and_profile_collisions_survive_serialization ... ok
+test import::tests::parses_netscape_bookmarks_into_nested_folder_paths ... ok
+test manifest::tests::load_manifest_returns_none_for_unknown_id ... ok
+test manifest::tests::local_only_ref_is_not_transferable ... ok
+test manifest::tests::manifest_loads_with_default_version_when_field_missing ... ok
+test manifest::tests::local_only_ref_round_trips_through_serde_for_local_storage ... ok
+test manifest::tests::resolve_errors_when_all_sources_yield_none ... ok
+test import::tests::intake_keeps_source_bytes_and_reports_projection_losses ... ok
+test manifest::tests::resolve_falls_through_local_then_iroh_then_https ... ok
+test manifest::tests::resolve_propagates_fetcher_error_when_no_source_succeeds ... ok
+test manifest::tests::resolve_rejects_hash_mismatch ... ok
+test manifest::tests::resolve_returns_bytes_from_local_source ... ok
+test manifest::tests::resolve_returns_embedded_bytes_directly ... ok
+test manifest::tests::to_transferable_errors_when_only_local_only_refs_present ... ok
+test models::adapter::tests::rejects_ambiguous_or_non_finite_envelopes ... ok
+test manifest::tests::save_and_load_manifest_round_trip ... ok
+test models::training::tests::rejects_ambiguous_corpora_and_incomparable_reports ... ok
+test models::training::tests::schema_refs_are_stable ... ok
+test models::training::tests::validates_adapter_provenance_without_reading_mesh_facts ... ok
+test models::adapter::tests::typed_round_trip_preserves_compatibility_envelope ... ok
+test models::training::tests::v1_training_corpus_schema_and_fields_remain_readable ... ok
+test schema::tests::hash_from_chunks_matches_full_slice ... ok
+test models::training::tests::typed_round_trips_preserve_immutable_training_artifacts ... ok
+test schema::tests::hash_multihash_bytes_round_trip ... ok
+test schema::tests::hash_of_known_input_matches_blake3_reference ... ok
+test schema::tests::hash_parse_accepts_tagged_and_legacy_bare_hex ... ok
+test schema::tests::hash_from_reader_matches_full_slice ... ok
+test schema::tests::hash_serializes_as_self_describing_string ... ok
+test schema::tests::manifest_id_store_key_is_prefix_plus_hex ... ok
+test schema::tests::privacy_class_defaults_to_local_only ... ok
+test schema::tests::provenance_self_imported_records_source ... ok
+test schema::tests::trust_envelope_self_asserted_starts_unreviewed ... ok
+test retention::tests::integrity_quota_and_keyless_private_refusals_write_nothing ... ok
+test retention::tests::competing_copies_share_one_atomic_owner_quota ... ok
+test schema_def::tests::json_ld_accepts_array_schema_with_multi_type_payload ... ok
+test schema_def::tests::json_ld_accepts_array_type_subsumption ... ok
+test schema_def::tests::bootstrap_enables_strict_schema_resolution ... ok
+test schema_def::tests::json_ld_rejects_payload_without_context_or_type ... ok
+test schema_def::tests::bootstrap_meta_schema_seeds_codicil_idempotently ... ok
+test retention::tests::exact_copy_is_atomic_idempotent_and_owner_scoped ... ok
+test schema_def::tests::json_ld_rejects_type_mismatch ... ok
+test schema_def::tests::json_ld_required_props_rejects_missing_property ... ok
+test schema_def::tests::json_ld_validates_payload_with_context_and_type ... ok
+test schema_def::tests::find_schema_by_id_locates_matching_codicil ... ok
+test schema_def::tests::json_schema_reports_unavailable_without_the_validator_feature ... ok
+test schema_def::tests::mere_native_enum_field_validates_against_values ... ok
+test schema_def::tests::mere_native_rejects_missing_required_field ... ok
+test schema_def::tests::mere_native_builder_produces_validating_schema ... ok
+test schema_def::tests::mere_native_rejects_wrong_field_type ... ok
+test schema_def::tests::mere_native_validates_required_field_present ... ok
+test schema_def::tests::meta_schema_codicil_id_is_stable_and_self_describing ... ok
+test schema_def::tests::meta_schema_payload_validates_a_well_formed_schema_definition ... ok
+test schema_def::tests::validate_against_unknown_schema_is_tolerant ... ok
+test schema_def::tests::schema_codicil_round_trips_through_save_and_load ... ok
+test schema_facets::tests::an_unknown_facet_remains_forward_compatible ... ok
+test schema_facets::tests::a_preloaded_schema_accepts_valid_and_rejects_invalid_payloads ... ok
+test schema_def::tests::validate_against_schema_resolves_codicil_and_runs_validator ... ok
+test seal::tests::no_sealer_leaves_private_payload_cleartext ... ok
+test seal::tests::public_lane_stays_cleartext ... ok
+test seal::tests::plain_resolve_blob_rejects_a_sealed_manifest ... ok
+test retention::tests::private_copy_uses_actual_aead_and_refuses_missing_or_wrong_wallet_keys ... ok
+test seal::tests::marker_survives_manifest_json_round_trip_and_keeps_metadata ... ok
+test seal::tests::unmarked_manifest_reads_as_cleartext ... ok
+test seal::tests::sealed_manifest_without_a_sealer_is_a_hard_error ... ok
+test tests::dispatch_load_returns_none_for_unknown_key ... ok
+test seal::tests::reads_a_pre_rotation_epoch_from_history ... ok
+test tests::dispatch_propagates_store_errors ... ok
+test seal::tests::tampered_sealed_bytes_are_rejected ... ok
+test seal::tests::seals_private_lane_and_round_trips_to_cleartext ... ok
+test tests::dispatch_round_trips_save_then_load ... ok
+test schema_facets::tests::registered_schemas_and_content_classes_round_trip_as_codicils ... ok
+test seal::tests::wrong_epoch_key_fails_to_unseal ... ok
+test typed::tests::load_typed_returns_none_for_unknown_id ... ok
+test typed::tests::load_typed_rejects_blob_whose_hash_no_longer_matches_manifest ... ok
+test typed::tests::list_typed_returns_only_matching_schema_manifests ... ok
+test typed::tests::save_then_load_round_trips_value ... ok
+test typed::tests::multiple_schemas_coexist_in_one_store ... ok
+test typed::tests::schema_mismatch_load_returns_error ... ok
+test typed::tests::sealed_typed_round_trips_and_stores_non_cleartext ... ok
+test retention::tests::verified_copy_reopens_on_a_real_disk_backend ... ok
+test retention::tests::a_nontransactional_backend_refuses_custody_without_fallback_writes ... ok
+
+test result: ok. 132 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.28s
+
+     Running unittests src\lib.rs (C:\t\cargo-targets\mere\debug\deps\graphshell-1245f9361d8ba9e5.exe)
+
+running 296 tests
+test browser_storage::tests::a_refusal_and_an_unanswerable_question_stay_distinct ... ok
+test browser_storage::tests::an_already_persistent_profile_is_not_asked_again ... ok
+test browser_storage::tests::only_a_granted_request_counts_as_durable ... ok
+test browser_storage::tests::the_status_line_never_reports_a_store_without_its_durability ... ok
+test browser_storage::tests::tokens_are_stable_for_automation ... ok
+test appearance::tests::browser_roles_retheme_faces_with_shared_mapping_and_alpha ... ok
+test access_inspection::tests::absent_target_never_resolves_to_an_equal_address ... ok
+test appearance::tests::missing_identity_keeps_requested_choice_and_reports_shared_fallback ... ok
+test access_inspection::tests::equal_address_does_not_invent_a_missing_association ... ok
+test access_inspection::tests::coverage_is_scoped_and_never_turns_held_accesses_into_a_complete_world ... ok
+test appearance::tests::corrupt_intake_and_failed_storage_preserve_valid_choice ... ok
+test access_inspection::tests::reinspection_follows_live_binding_and_preserves_the_access_target ... ok
+test access_inspection::tests::shared_source_keeps_distinct_accesses_and_inspection_is_read_only ... ok
+test canvas_gestures::tests::a_plain_wheel_is_the_pages_and_a_modified_one_zooms ... ok
+test canary::tests::loopback_discloses_the_remote_viewers_backdrop ... ok
+test access_inspection::tests::resource_facts_roundtrip_and_refresh_across_both_accesses ... ok
+test canary::tests::fixture_refuses_a_live_view_when_the_recipient_cannot_read_its_source ... ok
+test canvas_gestures::tests::one_finger_is_the_pages_unless_it_holds_a_node ... ok
+test canary::tests::fixture_rechecks_the_advertised_choice_before_accepting_it ... ok
+test canary::tests::both_profiles_keep_advertised_actions_accessible ... ok
+test canary::tests::loopback_resolves_rich_and_compact_profiles ... ok
+test canvas_physics::tests::diag_law_framing_on_the_p2_fixture ... ignored, diagnostic: prints the framing readings
+test appearance::tests::authored_css_remains_exact_and_last_with_explicit_default_role_fallback ... ok
+test canvas_physics::tests::law_start_reads_rose_and_fell_only_past_the_start ... ok
+test appearance::tests::explicit_theme_change_chooses_supported_mode_without_rewriting_stored_fallbacks ... ok
+test canvas_physics::tests::orbit_stays_bound_and_orbiting_on_the_p2_fixture_at_no_damping ... ignored, receipt: Orbit's bars over 120 s at no damping; run by Orbit-touching lanes
+test canvas_physics::tests::orbit_stays_bound_and_orbiting_on_the_p2_fixture_for_two_minutes ... ignored, receipt: Orbit's bars over 120 s; run by Orbit-touching lanes
+test appearance::tests::imported_choice_reopens_with_all_canonical_modes_without_activating_a_graph ... ok
+test canvas_physics::tests::print_fixture_topology ... ignored, diagnostic: prints the fixture topology
+test canvas_controls::tests::set_zoom_lands_exactly_and_keeps_the_centre_world_point ... ok
+test canvas_gestures::tests::a_pan_at_once_covers_the_glide ... ok
+test canvas_gestures::tests::two_fingers_pan_and_pinch_about_their_centre ... ok
+test canvas_gestures::tests::a_wheel_zoom_keeps_the_point_under_the_pointer ... ok
+test canvas_gestures::tests::a_pinch_past_the_range_keeps_the_held_point ... ok
+test canvas_physics::tests::a_custom_pair_names_no_profile_until_it_matches_again ... ok
+test canvas_physics::tests::free_drops_the_strategy_and_an_analytic_arrangement_restores_it ... ok
+test capture::tests::disk_browser_history_receipt ... ignored, explicit marker-owned disk fixture; run seed and reopen in separate processes
+test capture::tests::exported_history_adapter_keeps_source_parent_and_microsecond_evidence ... ok
+test canvas_physics::tests::physics_apply_sets_sources_overlays_and_law_together ... ok
+test canvas_physics::tests::a_profile_synchronizes_law_and_overlays_and_keeps_sources ... ok
+test capture::tests::policy_rejects_unconsented_private_internal_excluded_and_duplicate_visits ... ok
+test canvas_physics::tests::switches_follow_the_layout_a_pan_or_zoom_stops_it_and_fit_resumes_it ... ok
+test canvas_reader::tests::a_readers_drag_starts_a_keyboard_move_the_arrows_steer ... ok
+test canvas_reader::tests::the_clients_tree_lists_the_boards_drag_and_pin_through_the_local_route ... ok
+test capture_resources::page_versions_follow_resources_through_aliases_navigation_and_reopen ... ok
+test app::tests::browser_host_seeds_once_then_reopens_the_stored_graph ... ok
+test canvas_reader::tests::the_clients_tree_lists_the_local_graphs_drag_and_pin_through_the_local_route ... ok
+test app::tests::h1_fixture_projects_mutates_persists_and_reopens_byte_equivalently ... ok
+test canvas_reader::tests::a_screen_reader_reaches_the_canvas_items_and_their_buttons ... ok
+test capture::tests::scoped_pending_outside_range_withheld_parent_and_conflict_are_explicit ... ok
+test distillery_w1::tests::actual_distillery_chronicle_mount_resumes_by_diff_and_freezes_job_table ... ok
+test distillery_w1::tests::generic_resumable_mount_rediscovery_resumes_by_diff_and_freezes_a_readable_table ... ok
+test distillery_w1::tests::missing_offer_is_refused_before_endpoint_state_is_mounted ... ok
+test field_inspection::tests::authored_bounds_hit_is_separate_from_selector_membership ... ok
+test capture::tests::extension_production_wire_fixture_enters_the_document_graph ... ok
+test field_inspection::tests::exact_coupling_refreshes_its_record_and_never_substitutes_a_peer ... ok
+test capture::tests::capture_batch_is_atomic_and_the_same_delivery_retries_cleanly ... ok
+test field_inspection::tests::force_eligibility_discloses_lifecycle_and_definition_mismatch ... ok
+test field_inspection::tests::forme_and_numen_overlap_keep_independent_owners ... ok
+test field_inspection::tests::individually_identified_couplings_and_retired_fields_remain_inspectable ... ok
+test field_inspection::tests::missing_field_is_disclosed_without_name_based_retargeting ... ok
+test field_inspection::tests::field_and_exact_coupling_roundtrip_with_source_snapshot ... ok
+test field_inspection::tests::other_extent_shapes_stay_in_roster_without_fabricated_visible_regions ... ok
+test forme_session::tests::central_drop_tabs_edge_drop_splits_and_outside_drop_cancels ... ok
+test field_inspection::tests::overlap_is_deterministic_and_visibility_never_rewrites_source ... ok
+test forme_session::tests::collapsed_geometry_is_refused_in_drafts_and_saved_history_without_losing_bytes ... ok
+test forme_session::tests::discard_keeps_source_nodes_other_formes_and_committed_state ... ok
+test forme_session::tests::malformed_history_is_retained_and_failed_saved_undo_keeps_its_cursor ... ok
+test forme_session::tests::membership_nested_geometry_and_divider_runs_have_scoped_undo ... ok
+test forme_session::tests::failed_apply_retains_draft_and_history_then_commits_one_saved_change ... ok
+test forme_session::tests::preview_and_geometry_edits_retain_forme_root_and_member_identities ... ok
+test forme_session::tests::removed_graph_members_cannot_be_resurrected_by_saved_history ... ok
+test forme_workspace::tests::divider_events_require_one_share_per_child_and_leave_invalid_edits_unchanged ... ok
+test capture::tests::scoped_atomic_retry_does_not_duplicate_document_relations ... ok
+test forme_session::tests::saved_redo_and_visibility_survive_reopen_without_undoing_source ... ok
+test forme_workspace::tests::lock_blocks_layout_edits_but_allows_focus_and_close ... ok
+test forme_workspace::tests::malformed_geometry_is_refused_before_any_install_or_write ... ok
+test forme_workspace::tests::stable_identity_tests::closing_and_reopening_an_access_preserves_all_opaque_tile_ids ... ok
+test forme_workspace::tests::nested_placement_and_active_tabs_roundtrip_without_pixel_geometry ... ok
+test forme_workspace::tests::persistence_reconciles_removed_access_and_rejects_foreign_session ... ok
+test forme_workspace::tests::two_accesses_share_resource_but_keep_separate_tiles_and_regions ... ok
+test forme_workspace::tests::validation_refuses_cells_collapsed_by_world_coordinate_rounding ... ok
+test forme_workspace::tests::tab_placement_tests::tab_drop_order_and_active_member_survive_persistence ... ok
+test forme_workspace::tests::validation_refuses_split_shares_that_collapse_projected_cells ... ok
+test frame_budget::tests::even_multiples_overestimate_the_period ... ok
+test frame_budget::tests::planted_traces_read_their_period_or_fall_back ... ok
+test frame_budget::tests::logged_windows_read_this_panels_period ... ok
+test frame_budget::tests::worker_intervals_read_both_machines_and_a_coarse_clock ... ok
+test frame_budget::tests::the_worker_breaks_the_even_tie_and_the_main_thread_stands_in ... ok
+test host_dataset_view::tests::a_dataset_without_the_label_contract_is_refused ... ok
+test frame_budget::tests::the_budget_follows_the_period_read ... ok
+test capture::tests::consented_batch_projects_access_traversal_memory_reopen_and_forget ... ok
+test coupling_edit::tests::invalid_and_changed_targets_keep_private_history_without_graph_mutation ... ok
+test host_dataset_view::tests::relations_are_spoken_by_their_labels_and_endpoints ... ok
+test host_dataset_view::tests::nodes_and_edges_follow_the_compiled_scene ... ok
+test host_dataset_view::tests::the_served_refusal_fixtures_are_refused ... ok
+test host_dataset_view::tests::entering_a_workspace_exposes_member_crates_and_external_repository_context ... ok
+test host_dataset_view::tests::repository_expansion_keeps_source_identity_witnesses_and_remembered_placement ... ok
+test host_dataset_view::tests::the_portable_fold_scene_keeps_dragged_members_routes_and_bounds_consistent ... ok
+test host_history_view::tests::a_v1_envelope_is_one_unmarked_checkpoint ... ok
+test capture::tests::stable_legacy_ids_survive_proximity_and_browser_transition_meanings_are_preserved ... ok
+test host_dataset_view::tests::the_site_export_compiles_with_every_relation_drawn ... ok
+test host_dataset_view::tests::a_canvas_group_swap_preserves_dragged_coordinates_camera_and_surviving_focus ... ok
+test coupling_edit::tests::exact_strength_save_and_history_reopen_preserve_siblings_and_other_edits ... ok
+test host_history_view::tests::folded_checkpoints_retain_surviving_choices_positions_and_complete_change_evidence ... ok
+test link_inspection::tests::both_directions_and_both_strata_remain_distinct ... ok
+test link_inspection::tests::exact_assertion_survives_rebinding_but_missing_targets_never_retarget ... ok
+test link_inspection::tests::lifted_records_share_resource_owner_but_keep_distinct_displayed_access_pairs ... ok
+test link_inspection::tests::missing_bindings_and_scoped_coverage_are_disclosed ... ok
+test link_inspection::tests::mixed_nonsemantic_data_preserves_events_aggregates_and_family_values ... ok
+test link_inspection::tests::parallel_buckets_and_self_links_are_not_dropped_or_double_counted ... ok
+test link_inspection::tests::same_predicate_assertions_keep_exact_handles_and_attribution_without_mutation ... ok
+test link_inspection::tests::session_sidecars_are_inspected_without_fabricating_statements ... ok
+test live_endpoint::tests::a_peer_already_current_is_told_so_rather_than_re_sent ... ok
+test live_endpoint::tests::a_resuming_peer_is_caught_up_by_diff ... ok
+test link_inspection::tests::stable_bundle_and_statement_targets_roundtrip_through_graph_snapshot ... ok
+test live_endpoint::tests::a_stale_invocation_is_told_where_the_scene_is ... ok
+test live_endpoint::tests::both_intents_are_advertised ... ok
+test live_endpoint::tests::only_an_accepted_intent_rings ... ok
+test live_endpoint::tests::the_refused_intent_changes_nothing ... ok
+test live_endpoint::tests::the_admitted_intent_advances_the_revision_by_one ... ok
+test coupling_edit::tests::failures_and_nontransactional_backend_preserve_graph_history_and_draft ... ok
+test coupling_edit::tests::equal_coupling_ids_in_another_graph_cannot_accept_the_draft ... ok
+test coupling_edit::tests::stale_durable_session_refuses_before_overwriting_a_competing_save ... ok
+test host_history_view::tests::a_checkpoint_is_one_envelope_and_names_itself ... ok
+test host_history_view::tests::a_removed_relationship_between_remaining_occurrences_is_told ... ok
+test local_intake::tests::file_metadata_hashes_actual_bytes_and_preserves_picker_facts ... ok
+test host_history_view::tests::changing_fold_disclosure_reapplies_checkpoint_marks_once_and_keeps_camera ... ok
+test host_history_view::tests::the_site_transitions_read_as_the_sandbox_reads_them ... ok
+test capture::tests::scoped_encounters_preserve_branches_rapid_revisits_evidence_and_reopen ... ok
+test field_inspection::tests::dedicated_fixture_reopens_and_normal_reference_fixture_stays_separate ... ok
+test mere_host::tests::a_resident_opens_the_session_it_names_under_its_own_projection ... ok
+test host_history_view::tests::every_site_checkpoint_draws_its_revision_with_its_marks ... ok
+test local_edit::tests::stale_detail_member_does_not_mutate_or_write ... ok
+test local_intake::tests::intake_admission_refuses_before_graph_or_store_changes ... ok
+test local_edit::tests::saved_detail_edit_reopens_same_session_and_member ... ok
+test mere_host::tests::explicit_host_profiles_preserve_held_claims_and_refuse_legacy_atomically ... ok
+test mere_host::tests::hosted_projection_lifts_content_and_resource_badges_across_aliases ... ok
+test local_edit::tests::rejected_detail_save_reports_failure_and_can_retry ... ok
+test mere_host::tests::explicitly_qualified_host_exports_current_recorded_placement ... ok
+test mere_host::tests::old_host_slot_rejects_surface_resource_handle_collision_before_session_writes ... ok
+test local_intake::tests::rejected_intake_write_retries_same_pending_member_without_duplicate ... ok
+test local_edit::tests::canvas_metadata_refresh_preserves_geometry_camera_selection_and_play_state ... ok
+test node_presentation::tests::departed_occurrences_and_caller_matches_do_not_leak_into_reentry ... ok
+test node_presentation::tests::graph_replacement_and_saved_generation_reset_hysteresis ... ok
+test node_presentation::tests::repeated_resources_keep_independent_occurrence_hysteresis ... ok
+test node_presentation::tests::selected_attributes_and_position_pin_guard_have_separate_meanings ... ok
+test node_presentation::tests::source_inputs_are_read_only_and_unchanged_inputs_do_not_rebuild ... ok
+test node_presentation::tests::unavailable_negated_state_cannot_trigger_live_attributes ... ok
+test local_intake::tests::address_and_file_intake_reopen_same_session_and_members ... ok
+test practice_disclosure::tests::accepts_the_real_woodshed_export ... ok
+test node_presentation::tests::unsupported_snapshot_winner_preserves_base_instead_of_lower_rule ... ok
+test practice_disclosure::tests::rebuild_rechecks_the_woodshed_evidence ... ok
+test practice_disclosure::tests::rebuild_refuses_a_comparison_under_another_identity ... ok
+test practice_disclosure::tests::rebuild_refuses_an_extra_occurrence ... ok
+test practice_disclosure::tests::rejects_a_reported_partition_that_contradicts_literal_pitch_sets ... ok
+test practice_disclosure::tests::rejects_directionally_wrong_singleton_motion ... ok
+test practice_disclosure::tests::rejects_excessive_pitch_cardinality_before_reading_members ... ok
+test practice_disclosure::tests::rejects_missing_pitch_set ... ok
+test practice_disclosure::tests::rejects_wrong_source ... ok
+test practice_disclosure::tests::the_served_dataset_keeps_the_comparison_an_occurrence ... ok
+test practice_disclosure::tests::the_relations_dataset_rebuilds_the_same_record ... ok
+test practice_disclosure::tests::the_served_dataset_rebuilds_the_woodshed_record ... ok
+test node_presentation::tests::bounds_duplicate_ids_and_invalid_rules_refuse_atomically ... ok
+test practice_workspace::tests::history_is_bounded_and_ids_remain_monotonic_after_eviction ... ok
+test practice_workspace::tests::rejects_comparison_when_current_source_identity_or_ids_do_not_match ... ok
+test practice_workspace::tests::reopen_rejects_changed_evidence_at_the_same_source_revision ... ok
+test practice_workspace::tests::return_to_changes_location_without_editing_source ... ok
+test practice_workspace::tests::reopen_rejects_stale_revision_and_missing_saved_occurrence ... ok
+test practice_workspace::tests::runtime_changes_are_validated_without_creating_history ... ok
+test practice_workspace::tests::woodshed_export_preserves_disclosed_evidence_and_stable_relation ... ok
+test practice_workspace::tests::save_and_reopen_restores_history_location_and_runtime ... ok
+test presentation_binding::tests::equal_addresses_share_resource_facts_but_not_occurrences_or_states ... ok
+test presentation_binding::tests::live_forme_unlock_and_hover_inputs_use_current_view ... ok
+test presentation_binding::tests::invalid_rule_is_not_hidden_by_unavailable_input_filter ... ok
+test presentation_binding::tests::form_owner_keeps_numen_identity_and_supported_effects_separate ... ok
+test presentation_binding::tests::removed_access_cannot_retarget_equal_address ... ok
+test presentation_binding::tests::one_resource_assertion_has_distinct_exact_displayed_pair_occurrences ... ok
+test presentation_binding::tests::unknown_negated_state_and_measurement_never_match ... ok
+test presentation_editor::tests::failed_acknowledgment_keeps_draft_and_allows_retry ... ok
+test presentation_editor::tests::malformed_input_is_undoable_but_never_applied_or_previewed ... ok
+test presentation_editor::tests::one_acknowledged_apply_reopens_with_saved_undo_redo_scoped_to_this_graph ... ok
+test presentation_editor::tests::preview_does_not_change_context_and_hysteresis_is_explicit_per_occurrence ... ok
+test presentation_editor::tests::reordering_equal_priority_rules_changes_the_winner_and_undo_restores_it ... ok
+test presentation_editor::tests::saved_history_and_identity_are_validated_before_reopen ... ok
+test practice_disclosure::tests::served_practice_dataset_is_the_converted_woodshed_export ... ok
+test presentation_editor::tests::target_kind_unknown_properties_and_disabled_invalid_rules_are_refused ... ok
+test presentation_editor::tests::stale_workspace_write_refuses_atomically_and_preserves_both_drafts ... ok
+test product::tests::a_saved_projection_reopens_from_the_store ... ok
+test product::tests::direct_selection_and_family_readers_lift_content_without_losing_surface_relations ... ok
+test mere_host::tests::graphshell_s_own_edits_are_the_selected_persona_s_via_graphshell ... ok
+test product::tests::dynamics::a_flat_scene_converts_field_by_field ... ok
+test product::tests::dynamics::a_spec_on_a_flat_scene_wins_and_the_flat_fields_fill_its_gaps ... ok
+test mere_host::tests::an_attached_application_edits_undoes_and_keeps_views_under_its_own_name ... ok
+test mere_host::tests::a_store_from_before_sessions_is_read_once_and_left_in_place ... ok
+test mere_host::tests::served_snapshot_selects_rungs_from_the_ladder_at_declared_zoom ... ok
+test mere_host::tests::a_resident_graph_shows_the_session_item_and_graphshell_s_does_not ... ok
+test product::tests::dynamics::print_the_grouping_receipts_codicil ... ignored, writes the codicil_grouping receipt's text; run by hand
+test product::tests::dynamics::the_grouping_receipts_codicil_reads_and_binds ... ok
+test mere_host::tests::invalid_resource_in_old_host_slot_does_not_start_a_partial_session ... ok
+test presentation_editor::tests::draft_and_saved_history_are_bounded_and_noop_apply_does_not_save ... ok
+test product::tests::invalid_resource_codicils_fail_before_import_with_valid_control ... ok
+test product::tests::product_profiles_preserve_held_surface_truth_and_refuse_legacy_before_mutation ... ok
+test product::tests::product_surface_sidecars_reject_resource_handle_collisions_before_edits ... ok
+test product::tests::dynamics::a_depth_32_spec_round_trips_through_the_json_carrier ... ok
+test product::tests::projection_clock_excludes_paused_host_time_and_replays_deterministically ... ok
+test local_intake::tests::intake_ingest_preserves_existing_layout_and_physics_while_selecting_new_member ... ok
+test product::tests::product_tag_edits_keep_peer_assertions_and_search_shown_resource_labels ... ok
+test product::tests::dynamics::a_version_2_codicil_converts_and_an_export_narrows_the_target ... ok
+test product::tests::saved_scene_roles_read_old_pulls_as_they_behaved_and_round_trip ... ok
+test product::tests::selection_keeps_shown_resources_and_tag_concepts_without_unselected_content ... ok
+test product::tests::saved_scene_physics_fields_default_and_round_trip ... ok
+test product::tests::product_import_preserves_distinct_handles_and_rejects_collisions_atomically ... ok
+test product::tests::undo_keeps_a_save_another_channel_changed_since ... ok
+test product::tests::dynamics::a_spec_saves_and_reopens_byte_for_byte_with_its_scene ... ok
+test projection_compare::tests::an_alias_working_kind_is_not_shown_twice ... ok
+test local_edit::tests::hosted_canvas_metadata_keeps_exact_tag_claims_peer_sources_and_navigation_resources ... ok
+test projection_compare::tests::a_selection_adds_a_row_over_that_occurrence ... ok
+test product::tests::selection_keeps_statement_and_literal_declarations_to_a_fixed_point ... ok
+test projection_compile::tests::grid_ranks_fractional_values_without_truncation ... ok
+test projection_compile::tests::grid_ranks_unsorted_repeated_and_signed_zero_values_stably ... ok
+test projection_compile::tests::exported_woodshed_set_drives_both_arrangements_and_reopens_exact_occurrence ... ok
+test projection_compile::tests::grid_uses_dense_numeric_ranks ... ok
+test projection_compare::tests::the_working_draft_leads_and_every_other_family_follows_once ... ok
+test projection_compare::tests::every_compiled_cell_keeps_its_cards_inside_its_frame ... ok
+test projection_compile::tests::refresh_preserves_occurrence_identity_and_measured_footprints ... ok
+test projection_compile::tests::refresh_rejects_invalid_readings_and_resolves_changed_geometry ... ok
+test projection_compile::tests::rejects_unresolved_channels_binding_and_stale_selection ... ok
+test projection_compile::tests::refuses_an_arrangement_option_the_executable_compiler_does_not_own ... ok
+test projection_compile::tests::scatter_compiles_repeated_sources_to_distinct_instances_in_stable_order ... ok
+test projection_compile::tests::refresh_reuses_geometry_for_labels_and_new_revisions ... ok
+test projection_compile::tests::snapshot_round_trips_definition_and_selection ... ok
+test projection_compile::tests::unresolved_registration_missing_field_and_unsupported_realization_refuse_execution ... ok
+test projection_dynamics_compare::tests::a_cell_pick_changes_both_recipe_fields_in_one_undo_step ... ok
+test projection_dynamics_compare::tests::a_named_but_undisclosed_channel_is_refused ... ok
+test product::tests::dynamics::a_refused_spec_fails_the_open_by_name_and_place ... ok
+test product::tests::resource_codicil_import_is_one_exact_journaled_union_and_new_session_preserves_it ... ok
+test projection_editor::tests::a_blank_row_returns_the_option_to_its_default ... ok
+test projection_editor::tests::another_field_or_a_broken_run_starts_a_step ... ok
+test projection_editor::tests::a_save_marks_clean_and_undoing_past_it_reads_dirty ... ok
+test product::tests::undo_save_reaches_only_the_editors_channel ... ok
+test projection_editor::tests::an_unchanged_value_records_nothing ... ok
+test projection_editor::tests::authored_definition_refuses_a_variant_for_another_recipe ... ok
+test projection_editor::tests::chronicle_era_bands_off_is_a_variant_not_another_recipe ... ok
+test projection_editor::tests::editor_panels_are_open_workbench_tiles ... ok
+test projection_editor::tests::dynamics_is_edited_as_one_undo_step_and_saved_in_the_definition ... ok
+test projection_editor::tests::chronicle_is_one_recipe_bound_to_two_checkable_sources ... ok
+test projection_editor::tests::edits_to_one_field_coalesce_within_the_window ... ok
+test projection_editor::tests::every_family_and_a_registered_solver_have_rows ... ok
+test projection_editor::tests::invalid_draft_never_reaches_sink ... ok
+test projection_editor::tests::placeholders_show_the_default_and_measured_numbers ... ok
+test projection_editor::tests::switching_arrangement_drops_options_the_new_one_does_not_declare ... ok
+test projection_editor::tests::undo_restores_the_draft_and_returns_to_its_panel ... ok
+test projection_editor::tests::reducer_edits_typed_draft_and_panel ... ok
+test projection_editor::tests::unsupported_version_cannot_be_promoted_or_saved ... ok
+test projection_editor::tests::validation_reports_useful_fields ... ok
+test projection_editor::tests::save_uses_fixture_sink_and_serialization_is_repeatable ... ok
+test projection_editor::tests::workspace_activation_selects_panel_and_tearout_preserves_it ... ok
+test remote_board::tests::the_board_steps_at_the_viewers_chosen_speed ... ok
+test remote_board::tests::the_board_resyncs_only_when_the_revision_moves ... ok
+test remote_board::tests::the_live_board_maps_to_cards_at_their_slots ... ok
+test resume::tests::disconnected_client_resumes_to_the_full_snapshot_without_slot_reuse ... ok
+test speed_bar::tests::a_floor_past_the_budget_counts_the_floor_it_ran ... ok
+test resume::tests::unavailable_base_falls_back_to_an_epoch_preserving_snapshot ... ok
+test speed_bar::tests::nothing_fits_until_a_tick_is_timed ... ok
+test resume::tests::resumed_diff_and_current_ack_are_idempotent ... ok
+test speed_bar::tests::the_bar_is_half_the_lesser_of_the_dial_and_the_budget ... ok
+test speed_bar::tests::the_budget_fits_its_share_less_the_margin_at_the_measured_tick_cost ... ok
+test transfer::tests::a_copy_remaps_the_spec_targets_item_roles ... ok
+test transfer::tests::a_copied_scene_facet_is_remapped ... ok
+test product::tests::dynamics::a_spec_refused_while_read_names_its_path_at_the_open ... ok
+test projection_dynamics_compare::tests::presentation_refresh_preserves_the_live_trajectory_and_duplicate_sources ... ok
+test transfer::tests::h6_revoked_grant_refuses_before_blob_or_graph_mutation ... ok
+test transfer::tests::copy_keeps_resource_identity_and_remaps_only_shown_surfaces ... ok
+test product::tests::dynamics::an_unknown_flat_id_fails_the_open_with_it ... ok
+test transfer::tests::h6_copy_mints_ids_and_keeps_copied_from_provenance ... ok
+test transfer_endpoint::tests::transfer_disclosure_is_intent_gated_and_resumable ... ok
+test view::tests::a_single_placement_centers_instead_of_hugging_a_corner ... ok
+test view::tests::committed_receipt_matches_the_live_loopback_view ... ok
+test view::tests::generic_projection_receipt_keeps_items_and_intent_outcomes_visible ... ok
+test transfer::tests::h6_replicate_preserves_ids_relations_tags_blobs_and_access_authority ... ok
+test view::tests::remote_layout_realizes_a_backdrop_from_snapshot_data ... ok
+test view::tests::receipt_contains_both_resolutions_and_real_actions ... ok
+test transfer::tests::h6_resume_uses_an_already_verified_destination_blob ... ok
+test transfer::tests::h6_retry_reuses_verified_blobs_and_deterministic_copy_ids ... ok
+test product::tests::dynamics::an_unreadable_channel_fails_the_open_by_slot_and_id ... ok
+test product::tests::h3_mixed_graph_scene_and_selected_codicil_round_trip ... ok
+test transfer::tests::transfer_profiles_preserve_held_claims_and_refuse_legacy_before_blob_writes ... ok
+test projection_dynamics_compare::tests::arrangement_comparison_preserves_scope_and_moves_only_its_working_cell ... ok
+test transfer::tests::repeated_replication_merges_resource_truth_with_existing_surface_ids ... ok
+test projection_dynamics_compare::tests::direct_positions_hold_while_ranked_cells_can_move ... ok
+test projection_dynamics_compare::tests::the_matrix_keeps_occurrences_and_only_the_working_cell_moves ... ok
+test canvas_physics::tests::a_stop_returns_anchored_items_by_a_transition ... ok
+test canvas_faces::tests::every_face_in_view_sits_on_its_body ... ok
+test canvas_physics::tests::orbit_stays_bound_and_orbiting_on_the_p2_fixture ... ok
+test canvas_physics::tests::kinds_never_rests_on_the_p2_fixture ... ok
+
+test result: ok. 290 passed; 0 failed; 6 ignored; 0 measured; 0 filtered out; finished in 12.98s
+

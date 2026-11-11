@@ -1,0 +1,93 @@
+{
+  "schema": "mere.browser-history-intake-qualification/v1",
+  "date": "2026-10-12",
+  "source_commit": "8c490e23a46ab3782f48453069202a778b0561f7",
+  "consumer": "Graphshell existing intake, MereHost and document graph",
+  "features": "native: no default features; graphshell/web; native-only Muniment redb test backend",
+  "native_command": [
+    "cargo",
+    "test",
+    "-p",
+    "chartulary",
+    "-p",
+    "eidetic",
+    "-p",
+    "graphshell",
+    "--no-default-features",
+    "--features",
+    "graphshell/web",
+    "--lib",
+    "--locked",
+    "--offline"
+  ],
+  "native_results": {
+    "chartulary": 67,
+    "eidetic": 132,
+    "graphshell": 290,
+    "failed": 0,
+    "ordinary_ignored": 6,
+    "existing_ignored": 5,
+    "explicit_disk_fixture": 1
+  },
+  "wasm_command": [
+    "cargo",
+    "check",
+    "--manifest-path",
+    "ports/graphshell/web/Cargo.toml",
+    "--target",
+    "wasm32-unknown-unknown",
+    "--locked",
+    "--offline"
+  ],
+  "wasm_rustflags": "--cfg getrandom_backend=\"wasm_js\"",
+  "disk_results": {
+    "backend": "redb",
+    "seed_process_exit": 0,
+    "reopen_process_exit": 0,
+    "visits": 5,
+    "relations": 3,
+    "exact_expectation_equal": true,
+    "reimport_additions": 0,
+    "source_persona": "synthetic",
+    "sealed": false
+  },
+  "negative_control": {
+    "change": "remove explicit Stemma parent in resolver",
+    "expected": "branch assertion fails with 0 rather than 4 parents",
+    "observed": true,
+    "restored_byte_exact": true
+  },
+  "browser_evidence": "Chromium and Firefox API simulation; standalone browser-target compilation; no renewed headed receipt",
+  "limits": [
+    "single receiving writer",
+    "no renewed headed extension or IndexedDB qualification",
+    "tab/window/frame/document observations pending",
+    "source replacement/reinstallation binding pending",
+    "whole-input evidence and recall trace source handles pending",
+    "private custody pending",
+    "independent resource identity retained by browser forget"
+  ],
+  "cleanup": {
+    "isolated_targets": [],
+    "cargo_homes": [],
+    "worktrees": [],
+    "fixture_root": "removed with nonrecursive literal-path cleanup after marker, path, live-owner and archive verification",
+    "target_logs": "removed after archived hash verification"
+  },
+  "artifacts": {
+    "adapters.json": "07dca5ac9e8b31604bb127087259a4419f1a4ea1a7acca6b3726c69eaf6bddca",
+    "disk-expected.json": "2841de0af592170297b0d909f57bd0fe7baaeb2f82ce6a26746c2ca0d24e1c5a",
+    "disk-reopen.log": "39f147aef01ec18979ca553e148338a04951eee6eb081bc169eeaeb943af0f5e",
+    "disk-seed.log": "698f2edeeb4a142624b1d2c979e5c958c016f91f56d7cefe20847cb40a74876d",
+    "native.log": "be1924573cd678a2a81b5b9fa0ee5b8e1937ac770ef0d0c056a6f95ebc396355",
+    "parent-control.log": "396f081015fed44f12d0035114c426f230b4c798a5271e4e26bc9feeb8091166",
+    "wasm.log": "b261ffcf4d22ad1e97e327885f47e412212b13c8777cdc1444269eb9a4227d6a",
+    "forget-diagnostic.log": "e93a3cbfe73923b17809b8f83505ff315d37e14c68623bdf2889c802bfe7e42c"
+  },
+  "diagnostic": "Prequalification forget assertion found independently owned resource identity; qualified test now checks browser evidence scope.",
+  "doc_audit": {
+    "mechanical_failing_findings": 0,
+    "judgment_coverage": "262/265",
+    "unrelated_missing_records": 3
+  }
+}

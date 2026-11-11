@@ -1,0 +1,7 @@
+
+running 1 test
+browser history reopen: five visits, three relations, stable graph/source identity
+test capture::tests::disk_browser_history_receipt ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 295 filtered out; finished in 0.09s
+
