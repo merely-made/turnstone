@@ -5,7 +5,7 @@
 address/file intake have native and browser reopening receipts at `da466027a`,
 based on `79fbbeb75` with Genet `15713014`. Remaining product migration and
 large-graph responsiveness are open.
-**Parent:** [Graphshell on one Cambium tree](../../archive_docs/2026-10-28/2026-09-25_graphshell_one_tree_plan.md).
+**Parent:** Graphshell on one Cambium tree (`mere/design_docs/archive_docs/2026-10-28/2026-09-25_graphshell_one_tree_plan.md`).
 
 *Annotation, 2026-10-06 (S14 pass):* this inventory predates the physics
 panel and the remote session on the tree. The Graph tools physics panel
@@ -15,7 +15,7 @@ Remote session section landed on 2026-10-01 (`e9d95554`) and starts closed
 since 2026-10-02 (`9adc4415`). So `TreePage` now holds the physics panel and
 session state beside its graph, and the "First slice" and "Owners and seams"
 paragraphs and migration steps 2 and 3 below describe the tree before them.
-The [controls receipt](../../../../../testing/mere/receipts/relocated-summaries/README.md#2026-09-27_graphshell_controls_physics_receipt)'s
+The controls receipt (`Code/testing/mere/receipts/relocated-summaries/README.md`, section `2026-09-27_graphshell_controls_physics_receipt`)'s
 2026-10-01 and 2026-10-02 sections record both. The dated inventory below preserves the earlier sequence; the current
 annotation following it records the bounded intake progress.
 
@@ -31,7 +31,7 @@ intake. Selection is guarded during the chooser/write, while Tab remains
 available. The floating panel is anchored below the wrapped toolbar, and
 empty/long single-line fields have current-stack sizing receipts.
 
-The [controls receipt](../../../../../testing/mere/receipts/relocated-summaries/README.md#2026-09-27_graphshell_controls_physics_receipt)
+The controls receipt (`Code/testing/mere/receipts/relocated-summaries/README.md`, section `2026-09-27_graphshell_controls_physics_receipt`)
 owns the exact native and 1280/420 px browser evidence. Chooser cancellation
 uses the real DOM cancel listener plus the headless shared callback fixture;
 OS-dialog Cancel is still unverified. This completes the bounded address/file
@@ -263,7 +263,7 @@ Controls and elapsed-physics scenarios also pass. A real background-tab mount
 passes its first visible resume after about 32 seconds hidden, with a
 preexisting accessibility mirror and no hidden producer calls. Moving-graph
 hide/show and intentional hidden-timing rejection remain pending. The
-[controls receipt](../../../../../testing/mere/receipts/relocated-summaries/README.md#2026-09-27_graphshell_controls_physics_receipt)
+controls receipt (`Code/testing/mere/receipts/relocated-summaries/README.md`, section `2026-09-27_graphshell_controls_physics_receipt`)
 records the exact baseline, hashes and qualified diagnostic timings.
 
 Mark describes current physics as slightly laggy but acceptable, while leaving
