@@ -1251,8 +1251,8 @@ dependencies = [
 
 [[package]]
 name = "chirograph"
-version = "0.0.4"
-source = "git+https://github.com/merely-made/graphshell.git?branch=main#7b913edcf8f9d36c2076a1cf393cfa9ef401734d"
+version = "0.0.5"
+source = "git+https://github.com/merely-made/graphshell.git?branch=main#829afe1f209d224834b1546427bce2d425a92e93"
 dependencies = [
  "base64 0.22.1",
  "blake3",
@@ -3871,7 +3871,7 @@ dependencies = [
 [[package]]
 name = "graphshell-client"
 version = "0.0.2"
-source = "git+https://github.com/merely-made/graphshell.git?branch=main#7b913edcf8f9d36c2076a1cf393cfa9ef401734d"
+source = "git+https://github.com/merely-made/graphshell.git?branch=main#829afe1f209d224834b1546427bce2d425a92e93"
 dependencies = [
  "chirograph",
  "hest",
@@ -3891,8 +3891,8 @@ dependencies = [
 
 [[package]]
 name = "graphshell-endpoint"
-version = "0.0.3"
-source = "git+https://github.com/merely-made/graphshell.git?branch=main#7b913edcf8f9d36c2076a1cf393cfa9ef401734d"
+version = "0.0.4"
+source = "git+https://github.com/merely-made/graphshell.git?branch=main#829afe1f209d224834b1546427bce2d425a92e93"
 dependencies = [
  "chirograph",
 ]
@@ -4203,7 +4203,7 @@ checksum = "e17592d60ebacc7d5e169f4663c5f84f9161cc90328abcfe8456f41e4dfcb284"
 [[package]]
 name = "hest"
 version = "0.2.1"
-source = "git+https://github.com/merely-made/graphshell.git?branch=main#7b913edcf8f9d36c2076a1cf393cfa9ef401734d"
+source = "git+https://github.com/merely-made/graphshell.git?branch=main#829afe1f209d224834b1546427bce2d425a92e93"
 dependencies = [
  "serde",
 ]
@@ -5937,7 +5937,6 @@ dependencies = [
  "crossbeam-channel",
  "euclid",
  "futures-util",
- "hest",
  "infer",
  "mime_guess",
  "muniment",
@@ -9345,7 +9344,7 @@ dependencies = [
 [[package]]
 name = "sceno"
 version = "0.0.7"
-source = "git+https://github.com/merely-made/graphshell.git?branch=main#7b913edcf8f9d36c2076a1cf393cfa9ef401734d"
+source = "git+https://github.com/merely-made/graphshell.git?branch=main#829afe1f209d224834b1546427bce2d425a92e93"
 dependencies = [
  "serde",
  "serde_json",
@@ -9354,7 +9353,7 @@ dependencies = [
 [[package]]
 name = "sceno-backdrops"
 version = "0.0.1"
-source = "git+https://github.com/merely-made/graphshell.git?branch=main#7b913edcf8f9d36c2076a1cf393cfa9ef401734d"
+source = "git+https://github.com/merely-made/graphshell.git?branch=main#829afe1f209d224834b1546427bce2d425a92e93"
 dependencies = [
  "sceno",
  "serde",
@@ -9389,7 +9388,7 @@ dependencies = [
 [[package]]
 name = "scenotime"
 version = "0.0.5"
-source = "git+https://github.com/merely-made/graphshell.git?branch=main#7b913edcf8f9d36c2076a1cf393cfa9ef401734d"
+source = "git+https://github.com/merely-made/graphshell.git?branch=main#829afe1f209d224834b1546427bce2d425a92e93"
 dependencies = [
  "sceno",
  "serde",
@@ -10469,7 +10468,7 @@ dependencies = [
 [[package]]
 name = "tinct"
 version = "0.2.0"
-source = "git+https://github.com/merely-made/graphshell.git?branch=main#7b913edcf8f9d36c2076a1cf393cfa9ef401734d"
+source = "git+https://github.com/merely-made/graphshell.git?branch=main#829afe1f209d224834b1546427bce2d425a92e93"
 dependencies = [
  "serde",
 ]
@@ -11307,7 +11306,7 @@ checksum = "accd4ea62f7bb7a82fe23066fb0957d48ef677f6eeb8215f372f52e48bb32426"
 [[package]]
 name = "vector-sheet"
 version = "0.0.1"
-source = "git+https://github.com/merely-made/graphshell.git?branch=main#7b913edcf8f9d36c2076a1cf393cfa9ef401734d"
+source = "git+https://github.com/merely-made/graphshell.git?branch=main#829afe1f209d224834b1546427bce2d425a92e93"
 dependencies = [
  "ciborium",
  "serde",
