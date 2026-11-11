@@ -1,0 +1,32 @@
+# Run with a fresh synthetic archive list, after the own-view witness.
+# Click the ordinary advertised Save control for the attached live session.
+settle 3
+wait
+assert snap mere-status == open
+assert snap mere-read-only == false
+click role:button @data-attached=true
+settle 2
+wait
+capture 01_browser_saved_archive
+click role:button @data-step=open-archive
+settle 2
+wait
+assert snap mere-status == open
+assert snap mere-read-only == true
+capture 02_browser_read_only_archive
+click role:button @aria-label=Read Cleromancy and Turquet
+settle 2
+wait
+assert snap mere-record == Cleromancy and Turquet
+assert snap mere-record-data ~ What deserves attention
+assert snap mere-read-only == true
+capture 03_browser_transient_archive_record
+click role:button @data-layout=phyllotaxis.default
+settle 2
+wait
+assert snap mere-read-only == true
+assert snap mere-layout == phyllotaxis.default
+assert snap mere-view-saved == false
+capture 04_browser_transient_archive_layout
+# Receipt owner compares resident session count and archived bytes before/after
+# the transient record/layout actions. No SetView or implicit fork is sent.

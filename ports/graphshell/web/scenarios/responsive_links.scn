@@ -1,0 +1,55 @@
+# Fixed-endpoint responsive paths over Graphshell's three real source links.
+assert snap ready == true
+assert snap responsive-paths == 3
+assert snap responsive-field == attractor
+assert snap responsive-field-enabled == true
+assert snap responsive-attraction-enabled == false
+assert snap responsive-endpoints-fixed == true
+assert snap responsive-any-moved == true
+assert snap responsive-spring-share == unavailable
+assert snap responsive-assertions == fixture:v1:assertion:path-a|fixture:v1:assertion:path-b|fixture:v1:assertion:path-c
+capture responsive_attractor
+click role:button @data-responsive-toggle=field
+settle 3
+assert snap responsive-field-enabled == false
+assert snap responsive-any-moved == false
+assert snap responsive-bends == 0.000,0.000,0.000
+capture responsive_disabled
+click role:button @data-responsive-toggle=attraction
+settle 3
+assert snap responsive-attraction-enabled == true
+assert snap responsive-any-moved == true
+assert snap responsive-control-moved == false
+assert snap responsive-endpoints-fixed == true
+capture responsive_attraction_only
+click role:button @data-responsive-toggle=field
+settle 3
+assert snap responsive-field-enabled == true
+assert snap responsive-attraction-enabled == true
+capture responsive_combined
+click role:button @data-responsive-field=flow
+settle 3
+assert snap responsive-field == flow
+assert snap responsive-endpoints-fixed == true
+capture responsive_flow
+click role:button @data-responsive-toggle=attraction
+settle 3
+assert snap responsive-field-enabled == true
+assert snap responsive-attraction-enabled == false
+assert snap responsive-any-moved == true
+assert snap responsive-control-moved == true
+capture responsive_flow_field_only
+click role:button @data-responsive-field=vortex
+settle 3
+assert snap responsive-field == vortex
+assert snap responsive-attraction-enabled == false
+assert snap responsive-endpoints-fixed == true
+assert snap responsive-control-moved == true
+capture responsive_vortex_field_only
+click role:button @data-responsive-toggle=attraction
+settle 3
+assert snap responsive-attraction-enabled == true
+assert snap responsive-endpoints-fixed == true
+capture responsive_vortex_combined
+assert snap responsive-assertions == fixture:v1:assertion:path-a|fixture:v1:assertion:path-b|fixture:v1:assertion:path-c
+wait 30

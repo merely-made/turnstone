@@ -1,0 +1,52 @@
+[package]
+name = "graphshell-blocks"
+version = "0.0.1"
+rust-version = "1.97.1"
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Native host for guest block adapters: loads a reviewed component pack into Graphshell's block pane."
+publish = false
+
+[lib]
+path = "src/lib.rs"
+
+# The native window: Graphshell's block pane in a Cambium desktop shell, in the style of
+# graphshell-alembic. `graphshell-blocks [--data DIR] [--adapter PACK COMPONENT]...`
+[[bin]]
+name = "graphshell-blocks"
+path = "src/main.rs"
+
+[dependencies]
+graphshell = { path = "..", default-features = false, features = ["editable-blocks", "applets", "physics-engine"] }
+block-adapter = { workspace = true, features = ["guest"] }
+block-host.workspace = true
+vector-sheet.workspace = true
+sceno.workspace = true
+cambium.workspace = true
+cambium-desktop.workspace = true
+cambium-rootstock.workspace = true
+muniment = { workspace = true, features = ["directory"] }
+kernel.workspace = true
+cartography = { workspace = true, features = ["canvas", "image-decode", "physics-engine"] }
+# Complex-script shaping in the block window. It came through the mere facade's
+# defaults (platen -> document-canvas); kept on directly (engine split D58).
+parley = { workspace = true, features = ["complex-scripts"] }
+genet-scripted-dom.workspace = true
+layout_dom_api.workspace = true
+pollster = "0.4"
+mandrake.workspace = true
+taproot.workspace = true
+serde_json.workspace = true
+eidetic = { workspace = true, features = ["pack-signing"] }
+
+[dev-dependencies]
+eidetic = { workspace = true, features = ["pack-signing"] }
+personae.workspace = true
+serde_json.workspace = true
+# The headless render receipt (examples/render_view.rs).
+sprigging.workspace = true
+netrender = { workspace = true, features = ["vello-cpu"] }
+paint_list_api.workspace = true
+paint_list_render.workspace = true
+png = "0.17"

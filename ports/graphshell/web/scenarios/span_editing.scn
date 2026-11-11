@@ -1,0 +1,39 @@
+# Explicit copied facts, shared intents, ordinary rendered controls.
+settle 6
+click role:button Portable scenes
+settle 3
+click role:button Edit a copy
+click role:button @aria-label=Scene occurrence line-1/syllable/1: light
+settle 3
+assert text line-1/syllable/1 · start 1 / length 1 ticks
+click role:button Move later one unit
+settle 3
+assert text line-1/syllable/1 · start 2 / length 1 ticks
+click role:button End later one unit
+settle 3
+assert text line-1/syllable/1 · start 2 / length 2 ticks
+capture metre_copy_edited
+click role:button Discard copy
+settle 2
+click role:button Edit a copy
+click role:button @aria-label=Scene occurrence line-1/syllable/1: light
+settle 3
+assert text line-1/syllable/1 · start 1 / length 1 ticks
+click role:button Progression in C
+click role:button Edit a copy
+click role:button @aria-label=Scene occurrence bar-0: Dm7
+settle 3
+assert text bar-0 · start 0 / length 16 ticks
+click role:button Move later one unit
+settle 3
+assert text bar-0 · start 4 / length 16 ticks
+click role:button End later one unit
+settle 3
+assert text bar-0 · start 4 / length 20 ticks
+capture progression_copy_edited
+click role:button Discard copy
+click role:button Edit a copy
+click role:button @aria-label=Scene occurrence bar-0: Dm7
+settle 3
+assert text bar-0 · start 0 / length 16 ticks
+capture restored_source_copy

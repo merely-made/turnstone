@@ -1,0 +1,88 @@
+# First Cambium control/input slice; bounded frames during explicit play.
+log phase 4: shared canvas controls and live physics
+click role:button Fit graph
+settle 2
+assert snap physics-paused == true
+assert snap finite == true
+remember camera-start
+click role:button Pan right
+# Pan adds finite inertia. Establish a stationary baseline before testing
+# whether an unrelated focused button leaves graph-arrow shortcuts alone.
+wait 120
+assert snap moving == false
+assert snap focus-kind == button
+differs camera-start camera
+remember button-focus
+key ArrowLeft
+settle 1
+same button-focus focus
+same button-focus camera
+key Enter
+wait 120
+differs button-focus camera
+key Tab
+assert snap focus-kind == button
+differs button-focus focus
+key Enter
+wait 120
+click role:button Fit graph
+settle 2
+click-node https://example.test/i2p-port
+settle 1
+assert snap focus-kind == graph
+remember graph-focus
+key ArrowRight
+settle 2
+differs graph-focus camera
+click role:button Zoom in
+settle 2
+differs camera-start zoom
+click role:button Fit graph
+settle 2
+remember paused
+click role:button Play physics
+settle 12
+assert snap physics-paused == false
+assert snap finite == true
+differs paused geometry
+click role:button Pause physics
+settle 2
+click role:button Restore arrangement
+settle 2
+same paused geometry
+click role:button Play physics
+settle 12
+timing start live-physics
+press-node https://example.test/i2p-port
+settle 1
+assert snap dragging == true
+move-by 70 0
+settle 3
+assert snap dragging == true
+assert snap drag-distance <= 1
+assert snap finite == true
+remember held
+settle 6
+differs held geometry
+assert snap dragging == true
+assert snap drag-distance <= 1
+capture p4_tree_drag_held
+release-at
+settle 12
+assert snap dragging == false
+assert snap finite == true
+timing stop
+click role:button Pause physics
+settle 2
+assert snap physics-paused == true
+remember stopped
+settle 6
+same stopped geometry
+capture p4_tree_controls_paused
+click role:button Restore arrangement
+settle 2
+assert snap physics-paused == true
+assert snap finite == true
+differs stopped geometry
+capture p4_tree_restored
+wait 120

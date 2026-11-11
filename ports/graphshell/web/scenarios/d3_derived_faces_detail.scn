@@ -1,0 +1,17 @@
+# D3: default and detailed LOD in the real Graphshell canvas.
+assert title GRAPHSHELL H3 READY
+assert snap ready == true
+assert snap session == local
+assert snap face == derived
+capture d3_default
+wait
+act view:zoom_in
+settle 1
+act view:zoom_in
+settle 1
+act view:zoom_in
+settle 1
+assert event command view:zoom_in
+capture d3_detail
+wait
+log derived faces default and detailed receipt complete

@@ -1,0 +1,14 @@
+# Run in a NEW page load after projection_authoring.scn, on the same origin.
+assert title GRAPHSHELL H3 READY
+act reopen-practice-projection
+settle 2
+assert snap projection-executable == true
+assert snap projection-selected-occurrence == card:2
+assert retained {"role":"status","label":"Projection status","text":"Reopened executable"}
+assert retained {"role":"button","label":"spatial card:2:","attribute":"aria-pressed","value":"true"}
+assert retained {"role":"button","label":"list card:2:","attribute":"aria-pressed","value":"true"}
+assert retained {"role":"button","label":"spatial card:1:","attribute":"aria-pressed","value":"false"}
+assert retained {"role":"button","label":"list card:2:","text":"chord:Major"}
+capture projection_fresh_page
+wait
+log executable projection fresh-page reopen complete

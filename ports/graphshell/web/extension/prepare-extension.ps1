@@ -1,0 +1,51 @@
+# Copyright 2026 Mark Alan Boykin
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
+
+[CmdletBinding()]
+param(
+    [Parameter(Mandatory = $true)]
+    [ValidateSet("chromium", "firefox")]
+    [string]$Browser,
+    [Parameter(Mandatory = $true)]
+    [string]$Destination
+)
+
+$ErrorActionPreference = "Stop"
+$scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+$destinationPath = [System.IO.Path]::GetFullPath($Destination)
+New-Item -ItemType Directory -Path $destinationPath -Force | Out-Null
+
+Copy-Item -LiteralPath (Join-Path $scriptRoot "background.js") -Destination $destinationPath
+Copy-Item -LiteralPath (Join-Path $scriptRoot "capture-model.js") -Destination $destinationPath
+Copy-Item -LiteralPath (Join-Path $scriptRoot "extension-keep.js") -Destination $destinationPath
+Copy-Item -LiteralPath (Join-Path $scriptRoot "follower-queue.js") -Destination $destinationPath
+Copy-Item -LiteralPath (Join-Path $scriptRoot "action-form.js") -Destination $destinationPath
+Copy-Item -LiteralPath (Join-Path $scriptRoot "resource-chunk.js") -Destination $destinationPath
+Copy-Item -LiteralPath (Join-Path $scriptRoot "bridge.html") -Destination $destinationPath
+Copy-Item -LiteralPath (Join-Path $scriptRoot "bridge.css") -Destination $destinationPath
+Copy-Item -LiteralPath (Join-Path $scriptRoot "bridge.js") -Destination $destinationPath
+$webRoot = Split-Path -Parent $scriptRoot
+Copy-Item -LiteralPath (Join-Path $scriptRoot "graph.html") -Destination (Join-Path $destinationPath "graph.html")
+Copy-Item -LiteralPath (Join-Path $scriptRoot "graph.css") -Destination (Join-Path $destinationPath "graph.css")
+Copy-Item -LiteralPath (Join-Path $webRoot "styles.css") -Destination $destinationPath
+foreach ($font in @("IBMPlexSans-Regular.ttf", "IBMPlexMono-Regular.ttf", "Newsreader-Regular.ttf", "NotoSansMath-Regular.ttf", "OFL-IBMPlex.txt", "OFL-Newsreader.txt", "OFL-NotoSansMath.txt")) {
+  Copy-Item -LiteralPath (Join-Path $webRoot $font) -Destination $destinationPath
+}
+# Segmenter dictionaries the page fetches when reading text needs them.
+$dictionaries = Join-Path $destinationPath "dictionaries"
+New-Item -ItemType Directory -Force -Path $dictionaries | Out-Null
+foreach ($file in @("segmenter-southeast-asian.dict", "segmenter-chinese-japanese.dict", "LICENSE-Unicode.txt")) {
+  Copy-Item -LiteralPath (Join-Path (Join-Path $webRoot "dictionaries") $file) -Destination $dictionaries
+}
+Copy-Item -LiteralPath (Join-Path $webRoot "loader.js") -Destination $destinationPath
+Copy-Item -LiteralPath (Join-Path $webRoot "mount.js") -Destination $destinationPath
+Copy-Item -LiteralPath (Join-Path $webRoot "extension-profile.js") -Destination $destinationPath
+Copy-Item -LiteralPath (Join-Path $webRoot "pkg") -Destination $destinationPath -Recurse -Force
+Copy-Item `
+    -LiteralPath (Join-Path $scriptRoot "manifest.$Browser.json") `
+    -Destination (Join-Path $destinationPath "manifest.json")
+
+Write-Output $destinationPath

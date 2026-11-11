@@ -1,0 +1,28 @@
+# Relaunch the isolated P6 route in a new tab/process against its saved DB.
+# tree.html?app=local&fixture=family-assertions&scenario=scenarios/p6_tree_family_assertion_hide_reopen.scn
+click role:button Fit graph
+settle 2
+assert snap source == saved graph
+assert snap link-rest-ready == true
+assert snap assertion-visibility-save-state == saved
+assert snap link-rest-hidden-assertions == fixture:p6:family:collection-primary
+assert snap link-rest-surface-strength == 1
+remember p6-reopened-source
+capture p6_family_assertion_reopened_hidden
+
+click-link-rest a1-b1 surface
+settle 2
+assert snap link-inspector-open == true
+assert text Independent collection membership
+click role:button Show hidden assertions
+settle 120
+assert snap assertion-visibility-save-state == saved
+assert snap link-rest-hidden-assertion-count == 0
+assert snap link-rest-surface-strength == 2
+assert text Primary collection membership
+assert snap link-rest-source-assertion-ids ~ fixture:p6:family:collection-primary
+assert snap link-rest-source-assertion-ids ~ fixture:p6:family:collection-independent
+same p6-reopened-source link-rest-source-facts
+same p6-reopened-source link-rest-graph-revision
+capture p6_family_assertion_reopened_shown
+log P6 exact assertion hide survived fresh route reopen and the ordinary restore action returned both reasons

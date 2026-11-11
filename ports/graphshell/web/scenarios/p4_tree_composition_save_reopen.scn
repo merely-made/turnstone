@@ -1,0 +1,86 @@
+# G4b2a: author one admitted mix, retain it through source edits, and reopen
+# the same canonical v4 dynamics record. A recipe reopen is a fresh run.
+assert snap ready == true
+assert snap source == saved graph
+click role:button Inspector
+settle 2
+click role:combobox Profile
+click role:option Gas
+click role:button Apply profile
+click role:combobox Kinds
+click role:option By site
+click role:button Apply physics
+settle 2
+click role:combobox First law
+click role:option Springs
+click role:combobox Second law
+click role:option Charge
+click role:textbox First share
+input-text 0.25
+click role:textbox Second share
+input-text 0.75
+click role:button Apply mix
+settle 2
+assert snap physics-composition == mix
+assert snap panel-profile == custom
+assert snap panel-mix-first-share == 0.25
+assert snap panel-mix-second-share == 0.75
+remember authored
+click role:button Panes
+click role:button Graph controls
+click role:button Play physics
+settle 5
+assert snap physics-paused == false
+assert snap finite == true
+capture composition_authored
+# The existing source edit path must not flatten the mix.
+click role:combobox Kinds
+click role:option By island
+click role:button Apply physics
+settle 2
+assert snap physics-kind-source == component
+assert snap physics-composition == mix
+same authored physics-root-spec
+# Read the actual saved v4 facet, rather than treating form labels as proof.
+click role:button Scenes and transfers
+click role:button Save scene
+wait 120
+assert snap saved-scene-facet == v4
+assert snap saved-scene-matches-live == true
+remember saved
+capture composition_saved
+# A position-writing law cannot be put in a force mix. Keep the live mix
+# and saved record intact when this draft is refused.
+click role:combobox First law
+click role:option Anneal
+click role:button Apply mix
+settle 2
+assert snap physics-composition == mix
+same saved physics-root-spec
+same saved saved-scene-spec
+capture composition_refused
+# Explicitly clear the mix even though the flat law is still its first law.
+click role:button Use single law
+settle 2
+assert snap physics-composition == none
+assert snap saved-scene-matches-live == false
+same saved saved-scene-spec
+click role:button Reopen scene
+wait 120
+assert snap physics-composition == mix
+assert snap saved-scene-matches-live == true
+assert snap physics-paused == false
+assert snap physics-kind-source == component
+assert snap panel-profile == custom
+assert snap panel-mix-first-share == 0.25
+assert snap panel-mix-second-share == 0.75
+same saved physics-root-spec
+same saved saved-scene-spec
+assert snap panel-status == Saved scene physics restored
+capture composition_reopened
+# An unedited re-save keeps the same authored spec.
+click role:button Save scene
+wait 120
+same saved saved-scene-spec
+assert snap saved-scene-matches-live == true
+log bounded composition authoring and canonical scene reopen complete

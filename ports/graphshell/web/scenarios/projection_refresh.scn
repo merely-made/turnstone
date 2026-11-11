@@ -1,0 +1,25 @@
+# Paint/label changes retain solved placement; geometry changes resolve it.
+assert title GRAPHSHELL H3 READY
+act load-practice-projection
+settle 2
+assert snap projection-placement-solves == 1
+click role:textbox Projection title
+input-text Reused placement
+settle 2
+assert snap projection-placement-solves == 1
+click role:tab Encoding
+click role:textbox Label field
+input-text catalog_id
+settle 2
+assert snap projection-placement-solves == 1
+assert retained {"role":"button","label":"list card:2:","text":"chord:Major"}
+click role:button Projection: order by tempo
+settle 2
+assert snap projection-placement-solves == 2
+click role:button Projection: order by tempo
+settle 2
+assert snap projection-placement-solves == 2
+assert snap projection-executable == true
+capture projection_refresh
+wait
+log labels and appearance reuse geometry; changed arrangement solves once

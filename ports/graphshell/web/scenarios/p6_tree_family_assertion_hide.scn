@@ -1,0 +1,50 @@
+# Isolated P6 fixture: two same-actor CollectionMember assertion IDs share a
+# Surface appearance; a Cites control remains in the Resource stratum.
+# tree.html?app=local&fixture=family-assertions&scenario=scenarios/p6_tree_family_assertion_hide.scn
+click role:button Fit graph
+settle 2
+assert snap source == saved graph
+assert snap link-rest-ready == true
+assert snap link-rest-source-assertion-ids ~ fixture:p6:family:collection-primary
+assert snap link-rest-source-assertion-ids ~ fixture:p6:family:collection-independent
+assert snap link-rest-source-assertion-ids ~ fixture:p6:family:resource-control
+assert snap link-rest-surface-strength == 2
+assert snap assertion-visibility-save-state == saved
+remember p6-source
+capture p6_family_assertions_initial
+
+# Select the Surface link by its ordinary painted stroke, then inspect and
+# hide one exact source assertion through its normal member action.
+click-link-rest a1-b1 surface
+settle 2
+assert snap link-rest-selected ~ link:v1:surface
+assert snap link-inspector-open == true
+assert text Primary collection membership
+assert text Independent collection membership
+click-link-rest-assertion fixture:p6:family:collection-primary inspect
+settle 2
+assert snap assertion-inspector-open == true
+assert snap assertion-inspector-handle == fixture:p6:family:collection-primary
+same p6-source link-rest-source-facts
+same p6-source link-rest-graph-revision
+click role:button Close assertion inspection
+settle 2
+click role:button Close link inspection
+settle 2
+click-link-rest a1-b1 resource
+settle 2
+assert text Resource stratum citation control
+click role:button Close link inspection
+settle 2
+click-link-rest a1-b1 surface
+settle 2
+click-link-rest-assertion fixture:p6:family:collection-primary hide
+settle 120
+assert snap assertion-visibility-save-state == saved
+assert snap link-rest-hidden-assertions == fixture:p6:family:collection-primary
+assert snap link-rest-surface-strength == 1
+assert text Independent collection membership
+same p6-source link-rest-source-facts
+same p6-source link-rest-graph-revision
+capture p6_family_assertion_hidden
+log P6 exact assertion selection and acknowledged hide completed with independent source reason retained

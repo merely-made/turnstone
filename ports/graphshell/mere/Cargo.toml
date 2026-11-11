@@ -1,0 +1,66 @@
+[package]
+name = "graphshell-mere"
+version = "0.0.2"
+rust-version = "1.97.1"
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Native Graphshell mere viewer over the admitted resident route."
+publish = false
+
+# Keep the native view's feature selection independent of Graphshell's
+# document-host defaults. Co-op reuses its admitted protocol/client and the
+# ordinary view continues to read the resident-owned graph through the door.
+[[bin]]
+name = "graphshell_mere"
+path = "src/main.rs"
+
+[dependencies]
+ostiary = { workspace = true, features = ["native"] }
+castellan-client = { workspace = true, features = ["client"] }
+graphshell = { path = "..", default-features = false, features = ["coop", "goal-surface", "physics-engine"] }
+serde_json.workspace = true
+url = "2"
+uuid.workspace = true
+serde = { version = "1", features = ["derive"] }
+cambium.workspace = true
+cambium-desktop.workspace = true
+# `HostWake`; image decoding as the viewer had it inside Graphshell.
+cambium-rootstock = { workspace = true, features = ["image-decode"] }
+chirograph.workspace = true
+eidetic.workspace = true
+dramatis-surface.workspace = true
+graphshell-dramatis-pane = { path = "../dramatis-pane" }
+graphshell-client.workspace = true
+hest.workspace = true
+# The app side of the first-party door: `AppBrokerClient`.
+graphshell-door = { workspace = true, features = ["projection-door"] }
+graphshell-host = { workspace = true, features = ["coop", "mere-host", "goal-surface"] }
+# The route panel that fills the mere view (stack lift plan L14).
+mere-overmap = { workspace = true, features = ["view"] }
+mere-view.workspace = true
+mandrake.workspace = true
+pandect.workspace = true
+incipit = { workspace = true, features = ["view"] }
+# The blocking fetch handle only (no actor, smolweb or cookies): one address, on request.
+fetch = { package = "mere-fetch", path = "../../../crates/system/fetch", version = "0.0.1", default-features = false }
+fleece = { workspace = true, features = ["article"] }
+sceno.workspace = true
+scenotime.workspace = true
+sprigging.workspace = true
+taproot.workspace = true
+tokio = { version = "1", features = ["io-std", "io-util", "macros", "net", "rt-multi-thread", "sync", "time", "process"] }
+
+[dev-dependencies]
+dramatis.workspace = true
+personae.workspace = true
+genet-scripted-dom.workspace = true
+layout_dom_api.workspace = true
+kernel.workspace = true
+cartography = { workspace = true, features = ["canvas", "physics-engine"] }
+serde_json.workspace = true
+tempfile = "3"
+uuid.workspace = true
+
+[lints]
+workspace = true

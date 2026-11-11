@@ -1,0 +1,23 @@
+# Same profile/origin after p4_tree_field_inspection.scn, fresh page/process.
+assert snap source == saved graph
+assert snap field-inspection-fixture == true
+assert snap storage-reopened == true
+assert snap field-inspector-open == false
+assert snap field-inspector-roster-count == 3
+assert snap forme-accesses == 2
+assert snap forme-locked == true
+click role:button Inspect fields
+settle 2
+click role:button Inspect field: Region study
+settle 2
+assert snap field-inspector-ready == true
+assert snap field-inspector-couplings == 2
+click role:button Inspect coupling: 00000000-0000-0000-0000-0000000000c9
+settle 2
+assert snap coupling-inspector-strength == 0.02
+click role:button Inspect coupling: 00000000-0000-0000-0000-0000000000ca
+settle 2
+assert snap coupling-inspector-strength == 0.08
+assert snap coupling-inspector-eligibility == OpenResponse
+capture reopened_field_records
+log exact field and coupling source identities retained across page reopen

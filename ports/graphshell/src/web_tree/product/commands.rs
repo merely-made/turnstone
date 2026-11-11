@@ -1,0 +1,402 @@
+// Copyright 2026 Mark Alan Boykin
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+// SPDX-License-Identifier: MPL-2.0
+
+//! Command choices are session data; the retained menu is a shared widget view.
+use super::*;
+use cambium::{
+    Command, CommandChoices, CommandSet, EffectClass, MenuSession, button, lens, on_key,
+    request_focus, text_field_typed,
+};
+use graphshell_host::mere_host::{GRAPHSHELL, SessionViewIntent};
+
+pub(super) struct Commands {
+    set: CommandSet,
+    choices: CommandChoices,
+    menu: Option<(MenuSession, (f32, f32))>,
+    pub(super) query: TextInput,
+}
+impl Commands {
+    pub(super) fn load(app: &App) -> Self {
+        let mut set = crate::web_command_catalog::page_commands();
+        set.register(Command::new(
+            "forme:peek",
+            "Preview reading layout",
+            "canvas",
+            EffectClass::Curation,
+        ));
+        set.register(Command::new(
+            "forme:enter",
+            "Enter reading layout",
+            "canvas",
+            EffectClass::Curation,
+        ));
+        Self {
+            set,
+            choices: app
+                .host
+                .view(GRAPHSHELL, "commands")
+                .and_then(|view| view.commands.clone())
+                .unwrap_or_default(),
+            menu: None,
+            query: TextInput::new(""),
+        }
+    }
+}
+/// Whether running this command stores a change, so a follower lists it
+/// disabled. Opening details stays: a follower shows them read-only.
+fn stores_change(id: &str, effect: Option<EffectClass>) -> bool {
+    id != "node:edit"
+        && (effect == Some(EffectClass::DomainTruth)
+            || matches!(
+                id,
+                "session:undo"
+                    | "session:redo"
+                    | "save-projection"
+                    | "undo-projection-save"
+                    | "redo-projection-save"
+                    | "save-scene"
+                    | "open-codicil"
+            ))
+}
+impl Commands {
+    pub(super) fn view_only(&mut self) {
+        let ids: Vec<String> = self
+            .set
+            .commands()
+            .iter()
+            .filter(|command| stores_change(&command.id, Some(command.effect)))
+            .map(|command| command.id.clone())
+            .collect();
+        for id in ids {
+            self.set
+                .set_disabled(&id, Some(super::follow::VIEW_ONLY.into()));
+        }
+    }
+}
+impl SavedProduct {
+    fn refused_command(&self, id: &str) -> Result<(), String> {
+        if stores_change(id, self.commands.set.get(id).map(|command| command.effect)) {
+            self.view_only()?;
+        }
+        Ok(())
+    }
+    pub(in crate::web_tree) fn menu_open(&self) -> bool {
+        self.commands.menu.is_some()
+    }
+    pub(in crate::web_tree) fn close_menu(&mut self) {
+        self.commands.menu = None;
+    }
+    pub(in crate::web_tree) fn open_menu(
+        &mut self,
+        request: cartography::canvas::ContextRequest,
+        canvas: &mut Canvas,
+    ) {
+        if self.selection_locked() {
+            return;
+        }
+        if let Some(member) = request.node {
+            canvas.select_member(member);
+            self.select(Some(member));
+        }
+        self.commands.menu = Some((MenuSession::open(request.node.map(|_| "node")), request.at));
+        self.commands.query = TextInput::new("");
+    }
+    fn menu_action(&mut self, action: &str) -> Result<Option<String>, String> {
+        if self.selection_locked() {
+            return Err("A save is pending".into());
+        }
+        let (verb, id) = action.split_once(':').ok_or("Unknown menu action")?;
+        if self.following() {
+            // Keeping or dropping a row writes the session's view state.
+            if verb != "run" {
+                self.view_only()?;
+            }
+            self.refused_command(id)?;
+            self.commands.menu = None;
+            return Ok(Some(id.to_owned()));
+        }
+        let c = &mut self.commands;
+        match verb {
+            "keep" => {
+                c.set.add(&mut c.choices, id);
+            },
+            "drop" => {
+                c.set.remove(&mut c.choices, id);
+            },
+            "run" => {
+                c.set.record_use(&mut c.choices, id);
+                c.menu = None;
+            },
+            _ => return Err("Unknown menu action".into()),
+        }
+        self.app
+            .as_mut()
+            .ok_or("Local graph is busy")?
+            .host
+            .set_view_now(
+                GRAPHSHELL,
+                "commands",
+                SessionViewIntent {
+                    commands: Some(c.choices.clone()),
+                    ..SessionViewIntent::default()
+                },
+            )
+            .map_err(|e| e.to_string())?;
+        Ok((verb == "run").then(|| id.to_owned()))
+    }
+    pub(in crate::web_tree) fn run_command(
+        &mut self,
+        id: &str,
+        canvas: &mut Canvas,
+        layout: &str,
+        viewport: (u32, u32),
+    ) -> Result<(), String> {
+        self.refused_command(id)?;
+        match id {
+            "node:edit" => {
+                if self.selected.is_none() {
+                    canvas.select_by_url(FIXTURE_WEB_ADDRESS);
+                    self.select(canvas.focused_member());
+                }
+                self.open_detail(canvas);
+            },
+            "invoke-action" => self.open_selected(),
+            "node:new" => {
+                self.intake_open = true;
+                if !self.intake_address.text().trim().is_empty() {
+                    self.add_address();
+                }
+            },
+            "select-web" => {
+                canvas.select_by_url(FIXTURE_WEB_ADDRESS);
+                self.select(canvas.focused_member());
+            },
+            "open-projection-editor" => self.projection.open = true,
+            "close-projection-editor" => self.projection.open = false,
+            "projection-grid" | "projection-scatter" => {
+                self.projection_action(if id == "projection-grid" {
+                    "grid"
+                } else {
+                    "scatter"
+                })?
+            },
+            "load-practice-projection" => self.projection_action("load")?,
+            "reopen-practice-projection" => {
+                self.projection_action("load")?;
+                self.projection_action("reopen")?;
+            },
+            "save-projection" => self.projection_action("save")?,
+            "reload-projection" => self.projection_action("reopen")?,
+            "undo-projection" => self.projection_action("undo")?,
+            "redo-projection" => self.projection_action("redo")?,
+            "undo-projection-save" => self.projection_action("undo-save")?,
+            "redo-projection-save" => self.projection_action("redo-save")?,
+            "compare-projection" => self.projection_action("compare")?,
+            "compare-projection-dynamics" => self.projection_action("compare-dynamics")?,
+            "projection-motion" => self.projection_action("motion")?,
+            "projection-compare-left" => self.projection_action("compare-left")?,
+            "projection-compare-right" => self.projection_action("compare-right")?,
+            "projection-compare-up" => self.projection_action("compare-up")?,
+            "projection-compare-down" => self.projection_action("compare-down")?,
+            "save-scene" => self.scene_action(canvas, layout, viewport, "save")?,
+            "reopen-scene" => self.scene_action(canvas, layout, viewport, "reopen")?,
+            "export-codicil" => self.scene_action(canvas, layout, viewport, "export")?,
+            "open-codicil" => self.scene_action(canvas, layout, viewport, "open")?,
+            "session:undo" | "session:redo" => {
+                let app = self.app.as_mut().ok_or("Local graph is busy")?;
+                let back = id == "session:undo";
+                let reverted = if back {
+                    app.host.undo_now(GRAPHSHELL)
+                } else {
+                    app.host.redo_now(GRAPHSHELL)
+                }
+                .map_err(|e| e.to_string())?;
+                if let Some(reverted) = reverted {
+                    self.forme_reconcile_session = Some(app.host.graph_session().id().0);
+                    canvas.set_graph(app.host.graph().clone());
+                    self.status = if back {
+                        "Undid Graphshell's last change"
+                    } else {
+                        "Redid Graphshell's last change"
+                    }
+                    .into();
+                    if let Some(kept) = graphshell::product::kept_summary(&reverted.kept) {
+                        self.status.push_str(&format!(" · {kept}"));
+                    }
+                    self.operation_success = Some(self.status.clone());
+                    self.persist_operation();
+                } else {
+                    self.status = "Nothing to undo or redo in the session".into();
+                }
+            },
+            _ => return Err(format!("Unknown command: {id}")),
+        }
+        Ok(())
+    }
+}
+pub(in crate::web_tree) fn menu(page: &TreePage) -> Option<Child> {
+    let product = page.product.as_ref()?;
+    let c = &product.commands;
+    let (session, at) = c.menu.as_ref()?;
+    let mut session = session.clone();
+    session.set_query(c.query.text());
+    let has_forme = super::super::focus_card::has_forme(page);
+    let rows = session
+        .rows(&c.set, &c.choices)
+        .into_iter()
+        .filter(|row| !is_forme_command(&row.id) || has_forme)
+        .collect::<Vec<_>>();
+    let kept = c.set.kept(&c.choices);
+    let mut children: Vec<Child> = vec![Box::new(lens(
+        |input: &mut TextInput| {
+            request_focus(
+                text_field_typed(input).attr("aria-label", "Search commands"),
+                true,
+            )
+        },
+        |page: &mut TreePage| &mut page.product.as_mut().expect("menu").commands.query,
+    ))];
+    for (index, item) in rows.into_iter().enumerate() {
+        let keep = if kept.iter().any(|kept| kept.id == item.id) {
+            ("drop", format!("Remove {} from the menu", item.label))
+        } else {
+            ("keep", format!("Keep {} in the menu", item.label))
+        };
+        // A follower stores no menu choices and runs nothing that stores.
+        let verbs = std::iter::once(("run", item.label.clone()))
+            .chain((!product.following()).then_some(keep));
+        for (verb, label) in verbs {
+            let action = format!("{verb}:{}", item.id);
+            let target = action.clone();
+            let refused = verb == "run" && item.disabled_reason.is_some();
+            children.push(Box::new(
+                button(label, move |page: &mut TreePage, _| {
+                    apply_menu_action(page, &action);
+                })
+                .attr("data-command-menu", target)
+                .attr("aria-disabled", if refused { "true" } else { "false" })
+                .attr(
+                    "aria-description",
+                    item.disabled_reason
+                        .clone()
+                        .filter(|_| refused)
+                        .unwrap_or_default(),
+                )
+                .attr(
+                    "data-command-highlight",
+                    if verb == "run" && session.selected == Some(index) {
+                        "true"
+                    } else {
+                        "false"
+                    },
+                ),
+            ));
+        }
+    }
+    if children.len() == 1 {
+        children.push(Box::new(el("p", "No command matches")));
+    }
+    if product.following() {
+        children.insert(1, Box::new(el("p", super::follow::VIEW_ONLY)));
+    }
+    children.push(Box::new(button(
+        "Close commands",
+        |page: &mut TreePage, _| {
+            super::super::commands::close(page);
+        },
+    )));
+    let x = at.0.min((page.size.0 as f32 - 340.0).max(8.0));
+    let y = at.1.min((page.size.1 as f32 - 360.0).max(8.0));
+    Some(Box::new(on_key(el("section",children).attr("aria-label","Graph commands").attr("class","tree-command-menu")
+        .attr("style",format!("position:absolute;left:{x}px;top:{y}px;width:320px;max-height:350px;overflow:auto;z-index:12;background:#1e303d;padding:10px;")),
+        |page: &mut TreePage,event: cambium::KeyEvent| {
+            let has_forme = super::super::focus_card::has_forme(page);
+            let Some(product) = &mut page.product else { return; };
+            let c = &mut product.commands;
+            let Some((session, _)) = &mut c.menu else { return; };
+            session.set_query(c.query.text());
+            let rows = session.rows(&c.set, &c.choices).into_iter()
+                .filter(|row| !is_forme_command(&row.id) || has_forme).collect::<Vec<_>>();
+            let command = match event.key {
+                Key::Named(NamedKey::Escape) => { super::super::commands::close(page); None },
+                Key::Named(NamedKey::ArrowDown | NamedKey::ArrowUp) => {
+                    session.step(if matches!(event.key, Key::Named(NamedKey::ArrowDown)) {1} else {-1}, rows.len());
+                    None
+                },
+                Key::Named(NamedKey::Enter) => session.chosen(&rows).map(|row| format!("run:{}",row.id)),
+                _ => return,
+            };
+            if let Some(command) = command { apply_menu_action(page, &command); }
+            event.prevent_default();
+            event.stop_propagation();
+        })))
+}
+
+fn is_forme_command(id: &str) -> bool {
+    matches!(id, "forme:peek" | "forme:enter")
+}
+
+fn apply_menu_action(page: &mut TreePage, action: &str) {
+    let result = page
+        .product
+        .as_mut()
+        .ok_or("Local graph is unavailable".to_owned())
+        .and_then(|product| product.menu_action(action));
+    match result {
+        Ok(command) => {
+            if let Some(command) = command {
+                page.command(&command);
+            }
+            if let Some(product) = &mut page.product {
+                if action.starts_with("keep:")
+                    || action.starts_with("drop:")
+                    || action.strip_prefix("run:").is_some_and(is_forme_command)
+                {
+                    product.persist_menu_choices();
+                } else {
+                    product.persist_operation();
+                }
+            }
+        },
+        Err(error) => {
+            if let Some(product) = &mut page.product {
+                product.status = error;
+            }
+        },
+    }
+    page.shared.dirty.set(true);
+}
+
+/// Give the shared text host the product menu's actual query owner for IME,
+/// paste and multi-character browser input, as well as direct key events.
+pub(in crate::web_tree) fn focused_command_text(
+    runner: &cambium_rootstock::Runner<TreePage, Logic, Child>,
+) -> Option<cambium_rootstock::FocusedTextSlot<TreePage>> {
+    runner.state().product.as_ref()?.commands.menu.as_ref()?;
+    let node = runner.focus()?;
+    if !focused_field_has_label(&runner.dom().borrow(), node, "Search commands") {
+        return None;
+    }
+    Some(cambium_rootstock::FocusedTextSlot {
+        node,
+        get: Box::new(|page| {
+            &page
+                .product
+                .as_ref()
+                .expect("focused command product")
+                .commands
+                .query
+        }),
+        get_mut: Box::new(|page| {
+            &mut page
+                .product
+                .as_mut()
+                .expect("focused command product")
+                .commands
+                .query
+        }),
+    })
+}

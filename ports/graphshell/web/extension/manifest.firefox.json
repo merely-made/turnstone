@@ -1,0 +1,42 @@
+{
+  "manifest_version": 3,
+  "name": "Graphshell",
+  "version": "0.1.0",
+  "description": "Open Graphshell's local graph and identity surfaces.",
+  "permissions": [
+    "nativeMessaging",
+    "storage",
+    "unlimitedStorage"
+  ],
+  "optional_permissions": [
+    "history",
+    "tabs",
+    "webNavigation",
+    "scripting"
+  ],
+  "optional_host_permissions": [
+    "<all_urls>"
+  ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "graphshell@mere.systems"
+    }
+  },
+  "background": {
+    "scripts": [
+      "capture-model.js",
+      "background.js"
+    ]
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+  },
+  "action": {
+    "default_title": "Open Graphshell"
+  },
+  "sidebar_action": {
+    "default_panel": "graph.html",
+    "default_title": "Graphshell",
+    "open_at_install": false
+  }
+}

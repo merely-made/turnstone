@@ -1,0 +1,684 @@
+/* Colours read Tabard's roles (--tabard-color-<role>, published by web_appearance.rs) and fall back to the
+   values this sheet always had, so nothing changes until a theme is applied. Hairlines read
+   --tabard-color-border; control and floating-panel outlines read --tabard-color-border-strong (3:1); the
+   focus outline reads --tabard-color-focus. The "working" capture status is ink plus its word (activity is never a
+   colour change). Mapping: the Merely design system's design_docs/2026-10-16_graphshell_theme_and_font_brief.md (that
+   project, not this repository). */
+/* The component is its own box: the canvas fills it and the semantic
+   overlay is positioned within it, whether it fills the page (index.html)
+   or sits in a column of someone else's (embed.html). */
+graphshell-view {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  color-scheme: inherit;
+  background: var(--tabard-color-bg, #071015);
+  font-family: system-ui, sans-serif;
+}
+
+graphshell-view * {
+  box-sizing: border-box;
+}
+
+graphshell-view[data-practice-workspace] #gs-semantic-host { display: none; }
+graphshell-view[data-practice-workspace] { min-height:720px; }
+body.full-page:has(graphshell-view[data-practice-workspace]) { overflow:auto; }
+#gs-practice-controls { position:absolute;inset:0;pointer-events:none; }
+#gs-practice-controls > * { position:absolute;margin:0;padding:0;border:0;color:transparent;background:transparent;overflow:hidden; }
+#gs-practice-controls > button { pointer-events:auto;cursor:pointer;font:inherit; }
+#gs-practice-controls > button[data-practice-body] { touch-action:none;cursor:grab; }
+#gs-practice-controls > button:focus-visible { outline:2px solid var(--tabard-color-focus, #d4e6b9);outline-offset:3px; }
+
+/* These semantic buttons use the same rectangles as Genet's painted views. */
+#gs-projection-live { position: absolute; inset: 0; pointer-events: none; }
+#gs-projection-live[hidden] { display: none; }
+#gs-semantic-host #gs-projection-live button {
+  position: absolute; pointer-events: auto; color: transparent;
+  background: transparent; border: 0; padding: 0; margin: 0; cursor: pointer;
+}
+#gs-projection-live button:focus-visible { outline: 2px solid var(--tabard-color-tertiary, #f0c674); outline-offset: 3px; }
+
+html.full-page,
+body.full-page {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: var(--tabard-color-bg, #071015);
+}
+
+body.full-page graphshell-view {
+  width: 100%;
+  height: 100%;
+}
+
+/* The one-tree page (tree.html): a Cambium tree on its own canvas, with the
+   web host's accessibility mirror placed over it inside this box. */
+graphshell-tree {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  color-scheme: inherit;
+  background: var(--tabard-color-bg, #071015);
+}
+
+body.full-page graphshell-tree {
+  width: 100%;
+  height: 100%;
+}
+
+#gs-graphshell-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+#gs-graphshell-canvas {
+  display: block;
+  touch-action: none;
+  background: var(--tabard-color-bg, #071015);
+}
+
+#gs-semantic-host {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  color: var(--tabard-color-text, #dce5e8);
+}
+
+#gs-semantic-host header button,
+#gs-semantic-host nav button {
+  position: absolute;
+  z-index: 4;
+  pointer-events: auto;
+  color: transparent;
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  font: inherit;
+  cursor: pointer;
+}
+
+#gs-semantic-host button:focus-visible {
+  outline: 2px solid var(--tabard-color-tertiary, #f0c674);
+  outline-offset: 2px;
+}
+
+#gs-session-local {
+  left: 252px;
+  top: 10px;
+  width: 104px;
+  height: 43px;
+}
+
+#gs-session-remote {
+  left: 364px;
+  top: 10px;
+  width: 118px;
+  height: 43px;
+}
+
+#gs-session-undo {
+  left: 490px;
+  top: 10px;
+  width: 116px;
+  height: 43px;
+}
+
+#gs-session-redo {
+  left: 614px;
+  top: 10px;
+  width: 116px;
+  height: 43px;
+}
+
+nav button:nth-child(1) {
+  left: 24px;
+  top: 128px;
+  width: 188px;
+  height: 32px;
+}
+
+nav button:nth-child(2) {
+  left: 24px;
+  top: 164px;
+  width: 188px;
+  height: 32px;
+}
+
+nav button:nth-child(n + 3) {
+  width: 42px;
+  height: 36px;
+  bottom: 48px;
+}
+
+nav button:nth-child(3) { left: 24px; }
+nav button:nth-child(4) { left: 70px; }
+nav button:nth-child(5) { left: 116px; }
+nav button:nth-child(6) { left: 162px; }
+nav button:nth-child(7) { left: 208px; }
+nav button:nth-child(8) { left: 254px; }
+
+#gs-detail-surface {
+  position: absolute;
+  z-index: 6;
+  right: 12px;
+  top: 76px;
+  width: 352px;
+  max-height: calc(100% - 92px);
+  overflow: auto;
+  padding: 16px;
+  pointer-events: auto;
+  background: rgba(15, 27, 35, 0.97);
+  border: 1px solid var(--tabard-color-border-strong, #41616b);
+  border-radius: 12px;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+}
+
+#gs-detail-surface[aria-hidden="true"] {
+  visibility: hidden;
+}
+
+.semantic-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+#gs-product-panel {
+  position: absolute;
+  z-index: 5;
+  left: 12px;
+  top: 76px;
+  width: 276px;
+  max-height: calc(100% - 128px);
+  overflow: auto;
+  padding: 12px;
+  pointer-events: auto;
+  background: rgba(12, 24, 31, 0.96);
+  border: 1px solid var(--tabard-color-border, #29404a);
+  border-radius: 12px;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.3);
+}
+
+#gs-product-panel section + section {
+  border-top: 1px solid var(--tabard-color-border, #29404a);
+  margin-top: 14px;
+  padding-top: 12px;
+}
+
+#gs-projection-editor {
+  border-color: var(--tabard-color-border-strong, #41616b);
+}
+
+#gs-projection-editor[hidden] {
+  display: none;
+}
+
+#gs-projection-editor-panels {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+#gs-projection-editor-panels button {
+  margin-top: 0;
+  color: var(--tabard-color-secondary, #a9c7ba);
+  background: var(--tabard-color-surface-2, #17242c);
+  border: 1px solid var(--tabard-color-border-strong, #35505b);
+}
+
+#gs-projection-editor-panels button[aria-selected="true"] {
+  color: var(--tabard-color-on-primary, #172028);
+  background: var(--tabard-color-primary, #d39b4a);
+}
+
+#gs-projection-editor-status,
+#gs-projection-editor-validation,
+#gs-projection-editor-dirty,
+#gs-projection-editor-source,
+#gs-projection-editor-provenance {
+  color: var(--tabard-color-secondary, #a9c7ba);
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+
+#gs-projection-editor-status,
+#gs-projection-editor-validation,
+#gs-projection-editor-dirty {
+  margin: 5px 0;
+}
+
+#gs-projection-editor-validation {
+  color: var(--tabard-color-success, #8db8a4);
+}
+
+#gs-projection-editor-source,
+#gs-projection-editor-provenance {
+  color: var(--tabard-color-text-dim, #89a6af);
+}
+
+#gs-semantic-host h1,
+#gs-semantic-host h2,
+#gs-semantic-host h3 {
+  margin: 0 0 9px;
+  color: var(--tabard-color-text-header, #f5e7c4);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+#gs-semantic-host h3 {
+  margin-top: 14px;
+  font-size: 12px;
+}
+
+#gs-detail-surface h1 {
+  font-size: 18px;
+  overflow-wrap: anywhere;
+}
+
+#gs-detail-address {
+  margin: -4px 0 13px;
+  color: var(--tabard-color-text-dim, #89a6af);
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+
+#gs-action-draft-surface {
+  margin: 0 0 16px;
+  padding: 12px;
+  border: 1px solid var(--tabard-color-border, #35505b);
+  border-radius: 8px;
+  background: var(--tabard-color-surface, #101c24);
+}
+
+#gs-action-draft-surface[hidden] {
+  display: none;
+}
+
+#gs-action-draft-surface h2 {
+  margin-bottom: 5px;
+}
+
+#gs-action-draft-surface p {
+  margin: 0 0 8px;
+  color: var(--tabard-color-text-dim, #9fb1b7);
+  font-size: 11px;
+}
+
+#gs-action-draft-surface fieldset {
+  margin: 10px 0 0;
+  padding: 0;
+  border: 0;
+}
+
+#gs-action-draft-surface legend {
+  color: var(--tabard-color-secondary, #a9c7ba);
+  font-size: 11px;
+}
+
+#gs-action-draft-surface [role="alert"] {
+  color: var(--tabard-color-danger, #e99387);
+}
+
+#gs-semantic-host label {
+  display: block;
+  margin: 8px 0 4px;
+  color: var(--tabard-color-text-dim, #8da2a9);
+  font-size: 10px;
+  letter-spacing: 0.03em;
+}
+
+#gs-semantic-host input,
+#gs-semantic-host select,
+#gs-semantic-host textarea,
+#gs-semantic-host aside button,
+#gs-semantic-host section button,
+.file-picker {
+  width: 100%;
+  min-height: 32px;
+  padding: 7px 9px;
+  color: var(--tabard-color-text, #dce5e8);
+  background: var(--tabard-color-surface-2, #17242c);
+  border: 1px solid var(--tabard-color-border-strong, #35505b);
+  border-radius: 6px;
+  font: 12px system-ui, sans-serif;
+}
+
+#gs-semantic-host textarea {
+  min-height: 58px;
+  resize: vertical;
+}
+
+#gs-history-results {
+  max-height: 132px;
+  margin: 6px 0 0;
+  padding-left: 20px;
+  overflow: auto;
+  color: var(--tabard-color-text-dim, #b8c8cd);
+  font-size: 10px;
+}
+
+#gs-history-results li {
+  margin-bottom: 6px;
+  overflow-wrap: anywhere;
+}
+
+#gs-codicil-data {
+  margin-top: 8px;
+  min-height: 82px;
+  font-family: ui-monospace, monospace;
+  font-size: 9px;
+}
+
+#gs-semantic-host aside button,
+#gs-semantic-host section button,
+.file-picker {
+  position: static;
+  height: auto;
+  margin-top: 8px;
+  pointer-events: auto;
+  color: var(--tabard-color-on-primary, #172028);
+  background: var(--tabard-color-primary, #d39b4a);
+  border: 0;
+  cursor: pointer;
+}
+
+.file-picker {
+  display: block !important;
+  text-align: center;
+  color: var(--tabard-color-on-primary, #172028) !important;
+  letter-spacing: 0 !important;
+  font-size: 12px !important;
+}
+
+#gs-file-input {
+  position: absolute;
+  width: 1px !important;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.button-row {
+  display: flex;
+  gap: 8px;
+}
+
+.button-row > * {
+  flex: 1;
+}
+
+#gs-semantic-host .check {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  letter-spacing: 0;
+}
+
+#gs-semantic-host .check input {
+  width: auto;
+  min-height: 0;
+}
+
+@media (max-width: 719px) {
+  #gs-session-local {
+    left: 14px;
+    top: 53px;
+  }
+
+  #gs-session-remote {
+    left: 124px;
+    top: 53px;
+  }
+
+  #gs-session-undo {
+    left: 250px;
+    top: 53px;
+  }
+
+  #gs-session-redo {
+    left: 374px;
+    top: 53px;
+  }
+
+  nav button:nth-child(1) {
+    left: 24px;
+    top: auto;
+    bottom: 82px;
+    width: 148px;
+  }
+
+  nav button:nth-child(2) {
+    left: 180px;
+    top: auto;
+    bottom: 82px;
+    width: 148px;
+  }
+
+  nav button:nth-child(n + 3) {
+    bottom: 38px;
+  }
+
+  #gs-detail-surface {
+    left: 10px;
+    right: auto;
+    top: 112px;
+    width: calc(100% - 20px);
+    max-height: calc(100% - 124px);
+  }
+
+  #gs-product-panel {
+    left: 10px;
+    top: auto;
+    bottom: 8px;
+    width: calc(100% - 20px);
+    max-height: 236px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    overflow-x: hidden;
+  }
+
+  #gs-product-panel section {
+    min-width: 0;
+  }
+
+  #gs-product-panel section + section {
+    border-top: 0;
+    border-left: 1px solid var(--tabard-color-border, #29404a);
+    margin: 0;
+    padding: 0 0 0 12px;
+  }
+}
+
+@media (max-width: 479px) {
+  #gs-product-panel {
+    grid-template-columns: 1fr;
+    max-height: 300px;
+  }
+
+  #gs-product-panel section + section {
+    border-top: 1px solid var(--tabard-color-border, #29404a);
+    border-left: 0;
+    margin-top: 14px;
+    padding: 12px 0 0;
+  }
+}
+*[hidden] {
+  display: none !important;
+}
+
+#gs-capture-status[data-state="failed"] {
+  color: var(--tabard-color-danger, #ff9f92);
+}
+
+#gs-capture-status[data-state="working"] {
+  color: var(--tabard-color-text, #dce5e8);
+}
+
+/* The command context menu (Scenograph editor plan, track C1). */
+#gs-command-menu {
+  position: fixed;
+  z-index: 20;
+  width: 264px;
+  max-height: 360px;
+  overflow: auto;
+  padding: 8px;
+  pointer-events: auto;
+  color: var(--tabard-color-text, #dce5e8);
+  background: var(--tabard-color-surface, #101820);
+  border: 1px solid var(--tabard-color-border-strong, #41616b);
+  border-radius: 8px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+}
+
+#gs-command-menu[hidden] {
+  display: none;
+}
+
+#gs-command-menu .command-row {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+#gs-command-menu button {
+  position: static;
+  pointer-events: auto;
+  min-height: 28px;
+  padding: 5px 8px;
+  color: var(--tabard-color-text, #dce5e8);
+  background: var(--tabard-color-surface-2, #17242c);
+  border: 0;
+  border-radius: 6px;
+  font: 12px system-ui, sans-serif;
+  text-align: left;
+  cursor: pointer;
+}
+
+#gs-command-menu button[role="menuitem"] {
+  flex: 1;
+}
+
+#gs-command-menu button:hover,
+#gs-command-menu button:focus-visible {
+  background: var(--tabard-color-surface-hover, #294b52);
+}
+
+#gs-command-menu button[disabled] {
+  color: var(--tabard-color-text-dim, #6f858c);
+  cursor: default;
+}
+
+#gs-command-menu .command-keep {
+  width: 28px;
+  color: var(--tabard-color-text-dim, #8da2a9);
+  text-align: center;
+}
+
+#gs-command-menu p {
+  margin: 8px 4px;
+  color: var(--tabard-color-text-dim, #8da2a9);
+  font-size: 11px;
+}
+
+/* The projection editor's arrangement rows (Scenograph editor plan, E5). */
+#gs-projection-arrangement-options .option-row {
+  margin-top: 6px;
+}
+
+#gs-projection-arrangement-options .option-refusal {
+  min-height: 0;
+  margin: 2px 0 0;
+  color: var(--tabard-color-danger, #e3a07a);
+  font-size: 10px;
+}
+
+#gs-projection-arrangement-options [aria-invalid="true"] {
+  border-color: var(--tabard-color-danger, #c4734f);
+}
+
+#gs-projection-arrangement-options p {
+  color: var(--tabard-color-text-dim, #8da2a9);
+  font-size: 11px;
+}
+
+/* Appearance belongs to the component. These browser controls share the
+   computed roles used by Genet and Canvas, including authored Tabard CSS. */
+:is(graphshell-view, graphshell-tree) {
+  background: var(--gs-app-background, var(--tabard-color-bg, #071015));
+  color: var(--gs-app-text, var(--tabard-color-text, #dce5e8));
+}
+:is(graphshell-view, graphshell-tree) canvas {
+  background: var(--gs-app-background, var(--tabard-color-bg, #071015));
+}
+graphshell-view #gs-semantic-host { color: var(--gs-app-text, var(--tabard-color-text, #dce5e8)); }
+graphshell-view #gs-semantic-host :is(aside, section, fieldset) {
+  background-color: var(--gs-app-surface, var(--tabard-color-surface-2, #17242c));
+  border-color: var(--gs-app-edge, var(--tabard-color-border, #35505b));
+  color: var(--gs-app-text, var(--tabard-color-text, #dce5e8));
+}
+graphshell-view #gs-semantic-host :is(input, select, textarea, aside button, section button) {
+  background-color: var(--gs-app-surface, var(--tabard-color-surface-2, #17242c));
+  border-color: var(--gs-app-edge, var(--tabard-color-border-strong, #35505b));
+  color: var(--gs-app-text, var(--tabard-color-text, #dce5e8));
+}
+graphshell-view #gs-semantic-host :is(label, legend) { color:var(--gs-app-text, var(--tabard-color-text, #dce5e8)); }
+graphshell-view #gs-command-menu {
+  background:var(--gs-app-surface, var(--tabard-color-surface, #101820)); color:var(--gs-app-text, var(--tabard-color-text, #dce5e8));
+  border-color:var(--gs-app-edge, var(--tabard-color-border-strong, #41616b));
+}
+graphshell-view #gs-command-menu button {
+  background:var(--gs-app-surface, var(--tabard-color-surface-2, #17242c)); color:var(--gs-app-text, var(--tabard-color-text, #dce5e8));
+}
+graphshell-view #gs-semantic-host :is(h1, h2, h3, #gs-history-results, #gs-projection-editor-status, #gs-projection-editor-dirty) {
+  color:var(--gs-app-text, var(--tabard-color-text, #dce5e8));
+}
+graphshell-view #gs-semantic-host :is(p, #gs-detail-address, #gs-projection-editor-source, #gs-projection-editor-provenance, .command-keep) {
+  color:var(--gs-app-edge, var(--tabard-color-text-dim, #89a6af));
+}
+graphshell-view #gs-semantic-host :is(aside button, section button, .file-picker, button[aria-selected="true"]) {
+  background:var(--gs-app-primary, var(--tabard-color-primary, #d39b4a)); color:var(--gs-app-on-primary, var(--tabard-color-on-primary, #172028));
+}
+graphshell-view #gs-semantic-host .file-picker { color:var(--gs-app-on-primary, var(--tabard-color-on-primary, #172028)) !important; }
+graphshell-view #gs-command-menu :is(button:hover, button:focus-visible) {
+  background:var(--gs-app-primary, var(--tabard-color-surface-hover, #294b52)); color:var(--gs-app-on-primary, var(--tabard-color-on-primary, #172028));
+}
+graphshell-view #gs-command-menu button[disabled] { color:var(--gs-app-edge, var(--tabard-color-text-dim, #6f858c)); }
+graphshell-view #gs-semantic-host :is([role="alert"], .option-refusal, #gs-capture-status[data-state="failed"]) {
+  color:var(--gs-app-danger, var(--tabard-color-danger, #e99387));
+}
+graphshell-view #gs-semantic-host #gs-projection-editor-validation {
+  color:var(--gs-app-success, var(--tabard-color-success, #8db8a4));
+}
+graphshell-view #gs-semantic-host [aria-invalid="true"] { border-color:var(--gs-app-danger, var(--tabard-color-danger, #c4734f)); }
+graphshell-view #gs-semantic-host :focus-visible { outline-color:var(--gs-app-primary, var(--tabard-color-tertiary, #f0c674)); }
+.graphshell-appearance {
+  position:absolute; right:12px; top:10px; z-index:40;
+  max-width:340px; max-height:80%; overflow:auto;
+  border:1px solid var(--gs-app-edge, var(--tabard-color-border-strong, #35505b));
+  border-radius:6px; padding:8px 12px;
+  color:var(--gs-app-text, var(--tabard-color-text, #dce5e8));
+  background:var(--gs-app-surface, var(--tabard-color-surface-2, #17242c));
+  font:13px system-ui,sans-serif; pointer-events:auto;
+}
+.graphshell-appearance summary { cursor:pointer; }
+.graphshell-appearance label { display:block; margin-top:10px; }
+.graphshell-appearance :is(select, textarea) {
+  display:block; width:100%; margin-top:4px; padding:5px;
+  color:var(--gs-app-text, var(--tabard-color-text, #dce5e8));
+  background:var(--gs-app-background, var(--tabard-color-bg, #071015));
+  border:1px solid var(--gs-app-edge, var(--tabard-color-border-strong, #35505b)); font:inherit;
+}
+.graphshell-appearance button {
+  margin-top:8px; padding:6px 10px;
+  background:var(--gs-app-primary, var(--tabard-color-tertiary, #f0c674)); color:var(--gs-app-on-primary, var(--tabard-color-bg, #071015));
+  border:0; border-radius:4px; cursor:pointer; font:inherit;
+}
+.graphshell-appearance p { margin:8px 0 0; max-width:300px; overflow-wrap:anywhere; }

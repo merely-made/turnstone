@@ -1,0 +1,50 @@
+# Tree version of c4b3_reconnect.scn: resume on reconnect, with a change
+# during the outage, through the Remote session section's link controls.
+#
+# The page joins the live board, moves it once itself, then drops its link.
+# While it is away the host moves the board natively ("Nudge host" asks the
+# fixture's `POST /nudge`). The page rejoins as the same subject with the
+# retained delegation — the invitation is not spent again — and the change
+# it missed comes back as a bell, resumed by diff, without a re-snapshot.
+wait
+assert snap remote-link == webrtc
+assert snap remote-state == open
+assert snap remote-revision == 1
+click role:button Remote mount
+settle 1
+click role:button Append a card
+wait
+assert snap action-status ~ Accepted
+assert snap remote-revision == 2
+assert snap remote-cards == 2
+# The region scrolls: bring the action status into view for the capture.
+reveal role:status Accepted
+settle 2
+capture c4b3_before_outage
+wait
+# Down.
+click role:button Disconnect
+wait
+assert snap remote-state == disconnected
+assert event remote-channel-closed
+# The host moves on without us.
+click role:button Nudge host
+wait
+assert event remote-nudged revision 3
+assert snap remote-revision == 2
+# Back, as the same subject.
+click role:button Reconnect
+wait
+assert snap remote-state == open
+assert snap remote-rejoins == 1
+assert event remote-rejoined
+assert event remote-bell revision 3
+assert snap remote-revision == 3
+assert snap remote-cards == 3
+assert snap remote-resume ~ diff · 2 → 3
+# The region scrolls: bring the action status into view for the capture.
+reveal role:status Nudged
+settle 2
+capture c4b3_resumed
+wait
+log c4b3 reconnect receipt complete

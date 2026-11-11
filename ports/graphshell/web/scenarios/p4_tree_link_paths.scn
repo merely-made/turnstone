@@ -1,0 +1,155 @@
+# Ordinary graph route; temporary responsive geometry stays in this view.
+# tree.html?app=local&fixture=link-rest&scenario=scenarios/p4_tree_link_paths.scn
+click role:button Fit graph
+settle 2
+assert snap physics-paused == true
+assert snap link-rest-ready == true
+assert snap link-path-state == disabled
+assert snap link-path-field-response == false
+assert snap link-path-compatible-attraction == false
+assert snap link-path-group-count == 0
+assert snap link-path-count == 6
+assert snap link-path-responsive-count == 0
+assert snap link-path-max-bend == 0.000
+remember ordinary-path-source
+remember ordinary-path-baseline
+capture ordinary_link_paths_baseline
+
+# Field response is independently view-local. The named temporary field is
+# disclosed in the controls; the graph source facts and revision stay fixed.
+click role:button Temporary flow
+settle 2
+assert snap link-path-state == applied
+assert snap link-path-presentation-fallbacks == 0
+assert snap link-path-field-response == true
+assert snap link-path-compatible-attraction == false
+assert snap link-path-count == 6
+assert snap link-path-responsive-count == 6
+assert snap link-path-max-bend >= 1
+same ordinary-path-baseline link-path-endpoints
+same ordinary-path-source link-rest-source-facts
+same ordinary-path-source link-rest-graph-revision
+remember ordinary-path-field-only
+# Selection raises the Surface glyph without hiding its stratum or direction.
+click-link-path a1-b1 surface midpoint
+settle 2
+assert snap link-rest-selected ~ link:v1:surface
+assert snap link-path-selected-display-pair == a1-b1
+capture ordinary_link_paths_field_only
+
+# The stronger local presets have their own field-only runs, so attraction
+# membership cannot hide whether each field response changes painted paths.
+click role:button Temporary attractor
+settle 2
+assert snap link-path-state == applied
+assert snap link-path-presentation-fallbacks == 0
+assert snap link-path-field-response == true
+assert snap link-path-compatible-attraction == false
+assert snap link-path-responsive-count == 6
+assert snap link-path-max-bend >= 1
+same ordinary-path-baseline link-path-endpoints
+same ordinary-path-source link-rest-source-facts
+capture ordinary_link_paths_attractor_field_only
+click role:button Temporary vortex
+settle 2
+assert snap link-path-state == applied
+assert snap link-path-presentation-fallbacks == 0
+assert snap link-path-field-response == true
+assert snap link-path-compatible-attraction == false
+assert snap link-path-responsive-count == 6
+assert snap link-path-max-bend >= 1
+same ordinary-path-baseline link-path-endpoints
+same ordinary-path-source link-rest-source-facts
+capture ordinary_link_paths_vortex_field_only
+click role:button Temporary flow
+settle 2
+assert snap link-path-max-bend >= 1
+
+# Explicitly declare the selected canonical Resource link compatible. The
+# ordinary canvas hit route selects a point on the emitted path itself.
+click-link-path a1-b1 resource midpoint
+settle 2
+assert snap link-rest-selected ~ link:v1:resource
+assert snap link-path-selected-display-pair == a1-b1
+click role:button Add selected link to this view's group
+settle 2
+assert snap link-path-group-count == 1
+assert snap link-path-group-keys ~ link:v1:resource
+same ordinary-path-field-only link-path-geometry
+# Compatible-link attraction runs with field response disabled; only the
+# explicitly grouped canonical key should receive attraction.
+click role:button Disable field response
+settle 2
+click role:button Enable compatible-link attraction
+settle 2
+assert snap link-path-compatible-attraction == true
+assert snap link-path-field-response == false
+assert snap link-path-state == applied
+assert snap link-path-presentation-fallbacks == 0
+assert snap link-path-count == 6
+assert snap link-path-responsive-count >= 1
+assert snap link-path-max-bend >= 1
+assert snap link-path-compatible-max-bend >= 1
+assert snap link-path-other-max-bend == 0.000
+same ordinary-path-baseline link-path-endpoints
+same ordinary-path-baseline link-path-surface-geometry
+same ordinary-path-source link-rest-source-facts
+same ordinary-path-source link-rest-graph-revision
+assert snap link-rest-resource-forward == true
+assert snap link-rest-resource-reverse == true
+assert snap link-rest-resource-opposed == true
+capture ordinary_link_paths_compatible_only
+click role:button Temporary flow
+settle 2
+assert snap link-path-field-response == true
+assert snap link-path-compatible-attraction == true
+assert snap link-path-state == applied
+assert snap link-path-presentation-fallbacks == 0
+assert snap link-path-count == 6
+assert snap link-path-responsive-count == 6
+assert snap link-path-max-bend >= 1
+same ordinary-path-baseline link-path-endpoints
+same ordinary-path-source link-rest-source-facts
+same ordinary-path-source link-rest-graph-revision
+capture ordinary_link_paths_field_and_compatible
+
+# Turning both controls off restores the exact ordinary resting geometry.
+click role:button Disable field response
+settle 2
+click role:button Disable compatible-link attraction
+settle 2
+assert snap link-path-state == disabled
+assert snap link-path-field-response == false
+assert snap link-path-compatible-attraction == false
+assert snap link-path-responsive-count == 0
+same ordinary-path-baseline link-path-geometry
+same ordinary-path-baseline link-path-endpoints
+capture ordinary_link_paths_both_disabled
+click role:button Temporary flow
+settle 2
+click role:button Enable compatible-link attraction
+settle 2
+
+# A sampled point on the curved Resource path remains an ordinary selectable
+# target. Opening and hiding use the existing Graphshell link flow.
+click-link-path a1-b1 resource midpoint
+settle 2
+assert snap link-rest-selected ~ link:v1:resource
+assert snap link-path-selected-display-pair == a1-b1
+assert snap link-inspector-ready == true
+assert snap link-path-selected-source == true
+click role:button Close link inspection
+settle 2
+click role:button Hide selected link
+settle 120
+assert snap link-visibility-save-state == saved
+assert snap link-rest-hidden ~ link:v1:resource
+assert snap link-path-hidden-omitted == true
+assert snap link-path-state == applied
+assert snap link-path-presentation-fallbacks == 0
+assert snap link-path-count >= 1
+assert snap link-path-responsive-count >= 1
+same ordinary-path-source link-rest-source-facts
+same ordinary-path-source link-rest-graph-revision
+capture ordinary_link_paths_hidden
+log Ordinary responsive paths use real source link identities, stable endpoint positions, explicit view-local compatibility, ordinary selection and hide behavior

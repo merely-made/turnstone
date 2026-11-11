@@ -1,0 +1,11 @@
+# Run after another admitted Graphshell process acknowledges a Spiral own-view.
+# No browser Refresh action: the actual resident notice drives this reading.
+settle 3
+wait
+assert snap mere-status == open
+assert snap mere-read-only == false
+assert snap mere-layout == phyllotaxis.default
+assert snap mere-record == Reading session
+assert snap mere-record-data ~ context digest
+assert snap mere-view-saved == true
+capture 01_browser_live_external_view

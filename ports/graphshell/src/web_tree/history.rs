@@ -1,0 +1,319 @@
+// Copyright 2026 Mark Alan Boykin
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+// SPDX-License-Identifier: MPL-2.0
+
+//! A host history's checkpoints (mer3ly site canvas plan, S3; the sandbox's
+//! checkpoint slider, in function).
+//!
+//! The page shows one revision of the history at a time. A slider and two
+//! buttons step between checkpoints, the slider's text value names the one
+//! shown, and the graph is rebuilt from it. Each node's title carries its
+//! change's mark, and a "Changes" list tells every change, removed items
+//! included, for a reader.
+use super::*;
+use cambium::{RangeScrubber, RangeScrubberEvent, button, range_scrubber};
+use graphshell::host_dataset_view::{GroupedHostDataset, HostDatasetView};
+use graphshell::host_history_view::{
+    Change, HistoryView, ViewedChanges, change_mark, change_word, checkpoint_text, history_view,
+    host_history_view, mark_changes, revision_envelope,
+};
+use scenomise::host_dataset::{HostDatasetV1, HostDatasetV2};
+
+/// A host history, and the checkpoint the graph shows.
+pub(crate) struct HostedHistory {
+    history: HostDatasetV2,
+    membership_kind: Option<String>,
+    /// The shown checkpoint, from 0.
+    pub(super) index: usize,
+    pub(super) changes: Option<ViewedChanges>,
+    /// Why the last step was refused, if it was.
+    pub(super) error: Option<String>,
+}
+
+impl HostedHistory {
+    /// The history at its current (last) checkpoint, and that checkpoint's
+    /// view.
+    pub(super) fn open(
+        history: HostDatasetV2,
+        membership_kind: Option<String>,
+    ) -> Result<(Self, HostDatasetView, Option<GroupedHostDataset>), String> {
+        let index = history.revisions.len().saturating_sub(1);
+        let mut hosted = Self {
+            history,
+            membership_kind,
+            index,
+            changes: None,
+            error: None,
+        };
+        let (shown, grouped) = hosted.view_at(index, None)?;
+        hosted.changes = shown.changes;
+        Ok((hosted, shown.view, grouped))
+    }
+
+    fn view_at(
+        &self,
+        index: usize,
+        previous: Option<&GroupedHostDataset>,
+    ) -> Result<(HistoryView, Option<GroupedHostDataset>), String> {
+        let Some(kind) = &self.membership_kind else {
+            return Ok((host_history_view(&self.history, index)?, None));
+        };
+        let envelope = revision_envelope(&self.history, index)
+            .ok_or_else(|| format!("the history has no checkpoint {}", index + 1))?;
+        let grouped = match previous {
+            Some(previous) => previous.at_revision(envelope)?,
+            None => GroupedHostDataset::new(envelope, kind)?,
+        };
+        let shown = history_view(&self.history, index, grouped.view()?)?;
+        Ok((shown, Some(grouped)))
+    }
+
+    /// Fold changes create a fresh view; reapply this checkpoint's marks once.
+    pub(super) fn mark_view(&self, view: &mut HostDatasetView) {
+        if self.history.revisions.len() > 1 {
+            if let Some(changes) = self.history.changes_at(self.index) {
+                mark_changes(view, &changes);
+            }
+        }
+    }
+
+    pub(super) fn len(&self) -> usize {
+        self.history.revisions.len()
+    }
+
+    pub(super) fn envelope_at(&self, index: usize) -> Result<HostDatasetV1, String> {
+        revision_envelope(&self.history, index)
+            .ok_or_else(|| format!("No disclosed checkpoint {}", index + 1))
+    }
+
+    /// The shown checkpoint's text value.
+    pub(super) fn checkpoint(&self) -> String {
+        checkpoint_text(&self.history, self.index)
+    }
+
+    fn caption(&self, browsing: bool) -> String {
+        if browsing {
+            format!(
+                "{}checkpoint {} of {}",
+                if self.index + 1 == self.len() {
+                    "Current "
+                } else {
+                    ""
+                },
+                self.index + 1,
+                self.len()
+            )
+        } else {
+            self.checkpoint()
+        }
+    }
+
+    /// The counts with their marks, as the page shows them.
+    pub(super) fn summary(&self) -> Option<String> {
+        let changes = self.changes.as_ref()?;
+        Some(
+            [
+                Change::Added,
+                Change::Updated,
+                Change::Stable,
+                Change::Removed,
+            ]
+            .into_iter()
+            .map(|change| {
+                format!(
+                    "{} {} {}",
+                    change_mark(change),
+                    changes.count(change),
+                    change_word(change)
+                )
+            })
+            .collect::<Vec<_>>()
+            .join(", "),
+        )
+    }
+}
+
+impl TreePage {
+    /// Show checkpoint `index`: rebuild the graph from that revision, keep
+    /// the camera and the selection that still exists, and keep a chosen
+    /// arrangement.
+    pub(super) fn show_checkpoint(&mut self, index: usize) {
+        self.capture_host_selection();
+        let Some(hosted) = &mut self.history else {
+            return;
+        };
+        let index = index.min(hosted.len().saturating_sub(1));
+        if index == hosted.index {
+            return;
+        }
+        if let Some(grouped) = &mut self.grouping {
+            let canvas = self.shared.canvas.borrow();
+            grouped.remember_positions(canvas.graph().nodes().filter_map(|(key, node)| {
+                let id = node.url().strip_prefix("urn:host-dataset:")?.to_owned();
+                Some((id, canvas.world_position_of(key)?))
+            }));
+        }
+        let (shown, grouped) = match hosted.view_at(index, self.grouping.as_ref()) {
+            Ok(shown) => shown,
+            Err(error) => {
+                hosted.error = Some(format!("Checkpoint {} refused: {error}", index + 1));
+                return;
+            },
+        };
+        if let Some(pane) = &mut self.presenter {
+            if let Err(error) = hosted
+                .envelope_at(index)
+                .and_then(|envelope| pane.model.rebind(envelope))
+            {
+                hosted.error = Some(error);
+                return;
+            }
+        }
+        let view = shown.view;
+        {
+            let mut canvas = self.shared.canvas.borrow_mut();
+            let selected = canvas.selected_members();
+            let viewport = canvas.viewport();
+            canvas.set_graph(view.graph);
+            canvas.set_layout_strategy(Some(web_graphs::LAYOUT.to_string()));
+            canvas.apply_strategy_positions(&view.positions);
+            if grouped.is_some() {
+                canvas.set_physics_paused(true);
+                canvas.land_paused_positions(&view.positions);
+            }
+            canvas.set_viewport(viewport);
+            canvas.set_selected_members(&selected);
+            self.nodes = canvas.graph().node_count();
+            self.picked = canvas.focused_url().map(str::to_owned);
+        }
+        // A transition's slots name the old graph's nodes.
+        self.physics.transition = None;
+        self.source = format!("host dataset, revision {}", view.revision);
+        hosted.index = index;
+        hosted.changes = shown.changes;
+        hosted.error = None;
+        self.dataset = HostedDataset::Loaded(view.relations);
+        self.grouping = grouped;
+        self.grouping_error = None;
+        self.restore_host_selection();
+        if self.physics.layout_id != web_graphs::LAYOUT {
+            self.reapply_arrangement();
+        }
+        self.shared.dirty.set(true);
+    }
+
+    /// Step the shown checkpoint by `delta`, held to the history's ends.
+    fn step_checkpoint(&mut self, delta: isize) {
+        if let Some(hosted) = &self.history {
+            self.show_checkpoint(hosted.index.saturating_add_signed(delta));
+        }
+    }
+}
+
+/// The checkpoint slider: Cambium's range scrubber over the 1-based checkpoint
+/// number, so arrows and Page keys step, Home and End go to the ends, and a
+/// press or drag picks the checkpoint under the pointer.
+fn slider(hosted: &HostedHistory, browsing: bool) -> Child {
+    let count = hosted.len();
+    let props = RangeScrubber::new(1.0, count as f64, (hosted.index + 1) as f64)
+        .with_steps(1.0, 5.0)
+        .with_label("Checkpoint")
+        .with_value_text(hosted.caption(browsing));
+    Box::new(range_scrubber(
+        props,
+        |page: &mut TreePage, event: RangeScrubberEvent| {
+            let (RangeScrubberEvent::Preview(value) | RangeScrubberEvent::Commit(value)) = event;
+            page.show_checkpoint(value as usize - 1);
+        },
+    ))
+}
+
+/// The history region: the checkpoint control, its text value, the change
+/// counts with their marks, and every change as a list item. Absent below
+/// two checkpoints, as the sandbox hides its slider.
+pub(super) fn region(page: &TreePage) -> Option<Child> {
+    if presenter::browsing(page) && !page.presenter.as_ref()?.history_open {
+        return None;
+    }
+    let hosted = page.history.as_ref()?;
+    if hosted.len() < 2 {
+        return None;
+    }
+    let mut children: Vec<Child> = vec![Box::new(
+        el(
+            "div",
+            (
+                button("Earlier checkpoint", |page: &mut TreePage, _| {
+                    page.step_checkpoint(-1)
+                })
+                .attr("aria-disabled", (hosted.index == 0).to_string()),
+                slider(hosted, presenter::browsing(page)),
+                button("Later checkpoint", |page: &mut TreePage, _| {
+                    page.step_checkpoint(1)
+                })
+                .attr(
+                    "aria-disabled",
+                    (hosted.index + 1 == hosted.len()).to_string(),
+                ),
+            ),
+        )
+        .attr("class", "history-control"),
+    )];
+    children.push(Box::new(status_note(
+        "history-value",
+        hosted.caption(presenter::browsing(page)),
+    )));
+    if presenter::browsing(page) {
+        let shown = page.presenter.as_ref()?.checkpoint_source_open;
+        children.push(Box::new(disclosure_trigger(
+            if shown {
+                "Hide checkpoint source"
+            } else {
+                "Show checkpoint source"
+            },
+            shown,
+            |page: &mut TreePage| {
+                if let Some(pane) = &mut page.presenter {
+                    pane.checkpoint_source_open = !pane.checkpoint_source_open;
+                }
+            },
+        )));
+        if shown {
+            children.push(Box::new(
+                el("p", hosted.checkpoint()).attr("class", "presenter-evidence"),
+            ));
+        }
+    }
+    if let Some(error) = &hosted.error {
+        children.push(Box::new(
+            el("p", error.clone())
+                .attr("class", "tree-refusal")
+                .attr("role", "alert"),
+        ));
+    }
+    if let (Some(summary), Some(changes)) = (hosted.summary(), &hosted.changes) {
+        children.push(Box::new(
+            el("p", format!("Since the previous checkpoint: {summary}"))
+                .attr("class", "history-summary"),
+        ));
+        let items: Vec<Child> = changes
+            .spoken()
+            .into_iter()
+            .map(|text| Box::new(el("li", text).attr("role", "listitem")) as Child)
+            .collect();
+        children.push(Box::new(
+            el("ul", items)
+                .attr("role", "list")
+                .attr("aria-label", "Changes")
+                .attr("class", "history-changes"),
+        ));
+    }
+    Some(Box::new(
+        el("section", children)
+            .attr("class", "tree-history")
+            .attr("role", "region")
+            .attr("aria-label", "History"),
+    ))
+}

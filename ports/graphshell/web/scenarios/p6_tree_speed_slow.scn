@@ -1,0 +1,28 @@
+# Seiche's speed dial (physics catalog plan, 2026-10-03): slow motion on the
+# fixture (tree.html?physics_speed=0.2). Over the last thirty frames the
+# drawing moves on every one while the simulation steps on fewer, and the
+# canvas reports 0.2x. Time owed is wall time, so the share of frames that
+# step is 0.2 x the frame interval over a tick: one in five only at 60 Hz
+# (the canvas's native receipt holds that exactly).
+assert snap ready == true
+assert snap physics-speed == 0.2
+click role:button Play physics
+settle 2
+assert snap physics-paused == false
+click role:combobox Arrangement
+settle 1
+click role:option Free (physics alone)
+settle 1
+click role:button Apply arrangement
+settle 1
+assert snap layout == free
+settle 40
+log-physics slow
+assert snap physics-effective-speed >= 0.15
+assert snap physics-effective-speed <= 0.25
+assert snap pace-frames == 30
+assert snap pace-drawn-moved == 30
+assert snap pace-stepped >= 3
+assert snap pace-stepped <= 20
+assert snap finite == true
+log p6 speed slow receipt complete

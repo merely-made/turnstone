@@ -1,0 +1,9 @@
+# Same owner filtering, reached through the retained panel.
+click role:button Find and filter
+click role:textbox Search
+input-text graphshell-nonexistent-unique-query
+click role:button Apply filter
+assert snap filter-count == 0
+click role:button Clear filter
+assert snap filter-count >= 1
+capture p4_tree_find

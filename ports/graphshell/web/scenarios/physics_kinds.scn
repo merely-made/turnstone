@@ -1,0 +1,39 @@
+# Physics receipt: Kinds, particle life with a kind per node (by site here)
+# and a seeded rule matrix. Its signature is a living sort: energy above a
+# floor while the kinds chase and flee.
+assert title GRAPHSHELL H3 READY
+assert snap ready == true
+click role:button @data-command=physics:toggle
+settle 1
+assert snap physics-paused == false
+# No arrangement: the boot Spiral's anchor springs would pull under every law.
+click role:combobox Arrangement
+settle 1
+click role:option Free (physics alone)
+settle 1
+click role:button Apply arrangement
+settle 1
+assert snap layout == free
+click role:combobox Physics law
+settle 1
+click role:option Kinds
+settle 1
+click role:combobox Kinds
+settle 1
+click role:option By site
+settle 1
+click role:button Apply physics
+settle 1
+assert snap physics-law == kinds.particle-life
+assert snap physics-kind-source == site
+assert snap physics-profile == law.kinds
+capture physics_kinds_start
+wait
+settle 60
+capture physics_kinds_moving
+# Framing (2026-10-03): every node's centre on the visible canvas at the
+# frame this capture shows, read from the canvas's positions and camera.
+assert snap layout-outside == 0
+wait
+assert snap physics-energy >= 1
+log physics kinds receipt complete

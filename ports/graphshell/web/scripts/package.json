@@ -1,0 +1,5 @@
+{
+  "name": "graphshell-viewer-packaging",
+  "private": true,
+  "devDependencies": { "terser": "5.51.2" }
+}

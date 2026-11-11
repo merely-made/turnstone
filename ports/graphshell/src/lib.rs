@@ -1,0 +1,137 @@
+// Copyright 2026 Mark Alan Boykin
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+// SPDX-License-Identifier: MPL-2.0
+
+//! Graphshell's presentation host.
+//!
+//! G1 adds a native semantic view over the portable client state. Networking,
+//! product models, and source authority remain injected at the edge.
+
+#[cfg(all(feature = "alembic-workshop", not(target_arch = "wasm32")))]
+pub mod alembic_workshop;
+
+#[cfg(feature = "editable-blocks")]
+pub mod block_editing;
+#[cfg(feature = "editable-blocks")]
+pub mod block_pane;
+pub mod bound_actions;
+#[cfg(any(feature = "native", feature = "alembic-workshop-private"))]
+pub use graphshell_door::declaration;
+
+#[cfg(feature = "goal-surface")]
+pub mod goal_surface;
+#[cfg(feature = "moot-resources")]
+pub mod moot_resources;
+#[cfg(feature = "query-views")]
+pub mod query_views;
+#[cfg(feature = "retained-content")]
+pub mod retained_content;
+
+#[cfg(feature = "web")]
+pub mod access_inspection;
+#[cfg(feature = "web")]
+pub mod app;
+#[cfg(feature = "web")]
+pub mod appearance;
+#[cfg(feature = "web")]
+pub mod browser_storage;
+#[cfg(feature = "web")]
+#[cfg(test)]
+mod canvas_physics_tests;
+#[cfg(feature = "web")]
+pub mod canvas_reader;
+#[cfg(feature = "applets")]
+pub mod capsule_applet;
+#[cfg(feature = "web")]
+pub mod capture;
+#[cfg(all(test, feature = "web"))]
+mod capture_resources;
+#[cfg(all(test, feature = "web", feature = "goal-surface"))]
+mod kept_text_tests;
+#[cfg(feature = "web")]
+pub mod command_invocation;
+#[cfg(feature = "workspace-editor")]
+pub mod comms_open;
+#[cfg(any(feature = "native", feature = "web"))]
+pub mod distillery_w1;
+#[cfg(feature = "web")]
+pub mod field_inspection;
+#[cfg(feature = "web")]
+pub mod follower_edit;
+#[cfg(feature = "workspace-editor")]
+pub mod forme_workspace;
+#[cfg(feature = "web")]
+pub mod frame_budget;
+#[cfg(feature = "web")]
+pub mod host_dataset_view;
+#[cfg(feature = "web")]
+pub mod host_history_view;
+#[cfg(feature = "web")]
+pub mod host_presenter;
+#[cfg(feature = "web")]
+pub mod link_inspection;
+#[cfg(feature = "web")]
+pub mod local_edit;
+#[cfg(feature = "web")]
+pub mod local_intake;
+#[cfg(feature = "web")]
+pub mod local_locations;
+#[cfg(feature = "web")]
+pub mod local_profile;
+#[cfg(any(feature = "native", feature = "web"))]
+pub mod local_projection;
+#[cfg(feature = "web")]
+pub mod local_scene;
+#[cfg(feature = "alembic-workshop")]
+pub mod mere_host_alembic;
+#[cfg(feature = "web")]
+pub mod node_presentation;
+#[cfg(feature = "web")]
+pub mod pane_source;
+// Scene-spec cases of the personal graph record, which need the canvas
+// (pandect::personal_sync cannot name it: pictograph depends on pandect).
+#[cfg(all(test, feature = "personal-sync", not(target_arch = "wasm32")))]
+mod personal_sync_scene_tests;
+#[cfg(feature = "web")]
+pub mod presentation_binding;
+#[cfg(feature = "workspace-editor")]
+pub mod presentation_store;
+#[cfg(feature = "web")]
+pub mod product;
+#[cfg(feature = "web")]
+pub mod promoted_links;
+#[cfg(feature = "web")]
+pub mod responsive_links;
+#[cfg(feature = "web")]
+pub mod retained_policy;
+#[cfg(feature = "web")]
+pub mod speed_bar;
+#[cfg(feature = "web")]
+pub mod viewer_commands;
+
+#[cfg(any(feature = "native", feature = "web"))]
+pub mod practice_disclosure;
+#[cfg(any(feature = "native", feature = "web"))]
+pub mod practice_workspace;
+#[cfg(any(feature = "native", feature = "web"))]
+pub mod projection_compare;
+#[cfg(any(feature = "native", feature = "web"))]
+pub mod projection_compile;
+#[cfg(all(feature = "web", feature = "physics-engine"))]
+pub mod projection_dynamics_compare;
+#[cfg(all(feature = "web", feature = "physics-engine"))]
+pub mod projection_dynamics_receipt;
+#[cfg(any(feature = "native", feature = "web"))]
+pub mod projection_save;
+#[cfg(feature = "web")]
+pub mod transfer;
+#[cfg(feature = "web")]
+pub mod transfer_endpoint;
+#[cfg(all(feature = "webrtc-browser", target_arch = "wasm32"))]
+pub mod webrtc_browser;
+
+/// Graph browser policy shared by the product projections.
+#[cfg(feature = "web")]
+pub mod scope_policy;

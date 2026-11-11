@@ -1,0 +1,22 @@
+# One-tree plan, phase 3: the fixture inside a Cambium tree (tree.html).
+#
+# Pictograph's canvas draws through a texture producer in a custom-leaf slot.
+# Frames are timed from load, in the first window, and again once it has
+# had 600 frames to settle, in the same windows p3_presenter_fixture times on
+# index.html. A click on the fixture's web node, through the tree's own
+# pointer path, picks it.
+log phase 3: the fixture inside a Cambium tree
+timing start fixture-startup
+settle 240
+timing stop
+wait 600
+capture p3_tree_fixture_startup
+settle 600
+timing start fixture-steady
+settle 240
+timing stop
+wait 600
+click-node https://example.test/i2p-port
+settle 2
+assert snap picked == https://example.test/i2p-port
+capture p3_tree_fixture_picked

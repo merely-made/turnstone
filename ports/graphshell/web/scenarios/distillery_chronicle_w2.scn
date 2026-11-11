@@ -1,0 +1,22 @@
+# W2 headed path: the host-generated binding receipt is fetched by loader.js
+# before this scenario begins. It names one authored Chronicle definition,
+# records two successful source reads, verifies each shelfmark generation, and
+# applies the era-bands-off variant without replacing that definition.
+assert snap chronicle-receipt == verified
+assert snap chronicle-definition == distillery.chronicle
+assert snap chronicle-datasets == 2
+assert snap chronicle-shelfmark == round-trip
+assert snap chronicle-variant == era-bands-off
+assert snap chronicle-era-bands == false
+assert snap chronicle-generation >= 1
+assert snap remote-link == webrtc
+assert snap remote-state == open
+assert snap remote-generation >= 1
+assert snap remote-cards >= 1
+act session-remote
+settle 1
+assert snap session == remote
+assert snap remote-overlaps == 0
+capture distillery_chronicle_w2_bound
+wait
+log distillery Chronicle W2 authored binding headed receipt complete

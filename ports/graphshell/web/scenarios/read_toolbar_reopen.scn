@@ -1,0 +1,7 @@
+assert snap source == saved graph
+click role:button Read
+wait 90
+assert snap reading-text-size == 20
+assert snap reading-column-em == 32
+assert snap reading-find == closed
+capture graphshell_read_toolbar_reopened

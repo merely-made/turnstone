@@ -1,0 +1,25 @@
+# Fresh page on retained origin after p4_tree_coupling_strength.scn, motion=normal.
+assert snap reduced-motion == false
+assert snap physics-paused == true
+assert snap coupling-editing == false
+assert snap forme-accesses == 2
+remember reopened-scene
+click role:button Inspect fields
+reveal role:button Inspect field: Region study
+click role:button Inspect field: Region study
+reveal role:button Inspect coupling: 00000000-0000-0000-0000-0000000000c9
+click role:button Inspect coupling: 00000000-0000-0000-0000-0000000000c9
+assert snap coupling-inspector-strength == 0.125
+reveal role:button Undo saved coupling change
+click role:button Undo saved coupling change
+wait 120
+assert snap coupling-inspector-strength == 0.02
+reveal role:button Redo saved coupling change
+click role:button Redo saved coupling change
+wait 120
+assert snap coupling-inspector-strength == 0.125
+same reopened-scene nodes graph-session forme forme-accesses forme-geometry geometry
+capture reopened_strength_history
+reveal role:button Inspect coupling: 00000000-0000-0000-0000-0000000000ca
+click role:button Inspect coupling: 00000000-0000-0000-0000-0000000000ca
+assert snap coupling-inspector-strength == 0.08

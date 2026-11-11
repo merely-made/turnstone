@@ -1,0 +1,37 @@
+# Physics receipt: Energy, ForceAtlas2's force model — attraction linear in
+# distance along edges, repulsion falling as 1/d. Its signature is
+# separation: no overlapping bodies, communities apart.
+assert title GRAPHSHELL H3 READY
+assert snap ready == true
+click role:button @data-command=physics:toggle
+settle 1
+assert snap physics-paused == false
+# No arrangement: the boot Spiral's anchor springs would pull under every law.
+click role:combobox Arrangement
+settle 1
+click role:option Free (physics alone)
+settle 1
+click role:button Apply arrangement
+settle 1
+assert snap layout == free
+click role:combobox Physics law
+settle 1
+click role:option Energy
+settle 1
+click role:button Apply physics
+settle 1
+assert snap physics-law == energy.linlog
+assert snap physics-profile == law.energy
+capture physics_energy_start
+wait
+settle 60
+capture physics_energy_settled
+# Framing (2026-10-03): every node's centre on the visible canvas at the
+# frame this capture shows, read from the canvas's positions and camera.
+assert snap layout-outside == 0
+wait
+settle 300
+assert snap layout-overlaps == 0
+# Framing after the settle.
+assert snap layout-outside == 0
+log physics energy receipt complete

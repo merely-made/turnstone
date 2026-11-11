@@ -1,0 +1,22 @@
+# Native window, the data directory of native_guest_flow.scn (a saved document holding a progression
+# block), the same pack given but not approved: the class is unclaimed until review and approval.
+assert snap adapter-installed == false
+assert snap blocks-adapters == metre
+click .blocks-select-1
+wait 300
+assert snap blocks-unclaimed-notices == 1
+capture unclaimed
+click .blocks-review-adapters
+wait 300
+assert snap panel-open == true
+assert snap adapter-approve-offered == true
+capture review_panel
+click .blocks-approve-adapter
+assert snap adapter-installed == true
+assert snap adapter-approve-offered == false
+wait 300
+capture loaded_after_approval
+click .blocks-view-score
+assert snap blocks-view-mode == Score
+wait 300
+capture score_after_reopen

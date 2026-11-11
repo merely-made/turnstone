@@ -1,0 +1,20 @@
+# Same local origin after p4_tree_forme_draft.scn.
+assert snap source == saved graph
+assert snap storage-reopened == true
+assert snap forme-draft == false
+assert snap forme-locked == true
+assert snap forme-accesses == 2
+assert snap forme-cells == 2
+assert snap forme-can-redo == true
+remember reopened
+click role:button Redo saved forme change
+wait 120
+assert snap forme-cells == 1
+assert snap forme-accesses == 2
+assert snap forme-draft == false
+capture forme_saved_redo_reopened
+click role:button Undo saved forme change
+wait 120
+same reopened forme-geometry
+same reopened forme
+log saved Forme history survives browser reopen with stable identity

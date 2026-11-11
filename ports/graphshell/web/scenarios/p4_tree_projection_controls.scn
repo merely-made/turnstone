@@ -1,0 +1,6 @@
+# The public editor entry must exist on the one retained tree.
+click role:button Projection editor
+click role:button Load practice set
+assert snap projection-executable == true
+assert snap projection-occurrences == 3
+capture p4_tree_projection_controls

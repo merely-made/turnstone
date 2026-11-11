@@ -1,0 +1,63 @@
+# Physics receipt: Density on the old page, through the panel. Its signature
+# is room following mass (the rank of mass against area share) and an even
+# density, not energy (the flow writes positions). On the fixture the bar is
+# qualitative (ruled 2026-10-03): from the boot start the rank rises above
+# the start's and the density CV falls. Springs from the same start is the
+# control (physics_density_control), and picking Density disables the
+# overlays it refuses with the law's reason (it takes Hub room, Centre and
+# Tide converted, F73 and F81).
+assert title GRAPHSHELL H3 READY
+assert snap ready == true
+# The boot arrangement pauses the canvas, so the law is set and applied with
+# nothing moving: its start is the boot layout, the control's too.
+assert snap physics-paused == true
+# An overlay ticked under Springs that Density refuses is disabled and
+# unticked once Density is picked, so Density applies alone.
+click role:combobox Physics law
+settle 1
+click role:option Springs
+settle 1
+check-role Grid on
+assert retained {"role":"status","label":"Overlay availability","count":0}
+click role:combobox Physics law
+settle 1
+click role:option Density
+settle 1
+settle 1
+assert retained {"role":"checkbox","label":"Grid","attribute":"aria-disabled","value":"true"}
+assert retained {"role":"status","label":"Overlay availability","text":"Density takes only Hub room, Centre and Tide"}
+capture physics_density_refused
+wait
+click role:button Apply physics
+settle 1
+assert snap physics-law == density.gastner-newman
+assert snap physics-profile == law.density
+assert retained {"role":"status","label":"Physics status","text":"Physics set to Density"}
+assert snap physics-paused == true
+log-layout density start
+# No arrangement: the boot Spiral's anchor springs would pull under every
+# law. Returning to none resumes the canvas.
+click role:combobox Arrangement
+settle 1
+click role:option Free (physics alone)
+settle 1
+click role:button Apply arrangement
+settle 1
+assert snap layout == free
+assert snap physics-paused == false
+capture physics_density_start
+settle 2
+# Until the flow stops (60 passes at least, then three calm ones, the
+# 120-pass cap behind them; one tick a frame here).
+settle 7400
+assert snap physics-continuous == false
+capture physics_density_settled
+# Framing (2026-10-04, "Density gets the check here"): every node's centre on
+# the visible canvas at the frame this capture shows, after the settle.
+assert snap layout-outside == 0
+wait
+log-layout density settled
+assert snap layout-rank-rose == true
+assert snap layout-cv-fell == true
+assert snap layout-overlaps == 0
+log physics density receipt complete

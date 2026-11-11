@@ -1,0 +1,75 @@
+# Shared compass, editable trail and view-only close controls over real readings.
+assert snap source == saved graph
+remember initial
+wait 120
+click role:button Map
+wait 120
+click role:button Fit graph
+settle 20
+capture graphshell_scope_location_map
+remember before-edit
+click role:button Edit location:
+click role:combobox Address or graph search
+input-text no-such-document
+key Escape
+settle 5
+same before-edit scope-level
+same before-edit scope-focus
+same before-edit scope-back
+same before-edit scope-forward
+click role:button Edit location:
+click role:combobox Address or graph search
+input-text mere://reading/field-notes
+settle 5
+capture graphshell_scope_location_search
+key Enter
+wait 120
+assert snap scope-level == Document
+click role:button Find in reading
+settle 5
+click role:textbox Find text in reading
+input-text Field observation 4
+settle 10
+key Escape
+wait 90
+remember origin
+capture graphshell_scope_location_reading
+click role:button Edit location:
+click role:combobox Address or graph search
+input-text related-note
+key Enter
+wait 120
+assert snap scope-level == Document
+capture graphshell_scope_location_tabs
+click role:button Close Relationship field notes
+wait 120
+assert snap scope-level == Document
+same origin reading-anchor
+click role:button Close reading
+wait 120
+assert snap scope-level == Neighborhood
+same initial node-count
+capture graphshell_scope_location_closed
+click role:button Down:
+wait 120
+assert snap scope-level == Document
+same origin reading-anchor
+click role:button Up:
+wait 120
+# The restored tiny neighborhood can overlap. Separate its topmost note with
+# an ordinary drag, then fit; a drag must keep the scope at Neighborhood.
+press-node mere://reading/related-note
+settle 1
+move-by 180 -90
+settle 1
+release-at
+wait 90
+assert snap scope-level == Neighborhood
+click role:button Fit graph
+settle 20
+click-node mere://reading/field-notes
+click-node mere://reading/field-notes
+wait 120
+assert snap scope-level == Document
+same origin reading-anchor
+capture graphshell_scope_location_returned

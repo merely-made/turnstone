@@ -1,0 +1,58 @@
+click role:button Panes
+click role:button Graph controls
+reveal role:button Editable document
+click role:button Editable document
+assert snap blocks-adapters == metre,progression
+remember original-document
+reveal .blocks-insert-example
+click .blocks-insert-example
+remember cards-only
+reveal .blocks-view-score
+click .blocks-view-score
+same cards-only blocks-source
+reveal .blocks-command-write-notation
+click .blocks-command-write-notation
+wait 800
+assert snap blocks-view-mode == Chart
+remember written-notation
+wait 800
+reveal .blocks-guest-leaf
+wait 200
+capture chart
+wait 800
+reveal .blocks-guest-event-1-1
+click .blocks-guest-event-1-1
+assert snap blocks-event-selected == 1:1
+same written-notation blocks-source
+reveal .blocks-view-tab
+click .blocks-view-tab
+assert snap blocks-view-mode == Tab
+assert snap blocks-event-selected == 1:1
+same written-notation blocks-source
+wait 800
+reveal .blocks-guest-leaf
+wait 200
+capture tab_rest
+reveal .blocks-view-score
+click .blocks-view-score
+assert snap blocks-view-mode == Score
+assert snap blocks-event-selected == 1:1
+same written-notation blocks-source
+wait 800
+reveal .blocks-guest-leaf
+wait 200
+capture score_rest
+reveal .blocks-undo
+click .blocks-undo
+same cards-only blocks-source
+reveal .blocks-redo
+click .blocks-redo
+same written-notation blocks-source
+reveal .blocks-save
+click .blocks-save
+wait 180
+assert snap blocks-saving == false
+assert snap blocks-dirty == false
+reveal .blocks-close
+click .blocks-close
+assert snap blocks-open == false

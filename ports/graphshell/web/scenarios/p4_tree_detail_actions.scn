@@ -1,0 +1,39 @@
+# Typed detail actions through the same retained controls used by a person.
+# Run on tree.html?app=local; the saved graph fixture includes both addresses.
+click role:button Fit graph
+settle 3
+click-node https://example.test/i2p-port
+key Enter
+settle 2
+assert snap detail-open == true
+remember detail
+click role:textbox Facet id
+input-text notes.user/v1
+click role:textbox Facet JSON
+input-text {"note":"retained_detail"}
+click role:button Save facet
+wait 120
+assert snap save-state == saved
+assert snap detail-facet == {"note":"retained_detail"}
+same detail geometry
+same detail camera
+same detail physics-paused
+click role:textbox Relate to address
+input-text i2p://reference/service
+click role:combobox Relation kind
+click role:option Cites
+click role:button Add relation
+wait 120
+assert snap save-state == saved
+assert snap selected-count == 2
+assert text selected: 2
+click role:combobox Representation
+click role:option Bare
+click role:button Use representation
+assert snap face == bare
+click role:combobox Open handler
+click role:option Inspect in Graphshell
+click role:button Open selected
+assert snap action-count == 1
+assert text Accepted
+capture p4_tree_detail_actions

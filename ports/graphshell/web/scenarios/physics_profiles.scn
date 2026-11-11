@@ -1,0 +1,124 @@
+# Physics receipt: the donor's ten profiles, each applied through the profile
+# picker, each naming itself back with its law and the overlays it installs.
+assert title GRAPHSHELL H3 READY
+assert snap ready == true
+click role:button @data-command=physics:toggle
+settle 1
+assert snap physics-paused == false
+# No arrangement: the boot Spiral's anchor springs would pull under every law.
+click role:combobox Arrangement
+settle 1
+click role:option Free (physics alone)
+settle 1
+click role:button Apply arrangement
+settle 1
+assert snap layout == free
+click role:combobox Profile
+settle 1
+click role:option Liquid
+settle 1
+click role:button Apply profile
+settle 1
+assert snap physics-profile == liquid
+assert snap physics-law == spring.rapier
+assert snap physics-overlays == gravity-locus
+assert retained {"role":"checkbox","label":"Centre","attribute":"data-overlay","value":"gravity-locus"}
+click role:combobox Profile
+settle 1
+click role:option Gas
+settle 1
+click role:button Apply profile
+settle 1
+assert snap physics-profile == gas
+assert snap physics-law == charge.barnes-hut
+click role:combobox Profile
+settle 1
+click role:option Solid
+settle 1
+click role:button Apply profile
+settle 1
+assert snap physics-profile == solid
+assert snap physics-overlays == domain-cluster,degree-repulsion
+click role:combobox Profile
+settle 1
+click role:option Archipelago
+settle 1
+click role:button Apply profile
+settle 1
+assert snap physics-profile == archipelago
+assert snap physics-law == energy.linlog
+assert snap physics-overlays == domain-cluster,degree-repulsion
+click role:combobox Profile
+settle 1
+click role:option Constellation
+settle 1
+click role:button Apply profile
+settle 1
+assert snap physics-profile == constellation
+assert snap physics-overlays == degree-repulsion,hub-gravity
+click role:combobox Profile
+settle 1
+click role:option Crystal
+settle 1
+click role:button Apply profile
+settle 1
+assert snap physics-profile == crystal
+assert snap physics-law == stress.kamada-kawai
+assert snap physics-overlays == grid-snap
+capture physics_profiles_crystal
+# Framing (2026-10-03): every node's centre on the visible canvas at the
+# frame this capture shows.
+assert snap layout-outside == 0
+wait
+click role:combobox Profile
+settle 1
+click role:option Tide
+settle 1
+click role:button Apply profile
+settle 1
+assert snap physics-profile == tide
+assert snap physics-overlays == tide
+settle 60
+assert snap physics-energy >= 0.1
+click role:combobox Profile
+settle 1
+click role:option Sediment
+settle 1
+click role:button Apply profile
+settle 1
+assert snap physics-profile == sediment
+assert snap physics-overlays == depth-gravity
+capture physics_profiles_sediment
+# Framing (2026-10-03): every node's centre on the visible canvas at the
+# frame this capture shows.
+assert snap layout-outside == 0
+wait
+click role:combobox Profile
+settle 1
+click role:option Magnet
+settle 1
+click role:button Apply profile
+settle 1
+assert snap physics-profile == magnet
+assert snap physics-law == flow.magnetic
+click role:combobox Profile
+settle 1
+click role:option Void
+settle 1
+click role:button Apply profile
+settle 1
+assert snap physics-profile == void
+assert snap physics-law == still.default
+# And a custom pair names no profile: Still plus the skeleton, then the
+# checkbox off again.
+check-role Skeleton on
+click role:button Apply physics
+settle 1
+assert snap physics-overlays == skeleton
+assert snap physics-profile == custom
+check-role Skeleton off
+click role:button Apply physics
+settle 1
+assert snap physics-profile == void
+assert snap layout-outside == 0
+log physics profiles receipt complete

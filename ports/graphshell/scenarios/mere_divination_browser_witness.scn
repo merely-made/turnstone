@@ -1,0 +1,46 @@
+# Same admitted resident mere, after native Graphshell saved its own Grid view.
+# The browser is joined through c4_webrtc_host --endpoint resident-mere.
+settle 3
+wait
+assert snap mere-status == open
+assert snap session == remote
+assert snap mere-record == Reading session
+assert snap mere-record-data ~ context digest
+assert snap mere-layout == grid.default
+assert snap mere-view-saved == true
+capture 01_browser_resident_own_view
+click role:button @aria-label=Read Cleromancy and Turquet
+settle 2
+wait
+assert snap mere-record == Cleromancy and Turquet
+assert snap mere-record-data ~ What deserves attention
+assert snap mere-view-saved == true
+capture 02_browser_context_record
+click role:button @aria-label=Read Reading session
+settle 2
+wait
+assert snap mere-record == Reading session
+assert snap mere-record-data ~ context digest
+click role:button @data-action=refresh
+settle 2
+wait
+assert snap mere-record == Reading session
+assert snap mere-view-saved == true
+capture 03_browser_refreshed_record
+click role:button Disconnect
+settle 2
+wait
+assert snap mere-status == unavailable
+assert snap mere-records == 0
+assert snap mere-sessions == 0
+assert snap mere-archives == 0
+capture 04_browser_closed_purge
+click role:button Reconnect
+settle 3
+wait
+assert snap mere-status == open
+assert snap mere-record == Reading session
+assert snap mere-record-data ~ context digest
+assert snap mere-layout == grid.default
+assert snap mere-view-saved == true
+capture 05_browser_rejoined_own_view

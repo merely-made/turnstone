@@ -1,0 +1,43 @@
+# Expose retained disclosure controls; return focus to the original canvas key target.
+click role:button Remote session
+focus-retained .tree-canvas
+# C4b.1: the real mount. The page joined a host over WebRTC (`?signal=`), so
+# the remote session is the live fixture's board, not the in-process canary.
+#
+# `wait` holds while a remote answer is still to come: the join and the mount
+# first, then each intent's round trip and the bell-driven resume after it.
+wait
+assert snap remote-link == webrtc
+assert snap remote-state == open
+assert snap remote-revision == 1
+assert snap remote-cards == 1
+act session-remote
+settle 1
+assert snap session == remote
+assert snap active-session ~ Remote projection
+capture c4b1_mounted
+wait
+# The endpoint advertises both intents; the detail surface offers them as
+# buttons. The forbidden one is refused, and the revision stands still —
+# measured by a resnapshot, since a refusal rings no bell.
+act invoke-action
+settle 1
+assert retained {"role":"group","label":"Remote actions","text":"Append a card"}
+assert retained {"role":"group","label":"Remote actions","text":"Forbidden action"}
+click role:button Forbidden action
+wait
+assert snap action-status ~ Rejected
+assert snap remote-revision == 1
+assert snap remote-cards == 1
+# The admitted one is accepted; the bell it rings drives a resume the host
+# answers by diff, and the canvas shows the second card.
+click role:button Append a card
+wait
+assert snap action-status ~ Accepted
+assert snap remote-revision == 2
+assert snap remote-cards == 2
+assert snap remote-resume ~ diff
+assert event remote-bell revision 2
+capture c4b1_appended
+wait
+log c4b1 live board receipt complete

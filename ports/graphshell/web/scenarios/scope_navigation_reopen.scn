@@ -1,0 +1,14 @@
+assert snap source == saved graph
+wait 120
+assert snap scope-level == Document
+assert snap scope-back == true
+remember reopened
+capture graphshell_scope_reopened
+click role:button Up:
+wait 120
+assert snap scope-level == Neighborhood
+click role:button Down:
+wait 120
+assert snap scope-level == Document
+same reopened reading-anchor
+capture graphshell_scope_reopened_return

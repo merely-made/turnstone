@@ -1,0 +1,824 @@
+// Copyright 2026 Mark Alan Boykin
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+// SPDX-License-Identifier: MPL-2.0
+
+//! Graphshell's reference-host composition over local and remote projections.
+
+use crate::product::ProductHost;
+use chirograph::{
+    CacheRetention, CapabilityProfile, ContentHash, IntentInvocation, IntentResult,
+    PresentationCapability, ProjectionSession, ProjectionSnapshot, ResourceRequest,
+};
+use graphshell_client::{ClientState, PresentationResolution, ResolvedContent};
+use graphshell_endpoint::{IntentSink, PresentationSource, ProjectionSource};
+use graphshell_host::handlers::{OpenAddressV1, intent_id, local_profile_handlers};
+use muniment::Backend;
+use pandect::MereSessions;
+use sceno::InstanceId;
+
+use pandect::access::AccessContext;
+use crate::local_profile::LocalProfile;
+use graphshell_host::mere_host::{
+    FIXTURE_DEVICE_TWO_ADDRESS, FIXTURE_PERSONA_ADDRESS, HOST_SLOT, MereHost, MereHostError,
+    SelectedPersonaRef, fixture_handlers,
+};
+use crate::product::{
+    PINNED_PROJECTION_FACET, PinnedProjectionAuthorityV1, PinnedProjectionCardV1,
+};
+
+#[derive(Debug)]
+pub enum AppError {
+    Host(MereHostError),
+    Client(String),
+    LocalProjectionMissing,
+}
+
+impl std::fmt::Display for AppError {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Host(error) => write!(formatter, "{error}"),
+            Self::Client(error) => write!(formatter, "Graphshell client: {error}"),
+            Self::LocalProjectionMissing => {
+                write!(formatter, "local Mere projection is not mounted")
+            },
+        }
+    }
+}
+
+impl std::error::Error for AppError {}
+
+impl From<MereHostError> for AppError {
+    fn from(value: MereHostError) -> Self {
+        Self::Host(value)
+    }
+}
+
+/// One Graphshell process: a local Mere endpoint and the same portable client
+/// state used for remote endpoints.
+pub struct GraphshellApp<B> {
+    pub host: MereHost<B>,
+    pub client: ClientState,
+}
+
+impl<B: Backend + Clone> GraphshellApp<B> {
+    pub fn fixture(backend: B, selected_persona: SelectedPersonaRef) -> Result<Self, AppError> {
+        Ok(Self::new(MereHost::fixture(
+            backend,
+            selected_persona,
+            fixture_handlers(),
+        )?))
+    }
+
+    /// Reopen Graphshell's durable truth, seeding the reference fixture only
+    /// when this backend holds neither a session nor the old single slot.
+    pub async fn open_or_fixture(
+        backend: B,
+        selected_persona: SelectedPersonaRef,
+    ) -> Result<Self, AppError> {
+        Self::open_or_fixture_kind(backend, selected_persona, false).await
+    }
+
+    /// The field-inspection study must be hosted in its own backend namespace.
+    pub async fn open_or_field_inspection_fixture(
+        backend: B,
+        selected_persona: SelectedPersonaRef,
+    ) -> Result<Self, AppError> {
+        Self::open_or_fixture_kind(backend, selected_persona, true).await
+    }
+
+    async fn open_or_fixture_kind(
+        backend: B,
+        selected_persona: SelectedPersonaRef,
+        field_inspection: bool,
+    ) -> Result<Self, AppError> {
+        let sessions = MereSessions::new(backend.clone())
+            .list()
+            .await
+            .map_err(MereHostError::from)?;
+        let old_slot = backend.get(HOST_SLOT).await.map_err(MereHostError::from)?;
+        if sessions.is_empty() && old_slot.is_none() {
+            if field_inspection {
+                return Ok(Self::new(MereHost::field_inspection_fixture(
+                    backend,
+                    selected_persona,
+                    fixture_handlers(),
+                )?));
+            }
+            return Self::fixture(backend, selected_persona);
+        }
+        let host = MereHost::open(
+            backend,
+            selected_persona.clone(),
+            fixture_handlers(),
+            AccessContext {
+                persona: selected_persona.persona,
+                device: FIXTURE_DEVICE_TWO_ADDRESS.to_string(),
+                at_ms: 3_000,
+            },
+        )
+        .await?;
+        Ok(Self::new(host))
+    }
+}
+
+impl<B: Backend + Clone> GraphshellApp<B> {
+    /// Open the installed browser profile's store: its latest session, or an
+    /// empty one. It never seeds a fixture or names a fixture persona.
+    pub async fn open_local(
+        backend: B,
+        profile: &LocalProfile,
+        at_ms: u64,
+    ) -> Result<Self, AppError> {
+        let host = MereHost::open(
+            backend,
+            profile.persona(),
+            local_profile_handlers(),
+            profile.access_context(at_ms),
+        )
+        .await?;
+        Ok(Self::new(host))
+    }
+
+    /// Observe the installed profile's store while another view writes it.
+    pub async fn observe_local(
+        backend: B,
+        profile: &LocalProfile,
+        at_ms: u64,
+    ) -> Result<Self, AppError> {
+        let host = MereHost::observe(
+            backend,
+            profile.persona(),
+            local_profile_handlers(),
+            profile.access_context(at_ms),
+        )
+        .await?;
+        Ok(Self::new(host))
+    }
+}
+
+impl<B: Backend> GraphshellApp<B> {
+    pub fn new(host: MereHost<B>) -> Self {
+        Self {
+            host,
+            client: ClientState::default(),
+        }
+    }
+
+    /// Mount the local Mere endpoint through the same Graphshell client path as
+    /// any remote scene, then fetch its portable card resources.
+    pub fn mount_local(&mut self) -> Result<ProjectionSession, AppError> {
+        let request = self.host.local_request();
+        let session = request.session.clone();
+        let snapshot = self.host.snapshot(request)?;
+        let resources: Vec<_> = snapshot
+            .presentation
+            .offers
+            .values()
+            .flatten()
+            .map(|offer| offer.resource)
+            .collect();
+        self.client
+            .apply_snapshot(snapshot)
+            .map_err(|error| AppError::Client(format!("{error:?}")))?;
+        for resource in resources {
+            let response = self.host.resource(ResourceRequest {
+                session: session.clone(),
+                resource,
+            })?;
+            self.client
+                .apply_resource(response)
+                .map_err(|error| AppError::Client(format!("{error:?}")))?;
+        }
+        Ok(session)
+    }
+
+    /// Mount an independently supplied endpoint snapshot.
+    pub fn mount_remote(
+        &mut self,
+        snapshot: ProjectionSnapshot,
+    ) -> Result<ProjectionSession, AppError> {
+        let session = snapshot.session.clone();
+        self.client
+            .apply_snapshot(snapshot)
+            .map_err(|error| AppError::Client(format!("{error:?}")))?;
+        Ok(session)
+    }
+
+    /// Mount the deterministic G1 endpoint as H1's remote peer.
+    pub fn mount_fixture_remote(&mut self) -> Result<ProjectionSession, AppError> {
+        let mut remote = graphshell_host::canary::FixtureEndpoint::new();
+        let request = remote.request();
+        let snapshot = remote
+            .snapshot(request)
+            .map_err(|error| AppError::Client(error.to_string()))?;
+        self.mount_remote(snapshot)
+    }
+
+    /// Copy one user-selected exportable portable card into the local Mere
+    /// graph as an explicitly non-authoritative projection.
+    pub fn pin_portable_card(
+        &mut self,
+        session: &ProjectionSession,
+        instance: InstanceId,
+    ) -> Result<uuid::Uuid, AppError> {
+        let (source, epoch, revision) = {
+            let mounted = self
+                .client
+                .mounted(session)
+                .ok_or_else(|| AppError::Client("projection is not mounted".to_string()))?;
+            if mounted.cache_policy.retention != CacheRetention::Exportable {
+                return Err(AppError::Client(
+                    "projection does not permit export into the local graph".to_string(),
+                ));
+            }
+            let item = mounted
+                .scene
+                .active_item(instance)
+                .ok_or_else(|| AppError::Client("projection item is not active".to_string()))?;
+            let source = mounted
+                .scene
+                .tables
+                .sources
+                .get(item.source.0 as usize)
+                .and_then(Option::as_ref)
+                .cloned()
+                .ok_or_else(|| AppError::Client("projection source is unavailable".to_string()))?;
+            (source, mounted.scene.epoch.0, mounted.scene.revision.0)
+        };
+        let resolved = self
+            .client
+            .resolve(
+                session,
+                instance,
+                &CapabilityProfile::new([PresentationCapability::PortableCard]),
+            )
+            .map_err(|error| AppError::Client(format!("{error:?}")))?;
+        let PresentationResolution::Ready(resolved) = resolved else {
+            return Err(AppError::Client(
+                "portable card bytes have not arrived".to_string(),
+            ));
+        };
+        let ResolvedContent::PortableCard(card) = resolved.content else {
+            return Err(AppError::Client(
+                "projection item has no portable card".to_string(),
+            ));
+        };
+
+        let source_bytes =
+            serde_json::to_vec(&source).expect("projection source references always serialize");
+        let address = format!("graphshell://projection/{}", ContentHash::of(&source_bytes));
+        let id = self
+            .host
+            .create_address(&address, &card.title)
+            .map_err(|error| AppError::Client(error.to_string()))?;
+        let mut tags = card.badges.clone();
+        tags.push("projection".to_string());
+        self.host
+            .edit_node(id, &card.title, tags)
+            .map_err(|error| AppError::Client(error.to_string()))?;
+        let pinned = PinnedProjectionCardV1 {
+            source,
+            observed_session: session.0.clone(),
+            observed_epoch: epoch,
+            observed_revision: revision,
+            authority: PinnedProjectionAuthorityV1::SourceOwned,
+            card,
+        };
+        self.host
+            .set_product_facet(
+                id,
+                PINNED_PROJECTION_FACET,
+                &serde_json::to_string(&pinned).expect("pinned projection cards always serialize"),
+            )
+            .map_err(|error| AppError::Client(error.to_string()))?;
+        Ok(id)
+    }
+
+    /// Invoke a typed local open intent and refresh the mounted local scene when
+    /// its access record changes.
+    pub fn open_address(&mut self, address: &str, handler: &str) -> Result<IntentResult, AppError> {
+        let session = self.host.session();
+        let mounted = self
+            .client
+            .mounted(&session)
+            .ok_or(AppError::LocalProjectionMissing)?;
+        let target = self
+            .host
+            .instance_for_address(address)
+            .ok_or(AppError::LocalProjectionMissing)?;
+        let payload = serde_json::to_vec(&OpenAddressV1 {
+            address: address.to_string(),
+            handler: handler.to_string(),
+        })
+        .expect("OpenAddressV1 always serializes");
+        let result = self.host.invoke(IntentInvocation {
+            session: session.clone(),
+            target,
+            observed_epoch: mounted.scene.epoch,
+            observed_revision: mounted.scene.revision,
+            intent: intent_id(handler),
+            payload,
+        })?;
+        if result == IntentResult::Accepted {
+            self.mount_local()?;
+        }
+        Ok(result)
+    }
+
+    pub fn use_fixture_phone(&mut self, at_ms: u64) {
+        self.host.set_access_context(AccessContext {
+            persona: FIXTURE_PERSONA_ADDRESS.to_string(),
+            device: FIXTURE_DEVICE_TWO_ADDRESS.to_string(),
+            at_ms,
+        });
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::collections::BTreeSet;
+
+    use chirograph::IntentResult;
+    use kernel::address::AddressKind;
+    use kernel::graph::{EdgeFamily, Graph, RelationKind};
+    use muniment::MemoryBackend;
+    use serde_json::json;
+
+    use super::*;
+    use graphshell_host::mere_host::{
+        FIXTURE_FILE_ADDRESS, FIXTURE_GRANT_ADDRESS, FIXTURE_KEY_ADDRESS, FIXTURE_NON_WEB_ADDRESS,
+        FIXTURE_PERSONA_ADDRESS, FIXTURE_RECEIPT_ADDRESS, FIXTURE_REMOTE_ADDRESS,
+        FIXTURE_SCENE_ADDRESS, FIXTURE_WEB_ADDRESS, UNKNOWN_FIXTURE_FACET, fixture_handlers,
+    };
+    use crate::product::{
+        PINNED_PROJECTION_FACET, PinnedProjectionAuthorityV1, PinnedProjectionCardV1,
+    };
+
+    const SAVED_AT_SECS: u64 = 1_700_000_000;
+
+    fn selected() -> SelectedPersonaRef {
+        SelectedPersonaRef {
+            persona: FIXTURE_PERSONA_ADDRESS.to_string(),
+            profile: "profile:graphshell-h1".to_string(),
+        }
+    }
+
+    fn access_context() -> AccessContext {
+        AccessContext {
+            persona: FIXTURE_PERSONA_ADDRESS.to_string(),
+            device: FIXTURE_DEVICE_TWO_ADDRESS.to_string(),
+            at_ms: 3_000,
+        }
+    }
+
+    #[test]
+    fn local_profile_opens_empty_and_reopens_its_own_scope() {
+        pollster::block_on(async {
+            let backend = MemoryBackend::new();
+            let profile = LocalProfile::new(
+                uuid::Uuid::from_u128(7),
+                crate::local_profile::Browser::Chromium,
+            );
+            let mut app = GraphshellApp::open_local(backend.clone(), &profile, 1)
+                .await
+                .expect("open local profile");
+            assert!(!app.host.was_reopened());
+            assert_eq!(app.host.graph().node_count(), 0);
+            assert_eq!(app.host.selected_persona().persona, profile.scope());
+            let member =
+                crate::local_intake::create_address(&mut app, "https://example.org/", "Example")
+                    .expect("add address");
+            app.host.persist(SAVED_AT_SECS).await.expect("persist");
+            let session = app.host.graph_session().id();
+
+            let reopened = GraphshellApp::open_local(backend, &profile, 2)
+                .await
+                .expect("reopen local profile");
+            assert!(reopened.host.was_reopened());
+            assert_eq!(reopened.host.graph_session().id(), session);
+            assert!(reopened.host.graph().get_node_by_id(member).is_some());
+            assert_eq!(reopened.host.graph().node_count(), 1);
+        });
+    }
+
+    #[test]
+    fn a_second_view_observes_the_writers_commits_and_stores_nothing() {
+        pollster::block_on(async {
+            use muniment::Backend as _;
+            async fn bytes(store: &MemoryBackend) -> Vec<(String, Vec<u8>)> {
+                let mut keys = store.list("").await.unwrap();
+                keys.sort();
+                let mut out = Vec::new();
+                for key in keys {
+                    out.push((key.clone(), store.get(&key).await.unwrap().unwrap()));
+                }
+                out
+            }
+            let backend = MemoryBackend::new();
+            let profile = LocalProfile::new(
+                uuid::Uuid::from_u128(8),
+                crate::local_profile::Browser::Firefox,
+            );
+            // Before the writer stores anything, an observer sees an empty graph.
+            let empty = GraphshellApp::observe_local(backend.clone(), &profile, 1)
+                .await
+                .expect("observe an empty store");
+            assert_eq!(empty.host.graph().node_count(), 0);
+            assert!(bytes(&backend).await.is_empty(), "observing writes nothing");
+
+            let mut writer = GraphshellApp::open_local(backend.clone(), &profile, 2)
+                .await
+                .expect("open the writer");
+            let member =
+                crate::local_intake::create_address(&mut writer, "https://example.org/", "Example")
+                    .expect("add address");
+            writer.host.persist(SAVED_AT_SECS).await.expect("persist");
+
+            let mut observer = GraphshellApp::observe_local(backend.clone(), &profile, 3)
+                .await
+                .expect("observe the writer's store");
+            assert!(observer.host.is_observing());
+            assert_eq!(
+                observer.host.graph_session().id(),
+                writer.host.graph_session().id()
+            );
+            assert!(observer.host.graph().get_node_by_id(member).is_some());
+            let frozen = bytes(&backend).await;
+            assert!(
+                crate::local_intake::create_address(&mut observer, "https://example.net/", "No")
+                    .is_err(),
+                "an observer refuses an edit before it lands"
+            );
+            assert_eq!(observer.host.graph().node_count(), 1);
+            observer
+                .host
+                .persist(SAVED_AT_SECS)
+                .await
+                .expect("nothing to store");
+            assert_eq!(bytes(&backend).await, frozen, "the observer stored nothing");
+
+            // The writer's next commit is seen by the next observation.
+            crate::local_intake::create_address(&mut writer, "https://example.com/", "Next")
+                .expect("writer edits");
+            writer
+                .host
+                .persist(SAVED_AT_SECS + 1)
+                .await
+                .expect("persist");
+            let refreshed = GraphshellApp::observe_local(backend, &profile, 4)
+                .await
+                .expect("observe again");
+            assert_eq!(refreshed.host.graph().node_count(), 2);
+        });
+    }
+
+    #[test]
+    fn browser_host_seeds_once_then_reopens_the_stored_graph() {
+        pollster::block_on(async {
+            let backend = MemoryBackend::new();
+            let mut seeded = GraphshellApp::open_or_fixture(backend.clone(), selected())
+                .await
+                .expect("seed browser host");
+            assert!(!seeded.host.was_reopened());
+            assert_eq!(seeded.host.graph().node_count(), 11);
+            seeded.host.persist(SAVED_AT_SECS).await.expect("persist");
+
+            let reopened = GraphshellApp::open_or_fixture(backend, selected())
+                .await
+                .expect("reopen browser host");
+            assert!(reopened.host.was_reopened());
+            assert_eq!(reopened.host.graph().node_count(), 11);
+        });
+    }
+
+    #[test]
+    fn h1_fixture_projects_mutates_persists_and_reopens_byte_equivalently() {
+        pollster::block_on(async {
+            let backend = MemoryBackend::new();
+            let mut app = GraphshellApp::fixture(backend.clone(), selected()).expect("fixture");
+            let local = app.mount_local().expect("mount local");
+            let remote = app.mount_fixture_remote().expect("mount remote");
+
+            assert!(app.client.mounted(&local).is_some());
+            assert!(app.client.mounted(&remote).is_some());
+            assert_eq!(app.host.selected_persona(), &selected());
+            assert_eq!(app.host.graph().node_count(), 11);
+
+            let web_kind = app
+                .host
+                .graph()
+                .get_node_by_url(FIXTURE_WEB_ADDRESS)
+                .unwrap()
+                .1
+                .primary_address()
+                .address_kind();
+            let custom_kind = app
+                .host
+                .graph()
+                .get_node_by_url(FIXTURE_NON_WEB_ADDRESS)
+                .unwrap()
+                .1
+                .primary_address()
+                .address_kind();
+            assert_eq!(web_kind, AddressKind::Http);
+            assert_eq!(custom_kind, AddressKind::Unknown);
+            assert!(
+                app.host
+                    .graph()
+                    .get_node_by_url(FIXTURE_FILE_ADDRESS)
+                    .is_some()
+            );
+            assert!(
+                app.host
+                    .graph()
+                    .get_node_by_url(FIXTURE_SCENE_ADDRESS)
+                    .is_some()
+            );
+            assert!(
+                app.host
+                    .graph()
+                    .get_node_by_url(FIXTURE_REMOTE_ADDRESS)
+                    .is_some()
+            );
+
+            let families: BTreeSet<_> = app
+                .host
+                .graph()
+                .projected_relations()
+                .map(|(_, relation)| relation.kind.family())
+                .collect();
+            assert!(families.contains(&EdgeFamily::Semantic));
+            assert!(families.contains(&EdgeFamily::Containment));
+            assert!(families.contains(&EdgeFamily::Arrangement));
+            assert!(families.contains(&EdgeFamily::Provenance));
+            assert!(
+                app.host
+                    .graph()
+                    .relations()
+                    .any(|relation| { relation.kind.family() == EdgeFamily::Arrangement })
+            );
+            assert!(
+                app.host
+                    .graph()
+                    .resource_relations()
+                    .any(|(_, _, _, payload)| {
+                        payload.families().contains(&EdgeFamily::Semantic)
+                    })
+            );
+
+            assert_eq!(
+                app.host
+                    .access_history_for(FIXTURE_WEB_ADDRESS)
+                    .unwrap()
+                    .records
+                    .len(),
+                2,
+                "the fixture begins with accesses from two devices"
+            );
+            for (address, facet) in [
+                (FIXTURE_PERSONA_ADDRESS, "personae.public-persona/v1"),
+                (FIXTURE_KEY_ADDRESS, "personae.public-key-reference/v1"),
+                (FIXTURE_GRANT_ADDRESS, "personae.public-grant/v1"),
+                (FIXTURE_RECEIPT_ADDRESS, "personae.signing-receipt/v1"),
+            ] {
+                assert!(
+                    app.host.facet_value(address, facet).is_some(),
+                    "missing identity projection {facet}"
+                );
+            }
+            assert_eq!(
+                app.host
+                    .facet_value(FIXTURE_FILE_ADDRESS, UNKNOWN_FIXTURE_FACET),
+                Some(&json!({
+                    "carrier": "future",
+                    "facets": ["opaque", "preserve-me"],
+                    "version": 7
+                }))
+            );
+
+            let before_revision = app.host.projection_revision();
+            app.use_fixture_phone(3_000);
+            assert_eq!(
+                app.open_address(FIXTURE_WEB_ADDRESS, "system.default")
+                    .expect("typed open"),
+                IntentResult::Accepted
+            );
+            assert!(app.host.projection_revision() > before_revision);
+            let accesses = app.host.access_history_for(FIXTURE_WEB_ADDRESS).unwrap();
+            assert_eq!(accesses.records.len(), 3);
+            assert_eq!(accesses.records.last().unwrap().handler, "system.default");
+
+            app.host.persist(SAVED_AT_SECS).await.expect("persist");
+
+            let host = MereHost::open(
+                backend.clone(),
+                selected(),
+                fixture_handlers(),
+                access_context(),
+            )
+            .await
+            .expect("reopen");
+            let mut reopened = GraphshellApp::new(host);
+            let reopened_local = reopened.mount_local().expect("remount local");
+            let reopened_remote = reopened.mount_fixture_remote().expect("remount remote");
+            assert!(reopened.client.mounted(&reopened_local).is_some());
+            assert!(reopened.client.mounted(&reopened_remote).is_some());
+            assert_eq!(
+                reopened
+                    .host
+                    .access_history_for(FIXTURE_WEB_ADDRESS)
+                    .unwrap(),
+                accesses
+            );
+            assert_eq!(
+                reopened
+                    .host
+                    .facet_value(FIXTURE_FILE_ADDRESS, UNKNOWN_FIXTURE_FACET),
+                app.host
+                    .facet_value(FIXTURE_FILE_ADDRESS, UNKNOWN_FIXTURE_FACET)
+            );
+
+            let encoded = |graph: &Graph| {
+                let mut snapshot = graph.to_snapshot();
+                snapshot.timestamp_secs = 0;
+                (
+                    serde_json::to_vec(&snapshot).expect("snapshot encodes"),
+                    serde_json::to_vec(graph.facets()).expect("facets encode"),
+                )
+            };
+            assert_eq!(
+                encoded(reopened.host.graph()),
+                encoded(app.host.graph()),
+                "graph and facet truth re-encode byte-equivalently after reopen"
+            );
+            assert!(
+                reopened
+                    .host
+                    .graph_session()
+                    .pending(std::time::SystemTime::UNIX_EPOCH)
+                    .expect("pending")
+                    .is_empty(),
+                "reopening changes nothing a persist would write"
+            );
+        });
+    }
+
+    /// The identity projection Djinn's identity endpoint serves for a keeper
+    /// with one profile, one leased device, its grant and one signing record,
+    /// after the device's revocation: its snapshot and card resources.
+    /// Djinn's `door::identity_endpoint` test produces it and fails when it
+    /// drifts, since the endpoint is Djinn's (stack lift plan, after P5) and
+    /// this port cannot depend on Djinn.
+    #[derive(serde::Deserialize)]
+    struct IdentityCardsFixture {
+        snapshot: chirograph::ProjectionSnapshot,
+        resources: Vec<chirograph::ResourceResponse>,
+    }
+
+    #[tokio::test]
+    async fn h4_exportable_identity_cards_and_access_survive_scene_reopen_as_projections() {
+        use pandect::CartographyGeometry;
+
+        let fixture: IdentityCardsFixture =
+            serde_json::from_str(include_str!("../tests/fixtures/identity_cards.json"))
+                .expect("the identity cards fixture reads");
+        let device_id = uuid::Uuid::from_u128(0x45);
+        let device_source = format!("identity:device:{device_id}");
+        let snapshot = fixture.snapshot;
+        assert_eq!(snapshot.cache_policy.retention, CacheRetention::Exportable);
+        let identity_session = snapshot.session.clone();
+        let wanted_sources = [
+            "identity:profile:mixed-scene".to_string(),
+            device_source,
+            format!("identity:grant:{device_id}"),
+        ];
+        let signing_source = snapshot
+            .scene
+            .active_items_in_order()
+            .into_iter()
+            .filter_map(|(_, item)| {
+                snapshot.scene.tables.sources[item.source.0 as usize]
+                    .as_ref()
+                    .map(|source| source.id.clone())
+            })
+            .find(|source| source.starts_with("identity:history:"))
+            .expect("projected signing history");
+
+        let backend = MemoryBackend::new();
+        let mut app = GraphshellApp::fixture(backend.clone(), selected()).expect("fixture");
+        app.mount_remote(snapshot).expect("mount identity");
+        for resource in fixture.resources {
+            app.client
+                .apply_resource(resource)
+                .expect("cache identity card");
+        }
+
+        let pinned_instances = {
+            let mounted = app.client.mounted(&identity_session).unwrap();
+            wanted_sources
+                .iter()
+                .chain(std::iter::once(&signing_source))
+                .map(|source_id| {
+                    mounted
+                        .scene
+                        .active_items_in_order()
+                        .into_iter()
+                        .find_map(|(instance, item)| {
+                            mounted.scene.tables.sources[item.source.0 as usize]
+                                .as_ref()
+                                .filter(|source| source.id == source_id.as_str())
+                                .map(|_| instance)
+                        })
+                        .unwrap()
+                })
+                .collect::<Vec<_>>()
+        };
+        let mut selected_ids = Vec::new();
+        for instance in pinned_instances {
+            selected_ids.push(
+                app.pin_portable_card(&identity_session, instance)
+                    .expect("pin public identity card"),
+            );
+        }
+        let access = app
+            .host
+            .graph()
+            .get_node_by_url(FIXTURE_WEB_ADDRESS)
+            .unwrap()
+            .1
+            .id;
+        selected_ids.push(access);
+        // Written as a version-3 scene and converted, so the save is a
+        // version-4 scene (dynamics grammar plan, F142).
+        let scene = pandect::SavedSceneV2 {
+            name: "Identity and access".to_string(),
+            selected: selected_ids.clone(),
+            layout_strategy: Some("grid.default".to_string()),
+            physics_paused: true,
+            physics_damping: 0.7,
+            physics_law: "spring.rapier".to_string(),
+            physics_overlays: Vec::new(),
+            physics_kind_source: "site".to_string(),
+            physics_group_source: "site".to_string(),
+            physics_mass_source: "degree".to_string(),
+            physics_depth_source: "roots".to_string(),
+            arrangement_pull: 0.4,
+            arrangement_roles: None,
+            dynamics: None,
+            camera_offset: (0.0, 0.0),
+            camera_zoom: 1.0,
+            default_handler: "system.default".to_string(),
+            cartography: CartographyGeometry::from_positions(
+                selected_ids
+                    .iter()
+                    .enumerate()
+                    .map(|(index, id)| (*id, (index as f32 * 30.0, 0.0))),
+            ),
+        }
+        ;
+        let scene = cartography::canvas::saved_scene::scene_from_v2(scene).expect("the flat scene converts");
+        app.host
+            .save_product_scene("mere://scene/h4-identity-access", &scene)
+            .expect("save mixed scene");
+        app.host
+            .persist(SAVED_AT_SECS)
+            .await
+            .expect("persist scene");
+
+        let reopened = MereHost::open(backend, selected(), fixture_handlers(), access_context())
+            .await
+            .expect("reopen local graph");
+        assert_eq!(
+            reopened
+                .product_scene("mere://scene/h4-identity-access")
+                .expect("reopen mixed scene"),
+            scene
+        );
+        assert_eq!(
+            reopened
+                .access_history_for(FIXTURE_WEB_ADDRESS)
+                .unwrap()
+                .records
+                .len(),
+            2
+        );
+        for id in selected_ids.iter().take(4) {
+            let (_, node) = reopened.graph().get_node_by_id(*id).expect("pinned node");
+            let value = reopened
+                .graph()
+                .facets()
+                .get(&node.id, &chartulary::FacetId::new(PINNED_PROJECTION_FACET))
+                .expect("pinned projection facet");
+            let pinned: PinnedProjectionCardV1 =
+                serde_json::from_value(value.clone()).expect("typed pinned projection");
+            assert_eq!(pinned.authority, PinnedProjectionAuthorityV1::SourceOwned);
+            assert_eq!(pinned.source.adapter, "personae.public");
+            let json = value.to_string();
+            assert!(!json.contains("\"actions\""));
+            assert!(!json.contains("\"intent\""));
+            assert!(!json.contains("BEGIN OPENSSH PRIVATE KEY"));
+        }
+    }
+}

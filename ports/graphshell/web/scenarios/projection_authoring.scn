@@ -1,0 +1,64 @@
+# Actual Woodshed Set export -> definition -> Score -> Scene -> Genet pixels.
+assert title GRAPHSHELL H3 READY
+act load-practice-projection
+settle 2
+assert snap projection-executable == true
+assert snap projection-occurrences == 3
+assert retained {"role":"button","label":"spatial card:2:","attribute":"aria-pressed","value":"false"}
+click role:button spatial card:2:
+settle 2
+assert retained {"role":"button","label":"spatial card:2:","attribute":"aria-pressed","value":"true"}
+assert retained {"role":"button","label":"list card:2:","attribute":"aria-pressed","value":"true"}
+assert retained {"role":"button","label":"list card:1:","attribute":"aria-pressed","value":"false"}
+capture projection_grid
+wait
+click role:button Projection: order by tempo
+settle 2
+assert snap projection-executable == true
+assert snap projection-selected-occurrence == card:2
+click role:textbox Projection title
+input-text My practice session
+settle 2
+click role:tab Encoding
+click role:textbox Label field
+input-text catalog_id
+settle 2
+assert retained {"role":"button","label":"list card:2:","text":"chord:Major"}
+click role:button Save projection
+settle 2
+assert retained {"role":"status","label":"Projection status","text":"Saved executable"}
+capture projection_scatter
+wait
+click role:button list card:1:
+settle 2
+assert retained {"role":"button","label":"spatial card:1:","attribute":"aria-pressed","value":"true"}
+assert retained {"role":"button","label":"spatial card:2:","attribute":"aria-pressed","value":"false"}
+click role:textbox X field
+input-text missing
+settle 2
+assert snap projection-executable == false
+click role:button Save projection
+settle 2
+assert retained {"role":"status","label":"Projection status","text":"Save failed"}
+click role:button Reopen projection
+settle 2
+assert snap projection-executable == true
+assert snap projection-selected-occurrence == card:2
+assert retained {"role":"status","label":"Projection status","text":"Reopened executable"}
+assert retained {"role":"button","label":"list card:2:","attribute":"aria-pressed","value":"true"}
+click role:tab Arrangement
+click role:textbox Arrangement spacing
+input-text invalid
+settle 2
+assert snap projection-executable == false
+click role:button Save projection
+settle 2
+assert retained {"role":"status","label":"Projection status","text":"Save failed"}
+click role:button Reopen projection
+settle 2
+assert snap projection-executable == true
+assert snap projection-selected-occurrence == card:2
+assert snap session-store == stored
+capture projection_reopened
+wait
+log executable projection authoring proof complete

@@ -1,0 +1,6 @@
+# Run on practice-tree-test.html until the public practice wrapper cuts over.
+click role:button Compare
+assert snap practice-view == compare
+click role:button Relations
+assert snap practice-view == relations
+capture p4_tree_practice_controls

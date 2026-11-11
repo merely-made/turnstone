@@ -1,0 +1,47 @@
+# Expose retained disclosure controls; return focus to the original canvas key target.
+click role:button Remote session
+focus-retained .tree-canvas
+# C4b.2: the full-page surface — index.html, the component filling the body
+# and owning the title — with the same keyboard rows the embed runs, so the
+# two receipts compare like for like.
+assert title GRAPHSHELL H3 READY
+assert snap ready == true
+assert snap session == local
+assert snap detail-open == false
+assert snap active-session ~ Local Mere
+assert retained {"role":"button","label":"Local Mere","attribute":"aria-pressed","value":"true"}
+capture c4b2_full_boot
+wait
+focus-retained .tree-canvas
+assert retained {"class":"tree-canvas","focused":true}
+# Geometry adaptation: actual retained canvas leaf, below the header and beside docked tools.
+assert snap camera-centered == true
+assert snap zoom == 1
+mark-camera
+key ArrowLeft
+settle 1
+# One pan-left is a wheel gesture through the canvas physics; how far it
+# travels is velocity-shaped and differs run to run, so the claim is that
+# the camera moved left of where it started, and that the key reached the
+# component as its command.
+assert event command pan-left
+assert snap camera-dx <= -41
+assert snap camera-dy == 0
+key Enter
+settle 1
+assert snap detail-open == true
+assert retained {"class":"tree-detail","count":1,"visible":true}
+key Escape
+settle 1
+assert snap detail-open == false
+focus-retained role:button Remote mount
+assert retained {"role":"button","label":"Remote mount","focused":true}
+act session-remote
+settle 1
+assert snap session == remote
+assert retained {"role":"button","label":"Remote mount","attribute":"aria-pressed","value":"true"}
+capture c4b2_full_remote
+wait
+act session-local
+settle 1
+log c4b2 full-page receipt complete

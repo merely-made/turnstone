@@ -1,0 +1,20 @@
+# S1 (mer3ly site canvas plan, Rulings 124, 125 and 128): a host dataset in
+# the plain viewer. Run through either input:
+#   tree.html?dataset=fixtures/site-repository-host-dataset.json
+#   dataset.html (the root's data-dataset-src names the same file)
+# The fixture is the site exporter's output (merelyllc.com 9df5e96, sha256
+# 1b16d990...7eca0): 21 occurrences and 30 explained relationships. Every
+# occurrence is placed by the viewer's definition, every relationship is
+# routed onto that arrangement and drawn as an edge, and each relation is
+# named in the page's semantic tree.
+assert snap ready == true
+settle 3
+assert snap dataset == loaded
+assert snap nodes == 21
+assert snap edges == 30
+assert snap reader-relations == 30
+assert snap reader-relation-labels ~ Cleromancy depends on Genet: Cleromancy to Genet
+assert snap reader-canvas ~ of 21 shown
+capture tree_host_dataset
+wait
+log host dataset viewer receipt complete

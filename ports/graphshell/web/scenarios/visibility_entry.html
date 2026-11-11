@@ -1,0 +1,21 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Graphshell visibility test</title>
+<h1>Graphshell visibility test</h1>
+<p>Click the link to open the graph in a new tab, or middle-click to load it
+in the background. Switch between these tabs for the real visibility check.</p>
+<a id="graph" href="../tree.html" target="_blank" rel="noopener">Open graph</a>
+<script>
+  const options = new URLSearchParams(location.search);
+  const graph = new URL("../tree.html", location.href);
+  graph.search = new URLSearchParams({
+    nodes: options.get("nodes") || "128", seed: options.get("seed") || "7",
+  });
+  if (options.has("scenario")) {
+    graph.searchParams.set("scenario", options.get("scenario"));
+    graph.searchParams.set("sink", `${location.origin}/scenario-receipt`);
+  } else {
+    graph.searchParams.set("visibility_sink", `${location.origin}/scenario-receipt`);
+  }
+  document.getElementById("graph").href = graph;
+</script>

@@ -1,0 +1,181 @@
+// Copyright 2026 Mark Alan Boykin
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+// SPDX-License-Identifier: MPL-2.0
+
+//! Headed browser presenter for the Graphshell reference host.
+//!
+//! The crate is browser-only. It presents onto an `HtmlCanvasElement` using
+//! the selected browser renderer; the optional product feature adds IndexedDB
+//! storage and workspace editing. Its standalone manifest and lockfile live
+//! in `ports/graphshell/web`, with this file as the library entry point.
+//!
+//! Check it for the target it is for:
+//! `cargo check --manifest-path ports/graphshell/web/Cargo.toml --target wasm32-unknown-unknown`.
+#![cfg(target_arch = "wasm32")]
+
+// The viewer cone (mer3ly site canvas plan, Rulings 109-110, 118): the tree page
+// and what it reads are always compiled; the H5 reference host, the product
+// modes and the remote board are additive features, all on by default.
+mod web_appearance;
+#[cfg(feature = "product")]
+mod web_capture;
+#[cfg(feature = "product")]
+mod web_follower_edit;
+#[cfg(feature = "product")]
+mod web_command_catalog;
+mod web_dataset;
+mod web_graphs;
+mod web_period_worker;
+mod web_physics_worker;
+#[cfg(feature = "product")]
+mod web_practice;
+#[cfg(feature = "remote")]
+mod web_rtc_link;
+mod web_scenario;
+#[cfg(feature = "product")]
+mod web_share;
+mod web_speed;
+mod web_suggestions;
+mod web_timing;
+mod web_tree;
+
+#[cfg(feature = "product")]
+use graphshell::browser_storage::{StoragePersistence, decide};
+use wasm_bindgen::prelude::*;
+#[cfg(feature = "product")]
+use wasm_bindgen_futures::JsFuture;
+use web_sys::{Document, Window};
+
+/// How long the mount waits for `persist()`. Firefox answers only when the
+/// person answers its prompt, and the workspace must not wait on that.
+#[cfg(feature = "product")]
+const PERSIST_ANSWER_MS: i32 = 1_500;
+
+/// `promise`, or `None` once `ms` pass without an answer; the request stays open.
+#[cfg(feature = "product")]
+async fn answered_within(promise: js_sys::Promise, ms: i32) -> Option<Result<JsValue, JsValue>> {
+    let unanswered = JsValue::from_str("graphshell.unanswered");
+    let marker = unanswered.clone();
+    let timer = js_sys::Promise::new(&mut |resolve, _| {
+        if let Ok(window) = window() {
+            let _ =
+                window.set_timeout_with_callback_and_timeout_and_arguments_1(&resolve, ms, &marker);
+        }
+    });
+    let raced = js_sys::Promise::race(&js_sys::Array::of2(&promise, &timer));
+    match JsFuture::from(raced).await {
+        Ok(value) if value == unanswered => None,
+        answer => Some(answer),
+    }
+}
+
+/// Ask the browser whether this origin's storage is kept, requesting it when
+/// it is not.
+///
+/// Every failure path lands on `Unknown` with its reason rather than on
+/// `Refused`. An insecure context and a browser that declined are different
+/// facts, and only one of them changes if the person installs the resident
+/// host.
+#[cfg(feature = "product")]
+async fn resolve_storage_persistence() -> StoragePersistence {
+    let Ok(window) = window() else {
+        return StoragePersistence::Unknown("browser window is unavailable".to_string());
+    };
+    let manager = window.navigator().storage();
+    let persisted = match manager.persisted() {
+        Ok(promise) => match JsFuture::from(promise).await {
+            Ok(value) => value
+                .as_bool()
+                .ok_or_else(|| "persisted() did not answer with a boolean".to_string()),
+            Err(error) => Err(format!("persisted() failed: {error:?}")),
+        },
+        Err(error) => Err(format!("storage persistence is unavailable: {error:?}")),
+    };
+    // `decide` takes the request as a closure so it is never made when the
+    // answer is already yes; awaiting inside one needs the future built first.
+    let requested = if matches!(persisted, Ok(false)) {
+        match manager.persist() {
+            Ok(promise) => match answered_within(promise, PERSIST_ANSWER_MS).await {
+                Some(Ok(value)) => value
+                    .as_bool()
+                    .ok_or_else(|| "persist() did not answer with a boolean".to_string()),
+                Some(Err(error)) => Err(format!("persist() failed: {error:?}")),
+                None => Err("the browser has not answered the persistence request".to_string()),
+            },
+            Err(error) => Err(format!("persist() is unavailable: {error:?}")),
+        }
+    } else {
+        Ok(false)
+    };
+    decide(persisted, move || requested)
+}
+
+fn window() -> Result<Window, String> {
+    web_sys::window().ok_or_else(|| "browser window is unavailable".to_string())
+}
+
+fn document() -> Result<Document, String> {
+    window()?
+        .document()
+        .ok_or_else(|| "browser document is unavailable".to_string())
+}
+
+#[wasm_bindgen(start)]
+pub fn start() {
+    // First, before any other Rust code: pre.4 CubeCL's static constructors,
+    // once (burn migration plan §13.33; rulings 532 and 536).
+    cambium_genet_web_host::run_static_constructors_once();
+    console_error_panic_hook::set_once();
+}
+
+/// Optional F195 receipt export. It uses the same compiler and runner as the
+/// native example and is absent from ordinary bundles.
+#[cfg(all(feature = "dynamics-receipt", feature = "physics-engine"))]
+#[wasm_bindgen]
+pub fn projection_dynamics_receipt(bound: u32) -> Result<String, JsValue> {
+    graphshell::projection_dynamics_receipt::catalog_receipt(bound)
+        .map_err(|e| JsValue::from_str(&e))
+}
+
+#[cfg(all(feature = "dynamics-receipt", feature = "physics-engine"))]
+#[wasm_bindgen]
+pub fn projection_coordinates_receipt(bound: u32) -> Result<String, JsValue> {
+    graphshell::projection_dynamics_receipt::catalog_receipt_for(bound, "geographic")
+        .map_err(|e| JsValue::from_str(&e))
+}
+
+/// Join a host over WebRTC as the tree's remote session; `loader.js` calls this
+/// from `?signal=` once the page is ready. Without `remote` the tree has no
+/// session, so it says so on the
+/// console and the link simply never comes up: a refusal, not a page error.
+#[cfg(feature = "remote")]
+#[wasm_bindgen]
+pub fn connect_remote(signal_url: String, invite: Option<String>) -> Result<(), JsValue> {
+    if let Err(error) = web_tree::connect_remote(signal_url, invite) {
+        web_sys::console::warn_1(&error.into());
+    }
+    Ok(())
+}
+
+/// Parse and arm a scenario on the tree page; `loader.js` calls this from
+/// `?scenario=`. Mandrake owns stepping and observations on every public page.
+#[wasm_bindgen]
+pub fn run_scenario(text: &str) -> Result<(), JsValue> {
+    web_tree::run(text).map_err(|error| JsValue::from_str(&error))
+}
+
+/// Mount the same retained component used by all public pages.
+#[wasm_bindgen]
+pub fn mount(root: web_sys::Element) -> Result<(), JsValue> {
+    web_tree::mount_tree(root)
+}
+
+/// Preflight the same parser used by the retained lane without running the scenario.
+#[wasm_bindgen]
+pub fn validate_scenario(text: &str) -> Result<(), JsValue> {
+    taproot::Scenario::parse(text)
+        .map(|_| ())
+        .map_err(|error| JsValue::from_str(&error.to_string()))
+}

@@ -12,3 +12,182 @@ reason = "Standalone Pelt reference-host entrypoint. Existing source-size debt; 
 [[exception]]
 path = "ports/tabard/desktop/examples/native_shared_recovery.rs"
 reason = "Explicit, finite two-independent-window shared-device recovery gate. Existing source-size debt; a responsibility split must preserve NativeHost, Context, Authority and existing module visibility."
+
+# The reference app, imported from Mere with history (engine split U4/U5, D120); its
+# exceptions are carried verbatim from Mere's line-ceiling.toml.
+
+[[exception]]
+path = "ports/graphshell/mere/src/app_tests.rs"
+reason = "App tests. Existing source-size debt; a responsibility split must preserve existing entry points, fixture identity and module visibility."
+
+[[exception]]
+path = "ports/graphshell/mere/src/connection_tests.rs"
+reason = "Connection tests. Existing source-size debt; a responsibility split must preserve FixtureTransport, TestBrowser and existing module visibility."
+
+[[exception]]
+path = "ports/graphshell/mere/src/coop.rs"
+reason = "Co-op controls beside the ordinary MereView canvas. Existing source-size debt; a responsibility split must preserve Command, Update, Panel and existing module visibility."
+
+[[exception]]
+path = "ports/graphshell/mere/src/main.rs"
+reason = "Native Graphshell mere viewer over the admitted resident route. Existing source-size debt; a responsibility split must preserve Reading, PendingActivation, App and existing module visibility."
+
+[[exception]]
+path = "ports/graphshell/src/alembic_workshop.rs"
+reason = "Graphshell's evidence-brief embedding through its sole MereHost graph writer. Existing source-size debt; a responsibility split must preserve Store, GraphshellWorkshop and existing module visibility."
+
+[[exception]]
+path = "ports/graphshell/src/app.rs"
+reason = "Graphshell's reference-host composition over local and remote projections. Existing source-size debt; a responsibility split must preserve AppError, GraphshellApp and existing module visibility."
+
+[[exception]]
+path = "ports/graphshell/src/bin/c4_webrtc_host.rs"
+reason = "C4a's host fixture: a real Graphshell projection, served to a browser over WebRTC. Existing source-size debt; a responsibility split must preserve Endpoint, FixtureEndpoint, Args and existing module visibility."
+
+[[exception]]
+path = "ports/graphshell/src/bin/graphshell_alembic.rs"
+reason = "Public evidence-brief workshop through Graphshell's canonical MereHost. Existing source-size debt; a responsibility split must preserve OwnerMode, CustodyObserver, Command and existing module visibility."
+
+[[exception]]
+path = "ports/graphshell/src/bin/graphshell_coop.rs"
+reason = "Native Graphshell co-op surface. Existing source-size debt; a responsibility split must preserve Command, Update, App and existing module visibility."
+
+[[exception]]
+path = "ports/graphshell/src/block_pane.rs"
+reason = "The block editing pane: Cambium view, toolbar and adapter calls over one document. Existing source-size debt; a responsibility split must preserve Pane, PaneHost, PanePorts and existing module visibility."
+
+[[exception]]
+path = "ports/graphshell/src/canvas_physics_tests.rs"
+reason = "Host acceptance tests of cartography::canvas::physics_controls on Graphshell's reference fixture, as its tree page opens it. Existing source-size debt; a responsibility split must preserve NarrowedNumber and existing module visibility."
+
+[[exception]]
+path = "ports/graphshell/src/canvas_reader/tests.rs"
+reason = "The native accessibility receipt (dynamics grammar plan, F67): the canvas's producer semantics read through cambium-winit-a11y's AccessKit lowering in the headless harness, as a. Existing source-size debt; a responsibility split must preserve Page, View, Logic and existing module visibility."
+
+[[exception]]
+path = "ports/graphshell/src/capture.rs"
+reason = "Consented browser-history intake into Mere and Eidetic browsing memory. Existing source-size debt; a responsibility split must preserve CaptureBackend, StagedWrites, CaptureBatch and existing module visibility."
+
+[[exception]]
+path = "ports/graphshell/src/forme_session_lifecycle_tests.rs"
+reason = "Forme session lifecycle tests. Existing source-size debt; a responsibility split must preserve PersistPreparedSave, App, DelayedWrite and existing module visibility."
+
+[[exception]]
+path = "ports/graphshell/src/frame_budget.rs"
+reason = "The step budget both web pages give the canvas and the remote board: a share of the display's frame period (physics catalog plan, ruled 2026-10-04, \"The display's frame\"). Existing source-size debt; a responsibility split must preserve Source, WorkerState, Period and existing module visibility."
+
+[[exception]]
+path = "ports/graphshell/src/host_dataset_view.rs"
+reason = "A host-supplied dataset as the viewer's graph (mer3ly site canvas plan, S1; Rulings 124, 125 and 128). Existing source-size debt; a responsibility split must preserve ViewedRelation, HostDatasetView, GroupedHostDataset and existing module visibility."
+
+[[exception]]
+path = "ports/graphshell/src/link_inspection.rs"
+reason = "Read-only expansion of a displayed access pair into held source records. Existing source-size debt; a responsibility split must preserve LinkTarget, SourceEndpoint, LinkOwner and existing module visibility."
+
+[[exception]]
+path = "ports/graphshell/src/link_inspection/tests.rs"
+reason = "Link inspection tests. Existing source-size debt; a responsibility split must preserve existing entry points, fixture identity and module visibility."
+
+[[exception]]
+path = "ports/graphshell/src/practice_disclosure.rs"
+reason = "Bounded parsing for the named Woodshed musical-comparison disclosure. Existing source-size debt; a responsibility split must preserve existing entry points, fixture identity and module visibility."
+
+[[exception]]
+path = "ports/graphshell/src/practice_workspace.rs"
+reason = "Small, host-neutral state for a disclosed practice workspace. Existing source-size debt; a responsibility split must preserve PracticeSourceBinding, PracticeSource, PracticeSourceFingerprint and existing module visibility."
+
+[[exception]]
+path = "ports/graphshell/src/product.rs"
+reason = "Daily graph-product operations composed from Mere's portable graph and canvas surfaces. Existing source-size debt; a responsibility split must preserve RelationFamilyFilter, EditableRelation and existing module visibility."
+
+[[exception]]
+path = "ports/graphshell/src/query_views.rs"
+reason = "Query definitions are shared Resources, written through the current owner journal. Existing source-size debt; a responsibility split must preserve QueryFreezeCorrelation, PresentedLink and existing module visibility."
+
+[[exception]]
+path = "ports/graphshell/src/retained_content.rs"
+reason = "Pelt content inside a Mere projection. Existing source-size debt; a responsibility split must preserve HeldMedia, HeldContent, Clock and existing module visibility."
+
+[[exception]]
+path = "ports/graphshell/src/retained_content/tests.rs"
+reason = "Retained content tests. Existing source-size debt; a responsibility split must preserve existing entry points, fixture identity and module visibility."
+
+[[exception]]
+path = "ports/graphshell/src/transfer.rs"
+reason = "Portable graph-selection transfer between independent Graphshell stores. Existing source-size debt; a responsibility split must preserve TransferAuthorization, TransferRequest, TransferBlobInput and existing module visibility."
+
+[[exception]]
+path = "ports/graphshell/src/web_appearance.rs"
+reason = "Browser host adapter. Existing source-size debt; a responsibility split must preserve Handle, Session, Controls and existing module visibility."
+
+[[exception]]
+path = "ports/graphshell/src/web_practice.rs"
+reason = "A working session over disclosed source objects. Existing source-size debt; a responsibility split must preserve Face, Control, Metrics and existing module visibility."
+
+[[exception]]
+path = "ports/graphshell/src/web_tree.rs"
+reason = "The one-tree page: Graphshell's graph canvas inside a Cambium tree. Existing source-size debt; a responsibility split must preserve Shared, CanvasProducer, TreePage and existing module visibility."
+
+[[exception]]
+path = "ports/graphshell/src/web_tree/applet.rs"
+reason = "Graphshell's retained capsule review/reader, over its portable action gate. Existing source-size debt; a responsibility split must preserve Pane, WorkerAction, WorkerTurn and existing module visibility."
+
+[[exception]]
+path = "ports/graphshell/src/web_tree/backdrop.rs"
+reason = "Graphshell's reference embedding. Existing source-size debt; a responsibility split must preserve ImportPicker, SpanDrag, Pane and existing module visibility."
+
+[[exception]]
+path = "ports/graphshell/src/web_tree/focus_card.rs"
+reason = "Host-resolved, transient focus cards. Existing source-size debt; a responsibility split must preserve Target, State and existing module visibility."
+
+[[exception]]
+path = "ports/graphshell/src/web_tree/forme.rs"
+reason = "Workbench reading tiles and their scoped Forme draft in the retained page. Existing source-size debt; a responsibility split must preserve WriteDone, Pane, RetiredWrite and existing module visibility."
+
+[[exception]]
+path = "ports/graphshell/src/web_tree/lane.rs"
+reason = "Product observations and actions for Mandrake on the tree page. Existing source-size debt; a responsibility split must preserve TreeLane, HeardItem and existing module visibility."
+
+[[exception]]
+path = "ports/graphshell/src/web_tree/link_inspection.rs"
+reason = "Independent, read-only link and exact-assertion inspection. Existing source-size debt; a responsibility split must preserve existing entry points, fixture identity and module visibility."
+
+[[exception]]
+path = "ports/graphshell/src/web_tree/physics.rs"
+reason = "The \"Graph tools\" side region's first section: arrangement and physics. Existing source-size debt; a responsibility split must preserve PhysicsPanel and existing module visibility."
+
+[[exception]]
+path = "ports/graphshell/src/web_tree/presentation.rs"
+reason = "Retained authoring, exact occurrence previews and opt-in saved Forme guides. Existing source-size debt; a responsibility split must preserve Inputs, Pane, Completion and existing module visibility."
+
+[[exception]]
+path = "ports/graphshell/src/web_tree/product.rs"
+reason = "The bounded local saved-graph workflow on the retained tree. Existing source-size debt; a responsibility split must preserve App, CompletedEdit, Completion and existing module visibility."
+
+[[exception]]
+path = "ports/graphshell/src/web_tree/product/projection.rs"
+reason = "The projection editor and its two views share one typed draft and occurrence selection. Existing source-size debt; a responsibility split must preserve ProjectionControls and existing module visibility."
+
+[[exception]]
+path = "ports/graphshell/src/web_tree/promoted_links.rs"
+reason = "Review Resources promoted from a source-owned link reading. Existing source-size debt; a responsibility split must preserve Pane and existing module visibility."
+
+[[exception]]
+path = "ports/graphshell/src/web_tree/query_view.rs"
+reason = "Browser adapter for the reusable query editor and retained query readings. Existing source-size debt; a responsibility split must preserve CatalogEntry, Pane and existing module visibility."
+
+[[exception]]
+path = "ports/graphshell/src/web_tree/reading.rs"
+reason = "The retained Workbench uses Pelt for content; graph actions stay with its owner. Existing source-size debt; a responsibility split must preserve Binding, ClipAnswer, PendingClip and existing module visibility."
+
+[[exception]]
+path = "ports/graphshell/src/web_tree/remote.rs"
+reason = "The \"Graph tools\" region's remote session section, and where the tree keeps the session. Existing source-size debt; a responsibility split must preserve Sections, Session, TreeRemote and existing module visibility."
+
+[[exception]]
+path = "ports/graphshell/web/styles.css"
+reason = "Styles. Existing source-size debt; a responsibility split must preserve existing entry points, fixture identity and module visibility."
+
+[[exception]]
+path = "ports/graphshell/src/capsule_applet.rs"
+reason = "Predates enforcement (2026-11-11): over the ceiling in Mere without an exception when the app moved. A split along its responsibilities is listed as work after slice 4."

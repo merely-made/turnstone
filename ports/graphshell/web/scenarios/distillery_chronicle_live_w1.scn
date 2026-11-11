@@ -1,0 +1,18 @@
+# W1 live path: the Djinn-owned receipt host posts one real job before the
+# browser joins its admitted Distillery Chronicle route over the WebRTC door.
+# Chronicle card titles are post hashes, so the host receipt identifies the
+# exact post; the page verifies Chronicle's supplied `Job` label and its
+# one-card projection here.
+wait
+assert snap remote-link == webrtc
+assert snap remote-state == open
+assert snap remote-revision >= 2
+assert snap remote-cards == 1
+assert snap remote-card-labels ~ Job
+act session-remote
+settle 1
+assert snap session == remote
+assert snap remote-overlaps == 0
+capture distillery_chronicle_live_w1_mounted
+wait
+log distillery Chronicle W1 live headed receipt complete

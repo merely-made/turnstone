@@ -1,0 +1,91 @@
+# Fresh origin, product host, ?app=local&fixture=field-inspection&motion=normal.
+# Follow with the reopen page. This neutral fixture does not measure force effects.
+assert snap reduced-motion == false
+assert snap physics-paused == true
+click role:button Restore arrangement
+settle 3
+click-node file:///Graphshell/reference-notes.md
+settle 2
+click role:button Open selected in workbench
+wait 120
+click role:button Return to Mere
+settle 2
+click-node https://example.test/i2p-port
+settle 2
+click role:button Open selected in workbench
+wait 120
+click role:button Return to Mere
+settle 2
+remember scene-before-strength
+click role:button Inspect fields
+reveal role:button Inspect field: Region study
+click role:button Inspect field: Region study
+reveal role:button Inspect coupling: 00000000-0000-0000-0000-0000000000c9
+click role:button Inspect coupling: 00000000-0000-0000-0000-0000000000c9
+assert snap coupling-inspector-strength == 0.02
+reveal role:button Edit coupling strength
+click role:button Edit coupling strength
+assert snap coupling-editing == true
+assert snap coupling-draft-id == 00000000-0000-0000-0000-0000000000c9
+reveal role:textbox Coupling strength
+click role:textbox Coupling strength
+input-text NaN
+reveal role:button Apply coupling strength
+click role:button Apply coupling strength
+assert snap coupling-saving == false
+assert snap coupling-editing == true
+assert snap coupling-inspector-strength == 0.02
+assert text Strength must be finite
+reveal role:button Undo strength draft
+click role:button Undo strength draft
+assert snap coupling-draft-strength == 0.02
+reveal role:textbox Coupling strength
+click role:textbox Coupling strength
+input-text 0.125
+reveal role:button Preview coupling strength
+click role:button Preview coupling strength
+assert snap coupling-preview-current == true
+assert snap coupling-inspector-strength == 0.02
+capture exact_strength_preview
+reveal role:button Discard strength draft
+click role:button Discard strength draft
+assert snap coupling-editing == false
+assert snap coupling-inspector-strength == 0.02
+reveal role:button Edit coupling strength
+click role:button Edit coupling strength
+reveal role:textbox Coupling strength
+click role:textbox Coupling strength
+input-text 0.125
+reveal role:button Preview coupling strength
+click role:button Preview coupling strength
+# Inspecting another field never retargets the open strength draft.
+reveal role:button Inspect field: Region overlap
+click role:button Inspect field: Region overlap
+assert snap field-inspector-id == 00000000-0000-0000-0000-000000000066
+assert snap coupling-draft-id == 00000000-0000-0000-0000-0000000000c9
+reveal role:button Apply coupling strength
+click role:button Apply coupling strength
+wait 120
+assert snap coupling-saving == false
+assert snap coupling-editing == false
+assert text Coupling change saved
+assert snap field-inspector-id == 00000000-0000-0000-0000-000000000066
+same scene-before-strength nodes graph-session forme forme-accesses forme-geometry geometry detail-member
+reveal role:button Inspect field: Region study
+click role:button Inspect field: Region study
+reveal role:button Inspect coupling: 00000000-0000-0000-0000-0000000000c9
+click role:button Inspect coupling: 00000000-0000-0000-0000-0000000000c9
+assert snap coupling-inspector-strength == 0.125
+reveal role:button Undo saved coupling change
+click role:button Undo saved coupling change
+wait 120
+assert snap coupling-inspector-strength == 0.02
+reveal role:button Redo saved coupling change
+click role:button Redo saved coupling change
+wait 120
+assert snap coupling-inspector-strength == 0.125
+capture exact_strength_saved
+reveal role:button Inspect coupling: 00000000-0000-0000-0000-0000000000ca
+click role:button Inspect coupling: 00000000-0000-0000-0000-0000000000ca
+assert snap coupling-inspector-strength == 0.08
+assert snap field-inspector-couplings == 2

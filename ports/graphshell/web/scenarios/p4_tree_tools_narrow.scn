@@ -1,0 +1,30 @@
+# Narrow viewport: the Graph tools region collapses to a toggle in the
+# Graph controls row and opens over the canvas. Run in a narrow window.
+assert snap ready == true
+assert snap tools-mode == collapsed
+capture p4_tree_tools_collapsed
+settle 2
+click role:button Graph tools
+settle 2
+assert snap tools-mode == open
+# The opened region works: apply a law through it.
+click role:combobox Physics law
+settle 1
+click role:option Charge
+settle 1
+click role:button Apply physics
+settle 2
+assert snap physics-law == charge.barnes-hut
+capture p4_tree_tools_overlay
+settle 2
+# Keyboard: Enter on the focused toggle closes it again.
+click role:button Graph tools
+settle 2
+assert snap tools-mode == collapsed
+key Enter
+settle 2
+assert snap tools-mode == open
+key Enter
+settle 2
+assert snap tools-mode == collapsed
+log narrow tools receipt complete

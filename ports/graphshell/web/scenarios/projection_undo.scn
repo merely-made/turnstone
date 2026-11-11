@@ -1,0 +1,45 @@
+# Undo, redo and the unsaved flag in the projection editor (Scenograph editor
+# plan, E2). Two edits to one field a frame apart coalesce into one step; an
+# edit after the 400 ms window is its own step. `settle 90` outlasts the window
+# at any refresh rate up to 144 Hz.
+assert title GRAPHSHELL H3 READY
+act open-projection-editor
+settle 2
+assert retained {"role":"status","label":"Projection saved state","text":"No unsaved changes"}
+assert retained {"role":"status","label":"Projection preview","text":"Graphshell reference projection \u00b7"}
+click role:tab Preview
+settle 2
+click role:textbox Projection title
+input-text First
+settle 2
+click role:textbox Projection title
+input-text First draft
+settle 90
+click role:textbox Projection title
+input-text Second
+settle 2
+assert retained {"role":"status","label":"Projection saved state","text":"Unsaved changes"}
+assert retained {"role":"status","label":"Projection preview","text":"Second \u00b7"}
+click role:tab Provenance
+settle 2
+click role:button Undo projection
+settle 2
+assert retained {"role":"status","label":"Projection status","text":"Undone \u00b7 Preview"}
+assert retained {"role":"status","label":"Projection preview","text":"First draft \u00b7"}
+click role:button Undo projection
+settle 2
+assert retained {"role":"status","label":"Projection preview","text":"Graphshell reference projection \u00b7"}
+assert retained {"role":"status","label":"Projection saved state","text":"No unsaved changes"}
+# With nothing left to undo the button is disabled, so a click does nothing;
+# the command itself still answers.
+assert retained {"role":"button","label":"Undo projection","attribute":"disabled","value":""}
+act undo-projection
+settle 2
+assert retained {"role":"status","label":"Projection status","text":"Nothing to undo"}
+click role:button Redo projection
+settle 2
+assert retained {"role":"status","label":"Projection preview","text":"First draft \u00b7"}
+assert retained {"role":"status","label":"Projection saved state","text":"Unsaved changes"}
+capture projection_undo
+wait
+log projection editor undo proof complete

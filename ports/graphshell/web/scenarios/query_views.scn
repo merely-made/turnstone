@@ -1,0 +1,74 @@
+# Explicit fixture=retained-content-query. Definition uses held source Resources.
+assert snap source == saved graph
+reveal role:button New query view
+click role:button New query view
+reveal role:textbox Query view title
+click role:textbox Query view title
+input-text Source view
+reveal role:textbox SELECT query
+click role:textbox SELECT query
+input-text SELECT ?member WHERE { VALUES ?member { <https://query.example/source> <https://query.example/target> } }
+reveal role:button Save query view
+click role:button Save query view
+wait 800
+assert snap query-view-pending == false
+assert snap query-view-status == Query view saved
+assert snap save-state == saved
+assert snap workbench == true
+assert snap query-members == 2
+assert snap query-resource-nodes == 4
+assert snap query-surface-nodes == 3
+assert snap query-view-edge-stroke == dashed
+remember savedquery
+capture query_shared_resource_links_and_edges
+reveal role:button Freeze current query selection
+click role:button Freeze current query selection
+wait 800
+assert snap query-view-pending == false
+assert snap query-view-status == Query selection frozen and saved
+assert snap query-frozen-count == 1
+assert snap save-state == saved
+capture query_frozen_resource
+reveal role:button Return to Mere
+click role:button Return to Mere
+reveal role:button Edit query: Source view
+click role:button Edit query: Source view
+same savedquery query-view-owner
+reveal role:button Cross-stratum edge stroke: dashed
+click role:button Cross-stratum edge stroke: dashed
+assert snap query-view-edge-stroke == dotted
+reveal role:button Save query view
+click role:button Save query view
+wait 800
+assert snap query-view-status == Query view saved
+assert snap query-view-edge-stroke == dotted
+assert snap query-frozen-count == 1
+capture query_configured_edge_stroke
+reveal role:button Return to Mere
+click role:button Return to Mere
+reveal role:button Edit query: Source view
+click role:button Edit query: Source view
+reveal role:textbox SELECT query
+click role:textbox SELECT query
+input-text SELECT ?member WHERE { FILTER(false) }
+reveal role:button Save query view
+click role:button Save query view
+wait 800
+assert snap query-view-status == Query view saved
+assert snap query-frozen-count == 1
+assert snap query-members == 0
+assert snap query-resource-nodes == 0
+assert snap query-surface-nodes == 0
+capture query_exact_empty
+reveal role:button Return to Mere
+click role:button Return to Mere
+reveal role:button Edit query: Source view
+click role:button Edit query: Source view
+reveal role:textbox SELECT query
+click role:textbox SELECT query
+input-text SELECT ?member WHERE { VALUES ?member { <https://query.example/source> <https://query.example/target> } }
+reveal role:button Save query view
+click role:button Save query view
+wait 800
+assert snap query-view-status == Query view saved
+capture query_restored_members

@@ -1,0 +1,33 @@
+# Physics receipt (dynamics grammar plan, G3): the picker refuses only what
+# a law refuses. Still and Anneal are kinematic and take an overlay
+# converted (v = F/gamma, the rule Hold follows), so their overlays stay on;
+# Density takes Hub room, Centre and Tide converted and disables the rest
+# (F73, F81).
+assert title GRAPHSHELL H3 READY
+assert snap ready == true
+click role:combobox Physics law
+settle 1
+click role:option Anneal
+settle 1
+check-role Centre on
+settle 1
+assert retained {"role":"status","label":"Overlay availability","count":0}
+click role:combobox Physics law
+settle 1
+click role:option Still
+settle 1
+settle 1
+assert retained {"role":"status","label":"Overlay availability","count":0}
+click role:button Apply physics
+settle 1
+assert snap physics-law == still.default
+assert snap physics-overlays == gravity-locus
+assert retained {"role":"status","label":"Physics status","text":"Physics set to Still"}
+click role:combobox Physics law
+settle 1
+click role:option Density
+settle 1
+settle 1
+assert retained {"role":"checkbox","label":"Grid","attribute":"aria-disabled","value":"true"}
+assert retained {"role":"status","label":"Overlay availability","text":"Density takes only Hub room, Centre and Tide"}
+log physics converted receipt complete

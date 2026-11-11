@@ -1,0 +1,197 @@
+{
+  "schema": "scenomise.host-dataset/v1",
+  "dataset": {
+    "source": {
+      "authority": "example.stack",
+      "domain": "crates",
+      "resource": "graph:dependencies"
+    },
+    "revision": "r2",
+    "fields": {
+      "label": "text",
+      "occurrence_id": "text"
+    },
+    "occurrences": [
+      {
+        "occurrence_id": "kernel",
+        "source": {
+          "adapter": "example.crates",
+          "id": "kernel"
+        },
+        "values": {
+          "occurrence_id": {
+            "kind": "text",
+            "value": "kernel"
+          },
+          "label": {
+            "kind": "text",
+            "value": "Graph kernel"
+          }
+        }
+      },
+      {
+        "occurrence_id": "grammar",
+        "source": {
+          "adapter": "example.crates",
+          "id": "grammar"
+        },
+        "values": {
+          "occurrence_id": {
+            "kind": "text",
+            "value": "grammar"
+          },
+          "label": {
+            "kind": "text",
+            "value": "Projection grammar"
+          }
+        }
+      },
+      {
+        "occurrence_id": "scenomise",
+        "source": {
+          "adapter": "example.crates",
+          "id": "scenomise"
+        },
+        "values": {
+          "occurrence_id": {
+            "kind": "text",
+            "value": "scenomise"
+          },
+          "label": {
+            "kind": "text",
+            "value": "Scenomise"
+          }
+        }
+      },
+      {
+        "occurrence_id": "viewer",
+        "source": {
+          "adapter": "example.crates",
+          "id": "viewer"
+        },
+        "values": {
+          "occurrence_id": {
+            "kind": "text",
+            "value": "viewer"
+          },
+          "label": {
+            "kind": "text",
+            "value": "Graphshell viewer"
+          }
+        }
+      }
+    ]
+  },
+  "relationships": [
+    {
+      "id": "depends:grammar:kernel",
+      "from_occurrence": "grammar",
+      "to_occurrence": "kernel",
+      "kind": "depends_on",
+      "label": "Depends on",
+      "explanation": "The grammar manifest names kernel as a dependency.",
+      "provenance": {
+        "source": {
+          "authority": "example.stack",
+          "domain": "crates",
+          "resource": "graph:dependencies"
+        },
+        "source_revision": "r2",
+        "method": "example.manifest-dependencies",
+        "method_version": 1,
+        "provider": "example exporter",
+        "evidence": [
+          {
+            "adapter": "example.crates",
+            "id": "grammar"
+          }
+        ]
+      }
+    },
+    {
+      "id": "depends:scenomise:grammar",
+      "from_occurrence": "scenomise",
+      "to_occurrence": "grammar",
+      "kind": "depends_on",
+      "label": "Depends on",
+      "explanation": "The scenomise manifest names grammar as a dependency.",
+      "provenance": {
+        "source": {
+          "authority": "example.stack",
+          "domain": "crates",
+          "resource": "graph:dependencies"
+        },
+        "source_revision": "r2",
+        "method": "example.manifest-dependencies",
+        "method_version": 1,
+        "provider": "example exporter",
+        "evidence": [
+          {
+            "adapter": "example.crates",
+            "id": "scenomise"
+          }
+        ]
+      }
+    },
+    {
+      "id": "depends:viewer:scenomise",
+      "from_occurrence": "viewer",
+      "to_occurrence": "scenomise",
+      "kind": "depends_on",
+      "label": "Depends on",
+      "explanation": "The viewer manifest names scenomise as a dependency.",
+      "provenance": {
+        "source": {
+          "authority": "example.stack",
+          "domain": "crates",
+          "resource": "graph:dependencies"
+        },
+        "source_revision": "r2",
+        "method": "example.manifest-dependencies",
+        "method_version": 1,
+        "provider": "example exporter",
+        "evidence": [
+          {
+            "adapter": "example.crates",
+            "id": "viewer"
+          }
+        ]
+      }
+    },
+    {
+      "id": "depends:viewer:kernel",
+      "from_occurrence": "viewer",
+      "to_occurrence": "kernel",
+      "kind": "depends_on",
+      "label": "Depends on",
+      "explanation": "The viewer manifest names kernel as a dependency.",
+      "provenance": {
+        "source": {
+          "authority": "example.stack",
+          "domain": "crates",
+          "resource": "graph:dependencies"
+        },
+        "source_revision": "r2",
+        "method": "example.manifest-dependencies",
+        "method_version": 1,
+        "provider": "example exporter",
+        "evidence": [
+          {
+            "adapter": "example.crates",
+            "id": "viewer"
+          }
+        ]
+      }
+    }
+  ],
+  "revisions": [
+    {
+      "sequence": 1,
+      "revision": "r1"
+    },
+    {
+      "sequence": 2,
+      "revision": "r2"
+    }
+  ]
+}

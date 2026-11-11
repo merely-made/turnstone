@@ -1,0 +1,57 @@
+# Expose retained disclosure controls; return focus to the original canvas key target.
+click role:button Add an object
+focus-retained .tree-canvas
+# Saving into the mere session, the editor's Undo save, and Graphshell's
+# session Undo (Scenograph editor plan, E2b; SE14 to SE22). A save is stored
+# by the frame pump without holding the host across the write; `settle 6`
+# gives the write its frames before the store state is read.
+assert title GRAPHSHELL H3 READY
+act open-projection-editor
+settle 2
+click role:tab Preview
+settle 2
+click role:textbox Projection title
+input-text Stored one
+settle 2
+act save-projection
+settle 6
+assert retained {"role":"status","label":"Projection status","text":"Saved"}
+assert snap session-store == stored
+click role:textbox Projection title
+input-text Stored two
+settle 2
+act save-projection
+settle 6
+assert snap session-store == stored
+assert retained {"role":"status","label":"Projection saved state","text":"No unsaved changes"}
+act undo-projection-save
+settle 6
+assert retained {"role":"status","label":"Projection status","text":"Undid save \u00b7 Graphshell reference projection"}
+assert retained {"role":"status","label":"Projection preview","text":"Stored one \u00b7"}
+assert retained {"role":"status","label":"Projection saved state","text":"No unsaved changes"}
+assert snap session-store == stored
+# The stored definition came back as one step on the draft's own history.
+act undo-projection
+settle 2
+assert retained {"role":"status","label":"Projection preview","text":"Stored two \u00b7"}
+act redo-projection
+settle 2
+assert retained {"role":"status","label":"Projection preview","text":"Stored one \u00b7"}
+act redo-projection-save
+settle 6
+assert retained {"role":"status","label":"Projection status","text":"Redid save"}
+assert retained {"role":"status","label":"Projection preview","text":"Stored two \u00b7"}
+# Graphshell's session Undo reaches its own change, never the editor's save.
+click role:textbox Address
+input-text https://example.net/session-undo-probe
+settle 2
+act node:new
+settle 2
+act session:undo
+settle 6
+assert retained {"role":"status","label":"Graph status","text":"Undid Graphshell's last change"}
+assert retained {"role":"status","label":"Projection preview","text":"Stored two \u00b7"}
+assert snap session-store == stored
+capture projection_session
+wait
+log projection session save and undo proof complete

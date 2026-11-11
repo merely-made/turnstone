@@ -1,0 +1,53 @@
+# Ruling 120: Mark approved this Ruling 107 workload on 2026-10-07 ("Ok").
+# Current mer3ly source projects 21 nodes and 24 edges; generated html/repos
+# is stale at 26/29. This is a count-matched synthetic graph, not site data.
+# Release viewer bundles, same seed/links/size, three paired live windows.
+# Query: nodes=21&seed=7&links=none&physics_speed=1&gpu=off (CPU bundle)
+# Query: nodes=21&seed=7&links=none&physics_speed=1 (canvas-gpu bundle)
+# Normal GPU threshold is 400. Device presence is not proof of GPU dispatch.
+assert snap ready == true
+assert snap nodes == 21
+assert snap physics-paused == true
+click role:button Fit graph
+settle 12
+timing start site-paused
+settle 60
+timing stop
+settle 8
+click role:button Play physics
+settle 2
+click role:combobox Arrangement
+settle 1
+click role:option Free (physics alone)
+settle 1
+click role:button Apply arrangement
+settle 30
+assert snap layout == free
+assert snap physics-paused == false
+timing start site-live-1
+settle 120
+timing stop
+settle 8
+log-physics site-live-1
+log-pace site-live-1
+log-intervals site-live-1
+timing start site-live-2
+settle 120
+timing stop
+settle 8
+log-physics site-live-2
+log-pace site-live-2
+log-intervals site-live-2
+timing start site-live-3
+settle 120
+timing stop
+settle 8
+log-physics site-live-3
+log-pace site-live-3
+log-intervals site-live-3
+assert snap gpu-device-steps == 0
+assert snap gpu-failures == 0
+assert snap finite == true
+click role:button Pause physics
+settle 8
+log Ruling 107 site-size frame diagnostic complete

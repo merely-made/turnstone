@@ -1,0 +1,34 @@
+# The recipe's role select under Arrangement (dynamics grammar plan, G7, F48).
+# Anchored, a playing graph comes to rest and its anchored items glide home
+# (F45); seeded again, the request to settle releases them (the control).
+assert snap ready == true
+assert snap arrangement-role == seeded
+assert snap panel-role == seeded
+assert snap anchored-home == 0
+click role:combobox Role
+settle 1
+click role:option Anchored
+settle 1
+click role:button Apply role
+settle 1
+assert snap arrangement-role == anchored
+assert text Role set to anchored
+click role:button Play physics
+settle 1
+assert snap physics-paused == false
+settle 900
+assert snap settles >= 1
+assert snap anchored-home >= 1
+capture roles_anchored_home
+wait
+click role:combobox Role
+settle 1
+click role:option Seeded
+settle 1
+click role:button Apply role
+settle 1
+assert snap arrangement-role == seeded
+assert snap anchored-home == 0
+capture roles_seeded_again
+wait
+log role controls receipt complete

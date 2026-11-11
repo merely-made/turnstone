@@ -1,0 +1,189 @@
+#!/usr/bin/env python3
+# Copyright 2026 Mark Alan Boykin
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
+
+"""Build and package the read-only viewer, enforcing R157's delivery caps.
+
+The viewer ships one artifact, `webgl2/` (the WebGL2 presenter, built without
+Classic Vello), to every browser, and `mount.js` loads it whatever the browser's
+WebGPU support (Mark, 2026-11-08, after the WebGL2 receipts: host plan, T7). The
+WebGPU route artifact (`webgpu/`, with Classic Vello) is an opt-in comparison
+build, `--with-webgpu`, loaded only by an explicit `?render_backend=webgpu`. An
+artifact's Wasm and glue are held to the unchanged caps.
+The physics Worker module (`physics/`, one for both routes) is built beside
+them and held to its own cap.
+"""
+
+import argparse
+import gzip
+import hashlib
+import json
+import os
+from pathlib import Path
+import subprocess
+
+
+# R157's caps. Mark amended the Wasm cap to 3,460,300 B (3.30 MiB) on
+# 2026-10-15, to 3,670,016 B (3.50 MiB) on 2026-10-16, to 5,242,880 B
+# (5.00 MiB) on 2026-11-07, ruled "Ratchet down" the same day (4,194,304 B,
+# 4.00 MiB, applied to each route artifact), and, on 2026-11-08, "Fix the
+# reading, then flip": 3,670,016 B (3.50 MiB) now, once the viewer's main module
+# left the engine behind (the Worker module holds it). The ratchet schedule is in
+# the Graphshell host plan, T7: 3.25 MiB when the remaining stages land, applied
+# only after it measures green in both build modes (the same source built to
+# different sizes by checkout path; Genet d634ee0c485 removed the duplicate, and
+# both routes build without genet-livery's table layout, which the viewer never
+# uses).
+# The physics Worker module (`physics/`, loaded lazily into a Web Worker by
+# `physics/worker.js`, not part of a route's first load) has its own cap: 0.625
+# MiB, set from its first measurement (2026-11-08, both checkout paths: 493,109 B
+# gzip6 and 491,246 B gzip9, 75% of the cap).
+CAPS = {"wasm": 3670016, "glue": 20480, "mount": 8192, "history": 131072,
+        "physics": 655360}
+# Artifact name -> the viewer crate's features for that artifact. The
+# viewer is engine-free: the force engine (rapier and `seiche`'s simulation) is
+# not linked into the route artifact, whose physics is a transport to the Worker
+# module (`physics/`), the only place the engine is. `physics-worker-default`
+# makes the Worker the default backend; with no engine in the page there is
+# nothing else to ask for (`?physics=inline` is ignored with a console warning).
+ARTIFACTS = {
+    "webgl2": ["presentation-webgl2", "without-classic-vello", "without-table-layout",
+               "physics-worker-default"],
+}
+# The opt-in comparison route (`--with-webgpu`): the WebGPU presenter with Classic
+# Vello, for frame-time and visual comparison against the one shipped artifact.
+# It is not what ships (the 2026-11-08 ruling, T7) and `mount.js` loads it only on
+# an explicit `?render_backend=webgpu`.
+WEBGPU_COMPARISON = {
+    "webgpu": ["presentation-webgpu", "without-table-layout", "physics-worker-default"],
+}
+# The explicit opt-in (`--with-engine`): the engine linked into the route
+# artifact, so a page can run its physics in process (`?physics=inline`), as the
+# viewer did before 2026-11-08. It is bigger (about 0.4 MB gzip) and exists for
+# comparison and as the inline fallback; it is not what ships.
+ENGINE = ["physics-engine"]
+
+
+def build_physics_worker(args, web, target, out, assets, commands):
+    """Build the physics Worker's wasm (seiche's engine, no actor) and package it
+    with `physics/worker.js` as `<out>/physics/`, beside the route artifacts."""
+    command = [args.cargo, "build", "--locked", "--profile", "viewer",
+               "-p", "graphshell-physics-worker", "--target", "wasm32-unknown-unknown",
+               "--target-dir", str(target), "-j1"]
+    if args.offline:
+        command.append("--offline")
+    subprocess.run(command, cwd=web, check=True)
+    commands["physics"] = command
+    raw = target / "wasm32-unknown-unknown/viewer/graphshell_physics.wasm"
+    physics_out = out / "physics"
+    physics_out.mkdir(parents=True, exist_ok=True)
+    subprocess.run([args.wasm_bindgen, "--target", "web", "--remove-name-section",
+                    "--out-name", "graphshell_physics", "--out-dir", str(physics_out), str(raw)],
+                   check=True)
+    glue = physics_out / "graphshell_physics.js"
+    compact = physics_out / "graphshell_physics.min.js"
+    subprocess.run([args.terser, str(glue), "--module", "--compress", "--mangle",
+                    "--output", str(compact)], check=True)
+    compact.replace(glue)
+    worker = physics_out / "worker.js"
+    worker.write_bytes((web / "physics/worker.js").read_bytes())
+    assets["physics:wasm"] = physics_out / "graphshell_physics_bg.wasm"
+    assets["glue:physics"] = glue
+    assets["glue:physics-worker"] = worker
+
+
+def measure_assets(assets):
+    """Check both reproducible gzip9 and ordinary gzip6 delivery sizes."""
+    rows = {}
+    for name, path in assets.items():
+        data = path.read_bytes()
+        row = {"raw_bytes": len(data), "sha256": hashlib.sha256(data).hexdigest(),
+               "cap_bytes": CAPS[name.split(":")[0]]}
+        for level in (6, 9):
+            row[f"gzip{level}_bytes"] = len(gzip.compress(data, compresslevel=level, mtime=0))
+        row["cap_pass"] = max(row["gzip6_bytes"], row["gzip9_bytes"]) <= row["cap_bytes"]
+        rows[name] = row
+    return rows
+
+
+def require_budget(rows):
+    failures = [f"{name}: gzip6={r['gzip6_bytes']}, gzip9={r['gzip9_bytes']}, cap={r['cap_bytes']}"
+                for name, r in rows.items() if not r["cap_pass"]]
+    if failures:
+        raise RuntimeError("Viewer delivery budget exceeded: " + "; ".join(failures))
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--out-dir", required=True, type=Path)
+    parser.add_argument("--cargo", default="cargo")
+    parser.add_argument("--wasm-bindgen", default="wasm-bindgen")
+    parser.add_argument("--terser", default="terser", help="Terser CLI; install pinned scripts/package-lock.json dependencies")
+    parser.add_argument("--target-dir", type=Path)
+    parser.add_argument("--offline", action="store_true")
+    parser.add_argument("--with-webgpu", action="store_true",
+                        help="opt in: also build the WebGPU comparison artifact (`webgpu/`); "
+                             "the viewer ships only `webgl2/`")
+    parser.add_argument("--with-engine", action="store_true",
+                        help="opt in: link the force engine into the route artifacts (inline physics possible); "
+                             "the default viewer is engine-free, its physics only in the Worker module")
+    args = parser.parse_args()
+    web = Path(__file__).resolve().parents[1]
+    repo = web.parents[2]
+    target = (args.target_dir or web / "target").resolve()
+    out = args.out_dir.resolve()
+    out.mkdir(parents=True, exist_ok=True)
+    commands = {}
+    minifiers = {}
+    assets = {}
+    artifacts = {**ARTIFACTS, **(WEBGPU_COMPARISON if args.with_webgpu else {})}
+    for artifact, features in artifacts.items():
+        features = features + (ENGINE if args.with_engine else [])
+        command = [args.cargo, "build", "--locked", "--profile", "viewer",
+                   "--target", "wasm32-unknown-unknown", "--no-default-features",
+                   "--features", ",".join(features),
+                   "--target-dir", str(target), "-j1"]
+        if args.offline:
+            command.append("--offline")
+        subprocess.run(command, cwd=web, check=True)
+        commands[artifact] = command
+        raw = target / "wasm32-unknown-unknown/viewer/graphshell_web.wasm"
+        artifact_out = out / artifact
+        artifact_out.mkdir(parents=True, exist_ok=True)
+        subprocess.run([args.wasm_bindgen, "--target", "web", "--remove-name-section",
+                        "--out-name", "graphshell_web", "--out-dir", str(artifact_out), str(raw)],
+                       check=True)
+        glue = artifact_out / "graphshell_web.js"
+        glue_input_sha256 = hashlib.sha256(glue.read_bytes()).hexdigest()
+        compact = artifact_out / "graphshell_web.min.js"
+        minify_command = [args.terser, str(glue), "--module", "--compress", "--mangle",
+                          "--output", str(compact)]
+        subprocess.run(minify_command, check=True)
+        compact.replace(glue)
+        minifiers[artifact] = {"command": minify_command, "input_sha256": glue_input_sha256}
+        assets[f"wasm:{artifact}"] = artifact_out / "graphshell_web_bg.wasm"
+        assets[f"glue:{artifact}"] = glue
+    build_physics_worker(args, web, target, out, assets, commands)
+    assets["mount"] = web / "viewer.js"
+    assets["history"] = web / "fixtures/site-repository-host-history.json"
+    rows = measure_assets(assets)
+    report = {"source": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repo,
+                                                text=True).strip(),
+              "profile": "viewer", "artifacts": artifacts,
+              "engine_free": not args.with_engine,
+              "commands": commands, "rustc": subprocess.check_output(
+                  [os.environ.get("RUSTC", "rustc"), "--version"], text=True).strip(),
+              "manifest_sha256": hashlib.sha256((web / "Cargo.toml").read_bytes()).hexdigest(),
+              "minifiers": minifiers,
+              "minifier_version": subprocess.check_output([args.terser, "--version"], text=True).strip(),
+              "sizes": rows, "all_caps_pass": all(r["cap_pass"] for r in rows.values())}
+    (out / "viewer-delivery.json").write_text(json.dumps(report, indent=2) + "\n")
+    require_budget(rows)
+    print(json.dumps(report, indent=2))
+
+
+if __name__ == "__main__":
+    main()

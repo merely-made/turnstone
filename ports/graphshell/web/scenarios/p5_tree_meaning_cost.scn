@@ -1,0 +1,37 @@
+# Meaning's cost on the web (dynamics grammar plan, G2, F35): run per size
+# with ?nodes=<n>&seed=7, once as the page ships (the run sliced over frames)
+# and once with ?meaning_slice=0 (the run whole on one frame). Physics is
+# paused, so a window times the frame's own work and Meaning's: first a
+# baseline with nothing to run, then the frames across Kinds by meaning's
+# run, until it lands.
+assert snap ready == true
+click role:combobox Arrangement
+settle 1
+click role:option Free (physics alone)
+settle 1
+click role:button Apply arrangement
+settle 1
+assert snap layout == free
+click role:button Pause physics
+settle 2
+assert snap physics-paused == true
+assert snap meaning-runs == 0
+timing start baseline
+settle 60
+timing stop
+click role:combobox Physics law
+settle 1
+click role:option Kinds
+settle 1
+click role:combobox Kinds
+settle 1
+click role:option By meaning
+settle 1
+timing start meaning-run
+click role:button Apply physics
+settle 240
+timing stop
+assert snap meaning-snapshot-backend == lexical
+assert snap meaning-runs == 1
+assert snap meaning-pending == false
+log meaning cost receipt complete

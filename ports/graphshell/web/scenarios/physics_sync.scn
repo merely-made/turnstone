@@ -1,0 +1,34 @@
+# Physics receipt: Sync, Kuramoto oscillators coupled along edges, position
+# following phase on a ring. Its signature is a turning ring: energy above a
+# floor while the phases advance.
+assert title GRAPHSHELL H3 READY
+assert snap ready == true
+click role:button @data-command=physics:toggle
+settle 1
+assert snap physics-paused == false
+# No arrangement: the boot Spiral's anchor springs would pull under every law.
+click role:combobox Arrangement
+settle 1
+click role:option Free (physics alone)
+settle 1
+click role:button Apply arrangement
+settle 1
+assert snap layout == free
+click role:combobox Physics law
+settle 1
+click role:option Sync
+settle 1
+click role:button Apply physics
+settle 1
+assert snap physics-law == sync.kuramoto
+assert snap physics-profile == law.sync
+capture physics_sync_start
+wait
+settle 60
+capture physics_sync_moving
+# Framing (2026-10-03): every node's centre on the visible canvas at the
+# frame this capture shows, read from the canvas's positions and camera.
+assert snap layout-outside == 0
+wait
+assert snap physics-energy >= 1
+log physics sync receipt complete

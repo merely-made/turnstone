@@ -1,0 +1,396 @@
+# graphshell (port)
+
+The reference application over [`crates/graphshell`](../../crates/graphshell).
+The stack crates carry sessions; this port decides who gets one, runs the serve
+loops, hosts resident endpoints, and renders projections.
+
+Package name `graphshell`. Embedders depend directly on `chirograph` for the
+protocol, `graphshell-client` for client state, and `graphshell-endpoint` for
+serving projections, all three in the
+[Graphshell repository](https://github.com/merely-made/graphshell), the protocol
+layer below Mere. These capabilities do not require the reference port.
+
+The native opt-in `moot-resources` module composes the existing Moot resource
+view with verified retained Graphshell session authority and current Gemot and
+Eidetic owners. A mount holds independent inspection, pending feedback and
+opened bytes. The embedding host supplies current revocations, its clock,
+signer and stores, and schedules the asynchronous operation pump after input
+or explicit refresh. Rebuilding the view performs no domain operation.
+
+The finite `moot-resource-proof` binary mounts two readings on the shared
+Cambium native host. Run `cargo run --locked -p graphshell --no-default-features
+--features moot-resource-proof --bin moot-resource-host`; pass
+`-- --receipt DIRECTORY --size 1280x920` to execute the bounded native proof
+and close its window. Wide and compact native cases each passed four presented
+owner-state captures; these qualify paint/layout, not physical input or themes.
+Its public, unsealed
+in-memory fixtures use verified sans-I/O admission, with supplied carrier facts;
+they qualify no live peer, persistent community or private custody. Actual app
+session/coop routing remains open. The [Moot host plan](https://github.com/merely-made/gemot/blob/main/design_docs/archive_docs/2026-11-01/2026-06-12_moot_object_m1_plan.md#admitted-graphshell-resource-mount-2026-10-12)
+and [qualification record](docs/receipts/moot_resources_host_20261012/qualification.json)
+retain the acceptance scope.
+
+The `personae-vault` binary is djinn's terminal custody client. From Mere, run
+`cargo run -p graphshell --bin personae-vault -- --help`. It accepts a broker
+endpoint and persona name; djinn owns the vault path, unlock gate and private
+command execution. With djinn absent or Locked, commands needing identity
+stay pending. The public `profiles` roster remains readable while Locked.
+
+The ordinary native viewer, `cargo run --locked -p graphshell-mere -- DOMAIN`,
+can invite one named guest to an existing resident graph. Choose the graph in
+Sessions, then **Use this graph for co-op**. The owner and guest use the same
+MereView canvas and node selection; the resident's existing host and journal
+remain the sole writer. Guest edits retain admitted authorship, and ending
+access clears the guest view and survives a cold reopen. The
+[ordinary-view co-op receipt](docs/receipts/coop_graph_view_20261020/README.md)
+records contact/invitation commands, scope, qualification and limits. This
+integration covers native resident graphs; browser IndexedDB is not migrated.
+Current qualification uses the [shared native harness](../../support/graphshell-coop/README.md).
+The receipts retain the exact evidence for each boundary:
+
+| Boundary | Receipt |
+| --- | --- |
+| Intel Mac owner and M4 Mac guest, direct LAN and cold reopen | [Mac-to-Mac](docs/receipts/coop_two_machines_20261020/README.md) |
+| Mac owner and physical Fedora ThinkPad guest, Radeon/Wayland and cold reopen | [Mac-to-ThinkPad](docs/receipts/coop_mac_thinkpad_20261020/README.md) |
+| Forced relay carriage, scope, attribution, revocation and cold reopen | [Relay](docs/receipts/coop_relay_20261020/README.md) |
+| Relay loss during save, explicit reconnect/retry, revocation and cold reopen | [Current recovery](docs/receipts/coop_recovery_20261024/README.md) |
+
+To select relays, add `"coop_relay_urls": ["https://relay.example/"]` to the
+owner's existing Djinn profile settings and restart Djinn. An empty or absent
+list keeps co-op LAN-only. An unreachable configured relay fails contact
+creation. Reachability does not change invitation or graph authority.
+
+## Modules
+
+The serving half these compose (admission and its action check, the accept
+path, the line codec, `SessionAuthority` and `AdmittedEndpointContext`, the
+session loop and its notices, `ResidentEndpointCatalog`,
+`ResidentProjectionHost`, dialling, the N4 policy scenario, the fixture
+endpoints (`canary`, `resume`, `live_endpoint`), the receipt views (`view`,
+`sessions`) and the WebRTC door) is the `graphshell-host` crate (stack lift
+plan, L2 and after P5). Hosts that serve projections, and hosts that only
+render projection receipts, depend on that crate, not on this port.
+
+The servers Djinn runs (the application door's broker, the browser door's
+host and its native-messaging envelope (`browser_carrier`), the device broker
+and its `graphshell_native_host` relay, the local session, the identity
+endpoint and its cards, `ResidentIdentity`, and the personal sync, carriage,
+graph key and transfer staging hosts) are Djinn's `door` and `sync` modules
+since the stack lift plan's P5. `ResidentMereProxy`, an endpoint forwarding
+over the application door, is `graphshell_door::resident_mere_proxy`,
+and the C4 WebRTC host fixture that serves it stays here (`c4_webrtc_host`,
+feature `webrtc-session`). The port's identity scene test reads the identity
+cards from `tests/fixtures/identity_cards.json`, which Djinn's identity
+endpoint test keeps current.
+
+The application side of the first-party door (admission, the app client, custody and its
+clients, quarantine, the local endpoint, tracked tasks, the identity views,
+`GraphshellIdentity` and `env_profile`, the shared envelope and frames) is
+`graphshell_door`, features `projection-door` and `profile` (stack lift plan, L1,
+2026-10-15; split out of `graphshell-endpoint` on 2026-11-06). Applications depend on that crate, not on this port.
+
+Under `web` (portable, builds for `wasm32-unknown-unknown`):
+
+| Module | Contents |
+|---|---|
+| `app` | `GraphshellApp`, `AppError`: local and remote projections through one `ClientState` |
+| `product` | Graph-product operations and facets: `TransferScope`, `RelationFamilyFilter`, `EditableRelation` |
+| `retained_content` | Pelt-backed held HTML/text/image/selected-clip sessions, portable content input and a shared-device texture/scene producer |
+| `capture` | `HistoryCapturePolicy`, `BrowserVisit`, `NormalizedVisit`, `CaptureBackend` |
+| `browser_storage` | `StoragePersistence`, `decide`, `status_line` |
+| `transfer` | `prepare_transfer`, `apply_transfer`, `TransferRequest`, `TransferAuthorization`, the content facet; the records are `pandect::transfer` (engine split D70) |
+| `transfer_endpoint` | `TransferSourceEndpoint`, `TransferBeginV1` |
+| `goal_surface` | The goal surface's view, model and `suggest`; its provider, facts and door are `graphshell_host::goal_surface` |
+
+Modules that were once here and moved out (engine split, slices 1 and 2):
+
+| Was | Now |
+|---|---|
+| `access` | `pandect::access` |
+| `personal_sync` | `pandect::personal_sync` (feature `personal-sync`) |
+| `kept_text` | `eidetic::kept_text` |
+| `mere_host`, `handlers`, `session_item`, `resident_host` | `graphshell_host` modules of the same names |
+| `coop` | `graphshell_host::coop` |
+| `declaration` | `graphshell_door::declaration` |
+| `receipts`, `carriage` | the resident's `sync` modules (`ports/mere-resident/src/sync`) |
+
+## Features
+
+| Feature | Scope | Key dependencies |
+|---|---|---|
+| `native` (default) | Admitted sessions, native transports, Personae composition, the binaries | `graphshell-endpoint` (`network`, `stdio`), `notochord`, `transport`, `personae`, `session-runtime`, `ssh-agent-lib`, `ssh-key`, `light-file-dialog`, Tokio |
+| `web` | The portable graph and canvas cone | `mere` (`graph`, `canvas`), `chartulary`, `eidetic`, `muniment`, `url`, `sha2` |
+| `personal-sync` | `native` + `web` + device synchronization | `muniment/redb`, `p2panda-core`, `stickleback` |
+| `coop` | One chosen graph, owner and named guest; standalone or attached to an existing resident host | `native`, `web`, `muniment/redb`, `graphshell-client/pump` |
+
+Crates under `crates/` may not depend on this package.
+`scripts/check_port_boundaries.py` enforces that, checks that `graphshell` has
+exactly one manifest, and checks that the `web` cone's dependency tree excludes
+Turnstone, Genet host packages, and Servo runtime packages.
+
+## Binaries
+
+| Binary | Required features |
+|---|---|
+| `g1_receipt` | `native` |
+| `g4_sessions` | `native` |
+| `g5_peer` | `native` |
+| `n4_policy_receipt` | `native` |
+| `h4_identity_receipt` | `native` |
+| `h4d_browser_receipt_host` | `native` |
+| `h4e_browser_import_receipt_host` | `native` |
+| `h4f_agent_probe` | `native` |
+| `h6_transfer_peer` | `native`, `web` |
+| `h7_sync_peer` | `personal-sync` |
+
+## Browser surfaces
+
+`web/Cargo.toml` is a separate package, `graphshell-web`, whose `[lib] path` is
+`../src/web.rs`. It is a `cdylib` composing this port's `web` cone with Mere
+Canvas, Cambium over Genet's DOM and layout seam, and NetRender over a WebGPU
+canvas. Its browser dependencies stay out of the `graphshell` package.
+
+### Instrument retained-data reference workspace
+
+`web/workspace.html` opens the existing local-mere reference route
+(`tree.html?app=local`) with Instrument presentation. It reuses the current
+IndexedDB graph/session store and Forme workbench. Graph and tiled views show
+the same material, with a stable session caption and shared Cambium pane
+headers. The title, inspector and controls consume the existing Tabard
+application appearance. Read-only presenter and generated/fixture routes
+retain their existing framing; the Instrument authoring sheet is excluded
+from the no-default viewer build.
+
+This is a local retained-data reference entry, not a new store or a live
+cross-app resolver. An app's mere represents retained material using the
+app's useful views. Cross-domain use still requires the existing admitted
+source/owner and portable clip/live-entity paths; opening a scene does not
+copy data or grant another domain's operations.
+
+### September 5 practice workspace proof
+
+`web/practice.html` is a current-tree browser proof over one disclosed
+Woodshed comparison. Relations, pitch-membership Compare, and History use
+typed occurrence/comparison selection. Save/reopen validates source identity,
+revision, occurrence IDs, and the complete comparison disclosure before it
+restores the bounded workspace state.
+
+The same WASM component runs in `web/practice-embed.html`; that page is an
+embedded-wrapper proof, not the native Woodshed application. Relations use
+real Seiche dragging, Grid/Scatter recipes, fixed-60 Hz physics with at most
+three substeps, demand-driven redraw, and retained Cambium/Genet/Netrender
+faces. Projection fields are not wired into this proof yet.
+
+Build the web package and serve `web/` over loopback HTTP. Run the standalone
+walkthrough at `practice.html?scenario=scenarios/practice_workspace.scn`, the
+same-origin reopen at `practice.html?scenario=scenarios/practice_reopen.scn`,
+and the wrapper check at
+`practice-embed.html?scenario=scenarios/practice_embedded.scn`. The
+current `docs/receipts/practice_workspace_receipt.json` carries the
+current-tree receipt; it is not a release or final benchmark.
+
+Its lib root is `#![cfg(target_arch = "wasm32")]`, so it compiles to nothing on
+a native host and `cargo check --workspace` does not cover its code. Check it
+for the target it is for:
+
+```
+cd ports/graphshell/web
+cargo check --locked --offline --target wasm32-unknown-unknown
+```
+
+`scripts/cross-repo-smoke.ps1` runs this alongside the workspace gate.
+
+[`web/extension`](web/extension) holds the Chromium and Firefox extension and
+the `org.mere.graphshell` native-messaging registration.
+
+The desktop resident is [`djinn`](../djinn), not a Graphshell binary. Djinn
+owns persona-held stores and exposes these Graphshell session brokers; this
+port stays independently usable for local session and admission composition.
+
+## Where to look next
+
+[`docs/`](docs) holds the dated receipt notes for each landed slice.
+[`docs/receipts`](docs/receipts) holds the committed receipt artifacts and the
+commands that regenerate them.
+
+## Application appearance
+
+The existing full web app (`index.html`, `co_op.html`) and the saved tree app
+(`tree.html?app=local`) consume shared Tabard themes. Open **Appearance**, choose
+a built-in or previously imported theme and a mode, or paste the JSON exported
+from the shared Tabard workshop and choose **Import theme**. Import selects that
+theme; its attached custom authoring modes appear alongside Light, Dark,
+High Contrast Light and High Contrast Dark. This application is a consumer of
+the workshop's existing theme definition, not a second theme editor.
+
+The origin's `graphshell.application.appearance.v1` localStorage record contains
+the selected shared `ThemeChoice` and imported shared definitions. Each choice
+or import is persisted before it becomes active. Failed parsing or storage
+leaves the valid preference active. Corrupt stored intake is reported and left
+in storage; the application uses its built-in fallback until the user saves a
+valid choice. Missing stored identities and modes retain the requested choice
+and show Tabard's resolution diagnostic. The IndexedDB graph database,
+projection definitions, remote session revisions and graph authority remain
+owned by their existing systems.
+
+Only roots explicitly marked `data-appearance-application` consume this origin
+preference. The tree additionally requires its existing `app=local` product.
+Bare generated/fixture/dataset trees and embedded roots consume the composing
+host's inherited `--tabard-color-*` variables. They neither read nor write the
+application preference or mount an appearance picker. The existing
+`data-owns-title` marker continues to decide title ownership, including error
+reporting. `embed.html` supplies a light role set to demonstrate this separation
+after the same origin has saved a different standalone preference.
+
+The optional Moot capsule panel follows these same composing-host roles. Its
+review, grant, turn, keep and close lifecycle remain the existing applet host's
+responsibility. Appearance refresh retains the applet stylesheet and changes
+only the host's presentation mapping.
+
+Derived modes use the shared explicit-mode Tabard/Tinct artifact. For an
+attached authored mode sheet, Graphshell supplies the shared default built-in
+roles for omitted properties and then appends the **exact authored CSS rules**
+after its application role mapping in the existing Genet stylesheet cascade.
+It does not claim to derive arbitrary CSS from the imported theme's seeds.
+
+Canvas and the browser semantic overlay use browser-computed shared colors.
+An invisible same-origin document evaluates the sheet without injecting its
+selectors into the containing page. Canvas backdrop and edges consume
+`--gs-canvas-background` and `--gs-canvas-edge`, defaulting to
+`--tabard-color-bg` and `--tabard-color-text-dim`. Retained derived faces use
+primary, secondary, tertiary, success, danger and text through Pictograph's
+shared `DerivedFacePalette::from_palette` mapping, including its existing
+companion-color blend. Graph node selection/focus/status remains semantic
+canvas state. The local executable projection preview shares the same sheet;
+remote presentation continues to own its authored scene.
+
+For CSS that needs to affect Canvas or semantic DOM paint, set the shared
+properties at `:root` in the attached sheet, or inherit them onto the embedded
+component. Arbitrary selector rules such as `.topbar { border-width:4px; }`
+remain authoritative for Genet chrome; they do not redefine Canvas colors.
+The role bridge is the documented seam, with explicit shared defaults for
+omitted roles. It is not a separate renderer or CSS-to-seed conversion.
+
+### Read-only viewer delivery
+
+From the Mere root, build the read-only package with the pinned toolchain and
+`wasm-bindgen` 0.2.129:
+
+```sh
+python3 ports/graphshell/web/scripts/build-viewer.py --out-dir /tmp/graphshell-viewer-pkg
+python3 ports/graphshell/web/scripts/test_viewer_budget.py
+```
+
+The builder uses the standalone web lock, `--profile viewer` and
+`--no-default-features`, once: the one artifact, `webgl2/`, the WebGL2 presenter
+without Classic Vello, which every browser loads whether or not it has WebGPU (Mark,
+2026-11-08, after the WebGL2 receipts; the host plan's T7 has the evidence and the
+browser-support ruling). It is built with `without-table-layout`, which compiles
+Genet's table layout out (the viewer lays out no HTML table). `--with-webgpu` also builds
+`webgpu/` (the WebGPU presenter with Classic Vello) as a comparison build, which
+`viewer.js` loads only for an explicit `?render_backend=webgpu`. The viewer profile selects size optimization and full
+LTO; the full application's release profile remains separate. It writes
+`viewer-delivery.json` with source, compiler, profile, asset hashes and sizes,
+then rejects a package that exceeds any interaction cap at gzip level 6 or 9:
+Wasm 3,670,016 B (3.50 MiB, per artifact; Mark's 2026-11-07 "Ratchet down"
+ruling, second step, applied 2026-11-08 once the viewer's main module left the
+physics engine behind; 4.00 MiB was the first step, after 5.00 MiB the same day,
+3.50 MiB on 2026-10-16 and 3.30 MiB on 2026-10-15, amending R157's 3.25 MiB; the
+next step is scheduled in the host plan's T7), glue 20 KiB, mount 8 KiB, and the site history fixture
+128 KiB. The build also packages the physics Worker module (`pkg/physics/`:
+`graphshell_physics_bg.wasm`, its glue and `worker.js`, one for every page)
+with its own cap, Wasm 655,360 B (0.625 MiB) gzip, outside the route's first
+load. The viewer is engine-free (its artifact links no rapier or force
+engine) and runs its physics in that Worker by default (`physics-worker-default`);
+`?physics=inline` is ignored there, with a console warning and
+`data-physics-inline-ignored` on the element. `--with-engine` builds the old
+engine-linked artifacts as an explicit opt-in, where `?physics=inline` runs the
+engine in the page; `data-physics-backend` on the element says which a page has;
+see T7, step 3.
+The report remains available when the gate refuses a package. `--target-dir`
+can keep a delivery lane's build artifacts isolated; `--offline` requires the
+locked dependencies to be available locally.
+No CI job runs this gate: repository Actions are disabled and the tree holds
+no `viewer-delivery` workflow, so the gate is this builder plus
+`test_viewer_budget.py`, run by hand. The same source builds to different sizes
+at different checkout paths (the one webgl2 artifact, 3,011,023 or 3,012,846 B gzip6 at two paths), so the
+package is not a reproducible profile across paths; measure from two checkouts.
+
+Portable Platen excludes the unused document scene producer from this viewer.
+Retained Pelt content is an explicit `retained-content` capability, enabled by
+native defaults and by the web `product` feature. Standalone retained-content
+examples must select that feature; plain `web` stays the portable graph model.
+Native and product builds retain document layout, including its text capability.
+Size acceptance does not establish browser acceptance or site deployment. A
+site host must retain its separately budgeted frozen first reading and load the
+qualified viewer only on interaction, with an explicit failure fallback.
+
+### Appearance qualification commands
+
+Run standalone commands from `ports/graphshell/web` so its committed getrandom
+WASM configuration applies. Its generated lock is independent of Mere's root
+lock; create it once before the locked gates if this checkout has none.
+
+```sh
+cargo generate-lockfile --offline
+cargo check --locked --offline --target wasm32-unknown-unknown -j2
+cargo check --locked --offline --target wasm32-unknown-unknown --no-default-features -j2
+cargo check --locked --offline --target wasm32-unknown-unknown --features applets -j2
+cargo build --locked --offline --target wasm32-unknown-unknown -j2
+wasm-bindgen target/wasm32-unknown-unknown/debug/graphshell_web.wasm --target web --out-dir pkg
+python3 -m http.server 8872
+```
+
+Run the portable adapter regression suite from the Mere root:
+
+```sh
+cargo test --lib --locked --offline -p graphshell --no-default-features --features web appearance::tests
+```
+
+Use one browser origin/profile for these full application scenarios, in order:
+
+1. `http://127.0.0.1:8872/index.html?scenario=scenarios/appearance_modes.scn`
+2. `http://127.0.0.1:8872/index.html?scenario=scenarios/appearance_reopen.scn`
+3. `http://127.0.0.1:8872/embed.html?scenario=scenarios/appearance_embedded.scn`
+
+The first drives the actual semantic controls, captures four canonical modes,
+imports the attached CSS fixture, selects its custom authoring mode and rejects
+corrupt JSON without losing the valid selection. The second proves a fresh
+page reopens the same imported mode. The third proves the embedded role set
+and containing page title/controls survive the saved app preference. Inspect
+`window.graphshellScenario()` for completion, page/GPU failures, captures and
+snapshot evidence. `graph-nodes` is included in the full app snapshot for
+before/after graph authority checks.
+
+Also open `tree.html?app=local` in that profile: it must reopen the same custom
+mode, switch canonical modes through the same browser picker, update its
+Genet overlay and Canvas, and reopen again. Bare `tree.html` and `dataset.html`
+must expose `data-appearance-owner="host"` and no appearance picker. Review
+actual browser captures and GPU/error gates; successful WASM checks alone do
+not establish visual or reload acceptance.
+
+## Retained content
+
+The Workbench opens actual held bodies and verified selected text/WAV clips
+through Pelt and Genet. Sessions are keyed by reading access, survive projection
+rebuilds and tab hiding, and retire when that view closes or its source changes.
+Closing a view does not erase the supplying Mere's bytes. Link effects are
+resolved through existing retained graph addresses; other destinations report
+that their content is unavailable. `.mereclip` intake uses Fleece validation
+before admitting the bytes and creating the graph reference.
+The shared Cambium Read toolbar adjusts text size and column measure using
+Tabard reading intent. Those choices persist per access in the Forme workspace,
+including while a layout draft is open, and do not enter layout undo or graph
+history. Find uses the retained session's measured text, highlights and reveals
+matches, wraps next/previous, and closes with Escape; search state is temporary.
+
+
+The browser adapter reads the selected Mere's IndexedDB backend, plays verified
+WAV bytes with host audio controls, and exposes positive `clip-max-parts`,
+`clip-max-bytes` and `clip-max-record-bytes` options. Native consumers use the
+same content host, input view and producer. The explicit
+`?app=local&fixture=retained-content` acceptance source has its own database;
+it is not a default capture operation.
+
+Qualification and unresolved gates are recorded in the
+[one-tree plan](../../design_docs/archive_docs/2026-10-28/2026-09-25_graphshell_one_tree_plan.md).

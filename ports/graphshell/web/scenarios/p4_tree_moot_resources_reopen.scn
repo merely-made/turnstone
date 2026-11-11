@@ -1,0 +1,26 @@
+# New page on the retained origin, explicitly reinstall owner reads.
+# Reading attention and opened content do not enter the product source store.
+assert snap source == saved graph
+assert snap community-readings == 2
+assert snap community-1-resources == 2
+assert snap community-2-resources == 2
+assert snap community-1-opened == false
+assert snap community-2-opened == false
+assert snap community-1-pending == false
+assert snap community-2-pending == false
+assert snap community-1-outcome == none
+assert snap community-2-outcome == none
+assert snap forme-accesses == 0
+remember reopened
+click role:button @id=community-2-resource-1
+settle 2
+assert snap community-2-resource == 0303030303030303030303030303030303030303030303030303030303030303
+same reopened community-1-resource nodes graph-session forme forme-accesses
+click role:button @id=community-2-resource-Open
+wait 180
+assert snap community-2-opened == true
+assert snap community-1-opened == false
+assert snap community-2-outcome == accepted
+reveal .moot-opened-content Shared protocol notes
+settle 2
+capture moot_reopened_fresh_read

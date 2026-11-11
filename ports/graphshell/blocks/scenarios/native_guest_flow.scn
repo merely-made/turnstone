@@ -1,0 +1,33 @@
+# Native window, fresh data directory, the Woodshed test pack given with --adapter.
+# Review is on screen from the start; nothing is loaded until the person approves.
+assert snap adapter-installed == false
+assert snap blocks-adapters == metre
+capture before_approval
+click .blocks-approve-adapter
+assert snap adapter-installed == true
+assert snap adapter-approve-offered == false
+assert snap blocks-adapters == metre,progression
+capture approved
+click .blocks-insert-example
+assert snap blocks-dirty == true
+click .blocks-command-write-notation
+# Writing notation shows the adapter's first reading.
+assert snap blocks-view-mode == Chart
+wait 300
+capture chart
+click .blocks-view-tab
+assert snap blocks-view-mode == Tab
+wait 300
+capture tab
+click .blocks-view-score
+assert snap blocks-view-mode == Score
+wait 300
+capture score
+click .blocks-guest-event-1-1
+assert snap blocks-event-selected == 1:1
+wait 300
+capture score_selected
+click .blocks-save
+wait 300
+assert snap blocks-saving == false
+assert snap blocks-dirty == false
