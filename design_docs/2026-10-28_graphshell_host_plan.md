@@ -265,6 +265,7 @@ The native retained-content path does not close physical assistive technology, p
 - 2026-10-28: macOS denial of multicast egress follows the binary, not socket age; an unsigned dev binary under sshd or launchd is not a viable macOS peer.
 - 2026-10-28: `mere-transport` exposes no accessor that enumerates discovered peers; mDNS resolves an address only for a peer id already held.
 - 2026-10-28: the tree has no `html` or `body`, so a page's base styles go on `:root`; a hidden browser tab draws no frames, so frame timing needs the window in front and the mirror is written at mount and on a reader's action.
+- 2026-11-11: the web scenarios `h3_boot` and `editable_bar_blocks` fail identically on the post-split app web root and on Mere `325b0083`. `h3_boot` asserts a "Local Mere"/"Remote mount" UI that no longer exists (its 2026-09-02 baseline shows the older UI; the remote capture is blank). `editable_bar_blocks` expects the adapters `metre,progression` and only `metre` loads. The scenario inventory already marks both `verification: pending`. Evidence: `Code/testing/turnstone/2026-11-11_engine_split_headed/web/h3_boot/`, `Code/testing/turnstone/2026-11-11_engine_split_headed/web/editable_bar_blocks/` and `Code/testing/turnstone/2026-11-11_engine_split_headed/web-presplit-mere-325b0083/`; headed report `Code/testing/engine-split/slice6_u6_headed.md`, section 3, item 3.
 
 ## Progress
 
