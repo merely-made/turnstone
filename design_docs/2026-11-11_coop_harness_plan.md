@@ -64,6 +64,7 @@ This plan carries out two of Mark's rulings, which live in Mere's engine-split p
 - 2026-11-11: the two locks did not resolve their shared packages the same at Graphshell `9cd48e19` (host/Cargo.lock unchanged since `893818f6`) against Turnstone `0c1bb869`: 19 of 1,663 shared resolved packages differ (Mere `a9a125f2` against `325b0083`, Genet `3fa3ec62` against `7c6ffc87`, Distillery `8908f7e4` against `30bf5510`, wgpu-graft `67ebcc41` against `34af2599`). The shared custody pins agree (Armillary's `djinn`, Dramatis `30e9cc97`). Recorded rather than refused (D2).
 - 2026-11-12: the viewer's `await` expiry is a receipt field, not a failure: a control that never reaches ready exits 0 with `ok` true, so the control is judged on `status`, `attached` and `await-failed` (`verify.py`, `never_ready`).
 - 2026-11-12: the `existing-graph` capture shows the sessions column clipped at its top edge (too short for two entries); layout, not the door, and not fixed here.
+- 2026-11-12: the `control-not-ready` capture (resident stopped: "Connecting to resident", "transport failed: Connection refused (os error 111)", Retry) still offers "Use this graph for co-op" with no graph attached; viewer state, not the door, and not fixed here. Evidence: `Code/testing/turnstone/2026-11-11_engine_split_headed/fedora/run3/` (`capture-review.json`).
 
 ## Progress
 
