@@ -320,11 +320,10 @@ def workflow(args, relay=None):
 
 
 def owned_processes(roots):
-    """Processes still running from this run's binaries or private trees."""
+    """Processes still running an executable from this run's binaries or private trees."""
     listing = subprocess.check_output(['ps', '-axo', 'pid=,command='], text=True)
     return [line.strip() for line in listing.splitlines()
-            if int(line.split(None, 1)[0]) != os.getpid()
-            and any(str(root) in line for root in roots)]
+            if len(line.split()) > 1 and any(line.split()[1].startswith(str(root)) for root in roots)]
 
 
 def baseline(args):
