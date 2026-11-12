@@ -154,6 +154,16 @@ fn snapshot(
                 input_form: None,
                 effect: IntentEffect::Curation,
                 icon: None,
+            },
+            AdvertisedAction {
+                intent: IntentReference(wire::SET_ATTENTION_INTENT.into()),
+                label: "Keep your place".into(),
+                explanation: "Keep your focus and camera in one of your views, on this device only."
+                    .into(),
+                payload_schema: wire::SET_ATTENTION_SCHEMA.into(),
+                input_form: None,
+                effect: IntentEffect::Curation,
+                icon: None,
             }]
         } else {
             vec![]
@@ -208,12 +218,16 @@ fn fixture_with_state(
     let material_bytes = if with_material {
         let graph = kernel::graph::Graph::new().to_snapshot();
         let mut view = incipit::view::ViewIntent::default();
-        view.focus = focus.map(str::to_owned);
         view.strategy = strategy.map(str::to_owned);
+        let attention = incipit::view::AttentionState {
+            focus: focus.map(str::to_owned),
+            ..Default::default()
+        };
         serde_json::to_vec(&SessionGraphV1 {
             schema: wire::SESSION_GRAPH_SCHEMA.into(),
             application: "graphshell".into(),
             views: BTreeMap::from([("graphshell.mere".into(), view)]),
+            attention: BTreeMap::from([("graphshell.mere".into(), attention)]),
             session: id,
             read_only,
             epoch: SceneEpoch(1),
@@ -514,7 +528,7 @@ fn writable_activation_and_layout_save_through_shared_view_intent() {
             _ => None,
         })
         .expect("activation should persist through the carrier");
-    let saved: wire::SetViewV1 = serde_json::from_slice(activation_payload).unwrap();
+    let saved: wire::SetAttentionV1 = serde_json::from_slice(activation_payload).unwrap();
     assert_eq!(saved.state.focus.as_deref(), Some(ADDRESS));
 
     connection.take(MereViewRequest::Layout("phyllotaxis.default".into()));
@@ -535,15 +549,17 @@ fn writable_activation_and_layout_save_through_shared_view_intent() {
         .iter()
         .filter_map(|request| match request {
             CarrierRequestBody::Intent(invocation) => {
-                serde_json::from_slice::<wire::SetViewV1>(&invocation.payload).ok()
+                serde_json::from_slice::<wire::SetViewV1>(&invocation.payload)
+                    .ok()
+                    .filter(|saved| saved.schema == wire::SET_VIEW_SCHEMA)
             },
             _ => None,
         })
         .collect();
-    assert_eq!(saved_views.len(), 2);
-    assert_eq!(saved_views[1].state.focus.as_deref(), Some(ADDRESS));
+    // The focus is attention, saved by its own intent; the view carries the layout.
+    assert_eq!(saved_views.len(), 1);
     assert_eq!(
-        saved_views[1].state.strategy.as_deref(),
+        saved_views[0].state.strategy.as_deref(),
         Some("phyllotaxis.default")
     );
 }

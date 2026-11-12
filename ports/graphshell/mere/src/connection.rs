@@ -119,7 +119,7 @@ impl<T: RouteTransport, B: Browser> Connection<T, B> {
             self.panel.fail(reason.clone());
             return Err(reason);
         }
-        let saved_focus = self.panel.saved_view().focus.as_ref().and_then(|focus| {
+        let saved_focus = self.panel.saved_attention().focus.as_ref().and_then(|focus| {
             self.panel.records().iter().find_map(|(key, card)| {
                 card.values
                     .iter()
