@@ -25,13 +25,13 @@ repos:
         name: clippy
         entry: cargo clippy --workspace --all-targets
         language: system
-        files: '(^|/)(Cargo\.toml|[^/]+\.rs)$'
+        files: '(^|/)(Cargo\.toml|rust-toolchain\.toml|[^/]+\.rs)$'
         pass_filenames: false
       - id: clippy-2
         name: clippy --all-targets -p graphshell --features graphshell/query-views
         entry: cargo clippy --all-targets -p graphshell --features graphshell/query-views
         language: system
-        files: '(^|/)(Cargo\.toml|[^/]+\.rs)$'
+        files: '(^|/)(Cargo\.toml|rust-toolchain\.toml|[^/]+\.rs)$'
         pass_filenames: false
       - id: dependency-bans
         name: dependency bans

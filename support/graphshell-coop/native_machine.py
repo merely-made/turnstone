@@ -29,6 +29,8 @@ import sys
 import traceback
 import uuid
 
+import locks
+
 # What a receipt says about its compromises (engine-split D130).
 CUSTODY = ('fixture-custodian: djinn_custodian::fixture in its own process (coop_fixture_custodian), '
            'packaged Djinn grants at consent none; production passphrase-fd Djinn via --custodian. '
@@ -184,10 +186,10 @@ class Machine:
             'worker_sha256': sha(Path(__file__)),
             'source_commit': subprocess.check_output(['git', '-C', str(self.args.repo),
                                                       'rev-parse', 'HEAD'], text=True).strip(),
-            'lock_sha256': sha(self.args.repo / 'Cargo.lock'),
+            'lock_sha256': locks.sha256(locks.current(self.args.repo, 'Cargo.lock')),
             'host_commit': subprocess.check_output(['git', '-C', str(host), 'rev-parse', 'HEAD'],
                                                    text=True).strip(),
-            'host_lock_sha256': sha(host / 'host/Cargo.lock'),
+            'host_lock_sha256': locks.sha256(locks.current(host, 'host/Cargo.lock')),
             'custody': CUSTODY, 'binaries': binaries,
             'public': str(self.public), 'private': str(self.private),
         }

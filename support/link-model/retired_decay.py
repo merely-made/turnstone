@@ -96,11 +96,11 @@ def main():
         CHECK.fail("all five owning-repo caller regressions are required")
     command = CHECK.read_json(root / caller["record"])
     argv = command["command"]
-    if ("--locked" not in argv or "--manifest-path" not in argv or
+    if ("--manifest-path" not in argv or
             argv[argv.index("--manifest-path") + 1] != caller["harness_manifest"] or
             command["cwd"] != caller["harness_cwd"] or
             Path(caller["harness_manifest"]) != Path(caller["harness_cwd"]) / "Cargo.toml"):
-        CHECK.fail("caller test must identify the locked, recorded harness")
+        CHECK.fail("caller test must identify the recorded harness")
     for name, digest in caller["files"].items():
         if CHECK.sha256_file(root / name) != digest:
             CHECK.fail("caller harness manifest or lock hash mismatch")

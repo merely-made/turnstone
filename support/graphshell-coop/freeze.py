@@ -10,7 +10,9 @@
 
 Turnstone is the root (engine-split D130): the viewer comes from `--repo`; Djinn, the
 seeder and the fixture custodian come from Graphshell `host/`, checked out at the exact
-revision Turnstone's Cargo.lock pins for graphshell.git and built with host/Cargo.lock.
+revision Turnstone's lock pins for graphshell.git and built with host's lock. No lock is
+tracked: each is the one on disk, else the one `house resolved show <commit>` holds for that
+repository's commit (locks.py). The toolchain is the checkout's rust-toolchain.toml.
 Both repositories' commits, locks, input files and resolved suppliers are recorded.
 """
 import argparse
@@ -24,6 +26,8 @@ import shlex
 import shutil
 import subprocess
 import tomllib
+
+import locks
 
 GRAPHSHELL = 'https://github.com/merely-made/graphshell.git'
 VIEWER = ['graphshell_mere']
@@ -83,7 +87,7 @@ def checkout(host, revision):
 
 
 def build(root, artifacts, host, host_artifacts):
-    cargo = [CARGO, '+1.99.1', 'build']
+    cargo = [CARGO, 'build']
     subprocess.check_call([*cargo, '-p', 'graphshell-mere', '--bin', 'graphshell_mere',
                            '--target-dir', str(artifacts)], cwd=root)
     # Djinn alone, so the examples' dev-dependency features (in-process custody) never
@@ -137,7 +141,7 @@ def freeze_binary(name, artifacts, out):
 def inputs(root, workspace, names, out, trees):
     """One repository's commit, lock, input files, git suppliers and external paths."""
     tracked = set(run('git', 'ls-files', cwd=root).splitlines())
-    files = {name for name in tracked if Path(name).suffix in CODE or Path(name).name == 'Cargo.lock'}
+    files = {name for name in tracked if Path(name).suffix in CODE}
     # A compiled input the commit does not hold (a build-generated, ignored file such as
     # host/crates/script/wit/world.wit) is recorded by hash but cannot be checked against it.
     generated = set()
@@ -147,7 +151,7 @@ def inputs(root, workspace, names, out, trees):
             if path.is_relative_to(root) and path.is_file():
                 relative = path.relative_to(root).as_posix()
                 (files if relative in tracked else generated).add(relative)
-    metadata = json.loads(run(CARGO, '+1.99.1', 'metadata', '--offline',
+    metadata = json.loads(run(CARGO, 'metadata', '--offline',
                               '--format-version', '1', cwd=workspace))
     groups = {}
     for package in metadata['packages']:
@@ -167,7 +171,7 @@ def inputs(root, workspace, names, out, trees):
                           'packages': sorted(item['packages']), 'tracked_code_changes': []})
     texts = []
     for package, extra in trees:
-        tree = run(CARGO, '+1.99.1', 'tree', '--offline', '-p', package, *extra,
+        tree = run(CARGO, 'tree', '--offline', '-p', package, *extra,
                    '--edges', 'normal,build', cwd=workspace)
         (out / (package + '-tree.txt')).write_text(tree)
         texts.append(tree)
@@ -179,7 +183,7 @@ def inputs(root, workspace, names, out, trees):
             external.append({'name': package['name'], 'manifest': str(manifest), 'compiled': compiled})
             assert not compiled, ('unrecorded external path supplier', package['name'], manifest)
     return {'source_commit': run('git', 'rev-parse', 'HEAD', cwd=root).strip(),
-            'lock_sha256': sha(workspace / 'Cargo.lock'),
+            'lock_sha256': locks.sha256(locks.current(root, (workspace / 'Cargo.lock').relative_to(root).as_posix())),
             'files': {name: sha(root / name) for name in sorted(files)},
             'generated_files': {name: sha(root / name) for name in sorted(generated)},
             'suppliers': suppliers, 'external_path_packages': external}
@@ -193,15 +197,22 @@ def main():
                         help='clone Graphshell at the pin when absent and build both repositories')
     args = parser.parse_args()
     root, host = args.repo.resolve(), args.host_repo.resolve()
+    # A lock on disk is used; else the note's. Turnstone's lock names the Graphshell pin, so
+    # it must exist; Graphshell's, with no note, is whatever cargo resolves, and the receipt
+    # hashes that.
+    locks.ensure(root)
+    assert (root / 'Cargo.lock').exists(), 'no Cargo.lock on disk or in the resolved note: ' + str(root)
     pin = graphshell_pin(root / 'Cargo.lock')
     if args.build:
         checkout(host, pin)
+        locks.ensure(host, pin)
         build(root, args.artifacts.resolve(), host, args.host_artifacts.resolve())
     checkout(host, pin)
+    locks.ensure(host, pin)
     # Metadata and trees resolve every locked package for every target, including ones no
     # build fetched; fetch them first so the recorded queries stay --offline.
     for workspace in [root, host / 'host']:
-        subprocess.check_call([CARGO, '+1.99.1', 'fetch'], cwd=workspace)
+        subprocess.check_call([CARGO, 'fetch'], cwd=workspace)
     out = args.output.resolve()
     out.mkdir(mode=0o700)
     binaries = {name: freeze_binary(name, args.artifacts, out) | {'repository': 'turnstone'}
@@ -209,7 +220,7 @@ def main():
     binaries |= {name: freeze_binary(name, args.host_artifacts, out) | {'repository': 'graphshell'}
                  for name in HOST}
     # The production build: passphrase-fd, never in-process custody (D130).
-    features = run(CARGO, '+1.99.1', 'tree', '--offline', '-p', 'mere-resident',
+    features = run(CARGO, 'tree', '--offline', '-p', 'mere-resident',
                    '--features', 'passphrase-fd', '--edges', 'normal,build', '--depth', '0',
                    '--format', '{f}', cwd=host / 'host').strip().split(',')
     assert 'passphrase-fd' in features and 'in-process-custody' not in features, features
@@ -219,17 +230,17 @@ def main():
     assert graphshell['source_commit'] == pin
     shared = shared_lock_packages(root / 'Cargo.lock', host / 'host/Cargo.lock')
     names = ['run.py', 'machine.py', 'native_machine.py', 'network_machine.py',
-             'resident.py', 'freeze.py', 'relay.py', 'verify.py', 'freeze_relay.py',
-             'relay_server/Cargo.toml', 'relay_server/Cargo.lock', 'relay_server/src/main.rs']
+             'resident.py', 'freeze.py', 'relay.py', 'verify.py', 'freeze_relay.py', 'locks.py',
+             'relay_server/Cargo.toml', 'relay_server/src/main.rs']
     harness = {'support/graphshell-coop/' + name: sha(args.harness / name) for name in names}
     result = {**{k: turnstone[k] for k in ['source_commit', 'files', 'generated_files', 'suppliers', 'external_path_packages']},
               'lock_sha256': turnstone['lock_sha256'],
               'host': graphshell | {'repository': GRAPHSHELL, 'workspace': 'host',
-                                    'pinned_by': 'Turnstone Cargo.lock, graphshell.git',
+                                    'pinned_by': 'Turnstone lock, graphshell.git',
                                     'djinn_features': sorted(features)},
               'shared_lock_packages': shared,
               'harness': harness, 'binaries': binaries,
-              'rustc': run(RUSTC, '+1.99.1', '-Vv', cwd=root), 'cargo': run(CARGO, '+1.99.1', '-V', cwd=root),
+              'rustc': run(RUSTC, '-Vv', cwd=root), 'cargo': run(CARGO, '-V', cwd=root),
               'supplier_scope': 'Resolved Git checkouts, including uncompiled packages. Tracked Rust/TOML/lock/WGSL/C/C++ only; excludes untracked and asset-only changes.',
               'environment': {key: os.environ.get(key) for key in ['CARGO_TARGET_DIR', 'CARGO_BUILD_BUILD_DIR',
                               'CARGO_PROFILE_DEV_DEBUG', 'CARGO_PROFILE_TEST_DEBUG', 'CARGO_BUILD_JOBS']}}

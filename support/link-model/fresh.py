@@ -63,8 +63,8 @@ def complete_test_scope(command, role, package, listing=None):
             options[token] = cargo.pop(0)
         else:
             check.fail('filtered or unknown Cargo test scope: ' + token)
-    if '--locked' not in flags or options.get('-p', options.get('--package')) != package:
-        check.fail('locked complete package selection required')
+    if options.get('-p', options.get('--package')) != package:  # --locked is allowed, not required: no lock is tracked.
+        check.fail('complete package selection required')
     if role == 'canvas' and (options.get('--features') != 'canvas' or '--lib' in flags or '--no-default-features' in flags):
         check.fail('Canvas requires its full canvas-feature suite, including integration/doc tests')
     if role == 'engine' and ('--lib' in flags or '--no-default-features' in flags or '--features' in options):
@@ -90,8 +90,8 @@ def test_inventory(root, revision, role, inventory):
         record = check.read_json(path)
         command = record['command']
         complete_test_scope(command, role, package, key == 'ignored_record')
-        if '--locked' not in command or '-p' not in command or command[command.index('-p') + 1] != package:
-            check.fail('inventory does not identify its locked package')
+        if '-p' not in command or command[command.index('-p') + 1] != package:
+            check.fail('inventory does not identify its package')
         if role == 'canvas' and ('--features' not in command or command[command.index('--features') + 1] != 'canvas'):
             check.fail('canvas test inventory must enable canvas')
         if role == 'graphshell' and ('--no-default-features' not in command or '--features' not in command

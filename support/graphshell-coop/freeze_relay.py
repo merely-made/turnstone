@@ -60,11 +60,13 @@ def main():
         audit.append({'package': package, 'archive_sha256': expected[package], 'source_files_verified': count})
     assert verified > 0
     files = {str(path.relative_to(root)): sha(path) for path in
-             [fixture / 'Cargo.toml', fixture / 'Cargo.lock', fixture / 'src/main.rs', Path(__file__).resolve()]}
+             [fixture / 'Cargo.toml', fixture / 'src/main.rs', Path(__file__).resolve()]}
     result = {'source_commit': subprocess.check_output(['git', '-C', str(root), 'rev-parse', 'HEAD'], text=True).strip(),
               'sha256': sha(out / 'relay'), 'bytes': (out / 'relay').stat().st_size,
               'architecture': platform.machine(), 'files': files,
-              'rustc': subprocess.check_output([str(Path.home()/'.cargo/bin/rustc'), '+1.99.1', '-Vv'], text=True),
+              # The fixture's lock is untracked: the one this build resolved, checked below by its archives.
+              'lock_sha256': sha(fixture / 'Cargo.lock'),
+              'rustc': subprocess.check_output([str(Path.home()/'.cargo/bin/rustc'), '-Vv'], cwd=root, text=True),
               'registry_files_verified': verified, 'registry_packages': audit,
               'format': subprocess.check_output(['file', '-b', str(out/'relay')], text=True).strip()}
     (out / 'build-inputs.json').write_text(json.dumps(result, indent=2) + '\n')

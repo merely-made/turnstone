@@ -8,7 +8,9 @@ rulings `mere:engine-split D129` and `D130` (2026-11-11).
 The viewer (`graphshell_mere`) comes from this repository. Djinn, the seeder
 (`coop_existing_graph`) and the fixture custodian (`coop_fixture_custodian`) come
 from Graphshell `host/`, checked out at the exact revision this repository's
-`Cargo.lock` pins for graphshell.git and built with `host/Cargo.lock`. `freeze.py`
+lock pins for graphshell.git and built with `host/`'s lock. No lock is tracked: a lock
+on disk is used, else the one `house resolved show <commit>` holds for that
+repository's commit (`locks.py`; `freeze.py` writes it before building). `freeze.py`
 clones Graphshell when `--host-repo` does not exist (an existing checkout is only
 checked: HEAD at the pin, no tracked changes), builds both with `--build`, and
 records both commits, both lock hashes, both input file sets, every resolved Git
@@ -23,7 +25,8 @@ python3 support/graphshell-coop/freeze.py --build --repo . --artifacts TARGET \
   --harness support/graphshell-coop --output BINARIES
 ```
 
-The build is three cargo invocations, all `+1.99.1 --locked`:
+The build is three cargo invocations, on the toolchain each checkout's
+`rust-toolchain.toml` names (no release is hardcoded):
 `-p graphshell-mere --bin graphshell_mere` here; in `host/`,
 `-p mere-resident --bin djinn --features passphrase-fd` alone, so the examples'
 dev-dependency features never reach it; then

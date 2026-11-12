@@ -47,6 +47,13 @@ class Fresh(unittest.TestCase):
             with self.subTest(invalid=invalid), self.assertRaises(fresh.check.VerificationError):
                 fresh.complete_test_scope(invalid, 'canvas', 'pictograph')
 
+    def test_locked_is_allowed_but_not_required(self):
+        for command in (['cargo', 'test', '-p', 'seiche', '--', '--test-threads=1'],
+                        ['cargo', 'test', '--locked', '-p', 'seiche', '--', '--test-threads=1']):
+            fresh.complete_test_scope(command, 'engine', 'seiche')
+        with self.assertRaises(fresh.check.VerificationError):
+            fresh.complete_test_scope(['cargo', 'test', '-p', 'other', '--', '--test-threads=1'], 'engine', 'seiche')
+
     def test_graphshell_native_and_partial_engine_scopes_are_not_web_proof(self):
         command = ['cargo', 'test', '--locked', '-p', 'graphshell', '--no-default-features', '--features', 'web', '--lib', '--', '--test-threads=1']
         fresh.complete_test_scope(command, 'graphshell', 'graphshell')

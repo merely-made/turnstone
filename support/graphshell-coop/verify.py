@@ -16,6 +16,8 @@ import struct
 import subprocess
 import tomllib
 
+import locks
+
 ROOT = Path(__file__).resolve().parents[2]
 GRAPHSHELL = 'https://github.com/merely-made/graphshell.git'
 
@@ -86,13 +88,13 @@ def lock_differences(turnstone, host):
 def verify_host(inputs, machine, args):
     """Graphshell host/ at the revision Turnstone's lock pins, its lock and inputs (D130)."""
     host = inputs['host']
-    lock = (subprocess.check_output(['git', 'show', args.commit + ':Cargo.lock'], cwd=ROOT)
-            if args.commit else (ROOT / 'Cargo.lock').read_bytes())
+    lock = (locks.at_commit(ROOT, args.commit, 'Cargo.lock') if args.commit
+            else locks.current(ROOT, 'Cargo.lock'))
     assert hashlib.sha256(lock).hexdigest() == inputs['lock_sha256'] == machine['lock_sha256']
     pins = {p['source'].split('#')[1] for p in tomllib.loads(lock.decode())['package']
             if p.get('source', '').startswith('git+' + GRAPHSHELL)}
     assert pins == {host['source_commit']} == {machine['host_commit']}, pins
-    assert host['lock_sha256'] == host['files']['host/Cargo.lock'] == machine['host_lock_sha256']
+    assert host['lock_sha256'] == machine['host_lock_sha256']
     assert args.host_repo, '--host-repo (a Graphshell clone) is required to check host inputs'
     verify_sources(host['files'], host['source_commit'], args.host_repo.resolve())
     assert_generated(host.get('generated_files', {}), host['source_commit'], args.host_repo.resolve())
@@ -101,8 +103,7 @@ def verify_host(inputs, machine, args):
                for p in host['suppliers'])
     assert 'passphrase-fd' in host['djinn_features'] and 'in-process-custody' not in host['djinn_features']
     # Recorded, not required to agree; the record must be exactly what both locks say (coop-harness D2).
-    host_lock = subprocess.check_output(['git', 'show', host['source_commit'] + ':host/Cargo.lock'],
-                                        cwd=args.host_repo.resolve())
+    host_lock = locks.at_commit(args.host_repo.resolve(), host['source_commit'], 'host/Cargo.lock')
     assert hashlib.sha256(host_lock).hexdigest() == host['lock_sha256']
     assert inputs['shared_lock_packages'] == lock_differences(lock.decode(), host_lock.decode())
     return host
@@ -142,7 +143,7 @@ def verify_baseline(HERE, q, args):
     assert owner['console_present'] and not owner['console_locked']
     inputs = read(HERE / 'build-inputs.json')
     assert owner['source_commit'] == inputs['source_commit']
-    assert owner['lock_sha256'] == inputs['files']['Cargo.lock']
+    assert owner['lock_sha256'] == inputs['lock_sha256']
     verify_sources(inputs['files'] | inputs['harness'], args.commit)
     assert args.commit, '--commit is required: generated inputs are checked against it'
     assert_generated(inputs['generated_files'], args.commit, ROOT)
@@ -276,7 +277,7 @@ def main():
         machine = machines[role]
         source = inputs[role]
         assert machine['source_commit'] == source['source_commit']
-        assert machine['lock_sha256'] == source['files']['Cargo.lock']
+        assert machine['lock_sha256'] == source['lock_sha256']
         assert machine['worker_sha256'] == q['worker_sha256']
         assert machine['console_present'] and not machine['console_locked']
         assert all(not p['compiled'] for p in source['external_path_packages'])
@@ -387,6 +388,7 @@ def main():
         assert relay_build['source_commit'] == machines['guest']['source_commit']
         assert relay_build['architecture'] == 'x86_64'
         assert relay_build['registry_files_verified'] > 0
+        # Packets from before D139 hold the relay's tracked lock among the files.
         verify_sources(relay_build['files'], args.commit)
     assert fields('owner-private-during-coop')['attached'] == private
     assert state('owner-private-during-coop') is None
