@@ -145,6 +145,7 @@ set.
 - [Browser surfaces implementation: open work](2026-11-02_browser_surface_implementation_plan.md): draft. A0, S0 (shallows), X0, the E0 tails, default Servo correctness, accessibility and Cue platform qualification.
 - [Graphshell reference host](2026-10-28_graphshell_host_plan.md): the reference app's open phases (graph portal, Personae surface, companion, launcher) and its one-tree cutover; moved from Mere with the app (engine split D113), unedited apart from paths.
 - [Graphshell tree migration inventory](2026-09-27_graphshell_tree_migration_inventory.md): the app's migration onto one Cambium tree; moved from Mere with the app (D113).
+- [Co-op harness](2026-11-11_coop_harness_plan.md): in progress. `support/graphshell-coop` repaired as `mere:engine-split D129` and `D130` rule: fixture custodian, a grant from Graphshell's own code, Turnstone-rooted two-repository builds, a single-desktop baseline with a positive control; the two-machine phases unverified since 2026-10-24.
 
 ## Current architecture, audits, and design records
 

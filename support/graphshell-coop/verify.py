@@ -6,15 +6,18 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 
-"""Verify two native machine identities, source inputs and co-op behavior."""
+"""Verify a receipt packet: source inputs of both repositories, machine identities, and
+either the two-machine co-op behavior or the single-desktop baseline with its positive control."""
 import argparse
 import hashlib
 import json
 from pathlib import Path
 import struct
 import subprocess
+import tomllib
 
 ROOT = Path(__file__).resolve().parents[2]
+GRAPHSHELL = 'https://github.com/merely-made/graphshell.git'
 
 
 def read(path):
@@ -25,12 +28,12 @@ def sha(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def verify_sources(files, commit):
+def verify_sources(files, commit, root=ROOT):
     if not commit:
         for name, expected in files.items():
-            assert sha(ROOT / name) == expected, name
+            assert sha(root / name) == expected, name
         return
-    process = subprocess.Popen(['git', 'cat-file', '--batch'], cwd=ROOT,
+    process = subprocess.Popen(['git', 'cat-file', '--batch'], cwd=root,
                                stdin=subprocess.PIPE, stdout=subprocess.PIPE)
     try:
         for name, expected in files.items():
@@ -47,29 +50,150 @@ def verify_sources(files, commit):
     assert process.returncode == 0
 
 
+def verify_host(inputs, machine, args):
+    """Graphshell host/ at the revision Turnstone's lock pins, its lock and inputs (D130)."""
+    host = inputs['host']
+    lock = (subprocess.check_output(['git', 'show', args.commit + ':Cargo.lock'], cwd=ROOT)
+            if args.commit else (ROOT / 'Cargo.lock').read_bytes())
+    assert hashlib.sha256(lock).hexdigest() == inputs['lock_sha256'] == machine['lock_sha256']
+    pins = {p['source'].split('#')[1] for p in tomllib.loads(lock.decode())['package']
+            if p.get('source', '').startswith('git+' + GRAPHSHELL)}
+    assert pins == {host['source_commit']} == {machine['host_commit']}, pins
+    assert host['lock_sha256'] == host['files']['host/Cargo.lock'] == machine['host_lock_sha256']
+    assert args.host_repo, '--host-repo (a Graphshell clone) is required to check host inputs'
+    verify_sources(host['files'], host['source_commit'], args.host_repo.resolve())
+    assert all(not p['compiled'] for p in host['external_path_packages'])
+    assert all(p['head'] == p['source'].split('#')[-1] and not p['tracked_code_changes']
+               for p in host['suppliers'])
+    assert 'passphrase-fd' in host['djinn_features'] and 'in-process-custody' not in host['djinn_features']
+    assert not inputs['shared_lock_packages']['differ'], inputs['shared_lock_packages']['differ']
+    return host
+
+
+def check_capture(evidence, capture):
+    path = evidence / Path(capture['path']).name
+    data = path.read_bytes()
+    assert data[:8] == b'\x89PNG\r\n\x1a\n'
+    assert struct.unpack('>II', data[16:24]) == (capture['width'], capture['height'])
+    assert capture['width'] > 200 and capture['height'] > 200
+    return path.stem
+
+
+def verify_review(HERE, evidence, names):
+    review = read(HERE / 'capture-review.json')
+    assert {r['capture'] for r in review} == {name + '.png' for name in names}
+    assert all(r['reviewed'] and r['observation']
+               and sha(evidence / r['capture']) == r['sha256'] for r in review)
+
+
+def verify_baseline(HERE, q, args):
+    """One desktop: custody, grant, resident, seed, baseline phase, positive control."""
+    evidence = HERE / 'accepted'
+    assert q['result'] == 'ok' and q['all_owned_processes_stopped'] and q['custodian_launches'] == 1
+    owner = q['machines']['owner']
+    assert owner['operating_system'] in {'Darwin', 'Linux'}
+    assert owner['console_present'] and not owner['console_locked']
+    inputs = read(HERE / 'build-inputs.json')
+    assert owner['source_commit'] == inputs['source_commit']
+    assert owner['lock_sha256'] == inputs['files']['Cargo.lock']
+    verify_sources(inputs['files'] | inputs['harness'], args.commit)
+    host = verify_host(inputs, owner, args)
+    assert all(not p['compiled'] for p in inputs['external_path_packages'])
+    assert all(p['head'] == p['source'].split('#')[-1] and not p['tracked_code_changes']
+               for p in inputs['suppliers'])
+    assert q['worker_sha256'] == owner['worker_sha256'] == inputs['harness']['support/graphshell-coop/machine.py']
+    assert q['controller_sha256'] == inputs['harness']['support/graphshell-coop/run.py']
+    signing = 'ad-hoc,' if owner['operating_system'] == 'Darwin' else 'not applicable: native ELF'
+    assert set(owner['binaries']) == set(inputs['binaries'])
+    assert all(owner['binaries'][n] == b['sha256'] and b['architecture'] == owner['architecture']
+               and b['signing'].startswith(signing) for n, b in inputs['binaries'].items())
+    # Custody: the fixture custodian, handed to a production passphrase-fd Djinn.
+    assert q['custody'] == owner['custody'] and q['custody'].startswith('fixture-custodian:')
+    custodian = read(evidence / 'owner-resident/custodian.json')
+    assert custodian['ready'] and custodian['profile'] == 'CrossGraphOwner'
+    assert custodian['custody'] == 'fixture-custodian' and custodian['synthetic']
+    log = (evidence / 'owner-resident/djinn-1.log').read_text()
+    assert 'custody reached' in log and 'in_process=false' in log, 'Djinn did not reach the custodian'
+    # Consent: the grant came from Graphshell's own grant_for and is what Djinn loaded.
+    grant = read(evidence / 'owner-grant.json')
+    assert grant['origin'] == q['grant_origin'] and grant['prepare_sha256'] == owner['binaries']['coop_existing_graph']
+    assert grant['grant']['app'] == 'graphshell'
+    assert read(evidence / 'owner-settings.json')['applications'] == [grant['grant']]
+    status = q['resident_status']
+    assert status['ready'] and status['lock'] == 'unlocked'
+    events = [json.loads(line) for line in (evidence / 'owner-resident/events-1.jsonl').read_text().splitlines()]
+    ready = next(e for e in events if e['event'] == 'ready')
+    stopped = next(e for e in events if e['event'] == 'stopped')
+    assert stopped['ok'] and stopped['reason'] == 'stop intent' and ready['pid'] == stopped['pid'] == status['pid']
+    assert not (evidence / 'owner-resident/events-2.jsonl').exists(), 'one Djinn launch only'
+    # Seed through the door, then the viewer attached to the chosen graph and switched.
+    chosen, private = q['graphs']['chosen'], q['graphs']['private']
+    assert chosen != private and read(evidence / 'existing-graphs.json') == q['graphs']
+    result = read(evidence / 'baseline.json')
+    assert result['ok'] and not result['errors'] and result['final']['status'] == 'ready'
+    assert result['final']['attached'] == chosen
+    launch = read(evidence / 'baseline-launch.json')
+    pid = int(result['final']['pid'])
+    assert launch['launcher_pid'] == pid and q['native_processes'] == [{'machine': 'owner', 'pid': pid}]
+    assert launch['machine']['machine_id'] == owner['machine_id'] and launch['machine']['binaries'] == owner['binaries']
+    captures = {check_capture(evidence, c): c['fields'] for c in result['captures']}
+    assert set(captures) == {'private-before', 'existing-graph'}
+    assert captures['private-before']['attached'] == private and captures['existing-graph']['attached'] == chosen
+    # Positive control: launched after the resident stopped; never ready.
+    control, outcome = read(evidence / 'control.json'), q['control']
+    trace = [t['method'] for t in read(HERE / 'control-trace.json')]
+    assert trace.index('stop') < len(trace) - 1 - trace[::-1].index('launch'), 'control launched before stop'
+    assert outcome['failed_as_expected'] and control['ok'] is False
+    assert control['final']['status'] != 'ready' and 'status expected "ready"' in control['final']['await-failed']
+    assert int(control['final']['pid']) == read(evidence / 'control-launch.json')['launcher_pid'] != pid
+    control_captures = [check_capture(evidence, c) for c in control['captures']]
+    cleanup = read(HERE / 'cleanup.json')
+    assert cleanup['accepted_cohort'] == Path(owner['public']).parents[1].name
+    assert not cleanup['owner']['remaining']
+    verify_review(HERE, evidence, [*captures, *control_captures])
+    print(json.dumps({'result': 'ok', 'mode': 'baseline',
+                      'owner': {'operating_system': owner['operating_system'], 'system_version': owner['system_version'],
+                                'architecture': owner['architecture']},
+                      'turnstone': {'commit': inputs['source_commit'], 'lock_sha256': inputs['lock_sha256']},
+                      'graphshell': {'commit': host['source_commit'], 'lock_sha256': host['lock_sha256']},
+                      'shared_lock_packages': inputs['shared_lock_packages']['compared'],
+                      'custody': q['custody'], 'grant_origin': q['grant_origin'],
+                      'baseline': {'pid': pid, 'attached': chosen, 'captures': sorted(captures)},
+                      'control': {'status': control['final']['status'], 'await_failed': control['final']['await-failed'],
+                                  'captures': control_captures},
+                      'source_files': len(inputs['files']), 'host_files': len(host['files']),
+                      'commit': args.commit}, indent=2))
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--commit')
     parser.add_argument('--receipt', type=Path, required=True)
+    parser.add_argument('--host-repo', type=Path, help='a Graphshell clone holding the pinned revision')
     args = parser.parse_args()
     HERE = args.receipt.resolve()
     manifest = read(HERE / 'artifact-sha256.json')
-    actual = {str(p.relative_to(HERE)) for p in HERE.rglob('*')
-              if p.is_file() and p != HERE / 'artifact-sha256.json'}
+    # The capture review is written after the run, outside the manifest; it binds
+    # itself to the captures by their hashes.
+    unlisted = {'artifact-sha256.json'} | ({'capture-review.json'} - set(manifest))
+    actual = {p.relative_to(HERE).as_posix() for p in HERE.rglob('*')
+              if p.is_file() and p.relative_to(HERE).as_posix() not in unlisted}
     assert set(manifest) == actual, 'packet contains unlisted or missing files'
     for name, expected in manifest.items():
         path = (HERE / name).resolve()
         assert path.is_relative_to(HERE) and sha(path) == expected, name
     evidence = HERE / 'accepted'
     q = read(evidence / 'qualification.json')
+    if q.get('mode') == 'baseline':
+        return verify_baseline(HERE, q, args)
     mode = q.get('mode', 'relay' if (evidence/'relay-server.json').exists() else 'direct')
     assert q['result'] == 'ok' and q['all_owned_processes_stopped']
     assert q['custodian_launches'] == 4
     machines = q['machines']
     assert machines['owner']['machine_id'] != machines['guest']['machine_id']
-    assert machines['owner']['architecture'] == 'x86_64'
+    # The owner may be Linux or macOS on any architecture; the receipt records which (D130).
+    assert machines['owner']['operating_system'] in {'Darwin', 'Linux'}
     assert machines['guest']['architecture'] == 'x86_64'
-    assert machines['owner']['operating_system'] == 'Darwin'
     assert machines['guest']['operating_system'] == 'Linux'
     assert machines['guest']['desktop']['Type'] == 'wayland'
     assert machines['guest']['desktop']['Active'] == 'yes'
@@ -103,7 +227,9 @@ def main():
         assert all(not p['compiled'] for p in source['external_path_packages'])
         assert all(p['head'] == p['source'].split('#')[-1] and not p['tracked_code_changes']
                    for p in source['suppliers'])
-        expected_signing = 'ad-hoc,' if role == 'owner' else 'not applicable: native ELF'
+        if 'host' in source:  # Packets from before the two-repository harness carry none.
+            verify_host(source, machine, args)
+        expected_signing = 'ad-hoc,' if machine['operating_system'] == 'Darwin' else 'not applicable: native ELF'
         assert all(binary['signing'].startswith(expected_signing) for binary in source['binaries'].values())
         assert all(machine['binaries'][name] == binary['sha256']
                    and binary['architecture'] == machine['architecture']
@@ -273,6 +399,7 @@ def main():
     assert all(r['reviewed'] and r['observation']
                and sha(evidence / r['capture']) == r['sha256'] for r in review)
     print(json.dumps({'result': 'ok', 'machines': 2, 'native_processes': 7,
+                      'owner': {k: machines['owner'][k] for k in ['operating_system', 'architecture']},
                       'custodians': 4, 'captures': len(captures), 'active_routes': sorted(active_routes),
                       'source_files': len(inputs['owner']['files']), 'commit': args.commit}, indent=2))
 

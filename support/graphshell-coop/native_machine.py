@@ -29,6 +29,14 @@ import sys
 import traceback
 import uuid
 
+# What a receipt says about its compromises (engine-split D130).
+CUSTODY = ('fixture-custodian: djinn_custodian::fixture in its own process (coop_fixture_custodian), '
+           'packaged Djinn grants at consent none; production passphrase-fd Djinn via --custodian. '
+           'Not the djinn-custodian binary, its confinement, service listener or root-owned client file.')
+GRANT_ORIGIN = ('coop_existing_graph grant: mere_resident::applications::grant_for(graphshell, '
+                'graphshell_door::declaration::declaration(), peer None), in owner settings before start; '
+                'the state after a yes, not the consent dialog')
+
 
 def sha(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
@@ -111,14 +119,21 @@ class Machine:
         self.public.mkdir()
         self.private.mkdir(mode=0o700)
         from resident import Resident
-        self.resident = Resident(args.djinn, self.private / args.role,
-                                 'CrossGraph' + args.role.title(),
-                                 self.public / (args.role + '-resident'))
+        name = 'CrossGraph' + args.role.title()
+        self.resident = Resident(args.djinn, self.private / args.role, name,
+                                 self.public / (args.role + '-resident'), args.custodian)
+        # Consent: what an owner's yes writes, from Graphshell's own grant_for, put
+        # in the owner settings before Djinn starts (engine-split D130).
+        grant = json.loads(self.invoke(args.prepare, ['grant']))
+        assert grant['app'] == 'graphshell' and not grant['agent'], grant
+        write(self.public / (args.role + '-grant.json'),
+              {'origin': GRANT_ORIGIN, 'prepare_sha256': sha(args.prepare), 'grant': grant})
+        settings = {'applications': [grant]}
         if args.role == 'owner':
-            settings = {'reservoir': {'enabled': True, 'persona': str(uuid.uuid4())}}
-            path = Path(self.resident.environment['XDG_DATA_HOME'])
-            write(path / 'graphshell/settings/CrossGraphOwner.json', settings)
-            write(self.public / 'owner-settings.json', settings)
+            settings['reservoir'] = {'enabled': True, 'persona': str(uuid.uuid4())}
+        path = Path(self.resident.environment['XDG_DATA_HOME'])
+        write(path / 'graphshell/settings' / (name + '.json'), settings)
+        write(self.public / (args.role + '-settings.json'), settings)
         os.chmod(self.resident.environment['XDG_RUNTIME_DIR'], 0o700)
         _, self.desktop_state = desktop()
         self.resident.environment.update(self.desktop_state['graphical_environment'])
@@ -132,9 +147,10 @@ class Machine:
 
     def info(self):
         hardware, state = desktop()
-        binaries = {'graphshell_mere': sha(self.args.binary), 'djinn': sha(self.args.djinn)}
-        if self.args.prepare:
-            binaries['coop_existing_graph'] = sha(self.args.prepare)
+        binaries = {'graphshell_mere': sha(self.args.binary), 'djinn': sha(self.args.djinn),
+                    'coop_existing_graph': sha(self.args.prepare),
+                    'coop_fixture_custodian': sha(self.args.custodian)}
+        host = self.args.host_repo
         return {
             'role': self.args.role,
             'machine_id': hashlib.sha256(('graphshell-coop-v1:' + hardware).encode()).hexdigest(),
@@ -145,7 +161,10 @@ class Machine:
             'source_commit': subprocess.check_output(['git', '-C', str(self.args.repo),
                                                       'rev-parse', 'HEAD'], text=True).strip(),
             'lock_sha256': sha(self.args.repo / 'Cargo.lock'),
-            'binaries': binaries,
+            'host_commit': subprocess.check_output(['git', '-C', str(host), 'rev-parse', 'HEAD'],
+                                                   text=True).strip(),
+            'host_lock_sha256': sha(host / 'host/Cargo.lock'),
+            'custody': CUSTODY, 'binaries': binaries,
             'public': str(self.public), 'private': str(self.private),
         }
 
@@ -165,10 +184,14 @@ class Machine:
     def start(self):
         return self.resident.start()
 
-    def stop(self):
+    def stop(self, final=False):
         assert all(p.poll() is not None for p in self.phases.values()), 'native phase still running'
         self.resident.stop()
-        return {'resident_exit': self.resident.process.returncode, 'starts': self.resident.starts}
+        result = {'resident_exit': self.resident.process.returncode, 'starts': self.resident.starts}
+        if final:
+            result['custodian_exit'] = self.resident.stop_custodian()
+            assert result['custodian_exit'] == 0, result
+        return result
 
     def seed(self, domain):
         assert self.args.role == 'owner' and self.args.prepare
@@ -297,6 +320,20 @@ class Machine:
                                            for c in receipt['captures'])
         return receipt
 
+    def outcome(self, name, seconds=150):
+        """A phase expected to fail (the positive control): its exit and receipt, never asserted."""
+        process = self.phases[name]
+        try:
+            process.wait(timeout=seconds)
+            terminated = False
+        except subprocess.TimeoutExpired:
+            process.terminate()
+            process.wait(timeout=15)
+            terminated = True
+        receipt = self.public / (name + '.json')
+        return {'exit': process.returncode, 'terminated': terminated,
+                'receipt': json.loads(receipt.read_text()) if receipt.exists() else None}
+
     def collect(self, require_clean=True):
         if require_clean:
             assert all(p.poll() is not None for p in self.phases.values())
@@ -322,14 +359,15 @@ class Machine:
 
 def main():
     parser = argparse.ArgumentParser()
-    for name in ['repo', 'binary', 'djinn', 'output']:
+    # --prepare (coop_existing_graph) writes the grant on both roles and seeds on the owner;
+    # --custodian is coop_fixture_custodian; --host-repo the Graphshell checkout at the pin.
+    for name in ['repo', 'host-repo', 'binary', 'djinn', 'custodian', 'prepare', 'output']:
         parser.add_argument('--' + name, type=Path, required=True)
-    parser.add_argument('--prepare', type=Path)
     parser.add_argument('--role', choices=['owner', 'guest'], required=True)
     machine = Machine(parser.parse_args())
     allowed = {'info', 'start', 'stop', 'seed', 'prepare', 'export_contact', 'owner_contact',
                'exported_handoff', 'install_handoff', 'marker', 'launch', 'progress',
-               'finish', 'collect'}
+               'finish', 'outcome', 'collect'}
     try:
         for line in sys.stdin:
             request = json.loads(line)

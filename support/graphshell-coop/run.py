@@ -6,14 +6,18 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 
-"""Existing graph co-op, a Mac and a Linux ThinkPad, no forwarded data-plane ports."""
+"""Existing graph co-op, two machines with no forwarded data-plane ports; or `--mode baseline`,
+the owner alone on one Linux or macOS desktop: resident, seed and viewer over the app door, then
+the same viewer with the resident stopped as the positive control (engine-split D130)."""
 import argparse
 import base64
 import hashlib
 import json
+import os
 from pathlib import Path
 import select
 import shlex
+import shutil
 import subprocess
 import sys
 import time
@@ -49,6 +53,23 @@ def capture(machine, name):
 
 def barrier(machine, name):
     return await_(file=str(machine.private / 'markers' / name))
+
+
+def baseline_script(owner, chosen, private):
+    return (await_(status='ready', attached=chosen)
+            + 'click role:button @data-session-step=switch:' + private + '\n'
+            + await_(attached=private) + capture(owner, 'private-before')
+            + 'click role:button @data-session-step=switch:' + chosen + '\n'
+            + await_(attached=chosen) + capture(owner, 'existing-graph'))
+
+
+def worker_command(role, repo, host_repo, binaries, output, worker=None):
+    return [*([sys.executable, '-u', str(HERE / 'machine.py')] if worker is None
+              else ['python3', '-u', str(worker)]),
+            '--role', role, '--repo', str(repo), '--host-repo', str(host_repo),
+            '--output', str(output), '--binary', str(binaries / 'graphshell_mere'),
+            '--djinn', str(binaries / 'djinn'), '--custodian', str(binaries / 'coop_fixture_custodian'),
+            '--prepare', str(binaries / 'coop_existing_graph')]
 
 
 RELAY_URL = None
@@ -128,17 +149,11 @@ def workflow(args, relay=None):
     receipts = {}
     phases = {'owner': ['baseline', 'owner-live', 'owner-cold', 'private-return'],
               'guest': ['guest-live', 'guest-return', 'guest-cold']}
-    common = ['--role', 'owner', '--repo', str(args.repo), '--output', str(out / 'local'),
-              '--binary', str(args.owner_binaries / 'graphshell_mere'),
-              '--djinn', str(args.owner_binaries / 'djinn'),
-              '--prepare', str(args.owner_binaries / 'coop_existing_graph')]
-    owner = Worker('owner', [sys.executable, '-u', str(HERE / 'machine.py'), *common],
-                   out / 'owner-worker.log', trace)
+    owner = Worker('owner', worker_command('owner', args.repo, args.host_repo, args.owner_binaries,
+                                           out / 'local'), out / 'owner-worker.log', trace)
     workers.append(owner)
-    remote = ['python3', '-u', str(args.guest_worker), '--role', 'guest',
-              '--repo', str(args.guest_repo), '--output', str(args.guest_output),
-              '--binary', str(args.guest_binaries / 'graphshell_mere'),
-              '--djinn', str(args.guest_binaries / 'djinn')]
+    remote = worker_command('guest', args.guest_repo, args.guest_host_repo, args.guest_binaries,
+                            args.guest_output, args.guest_worker)
     try:
         guest = Worker('guest', ['ssh', '-S', str(args.ssh_control), args.guest_host,
                                 shlex.join(remote)], out / 'guest-worker.log', trace)
@@ -148,6 +163,8 @@ def workflow(args, relay=None):
         assert owner.info['machine_id'] != guest.info['machine_id']
         assert owner.info['source_commit'] == guest.info['source_commit']
         assert owner.info['lock_sha256'] == guest.info['lock_sha256']
+        assert owner.info['host_commit'] == guest.info['host_commit']
+        assert owner.info['host_lock_sha256'] == guest.info['host_lock_sha256']
         assert owner.info['worker_sha256'] == guest.info['worker_sha256'] == sha(HERE / 'machine.py')
         write(out / 'topology.json', topology)
         for machine in workers:
@@ -161,12 +178,7 @@ def workflow(args, relay=None):
         existing = next(s['id'] for s in before['snapshot']['scene']['tables']['sources']
                         if s and s['adapter'] == 'mere.graph')
         owner.call('owner_contact', contact=guest.call('export_contact'))
-        script = (await_(status='ready', attached=chosen)
-                  + 'click role:button @data-session-step=switch:' + private + '\n'
-                  + await_(attached=private) + capture(owner, 'private-before')
-                  + 'click role:button @data-session-step=switch:' + chosen + '\n'
-                  + await_(attached=chosen) + capture(owner, 'existing-graph'))
-        owner.launch('baseline', script, domain)
+        owner.launch('baseline', baseline_script(owner, chosen, private), domain)
         receipts['baseline'] = owner.finish('baseline')
         script = (await_(status='ready', attached=chosen) + click('coop-use')
                   + await_(**{'coop-nodes': '1'}) + capture(owner, 'owner-existing')
@@ -282,7 +294,7 @@ def workflow(args, relay=None):
         receipts['private-return'] = owner.finish('private-return')
         owner.call('prepare', arguments=['read', domain, private], save='private-after.json')
         for machine in workers:
-            machine.call('stop')
+            machine.call('stop', final=True)
             machine.collect(accepted)
         pids = [{'machine': machine.role, 'pid': int(receipts[name]['final']['pid'])}
                 for machine in workers for name in phases[machine.role]]
@@ -307,24 +319,105 @@ def workflow(args, relay=None):
             machine.close()
 
 
+def owned_processes(roots):
+    """Processes still running from this run's binaries or private trees."""
+    listing = subprocess.check_output(['ps', '-axo', 'pid=,command='], text=True)
+    return [line.strip() for line in listing.splitlines()
+            if int(line.split(None, 1)[0]) != os.getpid()
+            and any(str(root) in line for root in roots)]
+
+
+def baseline(args):
+    """One desktop: resident, seed, the baseline phase, then the positive control."""
+    out = args.output.resolve()
+    out.mkdir(mode=0o700)
+    packet = out / 'receipt'
+    accepted = packet / 'accepted'
+    accepted.mkdir(parents=True)
+    shutil.copy2(args.owner_binaries / 'build-inputs.json', packet / 'build-inputs.json')
+    trace = []
+    domain = 'coop-acceptance'
+    owner = Worker('owner', worker_command('owner', args.repo, args.host_repo, args.owner_binaries,
+                                           out / 'local'), packet / 'owner-worker.log', trace)
+    try:
+        info = owner.info
+        assert info['console_present'] and not info['console_locked'], 'owner desktop locked'
+        status = owner.call('start')
+        ids = owner.call('seed', domain=domain)
+        chosen, private = ids['chosen'], ids['private']
+        assert chosen != private
+        owner.launch('baseline', baseline_script(owner, chosen, private), domain)
+        result = owner.finish('baseline')
+        assert result['final']['status'] == 'ready' and result['final']['attached'] == chosen
+        assert len(result['captures']) == 2
+        first = owner.call('stop')
+        # Positive control: the same viewer, profile and domain with the resident
+        # stopped (the custodian still serving) must not reach ready.
+        owner.launch('control', await_(status='ready', attached=chosen) + 'settle 2\ncapture '
+                     + str(owner.public / 'control-not-ready.png') + '\n', domain)
+        control = owner.call('outcome', name='control')
+        receipt = control['receipt'] or {}
+        final = receipt.get('final', {})
+        control |= {'receipt': None, 'ok': receipt.get('ok'), 'status': final.get('status'),
+                    'attached': final.get('attached'), 'await_failed': final.get('await-failed'),
+                    'errors': receipt.get('errors'), 'pid': final.get('pid'),
+                    'expected': 'no ready: the await expires with the resident stopped'}
+        control['failed_as_expected'] = (receipt.get('ok') is False and final.get('status') != 'ready'
+                                         and 'status expected "ready"' in (final.get('await-failed') or ''))
+        assert control['failed_as_expected'], control
+        last = owner.call('stop', final=True)
+        owner.collect(accepted)
+        write(accepted / 'qualification.json', {
+            'result': 'ok', 'mode': 'baseline', 'graphs': ids, 'machines': {'owner': info},
+            'resident_status': status, 'resident_stops': [first, last],
+            'native_processes': [{'machine': 'owner', 'pid': int(result['final']['pid'])}],
+            'phases': {'owner': ['baseline']}, 'control': control,
+            'custody': info['custody'], 'grant_origin': read_json(accepted / 'owner-grant.json')['origin'],
+            'custodian_launches': 1, 'all_owned_processes_stopped': True,
+            'controller_sha256': sha(HERE / 'run.py'), 'worker_sha256': sha(HERE / 'machine.py')})
+        print(json.dumps({'result': 'ok', 'evidence': str(packet)}), flush=True)
+    except Exception:
+        try:
+            owner.collect(out / 'failed-owner', require_clean=False)
+        except Exception:
+            pass
+        raise
+    finally:
+        write(packet / 'control-trace.json', trace)
+        owner.close()
+    write(packet / 'cleanup.json', {'accepted_cohort': out.name, 'owner': {
+        'remaining': owned_processes([out, args.owner_binaries.resolve()])}})
+    write(packet / 'artifact-sha256.json', {str(p.relative_to(packet).as_posix()): sha(p)
+                                            for p in sorted(packet.rglob('*')) if p.is_file()})
+
+
+def read_json(path):
+    return json.loads(path.read_text())
+
+
 def main():
     parser = argparse.ArgumentParser()
-    for name in ['repo', 'owner-binaries', 'guest-repo', 'guest-binaries',
-                 'guest-worker', 'guest-output', 'ssh-control', 'output']:
+    for name in ['repo', 'host-repo', 'owner-binaries', 'output']:
         parser.add_argument('--' + name, type=Path, required=True)
+    for name in ['guest-repo', 'guest-host-repo', 'guest-binaries', 'guest-worker', 'guest-output',
+                 'ssh-control']:
+        parser.add_argument('--' + name, type=Path, help='co-op modes only')
     parser.add_argument('--guest-host', default='thinkpad-l14-f')
-    parser.add_argument('--mode', choices=['direct', 'relay', 'recovery'], default='direct')
+    parser.add_argument('--mode', choices=['baseline', 'direct', 'relay', 'recovery'], default='direct')
     parser.add_argument('--relay-binary')
     parser.add_argument('--relay-sha256')
     parser.add_argument('--relay-bind', default='192.168.4.32:0')
     args = parser.parse_args()
+    if args.mode == 'baseline':
+        return baseline(args)
+    assert all([args.guest_repo, args.guest_host_repo, args.guest_binaries, args.guest_worker,
+                args.guest_output, args.ssh_control]), 'co-op modes need every --guest-* and --ssh-control'
     global RELAY_URL
     relay = None
     if args.mode != 'direct':
         from relay import Relay
         relay = Relay(args)
         RELAY_URL = relay.start()
-        import os
         os.environ['GRAPHSHELL_RELAY_ACCEPTANCE_URL'] = RELAY_URL
     try:
         workflow(args, relay)
