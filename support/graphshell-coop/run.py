@@ -22,6 +22,8 @@ import subprocess
 import sys
 import time
 
+from verify import never_ready
+
 
 HERE = Path(__file__).resolve().parent
 
@@ -348,6 +350,7 @@ def baseline(args):
         owner.launch('baseline', baseline_script(owner, chosen, private), domain)
         result = owner.finish('baseline')
         assert result['final']['status'] == 'ready' and result['final']['attached'] == chosen
+        assert not result['final'].get('await-failed'), result['final']['await-failed']
         assert len(result['captures']) == 2
         first = owner.call('stop')
         # Positive control: the same viewer, profile and domain with the resident
@@ -361,8 +364,10 @@ def baseline(args):
                     'attached': final.get('attached'), 'await_failed': final.get('await-failed'),
                     'errors': receipt.get('errors'), 'pid': final.get('pid'),
                     'expected': 'no ready: the await expires with the resident stopped'}
-        control['failed_as_expected'] = (receipt.get('ok') is False and final.get('status') != 'ready'
-                                         and 'status expected "ready"' in (final.get('await-failed') or ''))
+        # An expired await is a receipt field, not a receipt failure: the viewer exits 0 with
+        # ok true, so the control is judged on what it saw, never on ok.
+        control['failed_as_expected'] = (not control['terminated'] and control['exit'] is not None
+                                         and never_ready(receipt, chosen))
         assert control['failed_as_expected'], control
         last = owner.call('stop', final=True)
         owner.collect(accepted)

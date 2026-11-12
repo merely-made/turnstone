@@ -99,6 +99,15 @@ def verify_host(inputs, machine, args):
     return host
 
 
+def never_ready(receipt, chosen):
+    """The positive control: the viewer ran its await to the deadline and never reached ready.
+    Judged on the viewer's own fields; an expired await leaves the receipt ok."""
+    final = (receipt or {}).get('final') or {}
+    status = final.get('status')
+    return (bool(receipt) and status not in {None, 'ready'} and final.get('attached') != chosen
+            and f'status expected "ready", was "{status}"' in (final.get('await-failed') or ''))
+
+
 def check_capture(evidence, capture):
     path = evidence / Path(capture['path']).name
     data = path.read_bytes()
@@ -160,6 +169,7 @@ def verify_baseline(HERE, q, args):
     assert chosen != private and read(evidence / 'existing-graphs.json') == q['graphs']
     result = read(evidence / 'baseline.json')
     assert result['ok'] and not result['errors'] and result['final']['status'] == 'ready'
+    assert not result['final'].get('await-failed'), 'the baseline awaited something it never saw'
     assert result['final']['attached'] == chosen
     launch = read(evidence / 'baseline-launch.json')
     pid = int(result['final']['pid'])
@@ -176,8 +186,7 @@ def verify_baseline(HERE, q, args):
     control, outcome = read(evidence / 'control.json'), q['control']
     trace = [t['method'] for t in read(HERE / 'control-trace.json')]
     assert trace.index('stop') < len(trace) - 1 - trace[::-1].index('launch'), 'control launched before stop'
-    assert outcome['failed_as_expected'] and control['ok'] is False
-    assert control['final']['status'] != 'ready' and 'status expected "ready"' in control['final']['await-failed']
+    assert outcome['failed_as_expected'] and not outcome['terminated'] and never_ready(control, chosen)
     assert int(control['final']['pid']) == read(evidence / 'control-launch.json')['launcher_pid'] != pid
     control_captures = [check_capture(evidence, c) for c in control['captures']]
     cleanup = read(HERE / 'cleanup.json')
