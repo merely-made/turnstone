@@ -1,7 +1,7 @@
 # Co-op harness: `support/graphshell-coop`
 
 **Date:** 2026-11-11
-**Status (2026-11-11):** in progress. The repair is built on branch `coop/harness` (H1 to H5 below); H6, the first headed baseline receipt on the Fedora ThinkPad, is open. The two-machine co-op phases (H7) are unverified since 2026-10-24 and are not brought up by this plan's first pass.
+**Status (2026-11-12):** in progress. H1 to H6 landed on branch `coop/harness`: the first headed baseline receipt on the Fedora ThinkPad is `ok` and verified, with its positive control. H7, the two-machine co-op phases, is unverified since 2026-10-24 and is not brought up by this plan's first pass.
 
 This plan owns the native co-op harness in `support/graphshell-coop`. It came to Turnstone with the reference app at the engine split (Mere `design_docs/mere_docs/implementation_strategy/2026-11-07_engine_split_plan.md`, U6). Its last pass was 2026-10-24. Since then custody isolation (H2, 2026-10-26) made a harness Djinn reach only a custodian it is handed, admission by consent (2026-11-01) made a fresh profile admit no application, and the split put the resident and the seeder in Graphshell `host/`. Two Fedora runs on 2026-11-11 failed on the first two (`Code/testing/engine-split/slice6_u6_door_fedora.md`). The assessment the rulings answer is `Code/testing/engine-split/slice6_u6_harness_assessment.md`.
 
@@ -62,7 +62,10 @@ This plan carries out two of Mark's rulings, which live in Mere's engine-split p
 - 2026-11-11: a `passphrase-fd` Djinn without `in-process-custody` reaches only the custodian named by `--custodian` (dramatis `crates/dramatis-resident/src/startup_vault.rs`, `open_custody`), and refuses a custodian whose current profile is not `--profile`; the fixture's first profile is the run's profile (`CrossGraphOwner`).
 - 2026-11-11: building the examples in the same cargo invocation as Djinn would give Djinn `in-process-custody`, through `mere-resident`'s dev-dependency on itself (`host/ports/mere-resident/Cargo.toml`, dev-dependencies). `cargo tree --edges normal,build --depth 0 --format '{f}'` resolves `cxf,default,passphrase-fd,personal-sync`; with dev edges it adds `in-process-custody`. Djinn is built alone and the freeze checks the first.
 - 2026-11-11: the two locks did not resolve their shared packages the same at Graphshell `9cd48e19` (host/Cargo.lock unchanged since `893818f6`) against Turnstone `0c1bb869`: 19 of 1,663 shared resolved packages differ (Mere `a9a125f2` against `325b0083`, Genet `3fa3ec62` against `7c6ffc87`, Distillery `8908f7e4` against `30bf5510`, wgpu-graft `67ebcc41` against `34af2599`). The shared custody pins agree (Armillary's `djinn`, Dramatis `30e9cc97`). Recorded rather than refused (D2).
+- 2026-11-12: the viewer's `await` expiry is a receipt field, not a failure: a control that never reaches ready exits 0 with `ok` true, so the control is judged on `status`, `attached` and `await-failed` (`verify.py`, `never_ready`).
+- 2026-11-12: the `existing-graph` capture shows the sessions column clipped at its top edge (too short for two entries); layout, not the door, and not fixed here.
 
 ## Progress
 
 - 2026-11-11: plan opened. H1 and H2 committed in Graphshell; H3 to H5, the README and this plan committed in Turnstone on `coop/harness`. Not yet run.
+- 2026-11-12: H6 landed. Fedora ThinkPad, Turnstone `534e774c` with Graphshell `aed944eb`: the receipt is `ok`, the positive control failed as expected in the same run, and `verify.py` passed (`Code/testing/turnstone/2026-11-11_engine_split_headed/fedora/run3/`). Four harness bugs found on the way were fixed in their own commits (`c8ab2255`, `83125ebf`, `6a656b0e`, `534e774c`). Evidence is in [the receipts file](archive_docs/receipts/2026-11-11_coop_harness_plan_receipts.md).
