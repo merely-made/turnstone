@@ -7,18 +7,32 @@ This plan owns the native co-op harness in `support/graphshell-coop`. It came to
 
 ## Rulings in force
 
-This plan records no decisions of its own yet. It carries out two of Mark's rulings, which live in Mere's engine-split plan and are cited by key; new decisions here are keyed `coop-harness D<n>`.
+This plan carries out two of Mark's rulings, which live in Mere's engine-split plan and are cited by key (D1 below). Its own decisions are keyed `coop-harness D<n>`.
 
 - `mere:engine-split D129` (2026-11-11): "Repair the harness now, inside U6", over recording the door surface as blocked and closing, and over "pre-seeding consent as a second test-only shortcut". The split stays open until the door surface passes headed.
 - `mere:engine-split D130` (2026-11-11), seven rulings, six of them this plan's:
   1. Custody: "Fixture custodian process (Recommended)". A Graphshell `host/` example runs `djinn_custodian::fixture::start` with the packaged grants at consent `none`; Djinn is the production `--features passphrase-fd` build, never in-process custody, handed `--custodian`.
   2. Consent: "Grant written by Graphshell's own code (Recommended)". A `grant` subcommand of `coop_existing_graph` calls the resident's `grant_for(graphshell, declaration(), None)`, and the harness writes its output into the owner settings before Djinn starts. No Python-authored grant, no admit-all mode, no `--grant` flag.
-  3. Two repositories: "Turnstone is the root (Recommended)". Graphshell is checked out at the revision Turnstone's `Cargo.lock` pins for graphshell.git and `host/` is built with its own lock `--locked`; both repositories' commits, locks and file sets are recorded and verified, and packages both locks share must resolve the same.
+  3. Two repositories: "Turnstone is the root (Recommended)". Graphshell is checked out at the revision Turnstone's `Cargo.lock` pins for graphshell.git and `host/` is built with its own lock `--locked`; both repositories' commits, locks and file sets are recorded and verified. Its "packages both locks share resolve the same" is refined by D2 below.
   4. Machines: "Single-machine baseline mode (Recommended)", with a positive control in the same run (the same viewer with the resident stopped must not reach ready). The two-machine co-op is not brought up now.
   5. Home: "Harness in Turnstone, new Turnstone plan (Recommended)". This plan.
   6. Owner platform: "Owner may be Linux or macOS, any arch (Recommended)", recorded in the receipt.
 
   The seventh (the custody fixture's S79 receipt note) belongs to Graphshell's document that cites it.
+
+## Decisions
+
+- **D1. The harness carries out engine-split D129 and D130 (Mark, 2026-11-11):** Offered keeping the two rulings as prose under "Rulings in force" or adding a decision that cites them, so the citation is machine-read: "Add a decision that cites them (Recommended)". The rulings stay in Mere's plan; this plan owns carrying them out (phases H1 to H7). Outcome: applies `mere:engine-split D129` and `mere:engine-split D130`.
+
+  Links: area testing · draws on mere:engine-split D129, mere:engine-split D130 · summary This plan owns the co-op harness repair that engine-split D129 and D130 rule.
+
+- **D2. Lock pairing: record the differences, verified (Mark, 2026-11-11):** Evidence: Turnstone `0c1bb869`'s lock and Graphshell `host/Cargo.lock` (unchanged from `893818f6` through `aed944eb`) share 1,710 crates by name and version; 47 are Graphshell's own path packages, and 19 of the other 1,663 resolve differently, in Mere, Genet, Distillery and wgpu-graft, about 12 of them in both the viewer's and the host's graphs. So the ruled assertion would stop every freeze. Offered aligning the locks first, recording the differences verified, or asserting only the custody and door pins: "Record the differences, verified (Recommended)". The receipt lists every shared crate whose resolution differs between the two locks; `verify.py` recomputes the list from both locks and fails if the receipt's list does not match. No assertion that they agree, and `freeze.py` does not stop on a difference. Outcome: refines `mere:engine-split D130` ("assert that shared packages resolve the same").
+
+  Links: area testing · draws on mere:engine-split D130 · plans coop-harness H3, coop-harness H5 · summary The two locks' differences on shared crates are recorded in the receipt and recomputed by the verifier, never refused.
+
+- **D3. GPU: record it instead of requiring Radeon (Mark, 2026-11-11):** Evidence: the Linux worker required exactly one Radeon Vulkan driver for the machine's architecture, so a Linux owner without a Radeon GPU, or on arm64, failed in the worker though D130 admits any Linux owner. "Record the GPU instead of requiring Radeon (Recommended)". The Linux worker accepts any single Vulkan driver, chosen for the one GPU render node, and the receipt names the driver and GPU, as it names the owner platform. Outcome: new.
+
+  Links: area testing · draws on coop-harness D1 · plans coop-harness H4, coop-harness H5 · summary The Linux worker selects and records the one GPU's Vulkan driver rather than requiring Radeon.
 
 ## Phases
 
@@ -29,16 +43,16 @@ This plan records no decisions of its own yet. It carries out two of Mark's ruli
 `coop_existing_graph grant` prints `grant_for` over `graphshell_door::declaration::declaration()`, peer none. **Done when** the worker writes exactly that grant into `applications` of the owner settings before Djinn starts, saves it as `owner-grant.json` with its origin, and the seed and the viewer are admitted under it (H6).
 
 ### H3. Two-repository build and freeze
-`freeze.py` reads the graphshell.git pin from Turnstone's lock, clones Graphshell at it when the checkout is absent (an existing checkout is only checked), builds the viewer here and Djinn (alone), the seeder and the custodian in `host/`, and records both commits, lock hashes, file sets, Git suppliers, Djinn's resolved features and the shared-lock comparison in `build-inputs.json`. **Done when** a freeze on the run machine passes with no scratch controller and refuses a Djinn resolved with `in-process-custody`.
+`freeze.py` reads the graphshell.git pin from Turnstone's lock, clones Graphshell at it when the checkout is absent (an existing checkout is only checked), builds the viewer here and Djinn (alone), the seeder and the custodian in `host/`, and records both commits, lock hashes, file sets, Git suppliers, Djinn's resolved features and every shared crate the two locks resolve differently (D2) in `build-inputs.json`. **Done when** a freeze on the run machine passes with no scratch controller and refuses a Djinn resolved with `in-process-custody`.
 
 ### H4. Baseline mode and positive control
 `run.py --mode baseline` drives the owner worker alone: custodian and Djinn start, seed, the baseline scenario (await `status=ready attached=<chosen>`, switch to the private graph and back, two captures), Djinn stops, then the same viewer, profile and domain as the control. The packet is `RUN/receipt`. **Done when** the control is recorded as failing with `status expected "ready"` in the viewer's own `await-failed` field and no window reaches ready.
 
 ### H5. Verifier
-`verify.py` gains a baseline branch: custody mode, the grant's origin and its presence in the settings, both repositories' commits and lock hashes against the pin, host files against a Graphshell clone (`--host-repo`), owner OS and architecture (Linux or Darwin, any), the baseline and control receipts, cleanup and the capture review. The co-op branch accepts a Linux owner and checks host inputs when a packet carries them. **Done when** it passes the H6 packet and prints the owner platform, both commits and both lock hashes.
+`verify.py` gains a baseline branch: custody mode, the grant's origin and its presence in the settings, both repositories' commits and lock hashes against the pin, host files against a Graphshell clone (`--host-repo`), owner OS and architecture (Linux or Darwin, any), the lock differences recomputed from both locks (D2), on Linux the recorded GPU's render node and Vulkan driver in the viewer (D3), the baseline and control receipts, cleanup and the capture review. The co-op branch accepts a Linux owner and checks host inputs when a packet carries them. **Done when** it passes the H6 packet and prints the owner platform, both commits and both lock hashes.
 
 ### H6. First headed baseline receipt
-**Done when**, on one Linux or macOS desktop with no scratch controller: the harness's entry points freeze both repositories; the receipt is `ok` (resident ready, seed through the door as `graphshell`, viewer at `status=ready attached=<chosen>`, the switch, two captures over 200 by 200 pixels); the positive control fails as expected in the same run; the receipt names its custody mode, the grant's origin, both commits and lock hashes and the owner's OS and architecture; `verify.py` passes it; the captures are reviewed whole; README and this plan match the tree.
+**Done when**, on one Linux or macOS desktop with no scratch controller: the harness's entry points freeze both repositories; the receipt is `ok` (resident ready, seed through the door as `graphshell`, viewer at `status=ready attached=<chosen>`, the switch, two captures over 200 by 200 pixels); the positive control fails as expected in the same run; the receipt names its custody mode, the grant's origin, both commits and lock hashes, the lock differences, and the owner's OS, architecture and GPU; `verify.py` passes it; the captures are reviewed whole; README and this plan match the tree.
 
 ### H7. Two-machine co-op phases (not now)
 `direct`, `relay` and `recovery` carry the custody, grant and build changes but have not run since 2026-10-24. **Done when** a Mac or Linux owner and the Linux guest pass the full workflow and `verify.py`, or the drifted phases are recorded as findings.
@@ -47,7 +61,7 @@ This plan records no decisions of its own yet. It carries out two of Mark's ruli
 
 - 2026-11-11: a `passphrase-fd` Djinn without `in-process-custody` reaches only the custodian named by `--custodian` (dramatis `crates/dramatis-resident/src/startup_vault.rs`, `open_custody`), and refuses a custodian whose current profile is not `--profile`; the fixture's first profile is the run's profile (`CrossGraphOwner`).
 - 2026-11-11: building the examples in the same cargo invocation as Djinn would give Djinn `in-process-custody`, through `mere-resident`'s dev-dependency on itself (`host/ports/mere-resident/Cargo.toml`, dev-dependencies). `cargo tree --edges normal,build --depth 0 --format '{f}'` resolves `cxf,default,passphrase-fd,personal-sync`; with dev edges it adds `in-process-custody`. Djinn is built alone and the freeze checks the first.
-- 2026-11-11: the two locks did not resolve their shared packages the same at Graphshell `9cd48e19` (host/Cargo.lock unchanged since `893818f6`) against Turnstone `0c1bb869`: 19 of 1,663 shared resolved packages differ (Mere `a9a125f2` against `325b0083`, Genet `3fa3ec62` against `7c6ffc87`, Distillery `8908f7e4` against `30bf5510`, wgpu-graft `67ebcc41` against `34af2599`). The shared custody pins agree (Armillary's `djinn`, Dramatis `30e9cc97`).
+- 2026-11-11: the two locks did not resolve their shared packages the same at Graphshell `9cd48e19` (host/Cargo.lock unchanged since `893818f6`) against Turnstone `0c1bb869`: 19 of 1,663 shared resolved packages differ (Mere `a9a125f2` against `325b0083`, Genet `3fa3ec62` against `7c6ffc87`, Distillery `8908f7e4` against `30bf5510`, wgpu-graft `67ebcc41` against `34af2599`). The shared custody pins agree (Armillary's `djinn`, Dramatis `30e9cc97`). Recorded rather than refused (D2).
 
 ## Progress
 

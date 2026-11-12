@@ -2,3 +2,26 @@
 # Never edited by hand; citations and back-links are derived locally
 # (`responsa lookup`). DOC_POLICY, "Decisions and doctrine".
 schema = 1
+
+[decisions."coop-harness D1"]
+title = "The harness carries out engine-split D129 and D130 (Mark, 2026-11-11)"
+source = "design_docs/2026-11-11_coop_harness_plan.md"
+area = "testing"
+summary = "This plan owns the co-op harness repair that engine-split D129 and D130 rule."
+draws_on = ["mere:engine-split D129", "mere:engine-split D130"]
+
+[decisions."coop-harness D2"]
+title = "Lock pairing: record the differences, verified (Mark, 2026-11-11)"
+source = "design_docs/2026-11-11_coop_harness_plan.md"
+area = "testing"
+summary = "The two locks' differences on shared crates are recorded in the receipt and recomputed by the verifier, never refused."
+draws_on = ["mere:engine-split D130"]
+plans = ["coop-harness"]
+
+[decisions."coop-harness D3"]
+title = "GPU: record it instead of requiring Radeon (Mark, 2026-11-11)"
+source = "design_docs/2026-11-11_coop_harness_plan.md"
+area = "testing"
+summary = "The Linux worker selects and records the one GPU's Vulkan driver rather than requiring Radeon."
+draws_on = ["coop-harness D1"]
+plans = ["coop-harness"]

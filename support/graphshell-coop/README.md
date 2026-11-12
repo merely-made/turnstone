@@ -12,7 +12,9 @@ from Graphshell `host/`, checked out at the exact revision this repository's
 clones Graphshell when `--host-repo` does not exist (an existing checkout is only
 checked: HEAD at the pin, no tracked changes), builds both with `--build`, and
 records both commits, both lock hashes, both input file sets, every resolved Git
-supplier and the packages the two locks share, which must resolve the same:
+supplier, and every shared crate whose resolution differs between the two locks.
+Differences are recorded, not refused; `verify.py` recomputes the list from both
+locks and fails if the receipt's list does not match (coop-harness D2):
 
 ```sh
 export CARGO_PROFILE_DEV_DEBUG=0 CARGO_BUILD_JOBS=4
@@ -54,7 +56,10 @@ start, `seed` creates a private and a chosen graph through the door as
 `graphshell`, the viewer reaches `status=ready attached=<chosen>`, switches to the
 private graph and back and leaves two captures. Djinn then stops and the same
 viewer, profile and domain run again as the positive control: it must not reach
-ready. `RUN/receipt` is the packet; `RUN/local/private` holds the run's vault and
+ready. On Linux the worker requires exactly one GPU render node and selects that
+GPU's own Vulkan driver (never llvmpipe). The receipt records the GPU and driver, as
+it records the owner's OS and architecture, and `verify.py` checks that the viewer
+held that render node and loaded that driver (coop-harness D3). `RUN/receipt` is the packet; `RUN/local/private` holds the run's vault and
 is never copied. The packet's `capture-review.json` is written after the run by
 whoever opened each capture, and binds itself to them by hash.
 

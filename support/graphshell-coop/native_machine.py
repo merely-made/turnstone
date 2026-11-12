@@ -89,11 +89,9 @@ def desktop():
                                       'org.gnome.ScreenSaver.GetActive'],
                                      env=os.environ | graphical, text=True).strip()
     assert screen in {'(true,)', '(false,)'}, screen
-    adapters = sorted(Path('/usr/share/vulkan/icd.d').glob('*radeon*.json'))
-    adapters = [p for p in adapters if platform.machine() in p.name]
-    assert len(adapters) == 1, adapters
-    # Qualify the installed Radeon driver; do not silently select llvmpipe.
-    graphical['VK_DRIVER_FILES'] = str(adapters[0])
+    gpu = vulkan_gpu()
+    # Select the GPU's own Vulkan driver; never silently fall back to llvmpipe.
+    graphical['VK_DRIVER_FILES'] = gpu['vulkan_icd']
     addresses = json.loads(subprocess.check_output(['ip', '-j', 'address', 'show'], text=True))
     distro = dict(line.split('=', 1) for line in Path('/etc/os-release').read_text().splitlines()
                   if '=' in line)
@@ -104,9 +102,35 @@ def desktop():
         'operating_system': 'Linux', 'system_version': distro['PRETTY_NAME'].strip('"'),
         'kernel': platform.release(), 'physical_model': Path('/sys/class/dmi/id/product_name').read_text().strip(),
         'desktop': state | {'session_id': session, 'gnome_screensaver': screen},
-        'graphical_environment': graphical,
+        'graphical_environment': graphical, 'gpu': gpu,
         'addresses': sorted({a['local'] for interface in addresses for a in interface['addr_info']}),
     }
+
+
+# Kernel DRM driver to the Mesa (or vendor) Vulkan driver name it pairs with.
+VULKAN_DRIVERS = {'amdgpu': 'radeon', 'radeon': 'radeon', 'i915': 'intel', 'xe': 'intel',
+                  'nouveau': 'nouveau', 'nvidia': 'nvidia', 'msm': 'freedreno',
+                  'panfrost': 'panfrost', 'asahi': 'asahi', 'virtio_gpu': 'virtio'}
+
+
+def vulkan_gpu():
+    """The one GPU and its one Vulkan driver, recorded rather than required (coop-harness D3)."""
+    nodes = []
+    for node in sorted(Path('/sys/class/drm').glob('renderD*')):
+        device = node / 'device'
+        nodes.append({'render_node': '/dev/dri/' + node.name,
+                      'vendor': (device / 'vendor').read_text().strip(),
+                      'device': (device / 'device').read_text().strip(),
+                      'kernel_driver': Path(os.readlink(device / 'driver')).name})
+    assert len(nodes) == 1, ('exactly one GPU render node', nodes)
+    name = VULKAN_DRIVERS.get(nodes[0]['kernel_driver'])
+    assert name, ('no Vulkan driver known for', nodes[0])
+    icds = [p for root in ['/usr/share/vulkan/icd.d', '/etc/vulkan/icd.d']
+            for p in sorted(Path(root).glob(name + '_icd*.json'))
+            if platform.machine() in p.name or p.name == name + '_icd.json']
+    assert len(icds) == 1, ('exactly one Vulkan driver for the GPU', icds)
+    library = json.loads(icds[0].read_text())['ICD']['library_path']
+    return nodes[0] | {'vulkan_icd': str(icds[0]), 'vulkan_library': library}
 
 
 class Machine:
@@ -302,7 +326,7 @@ class Machine:
                 except FileNotFoundError:
                     maps = ''
                 libraries = sorted({line.split()[-1] for line in maps.splitlines()
-                                    if 'libvulkan_radeon' in line or '/dri/' in line})
+                                    if 'libvulkan_' in line or '/dri/' in line})
                 write(self.public / (name + '-graphics.json'),
                       {'pid': process.pid, 'render_nodes': nodes, 'driver_libraries': libraries,
                        'VK_DRIVER_FILES': self.resident.environment.get('VK_DRIVER_FILES')})

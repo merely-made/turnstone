@@ -50,6 +50,31 @@ def verify_sources(files, commit, root=ROOT):
     assert process.returncode == 0
 
 
+def verify_graphics(graphics, machine):
+    """The native process held the recorded GPU's render node and loaded its Vulkan driver."""
+    assert graphics['VK_DRIVER_FILES'] == machine['graphical_environment']['VK_DRIVER_FILES']
+    gpu = machine.get('gpu') or {'vendor': '0x1002', 'vulkan_library': 'libvulkan_radeon'}  # Older packets.
+    assert graphics['render_nodes'] and all(n['vendor'] == gpu['vendor'] for n in graphics['render_nodes'])
+    library = Path(gpu['vulkan_library']).stem
+    assert any(library in p for p in graphics['driver_libraries']), (library, graphics['driver_libraries'])
+
+
+def lock_differences(turnstone, host):
+    """Every shared crate (name, version) whose resolution differs: freeze.py's comparison."""
+    def index(text):
+        table = {}
+        for p in tomllib.loads(text)['package']:
+            table.setdefault((p['name'], p['version']), set()).add((p.get('source'), p.get('checksum')))
+        return table
+    left, right = index(turnstone), index(host)
+    shared = sorted(left.keys() & right.keys())
+    resolved = [k for k in shared if all(s for s, _ in left[k] | right[k])]
+    return {'shared': len(shared), 'compared': len(resolved),
+            'differ': [{'name': n, 'version': v, 'turnstone': sorted(s for s, _ in left[(n, v)]),
+                        'graphshell': sorted(s for s, _ in right[(n, v)])}
+                       for n, v in resolved if left[(n, v)] != right[(n, v)]]}
+
+
 def verify_host(inputs, machine, args):
     """Graphshell host/ at the revision Turnstone's lock pins, its lock and inputs (D130)."""
     host = inputs['host']
@@ -66,7 +91,11 @@ def verify_host(inputs, machine, args):
     assert all(p['head'] == p['source'].split('#')[-1] and not p['tracked_code_changes']
                for p in host['suppliers'])
     assert 'passphrase-fd' in host['djinn_features'] and 'in-process-custody' not in host['djinn_features']
-    assert not inputs['shared_lock_packages']['differ'], inputs['shared_lock_packages']['differ']
+    # Recorded, not required to agree; the record must be exactly what both locks say (coop-harness D2).
+    host_lock = subprocess.check_output(['git', 'show', host['source_commit'] + ':host/Cargo.lock'],
+                                        cwd=args.host_repo.resolve())
+    assert hashlib.sha256(host_lock).hexdigest() == host['lock_sha256']
+    assert inputs['shared_lock_packages'] == lock_differences(lock.decode(), host_lock.decode())
     return host
 
 
@@ -139,6 +168,10 @@ def verify_baseline(HERE, q, args):
     captures = {check_capture(evidence, c): c['fields'] for c in result['captures']}
     assert set(captures) == {'private-before', 'existing-graph'}
     assert captures['private-before']['attached'] == private and captures['existing-graph']['attached'] == chosen
+    if owner['operating_system'] == 'Linux':
+        graphics = read(evidence / 'baseline-graphics.json')
+        assert graphics['pid'] == pid
+        verify_graphics(graphics, owner)
     # Positive control: launched after the resident stopped; never ready.
     control, outcome = read(evidence / 'control.json'), q['control']
     trace = [t['method'] for t in read(HERE / 'control-trace.json')]
@@ -153,10 +186,12 @@ def verify_baseline(HERE, q, args):
     verify_review(HERE, evidence, [*captures, *control_captures])
     print(json.dumps({'result': 'ok', 'mode': 'baseline',
                       'owner': {'operating_system': owner['operating_system'], 'system_version': owner['system_version'],
-                                'architecture': owner['architecture']},
+                                'architecture': owner['architecture'], 'gpu': owner.get('gpu')},
                       'turnstone': {'commit': inputs['source_commit'], 'lock_sha256': inputs['lock_sha256']},
                       'graphshell': {'commit': host['source_commit'], 'lock_sha256': host['lock_sha256']},
-                      'shared_lock_packages': inputs['shared_lock_packages']['compared'],
+                      'shared_lock_packages': {
+                          'compared': inputs['shared_lock_packages']['compared'],
+                          'differ': sorted(d['name'] + ' ' + d['version'] for d in inputs['shared_lock_packages']['differ'])},
                       'custody': q['custody'], 'grant_origin': q['grant_origin'],
                       'baseline': {'pid': pid, 'attached': chosen, 'captures': sorted(captures)},
                       'control': {'status': control['final']['status'], 'await_failed': control['final']['await-failed'],
@@ -200,9 +235,7 @@ def main():
     assert machines['guest']['desktop']['Remote'] == 'no'
     graphics = read(evidence / 'guest-live-graphics.json')
     assert graphics['pid'] == int(read(evidence / 'guest-live.json')['final']['pid'])
-    assert graphics['VK_DRIVER_FILES'] == machines['guest']['graphical_environment']['VK_DRIVER_FILES']
-    assert graphics['render_nodes'] and all(n['vendor'] == '0x1002' for n in graphics['render_nodes'])
-    assert any('libvulkan_radeon' in p for p in graphics['driver_libraries'])
+    verify_graphics(graphics, machines['guest'])
     inputs = {role: read(HERE / 'build' / role / 'build-inputs.json') for role in ['owner', 'guest']}
     assert inputs['owner']['source_commit'] == inputs['guest']['source_commit']
     owner_files, guest_files = inputs['owner']['files'], inputs['guest']['files']

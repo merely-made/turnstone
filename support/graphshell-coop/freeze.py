@@ -225,12 +225,13 @@ def main():
               'environment': {key: os.environ.get(key) for key in ['CARGO_TARGET_DIR', 'CARGO_BUILD_BUILD_DIR',
                               'CARGO_PROFILE_DEV_DEBUG', 'CARGO_PROFILE_TEST_DEBUG', 'CARGO_BUILD_JOBS']}}
     (out / 'build-inputs.json').write_text(json.dumps(result, indent=2) + '\n')
-    # Ruled (D130): packages both locks share resolve the same.
-    assert not shared['differ'], ('the two locks resolve shared packages differently', shared['differ'])
+    # Differences between the two locks are recorded, never refused (coop-harness D2);
+    # verify.py recomputes them from both locks.
     print(json.dumps({'result': 'ok', 'source': result['source_commit'], 'host': graphshell['source_commit'],
                       'files': len(turnstone['files']), 'host_files': len(graphshell['files']),
                       'git_suppliers': len(turnstone['suppliers']) + len(graphshell['suppliers']),
-                      'shared_lock_packages': shared['compared'], 'binaries': binaries}), flush=True)
+                      'shared_lock_packages': shared['compared'], 'lock_differences': len(shared['differ']),
+                      'binaries': binaries}), flush=True)
 
 
 if __name__ == '__main__':
