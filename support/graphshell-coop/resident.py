@@ -35,6 +35,7 @@ class Resident:
         self.evidence.mkdir(parents=True, exist_ok=True)
         self.passphrase = secrets.token_urlsafe(32)
         self.starts = 0
+        self.custodian_starts = 0
         self.process = None
         self.stream = None
         self.environment = {
@@ -64,6 +65,7 @@ class Resident:
         if self.custodian is not None:
             assert self.custodian.poll() is None, f'{self.name} custodian exited: {self.custodian.returncode}'
             return
+        self.custodian_starts += 1
         self.custodian_log = (self.evidence / 'custodian.log').open('w')
         self.custodian = subprocess.Popen(
             [str(self.custodian_binary), str(self.root / 'custodian'), self.name],

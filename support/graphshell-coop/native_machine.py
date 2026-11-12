@@ -214,6 +214,7 @@ class Machine:
         result = {'resident_exit': self.resident.process.returncode, 'starts': self.resident.starts}
         if final:
             result['custodian_exit'] = self.resident.stop_custodian()
+            result['custodian_starts'] = self.resident.custodian_starts
             assert result['custodian_exit'] == 0, result
         return result
 
@@ -365,6 +366,14 @@ class Machine:
         return {str(p.relative_to(self.public)): base64.b64encode(p.read_bytes()).decode()
                 for p in self.public.rglob('*') if p.is_file()}
 
+    def remaining(self):
+        """Processes still running an executable from this machine's binaries or private tree."""
+        roots = [self.private.resolve()] + [Path(getattr(self.args, n)).resolve().parent
+                                            for n in ['binary', 'djinn', 'custodian', 'prepare']]
+        listing = subprocess.check_output(['ps', '-axo', 'pid=,command='], text=True)
+        return [line.strip() for line in listing.splitlines()
+                if len(line.split()) > 1 and any(line.split()[1].startswith(str(r)) for r in roots)]
+
     def cleanup(self):
         commands = subprocess.check_output(['ps', '-axo', 'pid=,command='], text=True)
         for line in commands.splitlines():
@@ -391,7 +400,7 @@ def main():
     machine = Machine(parser.parse_args())
     allowed = {'info', 'start', 'stop', 'seed', 'prepare', 'export_contact', 'owner_contact',
                'exported_handoff', 'install_handoff', 'marker', 'launch', 'progress',
-               'finish', 'outcome', 'collect'}
+               'finish', 'outcome', 'collect', 'remaining'}
     try:
         for line in sys.stdin:
             request = json.loads(line)

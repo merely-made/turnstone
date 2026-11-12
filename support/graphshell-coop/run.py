@@ -295,16 +295,20 @@ def workflow(args, relay=None):
                      + await_(attached=private) + capture(owner, 'private-after'), domain)
         receipts['private-return'] = owner.finish('private-return')
         owner.call('prepare', arguments=['read', domain, private], save='private-after.json')
+        launches, remaining = 0, {}
         for machine in workers:
-            machine.call('stop', final=True)
+            launches += machine.call('stop', final=True)['custodian_starts']
             machine.collect(accepted)
+            remaining[machine.role] = {'remaining': machine.call('remaining')}
+        write(out / 'cleanup.json', {'accepted_cohort': out.name} | remaining)
         pids = [{'machine': machine.role, 'pid': int(receipts[name]['final']['pid'])}
                 for machine in workers for name in phases[machine.role]]
         assert len({(entry['machine'], entry['pid']) for entry in pids}) == 7
         write(accepted / 'qualification.json', {'result': 'ok', 'graphs': ids, 'existing_surface': existing,
               'machines': topology, 'native_processes': pids, 'phases': phases,
               'original_invitation_sha256': original, 'cold_invitation_sha256': cold['invitation_sha256'],
-              'custodian_launches': 4, 'all_owned_processes_stopped': True,
+              'custodian_launches': launches,
+              'all_owned_processes_stopped': not any(r['remaining'] for r in remaining.values()),
               'mode': args.mode, 'relay_rejoin_barrier': args.mode == 'recovery',
               'controller_sha256': sha(HERE / 'run.py'), 'worker_sha256': sha(HERE / 'machine.py')})
         print(json.dumps({'result': 'ok', 'evidence': str(accepted)}), flush=True)
@@ -371,14 +375,14 @@ def baseline(args):
         assert control['failed_as_expected'], control
         last = owner.call('stop', final=True)
         owner.collect(accepted)
-        write(accepted / 'qualification.json', {
+        qualification = {
             'result': 'ok', 'mode': 'baseline', 'graphs': ids, 'machines': {'owner': info},
             'resident_status': status, 'resident_stops': [first, last],
             'native_processes': [{'machine': 'owner', 'pid': int(result['final']['pid'])}],
             'phases': {'owner': ['baseline']}, 'control': control,
             'custody': info['custody'], 'grant_origin': read_json(accepted / 'owner-grant.json')['origin'],
-            'custodian_launches': 1, 'all_owned_processes_stopped': True,
-            'controller_sha256': sha(HERE / 'run.py'), 'worker_sha256': sha(HERE / 'machine.py')})
+            'custodian_launches': last['custodian_starts'],
+            'controller_sha256': sha(HERE / 'run.py'), 'worker_sha256': sha(HERE / 'machine.py')}
         print(json.dumps({'result': 'ok', 'evidence': str(packet)}), flush=True)
     except Exception:
         try:
@@ -389,8 +393,10 @@ def baseline(args):
     finally:
         write(packet / 'control-trace.json', trace)
         owner.close()
-    write(packet / 'cleanup.json', {'accepted_cohort': out.name, 'owner': {
-        'remaining': owned_processes([out, args.owner_binaries.resolve()])}})
+    remaining = owned_processes([out, args.owner_binaries.resolve()])
+    write(packet / 'cleanup.json', {'accepted_cohort': out.name, 'owner': {'remaining': remaining}})
+    qualification['all_owned_processes_stopped'] = not remaining
+    write(accepted / 'qualification.json', qualification)
     write(packet / 'artifact-sha256.json', {str(p.relative_to(packet).as_posix()): sha(p)
                                             for p in sorted(packet.rglob('*')) if p.is_file()})
 

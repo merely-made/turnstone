@@ -136,7 +136,7 @@ def verify_review(HERE, evidence, names):
 def verify_baseline(HERE, q, args):
     """One desktop: custody, grant, resident, seed, baseline phase, positive control."""
     evidence = HERE / 'accepted'
-    assert q['result'] == 'ok' and q['all_owned_processes_stopped'] and q['custodian_launches'] == 1
+    assert q['result'] == 'ok' and q['custodian_launches'] == 1
     owner = q['machines']['owner']
     assert owner['operating_system'] in {'Darwin', 'Linux'}
     assert owner['console_present'] and not owner['console_locked']
@@ -203,6 +203,7 @@ def verify_baseline(HERE, q, args):
     cleanup = read(HERE / 'cleanup.json')
     assert cleanup['accepted_cohort'] == Path(owner['public']).parents[1].name
     assert not cleanup['owner']['remaining']
+    assert q['all_owned_processes_stopped'] is (not cleanup['owner']['remaining'])
     verify_review(HERE, evidence, [*captures, *control_captures])
     print(json.dumps({'result': 'ok', 'mode': 'baseline',
                       'owner': {'operating_system': owner['operating_system'], 'system_version': owner['system_version'],
@@ -322,6 +323,7 @@ def main():
     cleanup = read(HERE / 'cleanup.json')
     assert cleanup['accepted_cohort'] == Path(machines['owner']['public']).parents[1].name
     assert all(not cleanup[role]['remaining'] for role in ['owner', 'guest'])
+    assert q['all_owned_processes_stopped'] is (not any(cleanup[r]['remaining'] for r in ['owner', 'guest']))
     chosen, private = q['graphs']['chosen'], q['graphs']['private']
     assert chosen != private
     assert q['original_invitation_sha256'] == q['cold_invitation_sha256']
