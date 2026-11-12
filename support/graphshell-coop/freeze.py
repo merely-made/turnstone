@@ -193,6 +193,10 @@ def main():
         checkout(host, pin)
         build(root, args.artifacts.resolve(), host, args.host_artifacts.resolve())
     checkout(host, pin)
+    # Metadata and trees resolve every locked package for every target, including ones no
+    # build fetched; fetch them first so the recorded queries stay --offline.
+    for workspace in [root, host / 'host']:
+        subprocess.check_call([CARGO, '+1.99.1', 'fetch', '--locked'], cwd=workspace)
     out = args.output.resolve()
     out.mkdir(mode=0o700)
     binaries = {name: freeze_binary(name, args.artifacts, out) | {'repository': 'turnstone'}
