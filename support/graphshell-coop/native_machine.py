@@ -149,7 +149,7 @@ class Machine:
         # Consent: what an owner's yes writes, from Graphshell's own grant_for, put
         # in the owner settings before Djinn starts (engine-split D130).
         grant = json.loads(self.invoke(args.prepare, ['grant']))
-        assert grant['app'] == 'graphshell' and not grant['agent'], grant
+        assert grant['app'] == 'graphshell' and not grant.get('agent'), grant
         write(self.public / (args.role + '-grant.json'),
               {'origin': GRANT_ORIGIN, 'prepare_sha256': sha(args.prepare), 'grant': grant})
         settings = {'applications': [grant]}
