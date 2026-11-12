@@ -136,13 +136,17 @@ def freeze_binary(name, artifacts, out):
 
 def inputs(root, workspace, names, out, trees):
     """One repository's commit, lock, input files, git suppliers and external paths."""
-    files = {name for name in run('git', 'ls-files', cwd=root).splitlines()
-             if Path(name).suffix in CODE or Path(name).name == 'Cargo.lock'}
+    tracked = set(run('git', 'ls-files', cwd=root).splitlines())
+    files = {name for name in tracked if Path(name).suffix in CODE or Path(name).name == 'Cargo.lock'}
+    # A compiled input the commit does not hold (a build-generated, ignored file such as
+    # host/crates/script/wit/world.wit) is recorded by hash but cannot be checked against it.
+    generated = set()
     for name in names:
         for dependency in shlex.split((out / (name + '.d')).read_text().split(': ', 1)[1]):
             path = Path(dependency).resolve()
             if path.is_relative_to(root) and path.is_file():
-                files.add(path.relative_to(root).as_posix())
+                relative = path.relative_to(root).as_posix()
+                (files if relative in tracked else generated).add(relative)
     metadata = json.loads(run(CARGO, '+1.99.1', 'metadata', '--locked', '--offline',
                               '--format-version', '1', cwd=workspace))
     groups = {}
@@ -177,6 +181,7 @@ def inputs(root, workspace, names, out, trees):
     return {'source_commit': run('git', 'rev-parse', 'HEAD', cwd=root).strip(),
             'lock_sha256': sha(workspace / 'Cargo.lock'),
             'files': {name: sha(root / name) for name in sorted(files)},
+            'generated_files': {name: sha(root / name) for name in sorted(generated)},
             'suppliers': suppliers, 'external_path_packages': external}
 
 
@@ -217,7 +222,7 @@ def main():
              'resident.py', 'freeze.py', 'relay.py', 'verify.py', 'freeze_relay.py',
              'relay_server/Cargo.toml', 'relay_server/Cargo.lock', 'relay_server/src/main.rs']
     harness = {'support/graphshell-coop/' + name: sha(args.harness / name) for name in names}
-    result = {**{k: turnstone[k] for k in ['source_commit', 'files', 'suppliers', 'external_path_packages']},
+    result = {**{k: turnstone[k] for k in ['source_commit', 'files', 'generated_files', 'suppliers', 'external_path_packages']},
               'lock_sha256': turnstone['lock_sha256'],
               'host': graphshell | {'repository': GRAPHSHELL, 'workspace': 'host',
                                     'pinned_by': 'Turnstone Cargo.lock, graphshell.git',

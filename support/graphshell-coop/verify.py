@@ -50,6 +50,14 @@ def verify_sources(files, commit, root=ROOT):
     assert process.returncode == 0
 
 
+def assert_generated(names, commit, root):
+    """Recorded build-generated inputs: by hash only, so they must be absent from the commit."""
+    for name in names:
+        listed = subprocess.run(['git', 'cat-file', '-e', commit + ':' + name], cwd=root,
+                                capture_output=True)
+        assert listed.returncode != 0, ('a tracked file recorded as generated', name)
+
+
 def verify_graphics(graphics, machine):
     """The native process held the recorded GPU's render node and loaded its Vulkan driver."""
     assert graphics['VK_DRIVER_FILES'] == machine['graphical_environment']['VK_DRIVER_FILES']
@@ -87,6 +95,7 @@ def verify_host(inputs, machine, args):
     assert host['lock_sha256'] == host['files']['host/Cargo.lock'] == machine['host_lock_sha256']
     assert args.host_repo, '--host-repo (a Graphshell clone) is required to check host inputs'
     verify_sources(host['files'], host['source_commit'], args.host_repo.resolve())
+    assert_generated(host.get('generated_files', {}), host['source_commit'], args.host_repo.resolve())
     assert all(not p['compiled'] for p in host['external_path_packages'])
     assert all(p['head'] == p['source'].split('#')[-1] and not p['tracked_code_changes']
                for p in host['suppliers'])
@@ -135,6 +144,8 @@ def verify_baseline(HERE, q, args):
     assert owner['source_commit'] == inputs['source_commit']
     assert owner['lock_sha256'] == inputs['files']['Cargo.lock']
     verify_sources(inputs['files'] | inputs['harness'], args.commit)
+    assert args.commit, '--commit is required: generated inputs are checked against it'
+    assert_generated(inputs['generated_files'], args.commit, ROOT)
     host = verify_host(inputs, owner, args)
     assert all(not p['compiled'] for p in inputs['external_path_packages'])
     assert all(p['head'] == p['source'].split('#')[-1] and not p['tracked_code_changes']
@@ -206,6 +217,7 @@ def verify_baseline(HERE, q, args):
                       'control': {'status': control['final']['status'], 'await_failed': control['final']['await-failed'],
                                   'captures': control_captures},
                       'source_files': len(inputs['files']), 'host_files': len(host['files']),
+                      'generated_files': sorted(inputs['generated_files']) + sorted(host['generated_files']),
                       'commit': args.commit}, indent=2))
 
 
