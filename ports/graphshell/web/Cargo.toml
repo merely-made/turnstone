@@ -286,17 +286,6 @@ netrender-vello-encoding = { git = "https://github.com/mark-ik/vello", branch = 
 [workspace.package]
 rust-version = "1.97.1"
 
-# Promoted sources shared with immutable older Mere suppliers. (The rows that served
-# sprigging and the Cambium family to Inker and Murm's carrier from Mere's tree left
-# with the app: Inker relocks onto graphshell.git first, engine split D121.)
-[patch."https://github.com/merely-made/mere.git"]
-chartulary = { git = "https://github.com/merely-made/eidetic.git", branch = "main" }
-eidetic = { git = "https://github.com/merely-made/eidetic.git", branch = "main" }
-servitor = { git = "https://github.com/merely-made/eidetic.git", branch = "main" }
-muniment = { git = "https://github.com/merely-made/eidetic.git", branch = "main" }
-stickleback = { git = "https://github.com/merely-made/eidetic.git", branch = "main" }
-mere-proofs = { git = "https://github.com/merely-made/eidetic.git", branch = "main" }
-
 [workspace.lints.clippy]
 missing_errors_doc = "warn"
 missing_panics_doc = "warn"

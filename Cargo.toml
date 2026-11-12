@@ -557,34 +557,6 @@ opt-level = 3
 [profile.dev.package.glamx]
 opt-level = 3
 
-# Family convention (Mere family composition brief, "Family source convention"):
-# one canonical URL per repository, branch = "main", this lockfile pins the
-# revision. Rows below redirect packages that left Mere for their own repository.
-[patch."https://github.com/merely-made/mere.git"]
-# Promoted sources shared with immutable older Mere suppliers.
-armillary = { git = "https://github.com/merely-made/armillary.git", branch = "main" }
-chartulary = { git = "https://github.com/merely-made/eidetic.git", branch = "main" }
-commons-spine = { git = "https://github.com/merely-made/gemot.git", branch = "main" }
-eidetic = { git = "https://github.com/merely-made/eidetic.git", branch = "main" }
-errand = { git = "https://github.com/merely-made/errand.git", branch = "main" }
-esp = { git = "https://github.com/merely-made/distillery.git", branch = "main" }
-gemot = { git = "https://github.com/merely-made/gemot.git", branch = "main" }
-luggage = { git = "https://github.com/merely-made/eidetic.git", branch = "main" }
-mere-proofs = { git = "https://github.com/merely-made/eidetic.git", branch = "main" }
-mien = { git = "https://github.com/merely-made/gemot.git", branch = "main" }
-mooting = { git = "https://github.com/merely-made/gemot.git", branch = "main" }
-muniment = { git = "https://github.com/merely-made/eidetic.git", branch = "main" }
-servitor = { git = "https://github.com/merely-made/eidetic.git", branch = "main" }
-stickleback = { git = "https://github.com/merely-made/eidetic.git", branch = "main" }
-# Coherent Murm adoption: imported carriers and owner leaves share one type family.
-insigne = { git = "https://github.com/merely-made/dramatis.git", branch = "main" }
-mere-transport = { git = "https://github.com/merely-made/murm.git", branch = "main" }
-notochord = { git = "https://github.com/merely-made/dramatis.git", branch = "main" }
-personae = { git = "https://github.com/merely-made/dramatis.git", branch = "main" }
-murm-webrtc = { git = "https://github.com/merely-made/murm.git", branch = "main" }
-
-mere-mesh = { git = "https://github.com/merely-made/distillery.git", branch = "main" }
-
 [workspace.package]
 rust-version = "1.97.1"
 edition = "2024"
