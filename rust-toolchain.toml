@@ -2,7 +2,7 @@
 # rustc >= 1.95; the integration toolchain is 1.99.1 with a shared MSRV of 1.97.1, and Turnstone
 # consumes those same subtrees through the facade).
 [toolchain]
-channel = "1.99.1"
+channel = "stable"
 # wasm32-wasip2: block-host builds its fixture guest for the app's blocks tests;
 # wasm32-unknown-unknown: the app's web root. As in Graphshell's toolchain file.
 targets = ["wasm32-wasip2", "wasm32-unknown-unknown"]

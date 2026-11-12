@@ -165,7 +165,7 @@ def main():
         raise ValueError(f"Missing portable lock: {lock}")
     run(["git", "-C", str(repo), "ls-files", "--error-unmatch", str(lock)], stdout=subprocess.DEVNULL)
     try:
-        metadata = json.loads(output(cargo + ["metadata", "--locked", "--format-version", "1"] + allowed, cwd=root))
+        metadata = json.loads(output(cargo + ["metadata", "--format-version", "1"] + allowed, cwd=root))
         for package in metadata["packages"]:
             if package["source"] is None:
                 path = Path(package["manifest_path"]).resolve()
@@ -173,7 +173,7 @@ def main():
                     raise ValueError(f"Outside path package: {package['name']} at {path}")
                 run(["git", "-C", str(repo), "ls-files", "--error-unmatch", str(path)], stdout=subprocess.DEVNULL)
         if not metadata_only:
-            run(cargo + ["check", "--workspace", "--locked"] + allowed, cwd=root)
+            run(cargo + ["check", "--workspace"] + allowed, cwd=root)
     finally:
         if digest(lock) != before:
             raise ValueError(f"Portable lock changed: {lock}")

@@ -92,7 +92,7 @@ Cancel always prevents a click.
 Turnstone pulls `mere` and the genet engine family as git dependencies; a plain
 `cargo build` fetches them. Headed self-drive receipts live under `scenarios/`.
 The committed `Cargo.lock` records the portable graph on Rust 1.99.1. Run
-`cargo check --workspace --locked`, or use Python 3.11+ to check configuration,
+`cargo check --workspace`, or use Python 3.11+ to check configuration,
 package provenance and lock preservation with `python scripts/cargo_mode.py verify`.
 
 For sibling development, copy `.cargo/config.toml.example` to

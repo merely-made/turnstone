@@ -29,12 +29,12 @@ out = fresh_output(args.output, repo)
 build_dir = args.target.resolve().parent / 'build' if args.cargo_wrapper else args.target.resolve() / 'build'
 env = dict(os.environ, CARGO_TARGET_DIR=str(args.target.resolve()), CARGO_BUILD_BUILD_DIR=str(build_dir))
 compiler = subprocess.check_output(['rustc', '--version'], cwd=repo, env=env, text=True).strip()
-web = ['cargo', 'check', '--locked',
+web = ['cargo', 'check',
        '--offline', '--target', 'wasm32-unknown-unknown', '--no-default-features', '-q']
 checks = [
-    ('shared-header', ['cargo', 'test', '-p', 'cambium', '--test', 'instrument', '--locked', '--offline', '-q']),
+    ('shared-header', ['cargo', 'test', '-p', 'cambium', '--test', 'instrument', '--offline', '-q']),
     ('workshop', ['cargo', 'test', '-p', 'tabard-workshop', '--test', 'embedding_api', '--test', 'shared_components',
-                  '--test', 'surface', '--test', 'usability', '--test', 'instrument', '--locked', '--offline', '-q']),
+                  '--test', 'surface', '--test', 'usability', '--test', 'instrument', '--offline', '-q']),
     ('viewer', web + ['--features', 'presentation-webgpu']),
     ('product-applets', web + ['--features', 'product,applets,presentation-webgpu']),
     ('port-boundaries', [sys.executable, 'scripts/check_port_boundaries.py']),
@@ -71,7 +71,7 @@ for label, command in checks:
     if after:
         raise SystemExit(1)
 # Audit the complete metadata ledger, including dev/test and target-specific edges.
-result = subprocess.run(['cargo', 'metadata', '--format-version', '1', '--locked', '--offline'],
+result = subprocess.run(['cargo', 'metadata', '--format-version', '1', '--offline'],
                         cwd=repo, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 assert result.returncode == 0, result.stderr
 ledger = json.loads(result.stdout)

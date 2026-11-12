@@ -425,13 +425,13 @@ windows = { version = "0.62", features = ["Win32_Foundation"], optional = true }
 # release tags. The two vendored Mozilla ICU patches below are self-contained
 # source copies, so a clean checkout does not require sibling paths.
 [patch.crates-io]
-# The reference app's graph uses these three of Mere's patch rows (engine split D123:
-# "Carry all three"). The patched copies left Mere with the resident and live in
-# graphshell.git's host/support/patches; cargo finds each there by package name.
-# cubek-matmul 0.3.1: retain packed Q4 execution on 48-KiB workgroup devices
-# by reducing unit stage partitions after register partitions reach one.
-# Remove when upstream selection admits the same bounded packed-weight rows.
-cubek-matmul = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
+# ureq 3.5.2 limits response bodies after decoding, so cef-dll-sys's build script cannot
+# read CEF's 10.6 MiB index.json. Retire this patch when download-cef raises the limit.
+download-cef = { path = "vendor/download-cef" }
+# Of Mere's patch rows the reference app's graph uses light-file-dialog (engine split
+# D123; cubek-matmul's row is dead since cubek 0.4). The patched copy left Mere with the
+# resident and lives in graphshell.git's host/support/patches; cargo finds it there by
+# package name.
 # Reuse the Windows password class across cancellation and sequential prompts.
 light-file-dialog = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 # The custody contract and resident use the same OS peer fact types.

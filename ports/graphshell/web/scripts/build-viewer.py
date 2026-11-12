@@ -70,7 +70,7 @@ ENGINE = ["physics-engine"]
 def build_physics_worker(args, web, target, out, assets, commands):
     """Build the physics Worker's wasm (seiche's engine, no actor) and package it
     with `physics/worker.js` as `<out>/physics/`, beside the route artifacts."""
-    command = [args.cargo, "build", "--locked", "--profile", "viewer",
+    command = [args.cargo, "build", "--profile", "viewer",
                "-p", "graphshell-physics-worker", "--target", "wasm32-unknown-unknown",
                "--target-dir", str(target), "-j1"]
     if args.offline:
@@ -142,7 +142,7 @@ def main():
     artifacts = {**ARTIFACTS, **(WEBGPU_COMPARISON if args.with_webgpu else {})}
     for artifact, features in artifacts.items():
         features = features + (ENGINE if args.with_engine else [])
-        command = [args.cargo, "build", "--locked", "--profile", "viewer",
+        command = [args.cargo, "build", "--profile", "viewer",
                    "--target", "wasm32-unknown-unknown", "--no-default-features",
                    "--features", ",".join(features),
                    "--target-dir", str(target), "-j1"]

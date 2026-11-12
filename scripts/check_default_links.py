@@ -97,7 +97,7 @@ def main():
     if not target:
         version = subprocess.check_output(["rustc", "-vV"], text=True)
         target = next(line.split(": ", 1)[1] for line in version.splitlines() if line.startswith("host: "))
-    command = ["cargo", "tree", "--manifest-path", str(ROOT / "Cargo.toml"), "--locked", "-p", "turnstone", "-e", "normal", "--target", target, "--prefix", "none", "--format", "{p} [{f}]"]
+    command = ["cargo", "tree", "--manifest-path", str(ROOT / "Cargo.toml"), "-p", "turnstone", "-e", "normal", "--target", target, "--prefix", "none", "--format", "{p} [{f}]"]
     if not args.online:
         command.append("--offline")
     if args.features:

@@ -1,7 +1,8 @@
 # Build output of every workspace root, nested ones too (the app's web root, the coop
 # relay server): target/ at every level (engine split D123).
 target/
-# Portable root lock is tracked; local mode has a separate ignored lock.
+# No Cargo.lock is tracked; see scripts/record-resolved.sh.
+Cargo.lock
 # Local-dev sibling patches (mirrors mere's convention): committed manifests
 # resolve owned sibling repos from GitHub; this file redirects them to the
 # working copies under repos/ for the cross-repo edit loop.

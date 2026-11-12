@@ -83,7 +83,7 @@ def checkout(host, revision):
 
 
 def build(root, artifacts, host, host_artifacts):
-    cargo = [CARGO, '+1.99.1', 'build', '--locked']
+    cargo = [CARGO, '+1.99.1', 'build']
     subprocess.check_call([*cargo, '-p', 'graphshell-mere', '--bin', 'graphshell_mere',
                            '--target-dir', str(artifacts)], cwd=root)
     # Djinn alone, so the examples' dev-dependency features (in-process custody) never
@@ -147,7 +147,7 @@ def inputs(root, workspace, names, out, trees):
             if path.is_relative_to(root) and path.is_file():
                 relative = path.relative_to(root).as_posix()
                 (files if relative in tracked else generated).add(relative)
-    metadata = json.loads(run(CARGO, '+1.99.1', 'metadata', '--locked', '--offline',
+    metadata = json.loads(run(CARGO, '+1.99.1', 'metadata', '--offline',
                               '--format-version', '1', cwd=workspace))
     groups = {}
     for package in metadata['packages']:
@@ -167,7 +167,7 @@ def inputs(root, workspace, names, out, trees):
                           'packages': sorted(item['packages']), 'tracked_code_changes': []})
     texts = []
     for package, extra in trees:
-        tree = run(CARGO, '+1.99.1', 'tree', '--locked', '--offline', '-p', package, *extra,
+        tree = run(CARGO, '+1.99.1', 'tree', '--offline', '-p', package, *extra,
                    '--edges', 'normal,build', cwd=workspace)
         (out / (package + '-tree.txt')).write_text(tree)
         texts.append(tree)
@@ -201,7 +201,7 @@ def main():
     # Metadata and trees resolve every locked package for every target, including ones no
     # build fetched; fetch them first so the recorded queries stay --offline.
     for workspace in [root, host / 'host']:
-        subprocess.check_call([CARGO, '+1.99.1', 'fetch', '--locked'], cwd=workspace)
+        subprocess.check_call([CARGO, '+1.99.1', 'fetch'], cwd=workspace)
     out = args.output.resolve()
     out.mkdir(mode=0o700)
     binaries = {name: freeze_binary(name, args.artifacts, out) | {'repository': 'turnstone'}
@@ -209,7 +209,7 @@ def main():
     binaries |= {name: freeze_binary(name, args.host_artifacts, out) | {'repository': 'graphshell'}
                  for name in HOST}
     # The production build: passphrase-fd, never in-process custody (D130).
-    features = run(CARGO, '+1.99.1', 'tree', '--locked', '--offline', '-p', 'mere-resident',
+    features = run(CARGO, '+1.99.1', 'tree', '--offline', '-p', 'mere-resident',
                    '--features', 'passphrase-fd', '--edges', 'normal,build', '--depth', '0',
                    '--format', '{f}', cwd=host / 'host').strip().split(',')
     assert 'passphrase-fd' in features and 'in-process-custody' not in features, features
