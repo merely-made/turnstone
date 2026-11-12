@@ -278,7 +278,7 @@ fn denizen_runs_attributed() {
 fn fork_session_snapshots_the_component_with_its_facets() {
     let root = tempfile::tempdir().unwrap();
     let mut app = App::test_stub_at(root.path().to_path_buf());
-    app.sessions = pandect::ManifestStore::with_root(session::sessions_root(&app.data_root));
+    app.sessions = crate::session::manifest_store::ManifestStore::with_root(session::sessions_root(&app.data_root));
     let donor_container = uuid::Uuid::from_u128(0xd0);
     app.sessions.insert(pandect::GraphSessionManifest::new(
         app.session_id,
@@ -375,7 +375,7 @@ fn fork_session_snapshots_the_component_with_its_facets() {
         !scene.cartography.members().contains(&a_id),
         "and no donor id came with it"
     );
-    let web = pandect::read_web_states(&fork_facets);
+    let web = crate::session::web_facets::read_web_states(&fork_facets);
     assert!(
         web.get(fork_a).is_some_and(|s| s.content_on),
         "web.content carried onto the remapped id"
@@ -400,7 +400,7 @@ fn fork_session_snapshots_the_component_with_its_facets() {
 fn fork_carries_denizen_worlds_as_real_copies() {
     let root = tempfile::tempdir().unwrap();
     let mut app = App::test_stub_at(root.path().to_path_buf());
-    app.sessions = pandect::ManifestStore::with_root(session::sessions_root(&app.data_root));
+    app.sessions = crate::session::manifest_store::ManifestStore::with_root(session::sessions_root(&app.data_root));
     std::fs::create_dir_all(app.session_dir()).unwrap();
     let pack = app.data_root.join("keeper.lua");
     std::fs::write(&pack, "mere.open('mere://kept/note')").unwrap();

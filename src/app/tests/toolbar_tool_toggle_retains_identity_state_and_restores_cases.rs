@@ -236,10 +236,10 @@ fn browser_states_refresh_and_round_trip() {
     let dir = std::env::temp_dir().join(format!("turnstone-bn-test-{}", uuid::Uuid::new_v4()));
     std::fs::create_dir_all(&dir).unwrap();
     let mut facets = pandect::NodeFacetStore::new();
-    pandect::write_web_states(&mut facets, &app.browser);
+    crate::session::web_facets::write_web_states(&mut facets, &app.browser);
     crate::session::save_node_facets(&dir, &facets);
     let reloaded = crate::session::load_node_facets(&dir).unwrap_or_default();
-    let restored = pandect::read_web_states(&reloaded);
+    let restored = crate::session::web_facets::read_web_states(&reloaded);
     assert!(restored.get(a).is_some_and(|b| b.content_on));
     // Content off -> the refresh clears the flag.
     app.content.note_closed(a);
@@ -347,11 +347,11 @@ fn requested_page_scale_round_trips_through_the_store() {
 
     let dir = std::env::temp_dir().join(format!("turnstone-zoom-test-{}", uuid::Uuid::new_v4()));
     std::fs::create_dir_all(&dir).unwrap();
-    let round_trip = |browser: &pandect::browser_node_state::BrowserNodeStates| {
+    let round_trip = |browser: &crate::session::browser_node_state::BrowserNodeStates| {
         let mut facets = pandect::NodeFacetStore::new();
-        pandect::write_web_states(&mut facets, browser);
+        crate::session::web_facets::write_web_states(&mut facets, browser);
         crate::session::save_node_facets(&dir, &facets);
-        pandect::read_web_states(&crate::session::load_node_facets(&dir).unwrap_or_default())
+        crate::session::web_facets::read_web_states(&crate::session::load_node_facets(&dir).unwrap_or_default())
     };
     assert_eq!(
         round_trip(&app.browser)

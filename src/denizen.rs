@@ -152,6 +152,9 @@ pub use read_cap::read_cap;
 #[path = "denizen/world_cap.rs"]
 mod world_cap;
 pub use world_cap::world_cap;
+// Moved from pandect (engine split D134).
+#[path = "denizen/denizen_facets.rs"]
+pub mod denizen_facets;
 #[path = "denizen/pack_body_kind.rs"]
 mod pack_body_kind;
 #[path = "denizen/parse_watch.rs"]

@@ -188,7 +188,7 @@ fn scene_restore_skips_missing_member_identities_across_every_geometry_field() {
     scene.cartography = geometry;
     let mut reopened = fresh_canvas(&source);
     crate::graph_facets::edit_canvas_facets(&mut reopened, |facets| {
-        pandect::write_saved_scene(facets, container, &scene)
+        cartography::saved_scene::write_saved_scene(facets, container, &scene)
     })
     .unwrap();
     let stored = scene_state::read_scene(reopened.facets(), container)

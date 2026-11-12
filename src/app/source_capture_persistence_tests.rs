@@ -14,7 +14,7 @@ use std::path::Path;
 
 fn app_at(root: &Path) -> App {
     let mut app = App::test_stub_at(root.to_path_buf());
-    app.sessions = pandect::ManifestStore::with_root(session::sessions_root(root));
+    app.sessions = crate::session::manifest_store::ManifestStore::with_root(session::sessions_root(root));
     app
 }
 

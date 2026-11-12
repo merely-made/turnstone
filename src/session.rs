@@ -20,7 +20,8 @@ use image::ImageEncoder;
 // out of pandect with the pane model).
 use crate::panes::store as frisket_store;
 use kernel::graph::Graph;
-use pandect::{GraphSessionManifest, ManifestStore, session_graph_store};
+use pandect::{GraphSessionManifest, session_graph_store};
+use crate::session::manifest_store::{ManifestStore};
 use sceno::Score;
 
 /// The current-session marker (`<root>/current_session`, the bare uuid): the
@@ -45,7 +46,7 @@ const SESSION_FILES: [&str; 11] = [
     frisket_store::FRAME_FILE,
     frisket_store::LEGACY_FRAME_FILE,
     WORKBENCH_FILE,
-    pandect::browser_node_state::BROWSER_NODES_FILE,
+    crate::session::browser_node_state::BROWSER_NODES_FILE,
     frisket_store::WINDOWS_FILE,
     frisket_store::LEGACY_WINDOWS_FILE,
     PROJECTION_SCORE_FILE,
@@ -245,3 +246,11 @@ pub use load_legacy_browser_nodes::load_legacy_browser_nodes;
 #[path = "session/load_workbench.rs"]
 mod load_workbench;
 pub use load_workbench::load_workbench;
+// Moved from pandect (engine split D134): the manifest set, and the browser
+// state the web.* facets persist.
+#[path = "session/manifest_store.rs"]
+pub mod manifest_store;
+#[path = "session/browser_node_state.rs"]
+pub mod browser_node_state;
+#[path = "session/web_facets.rs"]
+pub mod web_facets;

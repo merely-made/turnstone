@@ -13,13 +13,13 @@ use super::*;
 /// Missing or corrupt reads empty.
 pub fn load_legacy_browser_nodes(
     data_root: &Path,
-) -> pandect::browser_node_state::BrowserNodeStates {
-    match pandect::browser_node_state::load_browser_node_states(data_root) {
+) -> crate::session::browser_node_state::BrowserNodeStates {
+    match crate::session::browser_node_state::load_browser_node_states(data_root) {
         Ok(Some(states)) => states,
-        Ok(None) => pandect::browser_node_state::BrowserNodeStates::new(),
+        Ok(None) => crate::session::browser_node_state::BrowserNodeStates::new(),
         Err(err) => {
             tracing::warn!(%err, "failed to read the legacy browser-state sidecar; ignoring it");
-            pandect::browser_node_state::BrowserNodeStates::new()
+            crate::session::browser_node_state::BrowserNodeStates::new()
         },
     }
 }

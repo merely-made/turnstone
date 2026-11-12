@@ -517,7 +517,7 @@ impl App {
         );
         if let Err(error) = self
             .graph_runtimes
-            .edit_facets(|facets| pandect::remove_denizen_binding(facets, member))
+            .edit_facets(|facets| crate::denizen::denizen_facets::remove_denizen_binding(facets, member))
         {
             self.events.push(AppEvent::DenizenRefused(format!(
                 "cannot remove participant binding: {error}"

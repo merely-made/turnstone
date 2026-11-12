@@ -143,7 +143,7 @@ mod tests {
         let root = tempfile::tempdir().unwrap();
         let mut app = App::test_stub_at(root.path().to_path_buf());
         app.sessions =
-            pandect::ManifestStore::with_root(crate::session::sessions_root(root.path()));
+            crate::session::manifest_store::ManifestStore::with_root(crate::session::sessions_root(root.path()));
         let id = app
             .update(Action::NewSession)
             .into_iter()

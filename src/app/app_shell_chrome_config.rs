@@ -182,7 +182,7 @@ impl App {
         let browser = self.browser.clone();
         if let Err(error) = self
             .graph_runtimes
-            .edit_facets(|facets| pandect::write_web_states(facets, &browser))
+            .edit_facets(|facets| crate::session::web_facets::write_web_states(facets, &browser))
         {
             tracing::warn!(%error, "could not project browser state facets");
         }

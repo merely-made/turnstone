@@ -275,7 +275,7 @@ pub(crate) fn stage_scene(canvas: &mut Canvas, container: Uuid, state: &ViewStat
     match canvas.capture_scene(WORKING_SCENE, &arrangement, "") {
         Ok(scene) => {
             if let Err(error) = crate::graph_facets::edit_canvas_facets(canvas, |facets| {
-                pandect::write_saved_scene(facets, container, &scene)
+                cartography::saved_scene::write_saved_scene(facets, container, &scene)
             }) {
                 tracing::warn!(%error, "saved scene facet edit was refused");
             }
@@ -289,7 +289,7 @@ pub(crate) fn read_scene(
     facets: &NodeFacetStore,
     container: Uuid,
 ) -> Option<Result<SavedSceneV3, SceneReadError>> {
-    pandect::stored_scene(facets, container).map(saved_scene::read_scene)
+    cartography::saved_scene::stored_scene(facets, container).map(saved_scene::read_scene)
 }
 
 /// What restoring a scene did.
@@ -363,9 +363,9 @@ fn carry_legacy(
 ) -> Option<SavedSceneV3> {
     let facets = pool.facets();
     let scene_facets = container
-        .filter(|container| pandect::has_scene_facets(facets, *container))
-        .map(|container| pandect::read_scene_facets(facets, container));
-    let mut geometry = pandect::read_arrangement_geometry(facets, container);
+        .filter(|container| cartography::scene_facets::has_scene_facets(facets, *container))
+        .map(|container| cartography::scene_facets::read_scene_facets(facets, container));
+    let mut geometry = cartography::arrangement_facets::read_arrangement_geometry(facets, container);
     if legacy.is_none() && scene_facets.is_none() && geometry.is_empty() {
         return None;
     }
@@ -413,7 +413,7 @@ fn carry_legacy(
     pool.set_physics_damping(
         scene_facets
             .as_ref()
-            .map_or(pandect::DEFAULT_PHYSICS_DAMPING, |scene| {
+            .map_or(cartography::scene_facets::DEFAULT_PHYSICS_DAMPING, |scene| {
                 scene.physics_damping
             }),
     );
@@ -434,9 +434,9 @@ fn carry_legacy(
         scene.physics_paused = paused;
     }
     if let Err(error) = pool.edit_facets(|facets| {
-        pandect::clear_arrangement(facets, container);
+        cartography::arrangement_facets::clear_arrangement(facets, container);
         if let Some(container) = container {
-            pandect::clear_scene_facets(facets, container);
+            cartography::scene_facets::clear_scene_facets(facets, container);
         }
     }) {
         tracing::warn!(%error, "saved scene facet carry was refused");

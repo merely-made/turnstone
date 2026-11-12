@@ -30,7 +30,7 @@
 
 use kernel::graph::apply::{self as graph_apply, GraphDelta, apply_graph_delta};
 use kernel::graph::{ContainmentSubKind, EdgeAssertion, Graph, NodeKey, ProvenanceSubKind};
-use pandect::ManifestStore;
+use crate::session::manifest_store::ManifestStore;
 use std::collections::HashMap;
 
 use crate::panes::SessionId;

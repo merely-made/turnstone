@@ -146,7 +146,7 @@ fn host_session_fork_manifest_failure_never_publishes_or_switches() {
     assert!(pandect::node_facets_path(&children[0]).is_file());
     assert!(
         !children[0]
-            .join(pandect::manifest_store::MANIFEST_FILE)
+            .join(crate::session::manifest_store::MANIFEST_FILE)
             .exists()
     );
 }

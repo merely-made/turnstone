@@ -16,7 +16,7 @@ const HTML: &str = "<html><main>R1 source fixture</main></html>";
 
 fn app_at(root: &Path) -> App {
     let mut app = App::test_stub_at(root.to_path_buf());
-    app.sessions = pandect::ManifestStore::with_root(session::sessions_root(root));
+    app.sessions = crate::session::manifest_store::ManifestStore::with_root(session::sessions_root(root));
     let effects = app.update(Action::NewSession);
     let session = effects
         .iter()

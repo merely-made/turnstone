@@ -4,7 +4,7 @@
 /// Upgrade all legacy `genet.web` pins in one loaded session. Returns whether
 /// the caller should persist the changed facet state.
 pub(super) fn migrate_retired_viewer_overrides(
-    states: &mut pandect::browser_node_state::BrowserNodeStates,
+    states: &mut crate::session::browser_node_state::BrowserNodeStates,
 ) -> bool {
     let mut migrated = false;
     for state in states.nodes.values_mut() {

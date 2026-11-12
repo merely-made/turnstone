@@ -13,7 +13,7 @@ fn close_session_trashes_and_recover_restores_identity() {
     let _ = std::fs::remove_dir_all(&app.data_root);
     // Two real sessions on disk (manifests bound to the root so trash ops
     // have a home), the second is current.
-    app.sessions = pandect::ManifestStore::with_root(session::sessions_root(&app.data_root));
+    app.sessions = crate::session::manifest_store::ManifestStore::with_root(session::sessions_root(&app.data_root));
     let keeper = crate::panes::SessionId::new();
     let mut keeper_m = pandect::GraphSessionManifest::new(
         keeper,
@@ -408,8 +408,8 @@ fn a_component_denizen_acts_only_within_its_reviewed_rings() {
         let (&m, r) = app.denizens.residents.iter().next().unwrap();
         (m, r.subject)
     };
-    let binding = pandect::read_denizen_binding(app.graph_runtimes.facets(), member).unwrap();
-    assert_eq!(binding.kind, pandect::DenizenKind::Pack);
+    let binding = crate::denizen::denizen_facets::read_denizen_binding(app.graph_runtimes.facets(), member).unwrap();
+    assert_eq!(binding.kind, crate::denizen::denizen_facets::DenizenKind::Pack);
     let expected_author = participant_author(&app.denizens.residents[&member]);
     let file = app
         .graph_runtimes

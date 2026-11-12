@@ -46,7 +46,7 @@ pub fn rebuild(
             },
         }
     }
-    for (member, binding) in pandect::read_denizen_bindings(app_facets) {
+    for (member, binding) in crate::denizen::denizen_facets::read_denizen_bindings(app_facets) {
         let Ok(raw) = hex_to_bytes(&binding.subject) else {
             tracing::warn!(member = %member, "participant binding with unparseable subject; skipped");
             continue;

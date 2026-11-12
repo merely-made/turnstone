@@ -72,7 +72,7 @@ fn pause_skips_manual_runs_and_resume_is_durable() {
 #[test]
 fn uninstall_persists_revocation_and_rebuild_rejects_lagging_binding() {
     let (mut app, member) = installed_app("revoke", "mere.open('mere://revoke')");
-    let binding = pandect::read_denizen_binding(app.graph_runtimes.facets(), member).unwrap();
+    let binding = crate::denizen::denizen_facets::read_denizen_binding(app.graph_runtimes.facets(), member).unwrap();
     app.update(Action::UninstallDenizen { member });
 
     let revoked = crate::resident_admission::load(&app.session_dir()).unwrap();
@@ -81,7 +81,7 @@ fn uninstall_persists_revocation_and_rebuild_rejects_lagging_binding() {
         Lifecycle::Revoked
     );
     app.graph_runtimes
-        .edit_facets(|facets| pandect::write_denizen_binding(facets, member, &binding))
+        .edit_facets(|facets| crate::denizen::denizen_facets::write_denizen_binding(facets, member, &binding))
         .unwrap();
     let rebuilt = crate::denizen::rebuild(
         app.graph_runtimes.facets(),

@@ -231,7 +231,7 @@ impl App {
             if container != nil && self.graph_runtimes.facets().facets_of(&nil).is_some() {
                 let donor = self.graph_runtimes.facets().clone();
                 if let Err(error) = self.graph_runtimes.edit_facets(|facets| {
-                    pandect::copy_scene_facets(&donor, facets, nil, container);
+                    pandect::copy_node_facets(&donor, facets, &[(nil, container)]);
                     facets.remove_node(&nil);
                 }) {
                     tracing::warn!(%error, "nil-container scene facets could not be migrated");
@@ -252,7 +252,7 @@ impl App {
         }
         if let Err(error) = self
             .graph_runtimes
-            .edit_facets(|facets| pandect::retain_present_nodes(facets, &present))
+            .edit_facets(|facets| cartography::arrangement_facets::retain_present_nodes(facets, &present))
         {
             tracing::warn!(%error, "orphaned graph facets could not be pruned");
         }
@@ -310,11 +310,11 @@ impl App {
                 .graph_runtimes
                 .set_node_nested_for(member, Some(kernel::graph::LogId::new(log_id)));
             if let Some(binding) =
-                pandect::read_denizen_binding(self.graph_runtimes.facets(), member)
+                crate::denizen::denizen_facets::read_denizen_binding(self.graph_runtimes.facets(), member)
             {
                 if let Err(error) = self
                     .graph_runtimes
-                    .edit_facets(|facets| pandect::write_denizen_binding(facets, member, &binding))
+                    .edit_facets(|facets| crate::denizen::denizen_facets::write_denizen_binding(facets, member, &binding))
                 {
                     tracing::warn!(%error, %member, "participant binding could not be migrated");
                 }
@@ -420,7 +420,7 @@ impl App {
         // save writes facets only, and the stale file is left inert). Every
         // node whose content was ON respawns through the ordinary port, so
         // `Live` here is spawned truth, never a painted memory.
-        self.browser = pandect::read_web_states(self.graph_runtimes.facets());
+        self.browser = crate::session::web_facets::read_web_states(self.graph_runtimes.facets());
         for (id, legacy) in session::load_legacy_browser_nodes(&sdir).nodes {
             self.browser.nodes.entry(id).or_insert(legacy);
         }

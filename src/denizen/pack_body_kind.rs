@@ -5,10 +5,10 @@ use super::*;
 
 impl PackBody {
     /// The participant kind this body resides as.
-    pub fn kind(&self) -> pandect::DenizenKind {
+    pub fn kind(&self) -> crate::denizen::denizen_facets::DenizenKind {
         match self {
-            PackBody::Scenario(_) => pandect::DenizenKind::Scenario,
-            PackBody::Component(_) => pandect::DenizenKind::Pack,
+            PackBody::Scenario(_) => crate::denizen::denizen_facets::DenizenKind::Scenario,
+            PackBody::Component(_) => crate::denizen::denizen_facets::DenizenKind::Pack,
         }
     }
 

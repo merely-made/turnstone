@@ -68,21 +68,21 @@ fn adopt_session_restores_the_saved_canvas_layout_from_facets() {
     let id = app.graph_runtimes.graph().get_node(key).unwrap().id;
     session::save_session_graph(&sdir, app.graph_runtimes.graph());
     let mut facets = pandect::NodeFacetStore::new();
-    pandect::write_arrangement_positions(&mut facets, [(id, (444.0, -55.0))]);
-    pandect::write_arrangement_sizes(&mut facets, [(id, 96.0)]);
-    pandect::write_scene_facets(
+    cartography::arrangement_facets::write_arrangement_positions(&mut facets, [(id, (444.0, -55.0))]);
+    cartography::arrangement_facets::write_arrangement_sizes(&mut facets, [(id, 96.0)]);
+    cartography::scene_facets::write_scene_facets(
         &mut facets,
         container,
-        &pandect::SceneFacets {
+        &cartography::scene_facets::SceneFacets {
             physics_damping: 5.5,
-            ..pandect::SceneFacets::default()
+            ..cartography::scene_facets::SceneFacets::default()
         },
     );
     // Browser state rides the same store now (web.* facets): live content
     // was ON for this node, so the adopt must respawn it.
-    let mut browser = pandect::browser_node_state::BrowserNodeStates::new();
+    let mut browser = crate::session::browser_node_state::BrowserNodeStates::new();
     browser.entry(id).content_on = true;
-    pandect::write_web_states(&mut facets, &browser);
+    crate::session::web_facets::write_web_states(&mut facets, &browser);
     session::save_node_facets(&sdir, &facets);
 
     // Adopt (the boot/switch seam): the node comes back AND lands where
@@ -128,7 +128,7 @@ fn boot_launch_fetch_precedes_the_restored_content_spawn() {
     let url = "7fc8950ec4e50695be76eddc8e539ee8:/page/turnstone.mu";
     let mut app = App::test_stub();
     app.data_root = root.clone();
-    app.sessions = pandect::ManifestStore::with_root(session::sessions_root(&root));
+    app.sessions = crate::session::manifest_store::ManifestStore::with_root(session::sessions_root(&root));
     let session_id = crate::panes::SessionId::new();
     let mut manifest = pandect::GraphSessionManifest::new(session_id, crate::panes::GraphId::new());
     manifest.storage_path = Some(session::session_dir(&root, session_id));
@@ -140,9 +140,9 @@ fn boot_launch_fetch_precedes_the_restored_content_spawn() {
     let session_dir = session::session_dir(&root, session_id);
     session::save_session_graph(&session_dir, app.graph_runtimes.graph());
     let mut facets = pandect::NodeFacetStore::new();
-    let mut browser = pandect::browser_node_state::BrowserNodeStates::new();
+    let mut browser = crate::session::browser_node_state::BrowserNodeStates::new();
     browser.entry(node).content_on = true;
-    pandect::write_web_states(&mut facets, &browser);
+    crate::session::web_facets::write_web_states(&mut facets, &browser);
     session::save_node_facets(&session_dir, &facets);
 
     // This is the exact boot sequence after profile and identity setup. The
@@ -221,10 +221,10 @@ fn denizen_installs_after_visible_review() {
     assert!(app.pending_install.is_none());
     assert_eq!(app.denizens.residents.len(), 1);
     let (&member, resident) = app.denizens.residents.iter().next().unwrap();
-    let binding = pandect::read_denizen_binding(app.graph_runtimes.facets(), member)
+    let binding = crate::denizen::denizen_facets::read_denizen_binding(app.graph_runtimes.facets(), member)
         .expect("the binding facet is durable truth");
     assert_eq!(binding.subject, resident.subject.to_hex());
-    assert_eq!(binding.kind, pandect::DenizenKind::Scenario);
+    assert_eq!(binding.kind, crate::denizen::denizen_facets::DenizenKind::Scenario);
     assert!(
         binding.legacy_nested_log.is_empty(),
         "the facet is pure agency"

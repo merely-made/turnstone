@@ -54,10 +54,10 @@ pub fn install(app: &mut App, pending: PendingInstall) -> Result<Uuid, String> {
     // The binding + source + label facets: durable agency truth.
     app.graph_runtimes
         .edit_facets(|facets| {
-            pandect::write_denizen_binding(
+            crate::denizen::denizen_facets::write_denizen_binding(
                 facets,
                 member,
-                &pandect::DenizenBinding::new(hex.clone(), pending.body.kind()),
+                &crate::denizen::denizen_facets::DenizenBinding::new(hex.clone(), pending.body.kind()),
             );
         })
         .map_err(|error| format!("cannot store participant binding: {error}"))?;

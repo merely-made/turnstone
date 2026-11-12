@@ -109,7 +109,7 @@ impl App {
         {
             let ids = copy.id_remap.iter().copied().collect();
             let carried = cartography::canvas::saved_scene::remap_scene(&scene, &ids);
-            pandect::write_saved_scene(&mut fork_facets, *fork_graph_id.as_uuid(), &carried);
+            cartography::saved_scene::write_saved_scene(&mut fork_facets, *fork_graph_id.as_uuid(), &carried);
         }
         let derivation_facet =
             chartulary::FacetId::new(kernel::graph::node_facets::PROVENANCE_DERIVATIONS);

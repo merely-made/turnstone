@@ -177,7 +177,7 @@ fn install_delegates_from_the_profile_identity_and_uninstall_revokes_it() {
         "the delegation is revoked, so the ring is no longer authorized"
     );
     assert!(
-        pandect::read_denizen_binding(app.graph_runtimes.facets(), member).is_none(),
+        crate::denizen::denizen_facets::read_denizen_binding(app.graph_runtimes.facets(), member).is_none(),
         "un-resided: the agency facet is gone"
     );
     assert!(
@@ -255,7 +255,7 @@ fn deleting_a_denizen_archives_its_world_and_recovery_restores_residency() {
         record
             .facets
             .as_ref()
-            .and_then(|f| f.get(pandect::DENIZEN_BINDING))
+            .and_then(|f| f.get(crate::denizen::denizen_facets::DENIZEN_BINDING))
             .is_some(),
         "the tombstone carries the facet bundle incl. the binding"
     );
@@ -272,7 +272,7 @@ fn deleting_a_denizen_archives_its_world_and_recovery_restores_residency() {
         "the runtime entry left with the node"
     );
     assert!(
-        pandect::read_denizen_binding(app.graph_runtimes.facets(), member).is_none(),
+        crate::denizen::denizen_facets::read_denizen_binding(app.graph_runtimes.facets(), member).is_none(),
         "the live facets went to the tombstone"
     );
 
@@ -290,7 +290,7 @@ fn deleting_a_denizen_archives_its_world_and_recovery_restores_residency() {
         "the archive slot emptied"
     );
     assert!(
-        pandect::read_denizen_binding(app.graph_runtimes.facets(), member).is_some(),
+        crate::denizen::denizen_facets::read_denizen_binding(app.graph_runtimes.facets(), member).is_some(),
         "the binding facet restored"
     );
     let resident = app

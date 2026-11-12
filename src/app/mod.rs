@@ -153,7 +153,7 @@ pub struct App {
     pub data_root: PathBuf,
     /// The manifest set: one durable record per session, ManifestStore's
     /// on-disk layout under `sessions/`.
-    pub sessions: pandect::ManifestStore,
+    pub sessions: crate::session::manifest_store::ManifestStore,
     /// The live session — the one whose directory every save/load targets.
     pub session_id: crate::panes::SessionId,
     /// Per-node content lifecycle (rung 4). Data only: the live session
@@ -223,7 +223,7 @@ pub struct App {
     /// The browser-state sidecar (rung 6): per-node browser handling (viewer
     /// override, compat mode, content-on), persisted at `browser_nodes.json`.
     /// The graph stays correct without it (the sidecar's charter).
-    pub browser: pandect::browser_node_state::BrowserNodeStates,
+    pub browser: crate::session::browser_node_state::BrowserNodeStates,
     /// Latest typed refusal for one graph's physics controls, not persisted.
     physics_refusal: Option<(GraphId, cartography::canvas::OverlayRefusal)>,
     /// A maximized pane takes the whole pane area (a host view state; frisket

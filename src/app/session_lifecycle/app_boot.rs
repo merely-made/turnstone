@@ -106,7 +106,7 @@ impl App {
             frisket: FrisketLayout::default(),
             history: backstep::nav::History::new(String::new()),
             active_pane: None,
-            browser: pandect::browser_node_state::BrowserNodeStates::new(),
+            browser: crate::session::browser_node_state::BrowserNodeStates::new(),
             physics_refusal: None,
             maximized: None,
             window_count: 1,
@@ -209,7 +209,7 @@ impl App {
     /// through the store. Returns the id.
     pub(in super::super) fn mint_session(
         data_root: &std::path::Path,
-        sessions: &mut pandect::ManifestStore,
+        sessions: &mut crate::session::manifest_store::ManifestStore,
     ) -> crate::panes::SessionId {
         let id = crate::panes::SessionId::new();
         // A REAL GraphId from birth: the root graph is the session's container

@@ -243,7 +243,7 @@ fn host_session_fork_preserves_resource_records_and_tag_assertions() {
     };
     let root = tempfile::tempdir().unwrap();
     let mut app = App::test_stub_at(root.path().to_path_buf());
-    app.sessions = pandect::ManifestStore::with_root(session::sessions_root(root.path()));
+    app.sessions = crate::session::manifest_store::ManifestStore::with_root(session::sessions_root(root.path()));
     let mut graph = Graph::new();
     let member = uuid::Uuid::new_v4();
     let key = add_node(
@@ -323,7 +323,7 @@ fn host_session_fork_preserves_resource_records_and_tag_assertions() {
 fn new_session_records_its_birth_and_reopens_same_site_relations_exactly() {
     let root = tempfile::tempdir().unwrap();
     let mut app = App::test_stub_at(root.path().to_path_buf());
-    app.sessions = pandect::ManifestStore::with_root(session::sessions_root(root.path()));
+    app.sessions = crate::session::manifest_store::ManifestStore::with_root(session::sessions_root(root.path()));
     let effects = app.update(Action::NewSession);
     let id = effects
         .iter()

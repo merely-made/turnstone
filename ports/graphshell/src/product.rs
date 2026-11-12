@@ -26,9 +26,10 @@ use kernel::types::NodeProperty;
 use muniment::Backend;
 use pandect::graph_placement::{PlacementProfile, materialize_snapshot};
 use pandect::{
-    CartographyGeometry, DEFAULT_ARRANGEMENT, SAVED_SCENE_FACET, SAVED_SCENE_FACET_V2,
-    SAVED_SCENE_FACET_V3, SavedDynamics, SavedRolesV1, SavedSceneV2, SavedSceneV3, StoredScene,
+    CartographyGeometry, SAVED_SCENE_FACET, SAVED_SCENE_FACET_V2, SAVED_SCENE_FACET_V3,
+    SavedDynamics, SavedRolesV1, SavedSceneV2, SavedSceneV3,
 };
+use cartography::saved_scene::{DEFAULT_ARRANGEMENT, StoredScene};
 use sceno::SourceRef;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;

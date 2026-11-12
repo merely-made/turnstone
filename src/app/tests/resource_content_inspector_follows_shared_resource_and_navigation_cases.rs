@@ -274,7 +274,7 @@ fn stale_or_failed_source_capture_completion_never_attaches_a_reference() {
 #[test]
 fn retired_static_viewer_pins_migrate_to_livery() {
     let node = uuid::Uuid::new_v4();
-    let mut states = pandect::browser_node_state::BrowserNodeStates::new();
+    let mut states = crate::session::browser_node_state::BrowserNodeStates::new();
     states.entry(node).viewer_override = Some(inker::routing::ENGINE_GENET_WEB.to_string());
 
     assert!(migrate_retired_viewer_overrides(&mut states));
