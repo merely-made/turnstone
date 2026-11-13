@@ -191,10 +191,10 @@ eidetic = { git = "https://github.com/merely-made/eidetic.git", branch = "main" 
 # the BrowsingTrace corpus the trail actor captures. Derived state — the index
 # is re-minted from the corpus, never repaired.
 eidetic-search = { git = "https://github.com/merely-made/eidetic.git", branch = "main" }
-pollster = "0.4"
+pollster = "1"
 # The per-user data root (`<data_dir>/turnstone`), TURNSTONE_ROOT-overridable for
 # scratch profiles (the meerkat MERE_ROOT convention).
-dirs = "6"
+dirs = "7"
 # Native file authority stays in the shell. The app only sees a typed effect
 # and the contributed surface only sees the path the user selected.
 rfd = "0.17.2"
@@ -220,7 +220,7 @@ nematic = { git = "https://github.com/merely-made/inker.git", branch = "main" }
 retinue = { git = "https://github.com/merely-made/murm.git", branch = "main", optional = true }
 # An ephemeral Reticulum client identity is generated per NomadNet page fetch;
 # it is never persisted as a browsing preference or discovery record.
-getrandom = "0.2"
+getrandom = "0.4"
 # Protocol-faithful RSS/Atom parsing for the graph-native feed subscription
 # loop. Gemini feed discovery remains gemtext-native in Turnstone; errand owns
 # the shared XML grammar already used by Nematic.
@@ -291,7 +291,7 @@ winit = "0.30.13"
 # readback -> receipt).
 image = { version = "0.25", default-features = false, features = ["avif", "bmp", "gif", "ico", "jpeg", "png", "webp"] }
 # The dropped-sprite data-URI (file drop -> node face).
-base64 = "0.22"
+base64 = "0.23"
 wgpu = { version = "30", default-features = false, features = ["std", "wgsl"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
@@ -588,7 +588,7 @@ wgpu = "30.0.1"
 winit = "0.30.13"
 # Rows the reference app inherits, from Mere's root (engine split U4), re-addressed (D66).
 accesskit = "0.25.1"
-base64 = "0.22"
+base64 = "0.23"
 blake3 = "1"
 block-adapter = { version = "0.0.1", git = "https://github.com/merely-made/graphshell.git", branch = "main", default-features = false }
 block-host = { version = "0.0.1", git = "https://github.com/merely-made/graphshell.git", branch = "main" }

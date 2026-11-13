@@ -19,7 +19,7 @@ layout_dom_api = { workspace = true }
 genet-presenter.workspace = true
 wgpu.workspace = true
 serde_json.workspace = true
-dirs = "6"
+dirs = "7"
 
 [dev-dependencies]
 tempfile = "3"

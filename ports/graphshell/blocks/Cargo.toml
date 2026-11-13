@@ -34,7 +34,7 @@ cartography = { workspace = true, features = ["canvas", "image-decode", "physics
 parley = { workspace = true, features = ["complex-scripts"] }
 genet-scripted-dom.workspace = true
 layout_dom_api.workspace = true
-pollster = "0.4"
+pollster = "1"
 mandrake.workspace = true
 taproot.workspace = true
 serde_json.workspace = true
@@ -51,4 +51,4 @@ sprigging.workspace = true
 netrender = { workspace = true, features = ["vello-cpu"] }
 paint_list_api.workspace = true
 paint_list_render.workspace = true
-png = "0.17"
+png = "0.18"

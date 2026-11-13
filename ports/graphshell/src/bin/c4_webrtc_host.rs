@@ -43,7 +43,8 @@
 //!
 //! ## What the keys here are, and are not
 //!
-//! The host identity is generated fresh on every run from [`OsRng`]. That is
+//! The host identity is generated fresh on every run from the operating
+//! system's random source (`getrandom::fill`). That is
 //! not laziness about persistence: a fixture with a hard-coded seed is a
 //! private key in a public repository, and the first person to reuse this
 //! shape in something real inherits it. A restarted fixture is a different
@@ -64,7 +65,6 @@ use graphshell_host::webrtc_door::{InviteTerms, issue_invite};
 use graphshell_host::webrtc_session::HostedInvite;
 use notochord::{NetworkId, ProfileRef, TrustedRoot};
 use personae::{IdentityProvider, InMemoryProvider};
-use rand_core::{OsRng, RngCore};
 use tokio::io::{AsyncBufReadExt, AsyncReadExt, AsyncWriteExt, BufReader};
 use tokio::net::{TcpListener, TcpStream};
 use tokio::sync::Mutex;
@@ -204,7 +204,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Fresh every run. See the module doc.
     let mut seed = [0u8; 32];
-    OsRng.fill_bytes(&mut seed);
+    getrandom::fill(&mut seed).expect("operating system random source");
     // Not `Clone`, and rightly so — it holds the master private key. One
     // provider, shared by reference.
     let provider = Arc::new(InMemoryProvider::from_seed(seed));

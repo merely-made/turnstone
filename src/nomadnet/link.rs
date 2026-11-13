@@ -142,7 +142,7 @@ pub async fn fetch_page_on_interface_with_policy(
         // operation in this future makes cancellation and the host deadline
         // release that transport even during connect or discovery.
         let mut secret = [0_u8; IDENTITY_LEN];
-        getrandom::getrandom(&mut secret)
+        getrandom::fill(&mut secret)
             .map_err(|error| format!("could not create ephemeral Reticulum identity: {error}"))?;
         let endpoint = Endpoint::new(PrivateIdentity::from_secret_bytes(&secret));
         secret.fill(0);
@@ -260,7 +260,7 @@ pub async fn submit_form_on_interface_with_policy(
     let destination = AddressHash::from_bytes(address.destination_bytes());
     let result = tokio::time::timeout(timeout, async {
         let mut secret = [0_u8; IDENTITY_LEN];
-        getrandom::getrandom(&mut secret)
+        getrandom::fill(&mut secret)
             .map_err(|error| format!("could not create ephemeral Reticulum identity: {error}"))?;
         let endpoint = Endpoint::new(PrivateIdentity::from_secret_bytes(&secret));
         secret.fill(0);

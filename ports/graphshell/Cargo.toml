@@ -104,7 +104,7 @@ native = [
     "dep:chatelaine",
     "dep:personae",
     "personae/ssh",
-    "dep:rand_core",
+    "dep:getrandom",
     "dep:serde",
     "dep:pandect",
     "dep:incipit",
@@ -112,7 +112,6 @@ native = [
     "dep:signature",
     "dep:ssh-agent-lib",
     "dep:ssh-key",
-    "dep:thiserror",
     "dep:tokio",
     "dep:tracing",
     "dep:tracing-subscriber",
@@ -148,11 +147,9 @@ webrtc-browser = ["webrtc-join", "webrtc-carrier/browser"]
 
 webrtc-join = [
     "graphshell-host/webrtc-join",
-    "dep:getrandom",
     "dep:notochord",
     "dep:personae",
     "dep:serde",
-    "dep:thiserror",
     "dep:webrtc-carrier",
 ]
 
@@ -301,18 +298,13 @@ layout_dom_api = { workspace = true, optional = true }
 
 # Wasm-clean, and declared here rather than in the native-only table below so
 # the browser build can reach them: the identity core (`personae` without
-# `agent`), Notochord's decision core, the carrier's Wasm-clean core, and the
-# join's own two small deps. `rand_core` and `transport` stay native-only —
-# one would drag a third `getrandom` major into the wasm graph, the other is
-# iroh and tokio.
+# `agent`), Notochord's decision core and the carrier's Wasm-clean core.
+# `transport` stays native-only: it is iroh and tokio.
 notochord = { workspace = true, features = ["tokio"], optional = true }
 # Declared without `agent`: that feature is the ssh-agent lane (tokio,
 # gethostname) and only the native cone wants it, so `native` enables it and a
 # wasm feature enabling this dependency gets the identity core alone.
 personae = { workspace = true, optional = true }
-thiserror = { version = "1", optional = true }
-# The join's nonces. See `webrtc_join`'s module doc for why not `rand_core`.
-getrandom = { version = "0.3", optional = true }
 webrtc-carrier = { workspace = true, optional = true }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
@@ -321,7 +313,7 @@ cambium-desktop = { workspace = true, optional = true }
 mien = { workspace = true, optional = true }
 proofs = { workspace = true, optional = true }
 servitor = { workspace = true, optional = true }
-pollster = { version = "0.4", optional = true }
+pollster = { version = "1", optional = true }
 genet-scripted-dom = { workspace = true, optional = true }
 image = { version = "0.25", default-features = false, features = ["png"], optional = true }
 cambium = { workspace = true, optional = true }
@@ -335,10 +327,11 @@ blake3 = { workspace = true, optional = true }
 # `graphshell_door::custody_client`.
 dramatis = { workspace = true, optional = true }
 p2panda-core = { package = "p2mere-core", version = "0.10", optional = true }
-rand_core = { version = "0.6", features = ["getrandom"], optional = true }
-signature = { version = "2", optional = true }
-ssh-agent-lib = { version = "0.6", optional = true }
-ssh-key = { version = "0.6", features = ["ed25519", "encryption"], optional = true }
+# The C4 host's fresh identity seed (`src/bin/c4_webrtc_host.rs`).
+getrandom = { version = "0.4", optional = true }
+signature = { version = "3", optional = true }
+ssh-agent-lib = { version = "0.6", git = "https://github.com/mark-ik/ssh-agent-lib.git", branch = "main", optional = true }
+ssh-key = { version = "0.7.0-rc.12", features = ["ed25519", "encryption"], optional = true }
 stickleback = { workspace = true, optional = true }
 tokio = { version = "1", features = ["io-std", "io-util", "macros", "net", "rt-multi-thread", "sync", "time"], optional = true }
 tracing = { workspace = true, optional = true }
@@ -400,7 +393,7 @@ path = "src/bin/n4_policy_receipt.rs"
 required-features = ["native"]
 
 [dev-dependencies]
-chacha20poly1305 = "=0.10.1"
+chacha20poly1305 = "0.11"
 scenograph = { workspace = true, features = ["editor"] }
 # The real Rhai request batch is received by the same viewer adapter as Mandrake.
 script-rhai = { workspace = true }
@@ -424,7 +417,7 @@ mesh.workspace = true
 # integration test drives a real str0m loopback so the link challenge binds
 # fingerprints from a DTLS handshake that actually ran, not fabricated ones.
 webrtc-carrier = { workspace = true, features = ["native"] }
-pollster = "0.4"
+pollster = "1"
 tempfile = "3"
 # `process` is the C4a signaling receipt: it spawns the fixture *binary* and
 # reads its stdout, because "the pieces compose in-process" and "the binary a
@@ -464,11 +457,6 @@ required-features = ["webrtc-session"]
 name = "h4f_agent_probe"
 path = "src/bin/h4f_agent_probe.rs"
 required-features = ["native"]
-
-# The browser build's entropy: the same-named entry merges its feature into
-# the one above, the way `personae` does it.
-[target.'cfg(target_arch = "wasm32")'.dependencies]
-getrandom = { version = "0.3", features = ["wasm_js"], optional = true }
 
 # The committed N4 receipt against `graphshell_host::policy_projection`.
 [[test]]
