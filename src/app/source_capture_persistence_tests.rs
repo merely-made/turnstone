@@ -133,9 +133,9 @@ fn overwrite_capture_facet(
         |facets| {
             facets.set(
                 request.node,
-                chartulary::FacetId::new(facet),
+                portolan::FacetId::new(facet),
                 value,
-                &chartulary::AcceptAll,
+                &portolan::AcceptAll,
             )
         },
     )
@@ -152,7 +152,7 @@ fn request_ledger(app: &App, request: &CaptureRequest) -> serde_json::Value {
         .facets()
         .get(
             &request.node,
-            &chartulary::FacetId::new("capture.source-requests/v1"),
+            &portolan::FacetId::new("capture.source-requests/v1"),
         )
         .unwrap()
         .clone()

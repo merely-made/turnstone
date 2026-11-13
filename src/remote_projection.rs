@@ -17,7 +17,7 @@
 
 use std::collections::{BTreeMap, HashMap};
 
-use chartulary::{Container, EditSpec, GraphLog, Relation};
+use portolan::{Container, EditSpec, GraphLog, Relation};
 use chirograph::{
     AdvertisedAction, BoundsRelationship, CachePolicy, CapabilityProfile, CardValueV1, ContentHash,
     EndpointDescriptor, IntentEffect, IntentInvocation, IntentReference, IntentResult,

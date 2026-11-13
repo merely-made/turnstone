@@ -5,7 +5,7 @@ use std::path::Path;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
-use chartulary::{Author, Container};
+use portolan::{Author, Container};
 use commons::chat::{Channel, ChatEvent, Message};
 use gemot::moot::{MootAccessLevel, MootFile, MootId, MootMembershipAction, MootOutboundOperation};
 use identity::{IdentityProvider, InMemoryProvider};

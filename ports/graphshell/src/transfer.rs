@@ -14,7 +14,7 @@
 use crate::product::ProductHost;
 use std::collections::{BTreeMap, HashMap, HashSet};
 
-use chartulary::{AcceptAll, FacetId};
+use portolan::{AcceptAll, FacetId};
 use chirograph::Sha256NamedInformation;
 use eidetic::{
     BlobSource, Codicil, Hash, ManifestId, ModerationState, PrivacyClass, ProvenanceOrigin,
@@ -1479,9 +1479,9 @@ mod tests {
                 package(&source, TransferOperation::Copy, "personae://persona/bob").await;
             let mut product = verify_manifest(&manifest).unwrap();
             let iri = "https://copy-resource.test/page";
-            let resource_id = chartulary::resource_id_from_canonical_iri(iri).to_string();
+            let resource_id = portolan::resource_id_from_canonical_iri(iri).to_string();
             let tag = "https://copy-resource.test/vocab#Tag";
-            let tag_id = chartulary::resource_id_from_canonical_iri(tag).to_string();
+            let tag_id = portolan::resource_id_from_canonical_iri(tag).to_string();
             product.graph.resources = [iri, tag]
                 .into_iter()
                 .map(|iri| PersistedResourceRecord {
@@ -1715,9 +1715,9 @@ mod tests {
             let collision_resource = "https://destination.test/page";
             let target_resource = "https://destination.test/tag";
             let collision_resource_id =
-                chartulary::resource_id_from_canonical_iri(collision_resource).to_string();
+                portolan::resource_id_from_canonical_iri(collision_resource).to_string();
             let target_resource_id =
-                chartulary::resource_id_from_canonical_iri(target_resource).to_string();
+                portolan::resource_id_from_canonical_iri(target_resource).to_string();
             let mut collision_snapshot = Graph::new().to_snapshot();
             collision_snapshot.resources = [collision_resource, target_resource]
                 .into_iter()

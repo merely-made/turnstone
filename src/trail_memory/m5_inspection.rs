@@ -232,7 +232,7 @@ pub(super) fn inspect_exited_structured_copy() {
             .facets()
             .get(
                 &node.id,
-                &chartulary::FacetId::new(crate::source_capture::SOURCE_CAPTURE_REFERENCES_FACET),
+                &portolan::FacetId::new(crate::source_capture::SOURCE_CAPTURE_REFERENCES_FACET),
             )
             .and_then(|value| value.as_array())
             .expect("capture facet missing");

@@ -142,7 +142,7 @@ pub fn resolve(ids: &[String]) -> Vec<SectionProvider> {
 /// Durable download custody from graph facets, formerly Steward's projection.
 /// Rows remain read-only; custody and completion stay on the product spine.
 fn gather_downloads(app: &App) -> Vec<SectionRow> {
-    let facet = chartulary::FacetId::new(crate::content_classes::DOWNLOAD_FACET);
+    let facet = portolan::FacetId::new(crate::content_classes::DOWNLOAD_FACET);
     let mut rows = app
         .graph_runtimes
         .graph()

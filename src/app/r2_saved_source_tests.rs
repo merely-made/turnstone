@@ -6,7 +6,7 @@ use super::App;
 use crate::action::{Action, Effect, Update};
 use crate::saved_sources::{Admission, Content, Entry, Key, Selector, Target};
 use crate::{session, source_capture};
-use chartulary::FacetId;
+use portolan::FacetId;
 use cartography::canvas::Canvas;
 use std::path::Path;
 

@@ -390,8 +390,8 @@ fn resident_petitions_run_through_the_gate() {
             subject,
             &servitor::ScopePath::parse(crate::denizen::SCENARIO_SCOPE).unwrap(),
             rev,
-            vec![chartulary::EditSpec::InsertNode(
-                chartulary::Container::new("scenario/kept-note"),
+            vec![portolan::EditSpec::InsertNode(
+                portolan::Container::new("scenario/kept-note"),
             )],
         )
         .expect("an in-scope petition commits");
@@ -410,8 +410,8 @@ fn resident_petitions_run_through_the_gate() {
             subject,
             &servitor::ScopePath::parse("notes").unwrap(),
             rev,
-            vec![chartulary::EditSpec::InsertNode(
-                chartulary::Container::new("notes/sneaky"),
+            vec![portolan::EditSpec::InsertNode(
+                portolan::Container::new("notes/sneaky"),
             )],
         )
         .unwrap_err();

@@ -489,9 +489,9 @@ fn legacy_node_columns_migrate_on_load_and_existing_facets_win() {
     facets
         .set(
             node_id,
-            chartulary::FacetId::new(kernel::graph::node_facets::ARRANGEMENT_PIN),
+            portolan::FacetId::new(kernel::graph::node_facets::ARRANGEMENT_PIN),
             serde_json::json!(false),
-            &chartulary::AcceptAll,
+            &portolan::AcceptAll,
         )
         .unwrap();
     save_node_facets(&root, &facets);
@@ -513,7 +513,7 @@ fn legacy_node_columns_migrate_on_load_and_existing_facets_win() {
     assert_eq!(
         persisted.get(
             &node_id,
-            &chartulary::FacetId::new(kernel::graph::node_facets::ARRANGEMENT_PIN,),
+            &portolan::FacetId::new(kernel::graph::node_facets::ARRANGEMENT_PIN,),
         ),
         Some(&serde_json::json!(false))
     );

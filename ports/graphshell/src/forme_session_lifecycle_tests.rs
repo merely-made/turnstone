@@ -1675,7 +1675,7 @@ fn owner_lifecycle_failed_real_detail_persistence_reconciles_facet_and_preserves
             .await
             .is_err()
         );
-        let facet = chartulary::FacetId::new("example.review");
+        let facet = portolan::FacetId::new("example.review");
         assert_eq!(
             app.host.graph().facets().get(&member, &facet),
             Some(&serde_json::json!({"reviewed":true}))
@@ -1816,7 +1816,7 @@ fn owner_lifecycle_failed_actual_facet_completion_keeps_unpaused_physics_parked(
             canvas
                 .graph()
                 .facets()
-                .get(&member, &chartulary::FacetId::new("example.parked")),
+                .get(&member, &portolan::FacetId::new("example.parked")),
             Some(&serde_json::json!(true))
         );
     });

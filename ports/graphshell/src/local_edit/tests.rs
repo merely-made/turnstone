@@ -477,18 +477,18 @@ fn hosted_canvas_metadata_keeps_exact_tag_claims_peer_sources_and_navigation_res
             .facets_mut()
             .set(
                 first,
-                chartulary::FacetId::new(kernel::graph::node_facets::SEMANTIC_PROPERTIES),
+                portolan::FacetId::new(kernel::graph::node_facets::SEMANTIC_PROPERTIES),
                 serde_json::to_value(vec![property.clone(), property]).unwrap(),
-                &chartulary::AcceptAll,
+                &portolan::AcceptAll,
             )
             .unwrap();
         carried
             .facets_mut()
             .set(
                 first,
-                chartulary::FacetId::new("extension.origin-note"),
+                portolan::FacetId::new("extension.origin-note"),
                 serde_json::json!({"statement_id":expected[0].statement_id}),
-                &chartulary::AcceptAll,
+                &portolan::AcceptAll,
             )
             .unwrap();
         let mut probe = Canvas::with_graph(carried.clone());

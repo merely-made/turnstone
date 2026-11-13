@@ -15,7 +15,7 @@ use std::collections::{BTreeSet, HashMap, HashSet};
 use std::sync::Mutex;
 
 use async_trait::async_trait;
-use chartulary::FacetId;
+use portolan::FacetId;
 use eidetic::browsing::{
     BrowsingMemory, PageRef, TraceEvent, TraceTransition, bootstrap_browsing_schema,
 };
@@ -342,7 +342,7 @@ pub enum CaptureTransition {
 
 impl CaptureTransition {
     fn from_browser(value: &str) -> Self {
-        use chartulary::stemma::TransitionKind as T;
+        use hodograph::TransitionKind as T;
         match eidetic::import::encounters::browser_transition(value) {
             T::LinkClick => Self::LinkClick,
             T::UrlTyped => Self::UrlTyped,
@@ -1655,11 +1655,11 @@ mod tests {
             let ledger = browser_encounters(&host, &store).await.unwrap();
             assert_eq!(
                 ledger.snapshot.visits[0].inbound.unwrap().kind,
-                chartulary::stemma::TransitionKind::UrlTyped
+                hodograph::TransitionKind::UrlTyped
             );
             assert_eq!(
                 ledger.snapshot.visits[1].inbound.unwrap().kind,
-                chartulary::stemma::TransitionKind::Unknown
+                hodograph::TransitionKind::Unknown
             );
             assert_eq!(
                 ledger.snapshot.visits[1].context.raw_transition,

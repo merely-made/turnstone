@@ -45,8 +45,8 @@ pub(crate) fn proposal_reading(
                     "turnstone://alembic-example/{}/{}",
                     example.family, example.version
                 );
-                let canonical = chartulary::canonical_url(&url);
-                chartulary::resource_id_from_canonical_iri(&canonical).to_string()
+                let canonical = portolan::canonical_url(&url);
+                portolan::resource_id_from_canonical_iri(&canonical).to_string()
                     == requested_source.resource
             })
             .ok_or("The proposal source is outside Turnstone's public example corpus.")?;

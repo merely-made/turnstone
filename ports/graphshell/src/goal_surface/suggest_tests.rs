@@ -125,7 +125,7 @@ fn a_goal_runs_over_the_records_and_cites_exact_versions() {
         let Outcome::Visited(v) = &hits.iter().find(|s| s.address == B).unwrap().outcome else {
             panic!("visited")
         };
-        assert!(pages.text_of(&source_id(OWNER, chartulary::resource_id(B)), &v.retained_version).is_some());
+        assert!(pages.text_of(&source_id(OWNER, portolan::resource_id(B)), &v.retained_version).is_some());
         assert!(!v.passages.is_empty());
     });
 }
@@ -152,7 +152,7 @@ fn suggestions_come_from_existing_concepts_and_skip_pages_that_hold_them() {
             assert!(!row.evidence.is_empty() && row.review == Review::Unreviewed);
         }
         let scoped: std::collections::BTreeSet<_> =
-            [source_id(OWNER, chartulary::resource_id(B))].into();
+            [source_id(OWNER, portolan::resource_id(B))].into();
         let one = suggest::produce(&pages, &facts, Some(&scoped), "run-1").unwrap();
         assert_eq!(one.suggestions.len(), 1);
     });

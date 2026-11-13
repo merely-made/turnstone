@@ -201,7 +201,7 @@ pub fn sync_canvas_metadata_from_graph(
             .map(|edge| edge.to_node_id.clone())
             .collect();
         for record in &from.resources {
-            let id = chartulary::resource_id_from_canonical_iri(&record.canonical_iri).to_string();
+            let id = portolan::resource_id_from_canonical_iri(&record.canonical_iri).to_string();
             if id == resource_id || targets.contains(&id) {
                 deltas.push(CapturedDelta::ReplaySetResourceRecordById {
                     resource_id: id,

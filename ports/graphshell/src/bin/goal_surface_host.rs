@@ -124,7 +124,7 @@ fn main() {
         let start_index = pages
             .sources()
             .iter()
-            .position(|(source, _)| *source == goal_surface::source_id(fixture::OWNER, chartulary::resource_id(fixture::INDEX)))
+            .position(|(source, _)| *source == goal_surface::source_id(fixture::OWNER, portolan::resource_id(fixture::INDEX)))
             .expect("fixture index page");
         hooks.after_frame = Box::new(move |ctx| {
             let completed = pending.borrow_mut().as_mut().and_then(|(_, _, job)| job.poll());

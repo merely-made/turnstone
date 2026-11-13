@@ -91,7 +91,7 @@ pub fn rebuild(
             denizens.authority.adopt(cert);
         }
         let label = app_facets
-            .get(&member, &chartulary::FacetId::new("scenario.label"))
+            .get(&member, &portolan::FacetId::new("scenario.label"))
             .and_then(|v| v.as_str().map(str::to_string))
             .unwrap_or_else(|| log_id[..8.min(log_id.len())].to_string());
         let body = resident_body(app_facets, member, session_dir);

@@ -64,7 +64,7 @@ pub(crate) fn copy_session_component(
         .resources
         .into_iter()
         .filter(|record| {
-            resources.contains(&chartulary::resource_id_from_canonical_iri(
+            resources.contains(&portolan::resource_id_from_canonical_iri(
                 &record.canonical_iri,
             ))
         })

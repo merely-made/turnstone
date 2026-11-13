@@ -5,7 +5,7 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use chartulary::FacetId;
+use portolan::FacetId;
 use cartography::canvas::Canvas;
 use kernel::graph::Graph;
 use kernel::graph::apply::{GraphDelta, GraphDeltaResult, apply_graph_delta};
@@ -159,7 +159,7 @@ mod tests {
                 id,
                 FacetId::new("test.owner"),
                 serde_json::json!("value"),
-                &chartulary::AcceptAll,
+                &portolan::AcceptAll,
             )
         })
         .unwrap();

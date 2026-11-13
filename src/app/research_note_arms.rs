@@ -64,7 +64,7 @@ impl App {
                 if let Some(value) = runtime
                     .canvas
                     .facets()
-                    .get(&node.id, &chartulary::FacetId::new(NOTE_FACET))
+                    .get(&node.id, &portolan::FacetId::new(NOTE_FACET))
                 {
                     let address = value
                         .as_str()
@@ -118,7 +118,7 @@ impl App {
             let members: Vec<_> = canvas.graph().nodes().map(|(_, n)| n.id).collect();
             if let Err(error) = crate::graph_facets::edit_canvas_facets(canvas, |facets| {
                 for member in members {
-                    facets.remove(&member, &chartulary::FacetId::new(NOTE_FACET));
+                    facets.remove(&member, &portolan::FacetId::new(NOTE_FACET));
                 }
             }) {
                 return self.saved_source_refusal(format!("Research note choice failed: {error}"));
@@ -130,9 +130,9 @@ impl App {
         if let Err(error) = crate::graph_facets::edit_canvas_facets(canvas, |facets| {
             facets.set(
                 choice.member,
-                chartulary::FacetId::new(NOTE_FACET),
+                portolan::FacetId::new(NOTE_FACET),
                 serde_json::Value::String(choice.address.clone()),
-                &chartulary::AcceptAll,
+                &portolan::AcceptAll,
             )
         }) {
             return self.saved_source_refusal(format!("Research note choice failed: {error}"));
@@ -225,9 +225,9 @@ mod tests {
         crate::graph_facets::edit_canvas_facets(graph, |facets| {
             facets.set(
                 b.member,
-                chartulary::FacetId::new(NOTE_FACET),
+                portolan::FacetId::new(NOTE_FACET),
                 serde_json::Value::String(a.address.clone()),
-                &chartulary::AcceptAll,
+                &portolan::AcceptAll,
             )
         })
         .unwrap()

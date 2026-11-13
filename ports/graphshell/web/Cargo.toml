@@ -256,7 +256,10 @@ opt-level = 3
 
 [patch.crates-io]
 # Canonical promoted families; keep registry and Git consumers type-identical.
-chartulary = { git = "https://github.com/merely-made/eidetic.git", branch = "main" }
+fieldbook = { git = "https://github.com/merely-made/eidetic.git", branch = "main" }
+hodograph = { git = "https://github.com/merely-made/eidetic.git", branch = "main" }
+portolan = { git = "https://github.com/merely-made/eidetic.git", branch = "main" }
+quadstore = { git = "https://github.com/merely-made/eidetic.git", branch = "main" }
 eidetic = { git = "https://github.com/merely-made/eidetic.git", branch = "main" }
 mere-proofs = { git = "https://github.com/merely-made/eidetic.git", branch = "main" }
 servitor = { git = "https://github.com/merely-made/eidetic.git", branch = "main" }

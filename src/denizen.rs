@@ -33,7 +33,7 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-use chartulary::{Container, GraphLog, Relation};
+use portolan::{Container, GraphLog, Relation};
 use identity::IdentityProvider;
 use insigne::delegation::SignedDelegationCertificate;
 use muniment::{Journal, LogId};

@@ -64,7 +64,7 @@ fn source_iri(owner: &Owner, index: usize) -> String {
     )
 }
 fn source_resource(owner: &Owner, index: usize) -> String {
-    chartulary::resource_id_from_canonical_iri(&chartulary::canonical_url(&source_iri(
+    portolan::resource_id_from_canonical_iri(&portolan::canonical_url(&source_iri(
         owner, index,
     )))
     .to_string()

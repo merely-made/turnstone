@@ -338,7 +338,7 @@ impl App {
         let facet = |id: &str| {
             self.graph_runtimes
                 .facets()
-                .get(&member, &chartulary::FacetId::new(id))
+                .get(&member, &portolan::FacetId::new(id))
                 .and_then(|v| v.as_str().map(str::to_string))
         };
         // Which lane runs this resident is a property of what it IS

@@ -7,7 +7,7 @@
 use graphshell_host::goal_surface::fixture::{self, HOTEL, INDEX, OWNER, STARTER, STARTER_V1, TRAVEL};
 use super::*;
 use graphshell_host::goal_surface::{RetainedPages, resource_of, source_id};
-use chartulary::resource_id;
+use portolan::resource_id;
 use eidetic::models::recall::{RecallSourceId, RecallSourceKind};
 use eidetic_search::goal::GoalVerdict;
 use fleece::retained_traversal::{RetainedProvider, RetainedStop};

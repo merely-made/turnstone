@@ -10,7 +10,7 @@
 use graphshell_host::goal_surface::fixture::{self, INDEX, OWNER, TRAVEL};
 use super::model_path::{Embedder, ModelState, calibrated, real_loader};
 use super::*;
-use chartulary::resource_id;
+use portolan::resource_id;
 use cambium::{DomHandle, GenetAppRunner, PointerClick};
 use eidetic::models::embedding::{EmbeddingComponentV1, EmbeddingCorpusV1, EmbeddingEnvelopeV1, EmbeddingMetric, EmbeddingSpaceV1};
 use eidetic_search::goal::GoalVerdict;

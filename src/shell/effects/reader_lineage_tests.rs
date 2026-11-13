@@ -19,7 +19,7 @@ fn reader_lineage_projects_and_reextract_updates_the_node_facet() {
         block_count: 3,
     };
     project_reader_lineage_facet(&mut app, node, Some(&lineage));
-    let facet = chartulary::FacetId::new(crate::content::READER_LINEAGE_FACET);
+    let facet = portolan::FacetId::new(crate::content::READER_LINEAGE_FACET);
     assert_eq!(
         app.graph_runtimes.facets().get(&node, &facet).unwrap()["version"],
         "0.1.0"

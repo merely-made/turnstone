@@ -796,7 +796,7 @@ mod tests {
             let value = reopened
                 .graph()
                 .facets()
-                .get(&node.id, &chartulary::FacetId::new(PINNED_PROJECTION_FACET))
+                .get(&node.id, &portolan::FacetId::new(PINNED_PROJECTION_FACET))
                 .expect("pinned projection facet");
             let pinned: PinnedProjectionCardV1 =
                 serde_json::from_value(value.clone()).expect("typed pinned projection");

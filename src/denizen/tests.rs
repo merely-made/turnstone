@@ -94,13 +94,13 @@ fn a_legacy_binding_rebuilds_and_asks_for_a_heal() {
     store
         .set(
             member,
-            chartulary::FacetId::new(crate::denizen::denizen_facets::DENIZEN_BINDING),
+            portolan::FacetId::new(crate::denizen::denizen_facets::DENIZEN_BINDING),
             serde_json::json!({
                 "subject": "aa".repeat(32),
                 "nested_log": "aa".repeat(32),
                 "kind": "scenario",
             }),
-            &chartulary::AcceptAll,
+            &portolan::AcceptAll,
         )
         .unwrap();
 

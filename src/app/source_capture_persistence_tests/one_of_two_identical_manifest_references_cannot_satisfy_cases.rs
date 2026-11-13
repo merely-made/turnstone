@@ -254,7 +254,7 @@ fn session_fork_carries_evidence_and_foreign_facets_without_copying_capture_oper
             .facets()
             .get(
                 &child_node,
-                &chartulary::FacetId::new("capture.source-requests/v1")
+                &portolan::FacetId::new("capture.source-requests/v1")
             )
             .is_none(),
         "copied evidence is not admission of the donor's request into the new session"
@@ -262,7 +262,7 @@ fn session_fork_carries_evidence_and_foreign_facets_without_copying_capture_oper
     assert_eq!(
         child
             .facets()
-            .get(&child_node, &chartulary::FacetId::new(foreign_facet)),
+            .get(&child_node, &portolan::FacetId::new(foreign_facet)),
         Some(&foreign_value)
     );
 
@@ -300,7 +300,7 @@ fn session_fork_carries_evidence_and_foreign_facets_without_copying_capture_oper
     assert_eq!(
         app.graph_runtimes
             .facets()
-            .get(&child_node, &chartulary::FacetId::new(foreign_facet)),
+            .get(&child_node, &portolan::FacetId::new(foreign_facet)),
         Some(&foreign_value)
     );
 
@@ -318,14 +318,14 @@ fn session_fork_carries_evidence_and_foreign_facets_without_copying_capture_oper
     assert_eq!(
         donor.facets().get(
             &donor_node,
-            &chartulary::FacetId::new("capture.source-requests/v1")
+            &portolan::FacetId::new("capture.source-requests/v1")
         ),
         Some(&donor_ledger)
     );
     assert_eq!(
         donor
             .facets()
-            .get(&donor_node, &chartulary::FacetId::new(foreign_facet)),
+            .get(&donor_node, &portolan::FacetId::new(foreign_facet)),
         Some(&foreign_value)
     );
 }

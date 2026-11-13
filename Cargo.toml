@@ -113,7 +113,7 @@ moot-port = { package = "mere-moot", git = "https://github.com/merely-made/graph
 stickleback = { git = "https://github.com/merely-made/eidetic.git", branch = "main", optional = true }
 muniment = { features = ["redb", "fjall"], git = "https://github.com/merely-made/eidetic.git", branch = "main" }
 proofs = { package = "mere-proofs", git = "https://github.com/merely-made/eidetic.git", branch = "main" }
-chartulary = { git = "https://github.com/merely-made/eidetic.git", branch = "main" }
+portolan = { git = "https://github.com/merely-made/eidetic.git", branch = "main" }
 # Participant subjects are content-derived: blake3(source) is the 32-byte keyholder.
 blake3 = "1"
 
@@ -459,7 +459,10 @@ document-session-api = { git = "https://github.com/merely-made/genet.git", branc
 esp = { git = "https://github.com/merely-made/distillery.git", branch = "main" }
 # Canonical promoted families; keep registry and Git consumers type-identical.
 armillary = { git = "https://github.com/merely-made/armillary.git", branch = "main" }
-chartulary = { git = "https://github.com/merely-made/eidetic.git", branch = "main" }
+fieldbook = { git = "https://github.com/merely-made/eidetic.git", branch = "main" }
+hodograph = { git = "https://github.com/merely-made/eidetic.git", branch = "main" }
+portolan = { git = "https://github.com/merely-made/eidetic.git", branch = "main" }
+quadstore = { git = "https://github.com/merely-made/eidetic.git", branch = "main" }
 commons-spine = { git = "https://github.com/merely-made/gemot.git", branch = "main" }
 eidetic = { git = "https://github.com/merely-made/eidetic.git", branch = "main" }
 errand = { git = "https://github.com/merely-made/errand.git", branch = "main" }
@@ -592,7 +595,8 @@ block-host = { version = "0.0.1", git = "https://github.com/merely-made/graphshe
 cambium-a11y = { version = "0.3.0", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 cartography = { package = "mere-cartography", version = "0.0.2", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 castellan-client = { version = "0.0.2", git = "https://github.com/merely-made/dramatis.git", branch = "main", default-features = false }
-chartulary = { version = "0.3.0", git = "https://github.com/merely-made/eidetic.git", branch = "main" }
+hodograph = { version = "0.1.0", git = "https://github.com/merely-made/eidetic.git", branch = "main" }
+portolan = { version = "0.1.0", git = "https://github.com/merely-made/eidetic.git", branch = "main" }
 chatelaine = { version = "0.0.3", git = "https://github.com/merely-made/dramatis.git", branch = "main" }
 chirograph = { version = "0.0.5", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 comms = { package = "mere-comms", version = "0.0.1", git = "https://github.com/merely-made/murm.git", branch = "main" }

@@ -19,9 +19,9 @@ pub(super) fn project_reader_lineage_facet(
     if let Err(error) = app.graph_runtimes.edit_facets(|facets| {
         facets.set(
             node,
-            chartulary::FacetId::new(crate::content::READER_LINEAGE_FACET),
+            portolan::FacetId::new(crate::content::READER_LINEAGE_FACET),
             value,
-            &chartulary::AcceptAll,
+            &portolan::AcceptAll,
         )
     }) {
         tracing::warn!(%node, %error, "could not project reader extraction lineage facet");

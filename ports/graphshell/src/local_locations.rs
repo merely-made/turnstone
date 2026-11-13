@@ -47,7 +47,7 @@ pub fn withhold_snapshot_locations(snapshot: &mut GraphSnapshot) {
         .resources
         .iter()
         .filter(|record| is_local_file_location(&record.canonical_iri))
-        .map(|record| chartulary::resource_id_from_canonical_iri(&record.canonical_iri).to_string())
+        .map(|record| portolan::resource_id_from_canonical_iri(&record.canonical_iri).to_string())
         .collect();
     snapshot
         .resources

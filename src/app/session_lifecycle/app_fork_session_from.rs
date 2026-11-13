@@ -112,7 +112,7 @@ impl App {
             cartography::saved_scene::write_saved_scene(&mut fork_facets, *fork_graph_id.as_uuid(), &carried);
         }
         let derivation_facet =
-            chartulary::FacetId::new(kernel::graph::node_facets::PROVENANCE_DERIVATIONS);
+            portolan::FacetId::new(kernel::graph::node_facets::PROVENANCE_DERIVATIONS);
         let copied_derivations = copy
             .id_remap
             .iter()
@@ -129,7 +129,7 @@ impl App {
             return vec![Effect::Redraw];
         }
         let import_facet =
-            chartulary::FacetId::new(kernel::graph::node_facets::PROVENANCE_IMPORT);
+            portolan::FacetId::new(kernel::graph::node_facets::PROVENANCE_IMPORT);
         if let Err(error) = crate::graph_facets::edit_graph_facets(&mut fork_graph, |facets| {
             for (_, minted) in &copy.id_remap {
                 facets.remove(minted, &import_facet);
@@ -141,7 +141,7 @@ impl App {
                         minted,
                         derivation_facet.clone(),
                         value,
-                        &chartulary::AcceptAll,
+                        &portolan::AcceptAll,
                     )
                     .expect("AcceptAll cannot reject copied derivation");
             }

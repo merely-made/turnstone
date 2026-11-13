@@ -105,9 +105,9 @@ fn swapped_script_body_is_refused_before_runtime_execution() {
         .edit_facets(|facets| {
             facets.set(
                 member,
-                chartulary::FacetId::new(crate::denizen::SCENARIO_SOURCE_FACET),
+                portolan::FacetId::new(crate::denizen::SCENARIO_SOURCE_FACET),
                 serde_json::json!("mere.open('mere://swapped')"),
-                &chartulary::AcceptAll,
+                &portolan::AcceptAll,
             )
         })
         .unwrap()

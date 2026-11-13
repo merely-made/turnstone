@@ -325,7 +325,7 @@ fn binary_page_response_becomes_durable_download_custody() {
             .any(|effect| matches!(effect, Effect::SpawnContent { .. })),
         "a binary response must not be sent to a document engine"
     );
-    let facet = chartulary::FacetId::new(crate::content_classes::DOWNLOAD_FACET);
+    let facet = portolan::FacetId::new(crate::content_classes::DOWNLOAD_FACET);
     let pending = app.graph_runtimes.facets().get(&node, &facet).unwrap();
     assert_eq!(pending["status"], "storing");
     assert_eq!(pending["byte_size"], bytes.len() as u64);

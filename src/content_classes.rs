@@ -7,11 +7,11 @@
 //! Turnstone's built-in content classes, defined through the same data and
 //! schema seams a pack uses.
 
-use chartulary::{
-    CLASS_FACET, ClassError, ClassMembership, ClassRegistry, ContentClass, FacetError, FacetId,
-};
 use eidetic::schema_facets::SchemaFacetValidator;
 use eidetic::{MereNativeFieldSpec, MereNativeSchemaBuilder, SchemaDefinition, SchemaFormat};
+use portolan::{
+    CLASS_FACET, ClassError, ClassMembership, ClassRegistry, ContentClass, FacetError, FacetId,
+};
 use serde_json::json;
 
 pub(crate) const WEB_PAGE_CLASS: &str = "turnstone.web-page";
@@ -334,7 +334,7 @@ pub(crate) fn set_download_record(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use chartulary::ClassMembership;
+    use portolan::ClassMembership;
 
     #[test]
     fn web_and_note_classes_coexist_and_are_admitted_in_one_graph() {

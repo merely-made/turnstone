@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 //! Product controls belong to one Surface independently of shown content.
-use chartulary::{AcceptAll, FacetId};
+use portolan::{AcceptAll, FacetId};
 use cartography::canvas::Canvas;
 use kernel::graph::{Graph, NodeFacetStore};
 use kernel::persistence::GraphSnapshot;

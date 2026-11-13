@@ -53,9 +53,7 @@ impl App {
             for node in nodes {
                 let Some(value) = runtime.canvas.facets().get(
                     &node.id,
-                    &chartulary::FacetId::new(
-                        crate::source_capture::SOURCE_CAPTURE_REFERENCES_FACET,
-                    ),
+                    &portolan::FacetId::new(crate::source_capture::SOURCE_CAPTURE_REFERENCES_FACET),
                 ) else {
                     continue;
                 };

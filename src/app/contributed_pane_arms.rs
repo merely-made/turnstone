@@ -450,7 +450,7 @@ mod research_view_tests {
                 for target in &chosen {
                     facets.remove(
                         &target.node(),
-                        &chartulary::FacetId::new(
+                        &portolan::FacetId::new(
                             crate::source_capture::SOURCE_CAPTURE_REFERENCES_FACET,
                         ),
                     );

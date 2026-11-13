@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 use super::*;
-use chartulary::{Author, Container};
+use portolan::{Author, Container};
 use commons::chat::{Channel, ChatEvent, Message};
 use fleece::FleeceAnnotationRecord;
 use fleece::eidetic_bridge::{CaptureIdentity, FLEECE_ANNOTATION_SCHEMA_ID};

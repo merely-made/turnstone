@@ -7,7 +7,7 @@ use crate::action::{Action, Effect, StoredSourceDocument, Update};
 use crate::observe::AppEvent;
 use crate::source_capture::{CapturePhase, CaptureRequest, SourceCaptureTarget};
 use crate::{session, source_capture, surface_controls};
-use chartulary::{AcceptAll, FacetId};
+use portolan::{AcceptAll, FacetId};
 use std::path::Path;
 
 const URL_A: &str = "https://r1-keep.example/a";

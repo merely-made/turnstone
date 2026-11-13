@@ -251,9 +251,9 @@ impl App {
                 if let Err(error) = self.graph_runtimes.edit_facets(|facets| {
                     facets.set(
                         member,
-                        chartulary::FacetId::new(facet_id.as_str()),
+                        portolan::FacetId::new(facet_id.as_str()),
                         value.clone(),
-                        &chartulary::AcceptAll,
+                        &portolan::AcceptAll,
                     )
                 }) {
                     tracing::warn!(%member, %error, "could not restore a retained node facet");

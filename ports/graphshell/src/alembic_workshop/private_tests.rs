@@ -393,7 +393,7 @@ fn sealed_graphshell_owner_refuses_operation_evidence_rewrite() {
                 .any(|f| f.facet == "mere.alembic.evidence-brief.sealed-operation/v1")
         })
         .unwrap();
-    let resource = chartulary::resource_id_from_canonical_iri(&operation.canonical_iri);
+    let resource = portolan::resource_id_from_canonical_iri(&operation.canonical_iri);
     assert!(
         pollster::block_on(owner.host.workshop_seed(vec![
             GraphDelta::ReplaySetResourceRecordById {

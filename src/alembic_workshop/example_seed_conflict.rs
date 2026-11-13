@@ -10,8 +10,8 @@ pub(crate) fn example_seed_conflict(graph: &Graph) -> bool {
             "turnstone://alembic-example/{}/{}",
             example.family, example.version
         );
-        let canonical = chartulary::canonical_url(&url);
-        let resource = chartulary::resource_id_from_canonical_iri(&canonical);
+        let canonical = portolan::canonical_url(&url);
+        let resource = portolan::resource_id_from_canonical_iri(&canonical);
         snapshot
             .nodes
             .iter()

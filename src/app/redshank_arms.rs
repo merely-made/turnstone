@@ -11,7 +11,7 @@
 //! dock's commands, and projecting one library item, its progress, and its
 //! notes into the graph so they reopen after a restart.
 
-use chartulary::FacetId;
+use portolan::FacetId;
 use redshank_model::ItemId;
 use redshank_surfaces::{CompactCommand, CompactPlayerState};
 use serde_json::json;

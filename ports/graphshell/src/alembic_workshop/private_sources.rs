@@ -36,8 +36,8 @@ fn identity(owner: &Owner, surface: Uuid) -> (String, Uuid, Vec<u8>) {
         "mere://alembic-private-source/{}/{surface}",
         namespace.to_hex()
     );
-    let canonical = chartulary::canonical_url(&iri);
-    let resource = chartulary::resource_id_from_canonical_iri(&canonical);
+    let canonical = portolan::canonical_url(&iri);
+    let resource = portolan::resource_id_from_canonical_iri(&canonical);
     let context =
         serde_json::to_vec(&(FACET, owner, surface, resource)).expect("identity serializes");
     (canonical, resource, context)

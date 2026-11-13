@@ -69,9 +69,9 @@ pub fn install(app: &mut App, pending: PendingInstall) -> Result<Uuid, String> {
                 .edit_facets(|facets| {
                     facets.set(
                         member,
-                        chartulary::FacetId::new(SCENARIO_SOURCE_FACET),
+                        portolan::FacetId::new(SCENARIO_SOURCE_FACET),
                         serde_json::json!(source),
-                        &chartulary::AcceptAll,
+                        &portolan::AcceptAll,
                     )
                 })
                 .map_err(|error| format!("cannot store participant source: {error}"))?
@@ -92,9 +92,9 @@ pub fn install(app: &mut App, pending: PendingInstall) -> Result<Uuid, String> {
                         .edit_facets(|facets| {
                             facets.set(
                                 member,
-                                chartulary::FacetId::new(COMPONENT_FACET),
+                                portolan::FacetId::new(COMPONENT_FACET),
                                 serde_json::json!(file),
-                                &chartulary::AcceptAll,
+                                &portolan::AcceptAll,
                             )
                         })
                         .map_err(|error| format!("cannot store component reference: {error}"))?
@@ -110,9 +110,9 @@ pub fn install(app: &mut App, pending: PendingInstall) -> Result<Uuid, String> {
         .edit_facets(|facets| {
             facets.set(
                 member,
-                chartulary::FacetId::new("scenario.label"),
+                portolan::FacetId::new("scenario.label"),
                 serde_json::json!(pending.label),
-                &chartulary::AcceptAll,
+                &portolan::AcceptAll,
             )
         })
         .map_err(|error| format!("cannot store participant label: {error}"))?

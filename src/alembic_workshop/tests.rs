@@ -547,7 +547,7 @@ fn private_passage_freshness_requires_the_current_saved_source_admission() {
         |facets| {
             facets.remove(
                 &node,
-                &chartulary::FacetId::new(crate::source_capture::SOURCE_CAPTURE_REFERENCES_FACET),
+                &portolan::FacetId::new(crate::source_capture::SOURCE_CAPTURE_REFERENCES_FACET),
             );
             Ok::<(), String>(())
         },

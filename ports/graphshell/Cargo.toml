@@ -183,7 +183,8 @@ web = [
     # The canvas's producer semantics for a screen reader (`canvas_reader`;
     # dynamics grammar plan, F67).
     "dep:cambium-rootstock",
-    "dep:chartulary",
+    "dep:hodograph",
+    "dep:portolan",
     "dep:eidetic",
     "dep:kernel",
     "dep:cartography",
@@ -251,7 +252,8 @@ insigne = { workspace = true, features = ["verify"] }
 async-trait = { version = "0.1", optional = true }
 cambium-rootstock = { workspace = true, optional = true }
 base64.workspace = true
-chartulary = { workspace = true, optional = true }
+hodograph = { workspace = true, optional = true }
+portolan = { workspace = true, optional = true }
 distillery = { workspace = true, optional = true }
 eidetic = { workspace = true, optional = true }
 graphshell-client.workspace = true

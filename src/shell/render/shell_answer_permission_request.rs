@@ -183,9 +183,9 @@ impl Shell {
         if let Err(error) = self.app.graph_runtimes.edit_facets(|facets| {
             facets.set(
                 node,
-                chartulary::FacetId::new(crate::web_policy::USER_AGENT_POLICY_FACET),
+                portolan::FacetId::new(crate::web_policy::USER_AGENT_POLICY_FACET),
                 value,
-                &chartulary::AcceptAll,
+                &portolan::AcceptAll,
             )
         }) {
             tracing::warn!(%node, %error, "could not project user-agent policy summary facet");

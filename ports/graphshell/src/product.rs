@@ -8,7 +8,7 @@
 
 use std::collections::{BTreeMap, BTreeSet, HashSet};
 
-use chartulary::AcceptAll;
+use portolan::AcceptAll;
 use chirograph::{PortableCardV1, Sha256NamedInformation};
 use cartography::canvas::saved_scene::{self, SceneReadError};
 use kernel::geometry::PortablePoint;
@@ -776,7 +776,7 @@ pub(crate) fn product_import_edits(
     for record in &target.resources {
         if !current.resources.contains(record) {
             edits.push(CapturedDelta::ReplaySetResourceRecordById {
-                resource_id: chartulary::resource_id_from_canonical_iri(&record.canonical_iri)
+                resource_id: portolan::resource_id_from_canonical_iri(&record.canonical_iri)
                     .to_string(),
                 record: Some(record.clone()),
             });
@@ -971,7 +971,7 @@ fn filtered_snapshot(graph: &Graph, members: &HashSet<Uuid>, exported_at_ms: u64
                 .any(|facet| facet.facet == PREDICATE_DECLARATIONS_FACET)
         })
         .map(|resource| {
-            chartulary::resource_id_from_canonical_iri(&resource.canonical_iri).to_string()
+            portolan::resource_id_from_canonical_iri(&resource.canonical_iri).to_string()
         })
         .collect();
     resource_ids.extend(
@@ -980,7 +980,7 @@ fn filtered_snapshot(graph: &Graph, members: &HashSet<Uuid>, exported_at_ms: u64
             .filter_map(|id| graph.get_node_key_by_id(*id))
             .flat_map(|key| graph.node_properties(key).unwrap_or_default())
             .map(|property| {
-                chartulary::resource_id_from_canonical_iri(&property.predicate).to_string()
+                portolan::resource_id_from_canonical_iri(&property.predicate).to_string()
             })
             .filter(|id| declaration_ids.contains(id)),
     );
@@ -993,7 +993,7 @@ fn filtered_snapshot(graph: &Graph, members: &HashSet<Uuid>, exported_at_ms: u64
             }))
             .flat_map(|edge| edge.retained_assertions())
             .map(|statement| {
-                chartulary::resource_id_from_canonical_iri(&statement.predicate).to_string()
+                portolan::resource_id_from_canonical_iri(&statement.predicate).to_string()
             })
             .filter(|id| declaration_ids.contains(id))
             .collect();
@@ -1003,7 +1003,7 @@ fn filtered_snapshot(graph: &Graph, members: &HashSet<Uuid>, exported_at_ms: u64
                 .iter()
                 .filter(|resource| {
                     resource_ids.contains(
-                        &chartulary::resource_id_from_canonical_iri(&resource.canonical_iri)
+                        &portolan::resource_id_from_canonical_iri(&resource.canonical_iri)
                             .to_string(),
                     )
                 })
@@ -1013,7 +1013,7 @@ fn filtered_snapshot(graph: &Graph, members: &HashSet<Uuid>, exported_at_ms: u64
                     serde_json::from_str::<Vec<NodeProperty>>(&facet.value_json).unwrap_or_default()
                 })
                 .map(|property| {
-                    chartulary::resource_id_from_canonical_iri(&property.predicate).to_string()
+                    portolan::resource_id_from_canonical_iri(&property.predicate).to_string()
                 })
                 .filter(|id| declaration_ids.contains(id)),
         );
@@ -1025,7 +1025,7 @@ fn filtered_snapshot(graph: &Graph, members: &HashSet<Uuid>, exported_at_ms: u64
     }
     snapshot.resources.retain(|resource| {
         resource_ids.contains(
-            &chartulary::resource_id_from_canonical_iri(&resource.canonical_iri).to_string(),
+            &portolan::resource_id_from_canonical_iri(&resource.canonical_iri).to_string(),
         )
     });
     snapshot.resource_edges.retain(|edge| {
@@ -1387,7 +1387,7 @@ mod tests {
         let history = |codicil: &ProductCodicilV3, id: Uuid| {
             codicil
                 .facets
-                .get(&id, &chartulary::FacetId::new(ACCESS_HISTORY_FACET))
+                .get(&id, &portolan::FacetId::new(ACCESS_HISTORY_FACET))
                 .map(|value| {
                     serde_json::from_value::<AccessHistory>(value.clone())
                         .unwrap()
@@ -1397,7 +1397,7 @@ mod tests {
         let local_facet = |codicil: &ProductCodicilV3| {
             codicil
                 .facets
-                .get(&file, &chartulary::FacetId::new(LOCAL_FILE_FACET))
+                .get(&file, &portolan::FacetId::new(LOCAL_FILE_FACET))
                 .is_some()
         };
 
@@ -1581,7 +1581,7 @@ mod tests {
         ];
         let ids: Vec<_> = iris
             .iter()
-            .map(|iri| chartulary::resource_id_from_canonical_iri(iri).to_string())
+            .map(|iri| portolan::resource_id_from_canonical_iri(iri).to_string())
             .collect();
         let mut snapshot = graph.to_snapshot();
         snapshot.resources = iris
@@ -1902,7 +1902,7 @@ mod tests {
         const RESOURCE_LITERAL: &str = "https://vocab.test/predicates#resource-literal";
         const OUTSIDE: &str = "https://vocab.test/predicates#outside";
         const UNRELATED: &str = "https://vocab.test/predicates#Surface";
-        let id = |iri: &str| chartulary::resource_id_from_canonical_iri(iri).to_string();
+        let id = |iri: &str| portolan::resource_id_from_canonical_iri(iri).to_string();
         let (graph, surfaces, exact_tag) = resource_selection_graph();
         let mut source = graph.to_snapshot();
         for predicate in [
@@ -2099,7 +2099,7 @@ mod tests {
             "induced claims carry their declarations"
         );
         assert!(Graph::try_from_snapshot(&exported).is_ok());
-        let property_facet = chartulary::FacetId::new(SEMANTIC_PROPERTIES);
+        let property_facet = portolan::FacetId::new(SEMANTIC_PROPERTIES);
         let exported_facets = filtered_facets(graph.facets(), &members, false);
         assert_eq!(
             exported_facets.get(&surfaces[0], &property_facet),
@@ -2164,18 +2164,18 @@ mod tests {
                 .facets
                 .set(
                     surfaces[0],
-                    chartulary::FacetId::new(SEMANTIC_PROPERTIES),
+                    portolan::FacetId::new(SEMANTIC_PROPERTIES),
                     serde_json::to_value(vec![property.clone(), property]).unwrap(),
-                    &chartulary::AcceptAll,
+                    &portolan::AcceptAll,
                 )
                 .unwrap();
             product
                 .facets
                 .set(
                     surfaces[0],
-                    chartulary::FacetId::new("extension.origin-note"),
+                    portolan::FacetId::new("extension.origin-note"),
                     serde_json::json!({"statement_id": held}),
-                    &chartulary::AcceptAll,
+                    &portolan::AcceptAll,
                 )
                 .unwrap();
             let bytes = serde_json::to_vec(&ProfiledProductCodicil {
@@ -2228,7 +2228,7 @@ mod tests {
                 assert_eq!(
                     restored.facets().get(
                         &surfaces[0],
-                        &chartulary::FacetId::new("extension.origin-note")
+                        &portolan::FacetId::new("extension.origin-note")
                     ),
                     Some(&serde_json::json!({"statement_id": held}))
                 );
@@ -2454,7 +2454,7 @@ mod tests {
             .iter()
             .find(|record| record.canonical_iri == IMPORT_PREDICATE)
             .unwrap();
-        let resource_id = chartulary::resource_id_from_canonical_iri(IMPORT_PREDICATE);
+        let resource_id = portolan::resource_id_from_canonical_iri(IMPORT_PREDICATE);
         let resource = host.graph().resource(resource_id).unwrap();
         assert_eq!(resource.id(), resource_id);
         assert_eq!(resource.canonical_iri(), IMPORT_PREDICATE);

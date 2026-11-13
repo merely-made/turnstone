@@ -48,7 +48,7 @@ fn the_goal_surface_runs_unchanged_over_pages_rebuilt_from_the_door_reply() {
         .expect("the starter page is read");
     assert!(matches!(cited.outcome, Outcome::Visited(_)));
     // Both versions of the earlier-captured page travelled.
-    let page = chartulary::resource_id(STARTER).to_string();
+    let page = portolan::resource_id(STARTER).to_string();
     let wire_page = reply.pages.iter().find(|p| p.id == page).unwrap();
     assert_eq!(wire_page.versions.len(), 2);
     assert_eq!(wire_page.versions[0].version, wire_page.current);

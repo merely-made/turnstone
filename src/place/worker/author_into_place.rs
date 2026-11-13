@@ -117,8 +117,8 @@ pub(super) fn author_into_place(
                 .unwrap_or_else(|| address.clone());
             let operation = pollster::block_on(open.graph.edit(move |log| {
                 log.insert_node(
-                    &chartulary::Author::new("turnstone"),
-                    chartulary::Container::new(address.clone()).with_address(address),
+                    &portolan::Author::new("turnstone"),
+                    portolan::Container::new(address.clone()).with_address(address),
                 );
             }))
             .map_err(|error| format!("author shared node: {error}"))?;

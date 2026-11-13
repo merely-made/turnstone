@@ -77,7 +77,7 @@ pub(super) fn graph_members(
     for (_, node) in graph.nodes() {
         if let Some(value) = graph.facets().get(
             &node.id,
-            &chartulary::FacetId::new(crate::source_capture::SOURCE_CAPTURE_REFERENCES_FACET),
+            &portolan::FacetId::new(crate::source_capture::SOURCE_CAPTURE_REFERENCES_FACET),
         ) {
             let values = value.as_array().ok_or("malformed capture references")?;
             for (occurrence, value) in values.iter().enumerate() {

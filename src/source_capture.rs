@@ -10,7 +10,7 @@
 //! manifest identities in append order, so it can select a node's captures
 //! after restart without reconstructing an association by scanning Eidetic.
 
-use chartulary::{AcceptAll, FacetError, FacetId};
+use portolan::{AcceptAll, FacetError, FacetId};
 use serde::{Deserialize, Serialize};
 
 /// Identity of the acquired response, independent of the current URL/cursor.

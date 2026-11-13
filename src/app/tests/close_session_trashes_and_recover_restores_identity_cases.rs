@@ -416,7 +416,7 @@ fn a_component_denizen_acts_only_within_its_reviewed_rings() {
         .facets()
         .get(
             &member,
-            &chartulary::FacetId::new(crate::denizen::COMPONENT_FACET),
+            &portolan::FacetId::new(crate::denizen::COMPONENT_FACET),
         )
         .and_then(|v| v.as_str().map(str::to_string))
         .expect("the component facet points at the stored bytes");

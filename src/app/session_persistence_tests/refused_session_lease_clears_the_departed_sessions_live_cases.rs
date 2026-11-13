@@ -98,9 +98,9 @@ fn canonical_facet_roundtrip_preserves_destination_revision_and_absent_defaults(
             facets
                 .set(
                     member,
-                    chartulary::FacetId::new("foreign.roundtrip"),
+                    portolan::FacetId::new("foreign.roundtrip"),
                     serde_json::json!({"retained": true}),
-                    &chartulary::AcceptAll,
+                    &portolan::AcceptAll,
                 )
                 .unwrap();
             crate::surface_controls::set_facets(
@@ -179,7 +179,7 @@ fn canonical_false_control_survives_legacy_label_migration_without_default_facet
             .facets()
             .get(
                 &member,
-                &chartulary::FacetId::new(kernel::graph::node_facets::VISIT_HISTORY)
+                &portolan::FacetId::new(kernel::graph::node_facets::VISIT_HISTORY)
             )
             .is_none(),
         "migration cannot invent a visit absent from the authoritative sidecar"

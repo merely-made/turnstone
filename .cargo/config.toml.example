@@ -71,7 +71,6 @@ p2panda-sync = { path = "../../crates/p2panda/p2panda-sync" }
 "cambium" = { path = "../mere/crates/cambium/cambium" }
 "cambium-winit" = { path = "../mere/crates/cambium/cambium-winit" }
 "castellan" = { path = "../mere/ports/castellan" }
-"chartulary" = { path = "../mere/crates/eidetic/chartulary" }
 "commons-spine" = { path = "../mere/crates/moot/commons" }
 "distillery" = { path = "../mere/ports/distillery" }
 "document-canvas" = { path = "../mere/crates/inker/document-canvas" }
@@ -148,6 +147,13 @@ p2panda-sync = { path = "../../crates/p2panda/p2panda-sync" }
 "mesquite" = { path = "../mere/crates/cambium/mesquite" }
 "cambium-genet-winit-host" = { path = "../mere/crates/cambium/cambium-genet-winit-host" }
 "cambium-rootstock" = { path = "../mere/crates/cambium/cambium-rootstock" }
+
+# Local eidetic packages: chartulary split into these four (portolan plan).
+[patch."https://github.com/merely-made/eidetic.git"]
+"fieldbook" = { path = "../eidetic/crates/fieldbook" }
+"hodograph" = { path = "../eidetic/crates/hodograph" }
+"portolan" = { path = "../eidetic/crates/portolan" }
+"quadstore" = { path = "../eidetic/crates/quadstore" }
 
 # The host/guest contract crates live in the graphshell repository (bottom
 # protocol layer), beside this checkout as `../graphshell`.
