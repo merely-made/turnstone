@@ -374,9 +374,6 @@ reason = "held by castellan 0.0.4, ssh-key 0.6.7; moves when the holding crates 
 crate = "pastey@0.1.1"
 reason = "held by av-scenechange 0.14.1; gone when its holders move to pastey 0.2.3 (av-scenechange 0.14.1 in the graph, 0.25.0 newest)"
 
-[[bans.skip]]
-crate = "pem@3.0.6"
-reason = "held by rcgen 0.13.2; gone when its holders move to pem 4.0.0 (rcgen 0.13.2 in the graph, 0.14.10 newest)"
 
 [[bans.skip]]
 crate = "pem-rfc7468@0.7.0"
@@ -458,9 +455,6 @@ reason = "held by castellan 0.0.4, crypto-bigint 0.5.5, crypto-common 0.1.7, dji
 crate = "rand_core@0.9.5"
 reason = "held by rand 0.9.5, rand_chacha 0.9.0; gone when its holders move to rand_core 0.10.1 (rand 0.9.5 in the graph, 0.10.3 newest; rand_chacha 0.9.0 in the graph, 0.10.0 newest)"
 
-[[bans.skip]]
-crate = "rcgen@0.13.2"
-reason = "held by gemot-site-host 0.0.1, mere-resident 0.0.2, misfin 0.0.4; moves when the holding crates (git) move to rcgen 0.14.10"
 
 [[bans.skip]]
 crate = "read-fonts@0.41.0"
@@ -690,9 +684,6 @@ reason = "held by wasmtime-internal-component-macro 45.0.3, wasmtime-internal-wi
 crate = "writeable@0.6.2"
 reason = "held by fixed_decimal 0.7.1, icu_capi 2.1.2, icu_casemap 2.1.1, icu_datetime 2.1.1 +7 more; moves when the holding crates (git) move to writeable 0.6.4"
 
-[[bans.skip]]
-crate = "yasna@0.5.2"
-reason = "held by rcgen 0.13.2; gone when its holders move to yasna 0.6.0 (rcgen 0.13.2 in the graph, 0.14.10 newest)"
 
 [[bans.skip]]
 crate = "yoke@0.8.1"
