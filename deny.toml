@@ -460,9 +460,6 @@ reason = "held by rand 0.9.5, rand_chacha 0.9.0; gone when its holders move to r
 crate = "read-fonts@0.41.0"
 reason = "held by genet-fontique 0.10.0, harfrust 0.12.0, skrifa 0.44.0; moves when the holding crates (git/reg) move to read-fonts 0.46.0"
 
-[[bans.skip]]
-crate = "redb@2.6.4"
-reason = "held by gemot 0.1.1, muniment 0.2.1; moves when the holding crates (git) move to redb 4.5.0"
 
 [[bans.skip]]
 crate = "redox_syscall@0.4.1"
