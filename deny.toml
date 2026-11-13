@@ -419,6 +419,10 @@ crate = "primeorder@0.13.6"
 reason = "held by p256 0.13.2, p384 0.13.1, p521 0.13.3; gone when its holders move to primeorder 0.14.0 (p256 0.13.2 in the graph, 0.14.0 newest; p384 0.13.1 in the graph, 0.14.0 newest)"
 
 [[bans.skip]]
+crate = "quick-xml@0.37.5"
+reason = "held by oxrdfxml 0.2.5, sparesults 0.3.5 (oxigraph, under mere's query engine); gone when its holders move to quick-xml 0.42.0 (oxrdfxml 0.2.5 and sparesults 0.3.5 are their latest releases)"
+
+[[bans.skip]]
 crate = "quick-xml@0.39.4"
 reason = "held by errand 0.4.0, knot-composition 0.0.1; moves when the holding crates (git) move to quick-xml 0.42.0"
 
