@@ -280,6 +280,19 @@ wgpu-cue = { git = "https://github.com/merely-made/wgpu-cue.git", branch = "main
 # netrender-vello-encoding names, not from crates.io.
 netrender-vello = { git = "https://github.com/mark-ik/vello", branch = "mark-ik/all-vellos" }
 netrender-vello-encoding = { git = "https://github.com/mark-ik/vello", branch = "mark-ik/all-vellos" }
+# house patches --from https://github.com/merely-made/mere.git
+# Written by `house patches` (eidetic, crates/house) from the upstream's [patch.crates-io]; `house patches --check` fails when they drift.
+oxjsonld = { git = "https://github.com/mark-ik/oxigraph", branch = "mark-ik/0.5" }
+oxrdf = { git = "https://github.com/mark-ik/oxigraph", branch = "mark-ik/0.5" }
+oxrdfio = { git = "https://github.com/mark-ik/oxigraph", branch = "mark-ik/0.5" }
+oxrdfxml = { git = "https://github.com/mark-ik/oxigraph", branch = "mark-ik/0.5" }
+oxsdatatypes = { git = "https://github.com/mark-ik/oxigraph", branch = "mark-ik/0.5" }
+oxttl = { git = "https://github.com/mark-ik/oxigraph", branch = "mark-ik/0.5" }
+sparesults = { git = "https://github.com/mark-ik/oxigraph", branch = "mark-ik/0.5" }
+spareval = { git = "https://github.com/mark-ik/oxigraph", branch = "mark-ik/0.5" }
+spargebra = { git = "https://github.com/mark-ik/oxigraph", branch = "mark-ik/0.5" }
+sparopt = { git = "https://github.com/mark-ik/oxigraph", branch = "mark-ik/0.5" }
+# end house patches
 # CubeCL 0.11.1 supplies the resident lane without the retired runtime
 # persistence patch (migration plan 13.48). The burn-cubecl selector likewise
 # remains the registry implementation, qualified under ruling 410.

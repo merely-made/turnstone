@@ -340,10 +340,6 @@ crate = "prettyplease@0.2.37"
 reason = "held by bindgen 0.69.5, bindgen 0.72.1, servo-dom-struct 0.8.0; gone when its holders move to prettyplease 0.3.0 (bindgen 0.69.5 in the graph, 0.73.2 newest; bindgen 0.72.1 in the graph, 0.73.2 newest)"
 
 [[bans.skip]]
-crate = "quick-xml@0.37.5"
-reason = "held by oxrdfxml 0.2.5; gone when its holders move to quick-xml 0.42.0 (oxrdfxml 0.2.5 is its latest release)"
-
-[[bans.skip]]
 crate = "quick-xml@0.39.4"
 reason = "held by errand 0.4.0, knot-composition 0.0.1; moves when the holding crates (git) move to quick-xml 0.42.0"
 

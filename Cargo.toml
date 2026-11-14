@@ -521,6 +521,19 @@ netrender = { git = "https://github.com/merely-made/netrender.git", branch = "ma
 netrender_device = { git = "https://github.com/merely-made/netrender.git", branch = "main" }
 paint_list_api = { git = "https://github.com/merely-made/netrender.git", branch = "main" }
 paint_list_render = { git = "https://github.com/merely-made/netrender.git", branch = "main" }
+# house patches --from https://github.com/merely-made/mere.git
+# Written by `house patches` (eidetic, crates/house) from the upstream's [patch.crates-io]; `house patches --check` fails when they drift.
+oxjsonld = { git = "https://github.com/mark-ik/oxigraph", branch = "mark-ik/0.5" }
+oxrdf = { git = "https://github.com/mark-ik/oxigraph", branch = "mark-ik/0.5" }
+oxrdfio = { git = "https://github.com/mark-ik/oxigraph", branch = "mark-ik/0.5" }
+oxrdfxml = { git = "https://github.com/mark-ik/oxigraph", branch = "mark-ik/0.5" }
+oxsdatatypes = { git = "https://github.com/mark-ik/oxigraph", branch = "mark-ik/0.5" }
+oxttl = { git = "https://github.com/mark-ik/oxigraph", branch = "mark-ik/0.5" }
+sparesults = { git = "https://github.com/mark-ik/oxigraph", branch = "mark-ik/0.5" }
+spareval = { git = "https://github.com/mark-ik/oxigraph", branch = "mark-ik/0.5" }
+spargebra = { git = "https://github.com/mark-ik/oxigraph", branch = "mark-ik/0.5" }
+sparopt = { git = "https://github.com/mark-ik/oxigraph", branch = "mark-ik/0.5" }
+# end house patches
 #
 # The tagged `mere-p2panda-net =0.7.5` source owns the exact-ALPN net crate.
 # It resolves through this root patch until its crates.io release is available.
