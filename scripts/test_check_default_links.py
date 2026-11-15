@@ -9,13 +9,15 @@ class CompositionTests(unittest.TestCase):
         self.assertEqual(packages['redshank-playback'], {'native'})
 
     def test_transitive_leaks_fail_without_their_host_feature(self):
-        for package in ['firewheel','knot-editor','distillery','servo','welding','retinue','mere-transport']:
+        for package in ['firewheel','knot-editor','distillery','servo','welding','scrying','retinue','mere-transport']:
             self.assertTrue(violations({'turnstone':{'default'}, package:set()}), package)
         self.assertTrue(violations({'turnstone':{'default'},'graphshell-host':{'native'}}))
-        self.assertTrue(violations({'turnstone':{'default'},'mere-athanor':{'workshop-worker'},'mere-alembic':{'workshop-native'},'redshank-playback':{'native'},'graphshell-host':{'native'}}))
+        self.assertTrue(violations({'turnstone':{'default'},'mere-athanor':{'workshop-worker','workshop-native'},'redshank-playback':{'native'},'graphshell-host':{'native'}}))
+        self.assertTrue(violations({'turnstone':{'default'},'mere-athanor':{'workshop-native'}}))
+        self.assertFalse(violations({'turnstone':{'default'},'grafting':set()}))
 
     def test_explicit_selection_is_a_positive_control(self):
-        self.assertFalse(violations({'turnstone':{'audio','peers','authoring','workshop'},'firewheel':set(),'mere-transport':set(),'knot-editor':set(),'mere-athanor':{'workshop-worker'},'mere-alembic':{'workshop-native'},'redshank-playback':{'native'},'graphshell-host':{'native'}}))
+        self.assertFalse(violations({'turnstone':{'audio','peers','authoring','workshop'},'firewheel':set(),'mere-transport':set(),'knot-editor':set(),'mere-athanor':{'workshop-worker','workshop-native'},'redshank-playback':{'native'},'graphshell-host':{'native'}}))
 
     def test_a_selected_but_unwired_backend_fails_the_positive_control(self):
         self.assertTrue(violations({'turnstone':{'audio'}}))

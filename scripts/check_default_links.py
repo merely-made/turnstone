@@ -20,7 +20,9 @@ OPTIONAL = {
     "inference": {"distillery"},
     "servo": {"servo", "graft-engine", "grafting-servo"},
     "weld": {"welding", "weld-engine", "cef"},
-    "scry": {"scrying-engine", "webview2-com"},
+    # `grafting` is deliberately absent: it is the shared-texture import under
+    # Cue and the default build links it (Mark, 2026-11-13: "Grafting is plumbing").
+    "scry": {"scrying", "scrying-engine", "webview2-com"},
     "nomadnet": {"retinue", "tulle", "radio-hand", "outrider", "sennet", "tucket"},
     "wasm": {"wasmtime", "app-host"},
     "piccolo": {"genet-didge"},
@@ -30,7 +32,7 @@ REQUIRED = {
     "authoring": {"knot-editor"},
     "peers": {"mere-transport", "graphshell-host/native"},
     "inference": {"distillery"},
-    "workshop": {"mere-athanor/workshop-worker", "mere-alembic/workshop-native"},
+    "workshop": {"mere-athanor/workshop-worker", "mere-athanor/workshop-native"},
     "endpoint-process": {"graphshell-host/native"},
     "sky": {"turquet"},
     "nomadnet": {"retinue"},
@@ -76,11 +78,9 @@ def violations(packages):
         failures.extend(f"{name} requires a peer-capable service" for name in sorted(PEER_TRANSPORT & packages.keys()))
         for feature in {"native", "webrtc-join", "webrtc-session"} & packages.get("graphshell-host", set()):
             failures.append(f"graphshell-host/{feature} requires a peer-capable service")
-    for feature in {"workshop-worker"} & packages.get("mere-athanor", set()):
+    for feature in {"workshop-worker", "workshop-native"} & packages.get("mere-athanor", set()):
         if "workshop" not in selected:
             failures.append(f"mere-athanor/{feature} requires workshop")
-    if "workshop-native" in packages.get("mere-alembic", set()) and "workshop" not in selected:
-        failures.append("mere-alembic/workshop-native requires workshop")
     failures.extend(f"{name} is not admitted" for name in sorted(FORBIDDEN & packages.keys()))
     return failures
 
