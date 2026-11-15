@@ -1,4 +1,4 @@
-# house hooks --deny --patches --clippy-base '--workspace --all-targets' --clippy '--all-targets -p graphshell --features graphshell/query-views'
+# house hooks --bans . --bans ports/graphshell/web --bans support/graphshell-coop/relay_server --patches --clippy-base '--workspace --all-targets' --clippy '--all-targets -p graphshell --features graphshell/query-views'
 # Written by `house hooks` (eidetic, crates/house); `house hooks --check` fails when this file drifts from it.
 # `house` is on the PATH: cargo install --git https://github.com/merely-made/eidetic house
 fail_fast: true
@@ -35,7 +35,19 @@ repos:
         pass_filenames: false
       - id: dependency-bans
         name: dependency bans
-        entry: cargo deny check bans
+        entry: cargo deny --workspace --all-features check -D unmatched-skip bans
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: dependency-bans-ports-graphshell-web
+        name: dependency bans ports/graphshell/web
+        entry: cargo deny --manifest-path ports/graphshell/web/Cargo.toml --workspace --all-features --config ports/graphshell/web/deny.toml check -D unmatched-skip bans
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: dependency-bans-support-graphshell-coop-relay_server
+        name: dependency bans support/graphshell-coop/relay_server
+        entry: cargo deny --manifest-path support/graphshell-coop/relay_server/Cargo.toml --workspace --all-features --config support/graphshell-coop/relay_server/deny.toml check -D unmatched-skip bans
         language: system
         pass_filenames: false
         always_run: true

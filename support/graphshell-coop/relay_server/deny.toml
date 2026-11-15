@@ -1,0 +1,69 @@
+# cargo-deny configuration for support/graphshell-coop/relay_server, which is its own workspace.
+# The rule and how a skip is argued are in the root deny.toml.
+
+[graph]
+all-features = true
+
+[bans]
+multiple-versions = "deny"
+wildcards = "allow"
+
+[[bans.skip]]
+crate = "base64@0.22.1"
+reason = "tokio-rustls-acme 0.9.1 (latest), tokio-websockets 0.13.3 (latest) require it, via pem 3.0.6, under graphshell-coop-relay-receipt; goes when tokio-rustls-acme, tokio-websockets move to base64 0.23.1"
+
+[[bans.skip]]
+crate = "cpufeatures@0.2.17"
+reason = "aes 0.8.4 (aes 0.9.4 drops it), polyval 0.6.2 (polyval 0.7.3 drops it) require it, under graphshell-coop-relay-receipt; goes when their dependents take aes 0.9.4, polyval 0.7.3"
+
+[[bans.skip]]
+crate = "crypto-common@0.1.7"
+reason = "aead 0.5.2 (aead 0.6.1 drops it), cipher 0.4.4 (cipher 0.5.2 drops it), universal-hash 0.5.1 (universal-hash 0.6.1 drops it) require it, under graphshell-coop-relay-receipt; goes when their dependents take aead 0.6.1, cipher 0.5.2, universal-hash 0.6.1"
+
+[[bans.skip]]
+crate = "getrandom@0.2.17"
+reason = "ring 0.17.14 (latest) requires it, under graphshell-coop-relay-receipt; goes when ring moves to getrandom 0.4.3"
+
+[[bans.skip]]
+crate = "hashbrown@0.14.5"
+reason = "dashmap 6.2.1 (latest) requires it, under graphshell-coop-relay-receipt; goes when dashmap moves to hashbrown 0.17.1"
+
+[[bans.skip]]
+crate = "pem@3.0.6"
+reason = "tokio-rustls-acme 0.9.1 (latest) requires it, under graphshell-coop-relay-receipt; goes when tokio-rustls-acme moves to pem 4.0.0"
+
+[[bans.skip]]
+crate = "syn@2.0.119"
+reason = "asn1-rs-derive 0.6.0 (asn1-rs-derive 0.7.0 still requires it), asn1-rs-impl 0.2.0 (asn1-rs-impl 0.3.0 still requires it), curve25519-dalek-derive 0.1.1 (latest), derive_more-impl 2.1.1 (latest) and 14 more require it, via synstructure 0.13.2, windows-core 0.62.2 and 2 more, under graphshell-coop-relay-receipt; goes when asn1-rs-derive, asn1-rs-impl, curve25519-dalek-derive and 15 more move to syn 3.0.10"
+
+[[bans.skip]]
+crate = "synstructure@0.13.2"
+reason = "asn1-rs-derive 0.6.0 (asn1-rs-derive 0.7.0 still requires it) requires it, under graphshell-coop-relay-receipt; goes when asn1-rs-derive moves to synstructure 0.14.0"
+
+[[bans.skip]]
+crate = "windows-core@0.62.2"
+reason = "iana-time-zone 0.1.65 (latest) requires it, under graphshell-coop-relay-receipt; goes when iana-time-zone moves to windows-core 0.100.0"
+
+[[bans.skip]]
+crate = "windows-implement@0.60.2"
+reason = "iana-time-zone 0.1.65 (latest) requires it, via windows-core 0.62.2, under graphshell-coop-relay-receipt; goes when iana-time-zone moves to windows-implement 0.100.0"
+
+[[bans.skip]]
+crate = "windows-interface@0.59.3"
+reason = "iana-time-zone 0.1.65 (latest) requires it, via windows-core 0.62.2, under graphshell-coop-relay-receipt; goes when iana-time-zone moves to windows-interface 0.100.0"
+
+[[bans.skip]]
+crate = "windows-link@0.2.1"
+reason = "chrono 0.4.45 (latest), iana-time-zone 0.1.65 (latest), ipconfig 0.3.4 (latest), jni 0.22.4 (latest) and 3 more require it, via windows-core 0.62.2, windows-result 0.4.1 and 1 more, under graphshell-coop-relay-receipt; goes when chrono, iana-time-zone, ipconfig and 3 more move to windows-link 0.100.0; their dependents take windows-registry 0.100.0"
+
+[[bans.skip]]
+crate = "windows-result@0.4.1"
+reason = "iana-time-zone 0.1.65 (latest), ipconfig 0.3.4 (latest), windows-registry 0.6.1 (windows-registry 0.100.0 drops it) require it, via windows-core 0.62.2, under graphshell-coop-relay-receipt; goes when iana-time-zone, ipconfig move to windows-result 0.100.0; their dependents take windows-registry 0.100.0"
+
+[[bans.skip]]
+crate = "windows-strings@0.5.1"
+reason = "iana-time-zone 0.1.65 (latest), windows-registry 0.6.1 (windows-registry 0.100.0 drops it) require it, via windows-core 0.62.2, under graphshell-coop-relay-receipt; goes when iana-time-zone moves to windows-strings 0.100.0; their dependents take windows-registry 0.100.0"
+
+[[bans.skip]]
+crate = "windows-sys@0.52.0"
+reason = "ring 0.17.14 (latest) requires it, under graphshell-coop-relay-receipt; goes when ring moves to windows-sys 0.61.2"
