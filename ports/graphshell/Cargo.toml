@@ -260,7 +260,7 @@ graphshell-door.workspace = true
 # The serving half (stack lift plan, L2): admission, the session loop, the
 # catalog and the projection host. `native` and the WebRTC features name its
 # halves; with none, it is the fixture endpoints the web tests use.
-graphshell-host = { version = "0.0.2", git = "https://github.com/merely-made/graphshell.git", branch = "main", default-features = false }
+graphshell-host = { version = ">=0.0.2", git = "https://github.com/merely-made/graphshell.git", branch = "main", default-features = false }
 chirograph.workspace = true
 kernel = { workspace = true, optional = true }
 # The graph canvas (engine split D38: `cartography::canvas`); pictograph for
@@ -400,7 +400,7 @@ script-rhai = { workspace = true }
 # Tests and examples bind throwaway identities (vault lock plan, ruling 96).
 transport = { workspace = true, features = ["test-identity"] }
 # Co-op tests sign as an in-memory owner (stack-lift D4: tests only).
-graphshell-host = { version = "0.0.2", git = "https://github.com/merely-made/graphshell.git", branch = "main", default-features = false, features = ["test-signer", "test-support"] }
+graphshell-host = { version = ">=0.0.2", git = "https://github.com/merely-made/graphshell.git", branch = "main", default-features = false, features = ["test-signer", "test-support"] }
 # The native accessibility receipt (dynamics grammar plan, F67): the canvas's
 # producer semantics through cambium-winit-a11y's AccessKit lowering, driven
 # by the headless harness, its view built with Cambium, the tree read in

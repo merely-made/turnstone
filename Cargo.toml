@@ -33,7 +33,7 @@ name = "turnstone"
 path = "src/main.rs"
 
 [dependencies]
-murm-sync = { version = "0.0.1", git = "https://github.com/merely-made/murm.git", branch = "main", optional = true }
+murm-sync = { version = ">=0.0.1", git = "https://github.com/merely-made/murm.git", branch = "main", optional = true }
 async-trait = "0.1.92"
 # Product-redacted, bounded observations; the portable values live in Armillary.
 apparatus-core = { version = "0.1.0", git = "https://github.com/merely-made/armillary.git", branch = "main", default-features = false, features = ["serde"] }
@@ -162,8 +162,8 @@ graphshell-client = { git = "https://github.com/merely-made/graphshell.git", bra
 graphshell-endpoint = { git = "https://github.com/merely-made/graphshell.git", branch = "main", features = ["local", "stdio"] }
 # The projection door (broker client, offer, provider) left graphshell-endpoint for Mere.
 graphshell-door = { git = "https://github.com/merely-made/graphshell.git", branch = "main", features = ["projection-door"] }
-ostiary = { version = "0.0.1", git = "https://github.com/merely-made/armillary.git", branch = "main", features = ["native"] }
-castellan-client = { version = "0.0.2", git = "https://github.com/merely-made/dramatis.git", branch = "main", features = ["client"] }
+ostiary = { version = ">=0.0.1", git = "https://github.com/merely-made/armillary.git", branch = "main", features = ["native"] }
+castellan-client = { version = ">=0.0.2", git = "https://github.com/merely-made/dramatis.git", branch = "main", features = ["client"] }
 dramatis = { git = "https://github.com/merely-made/dramatis.git", branch = "main" }
 chirograph = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 # The pane model (rung 5 slice C) is no longer a dependency at all: it folded
@@ -349,7 +349,7 @@ grafting-servo = { git = "https://github.com/merely-made/wgpu-graft.git", branch
 grafting = { git = "https://github.com/merely-made/wgpu-graft.git", branch = "main", default-features = false, features = ["wgpu-30"], optional = true }
 
 [dev-dependencies]
-sporran = { version = "0.0.1", git = "https://github.com/merely-made/dramatis.git", branch = "main" }
+sporran = { version = ">=0.0.1", git = "https://github.com/merely-made/dramatis.git", branch = "main" }
 taproot = { version = "0.1.0", git = "https://github.com/merely-made/genet.git", branch = "main", features = ["estimated-probe-fixtures"] }
 accesskit_consumer = "=0.39.1"
 mien = { git = "https://github.com/merely-made/gemot.git", branch = "main" }
@@ -603,44 +603,44 @@ winit = "0.30.13"
 accesskit = "0.25.1"
 base64 = "0.23"
 blake3 = "1"
-block-adapter = { version = "0.0.1", git = "https://github.com/merely-made/graphshell.git", branch = "main", default-features = false }
-block-host = { version = "0.0.1", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
+block-adapter = { version = ">=0.0.1", git = "https://github.com/merely-made/graphshell.git", branch = "main", default-features = false }
+block-host = { version = ">=0.0.1", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 cambium-a11y = { version = "0.3.0", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
-cartography = { package = "mere-cartography", version = "0.0.2", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
-castellan-client = { version = "0.0.2", git = "https://github.com/merely-made/dramatis.git", branch = "main", default-features = false }
+cartography = { package = "mere-cartography", version = ">=0.0.2", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
+castellan-client = { version = ">=0.0.2", git = "https://github.com/merely-made/dramatis.git", branch = "main", default-features = false }
 hodograph = { version = "0.1.0", git = "https://github.com/merely-made/eidetic.git", branch = "main" }
 portolan = { version = "0.1.0", git = "https://github.com/merely-made/eidetic.git", branch = "main" }
-chatelaine = { version = "0.0.3", git = "https://github.com/merely-made/dramatis.git", branch = "main" }
-chirograph = { version = "0.0.5", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
-comms = { package = "mere-comms", version = "0.0.1", git = "https://github.com/merely-made/murm.git", branch = "main" }
+chatelaine = { version = ">=0.0.3", git = "https://github.com/merely-made/dramatis.git", branch = "main" }
+chirograph = { version = ">=0.0.5", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
+comms = { package = "mere-comms", version = ">=0.0.1", git = "https://github.com/merely-made/murm.git", branch = "main" }
 cue-netrender = { git = "https://github.com/merely-made/wgpu-cue.git", branch = "main" }
-distillery = { version = "0.0.1", git = "https://github.com/merely-made/distillery.git", branch = "main" }
-dramatis = { version = "0.0.5", git = "https://github.com/merely-made/dramatis.git", branch = "main" }
-dramatis-surface = { version = "0.0.1", git = "https://github.com/merely-made/dramatis.git", branch = "main" }
-eidetic = { version = ">=0.0.3, <0.1", git = "https://github.com/merely-made/eidetic.git", branch = "main", default-features = false, features = ["product"] }
+distillery = { version = ">=0.0.1", git = "https://github.com/merely-made/distillery.git", branch = "main" }
+dramatis = { version = ">=0.0.5", git = "https://github.com/merely-made/dramatis.git", branch = "main" }
+dramatis-surface = { version = ">=0.0.1", git = "https://github.com/merely-made/dramatis.git", branch = "main" }
+eidetic = { version = ">=0.0.3", git = "https://github.com/merely-made/eidetic.git", branch = "main", default-features = false, features = ["product"] }
 eidetic-search = { git = "https://github.com/merely-made/eidetic.git", branch = "main" }
 esp = { version = "0.1.0", git = "https://github.com/merely-made/distillery.git", branch = "main" }
-fleece = { package = "mere-fleece", version = "0.0.1", git = "https://github.com/merely-made/inker.git", branch = "main" }
+fleece = { package = "mere-fleece", version = ">=0.0.1", git = "https://github.com/merely-made/inker.git", branch = "main" }
 gemot = { version = "0.1.1", git = "https://github.com/merely-made/gemot.git", branch = "main" }
 genet-scripted-dom = { version = "0.1.2", git = "https://github.com/merely-made/genet.git", branch = "main" }
-graphshell-client = { version = "0.0.2", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
-graphshell-door = { version = "0.0.1", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
-graphshell-endpoint = { version = "0.0.4", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
-graphshell-host = { version = "0.0.2", git = "https://github.com/merely-made/graphshell.git", branch = "main", default-features = false }
+graphshell-client = { version = ">=0.0.2", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
+graphshell-door = { version = ">=0.0.1", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
+graphshell-endpoint = { version = ">=0.0.4", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
+graphshell-host = { version = ">=0.0.2", git = "https://github.com/merely-made/graphshell.git", branch = "main", default-features = false }
 hest = { version = "0.2.1", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
-illume = { version = "0.0.3", git = "https://github.com/merely-made/inker.git", branch = "main" }
+illume = { version = ">=0.0.3", git = "https://github.com/merely-made/inker.git", branch = "main" }
 incipit = { version = "0.2.3", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
-insigne = { version = "0.0.2", git = "https://github.com/merely-made/dramatis.git", branch = "main" }
-kernel = { package = "mere-kernel", version = "0.0.3", git = "https://github.com/merely-made/mere.git", branch = "main" }
+insigne = { version = ">=0.0.2", git = "https://github.com/merely-made/dramatis.git", branch = "main" }
+kernel = { package = "mere-kernel", version = ">=0.0.3", git = "https://github.com/merely-made/mere.git", branch = "main" }
 mere-lanes = { version = "0.1.0", git = "https://github.com/merely-made/inker.git", branch = "main" }
 mere-overmap = { version = "0.1.0", git = "https://github.com/merely-made/graphshell.git", branch = "main", default-features = false }
 mere-view = { version = "0.1.0", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 mesh = { package = "mere-mesh", git = "https://github.com/merely-made/distillery.git", branch = "main" }
-mien = { version = "0.0.1", git = "https://github.com/merely-made/gemot.git", branch = "main" }
+mien = { version = ">=0.0.1", git = "https://github.com/merely-made/gemot.git", branch = "main" }
 muniment = { version = "0.2.1", git = "https://github.com/merely-made/eidetic.git", branch = "main" }
-murm-sync = { version = "0.0.1", git = "https://github.com/merely-made/murm.git", branch = "main" }
+murm-sync = { version = ">=0.0.1", git = "https://github.com/merely-made/murm.git", branch = "main" }
 notochord = { version = "0.1.1", git = "https://github.com/merely-made/dramatis.git", branch = "main" }
-ostiary = { version = "0.0.1", git = "https://github.com/merely-made/armillary.git", branch = "main", default-features = false }
+ostiary = { version = ">=0.0.1", git = "https://github.com/merely-made/armillary.git", branch = "main", default-features = false }
 paint_list_api = { version = "=0.1.2", git = "https://github.com/merely-made/netrender.git", branch = "main" }
 paint_list_render = { version = "=0.1.2", git = "https://github.com/merely-made/netrender.git", branch = "main" }
 pandect = { version = "0.2.0", git = "https://github.com/merely-made/mere.git", branch = "main" }
@@ -648,24 +648,24 @@ parley = { package = "genet-parley", version = "0.10.0", git = "https://github.c
 personae = { version = "0.3.1", git = "https://github.com/merely-made/dramatis.git", branch = "main" }
 pictograph = { version = "0.2.0", git = "https://github.com/merely-made/emblem.git", branch = "main", default-features = false }
 proofs = { package = "mere-proofs", version = "0.1.0", git = "https://github.com/merely-made/eidetic.git", branch = "main" }
-sceno = { version = "0.0.7", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
-sceno-backdrops = { version = "0.0.1", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
-scenograph = { version = ">=0.0.6, <0.1", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
-scenomise = { version = ">=0.0.7, <0.1", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
-scenotime = { version = "0.0.5", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
-script-rhai = { version = "0.0.1", git = "https://github.com/merely-made/inker.git", branch = "main" }
-servitor = { version = "0.0.3", git = "https://github.com/merely-made/eidetic.git", branch = "main" }
+sceno = { version = ">=0.0.7", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
+sceno-backdrops = { version = ">=0.0.1", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
+scenograph = { version = ">=0.0.6", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
+scenomise = { version = ">=0.0.7", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
+scenotime = { version = ">=0.0.5", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
+script-rhai = { version = ">=0.0.1", git = "https://github.com/merely-made/inker.git", branch = "main" }
+servitor = { version = ">=0.0.3", git = "https://github.com/merely-made/eidetic.git", branch = "main" }
 sha2 = "0.11"
-sporran = { version = "0.0.1", git = "https://github.com/merely-made/dramatis.git", branch = "main" }
+sporran = { version = ">=0.0.1", git = "https://github.com/merely-made/dramatis.git", branch = "main" }
 sprigging = { version = "0.3.0", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 stickleback = { version = "0.4", git = "https://github.com/merely-made/eidetic.git", branch = "main" }
-tabard = { version = "0.0.2", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
+tabard = { version = ">=0.0.2", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-transport = { package = "mere-transport", version = "0.0.2", git = "https://github.com/merely-made/murm.git", branch = "main" }
+transport = { package = "mere-transport", version = ">=0.0.2", git = "https://github.com/merely-made/murm.git", branch = "main" }
 uuid = { version = "1", features = ["serde", "v4"] }
-vector-sheet = { version = "0.0.1", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
-webrtc-carrier = { package = "murm-webrtc", version = "0.0.1", git = "https://github.com/merely-made/murm.git", branch = "main" }
+vector-sheet = { version = ">=0.0.1", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
+webrtc-carrier = { package = "murm-webrtc", version = ">=0.0.1", git = "https://github.com/merely-made/murm.git", branch = "main" }
 wgpu-cue = { git = "https://github.com/merely-made/wgpu-cue.git", branch = "main" }
 workbench = { version = "=0.1.1", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 
