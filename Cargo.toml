@@ -34,7 +34,7 @@ path = "src/main.rs"
 
 [dependencies]
 murm-sync = { version = "0.0.1", git = "https://github.com/merely-made/murm.git", branch = "main", optional = true }
-async-trait = "=0.1.92"
+async-trait = "0.1.92"
 # Product-redacted, bounded observations; the portable values live in Armillary.
 apparatus-core = { version = "0.1.0", git = "https://github.com/merely-made/armillary.git", branch = "main", default-features = false, features = ["serde"] }
 # Presentable proof data/checks; Personae retains keys and issuing. The
