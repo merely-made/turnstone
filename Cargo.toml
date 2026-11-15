@@ -617,7 +617,7 @@ cue-netrender = { git = "https://github.com/merely-made/wgpu-cue.git", branch = 
 distillery = { version = "0.0.1", git = "https://github.com/merely-made/distillery.git", branch = "main" }
 dramatis = { version = "0.0.5", git = "https://github.com/merely-made/dramatis.git", branch = "main" }
 dramatis-surface = { version = "0.0.1", git = "https://github.com/merely-made/dramatis.git", branch = "main" }
-eidetic = { version = "0.0.3", git = "https://github.com/merely-made/eidetic.git", branch = "main", default-features = false, features = ["product"] }
+eidetic = { version = ">=0.0.3, <0.1", git = "https://github.com/merely-made/eidetic.git", branch = "main", default-features = false, features = ["product"] }
 eidetic-search = { git = "https://github.com/merely-made/eidetic.git", branch = "main" }
 esp = { version = "0.1.0", git = "https://github.com/merely-made/distillery.git", branch = "main" }
 fleece = { package = "mere-fleece", version = "0.0.1", git = "https://github.com/merely-made/inker.git", branch = "main" }
@@ -650,8 +650,8 @@ pictograph = { version = "0.2.0", git = "https://github.com/merely-made/emblem.g
 proofs = { package = "mere-proofs", version = "0.1.0", git = "https://github.com/merely-made/eidetic.git", branch = "main" }
 sceno = { version = "0.0.7", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 sceno-backdrops = { version = "0.0.1", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
-scenograph = { version = "0.0.6", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
-scenomise = { version = "0.0.7", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
+scenograph = { version = ">=0.0.6, <0.1", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
+scenomise = { version = ">=0.0.7, <0.1", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 scenotime = { version = "0.0.5", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 script-rhai = { version = "0.0.1", git = "https://github.com/merely-made/inker.git", branch = "main" }
 servitor = { version = "0.0.3", git = "https://github.com/merely-made/eidetic.git", branch = "main" }
