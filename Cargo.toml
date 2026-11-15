@@ -413,7 +413,7 @@ servo = ["dep:graft-engine", "graft-engine/servo", "dep:grafting-servo", "dep:gr
 grafting-servo = { git = "https://github.com/merely-made/wgpu-graft.git", branch = "main", default-features = false, features = ["no-wgl"], optional = true }
 scrying-engine = { git = "https://github.com/merely-made/inker.git", branch = "main", optional = true }
 # Select a process crypto provider before Servo network construction.
-webview2-com = { version = "=0.39.1", optional = true }
+webview2-com = { version = "0.39.1", optional = true }
 # Weld owns CEF's callback-time copy; Grafting owns the generic DX12 shared
 # handle import on Turnstone's existing wgpu device.
 welding = { version = "0.15.0", git = "https://github.com/merely-made/wgpu-weld.git", branch = "main", features = ["cef-runtime"], optional = true }
