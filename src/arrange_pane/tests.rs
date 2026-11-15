@@ -39,7 +39,7 @@ fn refused_overlays_are_visible_and_keep_the_applied_law() {
         app.physics_refusal().unwrap().refused,
         vec![PhysicsOverlay::Skeleton]
     );
-    app.update(Action::ApplyPhysicsProfile("crystal"));
+    app.update(Action::ApplyPhysicsProfile("lattice"));
     assert!(app.physics_refusal().is_none());
     assert!(
         !arrange_rows(&app)
@@ -110,7 +110,7 @@ fn current_refusal_attaches_to_the_platform_tree_and_clears_without_dom_sync() {
         physics_refusal_tree(&app, pane, bounds).unwrap().root,
         status_id
     );
-    app.update(Action::ApplyPhysicsProfile("crystal"));
+    app.update(Action::ApplyPhysicsProfile("lattice"));
     let contributions = physics_refusal_tree(&app, pane, bounds)
         .map(|tree| HashMap::from([(pane, tree)]))
         .unwrap_or_default();
@@ -143,8 +143,8 @@ fn intents_lower_to_the_palette_actions_by_id() {
         Some(Action::SetPhysicsOverlay("skeleton", true))
     );
     assert_eq!(
-        ArrangeIntent::ApplyProfile("crystal".into()).into_action(),
-        Some(Action::ApplyPhysicsProfile("crystal"))
+        ArrangeIntent::ApplyProfile("lattice".into()).into_action(),
+        Some(Action::ApplyPhysicsProfile("lattice"))
     );
     assert_eq!(ArrangeIntent::SetLaw("plasma".into()).into_action(), None);
     assert_eq!(
@@ -260,9 +260,9 @@ fn the_rows_read_the_canvas_back() {
     assert!(rows.contains(&"Physics: Orbit".to_string()), "{rows:?}");
     assert!(rows.contains(&"Overlays: Skeleton".to_string()), "{rows:?}");
     assert!(rows.contains(&"Profile: custom".to_string()), "{rows:?}");
-    app.update(Action::ApplyPhysicsProfile("crystal"));
+    app.update(Action::ApplyPhysicsProfile("lattice"));
     let rows = arrange_rows(&app);
     assert!(rows.contains(&"Physics: Stress".to_string()), "{rows:?}");
     assert!(rows.contains(&"Overlays: Grid".to_string()), "{rows:?}");
-    assert!(rows.contains(&"Profile: Crystal".to_string()), "{rows:?}");
+    assert!(rows.contains(&"Profile: Lattice".to_string()), "{rows:?}");
 }
