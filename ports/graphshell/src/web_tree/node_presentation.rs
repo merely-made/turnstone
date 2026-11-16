@@ -144,7 +144,7 @@ pub(super) fn install(page: &TreePage) {
     } else {
         std::collections::HashMap::new()
     };
-    match canvas.set_node_rule_faces(epoch, faces) {
+    match canvas.set_node_rule_representations(epoch, faces) {
         Ok(true) => page.shared.dirty.set(true),
         Err(message) => web_sys::console::error_1(&message.into()),
         _ => {},

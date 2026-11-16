@@ -176,11 +176,11 @@ impl SavedProduct {
         let Some(member) = self.selected else {
             return;
         };
-        let face = FACES[self.detail.face.selected.min(FACES.len() - 1)].0;
-        if face == Face::Sprite {
+        let face = &FACES[self.detail.face.selected.min(FACES.len() - 1)].0;
+        if *face == Face::Sprite {
             canvas.set_node_sprite(member, DEFAULT_SPRITE.into());
         } else {
-            canvas.set_node_face(member, face);
+            canvas.set_node_face(member, face.clone());
         }
         self.status = format!("Representation set to {}", face.as_code());
     }

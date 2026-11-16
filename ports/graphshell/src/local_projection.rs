@@ -22,6 +22,7 @@ pub fn draft_from_definition(definition: &ProjectionDefinition) -> ProjectionDra
         reading: definition.reading.clone(),
         encoding: definition.encoding.clone(),
         arrangement: definition.arrangement.clone(),
+        fields: definition.fields.clone(),
         interaction: definition.interaction.clone(),
         appearance: definition.appearance.clone(),
         provenance: definition.provenance.clone(),

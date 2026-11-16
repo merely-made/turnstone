@@ -5,14 +5,21 @@
 // SPDX-License-Identifier: MPL-2.0
 
 use graphshell::local_projection::ProjectionSession;
-use scenograph::Channel;
+use scenograph::{Channel, FieldSpec};
 use scenomise::authoring::EditorAction;
 
 const SOURCE: &str = include_str!("../web/fixtures/woodshed-stage.json");
 
 #[test]
-fn projection_selection_survives_label_edit_and_saved_snapshot_reopen() {
+fn projection_selection_and_fields_survive_edit_and_reopen() {
     let mut session = ProjectionSession::load(SOURCE, None).unwrap();
+    let fields = vec![
+        FieldSpec::new("label", "Label"),
+        FieldSpec::new("tempo_bpm", "Tempo"),
+    ];
+    let mut initial = session.snapshot().unwrap();
+    initial.definition.fields = fields.clone();
+    session.reopen(&initial).unwrap();
     session.select("card:2").unwrap();
     let solves = session.solves();
     let mut appearance = session.editor().draft().appearance.clone();
@@ -29,6 +36,7 @@ fn projection_selection_survives_label_edit_and_saved_snapshot_reopen() {
         "My practice session"
     );
     assert_eq!(reopened.selected(), Some("card:2"));
+    assert_eq!(reopened.snapshot().unwrap().definition.fields, fields);
     let compiled = reopened.compiled().unwrap();
     assert_eq!(
         compiled.selected,

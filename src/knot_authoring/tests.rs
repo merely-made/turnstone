@@ -66,6 +66,7 @@ fn knot_projection_recipe(
             revision_evidence: RevisionEvidence::PublicGeneration,
             note: "fixture".to_owned(),
         },
+        ..Default::default()
     }
 }
 

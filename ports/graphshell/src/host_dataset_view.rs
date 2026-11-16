@@ -116,6 +116,7 @@ pub fn viewer_definition(dataset: &ProjectionDataset) -> ProjectionDefinition {
             revision_evidence: RevisionEvidence::PublicGeneration,
             note: "The viewer's own arrangement of a host-supplied dataset.".into(),
         },
+        ..Default::default()
     }
 }
 

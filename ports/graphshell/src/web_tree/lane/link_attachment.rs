@@ -66,7 +66,7 @@ pub(super) fn apply(shared: &Shared, profile: Profile) -> Result<(), String> {
         },
         Profile::Rounded | Profile::Circle => {
             let shape = if profile == Profile::Rounded {
-                NodeShape::Rounded
+                NodeShape::RoundedSquare
             } else {
                 NodeShape::Circle
             };
@@ -361,9 +361,9 @@ fn current_profile_label(canvas: &cartography::canvas::Canvas) -> &'static str {
     }
     if let Some((key, _)) = canvas.graph().nodes().next() {
         match canvas.node_shape(key) {
-            NodeShape::Rounded => return "rounded",
+            NodeShape::RoundedSquare => return "rounded",
             NodeShape::Circle => return "circle",
-            NodeShape::Square => {},
+            NodeShape::Square | NodeShape::Diamond | NodeShape::Hexagon => {},
         }
     }
     "flat"

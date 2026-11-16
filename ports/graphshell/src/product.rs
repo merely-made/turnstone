@@ -1155,6 +1155,7 @@ mod tests {
                 revision_evidence: RevisionEvidence::PublicGeneration,
                 note: String::new(),
             },
+            ..Default::default()
         }
         .to_definition()
         .expect("a valid definition");

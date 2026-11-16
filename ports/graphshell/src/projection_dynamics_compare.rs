@@ -311,6 +311,7 @@ pub fn compare_dynamics(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::local_projection::draft_from_definition;
     use crate::projection_compile::default_definition;
     use cartography::canvas::dynamics_recipe::preset_slot;
     use scenomise::authoring::{EditorAction, ProjectionEditor};
@@ -319,22 +320,7 @@ mod tests {
         let data: ProjectionDataset =
             serde_json::from_str(include_str!("../web/fixtures/woodshed-stage.json")).unwrap();
         let definition = default_definition(&data);
-        (
-            ProjectionDraft {
-                version: definition.version,
-                id: definition.id,
-                label: definition.label,
-                source: definition.source,
-                reading: definition.reading,
-                encoding: definition.encoding,
-                arrangement: definition.arrangement,
-                dynamics: definition.dynamics,
-                interaction: definition.interaction,
-                appearance: definition.appearance,
-                provenance: definition.provenance,
-            },
-            data,
-        )
+        (draft_from_definition(&definition), data)
     }
 
     #[test]

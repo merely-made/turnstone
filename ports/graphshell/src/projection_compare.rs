@@ -231,6 +231,7 @@ pub fn compare_arrangements_with_scene(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::local_projection::draft_from_definition;
     use crate::projection_compile::default_definition;
 
     /// The practice fixture the web editor loads, as a draft and its data.
@@ -239,19 +240,7 @@ mod tests {
             serde_json::from_str(include_str!("../web/fixtures/woodshed-stage.json"))
                 .expect("the practice fixture");
         let definition = default_definition(&dataset);
-        let draft = ProjectionDraft {
-            dynamics: definition.dynamics.clone(),
-            version: definition.version,
-            id: definition.id.clone(),
-            label: definition.label.clone(),
-            source: definition.source.clone(),
-            reading: definition.reading.clone(),
-            encoding: definition.encoding.clone(),
-            arrangement: definition.arrangement.clone(),
-            interaction: definition.interaction.clone(),
-            appearance: definition.appearance.clone(),
-            provenance: definition.provenance.clone(),
-        };
+        let draft = draft_from_definition(&definition);
         (draft, dataset)
     }
 

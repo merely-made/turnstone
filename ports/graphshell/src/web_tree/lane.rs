@@ -1418,14 +1418,14 @@ impl Product for TreeLane {
                 canvas
                     .graph()
                     .get_node_by_id(id)
-                    .map(|(key, _)| canvas.node_face(key).as_code())
-                    .unwrap_or("none")
+                    .map(|(key, _)| canvas.node_face(key).as_code().to_owned())
+                    .unwrap_or_else(|| "none".into())
             } else {
                 let mut faces = canvas.graph().nodes().map(|(key, _)| canvas.node_face(key));
                 match faces.next() {
-                    Some(face) if faces.all(|other| other == face) => face.as_code(),
-                    Some(_) => "mixed",
-                    None => "none",
+                    Some(face) if faces.all(|other| other == face) => face.as_code().to_owned(),
+                    Some(_) => "mixed".into(),
+                    None => "none".into(),
                 }
             };
             let (link_visibility_state, link_visibility_status) = product.link_visibility_state();

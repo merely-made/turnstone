@@ -86,6 +86,7 @@ pub fn default_definition(dataset: &ProjectionDataset) -> ProjectionDefinition {
             note: "Disclosed Woodshed Set; grid ranks numeric fields, scatter uses their values."
                 .into(),
         },
+        ..Default::default()
     }
 }
 
@@ -159,6 +160,7 @@ pub fn initial_projection_draft() -> ProjectionDraft {
             revision_evidence: RevisionEvidence::PublicGeneration,
             note: "Host-owned editor fixture".to_string(),
         },
+        ..Default::default()
     }
 }
 
@@ -422,6 +424,7 @@ mod tests {
                 revision_evidence: RevisionEvidence::PublicGeneration,
                 note: "real-set-shaped fixture".into(),
             },
+            ..Default::default()
         }
     }
 
