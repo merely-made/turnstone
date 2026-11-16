@@ -33,10 +33,10 @@ fn dataset(count: usize) -> ProjectionDataset {
         .rev()
         .map(|index| {
             let id = format!("occurrence:{index:05}");
-            ProjectionOccurrence {
-                occurrence_id: id.clone(),
-                source: SourceRef::new("benchmark", format!("source:{}", index % 17)),
-                values: BTreeMap::from([
+            ProjectionOccurrence::new(
+                id.clone(),
+                SourceRef::new("benchmark", format!("source:{}", index % 17)),
+                BTreeMap::from([
                     ("occurrence_id".into(), ProjectionValue::Text(id)),
                     (
                         "label".into(),
@@ -51,7 +51,7 @@ fn dataset(count: usize) -> ProjectionDataset {
                         ProjectionValue::Number((index % 89) as f64 - 44.0),
                     ),
                 ]),
-            }
+            )
         })
         .collect();
     ProjectionDataset {

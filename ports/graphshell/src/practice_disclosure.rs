@@ -298,11 +298,11 @@ pub fn comparison_host_dataset(record: &ComparisonRecord) -> Result<HostDatasetV
                 ProjectionValue::Number(root as f64),
             );
         }
-        occurrences.push(ProjectionOccurrence {
-            occurrence_id: subject.occurrence_id.clone(),
-            source: sceno::SourceRef::new(&subject.source.adapter, &subject.source.id),
+        occurrences.push(ProjectionOccurrence::new(
+            subject.occurrence_id.clone(),
+            sceno::SourceRef::new(&subject.source.adapter, &subject.source.id),
             values,
-        });
+        ));
     }
     let number = |name: &str| {
         result[name]
@@ -355,11 +355,11 @@ pub fn comparison_host_dataset(record: &ComparisonRecord) -> Result<HostDatasetV
             );
         }
     }
-    occurrences.push(ProjectionOccurrence {
-        occurrence_id: relation.id.clone(),
-        source: sceno::SourceRef::new(COMPARISON_ADAPTER, &relation.id),
+    occurrences.push(ProjectionOccurrence::new(
+        relation.id.clone(),
+        sceno::SourceRef::new(COMPARISON_ADAPTER, &relation.id),
         values,
-    });
+    ));
     let mut fields: BTreeMap<String, ProjectionFieldType> = BTreeMap::new();
     for occurrence in &occurrences {
         for (name, value) in &occurrence.values {

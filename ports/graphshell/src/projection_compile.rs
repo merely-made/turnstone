@@ -361,18 +361,8 @@ mod tests {
             domain: "set".into(),
             resource: "set:practice".into(),
         };
-        let occurrence = |id: &str, label: &str, x: f64, y: f64| ProjectionOccurrence {
-            occurrence_id: id.into(),
-            // `bar:1` repeats on purpose: occurrences, rather than sources,
-            // are selected and coordinated across views.
-            source: SourceRef::new("woodshed.set", "bar:1"),
-            values: BTreeMap::from([
-                ("occurrence_id".into(), ProjectionValue::Text(id.into())),
-                ("label".into(), ProjectionValue::Text(label.into())),
-                ("x".into(), ProjectionValue::Number(x)),
-                ("y".into(), ProjectionValue::Number(y)),
-            ]),
-        };
+        // The same source repeats on purpose: occurrences are selected and
+        // coordinated across views.
         ProjectionDataset {
             source,
             revision: "woodshed-fixture-v1".into(),
@@ -582,15 +572,15 @@ mod tests {
     }
 
     fn occurrence(id: &str, label: &str, x: f64, y: f64) -> ProjectionOccurrence {
-        ProjectionOccurrence {
-            occurrence_id: id.into(),
-            source: SourceRef::new("woodshed.set", "bar:1"),
-            values: BTreeMap::from([
+        ProjectionOccurrence::new(
+            id,
+            SourceRef::new("woodshed.set", "bar:1"),
+            BTreeMap::from([
                 ("occurrence_id".into(), ProjectionValue::Text(id.into())),
                 ("label".into(), ProjectionValue::Text(label.into())),
                 ("x".into(), ProjectionValue::Number(x)),
                 ("y".into(), ProjectionValue::Number(y)),
             ]),
-        }
+        )
     }
 }
