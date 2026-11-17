@@ -301,3 +301,6 @@ pub enum ShellEvent {
 
 #[cfg(all(test, feature = "peers", windows))]
 mod catalogue_headed;
+
+#[cfg(all(test, windows))]
+mod silhouette_headed;
