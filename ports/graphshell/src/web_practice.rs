@@ -14,6 +14,7 @@
 //! rectangles.
 
 use super::window;
+use cartography::canvas::{ArrangementAction, Axes, BoardItem, PermittedActions, PhysicsBoard};
 use graphshell::{
     practice_disclosure::tone_labels as tones,
     practice_workspace::{
@@ -22,7 +23,6 @@ use graphshell::{
     },
     projection_compile::{PRACTICE_CARD, default_definition, practice_compiler},
 };
-use cartography::canvas::{ArrangementAction, Axes, BoardItem, PermittedActions, PhysicsBoard};
 use scenograph::{Channel, ProjectionDefinition};
 use scenomise::{host_dataset::HostDatasetV1, projection::CompiledProjection};
 use serde::{Deserialize, Serialize};
@@ -89,6 +89,7 @@ pub(super) struct PracticeHost {
     clock_ms: Option<f64>,
     accumulator_ms: f64,
     card_size: (f32, f32),
+    scene_fit: (f32, f32, f32),
     selected_tone: Option<String>,
     focus_view: bool,
 }
@@ -163,6 +164,7 @@ impl PracticeHost {
             clock_ms: None,
             accumulator_ms: 0.0,
             card_size: (PRACTICE_CARD.w, PRACTICE_CARD.h),
+            scene_fit: (1.0, 0.0, 0.0),
             selected_tone: None,
             focus_view: false,
         })
@@ -183,12 +185,24 @@ impl PracticeHost {
             .min(available_h / bounds.size.h.max(1.0))
             .min(1.5);
         self.card_size = (PRACTICE_CARD.w * scale, PRACTICE_CARD.h * scale);
-        let stacked = width < 480;
+        let has_forms = !self.compiled.scene.relation_constraints.is_empty()
+            || self
+                .compiled
+                .scene
+                .relations
+                .iter()
+                .any(|r| r.form != sceno::RelationForm::Stroke);
+        let stacked = width < 480 && !has_forms;
         if stacked {
             self.card_size = (width.saturating_sub(48) as f32, PRACTICE_CARD.h);
         }
         let origin_x = (width as f32 - bounds.size.w * scale) * 0.5;
         let origin_y = 216.0 + (available_h - bounds.size.h * scale) * 0.5;
+        self.scene_fit = (
+            scale,
+            origin_x - bounds.origin.x * scale,
+            origin_y - bounds.origin.y * scale,
+        );
         let items = self
             .compiled
             .scene
@@ -402,11 +416,26 @@ impl PracticeHost {
         relationships
             .iter()
             .map(|relationship| {
+                let outcome = self
+                    .compiled
+                    .scene
+                    .relation_constraints
+                    .iter()
+                    .find(|report| report.constraint.id == relationship.id)
+                    .map(|report| {
+                        format!(
+                            "; {}: {}",
+                            if report.honored { "honoured" } else { "unmet" },
+                            report.reason
+                        )
+                    })
+                    .unwrap_or_default();
                 format!(
-                    "{}: {} to {}",
+                    "{}: {} to {}{}",
                     relationship.label,
                     label(&relationship.from_occurrence),
-                    label(&relationship.to_occurrence)
+                    label(&relationship.to_occurrence),
+                    outcome
                 )
             })
             .collect::<Vec<_>>()
@@ -809,6 +838,52 @@ impl PracticeHost {
             false,
             None,
         );
+        if self.workspace.location().view == PracticeView::Relations {
+            let (scale, x, y) = self.scene_fit;
+            for (index, relation) in self.compiled.scene.relations.iter().enumerate() {
+                let Some(cell) = relation.cell_bounds() else {
+                    continue;
+                };
+                let from = &self.compiled.labels[&relation.from];
+                let to = &self.compiled.labels[&relation.to];
+                add(
+                    &format!("matrix-cell-{index}"),
+                    "●".into(),
+                    format!("{from} → {to}"),
+                    "matrix-cell",
+                    [
+                        x + cell.origin.x * scale,
+                        y + cell.origin.y * scale,
+                        cell.size.w * scale,
+                        cell.size.h * scale,
+                    ],
+                    None,
+                    false,
+                    None,
+                );
+            }
+            for (instance, row, column) in
+                scenomise::relation_forms::matrix_headings(&self.compiled.scene)
+            {
+                for (axis, at) in [("row", row), ("column", column)] {
+                    add(
+                        &format!("matrix-{axis}-{}", instance.0),
+                        self.compiled.labels[&instance].clone(),
+                        String::new(),
+                        "quiet",
+                        [
+                            x + at.x * scale - 28.0 * scale,
+                            y + at.y * scale - 8.0 * scale,
+                            56.0 * scale,
+                            16.0 * scale,
+                        ],
+                        None,
+                        false,
+                        None,
+                    );
+                }
+            }
+        }
         if self.drawer {
             add(
                 "space-card",
@@ -929,6 +1004,9 @@ impl PracticeHost {
                 .map(|(x, y)| (x + self.card_size.0 * 0.5, y + self.card_size.1 * 0.5))
         };
         for relation in &self.compiled.scene.relations {
+            if relation.form != sceno::RelationForm::Stroke {
+                continue;
+            }
             if let (Some((fx, fy)), Some((tx, ty))) = (center(&relation.from), center(&relation.to))
             {
                 lines.push(([fx, fy, tx, ty], false));

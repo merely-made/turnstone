@@ -306,14 +306,6 @@ impl GroupedHostDataset {
                 .translate = sceno::Vec2::new(position.x, position.y);
         }
         let scene = &mut projection.scene;
-        // Hosted relationships are straight world-space routes. Keep the
-        // portable scene consistent with remembered canvas placements.
-        for relation in &mut scene.relations {
-            relation.points = vec![
-                scene.items[relation.from.0 as usize].transform.translate,
-                scene.items[relation.to.0 as usize].transform.translate,
-            ];
-        }
         let mut bounds: Option<sceno::Rect> = None;
         for item in &scene.items {
             let transform = scene
@@ -335,6 +327,7 @@ impl GroupedHostDataset {
             }
         }
         scene.bounds = bounds.unwrap_or_default();
+        scenomise::relation_forms::refresh_scene(scene);
         Ok(projection)
     }
 
@@ -471,9 +464,10 @@ mod tests {
             view.relations.len()
         );
         let positions: std::collections::HashMap<_, _> = view.positions.iter().copied().collect();
-        let projection = cartography::canvas::underlay::projection_from_positions(&view.graph, |key| {
-            positions.get(&key).copied()
-        });
+        let projection =
+            cartography::canvas::underlay::projection_from_positions(&view.graph, |key| {
+                positions.get(&key).copied()
+            });
         assert_eq!(projection.nodes.len(), positions.len());
         for node in &projection.nodes {
             assert_eq!(node.position, positions[&node.node]);

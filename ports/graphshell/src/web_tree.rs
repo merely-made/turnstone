@@ -148,6 +148,7 @@ const SHEET: &str = "\
     .tree-product p { margin:4px 0; } \
     .tree-projection { position:absolute;top:8px;left:12px;right:310px;max-height:90%;overflow:auto;z-index:6;background:var(--tabard-color-surface, #17232b);padding:12px; } \
     .tree-practice { background:var(--tabard-color-surface, #1a211b);color:var(--tabard-color-text, #e4eadc); } \
+    .practice-matrix-cell { background:#dbb86b44; border:1px solid #dbb86b; text-align:center; } \
     .practice-control { box-sizing:border-box; padding:8px; font-size:14px; } \
     .practice-button,.practice-card { background:var(--tabard-color-surface-2, #29352a);border:1px solid var(--tabard-color-border-strong, #627255); } \
     .practice-selected { background:var(--tabard-color-surface-hover, #3a4c30);border:2px solid var(--tabard-color-border-strong, #bdd59e); } \

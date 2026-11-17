@@ -59,12 +59,8 @@ pub(crate) fn disclose_scene(
         item.layer = score_item.layer;
         item.visible = score_item.visible;
     }
-    for relation in &mut scene.relations {
-        let from = scene.items[relation.from.0 as usize].transform.translate;
-        let to = scene.items[relation.to.0 as usize].transform.translate;
-        relation.points = vec![from, to];
-    }
     scene.bounds = solved.bounds;
     scene.generation = mapped.score.generation;
+    scenomise::relation_forms::refresh_scene(&mut scene);
     cartography::CoveredScene { scene, coverage }
 }
