@@ -100,8 +100,8 @@ To refresh the Genet and Netrender sources together in the portable graph, run
 `cargo update -p paint_list_render --precise <netrender-revision>`, then run
 `cargo check -p turnstone --bin turnstone --locked`. Each update advances the
 packages from that Git source together. Record the selected revisions and
-check result in the task's receipt; the ignored lock is local build state, not
-a durable pin.
+check result in the task's receipt. The commit's resolved note records the
+portable graph; inspect it with `house resolved show <commit>`.
 
 For sibling development, copy `.cargo/config.toml.example` to
 `.cargo/config.local.toml` and adjust the paths. Existing users run
