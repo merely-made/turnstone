@@ -22,6 +22,7 @@ pub fn draft_from_definition(definition: &ProjectionDefinition) -> ProjectionDra
         reading: definition.reading.clone(),
         encoding: definition.encoding.clone(),
         arrangement: definition.arrangement.clone(),
+        marks: definition.marks.clone(),
         fields: definition.fields.clone(),
         interaction: definition.interaction.clone(),
         appearance: definition.appearance.clone(),
@@ -215,5 +216,23 @@ impl ProjectionSession {
         self.error.clear();
         self.solves += 1;
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn recipe_mark_slots_survive_reopening_as_a_draft() {
+        let definition = ProjectionDefinition {
+            marks: scenograph::MarkSlots {
+                node: Some(scenograph::presentation::NodeMark::card()),
+                relation: Some(scenograph::presentation::RelationForm::Stroke),
+                field: Some(scenograph::FieldForm::Contour),
+            },
+            ..Default::default()
+        };
+        assert_eq!(draft_from_definition(&definition).marks, definition.marks);
     }
 }

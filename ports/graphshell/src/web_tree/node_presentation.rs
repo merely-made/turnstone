@@ -6,9 +6,9 @@
 //! Saved node rules and the current-selection attribute lane.
 use super::*;
 use cambium::{DetailRow, DetailSection, button, detail_panel};
+use cartography::canvas::Role;
 use graphshell::node_presentation::{MAX_LIVE_NODES, NodeRuntime, Representation};
 use graphshell::presentation_binding::{BoundContext, Occurrence, ViewInputs, bind};
-use cartography::canvas::Role;
 use scenograph::presentation::{Effect, PrimitiveKind, RuleSet};
 #[derive(Default)]
 pub(super) struct Pane {
@@ -132,30 +132,43 @@ pub(super) fn install(page: &TreePage) {
     let pane = &page.node_presentation;
     let mut canvas = page.shared.canvas.borrow_mut();
     let epoch = canvas.graph_view_epoch();
-    let faces = if pane.running && pane.epoch == Some(epoch) {
-        pane.runtime
-            .decisions()
-            .iter()
-            .filter_map(|node| match &node.face {
-                Some(Effect::Representation { value }) => Some((node.member, value.clone())),
-                _ => None,
-            })
-            .collect()
-    } else {
-        std::collections::HashMap::new()
-    };
-    match canvas.set_node_rule_representations(epoch, faces) {
+    let mut faces = std::collections::HashMap::new();
+    let mut marks = std::collections::HashMap::new();
+    if pane.running && pane.epoch == Some(epoch) {
+        for node in pane.runtime.decisions() {
+            match &node.face {
+                Some(Effect::Representation { value }) => {
+                    faces.insert(node.member, value.clone());
+                },
+                Some(Effect::NodeMark { value }) => {
+                    marks.insert(node.member, value.clone());
+                },
+                _ => {},
+            }
+        }
+    }
+    match canvas.set_node_rule_presentation(epoch, faces, marks) {
         Ok(true) => page.shared.dirty.set(true),
-        Err(message) => web_sys::console::error_1(&message.into()),
+        Err(message) => {
+            if let Ok(true) = canvas.set_node_rule_representations(epoch, Default::default()) {
+                page.shared.dirty.set(true);
+            }
+            web_sys::console::error_1(&message.into());
+        },
         _ => {},
     }
 }
+
 fn count(page: &TreePage, face: Representation) -> usize {
     page.node_presentation
         .runtime
         .decisions()
         .iter()
-        .filter(|node| matches!(&node.face,Some(Effect::Representation { value }) if *value==face))
+        .filter(|node| match &node.face {
+            Some(Effect::Representation { value }) => *value == face,
+            Some(Effect::NodeMark { value }) => value.detail == face,
+            _ => false,
+        })
         .count()
 }
 pub(super) fn section(page: &TreePage) -> Child {

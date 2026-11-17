@@ -5,9 +5,7 @@
 // SPDX-License-Identifier: MPL-2.0
 use super::*;
 use kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta};
-use kernel::graph::{
-    Field, ScalarField, SemanticStatementSpec, SemanticSubKind, predicate_iri,
-};
+use kernel::graph::{Field, ScalarField, SemanticStatementSpec, SemanticSubKind, predicate_iri};
 use kernel::types::GraphScope;
 use scenograph::presentation::{Condition, Resolution, Rule, RuleSet, Target};
 fn fixture() -> (Graph, [Uuid; 4]) {
@@ -418,4 +416,27 @@ fn attention_binds_as_states_only_when_supplied() {
             .iter()
             .any(|note| note.contains("Overview state has no adapter"))
     );
+}
+
+#[test]
+fn whole_node_marks_use_the_live_canvas_capability() {
+    let (graph, members) = fixture();
+    let bound = bind(
+        &graph,
+        &Occurrence::Access { member: members[0] },
+        &ViewInputs::default(),
+        None,
+    )
+    .unwrap();
+    let mut mark = scenograph::presentation::NodeMark::new(
+        sceno::Representation::Glyph,
+        [scenograph::presentation::Extent::Measured],
+    );
+    mark.body =
+        scenograph::presentation::Body::Silhouette(scenograph::presentation::Silhouette::Diamond);
+    assert!(bound.supports_effect(&Effect::NodeMark {
+        value: mark.clone()
+    }));
+    mark.detail = sceno::Representation::Snapshot;
+    assert!(!bound.supports_effect(&Effect::NodeMark { value: mark }));
 }

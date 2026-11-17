@@ -297,6 +297,9 @@ impl BoundContext {
             return false;
         }
         match effect {
+            Effect::NodeMark { value } => {
+                cartography::canvas::Canvas::supports_node_rule_mark(value)
+            },
             Effect::Representation { value } => matches!(
                 value,
                 sceno::Representation::Glyph | sceno::Representation::Card
