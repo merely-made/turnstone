@@ -37,8 +37,10 @@ pub fn viewer_options(app: &App, saved: Option<&str>) -> Vec<ViewerOption> {
     engines.sort_by_key(|engine| {
         let rank = match engine.id.as_str() {
             "genet.livery" => 0,
-            "genet.reader" => 1,
-            _ => 2,
+            "genet.scripted" => 1,
+            "genet.scripted.nova" => 2,
+            "genet.reader" => 3,
+            _ => 4,
         };
         (
             !engine.availability.is_selectable(),

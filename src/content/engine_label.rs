@@ -6,6 +6,7 @@ pub fn engine_label(id: &str) -> String {
     match id {
         "genet.livery" => "Genet",
         "genet.scripted" => "Genet (Bole)",
+        "genet.scripted.nova" => "Genet (Vano)",
         "genet.reader" => "Reader",
         crate::retained_clip::ENGINE_ID => "Retained clip",
         crate::saved_sources::ENGINE_ID => "Saved source",

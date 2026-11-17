@@ -217,10 +217,17 @@ which runs offline; the Workbench image comes from
 `TURNSTONE_SCENARIO` set to the file and a fresh `TURNSTONE_ROOT`.
 
 Build the native app with `cargo build -p turnstone --features scripted-webgl`
-and set `TURNSTONE_GENET_ENGINE=bole` to select Genet's scripted HTML route.
+to enable Genet's scripted HTML routes. In the Inspector, open **Change viewer**
+and choose **Genet (Bole)** or **Genet (Vano)** to switch the selected page's engine.
+The choice is saved per page, and switching a live page reloads it in the chosen engine.
+Vano requires a 64-bit target. `TURNSTONE_GENET_ENGINE=bole` or
+`TURNSTONE_GENET_ENGINE=vano` sets the default for pages using Auto.
 The WebGL backdrop regression can be run on Windows with
-`scenarios/run_native_webgl_backdrop.ps1 -Executable <turnstone.exe> -ArtifactDir <fresh-directory>`.
-It serves the fixture from loopback and samples the composited Turnstone window.
+`scenarios/run_native_webgl_backdrop.ps1 -Executable <turnstone.exe> -ArtifactDir <fresh-directory> -Engine bole`.
+Run it again with `-Engine vano` and another fresh artifact directory to compare engines.
+Add `-SwitchEngines` to start with the other engine and switch the live page through
+the Inspector before checking its pixels. It serves the fixture from loopback,
+selects engines through the picker and samples the composited Turnstone window.
 
 ## Retained answers
 

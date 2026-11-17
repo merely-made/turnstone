@@ -206,6 +206,7 @@ rfd = "0.18.0"
 inker = { git = "https://github.com/merely-made/inker.git", branch = "main" }
 genet-documents = { git = "https://github.com/merely-made/genet.git", branch = "main", features = ["livery"] }
 genet-bole = { git = "https://github.com/merely-made/genet.git", branch = "main", optional = true }
+genet-vano = { git = "https://github.com/merely-made/genet.git", branch = "main", optional = true }
 genet-scripted = { git = "https://github.com/merely-made/genet.git", branch = "main", optional = true }
 # The Mere half of the former `genet-documents` (boundary plan P1): the
 # reader and smolweb lanes, and the remote fetcher that supplies the http(s)
@@ -372,7 +373,7 @@ tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 libc = "=0.2.189"
 
 [features]
-scripted-webgl = ["dep:genet-bole", "dep:genet-scripted", "genet-documents/scripted", "genet-presenter/native-webgl"]
+scripted-webgl = ["dep:genet-bole", "dep:genet-vano", "dep:genet-scripted", "genet-documents/scripted-nova", "genet-presenter/native-webgl"]
 default = []
 # Knot currently bundles the blob evidence store used by this adapter with its
 # supplier `peers` feature. This does not install Turnstone's peer workers.
