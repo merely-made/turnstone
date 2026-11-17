@@ -192,8 +192,7 @@ impl Shell {
         // the engine-native smolweb family. Route policy selects one by
         // address/media type without app dispatch.
         #[cfg(feature = "scripted-webgl")]
-        let scripted_webgl = (std::env::var("TURNSTONE_GENET_ENGINE").as_deref() == Ok("bole"))
-            .then(scripted_webgl::ScriptedWebGl::default);
+        let scripted_webgl = scripted_webgl::ScriptedWebGl::from_environment();
         let mut content_engines = content_engines_with_client_limits(
             client_limits,
             #[cfg(feature = "scripted-webgl")]
@@ -205,10 +204,10 @@ impl Shell {
         #[cfg(feature = "scripted-webgl")]
         let route_policy = {
             let mut policy = route_policy;
-            if scripted_webgl.is_some() {
+            if let Some(scripted) = &scripted_webgl {
                 for rule in &mut policy.rules {
                     if rule.engine_id == inker::routing::ENGINE_GENET_LIVERY {
-                        rule.engine_id = scripted_webgl::ENGINE_ID.into();
+                        rule.engine_id = scripted.engine_id().into();
                     }
                 }
             }

@@ -15,6 +15,7 @@ use wgpu_cue::{
 
 struct Entry {
     content: ContentKey,
+    engine_id: String,
     renderer: Option<PeltSceneRenderer>,
     presenter: Presenter,
     presentations: u64,
@@ -54,6 +55,7 @@ impl CueFrames {
             let webgl_images = 0usize;
             serde_json::json!({
             "surface":id.0,"content":format!("{:?}",entry.content),
+            "engine_id":entry.engine_id,
             "direction":if entry.renderer.is_some() {"host-device"} else {"native-frame"},
             "sampled_layers":entry.presentations,
             "scope":entry.last_stamp.map(|s|format!("{}:{}",s.scope.owner,s.scope.generation)),
@@ -119,6 +121,7 @@ impl CueFrames {
         }
         let entry = self.entries.entry(surface.id).or_insert_with(|| Entry {
             content: key,
+            engine_id: String::new(),
             renderer: None,
             presenter: Presenter::default(),
             presentations: 0,
@@ -132,6 +135,7 @@ impl CueFrames {
         let content = pool.cue_content_mut(&surface.id).map_err(Error::Backend)?;
         let host = self.host.as_ref().unwrap();
         let frame = if let Some(controller) = content.document_mut() {
+            controller.engine_id().clone_into(&mut entry.engine_id);
             if entry.renderer.is_none() {
                 entry.renderer = Some(PeltSceneRenderer::new(handles)?);
             }
@@ -172,6 +176,7 @@ impl CueFrames {
                 importer,
             )?
         } else {
+            entry.engine_id.clone_from(&content.route().decision.engine_id);
             entry.renderer = None;
             #[cfg(feature = "scripted-webgl")]
             {

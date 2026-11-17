@@ -4,10 +4,12 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)][string]$Executable,
-    [Parameter(Mandatory)][string]$ArtifactDir
+    [Parameter(Mandatory)][string]$ArtifactDir,
+    [ValidateSet('bole', 'vano')][string]$Engine = 'bole'
 )
 
 $ErrorActionPreference = 'Stop'
+$Engine = $Engine.ToLowerInvariant()
 $exe = (Resolve-Path -LiteralPath $Executable).Path
 $fixture = Join-Path $PSScriptRoot 'fixtures/native_webgl_backdrop.html'
 $artifact = [IO.Path]::GetFullPath($ArtifactDir)
@@ -48,7 +50,7 @@ $vars = @{
     TURNSTONE_ROOT = Join-Path $artifact 'profile'
     TURNSTONE_CAPTURE_DIR = $artifact
     TURNSTONE_SCENARIO = Join-Path $artifact 'backdrop.scn'
-    TURNSTONE_GENET_ENGINE = 'bole'
+    TURNSTONE_GENET_ENGINE = $Engine
     TURNSTONE_OFFLINE = '0'
 }
 $previous = @{}
@@ -85,8 +87,10 @@ capture backdrop
     $done = Get-Content -LiteralPath (Join-Path $artifact 'scenario.done') -TotalCount 1
     if ($done -ne 'RESULT ok') { throw "Scenario failed. See $artifact." }
     $diagnostic = Get-Content -LiteralPath (Join-Path $artifact 'backdrop.cue-frames.json') -Raw | ConvertFrom-Json
+    $engineId = if ($Engine -eq 'vano') { 'genet.scripted.nova' } else { 'genet.scripted' }
     $entries = @($diagnostic.entries | Where-Object { $_.direction -eq 'host-device' -and $_.webgl_images -eq 1 })
     if ($entries.Count -ne 1) { throw 'Expected one staged WebGL canvas on a host-device content surface.' }
+    if ($entries[0].engine_id -ne $engineId) { throw "Expected $engineId, got $($entries[0].engine_id)." }
     $bounds, $scale = $entries[0].viewport
     if ($null -eq $scale -or $scale -le 0) { throw 'Missing document viewport and scale.' }
 
@@ -121,9 +125,9 @@ capture backdrop
             }
             [pscustomobject]@{ name=$sample.name; x=$x; y=$y; expected=$expected; actual="$($rgb -join ','),$($p.A)" }
         }
-        [pscustomobject]@{ scale=$scale; viewport=$bounds; samples=@($rows) } |
+        [pscustomobject]@{ engine=$Engine; engine_id=$engineId; scale=$scale; viewport=$bounds; samples=@($rows) } |
             ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $artifact 'backdrop-pixels.json')
-        Write-Host "$($rows.Count) native backdrop pixel checks passed."
+        Write-Host "$Engine passed $($rows.Count) native backdrop pixel checks."
     } finally { $bitmap.Dispose() }
 } finally {
     if (!$server.HasExited) { $server.Kill(); $server.WaitForExit() }

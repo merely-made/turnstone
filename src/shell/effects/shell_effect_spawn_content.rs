@@ -144,8 +144,8 @@ impl Shell {
                 };
                 let decision = self.route_policy.route(&request);
                 #[cfg(feature = "scripted-webgl")]
-                if decision.engine_id == super::super::scripted_webgl::ENGINE_ID
-                    && let Some(scripted) = &self.scripted_webgl
+                if let Some(scripted) = &self.scripted_webgl
+                    && decision.engine_id == scripted.engine_id()
                 {
                     let Some(host) = &self.host else {
                         self.pending_surface_spawns.push((node, url));
