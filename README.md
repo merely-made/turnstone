@@ -91,9 +91,17 @@ Cancel always prevents a click.
 
 Turnstone pulls `mere` and the genet engine family as git dependencies; a plain
 `cargo build` fetches them. Headed self-drive receipts live under `scenarios/`.
-The committed `Cargo.lock` records the portable graph on Rust 1.99.1. Run
-`cargo check --workspace`, or use Python 3.11+ to check configuration,
-package provenance and lock preservation with `python scripts/cargo_mode.py verify`.
+The repository does not commit `Cargo.lock`; Git ignores the generated lock
+for this checkout. Cargo reads it to keep the resolved graph stable between
+commands. Run `cargo check --workspace` to compile the current portable graph.
+
+To refresh the Genet and Netrender sources together in the portable graph, run
+`cargo update -p genet-livery --precise <genet-revision>` and
+`cargo update -p paint_list_render --precise <netrender-revision>`, then run
+`cargo check -p turnstone --bin turnstone --locked`. Each update advances the
+packages from that Git source together. Record the selected revisions and
+check result in the task's receipt; the ignored lock is local build state, not
+a durable pin.
 
 For sibling development, copy `.cargo/config.toml.example` to
 `.cargo/config.local.toml` and adjust the paths. Existing users run
@@ -105,7 +113,8 @@ metadata use the portable graph; configure editor checks to use the launcher
 when working across repositories. Local config and locks are never committed.
 
 Mere, Genet, Knot and the other family repositories are followed on their
-`main` branches; `Cargo.lock` records the exact revisions a build used.
+`main` branches; the generated ignored `Cargo.lock` records the exact
+revisions used by this checkout.
 Independently developed suppliers (Armillary, Eidetic, Gemot) stay on fixed
 revisions. Advance the lock as a tested set rather than on every sibling commit.
 A local build and a redirect-free locked build are separate checks.
