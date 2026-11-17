@@ -20,26 +20,48 @@ struct Entry {
     presentations: u64,
     last_stamp: Option<FrameStamp>,
     submitted_revision: u64,
+    viewport: Option<([f32; 4], f32)>,
+    #[cfg(feature = "scripted-webgl")]
+    webgl_images: genet_render_host::webgl::WebGlImages,
 }
 #[derive(Default)]
 pub(super) struct CueFrames {
     host: Option<GpuHost>,
     entries: HashMap<SurfaceId, Entry>,
+    #[cfg(feature = "scripted-webgl")]
+    scripted_webgl: Option<super::scripted_webgl::ScriptedWebGl>,
 }
 impl CueFrames {
+    #[cfg(feature = "scripted-webgl")]
+    pub fn with_scripted_webgl(
+        scripted_webgl: Option<super::scripted_webgl::ScriptedWebGl>,
+    ) -> Self {
+        Self {
+            scripted_webgl,
+            ..Self::default()
+        }
+    }
+
     pub fn clear(&mut self) {
         self.entries.clear();
         self.host = None;
     }
     pub fn diagnostic(&self) -> serde_json::Value {
-        serde_json::json!({"entries":self.entries.iter().map(|(id, entry)| serde_json::json!({
+        serde_json::json!({"entries":self.entries.iter().map(|(id, entry)| {
+            #[cfg(feature = "scripted-webgl")]
+            let webgl_images = entry.webgl_images.staged_count();
+            #[cfg(not(feature = "scripted-webgl"))]
+            let webgl_images = 0usize;
+            serde_json::json!({
             "surface":id.0,"content":format!("{:?}",entry.content),
             "direction":if entry.renderer.is_some() {"host-device"} else {"native-frame"},
             "sampled_layers":entry.presentations,
             "scope":entry.last_stamp.map(|s|format!("{}:{}",s.scope.owner,s.scope.generation)),
             "revision":entry.last_stamp.map(|s|s.content_revision),
             "pending":entry.renderer.as_ref().is_some_and(PeltSceneRenderer::pending),
-        })).collect::<Vec<_>>()})
+            "viewport":entry.viewport,
+            "webgl_images":webgl_images,
+        })}).collect::<Vec<_>>()})
     }
     pub fn ready_count(&self) -> usize {
         self.entries
@@ -102,6 +124,9 @@ impl CueFrames {
             presentations: 0,
             last_stamp: None,
             submitted_revision: 0,
+            viewport: None,
+            #[cfg(feature = "scripted-webgl")]
+            webgl_images: Default::default(),
         });
         let revision = pool.paint_revision(&key).unwrap_or(0);
         let content = pool.cue_content_mut(&surface.id).map_err(Error::Backend)?;
@@ -113,7 +138,33 @@ impl CueFrames {
             if !entry.renderer.as_ref().unwrap().pending() {
                 entry.submitted_revision = revision;
             }
-            let mut source = entry.renderer.as_mut().unwrap().bind(controller);
+            let renderer = entry.renderer.as_mut().unwrap();
+            #[cfg(not(feature = "scripted-webgl"))]
+            let mut source = renderer.bind(controller);
+            #[cfg(feature = "scripted-webgl")]
+            let webgl_host = self
+                .scripted_webgl
+                .as_ref()
+                .and_then(|scripted| scripted.host());
+            #[cfg(feature = "scripted-webgl")]
+            let images = &mut entry.webgl_images;
+            #[cfg(feature = "scripted-webgl")]
+            let mut prepare =
+                |renderer: &netrender::Renderer,
+                 draws: &[inker::session_engine::SessionExternalTextureDraw]| {
+                    if let Some(host) = &webgl_host {
+                        images
+                            .sync(host, renderer, draws.iter().map(|draw| draw.texture_key))
+                            .map_err(|error| Error::Backend(error.into()))?;
+                    } else if !draws.is_empty() {
+                        return Err(Error::Backend(
+                            "document canvas sources are unavailable".into(),
+                        ));
+                    }
+                    Ok(())
+                };
+            #[cfg(feature = "scripted-webgl")]
+            let mut source = renderer.bind_with_external_images(controller, &mut prepare);
             entry.presenter.present(
                 host,
                 wgpu_cue::Source::HostDevice(&mut source),
@@ -122,6 +173,10 @@ impl CueFrames {
             )?
         } else {
             entry.renderer = None;
+            #[cfg(feature = "scripted-webgl")]
+            {
+                entry.webgl_images = Default::default();
+            }
             let source = content
                 .cue_browser_mut()
                 .ok_or_else(|| Error::Unsupported("browser has no shared frame binding".into()))?;
@@ -144,6 +199,7 @@ impl CueFrames {
             }
             entry.presentations = entry.presentations.saturating_add(1);
             entry.last_stamp = Some(frame.stamp);
+            entry.viewport = Some((surface.rect.dest(), viewport.scale));
         }
         let layer = frame.map(|frame| {
             let alpha = match frame.alpha {

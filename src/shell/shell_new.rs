@@ -191,7 +191,31 @@ impl Shell {
         // The content port's ordinary lanes: both Genet static renderers plus
         // the engine-native smolweb family. Route policy selects one by
         // address/media type without app dispatch.
-        let mut content_engines = content_engines_with_client_limits(client_limits);
+        #[cfg(feature = "scripted-webgl")]
+        let scripted_webgl = (std::env::var("TURNSTONE_GENET_ENGINE").as_deref() == Ok("bole"))
+            .then(scripted_webgl::ScriptedWebGl::default);
+        let mut content_engines = content_engines_with_client_limits(
+            client_limits,
+            #[cfg(feature = "scripted-webgl")]
+            scripted_webgl.as_ref(),
+            #[cfg(feature = "scripted-webgl")]
+            proxy.clone(),
+        );
+        let route_policy = standard_route_policy();
+        #[cfg(feature = "scripted-webgl")]
+        let route_policy = {
+            let mut policy = route_policy;
+            if scripted_webgl.is_some() {
+                for rule in &mut policy.rules {
+                    if rule.engine_id == inker::routing::ENGINE_GENET_LIVERY {
+                        rule.engine_id = scripted_webgl::ENGINE_ID.into();
+                    }
+                }
+            }
+            policy
+        };
+        #[cfg(feature = "scripted-webgl")]
+        let cue_frames = cue_content::CueFrames::with_scripted_webgl(scripted_webgl.clone());
         let knot_proxy = proxy.clone();
         let knot_wake: Arc<dyn Fn() + Send + Sync> = Arc::new(move || {
             let _ = knot_proxy.send_event(crate::shell::ShellEvent::ActorWake);
@@ -395,8 +419,13 @@ impl Shell {
             width: 1024,
             height: 600,
             content_engines: Arc::new(content_engines),
+            #[cfg(feature = "scripted-webgl")]
+            scripted_webgl,
             pelt_surface_engines: Arc::new(inker::SurfaceEngineRegistry::new()),
             content_sessions: NodeDocuments::default(),
+            #[cfg(feature = "scripted-webgl")]
+            cue_frames,
+            #[cfg(not(feature = "scripted-webgl"))]
             cue_frames: Default::default(),
             surface_engines: inker::SurfaceEngineRegistry::new(),
             surface_poll_clock: surface_poll::SurfacePollClock::new(
@@ -426,7 +455,7 @@ impl Shell {
             knot_clip,
             knot_notes_root,
             clip_offers: HashMap::new(),
-            route_policy: standard_route_policy(),
+            route_policy,
             web_policy,
             epoch: std::time::Instant::now(),
             pending_fetches: browse::PendingFetches::default(),

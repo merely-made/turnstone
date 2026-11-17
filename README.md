@@ -216,6 +216,12 @@ which runs offline; the Workbench image comes from
 `scenarios/readme_live_screenshots.scn`, which needs the network. Run either with
 `TURNSTONE_SCENARIO` set to the file and a fresh `TURNSTONE_ROOT`.
 
+Build the native app with `cargo build -p turnstone --features scripted-webgl`
+and set `TURNSTONE_GENET_ENGINE=bole` to select Genet's scripted HTML route.
+The WebGL backdrop regression can be run on Windows with
+`scenarios/run_native_webgl_backdrop.ps1 -Executable <turnstone.exe> -ArtifactDir <fresh-directory>`.
+It serves the fixture from loopback and samples the composited Turnstone window.
+
 ## Retained answers
 
 `Ask retained text` opens an answer pane for the current browsing session.

@@ -160,6 +160,8 @@ pub struct Shell {
     /// ContentStates tracks. Ports own handles; App holds data.
     /// Shared with every node's Pelt controller, which spawns from it.
     pub(super) content_engines: Arc<SessionRegistry<netrender::Scene>>,
+    #[cfg(feature = "scripted-webgl")]
+    pub(super) scripted_webgl: Option<scripted_webgl::ScriptedWebGl>,
     /// Pelt's surface registry for document controllers. A node's web surface
     /// is spawned from `surface_engines` below and held as the surface lane
     /// of its content.

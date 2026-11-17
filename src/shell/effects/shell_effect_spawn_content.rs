@@ -143,6 +143,23 @@ impl Shell {
                     pinned_engine: pinned,
                 };
                 let decision = self.route_policy.route(&request);
+                #[cfg(feature = "scripted-webgl")]
+                if decision.engine_id == super::super::scripted_webgl::ENGINE_ID
+                    && let Some(scripted) = &self.scripted_webgl
+                {
+                    let Some(host) = &self.host else {
+                        self.pending_surface_spawns.push((node, url));
+                        return;
+                    };
+                    if let Err(error) = scripted.set_device(&host.renderer().wgpu_device.core) {
+                        let effects = self.app.apply_update(Update::ContentFailed {
+                            node,
+                            error: error.into(),
+                        });
+                        self.run_effects(effects);
+                        return;
+                    }
+                }
                 match dispatch_content_spawn(
                     &decision.engine_id,
                     self.host.is_some(),

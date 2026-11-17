@@ -152,6 +152,8 @@ mod content_engines_with_client_limits;
 use content_engines_with_client_limits::content_engines_with_client_limits;
 #[path = "content_engines_with_remote.rs"]
 mod content_engines_with_remote;
+#[cfg(feature = "scripted-webgl")]
+mod scripted_webgl;
 use content_engines_with_remote::content_engines_with_remote;
 #[path = "project_engine_inventory.rs"]
 mod project_engine_inventory;

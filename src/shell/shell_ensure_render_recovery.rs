@@ -201,9 +201,13 @@ impl Shell {
             self.cancel_native_frames("render device generation lost");
             self.cue_frames.clear();
             let mut can_replace = true;
+            #[cfg(feature = "scripted-webgl")]
+            if let Some(scripted) = &self.scripted_webgl {
+                can_replace &= scripted.detach_if_idle();
+            }
             #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
             {
-                can_replace = ![
+                can_replace &= ![
                     inker::routing::ENGINE_WELD_CHROMIUM,
                     inker::routing::ENGINE_SCRYING_WEB,
                     inker::routing::ENGINE_GRAFT_SERVO,
@@ -292,6 +296,14 @@ impl Shell {
                     core.clone(),
                 ) {
                     Ok(host) => {
+                        #[cfg(feature = "scripted-webgl")]
+                        if let Some(scripted) = &self.scripted_webgl
+                            && let Err(error) =
+                                scripted.set_device(&host.renderer().wgpu_device.core)
+                        {
+                            self.main_receipt.errors.push(error.into());
+                            return false;
+                        }
                         self.host = Some(host);
                         window.request_redraw();
                     },
