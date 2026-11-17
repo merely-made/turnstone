@@ -21,12 +21,12 @@
 //!   missing action, or an action that does not route.
 
 use cambium_rootstock::{ProducerAction, ProducerNode, ProducerRole, ProducerSemantics};
-use chirograph::AdvertisedAction;
-use graphshell_client::{LocalActionTarget, LocalActions};
 use cartography::canvas::{
     ArrangementAction, Canvas, CanvasDescription, DESCRIBED_ITEMS, DRAG_INTENT, PIN_INTENT,
     PhysicsBoard, Role,
 };
+use chirograph::AdvertisedAction;
+use graphshell_client::{LocalActionTarget, LocalActions};
 
 /// The local graph's items in a scene name this source adapter, with the
 /// member's id (`MereHost`'s projection).
@@ -75,6 +75,10 @@ pub fn canvas_semantics(description: &CanvasDescription, plant: Plant) -> Produc
         .iter()
         .skip(skip)
         .map(|item| ProducerNode {
+            domain_ref: Some(cambium_rootstock::SourceRef::new(
+                GRAPH_SOURCE,
+                item.member.to_string(),
+            )),
             key: item.key,
             role: ProducerRole::Group,
             name: item.name.clone(),

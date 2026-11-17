@@ -479,6 +479,7 @@ pub(super) fn board_semantics(
             .into_iter()
             .enumerate()
             .map(|(ordinal, (id, title, rect))| ProducerNode {
+                domain_ref: None,
                 // A card's id is its scene instance.
                 key: id.parse().unwrap_or(ordinal as u64),
                 role: ProducerRole::ListItem,

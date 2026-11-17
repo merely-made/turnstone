@@ -1,5 +1,7 @@
 # Turnstone design documents
 
+uxtree P2 (2026-11-17, candidate): the canvas lowering carries each described member UUID in the existing `sceno::SourceRef` contract through `ProducerNode`, preserving `DescribedKeyRegistry`'s keys. The owning plan and qualification are `graphshell/design_docs/graphshell_docs/implementation_strategy/2026-11-11_uxtree_spine_plan.md` and its archived receipt. The 13 canvas reader tests pass, including a 12-member UUID/key/command walk through Rootstock; dropping the real lowering's reference fails the same test. Qualification selects the Graphshell P2 candidate through a temporary Cargo home, with package IDs and raw logs under `Code/testing/graphshell/uxtree-p2/`. Graphshell must land before this receiving change. Browser execution and human AT remain separate gates.
+
 Sky source home (2026-11-04): Turnstone embeds `cleromancy-sky` at `3e97e1375723a16f1877bc7a9ee136800d09de5e`, the shared library adopted from its named-zone timeline and receipt code. Pane controls, navigation, retained source/admission and UI remain here. The owning consolidation and receiving gates are in `cleromancy/design_docs/2026-10-18_duplication_reduction_plan.md`, section "Turquet and shared daily sky". Existing V1 receipt fixtures retain their 0.13 engine identity; newly calculated receipts identify the imported 0.17 engine. Current software checks do not renew the archived headed Sky acceptance.
 
 Supplier cutover (2026-11-03): Turnstone uses the extracted Distillery/ESP

@@ -22,16 +22,18 @@ use cambium_genet_winit_host::{
 };
 use cambium_rootstock::{KeyPress, NamedKey as PressKey, ProducedAction, ProducerSemantics};
 use cambium_winit_a11y::A11yAction;
-use chirograph::{CapabilityProfile, IntentReference, PresentationCapability};
-use graphshell_client::LocalActionError;
 use cartography::canvas::{
     Canvas, DESCRIBED_ITEMS, DRAG_INTENT, PIN_INTENT, PhysicsChoice, Role as ItemRole, Speed,
 };
+use chirograph::{CapabilityProfile, IntentReference, PresentationCapability};
+use graphshell_client::LocalActionError;
 
 use super::*;
 use crate::app::GraphshellApp;
-use graphshell_host::mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef};
 use graphshell_host::board::RemoteBoard;
+use graphshell_host::mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef};
+
+mod envelope;
 
 const SLOT: u64 = 3;
 const WIDTH: u32 = 1200;

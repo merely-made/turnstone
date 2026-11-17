@@ -270,6 +270,7 @@ impl TextureProducer for ContentProducer {
                     height: 0.,
                 });
                 children.push(ProducerNode {
+                    domain_ref: None,
                     key,
                     role: ProducerRole::Group,
                     name,
