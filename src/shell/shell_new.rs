@@ -271,6 +271,12 @@ impl Shell {
             });
 
         let mut surface_providers = crate::contributed_surface::SurfaceProviderRegistry::new();
+        let personae_proxy = proxy.clone();
+        surface_providers
+            .register_provider(crate::personae_surface::PersonaeProvider::new(Arc::new(move || {
+                let _ = personae_proxy.send_event(crate::shell::ShellEvent::ActorWake);
+            })))
+            .expect("the Personae provider is unique");
         let resident_graph_proxy = proxy.clone();
         let resident_address_proxy = proxy.clone();
         surface_providers

@@ -340,7 +340,11 @@ impl ContributedSurfacePane {
     }
 
     pub fn focus_traverse(&mut self, forward: bool) -> SurfaceRequest {
+        let previous = self.session.focus();
         let effects = self.session.focus_traverse(forward);
+        if let Some(current) = self.session.focus().filter(|node| Some(*node) != previous) {
+            self.reveal(current);
+        }
         self.apply(effects)
     }
 

@@ -231,6 +231,7 @@ impl Shell {
         };
         if matches!(key, WinitKey::Named(WinitNamedKey::Tab)) {
             pane.focus_traverse(!self.shift);
+            self.request_redraw();
             return true;
         }
         let modifiers = cambium::Modifiers {

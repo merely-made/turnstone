@@ -481,6 +481,18 @@ pub static BUILTIN_PANES: &[PaneDefinition] = &[
         Some(|| PaneContent::Registered(PaneKindId::new(kind::FROZEN_PROJECTION)))
     ),
     pane!(
+        crate::personae_surface::PANE_KIND,
+        crate::personae_surface::LABEL,
+        PaneSourceShape::fixed(&[FixedSourceKind::External(crate::personae_surface::SOURCE_SCHEMA)]),
+        PaneMultiplicity::PerSpaceAndSource,
+        capabilities(false, false, NONE),
+        "turnstone.personae.config",
+        "turnstone.personae.view",
+        PaneRenderer::Contributed,
+        None,
+        None
+    ),
+    pane!(
         crate::resident_graph::PANE_KIND,
         crate::resident_graph::LABEL,
         PaneSourceShape::fixed(&[FixedSourceKind::External(crate::resident_graph::SOURCE_SCHEMA)]),

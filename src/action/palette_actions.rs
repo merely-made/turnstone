@@ -83,6 +83,13 @@ pub fn palette_actions() -> Vec<(String, Action)> {
         ("New research note", Action::NewResearchNote),
         ("Open research note", Action::OpenResearchNote),
         (
+            "Open Personae",
+            Action::SummonContributedPane {
+                kind: PaneKindId::new(crate::personae_surface::PANE_KIND),
+                source: crate::personae_surface::source(),
+            },
+        ),
+        (
             "Open resident graph",
             Action::OpenResidentGraphPrompt,
         ),

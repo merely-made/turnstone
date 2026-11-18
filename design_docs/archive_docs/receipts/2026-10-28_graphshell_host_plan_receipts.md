@@ -123,3 +123,33 @@ The native build and the locked library suite passed, with 1,434 passed and
 nine ignored. The focused bounded-form test verifies the exact selected
 value and that a form ceases to match its offer after a revision change.
 The retained receipt fits within the workspace's 100 MB cap.
+
+## 2026-11-18 N2 Personae on T-PC
+
+Turnstone mounted the standalone viewer's shared Dramatis pane and worker
+inside a contributed surface. It used Graphshell's `dramatis-review-host`
+fixture built at `4af0249`. The fixture serves the app broker with the
+Dramatis custody grant for two synthetic personae and quarantined imports.
+Unlock uses the fixture's Djinn prompt provider. The Linux scenarios, native
+captures, hashes, and logs are in
+`~/Code/testing/turnstone/receipts/2026-11-18_personae` on T-PC.
+
+- `p4/connected` opened **Personae** from the command palette and read the
+  vault and quarantined import metadata. Tab traversal brought **Choose Work**
+  into the viewport and Enter selected it. The run returned to Family, locked
+  the vault, and unlocked it through Djinn. The import cards returned after
+  unlock and the passphrase action was offered again.
+- `p4/unavailable` opened the pane against an absent app socket, reached
+  **Reconnect**, and presented identity as pending after retrying. Both
+  scenarios saved nonblank captures and returned `RESULT ok`.
+
+The shared Dramatis pane's twelve tests exercised the bounded import form,
+exact review targets, keyboard focus, and pending and cancelled prompts.
+The Personae pane connects under the Dramatis declaration. On Windows a grant
+pinned to the standalone viewer's image requires owner approval for
+Turnstone. The headed run exercised the isolated Linux custody and prompt
+fixture. H4r tracks host-specific native prompts and carry management.
+
+The final Turnstone library run passed 1,437 tests with nine ignored.
+The fixture stores and generated fixture executable were removed after the
+run. The retained evidence fits within the workspace's 100 MB cap.
