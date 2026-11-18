@@ -22,12 +22,12 @@ settle 120
 assert snap decision-kind == permission
 assert snap decision-prompt ~ 127.0.0.1:43107
 assert snap decision-prompt ~ location
-assert a11y button: Allow once
+assert node role:button Allow once
 capture 01_permission_decision
 
-# At 1024x600 this point is the retained Allow once button. The page advances
+# The retained Allow once button advances the page
 # after the geolocation callback, retaining this same Weld surface.
-click-at 250 154
+click surface:chrome role:button Allow once
 settle 120
 assert event permission-answered
 assert focused 127.0.0.1:43107/permission-result

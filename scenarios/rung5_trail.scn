@@ -17,7 +17,7 @@ settle 30
 
 # Open the Trail pane. It renders real rows off the graph: a "Recent" section
 # with the two visited urls.
-act Open Trail pane
+act id:pane:trail
 settle 5
 assert pane trail
 assert surface pane

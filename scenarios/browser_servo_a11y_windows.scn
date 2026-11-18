@@ -54,14 +54,14 @@ settle 900
 
 click surface:workbench .tab Servo A
 settle 10
-click-at 200 150
+click surface:content role:textbox Actual native text input
 type alpha
 settle 60
 assert snap browser-current ~ Servo A semantics
 assert snap host-foreign-a11y-text ~ DOM-only A idle alpha
 assert snap host-foreign-a11y-text ~ DOM-only B initial
 record-idle semantics-idle-dom
-click-at 200 215
+click surface:content role:button Navigate with actual input
 settle 160
 assert snap browser-current ~ a11y.html?page=A&result=alpha
 assert snap host-foreign-a11y-surfaces == 2
@@ -72,11 +72,11 @@ record-idle semantics-a-navigation
 
 click surface:workbench .tab Servo B
 settle 10
-click-at 715 150
+click surface:content role:textbox Actual native text input
 type bravo
 settle 60
 assert snap host-foreign-a11y-text ~ DOM-only B idle bravo
-click-at 715 215
+click surface:content role:button Navigate with actual input
 settle 160
 assert snap browser-current ~ a11y.html?page=B&result=bravo
 assert snap host-foreign-a11y-text ~ DOM-only A result alpha

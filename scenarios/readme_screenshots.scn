@@ -11,7 +11,7 @@ open mere://beta
 settle 10
 open mere://gamma
 settle 120
-act Fit to view
+act id:view:fit
 settle 30
 assert nodes >= 15
 capture 01_canvas

@@ -24,9 +24,9 @@ settle 120
 assert snap decision-kind == permission
 assert snap decision-prompt ~ 127.0.0.1:43107
 assert snap decision-prompt ~ location
-assert a11y button: Deny
+assert node role:button Deny
 capture 01_permission_decision
-click-at 430 154
+click surface:chrome role:button Deny
 settle 120
 assert event permission-answered
 assert snap browser-current ~ /permission-result

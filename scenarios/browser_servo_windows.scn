@@ -52,7 +52,7 @@ record-idle two-servo-pages
 
 click surface:workbench .tab Servo A
 settle 10
-click-at 200 150
+click surface:content role:textbox Actual page A input
 type alpx
 key backspace
 settle 40
@@ -60,7 +60,7 @@ assert snap browser-current ~ Servo A | text=alp | clicks=0
 type ha
 settle 40
 assert snap browser-current ~ Servo A | text=alpha | clicks=0
-click-at 200 215
+click surface:content role:button Navigate with A input
 settle 160
 assert snap browser-current ~ result.html?page=A&text=alpha&clicks=1
 assert snap browser-current ~ Servo A | result=alpha | clicks=1
@@ -71,11 +71,11 @@ capture 02_a_native_input_and_navigation
 click surface:workbench .tab Servo B
 settle 10
 assert snap browser-current ~ /page-b.html
-click-at 715 150
+click surface:content role:textbox Actual page B input
 type bravo
 settle 40
 assert snap browser-current ~ Servo B | text=bravo | clicks=0
-click-at 715 215
+click surface:content role:button Navigate with B input
 settle 160
 assert snap browser-current ~ result.html?page=B&text=bravo&clicks=1
 assert snap browser-current ~ Servo B | result=bravo | clicks=1

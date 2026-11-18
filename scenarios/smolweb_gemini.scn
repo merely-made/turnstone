@@ -15,7 +15,7 @@ capture 01_gemini_capsule
 # Follow the first retained gemtext link. This exercises the same content-hit
 # path as a person clicking it and proves that a Gemini-relative href becomes
 # a new graph address rather than an unusable `/...` node.
-click-at 600 363
+click surface:content role:link FAQ
 settle 60
 assert focused faq
 assert snap node-count >= 14

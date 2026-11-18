@@ -14,7 +14,7 @@ wait
 assert focused example
 
 # Delete example.com: it stages into the recycle bin, absent from the graph.
-act Delete node
+act id:node:delete
 settle 15
 assert event node-removed
 

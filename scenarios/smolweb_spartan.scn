@@ -12,7 +12,7 @@ assert surface content
 capture 01_spartan_prompt
 
 # The prompt is the first content row in the retained Spartan document.
-click-at 520 36
+click surface:content role:link Submit acceptance body
 assert omnibar open
 assert event smolweb-submission-composed spartan://127.0.0.1:30001/submit
 insert Spartan acceptance

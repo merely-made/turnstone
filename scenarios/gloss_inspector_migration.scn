@@ -30,6 +30,6 @@ assert event viewer-changed
 assert row Viewer: genet.reader
 assert text Document controls
 capture 02_inspector_handling
-act Save session
+act id:session:save
 settle 10
 log Gloss and Inspector migration complete

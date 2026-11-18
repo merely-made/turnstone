@@ -334,6 +334,10 @@ impl ForeignA11y {
         Ok(updates)
     }
 
+    pub(crate) fn observed_nodes(&self) -> Vec<crate::a11y::ObservedNode<'_>> {
+        crate::a11y::forest_nodes(&self.published_forest)
+    }
+
     pub(crate) fn observed_lines(&self) -> Vec<String> {
         crate::a11y::forest_lines(&self.published_forest)
     }

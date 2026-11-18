@@ -22,10 +22,10 @@ assert sessions == 1
 # This session's recycle bin gets a record, shown in a Trail pane in the
 # PRIMARY window (summon-beside follows the active pane, so the Trail must be
 # established before anything moves to a lens).
-act Delete node
+act id:node:delete
 wait
 assert event node-removed
-act Open Trail pane
+act id:pane:trail
 settle 10
 assert pane trail
 assert row Recover mere://beta
@@ -54,7 +54,7 @@ assert no-pane trail
 
 # The bin came with us too: this session's bin is its own, so the first
 # session's deleted node is not offered for recovery here.
-act Open Trail pane
+act id:pane:trail
 settle 10
 assert pane trail
 assert no-row Recover mere://beta

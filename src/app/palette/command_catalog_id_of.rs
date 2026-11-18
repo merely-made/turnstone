@@ -9,7 +9,7 @@ impl CommandCatalog {
         self.ids.get(label).map(String::as_str)
     }
 
-    pub(in super::super) fn action(&self, id: &str) -> Option<&Action> {
+    pub(crate) fn action(&self, id: &str) -> Option<&Action> {
         self.actions.get(id)
     }
 }

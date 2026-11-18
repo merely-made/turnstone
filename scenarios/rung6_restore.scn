@@ -10,7 +10,7 @@ settle 30
 act Toggle live content
 settle 30
 assert content-live
-act Save session
+act id:session:save
 settle 5
 capture 01_before_restart
 

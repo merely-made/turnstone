@@ -15,9 +15,9 @@ assert text Diagnostics
 assert text Retained:
 assert text Loss evicted:
 assert text Coverage: producer-supplied observations
-assert a11y label: Retained:
-assert a11y label: Loss evicted:
+assert node role:label Retained:
+assert node role:label Loss evicted:
 capture 01_diagnostic_inspection
-act Save session
+act id:session:save
 settle 10
 log Shared diagnostic inspection configured and saved

@@ -23,12 +23,12 @@ capture 01_frozen_projection_open
 # The document announces itself, and every instance is reachable by name in
 # the stitched application tree. Labels come from node_display_label, the
 # same label the endpoint's presentation plane sends.
-assert a11y document: Disclosed projection
-assert a11y harbor-notes
-assert a11y beacon-notes
+assert node role:document Disclosed projection
+assert node role:listitem harbor-notes
+assert node role:listitem beacon-notes
 
 # The instances group states its own count-bearing label, so a reader knows
 # the size of what they are about to walk.
-assert a11y list:
+assert node role:list items
 
 capture 02_frozen_projection_asserted

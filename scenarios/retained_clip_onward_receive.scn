@@ -22,5 +22,5 @@ settle 150
 assert snap retained-voice ~ Ended
 assert snap offline-acquisition-attempts == 0
 capture 05_second_mere_played
-act Save session
+act id:session:save
 log Selected clips received in a second mere with the first receiver stopped

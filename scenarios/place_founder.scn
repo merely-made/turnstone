@@ -167,7 +167,7 @@ wait-file 6000 ${EXCHANGE}\joiner.edited
 # editor is pressed at its tile: the Knot tile is the right half of the
 # workbench beside the shared page (see founder_knot_page.png).
 capture founder_knot_page
-click-at 890 110
+click surface:knot role:textbox
 settle 10
 key end
 key space

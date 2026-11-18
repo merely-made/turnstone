@@ -14,7 +14,7 @@ settle 10
 open mere://gamma
 # Let the force layout spread the spiral into a real arrangement.
 settle 120
-act Save session
+act id:session:save
 settle 5
 assert nodes >= 15
 capture 01_layout_saved

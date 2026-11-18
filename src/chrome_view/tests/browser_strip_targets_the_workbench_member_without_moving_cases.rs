@@ -138,25 +138,11 @@ fn clicking_a_suggestion_row_bubbles_its_index() {
     );
     let mut chrome = ChromeSurfaces::new();
     chrome.sync(&app, &[(0, 1024.0, 600.0)]);
-    // Resolve the first selectable row's centre off the laid-out chrome
-    // (the primary root's OWN subtree layout, the per-window pass the
-    // shell runs).
-    let (x, y) = {
-        let dom = chrome.dom.borrow();
-        let root = chrome
-            .runner
-            .window_root(chrome.projections[0])
-            .expect("the primary window-root exists");
-        let sheet = crate::ui::chrome_sheet(&chrome.appearance);
-        let row = dom
-            .all_with_class(dom.document(), "omni-row-sel")
-            .into_iter()
-            .next()
-            .expect("a selected row is drawn");
-        let (rx, ry, rw, rh) = crate::ui::subtree_node_rect(&dom, root, row, &sheet, 1024, 600)
-            .expect("row has a rect");
-        (rx + rw / 2.0, ry + rh / 2.0)
-    };
+    chrome.scene(0, 1024, 600);
+    let label = crate::chrome_view::row_text(&app.omnibar.suggestions[0]);
+    let (x, y) = chrome
+        .selector_point(&taproot::Selector::role("button").containing(label))
+        .expect("a painted suggestion row has a role and name");
     let intents = chrome.click(0, x, y, 1024, 600);
     assert_eq!(intents, vec![ChromeIntent::CommitRow(0)]);
 }

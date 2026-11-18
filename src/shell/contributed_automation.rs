@@ -79,7 +79,7 @@ pub(super) fn select<'a>(
             };
             let usable = !semantic.state.hidden
                 && !semantic.state.disabled
-                && (!matches!(selector.matcher, Match::Role(_))
+                && (matches!(selector.matcher, Match::Class(_))
                     || semantic.actions.contains(&DocumentA11yAction::Click));
             selected = Some((
                 Target {

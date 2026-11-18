@@ -185,6 +185,7 @@ impl Shell {
                 },
             ),
             None => self.retained_pane_selector_target(selector),
+            Some("content") => self.content_selector_target(selector),
             Some("frame") => {
                 let mut frames = self.outer_frames.borrow_mut();
                 let Some(frame) = frames.get_mut(&0) else {

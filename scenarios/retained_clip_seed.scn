@@ -28,5 +28,5 @@ settle 150
 assert snap retained-voice ~ Ended
 assert snap offline-acquisition-attempts == 0
 capture 04_voice_finished
-act Save session
+act id:session:save
 log Retained clips were admitted and voice body reached Ended with acquisition disabled

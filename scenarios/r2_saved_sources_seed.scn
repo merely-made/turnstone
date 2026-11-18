@@ -49,7 +49,7 @@ click-row Save source and keep
 wait-row 600 Source save: Saved
 assert row Saved captures: 2
 record-source-captures 03_A2_saved
-act Save session
+act id:session:save
 
 # Exercise another session's saved sentinel. Its source must never enter this
 # session's listing/search even though both sessions share the same profile.
@@ -66,7 +66,7 @@ act Open Inspector pane
 settle 3
 click-row Save source and keep
 wait-row 600 Source save: Saved
-act Save session
+act id:session:save
 act Search saved sources
 type copperfield
 wait-saved-sources 600
@@ -101,7 +101,7 @@ assert snap saved-reader-state == Ready
 assert snap saved-reader-text ~ Archive A1 opening
 assert snap saved-reader-quote == naïve — 東京 🐦
 assert snap saved-reader-origin ~ /A
-assert a11y Open original address
+assert node role:link Open original address
 capture 06_A1_reader
 record-saved-sources 06_A1_reader
 

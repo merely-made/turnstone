@@ -25,6 +25,9 @@ impl taproot::Driveable for Shell {
         if let Some(result) = a11y_lint::step(line, || self.lint_primary_a11y()) {
             return result;
         }
+        if let Some(args) = line.strip_prefix("assert node ") {
+            return self.assert_semantic_node(args);
+        }
         if let Some(args) = line.strip_prefix("inline-a11y-window ") {
             let (slot, action, selector) = crate::frame_a11y::fixture_body_request(args)?;
             self.push_a11y_tree();

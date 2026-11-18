@@ -22,7 +22,7 @@ assert snap saved-reader-state == Ready
 assert snap saved-reader-text ~ Archive A1 opening
 assert snap saved-reader-quote == naïve — 東京 🐦
 assert snap saved-reader-origin ~ /A
-assert a11y Open original address
+assert node role:link Open original address
 capture 10_reopen_A1_reader
 record-saved-sources 10_reopen_A1_reader
 log R2 fresh-process offline reopen complete

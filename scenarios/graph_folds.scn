@@ -16,19 +16,19 @@ settle 10
 open mere://fold-zeta
 settle 90
 assert physics running
-act Pause or resume physics
+act id:physics:toggle
 settle 6
 assert physics paused
 key escape
-act Fit to view
+act id:view:fit
 select-graph-member none
-act Save session
+act id:session:save
 settle 5
 record-graph-folds 01_source 0
 capture 01_source
 select-graph-member mere://fold-alpha
 select-graph-member mere://fold-beta
-act Fold selection
+act id:fold:selection
 settle 6
 record-graph-folds 02_one_fold 1
 capture 02_one_fold
@@ -41,7 +41,7 @@ settle 5
 record-graph-folds 04_redone 1
 select-graph-member mere://fold-gamma
 select-graph-member mere://fold-delta
-act Fold selection
+act id:fold:selection
 settle 6
 record-graph-folds 05_two_folds 2
 capture 05_two_folds

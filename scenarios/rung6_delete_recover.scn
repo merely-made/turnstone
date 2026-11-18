@@ -17,14 +17,14 @@ open https://example.com/
 settle 40
 assert focused example
 
-act Open Trail pane
+act id:pane:trail
 settle 5
 assert pane trail
 
 # Delete the focused node (example.com): the record stages through the bin
 # actor (its answer refreshes the mirror within a settle) and the node leaves
 # the graph.
-act Delete node
+act id:node:delete
 settle 15
 assert event node-removed
 assert row Removed
@@ -45,7 +45,7 @@ capture 02_recovered
 # oven on command: it clears the eidetic store (the actor answers with the
 # empty list), so the record is GONE, not merely derived away — a fresh open
 # of the same url would mint a stranger, not recover it. Irreversible.
-act Delete node
+act id:node:delete
 settle 15
 assert row Removed
 act Empty recycle bin

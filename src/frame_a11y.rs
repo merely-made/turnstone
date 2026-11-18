@@ -159,6 +159,9 @@ pub(crate) fn project(
             node.set_label("Pane controls");
         }
         if let Some(&dom_node) = map.get(&local) {
+            if let Some(key) = crate::ui::authored_dom_key(&dom, dom_node) {
+                node.set_author_id(key);
+            }
             if let Some(id) = dom
                 .attribute(
                     dom_node,

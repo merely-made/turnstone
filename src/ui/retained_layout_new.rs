@@ -440,10 +440,15 @@ impl RetainedLayout {
                 action_map.insert(accesskit::NodeId(id), node);
             }
         });
-        Some((
-            genet_render::accesskit_tree_from_projection(projected),
-            action_map,
-        ))
+        let mut update = genet_render::accesskit_tree_from_projection(projected);
+        for (id, node) in &mut update.nodes {
+            if let Some(&dom_node) = action_map.get(id)
+                && let Some(key) = crate::ui::authored_dom_key(dom, dom_node)
+            {
+                node.set_author_id(key);
+            }
+        }
+        Some((update, action_map))
     }
 
     pub fn painted_rect(&self, dom: &ScriptedDom, node: DomNodeId) -> Option<NodeRect> {

@@ -61,9 +61,12 @@ pub enum A11yRoute {
 pub type ActionEnvelope = Envelope<AddressSpace<NodeId>, A11yRoute, uuid::Uuid>;
 pub type ActionEnvelopes = std::collections::HashMap<NodeId, ActionEnvelope>;
 
+pub(crate) const OMNIBAR_KEY: &str = "omnibar";
+
 pub(crate) fn action_envelope(root: NodeId, id: NodeId, route: A11yRoute) -> ActionEnvelope {
     let mut envelope = Envelope::derived(FederatedAddress::producer(root, id), None, route);
     match &envelope.provenance {
+        A11yRoute::OpenOmnibar => envelope.authored_key = Some(OMNIBAR_KEY.into()),
         A11yRoute::SelectMember { member, .. } => envelope.domain_ref = Some(*member),
         A11yRoute::Action(action)
         | A11yRoute::OmnibarRow {
@@ -122,7 +125,7 @@ mod tree_lines;
 pub use tree_lines::tree_lines;
 #[path = "a11y/forest_lines.rs"]
 mod forest_lines;
-pub(crate) use forest_lines::forest_lines;
+pub(crate) use forest_lines::{ObservedNode, forest_lines, forest_nodes};
 #[path = "a11y/matches_lines.rs"]
 mod matches_lines;
 pub(crate) use matches_lines::matches_lines;

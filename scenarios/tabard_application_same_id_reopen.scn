@@ -6,7 +6,7 @@ settle 5
 assert snap appearance-theme == theme:copy-1
 assert snap appearance-mode == dark
 assert snap appearance-css ~ #342214
-act Open Settings pane
+act id:pane:settings
 settle 5
 capture app_reopened_wide
 resize 640 780

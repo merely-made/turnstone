@@ -25,8 +25,8 @@ record-graph-folds 13_expanded 0
 act Undo fold
 settle 5
 record-graph-folds 14_restored_fold 1
-act Restore recipe seed
-act Save session
+act id:arrangement:restore_recipe_seed
+act id:session:save
 settle 5
 assert snap scene-saved-seed == false
 record-graph-scene 15_recipe_restored

@@ -2,7 +2,7 @@
 settle 12
 key escape
 resize 1180 800
-act Open Settings pane
+act id:pane:settings
 settle 5
 click surface:settings .setting-apply @data-action=edit-themes
 wait 1800

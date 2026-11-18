@@ -3,7 +3,7 @@
 settle 20
 key escape
 resize 1180 800
-act Open Settings pane
+act id:pane:settings
 settle 5
 act Tear out pane
 settle 20

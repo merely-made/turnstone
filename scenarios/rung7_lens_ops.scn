@@ -22,7 +22,7 @@ assert no-pane roster
 
 # Summon-beside follows the active pane into the lens: the trail splits off
 # the roster IN THE LENS, never touching the primary tree.
-act Open Trail pane
+act id:pane:trail
 settle 5
 assert lens-pane 0:trail
 assert no-pane trail

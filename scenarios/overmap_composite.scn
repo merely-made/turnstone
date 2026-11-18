@@ -13,7 +13,7 @@ open mere://beta
 settle 40
 
 # A node staged in the recycle bin, so the Removed section has something in it.
-act Delete node
+act id:node:delete
 settle 15
 assert event node-removed
 

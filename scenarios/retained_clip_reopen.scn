@@ -27,9 +27,9 @@ settle 20
 assert content-live
 assert snap browser-current ~ ${CLIP_VOICE}
 capture 07_voice_reopened
-# Physical pointer activation of the visible link in the reviewed 1024x600
-# three-cell Workbench, through the ordinary content-session navigation path.
-click-at 930 180
+# Resolve the visible link in the composed Workbench
+# and deliver the pointer through the ordinary content-session navigation path.
+click surface:content role:link Play voice note
 settle 150
 assert snap retained-voice ~ Ended
 assert snap offline-acquisition-attempts == 0

@@ -97,7 +97,7 @@ wait-knot 600 visiting
 # editor is pressed at its tile: with the Roster open on the right, the Knot
 # tile sits between the shared page and the Roster (see joiner_knot_page.png).
 capture joiner_knot_page
-click-at 700 110
+click surface:knot role:textbox
 settle 10
 key end
 key space

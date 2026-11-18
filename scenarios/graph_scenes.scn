@@ -16,23 +16,23 @@ settle 8
 open mere://gamma.example/two
 settle 75
 assert physics running
-act Pause or resume physics
+act id:physics:toggle
 settle 5
 assert physics paused
 select-graph-member none
-act Save session
+act id:session:save
 record-graph-scene 00_source
 act Layout: Partition (by site)
 settle 10
-act Fit to view
+act id:view:fit
 settle 5
 assert snap scene-arrangement == partition.default
 assert physics paused
 record-graph-scene 01_partition
 capture 01_partition
-act Set seed
+act id:arrangement:set_seed
 select-graph-member mere://alpha.example/one
-act Foreground pin
+act id:node:foreground_pin
 select-graph-member none
 select-graph-member mere://gamma.example/two
 settle 5
@@ -44,37 +44,37 @@ act Layout: Grid
 settle 10
 assert snap scene-regions == 0
 record-graph-scene 03_grid
-act Reset to seed
+act id:arrangement:reset_to_seed
 settle 90
 record-graph-scene 04_reset
 capture 04_reset
-act Restore recipe seed
+act id:arrangement:restore_recipe_seed
 assert snap scene-saved-seed == false
 act Layout: Sets (by tag)
 settle 10
-act Fit to view
+act id:view:fit
 settle 5
 record-graph-scene 05_sets
 capture 05_sets
 act Layout: Provenance
 settle 10
-act Fit to view
+act id:view:fit
 settle 5
 record-graph-scene 06_provenance
 capture 06_provenance
 act Layout: Mosaic (by site)
 settle 10
 select-graph-member mere://gamma.example/two
-act Grow tiles
+act id:tile:grow
 settle 10
-act Fit to view
+act id:view:fit
 settle 5
 record-graph-scene 07_mosaic
 capture 07_mosaic
 select-graph-member none
 select-graph-member mere://alpha.example/one
 select-graph-member mere://alpha.example/two
-act Fold selection
+act id:fold:selection
 settle 8
 record-graph-folds 08_folded 1
 select-graph-member none
@@ -92,8 +92,8 @@ capture 09_controls
 frame-a11y-window 0 click tab 0
 key escape
 settle 8
-act Set seed
-act Save session
+act id:arrangement:set_seed
+act id:session:save
 settle 5
 record-graph-scene 09_saved
 capture 09_saved
@@ -117,14 +117,14 @@ assert snap scene-saved-seed == true
 key-window 1 escape
 act Layout: Partition (by site)
 settle 10
-act Fit to view
+act id:view:fit
 settle 5
 record-graph-scene 10_lens_partition
 capture-lens 10_lens_partition
 act Layout: Mosaic (by site)
 settle 10
-act Fit to view
-act Save session
+act id:view:fit
+act id:session:save
 settle 5
 record-graph-scene 11_lens_saved
 capture-lens 11_lens_saved

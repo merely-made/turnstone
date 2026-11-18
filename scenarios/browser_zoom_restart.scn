@@ -26,7 +26,7 @@ assert snap page-zoom-applied == 125
 
 # The zoom arm already emits SaveSession; this makes the persisted state the
 # receipt depends on explicit rather than incidental.
-act Save session
+act id:session:save
 settle 40
 capture 01_restart_run1_at_125
 log E0.2 restart run 1: 125% requested, session saved

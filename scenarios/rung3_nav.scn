@@ -11,18 +11,18 @@ settle 5
 assert focused beta
 
 # Back re-selects alpha without refetching; Forward redoes.
-act Back
+act id:nav:back
 settle 5
 assert focused alpha
 assert event nav-back mere://alpha
-act Forward
+act id:nav:forward
 settle 5
 assert focused beta
 assert event nav-forward mere://beta
 
 # Reload announces itself (offline address: no fetch, no content — the
 # event is the spine receipt; the live-respawn path is unit-pinned).
-act Reload
+act id:nav:reload
 settle 5
 assert event reloaded mere://beta
 capture 01_nav

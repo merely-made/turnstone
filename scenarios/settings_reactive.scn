@@ -6,7 +6,7 @@ key escape
 resize 1180 950
 open mere://settings-reactive
 settle 10
-act Open Settings pane
+act id:pane:settings
 settle 5
 assert pane turnstone.settings
 act Maximize pane

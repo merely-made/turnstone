@@ -37,7 +37,7 @@ assert not-maximized
 
 # Close is exercised on a second pane, so the Roster survives for the restore
 # run: summon a Trail, then close it (the active pane), leaving the Roster.
-act Open Trail pane
+act id:pane:trail
 settle 5
 assert pane trail
 act Close pane
@@ -45,7 +45,7 @@ settle 5
 assert pane roster
 
 # The summon/divider/close all saved the layout; save once more to be sure.
-act Save session
+act id:session:save
 settle 5
 capture 04_roster_persisted
 log rung 5 slice C run 1 complete

@@ -32,6 +32,18 @@ impl taproot::Automatable for Shell {
         self.adapter_act(label)
     }
 
+    fn act_id(&mut self, id: &str) -> bool {
+        let catalog = self.app.command_catalog();
+        let Some(action) = catalog
+            .action(id)
+            .filter(|action| crate::action::shared_command_id(action) == Some(id))
+        else {
+            return false;
+        };
+        Shell::act(self, action.clone());
+        true
+    }
+
     /// Turnstone's quiescence report, driving the `wait` verb. Busy while any of
     /// the work a scenario must not race is outstanding:
     ///

@@ -119,7 +119,7 @@ capture 02_text_pointer_and_keyboard
 record-idle input
 
 # Reload B through the ordinary action, without reseeding its form or profile.
-act Reload
+act id:nav:reload
 settle 160
 assert snap browser-current-content == live
 assert snap browser-current ~ Scry B | text=bravo | clicks=0 | stored=B-retained
@@ -275,7 +275,7 @@ assert snap host-scry-imported-pages == 2
 assert snap browser-current ~ Scry A | text=alpha | clicks=0 | stored=A-retained
 assert snap browser-current ~ scry_A=A-retained
 assert wb-cells == 2
-act Save session
+act id:session:save
 settle 40
 capture 08_ready_for_restart
 record-idle reopened

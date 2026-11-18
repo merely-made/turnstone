@@ -4,7 +4,7 @@ settle 30
 key escape
 open mere://alpha
 settle 30
-act Open Settings pane
+act id:pane:settings
 settle 10
 assert pane turnstone.settings
 click surface:settings role:button Edit arrangement
@@ -13,6 +13,6 @@ click surface:settings role:button Add group
 settle 2
 click surface:settings role:button Save arrangement
 settle 30
-assert a11y Arrangement saved.
+assert node role:status Arrangement saved.
 capture 01_settings_arrangement_saved
 log Settings arrangement group saved

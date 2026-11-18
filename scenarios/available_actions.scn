@@ -12,7 +12,7 @@ assert snap actions ~ Open Gloss pane
 
 # And a label the snapshot reports is a label `act` can resolve — the
 # round trip that makes the list worth publishing.
-act Fit to view
+act id:view:fit
 settle 10
 
 # Contextual rows JOIN the catalog when their context exists, and they LEAD

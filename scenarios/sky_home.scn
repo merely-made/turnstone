@@ -13,7 +13,7 @@ assert text Applied: 2024-04-08 in America/New_York at Boston reference observer
 assert text Fixed Earth orientation input for 2024-04-08
 assert text Rise/set policies: Sun: USNO fixed refraction, upper limb, level horizon
 assert text Receipt caff8371d348ba141397a8185e291c533c6ab12d4fe85f9ce3be797707ce411d
-assert a11y Next day
+assert node role:button Next day
 assert text Moon: New Moon
 assert text bounded TT solver interval
 assert text sampled instant at TT

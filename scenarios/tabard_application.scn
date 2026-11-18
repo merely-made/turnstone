@@ -4,7 +4,7 @@ settle 12
 key escape
 resize 1180 800
 settle 5
-act Open Settings pane
+act id:pane:settings
 settle 5
 capture app_default
 click surface:settings .setting-apply @data-action=edit-themes

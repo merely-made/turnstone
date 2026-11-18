@@ -17,7 +17,7 @@ act Close session
 settle 40
 assert event session-closed
 
-act Open Trail pane
+act id:pane:trail
 settle 15
 assert row Removed sessions
 assert row Recover session

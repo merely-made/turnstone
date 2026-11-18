@@ -37,6 +37,7 @@ pub(super) fn project_chrome(app: &App) -> UxTree {
             _ => "omnibar",
         };
         n.set_label(label);
+        n.set_author_id(OMNIBAR_KEY);
         n.add_action(accesskit::Action::Focus);
         n.set_value(app.omnibar.presented_text());
         nodes.push((id, n));

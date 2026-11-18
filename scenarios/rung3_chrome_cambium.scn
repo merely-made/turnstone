@@ -14,12 +14,12 @@ settle 5
 
 # Find lane; the top row is the alpha node. A POINTER PRESS on the row
 # commits it — the hand chrome had no row handlers; the cambium chrome does.
-# (Row geometry: card at (232,96) in the 1024-wide window; first row centres
-# near y=148.)
+# The retained semantic selector still delivers the pointer to the row.
+
 omnibar find
 type alp
 assert suggestions >= 1
-click-at 512 148
+click surface:chrome role:button alpha
 settle 5
 assert omnibar closed
 assert focused alpha

@@ -17,17 +17,17 @@ assert content-live
 # The stitched tree: the pane structure names the workbench leaf, platen's
 # tiling projects its tab, the live document announces with its real title
 # and outline, and the caption chip is in the chrome subtree.
-assert a11y group: workbench
-assert a11y tab: Tile
-assert a11y document: Example Domain
-assert a11y heading: Example Domain
-assert a11y link: Learn more
-assert a11y label: Example Domain
+assert node role:group workbench
+assert node role:tab Tile
+assert node role:document Example Domain
+assert node role:heading Example Domain
+assert node role:link Learn more
+assert node role:label Example Domain
 
 # The omnibar joins the chrome subtree while open, carrying its live text.
 omnibar find
 type meer
-assert a11y textinput: omnibar = meer
+assert node role:textbox omnibar = meer
 key escape
 capture 01_a11y
 

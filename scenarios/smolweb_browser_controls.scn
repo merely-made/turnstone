@@ -12,15 +12,15 @@ assert surface content
 assert fetch streaming
 capture 01_loading_controls
 
-# The 1024px acceptance window centres the browser strip at x=202. Its third
-# button is Stop while the request is active and Reload after cancellation.
-click-at 340 27
+# The browser strip offers Stop while the request is active
+# and Reload after cancellation.
+click surface:chrome role:button Stop
 settle 10
 assert fetch stopped
 assert event stopped
 capture 02_stopped
 
-click-at 340 27
+click surface:chrome role:button Reload
 assert event reloaded
 settle 60
 assert content-live

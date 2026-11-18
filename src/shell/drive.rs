@@ -76,6 +76,8 @@ mod cmp_usize;
 mod impl_taproot_automatable_for_shell;
 #[path = "drive/a11y_lint.rs"]
 mod a11y_lint;
+#[path = "drive/semantic_node.rs"]
+mod semantic_node;
 #[path = "drive/impl_taproot_driveable_for_shell.rs"]
 mod impl_taproot_driveable_for_shell;
 #[path = "drive/shell_adapter_busy.rs"]

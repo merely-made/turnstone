@@ -2,11 +2,11 @@
 settle 40
 key escape
 assert physics paused
-act Fit to view
+act id:view:fit
 settle 5
 record-graph-folds 08_reopened 2
 capture 08_reopened
-act Expand fold
+act id:fold:expand
 settle 5
 record-graph-folds 09_expanded 1
 capture 09_expanded

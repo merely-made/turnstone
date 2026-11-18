@@ -16,7 +16,7 @@ act Open Inspector pane
 settle 3
 assert pane inspector
 assert row URL: ${TURNSTONE_R1_FIXTURE_URL}/A
-assert a11y Save source and keep
+assert node role:button Save source and keep
 capture 00_A_inspector_ready
 
 # Ordinary pointer activation on the source-bound Inspector control.

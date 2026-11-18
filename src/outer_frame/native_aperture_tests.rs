@@ -25,11 +25,24 @@ fn frame_selector_rejects_body_slots_and_uses_header_hit() {
             app.session_id.as_uuid().as_u128(),
         )
         .expect("retained frame");
-    assert!(
-        frame
-            .selector_point(&taproot::Selector::class("frisket-tab"))
-            .expect("painted header")
-            .is_some()
+    let header = frame
+        .selector_point(&taproot::Selector::class("frisket-tab"))
+        .expect("painted header");
+    assert!(header.is_some());
+    let key = {
+        let dom = frame.controls.dom.borrow();
+        let tab = dom
+            .all_with_class(dom.document(), "frisket-tab")
+            .into_iter()
+            .next()
+            .expect("the retained header tab");
+        crate::ui::authored_dom_key(&dom, tab)
+            .expect("the authored tab key")
+            .to_owned()
+    };
+    assert_eq!(
+        frame.selector_point(&taproot::Selector::key(key)).unwrap(),
+        header,
     );
     assert_eq!(
         frame

@@ -123,7 +123,8 @@ pub(super) fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView
             "div",
             caret_field_children::<ChromeState, ChromeIntent>(&state.omnibar_input, &[]),
         )
-        .attr("class", "omni-input");
+        .attr("class", "omni-input")
+        .attr("data-key", crate::a11y::OMNIBAR_KEY);
 
         let mut card_children: Vec<ChromeView> = if state.inline_address {
             Vec::new()
@@ -137,14 +138,16 @@ pub(super) fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView
                 // the other's handler.
                 let label = on_click(
                     el::<_, ChromeState, ChromeIntent>("div", row.text.clone())
-                        .attr("class", "omni-row-label"),
+                        .attr("class", "omni-row-label")
+                        .attr("role", "button"),
                     move |_state: &mut ChromeState, _click: PointerClick| {
                         ChromeIntent::CommitRow(index)
                     },
                 );
                 let toggle = on_click(
                     el::<_, ChromeState, ChromeIntent>("div", if kept { "Drop" } else { "Keep" })
-                        .attr("class", "omni-keep"),
+                        .attr("class", "omni-keep")
+                        .attr("role", "button"),
                     move |_state: &mut ChromeState, _click: PointerClick| {
                         ChromeIntent::ToggleKeep(index)
                     },
@@ -168,7 +171,7 @@ pub(super) fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView
                 // A row click COMMITS that row — the handler is the point of
                 // the retained view (the hand chrome had no row handlers).
                 Some(index) => Box::new(on_click(
-                    base,
+                    base.attr("role", "button"),
                     move |_state: &mut ChromeState, _click: PointerClick| {
                         ChromeIntent::CommitRow(index)
                     },

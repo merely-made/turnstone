@@ -30,6 +30,6 @@ assert snap commands-removed == view:fit
 capture 01_kept_and_dropped
 key escape
 
-act Save session
+act id:session:save
 settle 30
 log command menu keep receipt complete

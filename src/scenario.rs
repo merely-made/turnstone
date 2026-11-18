@@ -32,7 +32,11 @@
 //! insert <text>             # IME commit into the focused omnibar or Knot editor
 //! key enter|escape|tab|backspace|delete|up|down|left|right|home|end|ctrl+s
 //! key ctrl+a|shift+right    # native editor selection through the same key seam
-//! act <palette label>       # commit a palette_actions() entry by label
+//! act id:<command-id>       # invoke a shared command from the current palette
+//! act <palette label>       # invoke a command without a shared ID
+//! click [surface:<name>] key:<key>  # find a control by its authored key
+//! assert node [window:<slot>] role:<role> <name> [ = <value>]
+//! assert node [window:<slot>] key:<key> [ = <value>]
 //! select-graph-member <url>|none # Canvas multi-selection in the owner pane
 //! activate-graph-fold <index> # press/release a real native fold badge
 //! record-graph-folds <name> <count> # read native/source/saved-state checkpoint
@@ -40,7 +44,7 @@
 //! script <inline lua>        # run a Piccolo control script; its Actions lower
 //!                            # through the same spine (the automation runner —
 //!                            # needs the `piccolo` feature)
-//! click-at <x> <y>          # pointer click at window px (content links, canvas)
+//! click-at <x> <y>          # window-space pointer test or a target without semantics
 //! press-at <x> <y>          # mouse down, retained until release-at
 //! release-at <x> <y>        # mouse up after intervening frames/moves
 //! move-at <x> <y>           # pointer hover at window px (cursor/hover receipts)

@@ -2,7 +2,7 @@
 # real route table; it does not prove OS activation or human screen-reader use.
 settle 30
 key escape
-act Open Settings pane
+act id:pane:settings
 settle 5
 act Tear out pane
 settle 30

@@ -9,9 +9,9 @@ settle 5
 assert nodes >= 1
 assert visible
 key escape
-act Fit to view
+act id:view:fit
 settle 5
-act Open Settings pane
+act id:pane:settings
 settle 4
 click surface:settings .setting-apply @data-action=edit-themes
 wait 1800
@@ -46,14 +46,14 @@ drag 1300 215 60 160
 settle 6
 capture 01_inline_alpha_over_native_graph
 # The existing graph pane becomes a real foreign producer in a second float.
-click surface:frame .frisket-tab @data-tabkey=0
+click surface:frame key:0
 act Float pane
 settle 5
 assert snap floats ~ orrery
 # Current measured default stations: drag the graph header over Roster.
 drag 220 280 100 180
 settle 6
-act Fit to view
+act id:view:fit
 settle 5
 assert snap float-count == 2
 assert snap native-texture-count >= 1

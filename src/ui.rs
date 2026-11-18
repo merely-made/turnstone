@@ -34,6 +34,17 @@ use paint_list_api::{DeviceIntSize, PaintCmd, PaintList};
 use paint_list_render::{CompositeLayer, composite_paint_layers};
 use uuid::Uuid;
 
+pub(crate) fn authored_dom_key(dom: &ScriptedDom, node: DomNodeId) -> Option<&str> {
+    ["data-key", "data-tabkey", "id"].into_iter().find_map(|name| {
+        dom.attribute(
+            node,
+            &Namespace::default(),
+            &LocalName::from(name),
+        )
+        .filter(|key| !key.is_empty())
+    })
+}
+
 // Keep only the current zoom's baseline on each UI thread. Palette queries
 // reuse it instead of paying another text/layout pass for every keystroke.
 thread_local! {
