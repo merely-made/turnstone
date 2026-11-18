@@ -4,6 +4,7 @@
 use std::collections::BTreeSet;
 
 use genet_static_dom::{StaticDocument, StaticNodeKind};
+use graphshell::link_inspection::{ObservationLocator, ObservationSource, OccurrenceText};
 use mere::{ContextCache, dataset::View, formats::parse::parse_jsonld};
 use oxrdf::{NamedOrBlankNode, Term};
 use url::Url;
@@ -61,30 +62,18 @@ pub(super) fn extract(document: &FetchedDocument, hash: &str) -> Page {
     } else {
         MAX_CLAIMS / 2
     };
-    for (position, link) in fleece::extract_links(&dom).into_iter().enumerate() {
+    for occurrence in fleece::extract_link_occurrences(&dom) {
         if page.claims.len() == max_links {
             page.partial = true;
             break;
         }
-        let Some(target) = web_target(&base, &link.href) else {
-            continue;
-        };
-        let relation = link.rel.filter(|value| !value.trim().is_empty());
-        let rel = relation
-            .map(|value| format!(" · rel={value}"))
-            .unwrap_or_default();
-        page.claims.push(Claim {
-            from: page.address.clone(),
-            to: target.to_string(),
-            predicate: "Links to".into(),
-            source: page.address.clone(),
-            evidence: format!(
-                "{} · HTML link {}{rel} · {} · Capture {hash}",
-                page.address,
-                position + 1,
-                excerpt(&link.text),
-            ),
-        });
+        page.claims.extend(link_claim(
+            occurrence,
+            &base,
+            &page.address,
+            hash,
+            ObservationSource::Response,
+        ));
     }
     for block in blocks {
         if page.claims.len() == MAX_CLAIMS {
@@ -104,10 +93,6 @@ pub(super) fn extract(document: &FetchedDocument, hash: &str) -> Page {
             page.partial = true;
             continue;
         };
-        let evidence = format!(
-            "{} · JSON-LD block at DOM position {} · Capture {hash}",
-            page.address, block.document_order,
-        );
         let mut subjects = BTreeSet::new();
         for quad in dataset.quads(View::Live) {
             let (NamedOrBlankNode::NamedNode(from), Term::NamedNode(to)) =
@@ -124,32 +109,69 @@ pub(super) fn extract(document: &FetchedDocument, hash: &str) -> Page {
                     from: page.address.clone(),
                     to: from.as_str().into(),
                     predicate: "Contains statements about".into(),
-                    evidence: evidence.clone(),
                     source: page.address.clone(),
+                    capture: hash.into(),
+                    acquisition: ObservationSource::Response,
+                    locator: ObservationLocator::JsonLd {
+                        order: block.document_order,
+                        named_graph: None,
+                    },
                 });
             }
             if page.claims.len() == MAX_CLAIMS {
                 page.partial = true;
                 break;
             }
-            let statement_evidence = if quad.graph_name.is_default_graph() {
-                evidence.clone()
-            } else {
-                format!("{evidence} · RDF graph {}", quad.graph_name)
-            };
             page.claims.push(Claim {
                 from: from.as_str().into(),
                 to: to.as_str().into(),
                 predicate: quad.predicate.as_str().into(),
-                evidence: statement_evidence,
                 source: page.address.clone(),
+                capture: hash.into(),
+                acquisition: ObservationSource::Response,
+                locator: ObservationLocator::JsonLd {
+                    order: block.document_order,
+                    named_graph: (!quad.graph_name.is_default_graph())
+                        .then(|| quad.graph_name.to_string()),
+                },
             });
         }
     }
     page
 }
 
-pub(super) fn web_target(base: &Url, href: &str) -> Option<Url> {
+pub(super) fn link_claim(
+    occurrence: fleece::LinkOccurrence,
+    base: &Url,
+    source: &str,
+    capture: &str,
+    acquisition: ObservationSource,
+) -> Option<Claim> {
+    let target = web_target(base, &occurrence.link.href)?;
+    Some(Claim {
+        from: source.into(),
+        to: target.to_string(),
+        predicate: "Links to".into(),
+        source: source.into(),
+        capture: capture.into(),
+        acquisition,
+        locator: ObservationLocator::Hyperlink {
+            order: occurrence.document_order,
+            href: occurrence.link.href,
+            rel: occurrence.link.rel,
+            text: occurrence.link.text,
+            anchor: occurrence.anchor.map(|anchor| OccurrenceText {
+                start: anchor.position.start,
+                end: anchor.position.end,
+                prefix: anchor.quote.prefix,
+                exact: anchor.quote.exact,
+                suffix: anchor.quote.suffix,
+            }),
+        },
+    })
+}
+
+fn web_target(base: &Url, href: &str) -> Option<Url> {
     let target = base.join(href).ok()?;
     matches!(
         target.scheme(),

@@ -106,6 +106,20 @@ pub(super) fn swatch_view(state: &SwatchState) -> SwatchView {
                 }
             }
         }
+        if let Some(selection) = &state.neighborhood
+            && let Some(inspection) = selection
+                .link
+                .as_ref()
+                .and_then(|id| selection.details.get(id))
+        {
+            section_kids.push(Box::new(
+                cambium::el::<_, SwatchState, ()>(
+                    "section",
+                    cambium::detail_panel(&inspection.details()),
+                )
+                .attr("aria-label", "Link inspector"),
+            ));
+        }
         children.push(Box::new(
             cambium::el::<_, SwatchState, ()>("div", section_kids)
                 .attr("data-diagnostics-region", if state.sections.iter().any(|(id, _, _)| *id == "diagnostics") { "true" } else { "" })

@@ -17,7 +17,8 @@ impl Shell {
             return None;
         }
         let clip = session.clip()?;
-        crate::swatch_pane::Passage::from_clip(member, source.effective_url.as_deref()?, token, clip)
+        let document = self.app.content.fetched(member, &url)?;
+        crate::swatch_pane::Passage::from_clip(member, document, source, token, clip)
     }
 }
 

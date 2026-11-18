@@ -10,12 +10,15 @@ mod extraction;
 mod tests;
 
 use genet_static_dom::StaticDocument;
+use graphshell::link_inspection::{
+    LinkObservation as Claim, LinkTarget, ObservationSource, ObservedLinkInspection,
+};
 use url::Url;
 
 use super::{NodeState, ProjectionPreset, SwatchModel, SwatchNode, SwatchRelation, Uuid};
 use crate::app::App;
 use crate::panes::{GraphId, PaneId};
-use extraction::{document_base, excerpt, extract, web_target};
+use extraction::{document_base, excerpt, extract, link_claim};
 
 pub(crate) const RESOURCE_NEIGHBORHOOD: ProjectionPreset = ProjectionPreset {
     id: "resource.neighborhood",
@@ -31,15 +34,6 @@ const MAX_CLAIMS: usize = 512;
 const MAX_NEIGHBORS: usize = 16;
 const MAX_SOURCES: usize = 32;
 const MAX_EVIDENCE_ROWS: usize = 32;
-
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
-struct Claim {
-    from: String,
-    to: String,
-    predicate: String,
-    evidence: String,
-    source: String,
-}
 
 #[derive(Default)]
 struct Page {
@@ -70,39 +64,37 @@ pub(crate) struct Passage {
 impl Passage {
     pub(crate) fn from_clip(
         member: Uuid,
-        address: &str,
+        document: &crate::content::FetchedDocument,
+        identity: &crate::source_capture::SourceIdentity,
         admission: Uuid,
         clip: inker::DocumentClip,
     ) -> Option<Self> {
-        let source = Url::parse(address).ok()?;
+        let source = Url::parse(identity.effective_url.as_deref()?).ok()?;
         let actual = Url::parse(&clip.source_url).ok()?;
-        if source != actual || clip.selector.is_none() || clip.text.is_empty() {
+        if source != actual || clip.text.is_empty() {
             return None;
         }
-        let artifact = clip.artifacts.iter().find(|artifact| {
-            artifact.role == inker::DocumentClipArtifactRole::ObservedRepresentation
-        })?;
-        if artifact.bytes.len() > MAX_HTML_BYTES {
+        let selector: serde_json::Value = serde_json::from_str(clip.selector.as_deref()?).ok()?;
+        if selector["type"] != "dom-range" || selector["version"] != 1 {
             return None;
         }
-        let dom = StaticDocument::parse(std::str::from_utf8(&artifact.bytes).ok()?);
+        let orders: BTreeSet<usize> =
+            serde_json::from_value(selector.get("link_occurrence_orders")?.clone()).ok()?;
+        let (html, hash, acquisition) = passage_representation(&clip, document, identity, &source)?;
+        if html.len() > MAX_HTML_BYTES {
+            return None;
+        }
+        let dom = StaticDocument::parse(html);
         let base = document_base(&dom, &source);
-        let evidence = format!(
-            "Selected passage · {} · Observed document {}",
-            excerpt(&clip.text),
-            eidetic::Hash::of(&artifact.bytes),
-        );
-        let claims = clip
-            .links
+        let claims = fleece::extract_link_occurrences(&dom)
             .into_iter()
+            .filter(|occurrence| {
+                orders.contains(&occurrence.document_order)
+                    && clip.links.contains(&occurrence.link.href)
+            })
             .take(MAX_CLAIMS)
-            .filter_map(|href| web_target(&base, &href))
-            .map(|to| Claim {
-                from: source.to_string(),
-                to: to.to_string(),
-                predicate: "Links from selected passage".into(),
-                evidence: evidence.clone(),
-                source: source.to_string(),
+            .filter_map(|occurrence| {
+                link_claim(occurrence, &base, source.as_str(), &hash, acquisition)
             })
             .collect();
         Some(Self {
@@ -114,12 +106,49 @@ impl Passage {
     }
 }
 
+fn passage_representation<'a>(
+    clip: &'a inker::DocumentClip,
+    document: &'a crate::content::FetchedDocument,
+    identity: &crate::source_capture::SourceIdentity,
+    source: &Url,
+) -> Option<(&'a str, String, ObservationSource)> {
+    use inker::DocumentClipArtifactRole::{ObservedRepresentation, SourceResponse};
+
+    let artifact = clip.artifacts.iter().find(|artifact| {
+        artifact.role == ObservedRepresentation
+            && Url::parse(&artifact.canonical_uri).ok().as_ref() == Some(source)
+            && artifact
+                .media_type
+                .split(';')
+                .next()
+                .is_some_and(|kind| kind.trim().eq_ignore_ascii_case("text/html"))
+    });
+    if let Some(artifact) = artifact {
+        let html = std::str::from_utf8(&artifact.bytes).ok()?;
+        return Some((
+            html,
+            eidetic::Hash::of(&artifact.bytes).to_string(),
+            ObservationSource::ObservedDocument,
+        ));
+    }
+    clip.artifacts.iter().find(|artifact| {
+        artifact.role == SourceResponse
+            && Url::parse(&artifact.canonical_uri).ok().as_ref() == Some(source)
+            && artifact.bytes == document.bytes
+    })?;
+    Some((
+        &document.body,
+        identity.hash.clone(),
+        ObservationSource::Response,
+    ))
+}
+
 #[derive(Default)]
 pub(super) struct Selection {
     origin: Option<String>,
     pub(super) focus: Option<String>,
     pub(super) link: Option<String>,
-    pub(super) details: BTreeMap<String, Vec<String>>,
+    pub(super) details: BTreeMap<String, ObservedLinkInspection>,
     pub(super) status: String,
 }
 
@@ -342,23 +371,19 @@ fn project<'a>(
             kind: "resource-reference",
             label: format!("{} observations", claims.len()),
         };
-        let mut details: Vec<_> = claims
-            .iter()
-            .take(MAX_EVIDENCE_ROWS)
-            .map(|claim| {
-                format!(
-                    "{} → {} → {} · {}",
-                    claim.from, claim.predicate, claim.to, claim.evidence
-                )
-            })
-            .collect();
-        if claims.len() > MAX_EVIDENCE_ROWS {
-            details.push(format!(
-                "{} more observations",
-                claims.len() - MAX_EVIDENCE_ROWS,
-            ));
-        }
-        selection.details.insert(relation.id(), details);
+        selection.details.insert(
+            relation.id(),
+            ObservedLinkInspection {
+                target: LinkTarget::new(relation.from, relation.to),
+                observations: claims
+                    .iter()
+                    .take(MAX_EVIDENCE_ROWS)
+                    .copied()
+                    .cloned()
+                    .collect(),
+                total: claims.len(),
+            },
+        );
         model.relations.push(relation);
     }
     if selection

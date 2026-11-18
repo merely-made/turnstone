@@ -58,6 +58,7 @@ cambium-rootstock = { git = "https://github.com/merely-made/graphshell.git", bra
 kernel = { package = "mere-kernel", git = "https://github.com/merely-made/mere.git", branch = "main" }
 # Mere's linked-data engine parses the JSON-LD carried in admitted documents.
 mere = { git = "https://github.com/merely-made/mere.git", branch = "main" }
+graphshell = { path = "ports/graphshell", default-features = false, features = ["link-inspection"] }
 oxrdf = "0.3"
 # `canvas` is the graph canvas; the default features (physics-engine,
 # image-decode) are what the facade forwarded.

@@ -228,14 +228,7 @@ impl SwatchPane {
                     activate: Some(SectionActivate::Open(address.clone())),
                 });
             }
-            if let Some(evidence) = selection
-                .link
-                .as_ref()
-                .and_then(|id| selection.details.get(id))
-            {
-                rows.extend(evidence.iter().cloned().map(row));
-            }
-            sections.push(("resource-neighborhood", "Link inspector", rows));
+            sections.push(("resource-neighborhood", "Resource neighborhood", rows));
         }
         let swatch_h = if sections.is_empty() {
             pane_h
