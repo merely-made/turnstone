@@ -519,7 +519,7 @@ mod qual;
 use qual::qual;
 #[path = "ui/cambium_shell_sheet.rs"]
 mod cambium_shell_sheet;
-pub(crate) use cambium_shell_sheet::cambium_shell_sheet;
+pub(crate) use cambium_shell_sheet::{cambium_pane_sheet, cambium_shell_sheet};
 #[path = "ui/max_node_matches.rs"]
 mod max_node_matches;
 use max_node_matches::MAX_NODE_MATCHES;

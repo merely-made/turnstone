@@ -162,7 +162,7 @@ impl Shell {
         action: Action,
         invocation: Option<cambium::Invocation>,
     ) -> Option<cambium::Outcome> {
-        let opens_neighborhood = matches!(&action, Action::SummonPane(kind)
+        let opens_neighborhood = matches!(&action, Action::SummonPane(kind) | Action::ToggleToolPane(kind)
             if kind.as_str() == crate::panes::kind::RESOURCE_NEIGHBORHOOD);
         let passage = if opens_neighborhood {
             self.neighborhood_selection()

@@ -121,6 +121,28 @@ impl SwatchPane {
         }
     }
 
+    fn inspection_scroll_root(&self, dom: &ScriptedDom) -> Option<NodeId> {
+        self.runner.state().neighborhood.as_ref()?;
+        let root = self
+            .mount
+            .as_ref()
+            .map_or_else(|| dom.document(), cambium::RetainedMount::node);
+        dom.all_with_class(root, SECTIONS_CLASS).into_iter().next()
+    }
+
+    pub(crate) fn scroll_inspection_at(&mut self, (x, y): (f32, f32), dy: f32) -> bool {
+        let dom = self.dom.borrow();
+        let Some(owner) = self.inspection_scroll_root(&dom) else {
+            return false;
+        };
+        self.layout
+            .visible_rect(&dom, owner)
+            .is_some_and(|(left, top, width, height)| {
+                x >= left && x < left + width && y >= top && y < top + height
+            })
+            && self.layout.scroll_element(&dom, owner, dy)
+    }
+
     /// Set the composed section providers for this pane (the host resolves
     /// them from the leaf's `PaneComposition` each frame). Cheap: providers are
     /// `Copy` descriptors, and the rows themselves are gathered in `sync`.
@@ -264,7 +286,7 @@ impl SwatchPane {
         self.layout.set_scale(scale);
         self.layout.scene_with_leaves(
             &mut self.dom.borrow_mut(),
-            crate::ui::CAMBIUM_SHEET,
+            crate::ui::cambium_pane_sheet(),
             w,
             h,
             &mut self.registry,
@@ -277,7 +299,7 @@ impl SwatchPane {
     pub fn hover(&mut self, x: f32, y: f32, w: u32, h: u32) -> bool {
         let hit = self.layout.hit_test(
             &mut self.dom.borrow_mut(),
-            crate::ui::CAMBIUM_SHEET,
+            crate::ui::cambium_pane_sheet(),
             w,
             h,
             x,
@@ -318,16 +340,35 @@ impl SwatchPane {
     pub fn click(&mut self, x: f32, y: f32, w: u32, h: u32) -> Vec<SwatchIntent> {
         let hit = self.layout.hit_test(
             &mut self.dom.borrow_mut(),
-            crate::ui::CAMBIUM_SHEET,
+            crate::ui::cambium_pane_sheet(),
             w,
             h,
             x,
             y,
         );
         if let Some(node) = hit {
+            let previous = self
+                .runner
+                .state()
+                .neighborhood
+                .as_ref()
+                .and_then(|s| s.link.clone());
             let _ = self
                 .runner
                 .dispatch_click(node, cambium::PointerClick::at((x, y)));
+            if self
+                .runner
+                .state()
+                .neighborhood
+                .as_ref()
+                .and_then(|s| s.link.as_ref())
+                != previous.as_ref()
+            {
+                let dom = self.dom.borrow();
+                if let Some(owner) = self.inspection_scroll_root(&dom) {
+                    self.layout.reset_element_scroll(&dom, owner);
+                }
+            }
         }
         let mut drained = Vec::new();
         self.runner

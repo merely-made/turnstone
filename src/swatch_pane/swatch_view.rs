@@ -122,6 +122,7 @@ pub(super) fn swatch_view(state: &SwatchState) -> SwatchView {
         }
         children.push(Box::new(
             cambium::el::<_, SwatchState, ()>("div", section_kids)
+                .attr("class", SECTIONS_CLASS)
                 .attr("data-diagnostics-region", if state.sections.iter().any(|(id, _, _)| *id == "diagnostics") { "true" } else { "" })
                 .attr(
                 "style",

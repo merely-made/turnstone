@@ -371,12 +371,21 @@ impl PaneRenderers {
     /// Deliver a wheel delta to whichever renderer holds `pane`.
     ///
     /// Returns whether anything took it, so the caller only redraws when it
-    /// did. Every list renderer is named here; a pane kind added without an
-    /// arm simply will not scroll, which is why the fan-out is explicit rather
-    /// than a default. The swatch-backed panes (Gloss, Overmap) are absent on
-    /// purpose: they are custom-paint canvases whose wheel gesture is a pan,
-    /// owned by the canvas rather than by a scroll container.
-    pub(crate) fn scroll_pane(&mut self, pane: PaneId, dx: f32, dy: f32) -> bool {
+    /// did. Graph swatches can scroll their inspector below the canvas.
+    pub(crate) fn scroll_pane(
+        &mut self,
+        pane: PaneId,
+        local: (f32, f32),
+        dx: f32,
+        dy: f32,
+    ) -> bool {
+        if self
+            .gloss
+            .get_mut(&pane)
+            .is_some_and(|view| view.scroll_inspection_at(local, dy))
+        {
+            return true;
+        }
         macro_rules! deliver {
             ($($map:ident),+ $(,)?) => {
                 $(if let Some(view) = self.$map.get_mut(&pane) {

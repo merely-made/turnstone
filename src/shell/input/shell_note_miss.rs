@@ -131,7 +131,7 @@ impl Shell {
                 .is_some_and(|view| view.scroll_body_at(local.0, local.1, dy))
             {
                 self.request_redraw();
-            } else if self.renderers.scroll_pane(pane, dx, dy) {
+            } else if self.renderers.scroll_pane(pane, local, dx, dy) {
                 self.request_redraw();
             }
         }

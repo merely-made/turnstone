@@ -10,8 +10,9 @@ use super::*;
 pub(crate) fn cambium_sheet(appearance: &crate::shell_services::AppearanceConfig) -> String {
     let zoom = appearance.zoom();
     let (z12, z13) = (12.0 * zoom, 13.0 * zoom);
+    let base = cambium_pane_sheet();
     let sheet = format!(
-        "{CAMBIUM_SHEET} \
+        "{base} \
         .pane, .grid {{ background-color: var(--tabard-color-bg); color: var(--tabard-color-text); font-size: {z13:.2}px; }} \
         .list-section-title, .setting-label {{ color: var(--tabard-color-text-dim); font-size: {z12:.2}px; }} \
         .list-row, .setting-row {{ color: var(--tabard-color-text); font-size: {z13:.2}px; }} \

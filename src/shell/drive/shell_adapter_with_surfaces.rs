@@ -154,7 +154,7 @@ impl Shell {
                 } else if *name == "settings" {
                     &settings_sheet
                 } else {
-                    crate::ui::CAMBIUM_SHEET
+                    crate::ui::cambium_pane_sheet()
                 },
             })
             .collect();

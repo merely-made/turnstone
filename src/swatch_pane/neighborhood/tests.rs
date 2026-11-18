@@ -4,6 +4,65 @@
 use super::*;
 
 #[test]
+fn edge_is_clickable_through_the_native_swatch_hit_layers() {
+    use crate::swatch_pane::{GraphCanvasNode, SWATCH_PAD, SwatchPane};
+
+    let from = Uuid::from_u128(1);
+    let to = Uuid::from_u128(2);
+    let mut pane = SwatchPane::new(RESOURCE_NEIGHBORHOOD);
+    pane.runner.update(|state| {
+        state.viewport_w = 424.0;
+        state.viewport_h = 224.0;
+        state.swatch.width = 400;
+        state.swatch.height = 200;
+        state.swatch.graph.nodes = [(from, (0.2, 0.5)), (to, (0.8, 0.5))]
+            .into_iter()
+            .map(|(id, position)| GraphCanvasNode {
+                id,
+                kind: NodeState::Idle,
+                position,
+                label: id.to_string(),
+                key: Some(id.to_string()),
+            })
+            .collect();
+        state.swatch.relations = vec![cambium::GraphCanvasRelation {
+            id: "observed".into(),
+            from,
+            to,
+            kind: "resource-reference".into(),
+            label: "Link observation".into(),
+            route: Vec::new(),
+            visible: true,
+            emphasized: false,
+            link_key: None,
+            marks: Default::default(),
+            strength: 1.0,
+        }];
+        state.neighborhood.as_mut().unwrap().details.insert(
+            "observed".into(),
+            ObservedLinkInspection {
+                target: LinkTarget::new(from, to),
+                observations: Vec::new(),
+                total: 0,
+            },
+        );
+    });
+
+    let _ = pane.scene(424, 224, 1.0);
+    pane.click(200.0 + SWATCH_PAD, 100.0 + SWATCH_PAD, 424, 224);
+    assert_eq!(
+        pane.runner
+            .state()
+            .neighborhood
+            .as_ref()
+            .unwrap()
+            .link
+            .as_deref(),
+        Some("observed"),
+    );
+}
+
+#[test]
 fn moving_from_a_passage_to_a_resource_exposes_its_other_sources() {
     let address = "https://example.test/article";
     let resource = "https://example.test/places/town";

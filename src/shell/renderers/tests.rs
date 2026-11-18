@@ -20,7 +20,7 @@ fn scrollbar_continuation_is_scoped_to_actual_window_pane_plan() {
     let quiet = pane(8);
     renderers.roster.insert(scrolled, RosterGrid::new());
     renderers.roster.insert(quiet, RosterGrid::new());
-    assert!(renderers.scroll_pane(scrolled, 0.0, 40.0));
+    assert!(renderers.scroll_pane(scrolled, (0.0, 0.0), 0.0, 40.0));
     let surface = |pane| crate::surface::Surface {
         id: crate::surface::SurfaceId::pane(pane),
         kind: crate::surface::SurfaceKind::Pane(pane),

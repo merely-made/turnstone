@@ -39,7 +39,7 @@ impl Shell {
         {
             true
         } else {
-            self.renderers.scroll_pane(pane, dx, dy)
+            self.renderers.scroll_pane(pane, hit.local, dx, dy)
         };
         if redraw && let Some(lens) = self.lens_windows.get(&id) {
             lens.window.request_redraw();

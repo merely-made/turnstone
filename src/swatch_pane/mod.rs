@@ -43,6 +43,7 @@ use crate::overmap;
 
 /// Inset (px) of the swatch from the pane edges.
 const SWATCH_PAD: f32 = 12.0;
+const SECTIONS_CLASS: &str = "swatch-sections";
 /// When a swatch preset composes sections, the swatch takes this fraction of
 /// the pane height and the sections stack below (the gloss-composite split).
 const SWATCH_FRACTION: f32 = 0.55;
