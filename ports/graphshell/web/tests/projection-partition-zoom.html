@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en" class="full-page">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Partition zoom</title>
+  <base href="../">
+  <link rel="stylesheet" href="./styles.css?h3=1">
+</head>
+<body class="full-page">
+  <graphshell-tree id="graphshell" data-owns-title data-appearance-application data-ready="false"></graphshell-tree>
+  <section id="scenario-host" aria-hidden="true" hidden>
+    <pre id="scenario-log"></pre>
+    <pre id="scenario-result"></pre>
+    <div id="scenario-captures"></div>
+  </section>
+  <script type="module">
+    const response = await fetch("./fixtures/host-dataset-relations.json");
+    if (!response.ok) throw new Error("Could not load the projection fixture");
+    const {dataset} = await response.json();
+    dataset.fields.group = "text";
+    for (const row of dataset.occurrences) {
+      row.values.group = {kind: "text", value: ["grammar", "kernel"].includes(row.occurrence_id) ? "Alpha" : "Beta"};
+    }
+    const form = new URLSearchParams(location.search).get("form");
+    if (!["tiles", "rings"].includes(form)) throw new Error("Choose Tiles or Rings in the fixture query");
+    const root = document.querySelector("graphshell-tree");
+    root.dataset.projectionDataset = JSON.stringify(dataset);
+    root.dataset.projectionDefinition = JSON.stringify({
+      version: 1, id: "partition-zoom", label: "Partition zoom",
+      source: dataset.source,
+      reading: {kind: "nodes", key: "occurrence_id"},
+      encoding: {x: {kind: "field", value: "group"}, y: {kind: "field", value: "occurrence_id"}, label: {kind: "field", value: "label"}},
+      arrangement: {kind: "partition", direction: "coordinates", spacing: 16, options: {form, whole: "5"}},
+      frame: {kind: "bounded", bounds: {origin: {x: 0, y: 0}, size: {w: 760, h: 340}}},
+      marks: {node: {detail: "Card", accepts: ["assigned"]}},
+      interaction: {selection: "single", pan: false, zoom: false},
+      appearance: {realization: "canvas", title: "Partition zoom", theme: "slate"},
+      provenance: {author: "Fixture", source_revision: dataset.revision, note: ""}
+    });
+    await import("./loader.js");
+  </script>
+</body>
+</html>

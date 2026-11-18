@@ -13,7 +13,9 @@ use cambium::{
 use cartography::canvas::PhysicsLaw;
 use cartography::canvas::dynamics_recipe::preset_slot;
 use cartography::canvas::projection_dynamics::ProjectionDynamics;
-use graphshell::local_projection::{compile_editor, draft_from_definition, snapshot_editor};
+use graphshell::local_projection::{
+    compile_editor, compile_editor_with_partition_focus, draft_from_definition, snapshot_editor,
+};
 use graphshell::product::ProductHost;
 use graphshell::projection_compile::default_definition;
 use graphshell::projection_compile::initial_projection_draft;
@@ -27,6 +29,7 @@ use scenomise::authoring::{EditorAction, ProjectionEditor, ProjectionPanel};
 use scenomise::projection::{CompiledProjection, ProjectionDataset, ProjectionSnapshot};
 mod comparison;
 mod options;
+mod partition_zoom;
 mod scene_marks;
 use scenograph::swatch::AxisKind;
 use scenomise::host_dataset::{parse_host_dataset, route_relationships};
@@ -221,12 +224,22 @@ impl ProjectionControls {
         self.refresh();
     }
     fn refresh(&mut self) {
+        let focus = self
+            .compiled
+            .as_ref()
+            .and_then(CompiledProjection::partition_focus)
+            .map(str::to_owned);
+        self.refresh_with_partition_focus(focus.as_deref());
+    }
+
+    fn refresh_with_partition_focus(&mut self, group: Option<&str>) {
         let Some(dataset) = &self.dataset else { return };
-        match compile_editor(
+        match compile_editor_with_partition_focus(
             &self.editor,
             dataset,
             self.compiled.as_ref(),
             self.selected.as_deref(),
+            group,
         )
         .and_then(|mut compiled| {
             if !self.relationships.is_empty() {
@@ -624,7 +637,7 @@ impl SavedProduct {
         ] {
             snapshot = snapshot.with_field(name, value);
         }
-        snapshot
+        partition_zoom::add_snapshot(snapshot, p.compiled.as_ref())
     }
     pub(super) fn projection_action(&mut self, action: &str) -> Result<(), String> {
         if matches!(action, "save" | "undo-save" | "redo-save") {
@@ -940,10 +953,7 @@ pub(in crate::web_tree) fn editor(page: &TreePage) -> Option<Child> {
         )));
     }
     if p.editor.panel() == ProjectionPanel::Interaction {
-        children.push(Box::new(el(
-            "p",
-            "Selection, pan, and zoom remain host interaction policy.",
-        )));
+        children.push(partition_zoom::interaction(p));
     }
     if p.editor.panel() == ProjectionPanel::Arrangement {
         children.push(Box::new(
@@ -1032,6 +1042,10 @@ pub(in crate::web_tree) fn editor(page: &TreePage) -> Option<Child> {
             spatial.push(outline);
         }
         spatial.extend(scene_marks::fields(scene, &to_screen, |_| form));
+        if let Some(partition) = partition_zoom::view(p, compiled) {
+            children.extend(partition.controls());
+            spatial.extend(partition.regions(&to_screen));
+        }
         spatial.extend(scene_marks::relations(scene, &to_screen));
         for (id, row, column) in scenomise::relation_forms::matrix_headings(scene) {
             if let Some(label) = compiled.labels.get(&id) {

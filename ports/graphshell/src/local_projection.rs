@@ -55,12 +55,20 @@ pub fn compile_editor(
     previous: Option<&CompiledProjection>,
     selected: Option<&str>,
 ) -> Result<CompiledProjection, String> {
+    compile_editor_with_partition_focus(editor, dataset, previous, selected, None)
+}
+
+pub fn compile_editor_with_partition_focus(
+    editor: &ProjectionEditor,
+    dataset: &ProjectionDataset,
+    previous: Option<&CompiledProjection>,
+    selected: Option<&str>,
+    group: Option<&str>,
+) -> Result<CompiledProjection, String> {
     let definition = editor.draft().to_definition().map_err(issues)?;
-    let mut compiled = match previous {
-        Some(previous) => practice_compiler().refresh(previous, &definition, dataset),
-        None => practice_compiler().compile(&definition, dataset),
-    }
-    .map_err(compile_issues)?;
+    let mut compiled = practice_compiler()
+        .compile_with_partition_focus(&definition, dataset, previous, group)
+        .map_err(compile_issues)?;
     compiled.selected = selected
         .and_then(|id| compiled.instance_by_occurrence.get(id))
         .copied();

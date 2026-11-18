@@ -1,0 +1,41 @@
+# Run with app=local&form=tiles and app=local&form=rings.
+settle 6
+assert snap projection-executable == true
+assert snap projection-partition-viewport == 760x340
+click role:tab Interaction
+click role:button Partition zoom
+settle 4
+assert retained {"role":"button","key":["data-partition-zoom-policy",""],"attribute":"aria-pressed","value":"true"}
+click role:tab Preview
+settle 4
+assert snap projection-partition-focus == whole
+assert snap projection-partition-shares == Alpha:40,Beta:40,remainder:20
+assert retained {"role":"group","label":"Partition view","text":"Remainder 20%"}
+click role:button list kernel: Graph kernel
+settle 3
+capture whole
+click role:button @data-partition-zoom-group=Alpha
+settle 4
+assert snap projection-partition-focus == Alpha
+assert snap projection-partition-viewport == 760x340
+assert snap projection-partition-shares == Alpha:60,Beta:20,remainder:20
+assert retained {"role":"button","key":["data-partition-zoom-group","Alpha"],"attribute":"aria-pressed","value":"true"}
+click role:button list kernel: Graph kernel
+settle 3
+assert snap projection-partition-focus == Alpha
+capture focused
+click role:button @data-partition-zoom-group=Beta
+settle 4
+assert snap projection-partition-focus == Beta
+assert snap projection-partition-viewport == 760x340
+assert snap projection-partition-shares == Alpha:20,Beta:60,remainder:20
+click role:button Zoom out
+settle 4
+assert snap projection-partition-focus == whole
+assert snap projection-partition-viewport == 760x340
+assert snap projection-partition-shares == Alpha:40,Beta:40,remainder:20
+act undo-projection
+settle 4
+assert snap projection-executable == true
+assert retained {"role":"button","key":["data-partition-zoom-group","Alpha"],"count":0}
+log Partition zoom reallocated the viewport and restored the measured shares
