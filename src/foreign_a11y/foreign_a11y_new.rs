@@ -312,26 +312,20 @@ impl ForeignA11y {
                 )
             })
             .collect();
-        // Reconstruct the final whole snapshots from this exact ordered batch,
-        // including the final host focus update. Observation reads this forest.
-        let mut forest: BTreeMap<TreeId, TreeUpdate> = BTreeMap::new();
-        for update in &updates {
-            if update.tree.is_some() {
-                forest.insert(update.tree_id, update.clone());
-            } else if let Some(tree) = forest.get_mut(&update.tree_id) {
-                tree.focus = update.focus;
-                for (id, node) in &update.nodes {
-                    if let Some((_, previous)) = tree.nodes.iter_mut().find(|(n, _)| n == id) {
-                        *previous = node.clone();
-                    } else {
-                        tree.nodes.push((*id, node.clone()));
-                    }
-                }
-            }
-        }
-        self.published_forest = forest.into_values().collect();
+        self.published_forest = composed_forest(&updates);
         self.dirty = false;
         Ok(updates)
+    }
+
+    /// Compose a fresh, validated frame without advancing native publication.
+    pub(crate) fn tooling_forest(
+        &self,
+        host: TreeUpdate,
+        visible: &[Uuid],
+        guests: &[TreeUpdate],
+    ) -> Result<Vec<TreeUpdate>, String> {
+        let (composition, frames, _) = self.prepare(host, visible, true, guests)?;
+        Ok(composed_forest(&expand(Grafts::new().frame(composition), &frames)))
     }
 
     pub(crate) fn observed_nodes(&self) -> Vec<crate::a11y::ObservedNode<'_>> {
@@ -390,4 +384,24 @@ impl ForeignA11y {
             .collect::<Vec<_>>()
             .join("\n")
     }
+}
+
+/// Reconstruct the whole forest from the ordered batch, including final focus.
+fn composed_forest(updates: &[TreeUpdate]) -> Vec<TreeUpdate> {
+    let mut forest: BTreeMap<TreeId, TreeUpdate> = BTreeMap::new();
+    for update in updates {
+        if update.tree.is_some() {
+            forest.insert(update.tree_id, update.clone());
+        } else if let Some(tree) = forest.get_mut(&update.tree_id) {
+            tree.focus = update.focus;
+            for (id, node) in &update.nodes {
+                if let Some((_, previous)) = tree.nodes.iter_mut().find(|(n, _)| n == id) {
+                    *previous = node.clone();
+                } else {
+                    tree.nodes.push((*id, node.clone()));
+                }
+            }
+        }
+    }
+    forest.into_values().collect()
 }

@@ -14,6 +14,7 @@
 //! only for the routes its owner granted, and attributes accepted edits to the
 //! persona via that app. Standard output carries only MCP messages.
 
+use std::fs::File;
 use std::io::{self, BufReader};
 use std::process::ExitCode;
 
@@ -21,11 +22,12 @@ use ostiary::app_admission::{AppId, AppRouteId, configured_app_endpoint};
 use graphshell_door::projection::AppRouteCarrier;
 use graphshell_mcp::{Config, Server};
 
-const USAGE: &str = "usage: mere-mcp --route <route> [--app <id>] [--endpoint <endpoint>] [--read-only]\n\
+const USAGE: &str = "usage: mere-mcp --route <route> [--app <id>] [--endpoint <endpoint>] [--read-only] [--uxtree-snapshot <path>]\n\
   --route     the route to serve, such as mere/main (required)\n\
   --app       the app id to be admitted as (default mcp.agent)\n\
   --endpoint  djinn's application endpoint (default: GRAPHSHELL_APP_ENDPOINT or the installed one)\n\
-  --read-only offer no write tool";
+  --read-only offer no write tool\n\
+  --uxtree-snapshot  serve a Turnstone record-uxtree JSON export as a read-only resource";
 
 fn main() -> ExitCode {
     match run() {
@@ -45,6 +47,7 @@ fn run() -> Result<(), String> {
         true,
     );
     let mut args = std::env::args().skip(1);
+    let mut uxtree_snapshot = None;
     while let Some(flag) = args.next() {
         let mut value = |name: &str| args.next().ok_or(format!("{name} needs a value\n{USAGE}"));
         match flag.as_str() {
@@ -52,6 +55,7 @@ fn run() -> Result<(), String> {
             "--app" => app = value("--app")?,
             "--endpoint" => endpoint = value("--endpoint")?,
             "--read-only" => writes = false,
+            "--uxtree-snapshot" => uxtree_snapshot = Some(value("--uxtree-snapshot")?),
             "--help" | "-h" => {
                 println!("{USAGE}");
                 return Ok(());
@@ -74,7 +78,13 @@ fn run() -> Result<(), String> {
         writes,
         ..Config::default()
     };
-    Server::new(carrier, config)
+    let mut server = Server::new(carrier, config);
+    if let Some(path) = uxtree_snapshot {
+        server = File::open(&path)
+            .and_then(|file| server.with_uxtree_snapshot(file))
+            .map_err(|error| format!("uxtree snapshot {path}: {error}"))?;
+    }
+    server
         .serve(BufReader::new(io::stdin()), io::stdout())
         .map_err(|error| error.to_string())
 }

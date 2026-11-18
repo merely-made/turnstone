@@ -1,0 +1,128 @@
+{
+  "kind": "turnstone-uxtree-snapshot",
+  "root_tree_id": "00000000-0000-0000-0000-000000000000",
+  "public_fixture_text": true,
+  "trees": [
+    {
+      "tree_id": "00000000-0000-0000-0000-000000000000",
+      "root_node_id": "1",
+      "focus_node_id": "3",
+      "nodes": [
+        {
+          "node_id": "1",
+          "role": "Window",
+          "children": [
+            "2",
+            "3"
+          ],
+          "graft_tree_id": null,
+          "bounds": null,
+          "transform": null,
+          "actions": [],
+          "text_redacted": false,
+          "text": {
+            "label": "Public fixture",
+            "value": null,
+            "description": null
+          },
+          "envelope": null
+        },
+        {
+          "node_id": "2",
+          "role": "Button",
+          "children": [],
+          "graft_tree_id": null,
+          "bounds": null,
+          "transform": null,
+          "actions": [
+            "Click"
+          ],
+          "text_redacted": false,
+          "text": {
+            "label": "Open",
+            "value": null,
+            "description": null
+          },
+          "envelope": {
+            "address": {
+              "instance": {
+                "producer": "1"
+              },
+              "node_id": "2"
+            },
+            "stability": {
+              "kind": "derived",
+              "generation": null
+            },
+            "provenance": "turnstone",
+            "action_ids": [
+              "fixture.open"
+            ],
+            "domain_ref": null,
+            "authored_key": "omnibar"
+          }
+        },
+        {
+          "node_id": "3",
+          "role": "PasswordInput",
+          "children": [
+            "4"
+          ],
+          "graft_tree_id": null,
+          "bounds": null,
+          "transform": null,
+          "actions": [],
+          "text_redacted": true,
+          "text": null,
+          "envelope": {
+            "address": {
+              "instance": {
+                "producer": "1"
+              },
+              "node_id": "3"
+            },
+            "stability": {
+              "kind": "derived",
+              "generation": null
+            },
+            "provenance": "turnstone",
+            "action_ids": null,
+            "domain_ref": null,
+            "authored_key": null
+          }
+        },
+        {
+          "node_id": "4",
+          "role": "GenericContainer",
+          "children": [],
+          "graft_tree_id": "00000000-0000-0000-0000-000000000001",
+          "bounds": null,
+          "transform": null,
+          "actions": [],
+          "text_redacted": true,
+          "text": null,
+          "envelope": null
+        }
+      ]
+    },
+    {
+      "tree_id": "00000000-0000-0000-0000-000000000001",
+      "root_node_id": "1",
+      "focus_node_id": "1",
+      "nodes": [
+        {
+          "node_id": "1",
+          "role": "Label",
+          "children": [],
+          "graft_tree_id": null,
+          "bounds": null,
+          "transform": null,
+          "actions": [],
+          "text_redacted": true,
+          "text": null,
+          "envelope": null
+        }
+      ]
+    }
+  ]
+}

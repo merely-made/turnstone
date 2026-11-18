@@ -388,3 +388,11 @@ fn retained_waits_parse_with_explicit_frame_bounds() {
     assert!(parse("wait-retained-clip invalid").is_err());
     assert!(parse("wait-retained-reader").is_err());
 }
+#[test]
+fn record_uxtree_accepts_only_a_safe_capture_name() {
+    let steps = parse("record-uxtree p10-snapshot").expect("valid record-uxtree step");
+    assert!(matches!(steps.as_slice(), [Step::RecordUxTree(name)] if name == "p10-snapshot"));
+    for source in ["record-uxtree", "record-uxtree ../private", "record-uxtree two names"] {
+        assert!(parse(source).is_err(), "{source}");
+    }
+}

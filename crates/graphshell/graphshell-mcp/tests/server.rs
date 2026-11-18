@@ -11,6 +11,8 @@
 use std::io::Cursor;
 
 mod common;
+#[path = "common/uxtree_resource.rs"]
+mod uxtree_resource;
 
 use common::Route;
 use graphshell_mcp::{Config, Server};

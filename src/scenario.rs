@@ -57,6 +57,7 @@
 //! scroll-reader <role> <dy> # wheel at the live Reader inset|workbench|tile rect
 //! record-reader-appearances <name> # stable sorted Reader appearance observation
 //! record-idle <name>        # bounded global-idle diagnosis after a wait
+//! record-uxtree <name>      # redacted primary-window tree and envelopes as JSON
 //! divider <ratio>           # set the active pane's split ratio (0.0-1.0)
 //! assert pane <tag>         # a pane with that PaneContent tag is in the tree
 //! assert maximized | not-maximized
@@ -194,6 +195,7 @@ pub enum Step {
     /// Write the named reasons that currently make Turnstone's global `wait`
     /// report busy. This is a read-only receipt, not another waiting policy.
     RecordIdle(String),
+    RecordUxTree(String),
     /// Toggle the named current source member using Canvas multi-selection.
     SelectGraphMember(String),
     /// Click the one painted note member through the normal pointer route.

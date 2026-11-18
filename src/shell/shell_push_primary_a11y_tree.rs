@@ -3,6 +3,9 @@
 
 use super::*;
 
+#[path = "shell_uxtree_snapshot.rs"]
+mod shell_uxtree_snapshot;
+
 struct PrimaryA11yFrame {
     update: accesskit::TreeUpdate,
     visible: Vec<uuid::Uuid>,

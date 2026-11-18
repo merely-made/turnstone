@@ -28,6 +28,7 @@
 
 mod rpc;
 mod tools;
+mod uxtree_snapshot;
 pub mod view;
 
 use std::io::{self, BufRead, Write};
@@ -39,6 +40,7 @@ use chirograph::{
 };
 use rpc::{Era, RpcError};
 use serde_json::{Value, json};
+use uxtree_snapshot::UXTREE_URI;
 
 /// How the server presents itself and how much it will do.
 #[derive(Clone, Debug)]
@@ -80,6 +82,7 @@ pub struct Server<C> {
     opened: Option<Vec<ProjectionOffer>>,
     legacy_open: bool,
     gone: bool,
+    uxtree_snapshot: Option<String>,
 }
 
 impl<C: Carrier> Server<C> {
@@ -90,6 +93,7 @@ impl<C: Carrier> Server<C> {
             opened: None,
             legacy_open: false,
             gone: false,
+            uxtree_snapshot: None,
         }
     }
 
@@ -214,7 +218,7 @@ impl<C: Carrier> Server<C> {
     }
 
     fn list_resources(&mut self, era: Era) -> Result<Value, RpcError> {
-        let resources: Vec<Value> = self
+        let mut resources: Vec<Value> = self
             .projections()?
             .iter()
             .map(|offer| {
@@ -226,6 +230,14 @@ impl<C: Carrier> Server<C> {
                 })
             })
             .collect();
+        if self.uxtree_snapshot.is_some() {
+            resources.push(json!({
+                "uri": UXTREE_URI,
+                "name": "Turnstone uxtree snapshot",
+                "description": "A redacted, read-only tooling capture with no schema stability promise.",
+                "mimeType": "application/json",
+            }));
+        }
         Ok(rpc::uncacheable(era, json!({"resources": resources})))
     }
 
@@ -234,14 +246,20 @@ impl<C: Carrier> Server<C> {
             .get("uri")
             .and_then(Value::as_str)
             .ok_or_else(|| RpcError::invalid_params("resources/read needs a uri"))?;
-        let offer = self.find_projection(uri)?;
-        let document = self.read_projection(&offer)?;
+        let text = if uri == UXTREE_URI {
+            self.uxtree_snapshot
+                .clone()
+                .ok_or_else(|| RpcError::invalid_params("no uxtree snapshot was attached"))?
+        } else {
+            let offer = self.find_projection(uri)?;
+            self.read_projection(&offer)?.to_string()
+        };
         Ok(rpc::uncacheable(
             era,
             json!({"contents": [{
                 "uri": uri,
                 "mimeType": "application/json",
-                "text": document.to_string(),
+                "text": text,
             }]}),
         ))
     }

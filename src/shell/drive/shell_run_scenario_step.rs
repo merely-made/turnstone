@@ -51,11 +51,11 @@ impl Shell {
             | Step::Scroll(..)
             | Step::ScrollReader(..)
             | Step::Divider(..)
-            | Step::RecordReaderAppearances(..)
-            | Step::RecordIdle(..)
+            | Step::RecordReaderAppearances(..) | Step::RecordIdle(..)
             | Step::AssertOmnibar(..)
             | Step::AssertScrolled(..)
             | Step::AssertText(..) => self.scenario_open(step)?,
+            Step::RecordUxTree(name) => self.record_uxtree(name, public_fixture_a11y_receipt()?)?,
             Step::AssertFocused(..)
             | Step::AssertBrowserFetch(..)
             | Step::AssertLinkPreview(..)

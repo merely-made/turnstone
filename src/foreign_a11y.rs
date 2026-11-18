@@ -76,3 +76,4 @@ mod impl_default_for_foreign_a11y;
 #[path = "foreign_a11y/protected_nodes.rs"]
 mod protected_nodes;
 use protected_nodes::protected_nodes;
+pub(crate) use protected_nodes::protected_addresses;

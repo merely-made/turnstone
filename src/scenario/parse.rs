@@ -248,6 +248,12 @@ pub fn parse(body: &str) -> Result<Vec<Step>, String> {
                 Step::RecordReaderAppearances(rest.to_string())
             }
             "record-idle" if !rest.is_empty() => Step::RecordIdle(rest.to_string()),
+            "record-uxtree" => {
+                if rest.is_empty() || !rest.chars().all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-') {
+                    return err("record-uxtree wants a safe name");
+                }
+                Step::RecordUxTree(rest.to_string())
+            }
             "select-graph-member" if !rest.is_empty() => Step::SelectGraphMember(rest.to_string()),
             "click-note-member" if rest.is_empty() => Step::ClickNoteMember,
             "activate-graph-fold" => Step::ActivateGraphFold(rest.parse().map_err(|_| format!("line {}: fold index required", i + 1))?),
