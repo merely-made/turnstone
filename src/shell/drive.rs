@@ -74,6 +74,8 @@ use focused_saved_reader_node_for::focused_saved_reader_node_for;
 mod cmp_usize;
 #[path = "drive/impl_taproot_automatable_for_shell.rs"]
 mod impl_taproot_automatable_for_shell;
+#[path = "drive/a11y_lint.rs"]
+mod a11y_lint;
 #[path = "drive/impl_taproot_driveable_for_shell.rs"]
 mod impl_taproot_driveable_for_shell;
 #[path = "drive/shell_adapter_busy.rs"]

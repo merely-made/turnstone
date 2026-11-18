@@ -3,24 +3,21 @@
 
 use super::*;
 
+struct PrimaryA11yFrame {
+    update: accesskit::TreeUpdate,
+    visible: Vec<uuid::Uuid>,
+    placements: Vec<(uuid::Uuid, accesskit::Rect)>,
+    guests: Vec<accesskit::TreeUpdate>,
+    admissions: std::collections::HashMap<a11y_bridge::AdmissionKey, a11y_bridge::Admission>,
+    routes: crate::a11y::ActionEnvelopes,
+}
+
 impl Shell {
-    pub(super) fn push_primary_a11y_tree(
+    fn primary_a11y_frame(
         &mut self,
         override_placements: Option<Vec<(uuid::Uuid, accesskit::Rect)>>,
         plan: &[crate::surface::Surface],
-    ) {
-        let epoch = self
-            .a11y_adapter
-            .as_ref()
-            .map(|bridge| bridge.activation_epoch());
-        if epoch != self.a11y_epoch {
-            self.surface_a11y.reset_publication();
-            self.a11y_actions
-                .lock()
-                .expect("a11y queue poisoned")
-                .publish(Default::default());
-            self.a11y_epoch = epoch;
-        }
+    ) -> PrimaryA11yFrame {
         let placements = override_placements
             .unwrap_or_else(|| self.window_foreign_a11y_placements_with(0, plan.to_vec()));
         let document_a11y::Projected {
@@ -119,6 +116,41 @@ impl Shell {
                 node.set_bounds(bounds);
             }
         }
+        PrimaryA11yFrame {
+            update,
+            visible,
+            placements,
+            guests,
+            admissions,
+            routes,
+        }
+    }
+
+    pub(super) fn push_primary_a11y_tree(
+        &mut self,
+        override_placements: Option<Vec<(uuid::Uuid, accesskit::Rect)>>,
+        plan: &[crate::surface::Surface],
+    ) {
+        let epoch = self
+            .a11y_adapter
+            .as_ref()
+            .map(|bridge| bridge.activation_epoch());
+        if epoch != self.a11y_epoch {
+            self.surface_a11y.reset_publication();
+            self.a11y_actions
+                .lock()
+                .expect("a11y queue poisoned")
+                .publish(Default::default());
+            self.a11y_epoch = epoch;
+        }
+        let PrimaryA11yFrame {
+            update,
+            visible,
+            placements,
+            guests,
+            admissions,
+            routes,
+        } = self.primary_a11y_frame(override_placements, plan);
         let initial = a11y_bridge::safe_initial(&update);
         let updates = match self
             .surface_a11y
@@ -147,6 +179,59 @@ impl Shell {
             self.surface_a11y.retry_publication();
         }
         self.a11y_surface_layout = placements;
+    }
+
+    pub(super) fn lint_primary_a11y(&mut self) -> uxtree::lint::Report {
+        use crate::a11y::A11yRoute;
+        use accesskit::{Action, TreeId};
+
+        self.sync_content_placements();
+        self.drain_surface_accessibility();
+        let plan = self.surface_plan();
+        let PrimaryA11yFrame {
+            update,
+            visible,
+            guests,
+            admissions,
+            routes,
+            ..
+        } = self.primary_a11y_frame(None, &plan);
+        let foreign = self.surface_a11y.snapshots_for_lint(&visible);
+        let forward: std::collections::HashSet<_> =
+            foreign.iter().map(|tree| tree.tree_id).collect();
+        let mut trees = vec![update];
+        trees.extend(guests);
+        trees.extend(foreign);
+        uxtree::lint::inspect(
+            TreeId::ROOT,
+            &trees,
+            |(tree, local)| tree == TreeId::ROOT && routes.contains_key(&local),
+            |address @ (tree, local), action| {
+                if tree == TreeId::ROOT {
+                    return match routes.get(&local).map(|envelope| &envelope.provenance) {
+                        Some(A11yRoute::Frame(_)) => true,
+                        Some(A11yRoute::OpenOmnibar) => {
+                            matches!(action, Action::Click | Action::Focus)
+                        },
+                        Some(
+                            A11yRoute::Action(_)
+                            | A11yRoute::OmnibarRow { .. }
+                            | A11yRoute::SelectMember { .. },
+                        ) => action == Action::Click,
+                        _ => false,
+                    };
+                }
+                match admissions.get(&address) {
+                    Some(a11y_bridge::Admission::PoolDocument(_)) => {
+                        document_a11y::request_action(action).is_some()
+                    },
+                    Some(a11y_bridge::Admission::Contributed(_)) => {
+                        matches!(action, Action::Click | Action::Focus)
+                    },
+                    _ => forward.contains(&tree),
+                }
+            },
+        )
     }
 
     /// Drain assistive actions queued by the platform thread and lower each
