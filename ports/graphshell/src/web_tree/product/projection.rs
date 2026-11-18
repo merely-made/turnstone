@@ -28,6 +28,7 @@ use scenograph::Channel;
 use scenomise::authoring::{EditorAction, ProjectionEditor, ProjectionPanel};
 use scenomise::projection::{CompiledProjection, ProjectionDataset, ProjectionSnapshot};
 mod comparison;
+mod crystal;
 mod options;
 mod partition_zoom;
 mod scene_marks;
@@ -120,6 +121,7 @@ pub(super) struct ProjectionControls {
     compare_dynamics: bool,
     compare_slots: Option<(AxisKind, sceno::Rect)>,
     relationships: Vec<DisclosedRelationship>,
+    crystal_drag: Option<crystal::Drag>,
     settle_bound: Option<u32>,
     motion_paused: bool,
     compare_column: usize,
@@ -150,6 +152,7 @@ impl Default for ProjectionControls {
             compare_dynamics: false,
             compare_slots: None,
             relationships: Vec::new(),
+            crystal_drag: None,
             settle_bound: Some(60),
             motion_paused: false,
             compare_column: 0,
@@ -413,6 +416,7 @@ impl ProjectionControls {
     }
     fn replace_editor(&mut self, editor: ProjectionEditor) {
         self.editor = editor;
+        self.crystal_drag = None;
         self.generation += 1;
     }
     /// The host stored a save. Only the editor the save was sent from becomes
@@ -637,7 +641,8 @@ impl SavedProduct {
         ] {
             snapshot = snapshot.with_field(name, value);
         }
-        partition_zoom::add_snapshot(snapshot, p.compiled.as_ref())
+        let snapshot = partition_zoom::add_snapshot(snapshot, p.compiled.as_ref());
+        crystal::add_snapshot(snapshot, p.compiled.as_ref())
     }
     pub(super) fn projection_action(&mut self, action: &str) -> Result<(), String> {
         if matches!(action, "save" | "undo-save" | "redo-save") {
@@ -1025,9 +1030,12 @@ pub(in crate::web_tree) fn editor(page: &TreePage) -> Option<Child> {
             .as_ref()
             .map_or(&compiled.scene, ProjectionDynamics::scene);
         let bounds = scene.bounds;
+        let crystal = matches!(compiled.score.arrangement, sceno::Arrangement::Crystal(_));
         let subdivision = matches!(
             compiled.score.arrangement,
-            sceno::Arrangement::Mosaic(_) | sceno::Arrangement::Partition(_)
+            sceno::Arrangement::Mosaic(_)
+                | sceno::Arrangement::Partition(_)
+                | sceno::Arrangement::Crystal(_)
         );
         let width = (page.size.0 as f32 - 420.0).max(280.0);
         let scale = ((width - 24.0) / bounds.size.w.max(1.0)).min(1.0);
@@ -1046,7 +1054,11 @@ pub(in crate::web_tree) fn editor(page: &TreePage) -> Option<Child> {
             children.extend(partition.controls());
             spatial.extend(partition.regions(&to_screen));
         }
-        spatial.extend(scene_marks::relations(scene, &to_screen));
+        if crystal {
+            children.push(crystal::controls(compiled));
+        } else {
+            spatial.extend(scene_marks::relations(scene, &to_screen));
+        }
         for (id, row, column) in scenomise::relation_forms::matrix_headings(scene) {
             if let Some(label) = compiled.labels.get(&id) {
                 for point in [row, column] {
@@ -1126,17 +1138,36 @@ pub(in crate::web_tree) fn editor(page: &TreePage) -> Option<Child> {
                     {
                         style.push_str("background:#31594f;");
                     }
+                    if crystal {
+                        style.push_str(crystal::tile_style(scene, instance));
+                    }
                     control = control.attr("style", style);
                 }
-                output.push(Box::new(control));
+                if crystal && view == "spatial" {
+                    output.push(crystal::tile(
+                        control
+                            .attr("data-crystal-tile", occurrence.clone())
+                            .attr(
+                                "data-crystal-pinned",
+                                crystal::pinned(scene, instance).to_string(),
+                            )
+                            .attr(
+                                "aria-keyshortcuts",
+                                "ArrowUp ArrowDown ArrowLeft ArrowRight",
+                            ),
+                        occurrence.clone(),
+                        scale,
+                    ));
+                } else {
+                    output.push(Box::new(control));
+                }
             }
         }
-        for report in &scene.relation_constraints {
-            let outcome = if report.honored { "Honoured" } else { "Unmet" };
-            children.push(Box::new(el(
-                "p",
-                format!("{} · {outcome} · {}", report.constraint.id, report.reason),
-            )));
+        if crystal {
+            spatial.extend(scene_marks::relations(scene, &to_screen));
+            spatial.extend(crystal::drag_preview(p, compiled, &to_screen, scale));
+        } else {
+            children.extend(relation_reports(scene));
         }
         children.push(Box::new(
             el("div", spatial)
@@ -1162,6 +1193,9 @@ pub(in crate::web_tree) fn editor(page: &TreePage) -> Option<Child> {
         children.push(Box::new(
             el("div", list).attr("aria-label", "Projection occurrences"),
         ));
+        if crystal {
+            children.extend(relation_reports(scene));
+        }
     }
     Some(Box::new(
         el("section", children)
@@ -1172,6 +1206,16 @@ pub(in crate::web_tree) fn editor(page: &TreePage) -> Option<Child> {
             )
             .attr("aria-label", "Projection editor workspace"),
     ))
+}
+
+fn relation_reports(scene: &sceno::Scene) -> impl Iterator<Item = Child> + '_ {
+    scene.relation_constraints.iter().map(|report| {
+        let outcome = if report.honored { "Honoured" } else { "Unmet" };
+        Box::new(el(
+            "p",
+            format!("{} · {outcome} · {}", report.constraint.id, report.reason),
+        )) as Child
+    })
 }
 
 /// The subdivision owns the box and, for Partition rings, the sector outline.

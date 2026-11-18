@@ -185,7 +185,7 @@ pub(super) fn fields(
 
 pub(super) fn relations(scene: &Scene, project: &impl Fn(Vec2) -> [f32; 2]) -> Vec<Child> {
     let mut children = Vec::new();
-    for relation in &scene.relations {
+    for (index, relation) in scene.relations.iter().enumerate() {
         let Some(world) = scene.to_world(relation.space) else {
             continue;
         };
@@ -197,6 +197,25 @@ pub(super) fn relations(scene: &Scene, project: &impl Fn(Vec2) -> [f32; 2]) -> V
                         project(world.apply(segment[1])),
                         "stroke",
                         "#dbb86b",
+                    ));
+                }
+            },
+            sceno::RelationForm::Adjacency => {
+                let honored = scene
+                    .relation_constraints
+                    .get(index)
+                    .is_some_and(|report| report.honored);
+                let (mark, color) = if honored {
+                    ("border", "#84cbb0")
+                } else {
+                    ("unmet", "#dbb86b")
+                };
+                for segment in relation.points.windows(2) {
+                    children.push(line(
+                        project(world.apply(segment[0])),
+                        project(world.apply(segment[1])),
+                        mark,
+                        color,
                     ));
                 }
             },

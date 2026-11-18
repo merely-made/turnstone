@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en" class="full-page">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Crystal preview</title>
+  <base href="../">
+  <link rel="stylesheet" href="./styles.css?h3=1">
+</head>
+<body class="full-page">
+  <graphshell-tree id="graphshell" data-owns-title data-appearance-application data-ready="false"></graphshell-tree>
+  <section id="scenario-host" aria-hidden="true" hidden>
+    <pre id="scenario-log"></pre>
+    <pre id="scenario-result"></pre>
+    <div id="scenario-captures"></div>
+  </section>
+  <script type="module">
+    const response = await fetch("./fixtures/host-dataset-relations.json");
+    if (!response.ok) throw new Error("Could not load the relationship fixture");
+    const host = await response.json();
+    const labels = ["Nucleus", "Branch", "Leaf C", "Leaf D", "Leaf E", "Leaf F",
+      "Leaf G", "Leaf H", "Leaf I", "Leaf J", "Second hop", "Loose tile"];
+    host.dataset.occurrences = labels.map((value, index) => {
+      const id = String.fromCharCode(97 + index);
+      return {
+        occurrence_id: id,
+        source: { adapter: "fixture.crystal", id },
+        values: { occurrence_id: {kind: "text", value: id}, label: {kind: "text", value} }
+      };
+    });
+    const template = host.relationships[0];
+    const pairs = Array.from("bcdefghij", to => ["a",to]).concat([["b","k"]]);
+    host.relationships = pairs.map(([from, to]) => ({
+      ...template,
+      id: from + to, from_occurrence: from, to_occurrence: to,
+      label: "Linked tiles",
+      explanation: "The fixture supplies this link.",
+      provenance: {
+        ...template.provenance,
+        evidence: [host.dataset.occurrences.find(row => row.occurrence_id === from).source]
+      }
+    }));
+    const root = document.querySelector("graphshell-tree");
+    root.dataset.projectionDataset = JSON.stringify(host);
+    root.dataset.projectionDefinition = JSON.stringify({
+      version: 1, id: "crystal-study", label: "Crystal study",
+      source: host.dataset.source,
+      reading: {kind: "nodes", key: "occurrence_id"},
+      encoding: {x: {kind: "field", value: "occurrence_id"}, y: {kind: "field", value: "occurrence_id"}, label: {kind: "field", value: "label"}},
+      arrangement: {kind: "crystal", direction: "coordinates", spacing: 128, options: {smallest_side: "96"}},
+      frame: {kind: "unbounded", origin: {x: 0, y: 0}},
+      interaction: {selection: "single", pan: false, zoom: false},
+      appearance: {realization: "canvas", title: "Crystal study", theme: "slate"},
+      provenance: {author: "Fixture", source_revision: host.dataset.revision, note: ""}
+    });
+    await import("./loader.js");
+  </script>
+</body>
+</html>
