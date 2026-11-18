@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en" class="full-page">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Projection context scenes</title>
+  <base href="../">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body class="full-page">
+  <graphshell-tree id="graphshell" data-owns-title data-appearance-application data-ready="false"></graphshell-tree>
+  <section id="scenario-host" aria-hidden="true" hidden>
+    <pre id="scenario-log"></pre>
+    <pre id="scenario-result"></pre>
+    <div id="scenario-captures"></div>
+  </section>
+  <script type="module">
+    const root = document.querySelector("graphshell-tree");
+    const params = new URLSearchParams(location.search);
+    const fixture = params.get("context-guest");
+    const host = await (await fetch("./fixtures/host-dataset-relations.json")).json();
+    const {dataset} = host;
+    dataset.fields.column = "number";
+    dataset.fields.order = "number";
+    dataset.occurrences.forEach((row, index) => {
+      row.values.column = {kind: "number", value: 0};
+      row.values.order = {kind: "number", value: index};
+    });
+    let config, entry;
+    if (fixture) {
+      const url = new URL(fixture, document.baseURI);
+      if (url.origin !== location.origin) throw new Error("Fixture must be on the test origin");
+      config = await (await fetch(url)).json();
+      config.baseURL = url.href;
+      entry = config.disclosure.capsules[0].entry;
+      dataset.fields.url = "text";
+      dataset.occurrences[0].values.url = {kind: "text", value: entry.url};
+    }
+    const field = value => ({kind: "field", value});
+    const definition = (id, title, label = "label", x = "column", y = "order") => ({
+      version: 1, id, label: title,
+      source: dataset.source,
+      reading: {kind: "nodes", key: "occurrence_id"},
+      encoding: {x: field(x), y: field(y), label: field(label)},
+      arrangement: {kind: "grid", direction: "coordinates", spacing: 12, options: {}},
+      interaction: {selection: "single", pan: false, zoom: false},
+      appearance: {realization: "canvas", title, theme: "slate"},
+      provenance: {author: "Context fixture", source_revision: dataset.revision, note: ""}
+    });
+    const context = (id, title, trigger, placement, input, label, subject = "node") => ({
+      id, trigger, placement, subject, input,
+      recipe: input === "commands"
+        ? definition(id, title, "label", "column", "order")
+        : definition(id, title, label)
+    });
+    const menu = context("menu", "Commands", "request", "overlay", "commands");
+    menu.commands = [
+      {id: "host:wheel-page", label: "Scroll the page", shortcut: "Alt+J"},
+      {id: "host:wheel-pan", label: "Pan the graph", shortcut: "Alt+K"},
+      {id: "host:fit-selection", label: "Fit current selection"}
+    ];
+    if (fixture) menu.commands.unshift({id: "applet:open-address", label: "Read shared capsule", shortcut: "Alt+O"});
+    const projection = definition("context-scenes", "Context scenes");
+    projection.marks = {contexts: [
+      context("linked", "Linked nodes", "selection", "beside", "linked"),
+      context("resource", "Resource", "focus", "pane", "resource", "address"),
+      context("summary", "Item summary", "hover", "in_place", "subject", "label", "field"),
+      menu
+    ]};
+    root.dataset.projectionDataset = JSON.stringify(host);
+    root.dataset.projectionDefinition = JSON.stringify(projection);
+
+    // Qualify the real signed worker. The first open seeds a WIT command; the
+    // scenario then closes that reading and opens it anew via the context.
+    if (fixture) {
+      const scenario = params.get("scenario");
+      params.delete("scenario");
+      const original = location.href;
+      history.replaceState(null, "", location.pathname + "?" + params);
+      const until = async predicate => {
+        const deadline = performance.now() + 20000;
+        while (!predicate()) {
+          if (performance.now() > deadline) throw new Error("Capsule fixture did not become ready");
+          await new Promise(resolve => setTimeout(resolve, 50));
+        }
+      };
+      try {
+        await import("./loader.js");
+        await until(() => root.dataset.ready === "true");
+        const gs = await import("./pkg/graphshell_web.js");
+        const {mountCapsuleApplet} = await import("./applets/host.mjs");
+        window.contextApplet = await mountCapsuleApplet(root, gs, config);
+        gs.applet_confirm(JSON.stringify(["power:capsule-view", "power:navigate"]));
+        await until(() => window.contextApplet.receipt().projection?.length);
+        await window.contextApplet.turn("open", JSON.stringify({url: entry.url}));
+        const seeded = window.contextApplet.receipt();
+        if (!seeded.opened || seeded.turns < 2) throw new Error("No reading from the signed component");
+        gs.applet_close_reading(seeded.selected_reading);
+
+      } finally {
+        history.replaceState(null, "", original);
+      }
+      if (scenario) await import("./loader.js?context-scenario");
+    } else {
+      await import("./loader.js");
+    }
+  </script>
+</body>
+</html>

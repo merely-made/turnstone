@@ -86,23 +86,49 @@ pub(super) fn controls(compiled: &CompiledProjection) -> Child {
     )
 }
 
-pub(super) fn tile<V>(control: V, occurrence: String, scale: f32) -> Child
+pub(super) fn tile<V>(
+    control: V,
+    occurrence: String,
+    scale: f32,
+    subject: Option<contexts::Subject>,
+) -> Child
 where
     V: cambium::ElementView<TreePage, ()> + 'static,
 {
     let drag_tile = occurrence.clone();
-    Box::new(on_key(
+    let pointed = subject.clone();
+    let keyed = subject.clone();
+    let control = on_key(
         on_pointer(control, move |page: &mut TreePage, event: PointerEvent| {
+            if pointed
+                .as_ref()
+                .is_some_and(|subject| contexts::request_pointer(page, subject, &event))
+            {
+                if let Some(product) = &mut page.product {
+                    product.projection.crystal_drag = None;
+                }
+                return;
+            }
             if let Some(product) = &mut page.product {
                 pointer(&mut product.projection, &drag_tile, event, scale);
             }
         }),
         move |page: &mut TreePage, event: KeyEvent| {
+            if keyed
+                .as_ref()
+                .is_some_and(|subject| contexts::request_key(page, subject, &event))
+            {
+                return;
+            }
             if let Some(product) = &mut page.product {
                 nudge(&mut product.projection, &occurrence, event);
             }
         },
-    ))
+    );
+    match subject {
+        Some(subject) => Box::new(contexts::focus_and_hover(control, subject)),
+        None => Box::new(control),
+    }
 }
 
 fn apply(p: &mut ProjectionControls, action: CrystalEdit) {

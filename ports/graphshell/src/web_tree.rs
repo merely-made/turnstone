@@ -160,6 +160,7 @@ const SHEET: &str = "\
     .tree-detail .detail-key { display:block; } \
     .tree-detail .detail-value { display:block;margin:2px 0 8px;overflow-wrap:anywhere; } \
     .tree-product [data-cambium-text-value] { display:block;width:280px;min-height:1.2em;height:26px;color:var(--tabard-color-text, #dce3e8);background:var(--tabard-color-surface-2, #263640);border:1px solid var(--tabard-color-border-strong, #637581); } \
+    .tree-projection [aria-label=\"Context recipes\"] { min-height:100px; } \
     .tree-tools [data-cambium-text-value], .tree-projection [data-cambium-text-value], .tree-command-menu [data-cambium-text-value] { display:block;box-sizing:border-box;width:100%;min-height:1.2em;height:26px;color:var(--tabard-color-text, #dce3e8);background:var(--tabard-color-surface-2, #263640);border:1px solid var(--tabard-color-border-strong, #637581); } \
     .tree-product button { background:var(--tabard-color-surface-2, #263640);color:var(--tabard-color-text, #dce3e8);padding:5px 10px;border:1px solid var(--tabard-color-border-strong, #637581); } \
     .tree-product .tablist { display:flex; flex-wrap:wrap; gap:4px; margin:4px 0; } \
@@ -764,7 +765,10 @@ fn view(page: &TreePage) -> Child {
         return view;
     }
     #[cfg(feature = "applets")]
-    if page.shared.applet.borrow().mount.is_some() {
+    if {
+        let applet = page.shared.applet.borrow();
+        applet.mount.is_some() && !applet.show_workspace
+    } {
         return applet::view(page);
     }
     let (width, height) = page.size;

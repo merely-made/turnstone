@@ -97,7 +97,7 @@ chirograph = { git = "https://github.com/merely-made/graphshell.git", branch = "
 workbench = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 sceno = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 sceno-backdrops = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
-scenograph = { version = ">=0.0.7", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
+scenograph = { version = ">=0.0.7", features = ["toml"], git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 scenomise = { version = ">=0.0.8", git = "https://github.com/merely-made/graphshell.git", branch = "main", features = ["authoring"] }
 scenotime = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 serde = { version = "1", features = ["derive"] }

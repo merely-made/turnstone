@@ -1552,7 +1552,8 @@ impl Product for TreeLane {
         match verb {
             // Translate the original explicit focus fixture without activating
             // the target. Subsequent keys still traverse shared host input.
-            "focus-retained" => {
+            "focus-retained" | "hover-retained" | "secondary-retained" | "hold-retained"
+            | "release-retained" => {
                 let (head, label) = rest.split_once(' ').unwrap_or((rest, ""));
                 let mut selector = if let Some(role) = head.strip_prefix("role:") {
                     Selector::role(role)
@@ -1579,7 +1580,28 @@ impl Product for TreeLane {
                     ));
                 };
                 ctx.scroll_into_view(*node, cambium_rootstock::ScrollAlign::Nearest);
-                ctx.runner.set_focus(Some(*node));
+                if verb == "focus-retained" {
+                    ctx.runner.set_focus(Some(*node));
+                    return Ok(());
+                }
+                let (x, y, width, height) = ctx.painted_rect(*node).ok_or("No painted target")?;
+                let (x, y) = (x + width / 2.0, y + height / 2.0);
+                match verb {
+                    "hover-retained" => ctx.pointer.push(HostPointer::Moved(x, y)),
+                    "secondary-retained" => {
+                        ctx.pointer.push(HostPointer::SecondaryPress(x, y));
+                        ctx.pointer.push(HostPointer::SecondaryRelease(x, y));
+                    },
+                    "hold-retained" => ctx.pointer.push(HostPointer::Press(x, y)),
+                    "release-retained" => ctx.pointer.push(HostPointer::Release(x, y)),
+                    _ => unreachable!(),
+                }
+                Ok(())
+            },
+            "context-menu-key" => {
+                ctx.runner.dispatch_key(cambium::KeyEvent::new(cambium::Key::Named(
+                    cambium::NamedKey::ContextMenu,
+                )));
                 Ok(())
             },
             "mark-camera" => {

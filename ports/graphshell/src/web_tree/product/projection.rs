@@ -28,6 +28,7 @@ use scenograph::Channel;
 use scenomise::authoring::{EditorAction, ProjectionEditor, ProjectionPanel};
 use scenomise::projection::{CompiledProjection, ProjectionDataset, ProjectionSnapshot};
 mod comparison;
+mod contexts;
 mod crystal;
 mod options;
 mod partition_zoom;
@@ -105,6 +106,7 @@ pub(super) struct ProjectionControls {
     dataset: Option<ProjectionDataset>,
     compiled: Option<CompiledProjection>,
     selected: Option<String>,
+    contexts: contexts::State,
     status: String,
     solves: u64,
     reuses: u64,
@@ -137,6 +139,7 @@ impl Default for ProjectionControls {
             dataset: None,
             compiled: None,
             selected: None,
+            contexts: contexts::State::default(),
             status: String::new(),
             solves: 0,
             reuses: 0,
@@ -195,6 +198,7 @@ impl ProjectionControls {
             d.provenance.note.clone(),
         ];
         self.inputs = self.values.iter().map(TextInput::new).collect();
+        self.contexts.sync(&d.marks.contexts);
         self.sync_options();
     }
     pub(super) fn changed(&self) -> bool {
@@ -417,6 +421,7 @@ impl ProjectionControls {
     fn replace_editor(&mut self, editor: ProjectionEditor) {
         self.editor = editor;
         self.crystal_drag = None;
+        self.contexts = contexts::State::default();
         self.generation += 1;
     }
     /// The host stored a save. Only the editor the save was sent from becomes
@@ -441,6 +446,10 @@ impl ProjectionControls {
     }
 }
 impl SavedProduct {
+    pub(in crate::web_tree) fn context_workspace_open(&self) -> bool {
+        self.projection.open && !self.projection.editor.draft().marks.contexts.is_empty()
+    }
+
     pub(in crate::web_tree) fn load_projection_input(
         &mut self,
         json: &str,
@@ -902,6 +911,12 @@ pub(in crate::web_tree) fn editor(page: &TreePage) -> Option<Child> {
             p.status.clone(),
         )),
     ];
+    #[cfg(feature = "applets")]
+    if page.shared.applet.borrow().show_workspace {
+        children.push(Box::new(button("Capsule library", |page: &mut TreePage, _| {
+            page.shared.applet.borrow_mut().show_workspace = false;
+        })));
+    }
     let panels = ProjectionPanel::ALL;
     let items: Vec<TabItem> = panels
         .iter()
@@ -959,6 +974,7 @@ pub(in crate::web_tree) fn editor(page: &TreePage) -> Option<Child> {
     }
     if p.editor.panel() == ProjectionPanel::Interaction {
         children.push(partition_zoom::interaction(p));
+        children.push(contexts::author(p));
     }
     if p.editor.panel() == ProjectionPanel::Arrangement {
         children.push(Box::new(
@@ -1088,8 +1104,11 @@ pub(in crate::web_tree) fn editor(page: &TreePage) -> Option<Child> {
                 .map(|row| format!("{:?}", row.values))
                 .unwrap_or_default();
             let selected = p.selected.as_ref() == Some(occurrence);
+            let subject = contexts::Subject::node(occurrence.clone());
+            let has_context = contexts::enabled(page, p, &subject);
             for (view, output) in [("spatial", &mut spatial), ("list", &mut list)] {
                 let id = occurrence.clone();
+                let clicked = subject.clone();
                 let assigned = view == "spatial" && subdivision;
                 let assigned_card = assigned && item.representation == sceno::Representation::Card;
                 let caption = if assigned_card {
@@ -1103,6 +1122,9 @@ pub(in crate::web_tree) fn editor(page: &TreePage) -> Option<Child> {
                     if let Some(product) = &mut page.product {
                         product.projection.selected = Some(id.clone());
                         product.projection.refresh();
+                    }
+                    if has_context {
+                        contexts::select(page, &clicked);
                     }
                 })
                 .attr("aria-label", format!("{view} {occurrence}: {label}"))
@@ -1119,6 +1141,7 @@ pub(in crate::web_tree) fn editor(page: &TreePage) -> Option<Child> {
                     let [x, y] = to_screen(world.apply(footprint.origin));
                     let w = footprint.size.w * world.scale * scale;
                     let h = footprint.size.h * world.scale * scale;
+                    output.extend(contexts::panel(page, p, Some(contexts::Anchor::Tile(occurrence, [x, y, w, h]))));
                     let mut style = format!(
                         "position:absolute;left:{x}px;top:{y}px;width:{w}px;height:{h}px;overflow:hidden;"
                     );
@@ -1157,7 +1180,10 @@ pub(in crate::web_tree) fn editor(page: &TreePage) -> Option<Child> {
                             ),
                         occurrence.clone(),
                         scale,
+                        has_context.then(|| subject.clone()),
                     ));
+                } else if has_context {
+                    output.push(contexts::interactive(control, subject.clone()));
                 } else {
                     output.push(Box::new(control));
                 }
@@ -1196,6 +1222,8 @@ pub(in crate::web_tree) fn editor(page: &TreePage) -> Option<Child> {
         if crystal {
             children.extend(relation_reports(scene));
         }
+        children.extend(contexts::subjects(page, p));
+        children.extend(contexts::panel(page, p, None));
     }
     Some(Box::new(
         el("section", children)
