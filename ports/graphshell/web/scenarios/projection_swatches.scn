@@ -1,0 +1,63 @@
+# Headed M6. The host fixture supplies the dataset and a Partition recipe.
+settle 6
+assert snap projection-executable == true
+assert snap projection-arrangement == partition
+click role:tab Preview
+click role:button @data-projection-axis=node-mark
+settle 4
+assert snap projection-compare-axis == node-mark
+assert snap projection-compare-refused >= 1
+click role:button @data-projection-compare-cell=card:0
+settle 4
+assert snap projection-node-mark == card
+assert retained {"role":"button","label":"spatial kernel: Graph kernel","attribute":"data-projection-card","value":""}
+click role:button @data-projection-axis=node-mark
+click role:button list kernel: Graph kernel
+settle 3
+capture partition_cards
+act undo-projection
+settle 3
+assert snap projection-node-mark == default
+act redo-projection
+settle 3
+assert snap projection-node-mark == card
+click role:button @data-projection-axis=frame
+settle 4
+assert snap projection-compare-axis == frame
+assert snap projection-compare-refused >= 2
+click role:button @data-projection-compare-cell=viewport:0
+settle 4
+assert snap projection-frame == bounded
+assert snap projection-frame-contained == true
+assert snap projection-executable == true
+assert retained {"role":"button","label":"spatial kernel: Graph kernel","attribute":"data-projection-card","value":""}
+click role:button @data-projection-axis=frame
+click role:button list kernel: Graph kernel
+settle 3
+capture partition_viewport
+act undo-projection
+settle 3
+assert snap projection-frame == default
+assert snap projection-node-mark == card
+act redo-projection
+settle 3
+assert snap projection-frame == bounded
+click role:button @data-projection-axis=relation-form
+settle 4
+assert snap projection-compare-axis == relation-form
+click role:button @data-projection-compare-cell=matrix:0
+settle 4
+assert snap projection-relation-form == matrix_cell
+act undo-projection
+settle 3
+assert snap projection-relation-form == default
+click role:button @data-projection-axis=field-form
+settle 4
+assert snap projection-compare-axis == field-form
+click role:button @data-projection-compare-cell=contour:0
+settle 4
+assert snap projection-field-form == contour
+act undo-projection
+settle 3
+assert snap projection-field-form == default
+log projection swatch and viewport proof complete

@@ -5,28 +5,32 @@
 // SPDX-License-Identifier: MPL-2.0
 
 //! The projection editor and its two views share one typed draft and occurrence selection.
-use graphshell::product::ProductHost;
 use super::*;
 use cambium::{
     TabBar, TabBarNames, TabItem, button, disclosure_trigger, el, lens, tab_bar_view,
     text_field_typed,
 };
+use cartography::canvas::PhysicsLaw;
+use cartography::canvas::dynamics_recipe::preset_slot;
+use cartography::canvas::projection_dynamics::ProjectionDynamics;
 use graphshell::local_projection::{compile_editor, draft_from_definition, snapshot_editor};
+use graphshell::product::ProductHost;
 use graphshell::projection_compile::default_definition;
 use graphshell::projection_compile::initial_projection_draft;
 use graphshell::projection_dynamics_compare::{
     DynamicsComparison, compare_arrangements_dynamics, compare_dynamics,
 };
 use graphshell::projection_save::{PendingSave, SaveAck};
-use cartography::canvas::PhysicsLaw;
-use cartography::canvas::dynamics_recipe::preset_slot;
-use cartography::canvas::projection_dynamics::ProjectionDynamics;
 use sceno::InstanceId;
 use scenograph::Channel;
 use scenomise::authoring::{EditorAction, ProjectionEditor, ProjectionPanel};
 use scenomise::projection::{CompiledProjection, ProjectionDataset, ProjectionSnapshot};
 mod comparison;
 mod options;
+mod scene_marks;
+use scenograph::swatch::AxisKind;
+use scenomise::host_dataset::{parse_host_dataset, route_relationships};
+use scenomise::projection::DisclosedRelationship;
 const PRACTICE: &str = include_str!("../../../web/fixtures/woodshed-stage.json");
 
 pub(super) const FIELDS: [(&str, &str, ProjectionPanel); 17] = [
@@ -111,6 +115,8 @@ pub(super) struct ProjectionControls {
     dynamics: Option<ProjectionDynamics>,
     dynamics_comparison: Option<DynamicsComparison>,
     compare_dynamics: bool,
+    compare_slots: Option<(AxisKind, sceno::Rect)>,
+    relationships: Vec<DisclosedRelationship>,
     settle_bound: Option<u32>,
     motion_paused: bool,
     compare_column: usize,
@@ -139,6 +145,8 @@ impl Default for ProjectionControls {
             dynamics: None,
             dynamics_comparison: None,
             compare_dynamics: false,
+            compare_slots: None,
+            relationships: Vec::new(),
             settle_bound: Some(60),
             motion_paused: false,
             compare_column: 0,
@@ -220,7 +228,11 @@ impl ProjectionControls {
             self.compiled.as_ref(),
             self.selected.as_deref(),
         )
-        .and_then(|compiled| {
+        .and_then(|mut compiled| {
+            if !self.relationships.is_empty() {
+                route_relationships(&mut compiled, dataset, &self.relationships)
+                    .map_err(relationship_issues)?;
+            }
             let definition = self.editor.draft().to_definition().map_err(|issues| {
                 issues
                     .iter()
@@ -312,7 +324,20 @@ impl ProjectionControls {
             heading: 28.0,
         };
         let draft = self.editor.draft();
-        if self.compare_dynamics || draft.dynamics.is_some() {
+        if let Some((axis, viewport)) = self.compare_slots {
+            match graphshell::projection_compare::compare_slots(
+                draft,
+                dataset,
+                &self.relationships,
+                self.selected.as_deref(),
+                &layout,
+                axis,
+                viewport,
+            ) {
+                Ok(comparison) => self.comparison = Some(comparison),
+                Err(error) => self.status = error,
+            }
+        } else if self.compare_dynamics || draft.dynamics.is_some() {
             let result = self
                 .settle_bound
                 .ok_or_else(|| "Choose a preview step limit to compare dynamics".to_string())
@@ -405,15 +430,30 @@ impl SavedProduct {
         definition: Option<&str>,
     ) {
         let result = (|| {
-            let dataset: ProjectionDataset =
+            let value: serde_json::Value =
                 serde_json::from_str(json).map_err(|e| format!("Source load failed: {e}"))?;
+            let (dataset, relationships) = if value.get("schema").is_some() {
+                let host =
+                    parse_host_dataset(json).map_err(|e| format!("Source load failed: {e}"))?;
+                (host.dataset, host.relationships)
+            } else {
+                (
+                    serde_json::from_value(value)
+                        .map_err(|e| format!("Source load failed: {e}"))?,
+                    Vec::new(),
+                )
+            };
             let definition = definition
                 .map(serde_json::from_str)
                 .transpose()
                 .map_err(|e| format!("Recipe load failed: {e}"))?
                 .unwrap_or_else(|| default_definition(&dataset));
             let editor = ProjectionEditor::new(draft_from_definition(&definition));
-            let compiled = compile_editor(&editor, &dataset, None, None)?;
+            let mut compiled = compile_editor(&editor, &dataset, None, None)?;
+            if !relationships.is_empty() {
+                route_relationships(&mut compiled, &dataset, &relationships)
+                    .map_err(relationship_issues)?;
+            }
             let dynamics = definition
                 .dynamics
                 .as_ref()
@@ -422,14 +462,15 @@ impl SavedProduct {
                         .map_err(|error| error.to_string())
                 })
                 .transpose()?;
-            Ok::<_, String>((dataset, editor, compiled, dynamics))
+            Ok::<_, String>((dataset, relationships, editor, compiled, dynamics))
         })();
         match result {
-            Ok((dataset, editor, compiled, dynamics)) => {
+            Ok((dataset, relationships, editor, compiled, dynamics)) => {
                 let p = &mut self.projection;
                 p.replace_editor(editor);
                 p.dataset = Some(dataset);
                 p.compiled = Some(compiled);
+                p.relationships = relationships;
                 p.dynamics = dynamics;
                 p.selected = None;
                 p.refresh_comparison();
@@ -468,6 +509,52 @@ impl SavedProduct {
                     .trim_end_matches(".default")
                     .into(),
             ),
+            (
+                "projection-node-mark",
+                p.editor
+                    .draft()
+                    .marks
+                    .node
+                    .as_ref()
+                    .map_or_else(|| "default".into(), |mark| mark.label()),
+            ),
+            (
+                "projection-relation-form",
+                p.editor
+                    .draft()
+                    .marks
+                    .relation
+                    .map_or("default", |form| form.id())
+                    .into(),
+            ),
+            (
+                "projection-field-form",
+                p.editor
+                    .draft()
+                    .marks
+                    .field
+                    .and_then(|form| serde_json::to_value(form).ok())
+                    .and_then(|value| value.as_str().map(str::to_owned))
+                    .unwrap_or_else(|| "default".into()),
+            ),
+            (
+                "projection-frame",
+                p.editor
+                    .draft()
+                    .frame
+                    .as_ref()
+                    .map_or("default", |frame| frame.kind().id())
+                    .into(),
+            ),
+            (
+                "projection-frame-contained",
+                p.compiled
+                    .as_ref()
+                    .is_some_and(|compiled| {
+                        scene_marks::bounded_frame_contains_items(&compiled.scene)
+                    })
+                    .to_string(),
+            ),
             ("projection-executable", p.compiled.is_some().to_string()),
             (
                 "projection-occurrences",
@@ -499,12 +586,14 @@ impl SavedProduct {
             ),
             (
                 "projection-compare-axis",
-                if p.compare_dynamics {
-                    "dynamics"
-                } else {
-                    "scope"
-                }
-                .into(),
+                p.compare_slots
+                    .map(|(axis, _)| scene_marks::axis_id(axis))
+                    .unwrap_or(if p.compare_dynamics {
+                        "dynamics"
+                    } else {
+                        "scope"
+                    })
+                    .into(),
             ),
             (
                 "projection-compare-refused",
@@ -557,6 +646,7 @@ impl SavedProduct {
                     EditorAction::SelectPanel(ProjectionPanel::Preview),
                     js_sys::Date::now() as u64,
                 );
+                p.relationships.clear();
                 p.dataset = Some(dataset);
                 p.compiled = None;
                 p.selected = None;
@@ -604,7 +694,9 @@ impl SavedProduct {
             },
             "compare" | "compare-dynamics" => {
                 let dynamics = action == "compare-dynamics";
-                p.comparing = !p.comparing || p.compare_dynamics != dynamics;
+                p.comparing =
+                    !p.comparing || p.compare_slots.is_some() || p.compare_dynamics != dynamics;
+                p.compare_slots = None;
                 p.compare_dynamics = dynamics;
                 p.refresh_comparison();
             },
@@ -671,10 +763,7 @@ impl SavedProduct {
                 }
             },
             "save" => {
-                if p.dataset.is_some()
-                    && p.editor.draft().dynamics.is_some()
-                    && p.compiled.is_none()
-                {
+                if p.dataset.is_some() && p.compiled.is_none() {
                     return Err(format!("Cannot execute: {}", p.status));
                 }
                 let snapshot = if let Some(dataset) = &p.dataset {
@@ -914,6 +1003,7 @@ pub(in crate::web_tree) fn editor(page: &TreePage) -> Option<Child> {
             },
         ));
     }
+    children.push(scene_marks::axis_controls(page, p));
     if let Some(comparison) = comparison::view(p, (page.size.0 as f32 - 420.0).max(280.0)) {
         children.push(comparison);
     }
@@ -931,7 +1021,31 @@ pub(in crate::web_tree) fn editor(page: &TreePage) -> Option<Child> {
         );
         let width = (page.size.0 as f32 - 420.0).max(280.0);
         let scale = ((width - 24.0) / bounds.size.w.max(1.0)).min(1.0);
+        let form = p.editor.draft().marks.field;
+        let to_screen = |point: sceno::Vec2| {
+            [
+                12.0 + (point.x - bounds.origin.x) * scale,
+                12.0 + (point.y - bounds.origin.y) * scale,
+            ]
+        };
+        if let Some(outline) = scene_marks::frame_outline(scene, &to_screen) {
+            spatial.push(outline);
+        }
+        spatial.extend(scene_marks::fields(scene, &to_screen, |_| form));
+        spatial.extend(scene_marks::relations(scene, &to_screen));
+        for (id, row, column) in scenomise::relation_forms::matrix_headings(scene) {
+            if let Some(label) = compiled.labels.get(&id) {
+                for point in [row, column] {
+                    let [x, y] = to_screen(point);
+                    spatial.push(Box::new(el("span", label.clone())
+                        .attr("style", format!("position:absolute;pointer-events:none;left:{x}px;top:{y}px;transform:translate(-50%,-50%);font-size:11px;"))));
+                }
+            }
+        }
         for (index, item) in scene.items.iter().enumerate() {
+            if !item.visible {
+                continue;
+            }
             let instance = InstanceId(index as u32);
             let Some(occurrence) = compiled.occurrence_by_instance.get(&instance) else {
                 continue;
@@ -969,35 +1083,59 @@ pub(in crate::web_tree) fn editor(page: &TreePage) -> Option<Child> {
                 .attr("aria-pressed", selected.to_string())
                 .attr("data-projection-view", view)
                 .attr("data-projection-occurrence", occurrence.clone());
-                if view == "spatial" {
-                    if let Some(footprint) = item.footprint.bounds() {
-                        let x = 12.0
-                            + (item.transform.translate.x + footprint.origin.x - bounds.origin.x)
-                                * scale;
-                        let y = 12.0
-                            + (item.transform.translate.y + footprint.origin.y - bounds.origin.y)
-                                * scale;
-                        let w = footprint.size.w * scale;
-                        let h = footprint.size.h * scale;
-                        let mut style = format!(
-                            "position:absolute;left:{x}px;top:{y}px;width:{w}px;height:{h}px;overflow:hidden;"
-                        );
-                        if assigned {
-                            style.push_str("box-sizing:border-box;min-width:0;min-height:0;");
-                            assigned_clip(&mut style, &item.footprint, footprint);
-                            if assigned_card {
-                                style.push_str("text-align:start;white-space:pre-line;");
-                            }
+                if view == "spatial"
+                    && let Some(footprint) = item.footprint.bounds()
+                {
+                    let world = scene
+                        .to_world(item.space)
+                        .unwrap_or(sceno::Transform2::IDENTITY)
+                        .then(&item.transform);
+                    let [x, y] = to_screen(world.apply(footprint.origin));
+                    let w = footprint.size.w * world.scale * scale;
+                    let h = footprint.size.h * world.scale * scale;
+                    let mut style = format!(
+                        "position:absolute;left:{x}px;top:{y}px;width:{w}px;height:{h}px;overflow:hidden;"
+                    );
+                    if assigned {
+                        style.push_str("box-sizing:border-box;min-width:0;min-height:0;");
+                        assigned_clip(&mut style, &item.footprint, footprint);
+                        if assigned_card {
+                            control = control.attr("data-projection-card", "");
+                            style.push_str("text-align:start;white-space:pre-line;background:#38556555;box-shadow:inset 0 0 0 1px #879cab;");
                         }
-                        control = control.attr("style", style);
                     }
+                    if form == Some(scenograph::FieldForm::MemberTint)
+                        && scene
+                            .regions
+                            .iter()
+                            .any(|region| region.members.contains(&instance))
+                    {
+                        style.push_str("background:#31594f;");
+                    }
+                    control = control.attr("style", style);
                 }
                 output.push(Box::new(control));
             }
         }
+        for report in &scene.relation_constraints {
+            let outcome = if report.honored { "Honoured" } else { "Unmet" };
+            children.push(Box::new(el(
+                "p",
+                format!("{} · {outcome} · {}", report.constraint.id, report.reason),
+            )));
+        }
         children.push(Box::new(
             el("div", spatial)
                 .attr("aria-label", "Spatial projection")
+                .attr(
+                    "data-projection-frame",
+                    scene
+                        .frame
+                        .as_ref()
+                        .map_or("default", |f| f.spec.kind().id()),
+                )
+                .attr("data-projection-frame-width", bounds.size.w.to_string())
+                .attr("data-projection-frame-height", bounds.size.h.to_string())
                 .attr(
                     "style",
                     format!(
@@ -1041,4 +1179,12 @@ fn assigned_clip(style: &mut String, footprint: &sceno::Footprint, bounds: sceno
         let _ = write!(style, "{x}% {y}%");
     }
     style.push_str(");");
+}
+
+fn relationship_issues(issues: Vec<scenomise::projection::CompileIssue>) -> String {
+    issues
+        .into_iter()
+        .map(|issue| issue.message)
+        .collect::<Vec<_>>()
+        .join(". ")
 }

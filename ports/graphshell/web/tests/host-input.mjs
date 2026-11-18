@@ -67,7 +67,7 @@ async function perform(request) {
 let last=0,error;
 try {
   while(true) {
-    const state=await read(`({scenario:document.body.dataset.scenario,request:document.querySelector('graphshell-view,graphshell-tree')?.dataset.hostInputRequest})`);
+    const state=await read(`({scenario:document.body?.dataset.scenario,request:document.querySelector('graphshell-view,graphshell-tree')?.dataset.hostInputRequest})`);
     if(['ok','fail'].includes(state.scenario))break;
     if(state.request) {
       if(state.scenario!=='running')throw new Error('Host input requested outside explicit running scenario');

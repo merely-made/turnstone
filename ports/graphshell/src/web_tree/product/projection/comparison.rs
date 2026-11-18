@@ -34,7 +34,41 @@ pub(super) fn view(p: &ProjectionControls, width: f32) -> Option<Child> {
     let shown_height = if paged { 150.0 } else { bounds.size.h };
     let scale = ((width - 24.0) / shown_width.max(1.0)).min(1.0);
     let mut children: Vec<Child> = Vec::new();
-    for item in &scene.items {
+    let by_space: std::collections::HashMap<_, _> = comparison
+        .cells
+        .iter()
+        .map(|cell| (format!("cell: {}", cell.swatch_id), cell.field_form))
+        .collect();
+    let form_at = |mut space: sceno::SpaceId| loop {
+        let Some(entry) = scene.spaces.get(space.0 as usize) else {
+            break None;
+        };
+        if let Some(form) = entry.name.as_ref().and_then(|name| by_space.get(name)) {
+            break *form;
+        }
+        let Some(parent) = entry.parent else {
+            break None;
+        };
+        space = parent;
+    };
+    let to_screen = |point: sceno::Vec2| {
+        [
+            12.0 + (point.x - left) * scale,
+            12.0 + (point.y - top) * scale,
+        ]
+    };
+    children.extend(scene_marks::fields(scene, &to_screen, |space| {
+        form_at(space).filter(|form| *form == scenograph::FieldForm::Backdrop)
+    }));
+    let overlays = scene_marks::fields(scene, &to_screen, |space| {
+        form_at(space).filter(|form| *form != scenograph::FieldForm::Backdrop)
+    })
+    .into_iter()
+    .chain(scene_marks::relations(scene, &to_screen));
+    for (index, item) in scene.items.iter().enumerate() {
+        if !item.visible {
+            continue;
+        }
         let source = &scene.sources[item.source.0 as usize];
         let Some(footprint) = item.footprint.bounds() else {
             continue;
@@ -64,6 +98,8 @@ pub(super) fn view(p: &ProjectionControls, width: f32) -> Option<Child> {
                 continue;
             };
             let family = cell.family.clone();
+            let label = cell.label.clone();
+            let choice = cell.choice.clone();
             let working = cell.working;
             let scope = comparison
                 .facet
@@ -91,7 +127,7 @@ pub(super) fn view(p: &ProjectionControls, width: f32) -> Option<Child> {
                 button(
                     format!(
                         "{}{} · {scope} · {detail}",
-                        family,
+                        label,
                         if working { " (working)" } else { "" }
                     ),
                     move |page: &mut TreePage, _| {
@@ -102,25 +138,29 @@ pub(super) fn view(p: &ProjectionControls, width: f32) -> Option<Child> {
                             return;
                         };
                         let p = &mut product.projection;
-                        let arrangement = with_kind(
-                            &p.editor.draft().arrangement,
-                            &family,
-                            practice_compiler().registry(),
-                        );
-                        p.editor.break_run();
-                        p.editor.reduce(
+                        let action = if let Some(choice) = &choice {
+                            EditorAction::ApplySwatch(choice.clone())
+                        } else {
+                            let arrangement = with_kind(
+                                &p.editor.draft().arrangement,
+                                &family,
+                                practice_compiler().registry(),
+                            );
                             EditorAction::ApplyComparison {
                                 arrangement,
                                 dynamics: dynamics.clone(),
-                            },
-                            js_sys::Date::now() as u64,
-                        );
+                            }
+                        };
+                        p.editor.break_run();
+                        p.editor.reduce(action, js_sys::Date::now() as u64);
                         p.editor.break_run();
                         p.compare_column = 0;
                         p.compare_row = 0;
                         p.refresh();
                         p.sync_fields();
-                        p.status = format!("Applied · {family}");
+                        if p.compiled.is_some() {
+                            p.status = format!("Applied · {label}");
+                        }
                     },
                 )
                 .attr("data-projection-compare-cell", cell.swatch_id.clone())
@@ -142,10 +182,44 @@ pub(super) fn view(p: &ProjectionControls, width: f32) -> Option<Child> {
                 .unwrap_or_default();
             children.push(Box::new(el("span", label).attr("style", style)));
         } else {
-            children.push(Box::new(el("div", "").attr("aria-hidden", "true").attr(
-                "style",
-                format!("{style}border:1px solid #879cab;background:#263d49;pointer-events:none;"),
-            )));
+            let card = item.representation == sceno::Representation::Card;
+            let tint = form_at(item.space) == Some(scenograph::FieldForm::MemberTint)
+                && scene
+                    .regions
+                    .iter()
+                    .any(|region| region.members.contains(&sceno::InstanceId(index as u32)));
+            let fill = if tint {
+                "#31594f"
+            } else if card {
+                "#385565"
+            } else {
+                "#263d49"
+            };
+            let mut style = format!(
+                "{style}box-sizing:border-box;border:1px solid #879cab;background:{fill};pointer-events:none;"
+            );
+            super::assigned_clip(&mut style, &item.footprint, footprint);
+            let label = if card {
+                p.dataset
+                    .as_ref()
+                    .and_then(|data| data.occurrences.iter().find(|row| row.source == *source))
+                    .and_then(|row| match p.editor.draft().encoding.label.as_ref() {
+                        Some(Channel::Field(field)) => row.values.get(field),
+                        _ => None,
+                    })
+                    .and_then(|value| match value {
+                        scenomise::projection::ProjectionValue::Text(label) => Some(label.clone()),
+                        _ => None,
+                    })
+                    .unwrap_or_default()
+            } else {
+                String::new()
+            };
+            children.push(Box::new(
+                el("div", label)
+                    .attr("aria-hidden", "true")
+                    .attr("style", style),
+            ));
         }
     }
     for (column, family) in comparison.facet.columns.labels.iter().enumerate() {
@@ -190,15 +264,32 @@ pub(super) fn view(p: &ProjectionControls, width: f32) -> Option<Child> {
                     220.0 * scale, 150.0 * scale))));
         }
     }
+    children.extend(overlays);
+    let refused: Vec<Child> = if p.compare_slots.is_some() {
+        comparison
+            .refused
+            .iter()
+            .map(|(name, reason)| Box::new(el("li", format!("{name} · {reason}"))) as Child)
+            .collect()
+    } else {
+        Vec::new()
+    };
     Some(Box::new(
-        el("div", children)
-            .attr("aria-label", "Arrangement comparison")
-            .attr(
-                "style",
-                format!(
-                    "position:relative;width:{width}px;height:{}px;",
-                    shown_height * scale + 24.0
-                ),
+        el(
+            "div",
+            (
+                el("div", children)
+                    .attr("aria-label", "Projection comparison grid")
+                    .attr(
+                        "style",
+                        format!(
+                            "position:relative;overflow:hidden;width:{width}px;height:{}px;",
+                            shown_height * scale + 24.0
+                        ),
+                    ),
+                el("ul", refused).attr("aria-label", "Unavailable swatches"),
             ),
+        )
+        .attr("aria-label", "Arrangement comparison"),
     ))
 }

@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en" class="full-page">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Projection swatches</title>
+  <base href="../">
+  <link rel="stylesheet" href="./styles.css?h3=1">
+</head>
+<body class="full-page">
+  <graphshell-tree id="graphshell" data-owns-title data-appearance-application data-ready="false"></graphshell-tree>
+  <section id="scenario-host" aria-hidden="true" hidden>
+    <pre id="scenario-log"></pre>
+    <pre id="scenario-result"></pre>
+    <div id="scenario-captures"></div>
+  </section>
+  <script type="module">
+    const response = await fetch("./fixtures/host-dataset-relations.json");
+    if (!response.ok) throw new Error("Could not load the relationship fixture");
+    const host = await response.json();
+    const root = document.querySelector("graphshell-tree");
+    root.dataset.projectionDataset = JSON.stringify(host);
+    root.dataset.projectionDefinition = JSON.stringify({
+      version: 1, id: "partition-study", label: "Partition study",
+      source: host.dataset.source,
+      reading: {kind: "nodes", key: "occurrence_id"},
+      encoding: {x: {kind: "field", value: "label"}, y: {kind: "field", value: "occurrence_id"}, label: {kind: "field", value: "label"}},
+      arrangement: {kind: "partition", direction: "coordinates", spacing: 16, options: {}},
+      interaction: {selection: "single", pan: false, zoom: false},
+      appearance: {realization: "canvas", title: "Partition study", theme: "slate"},
+      provenance: {author: "Fixture", source_revision: host.dataset.revision, note: ""}
+    });
+    await import("./loader.js");
+  </script>
+</body>
+</html>

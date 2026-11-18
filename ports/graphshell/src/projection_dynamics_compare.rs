@@ -268,6 +268,9 @@ pub fn compare_dynamics(
                     cells.push(ComparedCell {
                         swatch_id: id,
                         family: family.clone(),
+                        choice: None,
+                        label: family.clone(),
+                        field_form: cell_draft.marks.field,
                         working,
                         row,
                         column,

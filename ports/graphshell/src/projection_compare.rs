@@ -11,7 +11,7 @@
 //! cells compose into one scene.
 
 use scenograph::swatch::{
-    Axis, AxisKind, AxisScale, Facet, FacetCell, Followed, Scope, Swatch, SwatchMode,
+    Axis, AxisKind, AxisScale, Facet, FacetCell, Followed, Scope, Swatch, SwatchChoice, SwatchMode,
 };
 use scenomise::catalog::{FAMILIES, Family};
 use scenomise::facet::compose_facet;
@@ -22,6 +22,10 @@ use crate::projection_compile::practice_compiler;
 use scenograph::ProjectionDraft;
 use scenomise::arrangement::with_kind;
 use scenomise::projection::{CompiledProjection, ProjectionDataset};
+
+#[path = "projection_compare/slots.rs"]
+mod slots;
+pub use slots::compare_slots;
 
 /// The view a working cell reflects (SE58, SE66).
 pub const EDITOR_VIEW: (&str, &str) = ("graphshell", "projection-editor");
@@ -36,6 +40,9 @@ pub struct ComparedCell {
     /// working cell.
     pub family: String,
     pub dynamics: Option<scenograph::DynamicsSlot>,
+    pub choice: Option<SwatchChoice>,
+    pub label: String,
+    pub field_form: Option<scenograph::FieldForm>,
     pub working: bool,
     pub row: usize,
     pub column: usize,
@@ -90,6 +97,50 @@ pub fn compare_arrangements_with_scene(
             .filter(|family| Some(**family) != working_family)
             .map(|family| family.id().to_string()),
     );
+    let candidates = families.into_iter().map(|key| {
+        let mut candidate = draft.clone();
+        candidate.arrangement = with_kind(&draft.arrangement, &key, compiler.registry());
+        Candidate {
+            label: key.clone(),
+            key,
+            draft: candidate,
+            choice: None,
+            refusal: None,
+        }
+    });
+    compare_candidates(
+        draft,
+        dataset,
+        selected,
+        layout,
+        AxisKind::Arrangement,
+        candidates,
+        move |definition, compiled, _| realize(definition, compiled),
+    )
+}
+
+struct Candidate {
+    key: String,
+    label: String,
+    draft: ProjectionDraft,
+    choice: Option<SwatchChoice>,
+    refusal: Option<String>,
+}
+
+fn compare_candidates(
+    draft: &ProjectionDraft,
+    dataset: &ProjectionDataset,
+    selected: Option<&str>,
+    layout: &FacetLayout,
+    axis: AxisKind,
+    candidates: impl IntoIterator<Item = Candidate>,
+    mut realize: impl FnMut(
+        &scenograph::ProjectionDefinition,
+        CompiledProjection,
+        &ProjectionDataset,
+    ) -> Result<sceno::Scene, String>,
+) -> Result<Comparison, String> {
+    let compiler = practice_compiler();
     let selection: Option<ProjectionDataset> = selected.map(|id| {
         let mut subset = dataset.clone();
         subset
@@ -111,13 +162,15 @@ pub fn compare_arrangements_with_scene(
     let mut columns = Vec::new();
     let mut refused = Vec::new();
     let mut compiled = Vec::new();
-    for family in &families {
-        let mut cell_draft = draft.clone();
-        cell_draft.arrangement = with_kind(&draft.arrangement, family, compiler.registry());
+    for (index, candidate) in candidates.into_iter().enumerate() {
+        if let Some(reason) = candidate.refusal.as_ref() {
+            refused.push((candidate.label, reason.clone()));
+            continue;
+        }
         let scenes: Result<Vec<_>, String> = rows
             .iter()
             .map(|(_, _, data)| {
-                let definition = cell_draft.to_definition().map_err(|issues| {
+                let definition = candidate.draft.to_definition().map_err(|issues| {
                     issues
                         .iter()
                         .map(|i| i.message.clone())
@@ -131,33 +184,28 @@ pub fn compare_arrangements_with_scene(
                         .collect::<Vec<_>>()
                         .join("; ")
                 })?;
-                realize(&definition, compiled)
+                realize(&definition, compiled, data)
             })
             .collect();
         match scenes {
             Ok(scenes) => {
-                columns.push(family.clone());
+                columns.push(candidate);
                 compiled.push(scenes);
             },
-            Err(reason) => refused.push((family.clone(), reason)),
+            Err(reason) if index == 0 => return Err(reason),
+            Err(reason) => refused.push((candidate.label, reason)),
         }
-    }
-    if columns.first() != Some(&working_kind) {
-        return Err(refused
-            .first()
-            .map(|(_, reason)| reason.clone())
-            .unwrap_or_else(|| "the working draft does not compile".into()));
     }
 
     let mut cells = Vec::new();
     let mut facet_cells = Vec::new();
     let mut scenes = Vec::new();
-    for (column, (family, row_scenes)) in columns.iter().zip(compiled).enumerate() {
+    for (column, (candidate, row_scenes)) in columns.iter().zip(compiled).enumerate() {
         for (row, ((_, scope, _), scene)) in rows.iter().zip(row_scenes).enumerate() {
             let working = column == 0;
             let swatch_id = match (working, row) {
                 (true, 0) => WORKING.to_string(),
-                _ => format!("{family}:{row}"),
+                _ => format!("{}:{row}", candidate.key),
             };
             let mode = if working && row == 0 {
                 SwatchMode::Reflection {
@@ -169,7 +217,7 @@ pub fn compare_arrangements_with_scene(
             } else {
                 SwatchMode::Projection {
                     definition_id: draft.id.clone(),
-                    variant_id: Some(family.clone()),
+                    variant_id: Some(candidate.key.clone()),
                 }
             };
             facet_cells.push(FacetCell {
@@ -183,8 +231,11 @@ pub fn compare_arrangements_with_scene(
             });
             cells.push(ComparedCell {
                 swatch_id: swatch_id.clone(),
-                family: family.clone(),
-                dynamics: draft.dynamics.clone(),
+                family: candidate.draft.arrangement.kind.clone(),
+                dynamics: candidate.draft.dynamics.clone(),
+                choice: candidate.choice.clone(),
+                label: candidate.label.clone(),
+                field_form: candidate.draft.marks.field,
                 working,
                 row,
                 column,
@@ -195,18 +246,18 @@ pub fn compare_arrangements_with_scene(
     let labels = columns
         .iter()
         .enumerate()
-        .map(|(index, family)| {
+        .map(|(index, candidate)| {
             if index == 0 {
-                format!("{family} (working)")
+                format!("{} (working)", candidate.label)
             } else {
-                family.clone()
+                candidate.label.clone()
             }
         })
         .collect();
     let facet = Facet {
         id: "projection-editor.compare".into(),
         columns: Axis {
-            kind: AxisKind::Arrangement,
+            kind: axis,
             labels,
             scale: AxisScale::Shared,
         },
