@@ -126,7 +126,7 @@ fn pool_document_admission_compares_full_snapshot_once_per_placement() {
     let snapshot = pool.accessibility_projection(&surface.id).unwrap();
     let mut queue = ActionQueueState::default();
     queue.publish(admissions(key, surface, snapshot.clone()));
-    let before = queue.published.clone();
+    let before = queue.published.entries().clone();
     let comparisons = count_snapshot_comparisons(|| {
         queue.publish(admissions(key, surface, snapshot));
     });
@@ -152,7 +152,7 @@ fn pool_document_admission_keeps_live_focus_freshness_for_every_control() {
         .id;
     let mut queue = ActionQueueState::default();
     queue.publish(admissions(key, surface, snapshot.clone()));
-    let before = queue.published.clone();
+    let before = queue.published.entries().clone();
     let action = inker::DocumentA11yActionRequest {
         revision: snapshot.projection().revision(),
         target,

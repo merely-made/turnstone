@@ -141,7 +141,6 @@ pub struct Shell {
     pub(super) a11y_adapter: Option<genet_winit_host::AccessKitBridge>,
     /// Routes for the current host tree. Document admissions are captured
     /// separately at enqueue and revalidated against their live source.
-    pub(super) a11y_routes: crate::a11y::A11yRoutes,
     /// Assistive actions queued by the platform thread, drained here.
     pub(super) a11y_actions: crate::shell::a11y_bridge::ActionQueue,
     /// Activation occurs on a platform thread; replay subtrees on the UI thread.

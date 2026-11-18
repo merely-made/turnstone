@@ -51,7 +51,7 @@ pub(super) struct LensWindow {
     pub(super) a11y_epoch: Option<u64>,
     pub(super) a11y_forest: crate::foreign_a11y::ForeignA11y,
     pub(super) a11y_scope: crate::window_projection::WindowScope,
-    pub(super) a11y_routes: crate::a11y::A11yRoutes,
+    pub(super) a11y_routes: crate::a11y::ActionEnvelopes,
     pub(super) a11y_tree: Option<accesskit::TreeUpdate>,
     pub(super) a11y_placements: Vec<(uuid::Uuid, accesskit::Rect)>,
 }

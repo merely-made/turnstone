@@ -17,14 +17,19 @@ fn every_graph_member_is_reachable_by_route_when_an_orrery_exists() {
     for member in members {
         let id = node_id_for_path(&format!("turnstone/frozen-projection/instance/{member}"));
         match routes.get(&id) {
-            Some(A11yRoute::SelectMember { member: routed, .. }) => {
-                assert_eq!(*routed, member)
+            Some(envelope) => {
+                assert!(
+                    matches!(&envelope.provenance, A11yRoute::SelectMember { member: routed, .. } if *routed == member)
+                );
+                assert_eq!(envelope.domain_ref, Some(member));
             },
             other => panic!("member {member} routed to {other:?}"),
         }
     }
     assert!(matches!(
-        routes.get(&node_id_for_path("turnstone/chrome/omnibar")),
+        routes
+            .get(&node_id_for_path("turnstone/chrome/omnibar"))
+            .map(|envelope| &envelope.provenance),
         Some(A11yRoute::OpenOmnibar)
     ));
 }
@@ -42,7 +47,11 @@ fn a_routed_selection_changes_the_app_and_a_miss_says_so() {
         .expect("a member");
     let id = node_id_for_path(&format!("turnstone/frozen-projection/instance/{member}"));
 
-    let effects = apply_route(&mut app, routes.get(&id), id);
+    let effects = apply_route(
+        &mut app,
+        routes.get(&id).map(|envelope| &envelope.provenance),
+        id,
+    );
     assert!(!effects.is_empty(), "a landed selection redraws");
 
     // The miss is loud and attributable, exactly like a pointer miss.
@@ -72,4 +81,23 @@ fn an_omnibar_route_opens_the_omnibar_through_the_spine() {
         node_id_for_path("turnstone/chrome/omnibar"),
     );
     assert!(app.omnibar.open, "the same spine a keypress uses");
+}
+
+#[test]
+fn frozen_and_platen_projections_emit_derived_observations() {
+    let frozen = project_frozen_projection(&App::projection_fixture());
+    let platen = platen::project_tile_layout(&platen::TileLayout::new());
+    for tree in [frozen, platen] {
+        assert!(!tree.nodes.is_empty());
+        let observations: Vec<_> = tree.derived_envelopes(tree.root).collect();
+        assert_eq!(observations.len(), tree.nodes.len());
+        for (envelope, (id, _)) in observations.iter().zip(&tree.nodes) {
+            assert_eq!(envelope.address.local, *id);
+            assert_eq!(envelope.address.instance, tree.root);
+            assert_eq!(
+                envelope.stability,
+                uxtree::envelope::Stability::Derived { generation: None }
+            );
+        }
+    }
 }

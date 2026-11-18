@@ -406,7 +406,6 @@ impl Shell {
             pending_lens_capture_window: None,
             window: None,
             a11y_adapter: None,
-            a11y_routes: crate::a11y::A11yRoutes::new(),
             a11y_actions: std::sync::Arc::new(std::sync::Mutex::new(Default::default())),
             a11y_epoch: None,
             a11y_surface_layout: Vec::new(),

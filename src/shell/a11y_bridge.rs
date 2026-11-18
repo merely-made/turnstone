@@ -44,14 +44,12 @@ pub(super) enum Admission {
     #[cfg(test)]
     Document(super::document_a11y::DocumentRoute),
     PoolDocument(super::document_a11y::PoolDocumentRoute),
+    Host(crate::a11y::ActionEnvelope),
     Contributed(crate::contributed_a11y::PublishedRoute),
 }
 
-#[derive(Clone, Debug, PartialEq)]
-pub(super) struct PublishedAdmission {
-    pub generation: u64,
-    pub admission: Admission,
-}
+pub(super) type PublishedAdmission = uxtree::generation::Published<Admission>;
+pub(super) type AdmissionKey = (accesskit::TreeId, accesskit::NodeId);
 
 pub(super) struct QueuedAction {
     pub request: ActionRequest,
@@ -61,15 +59,13 @@ pub(super) struct QueuedAction {
 #[derive(Default)]
 pub(crate) struct ActionQueueState {
     pub(super) requests: Vec<QueuedAction>,
-    pub(super) published:
-        std::collections::HashMap<(accesskit::TreeId, accesskit::NodeId), PublishedAdmission>,
-    next_generation: u64,
+    pub(super) published: uxtree::generation::GenerationMap<AdmissionKey, Admission>,
 }
 
 impl ActionQueueState {
     pub(super) fn publish(
         &mut self,
-        admissions: std::collections::HashMap<(accesskit::TreeId, accesskit::NodeId), Admission>,
+        admissions: std::collections::HashMap<AdmissionKey, Admission>,
     ) {
         // Controls from a contributed pane or document placement share their
         // immutable source. Compare each old/new pair structurally once here;
@@ -77,63 +73,53 @@ impl ActionQueueState {
         // Both snapshots stay alive in the old/new admission maps throughout.
         let mut compared_sources = std::collections::HashMap::new();
         let mut compared_snapshots = std::collections::HashMap::new();
-        self.published = admissions
-            .into_iter()
-            .map(|(key, admission)| {
-                let generation = self
-                    .published
-                    .get(&key)
-                    .filter(|old| match (&old.admission, &admission) {
-                        (Admission::PoolDocument(before), Admission::PoolDocument(after)) => {
-                            before.key == after.key
-                                && before.local == after.local
-                                && before.placement == after.placement
-                                && *compared_snapshots
-                                    .entry((
-                                        Arc::as_ptr(&before.snapshot),
-                                        Arc::as_ptr(&after.snapshot),
-                                    ))
-                                    .or_insert_with(|| {
-                                        super::document_a11y::snapshots_equal(
-                                            &before.snapshot,
-                                            &after.snapshot,
-                                        )
-                                    })
-                        },
-                        (Admission::Contributed(before), Admission::Contributed(after)) => {
-                            before.route == after.route
-                                && before.rect == after.rect
-                                && *compared_sources
-                                    .entry((
-                                        Arc::as_ptr(&before.source),
-                                        Arc::as_ptr(&after.source),
-                                    ))
-                                    .or_insert_with(|| {
-                                        crate::contributed_a11y::source_trees_equal(
-                                            &before.source,
-                                            &after.source,
-                                        )
-                                    })
-                        },
-                        _ => old.admission == admission,
-                    })
-                    .map(|old| old.generation)
-                    .unwrap_or_else(|| {
-                        self.next_generation = self
-                            .next_generation
-                            .checked_add(1)
-                            .expect("a11y admission generations exhausted");
-                        self.next_generation
-                    });
-                (
-                    key,
-                    PublishedAdmission {
-                        generation,
-                        admission,
-                    },
-                )
-            })
-            .collect();
+        self.published
+            .publish(admissions, |before, after| match (before, after) {
+                (Admission::PoolDocument(before), Admission::PoolDocument(after)) => {
+                    before.key == after.key
+                        && before.local == after.local
+                        && before.placement == after.placement
+                        && *compared_snapshots
+                            .entry((Arc::as_ptr(&before.snapshot), Arc::as_ptr(&after.snapshot)))
+                            .or_insert_with(|| {
+                                super::document_a11y::snapshots_equal(
+                                    &before.snapshot,
+                                    &after.snapshot,
+                                )
+                            })
+                },
+                (Admission::Contributed(before), Admission::Contributed(after)) => {
+                    before.route == after.route
+                        && before.rect == after.rect
+                        && *compared_sources
+                            .entry((Arc::as_ptr(&before.source), Arc::as_ptr(&after.source)))
+                            .or_insert_with(|| {
+                                crate::contributed_a11y::source_trees_equal(
+                                    &before.source,
+                                    &after.source,
+                                )
+                            })
+                },
+                _ => before == after,
+            });
+    }
+
+    pub(super) fn publish_window(
+        &mut self,
+        served: bool,
+        mut admissions: std::collections::HashMap<AdmissionKey, Admission>,
+        envelopes: &crate::a11y::ActionEnvelopes,
+    ) {
+        if served {
+            for (&id, envelope) in envelopes {
+                admissions
+                    .entry((accesskit::TreeId::ROOT, id))
+                    .or_insert_with(|| Admission::Host(envelope.clone()));
+            }
+        } else {
+            admissions.clear();
+        }
+        self.publish(admissions);
     }
 
     pub(super) fn is_current(
@@ -142,15 +128,23 @@ impl ActionQueueState {
         captured: &PublishedAdmission,
     ) -> bool {
         self.published
-            .get(&(request.target_tree, request.target_node))
-            .is_some_and(|current| current.generation == captured.generation)
+            .is_current(&(request.target_tree, request.target_node), captured)
     }
 
     pub(super) fn enqueue(&mut self, request: ActionRequest) {
-        let admission = self
+        let mut admission = self
             .published
             .get(&(request.target_tree, request.target_node))
             .cloned();
+        if let Some(PublishedAdmission {
+            generation,
+            admission: Admission::Host(envelope),
+        }) = &mut admission
+        {
+            envelope.stability = uxtree::envelope::Stability::Derived {
+                generation: Some(*generation),
+            };
+        }
         self.requests.push(QueuedAction { request, admission });
     }
 }

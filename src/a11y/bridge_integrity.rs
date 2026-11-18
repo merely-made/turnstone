@@ -79,6 +79,15 @@ fn diagnostic_gloss_rows_attach_without_routes_and_retire_after_removal() {
         .unwrap()
         .0;
     let diagnostic_root = contribution.root;
+    let observed = contribution
+        .derived_envelopes(pane)
+        .find(|envelope| envelope.address.local == row_id)
+        .expect("the diagnostic row has an observation");
+    assert_eq!(observed.address.instance, pane);
+    assert_eq!(
+        observed.stability,
+        uxtree::envelope::Stability::Derived { generation: None }
+    );
     let (tree, routes) = project_app_with_routes_and_contributions(
         &app,
         std::collections::HashMap::from([(pane, contribution)]),
@@ -110,7 +119,14 @@ fn diagnostic_gloss_rows_attach_without_routes_and_retire_after_removal() {
     let (removed, routes) = project_app_with_routes(&app);
     assert!(!removed.nodes.iter().any(|(id, _)| *id == row_id));
     let before = app.graph_runtimes.graph().nodes().count();
-    assert!(apply_route(&mut app, routes.get(&row_id), row_id).is_empty());
+    assert!(
+        apply_route(
+            &mut app,
+            routes.get(&row_id).map(|envelope| &envelope.provenance),
+            row_id
+        )
+        .is_empty()
+    );
     assert_eq!(app.graph_runtimes.graph().nodes().count(), before);
     assert!(
         app.take_events().iter().any(|event| matches!(

@@ -201,12 +201,14 @@ fn return_by_earlier_host_palette_request(f: &mut Fixture) {
         data: None,
     };
     assert!(matches!(
-        routes.get(&target),
-        Some(crate::a11y::A11yRoute::Action(Action::OmnibarCommitRow(_)))
+        routes.get(&target).map(|envelope| &envelope.provenance),
+        Some(crate::a11y::A11yRoute::OmnibarRow { kept: None, .. })
     ));
     let effects = crate::a11y::apply_route(
         &mut f.app,
-        routes.get(&request.target_node),
+        routes
+            .get(&request.target_node)
+            .map(|envelope| &envelope.provenance),
         request.target_node,
     );
     assert!(!effects.is_empty());

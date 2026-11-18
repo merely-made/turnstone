@@ -14,7 +14,8 @@
 //! remain intact, including Partial and unavailable semantics.
 
 use crate::panes::PaneContent;
-use accesskit::{Node, Role};
+use accesskit::{Node, NodeId, Role};
+use uxtree::envelope::{Address, Envelope};
 use uxtree::{UxTree, node_id_for_path, stitch};
 
 use crate::app::App;
@@ -33,8 +34,14 @@ pub enum A11yRoute {
     /// The chrome: open the omnibar in its find lane.
     OpenOmnibar,
     /// A chrome control: run this action through the update spine, exactly
-    /// as its click does (a palette row's commit, its Keep or Drop).
+    /// as its click does.
     Action(crate::action::Action),
+    /// An index is reusable, so retain the row source and its Keep/Drop state.
+    OmnibarRow {
+        index: usize,
+        suggestion: crate::ui::Suggestion,
+        kept: Option<bool>,
+    },
     /// A frozen-projection instance: select that member in the graph pane, so
     /// a reader who found a node by name can make it the app's selection.
     SelectMember {
@@ -50,8 +57,26 @@ pub enum A11yRoute {
     },
 }
 
-/// Routes for every node an assistive action may target.
-pub type A11yRoutes = std::collections::HashMap<accesskit::NodeId, A11yRoute>;
+/// Derived action observations from one window projection.
+pub type ActionEnvelope = Envelope<NodeId, A11yRoute, uuid::Uuid>;
+pub type ActionEnvelopes = std::collections::HashMap<NodeId, ActionEnvelope>;
+
+pub(crate) fn action_envelope(root: NodeId, id: NodeId, route: A11yRoute) -> ActionEnvelope {
+    let mut envelope = Envelope::derived(Address::new(root, id), None, route);
+    match &envelope.provenance {
+        A11yRoute::SelectMember { member, .. } => envelope.domain_ref = Some(*member),
+        A11yRoute::Action(action)
+        | A11yRoute::OmnibarRow {
+            suggestion: crate::ui::Suggestion::Act { action, .. },
+            kept: None,
+            ..
+        } => envelope
+            .action_ids
+            .extend(crate::action::shared_command_id(action).map(str::to_owned)),
+        _ => {},
+    }
+    envelope
+}
 
 #[cfg(test)]
 #[path = "a11y/route_table.rs"]

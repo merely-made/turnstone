@@ -9,7 +9,7 @@ pub(crate) fn project_lens_with_contributions(
     app: &App,
     ordinal: usize,
     mut contributions: std::collections::HashMap<crate::panes::PaneId, UxTree>,
-) -> Option<(UxTree, A11yRoutes)> {
+) -> Option<(UxTree, ActionEnvelopes)> {
     let layout = app.lenses.get(ordinal)?.as_ref()?;
     let mut frozen = None;
     let panes = crate::panes::project_frisket_with(layout, |content, pane| match content {
@@ -40,16 +40,15 @@ pub(crate) fn project_lens_with_contributions(
     let mut root = Node::new(Role::Window);
     root.set_label(lens_window_label(ordinal));
     let tree = stitch(&format!("turnstone/lens/{ordinal}"), root, vec![panes]);
-    let mut routes = A11yRoutes::new();
+    let mut routes = ActionEnvelopes::new();
     if let Some(pane) = frozen {
         for (_, node) in app.graph_runtimes.graph().nodes() {
-            routes.insert(
-                node_id_for_path(&format!("turnstone/frozen-projection/instance/{}", node.id)),
-                A11yRoute::SelectMember {
-                    pane,
-                    member: node.id,
-                },
-            );
+            let id = node_id_for_path(&format!("turnstone/frozen-projection/instance/{}", node.id));
+            let route = A11yRoute::SelectMember {
+                pane,
+                member: node.id,
+            };
+            routes.insert(id, action_envelope(tree.root, id, route));
         }
     }
     Some((tree, routes))

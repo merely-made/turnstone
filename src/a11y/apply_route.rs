@@ -20,6 +20,25 @@ pub(crate) fn apply_route(
             app.update(crate::action::Action::OmnibarOpen { command: false })
         },
         Some(A11yRoute::Action(action)) => app.update(action.clone()),
+        Some(A11yRoute::OmnibarRow {
+            index,
+            suggestion,
+            kept,
+        }) if app.omnibar.open
+            && app.omnibar.suggestions.get(*index) == Some(suggestion)
+            && kept.is_none_or(|kept| {
+                app.omnibar.text.trim().starts_with('>')
+                    && matches!(suggestion, crate::ui::Suggestion::Act { label, .. }
+                        if app.command_keep_states().of(label) == Some(kept))
+            }) =>
+        {
+            let action = if kept.is_some() {
+                crate::action::Action::OmnibarToggleKeepRow(*index)
+            } else {
+                crate::action::Action::OmnibarCommitRow(*index)
+            };
+            app.update(action)
+        },
         Some(A11yRoute::SelectMember { pane, member }) => {
             if app.graph_pane_select_member(*pane, *member) {
                 vec![crate::action::Effect::Redraw]
@@ -40,7 +59,7 @@ pub(crate) fn apply_route(
             });
             Vec::new()
         },
-        None => {
+        Some(A11yRoute::OmnibarRow { .. }) | None => {
             app.note(crate::observe::AppEvent::InteractionMissed {
                 what: "a11y-action",
                 target: format!("{target:?}"),

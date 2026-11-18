@@ -164,7 +164,7 @@ mod admission_work_tests;
 
 pub(super) struct Projected {
     pub tree: uxtree::UxTree,
-    pub routes: crate::a11y::A11yRoutes,
+    pub routes: crate::a11y::ActionEnvelopes,
     pub focus: Option<NodeId>,
     pub guests: Vec<TreeUpdate>,
     pub admissions: std::collections::HashMap<(TreeId, NodeId), super::a11y_bridge::Admission>,

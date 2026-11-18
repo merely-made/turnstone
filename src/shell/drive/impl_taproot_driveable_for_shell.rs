@@ -51,16 +51,15 @@ impl taproot::Driveable for Shell {
             let matches = layout.borrow().matching_nodes(&dom, &selector);
             let targets = routes
                 .iter()
-                .filter_map(|(id, route)| match route {
-                    crate::a11y::A11yRoute::Frame(crate::frame_controls::FrameRoute {
-                        control: crate::frame_controls::Control::Body { node, .. },
-                        ..
-                    }) if matches.contains(node)
+                .filter_map(|(id, envelope)| match &envelope.provenance {
+                    crate::a11y::A11yRoute::Frame(route)
+                        if matches!(&route.control, crate::frame_controls::Control::Body { node, .. }
+                            if matches.contains(node))
                         && nodes
                             .iter()
                             .any(|(n, current)| n == id && current.supports_action(action)) =>
                     {
-                        Some(*id)
+                        Some(route.clone())
                     },
                     _ => None,
                 })
@@ -69,31 +68,12 @@ impl taproot::Driveable for Shell {
             if targets.len() != 1 {
                 return Err("inline target is absent, ambiguous or unsupported".into());
             }
-            let request = accesskit::ActionRequest {
-                action,
-                target_tree: accesskit::TreeId::ROOT,
-                target_node: targets[0],
-                data: None,
-            };
-            if slot == 0 {
-                self.a11y_routes = routes;
-                self.a11y_actions
-                    .lock()
-                    .map_err(|_| "inline queue poisoned")?
-                    .enqueue(request);
-                self.drain_a11y_actions();
-            } else {
-                self.lens_windows
-                    .values_mut()
-                    .find(|lens| lens.ordinal + 1 == slot)
-                    .unwrap()
-                    .a11y_actions
-                    .lock()
-                    .map_err(|_| "inline queue poisoned")?
-                    .enqueue(request);
-                self.drain_lens_a11y_actions();
-            }
-            return Ok(());
+            // Scenario steps observe and dispatch synchronously on the UI
+            // thread. The frame still checks the current control and owner.
+            return self
+                .apply_frame_a11y(slot, &targets[0], action)
+                .then_some(())
+                .ok_or_else(|| "inline frame control refused the action".into());
         }
         if let Some(args) = line.strip_prefix("frame-a11y-window ") {
             let (slot, action, target) = crate::frame_a11y::fixture_window_request(args)?;
@@ -113,7 +93,7 @@ impl taproot::Driveable for Shell {
             let matches = lens
                 .a11y_routes
                 .iter()
-                .filter_map(|(id, route)| match route {
+                .filter_map(|(id, envelope)| match &envelope.provenance {
                     crate::a11y::A11yRoute::Frame(route)
                         if target.matches(&route.control)
                             && tree
@@ -121,7 +101,7 @@ impl taproot::Driveable for Shell {
                                 .iter()
                                 .any(|(node, n)| node == id && n.supports_action(action)) =>
                     {
-                        Some(*id)
+                        Some(route.clone())
                     },
                     _ => None,
                 })
@@ -129,17 +109,10 @@ impl taproot::Driveable for Shell {
             if matches.len() != 1 {
                 return Err("lens frame target is absent, ambiguous or unsupported".into());
             }
-            lens.a11y_actions
-                .lock()
-                .map_err(|_| "lens queue poisoned")?
-                .enqueue(accesskit::ActionRequest {
-                    action,
-                    target_tree: accesskit::TreeId::ROOT,
-                    target_node: matches[0],
-                    data: None,
-                });
-            self.drain_lens_a11y_actions();
-            return Ok(());
+            return self
+                .apply_frame_a11y(slot, &matches[0], action)
+                .then_some(())
+                .ok_or_else(|| "lens frame control refused the action".into());
         }
         if let Some(args) = line.strip_prefix("frame-a11y ") {
             let (action, target) = crate::frame_a11y::fixture_request(args)?;
@@ -147,7 +120,7 @@ impl taproot::Driveable for Shell {
                 self.projected_a11y_tree();
             let matches = routes
                 .iter()
-                .filter_map(|(id, route)| match route {
+                .filter_map(|(id, envelope)| match &envelope.provenance {
                     crate::a11y::A11yRoute::Frame(route)
                         if target.matches(&route.control)
                             && tree
@@ -155,7 +128,7 @@ impl taproot::Driveable for Shell {
                                 .iter()
                                 .any(|(node, n)| node == id && n.supports_action(action)) =>
                     {
-                        Some(*id)
+                        Some(route.clone())
                     },
                     _ => None,
                 })
@@ -165,18 +138,10 @@ impl taproot::Driveable for Shell {
                     "frame-a11y target is absent, ambiguous or does not support that action".into(),
                 );
             }
-            self.a11y_routes = routes;
-            self.a11y_actions
-                .lock()
-                .map_err(|_| "a11y queue poisoned")?
-                .enqueue(accesskit::ActionRequest {
-                    action,
-                    target_tree: accesskit::TreeId::ROOT,
-                    target_node: matches[0],
-                    data: None,
-                });
-            self.drain_a11y_actions();
-            return Ok(());
+            return self
+                .apply_frame_a11y(0, &matches[0], action)
+                .then_some(())
+                .ok_or_else(|| "primary frame control refused the action".into());
         }
 
         if let Some(size) = line.strip_prefix("resize ") {

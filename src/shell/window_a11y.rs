@@ -3,7 +3,7 @@
 //! Window host namespaces and publication use the one Genet native adapter.
 use super::Shell;
 use crate::{
-    a11y::{A11yRoute, A11yRoutes},
+    a11y::{A11yRoute, action_envelope},
     surface::{FocusTarget, SurfaceKind},
     window_projection::WindowScope,
 };
@@ -100,11 +100,9 @@ impl Shell {
             if let Some((frame_routes, frame_focus)) =
                 crate::frame_a11y::graft(&mut tree, parent, &bodies, frame)
             {
-                routes.extend(
-                    frame_routes
-                        .into_iter()
-                        .map(|(id, r)| (id, A11yRoute::Frame(r))),
-                );
+                routes.extend(frame_routes.into_iter().map(|(id, route)| {
+                    (id, action_envelope(tree.root, id, A11yRoute::Frame(route)))
+                }));
                 if frame_focus.is_some() {
                     focus = frame_focus;
                 }
@@ -216,7 +214,11 @@ impl Shell {
         frame.routes = frame
             .routes
             .into_iter()
-            .filter_map(|(id, route)| map.get(&id).map(|new| (*new, route)))
+            .filter_map(|(id, mut envelope)| {
+                let &id = map.get(&id)?;
+                envelope.address = uxtree::envelope::Address::new(frame.tree.root, id);
+                Some((id, envelope))
+            })
             .collect();
         frame.admissions = frame
             .admissions
@@ -258,19 +260,11 @@ impl Shell {
         lens.a11y_actions
             .lock()
             .expect("lens a11y queue poisoned")
-            .publish(if served {
-                frame.admissions
-            } else {
-                Default::default()
-            });
+            .publish_window(served, frame.admissions, &frame.routes);
         lens.a11y_routes = frame.routes;
         lens.a11y_placements = placements;
         if !served {
             lens.a11y_forest.retry_publication();
         }
-    }
-    // Scenario injection and platform wakeups share the same epoch-aware drain.
-    pub(super) fn drain_lens_a11y_actions(&mut self) {
-        self.drain_a11y_actions();
     }
 }

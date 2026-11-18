@@ -130,7 +130,6 @@ impl Shell {
                 return;
             },
         };
-        self.a11y_routes = routes;
         let served = self.a11y_adapter.as_mut().is_some_and(|bridge| {
             match bridge.update_batch_at(epoch.unwrap_or(0), initial, updates) {
                 Ok(served) => served,
@@ -143,11 +142,7 @@ impl Shell {
         self.a11y_actions
             .lock()
             .expect("a11y queue poisoned")
-            .publish(if served {
-                admissions
-            } else {
-                Default::default()
-            });
+            .publish_window(served, admissions, &routes);
         if !served {
             self.surface_a11y.retry_publication();
         }
@@ -178,6 +173,7 @@ impl Shell {
             );
         }
         for (window, queue, a11y_bridge::QueuedAction { request, admission }) in requests {
+            let mut route = None;
             if let Some(captured) = admission {
                 if !queue
                     .lock()
@@ -191,13 +187,15 @@ impl Shell {
                     continue;
                 }
                 let landed = match captured.admission {
+                    a11y_bridge::Admission::Host(envelope) => {
+                        route = Some(envelope.provenance);
+                        None
+                    },
                     a11y_bridge::Admission::PoolDocument(route) => {
-                        self.dispatch_pool_document_accessibility(&route, &request)
+                        Some(self.dispatch_pool_document_accessibility(&route, &request))
                     },
                     #[cfg(test)]
-                    a11y_bridge::Admission::Document(_route) => {
-                        false /* legacy routes exist only in queue tests */
-                    },
+                    a11y_bridge::Admission::Document(_route) => Some(false),
                     a11y_bridge::Admission::Contributed(published) => {
                         let origin = match window {
                             None => Some(crate::action::SpaceRef::Primary),
@@ -224,24 +222,26 @@ impl Shell {
                             published.route.pane,
                             self.pane_content(published.route.pane).as_ref(),
                         );
-                        dispatch_contributed_action(
+                        Some(dispatch_contributed_action(
                             &mut self.app,
                             &mut self.renderers.contributed,
                             &published,
                             &request,
                             &plan,
                             spec.as_ref(),
-                        )
+                        ))
                     },
                 };
-                if !landed {
-                    self.app.note(crate::observe::AppEvent::InteractionMissed {
-                        what: "a11y-action",
-                        target: "stale or unsupported live document action".into(),
-                    });
+                if let Some(landed) = landed {
+                    if !landed {
+                        self.app.note(crate::observe::AppEvent::InteractionMissed {
+                            what: "a11y-action",
+                            target: "stale or unsupported live document action".into(),
+                        });
+                    }
+                    self.request_redraw();
+                    continue;
                 }
-                self.request_redraw();
-                continue;
             }
             if request.target_tree != accesskit::TreeId::ROOT {
                 let (target, placements) = match window {
@@ -274,13 +274,10 @@ impl Shell {
                 }
                 continue;
             }
-            let (slot, route) = match window {
-                None => (0, self.a11y_routes.get(&request.target_node).cloned()),
+            let slot = match window {
+                None => 0,
                 Some(id) => match self.lens_windows.get(&id) {
-                    Some(lens) => (
-                        lens.ordinal + 1,
-                        lens.a11y_routes.get(&request.target_node).cloned(),
-                    ),
+                    Some(lens) => lens.ordinal + 1,
                     None => continue,
                 },
             };
@@ -301,6 +298,7 @@ impl Shell {
             }
             if request.action == accesskit::Action::Focus
                 && slot == 0
+                && matches!(route, Some(crate::a11y::A11yRoute::OpenOmnibar))
                 && crate::a11y::focus_host_input(&mut self.app, request.target_node)
             {
                 self.request_redraw();

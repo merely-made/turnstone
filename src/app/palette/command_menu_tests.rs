@@ -284,7 +284,11 @@ fn palette_rows_and_their_keep_controls_are_accessible() {
         .position(|row| matches!(row, Suggestion::Act { label, .. } if label == "Back"))
         .unwrap();
     let target = uxtree::node_id_for_path(&format!("turnstone/chrome/omnibar/row/{back}/keep"));
-    crate::a11y::apply_route(&mut app, routes.get(&target), target);
+    crate::a11y::apply_route(
+        &mut app,
+        routes.get(&target).map(|envelope| &envelope.provenance),
+        target,
+    );
     assert_eq!(
         app.command_choices.removed,
         ["nav:back"],

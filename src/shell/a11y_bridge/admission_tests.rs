@@ -59,7 +59,7 @@ fn contributed_sources_keep_independent_semantic_results() {
     let mut before = admissions(source());
     before.extend(pane_admissions(PaneId(2), source()));
     queue.publish(before);
-    let captured = queue.published.clone();
+    let captured = queue.published.entries().clone();
     let mut changed = source();
     changed.nodes[1].1.set_label("Changed second pane");
     let mut after = admissions(source());
@@ -91,7 +91,7 @@ fn request(target: &(TreeId, NodeId)) -> ActionRequest {
 fn contributed_republication_compares_each_shared_source_once() {
     let mut queue = ActionQueueState::default();
     queue.publish(admissions(source()));
-    let before = queue.published.clone();
+    let before = queue.published.entries().clone();
     let comparisons = count_source_comparisons(|| queue.publish(admissions(source())));
     assert_eq!(
         comparisons, 1,
@@ -130,7 +130,7 @@ fn contributed_source_changes_retire_every_queued_control() {
     ] {
         let mut queue = ActionQueueState::default();
         queue.publish(admissions(source()));
-        let before = queue.published.clone();
+        let before = queue.published.entries().clone();
         let mut changed = source();
         match change {
             "label" => changed.nodes[1].1.set_label("Changed"),
@@ -161,7 +161,7 @@ fn contributed_route_placement_session_and_target_changes_remain_stale() {
     for change in ["rect", "pane", "generation", "node", "removed"] {
         let mut queue = ActionQueueState::default();
         queue.publish(admissions(source()));
-        let (&target, captured) = queue.published.iter().next().unwrap();
+        let (&target, captured) = queue.published.entries().iter().next().unwrap();
         let captured = captured.clone();
         let mut changed = admissions(source());
         if change == "removed" {
@@ -184,4 +184,63 @@ fn contributed_route_placement_session_and_target_changes_remain_stale() {
             "{change}: source equality cannot revive a changed route"
         );
     }
+}
+
+#[test]
+fn queued_omnibar_click_cannot_follow_a_reused_row() {
+    use crate::{a11y, app::App, ui::Suggestion};
+
+    let mut app = App::test_stub();
+    app.omnibar.open = true;
+    app.omnibar.suggestions = vec![Suggestion::Go {
+        url: "https://first.example/".into(),
+    }];
+    let (tree, routes) = a11y::project_app_with_routes(&app);
+    let id = uxtree::node_id_for_path("turnstone/chrome/omnibar/row/0");
+    assert!(
+        tree.nodes
+            .iter()
+            .any(|(node, value)| *node == id && value.supports_action(Action::Click))
+    );
+    let mut queue = ActionQueueState::default();
+    queue.publish_window(true, HashMap::new(), &routes);
+    queue.enqueue(ActionRequest {
+        action: Action::Click,
+        target_tree: TreeId::ROOT,
+        target_node: id,
+        data: None,
+    });
+    let queued = queue.requests.pop().unwrap();
+    let captured = queued.admission.unwrap();
+
+    queue.publish_window(true, HashMap::new(), &routes);
+    assert!(queue.is_current(&queued.request, &captured));
+    app.omnibar.suggestions = vec![Suggestion::Go {
+        url: "https://second.example/".into(),
+    }];
+    let (_, new_routes) = a11y::project_app_with_routes(&app);
+    assert_eq!(routes[&id].address, new_routes[&id].address);
+    queue.publish_window(true, HashMap::new(), &new_routes);
+    assert!(!queue.is_current(&queued.request, &captured));
+
+    // The app can change before another publication reaches the platform.
+    // The owner also refuses the observed row against that live state.
+    let Admission::Host(envelope) = captured.admission else {
+        panic!("missing host envelope")
+    };
+    assert_eq!(
+        envelope.stability,
+        uxtree::envelope::Stability::Derived {
+            generation: Some(captured.generation)
+        },
+    );
+    assert!(a11y::apply_route(&mut app, Some(&envelope.provenance), id).is_empty());
+    assert!(app.omnibar.open);
+    assert!(app.take_events().iter().any(|event| matches!(
+        event,
+        crate::observe::AppEvent::InteractionMissed {
+            what: "a11y-action",
+            ..
+        }
+    )));
 }

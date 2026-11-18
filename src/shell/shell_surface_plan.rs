@@ -387,11 +387,14 @@ impl Shell {
                     crate::frame_a11y::graft(&mut frame.tree, parent, &bodies, outer)
                 })
                 .and_then(|(routes, focus)| {
-                    frame.routes.extend(
-                        routes
-                            .into_iter()
-                            .map(|(id, route)| (id, crate::a11y::A11yRoute::Frame(route))),
-                    );
+                    frame.routes.extend(routes.into_iter().map(|(id, route)| {
+                        let envelope = crate::a11y::action_envelope(
+                            frame.tree.root,
+                            id,
+                            crate::a11y::A11yRoute::Frame(route),
+                        );
+                        (id, envelope)
+                    }));
                     focus
                 })
         } else {
