@@ -1,0 +1,58 @@
+settle 6
+assert snap projection-executable == true
+focus-retained role:button label
+settle 3
+hover-retained role:button label
+settle 3
+assert retained {"role":"region","label":"Item summary","attribute":"data-context-placement","value":"inplace"}
+capture context_hover
+focus-retained role:button spatial kernel: Graph kernel
+settle 3
+assert retained {"role":"region","label":"Resource","attribute":"data-context-placement","value":"pane"}
+assert retained {"role":"listitem","key":["data-context-item","kernel"],"text":"kernel"}
+capture context_resource
+click role:button spatial kernel: Graph kernel
+settle 3
+assert retained {"role":"region","label":"Linked nodes","attribute":"data-context-placement","value":"beside"}
+assert retained {"role":"listitem","key":["data-context-item","grammar"],"text":"Projection grammar"}
+capture context_linked
+secondary-retained role:button spatial kernel: Graph kernel
+settle 3
+assert retained {"role":"region","label":"Commands","attribute":"data-context-placement","value":"overlay"}
+assert retained {"role":"button","label":"Scroll the page","attribute":"aria-keyshortcuts","value":"Alt+J"}
+assert retained {"role":"button","label":"Fit current selection","attribute":"aria-disabled","value":"true"}
+capture context_commands
+click role:button Scroll the page
+settle 2
+assert snap wheel-mode == page
+click role:button Close context
+focus-retained role:button list kernel: Graph kernel
+settle 3
+hold-retained role:button list kernel: Graph kernel
+settle 60
+release-retained role:button list kernel: Graph kernel
+settle 3
+assert retained {"role":"region","label":"Commands","attribute":"data-context-trigger","value":"request"}
+capture context_long_press
+click role:button Close context
+click role:tab Interaction
+settle 2
+assert retained {"role":"status","label":"Context warnings","text":"Hover-only contexts"}
+click role:textbox Context recipes
+input-text contexts = []
+click role:button Apply contexts
+settle 3
+assert retained {"role":"status","label":"Projection status","text":"Applied context recipes"}
+act undo-projection
+settle 3
+assert retained {"role":"status","label":"Context warnings","text":"Hover-only contexts"}
+act save-projection
+settle 8
+assert retained {"role":"status","label":"Projection status","text":"Saved executable projection"}
+click role:button Reopen projection
+settle 5
+focus-retained role:button spatial kernel: Graph kernel
+context-menu-key
+settle 3
+assert retained {"role":"button","label":"Scroll the page","attribute":"aria-keyshortcuts","value":"Alt+J"}
+log Context recipes, command invocation, and authored round trip complete

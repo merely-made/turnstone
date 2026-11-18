@@ -1,0 +1,22 @@
+settle 5
+click role:button Return to projection
+settle 4
+focus-retained role:button spatial kernel: Graph kernel
+context-menu-key
+settle 4
+assert retained {"role":"button","label":"Read shared capsule","key":["data-context-item","applet:open-address"],"attribute":"aria-keyshortcuts","value":"Alt+O"}
+capture context_guest_command
+click role:button Read shared capsule
+settle 40
+assert retained {"role":"button","label":"Close reading 2"}
+focus-retained role:button Close reading 2
+capture context_guest_reading
+click role:button Revoke navigation
+click role:button Return to projection
+settle 3
+focus-retained role:button spatial kernel: Graph kernel
+context-menu-key
+settle 3
+assert retained {"role":"button","label":"Scroll the page"}
+capture context_guest_revoked
+log Signed Wasm WIT action offered and dispatched through the context

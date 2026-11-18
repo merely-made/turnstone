@@ -60,15 +60,17 @@ export async function mountCapsuleApplet(root, gs, supplied) {
     return generation;
   }
 
+  async function open(generation, url, scope) {
+    const entry = scope.entries.find(e => e.url === url);
+    if (!entry) throw new Error('Address outside supplied scope');
+    const kept = await gs.applet_kept_body(generation, url);
+    const body = kept || await bytes(new URL('capsules/' + entry.revision + '.gmi', scope.base), entry.bytes);
+    gs.applet_open_body(generation, url, body, !!kept);
+  }
+
   async function apply(generation, result, scope) {
     const opens = JSON.parse(gs.applet_apply_turn(generation, JSON.stringify(result)));
-    for (const url of opens) {
-      const entry = scope.entries.find(e => e.url === url);
-      if (!entry) throw new Error('Address outside supplied scope');
-      const kept = await gs.applet_kept_body(generation, url);
-      const body = kept || await bytes(new URL('capsules/' + entry.revision + '.gmi', scope.base), entry.bytes);
-      gs.applet_open_body(generation, url, body, !!kept);
-    }
+    for (const url of opens) await open(generation, url, scope);
   }
 
   async function run(command) {
@@ -99,6 +101,8 @@ export async function mountCapsuleApplet(root, gs, supplied) {
       await apply(generation, result, scope);
     } else if (command.command === 'grants') {
       if (runtime) await runtime.call('grants', data);
+    } else if (command.command === 'open') {
+      await open(generation, data, scope);
     } else if (command.command === 'keep') {
       await gs.applet_keep(generation, Number(data));
     } else throw new Error('Unknown host command');

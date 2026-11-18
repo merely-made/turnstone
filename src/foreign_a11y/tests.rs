@@ -316,3 +316,33 @@ platform_recursive_consumer!(platform_consumer, accesskit_consumer);
 mod foreign_lens_retains_native_forest_with_independent_publication_cases;
 #[path = "tests/incomplete_tree_waits_and_invalid_host_frame_keeps_cases.rs"]
 mod incomplete_tree_waits_and_invalid_host_frame_keeps_cases;
+
+#[test]
+fn grafted_addresses_resolve_nested_nodes_and_refuse_retired_trees() {
+    let mut foreign = nested();
+    let owner = surface(1);
+    let other = surface(2);
+    foreign.admit(other, tree(201)).unwrap();
+    foreign.apply(other, document(tree(201), "second")).unwrap();
+    activate(&mut foreign, &[owner, other], 10);
+    for (tree, root, child) in [
+        (tree(101), Role::ScrollView, Role::GenericContainer),
+        (tree(102), Role::ScrollView, Role::GenericContainer),
+        (tree(103), Role::Document, Role::Button),
+    ] {
+        for (local, role) in [(NodeId(0), root), (NodeId(1), child)] {
+            let (observed_owner, node) = foreign.resolve_guest((tree, local)).unwrap();
+            assert_eq!(observed_owner, owner);
+            assert_eq!(node.role(), role);
+        }
+    }
+    let press = request(tree(103), 1, Action::Click);
+    assert_eq!(foreign.action_target(&press), Ok(owner));
+    assert!(foreign.resolve_guest((tree(103), NodeId(2))).is_err());
+    foreign.retire(owner);
+    assert!(foreign.resolve_guest((tree(103), NodeId(1))).is_err());
+    assert!(foreign.action_target(&press).is_err());
+    let (current_owner, current_node) = foreign.resolve_guest((tree(201), NodeId(1))).unwrap();
+    assert_eq!(current_owner, other);
+    assert_eq!(current_node.label(), Some("second"));
+}

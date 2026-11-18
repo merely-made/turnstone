@@ -15,7 +15,7 @@
 
 use crate::panes::PaneContent;
 use accesskit::{Node, NodeId, Role};
-use uxtree::envelope::{Address, Envelope};
+use uxtree::envelope::{AddressSpace, Envelope, FederatedAddress};
 use uxtree::{UxTree, node_id_for_path, stitch};
 
 use crate::app::App;
@@ -58,11 +58,11 @@ pub enum A11yRoute {
 }
 
 /// Derived action observations from one window projection.
-pub type ActionEnvelope = Envelope<NodeId, A11yRoute, uuid::Uuid>;
+pub type ActionEnvelope = Envelope<AddressSpace<NodeId>, A11yRoute, uuid::Uuid>;
 pub type ActionEnvelopes = std::collections::HashMap<NodeId, ActionEnvelope>;
 
 pub(crate) fn action_envelope(root: NodeId, id: NodeId, route: A11yRoute) -> ActionEnvelope {
-    let mut envelope = Envelope::derived(Address::new(root, id), None, route);
+    let mut envelope = Envelope::derived(FederatedAddress::producer(root, id), None, route);
     match &envelope.provenance {
         A11yRoute::SelectMember { member, .. } => envelope.domain_ref = Some(*member),
         A11yRoute::Action(action)

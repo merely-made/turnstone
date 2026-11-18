@@ -246,7 +246,7 @@ pub(super) fn close(page: &mut TreePage) {
     page.shared.dirty.set(true);
 }
 
-fn run(page: &mut TreePage, id: &str) {
+pub(super) fn run(page: &mut TreePage, id: &str) {
     // Re-read current capabilities instead of trusting a row from a prior frame.
     let set = catalog(page);
     let Some(command) = set.get(id) else {

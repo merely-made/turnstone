@@ -220,6 +220,14 @@ struct ViewState {
 
 mod source_input;
 
+/// Presentation of a command claimed by the current document block.
+#[cfg(target_arch = "wasm32")]
+pub struct ContextBlockCommand {
+    pub id: String,
+    pub label: String,
+    pub requires_editor: bool,
+}
+
 pub struct Pane {
     document: Document,
     /// The source text widget. The pane owns it; the document's editor is told of
@@ -669,6 +677,38 @@ impl Pane {
         .into();
         Ok(())
     }
+    #[cfg(target_arch = "wasm32")]
+    pub fn context_claim(&self, resource: &str, id: &str) -> Vec<ContextBlockCommand> {
+        let Ok(block) = self.target() else { return Vec::new() };
+        if self.preview.is_some() || self.document.id != resource
+            || block.attributes.get("id").is_none_or(|key| key != id) || !block.children.is_empty()
+        {
+            return Vec::new();
+        }
+        self.class_of(&block)
+            .and_then(|class| self.adapter(&class))
+            .map_or_else(Vec::new, |adapter| {
+                adapter.claim().commands.iter().map(|command| ContextBlockCommand {
+                    id: command.id.clone(),
+                    label: command.label.clone(),
+                    requires_editor: command.arg.is_some()
+                        || command.kind == block_adapter::CommandKind::Choice,
+                }).collect()
+            })
+    }
+
+    #[cfg(target_arch = "wasm32")]
+    pub fn invoke_context(&mut self, resource: &str, id: &str, command: &str) {
+        if !self.context_claim(resource, id).iter().any(|offer| {
+            offer.id == command && !offer.requires_editor
+        }) {
+            return;
+        }
+        if let Err(error) = self.run_command(command, "") {
+            self.set_status(error);
+        }
+    }
+
     /// An explicit write or text export of the selected block's adapter.
     fn run_command(&mut self, command: &str, arg: &str) -> Result<(), String> {
         if self.preview.is_some() {

@@ -216,7 +216,8 @@ impl Shell {
             .into_iter()
             .filter_map(|(id, mut envelope)| {
                 let &id = map.get(&id)?;
-                envelope.address = uxtree::envelope::Address::new(frame.tree.root, id);
+                envelope.address =
+                    uxtree::envelope::FederatedAddress::producer(frame.tree.root, id);
                 Some((id, envelope))
             })
             .collect();

@@ -26,6 +26,8 @@ pub(super) struct Pane {
     status: String,
     readings: Readings,
     commands: Vec<Value>,
+    context_opens: Vec<String>,
+    pub(super) show_workspace: bool,
     refusals: Vec<Value>,
     logs: Vec<String>,
     turns: u64,
@@ -74,7 +76,26 @@ impl Pane {
         self.command("grants", json!(grants));
     }
 
+    pub(super) fn offers_context_open(&self, url: &str) -> bool {
+        self.running && self.context_opens.iter().any(|open| open == url)
+            && self.mount.as_ref().is_some_and(|mount| mount.permits(NAVIGATE))
+    }
+
+    pub(super) fn context_open(&mut self, url: &str) {
+        if !self.offers_context_open(url) {
+            return;
+        }
+        let Some(mount) = self.mount.as_mut() else { return };
+        let payload = json!({"url": url}).to_string();
+        if let Ok(Some(url)) = mount.accept("open-address", &payload).and_then(|p| mount.lower(p)) {
+            self.command("open", json!(url));
+            self.show_workspace = false;
+        }
+    }
+
     fn close(&mut self) {
+        self.show_workspace = false;
+        self.context_opens.clear();
         self.generation += 1;
         self.running = false;
         self.mount = None;
@@ -114,8 +135,10 @@ pub fn review_applet(
         // Only a completely verified replacement displaces the current mount.
         pane.generation += 1;
         pane.mount = Some(mount);
+        pane.show_workspace = false;
         pane.running = false;
         pane.readings.clear();
+        pane.context_opens.clear();
         pane.commands.clear();
         pane.refusals.clear();
         pane.logs.clear();
@@ -188,7 +211,15 @@ pub fn applet_apply_turn(generation: u32, result: &str) -> Result<String, JsValu
         for action in turn.actions {
             let accepted = mount.accept(&action.name, &action.payload.to_string());
             match accepted.and_then(|proposal| mount.lower(proposal)) {
-                Ok(Some(url)) => opens.push(url),
+                Ok(Some(url)) => {
+                    if !pane.context_opens.contains(&url) {
+                        if pane.context_opens.len() == 64 {
+                            pane.context_opens.remove(0);
+                        }
+                        pane.context_opens.push(url.clone());
+                    }
+                    opens.push(url);
+                },
                 Ok(None) => {},
                 Err(refusal) => pane.refusals.push(json!(refusal)),
             }
@@ -513,6 +544,12 @@ pub(super) fn view(page: &TreePage) -> Child {
                 ),
             )));
         }
+    }
+    #[cfg(feature = "product")]
+    if pane.running && page.product.as_ref().is_some_and(|product| product.context_workspace_open()) {
+        children.push(Box::new(button("Return to projection", |page: &mut TreePage, _| {
+            page.shared.applet.borrow_mut().show_workspace = true;
+        })));
     }
     let rows: Vec<Child> = mount
         .projection

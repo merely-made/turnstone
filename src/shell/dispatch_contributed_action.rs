@@ -20,7 +20,7 @@ pub(super) fn dispatch_contributed_action(
         sessions,
         published,
         rect,
-        request.target_node,
+        (request.target_tree, request.target_node),
         request.action,
     );
     let landed =
