@@ -120,6 +120,9 @@ fn write_bytes_with_backup(path: &Path, bytes: &[u8]) -> io::Result<()> {
         let _ = std::fs::remove_file(&temporary);
         return Err(error);
     }
+    // The replacement file was flushed before renaming. Windows does not
+    // support opening a directory with the ordinary file-open operation.
+    #[cfg(unix)]
     std::fs::File::open(parent)?.sync_all()?;
     Ok(())
 }

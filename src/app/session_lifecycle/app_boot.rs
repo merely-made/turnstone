@@ -178,6 +178,10 @@ impl App {
     /// credential and profile bootstrapping so its effect ordering is covered
     /// without touching a person's profile during tests.
     pub(in super::super) fn apply_launch_address(&mut self, url: &str, effects: &mut Vec<Effect>) {
+        if let Some(domain) = url.strip_prefix(crate::resident_graph::ADDRESS_PREFIX) {
+            effects.extend(self.open_resident_graph(domain));
+            return;
+        }
         // The launch address is a pane-facing visit just like an omnibar
         // address. Saving it only on Canvas would be erased on the first pane
         // render when its local selection is restored.

@@ -271,6 +271,14 @@ impl Shell {
             });
 
         let mut surface_providers = crate::contributed_surface::SurfaceProviderRegistry::new();
+        let resident_graph_proxy = proxy.clone();
+        surface_providers
+            .register_provider(crate::resident_graph::ResidentGraphProvider::new(Arc::new(
+                move || {
+                    let _ = resident_graph_proxy.send_event(crate::shell::ShellEvent::ActorWake);
+                },
+            )))
+            .expect("the resident graph provider is unique");
         surface_providers
             .register_provider(crate::knot_document_surface::KnotDocumentProvider::default())
             .expect("the built-in Knot document provider is unique");

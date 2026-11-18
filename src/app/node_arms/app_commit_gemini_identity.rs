@@ -140,6 +140,9 @@ impl App {
     }
 
     pub(in super::super) fn open_address(&mut self, url: String) -> Vec<Effect> {
+        if let Some(domain) = url.strip_prefix(crate::resident_graph::ADDRESS_PREFIX) {
+            return self.open_resident_graph(domain);
+        }
         let saved = match crate::saved_sources::parse_address(&url) {
             Ok(Some(target)) if !self.saved_source_admitted(&target.key) => {
                 return self.saved_source_refusal(

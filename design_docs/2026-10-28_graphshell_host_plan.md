@@ -1,8 +1,8 @@
-# Graphshell host: the reference host's open phases and the one-tree cutover
+# Integrate the Graphshell app into Turnstone
 
-**Status:** 2026-10-28: cut from `2026-07-27_graphshell_reference_host_plan.md` and `2026-09-25_graphshell_one_tree_plan.md`, archived in `archive_docs/2026-10-28/`. The tree migration inventory (`2026-09-27_graphshell_tree_migration_inventory.md`) stays in place and is this plan's inventory. Reference host: H0 to H3 and H5 to H7 are complete; H4 is complete except an operational tail that now belongs to the family update resident plan; the H6 product-path addendum is open at its S3 apply slice and its relay leg; H8 has not started; H9's first-party application door and Turnstone receipts client are complete; H10's DNS-SD half is open and its owner is in question. One tree: phases 1 to 3 are done and Mark has accepted the architecture; phase 4, the move, is unfinished: the retained tree mounts all five public pages in source and the legacy presenter is retired there, but a fresh Wasm build, the five pages and the complete live scenario wall have not been accepted.
+**Status (2026-11-18):** Native integration is first (D2). N1 opens resident graphs in native Turnstone, with headed Windows and Linux receipts. N2 still owns the remaining native workflows, old view-state handoff and standalone app retirement. The H and T phases below retain their existing evidence and dependencies. For the web tree, the earlier architecture was accepted and the five routes mount in source. Fresh Wasm, all five pages and the live scenario wall are still owed under T4.
 
-**For:** Graphshell as Mere's useful, WASM-safe reference host (graph portal, Personae identity surface, browser-extension companion, application launcher, cross-device surface for addressed things) and the one retained Cambium tree that now hosts its browser page. Opened by Mark's product ruling of 2026-07-27 that Graphshell is the reference host and portal into the Mere ecosystem, and by his 2026-09-25 choice "One tree first" with "Enablers first".
+**For:** Moving the Graphshell app's graph portal, Personae surface, launcher and cross-device workflows into Turnstone, then retiring the standalone app. The browser companion and retained Cambium web tree also have open work here. The [tree migration inventory](2026-09-27_graphshell_tree_migration_inventory.md) covers the web tree. This plan was cut on 2026-10-28 from the reference host and one-tree plans in `archive_docs/2026-10-28/`.
 Not here:
 - H9's AI and MCP surfaces, and its three-adapter done condition (a user, an application and a granted agent inspect the same scene and invoke the same action): `2026-06-26_mcp_native_graph_plan.md`, which stays in place. An AI-facing door must not mount the Retinue endpoint's routes (see Constraints).
 - H4's tail, real sign-out or reboot recovery of the resident and final retirement of the disabled Personae task: `2026-10-28_family_update_resident_plan.md`. The device resident moved to djinn, so its remaining acceptance is there too.
@@ -19,7 +19,8 @@ line in Findings.
 ## Constraints
 
 Reference host:
-- **Graphshell is a reference host, not a web browser.** Turnstone owns browsing. Graphshell uses its own wgpu surface through NetRender and does not embed Turnstone or import the surface-embedding family (`grafting`, `scrying`, `welding`) or Servo hosting in its WASM profile. From: `archive_docs/2026-10-28/2026-07-27_graphshell_reference_host_plan.md:53-100`.
+- **Turnstone owns the app.** Use its existing native shell, pane registry, actions and workspace. Graphshell supplies the projection protocol and reusable libraries beneath Turnstone and other consumers. Ship one native product per supported platform. The browser extension takes priority over a PWA. From: graphshell_host D2.
+- **The default Turnstone frame excludes the optional Scry, Servo and Weld engines.** `scripts/check_default_links.py` checks the native dependency tree for engine packages without their opt-in feature. `grafting` remains available under Cue for shared-texture import. The composition check also follows `mere-athanor` for workshop features. See Turnstone `494efe06`.
 - **The resident is djinn, not a Graphshell binary.** Graphshell composes the session brokers djinn serves; the plan's older "permanent resident host" wording is corrected (see Open questions). From: `archive_docs/2026-10-28/2026-07-27_graphshell_reference_host_plan.md:16-24,81-85`.
 - **Projections are not authorities.** The graph projects public identity, grant and signing facts; signed evidence stays authoritative in Personae, Servitor or the owning ledger, and editing a projected grant grants nothing. Secret bytes never become facets or `Container` bodies; browser WASM never receives a seed, private key, vault root, private epoch, decrypted slot payload or unrestricted signing handle. Cross-app persona linkage stays opt-in. Encryption at rest protects a closed vault, not a compromised native process, and the GUI must not claim it identifies every local SSH-agent caller. From: `archive_docs/2026-10-28/2026-07-27_graphshell_reference_host_plan.md:102-198`.
 - **History is an append-only record.** `visit.history` is a derived cache over `AccessRecord`, never the chronology's authority; access on another device appends and never rewrites. A shared abstraction needs a second consumer; a Graphshell-only adapter stays in the port until another application proves the boundary. From: `archive_docs/2026-10-28/2026-07-27_graphshell_reference_host_plan.md:232-285`.
@@ -37,7 +38,56 @@ One tree:
 - **The presenter keeps selection, inspection and opening separate.** The adjacent inspector is the first site treatment; selection is keyed by occurrence id within one source binding, independent of visible Canvas members, and lasts for the mount; equal names never merge occurrences; no universal presenter crate and no second workbench or session owner. A live document face keeps its engine and session owner. From: `archive_docs/2026-10-28/2026-09-25_graphshell_one_tree_plan.md:849-947`.
 - **Viewer delivery caps hold.** The viewer Wasm cap is 3.50 MiB gzip per route artifact (Mark, 2026-11-07, "Ratchet down", second step, applied 2026-11-08; 4.00 MiB the first step; was 3.50 MiB from 2026-10-16 and 5.00 MiB earlier on 2026-11-07; the ratchet schedule is in T7); glue, mount and history keep their own caps; the site's first load stays under its separate 64 KiB cap; a cap is not raised and an oversized viewer is not deployed. From: `archive_docs/2026-10-28/2026-09-25_graphshell_one_tree_plan.md:1211-1221`.
 
+## Decisions
+
+### graphshell_host D1: Turnstone is the reference app and ladders; Graphshell is the library (2026-11-12)
+
+Mark, 2026-11-12: "1, since graphshell is retiring as app and living as lib in its own repo, what's in turnstone's is meant to be integrated; turnstone is now the reference app, the flagship so to speak, and will need to ladder. Graphshell will be implemented through turnstone and other app hosts and producers thus." D2 supersedes the proposed build tiers.
+
+Links: area product · amends the reference-host constraint · summary Turnstone is the laddered reference app, Graphshell the host library
+
+### graphshell_host D2. Native Turnstone first, then the browser extension (2026-11-14)
+
+Mark, 2026-11-14: "I think just start with the native app, right?" and "I do not want to make four builds of the same app." Turnstone takes the standalone app's capabilities and Graphshell becomes the protocol and library layer. The product is one native Turnstone per supported desktop platform, packaged for that OS. The extension comes before PWA work because it can request browser permissions and use native messaging. Mobile and the shape of a general web client are deferred. Runtime engine packs are a proposal for [engine adoption](2026-08-03_turnstone_engine_adoption_plan.md#e3-activation-model).
+
+Links: area product · amends graphshell_host D1 · plans N1 · plans N2 · summary integrate the native app into Turnstone first, then prioritize the browser extension
+
+### graphshell_host D3. Compose the frame from attached producers (2026-11-14)
+
+Mark, 2026-11-14: “the embeddable producers + frame, which should be able to detach and reattach to each other/a host as panes”. Extend [engine adoption D1](2026-08-03_turnstone_engine_adoption_plan.md#turnstone_engine_adoption-d1-an-engine-arrives-compiled-in-or-as-a-separate-process-in-one-inventory-2026-11-12) to all producers. A host uses one inventory for built-in producers and separately running producers. Its running profile is the set of producers attached to its frame. The same attachment contract should serve the native app and, where their platforms support it, the extension, PWA and mobile clients. D2 sets their order.
+
+| Table | What a cell records |
+|---|---|
+| Capability by platform | The evidence for a capability in that host environment. |
+| Producer by pattern | The evidence that a producer supports a snapshot card, live tile, input, accessibility subtree with actions, lens, one node at two sizes, physics body, or detach and reattach as a pane. |
+
+Both tables distinguish library API, adapter forwarding, Turnstone consumption and executed consumer evidence. Record platform and producer support per cell. The shared composition brief (`graphshell/design_docs/cambium_docs/research/2026-10-06_app_composition_brief.md`, AC1–AC12) owns the underlying host and mount contracts. The first native proof would detach a live pane, attach it to another compatible host, and show that the same producer session still renders and takes input. That proof is open.
+
+Links: area product · draws on turnstone_engine_adoption D1 · amends graphshell_host D2 · summary runtime producer attachment and evidence by platform and pattern
+
 ## Phases
+
+### N1. Open a resident graph in native Turnstone
+
+Mount the shared `MereView` and `MereRouteSession` through Turnstone's native pane and action system. Open a concrete `mere/<domain>` through Djinn under Turnstone's declared route and the owner's grant. Use the existing Device Receipts client as the native broker integration example.
+
+- Entry point: **Open resident graph** in the command palette, or `mere://resident/<domain>` in the address bar. The workspace saves the domain. Djinn chooses its latest live session when a connection opens and stores Turnstone's focus and layout separately for each session.
+- Done when: a headed run opens an existing resident graph in the normal Turnstone window, selects a record and reads its details, switches between available sessions, and reopens the view after restart. An undeclared, denied or unavailable route produces a visible reason. The standalone viewer is absent from the run.
+
+### N2. Move the remaining native workflows and retire the standalone app
+
+Bring across the retained-page search and capture, Personae controls, advertised actions, and co-op entry points that still live in the standalone window. Reuse Turnstone's existing equivalents where they cover the workflow. Carry saved view state when the app identity changes. Move the co-op harness's user-facing leg to Turnstone before retiring its standalone viewer target. Developer fixtures remain evidence tools.
+
+- Done when: each surviving native workflow has a Turnstone entry point and a headed receipt, existing graph/session access and saved focus and layout survive the cutover, and native packaging and product acceptance run without the Graphshell app binaries. Djinn still brokers the owner's selected routes and custody.
+- Needs: N1. After the desktop move, H5r carries the browser companion ahead of PWA work. Verify existing extension installations across any change to the native-messaging relay registration.
+
+| Workflow | Turnstone path and cutover check |
+| --- | --- |
+| Retained-page search and capture | Start from Turnstone's existing **Search saved sources** and source capture actions. The resident pane consumes the graph and record roles today. Bind the existing controls to the resident's disclosed sources. Check search, capture and reopening the saved result in Turnstone. |
+| Advertised actions | The standalone viewer's `owner_actions.rs` binds each offered action to the selected record and its observed revision. Use `MereRouteSession::record_actions` and `invoke_record_command` from the native pane with the same bound forms. Exercise a successful action, a stale offer and a refusal. Route an accepted address into Turnstone's normal opening path. |
+| Personae | Reuse the native identity and Device Receipts surfaces where they cover the workflow. Compare the remaining controls with the Graphshell Personae surface and run against the same Djinn profile and grants. |
+| Saved view state | Check the existing Graphshell consumer state before cutover. Carry focus and layout per session into the Turnstone consumer through Djinn with the owner's authority. Preserve an existing Turnstone choice. Qualify the first open and a restart. |
+| Co-op and retirement | `support/graphshell-coop/freeze.py` and the headed driver still name `graphshell_mere`. Move the user-facing leg to Turnstone and prove the existing two-device workflow before removing the standalone packaging target. Keep the native-messaging relay available for the extension. |
 
 ### H4r. Personae surface residue
 Native Firefox key import, desktop dialog providers beyond Windows (macOS and Linux), a configured carry root and broader carry management are still unproven after H4's other conditions closed. The two operational tail items of H4 are in the family update resident plan.
@@ -259,6 +309,9 @@ The native retained-content path does not close physical assistive technology, p
 
 ## Findings
 
+- 2026-11-14: `ports/graphshell/mere/Cargo.toml` declares the standalone `graphshell_mere` executable. Its `src/connection.rs` opens `mere/<domain>` under the `graphshell` declaration. Turnstone now declares `mere/` in `src/identity.rs` and uses `AppBrokerClient` in `src/resident_graph/worker.rs`. Djinn requires an owner grant for the route. It currently closes an ungranted first-party route during admission, so the pane reports the close and points to the grant and Reconnect. Existing `graphshell.mere` view state still needs a handoff to `turnstone.mere` in N2.
+- 2026-11-14: Switch and view changes can emit Notes notices on the same Djinn route. The native pane consumes the graph, sessions and archive roles, and filters Notes notices before passing them to `MereRouteSession`. The pre-existing Windows graph-save error blocked workspace persistence after the graph file had already been replaced. `src/session_graph_file.rs` keeps the directory sync on Unix and the pre-replacement file flush on both platforms.
+- 2026-11-14: `ports/graphshell/web/extension/manifest.{chromium,firefox}.json` use `nativeMessaging`. The existing `org.mere.graphshell` registration points to `graphshell_native_host` in `graphshell/host/ports/mere-resident`, a relay to Djinn. The extension's compatibility IDs and relay lifecycle are independent of the standalone graph window.
 - 2026-10-28: the desktop resident is `graphshell/host/ports/mere-resident/src/bin/djinn.rs`; Graphshell ships no device-host binary. Decisions 2 and 3 of §12 are closed against the tree (the browser store is muniment's IndexedDB backend, `crates/eidetic/muniment/src/indexeddb_backend.rs`; the presenter is a thin Genet host adapter over `genet_render_host::RenderCore`).
 - 2026-10-28: a bare iroh node id is not dialable and the address book is per process; a resident sync host that cannot receive a packet reports `reachable=1` because `known_peers` is address-book membership.
 - 2026-10-28: `put_bytes` tags every blob permanently and no GC is wired; everything is kept forever until pins exist.
@@ -270,6 +323,12 @@ The native retained-content path does not close physical assistive technology, p
 ## Progress
 
 - 2026-10-28: cut from the reference host plan and the one-tree plan; nothing new landed.
+- 2026-11-14: implemented the native resident graph pane. See the [Windows N1 receipt](archive_docs/receipts/2026-10-28_graphshell_host_plan_receipts.md#2026-11-14-n1-native-resident-graph-on-windows).
+- 2026-11-18: integrated the resident graph pane with current Turnstone and
+  ran the four native cases on T-PC again after the uxtree P7 merge. The
+  [Linux N1 receipt](archive_docs/receipts/2026-10-28_graphshell_host_plan_receipts.md#2026-11-18-n1-native-resident-graph-on-t-pc)
+  records focus and layout restoration after restart, and both error states.
+  N2 lists the remaining workflows and their cutover checks.
 
 ## Received from the backlog holder, 2026-10-28
 

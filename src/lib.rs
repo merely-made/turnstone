@@ -115,6 +115,7 @@ pub mod redshank_episode_surface;
 pub mod redshank_host;
 pub mod relationship_navigation;
 pub mod remote_projection;
+mod resident_graph;
 pub mod research;
 pub mod research_compare;
 pub(crate) mod research_record_graph;

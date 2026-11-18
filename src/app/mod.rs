@@ -61,6 +61,7 @@ mod r2_saved_source_tests;
 pub(crate) mod research_note_arms;
 #[cfg(test)]
 mod resident_admission_tests;
+mod resident_graph_arms;
 #[cfg(test)]
 mod resident_run_tests;
 mod runtime_pool;

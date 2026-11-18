@@ -145,6 +145,7 @@ pub enum PaneRenderer {
     SharedKnot,
     DeviceReceipts,
     FrozenProjection,
+    Contributed,
     Settings,
     Transcript,
     Arrange,
@@ -478,6 +479,18 @@ pub static BUILTIN_PANES: &[PaneDefinition] = &[
             label: "Open Frozen Projection pane"
         }),
         Some(|| PaneContent::Registered(PaneKindId::new(kind::FROZEN_PROJECTION)))
+    ),
+    pane!(
+        crate::resident_graph::PANE_KIND,
+        crate::resident_graph::LABEL,
+        PaneSourceShape::fixed(&[FixedSourceKind::External(crate::resident_graph::SOURCE_SCHEMA)]),
+        PaneMultiplicity::PerSpaceAndSource,
+        capabilities(false, false, NONE),
+        "turnstone.resident-graph.config",
+        "turnstone.resident-graph.view",
+        PaneRenderer::Contributed,
+        None,
+        None
     ),
     pane!(
         kind::SETTINGS,
