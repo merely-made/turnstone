@@ -239,6 +239,7 @@ mod tests {
                 node: Some(scenograph::presentation::NodeMark::card()),
                 relation: Some(scenograph::presentation::RelationForm::Stroke),
                 field: Some(scenograph::FieldForm::Contour),
+                ..Default::default()
             },
             ..Default::default()
         };

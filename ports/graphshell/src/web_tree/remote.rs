@@ -390,7 +390,7 @@ impl TreePage {
         });
     }
 
-    fn invoke(&mut self, index: usize) {
+    pub(super) fn invoke(&mut self, index: usize) {
         if self.shared.remote.borrow().reservoir.is_some() {
             return;
         }
