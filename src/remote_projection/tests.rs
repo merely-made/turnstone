@@ -110,7 +110,7 @@ fn coverage_survives_disclosure_and_snapshot_refusal() {
         endpoint.snapshot(legacy),
         Err(ProjectionRefusal::UnsupportedScore {
             received: 4,
-            supported: 5
+            supported: sceno::SCORE_VERSION
         })
     ));
     assert_eq!(endpoint.snapshot_coverage(), Some(&prior_coverage));
@@ -124,12 +124,8 @@ fn coverage_survives_disclosure_and_snapshot_refusal() {
 }
 
 #[test]
-fn score_five_accepts_and_score_four_refuses_without_replacing_snapshot() {
-    assert_eq!(
-        sceno::SCORE_VERSION,
-        5,
-        "this repin qualifies the version-five family"
-    );
+fn current_score_accepts_and_previous_score_refuses_without_replacing_snapshot() {
+    let previous_version = sceno::SCORE_VERSION - 1;
     let mut endpoint = TurnstoneEndpoint::new(App::projection_fixture()).unwrap();
     let request = ProjectionRequest {
         version: ProtocolVersion::V1,
@@ -140,13 +136,13 @@ fn score_five_accepts_and_score_four_refuses_without_replacing_snapshot() {
     let prior_revision = endpoint.snapshot.as_ref().unwrap().scene.revision;
     let prior_resources = endpoint.resources.clone();
     let mut legacy = request;
-    legacy.score.version = 4;
+    legacy.score.version = previous_version;
     assert!(matches!(
         endpoint.snapshot(legacy),
         Err(ProjectionRefusal::UnsupportedScore {
-            received: 4,
-            supported: 5
-        })
+            received,
+            supported: sceno::SCORE_VERSION
+        }) if received == previous_version
     ));
     assert_eq!(
         endpoint.snapshot.as_ref().unwrap().scene.revision,

@@ -177,6 +177,7 @@ pub(crate) fn command_metadata(action: &Action) -> (EffectClass, bool) {
         | Action::SummonPane(..)
         | Action::SetAnswerSelection { .. }
         | Action::SummonContributedPane { .. }
+        | Action::OpenResidentGraphPrompt
         | Action::CloseActivePane
         | Action::OuterWorkspace { .. }
         | Action::SetActivePaneDivider(..)

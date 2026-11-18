@@ -63,6 +63,7 @@ pub fn app_declaration() -> ostiary::declaration::AppDeclaration {
             NamePattern::exact(castellan_client::custody::CUSTODY_ROUTE),
             NamePattern::exact(ostiary::app_admission::APP_IDENTITY_ROUTE),
             NamePattern::exact("knot"),
+            NamePattern::prefix("mere/"),
             // The resident inference lane (`INFERENCE_ASK_ROUTE`).
             NamePattern::exact(INFERENCE_ASK_ROUTE),
         ],

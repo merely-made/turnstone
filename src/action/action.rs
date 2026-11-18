@@ -9,8 +9,8 @@ pub enum Action {
     OpenThemeWorkshop,
     /// Open Alembic's shared evidence-brief workshop.
     OpenAlembicWorkshop,
-    /// Open an address: mint/select its node in the graph and fetch it.
     OpenAddress(String),
+    OpenResidentGraphPrompt,
     /// Open the submission composer for the focused Titan or Spartan address.
     ComposeFocusedSmolwebSubmission,
     /// Open the focused Micron page's explicit form editor, if it has one.

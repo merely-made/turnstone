@@ -18,6 +18,7 @@ impl ContributedSurfacePane {
             dom,
             session,
             layout: RetainedLayout::new(),
+            rendered_leaves: sprigging::RenderedLeaves::new(),
             scroll: PaneScroll::new(),
             stylesheet: format!(
                 "{} {} {}",
@@ -153,8 +154,15 @@ impl ContributedSurfacePane {
         self.apply(effects);
         let dom = self.session.dom();
         let mut dom = dom.borrow_mut();
-        self.layout
-            .scene_scrolled(&mut dom, &self.stylesheet, width, height, &mut self.scroll)
+        self.layout.scene_scrolled_with_leaves(
+            &mut dom,
+            &self.stylesheet,
+            (width, height),
+            &mut self.scroll,
+            self.session
+                .leaves()
+                .map(|registry| (registry, &mut self.rendered_leaves)),
+        )
     }
 
     /// A point and the viewport size, in the layout pixels providers see.

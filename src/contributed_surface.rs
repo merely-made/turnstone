@@ -129,6 +129,7 @@ pub struct ContributedSurfacePane {
     dom: DomHandle,
     session: Box<dyn RetainedSurfaceSession>,
     layout: RetainedLayout,
+    rendered_leaves: sprigging::RenderedLeaves,
     scroll: PaneScroll,
     stylesheet: String,
     viewport: (u32, u32, f32),

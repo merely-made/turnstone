@@ -230,6 +230,20 @@ impl RetainedLayout {
         h: u32,
         scroll: &mut PaneScroll,
     ) -> netrender::Scene {
+        self.scene_scrolled_with_leaves(dom, sheet, (w, h), scroll, None)
+    }
+
+    pub(crate) fn scene_scrolled_with_leaves(
+        &mut self,
+        dom: &mut ScriptedDom,
+        sheet: &str,
+        (w, h): (u32, u32),
+        scroll: &mut PaneScroll,
+        leaves: Option<(
+            &mut sprigging::LeafRegistry<u64>,
+            &mut sprigging::RenderedLeaves,
+        )>,
+    ) -> netrender::Scene {
         if let Some((layout, owner)) = self.inline_target() {
             let mut layout = layout.borrow_mut();
             let scale = layout.scale;
@@ -288,6 +302,25 @@ impl RetainedLayout {
             &self.element_scroll,
             self.viewport_scroll,
         );
+        if let Some((registry, cache)) = leaves {
+            let mut sizes = HashMap::new();
+            walk_dom(&scoped, scoped.document(), &mut |node| {
+                if let (Some(key), Some(fragment)) =
+                    (custom_leaf_key(&scoped, node), snapshot.fragments.get(node))
+                {
+                    sizes.insert(
+                        key,
+                        sprigging::Size {
+                            width: fragment.width,
+                            height: fragment.height,
+                        },
+                    );
+                }
+            });
+            cache.retain_keys(|key| sizes.contains_key(&key));
+            registry.render_into(|key| sizes.get(&key).copied(), cache);
+            plist.splice_host_leaf_slots(|key| cache.get(key).map(<[_]>::to_vec), |_| None);
+        }
         append_scrollbars(
             &mut plist,
             snapshot.content_extent,

@@ -99,7 +99,7 @@ mien = { git = "https://github.com/merely-made/gemot.git", branch = "main", opti
 transport = { package = "mere-transport", git = "https://github.com/merely-made/murm.git", branch = "main", optional = true }
 # The place worker's lane runtime: transport binding and JoinedSpace tasks
 # need a reactor. Scoped to the worker thread; the app and panes stay sync.
-tokio = { version = "1", features = ["rt-multi-thread", "sync", "time"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "sync", "time"] }
 gemot = { git = "https://github.com/merely-made/gemot.git", branch = "main", optional = true }
 # The knot:// release address grammar Turnstone and Knot share; no dependencies,
 # so it is core rather than behind `authoring`.
@@ -162,6 +162,8 @@ graphshell-client = { git = "https://github.com/merely-made/graphshell.git", bra
 graphshell-endpoint = { git = "https://github.com/merely-made/graphshell.git", branch = "main", features = ["local", "stdio"] }
 # The projection door (broker client, offer, provider) left graphshell-endpoint for Mere.
 graphshell-door = { git = "https://github.com/merely-made/graphshell.git", branch = "main", features = ["projection-door"] }
+mere-overmap = { workspace = true, features = ["view"] }
+mere-view.workspace = true
 ostiary = { version = ">=0.0.1", git = "https://github.com/merely-made/armillary.git", branch = "main", features = ["native"] }
 castellan-client = { version = ">=0.0.2", git = "https://github.com/merely-made/dramatis.git", branch = "main", features = ["client"] }
 dramatis = { git = "https://github.com/merely-made/dramatis.git", branch = "main" }
@@ -364,7 +366,6 @@ netfetcher = { git = "https://github.com/merely-made/genet.git", branch = "main"
 # The MCP adapter over a live mere route (engine split D82: its test moved from the resident).
 graphshell-mcp = { path = "crates/graphshell/graphshell-mcp" }
 mere-resident = { git = "https://github.com/merely-made/graphshell.git", branch = "main", default-features = false, features = ["test-fixtures"] }
-mere-overmap = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 
 # A parallel place suite outgrows the 1024 open files Linux allows by

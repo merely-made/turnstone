@@ -82,6 +82,10 @@ pub fn palette_actions() -> Vec<(String, Action)> {
         ("Ask saved sources", Action::OpenAnswers),
         ("New research note", Action::NewResearchNote),
         ("Open research note", Action::OpenResearchNote),
+        (
+            "Open resident graph",
+            Action::OpenResidentGraphPrompt,
+        ),
         #[cfg(feature = "sky")]
         (
             "Open Sky reference",

@@ -85,6 +85,13 @@ impl App {
             Action::OpenThemeWorkshop => vec![Effect::OpenThemeWorkshop],
             Action::OpenAlembicWorkshop => vec![Effect::OpenAlembicWorkshop],
             Action::OpenAddress(url) => self.open_address(url),
+            Action::OpenResidentGraphPrompt => {
+                let mut effects = self.open_omnibar(false);
+                effects.extend(self.update(Action::OmnibarInsert(
+                    crate::resident_graph::ADDRESS_PREFIX.into(),
+                )));
+                effects
+            },
             Action::RetainProducerSelection { choice, selection } => {
                 self.retain_producer_selection(choice, selection)
             },
