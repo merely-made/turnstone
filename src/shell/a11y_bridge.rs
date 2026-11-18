@@ -49,7 +49,7 @@ pub(super) enum Admission {
 }
 
 pub(super) type PublishedAdmission = uxtree::generation::Published<Admission>;
-pub(super) type AdmissionKey = (accesskit::TreeId, accesskit::NodeId);
+pub(super) type AdmissionKey = uxtree::envelope::TreeAddress;
 
 pub(super) struct QueuedAction {
     pub request: ActionRequest,
@@ -89,7 +89,8 @@ impl ActionQueueState {
                             })
                 },
                 (Admission::Contributed(before), Admission::Contributed(after)) => {
-                    before.route == after.route
+                    before.address == after.address
+                        && before.route == after.route
                         && before.rect == after.rect
                         && *compared_sources
                             .entry((Arc::as_ptr(&before.source), Arc::as_ptr(&after.source)))

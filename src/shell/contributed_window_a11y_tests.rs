@@ -320,3 +320,97 @@ fn contributed_window_action_unchanged_lens_focus_and_click_controls() {
         }
     }
 }
+
+#[test]
+fn contributed_action_refuses_the_same_local_id_in_a_different_tree() {
+    let mut f = fixture();
+    let space = SpaceRef::Lens(0);
+    let (_, queued) = publish(&f, space, A11yAction::Click);
+    let a11y_bridge::Admission::Contributed(published) = queued.admission.unwrap().admission else {
+        panic!("contributed admission");
+    };
+    let mut request = queued.request;
+    let tree = request.target_tree;
+    let address = uxtree::envelope::FederatedAddress::<()>::grafted(published.address);
+    assert_eq!(address.tree_address(), Some((tree, request.target_node)));
+
+    let plan = contributed_action_plan(&f.app, &f.contents, &f.windows, Some(space));
+    let spec = spec(&f);
+    request.target_tree = uxtree::tree_id_for_path("other/contributed/tree");
+    assert!(!dispatch_contributed_action(
+        &mut f.app,
+        &mut f.sessions,
+        &published,
+        &request,
+        &plan,
+        Some(&spec)
+    ));
+    request.target_tree = tree;
+    assert!(dispatch_contributed_action(
+        &mut f.app,
+        &mut f.sessions,
+        &published,
+        &request,
+        &plan,
+        Some(&spec)
+    ));
+}
+
+#[test]
+fn contributed_graft_resolves_each_published_node_by_tree_and_local_id() {
+    use accesskit_consumer::{NodeRef, Tree, TreeChangeHandler};
+
+    struct Ignore;
+    impl TreeChangeHandler for Ignore {
+        fn node_added(&mut self, _: &NodeRef<'_>) {}
+        fn node_updated(&mut self, _: &NodeRef<'_>, _: &NodeRef<'_>) {}
+        fn focus_moved(&mut self, _: Option<&NodeRef<'_>>, _: Option<&NodeRef<'_>>) {}
+        fn node_removed(&mut self, _: &NodeRef<'_>) {}
+    }
+
+    let f = fixture();
+    let plan = lens::lens_content_plan(&f.app, &f.contents, 0, 800, 600);
+    let pane_rects = [(f.pane, pane_rect(&plan, f.pane).unwrap())].into();
+    let projected = crate::contributed_a11y::project(&f.sessions, &pane_rects, None);
+    let (host, _) =
+        crate::a11y::project_lens_with_contributions(&f.app, 0, projected.trees).unwrap();
+    let host = host.to_tree_update(None);
+    let mut forest = crate::foreign_a11y::ForeignA11y::new();
+    let initial = forest
+        .initial_host_with_guests(host.clone(), &[], &projected.guests)
+        .unwrap();
+    let mut consumer = Tree::new(initial, true);
+    for update in forest
+        .frame_with_guests(host, &[], &projected.guests)
+        .unwrap()
+    {
+        consumer.update_and_process_changes(update, &mut Ignore);
+    }
+
+    assert_eq!(projected.guests.len(), 1);
+    let guest = &projected.guests[0];
+    assert!(!guest.nodes.is_empty());
+    for &(local, ref node) in &guest.nodes {
+        let address = uxtree::envelope::FederatedAddress::<()>::grafted((guest.tree_id, local));
+        let (tree, local) = address.tree_address().unwrap();
+        let resolved = consumer.state().node_by_tree_local_id(local, tree).unwrap();
+        assert_eq!(resolved.role(), node.role());
+    }
+
+    let (empty, _) =
+        crate::a11y::project_lens_with_contributions(&f.app, 0, Default::default()).unwrap();
+    for update in forest
+        .frame_with_guests(empty.to_tree_update(None), &[], &[])
+        .unwrap()
+    {
+        consumer.update_and_process_changes(update, &mut Ignore);
+    }
+    for &(local, _) in &guest.nodes {
+        assert!(
+            consumer
+                .state()
+                .node_by_tree_local_id(local, guest.tree_id)
+                .is_none()
+        );
+    }
+}

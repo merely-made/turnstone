@@ -8,6 +8,7 @@
 use accesskit::{ActionRequest, Node, NodeId, Rect, Role, Tree, TreeId, TreeUpdate};
 use std::collections::{BTreeMap, HashMap, HashSet};
 use uuid::Uuid;
+use uxtree::envelope::TreeAddress;
 use uxtree::graft::{ActionTarget, Composition, GraftTable, Grafts, graft_node};
 
 #[derive(Clone)]

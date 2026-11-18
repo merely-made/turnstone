@@ -13,8 +13,9 @@
 
 use std::collections::HashMap;
 
-use accesskit::{NodeId, Role, TreeId, TreeUpdate};
+use accesskit::{NodeId, Role, TreeUpdate};
 use genet_scripted_dom::NodeId as DomNodeId;
+use uxtree::envelope::TreeAddress;
 use uxtree::{UxTree, node_id_for_path};
 
 use crate::contributed_surface::ContributedSurfaceSessions;
@@ -51,6 +52,7 @@ pub(crate) fn apply_route(
 
 #[derive(Clone, Debug)]
 pub(crate) struct PublishedRoute {
+    pub address: TreeAddress,
     pub route: ContributedA11yRoute,
     pub rect: Rect,
     pub source: std::sync::Arc<TreeUpdate>,
@@ -58,7 +60,8 @@ pub(crate) struct PublishedRoute {
 
 impl PartialEq for PublishedRoute {
     fn eq(&self, other: &Self) -> bool {
-        self.route == other.route
+        self.address == other.address
+            && self.route == other.route
             && self.rect == other.rect
             && source_trees_equal(&self.source, &other.source)
     }
@@ -88,7 +91,7 @@ pub(crate) fn count_source_comparisons(f: impl FnOnce()) -> usize {
 pub(crate) struct ContributedA11yProjection {
     pub trees: HashMap<PaneId, UxTree>,
     pub guests: Vec<TreeUpdate>,
-    pub routes: HashMap<(TreeId, NodeId), PublishedRoute>,
+    pub routes: HashMap<TreeAddress, PublishedRoute>,
     pub focus: Option<NodeId>,
 }
 
@@ -125,9 +128,11 @@ pub(crate) fn project(
             focused_pane == Some(pane) && session.accessibility_focus().is_some(),
         );
         routes.extend(pane_routes.into_iter().map(|(id, route)| {
+            let address = (guest.tree_id, id);
             (
-                (guest.tree_id, id),
+                address,
                 PublishedRoute {
+                    address,
                     route,
                     rect,
                     source: source.clone(),
@@ -207,19 +212,20 @@ pub(crate) fn published_route_is_current(
     sessions: &ContributedSurfaceSessions,
     route: &PublishedRoute,
     current_rect: Option<Rect>,
-    target: NodeId,
+    target: TreeAddress,
     action: accesskit::Action,
 ) -> bool {
-    current_rect == Some(route.rect)
+    target == route.address
+        && current_rect == Some(route.rect)
         && sessions.get(route.route.pane).is_some_and(|session| {
             session.generation() == route.route.generation
                 && session
                     .accessibility_tree()
                     .is_some_and(|(source, actions)| {
                         source == *route.source
-                            && actions.get(&target) == Some(&route.route.node)
+                            && actions.get(&target.1) == Some(&route.route.node)
                             && source.nodes.iter().any(|(id, n)| {
-                                *id == target
+                                *id == target.1
                                     && !n.is_hidden()
                                     && !n.is_disabled()
                                     && n.supports_action(action)

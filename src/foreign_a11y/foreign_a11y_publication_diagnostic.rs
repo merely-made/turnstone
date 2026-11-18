@@ -47,21 +47,27 @@ impl ForeignA11y {
         })
     }
 
-    pub(crate) fn action_target(&self, request: &ActionRequest) -> Result<Uuid, String> {
-        let ActionTarget::Guest(surface) = self.owners.route(request) else {
+    pub(crate) fn resolve_guest(&self, address: TreeAddress) -> Result<(Uuid, &Node), String> {
+        let ActionTarget::Guest(surface) = self.owners.resolve(address) else {
             return Err("action names a host, unknown or retired foreign tree".into());
         };
         if !self.mounted.contains(surface) || !self.ready(*surface) {
             return Err("action names a hidden or incomplete foreign surface".into());
         }
+        let (tree, local) = address;
         let node = self.surfaces[surface]
             .trees
-            .get(&request.target_tree)
-            .and_then(|tree| tree.nodes.get(&request.target_node))
+            .get(&tree)
+            .and_then(|tree| tree.nodes.get(&local))
             .ok_or("action names an absent or retired foreign node")?;
+        Ok((*surface, node))
+    }
+
+    pub(crate) fn action_target(&self, request: &ActionRequest) -> Result<Uuid, String> {
+        let (surface, node) = self.resolve_guest((request.target_tree, request.target_node))?;
         if !node.supports_action(request.action) {
             return Err("foreign node does not advertise the requested action".into());
         }
-        Ok(*surface)
+        Ok(surface)
     }
 }

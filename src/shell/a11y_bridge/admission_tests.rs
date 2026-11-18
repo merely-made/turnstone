@@ -40,6 +40,7 @@ fn pane_admissions(pane: PaneId, source: TreeUpdate) -> HashMap<(TreeId, NodeId)
             (
                 (tree, NodeId(id)),
                 Admission::Contributed(PublishedRoute {
+                    address: (tree, NodeId(id)),
                     route: ContributedA11yRoute {
                         pane,
                         generation: 8,
