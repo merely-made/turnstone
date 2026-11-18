@@ -5,7 +5,7 @@
 
 use cambium::{
     DomHandle, GenetAppRunner, ResolvedSurfaceEvent, RetainedSurfaceSession, SurfaceEffect,
-    SurfaceViewport, el,
+    SurfaceViewport, TextInput, button, el,
 };
 use chirograph::PortableCardV1;
 use genet_scripted_dom::NodeId;
@@ -24,6 +24,7 @@ use sprigging::{ColorF, LeafRegistry};
 use crate::contributed_surface::{SurfaceAdmissionError, SurfaceProvider};
 use crate::panes::{PaneKindId, PaneSource, SerializedSource, SourceRef, SourceSchemaId};
 
+mod kept;
 mod worker;
 
 pub(crate) const ADDRESS_PREFIX: &str = "mere://resident/";
@@ -31,8 +32,10 @@ pub(crate) const PANE_KIND: &str = "turnstone.resident-graph";
 pub(crate) const LABEL: &str = "Resident graph";
 pub(crate) const SOURCE_SCHEMA: &str = "turnstone.resident-mere.v1";
 const GRAPH_LEAF: u64 = 0x6d65_7265;
+const TOOLBAR_HEIGHT: u32 = 32;
 const RECONNECT: &str = "reconnect";
 const CSS: &str = "
+.resident-graph-toolbar { height: 32px; }
 .resident-graph { display: flex; flex-direction: column; color: var(--tabard-color-text, rgb(220, 226, 238)); }
 .resident-graph .mere-view-bar { padding-inline: 8px; }
 .resident-graph button:not(.graph-canvas-swatch-node) { color: inherit; background: var(--tabard-color-surface, rgb(28, 34, 50)); border: 1px solid var(--tabard-color-text-dim, rgb(120, 130, 150)); border-radius: 4px; padding: 3px 6px; }
@@ -79,9 +82,10 @@ impl ResidentGraphProvider {
                 accepted_source: SurfaceSourceShape::One(SourceKindId::from(SOURCE_SCHEMA)),
             },
             stylesheet: format!(
-                "{} {} {CSS}",
+                "{} {} {CSS} {}",
                 cambium::GRAPH_CANVAS_SWATCH_CSS,
                 mere_view::MERE_VIEW_CSS,
+                kept::CSS,
             ),
             wake,
         }
@@ -138,6 +142,7 @@ impl SurfaceProvider for ResidentGraphProvider {
             record: None,
             requested: 0,
             completed: 0,
+            kept: kept::Panel::default(),
             size: (1, 1),
         };
         state.connect();
@@ -173,6 +178,7 @@ struct State {
     record: Option<PortableCardV1>,
     requested: u64,
     completed: u64,
+    kept: kept::Panel,
     size: (u32, u32),
 }
 
@@ -199,6 +205,7 @@ impl State {
 
     fn fail(&mut self, reason: String) {
         self.connection = None;
+        self.kept = kept::Panel::default();
         self.model.status = ViewStatus::Unavailable(StatusNote {
             message: reason,
             action: self
@@ -215,16 +222,40 @@ impl State {
     fn request(&mut self, request: MereViewRequest) {
         if matches!(&request, MereViewRequest::Host(key) if key == RECONNECT) {
             self.connect();
-        } else if self.requested != self.completed
-            || matches!(self.model.status, ViewStatus::Building(_))
+        } else {
+            self.send(worker::Request::Graph(request));
+        }
+    }
+
+    fn send(&mut self, request: worker::Request) -> bool {
+        if self.requested != self.completed || matches!(self.model.status, ViewStatus::Building(_))
         {
             self.model.notice = Some("Wait for the resident's current operation.".into());
-        } else if let Some(connection) = &self.connection {
-            if connection.requests.try_send(request).is_ok() {
-                self.requested += 1;
-                self.model.notice = None;
-            } else {
-                self.fail("The resident graph connection closed. Reconnect to continue.".into());
+            return false;
+        }
+        let Some(connection) = &self.connection else {
+            return false;
+        };
+        if connection.requests.try_send(request).is_err() {
+            self.fail("The resident graph connection closed. Reconnect to continue.".into());
+            return false;
+        }
+        self.requested += 1;
+        self.model.notice = None;
+        true
+    }
+
+    fn toggle_kept(&mut self) {
+        if self.kept.open {
+            self.kept = kept::Panel::default();
+        } else if self.send(worker::Request::Kept(kept::Request::Refresh)) {
+            self.kept.open = true;
+            if let Some(address) = self
+                .record
+                .as_ref()
+                .and_then(|card| card.values.iter().find(|field| field.label == "Address"))
+            {
+                self.kept.address = TextInput::new(&address.value);
             }
         }
     }
@@ -240,6 +271,12 @@ impl State {
                 }
                 self.focused = read.focused;
                 self.record = read.record;
+                if self.kept.open
+                    && self.completed != read.completed
+                    && let Some(reply) = read.kept
+                {
+                    self.kept.apply(reply);
+                }
                 self.completed = read.completed;
             },
         }
@@ -260,6 +297,23 @@ type GraphView = MereViewElement<State, ()>;
 type Runner = GenetAppRunner<State, fn(&State) -> GraphView, GraphView, ()>;
 
 fn view(state: &State) -> GraphView {
+    let toolbar = matches!(state.model.status, ViewStatus::Ready).then(|| {
+        el(
+            "nav",
+            button(
+                if state.kept.open {
+                    "Back to resident graph"
+                } else {
+                    "Kept pages"
+                },
+                |state: &mut State, _| state.toggle_kept(),
+            ),
+        )
+        .attr("class", "resident-graph-toolbar")
+    });
+    if state.kept.open {
+        return Box::new(el("div", (toolbar, kept::view(state))).attr("class", "resident-graph"));
+    }
     let graph = mere_view::mere_view(
         state.mere_view(),
         |state: &mut State, event| {
@@ -296,7 +350,7 @@ fn view(state: &State) -> GraphView {
     } else {
         Box::new(el::<_, State, ()>("div", ()).attr("style", "display:none"))
     };
-    Box::new(el::<_, State, ()>("div", (graph, details)).attr("class", "resident-graph"))
+    Box::new(el::<_, State, ()>("div", (toolbar, graph, details)).attr("class", "resident-graph"))
 }
 
 struct GraphSession {
@@ -367,7 +421,9 @@ impl RetainedSurfaceSession for GraphSession {
     fn sync_viewport(&mut self, viewport: SurfaceViewport) -> Vec<SurfaceEffect> {
         let size = (
             viewport.width.max(1.0) as u32,
-            (viewport.height as u32).saturating_sub(104).max(1),
+            (viewport.height as u32)
+                .saturating_sub(104 + TOOLBAR_HEIGHT)
+                .max(1),
         );
         let state = self.runner.state();
         let changed = state

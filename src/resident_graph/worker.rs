@@ -1,7 +1,7 @@
 // Copyright 2026 Mark Alan Boykin
 // SPDX-License-Identifier: MPL-2.0
 
-use std::time::Duration;
+use std::{sync::Arc, time::Duration};
 
 use chirograph::{
     CapabilityProfile, CarrierNotice, CarrierOutput, CarrierRequest, CarrierRequestBody,
@@ -11,16 +11,23 @@ use chirograph::{
 use graphshell_client::LineDriven;
 use graphshell_door::projection::AppBrokerClient;
 use mere_overmap::route_session::MereRouteSession;
-use mere_overmap::wire::MERE_NOTES;
+use mere_overmap::wire::{MERE_GRAPH, MERE_NOTES};
 use mere_view::{MereViewModel, MereViewRequest, ViewStatus};
 use ostiary::app_admission::{AppAdmissionError, AppId, AppRouteId};
 use ostiary::app_client::AppClientError;
 use tokio::sync::{mpsc, watch};
 
+use super::kept;
+
 const DEADLINE: Duration = Duration::from_secs(15);
 
+pub(super) enum Request {
+    Graph(MereViewRequest),
+    Kept(kept::Request),
+}
+
 pub(super) struct Connection {
-    pub requests: mpsc::Sender<MereViewRequest>,
+    pub requests: mpsc::Sender<Request>,
     pub updates: watch::Receiver<Update>,
 }
 
@@ -37,6 +44,7 @@ pub(super) struct Reading {
     pub focused: Option<String>,
     pub record: Option<PortableCardV1>,
     pub completed: u64,
+    pub kept: Option<Arc<kept::Reply>>,
 }
 
 impl Connection {
@@ -66,7 +74,7 @@ impl Connection {
 
 async fn run(
     route: &AppRouteId,
-    mut incoming: mpsc::Receiver<MereViewRequest>,
+    mut incoming: mpsc::Receiver<Request>,
     outgoing: &watch::Sender<Update>,
     wake: &armillary::Wake,
 ) -> Result<(), String> {
@@ -90,11 +98,18 @@ async fn run(
         let CarrierResponseBody::Opened(opened) = reply else {
             return Err("The resident did not open the graph route.".into());
         };
+        let graph = opened
+            .descriptor
+            .projections
+            .iter()
+            .map(|offer| &offer.request.session)
+            .find(|session| session.0 == MERE_GRAPH)
+            .cloned();
         let mut panel = MereRouteSession::from_descriptor(opened.descriptor, profile, application)?;
         settle(&mut client, &mut panel).await?;
-        Ok::<_, String>((client, panel))
+        Ok::<_, String>((client, panel, graph))
     };
-    let (mut client, mut panel) = tokio::select! {
+    let (mut client, mut panel, graph) = tokio::select! {
         _ = outgoing.closed() => return Ok(()),
         result = tokio::time::timeout(DEADLINE, opened) => {
             result.map_err(|_| "Opening the resident graph timed out.".to_owned())??
@@ -102,6 +117,7 @@ async fn run(
     };
 
     let mut completed = 0;
+    let mut kept: Option<Arc<kept::Reply>> = None;
     let mut notices = tokio::time::interval(Duration::from_millis(500));
     notices.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
     loop {
@@ -118,6 +134,7 @@ async fn run(
                 focused,
                 record,
                 completed,
+                kept: kept.clone(),
             })))
             .is_err()
         {
@@ -135,9 +152,20 @@ async fn run(
                         let _ = tokio::time::timeout(DEADLINE, client.close()).await;
                         return Ok(());
                     };
-                    if let Err(reason) = panel.request(request) {
-                        panel.show_notice(reason);
-                    }
+                    kept = match request {
+                        Request::Graph(request) => {
+                            if let Err(reason) = panel.request(request) {
+                                panel.show_notice(reason);
+                            }
+                            None
+                        },
+                        Request::Kept(request) => Some(Arc::new(tokio::select! {
+                            _ = outgoing.closed() => return Ok(()),
+                            result = tokio::time::timeout(DEADLINE, kept::run(&mut client, graph.as_ref(), request)) => {
+                                result.map_err(|_| "The kept-page request timed out.".to_owned())?
+                            }
+                        })),
+                    };
                     completed += 1;
                     break;
                 }

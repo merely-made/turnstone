@@ -51,3 +51,37 @@ from the uxtree P7 resolved lock. All four headed cases passed again, with
 six nonblank captures under `~/Code/testing/turnstone/receipts/2026-11-18_n1/p7`.
 The pinned Turnstone library suite passed 1,432 tests with nine ignored.
 The fixture daemon and helpers were the same binaries as in the first run.
+
+## 2026-11-18 N2 resident kept pages on T-PC
+
+The native Turnstone candidate used Graphshell `066ecd0` and the resident's
+sealed-wallet test fixture. The fixture served the real application broker on a
+private Unix socket and granted Turnstone a pair of fixture meres. The app
+ran with isolated profiles on the Wayland desktop. The captures, scenario
+logs, fixture source, driver and binary hashes are in
+`~/Code/testing/turnstone/receipts/2026-11-18_kept` on T-PC.
+
+- `final/capture` opened **Kept pages**, enabled keeping, captured a local
+  fixture URL, found it by body text and opened the result in the pane.
+  Returning from the reader preserved the search results. Searching for a
+  marker in a script element yielded zero matches.
+- `final/reopen` restarted Turnstone with the same profile and broker. It
+  found and opened the kept text again from the restored resident pane.
+- `final/other-mere` ran the same search under another admitted mere and
+  found zero matches. The loopback server recorded a single GET across
+  the three runs, for the explicit capture. Each run saved a nonblank
+  screenshot and returned `RESULT ok`.
+- The initial `first` run used Djinn without a configured retained-text
+  wallet. It showed the custody pause and recorded zero requests. That
+  run stopped at the positive capture assertion. The successful capture
+  receipt uses fixture wallet custody.
+
+The locked native Turnstone build and library tests passed (1,432 passed
+and nine ignored). The standalone viewer's five kept-page tests and ten
+resident retained-text tests passed. The resident tests include toggling
+keeping while preserving the owner's excluded origin and page-size limit.
+
+The resident's ten tests passed again with Graphshell's concurrent uxtree
+changes merged at `4af0249`. The N1 regression sweep in
+`~/Code/testing/turnstone/receipts/2026-11-18_n1/kp` passed all four native
+cases with the kept-pages toolbar present.

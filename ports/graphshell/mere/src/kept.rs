@@ -29,9 +29,10 @@ use chirograph::{
 use graphshell::goal_surface::{self, GoalSurface};
 use graphshell_host::goal_surface::door;
 use eidetic::kept_text::{
-    DEFAULT_KEPT_BYTES, FetchRecordV1, KEEP_PAGES_INTENT, KEEP_SETTING_INTENT, KeepPagesV1,
+    FetchRecordV1, KEEP_PAGES_INTENT, KEEP_SETTING_INTENT, KeepPagesV1,
     KeepSettingV1, KeptPage,
 };
+use fetch::capture_kept_page as capture;
 use graphshell_door::projection::AppBrokerClient;
 use mere_overmap::wire::MERE_GRAPH;
 use ostiary::app_admission::{AppId, AppRouteId};
@@ -48,8 +49,6 @@ const ASK: RetainedPagesLimits = RetainedPagesLimits {
     max_versions: 0,
     max_links: 0,
 };
-/// Most HTML one capture reads, before extraction.
-const MAX_HTML_BYTES: u64 = 1 << 20;
 
 pub(super) const CSS: &str = ".kept-panel{padding:8px;border-top:1px solid #6d7783;overflow:auto;height:560px}.kept-panel h2,.kept-panel h3,.kept-panel p{margin:3px;overflow-wrap:anywhere}.kept-panel label{display:flex;align-items:center;gap:8px;margin:4px}.kept-input{min-width:420px;min-height:28px;padding:4px;border:1px solid #6d7783;background:#22262c;white-space:pre;overflow:hidden}.kept-panel .goal-input{background:#22262c;border-color:#6d7783;color:#e8e6e1}.kept-panel .goal-cite{background:#1d2127;border-color:#4a525a}.kept-panel .goal-meta{color:#abb4bd}.kept-panel .goal-notice{color:#f0b35a}.kept-panel mark{background:#ffd54a;color:#16191d}.kept-state-paused{color:#f0b35a}";
 
@@ -66,61 +65,6 @@ pub(super) enum Command {
 pub(super) struct Reply {
     pub pages: Option<Result<RetainedPagesResponse, String>>,
     pub notice: Option<String>,
-}
-
-/// The bounded text of one page at `address`, fetched once because the person
-/// asked. Declared HTML only; script and style are not text; the text is cut
-/// at the per-page bound on a character boundary.
-pub(super) fn capture(address: &str) -> Result<(KeptPage, FetchRecordV1), String> {
-    let parsed = url::Url::parse(address).map_err(|_| "That is not a web address.".to_string())?;
-    if !matches!(parsed.scheme(), "http" | "https") {
-        return Err("Only http and https pages can be kept.".into());
-    }
-    let fetched_at_ms = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .map(|elapsed| elapsed.as_millis() as u64)
-        .unwrap_or_default();
-    let net = fetch::NetFetch::new(&fetch::Stores::in_memory())
-        .map_err(|error| format!("Could not start the page fetch: {error}"))?;
-    let body = <fetch::NetFetch as fetch::Fetch>::read_all(
-        &net,
-        address,
-        Some("text/html"),
-        MAX_HTML_BYTES,
-    )
-    .map_err(|error| format!("Could not read that page: {error}"))?;
-    let html = String::from_utf8_lossy(&body.bytes);
-    let (_, text) = fleece::page_text_from_html(body.facts.content_type.as_deref(), &html)
-        .ok_or("That address did not return an HTML page.")?;
-    let mut text = text.trim().to_owned();
-    if text.is_empty() {
-        return Err("The page had no text to keep.".into());
-    }
-    if text.len() > DEFAULT_KEPT_BYTES {
-        let mut end = DEFAULT_KEPT_BYTES;
-        while !text.is_char_boundary(end) {
-            end -= 1;
-        }
-        text.truncate(end);
-    }
-    let record = FetchRecordV1 {
-        requested: address.to_owned(),
-        final_url: body.facts.final_url.clone(),
-        fetched_at_ms,
-        // Only a successful answer yields a body; anything else was refused above.
-        status: 200,
-        content_type: body.facts.content_type.clone(),
-        html_bytes: body.bytes.len() as u64,
-        text_bytes: text.len() as u64,
-        text_version: eidetic::kept_text::text_version(&text),
-    };
-    let page = KeptPage {
-        url: body.facts.final_url,
-        text,
-        at_ms: 0,
-        private: false,
-    };
-    Ok((page, record))
 }
 
 /// The viewer's side of one attached mere route.
