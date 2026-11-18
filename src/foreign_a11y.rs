@@ -10,6 +10,7 @@ use std::collections::{BTreeMap, HashMap, HashSet};
 use uuid::Uuid;
 use uxtree::envelope::TreeAddress;
 use uxtree::graft::{ActionTarget, Composition, GraftTable, Grafts, graft_node};
+use uxtree::lint::ADVERTISED_ACTIONS;
 
 #[derive(Clone)]
 struct RetainedTree {
@@ -49,33 +50,6 @@ struct PublishedSurface {
     trees: BTreeMap<TreeId, TreeUpdate>,
     ordered_updates: Vec<TreeUpdate>,
 }
-
-// AccessKit 0.24's complete public action enum, without requiring an optional
-// enum-conversion feature or assuming Click/Focus are the only possible masks.
-const ADVERTISED_ACTIONS: &[accesskit::Action] = &[
-    accesskit::Action::Click,
-    accesskit::Action::Focus,
-    accesskit::Action::Blur,
-    accesskit::Action::Collapse,
-    accesskit::Action::Expand,
-    accesskit::Action::CustomAction,
-    accesskit::Action::Decrement,
-    accesskit::Action::Increment,
-    accesskit::Action::HideTooltip,
-    accesskit::Action::ShowTooltip,
-    accesskit::Action::ReplaceSelectedText,
-    accesskit::Action::ScrollDown,
-    accesskit::Action::ScrollLeft,
-    accesskit::Action::ScrollRight,
-    accesskit::Action::ScrollUp,
-    accesskit::Action::ScrollIntoView,
-    accesskit::Action::ScrollToPoint,
-    accesskit::Action::SetScrollOffset,
-    accesskit::Action::SetTextSelection,
-    accesskit::Action::SetSequentialFocusNavigationStartingPoint,
-    accesskit::Action::SetValue,
-    accesskit::Action::ShowContextMenu,
-];
 
 #[cfg(test)]
 #[path = "foreign_a11y/tests.rs"]

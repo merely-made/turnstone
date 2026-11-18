@@ -277,7 +277,7 @@ genet-presenter = { git = "https://github.com/merely-made/genet.git", branch = "
 # chrome migrates onto this over time; panes that need a grid or a paint leaf
 # adopt it first.
 cambium = { version = "0.6.1", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
-registry = { package = "mere-registry", git = "https://github.com/merely-made/graphshell.git", branch = "main", default-features = false, features = ["diagnostics"] }
+registry = { package = "mere-registry", git = "https://github.com/merely-made/graphshell.git", branch = "main", default-features = false, features = ["diagnostics", "ux-lint"] }
 cambium-winit = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 sprigging = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 # The application half of the former `genet-host-api`: the settings projection

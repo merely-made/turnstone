@@ -22,6 +22,9 @@ impl taproot::Driveable for Shell {
     /// parser and run it against the Shell via `run_scenario_step`. An unknown
     /// verb fails loudly (parse returns Err), never a silent skip.
     fn app_step(&mut self, line: &str) -> Result<(), String> {
+        if let Some(result) = a11y_lint::step(line, || self.lint_primary_a11y()) {
+            return result;
+        }
         if let Some(args) = line.strip_prefix("inline-a11y-window ") {
             let (slot, action, selector) = crate::frame_a11y::fixture_body_request(args)?;
             self.push_a11y_tree();

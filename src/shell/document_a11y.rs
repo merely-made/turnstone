@@ -181,6 +181,18 @@ fn guest_id(
     ))
 }
 
+pub(super) fn request_action(action: Action) -> Option<DocumentA11yAction> {
+    Some(match action {
+        Action::Click => DocumentA11yAction::Click,
+        Action::Focus => DocumentA11yAction::Focus,
+        Action::SetValue => DocumentA11yAction::SetValue,
+        Action::ScrollIntoView => DocumentA11yAction::ScrollIntoView,
+        Action::Increment => DocumentA11yAction::Increment,
+        Action::Decrement => DocumentA11yAction::Decrement,
+        _ => return None,
+    })
+}
+
 impl super::Shell {
     pub(super) fn project_document_accessibility(
         &mut self,
@@ -295,14 +307,8 @@ impl super::Shell {
         route: &PoolDocumentRoute,
         request: &accesskit::ActionRequest,
     ) -> bool {
-        let action = match request.action {
-            Action::Click => DocumentA11yAction::Click,
-            Action::Focus => DocumentA11yAction::Focus,
-            Action::SetValue => DocumentA11yAction::SetValue,
-            Action::ScrollIntoView => DocumentA11yAction::ScrollIntoView,
-            Action::Increment => DocumentA11yAction::Increment,
-            Action::Decrement => DocumentA11yAction::Decrement,
-            _ => return false,
+        let Some(action) = request_action(request.action) else {
+            return false;
         };
         if action == DocumentA11yAction::Click
             && (self.pointer_capture.is_some() || self.surface_pointer_buttons.0 != 0)

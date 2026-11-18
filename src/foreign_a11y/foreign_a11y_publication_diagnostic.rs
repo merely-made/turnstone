@@ -4,6 +4,25 @@
 use super::*;
 
 impl ForeignA11y {
+    /// The full retained snapshots that a candidate would graft. This read
+    /// leaves the native publication cursor and mounted owners alone.
+    pub(crate) fn snapshots_for_lint(&self, visible: &[Uuid]) -> Vec<TreeUpdate> {
+        let mut snapshots = Vec::new();
+        for owner in visible {
+            let Some(forest) = self.surfaces.get(owner).filter(|forest| forest.ready()) else {
+                continue;
+            };
+            let mut trees: Vec<_> = forest.declared.iter().copied().collect();
+            trees.sort_unstable();
+            snapshots.extend(
+                trees
+                    .into_iter()
+                    .map(|tree| forest.trees[&tree].snapshot(tree)),
+            );
+        }
+        snapshots
+    }
+
     /// Persist identities and topology by default; page text needs an explicit
     /// public-fixture opt-in. Password nodes and their descendants stay redacted.
     pub(crate) fn publication_diagnostic(&self, public_fixture: bool) -> serde_json::Value {
