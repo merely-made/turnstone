@@ -425,6 +425,15 @@ impl App {
                 address,
             } => self.research_note_created(generation, address),
             Action::OpenResearchNote => self.open_research_note(),
+            Action::SummonContributedPane { kind, source }
+                if crate::panes::pane_definition(kind.as_str()).is_some_and(|definition| {
+                    definition.renderer == crate::panes::PaneRenderer::Contributed
+                        && definition.multiplicity
+                            == crate::panes::PaneMultiplicity::PerSpaceAndSource
+                }) =>
+            {
+                self.open_contributed_pane(kind, source)
+            },
             Action::SummonContributedPane { kind, source } => {
                 self.summon_contributed_pane(kind, source)
             },

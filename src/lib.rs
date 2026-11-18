@@ -115,6 +115,7 @@ pub mod redshank_episode_surface;
 pub mod redshank_host;
 pub mod relationship_navigation;
 pub mod remote_projection;
+mod personae_surface;
 mod resident_graph;
 pub mod research;
 pub mod research_compare;

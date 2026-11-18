@@ -11,6 +11,9 @@ use crate::panes::{GraphId, PaneContent, PaneId, PaneKindId, PaneSource, PaneSpe
 
 use super::App;
 
+#[path = "contributed_pane_arms/open_contributed_pane.rs"]
+mod open_contributed_pane;
+
 impl App {
     pub(super) fn summon_contributed_pane(
         &mut self,
