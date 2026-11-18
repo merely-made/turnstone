@@ -265,6 +265,20 @@ impl Shell {
                 pane.sync(&self.app, pw, ph);
                 pane.scene(rw, rh, scale)
             },
+            Some(PaneContent::Registered(kind))
+                if kind.as_str() == crate::panes::kind::RESOURCE_NEIGHBORHOOD =>
+            {
+                let pane = self.renderers.gloss.entry(pane_id).or_insert_with(|| {
+                    crate::swatch_pane::SwatchPane::new_in(
+                        mount(),
+                        crate::swatch_pane::RESOURCE_NEIGHBORHOOD,
+                    )
+                });
+                pane.sync_neighborhood(
+                    &self.app, pane_id, self.neighborhood_passages.get(&pane_id), pw, ph,
+                );
+                pane.scene(rw, rh, scale)
+            },
             Some(PaneContent::Inspector) => {
                 let admission = self
                     .renderers

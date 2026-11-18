@@ -36,6 +36,8 @@ impl SwatchPane {
             viewport_h: 0.0,
             sections: Vec::new(),
             swatch_h: 0.0,
+            neighborhood: (preset.id == RESOURCE_NEIGHBORHOOD.id)
+                .then(neighborhood::Selection::default),
         };
         let runner = SwatchRunner::new_at(
             dom.clone(),
@@ -54,6 +56,7 @@ impl SwatchPane {
             registry: LeafRegistry::new(),
             rendered: RenderedLeaves::new(),
             last_hover: None,
+            neighborhood_sources: neighborhood::Sources::default(),
             layout: crate::ui::RetainedLayout::new_at(
                 mount.as_ref().map(cambium::RetainedMount::node),
             ),
@@ -129,6 +132,32 @@ impl SwatchPane {
     /// project it into the swatch, re-register the paint leaf.
     pub fn sync(&mut self, app: &App, pane_w: f32, pane_h: f32) {
         let model = (self.preset.gather)(app);
+        self.sync_model(app, pane_w, pane_h, model);
+    }
+
+    pub(crate) fn sync_neighborhood(
+        &mut self,
+        app: &App,
+        pane: crate::panes::PaneId,
+        passage: Option<&Passage>,
+        pane_w: f32,
+        pane_h: f32,
+    ) {
+        let mut model = SwatchModel::default();
+        let sources = &mut self.neighborhood_sources;
+        self.runner.update(|state| {
+            if let Some(selection) = &mut state.neighborhood {
+                model = sources.sync(app, pane, passage, selection);
+            }
+        });
+        self.sync_model(app, pane_w, pane_h, model);
+    }
+
+    pub(crate) fn is_resource_neighborhood(&self) -> bool {
+        self.preset.id == RESOURCE_NEIGHBORHOOD.id
+    }
+
+    fn sync_model(&mut self, app: &App, pane_w: f32, pane_h: f32, model: SwatchModel) {
         let mut activate_of = HashMap::new();
         let nodes: Vec<GraphCanvasNode<Uuid, NodeState>> = model
             .nodes
@@ -155,14 +184,20 @@ impl SwatchPane {
             .relations
             .iter()
             .map(|relation| cambium::GraphCanvasRelation {
-                id: format!("{}:{}:{}", relation.kind, relation.from, relation.to),
+                id: relation.id(),
                 from: relation.from,
                 to: relation.to,
                 kind: relation.kind.to_string(),
                 label: relation.label.clone(),
                 route: Vec::new(),
                 visible: true,
-                emphasized: false,
+                emphasized: self
+                    .runner
+                    .state()
+                    .neighborhood
+                    .as_ref()
+                    .and_then(|selection| selection.link.as_deref())
+                    .is_some_and(|id| id == relation.id()),
                 link_key: None,
                 marks: Default::default(),
                 strength: 1.0,
@@ -171,11 +206,37 @@ impl SwatchPane {
 
         // Composed sections shrink the swatch to the top fraction; without
         // them it fills the pane (the Overmap's shape, unchanged).
-        let sections: Vec<(&'static str, &'static str, Vec<crate::sections::SectionRow>)> = self
-            .sections
-            .iter()
-            .map(|p| (p.id, p.title, (p.gather)(app)))
-            .collect();
+        let mut sections: Vec<(&'static str, &'static str, Vec<crate::sections::SectionRow>)> =
+            self.sections
+                .iter()
+                .map(|p| (p.id, p.title, (p.gather)(app)))
+                .collect();
+        if let Some(selection) = &self.runner.state().neighborhood {
+            use crate::sections::{SectionActivate, SectionRow};
+            let row = |text: String| SectionRow {
+                id: None,
+                text,
+                activate: None,
+            };
+            let mut rows = vec![row(selection.status.clone())];
+            if let Some(address) = selection.focus.as_ref()
+                && crate::browse::is_fetchable(address)
+            {
+                rows.push(SectionRow {
+                    id: None,
+                    text: "Open focused address".into(),
+                    activate: Some(SectionActivate::Open(address.clone())),
+                });
+            }
+            if let Some(evidence) = selection
+                .link
+                .as_ref()
+                .and_then(|id| selection.details.get(id))
+            {
+                rows.extend(evidence.iter().cloned().map(row));
+            }
+            sections.push(("resource-neighborhood", "Link inspector", rows));
+        }
         let swatch_h = if sections.is_empty() {
             pane_h
         } else {

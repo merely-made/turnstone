@@ -25,6 +25,9 @@ pub(in super::super) fn dispatch_primary_chrome_press(
         crate::chrome_view::ChromeIntent::Tool(kind) => {
             Action::ToggleToolPane(crate::panes::PaneKindId::new(kind))
         },
+        crate::chrome_view::ChromeIntent::ResourceNeighborhood => Action::SummonPane(
+            crate::panes::PaneKindId::new(crate::panes::kind::RESOURCE_NEIGHBORHOOD),
+        ),
         crate::chrome_view::ChromeIntent::ReadMember(member) => Action::ReadGraphMember(member),
         crate::chrome_view::ChromeIntent::NavigateRelationship(target) => {
             Action::NavigateRelationship(target)

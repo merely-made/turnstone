@@ -132,8 +132,8 @@ impl Shell {
                     }
                 }
             },
-            PaneContent::Gloss(_) | PaneContent::Overmap(_) => {
-                let panes = if matches!(content, PaneContent::Gloss(_)) {
+            content if content.uses_gloss_renderer() || matches!(content, PaneContent::Overmap(_)) => {
+                let panes = if content.uses_gloss_renderer() {
                     &mut self.renderers.gloss
                 } else {
                     &mut self.renderers.overmap

@@ -69,7 +69,7 @@ impl Shell {
                             guards.push(("workbench", rect, pane.dom_ref()));
                         }
                     },
-                    Some(PaneContent::Gloss(_)) => {
+                    Some(content) if content.uses_gloss_renderer() => {
                         if let Some(pane) = self.renderers.gloss.get(&id) {
                             guards.push(("gloss", rect, pane.dom_ref()));
                         }

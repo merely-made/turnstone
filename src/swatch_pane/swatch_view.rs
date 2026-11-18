@@ -11,13 +11,32 @@ pub(super) fn swatch_view(state: &SwatchState) -> SwatchView {
         &state.swatch,
         |state: &mut SwatchState, event: GraphCanvasEvent<Uuid>| match event {
             GraphCanvasEvent::Activate(id) => {
+                if let Some(selection) = &mut state.neighborhood
+                    && let Some(address) = state
+                        .swatch
+                        .graph
+                        .nodes
+                        .iter()
+                        .find(|node| node.id == id)
+                        .and_then(|node| node.key.clone())
+                {
+                    selection.focus = Some(address);
+                    selection.link = None;
+                    return;
+                }
                 if let Some(activate) = state.activate_of.get(&id) {
                     state.pending.push(SwatchIntent::Activate(activate.clone()));
                 }
             },
+            GraphCanvasEvent::RelationActivate(id) => {
+                if let Some(selection) = &mut state.neighborhood
+                    && selection.details.contains_key(&id)
+                {
+                    selection.link = Some(id);
+                }
+            },
             GraphCanvasEvent::Expand => state.pending.push(SwatchIntent::Expand),
             GraphCanvasEvent::Drag(_)
-            | GraphCanvasEvent::RelationActivate(_)
             | GraphCanvasEvent::Pan { .. }
             | GraphCanvasEvent::Zoom { .. } => {},
         },

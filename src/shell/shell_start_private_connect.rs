@@ -346,6 +346,10 @@ impl Shell {
             .command(crate::trail_memory::TrailCommand::SetCustody(None));
         drop(self.alembic_workshop.take());
         let effects = self.app.retire_private_custody();
+        self.neighborhood_passages.clear();
+        self.renderers
+            .gloss
+            .retain(|_, pane| !pane.is_resource_neighborhood());
         let directory = crate::trail_memory::memory_dir(&self.app.session_dir());
         self.trail_handle
             .command(crate::trail_memory::TrailCommand::Reopen {

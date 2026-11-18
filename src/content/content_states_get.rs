@@ -295,6 +295,10 @@ impl ContentStates {
         self.loads.get(&node).and_then(|load| load.fetched(url))
     }
 
+    pub(crate) fn source_capture_members(&self) -> impl Iterator<Item = Uuid> + '_ {
+        self.source_admissions.keys().copied()
+    }
+
     /// A source-capture candidate is available only for the exact current
     /// node/address pair. Incidental recall text never enters this seam.
     pub fn source_capture_candidate(&self, node: Uuid, url: &str) -> Option<&FetchedDocument> {
