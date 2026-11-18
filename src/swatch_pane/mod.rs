@@ -15,10 +15,12 @@
 //! preset: the swatch is the preset, the sections are per-pane config.
 
 mod inspection;
+mod neighborhood;
 mod presets;
 use inspection::project_inspection;
 use presets::state_color;
 pub use presets::{GLOSS_MINIMAP, OVERMAP_LINEAGE, ProjectionPreset};
+pub(crate) use neighborhood::{Passage, RESOURCE_NEIGHBORHOOD};
 
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -105,6 +107,12 @@ pub struct SwatchRelation {
     pub label: String,
 }
 
+impl SwatchRelation {
+    fn id(&self) -> String {
+        format!("{}:{}:{}", self.kind, self.from, self.to)
+    }
+}
+
 /// The line each kinded link is painted with: a fork solid, a pick dashed,
 /// containment dotted.
 const RELATION_LINES: [(&str, sprigging::RelationLine); 3] = [
@@ -126,6 +134,7 @@ struct SwatchState {
     /// The swatch area's height (px): the whole pane when there are no
     /// sections, the top fraction when there are. The sections stack below it.
     swatch_h: f32,
+    neighborhood: Option<neighborhood::Selection>,
 }
 
 type SwatchView = Box<dyn AnyView<SwatchState, (), GenetCtx, GenetElement>>;
@@ -153,6 +162,7 @@ pub struct SwatchPane {
     layout: crate::ui::RetainedLayout,
     // Drop the runner and its widget resources before final mount custody.
     mount: Option<cambium::RetainedMount>,
+    neighborhood_sources: neighborhood::Sources,
 }
 
 #[cfg(test)]

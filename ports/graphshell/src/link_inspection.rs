@@ -4,7 +4,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 
-//! Read-only expansion of a displayed access pair into held source records.
+//! Read-only expansion of a displayed pair into held or observed source records.
 //! Targets use access UUIDs or statement handles, never local edge indexes.
 //! Rule-derived display marks need their own owner adapter; these are held facts.
 use std::collections::BTreeSet;
@@ -21,6 +21,11 @@ use serde_json::json;
 use uuid::Uuid;
 
 use crate::access_inspection::{AccessSummary, access_summary};
+
+mod observations;
+pub use observations::{
+    LinkObservation, ObservationLocator, ObservationSource, ObservedLinkInspection, OccurrenceText,
+};
 
 /// An undirected displayed bundle. Its records retain their own direction.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]

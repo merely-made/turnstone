@@ -46,6 +46,7 @@ name = "moot_resources_reopen"
 required-features = ["moot-resources"]
 
 [features]
+link-inspection = ["dep:cambium", "dep:cartography", "dep:kernel", "dep:serde", "dep:uuid"]
 alembic-workshop = ["web", "dep:athanor", "athanor/workshop-destination", "athanor/workshop-worker", "athanor/workshop-sealed", "athanor/workshop-native", "muniment/directory", "dep:pollster", "dep:cambium-desktop", "dep:servitor", "dep:blake3"]
 # Explicit synthetic/private receiving mode; normal public workshop startup does
 # not connect to custody or automatically admit a real user's retained sources.
@@ -168,6 +169,7 @@ webrtc-join = [
 # (physics catalog plan, P5c; the canvas's `gpu`, ruled 2026-10-02).
 canvas-gpu = ["web", "cartography/gpu", "graphshell-host/board-gpu"]
 web = [
+    "link-inspection",
     # The remote board the browser pages draw (stack lift plan, P10).
     "graphshell-host/board",
     # The mere endpoint closure (engine split D68).

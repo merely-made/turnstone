@@ -85,3 +85,12 @@ The resident's ten tests passed again with Graphshell's concurrent uxtree
 changes merged at `4af0249`. The N1 regression sweep in
 `~/Code/testing/turnstone/receipts/2026-11-18_n1/kp` passed all four native
 cases with the kept-pages toolbar present.
+
+Turnstone's merge with the resource-neighborhood work at `0f17e4db` kept the
+qualified Graphshell dependency at `066ecd0`. Its native build and all
+three headed kept-page scenarios passed again under `merge/`. The merged
+library suite passed 1,433 tests with nine ignored. The loopback
+server again recorded only the explicit capture. The merged reader capture
+shows the body in the pane at 1024 × 600. Generated fixture stores and the
+temporary broker executable were removed. The retained receipt fits within
+the workspace's 100 MB cap.

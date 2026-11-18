@@ -373,6 +373,7 @@ impl Shell {
             reader_recovery: Default::default(),
             pending_clip_reads: HashMap::new(),
             ready_clip_reads: HashMap::new(),
+            neighborhood_passages: HashMap::new(),
             place_handle,
             place_settings,
             place_wake,

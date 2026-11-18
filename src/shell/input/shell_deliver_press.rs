@@ -200,7 +200,7 @@ impl Shell {
                                     }
                                 }
                             },
-                            Some(PaneContent::Gloss(_)) => {
+                            Some(content) if content.uses_gloss_renderer() => {
                                 // Same hit-test round trip; the outcome arrives
                                 // as drained intents (the swatch mutates state
                                 // rather than bubbling), lowered here.

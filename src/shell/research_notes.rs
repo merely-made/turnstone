@@ -8,6 +8,20 @@ use crate::app::research_note_arms::NoteChoice;
 use crate::knot_authoring::{KnotClipHandle, KnotDocumentSession};
 use crate::panes::{PaneContext, PaneId};
 
+impl Shell {
+    pub(super) fn neighborhood_selection(&self) -> Option<crate::swatch_pane::Passage> {
+        let (member, url) = self.app.browser_command_target()?;
+        let (token, source) = self.app.content.source_capture_admission(member, &url)?;
+        let session = self.content_sessions.session(&member)?;
+        if session.selected_text()?.trim().is_empty() {
+            return None;
+        }
+        let clip = session.clip()?;
+        let document = self.app.content.fetched(member, &url)?;
+        crate::swatch_pane::Passage::from_clip(member, document, source, token, clip)
+    }
+}
+
 #[derive(Clone)]
 pub(super) struct ClipOffer {
     id: uuid::Uuid,

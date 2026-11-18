@@ -20,6 +20,7 @@ pub mod kind {
     pub const WORKBENCH: &str = "turnstone.workbench";
     pub const TILE: &str = "turnstone.tile";
     pub const GLOSS: &str = "turnstone.gloss";
+    pub const RESOURCE_NEIGHBORHOOD: &str = "turnstone.resource-neighborhood";
     pub const ROSTER: &str = "turnstone.roster";
     pub const INSPECTOR: &str = "turnstone.inspector";
     pub const TRAIL: &str = "turnstone.trail";
@@ -303,6 +304,21 @@ pub static BUILTIN_PANES: &[PaneDefinition] = &[
         Some(|| PaneContent::Gloss(PaneComposition {
             sections: vec!["downloads".into()]
         }))
+    ),
+    pane!(
+        kind::RESOURCE_NEIGHBORHOOD,
+        "Resource neighborhood",
+        PaneSourceShape::contextual(&[FixedSourceKind::Graph], GRAPH_CONTEXT),
+        PaneMultiplicity::PerSpaceAndContext,
+        capabilities(false, false, NONE),
+        "turnstone.resource-neighborhood.config",
+        "turnstone.resource-neighborhood.view",
+        PaneRenderer::Gloss,
+        Some(PanePaletteEntry {
+            order: 31,
+            label: "Explore resource neighborhood"
+        }),
+        Some(|| PaneContent::Registered(PaneKindId::new(kind::RESOURCE_NEIGHBORHOOD)))
     ),
     pane!(
         kind::ROSTER,

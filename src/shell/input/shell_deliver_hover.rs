@@ -36,7 +36,7 @@ impl Shell {
                     == crate::contributed_surface::SurfaceRequest::Redraw;
             } else {
                 redraw |= match self.pane_content(prev) {
-                    Some(PaneContent::Gloss(_)) => self
+                    Some(content) if content.uses_gloss_renderer() => self
                         .renderers
                         .gloss
                         .get_mut(&prev)
@@ -71,7 +71,7 @@ impl Shell {
                     ) == crate::contributed_surface::SurfaceRequest::Redraw;
                 } else {
                     redraw |= match self.pane_content(id) {
-                        Some(PaneContent::Gloss(_)) => self
+                        Some(content) if content.uses_gloss_renderer() => self
                             .renderers
                             .gloss
                             .get_mut(&id)

@@ -64,6 +64,7 @@ pub enum ChromeIntent {
     Address,
     WorkspaceMap(bool),
     Tool(&'static str),
+    ResourceNeighborhood,
     ReadMember(uuid::Uuid),
     NavigateRelationship(crate::relationship_navigation::RelationshipTarget),
     RevealRelationship(crate::relationship_navigation::RelationshipTarget),

@@ -162,6 +162,13 @@ impl Shell {
         action: Action,
         invocation: Option<cambium::Invocation>,
     ) -> Option<cambium::Outcome> {
+        let opens_neighborhood = matches!(&action, Action::SummonPane(kind)
+            if kind.as_str() == crate::panes::kind::RESOURCE_NEIGHBORHOOD);
+        let passage = if opens_neighborhood {
+            self.neighborhood_selection()
+        } else {
+            None
+        };
         let retention_request =
             if let Action::RetainProducerSelection { choice, selection } = &action {
                 let request = uuid::Uuid::new_v4();
@@ -187,6 +194,17 @@ impl Shell {
             Some(invocation) => self.app.invoke_command(&invocation),
             None => (self.app.update(action), None),
         };
+        if opens_neighborhood
+            && let Some(pane) = self.app.active_pane
+            && self.pane_content(pane).is_some_and(|content| {
+                content.kind_id().as_str() == crate::panes::kind::RESOURCE_NEIGHBORHOOD
+            })
+        {
+            self.neighborhood_passages.remove(&pane);
+            if let Some(passage) = passage {
+                self.neighborhood_passages.insert(pane, passage);
+            }
+        }
         if let Some((request, choice, selection)) = retention_request {
             let dispatched = effects.iter().any(|effect| matches!(effect,
                 Effect::RetainProducerSelection { choice: c, selection: s } if c == &choice && s == &selection));
@@ -343,6 +361,7 @@ impl Shell {
             self.cancel_content_pointer();
         }
         self.renderers.evict(pane);
+        self.neighborhood_passages.remove(&pane);
         let lens_slots = self.app.lenses.len();
         self.content_sessions.retain_appearances(|node, id| {
             !crate::surface::appearance::reader_appearance_belongs_to_pane(

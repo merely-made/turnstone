@@ -142,6 +142,10 @@ pub(super) fn append_navigation_menu(
                     "Reveal this document in Map",
                     state.focused_node.map(ChromeIntent::RevealMember),
                 ));
+                rows.push(browser_button(
+                    "Explore resource neighborhood",
+                    Some(ChromeIntent::ResourceNeighborhood),
+                ));
                 rows.extend(cambium::shell_paged_list(
                     incipit::navigation::RELATIONSHIPS_NOUN,
                     incipit::navigation::NO_RELATIONSHIPS,

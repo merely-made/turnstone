@@ -29,7 +29,7 @@ pub mod query_views;
 #[cfg(feature = "retained-content")]
 pub mod retained_content;
 
-#[cfg(feature = "web")]
+#[cfg(feature = "link-inspection")]
 pub mod access_inspection;
 #[cfg(feature = "web")]
 pub mod app;
@@ -70,7 +70,7 @@ pub mod host_dataset_view;
 pub mod host_history_view;
 #[cfg(feature = "web")]
 pub mod host_presenter;
-#[cfg(feature = "web")]
+#[cfg(feature = "link-inspection")]
 pub mod link_inspection;
 #[cfg(feature = "web")]
 pub mod local_edit;

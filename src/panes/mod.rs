@@ -203,6 +203,9 @@ impl PaneContent {
             Self::Alembic => "Alembic",
             Self::Overmap(_) => "Overmap",
             Self::Tile(_) => "Document",
+            Self::Registered(kind) if kind.as_str() == kind::RESOURCE_NEIGHBORHOOD => {
+                "Resource neighborhood"
+            },
             Self::Registered(kind) => kind.as_str(),
         }
     }
@@ -229,6 +232,15 @@ impl PaneContent {
         match self {
             PaneContent::Gloss(cfg) | PaneContent::Overmap(cfg) => Some(cfg),
             _ => None,
+        }
+    }
+
+    pub(crate) fn uses_gloss_renderer(&self) -> bool {
+        match self {
+            Self::Gloss(_) => true,
+            Self::Registered(id) => pane_definition(id.as_str())
+                .is_some_and(|definition| definition.renderer == PaneRenderer::Gloss),
+            _ => false,
         }
     }
 
