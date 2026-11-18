@@ -925,6 +925,10 @@ pub(in crate::web_tree) fn editor(page: &TreePage) -> Option<Child> {
             .as_ref()
             .map_or(&compiled.scene, ProjectionDynamics::scene);
         let bounds = scene.bounds;
+        let subdivision = matches!(
+            compiled.score.arrangement,
+            sceno::Arrangement::Mosaic(_) | sceno::Arrangement::Partition(_)
+        );
         let width = (page.size.0 as f32 - 420.0).max(280.0);
         let scale = ((width - 24.0) / bounds.size.w.max(1.0)).min(1.0);
         for (index, item) in scene.items.iter().enumerate() {
@@ -946,22 +950,46 @@ pub(in crate::web_tree) fn editor(page: &TreePage) -> Option<Child> {
             let selected = p.selected.as_ref() == Some(occurrence);
             for (view, output) in [("spatial", &mut spatial), ("list", &mut list)] {
                 let id = occurrence.clone();
-                let mut control = button(
-                    format!("{label} · {details}"),
-                    move |page: &mut TreePage, _| {
-                        if let Some(product) = &mut page.product {
-                            product.projection.selected = Some(id.clone());
-                            product.projection.refresh();
-                        }
-                    },
-                )
+                let assigned = view == "spatial" && subdivision;
+                let assigned_card = assigned && item.representation == sceno::Representation::Card;
+                let caption = if assigned_card {
+                    format!("{label}\n{details}")
+                } else if assigned {
+                    label.clone()
+                } else {
+                    format!("{label} · {details}")
+                };
+                let mut control = button(caption, move |page: &mut TreePage, _| {
+                    if let Some(product) = &mut page.product {
+                        product.projection.selected = Some(id.clone());
+                        product.projection.refresh();
+                    }
+                })
                 .attr("aria-label", format!("{view} {occurrence}: {label}"))
                 .attr("aria-pressed", selected.to_string())
                 .attr("data-projection-view", view)
                 .attr("data-projection-occurrence", occurrence.clone());
                 if view == "spatial" {
                     if let Some(footprint) = item.footprint.bounds() {
-                        control = control.attr("style", format!("position:absolute;left:{}px;top:{}px;width:{}px;height:{}px;overflow:hidden;", 12.0+(item.transform.translate.x+footprint.origin.x-bounds.origin.x)*scale,12.0+(item.transform.translate.y+footprint.origin.y-bounds.origin.y)*scale,footprint.size.w*scale,footprint.size.h*scale));
+                        let x = 12.0
+                            + (item.transform.translate.x + footprint.origin.x - bounds.origin.x)
+                                * scale;
+                        let y = 12.0
+                            + (item.transform.translate.y + footprint.origin.y - bounds.origin.y)
+                                * scale;
+                        let w = footprint.size.w * scale;
+                        let h = footprint.size.h * scale;
+                        let mut style = format!(
+                            "position:absolute;left:{x}px;top:{y}px;width:{w}px;height:{h}px;overflow:hidden;"
+                        );
+                        if assigned {
+                            style.push_str("box-sizing:border-box;min-width:0;min-height:0;");
+                            assigned_clip(&mut style, &item.footprint, footprint);
+                            if assigned_card {
+                                style.push_str("text-align:start;white-space:pre-line;");
+                            }
+                        }
+                        control = control.attr("style", style);
                     }
                 }
                 output.push(Box::new(control));
@@ -992,4 +1020,25 @@ pub(in crate::web_tree) fn editor(page: &TreePage) -> Option<Child> {
             )
             .attr("aria-label", "Projection editor workspace"),
     ))
+}
+
+/// The subdivision owns the box and, for Partition rings, the sector outline.
+fn assigned_clip(style: &mut String, footprint: &sceno::Footprint, bounds: sceno::Rect) {
+    use std::fmt::Write as _;
+    let sceno::Footprint::Polygon { points } = footprint else {
+        return;
+    };
+    if bounds.size.w <= 0.0 || bounds.size.h <= 0.0 {
+        return;
+    }
+    style.push_str("clip-path:polygon(");
+    for (index, point) in points.iter().enumerate() {
+        if index > 0 {
+            style.push(',');
+        }
+        let x = 100.0 * (point.x - bounds.origin.x) / bounds.size.w;
+        let y = 100.0 * (point.y - bounds.origin.y) / bounds.size.h;
+        let _ = write!(style, "{x}% {y}%");
+    }
+    style.push_str(");");
 }

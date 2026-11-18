@@ -22,6 +22,7 @@ pub fn draft_from_definition(definition: &ProjectionDefinition) -> ProjectionDra
         reading: definition.reading.clone(),
         encoding: definition.encoding.clone(),
         arrangement: definition.arrangement.clone(),
+        frame: definition.frame.clone(),
         marks: definition.marks.clone(),
         fields: definition.fields.clone(),
         interaction: definition.interaction.clone(),
@@ -234,5 +235,43 @@ mod tests {
             ..Default::default()
         };
         assert_eq!(draft_from_definition(&definition).marks, definition.marks);
+    }
+
+    #[test]
+    fn saved_frame_survives_reopening_and_the_next_editor_refresh() {
+        let dataset = serde_json::json!({
+            "source": { "authority": "fixture", "domain": "nodes", "resource": "graph" },
+            "revision": "r1",
+            "fields": { "occurrence_id": "text", "label": "text", "order": "number", "tempo_bpm": "number" },
+            "occurrences": [{
+                "occurrence_id": "a", "source": { "adapter": "fixture", "id": "a" },
+                "values": {
+                    "occurrence_id": { "kind": "text", "value": "a" },
+                    "label": { "kind": "text", "value": "Alpha" },
+                    "order": { "kind": "number", "value": 0.0 },
+                    "tempo_bpm": { "kind": "number", "value": 0.0 }
+                }
+            }]
+        });
+        let mut session = ProjectionSession::load(&dataset.to_string(), None).unwrap();
+        let origin = sceno::Vec2::new(100.0, 200.0);
+        let frame = scenograph::Frame::Unbounded { origin };
+        session
+            .editor
+            .reduce(EditorAction::SetFrame(Some(frame.clone())), 0);
+        session.refresh();
+        let saved = session.snapshot().unwrap();
+        session.editor.reduce(EditorAction::SetFrame(None), 1);
+        session.refresh();
+        session.reopen(&saved).unwrap();
+        assert_eq!(session.editor().draft().frame, Some(frame.clone()));
+        session.refresh();
+        assert_eq!(
+            session.compiled().unwrap().scene.items[0]
+                .transform
+                .translate,
+            origin
+        );
+        assert_eq!(session.snapshot().unwrap().definition.frame, Some(frame));
     }
 }
