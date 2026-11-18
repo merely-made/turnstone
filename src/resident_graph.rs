@@ -24,6 +24,7 @@ use sprigging::{ColorF, LeafRegistry};
 use crate::contributed_surface::{SurfaceAdmissionError, SurfaceProvider};
 use crate::panes::{PaneKindId, PaneSource, SerializedSource, SourceRef, SourceSchemaId};
 
+mod actions;
 mod kept;
 mod worker;
 
@@ -33,6 +34,7 @@ pub(crate) const LABEL: &str = "Resident graph";
 pub(crate) const SOURCE_SCHEMA: &str = "turnstone.resident-mere.v1";
 const GRAPH_LEAF: u64 = 0x6d65_7265;
 const TOOLBAR_HEIGHT: u32 = 32;
+const DETAIL_HEIGHT: u32 = 104;
 const RECONNECT: &str = "reconnect";
 const CSS: &str = "
 .resident-graph-toolbar { height: 32px; }
@@ -68,10 +70,11 @@ pub(crate) struct ResidentGraphProvider {
     descriptor: SurfaceDescriptor,
     stylesheet: String,
     wake: armillary::Wake,
+    open_address: actions::OpenAddress,
 }
 
 impl ResidentGraphProvider {
-    pub(crate) fn new(wake: armillary::Wake) -> Self {
+    pub(crate) fn new(wake: armillary::Wake, open_address: actions::OpenAddress) -> Self {
         Self {
             kind: PaneKindId::new(PANE_KIND),
             schema: SourceSchemaId::new(SOURCE_SCHEMA),
@@ -82,12 +85,14 @@ impl ResidentGraphProvider {
                 accepted_source: SurfaceSourceShape::One(SourceKindId::from(SOURCE_SCHEMA)),
             },
             stylesheet: format!(
-                "{} {} {CSS} {}",
+                "{} {} {CSS} {} {}",
                 cambium::GRAPH_CANVAS_SWATCH_CSS,
                 mere_view::MERE_VIEW_CSS,
                 kept::CSS,
+                actions::CSS,
             ),
             wake,
+            open_address,
         }
     }
 }
@@ -132,6 +137,7 @@ impl SurfaceProvider for ResidentGraphProvider {
         let mut state = State {
             route,
             wake: self.wake.clone(),
+            open_address: self.open_address.clone(),
             connection: None,
             model: MereViewModel {
                 title: format!("Resident graph: {}", source.domain),
@@ -143,6 +149,7 @@ impl SurfaceProvider for ResidentGraphProvider {
             requested: 0,
             completed: 0,
             kept: kept::Panel::default(),
+            actions: actions::Panel::default(),
             size: (1, 1),
         };
         state.connect();
@@ -171,6 +178,7 @@ fn resident_route(domain: &str) -> Result<AppRouteId, String> {
 struct State {
     route: Result<AppRouteId, String>,
     wake: armillary::Wake,
+    open_address: actions::OpenAddress,
     connection: Option<worker::Connection>,
     model: MereViewModel,
     view: MereViewState,
@@ -179,6 +187,7 @@ struct State {
     requested: u64,
     completed: u64,
     kept: kept::Panel,
+    actions: actions::Panel,
     size: (u32, u32),
 }
 
@@ -206,6 +215,7 @@ impl State {
     fn fail(&mut self, reason: String) {
         self.connection = None;
         self.kept = kept::Panel::default();
+        self.actions = actions::Panel::default();
         self.model.status = ViewStatus::Unavailable(StatusNote {
             message: reason,
             action: self
@@ -268,9 +278,19 @@ impl State {
                 self.model = read.model;
                 if self.focused != read.focused {
                     self.view.focused.clone_from(&read.focused);
+                    self.actions = actions::Panel::default();
                 }
                 self.focused = read.focused;
                 self.record = read.record;
+                self.actions.offers = read.offers;
+                if self.completed != read.completed
+                    && let Some(reply) = read.action
+                {
+                    if let Some(address) = reply.address {
+                        (self.open_address)(address);
+                    }
+                    self.actions.finish(reply.notice);
+                }
                 if self.kept.open
                     && self.completed != read.completed
                     && let Some(reply) = read.kept
@@ -298,21 +318,43 @@ type Runner = GenetAppRunner<State, fn(&State) -> GraphView, GraphView, ()>;
 
 fn view(state: &State) -> GraphView {
     let toolbar = matches!(state.model.status, ViewStatus::Ready).then(|| {
-        el(
-            "nav",
-            button(
-                if state.kept.open {
-                    "Back to resident graph"
-                } else {
-                    "Kept pages"
+        let buttons: Vec<GraphView> = if state.kept.open || state.actions.open {
+            vec![Box::new(button(
+                "Back to resident graph",
+                |state: &mut State, _| {
+                    if state.kept.open {
+                        state.toggle_kept();
+                    } else if state.requested == state.completed {
+                        let offers = state.actions.offers.take();
+                        state.actions = actions::Panel::default();
+                        state.actions.offers = offers;
+                    }
                 },
-                |state: &mut State, _| state.toggle_kept(),
-            ),
-        )
-        .attr("class", "resident-graph-toolbar")
+            ))]
+        } else {
+            let mut buttons: Vec<GraphView> =
+                vec![Box::new(button("Kept pages", |state: &mut State, _| {
+                    state.toggle_kept()
+                }))];
+            if state.actions.has_offers() {
+                buttons.push(Box::new(button(
+                    "Record actions",
+                    |state: &mut State, _| {
+                        state.actions.open = true;
+                    },
+                )));
+            }
+            buttons
+        };
+        el("nav", buttons).attr("class", "resident-graph-toolbar")
     });
-    if state.kept.open {
-        return Box::new(el("div", (toolbar, kept::view(state))).attr("class", "resident-graph"));
+    if state.kept.open || state.actions.open {
+        let part = if state.kept.open {
+            kept::view(state)
+        } else {
+            actions::view(state)
+        };
+        return Box::new(el("div", (toolbar, part)).attr("class", "resident-graph"));
     }
     let graph = mere_view::mere_view(
         state.mere_view(),
@@ -422,7 +464,7 @@ impl RetainedSurfaceSession for GraphSession {
         let size = (
             viewport.width.max(1.0) as u32,
             (viewport.height as u32)
-                .saturating_sub(104 + TOOLBAR_HEIGHT)
+                .saturating_sub(DETAIL_HEIGHT + TOOLBAR_HEIGHT)
                 .max(1),
         );
         let state = self.runner.state();

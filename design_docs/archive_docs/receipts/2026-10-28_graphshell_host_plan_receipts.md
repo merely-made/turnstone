@@ -94,3 +94,32 @@ server again recorded only the explicit capture. The merged reader capture
 shows the body in the pane at 1024 × 600. Generated fixture stores and the
 temporary broker executable were removed. The retained receipt fits within
 the workspace's 100 MB cap.
+
+## 2026-11-18 N2 advertised record actions on T-PC
+
+The native headed run used an isolated Djinn with its web address handler
+enabled and an owner grant for one fixture mere. The driver seeded a loopback
+page through the ordinary application route and selected its record in
+Turnstone. It recorded the exact request sent by Turnstone and the reply
+from Djinn. The scenario files, screenshots, binary hashes, and bounded
+wire transcript are in `~/Code/testing/turnstone/receipts/2026-11-18_actions`
+on T-PC.
+
+- `native/accepted` clicked **Open in browser** in **Record actions**. Djinn
+  accepted the command and the loopback server recorded one navigation to
+  `/approved` plus its favicon request. Turnstone showed owner acceptance and
+  the approved URL as its current address.
+- `native/stale` advanced the real graph through a second admitted client
+  after Turnstone submitted its request. Djinn reported revision 7 for the
+  request observed at revision 6. Turnstone asked the user to reopen the
+  action. The loopback server recorded zero requests.
+- `native/refused` preserved Turnstone's original bound request in the
+  transcript, then substituted a mismatched address in the fixture relay to
+  exercise the real owner's rejection. Turnstone displayed the owner's
+  reason. The loopback server recorded zero requests.
+
+All three native scenarios returned `RESULT ok` and saved nonblank captures.
+The native build and the locked library suite passed, with 1,434 passed and
+nine ignored. The focused bounded-form test verifies the exact selected
+value and that a form ceases to match its offer after a revision change.
+The retained receipt fits within the workspace's 100 MB cap.

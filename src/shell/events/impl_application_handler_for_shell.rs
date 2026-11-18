@@ -264,6 +264,9 @@ impl ApplicationHandler<crate::shell::ShellEvent> for Shell {
         match event {
             crate::shell::ShellEvent::ActorWake => self.actor_wake_pending = true,
             crate::shell::ShellEvent::NativeFrameReady => self.request_native_frame_redraws(),
+            crate::shell::ShellEvent::ResidentAddressAccepted(address) => {
+                self.act(Action::OpenAddress(address));
+            },
         }
     }
 

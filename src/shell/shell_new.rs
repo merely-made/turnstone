@@ -272,12 +272,18 @@ impl Shell {
 
         let mut surface_providers = crate::contributed_surface::SurfaceProviderRegistry::new();
         let resident_graph_proxy = proxy.clone();
+        let resident_address_proxy = proxy.clone();
         surface_providers
-            .register_provider(crate::resident_graph::ResidentGraphProvider::new(Arc::new(
-                move || {
+            .register_provider(crate::resident_graph::ResidentGraphProvider::new(
+                Arc::new(move || {
                     let _ = resident_graph_proxy.send_event(crate::shell::ShellEvent::ActorWake);
-                },
-            )))
+                }),
+                Arc::new(move |address| {
+                    let _ = resident_address_proxy.send_event(
+                        crate::shell::ShellEvent::ResidentAddressAccepted(address),
+                    );
+                }),
+            ))
             .expect("the resident graph provider is unique");
         surface_providers
             .register_provider(crate::knot_document_surface::KnotDocumentProvider::default())

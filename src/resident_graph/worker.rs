@@ -5,8 +5,8 @@ use std::{sync::Arc, time::Duration};
 
 use chirograph::{
     CapabilityProfile, CarrierNotice, CarrierOutput, CarrierRequest, CarrierRequestBody,
-    CarrierResponse, CarrierResponseBody, PortableCardV1, PresentationCapability, ProtocolVersion,
-    ResourceResponse, SessionOpen,
+    CarrierResponse, CarrierResponseBody, IntentInvocation, IntentResult, PortableCardV1,
+    PresentationCapability, ProtocolVersion, ResourceResponse, SessionOpen,
 };
 use graphshell_client::LineDriven;
 use graphshell_door::projection::AppBrokerClient;
@@ -17,13 +17,14 @@ use ostiary::app_admission::{AppAdmissionError, AppId, AppRouteId};
 use ostiary::app_client::AppClientError;
 use tokio::sync::{mpsc, watch};
 
-use super::kept;
+use super::{actions, kept};
 
 const DEADLINE: Duration = Duration::from_secs(15);
 
 pub(super) enum Request {
     Graph(MereViewRequest),
     Kept(kept::Request),
+    Action(Box<actions::Command>),
 }
 
 pub(super) struct Connection {
@@ -45,6 +46,8 @@ pub(super) struct Reading {
     pub record: Option<PortableCardV1>,
     pub completed: u64,
     pub kept: Option<Arc<kept::Reply>>,
+    pub offers: Option<actions::Offers>,
+    pub action: Option<actions::Reply>,
 }
 
 impl Connection {
@@ -106,7 +109,7 @@ async fn run(
             .find(|session| session.0 == MERE_GRAPH)
             .cloned();
         let mut panel = MereRouteSession::from_descriptor(opened.descriptor, profile, application)?;
-        settle(&mut client, &mut panel).await?;
+        settle(&mut client, &mut panel, None).await?;
         Ok::<_, String>((client, panel, graph))
     };
     let (mut client, mut panel, graph) = tokio::select! {
@@ -118,6 +121,7 @@ async fn run(
 
     let mut completed = 0;
     let mut kept: Option<Arc<kept::Reply>> = None;
+    let mut action = None;
     let mut notices = tokio::time::interval(Duration::from_millis(500));
     notices.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
     loop {
@@ -128,6 +132,9 @@ async fn run(
             .as_ref()
             .and_then(|key| panel.records().get(key))
             .cloned();
+        let offers = focused
+            .as_ref()
+            .and_then(|key| panel.record_actions(key).ok());
         if outgoing
             .send(Update::Read(Box::new(Reading {
                 model,
@@ -135,6 +142,8 @@ async fn run(
                 record,
                 completed,
                 kept: kept.clone(),
+                offers,
+                action: action.clone(),
             })))
             .is_err()
         {
@@ -144,6 +153,7 @@ async fn run(
 
         // The broker notice call owns the same framed stream as requests.
         // Poll only while idle, and never cancel it to send a request mid-frame.
+        let mut expected = None;
         loop {
             tokio::select! {
                 biased;
@@ -152,19 +162,24 @@ async fn run(
                         let _ = tokio::time::timeout(DEADLINE, client.close()).await;
                         return Ok(());
                     };
-                    kept = match request {
+                    kept = None;
+                    action = None;
+                    match request {
                         Request::Graph(request) => {
                             if let Err(reason) = panel.request(request) {
                                 panel.show_notice(reason);
                             }
-                            None
                         },
-                        Request::Kept(request) => Some(Arc::new(tokio::select! {
+                        Request::Kept(request) => kept = Some(Arc::new(tokio::select! {
                             _ = outgoing.closed() => return Ok(()),
                             result = tokio::time::timeout(DEADLINE, kept::run(&mut client, graph.as_ref(), request)) => {
                                 result.map_err(|_| "The kept-page request timed out.".to_owned())?
                             }
                         })),
+                        Request::Action(command) => match command.queue(&mut panel) {
+                            Ok(bound) => expected = Some(bound),
+                            Err(reason) => action = Some(actions::Reply::new(reason)),
+                        },
                     };
                     completed += 1;
                     break;
@@ -181,11 +196,17 @@ async fn run(
                 }
             }
         }
-        tokio::select! {
+        let result = tokio::select! {
             _ = outgoing.closed() => return Ok(()),
-            result = tokio::time::timeout(DEADLINE, settle(&mut client, &mut panel)) => {
-                result.map_err(|_| "The resident graph request timed out.".to_owned())??;
+            result = tokio::time::timeout(DEADLINE, settle(
+                &mut client, &mut panel, expected.as_ref().map(|(intent, _)| intent),
+            )) => {
+                result.map_err(|_| "The resident graph request timed out.".to_owned())??
             }
+        };
+        if let Some((_, address)) = expected {
+            let result = result.ok_or("The resident did not answer the record action.")?;
+            action = Some(actions::Reply::from_intent(result, address));
         }
     }
     let _ = tokio::time::timeout(DEADLINE, client.close()).await;
@@ -235,7 +256,12 @@ fn open_error(error: AppClientError) -> String {
     }
 }
 
-async fn settle(client: &mut AppBrokerClient, panel: &mut MereRouteSession) -> Result<(), String> {
+async fn settle(
+    client: &mut AppBrokerClient,
+    panel: &mut MereRouteSession,
+    expected: Option<&IntentInvocation>,
+) -> Result<Option<IntentResult>, String> {
+    let mut outcome = None;
     loop {
         let outgoing = panel.take_outgoing();
         if outgoing.is_empty() {
@@ -244,13 +270,15 @@ async fn settle(client: &mut AppBrokerClient, panel: &mut MereRouteSession) -> R
             }
             return match &panel.model().status {
                 ViewStatus::Unavailable(note) => Err(note.message.clone()),
-                _ => Ok(()),
+                _ => Ok(outcome),
             };
         }
         for line in outgoing {
             let request = chirograph::line::decode::<CarrierRequest>(&line)
                 .map_err(|error| error.to_string())?
                 .ok_or("The resident graph emitted an empty request.")?;
+            let bound = matches!((&request.body, expected),
+                (CarrierRequestBody::Intent(actual), Some(expected)) if actual == expected);
             let body = match request.body {
                 CarrierRequestBody::Resource(request) => {
                     let bytes = client
@@ -264,6 +292,9 @@ async fn settle(client: &mut AppBrokerClient, panel: &mut MereRouteSession) -> R
                     .await
                     .map_err(|error| error.to_string())?,
             };
+            if bound && let CarrierResponseBody::Intent(result) = &body {
+                outcome = Some(result.clone());
+            }
             // The application door correlates its own frames. Preserve the view driver's id.
             feed(
                 panel,

@@ -292,11 +292,12 @@ use host_file_drag::HostFileDrag;
 mod shell;
 pub use shell::Shell;
 
-/// Wake classification keeps model invalidation apart from GPU completion.
-#[derive(Clone, Copy, Debug)]
+/// Events sent to the native shell across its platform event loop.
+#[derive(Clone, Debug)]
 pub enum ShellEvent {
     ActorWake,
     NativeFrameReady,
+    ResidentAddressAccepted(String),
 }
 
 #[cfg(all(test, feature = "peers", windows))]
