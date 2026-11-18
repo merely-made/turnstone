@@ -139,9 +139,6 @@ pub fn compare_slots(
                         draft.arrangement.kind,
                         caps.extent.id()
                     )),
-                    RelationForm(Some(sceno::RelationForm::Adjacency)) => {
-                        Some("Adjacency requires Crystal".into())
-                    },
                     RelationForm(Some(form))
                         if form.is_placed() && !caps.placed_forms.contains(form) =>
                     {

@@ -1,0 +1,58 @@
+# Crystal's retained keyboard input uses the same drop and slide edits as a pointer.
+settle 6
+assert snap projection-executable == true
+assert snap projection-arrangement == crystal
+assert snap crystal-pins == 0
+assert snap crystal-borders == 0
+assert snap crystal-unmet == 10
+assert snap crystal-strokes == 0
+assert snap crystal-tile-l == 876.00,448.00
+click role:button @data-crystal-tile=l
+key ArrowDown
+settle 4
+assert snap crystal-tile-l == 876.00,496.00
+assert snap crystal-unmet == 10
+assert snap crystal-strokes == 0
+click role:button @data-crystal-tile=a
+settle 3
+assert snap crystal-strokes == 9
+click role:button Pin selected tile
+settle 5
+assert snap crystal-pins == 1
+assert snap crystal-borders == 6
+assert snap crystal-unmet == 4
+assert snap crystal-strokes == 3
+assert snap crystal-tile-a == 0.00,0.00
+assert snap crystal-tile-b == 82.00,96.00
+assert snap crystal-tile-h == 876.00,224.00
+assert snap crystal-tile-i == 0.00,448.00
+assert snap crystal-tile-j == 292.00,448.00
+assert snap crystal-tile-k == 584.00,448.00
+assert snap crystal-tile-l == 876.00,496.00
+assert retained {"role":"button","key":["data-crystal-tile","a"],"attribute":"data-crystal-pinned","value":"true"}
+click role:button @data-crystal-tile=l
+click role:button @data-crystal-tile=a
+settle 3
+capture crystal_pinned
+click role:button @data-crystal-tile=b
+key ArrowLeft
+settle 4
+assert retained {"role":"status","label":"Projection status","text":"Tile moved"}
+assert snap crystal-pins == 1
+assert snap crystal-tile-a == 0.00,0.00
+assert snap crystal-tile-k == 584.00,448.00
+assert snap crystal-tile-b == -130.00,48.00
+capture crystal_slid
+click role:button @data-crystal-tile=a
+click role:button Unpin selected tile
+settle 4
+assert snap crystal-pins == 0
+assert snap crystal-borders >= 1
+assert snap crystal-tile-a == 0.00,0.00
+assert snap crystal-tile-b == -130.00,48.00
+click role:button Clear tile selection
+settle 4
+assert snap crystal-strokes == 0
+assert snap crystal-drawn == 0
+capture crystal_unpinned
+log Crystal pin, slide and unpin proof complete
