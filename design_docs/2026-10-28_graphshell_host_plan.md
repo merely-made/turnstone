@@ -1,6 +1,6 @@
 # Integrate the Graphshell app into Turnstone
 
-**Status (2026-11-18):** Native integration is first (D2). N1 opens resident graphs in native Turnstone, with headed Windows and Linux receipts. N2 has moved kept pages, advertised record actions, and Personae into native Turnstone, with headed Linux receipts. Saved view-state handoff and standalone app retirement are still open. The H and T phases below retain their existing evidence and dependencies. For the web tree, the earlier architecture was accepted and the five routes mount in source. Fresh Wasm, all five pages and the live scenario wall are still owed under T4.
+**Status (2026-11-18):** Native integration is first (D2). N1 opens resident graphs in native Turnstone, with headed Windows and Linux receipts. N2 has moved kept pages, advertised record actions, and Personae into native Turnstone, with headed Linux receipts. Saved view-state handoff and standalone app retirement are still open. The H and T phases below retain their existing evidence and dependencies. For the web tree, the earlier architecture was accepted and the five routes mount in source. Fresh Wasm, all five pages and the live scenario wall are still owed under T4. L1 and L2, added 2026-11-19, are plan only.
 
 **For:** Moving the Graphshell app's graph portal, Personae surface, launcher and cross-device workflows into Turnstone, then retiring the standalone app. The browser companion and retained Cambium web tree also have open work here. The [tree migration inventory](2026-09-27_graphshell_tree_migration_inventory.md) covers the web tree. This plan was cut on 2026-10-28 from the reference host and one-tree plans in `archive_docs/2026-10-28/`.
 Not here:
@@ -88,6 +88,24 @@ Bring across the retained-page search and capture, Personae controls, advertised
 | Personae | **Open Personae** mounts the same Dramatis roster, import review, and vault controls as the standalone viewer, using Djinn's existing Dramatis declaration. Djinn handles vault and consent prompts. A Windows grant pinned to the standalone executable requires approval for Turnstone's executable. See the [headed Linux receipt](archive_docs/receipts/2026-10-28_graphshell_host_plan_receipts.md#2026-11-18-n2-personae-on-t-pc). |
 | Saved view state | Check the existing Graphshell consumer state before cutover. Carry focus and layout per session into the Turnstone consumer through Djinn with the owner's authority. Preserve an existing Turnstone choice. Qualify the first open and a restart. |
 | Co-op and retirement | `support/graphshell-coop/freeze.py` and the headed driver still name `graphshell_mere`. Move the user-facing leg to Turnstone and prove the existing two-device workflow before removing the standalone packaging target. Keep the native-messaging relay available for the extension. |
+
+### L1. A page's claims to a SHACL finding
+
+Turnstone's part of the shared milestone in `mere/design_docs/mere_docs/implementation_strategy/2026-11-07_engine_split_plan.md` ("Shared milestone: a page's claims to a SHACL finding"), cited and not copied. The page, its claims and their page source are B2's native slice (`mere/design_docs/mere_docs/implementation_strategy/2026-11-04_application_experience_plan.md`, "Native Turnstone"), which the resource neighborhood already starts. What that slice does not have is the keep choice leading to a validation, the finding shown, and the way back from a finding into the reader.
+
+- Done when: from **Explore resource neighborhood**, a person keeps the page as a source, asks for its validation, sees a finding with its focus node and failing path, and choosing the finding opens the claim's evidence and scrolls the reader to its block; a session-only page offers no validation and says why (`mere:engine-split D184`); the kept source reopens offline with the same finding. The first pass calls Mere directly and the second runs through a pinned host projection (`mere:engine-split D185`).
+- Needs: Mere's SHACL call and its finding-to-evidence read; Graphshell's inspector finding row (`graphshell/design_docs/graphshell_docs/implementation_strategy/2026-11-19_engine_binding_plan.md`, E5); B2 step 3.
+- Rulings: `mere:engine-split D184` to `D186`.
+- From: Mark, 2026-11-19, on a review's five points: "with the page-to-SHACL flow as the first shared milestone".
+
+### L2. A browsing trail that survives export
+
+Turnstone's half of `mere:engine-split P7`'s added acceptance. The trail is one a person made here, not a constructed one.
+
+- Done when: the same address is visited twice through two distinct surfaces, the workspace is exported as an RDF dataset and reopened in a fresh store, and the reopened trail shows both visits with their endpoints, triggers, timestamps and frame membership, and can be walked.
+- Needs: the workspace pack's event representation (`mere:engine-split D182`), whose four forks (event identity, multiplicity, graph scope, provenance) are not yet ruled.
+- Rulings: -
+- From: `mere:engine-split P7`, acceptance added 2026-11-19.
 
 ### H4r. Personae surface residue
 Native Firefox key import, desktop dialog providers beyond Windows (macOS and Linux), a configured carry root and broader carry management are still unproven after H4's other conditions closed. The two operational tail items of H4 are in the family update resident plan.
@@ -329,6 +347,7 @@ The native retained-content path does not close physical assistive technology, p
   [Linux N1 receipt](archive_docs/receipts/2026-10-28_graphshell_host_plan_receipts.md#2026-11-18-n1-native-resident-graph-on-t-pc)
   records focus and layout restoration after restart, and both error states.
   N2 lists the remaining workflows and their cutover checks.
+- 2026-11-19: plan only. L1 and L2 added from a review's points, folded in at Mark's word: Turnstone's part of the shared page-to-SHACL milestone and of the trail round-trip. The human screen-reader run of the sortable table opened from Turnstone's chrome is A1 of `graphshell/design_docs/graphshell_docs/implementation_strategy/2026-10-28_platform_qualification_plan.md`. Nothing built.
 
 ## Received from the backlog holder, 2026-10-28
 
