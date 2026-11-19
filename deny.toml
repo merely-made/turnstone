@@ -346,22 +346,6 @@ crate = "multiversion-macros@0.8.1"
 reason = "exr 1.74.3 (latest) requires it, via multiversion 0.8.1, under esp, genet-clipboard, genet-compositor, genet-livery and 8 more; goes when exr moves to multiversion-macros 0.9.2"
 
 [[bans.skip]]
-crate = "netdev@0.45.1"
-reason = "netwatch 0.19.3 (netwatch 0.20.0 drops it) requires it, under mere-transport, p2mere-net; goes when their dependents take netwatch 0.20.0"
-
-[[bans.skip]]
-crate = "netlink-packet-core@0.8.2"
-reason = "netlink-proto 0.12.2 (netlink-proto 0.14.1 drops it), netwatch 0.19.3 (netwatch 0.20.0 drops it) require it, via netdev 0.45.1, netlink-packet-route 0.31.0, under mere-transport, p2mere-net; goes when their dependents take netlink-proto 0.14.1, netwatch 0.20.0"
-
-[[bans.skip]]
-crate = "netlink-packet-route@0.31.0"
-reason = "netwatch 0.19.3 (netwatch 0.20.0 drops it) requires it, via netdev 0.45.1, under mere-transport, p2mere-net; goes when their dependents take netwatch 0.20.0"
-
-[[bans.skip]]
-crate = "netlink-sys@0.8.8"
-reason = "netlink-proto 0.12.2 (netlink-proto 0.14.1 drops it), netwatch 0.19.3 (netwatch 0.20.0 drops it) require it, via netdev 0.45.1, under mere-transport, p2mere-net; goes when their dependents take netlink-proto 0.14.1, netwatch 0.20.0"
-
-[[bans.skip]]
 crate = "nom@7.1.3"
 reason = "asn1-rs 0.7.2 (latest), cexpr 0.6.0 (latest), der-parser 10.0.0 (latest), spm_precompiled 0.1.4 (latest) and 2 more require it, under conatus, esp, gemot-site-host, grafting-servo and 7 more; goes when asn1-rs, cexpr, der-parser and 2 more move to nom 8.0.0; their dependents take rusticata-macros 5.0.0"
 
@@ -752,3 +736,7 @@ reason = "wasmtime-internal-cache 45.0.3 (wasmtime-internal-cache 50.0.1 still n
 [[bans.skip]]
 crate = "zstd-safe@7.4.1"
 reason = "wasmtime-internal-cache 45.0.3 (wasmtime-internal-cache 50.0.1 drops it) requires it, via zstd 0.13.5, under app-host, authority-host, block-host, turnstone; goes when their dependents take wasmtime-internal-cache 50.0.1"
+
+[[bans.skip]]
+crate = "lru@0.18.5"
+reason = "held by cryoglyph 0.1.0, n0-dns-resolver 0.1.1; gone when its holders move to lru 0.19.0"

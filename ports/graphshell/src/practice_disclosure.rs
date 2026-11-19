@@ -363,7 +363,10 @@ pub fn comparison_host_dataset(record: &ComparisonRecord) -> Result<HostDatasetV
     let mut fields: BTreeMap<String, ProjectionFieldType> = BTreeMap::new();
     for occurrence in &occurrences {
         for (name, value) in &occurrence.values {
-            fields.insert(name.clone(), value.field_type());
+            // An empty list does not say its own item type.
+            if let Some(field_type) = value.field_type() {
+                fields.insert(name.clone(), field_type);
+            }
         }
     }
     Ok(HostDatasetV1 {

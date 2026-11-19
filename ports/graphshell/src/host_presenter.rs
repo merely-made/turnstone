@@ -193,15 +193,15 @@ impl HostPresenter {
         let facts = occurrence
             .values
             .iter()
-            .map(|(key, value)| {
-                (
-                    key.clone(),
-                    match value {
-                        ProjectionValue::Text(value) => Scalar::Text(value.clone()),
-                        ProjectionValue::Number(value) => Scalar::Number(*value),
-                        ProjectionValue::Boolean(value) => Scalar::Bool(*value),
-                    },
-                )
+            .filter_map(|(key, value)| {
+                // Rules read scalars; references, dates and lists are not facts yet.
+                let scalar = match value {
+                    ProjectionValue::Text(value) => Scalar::Text(value.clone()),
+                    ProjectionValue::Number(value) => Scalar::Number(*value),
+                    ProjectionValue::Boolean(value) => Scalar::Bool(*value),
+                    _ => return None,
+                };
+                Some((key.clone(), scalar))
             })
             .collect();
         let mut states = BTreeSet::new();
