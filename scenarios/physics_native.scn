@@ -22,12 +22,12 @@ assert row Profile: custom
 act Overlay off: Skeleton
 settle 5
 assert row Overlays: none
-act Profile: Crystal
+act Profile: Lattice
 settle 10
 assert row Physics: Stress
 assert row Overlays: Grid
-assert row Profile: Crystal
-capture 01_arrange_crystal
+assert row Profile: Lattice
+capture 01_arrange_lattice
 act Kinds: By colouring
 act Mass: By rank
 act Depth: By layer
@@ -41,7 +41,7 @@ assert row Arrangement: Free
 act Physics: Still
 settle 5
 assert row Physics: Still
-# A law switch keeps the overlays (Crystal's grid survives), so the pair is
+# A law switch keeps the overlays (Lattice's grid survives), so the pair is
 # custom; the profile is what sets both.
 assert row Overlays: Grid
 assert row Profile: custom
