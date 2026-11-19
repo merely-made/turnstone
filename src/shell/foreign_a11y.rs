@@ -123,7 +123,7 @@ impl Shell {
 
 /// Native visibility uses the actual window plan, retaining supplier IDs.
 pub(super) fn foreign_placements(
-    forest: &crate::foreign_a11y::ForeignA11y,
+    forest: &cambium_winit_a11y::guest::ForeignA11y,
     focus: FocusTarget,
     plan: &[crate::surface::Surface],
 ) -> Vec<(uuid::Uuid, accesskit::Rect)> {

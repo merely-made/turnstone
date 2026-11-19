@@ -2,7 +2,10 @@
 // SPDX-License-Identifier: MPL-2.0
 
 use super::*;
-use crate::shell::{a11y_bridge::ActionQueueState, content_pool::ContentKey};
+use crate::shell::{
+    a11y_bridge::{ActionQueue, publish_for_test},
+    content_pool::ContentKey,
+};
 use crate::surface::{Rect, SurfaceId, SurfaceKind};
 use pelt_core::{PeltContent, PeltController, PeltControllerConfig, PeltControllerPool};
 
@@ -124,11 +127,10 @@ fn pool_document_admission_shares_one_full_snapshot_per_placement() {
 fn pool_document_admission_compares_full_snapshot_once_per_placement() {
     let (mut pool, key, surface) = fixture();
     let snapshot = pool.accessibility_projection(&surface.id).unwrap();
-    let mut queue = ActionQueueState::default();
-    queue.publish(admissions(key, surface, snapshot.clone()));
-    let before = queue.published.entries().clone();
+    let queue = ActionQueue::default();
+    let before = publish_for_test(&queue, admissions(key, surface, snapshot.clone()));
     let comparisons = count_snapshot_comparisons(|| {
-        queue.publish(admissions(key, surface, snapshot));
+        publish_for_test(&queue, admissions(key, surface, snapshot));
     });
     assert_eq!(
         comparisons, 1,
@@ -150,9 +152,8 @@ fn pool_document_admission_keeps_live_focus_freshness_for_every_control() {
         .find(|node| node.actions.contains(&DocumentA11yAction::Focus))
         .unwrap()
         .id;
-    let mut queue = ActionQueueState::default();
-    queue.publish(admissions(key, surface, snapshot.clone()));
-    let before = queue.published.entries().clone();
+    let queue = ActionQueue::default();
+    let before = publish_for_test(&queue, admissions(key, surface, snapshot.clone()));
     let action = inker::DocumentA11yActionRequest {
         revision: snapshot.projection().revision(),
         target,
@@ -171,7 +172,7 @@ fn pool_document_admission_keeps_live_focus_freshness_for_every_control() {
     );
     let changed = pool.accessibility_projection(&surface.id).unwrap();
     let comparisons = count_snapshot_comparisons(|| {
-        queue.publish(admissions(key, surface, changed));
+        publish_for_test(&queue, admissions(key, surface, changed));
     });
     assert_eq!(comparisons, 1, "one exact changed-source comparison");
     for (target, captured) in before {

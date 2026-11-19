@@ -257,11 +257,11 @@ impl Shell {
             },
             Step::AssertA11y(substr) => {
                 self.push_a11y_tree();
-                let mut lines = self.surface_a11y.observed_lines();
+                let mut lines = crate::a11y::forest_lines(self.surface_a11y.published_forest());
                 let mut lenses: Vec<_> = self.lens_windows.values().collect();
                 lenses.sort_by_key(|lens| lens.ordinal);
                 for lens in lenses {
-                    lines.extend(lens.a11y_forest.observed_lines());
+                    lines.extend(crate::a11y::forest_lines(lens.a11y_forest.published_forest()));
                 }
                 if !crate::a11y::matches_lines(&lines, substr) {
                     return Err(format!(

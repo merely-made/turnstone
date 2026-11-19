@@ -43,7 +43,7 @@ fn fixture() -> (Vec<TreeUpdate>, ActionEnvelopes) {
         focus: NodeId(1),
         nodes: vec![(NodeId(1), child)],
     };
-    let forest = crate::foreign_a11y::ForeignA11y::default()
+    let forest = cambium_winit_a11y::guest::ForeignA11y::<uuid::Uuid>::default()
         .tooling_forest(root_update, &[], &[guest_update])
         .unwrap();
     let mut public =

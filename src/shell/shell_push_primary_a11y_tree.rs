@@ -140,10 +140,7 @@ impl Shell {
             .map(|bridge| bridge.activation_epoch());
         if epoch != self.a11y_epoch {
             self.surface_a11y.reset_publication();
-            self.a11y_actions
-                .lock()
-                .expect("a11y queue poisoned")
-                .publish(Default::default());
+            self.a11y_actions.clear_publication();
             self.a11y_epoch = epoch;
         }
         let PrimaryA11yFrame {
@@ -154,7 +151,6 @@ impl Shell {
             admissions,
             routes,
         } = self.primary_a11y_frame(override_placements, plan);
-        let initial = a11y_bridge::safe_initial(&update);
         let updates = match self
             .surface_a11y
             .frame_with_guests(update, &visible, &guests)
@@ -165,8 +161,14 @@ impl Shell {
                 return;
             },
         };
-        let served = self.a11y_adapter.as_mut().is_some_and(|bridge| {
-            match bridge.update_batch_at(epoch.unwrap_or(0), initial, updates) {
+        let served = self.a11y_adapter.as_mut().is_some_and(|publisher| {
+            match publisher.publish_at(
+                epoch.unwrap_or(0),
+                updates,
+                self.surface_a11y.tree_lineages(),
+                a11y_bridge::window_admissions(admissions, &routes, &self.surface_a11y),
+                a11y_bridge::admission_equivalence(),
+            ) {
                 Ok(served) => served,
                 Err(error) => {
                     tracing::warn!(%error, "a11y publication refused");
@@ -174,10 +176,6 @@ impl Shell {
                 },
             }
         });
-        self.a11y_actions
-            .lock()
-            .expect("a11y queue poisoned")
-            .publish_window(served, admissions, &routes);
         if !served {
             self.surface_a11y.retry_publication();
         }
@@ -253,164 +251,190 @@ impl Shell {
         );
         let mut requests = Vec::new();
         for (window, queue) in queues {
-            let pending = std::mem::take(&mut queue.lock().expect("a11y queue poisoned").requests);
             requests.extend(
-                pending
+                queue
+                    .take()
                     .into_iter()
                     .map(|request| (window, queue.clone(), request)),
             );
         }
-        for (window, queue, a11y_bridge::QueuedAction { request, admission }) in requests {
-            let mut route = None;
-            if let Some(captured) = admission {
-                if !queue
-                    .lock()
-                    .expect("a11y queue poisoned")
-                    .is_current(&request, &captured)
-                {
-                    self.app.note(crate::observe::AppEvent::InteractionMissed {
-                        what: "a11y-action",
-                        target: "retired accessibility admission".into(),
-                    });
-                    continue;
-                }
-                let landed = match captured.admission {
-                    a11y_bridge::Admission::Host(envelope) => {
-                        route = Some(envelope.provenance);
-                        None
-                    },
-                    a11y_bridge::Admission::PoolDocument(route) => {
-                        Some(self.dispatch_pool_document_accessibility(&route, &request))
-                    },
-                    #[cfg(test)]
-                    a11y_bridge::Admission::Document(_route) => Some(false),
-                    a11y_bridge::Admission::Contributed(published) => {
-                        let origin = match window {
-                            None => Some(crate::action::SpaceRef::Primary),
-                            Some(id) => self
-                                .lens_windows
-                                .get(&id)
-                                .map(|lens| crate::action::SpaceRef::Lens(lens.ordinal)),
-                        };
-                        let windows = ContributedActionWindows {
-                            primary: (self.width, self.height),
-                            lenses: self
-                                .lens_windows
-                                .values()
-                                .map(|lens| (lens.ordinal, lens.width, lens.height))
-                                .collect(),
-                        };
-                        let plan = contributed_action_plan(
-                            &self.app,
-                            &self.content_sessions,
-                            &windows,
-                            origin,
-                        );
-                        let spec = self.contributed_pane_spec(
-                            published.route.pane,
-                            self.pane_content(published.route.pane).as_ref(),
-                        );
-                        Some(dispatch_contributed_action(
-                            &mut self.app,
-                            &mut self.renderers.contributed,
-                            &published,
-                            &request,
-                            &plan,
-                            spec.as_ref(),
-                        ))
-                    },
-                };
-                if let Some(landed) = landed {
-                    if !landed {
-                        self.app.note(crate::observe::AppEvent::InteractionMissed {
-                            what: "a11y-action",
-                            target: "stale or unsupported live document action".into(),
-                        });
-                    }
-                    self.request_redraw();
-                    continue;
-                }
-            }
-            if request.target_tree != accesskit::TreeId::ROOT {
-                let (target, placements) = match window {
-                    None => (
-                        self.surface_a11y.action_target(&request),
-                        self.foreign_a11y_placements(),
-                    ),
-                    Some(id) => match self.lens_windows.get(&id) {
-                        Some(lens) => (
-                            lens.a11y_forest.action_target(&request),
-                            self.window_foreign_a11y_placements(lens.ordinal + 1),
-                        ),
-                        None => (
-                            Err("native accessibility window closed".to_owned()),
-                            Vec::new(),
-                        ),
-                    },
-                };
-                let result = foreign_a11y::deliver_foreign_action(
-                    &mut self.content_sessions,
-                    target,
-                    &placements,
-                    request,
-                );
-                if let Err(reason) = result {
-                    self.app.note(crate::observe::AppEvent::InteractionMissed {
-                        what: "a11y-action",
-                        target: reason,
-                    });
-                }
-                continue;
-            }
-            let slot = match window {
-                None => 0,
-                Some(id) => match self.lens_windows.get(&id) {
-                    Some(lens) => lens.ordinal + 1,
-                    None => continue,
-                },
+        for (window, queue, queued) in requests {
+            // Activation can change on the platform thread before another
+            // event frame has reset the source forest and queued bindings.
+            let same_activation = match window {
+                None => self
+                    .a11y_adapter
+                    .as_ref()
+                    .is_some_and(|publisher| self.a11y_epoch == Some(publisher.activation_epoch())),
+                Some(id) => self.lens_windows.get(&id).is_some_and(|lens| {
+                    lens.a11y_epoch == Some(lens.a11y.activation_epoch())
+                        && lens.a11y_scope.session == self.app.session_id.as_uuid().as_u128()
+                }),
             };
-            if let Some(crate::a11y::A11yRoute::Frame(route)) = &route {
-                if !self.apply_frame_a11y(slot, route, request.action) {
-                    self.app.note(crate::observe::AppEvent::InteractionMissed {
-                        what: "a11y-action",
-                        target: "Shared frame control is stale, hidden or unsupported".into(),
-                    });
-                }
+            let native_target_is_current = queue.native_target_is_current(&queued);
+            let request = queued.request;
+            let Some(captured) = queued.admission.filter(|captured| {
+                same_activation && native_target_is_current && queue.is_current(&request, captured)
+            }) else {
+                self.app.note(crate::observe::AppEvent::InteractionMissed {
+                    what: "a11y-action",
+                    target: "retired or absent accessibility admission".into(),
+                });
                 continue;
-            }
-            if !matches!(
-                request.action,
-                accesskit::Action::Click | accesskit::Action::Focus
-            ) {
-                continue;
-            }
-            if request.action == accesskit::Action::Focus
-                && slot == 0
-                && matches!(route, Some(crate::a11y::A11yRoute::OpenOmnibar))
-                && crate::a11y::focus_host_input(&mut self.app, request.target_node)
-            {
-                self.request_redraw();
-                continue;
-            }
-            // App-only routes are activation routes. A reader moving focus
-            // across them must not perform their default action.
-            if request.action != accesskit::Action::Click {
-                continue;
-            }
-            if let Some(crate::a11y::A11yRoute::SelectMember { pane, .. }) = &route {
-                if self.app.space_of(*pane) != Some(frame_keys::space(slot)) {
-                    self.app.note(crate::observe::AppEvent::InteractionMissed {
-                        what: "a11y-action",
-                        target: "Graph projection moved to another window".into(),
-                    });
+            };
+            use a11y_bridge::Admission;
+            let landed = match a11y_bridge::with_captured_generation(captured) {
+                Admission::Host(envelope) => {
+                    self.dispatch_host_accessibility(window, envelope.provenance, request);
                     continue;
-                }
+                },
+                Admission::Guest(witness) => {
+                    self.dispatch_guest_accessibility(window, &witness, request);
+                    continue;
+                },
+                Admission::PoolDocument(route) => {
+                    self.dispatch_pool_document_accessibility(&route, &request)
+                },
+                Admission::Contributed(published) => {
+                    self.dispatch_published_contributed_accessibility(window, &published, &request)
+                },
+                #[cfg(test)]
+                Admission::Document(_) => false,
+            };
+            if !landed {
+                self.app.note(crate::observe::AppEvent::InteractionMissed {
+                    what: "a11y-action",
+                    target: "stale or unsupported live document action".into(),
+                });
             }
-            let effects =
-                crate::a11y::apply_route(&mut self.app, route.as_ref(), request.target_node);
-            self.run_effects(effects);
             self.request_redraw();
         }
+    }
+
+    fn dispatch_guest_accessibility(
+        &mut self,
+        window: Option<winit::window::WindowId>,
+        witness: &cambium_winit_a11y::guest::GuestAdmission<uuid::Uuid>,
+        request: accesskit::ActionRequest,
+    ) {
+        let address = (request.target_tree, request.target_node);
+        let (forest, slot) = match window {
+            None => (Some(&self.surface_a11y), 0),
+            Some(id) => self.lens_windows.get(&id).map_or((None, 0), |lens| {
+                (Some(&lens.a11y_forest), lens.ordinal + 1)
+            }),
+        };
+        let target = forest
+            .filter(|forest| forest.matches_guest(address, witness))
+            .ok_or_else(|| "foreign accessibility admission retired".to_owned())
+            .and_then(|forest| forest.action_target(&request));
+        let placements = match (target.is_ok(), slot) {
+            (true, 0) => self.foreign_a11y_placements(),
+            (true, _) => self.window_foreign_a11y_placements(slot),
+            (false, _) => Vec::new(),
+        };
+        if let Err(reason) = foreign_a11y::deliver_foreign_action(
+            &mut self.content_sessions,
+            target,
+            &placements,
+            request,
+        ) {
+            self.app.note(crate::observe::AppEvent::InteractionMissed {
+                what: "a11y-action",
+                target: reason,
+            });
+        }
+    }
+
+    fn dispatch_published_contributed_accessibility(
+        &mut self,
+        window: Option<winit::window::WindowId>,
+        published: &crate::contributed_a11y::PublishedRoute,
+        request: &accesskit::ActionRequest,
+    ) -> bool {
+        let origin = match window {
+            None => Some(crate::action::SpaceRef::Primary),
+            Some(id) => self
+                .lens_windows
+                .get(&id)
+                .map(|lens| crate::action::SpaceRef::Lens(lens.ordinal)),
+        };
+        let windows = ContributedActionWindows {
+            primary: (self.width, self.height),
+            lenses: self
+                .lens_windows
+                .values()
+                .map(|lens| (lens.ordinal, lens.width, lens.height))
+                .collect(),
+        };
+        let plan = contributed_action_plan(&self.app, &self.content_sessions, &windows, origin);
+        let spec = self.contributed_pane_spec(
+            published.route.pane,
+            self.pane_content(published.route.pane).as_ref(),
+        );
+        dispatch_contributed_action(
+            &mut self.app,
+            &mut self.renderers.contributed,
+            published,
+            request,
+            &plan,
+            spec.as_ref(),
+        )
+    }
+
+    fn dispatch_host_accessibility(
+        &mut self,
+        window: Option<winit::window::WindowId>,
+        route: crate::a11y::A11yRoute,
+        request: accesskit::ActionRequest,
+    ) {
+        let slot = match window {
+            None => 0,
+            Some(id) => match self.lens_windows.get(&id) {
+                Some(lens) => lens.ordinal + 1,
+                None => return,
+            },
+        };
+        if let crate::a11y::A11yRoute::Frame(route) = &route {
+            if !self.apply_frame_a11y(slot, route, request.action) {
+                self.app.note(crate::observe::AppEvent::InteractionMissed {
+                    what: "a11y-action",
+                    target: "Shared frame control is stale, hidden or unsupported".into(),
+                });
+            }
+            return;
+        }
+        if !matches!(
+            request.action,
+            accesskit::Action::Click | accesskit::Action::Focus
+        ) {
+            return;
+        }
+        if request.action == accesskit::Action::Focus
+            && slot == 0
+            && matches!(route, crate::a11y::A11yRoute::OpenOmnibar)
+            && crate::a11y::focus_host_input(&mut self.app, request.target_node)
+        {
+            self.request_redraw();
+            return;
+        }
+        // App-only routes are activation routes. A reader moving focus
+        // across them must not perform their default action.
+        if request.action != accesskit::Action::Click {
+            return;
+        }
+        if let crate::a11y::A11yRoute::SelectMember { pane, .. } = &route {
+            if self.app.space_of(*pane) != Some(frame_keys::space(slot)) {
+                self.app.note(crate::observe::AppEvent::InteractionMissed {
+                    what: "a11y-action",
+                    target: "Graph projection moved to another window".into(),
+                });
+                return;
+            }
+        }
+        let effects = crate::a11y::apply_route(&mut self.app, Some(&route), request.target_node);
+        self.run_effects(effects);
+        self.request_redraw();
     }
 
     /// Run a scenario `script` step through the Piccolo control lane and lower

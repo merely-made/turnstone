@@ -60,13 +60,13 @@ fn lens_projection_identity_keeps_retained_links_per_window_and_refuses_missing_
                 .iter()
                 .all(|id| tree.nodes.iter().any(|(node, _)| node == id))
         );
-        let mut forest = crate::foreign_a11y::ForeignA11y::new();
+        let mut forest = cambium_winit_a11y::guest::ForeignA11y::<uuid::Uuid>::new();
         forest
             .frame(tree.to_tree_update(None), &[])
             .expect("actual composed host publication");
         assert!(
             matches_lines(
-                &forest.observed_lines(),
+                &crate::a11y::forest_lines(forest.published_forest()),
                 &format!("window: {expected} >> link: First Gemini >> link: Second Gemini",)
             ),
             "window identity and retained link order remain in the published forest"

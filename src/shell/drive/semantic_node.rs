@@ -39,7 +39,7 @@ impl Shell {
                 .ok_or("assert node window is absent")?
                 .a11y_forest
         };
-        let found = forest.observed_nodes().into_iter().any(|observation| {
+        let found = crate::a11y::forest_nodes(forest.published_forest()).into_iter().any(|observation| {
             let node = observation.node;
             matches_node(&selector, node) && value.is_none_or(|value| node.value() == Some(value))
         });
@@ -60,7 +60,7 @@ impl Shell {
         let plan = self.surface_plan();
         let current = self.app.browser_command_target().map(|(node, _)| node);
         let mut hits = Vec::new();
-        for observation in self.surface_a11y.observed_nodes() {
+        for observation in crate::a11y::forest_nodes(self.surface_a11y.published_forest()) {
             let node = observation.node;
             let Some(bounds) = observation.bounds else {
                 continue;

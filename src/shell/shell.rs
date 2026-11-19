@@ -138,16 +138,14 @@ pub struct Shell {
     pub(super) pending_lens_capture: Option<std::path::PathBuf>,
     pub(super) pending_lens_capture_window: Option<WindowId>,
     pub(super) window: Option<Arc<Window>>,
-    /// The OS AccessKit bridge for the primary window, when installed.
-    pub(super) a11y_adapter: Option<genet_winit_host::AccessKitBridge>,
-    /// Routes for the current host tree. Document admissions are captured
-    /// separately at enqueue and revalidated against their live source.
-    /// Assistive actions queued by the platform thread, drained here.
+    /// The common native accessibility publisher for the primary window.
+    pub(super) a11y_adapter: Option<crate::shell::a11y_bridge::ForestPublisher>,
+    /// Captured actions from the platform thread and their published routes.
     pub(super) a11y_actions: crate::shell::a11y_bridge::ActionQueue,
     /// Activation occurs on a platform thread; replay subtrees on the UI thread.
     pub(super) a11y_epoch: Option<u64>,
     pub(super) a11y_surface_layout: Vec<(uuid::Uuid, accesskit::Rect)>,
-    pub(super) surface_a11y: crate::foreign_a11y::ForeignA11y,
+    pub(super) surface_a11y: cambium_winit_a11y::guest::ForeignA11y<uuid::Uuid>,
     pub(super) host: Option<SurfaceHost>,
     pub(super) render_recovery: Option<Arc<genet_render_host::SharedRenderCore>>,
     pub(super) primary_recovery: Option<WindowRecovery>,

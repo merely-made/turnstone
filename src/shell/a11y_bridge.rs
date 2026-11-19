@@ -1,44 +1,17 @@
 // Copyright 2026 Mark Alan Boykin
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 
-//! The OS AccessKit bridge: app projection and retained foreign subtrees,
-//! composed on the UI thread and pushed to the platform assistive stack.
+//! Turnstone route admission for Cambium's shared native publisher.
 //!
-//! Turnstone has carried a complete in-process accessibility projection since
-//! the a11y module landed — `project_app` stitches chrome, panes, and the
-//! frozen projection into one `UxTree`, and the scenario lane asserts against
-//! it. What was missing was the last foot: nothing handed that tree to the OS,
-//! so a screen reader saw a bare window while the harness saw everything. The
-//! projection grammar plan's manual screen-reader pass fails its own preflight
-//! ("a11y_bridge: installed") without this file.
-//!
-//! The adapter's activation handler runs on whatever thread the platform
-//! calls in from, so it takes the latest tree out of a shared slot rather
-//! than reaching into `App`, which lives on the main thread and must stay
-//! there. The shell retains a safe host-only activation snapshot in the slot;
-//! activation wakes the UI thread to replay nested subtrees in parent order.
-//! Foreign semantic changes publish on their own wake through
-//! `update_if_active`, independently of pixel acquisition. Each event frame
-//! publishes the composed host and live document forest, including the frame
-//! that settles into idle. Composed snapshots do not prove screen-reader use.
-//!
-//! Actions are routed, not dropped, as of the day after the first pass: the
-//! platform hands an `ActionRequest` to whatever thread it likes, so the
-//! handler queues it and wakes the event loop, and the shell drains the
-//! queue on the main thread, resolves each target through the route table
-//! built beside the projection, and lowers it through the same update spine
-//! a keypress uses. A request whose node has no route lands in the event
-//! stream as `interaction-missed a11y-action`, because a miss a receipt
-//! cannot see is the failure this whole lane exists to prevent.
+//! Each native window has its own queue. Turnstone supplies route equality
+//! and rechecks the source and placement when dispatching an observed action.
 
-use accesskit::{ActionRequest, TreeUpdate};
-use std::sync::{Arc, Mutex};
-use winit::window::Window;
+use std::collections::HashMap;
+use std::sync::Arc;
 
-/// Queued assistive actions, drained by the shell on the main thread.
+use accesskit::TreeId;
+use cambium_winit_a11y::guest::{ForeignA11y, GuestAdmission};
+
 #[derive(Clone, Debug, PartialEq)]
 pub(super) enum Admission {
     #[cfg(test)]
@@ -46,209 +19,135 @@ pub(super) enum Admission {
     PoolDocument(super::document_a11y::PoolDocumentRoute),
     Host(crate::a11y::ActionEnvelope),
     Contributed(crate::contributed_a11y::PublishedRoute),
+    Guest(GuestAdmission<uuid::Uuid>),
 }
 
 pub(super) type PublishedAdmission = uxtree::generation::Published<Admission>;
 pub(super) type AdmissionKey = uxtree::envelope::TreeAddress;
+pub(super) type ActionQueue = cambium_winit_a11y::ActionQueue<Admission>;
+pub(super) type ForestPublisher = cambium_winit_a11y::ForestPublisher<Admission>;
+#[cfg(test)]
+pub(super) type QueuedAction = cambium_winit_a11y::QueuedAction<Admission>;
 
-pub(super) struct QueuedAction {
-    pub request: ActionRequest,
-    pub admission: Option<PublishedAdmission>,
-}
-
-#[derive(Default)]
-pub(crate) struct ActionQueueState {
-    pub(super) requests: Vec<QueuedAction>,
-    pub(super) published: uxtree::generation::GenerationMap<AdmissionKey, Admission>,
-}
-
-impl ActionQueueState {
-    pub(super) fn publish(
-        &mut self,
-        admissions: std::collections::HashMap<AdmissionKey, Admission>,
-    ) {
-        // Controls from a contributed pane or document placement share their
-        // immutable source. Compare each old/new pair structurally once here;
-        // allocation addresses only identify a comparison already performed.
-        // Both snapshots stay alive in the old/new admission maps throughout.
-        let mut compared_sources = std::collections::HashMap::new();
-        let mut compared_snapshots = std::collections::HashMap::new();
-        self.published
-            .publish(admissions, |before, after| match (before, after) {
-                (Admission::PoolDocument(before), Admission::PoolDocument(after)) => {
-                    before.key == after.key
-                        && before.local == after.local
-                        && before.placement == after.placement
-                        && *compared_snapshots
-                            .entry((Arc::as_ptr(&before.snapshot), Arc::as_ptr(&after.snapshot)))
-                            .or_insert_with(|| {
-                                super::document_a11y::snapshots_equal(
-                                    &before.snapshot,
-                                    &after.snapshot,
-                                )
-                            })
-                },
-                (Admission::Contributed(before), Admission::Contributed(after)) => {
-                    before.address == after.address
-                        && before.route == after.route
-                        && before.rect == after.rect
-                        && *compared_sources
-                            .entry((Arc::as_ptr(&before.source), Arc::as_ptr(&after.source)))
-                            .or_insert_with(|| {
-                                crate::contributed_a11y::source_trees_equal(
-                                    &before.source,
-                                    &after.source,
-                                )
-                            })
-                },
-                _ => before == after,
-            });
-    }
-
-    pub(super) fn publish_window(
-        &mut self,
-        served: bool,
-        mut admissions: std::collections::HashMap<AdmissionKey, Admission>,
-        envelopes: &crate::a11y::ActionEnvelopes,
-    ) {
-        if served {
-            for (&id, envelope) in envelopes {
-                admissions
-                    .entry((accesskit::TreeId::ROOT, id))
-                    .or_insert_with(|| Admission::Host(envelope.clone()));
-            }
-        } else {
-            admissions.clear();
-        }
-        self.publish(admissions);
-    }
-
-    pub(super) fn is_current(
-        &self,
-        request: &ActionRequest,
-        captured: &PublishedAdmission,
-    ) -> bool {
-        self.published
-            .is_current(&(request.target_tree, request.target_node), captured)
-    }
-
-    pub(super) fn enqueue(&mut self, request: ActionRequest) {
-        let mut admission = self
-            .published
-            .get(&(request.target_tree, request.target_node))
-            .cloned();
-        if let Some(PublishedAdmission {
-            generation,
-            admission: Admission::Host(envelope),
-        }) = &mut admission
-        {
-            envelope.stability = uxtree::envelope::Stability::Derived {
-                generation: Some(*generation),
-            };
-        }
-        self.requests.push(QueuedAction { request, admission });
+pub(super) fn admission_equivalence() -> impl FnMut(&Admission, &Admission) -> bool {
+    // Controls from one pane or placement share an immutable source. Compare
+    // each snapshot pair once for that publication. Allocation addresses key
+    // the memo only while the compared snapshots are both alive.
+    let mut compared_sources = HashMap::new();
+    let mut compared_snapshots = HashMap::new();
+    move |before, after| match (before, after) {
+        (Admission::PoolDocument(before), Admission::PoolDocument(after)) => {
+            before.key == after.key
+                && before.local == after.local
+                && before.placement == after.placement
+                && *compared_snapshots
+                    .entry((Arc::as_ptr(&before.snapshot), Arc::as_ptr(&after.snapshot)))
+                    .or_insert_with(|| {
+                        super::document_a11y::snapshots_equal(&before.snapshot, &after.snapshot)
+                    })
+        },
+        (Admission::Contributed(before), Admission::Contributed(after)) => {
+            before.address == after.address
+                && before.route == after.route
+                && before.rect == after.rect
+                && *compared_sources
+                    .entry((Arc::as_ptr(&before.source), Arc::as_ptr(&after.source)))
+                    .or_insert_with(|| {
+                        crate::contributed_a11y::source_trees_equal(&before.source, &after.source)
+                    })
+        },
+        _ => before == after,
     }
 }
 
-pub(crate) type ActionQueue = Arc<Mutex<ActionQueueState>>;
+fn with_host_routes(
+    mut admissions: HashMap<AdmissionKey, Admission>,
+    envelopes: &crate::a11y::ActionEnvelopes,
+) -> HashMap<AdmissionKey, Admission> {
+    for (&id, envelope) in envelopes {
+        admissions
+            .entry((TreeId::ROOT, id))
+            .or_insert_with(|| Admission::Host(envelope.clone()));
+    }
+    admissions
+}
+
+pub(super) fn window_admissions(
+    admissions: HashMap<AdmissionKey, Admission>,
+    envelopes: &crate::a11y::ActionEnvelopes,
+    forest: &ForeignA11y<uuid::Uuid>,
+) -> HashMap<AdmissionKey, Admission> {
+    let mut admissions = with_host_routes(admissions, envelopes);
+    for (address, guest) in forest.guest_admissions() {
+        admissions.entry(address).or_insert(Admission::Guest(guest));
+    }
+    admissions
+}
+
+pub(super) fn with_captured_generation(mut captured: PublishedAdmission) -> Admission {
+    if let Admission::Host(envelope) = &mut captured.admission {
+        envelope.stability = uxtree::envelope::Stability::Derived {
+            generation: Some(captured.generation),
+        };
+    }
+    captured.admission
+}
+
+/// Connect a native window to the common publisher and wake the existing UI
+/// event loop when the platform queues an action or activates the adapter.
+pub(super) fn install(
+    window: &winit::window::Window,
+    queue: ActionQueue,
+    wake: winit::event_loop::EventLoopProxy<crate::shell::ShellEvent>,
+    name: &str,
+) -> ForestPublisher {
+    let publisher = ForestPublisher::install(
+        window,
+        queue,
+        move || {
+            let _ = wake.send_event(crate::shell::ShellEvent::ActorWake);
+        },
+        name,
+    );
+    match publisher.status() {
+        genet_winit_host::BridgeStatus::Installed => tracing::info!("a11y_bridge: installed"),
+        genet_winit_host::BridgeStatus::Unavailable => {
+            tracing::warn!("a11y bridge installation failed")
+        },
+    }
+    publisher
+}
+
+#[cfg(test)]
+pub(super) fn publish_for_test(
+    queue: &ActionQueue,
+    admissions: HashMap<AdmissionKey, Admission>,
+) -> HashMap<AdmissionKey, PublishedAdmission> {
+    let keys: Vec<_> = admissions.keys().copied().collect();
+    queue.publish_source(admissions, admission_equivalence());
+    keys.into_iter()
+        .map(|(target_tree, target_node)| {
+            let captured = queue
+                .admission(&accesskit::ActionRequest {
+                    action: accesskit::Action::Click,
+                    target_tree,
+                    target_node,
+                    data: None,
+                })
+                .expect("the supplied admission was published");
+            ((target_tree, target_node), captured)
+        })
+        .collect()
+}
 
 #[cfg(test)]
 #[path = "a11y_bridge/admission_tests.rs"]
 mod admission_tests;
 
-/// Initial native activation must never enter a guest before the ordered
-/// complete forest has installed its subtrees.
-pub(super) fn safe_initial(update: &TreeUpdate) -> TreeUpdate {
-    let mut initial = update.clone();
-    let root = initial.tree.as_ref().expect("complete host tree").root;
-    initial.focus = root;
-    initial.nodes.retain(|(id, _)| *id == root);
-    for (_, node) in &mut initial.nodes {
-        node.clear_children();
-        node.clear_tree_id();
-    }
-    initial
-}
-
-/// Each native window owns the same shared Genet bridge and captures the
-/// currently served admission synchronously in its platform action callback.
-pub(crate) fn install(
-    window: &Window,
-    queue: ActionQueue,
-    wake: winit::event_loop::EventLoopProxy<crate::shell::ShellEvent>,
-    name: &str,
-) -> genet_winit_host::AccessKitBridge {
-    let mut bridge = genet_winit_host::AccessKitBridge::with_action_handler(
-        move || {
-            let _ = wake.send_event(crate::shell::ShellEvent::ActorWake);
-        },
-        move |request| {
-            queue
-                .lock()
-                .expect("a11y action queue poisoned")
-                .enqueue(ActionRequest {
-                    action: request.action,
-                    target_tree: request.target_tree,
-                    target_node: request.target_node,
-                    data: request.data,
-                })
-        },
-    );
-    let root = accesskit::NodeId(0);
-    let mut node = accesskit::Node::new(accesskit::Role::Window);
-    node.set_label(name);
-    let initial = TreeUpdate {
-        tree_id: accesskit::TreeId::ROOT,
-        tree: Some(accesskit::Tree::new(root)),
-        nodes: vec![(root, node)],
-        focus: root,
-    };
-    if let Err(error) = bridge.install(window, initial) {
-        tracing::warn!(%error, "a11y bridge installation failed");
-    } else {
-        tracing::info!("a11y_bridge: installed");
-    }
-    bridge
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[test]
-    fn content_pool_activation_starts_on_guest_free_root_before_window_replay() {
-        let root = accesskit::NodeId(1);
-        let child = accesskit::NodeId(2);
-        let mut window = accesskit::Node::new(accesskit::Role::Window);
-        window.set_label("Turnstone lens 0");
-        window.set_children(vec![child]);
-        let mut graft = accesskit::Node::new(accesskit::Role::Group);
-        graft.set_tree_id(uxtree::graft::tree_id_for_path("lens/guest"));
-        let update = TreeUpdate {
-            tree_id: accesskit::TreeId::ROOT,
-            nodes: vec![(root, window), (child, graft)],
-            tree: Some(accesskit::Tree::new(root)),
-            focus: child,
-        };
-        let initial = safe_initial(&update);
-        assert_eq!(
-            initial.focus, root,
-            "activation never focuses an uninstalled guest"
-        );
-        assert_eq!(
-            initial.nodes.len(),
-            1,
-            "only the complete host root is served initially"
-        );
-        assert!(initial.nodes[0].1.children().is_empty());
-        assert!(
-            initial
-                .nodes
-                .iter()
-                .all(|(_, node)| node.tree_id().is_none())
-        );
-        assert_eq!(initial.nodes[0].1.label(), Some("Turnstone lens 0"));
-        assert_eq!(update.focus, child, "ordered final focus remains unchanged");
-    }
+    use accesskit::ActionRequest;
 
     #[test]
     fn queued_admission_stays_on_its_published_revision_and_placement() {
@@ -269,49 +168,44 @@ mod tests {
                 rect: crate::surface::Rect::new(10.0, 20.0, 30.0, 40.0),
             },
         };
-        let mut queue = ActionQueueState::default();
-        queue.publish(std::collections::HashMap::from([(
-            (tree, node),
-            Admission::Document(route.clone()),
-        )]));
+        let queue = ActionQueue::default();
+        publish_for_test(
+            &queue,
+            std::collections::HashMap::from([((tree, node), Admission::Document(route.clone()))]),
+        );
         let request = || accesskit::ActionRequest {
             target_tree: tree,
             target_node: node,
             action: accesskit::Action::Click,
             data: None,
         };
-        queue.enqueue(request());
+        queue.enqueue_source(request());
         let mut newer = route.clone();
         newer.revision = 5;
         newer.placement.rect.x = 100.0;
-        queue.publish(std::collections::HashMap::from([(
-            (tree, node),
-            Admission::Document(newer.clone()),
-        )]));
-        queue.enqueue(request());
+        publish_for_test(
+            &queue,
+            std::collections::HashMap::from([((tree, node), Admission::Document(newer.clone()))]),
+        );
+        queue.enqueue_source(request());
+        let queued = queue.take();
         assert_eq!(
-            queue.requests[0]
-                .admission
-                .as_ref()
-                .map(|a| a.admission.clone()),
+            queued[0].admission.as_ref().map(|a| a.admission.clone()),
             Some(Admission::Document(route))
         );
         assert_eq!(
-            queue.requests[1]
-                .admission
-                .as_ref()
-                .map(|a| a.admission.clone()),
+            queued[1].admission.as_ref().map(|a| a.admission.clone()),
             Some(Admission::Document(newer.clone()))
         );
-        assert!(!queue.is_current(&request(), queue.requests[0].admission.as_ref().unwrap()));
-        assert!(queue.is_current(&request(), queue.requests[1].admission.as_ref().unwrap()));
-        queue.publish(std::collections::HashMap::new());
-        queue.publish(std::collections::HashMap::from([(
-            (tree, node),
-            Admission::Document(newer),
-        )]));
+        assert!(!queue.is_current(&request(), queued[0].admission.as_ref().unwrap()));
+        assert!(queue.is_current(&request(), queued[1].admission.as_ref().unwrap()));
+        publish_for_test(&queue, std::collections::HashMap::new());
+        publish_for_test(
+            &queue,
+            std::collections::HashMap::from([((tree, node), Admission::Document(newer))]),
+        );
         assert!(
-            !queue.is_current(&request(), queue.requests[1].admission.as_ref().unwrap()),
+            !queue.is_current(&request(), queued[1].admission.as_ref().unwrap()),
             "hidden and reopened publication retires queued admission"
         );
     }

@@ -187,10 +187,7 @@ impl Shell {
         let epoch = lens.a11y.activation_epoch();
         if lens.a11y_epoch != Some(epoch) || lens.a11y_scope.session != session {
             lens.a11y_forest.reset_publication();
-            lens.a11y_actions
-                .lock()
-                .expect("lens a11y queue poisoned")
-                .publish(Default::default());
+            lens.a11y_actions.clear_publication();
             lens.a11y_epoch = Some(epoch);
             lens.a11y_scope.session = session;
         }
@@ -240,7 +237,6 @@ impl Shell {
             }
         }
         lens.a11y_tree = Some(update.clone());
-        let initial = super::a11y_bridge::safe_initial(&update);
         let updates = match lens
             .a11y_forest
             .frame_with_guests(update, &visible, &frame.guests)
@@ -253,15 +249,21 @@ impl Shell {
         };
         let served = lens
             .a11y
-            .update_batch_at(epoch, initial, updates)
+            .publish_at(
+                epoch,
+                updates,
+                lens.a11y_forest.tree_lineages(),
+                super::a11y_bridge::window_admissions(
+                    frame.admissions,
+                    &frame.routes,
+                    &lens.a11y_forest,
+                ),
+                super::a11y_bridge::admission_equivalence(),
+            )
             .unwrap_or_else(|error| {
                 tracing::warn!(%error,"lens accessibility publication refused");
                 false
             });
-        lens.a11y_actions
-            .lock()
-            .expect("lens a11y queue poisoned")
-            .publish_window(served, frame.admissions, &frame.routes);
         lens.a11y_routes = frame.routes;
         lens.a11y_placements = placements;
         if !served {

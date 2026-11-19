@@ -55,7 +55,7 @@ fn tooling_snapshot(
     routes: &ActionEnvelopes,
     public_fixture: bool,
 ) -> Value {
-    let protected = crate::foreign_a11y::protected_addresses(forest);
+    let protected = crate::a11y::protected_addresses(forest);
     let trees: Vec<_> = forest
         .iter()
         .map(|tree| {

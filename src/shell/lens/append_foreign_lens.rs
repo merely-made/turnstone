@@ -3,7 +3,7 @@
 
 pub(in super::super) fn append_foreign_lens(
     frame: &mut super::super::document_a11y::Projected,
-    forest: &crate::foreign_a11y::ForeignA11y,
+    forest: &cambium_winit_a11y::guest::ForeignA11y,
     placements: Vec<(uuid::Uuid, accesskit::Rect)>,
     focus: crate::surface::FocusTarget,
 ) -> Vec<uuid::Uuid> {

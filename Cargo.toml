@@ -46,6 +46,7 @@ tabard = { git = "https://github.com/merely-made/graphshell.git", branch = "main
 tabard-workshop = { git = "https://github.com/merely-made/graphshell.git", branch = "main", features = ["native-host"] }
 mandrake = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 cambium-desktop = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
+cambium-a11y.workspace = true
 cambium-rootstock = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 
 # The library this app is the reference host for: graph truth and the

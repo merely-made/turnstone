@@ -31,7 +31,7 @@ fn micron_host_editor_exposes_current_field_and_prompt_without_secrets() {
         "Focus does not reset or submit the form"
     );
     let host = project_app(&app).to_tree_update(host_input_focus(&app));
-    let mut publication = crate::foreign_a11y::ForeignA11y::new();
+    let mut publication = cambium_winit_a11y::guest::ForeignA11y::<uuid::Uuid>::new();
     let safe = publication.initial_host(host.clone(), &[]).unwrap();
     let consumer = accesskit_consumer::Tree::new(safe, true);
     assert_eq!(

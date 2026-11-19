@@ -49,7 +49,6 @@ pub mod document_find;
 mod document_pump;
 mod download;
 mod feed;
-mod foreign_a11y;
 mod frame_a11y;
 mod frame_controls;
 mod frame_style;

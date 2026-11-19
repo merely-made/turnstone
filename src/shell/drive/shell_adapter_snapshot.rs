@@ -251,7 +251,7 @@ impl Shell {
             .with_field(
                 "host-foreign-a11y-text",
                 if public_fixture_a11y_receipt().unwrap_or(false) {
-                    self.surface_a11y.published_text()
+                    crate::a11y::guest_diagnostics::published_text(&self.surface_a11y)
                 } else {
                     String::new()
                 },

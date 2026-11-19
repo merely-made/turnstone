@@ -272,7 +272,7 @@ fn native_surface_lens_floating_tile_keeps_actual_appearance() {
     assert_eq!(contents.pool.placement(&moved.id).unwrap().window, 1);
 }
 fn publish(
-    forest: &mut crate::foreign_a11y::ForeignA11y,
+    forest: &mut cambium_winit_a11y::guest::ForeignA11y,
     plan: &[crate::surface::Surface],
     focus: crate::surface::FocusTarget,
 ) -> Vec<TreeUpdate> {
@@ -299,7 +299,7 @@ fn publish(
 #[test]
 fn native_surface_lens_actual_plan_controls_supplier_forest_action_and_retirement() {
     let (mut app, mut contents, node, events) = fixture(Paint::Frame);
-    let mut primary_forest = crate::foreign_a11y::ForeignA11y::new();
+    let mut primary_forest = cambium_winit_a11y::guest::ForeignA11y::new();
     let producer = contents.surface_mut(&node).unwrap();
     primary_forest
         .admit(
@@ -322,7 +322,7 @@ fn native_surface_lens_actual_plan_controls_supplier_forest_action_and_retiremen
     app.update(Action::TearOutActivePane);
     let primary = super::super::primary_content_plan(&app, &contents, 1200, 900);
     let lens_plan = lens_content_plan(&app, &contents, 0, 800, 600);
-    let mut lens_forest = crate::foreign_a11y::ForeignA11y::new();
+    let mut lens_forest = cambium_winit_a11y::guest::ForeignA11y::new();
     lens_forest.sync_retained_from(&primary_forest);
     publish(&mut primary_forest, &primary, app.focus);
     let updates = publish(&mut lens_forest, &lens_plan, app.focus);

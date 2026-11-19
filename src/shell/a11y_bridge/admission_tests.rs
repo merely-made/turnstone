@@ -4,7 +4,7 @@
 use super::*;
 use crate::contributed_a11y::{ContributedA11yRoute, PublishedRoute, count_source_comparisons};
 use crate::{panes::PaneId, surface::Rect};
-use accesskit::{Action, Node, NodeId, Role, Tree, TreeId};
+use accesskit::{Action, ActionRequest, Node, NodeId, Role, Tree, TreeId, TreeUpdate};
 use std::collections::HashMap;
 
 const CONTROLS: u64 = 64;
@@ -56,16 +56,17 @@ fn pane_admissions(pane: PaneId, source: TreeUpdate) -> HashMap<(TreeId, NodeId)
 
 #[test]
 fn contributed_sources_keep_independent_semantic_results() {
-    let mut queue = ActionQueueState::default();
+    let queue = ActionQueue::default();
     let mut before = admissions(source());
     before.extend(pane_admissions(PaneId(2), source()));
-    queue.publish(before);
-    let captured = queue.published.entries().clone();
+    let captured = publish_for_test(&queue, before);
     let mut changed = source();
     changed.nodes[1].1.set_label("Changed second pane");
     let mut after = admissions(source());
     after.extend(pane_admissions(PaneId(2), changed));
-    let comparisons = count_source_comparisons(|| queue.publish(after));
+    let comparisons = count_source_comparisons(|| {
+        publish_for_test(&queue, after);
+    });
     assert_eq!(comparisons, 2, "each independent source is compared once");
     for (target, admission) in captured {
         let Admission::Contributed(route) = &admission.admission else {
@@ -90,10 +91,11 @@ fn request(target: &(TreeId, NodeId)) -> ActionRequest {
 
 #[test]
 fn contributed_republication_compares_each_shared_source_once() {
-    let mut queue = ActionQueueState::default();
-    queue.publish(admissions(source()));
-    let before = queue.published.entries().clone();
-    let comparisons = count_source_comparisons(|| queue.publish(admissions(source())));
+    let queue = ActionQueue::default();
+    let before = publish_for_test(&queue, admissions(source()));
+    let comparisons = count_source_comparisons(|| {
+        publish_for_test(&queue, admissions(source()));
+    });
     assert_eq!(
         comparisons, 1,
         "one equal source must not be compared again for every control"
@@ -129,9 +131,8 @@ fn contributed_source_changes_retire_every_queued_control() {
         "action",
         "transform",
     ] {
-        let mut queue = ActionQueueState::default();
-        queue.publish(admissions(source()));
-        let before = queue.published.entries().clone();
+        let queue = ActionQueue::default();
+        let before = publish_for_test(&queue, admissions(source()));
         let mut changed = source();
         match change {
             "label" => changed.nodes[1].1.set_label("Changed"),
@@ -146,7 +147,9 @@ fn contributed_source_changes_retire_every_queued_control() {
                 .set_transform(accesskit::Affine::translate((1.0, 2.0))),
             _ => unreachable!(),
         }
-        let comparisons = count_source_comparisons(|| queue.publish(admissions(changed)));
+        let comparisons = count_source_comparisons(|| {
+            publish_for_test(&queue, admissions(changed));
+        });
         assert_eq!(comparisons, 1, "{change}: compare the changed source once");
         for (target, captured) in before {
             assert!(
@@ -160,9 +163,9 @@ fn contributed_source_changes_retire_every_queued_control() {
 #[test]
 fn contributed_route_placement_session_and_target_changes_remain_stale() {
     for change in ["rect", "pane", "generation", "node", "removed"] {
-        let mut queue = ActionQueueState::default();
-        queue.publish(admissions(source()));
-        let (&target, captured) = queue.published.entries().iter().next().unwrap();
+        let queue = ActionQueue::default();
+        let before = publish_for_test(&queue, admissions(source()));
+        let (&target, captured) = before.iter().next().unwrap();
         let captured = captured.clone();
         let mut changed = admissions(source());
         if change == "removed" {
@@ -179,7 +182,7 @@ fn contributed_route_placement_session_and_target_changes_remain_stale() {
                 _ => unreachable!(),
             }
         }
-        queue.publish(changed);
+        publish_for_test(&queue, changed);
         assert!(
             !queue.is_current(&request(&target), &captured),
             "{change}: source equality cannot revive a changed route"
@@ -203,36 +206,37 @@ fn queued_omnibar_click_cannot_follow_a_reused_row() {
             .iter()
             .any(|(node, value)| *node == id && value.supports_action(Action::Click))
     );
-    let mut queue = ActionQueueState::default();
-    queue.publish_window(true, HashMap::new(), &routes);
-    queue.enqueue(ActionRequest {
+    let queue = ActionQueue::default();
+    publish_for_test(&queue, with_host_routes(HashMap::new(), &routes));
+    queue.enqueue_source(ActionRequest {
         action: Action::Click,
         target_tree: TreeId::ROOT,
         target_node: id,
         data: None,
     });
-    let queued = queue.requests.pop().unwrap();
+    let queued = queue.take().pop().unwrap();
     let captured = queued.admission.unwrap();
 
-    queue.publish_window(true, HashMap::new(), &routes);
+    publish_for_test(&queue, with_host_routes(HashMap::new(), &routes));
     assert!(queue.is_current(&queued.request, &captured));
     app.omnibar.suggestions = vec![Suggestion::Go {
         url: "https://second.example/".into(),
     }];
     let (_, new_routes) = a11y::project_app_with_routes(&app);
     assert_eq!(routes[&id].address, new_routes[&id].address);
-    queue.publish_window(true, HashMap::new(), &new_routes);
+    publish_for_test(&queue, with_host_routes(HashMap::new(), &new_routes));
     assert!(!queue.is_current(&queued.request, &captured));
 
     // The app can change before another publication reaches the platform.
     // The owner also refuses the observed row against that live state.
-    let Admission::Host(envelope) = captured.admission else {
+    let generation = captured.generation;
+    let Admission::Host(envelope) = with_captured_generation(captured) else {
         panic!("missing host envelope")
     };
     assert_eq!(
         envelope.stability,
         uxtree::envelope::Stability::Derived {
-            generation: Some(captured.generation)
+            generation: Some(generation)
         },
     );
     assert!(a11y::apply_route(&mut app, Some(&envelope.provenance), id).is_empty());

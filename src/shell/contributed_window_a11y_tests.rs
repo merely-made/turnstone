@@ -107,7 +107,7 @@ fn publish(
     f: &Fixture,
     origin: SpaceRef,
     action: A11yAction,
-) -> (a11y_bridge::ActionQueueState, a11y_bridge::QueuedAction) {
+) -> (a11y_bridge::ActionQueue, a11y_bridge::QueuedAction) {
     let plan = match origin {
         SpaceRef::Primary => primary_content_plan(&f.app, &f.contents, 800, 600),
         SpaceRef::Lens(ordinal) => lens::lens_content_plan(&f.app, &f.contents, ordinal, 800, 600),
@@ -131,8 +131,9 @@ fn publish(
                 .map(|(target, _)| (guest.tree_id, *target))
         })
         .unwrap();
-    let mut queue = a11y_bridge::ActionQueueState::default();
-    queue.publish(
+    let queue = a11y_bridge::ActionQueue::default();
+    a11y_bridge::publish_for_test(
+        &queue,
         projected
             .routes
             .into_iter()
@@ -145,21 +146,16 @@ fn publish(
         target_node: target,
         data: None,
     };
-    let captured = queue.published.get(&(tree, target)).unwrap().clone();
-    // This captures exactly the synchronous platform queue publication before
-    // an earlier host request mutates App. No intermediate publish follows.
-    (
-        queue,
-        a11y_bridge::QueuedAction {
-            request,
-            admission: Some(captured),
-        },
-    )
+    // Capture through the shared queue before an earlier host request
+    // mutates App. No intermediate publication follows.
+    queue.enqueue_source(request);
+    let queued = queue.take().pop().unwrap();
+    (queue, queued)
 }
 fn deliver(
     f: &mut Fixture,
     origin: Option<SpaceRef>,
-    queue: &a11y_bridge::ActionQueueState,
+    queue: &a11y_bridge::ActionQueue,
     queued: &a11y_bridge::QueuedAction,
 ) -> bool {
     let captured = queued.admission.as_ref().unwrap();
@@ -375,7 +371,7 @@ fn contributed_graft_resolves_each_published_node_by_tree_and_local_id() {
     let (host, _) =
         crate::a11y::project_lens_with_contributions(&f.app, 0, projected.trees).unwrap();
     let host = host.to_tree_update(None);
-    let mut forest = crate::foreign_a11y::ForeignA11y::new();
+    let mut forest = cambium_winit_a11y::guest::ForeignA11y::<uuid::Uuid>::new();
     let initial = forest
         .initial_host_with_guests(host.clone(), &[], &projected.guests)
         .unwrap();

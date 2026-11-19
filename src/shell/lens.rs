@@ -46,10 +46,10 @@ pub(super) struct LensWindow {
     /// tombstones on close).
     pub(super) ordinal: usize,
     pub(super) focused: bool,
-    pub(super) a11y: genet_winit_host::AccessKitBridge,
+    pub(super) a11y: super::a11y_bridge::ForestPublisher,
     pub(super) a11y_actions: super::a11y_bridge::ActionQueue,
     pub(super) a11y_epoch: Option<u64>,
-    pub(super) a11y_forest: crate::foreign_a11y::ForeignA11y,
+    pub(super) a11y_forest: cambium_winit_a11y::guest::ForeignA11y<uuid::Uuid>,
     pub(super) a11y_scope: crate::window_projection::WindowScope,
     pub(super) a11y_routes: crate::a11y::ActionEnvelopes,
     pub(super) a11y_tree: Option<accesskit::TreeUpdate>,

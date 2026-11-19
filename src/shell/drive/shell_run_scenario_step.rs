@@ -516,7 +516,7 @@ impl Shell {
                 let path = self
                     .shared_out_dir
                     .join(format!("{name}.foreign-a11y.json"));
-                let mut diagnostic = self.surface_a11y.publication_diagnostic(public_fixture);
+                let mut diagnostic = crate::a11y::guest_diagnostics::publication_diagnostic(&self.surface_a11y, public_fixture);
                 #[cfg(all(
                     feature = "servo",
                     any(windows, target_os = "macos", target_os = "linux")

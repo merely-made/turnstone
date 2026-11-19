@@ -79,7 +79,7 @@ impl Shell {
             ) {
                 Ok(host) => {
                     debug_assert!(Arc::ptr_eq(&shared_core, &host.shared_core()));
-                    let a11y_actions = Arc::new(std::sync::Mutex::new(Default::default()));
+                    let a11y_actions = super::super::a11y_bridge::ActionQueue::default();
                     let a11y = super::super::a11y_bridge::install(
                         &window,
                         a11y_actions.clone(),
@@ -115,7 +115,7 @@ impl Shell {
                             a11y,
                             a11y_actions,
                             a11y_epoch: None,
-                            a11y_forest: crate::foreign_a11y::ForeignA11y::new(),
+                            a11y_forest: Default::default(),
                             a11y_scope: super::super::window_a11y::scope(
                                 ordinal + 1,
                                 self.app.session_id.as_uuid().as_u128(),

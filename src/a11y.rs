@@ -125,7 +125,7 @@ mod tree_lines;
 pub use tree_lines::tree_lines;
 #[path = "a11y/forest_lines.rs"]
 mod forest_lines;
-pub(crate) use forest_lines::{ObservedNode, forest_lines, forest_nodes};
+pub(crate) use forest_lines::{forest_lines, forest_nodes};
 #[path = "a11y/matches_lines.rs"]
 mod matches_lines;
 pub(crate) use matches_lines::matches_lines;
@@ -162,3 +162,8 @@ pub(crate) use project_app_with_routes_and_contributions::project_app_with_route
 #[path = "a11y/apply_route.rs"]
 mod apply_route;
 pub(crate) use apply_route::apply_route;
+#[path = "a11y/guest_diagnostics.rs"]
+pub(crate) mod guest_diagnostics;
+#[path = "a11y/protected_nodes.rs"]
+mod protected_nodes;
+pub(crate) use protected_nodes::protected_addresses;
