@@ -45,6 +45,7 @@ fn knot_projection_recipe(
             kind: "knot.outline".to_owned(),
             key: "source_range".to_owned(),
             value: Some("heading".to_owned()),
+            ..Default::default()
         },
         encoding: Encoding {
             x: Channel::Field("source_range.start".to_owned()),
