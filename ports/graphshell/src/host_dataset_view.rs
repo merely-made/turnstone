@@ -87,6 +87,7 @@ pub fn viewer_definition(dataset: &ProjectionDataset) -> ProjectionDefinition {
             kind: "nodes".into(),
             key: "occurrence_id".into(),
             value: None,
+            ..Default::default()
         },
         encoding: Encoding {
             x: Channel::Field("occurrence_id".into()),

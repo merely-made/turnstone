@@ -1135,6 +1135,7 @@ mod tests {
                 kind: "nodes".into(),
                 key: "topic".into(),
                 value: None,
+                ..Default::default()
             },
             encoding: Encoding {
                 x: Channel::Field("topic_x".into()),
