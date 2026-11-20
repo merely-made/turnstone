@@ -10,6 +10,9 @@ scenarios/fixtures/sky_receipt_v1_boston_2024-04-09.json -text
 # Frame scenarios keep LF endings.
 scenarios/frame*.scn text eol=lf
 
+# Pelt's Reader receipt checks these source bytes against the embedded fixture.
+ports/pelt/examples/workspace/reader/index.html text eol=lf
+
 # The reference app (from Mere, engine split U4/U5). Fixtures whose bytes its tests pin.
 ports/graphshell/tests/fixtures/g1_loopback.html text eol=lf
 ports/graphshell/tests/fixtures/g4_session_switch.html text eol=lf

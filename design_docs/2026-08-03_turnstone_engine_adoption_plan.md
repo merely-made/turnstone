@@ -418,6 +418,20 @@ rather than a fresh headed capture here).
 
 ### E3. Activation model
 
+**Smolweb packaging, checked 2026-11-19.** Turnstone links `mere-lanes/smolweb`
+in its native build and registers the Nematic session engines at startup.
+Standalone Pelt selects that lane at build time with `smolweb`. The Gemtext
+receipt exercises a host-held document and link navigation through the
+registered engine. Errand supplies protocol transport beneath the document
+lane, in its own repository under engine-split D32.
+
+The host plan's single native app can support separately installed engine
+packs by attaching their processes through the same inventory as built-ins.
+The current Smolweb wiring is compiled in. E3 owns runtime enablement and
+per-session selection, and the Verso charter owns carrying live state across
+a swap. Installing a producer, choosing it for new content, and transferring
+an existing session have separate completion conditions.
+
 The picker plan's decision 1 and 2: a global `EngineEnableSet` app setting
 with per-session override, folded into routing's `is_available` closure.
 Registered-but-disabled engines stay in the picker as switchable-off rows.
