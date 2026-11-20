@@ -153,3 +153,35 @@ fixture. H4r tracks host-specific native prompts and carry management.
 The final Turnstone library run passed 1,437 tests with nine ignored.
 The fixture stores and generated fixture executable were removed after the
 run. The retained evidence fits within the workspace's 100 MB cap.
+
+## 2026-11-19 N2 saved view-state handoff on T-PC
+
+The headed run used Turnstone `890d0eba` with its current dependency lock
+and the candidate Djinn based on Graphshell `2b0b5ff4`. The exact Graphshell
+source delta and executable hashes are recorded in `inputs.json`. All
+fixture changes and inspections used the admitted application routes.
+The scenarios, screenshots, and exact before-and-after reads are in
+`~/Code/testing/turnstone/receipts/2026-11-19_view-handoff/linux-headed`
+on T-PC.
+
+- With the owner setting off, the native pane opened the legacy-only
+  session in Spectral with no selected record. Both Turnstone slots for
+  that session were still absent in the admitted read.
+- With the setting on, first open recovered Graphshell's Grid layout and
+  the saved selected record in that session. The other session showed
+  Turnstone's existing Spiral layout and its own selected record. Both
+  original Graphshell views matched their readings from before the handoff.
+- After restarting Turnstone and Djinn with the setting off again, both
+  Turnstone views matched their first-open state. The restarted window
+  showed both expected layouts and focus. All three scenarios returned
+  `RESULT ok` with five nonblank captures.
+
+Djinn copies the layout strategy for the session and focus from its
+device-local attention slot. Older journaled views can supply layout.
+Writable live sessions participate, and the archive test confirms the
+archived session stays read-only. The layout entry, device attention
+update, and handoff markers share a transaction. Graphshell's seven
+attention tests passed, including preservation of existing and opaque
+Turnstone view records and a competing write that refused the whole
+handoff. Turnstone's locked library suite passed 1,420 tests with nine
+ignored. The generated profile and custody stores were removed.
