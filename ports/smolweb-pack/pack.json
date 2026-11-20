@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "engine": "nematic.gemtext.pack",
+  "scheme": "gemini",
+  "content_type": "text/gemini"
+}

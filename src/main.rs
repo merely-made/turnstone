@@ -32,6 +32,15 @@
 //! height-by-degree.
 
 fn main() {
+    let mut args = std::env::args_os().skip(1);
+    let command = args.next();
+    if command.as_deref() == Some(std::ffi::OsStr::new("engine-pack")) {
+        if let Err(error) = turnstone::engine_pack::command(args) {
+            eprintln!("{error}");
+            std::process::exit(1);
+        }
+        return;
+    }
     // The direct, unsandboxed route (see `turnstone::launch` for the other,
     // sandboxed one: CEF's Windows bootstrap calling the sibling
     // `sandbox_bootstrap_win` crate's `RunWinMain` cdylib export).

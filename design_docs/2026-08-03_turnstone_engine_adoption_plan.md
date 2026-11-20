@@ -432,6 +432,35 @@ per-session selection, and the Verso charter owns carrying live state across
 a swap. Installing a producer, choosing it for new content, and transferring
 an existing session have separate completion conditions.
 
+#### Local Gemini pack proof
+
+The first pack is Gemini Gemtext. The standalone `turnstone-smolweb-pack`
+executable lowers Turnstone's fetched body into Inker's `EngineDocument`.
+Turnstone still owns Gemini trust, fetching, and the retained document pane.
+The Inspector's Viewer picker offers the pack when installed and can select
+it for a Gemini page. Auto continues to use the built-in lane.
+
+Build the pack with `cargo build -p turnstone-smolweb-pack`. Put the built
+executable beside `ports/smolweb-pack/pack.json` in a bundle directory. Run
+`turnstone engine-pack install <bundle>` with a trusted local bundle and
+`turnstone engine-pack remove smolweb` to detach it. Installation and removal
+apply to the current Turnstone data root. The running native host refreshes
+its picker on its next inventory poll.
+
+The acceptance scenario installs and removes the pack while the native
+window stays open. It checks that the pack renders a loopback Gemini page
+with accessible links and that Auto can use the built-in lane after removal.
+The proof uses the ordinary desktop process permissions and a versioned
+local request. Pack distribution, the general enable set, and live state
+transfer remain open.
+
+**Windows receipt, 2026-11-19.** `scenarios/smolweb_engine_pack.scn` passed
+in one native window. The picker marked the saved choice unavailable after
+the worker was removed. The vacant bundle control could not select the
+pack, and the invalid executable control reported a session spawn failure.
+Raw output and captures are under
+`Code/testing/turnstone/receipts/smolweb-pack/`.
+
 The picker plan's decision 1 and 2: a global `EngineEnableSet` app setting
 with per-session override, folded into routing's `is_available` closure.
 Registered-but-disabled engines stay in the picker as switchable-off rows.

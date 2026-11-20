@@ -9,7 +9,7 @@
 # `ports/pelt` and `ports/tabard/desktop` are the Pelt and Tabard binaries, from Mere
 # (engine split D36): their libraries are Graphshell's (`pelt-desktop`,
 # `tabard-workshop`) or still Mere's (`pelt-core`).
-members = [".", "sandbox_bootstrap_win", "ports/pelt", "ports/tabard/desktop",
+members = [".", "sandbox_bootstrap_win", "ports/pelt", "ports/smolweb-pack", "ports/tabard/desktop",
     # The reference app from Mere (engine split D23, D104): Mere's subpaths kept.
     "ports/graphshell", "ports/graphshell/mere", "ports/graphshell/dramatis-pane",
     "ports/graphshell/blocks", "crates/graphshell/graphshell-mcp"]

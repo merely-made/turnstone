@@ -22,6 +22,7 @@ impl ApplicationHandler<crate::shell::ShellEvent> for Shell {
         // Replace this fallback when the engines expose a host wake callback.
         self.drain_surface_web_events();
         let now = std::time::Instant::now();
+        self.poll_engine_pack(now);
         let document_due = self.document_clock.poll_due(now);
         if document_due {
             self.pump_visible_documents();
@@ -106,6 +107,7 @@ impl ApplicationHandler<crate::shell::ShellEvent> for Shell {
             .deadline(active, now)
             .into_iter()
             .chain(self.document_clock.deadline(now))
+            .chain(std::iter::once(self.engine_pack_poll))
             .min()
             .unwrap_or_else(|| now + std::time::Duration::from_secs(60));
         let editor_idle = self.service_theme_editor(event_loop);

@@ -1,0 +1,44 @@
+# The driver installs after 01_before_install and removes after 02_pack_live.
+settle 30
+key escape
+open gemini://127.0.0.1:${TURNSTONE_A11Y_GEMINI_PORT}/capsule.gmi
+settle 40
+act Open Inspector pane
+settle 10
+act Maximize pane
+settle 10
+assert row Viewer: auto
+click surface:inspector role:button Change viewer
+settle 10
+capture 01_before_install
+settle 90
+scroll 620 430 360
+settle 10
+click-row nematic.gemtext.pack
+settle 10
+assert row Viewer: nematic.gemtext.pack
+act Maximize pane
+settle 10
+act Toggle live content
+wait
+assert content-live
+assert snap browser-current-engine == nematic.gemtext.pack
+assert a11y link: First Gemini >> link: Second Gemini
+capture 02_pack_live
+settle 90
+act Open Inspector pane
+settle 10
+act Maximize pane
+settle 10
+scroll 620 430 -1200
+settle 10
+capture 03_removed_choice
+click-row auto
+settle 10
+assert row Viewer: auto
+act Maximize pane
+settle 10
+wait 120
+assert content-live
+assert snap browser-current-engine == nematic.gemtext
+capture 04_builtin_after_remove

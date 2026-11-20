@@ -1,0 +1,15 @@
+[package]
+name = "turnstone-smolweb-pack"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.97.1"
+license = "MPL-2.0"
+publish = false
+
+[dependencies]
+inker.workspace = true
+nematic = { git = "https://github.com/merely-made/inker.git", branch = "main", default-features = false }
+serde_json.workspace = true
+
+[lints]
+workspace = true

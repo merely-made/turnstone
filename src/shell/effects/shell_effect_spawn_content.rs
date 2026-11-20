@@ -350,7 +350,19 @@ impl Shell {
                     tracing::debug!(%node, %url, "live engine does not support incremental body replacement");
                     return;
                 };
-                replace_fetched_smolweb_body(smolweb, &url, &document);
+                if engine == crate::engine_pack::ENGINE_ID {
+                    let mut input = inker::EngineInput::new(&url, &document.body);
+                    input.content_type = document.content_type.clone();
+                    match self.smolweb_pack.lower(&input) {
+                        Ok(document) => smolweb.replace_document(document),
+                        Err(error) => {
+                            tracing::warn!(%node, %error, "Smolweb pack document update failed");
+                            return;
+                        },
+                    }
+                } else {
+                    replace_fetched_smolweb_body(smolweb, &url, &document);
+                }
                 let facts = crate::content::ContentFacts {
                     engine,
                     lane: crate::content::ContentLane::Document,

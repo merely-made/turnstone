@@ -7,6 +7,29 @@ impl Shell {
     pub(super) fn publish_engine_inventory(&mut self) {
         self.app.engine_inventory =
             project_engine_inventory(&self.content_engines, &self.surface_engines);
+        if !self.smolweb_pack.available() {
+            self.app
+                .engine_inventory
+                .retain(|engine| engine.id != crate::engine_pack::ENGINE_ID);
+        }
+    }
+
+    pub(super) fn poll_engine_pack(&mut self, now: std::time::Instant) {
+        if now < self.engine_pack_poll {
+            return;
+        }
+        self.engine_pack_poll = now + std::time::Duration::from_secs(1);
+        let listed = self
+            .app
+            .engine_inventory
+            .iter()
+            .any(|engine| engine.id == crate::engine_pack::ENGINE_ID);
+        if self.smolweb_pack.available() != listed {
+            self.publish_engine_inventory();
+            if let Some(window) = &self.window {
+                window.request_redraw();
+            }
+        }
     }
 
     #[cfg(all(feature = "weld", windows))]

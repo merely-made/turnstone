@@ -26,11 +26,15 @@ pub fn viewer_options(app: &App, saved: Option<&str>) -> Vec<ViewerOption> {
     {
         engines.push(EngineDescriptor {
             id: saved.into(),
-            label: saved.into(),
+            label: crate::content::engine_label(saved),
             family: EngineFamily::Unknown,
             availability: EngineAvailability::Unavailable {
-                reason: "this host has no registration or construction path for the saved engine"
-                    .into(),
+                reason: if saved == crate::engine_pack::ENGINE_ID {
+                    "pack missing or invalid"
+                } else {
+                    "this host has no registration or construction path for the saved engine"
+                }
+                .into(),
             },
         });
     }
