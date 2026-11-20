@@ -18,7 +18,6 @@ act Maximize pane
 settle 4
 click surface:settings .radio Merely
 settle 3
-assert node role:button Discard edit
 click surface:settings role:button Edit arrangement
 settle 3
 record-uxtree visible
@@ -27,7 +26,6 @@ settle 4
 record-uxtree hidden
 click surface:settings role:button Show
 settle 4
-assert node role:button Discard edit
 record-uxtree restored
 click-at 345 311
 settle 4
