@@ -21,22 +21,6 @@ reason = "Explicit, finite two-independent-window shared-device recovery gate. E
 # exceptions are carried verbatim from Mere's line-ceiling.toml.
 
 [[exception]]
-path = "ports/graphshell/mere/src/app_tests.rs"
-reason = "App tests. Existing source-size debt; a responsibility split must preserve existing entry points, fixture identity and module visibility."
-
-[[exception]]
-path = "ports/graphshell/mere/src/connection_tests.rs"
-reason = "Connection tests. Existing source-size debt; a responsibility split must preserve FixtureTransport, TestBrowser and existing module visibility."
-
-[[exception]]
-path = "ports/graphshell/mere/src/coop.rs"
-reason = "Co-op controls beside the ordinary MereView canvas. Existing source-size debt; a responsibility split must preserve Command, Update, Panel and existing module visibility."
-
-[[exception]]
-path = "ports/graphshell/mere/src/main.rs"
-reason = "Native Graphshell mere viewer over the admitted resident route. Existing source-size debt; a responsibility split must preserve Reading, PendingActivation, App and existing module visibility."
-
-[[exception]]
 path = "ports/graphshell/src/alembic_workshop.rs"
 reason = "Graphshell's evidence-brief embedding through its sole MereHost graph writer. Existing source-size debt; a responsibility split must preserve Store, GraphshellWorkshop and existing module visibility."
 

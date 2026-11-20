@@ -86,9 +86,10 @@ impl ResidentGraphProvider {
                 accepted_source: SurfaceSourceShape::One(SourceKindId::from(SOURCE_SCHEMA)),
             },
             stylesheet: format!(
-                "{} {} {CSS} {} {} {}",
+                "{} {} {CSS} {} {} {} {}",
                 cambium::GRAPH_CANVAS_SWATCH_CSS,
                 mere_view::MERE_VIEW_CSS,
+                graphshell::goal_surface::CSS,
                 kept::CSS,
                 actions::CSS,
                 crate::graph_coop::controls::CSS,
@@ -280,10 +281,13 @@ impl State {
             worker::Update::Opening => {},
             worker::Update::Failed(reason) => self.fail(reason),
             worker::Update::Read(read) => {
-                if self.model.graph != read.model.graph
-                    || coop::attached(&self.model) != coop::attached(&read.model)
-                {
-                    self.coop.refresh(coop::attached(&read.model));
+                let attached = coop::attached(&read.model);
+                let scope_changed = coop::attached(&self.model) != attached;
+                if self.model.graph != read.model.graph || scope_changed {
+                    self.coop.refresh(attached);
+                }
+                if scope_changed {
+                    self.kept.reset_scope();
                 }
                 self.model = read.model;
                 if self.focused != read.focused {
@@ -302,10 +306,11 @@ impl State {
                     self.actions.finish(reply.notice);
                 }
                 if self.kept.open
+                    && !scope_changed
                     && self.completed != read.completed
                     && let Some(reply) = read.kept
                 {
-                    self.kept.apply(reply);
+                    self.kept.apply(&reply);
                 }
                 self.completed = read.completed;
             },

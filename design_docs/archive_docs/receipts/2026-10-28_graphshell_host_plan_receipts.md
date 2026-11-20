@@ -228,3 +228,62 @@ checks. The Y-PC preflight failed to obtain a Vulkan adapter and is
 retained as a hardware finding. The direct and baseline packets together
 fit within the workspace receipt cap. Turnstone's locked library suite
 passed 1,429 tests with nine ignored. The harness passed all 13 Python tests.
+
+## 2026-11-20 N2 standalone viewer retirement
+
+Cargo no longer resolves the `graphshell-mere` workspace package or
+lists `graphshell_mere` as a binary. The native staging directory held
+one product executable, `turnstone`. Djinn's native-messaging relay
+and the developer fixtures remain separate targets. The resolved
+Turnstone package set drops only `graphshell-mere`, and Graphshell
+remains pinned to `d50bc125`.
+
+The T-PC headed check ran the staged Turnstone against the admitted
+sealed-wallet fixture. The exact executable, fixture sources, locks,
+previous source commit and patch hash are in
+`~/Code/testing/c-retire/resource-links/inputs.json`. The four reviewed
+captures show these steps.
+
+- The person kept two loopback pages and opened the retained target text
+  through the existing search.
+- **Follow kept links** started from the first page. Depth zero recorded
+  one visit and no matches. Depth one followed its graph link and cited
+  the target's retained version, highlighted terms, coverage and the
+  reason for each visit. HTTP logs contain only the two requested
+  capture GETs.
+- The same search in a second mere returned no match.
+
+The first production-shaped test profile had no retained-page wallet.
+The sealed fixture supplied it without any personal data. The headed
+run also exposed a nested scrolling issue, which was fixed by letting
+the resident pane own scrolling. The final locked library suite
+passed 1,431 tests with nine ignored, including two focused tests for
+the shared snapshot and invalidation on pause, error or attachment change.
+
+## 2026-11-20 H5r extension native messaging after retirement
+
+T-PC Firefox 160 loaded the Firefox extension once from the
+pre-retirement Turnstone `205bdded` sources. The disposable profile,
+add-on origin and ID, native host manifest, and relay pathname were
+the same on both sides of the broker restart. Graphshell `d50bc125`
+supplied `graphshell_native_host` and production-shaped Djinn. The
+relay ELF stayed byte-identical. Djinn restarted with the same
+external synthetic custodian.
+
+Both native sessions showed three public cards and the same public
+subject and profile fingerprint. The session IDs and Djinn processes
+were distinct. Firefox sent Close for both, and Djinn recorded
+`end=Closed`. With Djinn stopped, the same bridge displayed
+**Native host disconnected** with no cards and the Close control
+disabled. The Firefox and Chromium native-message framed checks also
+passed. The headed packet and exact hashes are under
+`~/Code/testing/c-h5r/run1/receipt` on T-PC.
+
+The POSIX preparer now includes `action-form.js`. The PowerShell
+preparer copies `extension-keep.js` from the web root. Linux and
+Windows produced the same 30 files by SHA-256 for each browser, with
+the existing manifest identities. The package inputs used an earlier
+provenance-checked default Wasm bundle. The headed check exercised
+the native bridge, which is static JavaScript. A fresh Wasm runtime
+qualification and signed add-on persistence across a browser restart
+remain separate checks.

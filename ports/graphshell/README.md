@@ -36,17 +36,14 @@ endpoint and persona name; djinn owns the vault path, unlock gate and private
 command execution. With djinn absent or Locked, commands needing identity
 stay pending. The public `profiles` roster remains readable while Locked.
 
-The ordinary native viewer, `cargo run --locked -p graphshell-mere -- DOMAIN`,
-can invite one named guest to an existing resident graph. Choose the graph in
-Sessions, then **Use this graph for co-op**. The owner and guest use the same
-MereView canvas and node selection; the resident's existing host and journal
-remain the sole writer. Guest edits retain admitted authorship, and ending
-access clears the guest view and survives a cold reopen. The
-[ordinary-view co-op receipt](docs/receipts/coop_graph_view_20261020/README.md)
-records contact/invitation commands, scope, qualification and limits. This
-integration covers native resident graphs; browser IndexedDB is not migrated.
-Current qualification uses the [shared native harness](../../support/graphshell-coop/README.md).
-The receipts retain the exact evidence for each boundary:
+Turnstone hosts the resident graph and its native co-op controls. Open
+`mere://resident/DOMAIN`, choose a live session, then choose **Co-op** and
+**Use this graph for co-op**. The guest opens the invitation in Turnstone’s
+**Invited graph** pane. The resident host and journal own the graph, and
+guest edits retain admitted authorship. The [native harness](../../support/graphshell-coop/README.md)
+records the current contact and invitation commands and verifies scope,
+revocation and cold reopen. The standalone viewer’s historical receipts
+remain available:
 
 | Boundary | Receipt |
 | --- | --- |

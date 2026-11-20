@@ -204,21 +204,21 @@ with the selected values.
 
 ## Building
 
-Build the relay and the Djinn resident (the relay is Djinn's since the stack
-lift plan's P5; its binary name is unchanged):
+Build the native-messaging relay and Djinn from Graphshell's `host` workspace.
+The extension connects to the registered host name `org.mere.graphshell`.
 
 ```text
-cargo build -p djinn --bin graphshell_native_host
-cargo build -p djinn --bin djinn
+cargo build --locked -p mere-resident --bin graphshell_native_host --bin djinn
 ```
 
 Start `djinn` under the platform's resident lifecycle before
 opening the extension. On Windows,
-[`../../mere-resident/install-windows.ps1`](../../mere-resident/install-windows.ps1)
+[the Djinn installer](https://github.com/merely-made/graphshell/blob/main/host/ports/mere-resident/install-windows.ps1)
 performs the reversible standard-agent cutover; it requires the expected live
 fingerprint and preserves the previous Personae task.
 
-Prepare an unpacked extension directory:
+Generate the Wasm bundle from the default build of `ports/graphshell/web`,
+then prepare an unpacked extension directory.
 
 ```text
 wasm-bindgen /path/to/graphshell_web.wasm --target web \

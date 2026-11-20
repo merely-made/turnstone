@@ -35,8 +35,11 @@ def main():
     binary = args.artifacts / 'debug/graphshell-coop-relay-receipt'
     shutil.copy2(binary, out / 'relay')
     registry = Path.home() / '.cargo/registry/src'
+    debug = args.build_dir / 'debug'
+    dep_infos = list((debug / 'deps').glob('*.d'))
+    dep_infos.extend((debug / 'build').glob('*/*/out/*.d'))
     packages = set()
-    for dep in (args.build_dir / 'debug/deps').glob('*.d'):
+    for dep in dep_infos:
         for token in shlex.split(dep.read_text().replace('\\\n', ' ')):
             path = Path(token.removesuffix(':'))
             if path.is_file() and path.is_relative_to(registry):
