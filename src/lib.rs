@@ -31,6 +31,8 @@ pub mod contributed_surface;
 pub mod cookie_custody;
 mod custody_binding;
 mod denizen;
+#[doc(hidden)]
+pub mod engine_pack;
 pub mod focus_card;
 mod forme_context;
 mod map_theme;

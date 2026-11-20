@@ -200,6 +200,8 @@ impl Shell {
             #[cfg(feature = "scripted-webgl")]
             proxy.clone(),
         );
+        let smolweb_pack = crate::engine_pack::SmolwebPack::new(&app.data_root);
+        content_engines.register(Box::new(smolweb_pack.clone()));
         let route_policy = standard_route_policy();
         #[cfg(feature = "scripted-webgl")]
         let route_policy = {
@@ -443,6 +445,8 @@ impl Shell {
             width: 1024,
             height: 600,
             content_engines: Arc::new(content_engines),
+            smolweb_pack,
+            engine_pack_poll: std::time::Instant::now(),
             #[cfg(feature = "scripted-webgl")]
             scripted_webgl,
             pelt_surface_engines: Arc::new(inker::SurfaceEngineRegistry::new()),

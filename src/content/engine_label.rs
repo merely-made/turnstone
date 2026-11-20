@@ -14,6 +14,7 @@ pub fn engine_label(id: &str) -> String {
         "graft.servo" => "Servo",
         "weld.chromium" => "Chromium",
         "nematic.gemtext" => "Gemini / Spartan",
+        crate::engine_pack::ENGINE_ID => "Smolweb pack (Gemini)",
         "nematic.gopher" => "Gopher",
         "nematic.markdown" => "Markdown",
         "nematic.djot" => "Djot",
