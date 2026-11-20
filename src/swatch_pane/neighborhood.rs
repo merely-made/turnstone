@@ -18,7 +18,8 @@ use url::Url;
 use super::{NodeState, ProjectionPreset, SwatchModel, SwatchNode, SwatchRelation, Uuid};
 use crate::app::App;
 use crate::panes::{GraphId, PaneId};
-use extraction::{document_base, excerpt, extract, link_claim};
+pub(crate) use extraction::{document_base, interpret_blocks};
+use extraction::{excerpt, extract, link_claim};
 
 pub(crate) const RESOURCE_NEIGHBORHOOD: ProjectionPreset = ProjectionPreset {
     id: "resource.neighborhood",
@@ -36,10 +37,11 @@ const MAX_SOURCES: usize = 32;
 const MAX_EVIDENCE_ROWS: usize = 32;
 
 #[derive(Default)]
-struct Page {
+pub(super) struct Page {
     address: String,
     label: Option<String>,
     claims: Vec<Claim>,
+    pub(super) structured: Option<mere::acquire::page_claims::PageClaims>,
     partial: bool,
 }
 
@@ -150,6 +152,7 @@ pub(super) struct Selection {
     pub(super) link: Option<String>,
     pub(super) details: BTreeMap<String, ObservedLinkInspection>,
     pub(super) status: String,
+    pub(super) validation: super::validation::State,
 }
 
 impl Sources {
@@ -220,10 +223,13 @@ impl Sources {
         let previous_len = self.pages.len();
         self.pages.retain(|member, _| live.contains(member));
         changed |= previous_len != self.pages.len();
-        let origin = context
+        let member = context
             .and_then(|context| context.member)
-            .or_else(|| canvas.focused_member())
-            .and_then(|member| {
+            .or_else(|| canvas.focused_member());
+        selection.validation.sync(
+            app, member, member.and_then(|member| self.pages.get(&member).map(|(_, page)| page)),
+        );
+        let origin = member.and_then(|member| {
                 self.pages
                     .get(&member)
                     .map(|(_, page)| page.address.clone())

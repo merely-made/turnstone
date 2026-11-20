@@ -17,6 +17,9 @@ use crate::source_capture::{CaptureRequest, DepositReceipt};
 use eidetic::PayloadSealer;
 use eidetic::capture::sealed;
 
+mod kept_document;
+pub(super) use kept_document::read_kept_document;
+
 pub(super) fn capture_request(
     store: &mut dyn eidetic::Store,
     sealer: &dyn PayloadSealer,

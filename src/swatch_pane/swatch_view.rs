@@ -120,6 +120,9 @@ pub(super) fn swatch_view(state: &SwatchState) -> SwatchView {
                 .attr("aria-label", "Link inspector"),
             ));
         }
+        if let Some(selection) = &state.neighborhood {
+            section_kids.extend(super::validation::controls(&selection.validation));
+        }
         children.push(Box::new(
             cambium::el::<_, SwatchState, ()>("div", section_kids)
                 .attr("class", SECTIONS_CLASS)

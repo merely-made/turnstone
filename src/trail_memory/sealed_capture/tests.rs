@@ -7,6 +7,9 @@ use crate::trail_memory::sealed_memory_dir;
 use eidetic::Backend as _;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 
+#[path = "tests/kept_document_cases.rs"]
+mod kept_document_cases;
+
 struct TestSealer(AtomicBool);
 impl PayloadSealer for TestSealer {
     fn seal(

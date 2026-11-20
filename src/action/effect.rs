@@ -293,6 +293,16 @@ pub enum Effect {
     PersistSourceCapture {
         request: uuid::Uuid,
     },
+    ValidateKeptSource {
+        pane: crate::panes::PaneId,
+        source: crate::saved_sources::KeptSource,
+        shapes: crate::swatch_pane::validation::Shapes,
+    },
+    RevealValidationEvidence {
+        pane: crate::panes::PaneId,
+        source: crate::saved_sources::KeptSource,
+        order: u64,
+    },
     LoadSavedSources {
         generation: uuid::Uuid,
         request: uuid::Uuid,

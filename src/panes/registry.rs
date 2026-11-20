@@ -493,6 +493,18 @@ pub static BUILTIN_PANES: &[PaneDefinition] = &[
         None
     ),
     pane!(
+        crate::shell::structured_source::PANE_KIND,
+        crate::shell::structured_source::LABEL,
+        PaneSourceShape::fixed(&[FixedSourceKind::External(crate::shell::structured_source::SOURCE_SCHEMA)]),
+        PaneMultiplicity::PerSpaceAndSource,
+        capabilities(false, false, NONE),
+        "turnstone.structured-source.config",
+        "turnstone.structured-source.view",
+        PaneRenderer::Contributed,
+        None,
+        None
+    ),
+    pane!(
         crate::resident_graph::PANE_KIND,
         crate::resident_graph::LABEL,
         PaneSourceShape::fixed(&[FixedSourceKind::External(crate::resident_graph::SOURCE_SCHEMA)]),

@@ -5,16 +5,14 @@ use std::collections::BTreeSet;
 
 use genet_static_dom::{StaticDocument, StaticNodeKind};
 use graphshell::link_inspection::{ObservationLocator, ObservationSource, OccurrenceText};
-use mere::{ContextCache, dataset::View, formats::parse::parse_jsonld};
+use mere::{ContextCache, acquire::page_claims};
 use oxrdf::{NamedOrBlankNode, Term};
 use url::Url;
 
 use super::{Claim, MAX_CLAIMS, MAX_HTML_BYTES, Page};
 use crate::content::FetchedDocument;
 
-const MAX_JSON_LD_BYTES: usize = 64 * 1024;
-
-pub(super) fn document_base(document: &StaticDocument, address: &Url) -> Url {
+pub(crate) fn document_base(document: &StaticDocument, address: &Url) -> Url {
     let mut pending = vec![document.document_node()];
     while let Some(id) = pending.pop() {
         let node = document.node(id);
@@ -75,28 +73,36 @@ pub(super) fn extract(document: &FetchedDocument, hash: &str) -> Page {
             ObservationSource::Response,
         ));
     }
-    for block in blocks {
+    let structured = interpret_blocks(&blocks, &base);
+    page.partial |= !structured.diagnostics.is_empty();
+    project_structured_claims(&mut page, hash, &structured);
+    page.structured = Some(structured);
+    page
+}
+
+pub(crate) fn interpret_blocks(
+    blocks: &[fleece::EmbeddedJsonLdBlock],
+    base: &Url,
+) -> page_claims::PageClaims {
+    page_claims::interpret(
+        &ContextCache::full(),
+        base.as_str(),
+        blocks
+            .iter()
+            .map(|block| (block.document_order, block.dom_text.as_str())),
+    )
+}
+
+fn project_structured_claims(page: &mut Page, hash: &str, structured: &page_claims::PageClaims) {
+    for block in &structured.blocks {
         if page.claims.len() == MAX_CLAIMS {
             page.partial = true;
             break;
         }
-        if block.dom_text.len() > MAX_JSON_LD_BYTES {
-            page.partial = true;
-            continue;
-        }
-        let Ok(dataset) = parse_jsonld(
-            block.dom_text.as_bytes(),
-            ContextCache::full(),
-            Some(base.as_str()),
-            Default::default(),
-        ) else {
-            page.partial = true;
-            continue;
-        };
         let mut subjects = BTreeSet::new();
-        for quad in dataset.quads(View::Live) {
+        for quad in &block.quads {
             let (NamedOrBlankNode::NamedNode(from), Term::NamedNode(to)) =
-                (quad.subject, quad.object)
+                (&quad.subject, &quad.object)
             else {
                 continue;
             };
@@ -113,7 +119,7 @@ pub(super) fn extract(document: &FetchedDocument, hash: &str) -> Page {
                     capture: hash.into(),
                     acquisition: ObservationSource::Response,
                     locator: ObservationLocator::JsonLd {
-                        order: block.document_order,
+                        order: block.order,
                         named_graph: None,
                     },
                 });
@@ -130,14 +136,13 @@ pub(super) fn extract(document: &FetchedDocument, hash: &str) -> Page {
                 capture: hash.into(),
                 acquisition: ObservationSource::Response,
                 locator: ObservationLocator::JsonLd {
-                    order: block.document_order,
+                    order: block.order,
                     named_graph: (!quad.graph_name.is_default_graph())
                         .then(|| quad.graph_name.to_string()),
                 },
             });
         }
     }
-    page
 }
 
 pub(super) fn link_claim(

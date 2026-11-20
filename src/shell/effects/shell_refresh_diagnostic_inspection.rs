@@ -309,6 +309,7 @@ impl Shell {
 
     /// The effect runner: the one place effects meet ports.
     pub(in super::super) fn run_effects(&mut self, effects: Vec<Effect>) {
+        self.reconcile_structured_source();
         self.app.sync_research_context();
         self.publish_engine_inventory();
         // Semantic events noted by the update that produced these effects
@@ -373,6 +374,12 @@ impl Shell {
                 | Effect::EmptyRecycleBin
                 | Effect::RecallQuery { .. }
                 | Effect::RecordPageText { .. } => self.effect_open_theme_workshop(effect),
+                Effect::ValidateKeptSource { pane, source, shapes } => {
+                    self.validate_kept_source(pane, source, shapes);
+                },
+                Effect::RevealValidationEvidence { pane, source, order } => {
+                    self.open_validation_evidence(pane, source, order);
+                },
                 Effect::TrashSession { .. } | Effect::SwitchSession { .. } => {
                     self.effect_trash_session(effect)
                 },

@@ -63,6 +63,7 @@ pub struct Shell {
     pub(super) pending_clip_reads: HashMap<uuid::Uuid, super::clip_reading::PendingClipRead>,
     pub(super) ready_clip_reads: HashMap<uuid::Uuid, (String, inker::EngineDocument)>,
     pub(super) neighborhood_passages: HashMap<crate::panes::PaneId, crate::swatch_pane::Passage>,
+    pub(super) structured_source: structured_source::Reader,
     /// The retained-place worker. It owns every Gemot, Commons, chat, group,
     /// and redb handle for the active session.
     pub(super) place_handle: crate::place_service::PlacePort,

@@ -17,10 +17,12 @@
 mod inspection;
 mod neighborhood;
 mod presets;
+pub(crate) mod validation;
 use inspection::project_inspection;
 use presets::state_color;
 pub use presets::{GLOSS_MINIMAP, OVERMAP_LINEAGE, ProjectionPreset};
 pub(crate) use neighborhood::{Passage, RESOURCE_NEIGHBORHOOD};
+pub(crate) use neighborhood::{document_base, interpret_blocks};
 
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -67,6 +69,7 @@ pub enum SwatchActivate {
 pub enum SwatchIntent {
     /// A node was activated; its meaning rode the node as data.
     Activate(SwatchActivate),
+    Validation(validation::Intent),
     /// The Expand chip: jump to the app's full view (the canvas).
     Expand,
 }

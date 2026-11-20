@@ -59,6 +59,7 @@ cambium-rootstock = { git = "https://github.com/merely-made/graphshell.git", bra
 kernel = { package = "mere-kernel", git = "https://github.com/merely-made/mere.git", branch = "main" }
 # Mere's linked-data engine parses the JSON-LD carried in admitted documents.
 mere = { git = "https://github.com/merely-made/mere.git", branch = "main" }
+mere-shacl = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 graphshell = { path = "ports/graphshell", default-features = false, features = ["link-inspection"] }
 oxrdf = "0.3"
 # `canvas` is the graph canvas; the default features (physics-engine,
@@ -171,6 +172,7 @@ mere-overmap = { workspace = true, features = ["view"] }
 mere-view.workspace = true
 ostiary = { version = ">=0.0.1", git = "https://github.com/merely-made/armillary.git", branch = "main", features = ["native"] }
 castellan-client = { version = ">=0.0.2", git = "https://github.com/merely-made/dramatis.git", branch = "main", features = ["client"] }
+sporran = { version = ">=0.0.1", git = "https://github.com/merely-made/dramatis.git", branch = "main" }
 dramatis = { git = "https://github.com/merely-made/dramatis.git", branch = "main" }
 dramatis-surface.workspace = true
 graphshell-dramatis-pane = { path = "ports/graphshell/dramatis-pane" }
@@ -361,7 +363,6 @@ grafting-servo = { git = "https://github.com/merely-made/wgpu-graft.git", branch
 grafting = { git = "https://github.com/merely-made/wgpu-graft.git", branch = "main", default-features = false, features = ["wgpu-30"], optional = true }
 
 [dev-dependencies]
-sporran = { version = ">=0.0.1", git = "https://github.com/merely-made/dramatis.git", branch = "main" }
 taproot = { version = "0.1.0", git = "https://github.com/merely-made/genet.git", branch = "main", features = ["estimated-probe-fixtures"] }
 accesskit_consumer = "=0.39.1"
 mien = { git = "https://github.com/merely-made/gemot.git", branch = "main" }

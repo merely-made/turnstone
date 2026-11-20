@@ -63,6 +63,8 @@ mod research_compare_tests;
 mod research_search_tests;
 mod saved_sources;
 mod sealed_capture;
+mod kept_validation;
+pub use kept_validation::ValidationRequest;
 mod sealed_record_receipts;
 mod sealed_records;
 mod sealed_result_receipts;
@@ -74,6 +76,7 @@ mod worker_capture_ops;
 mod worker_open_sealed;
 mod worker_research_snapshot;
 mod worker_research_source;
+mod worker_read_saved_source;
 
 /// Traversals per stored trace segment. Segments are the flush granularity:
 /// small enough that a crash loses minutes, large enough that a stored trace
@@ -98,6 +101,7 @@ pub struct SourceCustody {
 pub(crate) mod custody_test_fixture;
 
 pub enum TrailCommand {
+    ValidateKeptSource(Box<ValidationRequest>),
     ResearchRecords(record_actor::Command),
     /// Ordered custody adoption or withdrawal; no key material is held here.
     SetCustody(Option<SourceCustody>),

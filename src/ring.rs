@@ -308,6 +308,8 @@ pub fn ring_of(action: &Action) -> Ring {
         | SearchSavedSources
         | CaptureSourceDocument { .. }
         | RetrySourceDocumentCapture { .. }
+        | ValidateKeptSource { .. }
+        | RevealValidationEvidence { .. }
         // Joining a place is a trust act, not a session act, so it sits at the
         // structural floor beside gate management rather than in `Session`
         // with `NewSession` and `SwitchSession`.

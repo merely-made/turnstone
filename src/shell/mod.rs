@@ -47,6 +47,7 @@ mod renderers;
 mod research_notes;
 mod retained_clips;
 mod saved_sources;
+pub(crate) mod structured_source;
 #[cfg(all(feature = "scry", windows))]
 mod scry;
 #[cfg(all(

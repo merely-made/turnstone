@@ -25,6 +25,9 @@ use crate::session;
 
 use super::Shell;
 
+#[path = "effects/shell_kept_source_validation.rs"]
+mod shell_kept_source_validation;
+
 #[derive(Debug, PartialEq, Eq)]
 enum ContentSpawnDispatch {
     PendingBrowser,

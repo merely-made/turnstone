@@ -151,6 +151,9 @@ impl Shell {
                             crate::swatch_pane::SwatchIntent::Activate(
                                 crate::swatch_pane::SwatchActivate::Recover(id),
                             ) => out.push(Action::RecoverDeletedNode(id)),
+                            crate::swatch_pane::SwatchIntent::Validation(intent) => {
+                                out.push(intent.into_action(pane_id));
+                            },
                             crate::swatch_pane::SwatchIntent::Expand => {
                                 self.app.focus = crate::surface::FocusTarget::Graph(
                                     self.app.default_graph_pane(),

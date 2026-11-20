@@ -7,6 +7,7 @@ use super::*;
 /// state through [`crate::app::apply_update`]. App-owned types only; port
 /// adapters convert.
 pub enum Update {
+    KeptSourceValidated(Box<crate::swatch_pane::validation::Response>),
     ResearchRecords(crate::research_records::JobResult),
     ResearchCompareFinished {
         request: crate::research_compare::Request,

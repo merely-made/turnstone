@@ -212,6 +212,9 @@ impl Shell {
         let (pw, ph) = (rw as f32 / scale, rh as f32 / scale);
         let (lw, lh) = ((pw.round() as u32).max(1), (ph.round() as u32).max(1));
         if let Some(spec) = self.contributed_pane_spec(pane_id, content) {
+            if spec.kind.as_str() == super::super::structured_source::PANE_KIND {
+                self.reconcile_structured_source();
+            }
             return match self
                 .renderers
                 .contributed

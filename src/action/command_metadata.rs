@@ -34,6 +34,8 @@ pub(crate) fn command_metadata(action: &Action) -> (EffectClass, bool) {
         | Action::CapturePage { .. }
         | Action::CaptureSourceDocument { .. }
         | Action::RetrySourceDocumentCapture { .. }
+        | Action::ValidateKeptSource { .. }
+        | Action::RevealValidationEvidence { .. }
         | Action::OpenSavedSource(..)
         | Action::ChoosePermission { .. }
         | Action::SubmitAuthentication { .. }

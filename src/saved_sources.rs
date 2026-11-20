@@ -28,6 +28,14 @@ impl Key {
     }
 }
 
+/// An exact, acknowledged Keep operation eligible for structured validation.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct KeptSource {
+    pub key: Key,
+    pub request: uuid::Uuid,
+    pub capture_hash: String,
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Admission {
     pub key: Key,

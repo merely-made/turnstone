@@ -75,6 +75,16 @@ pub enum Action {
     RetrySourceDocumentCapture {
         request: uuid::Uuid,
     },
+    ValidateKeptSource {
+        pane: crate::panes::PaneId,
+        source: crate::saved_sources::KeptSource,
+        shapes: crate::swatch_pane::validation::Shapes,
+    },
+    RevealValidationEvidence {
+        pane: crate::panes::PaneId,
+        source: crate::saved_sources::KeptSource,
+        order: u64,
+    },
     /// Search the current session's explicitly attached saved evidence.
     SearchSavedSources,
     ResearchSearch(ResearchSearchAction),

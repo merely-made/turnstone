@@ -294,6 +294,10 @@ impl Shell {
         surface_providers
             .register_provider(crate::knot_document_surface::KnotDocumentProvider::default())
             .expect("the built-in Knot document provider is unique");
+        let structured_source = structured_source::Reader::default();
+        surface_providers
+            .register_provider(structured_source::Provider::new(structured_source.clone()))
+            .expect("the source block reader provider is unique");
         #[cfg(feature = "sky")]
         surface_providers
             .register_provider(crate::sky_surface::SkySurfaceProvider::default())
@@ -386,6 +390,7 @@ impl Shell {
             pending_clip_reads: HashMap::new(),
             ready_clip_reads: HashMap::new(),
             neighborhood_passages: HashMap::new(),
+            structured_source,
             place_handle,
             place_settings,
             place_wake,

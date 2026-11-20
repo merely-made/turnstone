@@ -39,6 +39,16 @@ pub(super) fn run(
     let mut last_to: HashMap<String, PageRef> = HashMap::new();
     while let Ok(command) = commands.recv() {
         match command {
+            TrailCommand::ValidateKeptSource(request) => {
+                let response = request.run(
+                    &current_dir,
+                    current_capture_generation,
+                    custody.as_ref(),
+                    sealed_store.as_ref(),
+                    &limits,
+                );
+                out.emit(Update::KeptSourceValidated(Box::new(response)));
+            }
             TrailCommand::ResearchRecords(command) => {
                 if let Some(error) = &sealed_error {
                     record_actor::reject(command, error.clone());
@@ -198,54 +208,17 @@ pub(super) fn run(
                 admission,
                 directory,
             } => {
-                let custody_epoch = custody.as_ref().and_then(SourceCustody::snapshot);
-                let owner = current_dir
-                    .parent()
-                    .and_then(Path::file_name)
-                    .and_then(|name| name.to_str());
-                let mut result = if generation != current_capture_generation
-                    || directory != current_dir
-                    || owner != Some(target.key.session.as_uuid().to_string().as_str())
-                    || admission.key != target.key
-                {
-                    Err(
-                        "Saved source reading belongs to another session opening or attachment"
-                            .into(),
-                    )
-                } else if custody_epoch.is_none() {
-                    Err("Unlock the profile to read private saved sources".into())
-                } else if let Some(error) = &sealed_error {
-                    Err(error.clone())
-                } else {
-                    match state.as_mut() {
-                        Some((store, _)) => limits
-                            .as_ref()
-                            .map_err(|e| crate::research_storage::SourceReadError::from(e.clone()))
-                            .and_then(|limits| {
-                                saved_sources::resolve_with_budget(
-                                    store,
-                                    sealed_store.as_ref(),
-                                    custody
-                                        .as_ref()
-                                        .map(|v| v.sealer.as_ref() as &dyn eidetic::PayloadSealer),
-                                    &admission,
-                                    &target,
-                                    limits.budget(),
-                                )
-                            }),
-                        None => Err(memory_error
-                            .clone()
-                            .unwrap_or_else(|| "The session evidence store is unavailable".into())),
-                    }
+                let owner = worker_read_saved_source::Owner {
+                    directory: &current_dir,
+                    generation: current_capture_generation,
+                    custody: custody.as_ref(),
+                    legacy: state.as_ref().map(|(store, _)| store),
+                    sealed: sealed_store.as_ref(),
+                    legacy_error: memory_error.as_ref(),
+                    sealed_error: sealed_error.as_ref(),
+                    limits: &limits,
                 };
-                if custody_epoch.is_some()
-                    && !custody
-                        .as_ref()
-                        .is_some_and(|binding| binding.remains_current(custody_epoch))
-                {
-                    result =
-                        Err("Profile custody changed while reading a private saved source".into());
-                }
+                let result = owner.resolve(generation, &directory, &admission, &target);
                 out.emit(Update::SavedSourceRead {
                     generation,
                     request,

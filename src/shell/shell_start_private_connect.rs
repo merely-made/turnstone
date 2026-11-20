@@ -346,6 +346,7 @@ impl Shell {
             .command(crate::trail_memory::TrailCommand::SetCustody(None));
         drop(self.alembic_workshop.take());
         let effects = self.app.retire_private_custody();
+        self.clear_structured_source();
         self.neighborhood_passages.clear();
         self.renderers
             .gloss

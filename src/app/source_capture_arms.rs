@@ -14,3 +14,5 @@ mod app_await_source_capture_revalidation;
 mod app_recover_source_capture;
 #[path = "source_capture_arms/app_retire_private_custody.rs"]
 mod app_retire_private_custody;
+#[path = "app_kept_structured_source.rs"]
+mod app_kept_structured_source;

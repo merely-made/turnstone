@@ -133,6 +133,8 @@ impl App {
             Action::CapturePage { member } => vec![Effect::CaptureContent { node: member }],
             Action::CaptureSourceDocument { target } => self.begin_source_capture(target),
             Action::RetrySourceDocumentCapture { request } => self.retry_source_capture(request),
+            Action::ValidateKeptSource { pane, source, shapes } => self.validate_kept_source(pane, source, shapes),
+            Action::RevealValidationEvidence { pane, source, order } => self.reveal_validation_evidence(pane, source, order),
             Action::SearchSavedSources => self.search_saved_sources(),
             Action::ResearchSearch(command) => self.research_search_command(command),
             Action::ResearchStructured(command) => self.research_structured_command(command),

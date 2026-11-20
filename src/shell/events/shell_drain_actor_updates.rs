@@ -108,6 +108,13 @@ impl Shell {
         while let Ok(update) = self.trail_rx.try_recv() {
             // Recall answers (RecallHits / RecallFailed), already app-owned.
             self.service_private_custody();
+            let update = match update {
+                crate::action::Update::KeptSourceValidated(response) => {
+                    self.accept_kept_source_validation(*response);
+                    continue;
+                },
+                update => update,
+            };
             let refresh_workshop_sources = matches!(
                 &update,
                 crate::action::Update::SavedSourcesLoaded {
