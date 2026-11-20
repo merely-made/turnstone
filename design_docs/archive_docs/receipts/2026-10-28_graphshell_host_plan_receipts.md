@@ -259,3 +259,31 @@ run also exposed a nested scrolling issue, which was fixed by letting
 the resident pane own scrolling. The final locked library suite
 passed 1,431 tests with nine ignored, including two focused tests for
 the shared snapshot and invalidation on pause, error or attachment change.
+
+## 2026-11-20 H5r extension native messaging after retirement
+
+T-PC Firefox 160 loaded the Firefox extension once from the
+pre-retirement Turnstone `205bdded` sources. The disposable profile,
+add-on origin and ID, native host manifest, and relay pathname were
+the same on both sides of the broker restart. Graphshell `d50bc125`
+supplied `graphshell_native_host` and production-shaped Djinn. The
+relay ELF stayed byte-identical. Djinn restarted with the same
+external synthetic custodian.
+
+Both native sessions showed three public cards and the same public
+subject and profile fingerprint. The session IDs and Djinn processes
+were distinct. Firefox sent Close for both, and Djinn recorded
+`end=Closed`. With Djinn stopped, the same bridge displayed
+**Native host disconnected** with no cards and the Close control
+disabled. The Firefox and Chromium native-message framed checks also
+passed. The headed packet and exact hashes are under
+`~/Code/testing/c-h5r/run1/receipt` on T-PC.
+
+The POSIX preparer now includes `action-form.js`. The PowerShell
+preparer copies `extension-keep.js` from the web root. Linux and
+Windows produced the same 30 files by SHA-256 for each browser, with
+the existing manifest identities. The package inputs used an earlier
+provenance-checked default Wasm bundle. The headed check exercised
+the native bridge, which is static JavaScript. A fresh Wasm runtime
+qualification and signed add-on persistence across a browser restart
+remain separate checks.

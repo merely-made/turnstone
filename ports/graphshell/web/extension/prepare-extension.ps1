@@ -20,7 +20,6 @@ New-Item -ItemType Directory -Path $destinationPath -Force | Out-Null
 
 Copy-Item -LiteralPath (Join-Path $scriptRoot "background.js") -Destination $destinationPath
 Copy-Item -LiteralPath (Join-Path $scriptRoot "capture-model.js") -Destination $destinationPath
-Copy-Item -LiteralPath (Join-Path $scriptRoot "extension-keep.js") -Destination $destinationPath
 Copy-Item -LiteralPath (Join-Path $scriptRoot "follower-queue.js") -Destination $destinationPath
 Copy-Item -LiteralPath (Join-Path $scriptRoot "action-form.js") -Destination $destinationPath
 Copy-Item -LiteralPath (Join-Path $scriptRoot "resource-chunk.js") -Destination $destinationPath
@@ -43,6 +42,7 @@ foreach ($file in @("segmenter-southeast-asian.dict", "segmenter-chinese-japanes
 Copy-Item -LiteralPath (Join-Path $webRoot "loader.js") -Destination $destinationPath
 Copy-Item -LiteralPath (Join-Path $webRoot "mount.js") -Destination $destinationPath
 Copy-Item -LiteralPath (Join-Path $webRoot "extension-profile.js") -Destination $destinationPath
+Copy-Item -LiteralPath (Join-Path $webRoot "extension-keep.js") -Destination $destinationPath
 Copy-Item -LiteralPath (Join-Path $webRoot "pkg") -Destination $destinationPath -Recurse -Force
 Copy-Item `
     -LiteralPath (Join-Path $scriptRoot "manifest.$Browser.json") `

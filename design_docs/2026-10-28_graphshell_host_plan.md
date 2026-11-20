@@ -127,8 +127,9 @@ Native Firefox key import, desktop dialog providers beyond Windows (macOS and Li
 - From: `archive_docs/2026-10-28/2026-07-27_graphshell_reference_host_plan.md:824-825,839-841`
 
 ### H5r. Browser extension residue
-Persona and device injection by the composing host is proven in one host; proving it in a second host is a follow-on. Favicon intake is a separate optional `tabs` permission and retention feature. The C4 consent gate for live capture is shared with Turnstone's page capture plan, with its default open: this H5's `HistoryCapturePolicy` is disabled by default while the archived capture plan's C4 shipped `Full`.
-- Done when: not stated; owed.
+The [headed Firefox check](archive_docs/receipts/2026-10-28_graphshell_host_plan_receipts.md#2026-11-20-h5r-extension-native-messaging-after-retirement) qualified the native bridge after standalone retirement. A pre-retirement add-on stayed loaded in one Linux Firefox profile while Djinn stopped and restarted. It reopened on the same registered host, read the same public cards in a fresh session, and closed cleanly. The stopped-resident control showed visible refusal and no cards. Both extension preparers produced matching Firefox and Chromium bundles.
+
+Permanent signed installation across a browser restart and headed Chromium remain separate checks. Favicon intake is a separate optional `tabs` permission and retention feature. The C4 consent gate for live capture is shared with Turnstone's page capture plan. Its default remains open because H5's `HistoryCapturePolicy` is disabled by default and the archived C4 shipped `Full`.
 - Needs: Turnstone's page capture plan (C4 gate, other repository).
 - Rulings: -
 - From: `archive_docs/2026-10-28/2026-07-27_graphshell_reference_host_plan.md:914-925`; `archive_docs/2026-10-28/2026-07-03_archived_plan_tails_plan.md:1109-1116`
