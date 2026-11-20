@@ -53,10 +53,12 @@ impl SettingsPane {
             });
             return Ok(());
         }
-        let dirty = self.runner.state().rows.values().any(|row| {
-            let s = row.session.snapshot();
-            s.dirty || s.pending_generation.is_some()
-        });
+        let dirty = self
+            .runner
+            .state()
+            .rows
+            .values()
+            .any(|row| row.session.snapshot().is_unsettled());
         if !force
             && self.runner.state().loaded_record.is_some()
             && (dirty || self.runner.state().editor.unsaved)
@@ -99,10 +101,13 @@ impl SettingsPane {
         let (collapsed, x, y) = decode_view(&view)?;
         let keys = self.runner.state().rows.keys().cloned().collect();
         self.prepare_keys(&keys, true)?;
-        if self.runner.state().rows.values().any(|row| {
-            let s = row.session.snapshot();
-            s.dirty || s.pending_generation.is_some()
-        }) {
+        if self
+            .runner
+            .state()
+            .rows
+            .values()
+            .any(|row| row.session.snapshot().is_unsettled())
+        {
             self.runner
                 .update_deferred(|state| state.pending_record = Some((config, view)));
             return Err(

@@ -104,10 +104,12 @@ impl SettingsPane {
                 EditorIntent::ToggleContainer(container) => self.toggle_container(container),
                 EditorIntent::Save => self.save_arrangement(),
                 EditorIntent::ReloadSaved => {
-                    let dirty = self.runner.state().rows.values().any(|row| {
-                        let s = row.session.snapshot();
-                        s.dirty || s.pending_generation.is_some()
-                    });
+                    let dirty = self
+                        .runner
+                        .state()
+                        .rows
+                        .values()
+                        .any(|row| row.session.snapshot().is_unsettled());
                     if dirty || self.runner.state().editor.unsaved {
                         self.runner.update(|state| {
                             state.editor.confirmation = Some(EditConfirmation {
@@ -185,10 +187,13 @@ impl SettingsPane {
                     ConfirmationDecision::Cancel => unreachable!(),
                 }
             }
-            if self.runner.state().rows.get(key).is_some_and(|row| {
-                let s = row.session.snapshot();
-                s.dirty || s.pending_generation.is_some()
-            }) {
+            if self
+                .runner
+                .state()
+                .rows
+                .get(key)
+                .is_some_and(|row| row.session.snapshot().is_unsettled())
+            {
                 return Err("An edit could not be resolved. The arrangement was kept; any earlier successful Apply or Discard remains in effect.".into());
             }
         }
@@ -222,10 +227,11 @@ impl SettingsPane {
             .cloned()
             .collect::<BTreeSet<_>>();
         if retiring.iter().any(|key| {
-            self.runner.state().rows.get(key).is_some_and(|row| {
-                let s = row.session.snapshot();
-                s.dirty || s.pending_generation.is_some()
-            })
+            self.runner
+                .state()
+                .rows
+                .get(key)
+                .is_some_and(|row| row.session.snapshot().is_unsettled())
         }) {
             return Err("Apply or discard edits before removing or rebinding these rows.".into());
         }
@@ -240,10 +246,11 @@ impl SettingsPane {
         self.prepare_keys(&withdraw, true)?;
         // IME preparation may itself turn a clean row into a dirty row.
         if retiring.iter().any(|key| {
-            self.runner.state().rows.get(key).is_some_and(|row| {
-                let s = row.session.snapshot();
-                s.dirty || s.pending_generation.is_some()
-            })
+            self.runner
+                .state()
+                .rows
+                .get(key)
+                .is_some_and(|row| row.session.snapshot().is_unsettled())
         }) {
             return Err(
                 "Move preparation committed an edit. Apply or discard it before continuing.".into(),

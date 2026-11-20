@@ -139,7 +139,7 @@ pub(super) fn reconcile_rows(state: &mut SettingsState, unavailable: &BTreeMap<S
             .as_ref()
             .is_none_or(|binding| binding.guard().owner != snapshot.owner);
         row.session.observe(spec.clone());
-        if (before.dirty || before.pending_generation.is_some()) && foreign_owner {
+        if before.is_unsettled() && foreign_owner {
             row.reviewed = None;
             row.session.set_unavailable(
                 "The settings owner was replaced. Discard this edit to revalidate the new owner.",
