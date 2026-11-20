@@ -7,11 +7,8 @@
 //! adapters on one caller-owned GPU. Run with an evidence output directory:
 //! cargo run -p graphshell --no-default-features --features caller-owned-toolkit-bench,image-decode --example caller_owned_toolkits -- <receipt-directory>
 //! The toolkit callbacks are native/headless; physical IME/AT remain separate.
-use cambium_rootstock::{
-    TextureProducer,
-    embedding::{self, Frame, Placement, TargetConfig, View},
-};
-use embedding::{egui, iced};
+use cambium_embed::{Frame, Placement, TargetConfig, View, egui, iced};
+use cambium_rootstock::TextureProducer;
 use graphshell::{
     app::GraphshellApp,
     retained_content::{ContentHost, ContentProducer, HeldContent},

@@ -56,7 +56,7 @@ coop = ["native", "web", "muniment/redb", "dep:pollster", "graphshell-client/pum
 coop-window = ["coop", "dep:cambium-desktop", "dep:mien", "dep:genet-scripted-dom", "dep:layout_dom_api", "dep:image"]
 editable-blocks = ["web", "dep:illume", "dep:vector-sheet", "dep:block-adapter", "dep:sprigging", "dep:ciborium", "dep:netrender", "dep:wgpu", "dep:uuid", "uuid/v4"]
 query-views = ["web", "dep:mere-view", "mere-view/query", "dep:cambium"]
-caller-owned-toolkit-bench = ["retained-content", "cambium-rootstock/embedding-egui", "cambium-rootstock/embedding-iced", "dep:image"]
+caller-owned-toolkit-bench = ["retained-content", "dep:cambium-embed", "dep:image"]
 # Goal-directed traversal over retained page text and the graph's links: the
 # native goal surface (`goal_surface`). Lexical, model-free; reads, never fetches.
 goal-surface = ["web", "dep:cambium", "dep:fleece", "fleece/retained-traversal", "dep:eidetic-search", "graphshell-host/goal-surface"]
@@ -249,6 +249,7 @@ comms = { workspace = true, optional = true }
 # The check conclusions and faults, named directly (insigne proofs plan, B).
 insigne = { workspace = true, features = ["verify"] }
 async-trait = { version = "0.1", optional = true }
+cambium-embed = { git = "https://github.com/merely-made/graphshell.git", branch = "main", features = ["egui", "iced"], optional = true }
 cambium-rootstock = { workspace = true, optional = true }
 base64.workspace = true
 hodograph = { workspace = true, optional = true }
