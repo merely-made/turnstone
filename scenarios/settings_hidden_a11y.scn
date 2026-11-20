@@ -1,0 +1,79 @@
+# Hidden Settings row publishes no accessibility nodes, keeps its draft, and takes no focus.
+# Hiding here is the arrangement editor's Hide on the Theme row (the first row), which the
+# product parks while keeping its session. Run headed with a fresh TURNSTONE_ROOT, a
+# TURNSTONE_CAPTURE_DIR and TURNSTONE_A11Y_PUBLIC_FIXTURE_RECEIPT=1, then:
+#   scripts/check-settings-hidden-a11y.py <capture dir>
+# The Hide click is by window position (resize 1180 950, maximized pane): a role selector for
+# "Hide" matches every row's button and did not act on the first. Show is unambiguous once
+# one row is hidden.
+settle 20
+key escape
+resize 1180 950
+open mere://settings-reactive
+settle 10
+act id:pane:settings
+settle 5
+assert pane turnstone.settings
+act Maximize pane
+settle 4
+click surface:settings .radio Merely
+settle 3
+assert node role:button Discard edit
+click surface:settings role:button Edit arrangement
+settle 3
+record-uxtree visible
+click-at 345 311
+settle 4
+record-uxtree hidden
+click surface:settings role:button Show
+settle 4
+assert node role:button Discard edit
+record-uxtree restored
+click-at 345 311
+settle 4
+click surface:settings role:button Reload saved
+settle 3
+record-uxtree h00
+key tab
+settle 2
+record-uxtree h01
+key tab
+settle 2
+record-uxtree h02
+key tab
+settle 2
+record-uxtree h03
+key tab
+settle 2
+record-uxtree h04
+key tab
+settle 2
+record-uxtree h05
+key tab
+settle 2
+record-uxtree h06
+key tab
+settle 2
+record-uxtree h07
+key tab
+settle 2
+record-uxtree h08
+key tab
+settle 2
+record-uxtree h09
+key tab
+settle 2
+record-uxtree h10
+key tab
+settle 2
+record-uxtree h11
+key tab
+settle 2
+record-uxtree h12
+key tab
+settle 2
+record-uxtree h13
+key tab
+settle 2
+record-uxtree h14
+log hidden-row snapshots recorded; run scripts/check-settings-hidden-a11y.py on the capture dir

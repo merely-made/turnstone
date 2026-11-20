@@ -1,0 +1,50 @@
+# Settings keeps its live row state across pane moves: Float, Tear out (second window),
+# Return to primary, Dock. The distinctive state is an unapplied edit on "Show shellbar"
+# with the arrangement editor open: only a row holding a draft is offered
+# "Delete (draft must be settled)" instead of "Delete", so that button in the window that
+# owns the pane is the witness. (Not "Discard edit": node selectors match substrings and
+# the theme row's "Discard edits and reload" contains it.) Run headed with a fresh
+# TURNSTONE_ROOT. Free window-position moves have no scenario verb; this is the
+# pane-custody move only. An emptied torn-out window stays open after Return (windows
+# stays 2); the Dock step below runs in the primary window.
+settle 20
+key escape
+resize 1180 950
+open mere://settings-reactive
+settle 10
+act id:pane:settings
+settle 5
+assert pane turnstone.settings
+click surface:settings .toggle
+settle 3
+click surface:settings role:button Edit arrangement
+settle 3
+assert windows == 1
+assert node role:button Delete (draft must be settled)
+
+act Float pane
+settle 8
+assert windows == 1
+assert pane turnstone.settings
+assert node role:button Delete (draft must be settled)
+
+act Tear out pane
+settle 10
+assert windows == 2
+assert lens-pane turnstone.settings
+assert no-pane turnstone.settings
+assert node window:1 role:button Delete (draft must be settled)
+assert node window:1 role:switch Toggle
+
+act Return pane to primary
+settle 10
+assert pane turnstone.settings
+assert no-lens-pane turnstone.settings
+assert node role:button Delete (draft must be settled)
+
+act Dock pane
+settle 8
+assert pane turnstone.settings
+assert node role:button Delete (draft must be settled)
+assert node role:switch Toggle
+log Settings draft survived float, tear out, return and dock

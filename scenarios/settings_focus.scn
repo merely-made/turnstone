@@ -1,0 +1,88 @@
+# Settings keyboard focus path. Run headed with a fresh TURNSTONE_ROOT, a TURNSTONE_CAPTURE_DIR
+# and TURNSTONE_A11Y_PUBLIC_FIXTURE_RECEIPT=1 (labels in the tree), then:
+#   scripts/check-settings-focus.py <capture dir>
+# A click enters the Settings controls (key tab alone leaves focus on the window); each key
+# press is followed by a tree snapshot whose focus_node_id the script reads. The scenario's
+# own asserts only cover that input goes to the pane; the order and wrap checks are the script's.
+settle 20
+key escape
+resize 1180 950
+open mere://settings-reactive
+settle 10
+act id:pane:settings
+settle 5
+assert pane turnstone.settings
+act Maximize pane
+settle 4
+click surface:settings role:button Reload saved
+settle 3
+assert focus pane
+record-uxtree f00
+key tab
+settle 2
+record-uxtree f01
+key tab
+settle 2
+record-uxtree f02
+key tab
+settle 2
+record-uxtree f03
+key tab
+settle 2
+record-uxtree f04
+key tab
+settle 2
+record-uxtree f05
+key tab
+settle 2
+record-uxtree f06
+key tab
+settle 2
+record-uxtree f07
+key tab
+settle 2
+record-uxtree f08
+key tab
+settle 2
+record-uxtree f09
+key tab
+settle 2
+record-uxtree f10
+key tab
+settle 2
+record-uxtree f11
+key tab
+settle 2
+record-uxtree f12
+key tab
+settle 2
+record-uxtree f13
+key tab
+settle 2
+record-uxtree f14
+key tab
+settle 2
+record-uxtree f15
+key tab
+settle 2
+record-uxtree f16
+key tab
+settle 2
+record-uxtree f17
+key tab
+settle 2
+record-uxtree f18
+key tab
+settle 2
+record-uxtree f19
+key shift+tab
+settle 2
+record-uxtree b01
+key shift+tab
+settle 2
+record-uxtree b02
+key shift+tab
+settle 2
+record-uxtree b03
+assert focus pane
+log Settings focus walk recorded; run scripts/check-settings-focus.py on the capture dir
