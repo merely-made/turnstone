@@ -86,6 +86,11 @@ runtime with `--guest-loader`. Both are recorded and checked against the
 running process. Relay modes require `--relay-binary`, its `--relay-sha256`,
 and the socket. SSH carries control and invitation handoff only.
 
+The direct Turnstone workflow passed on T-PC and S-PC on 2026-11-20. The
+[receipt](../../design_docs/archive_docs/receipts/2026-10-28_graphshell_host_plan_receipts.md#2026-11-20-n2-native-co-op-on-t-pc-and-s-pc)
+records the devices, builds, and visual review. Relay and recovery still
+need Turnstone runs.
+
 Recovery stops the owned relay before a guest save, records pending and failed
 native states, checks the owner's durable graph before and after the failure,
 then restarts the relay on its original address. The same guest window uses

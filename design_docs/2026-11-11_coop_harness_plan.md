@@ -54,8 +54,10 @@ This plan carries out two of Mark's rulings, which live in Mere's engine-split p
 ### H6. First headed baseline receipt
 **Done when**, on one Linux or macOS desktop with no scratch controller: the harness's entry points freeze both repositories; the receipt is `ok` (resident ready, seed through the door as `graphshell`, viewer at `status=ready attached=<chosen>`, the switch, two captures over 200 by 200 pixels); the positive control fails as expected in the same run; the receipt names its custody mode, the grant's origin, both commits and lock hashes, the lock differences, and the owner's OS, architecture and GPU; `verify.py` passes it; the captures are reviewed whole; README and this plan match the tree.
 
-### H7. Two-machine co-op phases (not now)
-`direct`, `relay` and `recovery` carry the custody, grant and build changes but have not run since 2026-10-24. **Done when** a Mac or Linux owner and the Linux guest pass the full workflow and `verify.py`, or the drifted phases are recorded as findings.
+### H7. Two-machine co-op phases
+The Turnstone `direct` workflow passed on two physical Linux Wayland desktops on 2026-11-20, with `verify.py` and whole-capture review. It used production-shaped Djinn with one fixture custodian per desktop, kept alive across both resident starts. The [N2 receipt](archive_docs/receipts/2026-10-28_graphshell_host_plan_receipts.md#2026-11-20-n2-native-co-op-on-t-pc-and-s-pc) records the exact source, locks, devices, and checks. The installed custody and consent boundary remains the same as H6.
+
+The Turnstone `relay` and `recovery` paths still need native reruns. Their historical 2026-10-24 receipts concern the standalone viewer. **Done when** the Turnstone phases pass their full workflow and `verify.py` on physical devices, or the drifted phases are recorded as findings.
 
 ## Findings
 

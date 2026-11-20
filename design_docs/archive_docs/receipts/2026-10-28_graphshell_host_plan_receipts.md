@@ -185,3 +185,46 @@ attention tests passed, including preservation of existing and opaque
 Turnstone view records and a competing write that refused the whole
 handoff. Turnstone's locked library suite passed 1,420 tests with nine
 ignored. The generated profile and custody stores were removed.
+
+## 2026-11-20 N2 native co-op on T-PC and S-PC
+
+The native receipts use Turnstone `243ec745` and Graphshell `cfb155fb`.
+The frozen executable hashes and resolved lock hashes are in each packet.
+Both desktops used the same four frozen Linux x86-64 binaries. T-PC ran
+Fedora 45 with AMD Vulkan. S-PC ran Ubuntu 26.04.1 with AMD Vulkan and a
+process-scoped glibc 2.44 loader and runtime. The guest graphics receipt
+records the loaded Vulkan driver, hardware render node, and exact runtime
+file hashes. The active graph carrier was direct Iroh over IPv6.
+
+The two-device packet is `~/Code/testing/c2e/receipt` on T-PC. It passed
+`verify.py` with seven native Turnstone processes, four Djinn starts,
+two fixture custodians, and 22 reviewed nonblank captures.
+
+- The owner attached the shared graph, opened **Co-op**, and issued an
+  editor invitation to a contact exported by Turnstone on the other
+  desktop. The guest opened **Invited graph**, added a record, and renamed
+  an existing source. The accepted edit remained attributed to the guest
+  in the owner’s durable graph.
+- While the owner viewed the private graph, the guest continued to see only
+  the shared graph. The guest received a regular owner-side graph edit on
+  the same connection. Before and after readings agreed for the private
+  graph.
+- Ending guest access cleared the guest graph and editor controls. After
+  restarting both residents and viewers, the same invitation was rejected.
+  The owner reopened the shared graph, retained the prior edits, and saved
+  a further edit. The owner graph scrolls above the viewport when using the
+  invitation controls. Live withdrawal displays a connection-loss message.
+  Cold reopen explicitly reports `Delegation(Revoked)`.
+
+The stopped-resident control packet is `~/Code/testing/c2b/receipt`. It
+passed `verify.py` with three reviewed nonblank captures. The native pane
+showed **Reconnect** and connection refusal while the resident was stopped,
+and its wait for the shared graph expired with no session attached.
+
+Each Djinn used an external synthetic fixture custodian. Consent was
+represented by the narrow fixture grants. Installed custody prompts,
+relay and recovery, and standalone packaging retirement need separate
+checks. The Y-PC preflight failed to obtain a Vulkan adapter and is
+retained as a hardware finding. The direct and baseline packets together
+fit within the workspace receipt cap. Turnstone's locked library suite
+passed 1,429 tests with nine ignored. The harness passed all 13 Python tests.
