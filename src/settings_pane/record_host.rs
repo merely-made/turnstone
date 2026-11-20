@@ -3,6 +3,7 @@
 
 use super::{arrangement::SettingsArrangement, *};
 use crate::panes::{PaneConfig, PaneId, PaneViewState};
+use cambium::PreparationPurpose;
 use cambium::composition::{ContainerKey, ContainerKind};
 
 impl SettingsPane {
@@ -100,7 +101,7 @@ impl SettingsPane {
         .map_err(|error| format!("Could not restore arrangement: {error:?}"))?;
         let (collapsed, x, y) = decode_view(&view)?;
         let keys = self.runner.state().rows.keys().cloned().collect();
-        self.prepare_keys(&keys, true)?;
+        self.prepare_keys(&keys, PreparationPurpose::Retire)?;
         if self
             .runner
             .state()

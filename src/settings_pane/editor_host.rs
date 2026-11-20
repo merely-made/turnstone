@@ -6,9 +6,8 @@ use super::{
     editor::{ConfirmationDecision, ConfirmationTarget, EditConfirmation, EditorIntent},
     *,
 };
+use cambium::PreparationPurpose;
 use cambium::composition::{ComponentKey, ContainerKey, ContainerKind, PlacementNode};
-use genet_scripted_dom::NodeId;
-use layout_dom_api::{LayoutDom, LocalName, Namespace};
 use std::collections::BTreeSet;
 
 pub(super) enum HistoryCommit {
@@ -153,7 +152,7 @@ impl SettingsPane {
             ConfirmationTarget::Delete(key) => vec![key.clone()],
             ConfirmationTarget::ReloadSaved => self.runner.state().rows.keys().cloned().collect(),
         };
-        self.prepare_keys(&keys.iter().cloned().collect(), true)?;
+        self.prepare_keys(&keys.iter().cloned().collect(), PreparationPurpose::Retire)?;
         if keys.iter().any(|key| {
             self.runner
                 .state()
@@ -235,15 +234,16 @@ impl SettingsPane {
         }) {
             return Err("Apply or discard edits before removing or rebinding these rows.".into());
         }
-        self.prepare_keys(&effect.prepare_routes, false)?;
-        let mut withdraw = retiring.clone();
+        self.prepare_keys(&effect.prepare_routes, PreparationPurpose::Move)?;
+        let mut withdraw = BTreeSet::new();
         withdraw.extend(hidden_keys(
             &prepared.candidate().placement,
             &self.runner.state().collapsed,
             false,
         ));
         withdraw.extend(prepared.candidate().unplaced.iter().cloned());
-        self.prepare_keys(&withdraw, true)?;
+        self.prepare_keys(&retiring, PreparationPurpose::Retire)?;
+        self.prepare_keys(&withdraw, PreparationPurpose::Hide)?;
         // IME preparation may itself turn a clean row into a dirty row.
         if retiring.iter().any(|key| {
             self.runner
@@ -282,55 +282,15 @@ impl SettingsPane {
     pub(super) fn prepare_keys(
         &mut self,
         keys: &BTreeSet<ComponentKey>,
-        retiring: bool,
+        purpose: PreparationPurpose,
     ) -> Result<(), String> {
-        let nodes = keys
-            .iter()
-            .filter_map(|key| self.component_node(key))
-            .collect::<Vec<_>>();
-        for node in nodes {
-            let _: Vec<()> = self.runner.prepare_subtree_move(node);
-            if self.runner.subtree_move_has_active_interaction(node) {
-                return Err(
-                    "The active text composition could not be committed. The arrangement was kept."
-                        .into(),
-                );
-            }
-            if retiring {
-                let focused = self.runner.focus().is_some_and(|focus| {
-                    let dom = self.dom.borrow();
-                    let mut current = Some(focus);
-                    while let Some(candidate) = current {
-                        if candidate == node {
-                            return true;
-                        }
-                        current = dom.parent(candidate);
-                    }
-                    false
-                });
-                if focused {
-                    self.runner.set_focus(None);
-                }
-            }
-        }
-        Ok(())
-    }
-
-    pub(super) fn component_node(&self, key: &ComponentKey) -> Option<NodeId> {
-        let dom = self.dom.borrow();
-        fn find(dom: &ScriptedDom, node: NodeId, key: &str) -> Option<NodeId> {
-            if dom.attribute(
-                node,
-                &Namespace::default(),
-                &LocalName::from("data-setting-instance"),
-            ) == Some(key)
-            {
-                return Some(node);
-            }
-            dom.dom_children(node)
-                .find_map(|child| find(dom, child, key))
-        }
-        find(&dom, self.runner.root(), &key.0)
+        let sink = self.runner.state().composition_lifecycle.clone();
+        self.runner
+            .prepare_components(&sink, keys, purpose)
+            .map_err(|_| {
+                "The active text composition could not be committed. The arrangement was kept."
+                    .to_owned()
+            })
     }
 
     fn toggle_container(&mut self, container: ContainerKey) -> Result<(), String> {
@@ -339,7 +299,12 @@ impl SettingsPane {
             &container,
         );
         let closing = !self.runner.state().collapsed.contains(&container);
-        self.prepare_keys(&keys, closing)?;
+        let purpose = if closing {
+            PreparationPurpose::Hide
+        } else {
+            PreparationPurpose::Move
+        };
+        self.prepare_keys(&keys, purpose)?;
         self.runner.update(|state| {
             if !state.collapsed.remove(&container) {
                 state.collapsed.insert(container);
