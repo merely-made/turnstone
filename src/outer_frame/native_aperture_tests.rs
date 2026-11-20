@@ -259,6 +259,68 @@ fn the_final_floating_canvas_keeps_one_actual_native_aperture() {
     );
 }
 #[test]
+fn native_paint_reuses_translation_across_source_epochs_and_rebuilds_on_placement() {
+    let app = crate::app::App::test_stub();
+    let mut frame = OuterFrame::default();
+    let bodies = frame
+        .prepare(
+            &app.frisket,
+            app.active_pane,
+            None,
+            (900, 600),
+            &app.shell_chrome_config().appearance,
+            app.session_id.as_uuid().as_u128(),
+        )
+        .unwrap();
+    let mut surface = Surface {
+        id: SurfaceId::graph(PaneId(0)),
+        kind: SurfaceKind::Graph(PaneId(0)),
+        rect: bodies[0].1,
+    };
+    let install = |frame: &OuterFrame, surface: &Surface, epoch| {
+        let node = frame.native_source_node(&app, surface, 0).unwrap();
+        let dom = frame.dom_ref();
+        let layout = frame.layout.borrow();
+        let command = layout
+            .native_source_command(&dom, node, 17, epoch, surface.rect)
+            .unwrap();
+        drop(layout);
+        frame
+            .layout
+            .borrow_mut()
+            .set_native_sources(std::collections::HashMap::from([(
+                dom.opaque_id(node),
+                vec![command],
+            )]));
+    };
+    install(&frame, &surface, 1);
+    let (first, reused) = frame.native_scene_resources().unwrap();
+    assert!(!reused);
+    assert_eq!(first.external_textures[0].content_generation, Some(1));
+
+    install(&frame, &surface, 2);
+    let ((second, reused), emitted) =
+        crate::ui::count_paint_calls(|| frame.native_scene_resources().unwrap());
+    assert!(reused);
+    assert_eq!(emitted, 0);
+    assert_eq!(second.external_textures[0].content_generation, Some(2));
+    assert_eq!(
+        first.scene.snapshot_postcard(),
+        second.scene.snapshot_postcard()
+    );
+
+    surface.rect.x += 8.0;
+    install(&frame, &surface, 3);
+    let (moved, reused) = frame.native_scene_resources().unwrap();
+    assert!(!reused);
+    assert_eq!(moved.external_textures[0].content_generation, Some(3));
+    assert_ne!(
+        first.scene.snapshot_postcard(),
+        moved.scene.snapshot_postcard()
+    );
+}
+
+#[test]
 fn identical_source_rectangles_keep_exact_appearance_owners() {
     let app = crate::app::App::test_stub();
     let frame = OuterFrame::default();

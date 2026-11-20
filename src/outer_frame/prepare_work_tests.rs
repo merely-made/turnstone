@@ -69,6 +69,37 @@ fn outer_frame_prepare_keeps_resized_scaled_and_current_geometry_without_paint()
 }
 
 #[test]
+fn prepared_geometry_follows_workspace_area_and_session() {
+    let app = app();
+    let mut frame = OuterFrame::default();
+    let prepare = |frame: &mut OuterFrame, session| {
+        frame
+            .prepare(
+                &app.frisket,
+                app.active_pane,
+                None,
+                (900, 600),
+                &app.shell_chrome_config().appearance,
+                session,
+            )
+            .unwrap()
+    };
+    let original = prepare(&mut frame, 1);
+    assert_eq!(prepare(&mut frame, 1), original);
+    assert_eq!(prepare(&mut frame, 1), original);
+    assert_eq!(frame.prepared_geometry.as_ref().unwrap().bodies, original);
+    let previous = frame.stamp();
+
+    frame.set_workspace_area(Rect::new(36.0, 0.0, 864.0, 600.0));
+    let moved = prepare(&mut frame, 1);
+    assert!(moved[0].1.x > original[0].1.x);
+    assert_eq!(prepare(&mut frame, 1), moved);
+
+    assert_eq!(prepare(&mut frame, 2), moved);
+    assert_ne!(previous.admission, frame.stamp().admission);
+}
+
+#[test]
 fn outer_frame_explicit_scene_resources_emits_exactly_one_paint() {
     let app = app();
     let mut frame = OuterFrame::default();

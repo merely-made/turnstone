@@ -35,6 +35,7 @@ pub struct OuterFrame {
     pub(crate) body_focus: Option<NodeId>,
     pub(crate) controls: FrameControls,
     pub(crate) layout: crate::ui::InlineLayoutHandle,
+    prepared_geometry: Option<PreparedGeometry>,
     workspace: Workspace,
     current: Option<TileId>,
     /// Physical window size and the layout scale the frame is laid out at:
@@ -45,6 +46,16 @@ pub struct OuterFrame {
     laid_scale: f32,
     sheet: String,
     appearance: crate::shell_services::AppearanceConfig,
+}
+
+struct PreparedGeometry {
+    layout: FrisketLayout,
+    session: u128,
+    maximize: Option<PaneId>,
+    controls: FrameStamp,
+    dom: u64,
+    viewport_scroll: (f32, f32),
+    bodies: Vec<(PaneId, Rect)>,
 }
 
 #[cfg(test)]

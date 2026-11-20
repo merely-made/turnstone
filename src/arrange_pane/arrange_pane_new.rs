@@ -120,13 +120,26 @@ impl ArrangePane {
     }
 
     pub(super) fn sync_choice(&mut self, choice: Choice, pane_w: f32, pane_h: f32) {
+        let state = self.runner.state();
+        let mut form = state.form.clone();
+        if !state.choice.readback.same_composition(&choice.readback) {
+            form.follow_composition(&choice.readback);
+        }
+        form.follow_roles(&choice.readback);
+        form.follow_speed(&choice.readback);
+        form.follow_physics(&choice.readback);
+        let reuse = std::env::var_os("TURNSTONE_PROFILE_BYPASS_FRAME_PREP").is_none()
+            && state.choice == choice
+            && state.form == form
+            && state.viewport_w == pane_w
+            && state.viewport_h == pane_h;
+        tracing::debug!(target: "turnstone::shell::render", arrange_reused = u8::from(reuse),
+            "native arrange prep");
+        if reuse {
+            return;
+        }
         self.runner.update(|state| {
-            if !state.choice.readback.same_composition(&choice.readback) {
-                state.form.follow_composition(&choice.readback);
-            }
-            state.form.follow_roles(&choice.readback);
-            state.form.follow_speed(&choice.readback);
-            state.form.follow_physics(&choice.readback);
+            state.form = form;
             state.choice = choice;
             state.viewport_w = pane_w;
             state.viewport_h = pane_h;

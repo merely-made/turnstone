@@ -221,6 +221,68 @@ impl RetainedLayout {
         composite_resources(DeviceIntSize::new(lw as i32, lh as i32), &plist)
     }
 
+    /// Native producer pixels are staged separately under stable image keys.
+    /// A new content generation updates the resource metadata without changing
+    /// the translated paint. Layout, placement, or leaf paint changes rebuild it.
+    pub(crate) fn native_scene_resources(
+        &mut self,
+        dom: &mut ScriptedDom,
+        sheet: &str,
+        w: u32,
+        h: u32,
+    ) -> Result<(paint_list_render::TranslatedDisplayList, bool), paint_list_render::TranslationError>
+    {
+        if std::env::var_os("TURNSTONE_PROFILE_BYPASS_NATIVE_PAINT").is_some() {
+            self.native_paint = None;
+            return self
+                .scene_resources(dom, sheet, w, h)
+                .map(|scene| (scene, false));
+        }
+        self.ensure(dom, sheet, w, h);
+        if let Some(memo) = self.native_paint.as_ref()
+            && memo.viewport_scroll == self.viewport_scroll
+            && memo.element_scroll == self.element_scroll
+            && memo.inline_leaves == self.inline_leaves
+        {
+            let mut external_textures = memo.translated.external_textures.clone();
+            for draw in &mut external_textures {
+                for command in self.native_sources.values().flatten() {
+                    if let PaintCmd::DrawExternalTexture(source) = command
+                        && source.texture_key == draw.texture_key
+                    {
+                        draw.content_generation = source.content_generation;
+                        break;
+                    }
+                }
+            }
+            return Ok((
+                paint_list_render::TranslatedDisplayList {
+                    scene: memo.translated.scene.clone(),
+                    external_textures,
+                    box_shadow_masks: memo.translated.box_shadow_masks.clone(),
+                },
+                true,
+            ));
+        }
+        let translated = self.scene_resources(dom, sheet, w, h)?;
+        self.native_paint = Some(NativePaintMemo {
+            identity: std::rc::Rc::new(()),
+            viewport_scroll: self.viewport_scroll,
+            element_scroll: self.element_scroll.clone(),
+            inline_leaves: self.inline_leaves.clone(),
+            translated: paint_list_render::TranslatedDisplayList {
+                scene: translated.scene.clone(),
+                external_textures: translated.external_textures.clone(),
+                box_shadow_masks: translated.box_shadow_masks.clone(),
+            },
+        });
+        Ok((translated, false))
+    }
+
+    pub(crate) fn native_paint_identity(&self) -> Option<std::rc::Rc<()>> {
+        self.native_paint.as_ref().map(|memo| memo.identity.clone())
+    }
+
     /// [`scene_from_dom_scrolled`] against the retained layout.
     pub fn scene_scrolled(
         &mut self,

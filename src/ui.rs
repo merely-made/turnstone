@@ -184,6 +184,7 @@ pub(crate) type InlineLayoutHandle = std::rc::Rc<std::cell::RefCell<RetainedLayo
 pub struct RetainedLayout {
     inline_leaves: HashMap<u64, Vec<paint_list_api::PaintCmd>>,
     native_sources: HashMap<u64, Vec<PaintCmd>>,
+    native_paint: Option<NativePaintMemo>,
     inline_scroll_root: Option<DomNodeId>,
     inline_bar: Option<DomNodeId>,
     root: Option<DomNodeId>,
@@ -207,6 +208,14 @@ pub struct RetainedLayout {
     /// bodies ask with their own roots; an unchanged DOM, snapshot, focus,
     /// scroll and scale give the same answer.
     projections: std::cell::RefCell<HashMap<DomNodeId, ProjectionMemo>>,
+}
+
+struct NativePaintMemo {
+    identity: std::rc::Rc<()>,
+    viewport_scroll: (f32, f32),
+    element_scroll: HashMap<DomNodeId, (f32, f32)>,
+    inline_leaves: HashMap<u64, Vec<PaintCmd>>,
+    translated: paint_list_render::TranslatedDisplayList,
 }
 
 struct ProjectionMemo {

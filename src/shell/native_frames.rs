@@ -10,7 +10,7 @@ use std::{
     time::{Duration, Instant},
 };
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 pub(super) struct Identity {
     pub window: WindowId,
     pub ordinal: usize,
@@ -35,6 +35,7 @@ pub(super) struct StagedWindowFrame {
     pub capture: Option<std::path::PathBuf>,
     pub diagnostics: Vec<super::appearance_receipt::PendingCapture>,
     pub reactive: crate::reactive_render::StagedFrame,
+    pub pane_raster: Option<super::native_composition::PaneRaster>,
 }
 pub(super) struct QueuedFrame {
     pub identity: Identity,
@@ -46,6 +47,7 @@ pub(super) struct NativeFrameQueue {
     pending: HashMap<WindowId, QueuedFrame>,
     waiting: VecDeque<WindowId>,
     revision: Cell<u64>,
+    pub pane_raster: Option<super::native_composition::PaneRaster>,
 }
 impl NativeFrameQueue {
     pub fn invalidate(&self) {
@@ -101,10 +103,14 @@ impl NativeFrameQueue {
     pub fn clear(&mut self) {
         self.waiting.clear();
         self.pending.clear();
+        self.pane_raster = None;
     }
 }
 impl Shell {
     pub(super) fn cancel_native_window(&mut self, ordinal: u64, reason: &str) {
+        if ordinal == 0 {
+            self.native_frames.pane_raster = None;
+        }
         let id = if ordinal == 0 {
             self.window.as_ref().map(|window| window.id())
         } else {
@@ -317,56 +323,71 @@ impl Shell {
             ));
         }
         let outcome = match result {
-            Ok(accepted) => match accepted.publish(|staged| {
-                let needs_redraw = staged.needs_redraw;
-                let revision = staged.revision;
-                let timings = staged.timings.clone();
-                let capture = staged.capture.clone();
-                let presented = if staged.identity.ordinal == 0 {
-                    self.present_native_primary(staged)
-                } else {
-                    self.present_native_lens(staged)
-                };
-                if !presented && self.native_frame_current(identity) {
-                    self.app.frame_timings.absorb(timings);
-                    if let Some(path) = capture {
-                        let vacant = if identity.ordinal == 0 {
-                            self.pending_capture.is_none()
-                        } else {
-                            self.pending_lens_capture.is_none()
-                        };
-                        if vacant {
-                            if identity.ordinal == 0 {
-                                self.pending_capture = Some(path);
-                            } else {
-                                self.pending_lens_capture = Some(path);
-                                self.pending_lens_capture_window = Some(identity.window);
-                            }
-                        } else {
-                            self.main_receipt.errors.push(format!(
-                                "native capture {} refused: a later request superseded the skipped presentation",
-                                path.display()
-                            ));
-                        }
-                    }
-                    self.request_redraw();
+            Ok(accepted) => {
+                let timing = accepted.timing();
+                if let Some(worker) = accepted.worker_attribution() {
+                    tracing::debug!(target: "turnstone::shell::render", batch = worker.batch_id,
+                        worker_ms = worker.total.wall.as_secs_f64() * 1000.0,
+                        worker_cpu_ms = worker.total.thread_cpu.map(|cpu| cpu.as_secs_f64() * 1000.0),
+                        wait_ms = worker.wait.wall.as_secs_f64() * 1000.0,
+                        poll_ms = worker.poll.wall.as_secs_f64() * 1000.0,
+                        quality_ms = worker.quality_total.wall.as_secs_f64() * 1000.0,
+                        scope_wait_ms = worker.scope_wait.wall.as_secs_f64() * 1000.0,
+                        quality_polls = worker.quality_polls, mapped_buffers = worker.mapped_buffers,
+                        mapped_bytes = worker.mapped_bytes, gpu = ?worker.gpu, "native worker profile");
                 }
-                let continue_render = presented && (
-                    needs_redraw || self.native_frames.revision() != revision
-                    || self.shared_scenario.is_some()
-                );
-                (presented, continue_render)
-            }) {
-                Ok(presented) => presented,
-                Err(failure) => {
-                    self.refuse_raster_frame(
-                        identity.ordinal as u64,
-                        identity.generation,
-                        0,
-                        failure,
+                let published = accepted.publish(|staged| {
+                    let needs_redraw = staged.needs_redraw;
+                    let revision = staged.revision;
+                    let timings = staged.timings.clone();
+                    let capture = staged.capture.clone();
+                    let presented = if staged.identity.ordinal == 0 {
+                        self.present_native_primary(staged, timing)
+                    } else {
+                        self.present_native_lens(staged)
+                    };
+                    if !presented && self.native_frame_current(identity) {
+                        self.app.frame_timings.absorb(timings);
+                        if let Some(path) = capture {
+                            let vacant = if identity.ordinal == 0 {
+                                self.pending_capture.is_none()
+                            } else {
+                                self.pending_lens_capture.is_none()
+                            };
+                            if vacant {
+                                if identity.ordinal == 0 {
+                                    self.pending_capture = Some(path);
+                                } else {
+                                    self.pending_lens_capture = Some(path);
+                                    self.pending_lens_capture_window = Some(identity.window);
+                                }
+                            } else {
+                                self.main_receipt.errors.push(format!(
+                                    "native capture {} refused: a later request superseded the skipped presentation",
+                                    path.display()
+                                ));
+                            }
+                        }
+                        self.request_redraw();
+                    }
+                    let continue_render = presented && (
+                        needs_redraw || self.native_frames.revision() != revision
+                        || self.shared_scenario.is_some()
                     );
-                    (false, false)
-                },
+                    (presented, continue_render)
+                });
+                match published {
+                    Ok(presented) => presented,
+                    Err(failure) => {
+                        self.refuse_raster_frame(
+                            identity.ordinal as u64,
+                            identity.generation,
+                            0,
+                            failure,
+                        );
+                        (false, false)
+                    },
+                }
             },
             Err(failure) => {
                 self.refuse_raster_frame(identity.ordinal as u64, identity.generation, 0, failure);

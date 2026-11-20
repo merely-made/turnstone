@@ -112,7 +112,9 @@ impl Shell {
         // The surface plan (rung 5 slice A): the ordered list of composited
         // surfaces, each with its own rect. Built by the same helper input
         // routing uses, so what a frame draws and what a pointer hits agree.
+        let inline_started = std::time::Instant::now();
         self.prepare_inline_owners(0, (w, h));
+        let inline_done = std::time::Instant::now();
         if let Some(area) = self.pane_ime_cursor_area(0)
             && let Some(window) = &self.window
         {
@@ -132,7 +134,9 @@ impl Shell {
             .and_then(|graph| self.app.graph_runtimes.canvas(graph))
             .and_then(crate::app::focused_caption);
 
+        let documents_started = std::time::Instant::now();
         self.pump_visible_documents();
+        let documents_done = std::time::Instant::now();
         let mut needs_redraw = self.content_sessions.pool.window_needs_frame(0);
 
         #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
@@ -378,6 +382,7 @@ impl Shell {
                 return presented;
             },
         };
+        let raster_layers_started = std::time::Instant::now();
         let mut source_diagnostics = Vec::new();
         // Keep each returned texture alive through composition and capture.
         let mut raster_textures = Vec::new();
@@ -388,6 +393,7 @@ impl Shell {
                     PlannedLayer::Scene(scene) if matches!(scene.kind, SurfaceKind::Frame | SurfaceKind::FloatFrame(_))))
                 .map(|source| match source {
                     PlannedLayer::Scene(scene) => {
+                        let source_started = std::time::Instant::now();
                         let (texture, view) = batch
                             .rasterize(
                                 scene.id,
@@ -398,6 +404,9 @@ impl Shell {
                                 scene.scale,
                             )
                             .map_err(|failure| (scene.id, failure))?;
+                        tracing::debug!(target: "turnstone::shell::render", kind = ?scene.kind,
+                            source_encode_ms = source_started.elapsed().as_secs_f64() * 1000.0,
+                            "native source prep");
                         let raster = texture.clone();
                         raster_textures.push(texture);
                         surface_raster.note(
@@ -429,7 +438,9 @@ impl Shell {
                 return presented;
             },
         };
-        let layers = if shared_frame {
+        let raster_layers_done = std::time::Instant::now();
+        let identity = self.native_frame_identity(window_id, 0, generation, (w, h));
+        let (layers, pane_raster) = if shared_frame {
             let mut frames = self.outer_frames.borrow_mut();
             match super::super::native_composition::compose(
                 frames.get_mut(&0).expect("shared frame prepared"),
@@ -443,6 +454,7 @@ impl Shell {
                 layers,
                 &mut raster_textures,
                 (w, h),
+                Some((identity, self.native_frames.pane_raster.as_ref())),
                 self.pending_capture
                     .as_deref()
                     .filter(|_| {
@@ -458,12 +470,12 @@ impl Shell {
                         )
                     }),
             ) {
-                Ok(layers) => {
+                Ok(output) => {
                     surface_raster.note(
                         SurfaceKind::Frame,
                         host.renderer().vello_last_dirty_count().unwrap_or(0),
                     );
-                    layers
+                    output
                 },
                 Err(failure) => {
                     drop(frames);
@@ -473,11 +485,21 @@ impl Shell {
                 },
             }
         } else {
-            layers
+            (layers, None)
         };
         let raster_elapsed = raster_started.elapsed();
+        let ms = |span: std::time::Duration| span.as_secs_f64() * 1000.0;
+        tracing::debug!(target: "turnstone::shell::render", batch = batch.batch_id(),
+            before_inline_ms = ms(inline_started - started),
+            inline_ms = ms(inline_done - inline_started),
+            plan_ms = ms(documents_started - inline_done),
+            documents_ms = ms(documents_done - documents_started),
+            scenes_ms = ms(raster_started - documents_done),
+            admit_ms = ms(raster_layers_started - raster_started),
+            source_layers_ms = ms(raster_layers_done - raster_layers_started),
+            shared_composition_ms = ms(raster_layers_done.elapsed()),
+            "native prep profile");
 
-        let identity = self.native_frame_identity(window_id, 0, generation, (w, h));
         let staged = super::super::native_frames::StagedWindowFrame {
             identity,
             revision: self.native_frames.revision(),
@@ -493,6 +515,7 @@ impl Shell {
             capture: self.pending_capture.take(),
             diagnostics: source_diagnostics,
             reactive: reactive_frame.stage(),
+            pane_raster,
         };
         let capture_hint = staged.capture.clone();
         let pending = batch.seal_with_wake(staged, self.native_frame_wake.clone());

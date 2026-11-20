@@ -112,6 +112,12 @@ impl FrameControls {
         }
     }
 
+    pub(crate) fn sync_is_settled(&self) -> bool {
+        self.settled
+            .as_ref()
+            .is_some_and(|previous| *previous == self.sync_stamp())
+    }
+
     pub fn invalidate(&mut self) {
         self.revision = self
             .revision

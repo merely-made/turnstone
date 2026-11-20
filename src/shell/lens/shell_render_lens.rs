@@ -318,6 +318,7 @@ impl Shell {
                 layers,
                 &mut raster_textures,
                 (lw, lh),
+                None,
                 self.pending_lens_capture
                     .as_deref()
                     .filter(|_| {
@@ -327,7 +328,7 @@ impl Shell {
                     })
                     .map(|path| (path, &mut source_diagnostics, lens.window.scale_factor())),
             ) {
-                Ok(layers) => layers,
+                Ok((layers, _)) => layers,
                 Err(failure) => {
                     drop(frames);
                     drop(raster_textures);
@@ -361,6 +362,7 @@ impl Shell {
             capture,
             diagnostics: source_diagnostics,
             reactive: reactive_frame.stage(),
+            pane_raster: None,
         };
         let capture_hint = staged.capture.clone();
         let pending = batch.seal_with_wake(staged, self.native_frame_wake.clone());

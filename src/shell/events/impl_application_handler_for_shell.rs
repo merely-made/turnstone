@@ -206,7 +206,13 @@ impl ApplicationHandler<crate::shell::ShellEvent> for Shell {
         self.app.graph_runtimes.fit_to_content();
 
         let options = NetrenderOptions {
-            tile_cache_size: Some(64),
+            tile_cache_size: Some(
+                std::env::var("TURNSTONE_PROFILE_TILE_SIZE")
+                    .ok()
+                    .and_then(|size| size.parse().ok())
+                    .filter(|size| matches!(size, 64 | 128 | 256))
+                    .unwrap_or(128),
+            ),
             enable_vello: true,
             // Windows browser producers export D3D12 shared textures. The
             // host must use the same API before constructing either producer.
@@ -214,6 +220,8 @@ impl ApplicationHandler<crate::shell::ShellEvent> for Shell {
             backends: Some(wgpu::Backends::DX12),
             ..Default::default()
         };
+        tracing::debug!(target: "turnstone::shell::render",
+            tile_size = options.tile_cache_size.unwrap_or_default(), "native renderer configuration");
         #[cfg(all(feature = "servo", target_os = "linux"))]
         let booted = super::super::servo::cue::boot_render_core(options).and_then(|core| {
             SurfaceHost::from_shared_core(window.clone(), self.width, self.height, Arc::new(core))

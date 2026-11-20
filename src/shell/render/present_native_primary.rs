@@ -5,6 +5,7 @@ impl Shell {
     pub(in super::super) fn present_native_primary(
         &mut self,
         staged: super::super::native_frames::StagedWindowFrame,
+        completion: genet_render_host::NativeFrameTiming,
     ) -> bool {
         let super::super::native_frames::StagedWindowFrame {
             identity,
@@ -21,6 +22,7 @@ impl Shell {
             capture,
             diagnostics,
             reactive,
+            pane_raster,
         } = staged;
         let (w, h) = identity.dimensions;
         let generation = identity.generation;
@@ -91,6 +93,8 @@ impl Shell {
         }
         // wgpu 30 moved presentation from SurfaceTexture to Queue.
         host.queue().present(frame);
+        // This function runs inside AcceptedNativeFrame::publish.
+        self.native_frames.pane_raster = pane_raster;
         reactive.submitted(generation);
         self.pending_native_diagnostics.extend(diagnostics);
         self.main_receipt.presented();
@@ -138,6 +142,11 @@ impl Shell {
         let raster_totals = split.totals();
         tracing::debug!(
             frame_ms = started.elapsed().as_secs_f32() * 1000.0,
+            prep_and_encode_ms = ms(completion.sealed_at().duration_since(started)),
+            qualification_queue_ms = ms(completion.queue()),
+            qualification_worker_ms = ms(completion.worker()),
+            qualification_delivery_ms = ms(completion.ready_to_collect()),
+            collected_to_present_ms = ms(completion.collected_at().elapsed()),
             surfaces = layers.len(),
             palette,
             suggestions_ms = ms(timings.suggestions),

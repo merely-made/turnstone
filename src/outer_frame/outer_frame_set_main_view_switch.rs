@@ -34,6 +34,34 @@ impl OuterFrame {
         session: u128,
     ) -> Result<Vec<(PaneId, Rect)>, String> {
         let scale = self.scale;
+        let current_tile = current.map(|id| TileId(id.0));
+        let reuse = std::env::var_os("TURNSTONE_PROFILE_BYPASS_FRAME_PREP").is_none();
+        if reuse
+            && let Some(prepared) = self.prepared_geometry.as_ref()
+            && prepared.session == session
+            && prepared.maximize == maximize
+            && self.size == size
+            && self.laid_scale == scale
+            && self.current == current_tile
+            && &self.appearance == appearance
+            && &prepared.layout == layout
+            && prepared.controls == self.controls.stamp()
+            && self.controls.sync_is_settled()
+        {
+            let dom = self.controls.dom.borrow();
+            let (base, pending) = dom.pending_mutations();
+            let layout = self.layout.borrow();
+            if prepared.dom == base + pending.len() as u64
+                && layout.has_current_snapshot(&dom)
+                && self.scrolls == layout.scroll_stamp()
+                && prepared.viewport_scroll == layout.viewport_scroll()
+            {
+                tracing::debug!(target: "turnstone::shell::render", geometry_reused = 1,
+                    "native geometry prep");
+                return Ok(prepared.bodies.clone());
+            }
+        }
+        self.prepared_geometry = None;
         if self.size != size || self.laid_scale != scale {
             // WindowDom presents the scope as a synthetic document. Its real
             // styled child owns the viewport box and authored backdrop even
@@ -106,7 +134,7 @@ impl OuterFrame {
                 workspace = Workspace::new(TileTree::single(tile));
             }
         }
-        let current = current.map(|id| TileId(id.0));
+        let current = current_tile;
         self.controls.sync(session, workspace.clone(), current);
         // Read/Map owns the primary view selection. Its canonical shared
         // stack does not need a second row of frame tabs above document tabs.
@@ -197,11 +225,30 @@ impl OuterFrame {
                 out.push((PaneId(id.0), Rect::new(x, y, w, h)));
             }
         }
+        if reuse && self.controls.sync_is_settled() {
+            let (base, pending) = dom.pending_mutations();
+            self.prepared_geometry = Some(PreparedGeometry {
+                layout: layout.clone(),
+                session,
+                maximize,
+                controls: self.controls.stamp(),
+                dom: base + pending.len() as u64,
+                viewport_scroll: self.layout.borrow().viewport_scroll(),
+                bodies: out.clone(),
+            });
+        }
+        tracing::debug!(target: "turnstone::shell::render", geometry_reused = 0,
+            "native geometry prep");
         Ok(out)
     }
 
     /// Nearer floats last, with their actual retained outer and body apertures.
     pub(crate) fn floats(&self) -> Vec<(PaneId, Rect, Rect)> {
+        if self.workspace.floating().is_empty()
+            && std::env::var_os("TURNSTONE_PROFILE_BYPASS_FRAME_PREP").is_none()
+        {
+            return Vec::new();
+        }
         let dom = self.controls.dom.borrow();
         let slots = body_slots(&dom, self.controls.root());
         self.workspace
@@ -295,6 +342,19 @@ impl OuterFrame {
     ) -> Result<paint_list_render::TranslatedDisplayList, paint_list_render::TranslationError> {
         let _reactive_work = crate::reactive_render::WorkScope::window();
         self.layout.borrow_mut().scene_resources(
+            &mut self.controls.dom.borrow_mut(),
+            &self.sheet,
+            self.size.0,
+            self.size.1,
+        )
+    }
+
+    pub(crate) fn native_scene_resources(
+        &mut self,
+    ) -> Result<(paint_list_render::TranslatedDisplayList, bool), paint_list_render::TranslationError>
+    {
+        let _reactive_work = crate::reactive_render::WorkScope::window();
+        self.layout.borrow_mut().native_scene_resources(
             &mut self.controls.dom.borrow_mut(),
             &self.sheet,
             self.size.0,

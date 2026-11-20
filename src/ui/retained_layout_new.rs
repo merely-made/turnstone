@@ -8,6 +8,7 @@ impl RetainedLayout {
         Self {
             inline_leaves: HashMap::new(),
             native_sources: HashMap::new(),
+            native_paint: None,
             inline_scroll_root: None,
             inline_bar: None,
             root: None,
@@ -101,9 +102,31 @@ impl RetainedLayout {
     pub(super) fn replace_snapshot(&mut self, snapshot: Option<LiverySnapshot<DomNodeId>>) {
         self.snapshot = snapshot;
         self.projections.get_mut().clear();
+        self.native_paint = None;
     }
 
     pub(crate) fn set_native_sources(&mut self, sources: HashMap<u64, Vec<PaintCmd>>) {
+        if self.native_paint.is_some()
+            && (self.native_sources.len() != sources.len()
+                || sources.iter().any(|(node, current)| {
+                    !self.native_sources.get(node).is_some_and(|previous| {
+                        previous.len() == current.len()
+                            && previous.iter().zip(current).all(|(a, b)| match (a, b) {
+                                (
+                                    PaintCmd::DrawExternalTexture(a),
+                                    PaintCmd::DrawExternalTexture(b),
+                                ) => {
+                                    a.texture_key == b.texture_key
+                                        && a.placement == b.placement
+                                        && a.opacity == b.opacity
+                                },
+                                _ => a == b,
+                            })
+                    })
+                }))
+        {
+            self.native_paint = None;
+        }
         self.native_sources = sources;
     }
 
@@ -143,6 +166,10 @@ impl RetainedLayout {
             .collect::<Vec<_>>();
         rows.sort_unstable();
         rows
+    }
+
+    pub(crate) fn viewport_scroll(&self) -> (f32, f32) {
+        self.viewport_scroll
     }
 
     pub(crate) fn selector_point(

@@ -201,6 +201,7 @@ impl Shell {
     /// surfaces remain in the input plan, but inline owners are never rasterized
     /// as an additional texture.
     pub(in super::super) fn prepare_inline_owners(&mut self, slot: usize, size: (u32, u32)) {
+        let started = std::time::Instant::now();
         if !self.prepare_outer(slot, size) {
             // Projection withdrawal detaches only bodies still parented here.
             // Pane runners and owners survive; a moved destination keeps custody.
@@ -227,6 +228,7 @@ impl Shell {
             }
             return;
         }
+        let plan_started = std::time::Instant::now();
         let plan = if slot == 0 {
             self.surface_plan()
         } else {
@@ -239,6 +241,7 @@ impl Shell {
             .unwrap()
             .layout
             .clone();
+        let sync_started = std::time::Instant::now();
         for surface in &plan {
             let crate::surface::SurfaceKind::Pane(pane) = surface.kind else {
                 continue;
@@ -259,6 +262,7 @@ impl Shell {
             );
             self.renderers.bind_inline(pane, &layout);
         }
+        let mount_started = std::time::Instant::now();
         let mounts = plan
             .iter()
             .filter_map(|surface| {
@@ -277,6 +281,7 @@ impl Shell {
         self.prepare_outer(slot, size);
         // Paint state, scroll clamps and custom leaves use measured shared
         // sizes. The first pass already synced app data and owner view state.
+        let paint_started = std::time::Instant::now();
         for surface in &plan {
             let crate::surface::SurfaceKind::Pane(pane) = surface.kind else {
                 continue;
@@ -288,6 +293,7 @@ impl Shell {
                 self.app.pane_layout_scale(pane),
             );
         }
+        let finish_started = std::time::Instant::now();
         self.prepare_outer(slot, size);
         let focused = match self.app.focus {
             crate::surface::FocusTarget::Pane(pane)
@@ -304,6 +310,15 @@ impl Shell {
             .get_mut(&slot)
             .unwrap()
             .body_focus = focused;
+        let ms = |span: std::time::Duration| span.as_secs_f64() * 1000.0;
+        tracing::debug!(target: "turnstone::shell::render", slot,
+            initial_geometry_ms = ms(plan_started - started),
+            inline_plan_ms = ms(sync_started - plan_started),
+            pane_sync_ms = ms(mount_started - sync_started),
+            mount_geometry_ms = ms(paint_started - mount_started),
+            inline_paint_ms = ms(finish_started - paint_started),
+            final_geometry_ms = ms(finish_started.elapsed()),
+            "native inline prep");
     }
 
     pub(in super::super) fn finish_inline_frame(&mut self) {
