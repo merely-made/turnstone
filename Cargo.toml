@@ -306,7 +306,7 @@ winit = "0.30.13"
 image = { version = "0.25", default-features = false, features = ["avif", "bmp", "gif", "ico", "jpeg", "png", "webp"] }
 # The dropped-sprite data-URI (file drop -> node face).
 base64 = "0.23"
-wgpu = { version = "30", default-features = false, features = ["std", "wgsl"] }
+wgpu = { version = "30.0.2", default-features = false, features = ["std", "wgsl"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 # The pane model (src/panes) persists its layout, and `incipit` supplies the
@@ -610,7 +610,7 @@ pelt-desktop = { git = "https://github.com/merely-made/graphshell.git", branch =
 serde_json = "1"
 tabard-workshop = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 taproot = { version = "0.1.0", git = "https://github.com/merely-made/genet.git", branch = "main", default-features = false, features = ["accesskit"] }
-wgpu = "30.0.1"
+wgpu = "30.0.2"
 winit = "0.30.13"
 # Rows the reference app inherits, from Mere's root (engine split U4), re-addressed (D66).
 accesskit = "0.25.1"
