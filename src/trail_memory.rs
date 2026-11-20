@@ -64,6 +64,8 @@ mod research_search_tests;
 mod saved_sources;
 mod sealed_capture;
 mod kept_validation;
+mod kept_document_read;
+pub(crate) use kept_document_read::KeptDocumentRead;
 pub use kept_validation::{Command as ValidationCommand, EvidenceRequest, ValidationRequest};
 mod sealed_record_receipts;
 mod sealed_records;
@@ -102,6 +104,7 @@ pub(crate) mod custody_test_fixture;
 
 pub enum TrailCommand {
     ValidateKeptSource(Box<ValidationCommand>),
+    ReopenNeighborhood(Box<crate::swatch_pane::NeighborhoodRead>),
     ResearchRecords(record_actor::Command),
     /// Ordered custody adoption or withdrawal; no key material is held here.
     SetCustody(Option<SourceCustody>),

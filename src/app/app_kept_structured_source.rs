@@ -20,18 +20,57 @@ impl App {
                         attempt.request.source.as_ref() == Some(identity)
                     })
             })
-            .filter_map(|attempt| {
-                self.kept_structured_target(attempt).map(|target| {
-                    let acquired_at = attempt
-                        .request
-                        .source
-                        .as_ref()
-                        .map(|source| source.acquired_at_ms);
-                    ((acquired_at, attempt.ordinal), target)
-                })
-            })
+            .filter_map(|attempt| self.ranked_kept_source(attempt))
             .max_by_key(|(ordinal, _)| *ordinal)
             .map(|(_, target)| target)
+    }
+
+    pub(crate) fn offline_kept_sources(
+        &self,
+        graph: crate::panes::GraphId,
+    ) -> Vec<(KeptSource, u64)> {
+        if !self.research.is_available() || self.session_load_refused() {
+            return Vec::new();
+        }
+        let Some(canvas) = self.graph_runtimes.canvas(graph) else {
+            return Vec::new();
+        };
+        let mut newest = std::collections::BTreeMap::new();
+        for attempt in self.source_captures.values() {
+            let request = &attempt.request;
+            if request.graph != graph || request.session != self.session_id {
+                continue;
+            }
+            let Some((_, node)) = canvas.graph().get_node_by_id(request.node) else {
+                continue;
+            };
+            if node.url() != request.url
+                || self
+                    .content
+                    .source_capture_admission(request.node, node.url())
+                    .is_some()
+            {
+                continue;
+            }
+            if let Some((rank, source)) = self.ranked_kept_source(attempt) {
+                let slot = newest
+                    .entry(request.node)
+                    .or_insert_with(|| (rank, source.clone()));
+                if rank > slot.0 {
+                    *slot = (rank, source);
+                }
+            }
+        }
+        newest
+            .into_values()
+            .map(|((time, _), source)| (source, time))
+            .collect()
+    }
+
+    fn ranked_kept_source(&self, attempt: &CaptureAttempt) -> Option<((u64, u64), KeptSource)> {
+        let acquired_at = attempt.request.source.as_ref()?.acquired_at_ms;
+        let source = self.kept_structured_target(attempt)?;
+        Some(((acquired_at, attempt.ordinal), source))
     }
 
     fn kept_structured_target(&self, attempt: &CaptureAttempt) -> Option<KeptSource> {

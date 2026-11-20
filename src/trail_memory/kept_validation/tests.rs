@@ -8,8 +8,9 @@ use mere::dataset::View;
 use super::*;
 use crate::content::FetchedDocument;
 use crate::panes::{GraphId, SessionId};
-use crate::saved_sources::Key;
-use crate::source_capture::SourceIdentity;
+use crate::saved_sources::{KeptSource, Key};
+use crate::source_capture::{CaptureRequest, SourceIdentity};
+use crate::trail_memory::sealed_capture;
 use crate::swatch_pane::validation::EvidenceTarget;
 
 const HTML: &str = r#"<!doctype html>
@@ -142,14 +143,16 @@ fn kept_validation_reopens_from_sealed_source_at_the_same_cursor() {
         capture_hash: stored.raw_manifest.clone(),
     };
     let request = |generation, shapes| ValidationRequest {
-        generation,
         request: Uuid::new_v4(),
         pane: PaneId(1),
-        source: source.clone(),
-        capture: capture.clone(),
-        stored: stored.clone(),
-        directory: directory.clone(),
         shapes,
+        read: KeptDocumentRead {
+            generation,
+            source: source.clone(),
+            capture: capture.clone(),
+            stored: stored.clone(),
+            directory: directory.clone(),
+        },
     };
     let generation = Uuid::new_v4();
     let live = request(generation, Shapes::File(shapes_path.clone()))

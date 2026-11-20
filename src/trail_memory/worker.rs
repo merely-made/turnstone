@@ -48,6 +48,15 @@ pub(super) fn run(
                     &limits,
                 ));
             }
+            TrailCommand::ReopenNeighborhood(request) => {
+                out.emit(Update::NeighborhoodReopened(Box::new(request.run(
+                    &current_dir,
+                    current_capture_generation,
+                    custody.as_ref(),
+                    sealed_store.as_ref(),
+                    &limits,
+                ))));
+            }
             TrailCommand::ResearchRecords(command) => {
                 if let Some(error) = &sealed_error {
                     record_actor::reject(command, error.clone());

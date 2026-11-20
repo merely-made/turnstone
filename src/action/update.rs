@@ -8,6 +8,7 @@ use super::*;
 /// adapters convert.
 pub enum Update {
     KeptSourceValidated(Box<crate::swatch_pane::validation::Reply>),
+    NeighborhoodReopened(Box<crate::swatch_pane::NeighborhoodReply>),
     ResearchRecords(crate::research_records::JobResult),
     ResearchCompareFinished {
         request: crate::research_compare::Request,

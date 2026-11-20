@@ -16,6 +16,7 @@
 
 mod inspection;
 mod neighborhood;
+pub(crate) use neighborhood::{NeighborhoodRead, NeighborhoodReply};
 mod presets;
 pub(crate) mod validation;
 use inspection::project_inspection;

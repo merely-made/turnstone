@@ -277,9 +277,18 @@ impl Shell {
                         crate::swatch_pane::RESOURCE_NEIGHBORHOOD,
                     )
                 });
-                pane.sync_neighborhood(
+                let reads = pane.sync_neighborhood(
                     &self.app, pane_id, self.neighborhood_passages.get(&pane_id), pw, ph,
                 );
+                for read in reads {
+                    let failure = read.unavailable();
+                    if !self.trail_handle.command(crate::trail_memory::TrailCommand::ReopenNeighborhood(Box::new(read))) {
+                        pane.accept_neighborhood_read(failure);
+                        if let Some(window) = &self.window {
+                            window.request_redraw();
+                        }
+                    }
+                }
                 pane.scene(rw, rh, scale)
             },
             Some(PaneContent::Inspector) => {

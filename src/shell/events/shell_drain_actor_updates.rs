@@ -117,6 +117,15 @@ impl Shell {
                     }
                     continue;
                 },
+                crate::action::Update::NeighborhoodReopened(reply) => {
+                    if self.app.source_capture_generation == reply.generation
+                        && let Some(pane) = self.renderers.gloss.get_mut(&reply.pane)
+                    {
+                        pane.accept_neighborhood_read(*reply);
+                        self.request_redraw();
+                    }
+                    continue;
+                },
                 update => update,
             };
             let refresh_workshop_sources = matches!(

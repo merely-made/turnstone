@@ -4,6 +4,91 @@
 use super::*;
 
 #[test]
+fn kept_page_replay_restores_repeated_link_evidence_only_for_its_request() {
+    use crate::panes::SessionId;
+    use crate::saved_sources::Key;
+
+    let generation = Uuid::new_v4();
+    let graph = GraphId::from_uuid(Uuid::new_v4());
+    let node = Uuid::new_v4();
+    let request = Uuid::new_v4();
+    let html = r#"<base href="/maps/"><p>One <a href="shared">first map</a></p>
+        <p>Two <a href="shared">second map</a></p>"#;
+    let document = crate::content::FetchedDocument {
+        bytes: html.as_bytes().to_vec(),
+        body: html.into(),
+        effective_url: Some("https://example.test/effective/source".into()),
+        content_type: Some("text/html".into()),
+        acquired_at_ms: 1,
+    };
+    let source = KeptSource {
+        key: Key {
+            session: SessionId::from_uuid(Uuid::new_v4()),
+            graph,
+            node,
+            annotation_manifest: "fixture-manifest".into(),
+        },
+        request: Uuid::new_v4(),
+        capture_hash: crate::source_capture::SourceIdentity::of(&document).hash,
+    };
+    let mut sources = Sources {
+        graph: Some(graph),
+        generation: Some(generation),
+        ..Sources::default()
+    };
+    sources.pages.insert(
+        node,
+        Edition::Kept {
+            source: source.clone(),
+            request,
+            result: None,
+        },
+    );
+
+    let reply = |generation, request| NeighborhoodReply {
+        pane: PaneId(1),
+        request,
+        generation,
+        source: source.clone(),
+        result: Ok(extract(&document, &source.capture_hash)),
+    };
+    sources.accept_reopen(reply(Uuid::new_v4(), request));
+    sources.accept_reopen(reply(generation, Uuid::new_v4()));
+    assert!(sources.pages[&node].page().is_none());
+    sources.accept_reopen(reply(generation, request));
+    assert!(sources.changed);
+
+    let live = extract(&document, &source.capture_hash);
+    let mut original = Selection {
+        focus: document.effective_url.clone(),
+        ..Selection::default()
+    };
+    let mut reopened = Selection {
+        focus: original.focus.clone(),
+        ..Selection::default()
+    };
+    project(std::iter::once(&live), None, false, &mut original);
+    project(
+        sources.pages.values().filter_map(Edition::page),
+        None,
+        false,
+        &mut reopened,
+    );
+    assert_eq!(
+        original.details.keys().collect::<Vec<_>>(),
+        reopened.details.keys().collect::<Vec<_>>()
+    );
+    let links = &reopened.details.values().next().unwrap().observations;
+    assert_eq!(
+        links,
+        &original.details.values().next().unwrap().observations
+    );
+    assert_eq!(links.len(), 2);
+    assert_eq!(links[0].to, "https://example.test/maps/shared");
+    assert_ne!(links[0].locator, links[1].locator);
+}
+
+#[test]
 fn edge_is_clickable_through_the_native_swatch_hit_layers() {
     use crate::swatch_pane::{GraphCanvasNode, SWATCH_PAD, SwatchPane};
 

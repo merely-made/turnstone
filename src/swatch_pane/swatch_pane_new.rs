@@ -164,15 +164,21 @@ impl SwatchPane {
         passage: Option<&Passage>,
         pane_w: f32,
         pane_h: f32,
-    ) {
+    ) -> Vec<NeighborhoodRead> {
         let mut model = SwatchModel::default();
+        let mut reads = Vec::new();
         let sources = &mut self.neighborhood_sources;
         self.runner.update(|state| {
             if let Some(selection) = &mut state.neighborhood {
-                model = sources.sync(app, pane, passage, selection);
+                (model, reads) = sources.sync(app, pane, passage, selection);
             }
         });
         self.sync_model(app, pane_w, pane_h, model);
+        reads
+    }
+
+    pub(crate) fn accept_neighborhood_read(&mut self, reply: NeighborhoodReply) {
+        self.neighborhood_sources.accept_reopen(reply);
     }
 
     pub(crate) fn is_resource_neighborhood(&self) -> bool {

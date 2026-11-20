@@ -10,12 +10,11 @@ use oxrdf::NamedNode;
 use pandect::graph_session::MereSessions;
 use uuid::Uuid;
 
-use super::{SourceCustody, SystemTime, sealed_capture};
-use crate::action::{StoredSourceDocument, Update};
+use super::kept_document_read::in_session_directory;
+use super::{KeptDocumentRead, SourceCustody, SystemTime};
+use crate::action::Update;
 use crate::panes::PaneId;
-use crate::research_storage::{BudgetStore, StorageLimits};
-use crate::saved_sources::KeptSource;
-use crate::source_capture::CaptureRequest;
+use crate::research_storage::StorageLimits;
 use crate::swatch_pane::validation::{FindingView, Reply, Report, Response, Shapes, claim_preview};
 
 const SHAPES_KEY: &str = "validation-shapes.json";
@@ -55,34 +54,13 @@ impl Command {
 }
 
 pub struct ValidationRequest {
-    pub generation: Uuid,
     pub request: Uuid,
     pub pane: PaneId,
-    pub source: KeptSource,
-    pub capture: CaptureRequest,
-    pub stored: StoredSourceDocument,
-    pub directory: PathBuf,
+    pub(crate) read: KeptDocumentRead,
     pub shapes: Shapes,
 }
 
 impl ValidationRequest {
-    fn qualified(&self, directory: &Path, generation: Uuid) -> bool {
-        self.generation == generation
-            && self.directory == directory
-            && in_session_directory(directory, &self.source)
-            && self.capture.keep
-            && self.capture.id == self.source.request
-            && self.capture.session == self.source.key.session
-            && self.capture.graph == self.source.key.graph
-            && self.capture.node == self.source.key.node
-            && self.stored.annotation_manifest == self.source.key.annotation_manifest
-            && self
-                .capture
-                .source
-                .as_ref()
-                .is_some_and(|identity| identity.hash == self.source.capture_hash)
-    }
-
     pub(super) fn run(
         self,
         directory: &Path,
@@ -93,10 +71,10 @@ impl ValidationRequest {
     ) -> Response {
         let result = self.run_scoped(directory, generation, custody, store, limits);
         Response {
-            generation: self.generation,
+            generation: self.read.generation,
             request: self.request,
             pane: self.pane,
-            source: self.source,
+            source: self.read.source,
             result,
         }
     }
@@ -109,26 +87,10 @@ impl ValidationRequest {
         store: Option<&FjallStore>,
         limits: &Result<StorageLimits, String>,
     ) -> Result<Report, String> {
-        if !self.qualified(directory, generation) {
-            return Err("The kept source belongs to another session opening or attachment.".into());
-        }
-        let custody = custody.ok_or("Unlock the profile to validate this kept source.")?;
-        let epoch = custody.snapshot();
-        if epoch.is_none() {
-            return Err("Unlock the profile to validate this kept source.".into());
-        }
-        let mut store = BudgetStore {
-            store: store.ok_or("The kept source store is unavailable.")?,
-            budget: limits.as_ref().map_err(Clone::clone)?.budget(),
-        };
-        let document = sealed_capture::read_kept_document(
-            &mut store,
-            custody.sealer.as_ref(),
-            &self.capture,
-            &self.stored,
-        )
-        .map_err(|error| error.to_string())?;
-        let journal_path = journal_path(directory, &self.stored.annotation_manifest);
+        let (document, custody, epoch) = self
+            .read
+            .read(directory, generation, custody, store, limits)?;
+        let journal_path = journal_path(directory, &self.read.stored.annotation_manifest);
         let result = pollster::block_on(validate_capture(
             self,
             document,
@@ -141,14 +103,6 @@ impl ValidationRequest {
         }
         result
     }
-}
-
-fn in_session_directory(directory: &Path, source: &KeptSource) -> bool {
-    directory
-        .parent()
-        .and_then(Path::file_name)
-        .and_then(|parent| parent.to_str())
-        == Some(source.key.session.as_uuid().to_string().as_str())
 }
 
 fn journal_path(directory: &Path, manifest: &str) -> PathBuf {
@@ -173,7 +127,7 @@ async fn validate_capture(
     let blocks = fleece::extract_json_ld_blocks(&dom);
     let source = NamedNode::new(format!(
         "urn:mere:kept-source:{}",
-        eidetic::Hash::of(request.stored.annotation_manifest.as_bytes()).to_hex(),
+        eidetic::Hash::of(request.read.stored.annotation_manifest.as_bytes()).to_hex(),
     ))
     .map_err(|error| error.to_string())?;
 
@@ -244,7 +198,7 @@ async fn validate_capture(
         projection,
         checked_shapes.pack_label,
         origin,
-        &request.source.capture_hash,
+        &request.read.source.capture_hash,
         blocks,
     ))
 }

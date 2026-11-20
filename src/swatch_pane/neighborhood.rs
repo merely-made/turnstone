@@ -6,6 +6,8 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 mod extraction;
+mod reopen;
+pub(crate) use reopen::{NeighborhoodRead, NeighborhoodReply};
 #[cfg(test)]
 mod tests;
 
@@ -18,8 +20,11 @@ use url::Url;
 use super::{NodeState, ProjectionPreset, SwatchModel, SwatchNode, SwatchRelation, Uuid};
 use crate::app::App;
 use crate::panes::{GraphId, PaneId};
+use crate::saved_sources::KeptSource;
+use crate::trail_memory::KeptDocumentRead;
 pub(crate) use extraction::{document_base, interpret_blocks};
 use extraction::{excerpt, extract, link_claim};
+use reopen::Edition;
 
 pub(crate) const RESOURCE_NEIGHBORHOOD: ProjectionPreset = ProjectionPreset {
     id: "resource.neighborhood",
@@ -48,11 +53,22 @@ pub(super) struct Page {
 #[derive(Default)]
 pub(super) struct Sources {
     graph: Option<GraphId>,
-    pages: BTreeMap<Uuid, (Uuid, Page)>,
+    generation: Option<Uuid>,
+    pages: BTreeMap<Uuid, Edition>,
     displayed_focus: Option<String>,
     model: SwatchModel,
     passage: Option<Passage>,
     truncated: bool,
+    changed: bool,
+}
+
+enum Candidate<'a> {
+    Live {
+        address: &'a str,
+        token: Uuid,
+        hash: &'a str,
+    },
+    Kept(KeptSource),
 }
 
 #[derive(Clone, PartialEq, Eq)]
@@ -162,92 +178,154 @@ impl Sources {
         pane: PaneId,
         passage: Option<&Passage>,
         selection: &mut Selection,
-    ) -> SwatchModel {
+    ) -> (SwatchModel, Vec<NeighborhoodRead>) {
         let context = app.follower_context(pane);
         let graph_id = context
             .and_then(|context| context.graph)
             .or_else(|| app.graph_for_pane(pane));
-        if self.graph != graph_id {
+        let generation = Some(app.source_capture_generation);
+        if self.graph != graph_id || self.generation != generation {
             *self = Self {
                 graph: graph_id,
+                generation,
                 ..Self::default()
             };
             *selection = Selection::default();
         }
-        let Some(canvas) = graph_id.and_then(|id| app.graph_runtimes.canvas(id)) else {
+        let Some((graph_id, canvas)) =
+            graph_id.and_then(|id| app.graph_runtimes.canvas(id).map(|canvas| (id, canvas)))
+        else {
             *self = Self {
                 graph: graph_id,
+                generation,
                 ..Self::default()
             };
             *selection = Selection::default();
             selection.status = "Open a document in this graph to see its resource links.".into();
-            return SwatchModel::default();
+            return (SwatchModel::default(), Vec::new());
         };
         let graph = canvas.graph();
-        let mut live = BTreeSet::new();
-        let mut changed = false;
+        let mut present = BTreeSet::new();
+        let mut requests = Vec::new();
+        let mut changed = std::mem::take(&mut self.changed);
+        let member = context
+            .and_then(|context| context.member)
+            .or_else(|| canvas.focused_member());
         let mut admitted: Vec<_> = app
             .content
             .source_capture_members()
             .filter_map(|member| {
                 let (_, node) = graph.get_node_by_id(member)?;
                 let (token, identity) = app.content.source_capture_admission(member, node.url())?;
-                Some((member, node.url(), token, identity))
+                Some((
+                    member,
+                    identity.acquired_at_ms,
+                    Candidate::Live {
+                        address: node.url(),
+                        token,
+                        hash: identity.hash.as_str(),
+                    },
+                ))
             })
             .collect();
-        admitted.sort_by_key(|(member, _, _, source)| {
+        admitted.extend(
+            app.offline_kept_sources(graph_id)
+                .into_iter()
+                .map(|(source, time)| (source.key.node, time, Candidate::Kept(source))),
+        );
+        admitted.sort_by_key(|(candidate, time, _)| {
             (
-                context.and_then(|context| context.member) != Some(*member),
-                std::cmp::Reverse(source.acquired_at_ms),
-                *member,
+                member != Some(*candidate),
+                std::cmp::Reverse(*time),
+                *candidate,
             )
         });
         let truncated = admitted.len() > MAX_SOURCES;
         changed |= truncated != self.truncated;
         self.truncated = truncated;
-        for (member, address, token, identity) in admitted.into_iter().take(MAX_SOURCES) {
-            live.insert(member);
-            if self
-                .pages
-                .get(&member)
-                .is_some_and(|(seen, _)| *seen == token)
-            {
-                continue;
-            }
-            if let Some(document) = app.content.fetched(member, address) {
-                self.pages
-                    .insert(member, (token, extract(document, &identity.hash)));
-                changed = true;
+        for (node, _, candidate) in admitted.into_iter().take(MAX_SOURCES) {
+            match candidate {
+                Candidate::Live {
+                    address,
+                    token,
+                    hash,
+                } => {
+                    if let Some(Edition::Live { token: seen, .. }) = self.pages.get(&node)
+                        && *seen == token
+                    {
+                        present.insert(node);
+                    } else if let Some(document) = app.content.fetched(node, address) {
+                        self.pages.insert(
+                            node,
+                            Edition::Live {
+                                token,
+                                page: extract(document, hash),
+                            },
+                        );
+                        present.insert(node);
+                        changed = true;
+                    }
+                },
+                Candidate::Kept(source) => {
+                    if let Some(Edition::Kept { source: seen, .. }) = self.pages.get(&node)
+                        && seen == &source
+                    {
+                        present.insert(node);
+                    } else if let Some(attempt) = app.admit_structured_validation(&source)
+                        && let Some(stored) = &attempt.stored
+                    {
+                        let request = Uuid::new_v4();
+                        requests.push(NeighborhoodRead {
+                            pane,
+                            request,
+                            read: KeptDocumentRead {
+                                generation: app.source_capture_generation,
+                                source: source.clone(),
+                                capture: attempt.request.clone(),
+                                stored: stored.clone(),
+                                directory: crate::trail_memory::memory_dir(&app.session_dir()),
+                            },
+                        });
+                        self.pages.insert(
+                            node,
+                            Edition::Kept {
+                                source,
+                                request,
+                                result: None,
+                            },
+                        );
+                        present.insert(node);
+                        changed = true;
+                    }
+                },
             }
         }
         let previous_len = self.pages.len();
-        self.pages.retain(|member, _| live.contains(member));
+        self.pages.retain(|member, _| present.contains(member));
         changed |= previous_len != self.pages.len();
-        let member = context
-            .and_then(|context| context.member)
-            .or_else(|| canvas.focused_member());
         selection.validation.sync(
-            app, member, member.and_then(|member| self.pages.get(&member).map(|(_, page)| page)),
+            app,
+            member,
+            member.and_then(|member| self.pages.get(&member)?.page()),
         );
         let origin = member.and_then(|member| {
-                self.pages
-                    .get(&member)
-                    .map(|(_, page)| page.address.clone())
-                    .or_else(|| {
-                        graph
-                            .get_node_by_id(member)
-                            .map(|(_, node)| node.url().to_string())
-                    })
-            });
+            self.pages
+                .get(&member)
+                .and_then(Edition::page)
+                .map(|page| page.address.clone())
+                .or_else(|| {
+                    graph
+                        .get_node_by_id(member)
+                        .map(|(_, node)| node.url().to_string())
+                })
+        });
         if selection.origin != origin {
             selection.origin = origin.clone();
             selection.focus = origin;
             selection.link = None;
         }
         let passage = passage.filter(|passage| {
-            self.pages
-                .get(&passage.member)
-                .is_some_and(|(token, _)| *token == passage.admission)
+            matches!(self.pages.get(&passage.member), Some(Edition::Live { token, .. }) if *token == passage.admission)
                 && selection.origin.as_deref() == Some(&passage.address)
         });
         if self.passage.as_ref() != passage {
@@ -260,14 +338,52 @@ impl Sources {
         }
         if changed || self.displayed_focus != selection.focus || selection.status.is_empty() {
             self.model = project(
-                self.pages.values().map(|(_, page)| page),
+                self.pages.values().filter_map(Edition::page),
                 self.passage.as_ref(),
                 self.truncated,
                 selection,
             );
+            if self
+                .pages
+                .values()
+                .any(|edition| matches!(edition, Edition::Kept { result: None, .. }))
+            {
+                selection.status.push_str(" Loading kept sources…");
+            }
+            if self.pages.values().any(|edition| {
+                matches!(
+                    edition,
+                    Edition::Kept {
+                        result: Some(Err(_)),
+                        ..
+                    }
+                )
+            }) {
+                selection
+                    .status
+                    .push_str(" Some kept sources could not be reopened.");
+            }
             self.displayed_focus.clone_from(&selection.focus);
         }
-        self.model.clone()
+        (self.model.clone(), requests)
+    }
+
+    pub(super) fn accept_reopen(&mut self, reply: NeighborhoodReply) {
+        if self.generation != Some(reply.generation) || self.graph != Some(reply.source.key.graph) {
+            return;
+        }
+        if let Some(Edition::Kept {
+            source,
+            request,
+            result,
+        }) = self.pages.get_mut(&reply.source.key.node)
+            && *request == reply.request
+            && *source == reply.source
+            && result.is_none()
+        {
+            *result = Some(reply.result);
+            self.changed = true;
+        }
     }
 }
 

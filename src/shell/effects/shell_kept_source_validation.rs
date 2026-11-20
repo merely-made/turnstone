@@ -54,13 +54,15 @@ impl Shell {
         let generation = self.app.source_capture_generation;
         let command = ValidationRequest {
             request,
-            generation,
             pane,
             shapes,
-            capture: capture.request.clone(),
-            stored,
-            directory: crate::trail_memory::memory_dir(&self.app.session_dir()),
-            source: source.clone(),
+            read: crate::trail_memory::KeptDocumentRead {
+                generation,
+                capture: capture.request.clone(),
+                stored,
+                directory: crate::trail_memory::memory_dir(&self.app.session_dir()),
+                source: source.clone(),
+            },
         };
         if !self
             .renderers

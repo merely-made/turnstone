@@ -8,7 +8,7 @@ impl SourceCustody {
         (self.epoch)()
     }
 
-    pub(super) fn remains_current(&self, epoch: Option<u64>) -> bool {
+    pub(crate) fn remains_current(&self, epoch: Option<u64>) -> bool {
         epoch.is_some() && self.snapshot() == epoch
     }
 }
