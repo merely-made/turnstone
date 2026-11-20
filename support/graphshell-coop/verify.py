@@ -314,8 +314,11 @@ def main():
         return verify_baseline(HERE, q, args)
     mode = q.get('mode', 'relay' if (evidence/'relay-server.json').exists() else 'direct')
     assert q['result'] == 'ok' and q['all_owned_processes_stopped']
-    assert q['custodian_launches'] == 4
     machines = q['machines']
+    viewer = machines['owner'].get('viewer', 'graphshell_mere')
+    assert machines['guest'].get('viewer', 'graphshell_mere') == viewer
+    turnstone = viewer == 'turnstone'
+    assert q['custodian_launches'] == (2 if turnstone else 4)
     assert machines['owner']['machine_id'] != machines['guest']['machine_id']
     # The owner may be Linux or macOS on any architecture; the receipt records which (D130).
     assert machines['owner']['operating_system'] in {'Darwin', 'Linux'}
@@ -338,14 +341,14 @@ def main():
     assert q['controller_sha256'] == inputs['owner']['harness'][harness_prefix + 'run.py']
     process_pairs = {(p['machine'], p['pid']) for p in q['native_processes']}
     assert len(process_pairs) == 7
-    custodians = set()
+    resident_processes = set()
+    fixture_custodians = set()
     captures = {}
     capture_roles = {}
     for role in ['owner', 'guest']:
         machine = machines[role]
         source = inputs[role]
-        viewer = machine.get('viewer', 'graphshell_mere')
-        if viewer == 'turnstone':
+        if turnstone:
             assert 'turnstone' in source['binaries']
             verify_turnstone_grants(machine, evidence, role)
         assert machine['source_commit'] == source['source_commit']
@@ -362,9 +365,16 @@ def main():
         assert all(machine['binaries'][name] == binary['sha256']
                    and binary['architecture'] == machine['architecture']
                    for name, binary in source['binaries'].items())
+        residence = evidence / (role + '-resident')
+        if turnstone:
+            custodian = read(residence / 'custodian.json')
+            assert custodian['ready'] and custodian['profile'] == 'CrossGraph' + role.title()
+            assert custodian['custody'] == 'fixture-custodian' and custodian['synthetic']
+            assert machine['custody'].startswith('fixture-custodian:')
+            fixture_custodians.add((role, custodian['pid']))
         previous_stop = None
         for launch in [1, 2]:
-            events = [json.loads(line) for line in (evidence / (role + '-resident') /
+            events = [json.loads(line) for line in (residence /
                        ('events-' + str(launch) + '.jsonl')).read_text().splitlines()]
             ready = next(e for e in events if e['event'] == 'ready')
             stopped = next(e for e in events if e['event'] == 'stopped')
@@ -373,7 +383,10 @@ def main():
             if previous_stop is not None:
                 assert previous_stop < ready['at_ms']
             previous_stop = stopped['at_ms']
-            custodians.add((role, ready['pid']))
+            resident_processes.add((role, ready['pid']))
+            if turnstone:
+                log = (residence / f'djinn-{launch}.log').read_text()
+                assert 'custody reached' in log and 'in_process=false' in log, (role, launch)
         for name in q['phases'][role]:
             result = read(evidence / (name + '.json'))
             assert result.get('viewer', 'graphshell_mere') == viewer
@@ -394,7 +407,10 @@ def main():
                 assert path.stem not in captures
                 captures[path.stem] = capture['fields']
                 capture_roles[path.stem] = role
-    assert len(custodians) == 4 and len(captures) == (27 if mode == 'recovery' else 22)
+    assert len(resident_processes) == 4 and len(captures) == (27 if mode == 'recovery' else 22)
+    if turnstone:
+        assert len(fixture_custodians) == q['custodian_launches']
+        assert fixture_custodians.isdisjoint(resident_processes)
     cleanup = read(HERE / 'cleanup.json')
     assert cleanup['accepted_cohort'] == Path(machines['owner']['public']).parents[1].name
     assert all(not cleanup[role]['remaining'] for role in ['owner', 'guest'])
@@ -539,7 +555,8 @@ def main():
                and sha(evidence / r['capture']) == r['sha256'] for r in review)
     print(json.dumps({'result': 'ok', 'machines': 2, 'native_processes': 7,
                       'owner': {k: machines['owner'][k] for k in ['operating_system', 'architecture']},
-                      'custodians': 4, 'captures': len(captures), 'active_routes': sorted(active_routes),
+                      'custodians': q['custodian_launches'], 'resident_processes': len(resident_processes),
+                      'captures': len(captures), 'active_routes': sorted(active_routes),
                       'source_files': len(inputs['owner']['files']), 'commit': args.commit}, indent=2))
 
 

@@ -350,6 +350,7 @@ def workflow(args, relay=None):
             launches += machine.call('stop', final=True)['custodian_starts']
             machine.collect(accepted)
             remaining[machine.role] = {'remaining': machine.call('remaining')}
+        assert launches == 2, 'one fixture custodian on each machine'
         write(packet / 'cleanup.json', {'accepted_cohort': owner.public.parents[1].name} | remaining)
         pids = [{'machine': machine.role, 'pid': int(receipts[name]['final']['pid'])}
                 for machine in workers for name in phases[machine.role]]
