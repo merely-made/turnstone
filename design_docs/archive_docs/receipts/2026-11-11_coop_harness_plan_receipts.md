@@ -33,3 +33,30 @@ Run evidence for [the co-op harness plan](../../2026-11-11_coop_harness_plan.md)
 - The grant check read `agent`, which a grant omits when false (`83125ebf`).
 - The control predicate required `ok false`, but an expired await leaves the receipt ok (`6a656b0e`). That run's baseline and control themselves passed.
 - A build-generated, ignored file was listed among host/'s tracked inputs (`534e774c`). The `6a656b0e` packet, verified up to that point, is kept as `fedora/run3-superseded-6a656b0e`.
+
+## 2026-11-20 Turnstone relay and recovery
+
+T-PC on Fedora 45 hosted the owner. S-PC on Ubuntu 26.04.1 ran the guest
+and the private LAN Iroh relay. Both desktops used hardware AMD Vulkan.
+The frozen input revisions were Turnstone `205bdded` and Graphshell
+`d50bc125`. The relay's lock and registry audit checked 10,070 source
+files from 276 archives. The guest used the staged glibc runtime and
+the verified Fedora Pasta binary through a process-scoped path.
+
+- **Relay** passed with 22 reviewed nonblank captures. The guest joined,
+  added and renamed records, and saw ordinary owner edits while staying
+  within the invited graph. The relay was its only active carrier.
+- **Recovery** passed with 27 reviewed nonblank captures. The guest
+  showed a pending save and then lost the graph and edit controls.
+  The owner readings before relay loss and after the failed save were
+  byte-identical. Both original endpoints rejoined the same listener
+  before Reconnect. The guest saw the previous title, explicitly retried
+  the change, and received the owner acknowledgement.
+- Each run proved that TCP reached the relay from the guest namespace.
+  The host UDP witness arrived and the namespace UDP witness did not
+  reach it. The namespace PID matched the native viewer. Each run ended
+  with live withdrawal, revoked cold reopen, and the private graph intact.
+
+Both packets passed `verify.py`. The full packets are under
+`~/Code/testing/c-r1/receipt` and `~/Code/testing/c-r2/receipt` on T-PC.
+The fixture used a private LAN HTTP relay and synthetic external custody.

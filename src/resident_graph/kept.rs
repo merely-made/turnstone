@@ -10,22 +10,29 @@ use chirograph::{
 };
 use eidetic::kept_text::{KEEP_PAGES_INTENT, KeepPagesV1};
 use eidetic_search::{DocumentHit, DocumentIndex, SearchDocument};
+use graphshell::goal_surface::{self, GoalSurface, Start};
 use graphshell_door::projection::AppBrokerClient;
+use graphshell_host::goal_surface::{RetainedPage, RetainedPages, door, source_id};
 use sceno::InstanceId;
 use scenotime::{Revision, SceneEpoch};
-use std::sync::Arc;
+use std::rc::Rc;
 
 use super::{GraphView, State, worker};
 
 const RESULT_LIMIT: usize = 20;
+const SNAPSHOT_OWNER: &str = "turnstone-resident";
 
 pub(super) const CSS: &str = "
-.resident-kept { box-sizing: border-box; overflow: auto; padding: 8px; }
+.resident-kept { box-sizing: border-box; padding: 8px; }
 .resident-kept h2, .resident-kept h3, .resident-kept p { margin: 4px 0; }
 .resident-kept label, .resident-kept li { display: block; margin: 6px 0; }
 .resident-kept .kept-input { display: block; min-height: 25px; width: 100%; background: var(--tabard-color-surface, #22262c); border: 1px solid #6d7783; }
 .resident-kept p, .resident-kept pre { overflow-wrap: anywhere; white-space: pre-wrap; }
 .resident-kept ul { padding-left: 0; }
+.resident-kept .goal-input { min-width: 0; max-width: 100%; box-sizing: border-box; background: var(--tabard-color-surface, #22262c); color: inherit; }
+.resident-kept .goal-cite { background: var(--tabard-color-surface, #22262c); }
+.resident-kept .goal-meta { color: inherit; }
+.resident-kept .goal-notice, .resident-kept .goal-step-failed { color: var(--tabard-color-text, rgb(220, 226, 238)); }
 ";
 
 pub(super) enum Request {
@@ -35,8 +42,29 @@ pub(super) enum Request {
 }
 
 pub(super) struct Reply {
-    pages: Result<RetainedPagesResponse, String>,
+    pages: Result<KeptReading, String>,
     notice: Option<String>,
+}
+
+struct KeptReading {
+    pages: Option<RetainedPages>,
+    keeping: RetainedKeeping,
+    partial: bool,
+}
+
+impl KeptReading {
+    fn from_wire(wire: RetainedPagesResponse) -> Result<Self, String> {
+        let pages = if matches!(&wire.keeping, RetainedKeeping::Paused { .. }) {
+            None
+        } else {
+            Some(door::from_wire(SNAPSHOT_OWNER, &wire)?)
+        };
+        Ok(Self {
+            pages,
+            keeping: wire.keeping,
+            partial: !wire.truncated.is_complete(),
+        })
+    }
 }
 
 pub(super) async fn run(
@@ -85,7 +113,7 @@ pub(super) async fn run(
 async fn read(
     client: &mut AppBrokerClient,
     graph: &ProjectionSession,
-) -> Result<RetainedPagesResponse, String> {
+) -> Result<KeptReading, String> {
     let response = client
         .request_body(CarrierRequestBody::RetainedPages(RetainedPagesRequest {
             session: graph.clone(),
@@ -99,8 +127,7 @@ async fn read(
     if pages.session != *graph {
         return Err("The resident returned kept pages for another graph.".into());
     }
-    graphshell_host::goal_surface::door::from_wire("turnstone-resident", &pages)?;
-    Ok(*pages)
+    KeptReading::from_wire(*pages)
 }
 
 async fn capture(
@@ -170,17 +197,34 @@ pub(super) struct Panel {
     submitted: String,
     hits: Vec<DocumentHit<String>>,
     selected: Option<(String, String)>,
-    reply: Option<Arc<Reply>>,
+    traversal: Option<GoalSurface>,
+    follow_links: bool,
+    keeping: Option<RetainedKeeping>,
+    partial: bool,
     notice: String,
 }
 
 impl Panel {
-    pub(super) fn apply(&mut self, reply: Arc<Reply>) {
+    pub(super) fn apply(&mut self, reply: &Reply) {
         self.notice = reply.notice.clone().unwrap_or_default();
-        if let Err(reason) = &reply.pages {
-            self.notice = reason.clone();
+        self.keeping = None;
+        self.partial = false;
+        match &reply.pages {
+            Ok(reading) => {
+                self.keeping = Some(reading.keeping.clone());
+                self.partial = reading.partial;
+                if let Some(pages) = &reading.pages {
+                    self.replace_pages(pages);
+                } else {
+                    self.traversal = None;
+                }
+            },
+            Err(reason) => {
+                self.traversal = None;
+                self.notice = reason.clone();
+            },
         }
-        self.reply = Some(reply);
+
         self.hits = self
             .pages()
             .map_or_else(Vec::new, |pages| search(pages, &self.submitted));
@@ -189,19 +233,58 @@ impl Panel {
         }
     }
 
-    fn pages(&self) -> Option<&RetainedPagesResponse> {
-        self.reply.as_ref()?.pages.as_ref().ok()
+    pub(super) fn reset_scope(&mut self) {
+        *self = Self {
+            open: self.open,
+            ..Self::default()
+        };
     }
 
-    fn reading(&self) -> Option<(&chirograph::RetainedPageWire, &str)> {
+    fn replace_pages(&mut self, pages: &RetainedPages) {
+        let Some(surface) = &mut self.traversal else {
+            let mut surface = GoalSurface::new(Rc::new(pages.clone()));
+            surface.heading = false;
+            self.traversal = Some(surface);
+            return;
+        };
+        if pages == surface.pages() {
+            return;
+        }
+
+        if let Start::Source(index) = surface.start {
+            let old_sources = surface.pages().sources();
+            surface.start = old_sources
+                .get(index)
+                .and_then(|(chosen, _)| {
+                    pages
+                        .sources()
+                        .iter()
+                        .position(|(source, _)| source == chosen)
+                })
+                .map_or(Start::All, Start::Source);
+        }
+        surface.run = None;
+        surface.receipt = None;
+        surface.replace_pages(Rc::new(pages.clone()));
+    }
+
+    fn pages(&self) -> Option<&RetainedPages> {
+        self.traversal.as_ref().map(GoalSurface::pages)
+    }
+
+    fn page(&self, id: &str) -> Option<&RetainedPage> {
+        let pages = self.pages()?;
+        pages.page(&source_id(pages.owner(), id.parse().ok()?))
+    }
+
+    fn reading(&self) -> Option<(&RetainedPage, &str)> {
         let (id, version) = self.selected.as_ref()?;
-        let page = self.pages()?.pages.iter().find(|page| page.id == *id)?;
-        let text = page.versions.iter().find(|held| held.version == *version)?;
-        Some((page, &text.text))
+        let page = self.page(id)?;
+        Some((page, page.versions.get(version)?))
     }
 
     fn keeping(&self) -> Option<&RetainedKeeping> {
-        self.pages().map(|pages| &pages.keeping)
+        self.keeping.as_ref()
     }
 
     fn status(&self) -> String {
@@ -216,74 +299,36 @@ impl Panel {
     }
 }
 
-fn current(page: &chirograph::RetainedPageWire) -> Option<&str> {
-    page.versions
-        .iter()
-        .find(|version| version.version == page.current)
-        .map(|version| version.text.as_str())
-}
-
-fn search(pages: &RetainedPagesResponse, query: &str) -> Vec<DocumentHit<String>> {
+fn search(pages: &RetainedPages, query: &str) -> Vec<DocumentHit<String>> {
     if query.trim().is_empty() {
         return Vec::new();
     }
     DocumentIndex::from_documents(
         Default::default(),
-        pages.pages.iter().map(|page| SearchDocument {
-            key: page.id.clone(),
-            primary_address: page.address.clone(),
-            aliases: Vec::new(),
-            title: page.title.clone(),
-            body: current(page).map(str::to_owned),
-        }),
+        pages
+            .sources()
+            .into_iter()
+            .map(|(source, page)| SearchDocument {
+                key: source.source,
+                primary_address: page.url.clone(),
+                aliases: Vec::new(),
+                title: page.title.clone(),
+                body: page.versions.get(&page.current).cloned(),
+            }),
     )
     .search(query, RESULT_LIMIT)
 }
 
-pub(super) fn view(state: &State) -> GraphView {
+fn search_view(state: &State) -> GraphView {
     let panel = &state.kept;
-    let scroll = format!("height: {}px", state.size.1.saturating_sub(32));
-    if let Some((page, text)) = panel.reading() {
-        return Box::new(
-            el::<_, State, ()>(
-                "article",
-                (
-                    button("Back to kept pages", |state: &mut State, _| {
-                        state.kept.selected = None;
-                    }),
-                    el(
-                        "h2",
-                        page.title.clone().unwrap_or_else(|| page.address.clone()),
-                    ),
-                    page.title
-                        .as_ref()
-                        .filter(|title| *title != &page.address)
-                        .map(|_| el("p", page.address.clone())),
-                    el("pre", text.to_owned()),
-                ),
-            )
-            .attr("aria-label", "Kept page text")
-            .attr("class", "resident-kept")
-            .attr("style", scroll),
-        );
-    }
-    let can_set = matches!(
-        panel.keeping(),
-        Some(RetainedKeeping::On | RetainedKeeping::Off)
-    );
-    let on = matches!(panel.keeping(), Some(RetainedKeeping::On));
     let busy = state.requested != state.completed;
     let rows: Vec<GraphView> = panel
         .hits
         .iter()
         .filter_map(|hit| {
-            let page = panel
-                .pages()?
-                .pages
-                .iter()
-                .find(|page| page.id == hit.key)?;
-            let chosen = (page.id.clone(), page.current.clone());
-            let title = page.title.clone().unwrap_or_else(|| page.address.clone());
+            let page = panel.page(&hit.key)?;
+            let chosen = (hit.key.clone(), page.current.clone());
+            let title = page.title.clone().unwrap_or_else(|| page.url.clone());
             Some(Box::new(el(
                 "li",
                 (
@@ -295,11 +340,11 @@ pub(super) fn view(state: &State) -> GraphView {
                             }
                         },
                     )
-                    .attr("data-kept-page", page.id.clone()),
+                    .attr("data-kept-page", hit.key.clone()),
                     page.title
                         .as_ref()
-                        .filter(|title| *title != &page.address)
-                        .map(|_| el("p", page.address.clone())),
+                        .filter(|title| *title != &page.url)
+                        .map(|_| el("p", page.url.clone())),
                 ),
             )) as GraphView)
         })
@@ -312,9 +357,85 @@ pub(super) fn view(state: &State) -> GraphView {
         count if count == RESULT_LIMIT => format!("Showing {count} matches"),
         count => format!("{count} matches"),
     };
-    let partial = panel
-        .pages()
-        .is_some_and(|pages| !pages.truncated.is_complete());
+    Box::new(el(
+        "div",
+        (
+            el(
+                "label",
+                (
+                    "Search query",
+                    lens(
+                        |input: &mut TextInput| {
+                            text_field_typed(input)
+                                .attr("aria-label", "Search query")
+                                .attr("class", "kept-input")
+                        },
+                        |state: &mut State| &mut state.kept.query,
+                    ),
+                ),
+            ),
+            button("Search kept pages", |state: &mut State, _| {
+                let query = state.kept.query.text().trim().to_owned();
+                if query.is_empty() {
+                    state.kept.notice = "Enter a search query.".into();
+                } else if state.send(worker::Request::Kept(Request::Refresh)) {
+                    state.kept.submitted = query;
+                    state.kept.hits.clear();
+                    state.kept.selected = None;
+                }
+            }),
+            el("p", summary)
+                .attr("role", "status")
+                .attr("aria-label", "Kept page matches"),
+            el("ul", rows),
+        ),
+    ))
+}
+
+pub(super) fn view(state: &State) -> GraphView {
+    let panel = &state.kept;
+    if let Some((page, text)) = panel.reading() {
+        return Box::new(
+            el::<_, State, ()>(
+                "article",
+                (
+                    button("Back to kept pages", |state: &mut State, _| {
+                        state.kept.selected = None;
+                    }),
+                    el("h2", page.title.clone().unwrap_or_else(|| page.url.clone())),
+                    page.title
+                        .as_ref()
+                        .filter(|title| *title != &page.url)
+                        .map(|_| el("p", page.url.clone())),
+                    el("pre", text.to_owned()),
+                ),
+            )
+            .attr("aria-label", "Kept page text")
+            .attr("class", "resident-kept"),
+        );
+    }
+    let can_set = matches!(
+        panel.keeping(),
+        Some(RetainedKeeping::On | RetainedKeeping::Off)
+    );
+    let on = matches!(panel.keeping(), Some(RetainedKeeping::On));
+    let busy = state.requested != state.completed;
+    let finding: Option<GraphView> = if panel.follow_links {
+        panel.traversal.is_some().then(|| {
+            Box::new(lens(
+                |surface: &mut GoalSurface| goal_surface::view(surface),
+                |state: &mut State| {
+                    state
+                        .kept
+                        .traversal
+                        .as_mut()
+                        .expect("visible kept traversal")
+                },
+            )) as GraphView
+        })
+    } else {
+        Some(search_view(state))
+    };
     Box::new(
         el::<_, State, ()>(
             "section",
@@ -368,30 +489,20 @@ pub(super) fn view(state: &State) -> GraphView {
                     })
                 }),
                 el(
-                    "label",
+                    "nav",
                     (
-                        "Search query",
-                        lens(
-                            |input: &mut TextInput| {
-                                text_field_typed(input)
-                                    .attr("aria-label", "Search query")
-                                    .attr("class", "kept-input")
-                            },
-                            |state: &mut State| &mut state.kept.query,
-                        ),
+                        button("Search text", |state: &mut State, _| {
+                            state.kept.follow_links = false;
+                        })
+                        .attr("aria-pressed", (!panel.follow_links).to_string()),
+                        button("Follow kept links", |state: &mut State, _| {
+                            state.kept.follow_links = true;
+                        })
+                        .attr("aria-pressed", panel.follow_links.to_string()),
                     ),
-                ),
-                button("Search kept pages", |state: &mut State, _| {
-                    let query = state.kept.query.text().trim().to_owned();
-                    if query.is_empty() {
-                        state.kept.notice = "Enter a search query.".into();
-                    } else if state.send(worker::Request::Kept(Request::Refresh)) {
-                        state.kept.submitted = query;
-                        state.kept.hits.clear();
-                        state.kept.selected = None;
-                    }
-                }),
-                partial.then(|| {
+                )
+                .attr("aria-label", "Find kept pages"),
+                panel.partial.then(|| {
                     el(
                         "p",
                         "The resident's read limit excluded some kept material.",
@@ -407,13 +518,12 @@ pub(super) fn view(state: &State) -> GraphView {
                 )
                 .attr("role", "status")
                 .attr("aria-label", "Kept page status"),
-                el("p", summary)
-                    .attr("role", "status")
-                    .attr("aria-label", "Kept page matches"),
-                el("ul", rows),
+                finding,
             ),
         )
-        .attr("class", "resident-kept")
-        .attr("style", scroll),
+        .attr("class", "resident-kept"),
     )
 }
+
+#[cfg(test)]
+mod tests;

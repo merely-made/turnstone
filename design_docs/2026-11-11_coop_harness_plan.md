@@ -57,7 +57,7 @@ This plan carries out two of Mark's rulings, which live in Mere's engine-split p
 ### H7. Two-machine co-op phases
 The Turnstone `direct` workflow passed on two physical Linux Wayland desktops on 2026-11-20, with `verify.py` and whole-capture review. It used production-shaped Djinn with one fixture custodian per desktop, kept alive across both resident starts. The [N2 receipt](archive_docs/receipts/2026-10-28_graphshell_host_plan_receipts.md#2026-11-20-n2-native-co-op-on-t-pc-and-s-pc) records the exact source, locks, devices, and checks. The installed custody and consent boundary remains the same as H6.
 
-The Turnstone `relay` and `recovery` paths still need native reruns. Their historical 2026-10-24 receipts concern the standalone viewer. **Done when** the Turnstone phases pass their full workflow and `verify.py` on physical devices, or the drifted phases are recorded as findings.
+The Turnstone `relay` and `recovery` workflows also passed on T-PC and S-PC with the packet verifier and visual review. Each ran on a private LAN relay with a guest network namespace. Recovery withdrew the relay before a save, compared the owner's durable reads, waited for both original endpoints to rejoin, and saved only after an explicit retry. See the [relay and recovery receipts](archive_docs/receipts/2026-11-11_coop_harness_plan_receipts.md#2026-11-20-turnstone-relay-and-recovery). WAN and TLS deployment remain separate checks.
 
 ## Findings
 

@@ -11,7 +11,7 @@
 # `tabard-workshop`) or still Mere's (`pelt-core`).
 members = [".", "sandbox_bootstrap_win", "ports/pelt", "ports/smolweb-pack", "ports/tabard/desktop",
     # The reference app from Mere (engine split D23, D104): Mere's subpaths kept.
-    "ports/graphshell", "ports/graphshell/mere", "ports/graphshell/dramatis-pane",
+    "ports/graphshell", "ports/graphshell/dramatis-pane",
     "ports/graphshell/blocks", "crates/graphshell/graphshell-mcp"]
 exclude = ["vendor/mozjs-icu-collator", "vendor/mozjs-icu-normalizer",
     # Its own lock root (wasm32); the empty [workspace] in its manifest is what keeps it out.
@@ -60,7 +60,7 @@ kernel = { package = "mere-kernel", git = "https://github.com/merely-made/mere.g
 # Mere's linked-data engine parses the JSON-LD carried in admitted documents.
 mere = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 mere-shacl = { git = "https://github.com/merely-made/mere.git", branch = "main" }
-graphshell = { path = "ports/graphshell", default-features = false, features = ["link-inspection"] }
+graphshell = { path = "ports/graphshell", default-features = false, features = ["goal-surface", "link-inspection"] }
 oxrdf = "0.3"
 # `canvas` is the graph canvas; the default features (physics-engine,
 # image-decode) are what the facade forwarded.
