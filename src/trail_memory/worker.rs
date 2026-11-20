@@ -40,14 +40,13 @@ pub(super) fn run(
     while let Ok(command) = commands.recv() {
         match command {
             TrailCommand::ValidateKeptSource(request) => {
-                let response = request.run(
+                out.emit(request.run(
                     &current_dir,
                     current_capture_generation,
                     custody.as_ref(),
                     sealed_store.as_ref(),
                     &limits,
-                );
-                out.emit(Update::KeptSourceValidated(Box::new(response)));
+                ));
             }
             TrailCommand::ResearchRecords(command) => {
                 if let Some(error) = &sealed_error {

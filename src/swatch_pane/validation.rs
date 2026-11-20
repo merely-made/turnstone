@@ -13,8 +13,9 @@ const MAX_PREVIEW_CLAIMS: usize = 16;
 pub enum Intent {
     Keep(SourceCaptureTarget),
     Validate(KeptSource),
+    ValidateWithPack(KeptSource),
     Reopen(KeptSource),
-    OpenEvidence { source: KeptSource, order: u64 },
+    OpenEvidence(EvidenceTarget),
 }
 
 impl Intent {
@@ -27,16 +28,17 @@ impl Intent {
                 source,
                 shapes: Shapes::Choose,
             },
+            Self::ValidateWithPack(source) => Action::ValidateKeptSource {
+                pane,
+                source,
+                shapes: Shapes::ChoosePack,
+            },
             Self::Reopen(source) => Action::ValidateKeptSource {
                 pane,
                 source,
                 shapes: Shapes::Reopen,
             },
-            Self::OpenEvidence { source, order } => Action::RevealValidationEvidence {
-                pane,
-                source,
-                order,
-            },
+            Self::OpenEvidence(target) => Action::RevealValidationEvidence { pane, target },
         }
     }
 }
@@ -44,8 +46,17 @@ impl Intent {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Shapes {
     Choose,
+    ChoosePack,
     File(std::path::PathBuf),
+    Pack(std::path::PathBuf),
     Reopen,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct EvidenceTarget {
+    pub(crate) source: KeptSource,
+    pub(crate) report: Uuid,
+    pub(crate) order: u64,
 }
 
 pub struct Response {
@@ -54,6 +65,18 @@ pub struct Response {
     pub pane: crate::panes::PaneId,
     pub source: KeptSource,
     pub result: Result<Report, String>,
+}
+
+pub struct EvidenceResponse {
+    pub generation: Uuid,
+    pub pane: crate::panes::PaneId,
+    pub target: EvidenceTarget,
+    pub result: Result<(), String>,
+}
+
+pub enum Reply {
+    Report(Response),
+    Evidence(EvidenceResponse),
 }
 
 impl SwatchPane {
@@ -101,17 +124,18 @@ impl SwatchPane {
         });
     }
 
-    pub(crate) fn validation_evidence(&self, source: &KeptSource, order: u64) -> Option<&Report> {
+    pub(crate) fn validation_evidence(&self, target: &EvidenceTarget) -> Option<&Report> {
         let state = &self.runner.state().neighborhood.as_ref()?.validation;
-        if state.kept.as_ref() != Some(source) {
+        if state.kept.as_ref() != Some(&target.source) {
             return None;
         }
         let report = state.result.as_ref()?.as_ref().ok()?;
-        report
-            .findings
-            .iter()
-            .any(|entry| entry.evidence.iter().any(|item| item.id == order))
-            .then_some(report)
+        (target.report == report.id
+            && report
+                .findings
+                .iter()
+                .any(|entry| entry.evidence.iter().any(|item| item.id == target.order)))
+        .then_some(report)
     }
 }
 
@@ -121,10 +145,12 @@ pub struct FindingView {
 }
 
 pub struct Report {
+    pub id: Uuid,
     pub origin: String,
     pub blocks: Vec<fleece::EmbeddedJsonLdBlock>,
     pub conforms: bool,
-    pub cursor: u64,
+    pub projection: graphshell_host::pinned_shacl::PinnedValidation,
+    pub pack_label: Option<String>,
     pub diagnostics: Vec<String>,
     pub claims: Option<DetailSection>,
     pub findings: Vec<FindingView>,
@@ -243,8 +269,13 @@ pub(super) fn controls(state: &State) -> Vec<SwatchView> {
     if !state.has_claims && state.kept.is_none() {
         return Vec::new();
     }
+    let displayed = state
+        .result
+        .as_ref()
+        .and_then(|result| result.as_ref().ok());
+    let diagnostics = displayed.map_or(&state.diagnostics, |report| &report.diagnostics);
     let mut rows = vec![note("Structured data")];
-    rows.extend(state.diagnostics.iter().cloned().map(note));
+    rows.extend(diagnostics.iter().cloned().map(note));
     let Some(source) = &state.kept else {
         rows.push(note("Keep this source to validate its claims."));
         if let Some(target) = &state.keep {
@@ -271,6 +302,10 @@ pub(super) fn controls(state: &State) -> Vec<SwatchView> {
             Intent::Validate(source.clone()),
         ));
         rows.push(button(
+            "Validate with shape pack…",
+            Intent::ValidateWithPack(source.clone()),
+        ));
+        rows.push(button(
             "Reopen validation for this capture",
             Intent::Reopen(source.clone()),
         ));
@@ -278,15 +313,19 @@ pub(super) fn controls(state: &State) -> Vec<SwatchView> {
     match &state.result {
         Some(Err(error)) => rows.push(note(error.clone())),
         Some(Ok(report)) => {
-            rows.push(note(format!("Source journal cursor {}", report.cursor)));
-            if state.diagnostics.is_empty() {
-                rows.extend(report.diagnostics.iter().cloned().map(note));
+            rows.push(note(format!(
+                "Source journal cursor {}",
+                report.projection.revision().cursor.0
+            )));
+            if let Some(pack) = &report.pack_label {
+                rows.push(note(pack.clone()));
             }
             if report.conforms {
                 rows.push(note("The kept source conforms."));
             }
             for entry in &report.findings {
                 let source = source.clone();
+                let report_id = report.id;
                 rows.push(Box::new(cambium::validation_finding_panel(
                     &entry.finding,
                     &entry.evidence,
@@ -294,10 +333,13 @@ pub(super) fn controls(state: &State) -> Vec<SwatchView> {
                     move |state: &mut SwatchState, order| {
                         state
                             .pending
-                            .push(SwatchIntent::Validation(Intent::OpenEvidence {
-                                source: source.clone(),
-                                order,
-                            }));
+                            .push(SwatchIntent::Validation(Intent::OpenEvidence(
+                                EvidenceTarget {
+                                    source: source.clone(),
+                                    report: report_id,
+                                    order,
+                                },
+                            )));
                     },
                 )));
             }
@@ -307,10 +349,7 @@ pub(super) fn controls(state: &State) -> Vec<SwatchView> {
     if let Some(error) = &state.open_error {
         rows.push(note(error.clone()));
     }
-    let claims = state
-        .claims
-        .as_ref()
-        .or_else(|| state.result.as_ref()?.as_ref().ok()?.claims.as_ref());
+    let claims = displayed.map_or(state.claims.as_ref(), |report| report.claims.as_ref());
     if let Some(claims) = claims {
         rows.push(Box::new(cambium::detail_panel(std::slice::from_ref(
             claims,

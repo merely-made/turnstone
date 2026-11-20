@@ -377,8 +377,8 @@ impl Shell {
                 Effect::ValidateKeptSource { pane, source, shapes } => {
                     self.validate_kept_source(pane, source, shapes);
                 },
-                Effect::RevealValidationEvidence { pane, source, order } => {
-                    self.open_validation_evidence(pane, source, order);
+                Effect::RevealValidationEvidence { pane, target } => {
+                    self.open_validation_evidence(pane, target);
                 },
                 Effect::TrashSession { .. } | Effect::SwitchSession { .. } => {
                     self.effect_trash_session(effect)

@@ -110,7 +110,11 @@ impl Shell {
             self.service_private_custody();
             let update = match update {
                 crate::action::Update::KeptSourceValidated(response) => {
-                    self.accept_kept_source_validation(*response);
+                    use crate::swatch_pane::validation::Reply;
+                    match *response {
+                        Reply::Report(response) => self.accept_kept_source_validation(response),
+                        Reply::Evidence(response) => self.accept_validation_evidence(response),
+                    }
                     continue;
                 },
                 update => update,

@@ -4,8 +4,10 @@
 use super::*;
 use crate::panes::PaneId;
 use crate::saved_sources::KeptSource;
-use crate::swatch_pane::validation::{Response, Shapes};
-use crate::trail_memory::{TrailCommand, ValidationRequest};
+use crate::swatch_pane::validation::{EvidenceResponse, EvidenceTarget, Response, Shapes};
+use crate::trail_memory::{
+    EvidenceRequest, TrailCommand, ValidationCommand as Command, ValidationRequest,
+};
 
 impl Shell {
     pub(in crate::shell) fn validate_kept_source(
@@ -17,16 +19,27 @@ impl Shell {
         if !self.app.admits_neighborhood_validation(pane, &source) {
             return;
         }
-        if shapes == Shapes::Choose {
-            if let Some(path) = rfd::FileDialog::new()
-                .set_title("Choose SHACL shapes")
-                .add_filter("Turtle shapes", &["ttl"])
-                .pick_file()
-            {
+        if matches!(shapes, Shapes::Choose | Shapes::ChoosePack) {
+            let pack = shapes == Shapes::ChoosePack;
+            let dialog = rfd::FileDialog::new();
+            let dialog = if pack {
+                dialog
+                    .set_title("Choose a SHACL shape pack")
+                    .add_filter("Mere packs", &["pack"])
+            } else {
+                dialog
+                    .set_title("Choose SHACL shapes")
+                    .add_filter("Turtle shapes", &["ttl"])
+            };
+            if let Some(path) = dialog.pick_file() {
                 self.act(Action::ValidateKeptSource {
                     pane,
                     source,
-                    shapes: Shapes::File(path),
+                    shapes: if pack {
+                        Shapes::Pack(path)
+                    } else {
+                        Shapes::File(path)
+                    },
                 });
             }
             return;
@@ -59,7 +72,9 @@ impl Shell {
         }
         if !self
             .trail_handle
-            .command(TrailCommand::ValidateKeptSource(Box::new(command)))
+            .command(TrailCommand::ValidateKeptSource(Box::new(
+                Command::Validate(command),
+            )))
         {
             self.accept_kept_source_validation(Response {
                 generation,
@@ -86,36 +101,86 @@ impl Shell {
     pub(in crate::shell) fn open_validation_evidence(
         &mut self,
         pane: PaneId,
-        source: KeptSource,
-        order: u64,
+        target: EvidenceTarget,
     ) {
-        if !self.app.admits_neighborhood_validation(pane, &source) {
+        if !self
+            .app
+            .admits_neighborhood_validation(pane, &target.source)
+        {
+            return;
+        }
+        let Some(revision) = self
+            .renderers
+            .gloss
+            .get(&pane)
+            .and_then(|view| view.validation_evidence(&target))
+            .map(|report| report.projection.revision().clone())
+        else {
+            return;
+        };
+        let generation = self.app.source_capture_generation;
+        let request = EvidenceRequest {
+            generation,
+            pane,
+            target: target.clone(),
+            revision,
+            directory: crate::trail_memory::memory_dir(&self.app.session_dir()),
+        };
+        if !self
+            .trail_handle
+            .command(TrailCommand::ValidateKeptSource(Box::new(
+                Command::OpenEvidence(request),
+            )))
+        {
+            self.accept_validation_evidence(EvidenceResponse {
+                generation,
+                pane,
+                target,
+                result: Err("The kept source store is unavailable.".into()),
+            });
+        }
+    }
+
+    pub(in crate::shell) fn accept_validation_evidence(&mut self, response: EvidenceResponse) {
+        let EvidenceResponse {
+            generation,
+            pane,
+            target,
+            result,
+        } = response;
+        if self.app.source_capture_generation != generation
+            || !self
+                .app
+                .admits_neighborhood_validation(pane, &target.source)
+        {
             return;
         }
         let Some((origin, block)) = self
             .renderers
             .gloss
             .get(&pane)
-            .and_then(|view| view.validation_evidence(&source, order))
+            .and_then(|view| view.validation_evidence(&target))
             .and_then(|report| {
                 let block = report
                     .blocks
                     .iter()
-                    .find(|block| block.document_order == order)?;
+                    .find(|block| block.document_order == target.order)?;
                 Some((report.origin.clone(), block.clone()))
             })
         else {
             return;
         };
-        let result = self.reveal_structured_source(
-            &source,
-            &origin,
-            &source.capture_hash,
-            std::slice::from_ref(&block),
-            order,
-        );
+        let result = result.and_then(|()| {
+            self.reveal_structured_source(
+                &target.source,
+                &origin,
+                &target.source.capture_hash,
+                std::slice::from_ref(&block),
+                target.order,
+            )
+        });
         if let Some(view) = self.renderers.gloss.get_mut(&pane) {
-            view.record_evidence_open(order, result);
+            view.record_evidence_open(target.order, result);
             self.request_redraw();
         }
     }

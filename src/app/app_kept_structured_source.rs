@@ -107,15 +107,10 @@ impl App {
     pub(crate) fn reveal_validation_evidence(
         &self,
         pane: crate::panes::PaneId,
-        source: KeptSource,
-        order: u64,
+        target: crate::swatch_pane::validation::EvidenceTarget,
     ) -> Vec<Effect> {
-        if self.admits_neighborhood_validation(pane, &source) {
-            vec![Effect::RevealValidationEvidence {
-                pane,
-                source,
-                order,
-            }]
+        if self.admits_neighborhood_validation(pane, &target.source) {
+            vec![Effect::RevealValidationEvidence { pane, target }]
         } else {
             vec![]
         }

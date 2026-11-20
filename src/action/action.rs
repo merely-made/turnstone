@@ -82,8 +82,7 @@ pub enum Action {
     },
     RevealValidationEvidence {
         pane: crate::panes::PaneId,
-        source: crate::saved_sources::KeptSource,
-        order: u64,
+        target: crate::swatch_pane::validation::EvidenceTarget,
     },
     /// Search the current session's explicitly attached saved evidence.
     SearchSavedSources,

@@ -146,7 +146,7 @@ scenograph = { git = "https://github.com/merely-made/graphshell.git", branch = "
 # `graphshell-host`.
 # The serving half: admission, the carriers, dialling, the session loop with
 # its notices, the endpoint catalog and the projection host (lift plan P4).
-graphshell-host = { git = "https://github.com/merely-made/graphshell.git", branch = "main", default-features = false, features = ["coop", "goal-surface", "mere-host"] }
+graphshell-host = { git = "https://github.com/merely-made/graphshell.git", branch = "main", default-features = false, features = ["coop", "goal-surface", "mere-host", "pinned-shacl"] }
 notochord = { git = "https://github.com/merely-made/dramatis.git", branch = "main" }
 # The in-process carrier and the Knot endpoint it hosts. Turnstone embeds the
 # endpoint rather than spawning it: a subprocess is unshippable in a browser

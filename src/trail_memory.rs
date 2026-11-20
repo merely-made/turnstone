@@ -64,7 +64,7 @@ mod research_search_tests;
 mod saved_sources;
 mod sealed_capture;
 mod kept_validation;
-pub use kept_validation::ValidationRequest;
+pub use kept_validation::{Command as ValidationCommand, EvidenceRequest, ValidationRequest};
 mod sealed_record_receipts;
 mod sealed_records;
 mod sealed_result_receipts;
@@ -101,7 +101,7 @@ pub struct SourceCustody {
 pub(crate) mod custody_test_fixture;
 
 pub enum TrailCommand {
-    ValidateKeptSource(Box<ValidationRequest>),
+    ValidateKeptSource(Box<ValidationCommand>),
     ResearchRecords(record_actor::Command),
     /// Ordered custody adoption or withdrawal; no key material is held here.
     SetCustody(Option<SourceCustody>),

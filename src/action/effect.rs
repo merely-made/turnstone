@@ -300,8 +300,7 @@ pub enum Effect {
     },
     RevealValidationEvidence {
         pane: crate::panes::PaneId,
-        source: crate::saved_sources::KeptSource,
-        order: u64,
+        target: crate::swatch_pane::validation::EvidenceTarget,
     },
     LoadSavedSources {
         generation: uuid::Uuid,

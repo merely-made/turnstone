@@ -3,11 +3,14 @@
 
 use std::{collections::BTreeSet, sync::Arc};
 
+use mere::dataset::View;
+
 use super::*;
 use crate::content::FetchedDocument;
 use crate::panes::{GraphId, SessionId};
 use crate::saved_sources::Key;
 use crate::source_capture::SourceIdentity;
+use crate::swatch_pane::validation::EvidenceTarget;
 
 const HTML: &str = r#"<!doctype html>
 <html>
@@ -41,6 +44,7 @@ const ORIGIN: &str = "https://page.invalid/articles/field-notes";
 const ACCEPTED: &str = "https://page.invalid/archive/readable-claim";
 const INVALID: &str = "https://page.invalid/archive/invalid-claim";
 const PATH: &str = "https://example.invalid/vocab#score";
+const INDEPENDENT_SOURCE: &str = "urn:fixture:independent-kept-source";
 
 fn order(report: &Report, id: &str) -> u64 {
     report
@@ -159,7 +163,7 @@ fn kept_validation_reopens_from_sealed_source_at_the_same_cursor() {
         .result
         .unwrap();
     assert_finding(&live);
-    assert!(live.cursor > 0);
+    assert!(live.projection.revision().cursor.0 > 0);
     drop(store);
 
     let edition_digest = eidetic::Hash::of(stored.annotation_manifest.as_bytes()).to_hex();
@@ -175,7 +179,10 @@ fn kept_validation_reopens_from_sealed_source_at_the_same_cursor() {
         let manifest = sessions.latest_live().await.unwrap().unwrap();
         let session = sessions.open(manifest.session_id).await.unwrap();
         let kept = session.kept_page_claims(&journal_graph).unwrap().unwrap();
-        assert_eq!(session.journal().live_cursor().0, live.cursor);
+        assert_eq!(
+            session.journal().live_cursor(),
+            live.projection.revision().cursor
+        );
         assert_eq!(kept.claims.blocks.len(), 2);
         let subjects: BTreeSet<_> = kept
             .dataset()
@@ -217,7 +224,7 @@ fn kept_validation_reopens_from_sealed_source_at_the_same_cursor() {
         .result
         .unwrap();
     assert_finding(&reopened);
-    assert_eq!(reopened.cursor, live.cursor);
+    assert_eq!(reopened.projection.revision(), live.projection.revision());
     assert_eq!(reopened.blocks, live.blocks);
     assert_eq!(reopened.diagnostics, live.diagnostics);
     assert_eq!(
@@ -228,6 +235,147 @@ fn kept_validation_reopens_from_sealed_source_at_the_same_cursor() {
         reopened.findings[0].finding.message,
         live.findings[0].finding.message
     );
+
+    let evidence = |report: &Report| EvidenceRequest {
+        generation: generation_after_restart,
+        pane: PaneId(1),
+        target: EvidenceTarget {
+            source: source.clone(),
+            report: report.id,
+            order: order(report, "finding"),
+        },
+        revision: report.projection.revision().clone(),
+        directory: directory.clone(),
+    };
+    let open_evidence = |report: &Report| {
+        evidence(report)
+            .run(&directory, generation_after_restart, Some(&custody))
+            .result
+    };
+    assert!(open_evidence(&reopened).is_ok());
+    let (before, advanced) = append_independent_source(&journal_path, &custody);
+    let outdated = open_evidence(&reopened).unwrap_err();
+    assert!(
+        outdated.contains("Reopen validation for this capture"),
+        "{outdated}"
+    );
+    assert_eq!(&before, reopened.projection.revision());
+    assert!(advanced.cursor > before.cursor);
+    assert_ne!(advanced.digest, before.digest);
+    let independent_source = NamedNode::new(INDEPENDENT_SOURCE).unwrap();
+    assert!(
+        reopened
+            .projection
+            .pin()
+            .kept_page_claims(&independent_source)
+            .unwrap()
+            .is_none()
+    );
+    assert_finding(&reopened);
+
+    let refreshed = request(generation_after_restart, Shapes::Reopen)
+        .run(
+            &directory,
+            generation_after_restart,
+            Some(&custody),
+            Some(&store),
+            &limits,
+        )
+        .result
+        .unwrap();
+    assert_eq!(refreshed.projection.revision(), &advanced);
+    assert_finding(&refreshed);
+    assert!(open_evidence(&refreshed).is_ok());
+}
+
+fn append_independent_source(
+    journal: &Path,
+    custody: &SourceCustody,
+) -> (pandect::GraphRevision, pandect::GraphRevision) {
+    use mere::acquire::page_claims::interpret;
+
+    pollster::block_on(async {
+        let disk = DirectoryBackend::open(journal).unwrap();
+        let backend = sporran::WalletSealedBackend::with_sealer(disk, custody.sealer.clone());
+        let sessions = MereSessions::new(backend);
+        let manifest = sessions.latest_live().await.unwrap().unwrap();
+        let mut session = sessions.open(manifest.session_id).await.unwrap();
+        let before = session.live_revision().unwrap();
+        let source = NamedNode::new(INDEPENDENT_SOURCE).unwrap();
+        let claims = interpret(
+            &mere::ContextCache::new(),
+            ORIGIN,
+            [(
+                0,
+                r#"{"@id":"urn:fixture:other","https://example.invalid/vocab#score":42}"#,
+            )],
+        );
+        assert_eq!(claims.blocks.len(), 1);
+        assert!(session.kept_page_claims(&source).unwrap().is_none());
+        session
+            .admit_page_claims(
+                kernel::graph::Author::user(),
+                &source,
+                &claims,
+                SystemTime::now(),
+            )
+            .await
+            .unwrap();
+        assert!(session.kept_page_claims(&source).unwrap().is_some());
+        (before, session.live_revision().unwrap())
+    })
+}
+
+// This edits the journal from outside the running GUI, with the same synthetic
+// broker and directory ownership checks the GUI uses for a saved source.
+#[cfg(target_os = "windows")]
+#[test]
+#[ignore = "requires the isolated headed L1 pin fixture and its custody broker"]
+fn kept_validation_advance_native_fixture() {
+    use std::sync::atomic::AtomicU64;
+
+    let fixture = PathBuf::from(std::env::var_os("TURNSTONE_L1_PINNED_FIXTURE").unwrap())
+        .canonicalize()
+        .unwrap();
+    assert_eq!(
+        std::fs::read(fixture.join("fixture-marker")).unwrap(),
+        b"turnstone-l1-pinned-public-fixture/v1\n"
+    );
+    let profile = fixture.join("profile").canonicalize().unwrap();
+    assert!(profile.starts_with(&fixture));
+    let journal = PathBuf::from(std::env::var_os("TURNSTONE_L1_PINNED_JOURNAL").unwrap())
+        .canonicalize()
+        .unwrap();
+    let scoped_path = journal.strip_prefix(&profile).unwrap();
+    let components: Vec<_> = scoped_path
+        .iter()
+        .map(|component| component.to_str().unwrap())
+        .collect();
+    assert_eq!(components.len(), 5);
+    assert_eq!(components[0], "sessions");
+    assert!(Uuid::parse_str(components[1]).is_ok());
+    assert_eq!(components[2], "memory");
+    assert_eq!(components[3], "structured-validation");
+    assert_eq!(components[4].len(), 64);
+    assert!(components[4].bytes().all(|byte| byte.is_ascii_hexdigit()));
+
+    let endpoint = std::env::var("GRAPHSHELL_APP_ENDPOINT").unwrap();
+    assert_eq!(endpoint, r"\\.\pipe\turnstone-l1-pinned-check");
+    let identity = crate::identity::bind_timeout(std::time::Duration::from_secs(2))
+        .expect("isolated fixture custody");
+    let bound =
+        crate::custody_binding::BoundSealer::bind(identity, Arc::new(AtomicU64::new(1))).unwrap();
+    let epoch_bound = bound.clone();
+    let custody = SourceCustody {
+        sealer: bound,
+        epoch: Arc::new(move || epoch_bound.epoch()),
+    };
+    let (before, after) = append_independent_source(&journal, &custody);
+    assert_eq!(after.session, before.session);
+    assert_eq!(after.cursor.0, before.cursor.0 + 1);
+    assert_ne!(after.digest, before.digest);
+    println!("Fixture journal before edit: {before:?}");
+    println!("Fixture journal after edit: {after:?}");
 }
 
 fn assert_journal_sealed(disk: &DirectoryBackend) {
