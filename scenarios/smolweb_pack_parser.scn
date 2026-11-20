@@ -1,0 +1,27 @@
+# A loopback source and the enabled pack parser are supplied by the runner.
+settle 30
+key escape
+open ${TURNSTONE_PACK_FIXTURE}
+settle 40
+act Open Inspector pane
+settle 10
+act Maximize pane
+settle 10
+assert row Viewer: auto
+click surface:inspector role:button Change viewer
+settle 10
+capture 00_before_switch
+settle ${TURNSTONE_PACK_SWITCH_WAIT}
+scroll 620 430 ${TURNSTONE_PACK_PICKER_SCROLL}
+settle 10
+click-row ${TURNSTONE_PACK_PARSER}
+settle 10
+assert row Viewer: ${TURNSTONE_PACK_PARSER}
+act Maximize pane
+settle 10
+act Toggle live content
+wait 120
+assert content-live
+assert snap browser-current-engine == ${TURNSTONE_PACK_PARSER}
+assert a11y link: ${TURNSTONE_PACK_FIRST_LINK} >> link: ${TURNSTONE_PACK_SECOND_LINK}
+capture 01_parser_live

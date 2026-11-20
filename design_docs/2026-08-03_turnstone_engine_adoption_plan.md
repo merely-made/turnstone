@@ -427,7 +427,7 @@ lane, in its own repository under engine-split D32.
 
 The host plan's single native app can support separately installed engine
 packs by attaching their processes through the same inventory as built-ins.
-The current Smolweb wiring is compiled in. E3 owns runtime enablement and
+The built-in Smolweb viewers are still compiled in. E3 owns runtime enablement and
 per-session selection, and the Verso charter owns carrying live state across
 a swap. Installing a producer, choosing it for new content, and transferring
 an existing session have separate completion conditions.
@@ -461,9 +461,77 @@ pack, and the invalid executable control reported a session spawn failure.
 Raw output and captures are under
 `Code/testing/turnstone/receipts/smolweb-pack/`.
 
+#### Separate Smolweb protocol and parser switches
+
+The version 2 bundle offers Gemini and Spartan connections and Gemtext and
+Markdown parsers. Turnstone admits each connection through its native fetch
+port. The worker receives the fetched body and runs only the selected
+parser. Gemtext and Markdown use the response media type, including when
+Turnstone fetches the body over HTTP or HTTPS. Gemini and Spartan can default
+to Gemtext when the response has no media type. Auto still uses built-in
+viewers.
+
+Use `turnstone engine-pack status smolweb` to list the switches. For
+example, `turnstone engine-pack disable smolweb protocol spartan` blocks new
+Spartan browse requests and submissions in this Turnstone profile.
+`turnstone engine-pack disable smolweb parser markdown` turns off the pack's
+Markdown viewer in Inspector. Use `enable` with the same arguments to turn
+either back on. Changes apply while the window is open and survive restart
+for the installed bundle. Removing the bundle removes its settings. Version
+1 bundles retain the original Gemini/Gemtext path.
+
+Done when a Gemini response still renders with Spartan off, a Gemtext
+response can use the pack with both Smolweb protocols off when acquired over
+HTTP, and disabling Markdown leaves Gemtext selectable while refusing
+Markdown work in the pack.
+
+**Windows receipt, 2026-11-20.** The Gemini and Spartan fixtures rendered
+with the other protocol switched off. The HTTP fixtures rendered with both
+protocols switched off and only the requested parser enabled. The live
+Spartan switch kept its server at zero requests, and the enabled control
+reached it. The live Markdown switch made its picker row refuse selection.
+The version 1 and 2 bundles both passed install, status, enable, disable and
+remove checks. See `Code/testing/turnstone/receipts/smolweb-pack/granular-headed-first/`.
+
+The shared fetch actor takes Turnstone's protocol policy and reads it before
+each Smolweb transport hop (Graphshell `9f43ea3f`). Page loads and binary
+subresources share the redirect loop. Explicit submissions check admission
+before sending, and their returned redirect targets go through ordinary
+navigation.
+
+The redirect gate counts connections at both ends. With Spartan off, an
+allowed Gemini source may reply with a redirect, and the Spartan target must
+receive zero connections. This includes switching Spartan off while the
+Gemini response is in flight. With both protocols enabled, the redirect
+must reach Spartan. A Gemini-to-Gemini redirect must still work with
+Spartan off. The earlier `granular-redirect/` receipt captured the gap.
+
+**Redirect receipt, 2026-11-20.** Windows reached the Gemini source and
+made zero connections to disabled Spartan, including when Spartan was
+switched off after the Gemini request. With both protocols enabled, the
+Spartan target received the redirected request. An enabled Gemini-to-Gemini
+redirect still rendered with Spartan off. The old build failed the blocked
+case and connected to Spartan once. The two HTTP parser cases and direct
+protocol cases also passed. The matrix passed again over Turnstone
+`f143bf23`. See `hop-final-headed/` and `hop-broken-control/` under
+`Code/testing/turnstone/receipts/smolweb-pack/`.
+
 The picker plan's decision 1 and 2: a global `EngineEnableSet` app setting
 with per-session override, folded into routing's `is_available` closure.
 Registered-but-disabled engines stay in the picker as switchable-off rows.
+
+The first activation slice reads Pandect's existing `disabled_engines`
+through Turnstone's application settings projection. New content routes
+through Inker's availability predicate, and installed viewers disabled by
+the global setting stay visible in Inspector. Internal pages, graph ingest,
+external protocol dispatch and host-owned kept content keep their routes.
+The next activation slice adds the Settings controls, session overrides,
+and rerouting of content that is already open.
+
+**Activation receipt, 2026-11-20.** Four routing tests and eleven engine
+inventory tests passed on Windows. The new case projects Pandect's setting
+through the app, routes past a disabled Reader pin to Genet, and leaves
+Reader visible as a disabled choice. This slice has unit-level evidence.
 
 Done when: disabling an engine globally reroutes existing content through
 the next rule, and a session override brings it back for that session only.

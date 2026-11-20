@@ -1,0 +1,11 @@
+# The runner disables the protocol after the first capture and counts connections.
+settle 30
+key escape
+capture 00_before_switch
+settle 90
+open ${TURNSTONE_PACK_FIXTURE}
+settle 15
+act Toggle live content
+wait 120
+assert snap browser-current-content == failed
+capture 01_transport_blocked

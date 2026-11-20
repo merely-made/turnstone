@@ -50,6 +50,7 @@ pub struct ChromeSettings {
     /// live snapshot because it is the same kind of thing: an application
     /// setting the app must see change without a restart.
     cascade_budget: u32,
+    pub(crate) engine_enablement: crate::engine_enablement::EngineEnableSet,
 }
 
 impl From<&ApplicationSettings> for ChromeSettings {
@@ -109,6 +110,9 @@ impl ChromeSettings {
             shellbar_edge: settings.shellbar_edge,
             shellbar_hidden: settings.shellbar_hidden,
             cascade_budget: settings.cascade_budget,
+            engine_enablement: crate::engine_enablement::EngineEnableSet::from_disabled(
+                &settings.disabled_engines,
+            ),
         }
     }
 

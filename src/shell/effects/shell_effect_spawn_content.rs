@@ -130,6 +130,10 @@ impl Shell {
                             .then(|| crate::knot_authoring::ENGINE_ID.to_string())
                         })
                 };
+                let pinned = pinned.filter(|id| {
+                    self.smolweb_pack.parser_availability(id)
+                        != Some(crate::content::EngineAvailability::Disabled)
+                });
                 let request = inker::EngineRouteRequest {
                     workspace_id: inker::WorkspaceRouteId::new("turnstone"),
                     view: None,
@@ -142,7 +146,17 @@ impl Shell {
                     // route, so a respawn lands on the chosen lane.
                     pinned_engine: pinned,
                 };
-                let decision = self.route_policy.route(&request);
+                let decision = super::super::routing::route_for_enabled_engines(
+                    &self.route_policy,
+                    &request,
+                    &self.app.engine_enablement,
+                );
+                let route_source =
+                    if request.pinned_engine.as_deref() == Some(decision.engine_id.as_str()) {
+                        pelt_core::PeltRouteSource::UserOverride
+                    } else {
+                        pelt_core::PeltRouteSource::Automatic
+                    };
                 #[cfg(feature = "scripted-webgl")]
                 if let Some(scripted) = &self.scripted_webgl
                     && super::super::scripted_webgl::is_scripted_engine(&decision.engine_id)
@@ -169,12 +183,7 @@ impl Shell {
                 ) {
                     ContentSpawnDispatch::PendingBrowser => return,
                     ContentSpawnDispatch::Browser => {
-                        let source = if request.pinned_engine.is_some() {
-                            pelt_core::PeltRouteSource::UserOverride
-                        } else {
-                            pelt_core::PeltRouteSource::Automatic
-                        };
-                        let update = self.spawn_browser_surface(node, &url, &decision, source);
+                        let update = self.spawn_browser_surface(node, &url, &decision, route_source);
                         let effects = self.app.apply_update(update);
                         self.run_effects(effects);
                         return;
@@ -214,11 +223,7 @@ impl Shell {
                 };
                 let route = pelt_core::PeltRoute {
                     decision: decision.clone(),
-                    source: if request.pinned_engine.is_some() {
-                        pelt_core::PeltRouteSource::UserOverride
-                    } else {
-                        pelt_core::PeltRouteSource::Automatic
-                    },
+                    source: route_source,
                     state: pelt_core::PeltRouteState::Document,
                 };
                 let opened = open_prepared_content_controller(
@@ -350,10 +355,10 @@ impl Shell {
                     tracing::debug!(%node, %url, "live engine does not support incremental body replacement");
                     return;
                 };
-                if engine == crate::engine_pack::ENGINE_ID {
+                if crate::engine_pack::parser_label(&engine).is_some() {
                     let mut input = inker::EngineInput::new(&url, &document.body);
                     input.content_type = document.content_type.clone();
-                    match self.smolweb_pack.lower(&input) {
+                    match self.smolweb_pack.lower(&engine, &input) {
                         Ok(document) => smolweb.replace_document(document),
                         Err(error) => {
                             tracing::warn!(%node, %error, "Smolweb pack document update failed");

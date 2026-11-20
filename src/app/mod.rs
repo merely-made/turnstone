@@ -170,6 +170,7 @@ pub struct App {
     pub(crate) research_clip_readers: HashMap<uuid::Uuid, crate::research::ClipReader>,
     /// Transient host engine availability; retained across session switches.
     pub engine_inventory: Vec<crate::content::EngineDescriptor>,
+    pub(crate) engine_enablement: crate::engine_enablement::EngineEnableSet,
     /// Durable feed schedules and duplicate-suppression state for this
     /// session. Entry nodes and unread markers themselves remain graph truth.
     pub feeds: crate::feed::FeedSubscriptions,

@@ -15,6 +15,7 @@ pub struct ViewerOption {
     pub viewer: Option<String>,
     pub label: String,
     pub selectable: bool,
+    pub disabled_in_settings: bool,
 }
 
 /// Registered and constructible lanes come first. Unavailable saved pins keep
@@ -29,7 +30,7 @@ pub fn viewer_options(app: &App, saved: Option<&str>) -> Vec<ViewerOption> {
             label: crate::content::engine_label(saved),
             family: EngineFamily::Unknown,
             availability: EngineAvailability::Unavailable {
-                reason: if saved == crate::engine_pack::ENGINE_ID {
+                reason: if crate::engine_pack::parser_label(saved).is_some() {
                     "pack missing or invalid"
                 } else {
                     "this host has no registration or construction path for the saved engine"
@@ -56,14 +57,22 @@ pub fn viewer_options(app: &App, saved: Option<&str>) -> Vec<ViewerOption> {
         viewer: None,
         label: "Auto".into(),
         selectable: true,
+        disabled_in_settings: false,
     })
-    .chain(engines.into_iter().map(|engine| ViewerOption {
-        viewer: Some(engine.id.clone()),
-        label: match &engine.availability {
-            EngineAvailability::Registered => engine.label.clone(),
-            availability => format!("{} ({})", engine.label, availability.describe()),
-        },
-        selectable: engine.availability.is_selectable(),
+    .chain(engines.into_iter().map(|engine| {
+        let present = engine.availability.is_selectable();
+        let disabled_in_settings = engine.availability == EngineAvailability::Disabled
+            || (present && !app.engine_enablement.is_enabled(&engine.id));
+        ViewerOption {
+            viewer: Some(engine.id),
+            label: match &engine.availability {
+                _ if disabled_in_settings => format!("{} (disabled)", engine.label),
+                EngineAvailability::Registered => engine.label,
+                availability => format!("{} ({})", engine.label, availability.describe()),
+            },
+            selectable: present && !disabled_in_settings,
+            disabled_in_settings,
+        }
     }))
     .collect()
 }

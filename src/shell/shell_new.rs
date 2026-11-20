@@ -81,17 +81,20 @@ impl Shell {
         // same cookies as the pages (ranged fetch plan, lane T1). Keying the
         // set by persona is lane T2.
         let stores = fetch::session_stores().clone();
+        let smolweb_pack = crate::engine_pack::SmolwebPack::new(&app.data_root);
         let network_offline = crate::offline::enabled();
         let offline_attempts = Arc::new(std::sync::atomic::AtomicUsize::new(0));
         let (fetch_handle, fetch_rx) = if network_offline {
             let (handle, updates) = crate::offline::spawn(fetch_wake, offline_attempts.clone());
             (fetch_port::FetchPort::Offline(handle), updates)
         } else {
-            let (actor, updates) = fetch::spawn_fetcher_with_admission(
+            let pack_for_hops = smolweb_pack.clone();
+            let (actor, updates) = fetch::spawn_fetcher_with_hop_admission(
                 fetch_wake,
                 stores.clone(),
                 client_limits.fetch,
                 client_limits.admission,
+                Some(Arc::new(move |scheme| pack_for_hops.admit_transport(scheme))),
             )
             .expect("Turnstone could not start its fetch actor");
             (fetch_port::FetchPort::Network(actor), updates)
@@ -202,8 +205,7 @@ impl Shell {
             #[cfg(feature = "scripted-webgl")]
             proxy.clone(),
         );
-        let smolweb_pack = crate::engine_pack::SmolwebPack::new(&app.data_root);
-        content_engines.register(Box::new(smolweb_pack.clone()));
+        smolweb_pack.register(&mut content_engines);
         let route_policy = standard_route_policy();
         #[cfg(feature = "scripted-webgl")]
         let route_policy = {

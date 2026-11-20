@@ -26,6 +26,7 @@ impl InspectorPane {
                 viewer: None,
                 label: "Auto".into(),
                 selectable: true,
+                disabled_in_settings: false,
             }],
             viewer_expanded: false,
             research_expanded: false,
@@ -156,7 +157,11 @@ impl InspectorPane {
             .and_then(|browser| browser.viewer_override.as_deref());
         let viewer_options: Vec<_> = crate::inspector_controls::viewer_options(app, saved_viewer)
             .into_iter()
-            .filter(|option| option.selectable || option.viewer.as_deref() == saved_viewer)
+            .filter(|option| {
+                option.selectable
+                    || option.disabled_in_settings
+                    || option.viewer.as_deref() == saved_viewer
+            })
             .collect();
         let synced_viewer =
             crate::inspector_controls::index_for_viewer(&viewer_options, saved_viewer);

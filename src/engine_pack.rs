@@ -1,7 +1,6 @@
 // Copyright 2026 Mark Alan Boykin
 // SPDX-License-Identifier: MPL-2.0
 
-use std::ffi::{OsStr, OsString};
 use std::fs;
 use std::io::{self, Read, Seek};
 use std::path::{Path, PathBuf};
@@ -13,13 +12,15 @@ use inker::{
 };
 use mere_document_lanes::{SmolwebDocument, SmolwebDocumentSession, SmolwebTheme};
 use netrender::Scene;
-use serde::Deserialize;
 
 #[path = "../ports/smolweb-pack/protocol.rs"]
 mod protocol;
 
-pub(crate) const ENGINE_ID: &str = "nematic.gemtext.pack";
-const MANIFEST: &str = "pack.json";
+#[path = "engine_pack/install.rs"]
+mod install;
+use install::Transport;
+pub use install::command;
+
 const EXECUTABLE: &str = if cfg!(windows) {
     "turnstone-smolweb-pack.exe"
 } else {
@@ -27,67 +28,29 @@ const EXECUTABLE: &str = if cfg!(windows) {
 };
 const PROCESS_TIMEOUT: Duration = Duration::from_secs(3);
 
-#[derive(Deserialize, PartialEq, Eq)]
-#[serde(deny_unknown_fields)]
-struct Manifest {
-    version: u32,
-    engine: String,
-    scheme: String,
-    content_type: String,
-}
+use protocol::Parser;
 
-fn valid_manifest(directory: &Path) -> io::Result<bool> {
-    let mut bytes = Vec::new();
-    fs::File::open(directory.join(MANIFEST))?
-        .take(1025)
-        .read_to_end(&mut bytes)?;
-    let expected: Manifest = serde_json::from_str(include_str!("../ports/smolweb-pack/pack.json"))?;
-    Ok(bytes.len() <= 1024
-        && serde_json::from_slice::<Manifest>(&bytes).is_ok_and(|manifest| manifest == expected))
-}
-
-fn pack_parent(root: &Path) -> PathBuf {
-    root.join("engine-packs")
-}
-
-fn installed(root: &Path) -> PathBuf {
-    pack_parent(root).join("smolweb")
-}
-
-/// Manage the first-party local Gemini pack before opening the native app.
-pub fn command(args: impl Iterator<Item = OsString>) -> Result<(), String> {
-    let args: Vec<_> = args.collect();
-    let root = crate::session::default_turnstone_root();
-    let result = match args.as_slice() {
-        [verb, directory] if verb == OsStr::new("install") => install(&root, Path::new(directory)),
-        [verb, name] if verb == OsStr::new("remove") && name == OsStr::new("smolweb") => {
-            remove(&root)
-        },
-        _ => return Err("Usage: turnstone engine-pack install <bundle> | remove smolweb".into()),
-    };
-    result.map_err(|error| format!("Smolweb engine pack: {error}"))
-}
-
-fn install(root: &Path, bundle: &Path) -> io::Result<()> {
-    if !valid_manifest(bundle)? {
-        return Err(io::Error::other("unsupported Smolweb pack manifest"));
+impl Parser {
+    const fn engine_id(self) -> &'static str {
+        match self {
+            Self::Gemtext => "nematic.gemtext.pack",
+            Self::Markdown => "nematic.markdown.pack",
+        }
     }
-    let parent = pack_parent(root);
-    fs::create_dir_all(&parent)?;
-    let staging = tempfile::tempdir_in(parent)?;
-    fs::copy(bundle.join(EXECUTABLE), staging.path().join(EXECUTABLE))?;
-    fs::write(
-        staging.path().join(MANIFEST),
-        include_bytes!("../ports/smolweb-pack/pack.json"),
-    )?;
-    // Publish the two files together. A second install must remove the first.
-    fs::rename(staging.path(), installed(root))
 }
 
-fn remove(root: &Path) -> io::Result<()> {
-    let staging = tempfile::tempdir_in(pack_parent(root))?;
-    fs::rename(installed(root), staging.path().join("removed"))?;
-    staging.close()
+pub(crate) fn parser_label(engine: &str) -> Option<&'static str> {
+    match engine {
+        "nematic.gemtext.pack" => Some("Smolweb pack (Gemtext)"),
+        "nematic.markdown.pack" => Some("Smolweb pack (Markdown)"),
+        _ => None,
+    }
+}
+
+fn parser_for(engine: &str) -> Option<Parser> {
+    Parser::ALL
+        .into_iter()
+        .find(|parser| parser.engine_id() == engine)
 }
 
 #[derive(Clone)]
@@ -98,31 +61,92 @@ pub(crate) struct SmolwebPack {
 impl SmolwebPack {
     pub(crate) fn new(root: &Path) -> Self {
         Self {
-            directory: installed(root),
+            directory: install::installed(root),
         }
     }
 
-    pub(crate) fn available(&self) -> bool {
-        valid_manifest(&self.directory).unwrap_or(false)
-            && self.directory.join(EXECUTABLE).is_file()
+    pub(crate) fn register(&self, registry: &mut inker::SessionRegistry<Scene>) {
+        for parser in Parser::ALL {
+            registry.register(Box::new(PackParser {
+                pack: self.clone(),
+                parser,
+            }));
+        }
     }
 
-    pub(crate) fn lower(&self, input: &EngineInput) -> Result<EngineDocument, SessionError> {
-        if !protocol::accepts(input) {
-            return Err(SessionError::SpawnFailed(
-                "Smolweb pack requires a Gemini Gemtext response".into(),
-            ));
+    pub(crate) fn parser_availability(
+        &self,
+        engine: &str,
+    ) -> Option<crate::content::EngineAvailability> {
+        let parser = parser_for(engine)?;
+        use crate::content::EngineAvailability;
+        if !install::installed_kind(&self.directory).is_ok_and(|kind| kind.supports_parser(parser))
+        {
+            return Some(EngineAvailability::Unavailable {
+                reason: "parser absent from pack".into(),
+            });
         }
-        if !self.available() {
-            return Err(SessionError::SpawnFailed(
-                "Smolweb engine pack is unavailable. Choose Auto or install the pack.".into(),
-            ));
+        if install::disabled(&self.directory, "parser", parser.name()) {
+            Some(EngineAvailability::Disabled)
+        } else {
+            Some(EngineAvailability::Registered)
         }
-        self.run(input)
+    }
+
+    pub(crate) fn lower(
+        &self,
+        engine: &str,
+        input: &EngineInput,
+    ) -> Result<EngineDocument, SessionError> {
+        let parser = parser_for(engine)
+            .ok_or_else(|| SessionError::SpawnFailed("unknown Smolweb pack parser".into()))?;
+        let prepare = || {
+            let kind = install::installed_kind(&self.directory)?;
+            if !kind.supports_parser(parser)
+                || install::disabled(&self.directory, "parser", parser.name())
+            {
+                return Err(io::Error::other(format!(
+                    "{} parser is unavailable",
+                    parser.name()
+                )));
+            }
+            if !parser.accepts(input, kind.is_legacy()) {
+                return Err(io::Error::other(format!(
+                    "{} parser does not accept this response",
+                    parser.name()
+                )));
+            }
+            let command = if kind.is_legacy() {
+                protocol::LEGACY_COMMAND
+            } else {
+                parser.command()
+            };
+            self.run(parser, command, input)
+        };
+        prepare()
             .map_err(|error| SessionError::SpawnFailed(format!("Smolweb engine pack: {error}")))
     }
 
-    fn run(&self, input: &EngineInput) -> io::Result<EngineDocument> {
+    pub(crate) fn admit_transport(&self, scheme: &str) -> Result<(), String> {
+        if let Some(transport) = Transport::from_scheme(scheme)
+            && install::installed_kind(&self.directory)
+                .is_ok_and(|kind| kind.supports_transport(transport))
+            && install::disabled(&self.directory, "protocol", transport.name())
+        {
+            return Err(format!(
+                "{} connections are disabled in the Smolweb pack",
+                transport.name()
+            ));
+        }
+        Ok(())
+    }
+
+    fn run(
+        &self,
+        parser: Parser,
+        command_arg: &str,
+        input: &EngineInput,
+    ) -> io::Result<EngineDocument> {
         let request = serde_json::to_vec(input)?;
         if request.len() as u64 > protocol::REQUEST_LIMIT {
             return Err(io::Error::other("input exceeds its byte limit"));
@@ -135,7 +159,7 @@ impl SmolwebPack {
         let mut stdout = tempfile::tempfile()?;
         let mut command = Command::new(fs::canonicalize(self.directory.join(EXECUTABLE))?);
         command
-            .arg(protocol::COMMAND)
+            .arg(command_arg)
             .env_clear()
             .stdin(stdin)
             .stdout(stdout.try_clone()?)
@@ -175,7 +199,7 @@ impl SmolwebPack {
         }
         let document: EngineDocument = serde_json::from_slice(&reply)?;
         if document.address != input.address
-            || document.provenance.source_kind.as_deref() != Some("nematic.gemtext")
+            || document.provenance.source_kind.as_deref() != Some(parser.source_kind())
         {
             return Err(io::Error::other(
                 "worker returned a document for the wrong source",
@@ -185,9 +209,14 @@ impl SmolwebPack {
     }
 }
 
-impl SessionEngine<Scene> for SmolwebPack {
+struct PackParser {
+    pack: SmolwebPack,
+    parser: Parser,
+}
+
+impl SessionEngine<Scene> for PackParser {
     fn engine_id(&self) -> &str {
-        ENGINE_ID
+        self.parser.engine_id()
     }
 
     fn spawn(
@@ -199,8 +228,10 @@ impl SessionEngine<Scene> for SmolwebPack {
         })?;
         let mut input = EngineInput::new(&request.address, body);
         input.content_type = request.content_type.clone();
-        let document =
-            SmolwebDocument::from_document_with_theme(self.lower(&input)?, SmolwebTheme::default());
+        let document = SmolwebDocument::from_document_with_theme(
+            self.pack.lower(self.engine_id(), &input)?,
+            SmolwebTheme::default(),
+        );
         Ok(Box::new(SmolwebDocumentSession::new(
             document,
             request.viewport,

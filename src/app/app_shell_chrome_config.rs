@@ -54,11 +54,15 @@ impl App {
         // which answers "does the shell need relaying out": a budget change
         // needs no relayout, and folding it in would force a spurious one.
         self.cascade_budget = settings.cascade_budget();
+        let engine_changed = self.engine_enablement != settings.engine_enablement;
+        if engine_changed {
+            self.engine_enablement = settings.engine_enablement.clone();
+        }
 
         let mut chrome = self.shell_chrome_config().clone();
         settings.apply_to(&mut chrome);
         if chrome == *self.shell_chrome_config() {
-            false
+            engine_changed
         } else {
             self.set_shell_chrome_config(chrome);
             true

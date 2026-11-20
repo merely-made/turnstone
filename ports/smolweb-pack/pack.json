@@ -1,6 +1,5 @@
 {
-  "version": 1,
-  "engine": "nematic.gemtext.pack",
-  "scheme": "gemini",
-  "content_type": "text/gemini"
+  "version": 2,
+  "protocols": ["gemini", "spartan"],
+  "parsers": ["gemtext", "markdown"]
 }

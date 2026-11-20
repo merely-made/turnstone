@@ -90,6 +90,7 @@ impl App {
             saved_readers: Default::default(),
             research_clip_readers: Default::default(),
             engine_inventory: Vec::new(),
+            engine_enablement: Default::default(),
             feeds: crate::feed::FeedSubscriptions::default(),
             redshank: crate::redshank_host::RedshankHost::default(),
             redshank_members: std::collections::BTreeMap::new(),

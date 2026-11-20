@@ -26,6 +26,7 @@ use uuid::Uuid;
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum EngineAvailability {
     Registered,
+    Disabled,
     OnDemand { detail: String },
     Unavailable { reason: String },
 }

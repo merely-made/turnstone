@@ -5,13 +5,17 @@ use super::*;
 
 impl Shell {
     pub(super) fn publish_engine_inventory(&mut self) {
-        self.app.engine_inventory =
-            project_engine_inventory(&self.content_engines, &self.surface_engines);
-        if !self.smolweb_pack.available() {
-            self.app
-                .engine_inventory
-                .retain(|engine| engine.id != crate::engine_pack::ENGINE_ID);
-        }
+        let mut entries = project_engine_inventory(&self.content_engines, &self.surface_engines);
+        entries.retain_mut(|engine| {
+            if let Some(availability) = self.smolweb_pack.parser_availability(&engine.id) {
+                if matches!(availability, crate::content::EngineAvailability::Unavailable { .. }) {
+                    return false;
+                }
+                engine.availability = availability;
+            }
+            true
+        });
+        self.app.engine_inventory = entries;
     }
 
     pub(super) fn poll_engine_pack(&mut self, now: std::time::Instant) {
@@ -19,16 +23,10 @@ impl Shell {
             return;
         }
         self.engine_pack_poll = now + std::time::Duration::from_secs(1);
-        let listed = self
-            .app
-            .engine_inventory
-            .iter()
-            .any(|engine| engine.id == crate::engine_pack::ENGINE_ID);
-        if self.smolweb_pack.available() != listed {
-            self.publish_engine_inventory();
-            if let Some(window) = &self.window {
-                window.request_redraw();
-            }
+        let previous = std::mem::take(&mut self.app.engine_inventory);
+        self.publish_engine_inventory();
+        if self.app.engine_inventory != previous && let Some(window) = &self.window {
+            window.request_redraw();
         }
     }
 

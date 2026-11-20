@@ -3,6 +3,9 @@
 
 /// Names known engines without using a closed list to decide registration.
 pub fn engine_label(id: &str) -> String {
+    if let Some(label) = crate::engine_pack::parser_label(id) {
+        return label.into();
+    }
     match id {
         "genet.livery" => "Genet",
         "genet.scripted" => "Genet (Bole)",
@@ -14,7 +17,6 @@ pub fn engine_label(id: &str) -> String {
         "graft.servo" => "Servo",
         "weld.chromium" => "Chromium",
         "nematic.gemtext" => "Gemini / Spartan",
-        crate::engine_pack::ENGINE_ID => "Smolweb pack (Gemini)",
         "nematic.gopher" => "Gopher",
         "nematic.markdown" => "Markdown",
         "nematic.djot" => "Djot",
