@@ -7,7 +7,9 @@ use super::{
     *,
 };
 use cambium::PreparationPurpose;
-use cambium::composition::{ComponentKey, ContainerKey, ContainerKind, PlacementNode};
+use cambium::composition::{
+    ComponentKey, ContainerKey, container_keys, hidden_keys, keys_in_container,
+};
 use std::collections::BTreeSet;
 
 pub(super) enum HistoryCommit {
@@ -239,7 +241,6 @@ impl SettingsPane {
         withdraw.extend(hidden_keys(
             &prepared.candidate().placement,
             &self.runner.state().collapsed,
-            false,
         ));
         withdraw.extend(prepared.candidate().unplaced.iter().cloned());
         self.prepare_keys(&retiring, PreparationPurpose::Retire)?;
@@ -314,107 +315,4 @@ impl SettingsPane {
         self.recompute_unsaved();
         Ok(())
     }
-}
-
-pub(super) fn container_keys(nodes: &[PlacementNode]) -> BTreeSet<ContainerKey> {
-    let mut keys = BTreeSet::new();
-    for node in nodes {
-        let (container, children) = match node {
-            PlacementNode::Component { .. } => continue,
-            PlacementNode::Group { key, children } => (
-                ContainerKey {
-                    kind: ContainerKind::Group,
-                    key: key.0.clone(),
-                },
-                children,
-            ),
-            PlacementNode::Drawer { key, children } => (
-                ContainerKey {
-                    kind: ContainerKind::Drawer,
-                    key: key.0.clone(),
-                },
-                children,
-            ),
-        };
-        keys.insert(container);
-        keys.extend(container_keys(children));
-    }
-    keys
-}
-
-fn keys_in_container(nodes: &[PlacementNode], container: &ContainerKey) -> BTreeSet<ComponentKey> {
-    fn all(nodes: &[PlacementNode], out: &mut BTreeSet<ComponentKey>) {
-        for node in nodes {
-            match node {
-                PlacementNode::Component { key } => {
-                    out.insert(key.clone());
-                },
-                PlacementNode::Group { children, .. } | PlacementNode::Drawer { children, .. } => {
-                    all(children, out)
-                },
-            }
-        }
-    }
-    let mut result = BTreeSet::new();
-    for node in nodes {
-        let (key, children) = match node {
-            PlacementNode::Component { .. } => continue,
-            PlacementNode::Group { key, children } => (
-                ContainerKey {
-                    kind: ContainerKind::Group,
-                    key: key.0.clone(),
-                },
-                children,
-            ),
-            PlacementNode::Drawer { key, children } => (
-                ContainerKey {
-                    kind: ContainerKind::Drawer,
-                    key: key.0.clone(),
-                },
-                children,
-            ),
-        };
-        if &key == container {
-            all(children, &mut result);
-        } else {
-            result.extend(keys_in_container(children, container));
-        }
-    }
-    result
-}
-
-fn hidden_keys(
-    nodes: &[PlacementNode],
-    collapsed: &BTreeSet<ContainerKey>,
-    inherited: bool,
-) -> BTreeSet<ComponentKey> {
-    let mut result = BTreeSet::new();
-    for node in nodes {
-        match node {
-            PlacementNode::Component { key } => {
-                if inherited {
-                    result.insert(key.clone());
-                }
-            },
-            PlacementNode::Group { key, children } => result.extend(hidden_keys(
-                children,
-                collapsed,
-                inherited
-                    || collapsed.contains(&ContainerKey {
-                        kind: ContainerKind::Group,
-                        key: key.0.clone(),
-                    }),
-            )),
-            PlacementNode::Drawer { key, children } => result.extend(hidden_keys(
-                children,
-                collapsed,
-                inherited
-                    || collapsed.contains(&ContainerKey {
-                        kind: ContainerKind::Drawer,
-                        key: key.0.clone(),
-                    }),
-            )),
-        }
-    }
-    result
 }
