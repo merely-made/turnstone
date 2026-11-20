@@ -118,6 +118,7 @@ pub struct Shell {
     /// controls; delivery still lowers through the ordinary shell action path.
     pub(super) scenario_queued_action: Option<Action>,
     pub(super) pending_scenario_wait: Option<drive::PendingScenarioWait>,
+    pub(super) pending_coop_wait: Option<drive::PendingCoopWait>,
     pub(super) held_contributed_click: Option<contributed_automation::HeldClick>,
     pub(super) contributed_click_request: u64,
     /// A bounded copy of semantic events after their ordinary consumers have

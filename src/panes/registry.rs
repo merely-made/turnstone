@@ -15,6 +15,9 @@ use super::{
     SourceSelector,
 };
 
+#[path = "registry/source_acceptance.rs"]
+mod source_acceptance;
+
 pub mod kind {
     pub const GRAPH: &str = "turnstone.graph";
     pub const WORKBENCH: &str = "turnstone.workbench";
@@ -76,25 +79,6 @@ impl PaneSourceShape {
         contextual: &'static [SourceSelector],
     ) -> Self {
         Self { fixed, contextual }
-    }
-
-    pub fn accepts(self, source: &PaneSource) -> bool {
-        match source {
-            PaneSource::FromContext(selector) => self.contextual.contains(selector),
-            PaneSource::Fixed(source) => self.fixed.iter().any(|kind| match (kind, source) {
-                (FixedSourceKind::Graph, SourceRef::Graph(_))
-                | (FixedSourceKind::Forme, SourceRef::Forme { .. })
-                | (FixedSourceKind::Member, SourceRef::Member { .. })
-                | (FixedSourceKind::Settings, SourceRef::Settings(_))
-                | (FixedSourceKind::Session, SourceRef::Session(_))
-                | (FixedSourceKind::SessionSet, SourceRef::SessionSet)
-                | (FixedSourceKind::Application, SourceRef::Application) => true,
-                (FixedSourceKind::External(expected), SourceRef::External { schema, .. }) => {
-                    schema.as_str() == *expected
-                },
-                _ => false,
-            }),
-        }
     }
 }
 
@@ -512,6 +496,18 @@ pub static BUILTIN_PANES: &[PaneDefinition] = &[
         capabilities(false, false, NONE),
         "turnstone.resident-graph.config",
         "turnstone.resident-graph.view",
+        PaneRenderer::Contributed,
+        None,
+        None
+    ),
+    pane!(
+        crate::graph_coop::guest::PANE_KIND,
+        crate::graph_coop::guest::LABEL,
+        PaneSourceShape::fixed(&[FixedSourceKind::External(crate::graph_coop::guest::SOURCE_SCHEMA)]),
+        PaneMultiplicity::PerSpaceAndSource,
+        capabilities(false, false, NONE),
+        "turnstone.invited-graph.config",
+        "turnstone.invited-graph.view",
         PaneRenderer::Contributed,
         None,
         None

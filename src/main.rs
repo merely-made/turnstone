@@ -35,5 +35,5 @@ fn main() {
     // The direct, unsandboxed route (see `turnstone::launch` for the other,
     // sandboxed one: CEF's Windows bootstrap calling the sibling
     // `sandbox_bootstrap_win` crate's `RunWinMain` cdylib export).
-    std::process::exit(turnstone::launch::run_direct(std::env::args().nth(1)));
+    std::process::exit(turnstone::launch::run_command_line());
 }

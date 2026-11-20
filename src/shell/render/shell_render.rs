@@ -512,7 +512,7 @@ impl Shell {
             needs_redraw: needs_redraw || self.renderers.any_bars_visible(),
             palette: self.app.omnibar.open,
             nodes: self.app.graph_runtimes.graph().nodes().count(),
-            capture: self.pending_capture.take(),
+            capture: self.take_capture_with_coop_reading(),
             diagnostics: source_diagnostics,
             reactive: reactive_frame.stage(),
             pane_raster,

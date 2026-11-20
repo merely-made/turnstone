@@ -22,6 +22,7 @@ import subprocess
 import sys
 import time
 
+from native_machine import DOMAIN
 from verify import never_ready
 
 
@@ -34,44 +35,65 @@ def write(path, value):
 
 
 def sha(path):
-    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+    with Path(path).open('rb') as stream:
+        return hashlib.file_digest(stream, 'sha256').hexdigest()
 
 
 def await_(**fields):
-    return 'await ' + json.dumps(fields) + '\nwait 30000\n'
+    return 'wait-coop ' + json.dumps(fields, separators=(',', ':')) + '\n'
 
 
 def click(identifier):
-    return 'click role:button @id=' + identifier + '\n'
+    return button('@id=' + identifier)
+
+
+def button(selector):
+    return 'click surface:contributed role:button ' + selector + '\n'
+
+
+def switch(session):
+    return button('@data-session-step=switch:' + session)
+
+
+def select_record(record):
+    return 'click surface:contributed .graph-canvas-swatch-node @data-key=' + record + '\n'
 
 
 def input_(index, text):
-    return f'click role:textbox @id=coop-field-{index}\ninput-text {text}\n'
+    return (f'click surface:contributed role:textbox @id=coop-field-{index}\n'
+            + f'key ctrl+a\ninsert {text}\n')
 
 
-def capture(machine, name):
-    return 'wheel 0 -10000 px on .coop-panel\nsettle 2\ncapture ' + str(machine.public / (name + '.png')) + '\n'
+def capture(name):
+    return 'settle 2\ncapture ' + name + '\n'
+
+
+def maximize():
+    return 'act Maximize pane\n'
 
 
 def barrier(machine, name):
-    return await_(file=str(machine.private / 'markers' / name))
+    return 'wait-file 18000 ' + str(machine.private / 'markers' / name) + '\n'
 
 
-def baseline_script(owner, chosen, private):
-    return (await_(status='ready', attached=chosen)
-            + 'click role:button @data-session-step=switch:' + private + '\n'
-            + await_(attached=private) + capture(owner, 'private-before')
-            + 'click role:button @data-session-step=switch:' + chosen + '\n'
-            + await_(attached=chosen) + capture(owner, 'existing-graph'))
+def baseline_script(chosen, private):
+    return (await_(status='ready', attached=chosen) + maximize()
+            + switch(private) + await_(attached=private) + capture('private-before')
+            + switch(chosen) + await_(attached=chosen) + capture('existing-graph'))
 
 
-def worker_command(role, repo, host_repo, binaries, output, worker=None):
-    return [*([sys.executable, '-u', str(HERE / 'machine.py')] if worker is None
-              else ['python3', '-u', str(worker)]),
-            '--role', role, '--repo', str(repo), '--host-repo', str(host_repo),
-            '--output', str(output), '--binary', str(binaries / 'graphshell_mere'),
-            '--djinn', str(binaries / 'djinn'), '--custodian', str(binaries / 'coop_fixture_custodian'),
-            '--prepare', str(binaries / 'coop_existing_graph')]
+def worker_command(role, repo, host_repo, binaries, output, worker=None, vulkan_icd=None, loader=None):
+    command = [*([sys.executable, '-u', str(HERE / 'machine.py')] if worker is None
+                 else ['python3', '-u', str(worker)]),
+               '--role', role, '--repo', str(repo), '--host-repo', str(host_repo),
+               '--output', str(output), '--binary', str(binaries / 'turnstone'),
+               '--djinn', str(binaries / 'djinn'), '--custodian', str(binaries / 'coop_fixture_custodian'),
+               '--prepare', str(binaries / 'coop_existing_graph')]
+    if vulkan_icd:
+        command += ['--vulkan-icd', str(vulkan_icd)]
+    if loader:
+        command += ['--loader', str(loader)]
+    return command
 
 
 RELAY_URL = None
@@ -87,7 +109,11 @@ class Worker:
         self.log = log.open('w')
         self.process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                         stderr=self.log, text=True, bufsize=1)
-        self.info = self.call('info')
+        try:
+            self.info = self.call('info')
+        except Exception:
+            self.close()
+            raise
         self.public = Path(self.info['public'])
         self.private = Path(self.info['private'])
 
@@ -138,27 +164,44 @@ class Worker:
         except subprocess.TimeoutExpired:
             self.process.terminate()
             self.process.wait(timeout=10)
+        self.process.stdout.close()
         self.log.close()
+
+
+def ssh_command(host, command, socket=None):
+    # This stream carries only control and public handoff artifacts.
+    options = ['-T', '-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=yes',
+               '-o', 'ForwardAgent=no', '-o', 'ForwardX11=no', '-o', 'ClearAllForwardings=yes']
+    if socket:
+        options += ['-S', str(socket)]
+    return ['ssh', *options, host, shlex.join(command)]
+
+
+def artifact_manifest(packet):
+    write(packet / 'artifact-sha256.json',
+          {p.relative_to(packet).as_posix(): sha(p) for p in sorted(packet.rglob('*')) if p.is_file()})
 
 
 def workflow(args, relay=None):
     out = args.output.resolve()
     out.mkdir(mode=0o700)
-    accepted = out / 'accepted'
-    accepted.mkdir()
+    packet = out / 'receipt'
+    accepted = packet / 'accepted'
+    accepted.mkdir(parents=True)
     trace = []
     workers = []
     receipts = {}
     phases = {'owner': ['baseline', 'owner-live', 'owner-cold', 'private-return'],
               'guest': ['guest-live', 'guest-return', 'guest-cold']}
-    owner = Worker('owner', worker_command('owner', args.repo, args.host_repo, args.owner_binaries,
-                                           out / 'local'), out / 'owner-worker.log', trace)
+    owner_command = worker_command('owner', args.repo, args.host_repo, args.owner_binaries,
+                                   out / 'local', vulkan_icd=args.owner_vulkan_icd)
+    owner = Worker('owner', owner_command, packet / 'owner-worker.log', trace)
     workers.append(owner)
     remote = worker_command('guest', args.guest_repo, args.guest_host_repo, args.guest_binaries,
-                            args.guest_output, args.guest_worker)
+                            args.guest_output, args.guest_worker, args.guest_vulkan_icd, args.guest_loader)
     try:
-        guest = Worker('guest', ['ssh', '-S', str(args.ssh_control), args.guest_host,
-                                shlex.join(remote)], out / 'guest-worker.log', trace)
+        guest = Worker('guest', ssh_command(args.guest_host, remote, args.ssh_control),
+                       packet / 'guest-worker.log', trace)
         workers.append(guest)
         topology = {'owner': owner.info, 'guest': guest.info,
                     'ssh_use': 'JSON control, empty barriers and public contact/invitation handoff only; no port forwarding or graph-state injection'}
@@ -168,11 +211,18 @@ def workflow(args, relay=None):
         assert owner.info['host_commit'] == guest.info['host_commit']
         assert owner.info['host_lock_sha256'] == guest.info['host_lock_sha256']
         assert owner.info['worker_sha256'] == guest.info['worker_sha256'] == sha(HERE / 'machine.py')
-        write(out / 'topology.json', topology)
+        write(packet / 'topology.json', topology)
         for machine in workers:
+            inputs = machine.call('build_inputs')
+            assert machine.info['source_commit'] == inputs['source_commit']
+            assert machine.info['lock_sha256'] == inputs['lock_sha256']
+            assert machine.info['host_commit'] == inputs['host']['source_commit']
+            assert machine.info['host_lock_sha256'] == inputs['host']['lock_sha256']
+            assert machine.info['binaries'] == {key: value['sha256'] for key, value in inputs['binaries'].items()}
+            write(packet / 'build' / machine.role / 'build-inputs.json', inputs)
             assert machine.info['console_present'] and not machine.info['console_locked'], machine.info['role'] + ' desktop locked'
             machine.call('start')
-        domain = 'coop-acceptance'
+        domain = DOMAIN
         ids = owner.call('seed', domain=domain)
         chosen, private = ids['chosen'], ids['private']
         assert chosen != private
@@ -180,43 +230,43 @@ def workflow(args, relay=None):
         existing = next(s['id'] for s in before['snapshot']['scene']['tables']['sources']
                         if s and s['adapter'] == 'mere.graph')
         owner.call('owner_contact', contact=guest.call('export_contact'))
-        owner.launch('baseline', baseline_script(owner, chosen, private), domain)
+        owner.launch('baseline', baseline_script(chosen, private), domain)
         receipts['baseline'] = owner.finish('baseline')
-        script = (await_(status='ready', attached=chosen) + click('coop-use')
-                  + await_(**{'coop-nodes': '1'}) + capture(owner, 'owner-existing')
+        script = (await_(status='ready', attached=chosen) + maximize() + click('coop-open') + click('coop-use')
+                  + await_(**{'coop-nodes': '1'}) + capture('owner-existing')
                   + input_(2, owner.private / 'guest-contact.json')
                   + input_(3, owner.private / 'invitation')
-                  + 'click role:button Invite editor\n'
-                  + await_(**{'coop-access': 'editor'}) + capture(owner, 'owner-invited')
-                  + await_(**{'coop-nodes': '2', 'nodes': '2'}) + capture(owner, 'owner-saw-guest')
-                  + 'click role:button @data-session-step=switch:' + private + '\n'
+                  + click('coop-invite-editor')
+                  + await_(**{'coop-access': 'editor'}) + capture('owner-invited')
+                  + await_(**{'coop-nodes': '2', 'nodes': '2'}) + capture('owner-saw-guest')
+                  + switch(private)
                   + await_(attached=private, **{'coop-available': 'false'})
-                  + capture(owner, 'owner-private-during-coop')
+                  + capture('owner-private-during-coop')
                   + barrier(owner, 'guest-still-scoped')
-                  + 'click role:button @data-session-step=switch:' + chosen + '\n'
+                  + switch(chosen)
                   + await_(attached=chosen) + click('coop-use')
                   + await_(**{'coop-nodes': '2', 'coop-access': 'editor'})
-                  + capture(owner, 'owner-returned-to-chosen')
+                  + capture('owner-returned-to-chosen')
                   + await_(**{'coop-nodes': '3', 'nodes': '3'})
-                  + capture(owner, 'owner-ordinary-push') + barrier(owner, 'revoke-now')
+                  + capture('owner-ordinary-push') + barrier(owner, 'revoke-now')
                   + click('coop-revoke') + await_(**{'coop-access': 'revoked'})
-                  + capture(owner, 'owner-revoked') + barrier(owner, 'guest-withdrawn'))
+                  + capture('owner-revoked') + barrier(owner, 'guest-withdrawn'))
         owner.launch('owner-live', script, domain)
         owner.wait('owner-live', 'owner-invited.png')
         handoff = owner.call('exported_handoff')
         original = handoff['invitation_sha256']
         assert guest.call('install_handoff', invitation=handoff['invitation'], contact=handoff['contact']) == original
-        script = ('settle 20\n' + capture(guest, 'guest-start')
+        script = ('settle 20\n' + maximize() + capture('guest-start')
                   + await_(**{'coop-nodes': '1', 'sessions': '0', 'archives': '0', 'coop': '~active '})
-                  + capture(guest, 'guest-joined') + input_(0, 'https://shared.invalid/guest')
+                  + capture('guest-joined') + input_(0, 'https://shared.invalid/guest')
                   + input_(1, 'Guest source') + click('coop-add')
-                  + await_(**{'coop-nodes': '2', 'coop-status': '~Saved'}) + capture(guest, 'guest-added')
-                  + barrier(guest, 'owner-private') + capture(guest, 'guest-still-scoped')
-                  + await_(**{'coop-nodes': '3', 'relations': '1'}) + capture(guest, 'guest-push')
-                  + 'click role:button @data-key=' + existing + '\n' + await_(selected=existing)
+                  + await_(**{'coop-nodes': '2', 'coop-status': '~Saved'}) + capture('guest-added')
+                  + barrier(guest, 'owner-private') + capture('guest-still-scoped')
+                  + await_(**{'coop-nodes': '3', 'relations': '1'}) + capture('guest-push')
+                  + select_record(existing) + await_(selected=existing)
                   + input_(1, 'Guest revised existing source') + click('coop-title')
                   + await_(**{'coop-status': '~Saved', 'coop': '~Guest revised existing source'})
-                  + capture(guest, 'guest-renamed'))
+                  + capture('guest-renamed'))
         guest.launch('guest-live', script, domain)
         guest.wait('guest-live', 'guest-added.png')
         owner.wait('owner-live', 'owner-private-during-coop.png')
@@ -230,24 +280,24 @@ def workflow(args, relay=None):
         recovery = ''
         if args.mode == 'recovery':
             recovery = (
-                'click role:button @data-key=' + existing + '\n' + await_(selected=existing)
+                select_record(existing) + await_(selected=existing)
                 + input_(1, 'Guest retry after relay recovery')
-                + capture(guest, 'guest-before-relay-loss')
+                + capture('guest-before-relay-loss')
                 + barrier(guest, 'attempt-offline') + click('coop-title')
-                + capture(guest, 'guest-save-pending')
+                + capture('guest-save-pending')
                 + await_(**{'coop-available': 'false', 'nodes': '0'})
-                + capture(guest, 'guest-save-failed') + barrier(guest, 'relay-restored')
-                + 'click role:button Reconnect\n'
+                + capture('guest-save-failed') + barrier(guest, 'relay-restored')
+                + click('coop-reconnect')
                 + await_(**{'coop-nodes': '3', 'coop': '~active relay '})
-                + capture(guest, 'guest-relay-restored')
-                + 'click role:button @data-key=' + existing + '\n' + await_(selected=existing)
+                + capture('guest-relay-restored')
+                + select_record(existing) + await_(selected=existing)
                 + input_(1, 'Guest retry after relay recovery') + click('coop-title')
                 + await_(**{'coop-status': '~Saved', 'coop': '~Guest retry after relay recovery'})
-                + capture(guest, 'guest-save-retried'))
-        guest.launch('guest-return', await_(**{'coop-nodes': '3', 'coop': '~Guest revised existing source'})
-                     + capture(guest, 'guest-return') + recovery
+                + capture('guest-save-retried'))
+        guest.launch('guest-return', 'settle 20\n' + maximize() + await_(**{'coop-nodes': '3', 'coop': '~Guest revised existing source'})
+                     + capture('guest-return') + recovery
                      + await_(**{'coop-available': 'false', 'nodes': '0', 'selected': ''})
-                     + capture(guest, 'guest-withdrawn'), domain)
+                     + capture('guest-withdrawn'), domain)
         guest.wait('guest-return', 'guest-return.png')
         if args.mode == 'recovery':
             guest.wait('guest-return', 'guest-before-relay-loss.png')
@@ -271,28 +321,28 @@ def workflow(args, relay=None):
             machine.call('stop')
         for machine in workers:
             machine.call('start')
-        script = (await_(status='ready', attached=chosen) + click('coop-use')
+        script = (await_(status='ready', attached=chosen) + maximize() + click('coop-open') + click('coop-use')
                   + await_(**{'coop-nodes': '3', 'coop-access': 'revoked', 'coop': ('~Guest retry after relay recovery' if args.mode == 'recovery' else '~Guest revised existing source')})
-                  + capture(owner, 'owner-cold-retained') + input_(3, owner.private / 'invitation')
-                  + click('coop-export') + await_(**{'coop-nodes': '3'})
+                  + capture('owner-cold-retained') + input_(3, owner.private / 'invitation')
+                  + click('coop-export') + await_(**{'coop-nodes': '3', 'coop-status': '~owner acknowledged'})
                   + input_(0, 'https://shared.invalid/owner-after-revoke') + input_(1, 'Owner after revoke')
-                  + click('coop-add') + await_(**{'coop-nodes': '4'}) + capture(owner, 'owner-cold-edited')
-                  + barrier(owner, 'guest-cold-denied') + capture(owner, 'owner-cold-refused'))
+                  + click('coop-add') + await_(**{'coop-nodes': '4'}) + capture('owner-cold-edited')
+                  + barrier(owner, 'guest-cold-denied') + capture('owner-cold-refused'))
         owner.launch('owner-cold', script, domain)
         owner.wait('owner-cold', 'owner-cold-edited.png')
         cold = owner.call('exported_handoff')
         assert cold['invitation_sha256'] == original
         assert guest.call('install_handoff', invitation=cold['invitation'], contact=cold['contact']) == original
-        guest.launch('guest-cold', await_(**{'coop-status': '~Revoked', 'coop-available': 'false',
+        guest.launch('guest-cold', 'settle 20\n' + maximize() + await_(**{'coop-status': '~Revoked', 'coop-available': 'false',
                                           'nodes': '0', 'sessions': '0', 'archives': '0'})
-                     + capture(guest, 'guest-cold-denied'), domain)
+                     + capture('guest-cold-denied'), domain)
         receipts['guest-cold'] = guest.finish('guest-cold')
         owner.call('marker', name='guest-cold-denied')
         receipts['owner-cold'] = owner.finish('owner-cold')
         owner.call('prepare', arguments=['read', domain, chosen], save='chosen-after-cold.json')
-        owner.launch('private-return', await_(status='ready')
-                     + 'click role:button @data-session-step=switch:' + private + '\n'
-                     + await_(attached=private) + capture(owner, 'private-after'), domain)
+        owner.launch('private-return', await_(status='ready') + maximize()
+                     + switch(private)
+                     + await_(attached=private) + capture('private-after'), domain)
         receipts['private-return'] = owner.finish('private-return')
         owner.call('prepare', arguments=['read', domain, private], save='private-after.json')
         launches, remaining = 0, {}
@@ -300,7 +350,7 @@ def workflow(args, relay=None):
             launches += machine.call('stop', final=True)['custodian_starts']
             machine.collect(accepted)
             remaining[machine.role] = {'remaining': machine.call('remaining')}
-        write(out / 'cleanup.json', {'accepted_cohort': out.name} | remaining)
+        write(packet / 'cleanup.json', {'accepted_cohort': owner.public.parents[1].name} | remaining)
         pids = [{'machine': machine.role, 'pid': int(receipts[name]['final']['pid'])}
                 for machine in workers for name in phases[machine.role]]
         assert len({(entry['machine'], entry['pid']) for entry in pids}) == 7
@@ -311,7 +361,7 @@ def workflow(args, relay=None):
               'all_owned_processes_stopped': not any(r['remaining'] for r in remaining.values()),
               'mode': args.mode, 'relay_rejoin_barrier': args.mode == 'recovery',
               'controller_sha256': sha(HERE / 'run.py'), 'worker_sha256': sha(HERE / 'machine.py')})
-        print(json.dumps({'result': 'ok', 'evidence': str(accepted)}), flush=True)
+        return packet
     except Exception:
         for machine in workers:
             try:
@@ -320,7 +370,7 @@ def workflow(args, relay=None):
                 pass
         raise
     finally:
-        write(out / 'control-trace.json', trace)
+        write(packet / 'control-trace.json', trace)
         for machine in workers:
             machine.close()
 
@@ -341,9 +391,9 @@ def baseline(args):
     accepted.mkdir(parents=True)
     shutil.copy2(args.owner_binaries / 'build-inputs.json', packet / 'build-inputs.json')
     trace = []
-    domain = 'coop-acceptance'
+    domain = DOMAIN
     owner = Worker('owner', worker_command('owner', args.repo, args.host_repo, args.owner_binaries,
-                                           out / 'local'), packet / 'owner-worker.log', trace)
+                                           out / 'local', vulkan_icd=args.owner_vulkan_icd), packet / 'owner-worker.log', trace)
     try:
         info = owner.info
         assert info['console_present'] and not info['console_locked'], 'owner desktop locked'
@@ -351,7 +401,7 @@ def baseline(args):
         ids = owner.call('seed', domain=domain)
         chosen, private = ids['chosen'], ids['private']
         assert chosen != private
-        owner.launch('baseline', baseline_script(owner, chosen, private), domain)
+        owner.launch('baseline', baseline_script(chosen, private), domain)
         result = owner.finish('baseline')
         assert result['final']['status'] == 'ready' and result['final']['attached'] == chosen
         assert not result['final'].get('await-failed'), result['final']['await-failed']
@@ -359,17 +409,16 @@ def baseline(args):
         first = owner.call('stop')
         # Positive control: the same viewer, profile and domain with the resident
         # stopped (the custodian still serving) must not reach ready.
-        owner.launch('control', await_(status='ready', attached=chosen) + 'settle 2\ncapture '
-                     + str(owner.public / 'control-not-ready.png') + '\n', domain)
+        owner.launch('control', 'settle 20\n' + capture('control-not-ready')
+                     + await_(status='ready', attached=chosen), domain)
         control = owner.call('outcome', name='control')
         receipt = control['receipt'] or {}
         final = receipt.get('final', {})
         control |= {'receipt': None, 'ok': receipt.get('ok'), 'status': final.get('status'),
-                    'attached': final.get('attached'), 'await_failed': final.get('await-failed'),
+                    'attached': final.get('attached'), 'await_failed': (final.get('await-failed') or next((line for line in receipt.get('errors', [])
+                                        if line.startswith('wait-coop timed out')), None)),
                     'errors': receipt.get('errors'), 'pid': final.get('pid'),
                     'expected': 'no ready: the await expires with the resident stopped'}
-        # An expired await is a receipt field, not a receipt failure: the viewer exits 0 with
-        # ok true, so the control is judged on what it saw, never on ok.
         control['failed_as_expected'] = (not control['terminated'] and control['exit'] is not None
                                          and never_ready(receipt, chosen))
         assert control['failed_as_expected'], control
@@ -397,8 +446,7 @@ def baseline(args):
     write(packet / 'cleanup.json', {'accepted_cohort': out.name, 'owner': {'remaining': remaining}})
     qualification['all_owned_processes_stopped'] = not remaining
     write(accepted / 'qualification.json', qualification)
-    write(packet / 'artifact-sha256.json', {str(p.relative_to(packet).as_posix()): sha(p)
-                                            for p in sorted(packet.rglob('*')) if p.is_file()})
+    artifact_manifest(packet)
 
 
 def read_json(path):
@@ -409,9 +457,9 @@ def main():
     parser = argparse.ArgumentParser()
     for name in ['repo', 'host-repo', 'owner-binaries', 'output']:
         parser.add_argument('--' + name, type=Path, required=True)
-    for name in ['guest-repo', 'guest-host-repo', 'guest-binaries', 'guest-worker', 'guest-output',
-                 'ssh-control']:
-        parser.add_argument('--' + name, type=Path, help='co-op modes only')
+    for name in ['owner-vulkan-icd', 'guest-vulkan-icd', 'guest-repo', 'guest-host-repo',
+                 'guest-binaries', 'guest-worker', 'guest-output', 'guest-loader', 'ssh-control']:
+        parser.add_argument('--' + name, type=Path)
     parser.add_argument('--guest-host', default='thinkpad-l14-f')
     parser.add_argument('--mode', choices=['baseline', 'direct', 'relay', 'recovery'], default='direct')
     parser.add_argument('--relay-binary')
@@ -420,8 +468,11 @@ def main():
     args = parser.parse_args()
     if args.mode == 'baseline':
         return baseline(args)
-    assert all([args.guest_repo, args.guest_host_repo, args.guest_binaries, args.guest_worker,
-                args.guest_output, args.ssh_control]), 'co-op modes need every --guest-* and --ssh-control'
+    if not all([args.guest_repo, args.guest_host_repo, args.guest_binaries,
+                args.guest_worker, args.guest_output]):
+        parser.error('co-op modes need every --guest-* path')
+    if args.mode != 'direct' and not args.ssh_control:
+        parser.error('relay modes need --ssh-control')
     global RELAY_URL
     relay = None
     if args.mode != 'direct':
@@ -430,11 +481,16 @@ def main():
         RELAY_URL = relay.start()
         os.environ['GRAPHSHELL_RELAY_ACCEPTANCE_URL'] = RELAY_URL
     try:
-        workflow(args, relay)
+        packet = workflow(args, relay)
     finally:
         if relay:
             relay.stop()
             relay.write()
+    if relay:
+        shutil.copy2(args.output / 'relay-server.json', packet / 'accepted/relay-server.json')
+        write(packet / 'build/relay/build-inputs.json', relay.build_inputs())
+    artifact_manifest(packet)
+    print(json.dumps({'result': 'ok', 'evidence': str(packet)}), flush=True)
 
 
 if __name__ == '__main__':

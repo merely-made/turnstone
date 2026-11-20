@@ -64,6 +64,7 @@ pub fn app_declaration() -> ostiary::declaration::AppDeclaration {
             NamePattern::exact(ostiary::app_admission::APP_IDENTITY_ROUTE),
             NamePattern::exact("knot"),
             NamePattern::prefix("mere/"),
+            NamePattern::prefix("coop/"),
             // The resident inference lane (`INFERENCE_ASK_ROUTE`).
             NamePattern::exact(INFERENCE_ASK_ROUTE),
         ],
@@ -78,6 +79,12 @@ pub fn app_declaration() -> ostiary::declaration::AppDeclaration {
             ]
             .into(),
             salts: vec![
+                // The peer contact and transport for an explicitly invited graph.
+                SaltUse::persona(SaltPattern::Exact(
+                    std::str::from_utf8(graphshell_host::coop::TRANSPORT_SALT)
+                        .expect("co-op transport salt is UTF-8")
+                        .into(),
+                )),
                 // A place's transport, sealed secrets and founding key.
                 prefix("turnstone.place."),
                 // Capsule-scoped Gemini client identities.

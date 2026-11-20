@@ -25,6 +25,11 @@ class Relay:
         self.process = None
         self.url = None
 
+    def build_inputs(self):
+        path = Path(self.args.relay_binary).parent / 'build-inputs.json'
+        raw = subprocess.check_output(self.ssh + [shlex.join(['cat', str(path)])], text=True)
+        return json.loads(raw)
+
     def next_event(self, deadline):
         remaining = deadline - time.monotonic()
         if remaining <= 0:
@@ -103,5 +108,3 @@ class Relay:
             value = {'exit': 0, 'sha256': self.args.relay_sha256, 'segments': self.segments,
                      'events': [e for s in self.segments for e in s['events']]}
             (out / 'relay-server.json').write_text(json.dumps(value, indent=2)+'\n')
-            if (out/'accepted/qualification.json').exists():
-                (out/'accepted/relay-server.json').write_text(json.dumps(value, indent=2)+'\n')

@@ -9,6 +9,7 @@ impl Shell {
             proxy,
             address,
             apparatus_core::RunId(uuid::Uuid::new_v4().to_string()),
+            None,
         )
     }
 
@@ -16,6 +17,7 @@ impl Shell {
         proxy: EventLoopProxy<crate::shell::ShellEvent>,
         address: Option<String>,
         run: apparatus_core::RunId,
+        visit: Option<crate::graph_coop::guest::Visit>,
     ) -> Self {
         let client_limits = crate::client_limits::BrowserClientLimits::from_environment()
             .expect("Turnstone client limit configuration is invalid");
@@ -271,6 +273,16 @@ impl Shell {
             });
 
         let mut surface_providers = crate::contributed_surface::SurfaceProviderRegistry::new();
+        let open_guest = visit.is_some();
+        let guest_proxy = proxy.clone();
+        surface_providers
+            .register_provider(
+                crate::graph_coop::guest::Provider::new(Arc::new(move || {
+                    let _ = guest_proxy.send_event(crate::shell::ShellEvent::ActorWake);
+                }))
+                .with_visit(visit),
+            )
+            .expect("the invited graph provider is unique");
         let personae_proxy = proxy.clone();
         surface_providers
             .register_provider(crate::personae_surface::PersonaeProvider::new(Arc::new(move || {
@@ -416,6 +428,7 @@ impl Shell {
             shared_scenario: shared_scenario_from_env(),
             scenario_queued_action: None,
             pending_scenario_wait: None,
+            pending_coop_wait: None,
             held_contributed_click: None,
             contributed_click_request: 0,
             observed_events: VecDeque::with_capacity(128),
@@ -520,6 +533,14 @@ impl Shell {
         };
         shell.publish_engine_inventory();
         shell.run_effects(boot_effects);
+        if open_guest {
+            use crate::graph_coop::guest;
+            shell.act(crate::action::Action::OmnibarClose);
+            shell.act(crate::action::Action::SummonContributedPane {
+                kind: crate::panes::PaneKindId::new(guest::PANE_KIND),
+                source: guest::source(),
+            });
+        }
         shell
     }
 

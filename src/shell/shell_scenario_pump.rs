@@ -23,6 +23,26 @@ impl Shell {
             self.request_redraw();
             return;
         }
+        if let Some(wait) = self.pending_coop_wait.take() {
+            match wait.poll(self.coop_observation().as_deref()) {
+                Ok(true) => {},
+                Ok(false) => {
+                    self.pending_coop_wait = Some(wait);
+                    self.request_redraw();
+                    return;
+                },
+                Err(error) => {
+                    if let Some(shared) = self.shared_scenario.take() {
+                        let mut outcome = shared.finish();
+                        outcome.ok = false;
+                        outcome.log.push(error);
+                        self.write_shared_done(&outcome);
+                        event_loop.exit();
+                    }
+                    return;
+                },
+            }
+        }
         if let Some(wait) = self.pending_scenario_wait.as_mut() {
             match wait.poll(&self.app.place.status_lines()) {
                 Ok(true) => self.pending_scenario_wait = None,

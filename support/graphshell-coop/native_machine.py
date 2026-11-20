@@ -24,6 +24,7 @@ import plistlib
 import re
 import shutil
 import signal
+import struct
 import subprocess
 import sys
 import traceback
@@ -35,13 +36,16 @@ import locks
 CUSTODY = ('fixture-custodian: djinn_custodian::fixture in its own process (coop_fixture_custodian), '
            'packaged Djinn grants at consent none; production passphrase-fd Djinn via --custodian. '
            'Not the djinn-custodian binary, its confinement, service listener or root-owned client file.')
-GRANT_ORIGIN = ('coop_existing_graph grant: mere_resident::applications::grant_for(graphshell, '
-                'graphshell_door::declaration::declaration(), peer None), in owner settings before start; '
-                'the state after a yes, not the consent dialog')
+DOMAIN = 'coop-acceptance'
+LINUX_LOADER_FILES = ('ld-linux-x86-64.so.2', 'libc.so.6', 'libm.so.6',
+                      'libdl.so.2', 'libpthread.so.0', 'librt.so.1')
+GRANT_ORIGIN = ('coop_existing_graph grant turnstone: fixture-only exact domain routes '
+                'and custody privileges in profile settings before start')
 
 
 def sha(path):
-    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+    with Path(path).open('rb') as stream:
+        return hashlib.file_digest(stream, 'sha256').hexdigest()
 
 
 def write(path, value):
@@ -49,7 +53,7 @@ def write(path, value):
     path.write_text(json.dumps(value, indent=2) + '\n')
 
 
-def desktop():
+def desktop(vulkan_icd=None):
     if platform.system() == 'Darwin':
         expert = plistlib.loads(subprocess.check_output(
             ['/usr/sbin/ioreg', '-rd1', '-c', 'IOPlatformExpertDevice', '-a']))
@@ -86,12 +90,15 @@ def desktop():
     # The resident uses an isolated runtime directory. Wayland must retain the
     # real desktop socket rather than resolve relative to that private root.
     graphical['WAYLAND_DISPLAY'] = str(display)
-    screen = subprocess.check_output(['gdbus', 'call', '--session', '--dest', 'org.gnome.ScreenSaver',
-                                      '--object-path', '/org/gnome/ScreenSaver', '--method',
-                                      'org.gnome.ScreenSaver.GetActive'],
+    if 'KDE' in graphical.get('XDG_CURRENT_DESKTOP', '').split(':'):
+        service, path = 'org.freedesktop.ScreenSaver', '/ScreenSaver'
+    else:
+        service, path = 'org.gnome.ScreenSaver', '/org/gnome/ScreenSaver'
+    screen = subprocess.check_output(['gdbus', 'call', '--session', '--dest', service,
+                                      '--object-path', path, '--method', service + '.GetActive'],
                                      env=os.environ | graphical, text=True).strip()
     assert screen in {'(true,)', '(false,)'}, screen
-    gpu = vulkan_gpu()
+    gpu = vulkan_gpu(vulkan_icd)
     # Select the GPU's own Vulkan driver; never silently fall back to llvmpipe.
     graphical['VK_DRIVER_FILES'] = gpu['vulkan_icd']
     addresses = json.loads(subprocess.check_output(['ip', '-j', 'address', 'show'], text=True))
@@ -103,7 +110,7 @@ def desktop():
         'console_present': state.get('Active') == 'yes' and state.get('Remote') == 'no',
         'operating_system': 'Linux', 'system_version': distro['PRETTY_NAME'].strip('"'),
         'kernel': platform.release(), 'physical_model': Path('/sys/class/dmi/id/product_name').read_text().strip(),
-        'desktop': state | {'session_id': session, 'gnome_screensaver': screen},
+        'desktop': state | {'session_id': session, 'screensaver_service': service, 'screensaver': screen},
         'graphical_environment': graphical, 'gpu': gpu,
         'addresses': sorted({a['local'] for interface in addresses for a in interface['addr_info']}),
     }
@@ -115,7 +122,7 @@ VULKAN_DRIVERS = {'amdgpu': 'radeon', 'radeon': 'radeon', 'i915': 'intel', 'xe':
                   'panfrost': 'panfrost', 'asahi': 'asahi', 'virtio_gpu': 'virtio'}
 
 
-def vulkan_gpu():
+def vulkan_gpu(vulkan_icd=None):
     """The one GPU and its one Vulkan driver, recorded rather than required (coop-harness D3)."""
     nodes = []
     for node in sorted(Path('/sys/class/drm').glob('renderD*')):
@@ -127,9 +134,17 @@ def vulkan_gpu():
     assert len(nodes) == 1, ('exactly one GPU render node', nodes)
     name = VULKAN_DRIVERS.get(nodes[0]['kernel_driver'])
     assert name, ('no Vulkan driver known for', nodes[0])
+    # Intel's HasVK ICD serves older i915 GPUs that ANV cannot enumerate.
+    # An explicit selection is still restricted to the recorded GPU's driver family.
+    names = [name, 'intel_hasvk'] if name == 'intel' else [name]
     icds = [p for root in ['/usr/share/vulkan/icd.d', '/etc/vulkan/icd.d']
-            for p in sorted(Path(root).glob(name + '_icd*.json'))
-            if platform.machine() in p.name or p.name == name + '_icd.json']
+            for driver in names
+            for p in sorted(Path(root).glob(driver + '_icd*.json'))
+            if platform.machine() in p.name or p.name == driver + '_icd.json']
+    if vulkan_icd:
+        icds = [p for p in icds if p.resolve() == vulkan_icd.resolve()]
+    else:
+        icds = [p for p in icds if p.name.startswith(name + '_icd')]
     assert len(icds) == 1, ('exactly one Vulkan driver for the GPU', icds)
     library = json.loads(icds[0].read_text())['ICD']['library_path']
     return nodes[0] | {'vulkan_icd': str(icds[0]), 'vulkan_library': library}
@@ -138,6 +153,18 @@ def vulkan_gpu():
 class Machine:
     def __init__(self, args):
         self.args = args
+        self.loader_prefix = []
+        self.native_loader = None
+        if args.loader:
+            assert platform.system() == 'Linux' and platform.machine() == 'x86_64'
+            loader = args.loader.resolve(strict=True)
+            assert loader.name == LINUX_LOADER_FILES[0] and os.access(loader, os.X_OK), loader
+            runtime = loader.parent
+            assert all((runtime / n).is_file() and not (runtime / n).is_symlink()
+                       for n in LINUX_LOADER_FILES), runtime
+            self.loader_prefix = [str(loader), '--library-path', str(runtime)]
+            self.native_loader = {'launch_prefix': self.loader_prefix,
+                                  'files': {n: sha(runtime / n) for n in LINUX_LOADER_FILES}}
         self.output = args.output.resolve()
         self.output.mkdir(mode=0o700, parents=True)
         self.public = self.output / 'evidence'
@@ -148,32 +175,34 @@ class Machine:
         name = 'CrossGraph' + args.role.title()
         self.resident = Resident(args.djinn, self.private / args.role, name,
                                  self.public / (args.role + '-resident'), args.custodian)
-        # Consent: what an owner's yes writes, from Graphshell's own grant_for, put
-        # in the owner settings before Djinn starts (engine-split D130).
-        grant = json.loads(self.invoke(args.prepare, ['grant']))
-        assert grant['app'] == 'graphshell' and not grant.get('agent'), grant
+        grant = json.loads(self.invoke(args.prepare, ['grant', 'turnstone', DOMAIN]))
+        assert grant['app'] == 'turnstone' and not grant.get('agent'), grant
         write(self.public / (args.role + '-grant.json'),
               {'origin': GRANT_ORIGIN, 'prepare_sha256': sha(args.prepare), 'grant': grant})
         settings = {'applications': [grant]}
         if args.role == 'owner':
+            seed_grant = json.loads(self.invoke(args.prepare, ['grant']))
+            assert seed_grant['app'] == 'graphshell' and not seed_grant.get('agent'), seed_grant
+            write(self.public / 'owner-seed-grant.json', seed_grant)
+            settings['applications'].append(seed_grant)
             settings['reservoir'] = {'enabled': True, 'persona': str(uuid.uuid4())}
         path = Path(self.resident.environment['XDG_DATA_HOME'])
         write(path / 'graphshell/settings' / (name + '.json'), settings)
         write(self.public / (args.role + '-settings.json'), settings)
         os.chmod(self.resident.environment['XDG_RUNTIME_DIR'], 0o700)
-        _, self.desktop_state = desktop()
+        _, self.desktop_state = desktop(args.vulkan_icd)
         self.resident.environment.update(self.desktop_state['graphical_environment'])
         self.phases = {}
         self.bundle = self.private / (args.role + '.app')
-        self.executable = (self.bundle / 'Contents/MacOS/graphshell_mere'
-                           if platform.system() == 'Darwin' else self.private / 'native/graphshell_mere')
+        self.executable = (self.bundle / 'Contents/MacOS/turnstone'
+                           if platform.system() == 'Darwin' else self.private / 'native/turnstone')
         self.handoff = self.private / 'invitation'
         self.contact = self.private / 'guest-contact.json'
         write(self.public / (args.role + '-machine.json'), self.info())
 
     def info(self):
-        hardware, state = desktop()
-        binaries = {'graphshell_mere': sha(self.args.binary), 'djinn': sha(self.args.djinn),
+        hardware, state = desktop(self.args.vulkan_icd)
+        binaries = {'turnstone': sha(self.args.binary), 'djinn': sha(self.args.djinn),
                     'coop_existing_graph': sha(self.args.prepare),
                     'coop_fixture_custodian': sha(self.args.custodian)}
         host = self.args.host_repo
@@ -190,9 +219,13 @@ class Machine:
             'host_commit': subprocess.check_output(['git', '-C', str(host), 'rev-parse', 'HEAD'],
                                                    text=True).strip(),
             'host_lock_sha256': locks.sha256(locks.current(host, 'host/Cargo.lock')),
-            'custody': CUSTODY, 'binaries': binaries,
+            'custody': CUSTODY, 'binaries': binaries, 'viewer': 'turnstone',
+            'native_loader': self.native_loader,
             'public': str(self.public), 'private': str(self.private),
         }
+
+    def build_inputs(self):
+        return json.loads((self.args.binary.parent / 'build-inputs.json').read_text())
 
     def path(self, area, relative):
         base = self.public if area == 'public' else self.private
@@ -201,7 +234,10 @@ class Machine:
         return path
 
     def invoke(self, binary, arguments):
-        result = subprocess.run([str(binary), *arguments], env=self.resident.environment,
+        command = [str(binary), *arguments]
+        if binary == self.args.binary:
+            command = self.loader_prefix + command
+        result = subprocess.run(command, env=self.resident.environment,
                                 capture_output=True, text=True, timeout=90)
         if result.returncode:
             raise RuntimeError(result.stderr + '\n' + result.stdout)
@@ -267,40 +303,49 @@ class Machine:
         assert re.fullmatch(r'[a-z-]+', name)
         path = self.private / 'markers' / name
         path.parent.mkdir(exist_ok=True)
-        path.touch()
+        path.write_text('ready\n')
         return True
 
-    def launch(self, name, scenario, domain):
+    def phase_path(self, name):
+        return self.public / 'native' / name
+
+    def launch_context(self, name, scenario, domain):
+        assert domain == DOMAIN
         assert re.fullmatch(r'[a-z-]+', name) and name not in self.phases
         state = self.info()
         assert state['console_present'] and not state['console_locked'], 'headed desktop is locked'
         assert state['console_user'] == getpass.getuser(), 'another desktop user is active'
         if not self.executable.exists():
             if platform.system() == 'Darwin':
-                shutil.copytree(self.args.binary.parent / 'GraphshellCoop.app', self.bundle)
+                shutil.copytree(self.args.binary.parent / 'TurnstoneCoop.app', self.bundle)
             else:
                 self.executable.parent.mkdir()
                 shutil.copy2(self.args.binary, self.executable)
         if platform.system() == 'Darwin':
             subprocess.run(['/usr/bin/codesign', '--verify', '--strict', str(self.bundle)], check=True)
-        assert sha(self.executable) == state['binaries']['graphshell_mere']
+        assert sha(self.executable) == state['binaries']['turnstone']
         scenario_path = self.public / (name + '.scn')
         scenario_path.write_text(scenario)
+        captures = self.phase_path(name)
+        captures.mkdir(parents=True)
         env = self.resident.environment | {
-            'GRAPHSHELL_MERE_SCENARIO': str(scenario_path),
-            'GRAPHSHELL_MERE_RECEIPT': str(self.public / (name + '.json')),
-            'GRAPHSHELL_MERE_JSON_RECEIPT': '1',
-            'GRAPHSHELL_MERE_PRESENTATION_TIMEOUT_SECS': '60', 'RUST_LOG': 'warn',
+            'TURNSTONE_SCENARIO': str(scenario_path),
+            'TURNSTONE_CAPTURE_DIR': str(captures),
+            'RUST_LOG': 'warn',
         }
         # Launch the owned bundle executable directly. LaunchServices' open -W
         # can return before it has a native PID on a remote desktop session.
         # Popen owns the actual native lifecycle and reports its exit status.
-        command = [str(self.executable)]
+        command = self.loader_prefix + [str(self.executable)]
         if self.args.role == 'guest':
             command += ['--invitation', str(self.handoff / 'invitation.json'),
                         '--contact', str(self.handoff / 'contact.json')]
         else:
-            command += [domain]
+            command += ['mere://resident/' + domain]
+        return state, scenario_path, env, command
+
+    def launch(self, name, scenario, domain):
+        state, scenario_path, env, command = self.launch_context(name, scenario, domain)
         with (self.public / (name + '.log')).open('w') as log:
             process = subprocess.Popen(command, env=env, stdout=log, stderr=log)
         self.phases[name] = process
@@ -310,7 +355,7 @@ class Machine:
 
     def progress(self, name, capture=None):
         process = self.phases[name]
-        receipt = self.public / (name + '.json')
+        phase = self.phase_path(name)
         if (platform.system() == 'Linux' and process.poll() is None
                 and not (self.public / (name + '-graphics.json')).exists()):
             proc = Path('/proc') / str(process.pid)
@@ -330,25 +375,69 @@ class Machine:
                     maps = ''
                 libraries = sorted({line.split()[-1] for line in maps.splitlines()
                                     if 'libvulkan_' in line or '/dri/' in line})
-                write(self.public / (name + '-graphics.json'),
-                      {'pid': process.pid, 'render_nodes': nodes, 'driver_libraries': libraries,
-                       'VK_DRIVER_FILES': self.resident.environment.get('VK_DRIVER_FILES')})
+                graphics = {'pid': process.pid, 'render_nodes': nodes, 'driver_libraries': libraries,
+                            'VK_DRIVER_FILES': self.resident.environment.get('VK_DRIVER_FILES')}
+                if self.native_loader:
+                    mapped = {Path(line.split()[-1]) for line in maps.splitlines() if '/' in line}
+                    runtime = Path(self.loader_prefix[-1])
+                    graphics['loader_files'] = {path.name: sha(path) for path in mapped
+                                                if path.parent == runtime}
+                write(self.public / (name + '-graphics.json'), graphics)
         return {'running': process.poll() is None, 'exit': process.returncode,
-                'receipt': receipt.exists(),
-                'capture': bool(capture and self.path('public', capture).exists())}
+                'receipt': (phase / 'scenario.done').is_file(),
+                'capture': bool(capture and (phase / Path(capture).name).is_file()
+                                and (phase / (Path(capture).stem + '.coop.json')).is_file())}
+
+    def receipt(self, name):
+        """Index the native sentinel, screenshots and raw application observations."""
+        phase = self.phase_path(name)
+        sentinel = phase / 'scenario.done'
+        if not sentinel.exists():
+            return None
+        result, *log = sentinel.read_text().splitlines()
+        assert result in {'RESULT ok', 'RESULT fail'}, result
+        captures = []
+        # Preserve actual scenario order (alphabetical order loses terminal state).
+        scenario = (self.public / (name + '.scn')).read_text().splitlines()
+        for step in scenario:
+            if not step.startswith('capture '):
+                continue
+            stem = step.removeprefix('capture ')
+            artifact = phase / (stem + '.png')
+            if not artifact.exists():
+                continue
+            with artifact.open('rb') as stream:
+                header = stream.read(24)
+            assert header[:8] == b'\x89PNG\r\n\x1a\n', artifact
+            width, height = struct.unpack('>II', header[16:24])
+            fields = json.loads((phase / (stem + '.coop.json')).read_text())
+            assert int(fields['pid']) == self.phases[name].pid, fields
+            captures.append({'path': str(artifact), 'width': width, 'height': height, 'fields': fields})
+            # Historical packet paths and their capture-review bindings remain stable.
+            artifact.rename(self.public / artifact.name)
+        presentation = [line for line in log if line.startswith('presentation frames=')]
+        assert len(presentation) == 1, presentation
+        proof = re.fullmatch(r'presentation frames=(\d+) captures=(\d+) blank=(\d+)', presentation[0])
+        assert proof and int(proof[1]) > 0 and int(proof[2]) == len(captures) and int(proof[3]) == 0, presentation
+        ok = result == 'RESULT ok'
+        errors = [] if ok else log
+        final = dict(captures[-1]['fields']) if captures else {}
+        receipt = {'viewer': 'turnstone', 'ok': ok, 'errors': errors, 'final': final, 'captures': captures}
+        write(self.public / (name + '.json'), receipt)
+        return receipt
 
     def finish(self, name):
         process = self.phases[name]
         process.wait(timeout=30)
         assert process.returncode == 0, (name, process.returncode)
-        receipt = json.loads((self.public / (name + '.json')).read_text())
-        assert receipt['ok'] and not receipt['errors'], receipt
+        receipt = self.receipt(name)
+        assert receipt and receipt['ok'] and not receipt['errors'], receipt
         assert receipt['captures'] and all(c['width'] > 200 and c['height'] > 200
                                            for c in receipt['captures'])
         return receipt
 
     def outcome(self, name, seconds=150):
-        """A phase expected to fail (the positive control): its exit and receipt, never asserted."""
+        """An expected failure must have the application sentinel and actual native exit."""
         process = self.phases[name]
         try:
             process.wait(timeout=seconds)
@@ -357,9 +446,7 @@ class Machine:
             process.terminate()
             process.wait(timeout=15)
             terminated = True
-        receipt = self.public / (name + '.json')
-        return {'exit': process.returncode, 'terminated': terminated,
-                'receipt': json.loads(receipt.read_text()) if receipt.exists() else None}
+        return {'exit': process.returncode, 'terminated': terminated, 'receipt': self.receipt(name)}
 
     def collect(self, require_clean=True):
         if require_clean:
@@ -372,6 +459,8 @@ class Machine:
         """Processes still running an executable from this machine's binaries or private tree."""
         roots = [self.private.resolve()] + [Path(getattr(self.args, n)).resolve().parent
                                             for n in ['binary', 'djinn', 'custodian', 'prepare']]
+        if self.native_loader:
+            roots.append(Path(self.loader_prefix[-1]))
         listing = subprocess.check_output(['ps', '-axo', 'pid=,command='], text=True)
         return [line.strip() for line in listing.splitlines()
                 if len(line.split()) > 1 and any(line.split()[1].startswith(str(r)) for r in roots)]
@@ -398,9 +487,11 @@ def main():
     # --custodian is coop_fixture_custodian; --host-repo the Graphshell checkout at the pin.
     for name in ['repo', 'host-repo', 'binary', 'djinn', 'custodian', 'prepare', 'output']:
         parser.add_argument('--' + name, type=Path, required=True)
+    parser.add_argument('--vulkan-icd', type=Path)
+    parser.add_argument('--loader', type=Path)
     parser.add_argument('--role', choices=['owner', 'guest'], required=True)
     machine = Machine(parser.parse_args())
-    allowed = {'info', 'start', 'stop', 'seed', 'prepare', 'export_contact', 'owner_contact',
+    allowed = {'info', 'build_inputs', 'start', 'stop', 'seed', 'prepare', 'export_contact', 'owner_contact',
                'exported_handoff', 'install_handoff', 'marker', 'launch', 'progress',
                'finish', 'outcome', 'collect', 'remaining'}
     try:

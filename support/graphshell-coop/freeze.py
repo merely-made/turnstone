@@ -30,7 +30,7 @@ import tomllib
 import locks
 
 GRAPHSHELL = 'https://github.com/merely-made/graphshell.git'
-VIEWER = ['graphshell_mere']
+VIEWER = ['turnstone']
 HOST = ['djinn', 'coop_existing_graph', 'coop_fixture_custodian']
 HOST_EXAMPLES = {'coop_existing_graph', 'coop_fixture_custodian'}
 CODE = {'.rs', '.toml', '.wgsl', '.css', '.js', '.html'}
@@ -39,7 +39,8 @@ RUSTC = str(Path.home() / '.cargo/bin/rustc')
 
 
 def sha(path):
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+    with Path(path).open('rb') as stream:
+        return hashlib.file_digest(stream, 'sha256').hexdigest()
 
 
 def run(*command, cwd):
@@ -87,8 +88,8 @@ def checkout(host, revision):
 
 
 def build(root, artifacts, host, host_artifacts):
-    cargo = [CARGO, 'build']
-    subprocess.check_call([*cargo, '-p', 'graphshell-mere', '--bin', 'graphshell_mere',
+    cargo = [CARGO, 'build', '--locked']
+    subprocess.check_call([*cargo, '-p', 'turnstone', '--bin', 'turnstone',
                            '--target-dir', str(artifacts)], cwd=root)
     # Djinn alone, so the examples' dev-dependency features (in-process custody) never
     # reach it: this is the production passphrase-fd build.
@@ -111,14 +112,14 @@ def freeze_binary(name, artifacts, out):
     if platform.system() == 'Linux':
         description = run('file', '-b', str(out / name), cwd=out).strip()
         assert description.startswith('ELF 64-bit'), description
-    elif name == 'graphshell_mere':
-        bundle = out / 'GraphshellCoop.app'
-        executable = bundle / 'Contents/MacOS/graphshell_mere'
+    elif name in VIEWER:
+        bundle = out / 'TurnstoneCoop.app'
+        executable = bundle / 'Contents/MacOS' / name
         executable.parent.mkdir(parents=True)
         shutil.copy2(out / name, executable)
         with (bundle / 'Contents/Info.plist').open('wb') as stream:
-            plistlib.dump({'CFBundleIdentifier': 'made.merely.graphshell.coop.acceptance',
-                           'CFBundleName': 'Graphshell co-op test',
+            plistlib.dump({'CFBundleIdentifier': 'made.merely.turnstone.coop.acceptance',
+                           'CFBundleName': 'Turnstone co-op test',
                            'CFBundleExecutable': name, 'CFBundlePackageType': 'APPL',
                            'CFBundleVersion': '1', 'NSHighResolutionCapable': True,
                            'NSLocalNetworkUsageDescription':
@@ -151,7 +152,7 @@ def inputs(root, workspace, names, out, trees):
             if path.is_relative_to(root) and path.is_file():
                 relative = path.relative_to(root).as_posix()
                 (files if relative in tracked else generated).add(relative)
-    metadata = json.loads(run(CARGO, 'metadata', '--offline',
+    metadata = json.loads(run(CARGO, 'metadata', '--offline', '--locked',
                               '--format-version', '1', cwd=workspace))
     groups = {}
     for package in metadata['packages']:
@@ -171,7 +172,7 @@ def inputs(root, workspace, names, out, trees):
                           'packages': sorted(item['packages']), 'tracked_code_changes': []})
     texts = []
     for package, extra in trees:
-        tree = run(CARGO, 'tree', '--offline', '-p', package, *extra,
+        tree = run(CARGO, 'tree', '--offline', '--locked', '-p', package, *extra,
                    '--edges', 'normal,build', cwd=workspace)
         (out / (package + '-tree.txt')).write_text(tree)
         texts.append(tree)
@@ -212,7 +213,7 @@ def main():
     # Metadata and trees resolve every locked package for every target, including ones no
     # build fetched; fetch them first so the recorded queries stay --offline.
     for workspace in [root, host / 'host']:
-        subprocess.check_call([CARGO, 'fetch'], cwd=workspace)
+        subprocess.check_call([CARGO, 'fetch', '--locked'], cwd=workspace)
     out = args.output.resolve()
     out.mkdir(mode=0o700)
     binaries = {name: freeze_binary(name, args.artifacts, out) | {'repository': 'turnstone'}
@@ -220,11 +221,11 @@ def main():
     binaries |= {name: freeze_binary(name, args.host_artifacts, out) | {'repository': 'graphshell'}
                  for name in HOST}
     # The production build: passphrase-fd, never in-process custody (D130).
-    features = run(CARGO, 'tree', '--offline', '-p', 'mere-resident',
+    features = run(CARGO, 'tree', '--offline', '--locked', '-p', 'mere-resident',
                    '--features', 'passphrase-fd', '--edges', 'normal,build', '--depth', '0',
                    '--format', '{f}', cwd=host / 'host').strip().split(',')
     assert 'passphrase-fd' in features and 'in-process-custody' not in features, features
-    turnstone = inputs(root, root, VIEWER, out, [('graphshell-mere', [])])
+    turnstone = inputs(root, root, VIEWER, out, [('turnstone', [])])
     graphshell = inputs(host, host / 'host', HOST, out,
                         [('mere-resident', ['--features', 'passphrase-fd'])])
     assert graphshell['source_commit'] == pin

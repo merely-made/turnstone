@@ -11,6 +11,7 @@ either the two-machine co-op behavior or the single-desktop baseline with its po
 import argparse
 import hashlib
 import json
+import re
 from pathlib import Path
 import struct
 import subprocess
@@ -27,7 +28,8 @@ def read(path):
 
 
 def sha(path):
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+    with Path(path).open('rb') as stream:
+        return hashlib.file_digest(stream, 'sha256').hexdigest()
 
 
 def verify_sources(files, commit, root=ROOT):
@@ -67,6 +69,10 @@ def verify_graphics(graphics, machine):
     assert graphics['render_nodes'] and all(n['vendor'] == gpu['vendor'] for n in graphics['render_nodes'])
     library = Path(gpu['vulkan_library']).stem
     assert any(library in p for p in graphics['driver_libraries']), (library, graphics['driver_libraries'])
+    if loader := machine.get('native_loader'):
+        actual = graphics['loader_files']
+        assert {'ld-linux-x86-64.so.2', 'libc.so.6', 'libm.so.6'} <= actual.keys()
+        assert all(loader['files'][name] == digest for name, digest in actual.items())
 
 
 def lock_differences(turnstone, host):
@@ -114,8 +120,18 @@ def never_ready(receipt, chosen):
     Judged on the viewer's own fields; an expired await leaves the receipt ok."""
     final = (receipt or {}).get('final') or {}
     status = final.get('status')
-    return (bool(receipt) and status not in {None, 'ready'} and final.get('attached') != chosen
-            and f'status expected "ready", was "{status}"' in (final.get('await-failed') or ''))
+    if not receipt or status in {None, 'ready'} or final.get('attached') == chosen:
+        return False
+    if receipt.get('viewer') == 'turnstone':
+        if receipt.get('ok'):
+            return False
+        for line in receipt['errors']:
+            if line.startswith('wait-coop timed out.'):
+                observed = line.partition('; observed ')[2]
+                view = re.search(r'\("status", Some\("([^"]+)"\)\)', observed)
+                return bool(view and view[1] != 'ready')
+        return False
+    return f'status expected "ready", was "{status}"' in (final.get('await-failed') or '')
 
 
 def check_capture(evidence, capture):
@@ -126,6 +142,44 @@ def check_capture(evidence, capture):
     assert capture['width'] > 200 and capture['height'] > 200
     return path.stem
 
+
+def verify_native_phase(evidence, name, result):
+    """Bind the normalized Turnstone phase to its emitted observations and scenario outcome."""
+    if result.get('viewer') != 'turnstone':
+        return
+    phase = evidence / 'native' / name
+    sentinel, *log = (phase / 'scenario.done').read_text().splitlines()
+    assert sentinel == ('RESULT ok' if result['ok'] else 'RESULT fail')
+    assert result['errors'] == ([] if result['ok'] else log)
+    presentation = [line for line in log if line.startswith('presentation frames=')]
+    assert len(presentation) == 1
+    proof = re.fullmatch(r'presentation frames=(\d+) captures=(\d+) blank=(\d+)', presentation[0])
+    assert proof and int(proof[1]) > 0 and int(proof[2]) == len(result['captures'])
+    assert int(proof[3]) == 0
+    assert result['final'] == result['captures'][-1]['fields']
+    for capture in result['captures']:
+        stem = check_capture(evidence, capture)
+        assert capture['fields'] == read(phase / (stem + '.coop.json'))
+
+
+def verify_turnstone_grants(machine, evidence, role):
+    """Turnstone and the owner-only seed helper use separate admission grants."""
+    grant = read(evidence / (role + '-grant.json'))
+    apps = read(evidence / (role + '-settings.json'))['applications']
+    assert grant['prepare_sha256'] == machine['binaries']['coop_existing_graph']
+    turnstone = grant['grant']
+    assert turnstone['app'] == 'turnstone' and not turnstone.get('agent')
+    assert turnstone['routes'] == [{'exact': route} for route in
+                                  ['custody', 'mere/coop-acceptance', 'coop/coop-acceptance']]
+    assert set(turnstone['custody']['operations']) == {'status', 'release', 'attest', 'watch_lock'}
+    assert turnstone['custody']['salts'] == [
+        {'source': 'persona', 'name': {'exact': 'graphshell/endpoint-session/coop/v1'}}]
+    expected = [turnstone]
+    if role == 'owner':
+        seed = read(evidence / 'owner-seed-grant.json')
+        assert seed['app'] == 'graphshell' and not seed.get('agent')
+        expected.append(seed)
+    assert apps == expected
 
 def verify_review(HERE, evidence, names):
     review = read(HERE / 'capture-review.json')
@@ -167,8 +221,13 @@ def verify_baseline(HERE, q, args):
     # Consent: the grant came from Graphshell's own grant_for and is what Djinn loaded.
     grant = read(evidence / 'owner-grant.json')
     assert grant['origin'] == q['grant_origin'] and grant['prepare_sha256'] == owner['binaries']['coop_existing_graph']
-    assert grant['grant']['app'] == 'graphshell'
-    assert read(evidence / 'owner-settings.json')['applications'] == [grant['grant']]
+    viewer = owner.get('viewer', 'graphshell_mere')
+    if viewer == 'turnstone':
+        assert 'turnstone' in inputs['binaries']
+        verify_turnstone_grants(owner, evidence, 'owner')
+    else:
+        assert grant['grant']['app'] == 'graphshell'
+        assert read(evidence / 'owner-settings.json')['applications'] == [grant['grant']]
     status = q['resident_status']
     assert status['ready'] and status['lock'] == 'unlocked'
     events = [json.loads(line) for line in (evidence / 'owner-resident/events-1.jsonl').read_text().splitlines()]
@@ -180,6 +239,8 @@ def verify_baseline(HERE, q, args):
     chosen, private = q['graphs']['chosen'], q['graphs']['private']
     assert chosen != private and read(evidence / 'existing-graphs.json') == q['graphs']
     result = read(evidence / 'baseline.json')
+    assert result.get('viewer', 'graphshell_mere') == viewer
+    verify_native_phase(evidence, 'baseline', result)
     assert result['ok'] and not result['errors'] and result['final']['status'] == 'ready'
     assert not result['final'].get('await-failed'), 'the baseline awaited something it never saw'
     assert result['final']['attached'] == chosen
@@ -196,6 +257,13 @@ def verify_baseline(HERE, q, args):
         verify_graphics(graphics, owner)
     # Positive control: launched after the resident stopped; never ready.
     control, outcome = read(evidence / 'control.json'), q['control']
+    assert control.get('viewer', 'graphshell_mere') == viewer
+    verify_native_phase(evidence, 'control', control)
+    if viewer == 'turnstone':
+        predicate = (evidence / 'control.scn').read_text().splitlines()[-1]
+        assert predicate.startswith('wait-coop ')
+        assert json.loads(predicate.removeprefix('wait-coop ')) == {'status': 'ready', 'attached': chosen}
+        assert outcome['await_failed'] in control['errors']
     trace = [t['method'] for t in read(HERE / 'control-trace.json')]
     assert trace.index('stop') < len(trace) - 1 - trace[::-1].index('launch'), 'control launched before stop'
     assert outcome['failed_as_expected'] and not outcome['terminated'] and never_ready(control, chosen)
@@ -216,7 +284,7 @@ def verify_baseline(HERE, q, args):
                           'differ': sorted(d['name'] + ' ' + d['version'] for d in inputs['shared_lock_packages']['differ'])},
                       'custody': q['custody'], 'grant_origin': q['grant_origin'],
                       'baseline': {'pid': pid, 'attached': chosen, 'captures': sorted(captures)},
-                      'control': {'status': control['final']['status'], 'await_failed': control['final']['await-failed'],
+                      'control': {'status': control['final']['status'], 'await_failed': outcome['await_failed'],
                                   'captures': control_captures},
                       'source_files': len(inputs['files']), 'host_files': len(host['files']),
                       'generated_files': sorted(inputs['generated_files']) + sorted(host['generated_files']),
@@ -276,6 +344,10 @@ def main():
     for role in ['owner', 'guest']:
         machine = machines[role]
         source = inputs[role]
+        viewer = machine.get('viewer', 'graphshell_mere')
+        if viewer == 'turnstone':
+            assert 'turnstone' in source['binaries']
+            verify_turnstone_grants(machine, evidence, role)
         assert machine['source_commit'] == source['source_commit']
         assert machine['lock_sha256'] == source['lock_sha256']
         assert machine['worker_sha256'] == q['worker_sha256']
@@ -304,6 +376,8 @@ def main():
             custodians.add((role, ready['pid']))
         for name in q['phases'][role]:
             result = read(evidence / (name + '.json'))
+            assert result.get('viewer', 'graphshell_mere') == viewer
+            verify_native_phase(evidence, name, result)
             assert result['ok'] and not result['errors'], name
             assert (role, int(result['final']['pid'])) in process_pairs
             launch = read(evidence / (name + '-launch.json'))
@@ -333,7 +407,12 @@ def main():
         return captures[name]
 
     def update(name):
-        return json.loads(fields(name)['coop'])
+        raw = fields(name)['coop']
+        if not raw and capture_roles[name] == 'owner':
+            # The Turnstone owner panel intentionally omits out-of-scope data.
+            assert fields(name)['coop-available'] == 'false'
+            return {'data': None, 'connection': []}
+        return json.loads(raw)
 
     def state(name):
         return update(name)['data']
@@ -351,6 +430,8 @@ def main():
             assert all(r['from'] in ids and r['to'] in ids for r in data['relations'])
             active_routes.update(p for p in update(name)['connection'] if p.startswith('active '))
     assert active_routes, 'no observed live carrier path'
+    if mode == 'direct' and machines['guest'].get('viewer') == 'turnstone':
+        assert any(not route.startswith('active relay ') for route in active_routes), active_routes
     if mode != 'direct':
         relay = read(evidence / 'relay-server.json')
         assert relay['exit'] == 0

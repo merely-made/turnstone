@@ -5,7 +5,7 @@ rulings `mere:engine-split D129` and `D130` (2026-11-11).
 
 ## Two repositories, Turnstone the root
 
-The viewer (`graphshell_mere`) comes from this repository. Djinn, the seeder
+The native `turnstone` executable comes from this repository. Djinn, the seeder
 (`coop_existing_graph`) and the fixture custodian (`coop_fixture_custodian`) come
 from Graphshell `host/`, checked out at the exact revision this repository's
 lock pins for graphshell.git and built with `host/`'s lock. No lock is tracked: a lock
@@ -27,7 +27,7 @@ python3 support/graphshell-coop/freeze.py --build --repo . --artifacts TARGET \
 
 The build is three cargo invocations, on the toolchain each checkout's
 `rust-toolchain.toml` names (no release is hardcoded):
-`-p graphshell-mere --bin graphshell_mere` here; in `host/`,
+`-p turnstone --bin turnstone` here; in `host/`,
 `-p mere-resident --bin djinn --features passphrase-fd` alone, so the examples'
 dev-dependency features never reach it; then
 `-p mere-resident --example coop_existing_graph --example coop_fixture_custodian`.
@@ -39,8 +39,10 @@ Each worker starts the fixture custodian once (a synthetic passphrase vault with
 the packaged Djinn grants at consent `none`) and hands its client file to a
 production `passphrase-fd` Djinn as `--custodian`. The custodian outlives Djinn's
 restarts, as an installed one does. Before Djinn starts, the worker writes the
-grant `coop_existing_graph grant` prints (Graphshell's own `grant_for` over
-`declaration()`) into the profile's owner settings, `applications`. The receipt
+Graphshell seeder grant and Turnstone grant from `coop_existing_graph` into
+the profile's owner settings. The Turnstone grant admits the selected
+`mere/<domain>`, the owner control route `coop/<domain>`, and the co-op
+transport identity used by a guest. The receipt
 proves Djinn's custody client and grant checks and the state after a yes. It does
 not prove the `djinn-custodian` binary, its confinement, the service listener,
 the root-owned client file, Linux's per-generation consent or the consent dialog.
@@ -66,16 +68,23 @@ held that render node and loaded that driver (coop-harness D3). `RUN/receipt` is
 is never copied. The packet's `capture-review.json` is written after the run by
 whoever opened each capture, and binds itself to them by hash.
 
-## Two machines: unverified since 2026-10-24
+## Two machines
 
-`--mode direct`, `--mode relay` and `--mode recovery` drive a Mac or Linux owner
-and a Linux Wayland guest over an owned SSH control socket (`--guest-*`,
-`--ssh-control`). They share one scope, attribution, revocation and cold-reopen
-controller. Relay modes require `--relay-binary`, its `--relay-sha256`, and the
-socket; SSH carries control and invitation handoff only. Their last pass was
-2026-10-24. Custody isolation (2026-10-26), admission by consent (2026-11-01) and
-the two-repository split came after it; the custody, grant and build changes
-above reach these modes too, but none of their phases has run since.
+The owner opens `turnstone mere://resident/<domain>`, selects a live graph,
+then chooses **Co-op** and **Use this graph for co-op**. The guest exports
+its contact with `turnstone --contact FILE`. The owner selects that contact
+and an invitation folder, then invites a reader or editor. Send the invitation
+and its companion owner contact to the guest. The guest opens them with
+`turnstone --invitation FILE --contact FILE`.
+
+`--mode direct`, `--mode relay` and `--mode recovery` drive a Mac or Linux
+owner and a Linux Wayland guest. They share one scope, attribution,
+revocation and cold-reopen controller. Use `--guest-*` and `--ssh-control`
+from the owner desktop. A Linux guest may select its GPU's Vulkan ICD
+with `--guest-vulkan-icd` or use a separately staged loader and matching
+runtime with `--guest-loader`. Both are recorded and checked against the
+running process. Relay modes require `--relay-binary`, its `--relay-sha256`,
+and the socket. SSH carries control and invitation handoff only.
 
 Recovery stops the owned relay before a guest save, records pending and failed
 native states, checks the owner's durable graph before and after the failure,

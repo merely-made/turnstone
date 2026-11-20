@@ -25,6 +25,7 @@ use crate::contributed_surface::{SurfaceAdmissionError, SurfaceProvider};
 use crate::panes::{PaneKindId, PaneSource, SerializedSource, SourceRef, SourceSchemaId};
 
 mod actions;
+mod coop;
 mod kept;
 mod worker;
 
@@ -36,7 +37,7 @@ const GRAPH_LEAF: u64 = 0x6d65_7265;
 const TOOLBAR_HEIGHT: u32 = 32;
 const DETAIL_HEIGHT: u32 = 104;
 const RECONNECT: &str = "reconnect";
-const CSS: &str = "
+pub(crate) const CSS: &str = "
 .resident-graph-toolbar { height: 32px; }
 .resident-graph { display: flex; flex-direction: column; color: var(--tabard-color-text, rgb(220, 226, 238)); }
 .resident-graph .mere-view-bar { padding-inline: 8px; }
@@ -85,11 +86,12 @@ impl ResidentGraphProvider {
                 accepted_source: SurfaceSourceShape::One(SourceKindId::from(SOURCE_SCHEMA)),
             },
             stylesheet: format!(
-                "{} {} {CSS} {} {}",
+                "{} {} {CSS} {} {} {}",
                 cambium::GRAPH_CANVAS_SWATCH_CSS,
                 mere_view::MERE_VIEW_CSS,
                 kept::CSS,
                 actions::CSS,
+                crate::graph_coop::controls::CSS,
             ),
             wake,
             open_address,
@@ -150,6 +152,7 @@ impl SurfaceProvider for ResidentGraphProvider {
             completed: 0,
             kept: kept::Panel::default(),
             actions: actions::Panel::default(),
+            coop: coop::OwnerPanel::new(source.domain),
             size: (1, 1),
         };
         state.connect();
@@ -188,6 +191,7 @@ struct State {
     completed: u64,
     kept: kept::Panel,
     actions: actions::Panel,
+    coop: coop::OwnerPanel,
     size: (u32, u32),
 }
 
@@ -214,6 +218,7 @@ impl State {
 
     fn fail(&mut self, reason: String) {
         self.connection = None;
+        self.coop.close();
         self.kept = kept::Panel::default();
         self.actions = actions::Panel::default();
         self.model.status = ViewStatus::Unavailable(StatusNote {
@@ -275,6 +280,11 @@ impl State {
             worker::Update::Opening => {},
             worker::Update::Failed(reason) => self.fail(reason),
             worker::Update::Read(read) => {
+                if self.model.graph != read.model.graph
+                    || coop::attached(&self.model) != coop::attached(&read.model)
+                {
+                    self.coop.refresh(coop::attached(&read.model));
+                }
                 self.model = read.model;
                 if self.focused != read.focused {
                     self.view.focused.clone_from(&read.focused);
@@ -336,6 +346,7 @@ fn view(state: &State) -> GraphView {
                 vec![Box::new(button("Kept pages", |state: &mut State, _| {
                     state.toggle_kept()
                 }))];
+            buttons.push(coop::toggle_button(state));
             if state.actions.has_offers() {
                 buttons.push(Box::new(button(
                     "Record actions",
@@ -348,13 +359,18 @@ fn view(state: &State) -> GraphView {
         };
         el("nav", buttons).attr("class", "resident-graph-toolbar")
     });
+    let observation = coop::observation(state);
     if state.kept.open || state.actions.open {
         let part = if state.kept.open {
             kept::view(state)
         } else {
             actions::view(state)
         };
-        return Box::new(el("div", (toolbar, part)).attr("class", "resident-graph"));
+        return Box::new(
+            el("div", (toolbar, part))
+                .attr("class", "resident-graph")
+                .attr("data-coop-observation", observation),
+        );
     }
     let graph = mere_view::mere_view(
         state.mere_view(),
@@ -392,7 +408,12 @@ fn view(state: &State) -> GraphView {
     } else {
         Box::new(el::<_, State, ()>("div", ()).attr("style", "display:none"))
     };
-    Box::new(el::<_, State, ()>("div", (toolbar, graph, details)).attr("class", "resident-graph"))
+    let coop = state.coop.is_open().then(|| coop::view(state));
+    Box::new(
+        el::<_, State, ()>("div", (toolbar, graph, details, coop))
+            .attr("class", "resident-graph")
+            .attr("data-coop-observation", observation),
+    )
 }
 
 struct GraphSession {
@@ -461,18 +482,20 @@ impl RetainedSurfaceSession for GraphSession {
         true
     }
     fn sync_viewport(&mut self, viewport: SurfaceViewport) -> Vec<SurfaceEffect> {
+        let state = self.runner.state();
+        let controls = if state.coop.is_open() { 140 } else { 0 };
         let size = (
             viewport.width.max(1.0) as u32,
             (viewport.height as u32)
-                .saturating_sub(DETAIL_HEIGHT + TOOLBAR_HEIGHT)
+                .saturating_sub(DETAIL_HEIGHT + TOOLBAR_HEIGHT + controls)
                 .max(1),
         );
-        let state = self.runner.state();
         let changed = state
             .connection
             .as_ref()
             .is_some_and(|connection| !matches!(connection.updates.has_changed(), Ok(false)));
-        if !changed && state.size == size {
+        let coop_changed = state.coop.take_dirty();
+        if !changed && !coop_changed && state.size == size {
             return Vec::new();
         }
         self.runner.update(|state| {
@@ -480,6 +503,7 @@ impl RetainedSurfaceSession for GraphSession {
                 let update = connection.updates.borrow_and_update().clone();
                 state.update_model(update);
             }
+            state.coop.sync();
             state.size = size;
             state.view.lay_out(&state.model, size.0, size.1);
         });
@@ -511,18 +535,20 @@ impl RetainedSurfaceSession for GraphSession {
         if !std::mem::take(&mut self.leaf_dirty) {
             return Some(&mut self.leaves);
         }
-        let leaf = self.runner.state().mere_view().paint_leaf(|kind| {
-            let (r, g, b) = match kind.state() {
-                NodeState::Available => (0.41, 0.67, 0.86),
-                NodeState::Unavailable => (0.58, 0.59, 0.63),
-                NodeState::Open => (0.48, 0.78, 0.6),
-                NodeState::Dirty => (0.9, 0.66, 0.34),
-            };
-            ColorF { r, g, b, a: 1.0 }
-        });
+        let leaf = self.runner.state().mere_view().paint_leaf(node_color);
         self.leaves.insert(GRAPH_LEAF, Box::new(leaf));
         Some(&mut self.leaves)
     }
+}
+
+pub(crate) fn node_color(kind: &mere_view::MereNodeKind) -> ColorF {
+    let (r, g, b) = match kind.state() {
+        NodeState::Available => (0.41, 0.67, 0.86),
+        NodeState::Unavailable => (0.58, 0.59, 0.63),
+        NodeState::Open => (0.48, 0.78, 0.6),
+        NodeState::Dirty => (0.9, 0.66, 0.34),
+    };
+    ColorF { r, g, b, a: 1.0 }
 }
 
 #[cfg(test)]

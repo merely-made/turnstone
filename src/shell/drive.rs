@@ -53,6 +53,9 @@ mod saved_reader_probe_tests;
 
 #[path = "drive/parse_public_fixture_a11y_receipt.rs"]
 mod parse_public_fixture_a11y_receipt;
+#[path = "drive/coop_observation.rs"]
+mod coop_observation;
+pub(super) use coop_observation::PendingCoopWait;
 #[path = "drive/pending_scenario_wait_file.rs"]
 mod pending_scenario_wait_file;
 use parse_public_fixture_a11y_receipt::parse_public_fixture_a11y_receipt;

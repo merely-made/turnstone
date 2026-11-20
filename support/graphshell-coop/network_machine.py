@@ -10,7 +10,6 @@
 import json
 import os
 from pathlib import Path
-import shutil
 import socket
 import subprocess
 import sys
@@ -91,23 +90,8 @@ class RelayMachine(base.Machine):
     def launch(self, name, scenario, domain):
         if self.args.role != 'guest':
             return super().launch(name, scenario, domain)
-        assert sys.platform == 'linux' and base.re.fullmatch(r'[a-z-]+', name) and name not in self.phases
-        state = self.info()
-        assert state['console_present'] and not state['console_locked']
-        if not self.executable.exists():
-            self.executable.parent.mkdir()
-            shutil.copy2(self.args.binary, self.executable)
-        assert base.sha(self.executable) == state['binaries']['graphshell_mere']
-        script = self.public / (name + '.scn')
-        script.write_text(scenario)
-        env = self.resident.environment | {
-            'GRAPHSHELL_MERE_SCENARIO': str(script),
-            'GRAPHSHELL_MERE_RECEIPT': str(self.public / (name + '.json')),
-            'GRAPHSHELL_MERE_JSON_RECEIPT': '1',
-            'GRAPHSHELL_MERE_PRESENTATION_TIMEOUT_SECS': '60', 'RUST_LOG': 'warn',
-        }
-        command = [str(self.executable), '--invitation', str(self.handoff / 'invitation.json'),
-                   '--contact', str(self.handoff / 'contact.json')]
+        assert sys.platform == 'linux'
+        state, script, env, command = self.launch_context(name, scenario, domain)
         entry = self.private / 'namespace-entry.py'
         entry.write_text(ENTRY)
         rendezvous = self.private / ('namespace-' + name)

@@ -20,7 +20,8 @@ import tomllib
 
 
 def sha(path):
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+    with Path(path).open('rb') as stream:
+        return hashlib.file_digest(stream, 'sha256').hexdigest()
 
 
 def main():

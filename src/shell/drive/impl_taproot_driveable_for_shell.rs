@@ -22,6 +22,10 @@ impl taproot::Driveable for Shell {
     /// parser and run it against the Shell via `run_scenario_step`. An unknown
     /// verb fails loudly (parse returns Err), never a silent skip.
     fn app_step(&mut self, line: &str) -> Result<(), String> {
+        if let Some(fields) = line.strip_prefix("wait-coop ") {
+            self.pending_coop_wait = Some(PendingCoopWait::new(fields)?);
+            return Ok(());
+        }
         if let Some(result) = a11y_lint::step(line, || self.lint_primary_a11y()) {
             return result;
         }

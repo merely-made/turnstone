@@ -18,12 +18,76 @@
 //! "E2-Weld Windows sandbox bootstrap", for the bundle layout and the two
 //! launch commands.
 
+use std::ffi::{OsStr, OsString};
+use std::path::PathBuf;
+
 use winit::event_loop::EventLoop;
+
+use crate::graph_coop::{guest, worker};
+
+enum Launch {
+    Address(Option<String>),
+    Contact(PathBuf),
+    Invitation(guest::Visit),
+}
+
+impl Launch {
+    fn parse(mut arguments: impl Iterator<Item = OsString>) -> Result<Self, &'static str> {
+        let Some(first) = arguments.next() else {
+            return Ok(Self::Address(None));
+        };
+        match first.to_str() {
+            Some("--contact") => {
+                let path = arguments.next().filter(|path| !path.is_empty());
+                match (path, arguments.next()) {
+                    (Some(path), None) => Ok(Self::Contact(path.into())),
+                    _ => Err("usage: turnstone --contact FILE"),
+                }
+            },
+            Some("--invitation") => {
+                let invitation = arguments.next().filter(|path| !path.is_empty());
+                let flag = arguments.next();
+                let contact = arguments.next().filter(|path| !path.is_empty());
+                match (invitation, flag.as_deref(), contact, arguments.next()) {
+                    (Some(invitation), Some(flag), Some(contact), None)
+                        if flag == OsStr::new("--contact") =>
+                    {
+                        Ok(Self::Invitation(guest::Visit {
+                            invitation: invitation.into(),
+                            contact: contact.into(),
+                        }))
+                    },
+                    _ => Err("usage: turnstone --invitation FILE --contact FILE"),
+                }
+            },
+            Some(address) => Ok(Self::Address(Some(address.into()))),
+            None => Err("the address must be valid UTF-8"),
+        }
+    }
+}
+
+fn launch_command_line() -> i32 {
+    match Launch::parse(std::env::args_os().skip(1)) {
+        Ok(Launch::Address(address)) => start_app(address, None),
+        Ok(Launch::Invitation(visit)) => start_app(None, Some(visit)),
+        Ok(Launch::Contact(path)) => match worker::export_contact(&path) {
+            Ok(()) => 0,
+            Err(error) => {
+                eprintln!("turnstone: could not export public co-op contact: {error}");
+                1
+            },
+        },
+        Err(error) => {
+            eprintln!("turnstone: {error}");
+            2
+        },
+    }
+}
 
 /// Start tracing and run Turnstone's event loop. Shared tail for both hosting
 /// routes; only reached once CEF's process-role probe (when one runs) has
 /// confirmed this is the browser process.
-fn start_app(address: Option<String>) -> i32 {
+fn start_app(address: Option<String>, visit: Option<guest::Visit>) -> i32 {
     use tracing_subscriber::prelude::*;
 
     let diagnostic_run = apparatus_core::RunId::from(uuid::Uuid::new_v4().to_string());
@@ -48,9 +112,10 @@ fn start_app(address: Option<String>) -> i32 {
     // Which graph actually shows (restored session / fresh-from-address /
     // sample) is decided and logged inside `App::boot`, after the restore
     // attempt; claiming it here would lie on a restoring launch.
-    match &address {
-        Some(url) => tracing::info!(%url, "turnstone starting on an address"),
-        None => tracing::info!("turnstone starting"),
+    match (&address, visit.is_some()) {
+        (Some(url), _) => tracing::info!(%url, "turnstone starting on an address"),
+        (_, true) => tracing::info!("turnstone starting with a co-op invitation"),
+        _ => tracing::info!("turnstone starting"),
     }
 
     let event_loop = EventLoop::<crate::shell::ShellEvent>::with_user_event()
@@ -58,7 +123,7 @@ fn start_app(address: Option<String>) -> i32 {
         .expect("failed to create event loop");
     let proxy = event_loop.create_proxy();
     let mut shell =
-        crate::shell::Shell::new_with_diagnostic_run(proxy, address, diagnostic_run.clone());
+        crate::shell::Shell::new_with_diagnostic_run(proxy, address, diagnostic_run, visit);
     if shell
         .attach_reactive_trace(reactive_receiver, &reactive_boot)
         .is_err()
@@ -67,6 +132,11 @@ fn start_app(address: Option<String>) -> i32 {
     }
     event_loop.run_app(&mut shell).expect("event loop error");
     0
+}
+
+/// Run as the ordinary `turnstone.exe` with its native command-line arguments.
+pub fn run_command_line() -> i32 {
+    run_direct_with(launch_command_line)
 }
 
 /// Run as the ordinary `turnstone.exe`.
@@ -81,6 +151,10 @@ fn start_app(address: Option<String>) -> i32 {
 /// `shell::weld::initialize_runtime`) rather than silently downgrading to
 /// unsandboxed.
 pub fn run_direct(address: Option<String>) -> i32 {
+    run_direct_with(|| start_app(address, None))
+}
+
+fn run_direct_with(start: impl FnOnce() -> i32) -> i32 {
     #[cfg(all(feature = "weld", windows))]
     {
         crate::shell::weld::set_sandbox_route(crate::shell::weld::WeldSandboxRoute::Direct);
@@ -103,7 +177,7 @@ pub fn run_direct(address: Option<String>) -> i32 {
             }
         }
     }
-    start_app(address)
+    start()
 }
 
 /// Run inside CEF's Windows bootstrap/client-DLL contract.
@@ -156,5 +230,47 @@ pub unsafe fn run_bootstrap(instance: *mut std::ffi::c_void, sandbox_info: *mut 
         },
     }
     crate::shell::weld::set_sandbox_route(crate::shell::weld::WeldSandboxRoute::Bootstrap(context));
-    start_app(std::env::args().nth(1))
+    launch_command_line()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn parse(arguments: &[&str]) -> Result<Launch, &'static str> {
+        Launch::parse(arguments.iter().map(OsString::from))
+    }
+
+    #[test]
+    fn co_op_launch_preserves_the_selected_files() {
+        let Launch::Invitation(visit) = parse(&[
+            "--invitation",
+            "shared graph.json",
+            "--contact",
+            "my contact.json",
+        ])
+        .unwrap() else {
+            panic!("expected an invitation launch");
+        };
+        assert_eq!(visit.invitation, PathBuf::from("shared graph.json"));
+        assert_eq!(visit.contact, PathBuf::from("my contact.json"));
+
+        let Launch::Contact(path) = parse(&["--contact", "public contact.json"]).unwrap() else {
+            panic!("expected a contact export");
+        };
+        assert_eq!(path, PathBuf::from("public contact.json"));
+    }
+
+    #[test]
+    fn malformed_co_op_arguments_fail_before_startup() {
+        assert!(parse(&["--contact"]).is_err());
+        assert!(parse(&["--contact", "contact.json", "extra"]).is_err());
+        assert!(parse(&["--invitation", "invite.json"]).is_err());
+        assert!(parse(&["--invitation", "invite.json", "--other", "contact.json"]).is_err());
+        assert!(parse(&["--invitation", "", "--contact", "contact.json"]).is_err());
+        assert!(matches!(
+            parse(&["mere://resident/notes"]).unwrap(),
+            Launch::Address(Some(address)) if address == "mere://resident/notes"
+        ));
+    }
 }
