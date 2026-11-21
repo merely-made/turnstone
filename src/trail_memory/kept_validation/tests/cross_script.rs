@@ -20,9 +20,8 @@ fn validate(directory: &Path, page: &KeptPage, store: &FjallStore, shapes: Shape
         .unwrap()
 }
 
-fn checked_report(report: &Report) -> serde_json::Value {
+fn checked_report(report: &Report, score_value: &oxrdf::Literal) -> serde_json::Value {
     assert!(report.diagnostics.is_empty());
-    assert!(report.conforms && report.findings.is_empty());
     let kept = report.projection.kept();
     let quads: Vec<_> = kept.dataset().quads(View::Live).collect();
     assert_eq!(quads.len(), 2);
@@ -37,7 +36,7 @@ fn checked_report(report: &Report) -> serde_json::Value {
     let score = NamedNode::new_unchecked("urn:survey:score");
     assert!(quads.iter().any(|q| q.subject == river.subject
         && q.predicate == score
-        && q.object == oxrdf::Term::from(oxrdf::Literal::from(7))));
+        && q.object == oxrdf::Term::from(score_value.clone())));
     let focus: oxrdf::Term = river.subject.clone().into();
     let sources: Vec<_> = kept
         .evidence_for(&focus, None)
@@ -52,6 +51,44 @@ fn checked_report(report: &Report) -> serde_json::Value {
             .collect::<Vec<_>>(),
         [order(report, "score")]
     );
+    let finding = if score_value.datatype() == oxrdf::vocab::xsd::INTEGER {
+        assert!(report.conforms && report.findings.is_empty());
+        None
+    } else {
+        assert!(!report.conforms);
+        let [finding] = report.projection.report().findings.as_slice() else {
+            panic!("expected one SHACL finding");
+        };
+        let [visible] = report.findings.as_slice() else {
+            panic!("expected one visible finding");
+        };
+        let component =
+            NamedNode::new_unchecked("http://www.w3.org/ns/shacl#DatatypeConstraintComponent");
+        assert_eq!(
+            finding.constraint_component,
+            oxrdf::Term::from(component.clone())
+        );
+        assert_eq!(finding.focus_node, focus);
+        assert_eq!(finding.value, Some(oxrdf::Term::from(score_value.clone())));
+        assert_eq!(
+            finding.path.as_ref().and_then(|path| path.predicate()),
+            Some(&score)
+        );
+        assert_eq!(visible.finding.focus_node, focus.to_string());
+        assert_eq!(visible.finding.path.as_deref(), Some(score.as_str()));
+        let [evidence] = visible.evidence.as_slice() else {
+            panic!("expected evidence from just the score script");
+        };
+        assert_eq!(evidence.id, order(report, "score"));
+        Some(serde_json::json!({
+            "component": component.as_str(),
+            "focus": focus.to_string(),
+            "path": score.as_str(),
+            "value": score_value.to_string(),
+            "script": "score",
+            "order": evidence.id,
+        }))
+    };
     let report_quads: Vec<_> = report
         .projection
         .report()
@@ -67,12 +104,21 @@ fn checked_report(report: &Report) -> serde_json::Value {
     let revision = report.projection.revision();
     serde_json::json!({
         "session": revision.session.as_uuid(), "cursor": revision.cursor.0, "digest": revision.digest,
-        "node": focus.to_string(), "blocks": sources, "report": canonical_report,
+        "node": focus.to_string(), "blocks": sources, "report": canonical_report, "finding": finding,
     })
 }
 
 #[test]
 fn cross_script_blank_node_conforms_and_reopens_with_both_blocks_offline() {
+    check_offline_reopen(&oxrdf::Literal::from(7));
+}
+
+#[test]
+fn cross_script_datatype_finding_reopens_with_score_evidence_offline() {
+    check_offline_reopen(&oxrdf::Literal::from("seven"));
+}
+
+fn check_offline_reopen(score_value: &oxrdf::Literal) {
     const PAGE: &str = r#"<!doctype html><title>Survey</title><p>River observations.</p>
     <script type="application/ld+json" id="type">
         {"@id":"_:river","@type":"urn:survey:River"}
@@ -100,7 +146,7 @@ fn cross_script_blank_node_conforms_and_reopens_with_both_blocks_offline() {
             .unwrap();
         let page = kept_from_receipt(custody, receipt.request, receipt.stored.unwrap());
         let report = validate(&directory, &page, &store, Shapes::Reopen);
-        println!("\nREOPENED {}", checked_report(&report));
+        println!("\nREOPENED {}", checked_report(&report, score_value));
         return;
     }
 
@@ -113,24 +159,27 @@ fn cross_script_blank_node_conforms_and_reopens_with_both_blocks_offline() {
     std::fs::write(&shapes, REQUIRED_SCORE).unwrap();
     let sealed_dir = crate::trail_memory::sealed_memory_dir(&directory);
     let mut store = FjallStore::open(&sealed_dir).unwrap();
-    let page = keep_page(session, &mut store, PAGE, fixture_custody());
-    // Changing only the second label disconnects the score from the SHACL target.
-    let other_text = PAGE.replace(
-        r#""_:river","urn:survey:score""#,
-        r#""_:other","urn:survey:score""#,
-    );
-    let other = keep_page(session, &mut store, &other_text, page.custody.clone());
-    let disjoint = validate(&directory, &other, &store, Shapes::File(shapes.clone()));
-    assert!(!disjoint.conforms);
-    assert_eq!(disjoint.findings.len(), 1);
-    assert_eq!(
-        disjoint.findings[0].finding.path.as_deref(),
-        Some("urn:survey:score")
-    );
-    drop(disjoint);
-
+    let html = if score_value.datatype() == oxrdf::vocab::xsd::INTEGER {
+        // Changing only the second label disconnects the score from the SHACL target.
+        let other_text = PAGE.replace(
+            r#""_:river","urn:survey:score""#,
+            r#""_:other","urn:survey:score""#,
+        );
+        let other = keep_page(session, &mut store, &other_text, fixture_custody());
+        let disjoint = validate(&directory, &other, &store, Shapes::File(shapes.clone()));
+        assert!(!disjoint.conforms);
+        assert_eq!(disjoint.findings.len(), 1);
+        assert_eq!(
+            disjoint.findings[0].finding.path.as_deref(),
+            Some("urn:survey:score")
+        );
+        PAGE.to_owned()
+    } else {
+        PAGE.replace(r#""urn:survey:score":7"#, r#""urn:survey:score":"seven""#)
+    };
+    let page = keep_page(session, &mut store, &html, fixture_custody());
     let live = validate(&directory, &page, &store, Shapes::File(shapes.clone()));
-    let expected = checked_report(&live);
+    let expected = checked_report(&live, score_value);
     drop(live);
     drop(store);
     std::fs::remove_file(shapes).unwrap();
