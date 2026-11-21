@@ -364,7 +364,7 @@ grafting = { git = "https://github.com/merely-made/wgpu-graft.git", branch = "ma
 
 [dev-dependencies]
 taproot = { version = "0.1.0", git = "https://github.com/merely-made/genet.git", branch = "main", features = ["estimated-probe-fixtures"] }
-accesskit_consumer = "=0.39.1"
+accesskit_consumer = ">=0.39.1"
 mien = { git = "https://github.com/merely-made/gemot.git", branch = "main" }
 # Place fixtures select `peer-tests` for Mere's `test-identity` builder
 # (vault lock ruling 97), without adding transport to ordinary test builds.
@@ -680,7 +680,7 @@ uuid = { version = "1", features = ["serde", "v4"] }
 vector-sheet = { version = ">=0.0.1", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 webrtc-carrier = { package = "murm-webrtc", version = ">=0.0.1", git = "https://github.com/merely-made/murm.git", branch = "main" }
 wgpu-cue = { git = "https://github.com/merely-made/wgpu-cue.git", branch = "main" }
-workbench = { version = "=0.1.1", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
+workbench = { version = ">=0.1.1", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 
 # Compatibility source keys for immutable suppliers published before the
 # repository rename. Targets and current direct dependencies use Murm.
