@@ -326,7 +326,7 @@ impl SettingsPane {
             crate::reactive_render::mark_input_gap();
         }
         if let Some(queue) = &state.input_queue {
-            if queue.dropped_mutation_records() > 0 || queue.generation_exhaustions() > 0 {
+            if queue.has_gap() {
                 crate::reactive_render::mark_input_gap();
             }
             crate::reactive_render::include_mutations(&queue.latest_mutations());

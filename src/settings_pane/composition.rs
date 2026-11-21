@@ -434,32 +434,17 @@ pub(super) fn changed_input_cause(
     previous: &InputVector,
     next: &InputVector,
 ) -> Vec<(CompositionCauseRef, DependencyStamp)> {
-    let mut changed = Vec::new();
-    for dependency in next.dependencies() {
-        let same_axis = previous.dependencies().iter().any(|old| {
-            old.source_id() == dependency.source_id()
-                && old.owner_incarnation() == dependency.owner_incarnation()
-                && old.domain() == dependency.domain()
-        });
-        if !same_axis
-            || previous.dependencies().iter().any(|old| {
-                old.source_id() == dependency.source_id()
-                    && old.owner_incarnation() == dependency.owner_incarnation()
-                    && old.domain() == dependency.domain()
-                    && old.revision() != dependency.revision()
-            })
-        {
-            if let Some(cause) = state.revision_causes.get(&(
+    next.changed_since(previous)
+        .filter_map(|dependency| {
+            let cause = state.revision_causes.get(&(
                 dependency.source_id(),
                 dependency.owner_incarnation(),
                 dependency.domain().to_owned(),
                 dependency.revision(),
-            )) {
-                changed.push((*cause, dependency.clone()));
-            }
-        }
-    }
-    changed
+            ))?;
+            Some((*cause, dependency.clone()))
+        })
+        .collect()
 }
 
 fn publish_inputs(
