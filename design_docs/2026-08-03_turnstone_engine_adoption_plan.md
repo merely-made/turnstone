@@ -477,8 +477,8 @@ Spartan browse requests and submissions in this Turnstone profile.
 `turnstone engine-pack disable smolweb parser markdown` turns off the pack's
 Markdown viewer in Inspector. Use `enable` with the same arguments to turn
 either back on. Changes apply while the window is open and survive restart
-for the installed bundle. Removing the bundle removes its settings. Version
-1 bundles retain the original Gemini/Gemtext path.
+for the installed bundle. Removing the bundle removes its profile defaults.
+Version 1 bundles retain the original Gemini/Gemtext path.
 
 Done when a Gemini response still renders with Spartan off, a Gemtext
 response can use the pack with both Smolweb protocols off when acquired over
@@ -516,6 +516,29 @@ protocol cases also passed. The matrix passed again over Turnstone
 `f143bf23`. See `hop-final-headed/` and `hop-broken-control/` under
 `Code/testing/turnstone/receipts/smolweb-pack/`.
 
+#### Smolweb controls in Settings
+
+Settings shows the installed pack's individual protocol and parser switches.
+**Profile default** updates the same values as the CLI. **This session** can
+follow that default, turn the capability on, or turn it off. Turnstone saves
+explicit overrides alongside the session and restores them when it reopens.
+A new session inherits the current profile defaults. Other sessions keep
+their own overrides. An override applies only while the installed pack offers
+the capability. A saved override survives pack removal and takes effect again
+if a bundle offering the capability is installed.
+
+The fetch worker for the departing session retires at session switch. The new
+worker reads the adopted session's effective protocol setting before each
+hop. Changes to a parser affect its availability in Inspector and new parser
+work. Views that already rendered keep their document until the next routing
+event. Live document transfer remains with Verso.
+
+Done when Settings can change a profile default and the CLI reports it, a
+session can override that default in either direction, a second session
+inherits independently, and returning to the first session restores its
+choices. Verify that a session-level protocol change stops an in-flight
+redirect and that the parser switches remain independent of connections.
+
 The picker plan's decision 1 and 2: a global `EngineEnableSet` app setting
 with per-session override, folded into routing's `is_available` closure.
 Registered-but-disabled engines stay in the picker as switchable-off rows.
@@ -525,8 +548,9 @@ through Turnstone's application settings projection. New content routes
 through Inker's availability predicate, and installed viewers disabled by
 the global setting stay visible in Inspector. Internal pages, graph ingest,
 external protocol dispatch and host-owned kept content keep their routes.
-The next activation slice adds the Settings controls, session overrides,
-and rerouting of content that is already open.
+Generic engine controls and session overrides for the global enable set
+remain open along with rerouting content that is already open. The Smolweb
+Settings section edits the installable pack's capabilities.
 
 **Activation receipt, 2026-11-20.** Four routing tests and eleven engine
 inventory tests passed on Windows. The new case projects Pandect's setting

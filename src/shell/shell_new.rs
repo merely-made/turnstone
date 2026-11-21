@@ -82,22 +82,19 @@ impl Shell {
         // set by persona is lane T2.
         let stores = fetch::session_stores().clone();
         let smolweb_pack = crate::engine_pack::SmolwebPack::new(&app.data_root);
+        smolweb_pack.bind_session(
+            (!app.session_load_refused())
+                .then(|| app.session_dir())
+                .as_deref(),
+        );
+        live_settings.publish_pack_settings(smolweb_pack.settings());
         let network_offline = crate::offline::enabled();
         let offline_attempts = Arc::new(std::sync::atomic::AtomicUsize::new(0));
         let (fetch_handle, fetch_rx) = if network_offline {
-            let (handle, updates) = crate::offline::spawn(fetch_wake, offline_attempts.clone());
-            (fetch_port::FetchPort::Offline(handle), updates)
+            fetch_port::FetchPort::offline(fetch_wake.clone(), offline_attempts.clone())
         } else {
-            let pack_for_hops = smolweb_pack.clone();
-            let (actor, updates) = fetch::spawn_fetcher_with_hop_admission(
-                fetch_wake,
-                stores.clone(),
-                client_limits.fetch,
-                client_limits.admission,
-                Some(Arc::new(move |scheme| pack_for_hops.admit_transport(scheme))),
-            )
-            .expect("Turnstone could not start its fetch actor");
-            (fetch_port::FetchPort::Network(actor), updates)
+            fetch_port::FetchPort::network(fetch_wake.clone(), client_limits, &smolweb_pack)
+                .expect("Turnstone could not start its fetch actor")
         };
         let blocking_fetch: Arc<dyn fetch::Fetch> = if network_offline {
             Arc::new(crate::offline::NoNetwork(offline_attempts.clone()))
@@ -379,6 +376,8 @@ impl Shell {
             native_frames: Default::default(),
             native_frame_wake,
             fetch_handle,
+            fetch_wake,
+            client_limits,
             network_offline,
             offline_attempts,
             gemini_trust,

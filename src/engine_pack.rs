@@ -5,6 +5,7 @@ use std::fs;
 use std::io::{self, Read, Seek};
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
+use std::sync::{Arc, RwLock};
 use std::time::{Duration, Instant};
 
 use inker::{
@@ -18,8 +19,12 @@ mod protocol;
 
 #[path = "engine_pack/install.rs"]
 mod install;
+pub(crate) use install::Capability;
 use install::Transport;
+#[path = "engine_pack/settings.rs"]
+mod settings;
 pub use install::command;
+pub(crate) use settings::{PackEdit, PackSettings, Scope};
 
 const EXECUTABLE: &str = if cfg!(windows) {
     "turnstone-smolweb-pack.exe"
@@ -56,12 +61,14 @@ fn parser_for(engine: &str) -> Option<Parser> {
 #[derive(Clone)]
 pub(crate) struct SmolwebPack {
     directory: PathBuf,
+    session: Arc<RwLock<settings::SessionSwitches>>,
 }
 
 impl SmolwebPack {
     pub(crate) fn new(root: &Path) -> Self {
         Self {
             directory: install::installed(root),
+            session: Arc::default(),
         }
     }
 
@@ -86,7 +93,7 @@ impl SmolwebPack {
                 reason: "parser absent from pack".into(),
             });
         }
-        if install::disabled(&self.directory, "parser", parser.name()) {
+        if self.disabled(Capability::Parser(parser)) {
             Some(EngineAvailability::Disabled)
         } else {
             Some(EngineAvailability::Registered)
@@ -102,9 +109,7 @@ impl SmolwebPack {
             .ok_or_else(|| SessionError::SpawnFailed("unknown Smolweb pack parser".into()))?;
         let prepare = || {
             let kind = install::installed_kind(&self.directory)?;
-            if !kind.supports_parser(parser)
-                || install::disabled(&self.directory, "parser", parser.name())
-            {
+            if !kind.supports_parser(parser) || self.disabled(Capability::Parser(parser)) {
                 return Err(io::Error::other(format!(
                     "{} parser is unavailable",
                     parser.name()
@@ -125,20 +130,6 @@ impl SmolwebPack {
         };
         prepare()
             .map_err(|error| SessionError::SpawnFailed(format!("Smolweb engine pack: {error}")))
-    }
-
-    pub(crate) fn admit_transport(&self, scheme: &str) -> Result<(), String> {
-        if let Some(transport) = Transport::from_scheme(scheme)
-            && install::installed_kind(&self.directory)
-                .is_ok_and(|kind| kind.supports_transport(transport))
-            && install::disabled(&self.directory, "protocol", transport.name())
-        {
-            return Err(format!(
-                "{} connections are disabled in the Smolweb pack",
-                transport.name()
-            ));
-        }
-        Ok(())
     }
 
     fn run(

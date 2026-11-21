@@ -3,6 +3,9 @@
 
 use super::*;
 
+#[path = "pack_controls.rs"]
+mod pack_controls;
+
 pub(super) fn settings_view(state: &SettingsState) -> SettingsView {
     let body = composition::managed_rows(state);
     Box::new(
@@ -38,6 +41,7 @@ pub(super) fn settings_view(state: &SettingsState) -> SettingsView {
                 )
                 .attr("class", "setting-reload")
                 .attr("data-action", "reload-settings"),
+                pack_controls::view(state),
                 el::<_, SettingsState, ()>("div", Keyed::new(vec![(state.reload_epoch, body)])),
                 status_note::<SettingsState, ()>(
                     "list-row muted",

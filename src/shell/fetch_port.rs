@@ -15,6 +15,29 @@ pub(crate) enum FetchPort {
 }
 
 impl FetchPort {
+    pub(super) fn network(
+        wake: armillary::Wake,
+        limits: crate::client_limits::BrowserClientLimits,
+        pack: &crate::engine_pack::SmolwebPack,
+    ) -> Result<(Self, std::sync::mpsc::Receiver<fetch::FetchUpdate>), String> {
+        let (actor, updates) = fetch::spawn_fetcher_with_hop_admission(
+            wake,
+            fetch::session_stores().clone(),
+            limits.fetch,
+            limits.admission,
+            Some(pack.hop_admission()),
+        )?;
+        Ok((Self::Network(actor), updates))
+    }
+
+    pub(super) fn offline(
+        wake: armillary::Wake,
+        attempts: std::sync::Arc<std::sync::atomic::AtomicUsize>,
+    ) -> (Self, std::sync::mpsc::Receiver<fetch::FetchUpdate>) {
+        let (handle, updates) = crate::offline::spawn(wake, attempts);
+        (Self::Offline(handle), updates)
+    }
+
     /// False means the command was not admitted.
     pub(crate) fn command(&self, command: FetchCommand) -> bool {
         match self {

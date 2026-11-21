@@ -21,6 +21,7 @@ impl Shell {
         for action in self.live_settings.take_actions() {
             self.act(action);
         }
+        self.apply_pack_settings();
         self.refresh_retained_clip_playback();
         self.poll_capture_readback();
         let diagnostics = std::mem::take(&mut self.pending_native_diagnostics);

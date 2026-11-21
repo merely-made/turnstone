@@ -8,7 +8,10 @@ impl Shell {
         let mut entries = project_engine_inventory(&self.content_engines, &self.surface_engines);
         entries.retain_mut(|engine| {
             if let Some(availability) = self.smolweb_pack.parser_availability(&engine.id) {
-                if matches!(availability, crate::content::EngineAvailability::Unavailable { .. }) {
+                if matches!(
+                    availability,
+                    crate::content::EngineAvailability::Unavailable { .. }
+                ) {
                     return false;
                 }
                 engine.availability = availability;
@@ -18,6 +21,55 @@ impl Shell {
         self.app.engine_inventory = entries;
     }
 
+    pub(super) fn rebind_smolweb_session(&mut self) {
+        let directory = (!self.app.session_load_refused()).then(|| self.app.session_dir());
+        self.smolweb_pack.bind_session(directory.as_deref());
+        // Retire correlation along with the actor. In particular, an old
+        // URL-only subresource reply must not satisfy the adopted session.
+        self.pending_fetches = browse::PendingFetches::default();
+        self.fetch_handle = fetch_port::FetchPort::Closed;
+        let offline = || {
+            fetch_port::FetchPort::offline(self.fetch_wake.clone(), self.offline_attempts.clone())
+        };
+        (self.fetch_handle, self.fetch_rx) = if self.network_offline {
+            offline()
+        } else {
+            fetch_port::FetchPort::network(
+                self.fetch_wake.clone(),
+                self.client_limits,
+                &self.smolweb_pack,
+            )
+            .unwrap_or_else(|error| {
+                tracing::error!(%error, "could not open the session fetch actor");
+                offline()
+            })
+        };
+        self.publish_engine_inventory();
+        self.live_settings
+            .publish_pack_settings(self.smolweb_pack.settings());
+    }
+
+    pub(super) fn apply_pack_settings(&mut self) {
+        let edits = self.live_settings.take_pack_edits();
+        if edits.is_empty() {
+            return;
+        }
+        let mut error = None;
+        for edit in edits {
+            if let Err(failure) = self.smolweb_pack.edit(edit) {
+                error = Some(format!(
+                    "Could not save {} settings: {failure}",
+                    edit.capability.label()
+                ));
+            }
+        }
+        self.live_settings.report_status(error);
+        self.publish_engine_inventory();
+        self.live_settings
+            .publish_pack_settings(self.smolweb_pack.settings());
+        self.request_redraw();
+    }
+
     pub(super) fn poll_engine_pack(&mut self, now: std::time::Instant) {
         if now < self.engine_pack_poll {
             return;
@@ -25,8 +77,11 @@ impl Shell {
         self.engine_pack_poll = now + std::time::Duration::from_secs(1);
         let previous = std::mem::take(&mut self.app.engine_inventory);
         self.publish_engine_inventory();
-        if self.app.engine_inventory != previous && let Some(window) = &self.window {
-            window.request_redraw();
+        let switches_changed = self
+            .live_settings
+            .publish_pack_settings(self.smolweb_pack.settings());
+        if switches_changed || self.app.engine_inventory != previous {
+            self.request_redraw();
         }
     }
 

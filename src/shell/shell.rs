@@ -18,6 +18,8 @@ pub struct Shell {
     pub(super) native_frame_wake: armillary::Wake,
     /// Bounded fetch ingress, joined at exit; dropping it only requests shutdown.
     pub(super) fetch_handle: fetch_port::FetchPort,
+    pub(super) fetch_wake: armillary::Wake,
+    pub(super) client_limits: crate::client_limits::BrowserClientLimits,
     pub(super) network_offline: bool,
     pub(super) offline_attempts: Arc<std::sync::atomic::AtomicUsize>,
     /// Durable Gemini server pins. The protocol verifier shares this exact

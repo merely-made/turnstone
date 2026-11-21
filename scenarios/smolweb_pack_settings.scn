@@ -1,0 +1,47 @@
+# Run with the installed v2 worker and loopback fixtures on a fresh profile.
+settle 30
+key escape
+resize 1180 940
+open mere://first-pack-session
+settle 10
+act id:pane:settings
+settle 10
+act Maximize pane
+settle 10
+assert a11y button: Spartan protocol, This session, Use profile default
+click surface:settings role:button @aria-label=Spartan protocol, Profile default, Off
+click surface:settings role:button @aria-label=Spartan protocol, This session, On
+click surface:settings role:button @aria-label=Markdown parser, This session, Off
+settle 10
+capture 01_first_session
+act Maximize pane
+open ${TURNSTONE_PACK_ALLOWED}
+settle 30
+act Toggle live content
+settle 15
+assert content-live
+assert a11y link: First Gemtext >> link: Second Gemtext
+
+act New session
+settle 30
+assert sessions == 2
+assert event session-switched
+open ${TURNSTONE_PACK_BLOCKED}
+settle 15
+act Toggle live content
+wait 120
+assert snap browser-current-content == failed
+
+omnibar actions
+type switch to session
+settle 5
+key enter
+settle 30
+assert event session-switched
+open ${TURNSTONE_PACK_RESTORED}
+settle 30
+act Toggle live content
+settle 15
+assert content-live
+assert a11y link: First Gemtext >> link: Second Gemtext
+capture 02_restored_session

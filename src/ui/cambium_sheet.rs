@@ -18,6 +18,9 @@ pub(crate) fn cambium_sheet(appearance: &crate::shell_services::AppearanceConfig
         .list-row, .setting-row {{ color: var(--tabard-color-text); font-size: {z13:.2}px; }} \
         .list-row.muted, .setting-unsupported {{ color: var(--tabard-color-text-dim); }} \
         .setting-apply {{ color: var(--tabard-color-text-header); background-color: var(--tabard-color-surface); border: 1px solid var(--tabard-color-text-dim); font-size: {z13:.2}px; }} \
+        .pack-switch-row {{ display: flex; flex-wrap: wrap; align-items: center; gap: 5px; padding: 3px 0; }} \
+        .pack-switch-label {{ min-width: 10em; }} \
+        .pack-switch[aria-pressed=true] {{ color: var(--tabard-color-text-header); background-color: var(--tabard-color-surface-2); border-color: var(--tabard-color-primary); }} \
         .radio {{ color: var(--tabard-color-text); font-size: {z13:.2}px; }} \
         .toggle {{ color: var(--tabard-color-text); font-size: {z13:.2}px; }} \
         .radio.selected {{ color: var(--tabard-color-primary); }} \

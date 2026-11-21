@@ -41,6 +41,7 @@ impl Shell {
                 self.lens_divider_drag = None;
                 self.pending_windows.clear();
                 let fx = self.app.adopt_session(next);
+                self.rebind_smolweb_session();
                 if !self.app.session_load_refused() {
                     self.bin_handle.command(crate::recycle::BinCommand::Reopen(
                         crate::recycle::bin_dir(&self.app.session_dir()),
@@ -74,6 +75,7 @@ impl Shell {
                 self.lens_divider_drag = None;
                 self.pending_windows.clear();
                 let fx = self.app.adopt_session(id);
+                self.rebind_smolweb_session();
                 // Re-point the bin actor at the adopted session's store;
                 // it answers with THAT bin's list (the app cleared its
                 // mirror in adopt_session). The trail memory re-points

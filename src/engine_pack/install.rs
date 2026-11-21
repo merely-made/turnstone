@@ -124,32 +124,47 @@ pub(super) fn installed(root: &Path) -> PathBuf {
     pack_parent(root).join("smolweb")
 }
 
-#[derive(Clone, Copy)]
-enum Capability {
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum Capability {
     Protocol(Transport),
     Parser(Parser),
 }
 
 impl Capability {
     fn parse(kind: PackKind, group: &OsStr, name: &OsStr) -> io::Result<Self> {
-        let capability = match group.to_str() {
-            Some("protocol") => Transport::ALL
-                .into_iter()
-                .find(|transport| {
-                    kind.supports_transport(*transport) && name == OsStr::new(transport.name())
-                })
-                .map(Self::Protocol),
-            Some("parser") => Parser::ALL
-                .into_iter()
-                .find(|parser| kind.supports_parser(*parser) && name == OsStr::new(parser.name()))
-                .map(Self::Parser),
-            _ => None,
-        };
-        capability
+        Self::installed_in(kind)
+            .find(|item| {
+                let (item_group, item_name) = item.names();
+                group == OsStr::new(item_group) && name == OsStr::new(item_name)
+            })
             .ok_or_else(|| io::Error::other("capability absent from the installed Smolweb pack"))
     }
 
-    fn names(self) -> (&'static str, &'static str) {
+    pub(super) fn installed_in(kind: PackKind) -> impl Iterator<Item = Self> {
+        Transport::ALL
+            .into_iter()
+            .map(Self::Protocol)
+            .chain(Parser::ALL.into_iter().map(Self::Parser))
+            .filter(move |item| item.supported_by(kind))
+    }
+
+    pub(super) fn supported_by(self, kind: PackKind) -> bool {
+        match self {
+            Self::Protocol(item) => kind.supports_transport(item),
+            Self::Parser(item) => kind.supports_parser(item),
+        }
+    }
+
+    pub(crate) fn label(self) -> &'static str {
+        match self {
+            Self::Protocol(Transport::Gemini) => "Gemini protocol",
+            Self::Protocol(Transport::Spartan) => "Spartan protocol",
+            Self::Parser(Parser::Gemtext) => "Gemtext parser",
+            Self::Parser(Parser::Markdown) => "Markdown parser",
+        }
+    }
+
+    pub(super) fn names(self) -> (&'static str, &'static str) {
         match self {
             Self::Protocol(transport) => ("protocol", transport.name()),
             Self::Parser(parser) => ("parser", parser.name()),
@@ -166,7 +181,16 @@ pub(super) fn disabled(directory: &Path, group: &str, name: &str) -> bool {
 }
 
 fn toggle(directory: &Path, group: &OsStr, name: &OsStr, enabled: bool) -> io::Result<()> {
-    let (group, name) = Capability::parse(installed_kind(directory)?, group, name)?.names();
+    let capability = Capability::parse(installed_kind(directory)?, group, name)?;
+    set_enabled(directory, capability, enabled)
+}
+
+pub(super) fn set_enabled(
+    directory: &Path,
+    capability: Capability,
+    enabled: bool,
+) -> io::Result<()> {
+    let (group, name) = capability.names();
     let path = marker(directory, group, name);
     let result = if enabled {
         fs::remove_file(path)
@@ -189,17 +213,7 @@ fn toggle(directory: &Path, group: &OsStr, name: &OsStr, enabled: bool) -> io::R
 
 fn status(directory: &Path) -> io::Result<()> {
     let kind = installed_kind(directory)?;
-    let capabilities = Transport::ALL
-        .into_iter()
-        .filter(|item| kind.supports_transport(*item))
-        .map(Capability::Protocol)
-        .chain(
-            Parser::ALL
-                .into_iter()
-                .filter(|item| kind.supports_parser(*item))
-                .map(Capability::Parser),
-        );
-    for capability in capabilities {
+    for capability in Capability::installed_in(kind) {
         let (group, name) = capability.names();
         let setting = if disabled(directory, group, name) {
             "off"

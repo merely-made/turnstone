@@ -28,6 +28,7 @@ impl Shell {
         for action in self.live_settings.take_actions() {
             self.act(action);
         }
+        self.apply_pack_settings();
         if self.theme_editor_requested && self.native_child_open_pending() {
             self.defer_native_child_open();
             return IdlePolicy::Wait;

@@ -12,6 +12,7 @@ use std::rc::Rc;
 
 use pandect::ApplicationSettings;
 
+use crate::engine_pack::{PackEdit, PackSettings};
 use crate::settings_provider::{ApplicationSettingsProvider, SharedApplicationSettingsOwner};
 
 use super::ChromeSettings;
@@ -35,6 +36,8 @@ struct LiveSettingsState {
     catalog_applied: bool,
     actions: std::collections::VecDeque<crate::action::Action>,
     notice: Option<String>,
+    pack_settings: PackSettings,
+    pack_edits: Vec<PackEdit>,
     owner: Option<SharedApplicationSettingsOwner>,
 }
 
@@ -45,6 +48,8 @@ impl LiveSettingsHandle {
             catalog_applied: false,
             actions: Default::default(),
             notice: None,
+            pack_settings: PackSettings::default(),
+            pack_edits: Vec::new(),
             owner: None,
         })))
     }
@@ -115,6 +120,27 @@ impl LiveSettingsHandle {
 
     pub(crate) fn take_actions(&self) -> Vec<crate::action::Action> {
         self.0.borrow_mut().actions.drain(..).collect()
+    }
+
+    pub(crate) fn publish_pack_settings(&self, next: PackSettings) -> bool {
+        let mut state = self.0.borrow_mut();
+        if state.pack_settings == next {
+            return false;
+        }
+        state.pack_settings = next;
+        true
+    }
+
+    pub(super) fn pack_settings(&self) -> PackSettings {
+        self.0.borrow().pack_settings.clone()
+    }
+
+    pub(super) fn request_pack_edit(&self, edit: PackEdit) {
+        self.0.borrow_mut().pack_edits.push(edit);
+    }
+
+    pub(crate) fn take_pack_edits(&self) -> Vec<PackEdit> {
+        std::mem::take(&mut self.0.borrow_mut().pack_edits)
     }
 
     pub(crate) fn publish_provider(&self, provider: &ApplicationSettingsProvider) {
