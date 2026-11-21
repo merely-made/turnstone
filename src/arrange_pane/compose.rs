@@ -11,12 +11,14 @@
 //! model's form until their button applies them, and follow the canvas when
 //! what it authored changes, not on every frame.
 
-use cartography::canvas::physics_form::{Command, Control, Field, FieldId, FormAction, Readback, Section};
+use cartography::canvas::physics_form::{
+    Command, Control, Field, FieldId, FormAction, Readback, Section,
+};
 use mere_surface_api::settings::{SettingControl, SettingValue};
 
 use super::{
-    ArrangeIntent, ArrangeState, ArrangeView, apply_button, choice_control, el, section,
-    setting_row, spec,
+    ArrangeIntent, ArrangeState, ArrangeView, apply_button, choice_control, choice_row, el,
+    section, setting_row, spec,
 };
 
 /// The note under a form: what the canvas authored for it, or why the form
@@ -59,20 +61,7 @@ pub(super) fn live_choice_with_key(
     let Control::Choice { options, current } = field.control else {
         unreachable!("{} is a choice", field.label)
     };
-    let spec = spec(
-        key,
-        &field.label,
-        choice_control(options_of(&options)),
-        SettingValue::Text(current.to_string()),
-    );
-    Box::new(setting_row(
-        &spec,
-        &field.label,
-        move |_state: &mut ArrangeState, value: SettingValue| match value {
-            SettingValue::Text(id) => Some(intent(id)),
-            _ => None,
-        },
-    ))
+    choice_row(key, &field.label, options_of(&options), current, intent)
 }
 
 /// A toggle field whose accepted change applies immediately.

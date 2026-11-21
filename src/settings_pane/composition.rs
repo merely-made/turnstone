@@ -21,7 +21,7 @@ use cambium::composition_scheduler::{
     CompositionCauseRef, CompositionInputError, CompositionInputSnapshot, CompositionInputs,
     DependencyStamp, InputVector, LocalInputStamp,
 };
-use cambium::{LifecycleEventSink, RetainedComposition, SettingRowSnapshot, el, setting_row};
+use cambium::{LifecycleEventSink, RetainedComposition, el, setting_row};
 use mere_surface_api::settings::SettingSpec;
 use serde_json::{Value, json};
 
@@ -186,13 +186,9 @@ pub(super) fn component_key(setting_id: &str) -> ComponentKey {
 /// the id it passed in.
 fn pane_setting_row(spec: &SettingSpec) -> SettingsView {
     let setting_id = spec.id.clone();
-    let label = format!(
-        "{} · {:?} · {:?} · {:?}",
-        spec.label, spec.scope, spec.movement, spec.mutability
-    );
     Box::new(setting_row(
         spec,
-        label,
+        row_label(spec),
         move |state: &mut SettingsState, value: super::SettingValue| {
             apply_value(state, &setting_id, value);
         },
@@ -266,7 +262,7 @@ pub(super) fn managed_rows(state: &SettingsState) -> SettingsView {
             None => 1,
         };
         cache.insert(key.clone(), (snapshot.clone(), generation));
-        let label = row_label(&snapshot);
+        let label = row_label(&snapshot.observed_spec);
         let vector = match input_vector(state, row, generation) {
             Ok(vector) => vector,
             Err(error) => {
@@ -348,8 +344,7 @@ pub(super) fn managed_rows(state: &SettingsState) -> SettingsView {
     }
 }
 
-fn row_label(snapshot: &SettingRowSnapshot) -> String {
-    let spec = &snapshot.observed_spec;
+fn row_label(spec: &SettingSpec) -> String {
     format!(
         "{} · {:?} · {:?} · {:?}",
         spec.label, spec.scope, spec.movement, spec.mutability
