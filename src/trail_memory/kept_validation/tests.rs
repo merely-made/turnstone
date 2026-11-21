@@ -10,8 +10,8 @@ use crate::content::FetchedDocument;
 use crate::panes::{GraphId, SessionId};
 use crate::saved_sources::{KeptSource, Key};
 use crate::source_capture::{CaptureRequest, SourceIdentity};
-use crate::trail_memory::sealed_capture;
 use crate::swatch_pane::validation::EvidenceTarget;
+use crate::trail_memory::sealed_capture;
 
 const HTML: &str = r#"<!doctype html>
 <html>
@@ -86,28 +86,50 @@ fn assert_finding(report: &Report) {
     );
 }
 
-#[test]
-fn kept_validation_reopens_from_sealed_source_at_the_same_cursor() {
-    let root = tempfile::tempdir().unwrap();
-    let session_id = SessionId::new();
-    let directory = super::super::memory_dir(&root.path().join(session_id.as_uuid().to_string()));
-    std::fs::create_dir_all(&directory).unwrap();
-    let sealed_dir = super::super::sealed_memory_dir(&directory);
-    let shapes_path = root.path().join("record-shapes.ttl");
-    std::fs::write(&shapes_path, SHAPES).unwrap();
+struct KeptPage {
+    custody: SourceCustody,
+    source: KeptSource,
+    capture: CaptureRequest,
+    stored: crate::action::StoredSourceDocument,
+}
 
-    let custody = SourceCustody {
+impl KeptPage {
+    fn request(&self, directory: &Path, generation: Uuid, shapes: Shapes) -> ValidationRequest {
+        ValidationRequest {
+            request: Uuid::new_v4(),
+            pane: PaneId(1),
+            shapes,
+            read: KeptDocumentRead {
+                generation,
+                source: self.source.clone(),
+                capture: self.capture.clone(),
+                stored: self.stored.clone(),
+                directory: directory.to_owned(),
+            },
+        }
+    }
+}
+
+fn fixture_custody() -> SourceCustody {
+    SourceCustody {
         sealer: Arc::new(sporran::WalletEpochSealer::from_epoch(
-            pandect::PersonaId::new(),
-            sporran::KeyEpochId::new(),
+            pandect::PersonaId(Uuid::from_u128(17)),
+            sporran::KeyEpochId(Uuid::from_u128(19)),
             b"l1 kept-source fixture",
         )),
         epoch: Arc::new(|| Some(1)),
-    };
-    let limits = Ok(StorageLimits::default());
+    }
+}
+
+fn keep_page(
+    session_id: SessionId,
+    store: &mut FjallStore,
+    html: &str,
+    custody: SourceCustody,
+) -> KeptPage {
     let document = FetchedDocument {
-        bytes: HTML.as_bytes().to_vec(),
-        body: HTML.into(),
+        bytes: html.as_bytes().to_vec(),
+        body: html.into(),
         effective_url: Some(ORIGIN.into()),
         content_type: Some("text/html; charset=utf-8".into()),
         acquired_at_ms: 1,
@@ -121,17 +143,21 @@ fn kept_validation_reopens_from_sealed_source_at_the_same_cursor() {
         source: Some(SourceIdentity::of(&document)),
         keep: true,
     };
-    let mut store = FjallStore::open(&sealed_dir).unwrap();
-    let stored = sealed_capture::capture_request(
-        &mut store,
-        custody.sealer.as_ref(),
-        &capture,
-        Some(&document),
-    )
-    .unwrap();
-    sealed_capture::acknowledge(&mut store, custody.sealer.as_ref(), &capture).unwrap();
+
+    let stored =
+        sealed_capture::capture_request(store, custody.sealer.as_ref(), &capture, Some(&document))
+            .unwrap();
+    sealed_capture::acknowledge(store, custody.sealer.as_ref(), &capture).unwrap();
     drop(document);
 
+    kept_from_receipt(custody, capture, stored)
+}
+
+fn kept_from_receipt(
+    custody: SourceCustody,
+    capture: CaptureRequest,
+    stored: crate::action::StoredSourceDocument,
+) -> KeptPage {
     let source = KeptSource {
         key: Key {
             session: capture.session,
@@ -140,36 +166,41 @@ fn kept_validation_reopens_from_sealed_source_at_the_same_cursor() {
             annotation_manifest: stored.annotation_manifest.clone(),
         },
         request: capture.id,
-        capture_hash: stored.raw_manifest.clone(),
+        capture_hash: capture.source.as_ref().unwrap().hash.clone(),
     };
-    let request = |generation, shapes| ValidationRequest {
-        request: Uuid::new_v4(),
-        pane: PaneId(1),
-        shapes,
-        read: KeptDocumentRead {
-            generation,
-            source: source.clone(),
-            capture: capture.clone(),
-            stored: stored.clone(),
-            directory: directory.clone(),
-        },
-    };
+    KeptPage {
+        custody,
+        source,
+        capture,
+        stored,
+    }
+}
+
+#[test]
+fn kept_validation_reopens_from_sealed_source_at_the_same_cursor() {
+    let root = tempfile::tempdir().unwrap();
+    let session_id = SessionId::new();
+    let directory = super::super::memory_dir(&root.path().join(session_id.as_uuid().to_string()));
+    std::fs::create_dir_all(&directory).unwrap();
+    let sealed_dir = super::super::sealed_memory_dir(&directory);
+    let shapes_path = root.path().join("record-shapes.ttl");
+    std::fs::write(&shapes_path, SHAPES).unwrap();
+
+    let mut store = FjallStore::open(&sealed_dir).unwrap();
+    let page = keep_page(session_id, &mut store, HTML, fixture_custody());
+    let custody = &page.custody;
+    let limits = Ok(StorageLimits::default());
+    let request = |generation, shapes| page.request(&directory, generation, shapes);
     let generation = Uuid::new_v4();
     let live = request(generation, Shapes::File(shapes_path.clone()))
-        .run(
-            &directory,
-            generation,
-            Some(&custody),
-            Some(&store),
-            &limits,
-        )
+        .run(&directory, generation, Some(custody), Some(&store), &limits)
         .result
         .unwrap();
     assert_finding(&live);
     assert!(live.projection.revision().cursor.0 > 0);
     drop(store);
 
-    let edition_digest = eidetic::Hash::of(stored.annotation_manifest.as_bytes()).to_hex();
+    let edition_digest = eidetic::Hash::of(page.stored.annotation_manifest.as_bytes()).to_hex();
     let journal_path = directory
         .join("structured-validation")
         .join(&edition_digest);
@@ -209,7 +240,7 @@ fn kept_validation_reopens_from_sealed_source_at_the_same_cursor() {
             .run(
                 &directory,
                 generation_after_restart,
-                Some(&custody),
+                Some(custody),
                 Some(&store),
                 &limits
             )
@@ -220,7 +251,7 @@ fn kept_validation_reopens_from_sealed_source_at_the_same_cursor() {
         .run(
             &directory,
             generation_after_restart,
-            Some(&custody),
+            Some(custody),
             Some(&store),
             &limits,
         )
@@ -243,7 +274,7 @@ fn kept_validation_reopens_from_sealed_source_at_the_same_cursor() {
         generation: generation_after_restart,
         pane: PaneId(1),
         target: EvidenceTarget {
-            source: source.clone(),
+            source: page.source.clone(),
             report: report.id,
             order: order(report, "finding"),
         },
@@ -252,11 +283,11 @@ fn kept_validation_reopens_from_sealed_source_at_the_same_cursor() {
     };
     let open_evidence = |report: &Report| {
         evidence(report)
-            .run(&directory, generation_after_restart, Some(&custody))
+            .run(&directory, generation_after_restart, Some(custody))
             .result
     };
     assert!(open_evidence(&reopened).is_ok());
-    let (before, advanced) = append_independent_source(&journal_path, &custody);
+    let (before, advanced) = append_independent_source(&journal_path, custody);
     let outdated = open_evidence(&reopened).unwrap_err();
     assert!(
         outdated.contains("Reopen validation for this capture"),
@@ -280,7 +311,7 @@ fn kept_validation_reopens_from_sealed_source_at_the_same_cursor() {
         .run(
             &directory,
             generation_after_restart,
-            Some(&custody),
+            Some(custody),
             Some(&store),
             &limits,
         )
@@ -290,6 +321,8 @@ fn kept_validation_reopens_from_sealed_source_at_the_same_cursor() {
     assert_finding(&refreshed);
     assert!(open_evidence(&refreshed).is_ok());
 }
+
+mod cross_script;
 
 fn append_independent_source(
     journal: &Path,
