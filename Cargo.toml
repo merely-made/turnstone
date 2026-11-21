@@ -247,7 +247,7 @@ genet-didge = { git = "https://github.com/merely-made/genet.git", branch = "main
 # backs `emit` with turnstone's ring gate. Optional — the `wasm` feature.
 app-host = { git = "https://github.com/merely-made/graphshell.git", branch = "main", optional = true }
 # Store limits for a component instance (the same wasmtime the host uses).
-wasmtime = { version = "45", optional = true }
+wasmtime = { version = "51", optional = true }
 # Clip/capture capability, with lightweight Genet extraction reexported.
 fleece = { package = "mere-fleece", git = "https://github.com/merely-made/inker.git", branch = "main", features = ["clip", "eidetic-bridge", "portable-clip"] }
 genet-static-dom = { git = "https://github.com/merely-made/genet.git", branch = "main" }
@@ -379,7 +379,7 @@ tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 # A parallel place suite outgrows the 1024 open files Linux allows by
 # default; the tests raise their own soft limit. Already in the graph.
 [target.'cfg(unix)'.dev-dependencies]
-libc = "=0.2.189"
+libc = ">=0.2.189"
 
 [features]
 scripted-webgl = ["dep:genet-bole", "dep:genet-vano", "dep:genet-scripted", "genet-documents/scripted-nova", "genet-presenter/native-webgl"]

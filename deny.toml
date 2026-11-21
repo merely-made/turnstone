@@ -330,10 +330,6 @@ crate = "litemap@0.8.1"
 reason = "icu_experimental 0.4.0 (icu_experimental 0.7.0 still needs it), icu_capi 2.1.2 (icu_capi 2.4.0 drops it), icu_casemap 2.1.1 (icu_casemap 2.4.0 drops it), icu_collator 2.1.1 (icu_collator 2.4.0 drops it) and 8 more require it, via icu_calendar 2.1.1, icu_locale 2.1.1 and 3 more, under grafting-servo; goes when icu_experimental moves to litemap 0.8.3; their dependents take icu_capi 2.4.0, icu_casemap 2.4.0, icu_collator 2.4.0 and 8 more"
 
 [[bans.skip]]
-crate = "mach2@0.4.3"
-reason = "wasmtime 45.0.3 (wasmtime 50.0.1 drops it) requires it, under app-host, authority-host, block-host, turnstone; goes when their dependents take wasmtime 50.0.1; turnstone takes wasmtime 50.0.1 together with merely-made/graphshell's app-host, authority-host, block-host"
-
-[[bans.skip]]
 crate = "mach2@0.6.0"
 reason = "cpal 0.18.2 (latest) requires it, under firewheel-cpal; goes when cpal moves to mach2 0.7.0"
 
@@ -478,10 +474,6 @@ crate = "redox_syscall@0.5.18"
 reason = "parking_lot_core 0.9.12 (parking_lot_core 0.10.0 drops it) requires it, under boa_engine, cambium-desktop, cambium-rootstock, conatus and 31 more; goes when their dependents take parking_lot_core 0.10.0"
 
 [[bans.skip]]
-crate = "redox_users@0.4.6"
-reason = "dirs-sys-next 0.1.2 (latest) requires it, under app-host, authority-host, block-host, turnstone; goes when dirs-sys-next moves to redox_users 0.5.3"
-
-[[bans.skip]]
 crate = "regress@0.11.1"
 reason = "0.11.1 from crates.io and merely-made/genet: genet-scripted-dom 0.1.2 (family, merely-made/genet), nova_vm 1.0.0 (family, merely-made/vano) require it; goes when merely-made/genet moves genet-scripted-dom to regress 0.12.0; merely-made/vano moves nova_vm to regress 0.12.0"
 
@@ -614,14 +606,6 @@ crate = "vello_cpu@0.1.0"
 reason = "epaint 0.36.2 (epaint 0.37.0 drops it) requires it, under cambium-rootstock; goes when their dependents take epaint 0.37.0"
 
 [[bans.skip]]
-crate = "wasm-encoder@0.248.0"
-reason = "wasm-compose 0.248.0 (wasm-compose 0.263.0 drops it), wasmtime 45.0.3 (wasmtime 50.0.1 drops it), wasmtime-environ 45.0.3 (wasmtime-environ 50.0.1 drops it) require it, under app-host, authority-host, block-host, turnstone; goes when their dependents take wasm-compose 0.263.0, wasmtime 50.0.1, wasmtime-environ 50.0.1; turnstone takes wasmtime 50.0.1 together with merely-made/graphshell's app-host, authority-host, block-host"
-
-[[bans.skip]]
-crate = "wasmparser@0.248.0"
-reason = "wasm-compose 0.248.0 (wasm-compose 0.263.0 drops it), wasmprinter 0.248.0 (wasmprinter 0.263.0 drops it), wasmtime 45.0.3 (wasmtime 50.0.1 drops it), wasmtime-environ 45.0.3 (wasmtime-environ 50.0.1 drops it) and 5 more require it, via wasm-encoder 0.248.0, wit-parser 0.248.0, under app-host, authority-host, block-host, turnstone; goes when their dependents take wasm-compose 0.263.0, wasmprinter 0.263.0, wasmtime 50.0.1 and 6 more; turnstone takes wasmtime 50.0.1 together with merely-made/graphshell's app-host, authority-host, block-host"
-
-[[bans.skip]]
 crate = "wast@35.0.2"
 reason = "witx 0.9.1 (latest) requires it, under app-host, authority-host, block-host; goes when witx moves to wast 263.0.0"
 
@@ -698,10 +682,6 @@ crate = "winnow@0.7.15"
 reason = "cbindgen 0.29.4 (latest), wasmtime-internal-cache 45.0.3 (wasmtime-internal-cache 50.0.1 drops it), firewheel-macros 0.14.0 (family, mark-ik/firewheel) require it, via toml 0.9.12+spec-1.1.0, toml_edit 0.23.10+spec-1.0.0, under app-host, authority-host, block-host, grafting-servo and 1 more; goes when cbindgen moves to winnow 1.0.5; their dependents take wasmtime-internal-cache 50.0.1; mark-ik/firewheel moves firewheel-macros to winnow 1.0.5"
 
 [[bans.skip]]
-crate = "wit-parser@0.248.0"
-reason = "wasmtime-internal-component-macro 45.0.3 (wasmtime-internal-component-macro 50.0.1 drops it), wasmtime-internal-wit-bindgen 45.0.3 (wasmtime-internal-wit-bindgen 50.0.1 drops it) require it, under app-host, authority-host, block-host, turnstone; goes when their dependents take wasmtime-internal-component-macro 50.0.1, wasmtime-internal-wit-bindgen 50.0.1"
-
-[[bans.skip]]
 crate = "writeable@0.6.2"
 reason = "fixed_decimal 0.7.1 (fixed_decimal 0.7.3 drops it), icu_capi 2.1.2 (icu_capi 2.4.0 drops it), icu_casemap 2.1.1 (icu_casemap 2.4.0 drops it), icu_collator 2.1.1 (icu_collator 2.4.0 drops it) and 10 more require it, via icu_calendar 2.1.1, icu_collections 2.1.1 and 5 more, under grafting-servo; goes when their dependents take fixed_decimal 0.7.3, icu_capi 2.4.0, icu_casemap 2.4.0 and 11 more"
 
@@ -732,14 +712,6 @@ reason = "icu_capi 2.1.2 (icu_capi 2.4.0 drops it), icu_casemap 2.1.1 (icu_casem
 [[bans.skip]]
 crate = "zerovec-derive@0.11.2"
 reason = "icu_capi 2.1.2 (icu_capi 2.4.0 drops it), icu_casemap 2.1.1 (icu_casemap 2.4.0 drops it), icu_collator 2.1.1 (icu_collator 2.4.0 drops it), icu_datetime 2.1.1 (icu_datetime 2.4.0 drops it) and 9 more require it, via icu_calendar 2.1.1, icu_collections 2.1.1 and 7 more, under grafting-servo; goes when their dependents take icu_capi 2.4.0, icu_casemap 2.4.0, icu_collator 2.4.0 and 10 more"
-
-[[bans.skip]]
-crate = "zstd@0.13.5"
-reason = "wasmtime-internal-cache 45.0.3 (wasmtime-internal-cache 50.0.1 still needs it) requires it, under app-host, authority-host, block-host, turnstone; goes when wasmtime-internal-cache moves to zstd 0.14.4"
-
-[[bans.skip]]
-crate = "zstd-safe@7.4.1"
-reason = "wasmtime-internal-cache 45.0.3 (wasmtime-internal-cache 50.0.1 drops it) requires it, via zstd 0.13.5, under app-host, authority-host, block-host, turnstone; goes when their dependents take wasmtime-internal-cache 50.0.1"
 
 [[bans.skip]]
 crate = "lru@0.18.5"
