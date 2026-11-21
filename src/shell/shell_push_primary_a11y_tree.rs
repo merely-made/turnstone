@@ -6,13 +6,30 @@ use super::*;
 #[path = "shell_uxtree_snapshot.rs"]
 mod shell_uxtree_snapshot;
 
-struct PrimaryA11yFrame {
+#[derive(Clone)]
+pub(super) struct PrimaryA11yFrame {
     update: accesskit::TreeUpdate,
     visible: Vec<uuid::Uuid>,
     placements: Vec<(uuid::Uuid, accesskit::Rect)>,
     guests: Vec<accesskit::TreeUpdate>,
     admissions: std::collections::HashMap<a11y_bridge::AdmissionKey, a11y_bridge::Admission>,
     routes: crate::a11y::ActionEnvelopes,
+}
+
+impl PrimaryA11yFrame {
+    fn same_native_publication(&self, other: &Self) -> bool {
+        if self.update != other.update
+            || self.guests != other.guests
+            || self.routes != other.routes
+            || self.admissions.len() != other.admissions.len()
+        {
+            return false;
+        }
+        let mut same_admission = a11y_bridge::admission_equivalence();
+        self.admissions.iter().all(|(address, admission)| {
+            other.admissions.get(address).is_some_and(|previous| same_admission(previous, admission))
+        })
+    }
 }
 
 impl Shell {
@@ -138,19 +155,38 @@ impl Shell {
             .a11y_adapter
             .as_ref()
             .map(|bridge| bridge.activation_epoch());
+        let started = std::time::Instant::now();
         if epoch != self.a11y_epoch {
+            self.a11y_native_frame = None;
             self.surface_a11y.reset_publication();
             self.a11y_actions.clear_publication();
             self.a11y_epoch = epoch;
         }
+        let ordinary_publication = override_placements.is_none();
+        let frame = self.primary_a11y_frame(override_placements, plan);
+        let projected = std::time::Instant::now();
+        let ms = |span: std::time::Duration| span.as_secs_f64() * 1000.0;
+        // Local retained guests have complete snapshots and admissions in
+        // this frame. Foreign suppliers own additional mount and retirement
+        // state, so transitions involving them always reach the publisher.
+        let reusable = ordinary_publication
+            && frame.placements.is_empty()
+            && self.a11y_surface_layout.is_empty()
+            && std::env::var_os("TURNSTONE_PROFILE_EAGER_A11Y").is_none();
+        if reusable
+            && self.a11y_native_frame.as_ref().is_some_and(|previous| frame.same_native_publication(previous))
+            && self.a11y_adapter.as_ref().is_some_and(|publisher| Some(publisher.activation_epoch()) == epoch)
+        {
+            tracing::debug!(target: "turnstone::shell::render", epoch = epoch.unwrap_or(0), skipped = true,
+                served = false, a11y_project_ms = ms(projected - started),
+                a11y_primary_ms = ms(started.elapsed()), "native a11y primary");
+            return;
+        }
+        self.a11y_native_frame = None;
+        let retained = reusable.then(|| frame.clone());
         let PrimaryA11yFrame {
-            update,
-            visible,
-            placements,
-            guests,
-            admissions,
-            routes,
-        } = self.primary_a11y_frame(override_placements, plan);
+            update, visible, placements, guests, admissions, routes,
+        } = frame;
         let updates = match self
             .surface_a11y
             .frame_with_guests(update, &visible, &guests)
@@ -161,6 +197,7 @@ impl Shell {
                 return;
             },
         };
+        let composed = std::time::Instant::now();
         let served = self.a11y_adapter.as_mut().is_some_and(|publisher| {
             match publisher.publish_at(
                 epoch.unwrap_or(0),
@@ -176,10 +213,16 @@ impl Shell {
                 },
             }
         });
-        if !served {
+        if served {
+            self.a11y_native_frame = retained;
+        } else {
             self.surface_a11y.retry_publication();
         }
         self.a11y_surface_layout = placements;
+        tracing::debug!(target: "turnstone::shell::render", epoch = epoch.unwrap_or(0), skipped = false,
+            served, a11y_project_ms = ms(projected - started), a11y_compose_ms = ms(composed - projected),
+            a11y_publish_ms = ms(composed.elapsed()), a11y_primary_ms = ms(started.elapsed()),
+            "native a11y primary");
     }
 
     pub(super) fn lint_primary_a11y(&mut self) -> uxtree::lint::Report {

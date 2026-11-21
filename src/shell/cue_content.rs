@@ -21,9 +21,22 @@ struct Entry {
     presentations: u64,
     last_stamp: Option<FrameStamp>,
     submitted_revision: u64,
+    submitted_document: Option<DocumentFrameKey>,
+    qualified_document: Option<(DocumentFrameKey, CompositeLayer)>,
     viewport: Option<([f32; 4], f32)>,
     #[cfg(feature = "scripted-webgl")]
     webgl_images: genet_render_host::webgl::WebGlImages,
+}
+
+#[derive(Clone, Copy, PartialEq)]
+struct DocumentFrameKey {
+    // Carry the submission's paint and placement identity through async
+    // completion. An older ready frame cannot settle newer input.
+    session: pelt_core::PeltSessionIdentity,
+    scope: Scope,
+    revision: u64,
+    placement: u64,
+    viewport: Viewport,
 }
 #[derive(Default)]
 pub(super) struct CueFrames {
@@ -88,13 +101,14 @@ impl CueFrames {
         handles: WgpuHandles,
         importer: &mut dyn NativeImporter,
     ) -> Result<(Option<CompositeLayer>, bool)> {
-        if !pool
+        let started = std::time::Instant::now();
+        let Some(placement_generation) = pool
             .placement_generation(&surface.id)
-            .is_some_and(|generation| pool.admits(&surface.id, generation))
-        {
+            .filter(|generation| pool.admits(&surface.id, *generation))
+        else {
             self.entries.remove(&surface.id);
             return Ok((None, false));
-        }
+        };
         let viewport = Viewport {
             width: surface.rect.w.round().max(1.) as u32,
             height: surface.rect.h.round().max(1.) as u32,
@@ -127,20 +141,52 @@ impl CueFrames {
             presentations: 0,
             last_stamp: None,
             submitted_revision: 0,
+            submitted_document: None,
+            qualified_document: None,
             viewport: None,
             #[cfg(feature = "scripted-webgl")]
             webgl_images: Default::default(),
         });
         let revision = pool.paint_revision(&key).unwrap_or(0);
+        let pending_document = pool.pending_contents().any(|pending| *pending == key);
         let content = pool.cue_content_mut(&surface.id).map_err(Error::Backend)?;
         let host = self.host.as_ref().unwrap();
+        let mut document_key = None;
         let frame = if let Some(controller) = content.document_mut() {
             controller.engine_id().clone_into(&mut entry.engine_id);
             if entry.renderer.is_none() {
                 entry.renderer = Some(PeltSceneRenderer::new(handles)?);
             }
+            if revision != 0
+                && !pending_document
+                && controller.cue_surface().visible()
+                && controller.session().external_texture_draws().is_empty()
+                && std::env::var_os("TURNSTONE_PROFILE_BYPASS_DOCUMENT_RASTER").is_none()
+            {
+                let key = DocumentFrameKey {
+                    session: controller.session_identity(),
+                    scope: controller.cue_surface().scope(),
+                    revision,
+                    placement: placement_generation,
+                    viewport,
+                };
+                if let Some((qualified, layer)) = &entry.qualified_document
+                    && *qualified == key
+                    && !entry.renderer.as_ref().unwrap().pending()
+                {
+                    entry.presentations = entry.presentations.saturating_add(1);
+                    let mut layer = layer.clone();
+                    layer.changed = false;
+                    tracing::debug!(target: "turnstone::shell::render", document_reused = true,
+                        cue_document_ms = started.elapsed().as_secs_f64() * 1000.0, "native document texture");
+                    return Ok((Some(layer), false));
+                }
+                document_key = Some(key);
+            }
+            entry.qualified_document = None;
             if !entry.renderer.as_ref().unwrap().pending() {
                 entry.submitted_revision = revision;
+                entry.submitted_document = document_key;
             }
             let renderer = entry.renderer.as_mut().unwrap();
             #[cfg(not(feature = "scripted-webgl"))]
@@ -176,8 +222,12 @@ impl CueFrames {
                 importer,
             )?
         } else {
-            entry.engine_id.clone_from(&content.route().decision.engine_id);
+            entry
+                .engine_id
+                .clone_from(&content.route().decision.engine_id);
             entry.renderer = None;
+            entry.submitted_document = None;
+            entry.qualified_document = None;
             #[cfg(feature = "scripted-webgl")]
             {
                 entry.webgl_images = Default::default();
@@ -223,6 +273,18 @@ impl CueFrames {
                 placement: ExternalTexturePlacement::new(surface.rect.dest()).with_alpha(alpha),
             }
         });
+        if !pending
+            && let Some(key) = document_key
+            && entry.submitted_document == Some(key)
+            && entry
+                .last_stamp
+                .is_some_and(|stamp| stamp.scope == key.scope)
+            && let Some(layer) = &layer
+        {
+            entry.qualified_document = Some((key, layer.clone()));
+        }
+        tracing::debug!(target: "turnstone::shell::render", document_reused = false,
+            cue_document_ms = started.elapsed().as_secs_f64() * 1000.0, "native document texture");
         Ok((layer, pending))
     }
 }
@@ -461,6 +523,13 @@ mod tests {
             saw_old,
             "exercise the completion of a frame submitted before input"
         );
+        let qualified = frames.entries[&id].last_stamp;
+        let (held, pending) = frames
+            .present(&mut pool, &surface, 1., handles.clone(), &mut NoNative)
+            .unwrap();
+        assert!(!pending);
+        assert!(!held.unwrap().changed);
+        assert_eq!(frames.entries[&id].last_stamp, qualified);
         assert_eq!(pool.content(&key).unwrap().session_identity(), identity);
         pool.set_placements([]);
         let (frame, pending) = frames

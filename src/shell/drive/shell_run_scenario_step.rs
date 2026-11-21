@@ -469,7 +469,10 @@ impl Shell {
             Step::DragTabOut(from) => self.drag_workbench_tab_out(from),
             Step::HoverFile(x, y, path) => self.hover_file(*x, *y, std::path::Path::new(path)),
             Step::DropFile(x, y, path) => self.drop_file(*x, *y, std::path::Path::new(path)),
-            Step::Scroll(x, y, dx, dy) => self.deliver_wheel(*x, *y, *dx, *dy),
+            Step::Scroll(x, y, dx, dy) => {
+                tracing::debug!(target: "turnstone::shell::render", "native scenario pan input");
+                self.deliver_wheel(*x, *y, *dx, *dy);
+            },
             Step::ScrollReader(role, dy) => {
                 let role = super::super::reader_observe::ReaderAppearanceRole::parse(role)
                     .ok_or_else(|| format!("scroll-reader: unknown Reader role '{role}'"))?;
@@ -481,10 +484,7 @@ impl Shell {
                 let path = self.shared_out_dir.join(format!("{name}.txt"));
                 std::fs::write(
                     &path,
-                    format!(
-                        "RESULT ok\n{}\n",
-                        Self::describe_reader_appearances(&observations)
-                    ),
+                    format!("RESULT ok\n{}\n", Self::describe_reader_appearances(&observations)),
                 )
                 .map_err(|error| {
                     format!(

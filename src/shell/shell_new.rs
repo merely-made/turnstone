@@ -451,6 +451,7 @@ impl Shell {
             a11y_adapter: None,
             a11y_actions: Default::default(),
             a11y_epoch: None,
+            a11y_native_frame: None,
             a11y_surface_layout: Vec::new(),
             surface_a11y: Default::default(),
             host: None,

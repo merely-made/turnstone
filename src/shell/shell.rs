@@ -146,6 +146,7 @@ pub struct Shell {
     pub(super) a11y_actions: crate::shell::a11y_bridge::ActionQueue,
     /// Activation occurs on a platform thread; replay subtrees on the UI thread.
     pub(super) a11y_epoch: Option<u64>,
+    pub(super) a11y_native_frame: Option<super::shell_push_primary_a11y_tree::PrimaryA11yFrame>,
     pub(super) a11y_surface_layout: Vec<(uuid::Uuid, accesskit::Rect)>,
     pub(super) surface_a11y: cambium_winit_a11y::guest::ForeignA11y<uuid::Uuid>,
     pub(super) host: Option<SurfaceHost>,

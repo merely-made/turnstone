@@ -6,6 +6,7 @@ use super::*;
 /// A rasterized surface ready to compose: its view and where it lands in the
 /// frame. The self-capture path composes the same list, so the receipt is the
 /// presented frame.
+#[derive(Clone)]
 pub(super) struct CompositeLayer {
     pub(super) id: u64,
     pub(super) changed: bool,

@@ -478,6 +478,7 @@ impl Shell {
     }
 
     pub(super) fn pump_visible_documents(&mut self) -> bool {
+        let started = std::time::Instant::now();
         self.sync_content_placements();
         let pump_started = std::time::Instant::now();
         let mut visible_pending = false;
@@ -517,6 +518,10 @@ impl Shell {
             );
             visible_pending = host.content_sessions.pool.visible_needs_frame();
         });
+        tracing::debug!(target: "turnstone::shell::render",
+            document_placement_ms = (pump_started - started).as_secs_f64() * 1000.0,
+            document_pump_ms = pump_started.elapsed().as_secs_f64() * 1000.0,
+            "native document pump");
         visible_pending
     }
 }
