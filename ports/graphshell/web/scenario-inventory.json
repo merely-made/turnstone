@@ -3354,7 +3354,7 @@
       "name": "projection_session.scn",
       "status": "live",
       "verification": "pending",
-      "current_source_sha256": "05830d1a3f8eb585b476f641376c496203722b1b7b6ab135ba71515a8ead0026",
+      "current_source_sha256": "509d541310438a9921ef8e25b27bbcc0d78e9ded095eee253967a4eba8af6e3c",
       "expected_outcome": {
         "scenario": "pass",
         "page_errors": 0,

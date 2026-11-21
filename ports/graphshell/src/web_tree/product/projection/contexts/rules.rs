@@ -55,13 +55,17 @@ pub(super) fn override_scenes(
             context.facts = row
                 .values
                 .iter()
-                .map(|(name, value)| {
+                .filter_map(|(name, value)| {
                     let value = match value {
                         ProjectionValue::Text(text) => Scalar::Text(text.clone()),
                         ProjectionValue::Number(number) => Scalar::Number(*number),
                         ProjectionValue::Boolean(value) => Scalar::Bool(*value),
+                        ProjectionValue::Reference(_)
+                        | ProjectionValue::Date(_)
+                        | ProjectionValue::DateTime(_)
+                        | ProjectionValue::List(_) => return None,
                     };
-                    (name.clone(), value)
+                    Some((name.clone(), value))
                 })
                 .collect();
             available.states.insert(ViewState::Selected);
