@@ -539,6 +539,16 @@ inherits independently, and returning to the first session restores its
 choices. Verify that a session-level protocol change stops an in-flight
 redirect and that the parser switches remain independent of connections.
 
+**Windows receipt, 2026-11-20.** Keyboard and pointer edits passed the
+Settings tests. The native Settings run set the profile default to Spartan
+Off, which the CLI confirmed, and set an explicit On override in the first
+session. The second session made zero Spartan connections. Switching back
+and restarting restored the first session's override. Turning Spartan off
+in Settings during a pending Gemini redirect kept its target at zero
+connections. The enabled control connected once. See
+`settings-headed-first/` and `settings-headed-restart/` under
+`Code/testing/turnstone/receipts/smolweb-pack/`.
+
 The picker plan's decision 1 and 2: a global `EngineEnableSet` app setting
 with per-session override, folded into routing's `is_available` closure.
 Registered-but-disabled engines stay in the picker as switchable-off rows.
