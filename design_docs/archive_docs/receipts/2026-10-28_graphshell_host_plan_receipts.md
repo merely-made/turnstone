@@ -358,3 +358,26 @@ and package bytes. `wasm-runtime` and `wasm-runtime-projection-disclosed`
 hold the Firefox Wasm attempts. `chromium-tpc-4/receipt/chromium.json`
 records the Chromium run, and `signed-fixture-restart.json` records the
 Firefox signing control and both process exits.
+
+## 2026-11-20 H5r Turnstone Companion display name
+
+Firefox 160 and Chrome for Testing 151 opened the branded workspace and
+Identity page in headed disposable profiles. The workspace kept its
+Turnstone Companion title after the Wasm mount. Both capture controls
+started off. Firefox reported `graphshell@mere.systems` and Chromium
+reported `oajkkocppbpbmfblepgbiidagliniofd`. The relay registration still
+names `org.mere.graphshell`, and the extension manifests changed only
+display text. Eight JavaScript smoke checks passed with Web Storage
+enabled in Node 24.
+
+Visual review confirmed the branded workspace header in both browsers.
+The existing Browser history and Page text controls still overlap.
+Both packages used the fresh default Wasm build, with the same
+disposable CubeCL override as the preceding H5r build. The unsigned
+Firefox ZIP has SHA-256
+`98d0bda687e508ff193bb1396ec992389123125f43c3115cb9c0c8b499a61855`.
+Mozilla's `web-ext` 10.8.0 lint returned zero errors and four warnings.
+One flags the missing data consent declaration. Two flag dynamic
+imports in the shared web loader and viewer mount. One flags the
+generated wasm-bindgen `innerHTML` setter. The package and receipts are
+in `~/Code/testing/turnstone/receipts/2026-11-20_companion-signing` on T-PC.

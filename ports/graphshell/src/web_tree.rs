@@ -1848,6 +1848,8 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
     };
     let page_shared = shared.clone();
     let page_root = root.clone();
+    #[cfg(feature = "product")]
+    let workspace_brand = root.get_attribute("data-workspace-brand");
     let physics = physics::PhysicsPanel::new(&shared.canvas.borrow(), web_graphs::LAYOUT);
     let mounted = mount_with_lifetime(
         canvas.clone(),
@@ -1930,7 +1932,10 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
                 tools_open: false,
                 viewer_controls_open: false,
                 #[cfg(feature = "product")]
-                instrument: instrument::State::default(),
+                instrument: instrument::State {
+                    brand: workspace_brand,
+                    ..Default::default()
+                },
                 #[cfg(feature = "remote")]
                 session: remote::Session::Local,
                 #[cfg(feature = "remote")]

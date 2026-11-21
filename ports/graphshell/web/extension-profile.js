@@ -189,11 +189,11 @@ async function refreshStatus() {
   disableButton.disabled = !status.permission && !status.policy.enabled;
   setStatus(
     status.permission && status.policy.enabled
-      ? `Capture enabled · ${status.queued} visit(s) waiting for Graphshell`
+      ? `Capture enabled · ${status.queued} visit(s) waiting to be saved`
         + (status.coverage?.omitted_queue ? ` · ${status.coverage.omitted_queue} omitted by queue limit` : "")
         + (status.coverage?.refused_conflicts ? ` · ${status.coverage.refused_conflicts} refused as conflicting` : "")
         + (status.coverage?.candidate_limit_reached ? " · history candidate limit reached" : "")
-      : "Capture is off. Graphshell has not requested browser history access.",
+      : "Capture is off. Turnstone Companion has not requested browser history access.",
   );
   return status;
 }
@@ -449,7 +449,7 @@ async function becomeWriter(bar) {
 function follow() {
   const bar = document.querySelector("#writer-standby");
   const status = document.querySelector("#writer-standby-status");
-  if (!bar) throw new Error("Graphshell is open in another view of this browser profile");
+  if (!bar) throw new Error("Turnstone Companion is open in another view of this browser profile");
   globalThis.graphshellViewRole = "follower";
   bar.hidden = false;
   const channel = new BroadcastChannel(VIEWS_CHANNEL);
@@ -533,7 +533,7 @@ function follow() {
 async function claimWriter() {
   if (fixtureRoute()) return "writer";
   if (!navigator.locks) {
-    throw new Error("This browser cannot keep Graphshell to one writer");
+    throw new Error("This browser cannot keep Turnstone Companion to one writer");
   }
   const held = await new Promise((resolve) => {
     navigator.locks.request(WRITER_LOCK, { ifAvailable: true }, (lock) => {

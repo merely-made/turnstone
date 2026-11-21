@@ -133,6 +133,8 @@ The [headed Firefox check](archive_docs/receipts/2026-10-28_graphshell_host_plan
 
 The [fresh browser checks](archive_docs/receipts/2026-10-28_graphshell_host_plan_receipts.md#2026-11-20-h5r-fresh-wasm-and-browser-restart-checks) ran the default Wasm package with a test-only CubeCL patch. Headed Chromium verified native admission, refusal, recovery and local graph persistence after reloading the same unpacked package into the restarted browser. Firefox verified permanent installation through a full restart with a Mozilla-signed fixture. The Graphshell restart check still needs a signed Graphshell XPI. The unmodified Wasm build still needs a CubeCL fix, and Firefox logged Wasm traps even when its scenario assertions passed.
 
+**Turnstone Companion** is the browser-facing name in Firefox and Chromium. The existing browser IDs and `org.mere.graphshell` native host name carry the installation forward. The [headed branding and signing preflight](archive_docs/receipts/2026-10-28_graphshell_host_plan_receipts.md#2026-11-20-h5r-turnstone-companion-display-name) verified the mounted workspace and Identity labels. Signing still needs the Firefox data consent declaration and review of the web routes included in the package.
+
 Favicon intake is a separate optional `tabs` permission and retention feature. The C4 consent gate for live capture is shared with Turnstone's page capture plan. Its default remains open because H5's `HistoryCapturePolicy` is disabled by default and the archived C4 shipped `Full`.
 - Needs: Turnstone's page capture plan (C4 gate, other repository).
 - Rulings: -

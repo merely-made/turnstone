@@ -75,7 +75,7 @@ export async function refreshKeep() {
   } else if (on) {
     setStatus(`Keeping page text · ${describe(status)}`);
   } else {
-    setStatus("Page text is off. Graphshell has not asked for access to the pages you load.");
+    setStatus("Page text is off. Turnstone Companion has not asked for access to the pages you load.");
   }
   const problem = node("#keep-problem");
   problem.textContent = status.state.last_error ? `Last problem: ${status.state.last_error}` : "";

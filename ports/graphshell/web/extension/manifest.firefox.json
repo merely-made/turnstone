@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Graphshell",
+  "name": "Turnstone Companion",
   "version": "0.1.0",
-  "description": "Open Graphshell's local graph and identity surfaces.",
+  "description": "Keep pages and visits in a local graph. Open device identity when Djinn is available.",
   "permissions": [
     "nativeMessaging",
     "storage",
@@ -32,11 +32,11 @@
     "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
   },
   "action": {
-    "default_title": "Open Graphshell"
+    "default_title": "Open Turnstone Companion"
   },
   "sidebar_action": {
     "default_panel": "graph.html",
-    "default_title": "Graphshell",
+    "default_title": "Turnstone Companion",
     "open_at_install": false
   }
 }

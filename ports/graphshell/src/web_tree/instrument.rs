@@ -16,6 +16,7 @@ use cambium::{
 
 #[derive(Default)]
 pub(super) struct State {
+    pub brand: Option<String>,
     pub cards: super::focus_card::State,
     pub panes_open: bool,
     pub graph_controls: bool,
@@ -109,8 +110,14 @@ pub(super) fn app_header(page: &TreePage) -> Option<Child> {
         ),
         trailing,
     );
+    let brand = page
+        .instrument
+        .brand
+        .as_deref()
+        .unwrap_or("Graphshell")
+        .to_owned();
     let bar = title_bar(
-        Box::new(el("span", "Graphshell").attr("class", "workspace-brand")),
+        Box::new(el("span", brand).attr("class", "workspace-brand")),
         toolbar,
         Box::new(el("div", ())),
         Box::new(el("div", ())),

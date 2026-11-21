@@ -1,8 +1,8 @@
-# Graphshell browser extension
+# Turnstone Companion
 
-The Chromium and Firefox extension that carries Graphshell's Wasm portal, plus
-the `org.mere.graphshell` native-messaging registration that connects it to the
-resident device host.
+The Chromium and Firefox companion runs the Graphshell workspace in Wasm. A
+browser-local profile can keep pages and visits. The optional connection to
+Djinn uses the `org.mere.graphshell` native-messaging registration.
 
 ## Files
 
@@ -201,6 +201,27 @@ public import receipt or a bounded failure reason.
 portal as **Open Identity**. An endpoint may advertise a bounded `input_form`;
 the bridge renders its labels and choices and serializes the declared schema
 with the selected values.
+
+## Firefox signing preflight
+
+History capture and Keep page text use separate browser permission prompts.
+The background script queues visits and text in extension storage, and the
+workspace writer commits them into this browser profile. Opening a saved
+link hands its address to the attached browser's tab API.
+
+Opening **Identity** starts a distinct exchange with local Djinn. It sends
+challenge replies and projection requests. Invoking an advertised action
+also sends the selected identifiers and bounded form values. The capture
+queues do not feed that exchange. Firefox counts information sent through
+native messaging in its data consent policy, so the declaration and opt-in
+need to describe the actual native actions. The shared loader also carries
+WebRTC, guest adapter and receipt routes. Review which of those routes the
+distributed companion exposes before a submission.
+
+Mozilla reviews generated code, including Wasm. Provide the corresponding
+source, dependency resolution and reproducible build instructions with a
+submission. See [Mozilla's add-on policies](https://extensionworkshop.com/documentation/publish/add-on-policies/)
+and [Firefox data consent](https://extensionworkshop.com/documentation/develop/firefox-builtin-data-consent/).
 
 ## Building
 

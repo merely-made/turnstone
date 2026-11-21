@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Graphshell</title>
+    <title>Turnstone Companion</title>
     <link rel="stylesheet" href="./styles.css?h3=1">
     <link rel="stylesheet" href="./graph.css">
   </head>
@@ -11,13 +11,14 @@
     <!-- The installed extension's workspace: the same component and host as
          index.html, plus the browser's own consent and single-writer controls,
          which only packaged extension code may drive. -->
-    <graphshell-view id="graphshell" data-owns-title data-appearance-application data-ready="false"></graphshell-view>
+    <graphshell-view id="graphshell" data-workspace-brand="Turnstone Companion"
+                      data-appearance-application data-ready="false"></graphshell-view>
 
     <!-- Shown above the workspace while another view of this profile holds
          its one writer: this view follows that one's saves. -->
     <section id="writer-standby" class="extension-bar" role="region" aria-labelledby="writer-standby-title" hidden>
       <p><strong id="writer-standby-title">Viewing</strong>
-        <span id="writer-standby-status" role="status">Editing happens in another Graphshell view.</span></p>
+        <span id="writer-standby-status" role="status">Editing happens in another Companion view.</span></p>
       <div class="button-row">
         <button id="writer-show" type="button">Show that view</button>
         <button id="writer-take" type="button">Edit here</button>
