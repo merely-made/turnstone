@@ -3365,16 +3365,16 @@ dependencies = [
 [[package]]
 name = "commons-spine"
 version = "0.0.1"
-source = "git+https://github.com/merely-made/gemot.git?branch=main#23021d06f57b564526e3b3161bed260d65edcd65"
+source = "git+https://github.com/merely-made/gemot.git?branch=main#b94a6940d0483716536a5bc057746c54dd2bbc7a"
 dependencies = [
  "gemot",
  "insigne",
  "mere-proofs",
  "muniment",
  "murm-sync",
- "p2mere-core 0.11.1",
- "p2mere-encryption 0.11.1",
- "p2mere-store 0.11.1",
+ "p2mere-core",
+ "p2mere-encryption",
+ "p2mere-store",
  "personae",
  "portolan",
  "serde",
@@ -5499,7 +5499,7 @@ dependencies = [
  "mere-surface-api",
  "mere-transport",
  "muniment",
- "p2mere-core 0.12.1",
+ "p2mere-core",
  "personae",
  "sceno",
  "scenograph",
@@ -5725,7 +5725,7 @@ dependencies = [
 [[package]]
 name = "dramatis-surface"
 version = "0.0.1"
-source = "git+https://github.com/merely-made/dramatis.git?branch=main#5a15a1f3a8cb2f97e000ae3237dd95f233325c16"
+source = "git+https://github.com/merely-made/dramatis.git?branch=main#b38ef358d470ca0fd3287942863f2cb30188dfd2"
 dependencies = [
  "castellan-client",
  "chirograph",
@@ -7392,9 +7392,9 @@ dependencies = [
  "muniment",
  "murm-sync",
  "p2mere-auth",
- "p2mere-core 0.12.1",
- "p2mere-encryption 0.12.1",
- "p2mere-store 0.12.1",
+ "p2mere-core",
+ "p2mere-encryption",
+ "p2mere-store",
  "personae",
  "serde",
  "servitor",
@@ -7518,7 +7518,7 @@ dependencies = [
 [[package]]
 name = "genet-clipboard"
 version = "0.1.0"
-source = "git+https://github.com/merely-made/genet.git?branch=main#e1be7c7e660e41dff12cd8157d86bfb86862e0ba"
+source = "git+https://github.com/merely-made/genet.git?branch=main#a81e40e98827ca0fbd6d4a64d7551163e667a8ec"
 dependencies = [
  "arboard",
 ]
@@ -7555,7 +7555,7 @@ dependencies = [
 [[package]]
 name = "genet-didge"
 version = "0.0.0"
-source = "git+https://github.com/merely-made/genet.git?branch=main#e1be7c7e660e41dff12cd8157d86bfb86862e0ba"
+source = "git+https://github.com/merely-made/genet.git?branch=main#a81e40e98827ca0fbd6d4a64d7551163e667a8ec"
 dependencies = [
  "gc-arena",
  "piccolo",
@@ -8197,7 +8197,7 @@ dependencies = [
 [[package]]
 name = "graft-engine"
 version = "0.2.0"
-source = "git+https://github.com/merely-made/inker.git?branch=main#1194c74adc5f7718dd8a8ab6df1701d9d23e4720"
+source = "git+https://github.com/merely-made/inker.git?branch=main#9f1c9eb140a31a422ba665732628ed586f82a893"
 dependencies = [
  "accesskit 0.25.1",
  "grafting-servo",
@@ -8249,7 +8249,7 @@ dependencies = [
 [[package]]
 name = "grafting-servo"
 version = "0.1.0"
-source = "git+https://github.com/merely-made/wgpu-graft.git?branch=main#db9d6bea71bd24a9208040a1f9d494e48a16527c"
+source = "git+https://github.com/merely-made/wgpu-graft.git?branch=main#df803e0e12d8e429f1a77db9ecc68668f8049434"
 dependencies = [
  "accesskit 0.24.1",
  "dpi",
@@ -8329,7 +8329,7 @@ dependencies = [
  "netrender",
  "notochord",
  "ostiary",
- "p2mere-core 0.12.1",
+ "p2mere-core",
  "pandect",
  "pelt-core",
  "personae",
@@ -11099,8 +11099,8 @@ dependencies = [
  "notify",
  "notochord",
  "ostiary",
- "p2mere-core 0.12.1",
- "p2mere-store 0.12.1",
+ "p2mere-core",
+ "p2mere-store",
  "pandect",
  "personae",
  "pollster",
@@ -11139,8 +11139,8 @@ dependencies = [
  "mere-proofs",
  "muniment",
  "murm-sync",
- "p2mere-core 0.12.1",
- "p2mere-store 0.12.1",
+ "p2mere-core",
+ "p2mere-store",
  "sceno-backdrops",
  "serde",
  "serde_json",
@@ -11941,7 +11941,7 @@ dependencies = [
 [[package]]
 name = "mere-athanor"
 version = "0.0.1"
-source = "git+https://github.com/merely-made/distillery.git?branch=main#48b10680a964959fb3e8354e94b9ac8612c49e34"
+source = "git+https://github.com/merely-made/distillery.git?branch=main#cc0dce7fe2b099ad83b850aa484e8959ff5fe96b"
 dependencies = [
  "armillary",
  "blake3",
@@ -12179,8 +12179,8 @@ dependencies = [
  "muniment",
  "murm-sync",
  "notochord",
- "p2mere-core 0.12.1",
- "p2mere-store 0.12.1",
+ "p2mere-core",
+ "p2mere-store",
  "personae",
  "serde",
  "serde_json",
@@ -12308,8 +12308,8 @@ dependencies = [
  "murm-sync",
  "notochord",
  "ostiary",
- "p2mere-core 0.12.1",
- "p2mere-store 0.12.1",
+ "p2mere-core",
+ "p2mere-store",
  "pandect",
  "peer-facts",
  "personae",
@@ -12381,7 +12381,7 @@ dependencies = [
  "murm-sync",
  "n0-future",
  "notochord",
- "p2mere-core 0.12.1",
+ "p2mere-core",
  "p2mere-net",
  "personae",
  "retinue",
@@ -12432,8 +12432,8 @@ dependencies = [
  "insigne",
  "muniment",
  "murm-sync",
- "p2mere-core 0.12.1",
- "p2mere-store 0.12.1",
+ "p2mere-core",
+ "p2mere-store",
  "personae",
  "serde",
  "stickleback",
@@ -12568,7 +12568,7 @@ name = "mooting"
 version = "0.1.0"
 source = "git+https://github.com/merely-made/gemot.git?branch=main#b94a6940d0483716536a5bc057746c54dd2bbc7a"
 dependencies = [
- "p2mere-core 0.12.1",
+ "p2mere-core",
  "serde",
  "thiserror 2.0.21",
 ]
@@ -12879,9 +12879,9 @@ dependencies = [
  "futures-util",
  "getrandom 0.4.3",
  "muniment",
- "p2mere-core 0.12.1",
+ "p2mere-core",
  "p2mere-net",
- "p2mere-store 0.12.1",
+ "p2mere-store",
  "p2mere-sync",
  "personae",
  "serde",
@@ -15056,26 +15056,10 @@ version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0f6e408e0ff92c129f7cdb42d3c4225cd4f4a0b64c3d50355b406761fd2a5ece"
 dependencies = [
- "p2mere-core 0.12.1",
+ "p2mere-core",
  "petgraph 0.8.3",
  "thiserror 2.0.21",
  "tracing",
-]
-
-[[package]]
-name = "p2mere-core"
-version = "0.11.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6e569abc3daa216ebb58285cbbd3777b9a5a78fb0318af4147c754fdd207c7d6"
-dependencies = [
- "blake3",
- "cbor-core",
- "ed25519-dalek",
- "hex",
- "rand 0.10.4",
- "serde",
- "serde_bytes",
- "thiserror 2.0.21",
 ]
 
 [[package]]
@@ -15102,37 +15086,12 @@ checksum = "ba7d58e245f09a76f4f1769182e34cd0460fde97fa5fe81c1ce783f6aae5967d"
 dependencies = [
  "blake3",
  "futures-util",
- "p2mere-core 0.12.1",
- "p2mere-store 0.12.1",
+ "p2mere-core",
+ "p2mere-store",
  "rand 0.10.4",
  "serde",
  "thiserror 2.0.21",
  "tokio",
-]
-
-[[package]]
-name = "p2mere-encryption"
-version = "0.11.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "758951687d16509951f917b212d705a1634c4b0427ac2a9f2f074e9c0ae985a1"
-dependencies = [
- "chacha20poly1305 0.11.0",
- "curve25519-dalek 5.0.0",
- "hex",
- "hkdf",
- "hpke-rs",
- "hpke-rs-crypto",
- "hpke-rs-rust-crypto",
- "p2mere-core 0.11.1",
- "rand 0.10.4",
- "rand_chacha 0.10.0",
- "serde",
- "serde_bytes",
- "sha2 0.11.1",
- "subtle",
- "thiserror 2.0.21",
- "x25519-dalek",
- "zeroize",
 ]
 
 [[package]]
@@ -15148,7 +15107,7 @@ dependencies = [
  "hpke-rs",
  "hpke-rs-crypto",
  "hpke-rs-rust-crypto",
- "p2mere-core 0.12.1",
+ "p2mere-core",
  "rand 0.10.4",
  "rand_chacha 0.10.0",
  "serde",
@@ -15173,9 +15132,9 @@ dependencies = [
  "iroh-base",
  "iroh-gossip",
  "iroh-mdns-address-lookup",
- "p2mere-core 0.12.1",
+ "p2mere-core",
  "p2mere-discovery",
- "p2mere-store 0.12.1",
+ "p2mere-store",
  "p2mere-sync",
  "postcard",
  "ractor",
@@ -15191,22 +15150,12 @@ dependencies = [
 
 [[package]]
 name = "p2mere-store"
-version = "0.11.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e2499688d58bafee222d09c02228db8f6e7b93cb74dff74459a4d7b373256096"
-dependencies = [
- "futures-util",
- "p2mere-core 0.11.1",
-]
-
-[[package]]
-name = "p2mere-store"
 version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "30870ee0858ddfdf1c6d8ab579a57e6b5cd11929f0c708cf30b8cc6c0438c941"
 dependencies = [
  "futures-util",
- "p2mere-core 0.12.1",
+ "p2mere-core",
 ]
 
 [[package]]
@@ -15217,8 +15166,8 @@ checksum = "735e211f3aac2c64c3e6476eff575bc81c54acd0e581144de941703c69e5bed9"
 dependencies = [
  "futures-channel",
  "futures-util",
- "p2mere-core 0.12.1",
- "p2mere-store 0.12.1",
+ "p2mere-core",
+ "p2mere-store",
  "pin-project-lite",
  "serde",
  "thiserror 2.0.21",
@@ -15333,8 +15282,8 @@ dependencies = [
  "mere-kernel",
  "muniment",
  "oxrdf",
- "p2mere-core 0.12.1",
- "p2mere-store 0.12.1",
+ "p2mere-core",
+ "p2mere-store",
  "personae",
  "portolan",
  "serde",
@@ -18322,7 +18271,7 @@ source = "git+https://github.com/merely-made/genet.git?branch=main#a81e40e98827c
 [[package]]
 name = "script-rhai"
 version = "0.0.1"
-source = "git+https://github.com/merely-made/inker.git?branch=main#ea03455baf9f499225c2f4b0081782a9bcf90ec6"
+source = "git+https://github.com/merely-made/inker.git?branch=main#9f1c9eb140a31a422ba665732628ed586f82a893"
 dependencies = [
  "hest",
  "inker",
@@ -19575,7 +19524,7 @@ dependencies = [
 [[package]]
 name = "servo-media-player"
 version = "0.2.0"
-source = "git+https://github.com/merely-made/genet.git?branch=main#e1be7c7e660e41dff12cd8157d86bfb86862e0ba"
+source = "git+https://github.com/merely-made/genet.git?branch=main#a81e40e98827ca0fbd6d4a64d7551163e667a8ec"
 dependencies = [
  "ipc-channel",
  "serde",
@@ -19600,7 +19549,7 @@ dependencies = [
 [[package]]
 name = "servo-media-streams"
 version = "0.2.0"
-source = "git+https://github.com/merely-made/genet.git?branch=main#e1be7c7e660e41dff12cd8157d86bfb86862e0ba"
+source = "git+https://github.com/merely-made/genet.git?branch=main#a81e40e98827ca0fbd6d4a64d7551163e667a8ec"
 dependencies = [
  "uuid 1.29.3",
 ]
@@ -19639,7 +19588,7 @@ dependencies = [
 [[package]]
 name = "servo-media-traits"
 version = "0.2.0"
-source = "git+https://github.com/merely-made/genet.git?branch=main#e1be7c7e660e41dff12cd8157d86bfb86862e0ba"
+source = "git+https://github.com/merely-made/genet.git?branch=main#a81e40e98827ca0fbd6d4a64d7551163e667a8ec"
 
 [[package]]
 name = "servo-media-traits"
@@ -20682,7 +20631,7 @@ version = "0.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "287f59010008f0d7cf5e3b03196d666c1acc46c8d3e9cf34c28a1a7157601e72"
 dependencies = [
- "heck 0.4.1",
+ "heck 0.5.0",
  "proc-macro2",
  "quote",
  "syn 2.0.119",
@@ -21130,9 +21079,9 @@ dependencies = [
  "insigne",
  "mere-proofs",
  "muniment",
- "p2mere-core 0.12.1",
- "p2mere-encryption 0.12.1",
- "p2mere-store 0.12.1",
+ "p2mere-core",
+ "p2mere-encryption",
+ "p2mere-store",
  "personae",
  "serde",
  "serde_bytes",
@@ -24794,7 +24743,7 @@ checksum = "a28ac98ddc8b9274cb41bb4d9d4d5c425b6020c50c46f25559911905610b4a88"
 [[package]]
 name = "weld-engine"
 version = "0.2.0"
-source = "git+https://github.com/merely-made/inker.git?branch=main#1194c74adc5f7718dd8a8ab6df1701d9d23e4720"
+source = "git+https://github.com/merely-made/inker.git?branch=main#9f1c9eb140a31a422ba665732628ed586f82a893"
 dependencies = [
  "dpi",
  "inker",
@@ -24805,7 +24754,7 @@ dependencies = [
 [[package]]
 name = "welding"
 version = "0.15.0"
-source = "git+https://github.com/merely-made/wgpu-weld.git?branch=main#9edccc08c4bf75b4365fd61cd2f2d9ee96002fb0"
+source = "git+https://github.com/merely-made/wgpu-weld.git?branch=main#e991684bab23d0eaea42d418e216317173ace2a9"
 dependencies = [
  "base64 0.22.1",
  "cef",
