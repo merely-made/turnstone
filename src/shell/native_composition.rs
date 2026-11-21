@@ -287,9 +287,35 @@ pub(super) fn compose(
         accepted.push((layer, image, alpha, same_raster.is_none()));
     }
     // Preflight appearance and alpha/encoding before replacing staging.
-    let arrange_graph = matches!(
-        accepted.as_slice(), [(layer, _, _, _)] if matches!(layer.kind, SurfaceKind::Graph(_))
-    ) && pane_raster::arrange_visible(app, surfaces);
+    let split_sources = if pane_raster::arrange_visible(app, surfaces) {
+        match accepted.as_slice() {
+            [(graph, image, _, _)] if matches!(graph.kind, SurfaceKind::Graph(_)) => {
+                Some(pane_raster::PaneSources {
+                    graph: external_image_key(image.key),
+                    document: None,
+                })
+            },
+            [
+                (graph, graph_image, _, _),
+                (document, document_image, _, false),
+            ]
+            | [
+                (document, document_image, _, false),
+                (graph, graph_image, _, _),
+            ] if matches!(graph.kind, SurfaceKind::Graph(_))
+                && matches!(document.kind, SurfaceKind::Content(_))
+                && !document.changed =>
+            {
+                Some(pane_raster::PaneSources {
+                    graph: external_image_key(graph_image.key),
+                    document: Some((external_image_key(document_image.key), document_image.epoch)),
+                })
+            },
+            _ => None,
+        }
+    } else {
+        None
+    };
     let sources_started = std::time::Instant::now();
     let direct_graph_images = accepted
         .iter()
@@ -301,7 +327,7 @@ pub(super) fn compose(
         let ProducerImage { key, epoch, .. } = image;
         if let Some((path, pending, window_scale)) = diagnostic.as_mut() {
             if image.direct
-                && arrange_graph
+                && split_sources.is_some()
                 && std::env::var_os("TURNSTONE_PROFILE_VERIFY_PANE_RASTER").is_some()
             {
                 graph_reference = Some(pane_raster::GraphReference {
@@ -410,10 +436,9 @@ pub(super) fn compose(
         diagnostic.is_some() && std::env::var_os("TURNSTONE_PROFILE_VERIFY_PANE_RASTER").is_some();
     let split_started = std::time::Instant::now();
     let mut split_reused = false;
-    let (plan, cached) = match pane_cache {
-        Some((window, cached))
-            if arrange_graph
-                && paint_reused
+    let (plan, cached) = match (pane_cache, split_sources) {
+        (Some((window, cached)), Some(sources))
+            if paint_reused
                 && (diagnostic.is_none() || verify_pane)
                 && std::env::var_os("TURNSTONE_PROFILE_BYPASS_PANE_RASTER").is_none()
                 && core.renderer().vello_output_reuse_allowed() =>
@@ -426,7 +451,7 @@ pub(super) fn compose(
                     let tile_size = core.renderer().tile_cache()?.try_lock().ok()?.tile_size();
                     if reuse_composition
                         && let Some(plan) = cached.and_then(|raster| {
-                            raster.reusable_plan(window, &paint, scale, tile_size)
+                            raster.reusable_plan(window, &paint, scale, tile_size, sources)
                         })
                     {
                         split_reused = true;
@@ -437,6 +462,7 @@ pub(super) fn compose(
                         paint,
                         scale,
                         tile_size,
+                        sources,
                         &translated,
                         reuse_composition,
                     )

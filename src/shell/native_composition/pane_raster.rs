@@ -157,9 +157,18 @@ pub(super) struct PanePlan {
     paint: Rc<()>,
     scale: f32,
     tile_size: u32,
+    sources: PaneSources,
     pub(super) split_layout: u32,
     pub(super) split_px: u32,
     cropped: Option<Rc<Scene>>,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(super) struct PaneSources {
+    pub(super) graph: ImageKey,
+    // A document may span the split because both sides sample the same
+    // completed source. A new generation invalidates the retained side.
+    pub(super) document: Option<(ImageKey, u64)>,
 }
 
 impl PanePlan {
@@ -168,12 +177,21 @@ impl PanePlan {
         paint: Rc<()>,
         scale: f32,
         tile_size: u32,
+        sources: PaneSources,
         translated: &TranslatedDisplayList,
         retain_crop: bool,
     ) -> Option<Self> {
-        let [graph] = translated.external_textures.as_slice() else {
+        let draws = &translated.external_textures;
+        if draws.len() != 1 + usize::from(sources.document.is_some())
+            || !draws.iter().any(|draw| draw.image_key == sources.graph)
+            || sources.document.is_some_and(|(key, generation)| {
+                !draws.iter().any(|draw| {
+                    draw.image_key == key && draw.content_generation == Some(generation)
+                })
+            })
+        {
             return None;
-        };
+        }
         let scene = &translated.scene;
         if !scale.is_finite()
             || scale <= 0.0
@@ -189,7 +207,7 @@ impl PanePlan {
         for op in &scene.ops {
             match op {
                 SceneOp::Image(image)
-                    if image.key == graph.image_key
+                    if image.key == sources.graph
                         && image.transform_id == 0
                         && image.x1.is_finite()
                         && image.x1 > 0.0
@@ -197,6 +215,9 @@ impl PanePlan {
                 {
                     graph_edge = Some(image.x1);
                 },
+                SceneOp::Image(image)
+                    if sources.document.is_some_and(|(key, _)| image.key == key)
+                        && image.transform_id == 0 => {},
                 SceneOp::Image(_) | SceneOp::Pattern(_) | SceneOp::Fragment(_) => return None,
                 SceneOp::PushLayer(layer)
                     if layer.backdrop_filter.is_some()
@@ -228,6 +249,7 @@ impl PanePlan {
             paint,
             scale,
             tile_size,
+            sources,
             split_layout,
             split_px: split as u32,
             cropped: retain_crop.then(|| {
@@ -280,11 +302,13 @@ impl PaneRaster {
         paint: &Rc<()>,
         scale: f32,
         tile_size: u32,
+        sources: PaneSources,
     ) -> Option<PanePlan> {
         let plan = &self.plan;
         (plan.window == window
             && plan.scale == scale
             && plan.tile_size == tile_size
+            && plan.sources == sources
             && Rc::ptr_eq(&plan.paint, paint))
         .then(|| plan.clone())
     }
@@ -293,6 +317,7 @@ impl PaneRaster {
         self.plan.window == plan.window
             && self.plan.scale == plan.scale
             && self.plan.tile_size == plan.tile_size
+            && self.plan.sources == plan.sources
             && self.plan.split_px == plan.split_px
             && self.plan.split_layout == plan.split_layout
             && Rc::ptr_eq(&self.plan.paint, &plan.paint)
