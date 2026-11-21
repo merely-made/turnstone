@@ -174,10 +174,10 @@ impl Carrier for Route {
                 if intent.observed_revision != Revision(self.revision)
                     || intent.observed_epoch != SceneEpoch(3)
                 {
-                    return Ok(CarrierResponseBody::Intent(IntentResult::Stale {
-                        current_epoch: SceneEpoch(3),
-                        current_revision: Revision(self.revision),
-                    }));
+                    return Ok(CarrierResponseBody::Intent(IntentResult::stale(
+                        SceneEpoch(3),
+                        Revision(self.revision),
+                    )));
                 }
                 if intent.intent != "notes.append" {
                     return Ok(CarrierResponseBody::Intent(IntentResult::Rejected {

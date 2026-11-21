@@ -25,7 +25,7 @@ pub(super) fn apply_value(
                 date
             };
             let millis = boundary
-                .to_zoned(jiff::tz::TimeZone::UTC)
+                .to_zoned_datetime(jiff::tz::TimeZone::UTC)
                 .map_err(|_| "Date is out of range")?
                 .timestamp()
                 .as_millisecond();

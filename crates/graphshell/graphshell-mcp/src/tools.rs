@@ -160,6 +160,7 @@ impl<C: chirograph::Carrier> Server<C> {
             Ok(CarrierResponseBody::Intent(IntentResult::Stale {
                 current_epoch,
                 current_revision,
+                ..
             })) => Ok((
                 json!({
                     "result": "stale",

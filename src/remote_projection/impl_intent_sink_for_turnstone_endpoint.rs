@@ -14,10 +14,7 @@ impl IntentSink for TurnstoneEndpoint {
             return Err("intent arrived before a snapshot".into());
         };
         if intent.observed_epoch != epoch || intent.observed_revision != revision {
-            return Ok(IntentResult::Stale {
-                current_epoch: epoch,
-                current_revision: revision,
-            });
+            return Ok(IntentResult::stale(epoch, revision));
         }
         if !self.intent_was_advertised(&intent) {
             return Ok(IntentResult::Rejected {

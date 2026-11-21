@@ -318,7 +318,7 @@ incipit = { version = "0.2.2", git = "https://github.com/merely-made/graphshell.
 serde_json = { version = "1", features = ["float_roundtrip"] }
 # T5a's civil-day boundary is application policy. Jiff supplies civil types
 # and IANA-zone rules needed to distinguish 23-, 24-, and 25-hour local dates.
-jiff = "0.2"
+jiff = "1.0"
 # T5a is an acceptance consumer of this exact Turquet 0.13.0 source revision.
 cleromancy-sky = { version = "0.1.0", git = "https://github.com/merely-made/cleromancy.git", branch = "main", optional = true }
 

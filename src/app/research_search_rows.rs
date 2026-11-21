@@ -525,6 +525,6 @@ impl App {
 fn show_date(value: Option<i64>) -> String {
     value
         .and_then(|ms| jiff::Timestamp::from_millisecond(ms).ok())
-        .map(|ts| ts.to_zoned(jiff::tz::TimeZone::UTC).date().to_string())
+        .map(|ts| ts.to_zoned_datetime(jiff::tz::TimeZone::UTC).date().to_string())
         .unwrap_or_else(|| "any date".into())
 }

@@ -392,10 +392,7 @@ fn changed_owner_offer_is_not_replayed_and_owner_refusal_and_stale_survive() {
         IntentResult::Rejected {
             reason: "owner confirmation required".into(),
         },
-        IntentResult::Stale {
-            current_epoch: SceneEpoch(4),
-            current_revision: Revision(1),
-        },
+        IntentResult::stale(SceneEpoch(4), Revision(1)),
     ] {
         let progress = owner.submit_action_draft(&target, &mut draft).unwrap();
         assert!(matches!(

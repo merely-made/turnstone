@@ -294,6 +294,10 @@ crate = "inout@0.1.4"
 reason = "noq-proto 1.4.0 (latest), snow 0.10.0 (latest), turso_core 0.8.3 (latest) require it, via aes 0.8.4, aes-gcm 0.10.3 and 4 more, under conatus, esp, mere-transport, p2mere-net; goes when noq-proto, snow, turso_core move to inout 0.2.6"
 
 [[bans.skip]]
+crate = "jiff-tzdb@0.1.10"
+reason = "timezone_provider 0.2.6 (latest) requires jiff-tzdb 0.1, under boa_engine and temporal_rs (genet-bole, genet-vano); jiff 1.0 takes 1.0.0; goes when timezone_provider moves to jiff-tzdb 1.0 (2026-11-20)"
+
+[[bans.skip]]
 crate = "itertools@0.13.0"
 reason = "bindgen 0.72.1 (bindgen 0.73.2 drops it) requires it, under grafting-servo, p2mere-encryption; goes when their dependents take bindgen 0.73.2"
 

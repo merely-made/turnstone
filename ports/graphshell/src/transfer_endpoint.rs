@@ -268,10 +268,10 @@ impl IntentSink for TransferSourceEndpoint {
         if intent.observed_epoch != self.snapshot.scene.epoch
             || intent.observed_revision != self.snapshot.scene.revision
         {
-            return Ok(IntentResult::Stale {
-                current_epoch: self.snapshot.scene.epoch,
-                current_revision: self.snapshot.scene.revision,
-            });
+            return Ok(IntentResult::stale(
+                self.snapshot.scene.epoch,
+                self.snapshot.scene.revision,
+            ));
         }
         if intent.intent != TRANSFER_BEGIN_INTENT || intent.target != InstanceId(0) {
             return Ok(IntentResult::Rejected {
