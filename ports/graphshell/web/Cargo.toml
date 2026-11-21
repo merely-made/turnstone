@@ -118,9 +118,9 @@ genet-render = { git = "https://github.com/merely-made/genet.git", branch = "mai
 # this crate no longer hand-rolls them; only the canvas target and the
 # content-over-chrome composition below are ours.
 genet-presenter = { git = "https://github.com/merely-made/genet.git", branch = "main" }
-genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", branch = "main", version = "0.1.2" }
+genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", branch = "main", version = ">=0.1.2" }
 # Retained scenario attributes use the shared DOM seam.
-layout-dom-api = { git = "https://github.com/merely-made/genet.git", branch = "main", version = "0.1.1" }
+layout-dom-api = { git = "https://github.com/merely-made/genet.git", branch = "main", version = ">=0.1.1" }
 # The shared scenario driver every genet app runs its receipts through; the
 # page implements its `Automatable`/`Driveable` over the browser DOM
 # (`src/web_scenario.rs`). Pure: its three deps are already in this graph.
@@ -267,8 +267,8 @@ stickleback = { git = "https://github.com/merely-made/eidetic.git", branch = "ma
 # Dramatis uses published muniment; the viewer and its applets share Mere's
 # own package, as the root workspace does after DR-D.
 muniment = { git = "https://github.com/merely-made/eidetic.git", branch = "main" }
-layout-dom-api = { git = "https://github.com/merely-made/genet.git", branch = "main", version = "0.1.1" }
-genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", branch = "main", version = "0.1.2" }
+layout-dom-api = { git = "https://github.com/merely-made/genet.git", branch = "main", version = ">=0.1.1" }
+genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", branch = "main", version = ">=0.1.2" }
 # Registry Webcue and Genet sessions share one input vocabulary, as at the root.
 document-session-api = { git = "https://github.com/merely-made/genet.git", branch = "main" }
 # Webcue and Wgpu Cue from their repository, as at the root (one copy of each, one document-session-api).
