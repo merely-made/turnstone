@@ -287,3 +287,74 @@ provenance-checked default Wasm bundle. The headed check exercised
 the native bridge, which is static JavaScript. A fresh Wasm runtime
 qualification and signed add-on persistence across a browser restart
 remain separate checks.
+
+## 2026-11-20 H5r fresh Wasm and browser restart checks
+
+T-PC built the default `graphshell-web` product from Turnstone
+`c8b749be` plus the context-scene rule fix in this commit. Context rules
+take text, numbers and booleans as facts, matching the native presenter.
+Reference, date, date-time and list values remain available in the source row.
+
+The unmodified dependency build failed on Wasm in `cubecl-runtime
+0.12.0-pre.2`. The test used a disposable copy of that exact crate with
+[CubeCL's upstream fix](https://github.com/tracel-ai/cubecl/pull/2050)
+applied via a Cargo path override. Both resolved lockfiles, the original
+errors and the patch are in the receipt. This qualification used all
+default features and wgpu 30.0.2. The checkout still needs a released
+CubeCL fix for an unmodified default build.
+
+Wasm-bindgen 0.2.129 generated the web package. A section comparison
+verified that removing the debugging name section preserved every other
+section byte-for-byte. The served Wasm was 83,512,762 bytes with SHA-256
+`49a58e03d0303208030c57b53617c58a8da41a9bf03007b2371cce5f51cd6bc5`.
+
+Headed Firefox 160 on Wayland loaded the fresh package. The repository
+dataset rendered 21 nodes and 30 relationships and exposed all 30
+relationship names. The stale-revision control exposed an accessible
+refusal and rendered zero nodes and edges. Both scenario and window
+captures are retained.
+
+The original projection scenario failed at Add an object and Address
+because it never opened Document tools. The rerun added the two pane
+disclosure clicks and kept every assertion. Save, undo, redo, and
+fresh-page reload all passed on the same origin and profile. Firefox
+also logged script timeout and Wasm `unreachable` errors during the
+headed tests that the scenario's page gate did not report. A clean
+Firefox runtime log remains open.
+
+Headed Chrome for Testing 151.0.7922.34 on Wayland loaded the exact
+same Wasm bytes from the Chromium extension. The native bridge admitted
+three public cards using the existing Graphshell `d50bc125` relay and
+synthetic Djinn fixture. The stopped-resident control showed a refusal
+with zero cards and Close disabled. Fresh sessions after Djinn and
+Chromium restarts read the same subject and fingerprint, and accepted
+Close.
+
+The packaged graph saved one local record and disclosed it once on
+reopen in a new Chromium process. The unpacked CDP install needed to
+load again on process restart. The new process first reproduced an
+unavailable extension origin, then loaded the byte-identical package
+into the same profile. The graph record survived in that profile.
+The graph used WebGL2. The inspected graph captures show overlapping
+history and page-text controls and a clipped details pane at 1366×593.
+
+Headed Firefox 160 permanently installed a Mozilla-signed Web Platform
+Tests add-on in a disposable profile. Firefox refused the same-ID
+unsigned package with `ERROR_SIGNEDSTATE_REQUIRED`. Both Firefox
+process groups exited cleanly. The second process used the same profile,
+where the add-on was still active at version 1.0 with signed state 2
+and the same XPI hash. The driver made one signed install call and
+removed the profile after verification.
+
+A signed Graphshell XPI is still needed for the product restart check.
+The configured Linux/Windows hosts and both reachable Macs supplied no
+matching signed artifact. The signed fixture exercised Firefox's
+permanent install path.
+
+The T-PC packet is
+`~/Code/testing/turnstone/receipts/2026-11-20_fresh-extension-runtime`.
+`bundle-provenance.json` records the source diff hash, Cargo resolution
+and package bytes. `wasm-runtime` and `wasm-runtime-projection-disclosed`
+hold the Firefox Wasm attempts. `chromium-tpc-4/receipt/chromium.json`
+records the Chromium run, and `signed-fixture-restart.json` records the
+Firefox signing control and both process exits.
