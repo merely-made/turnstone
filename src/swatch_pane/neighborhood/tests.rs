@@ -89,62 +89,81 @@ fn kept_page_replay_restores_repeated_link_evidence_only_for_its_request() {
 }
 
 #[test]
-fn edge_is_clickable_through_the_native_swatch_hit_layers() {
+fn edges_and_nodes_are_clickable_in_narrow_and_wide_swatches() {
     use crate::swatch_pane::{GraphCanvasNode, SWATCH_PAD, SwatchPane};
 
-    let from = Uuid::from_u128(1);
-    let to = Uuid::from_u128(2);
+    let center = Uuid::from_u128(1);
+    let right = Uuid::from_u128(2);
+    let left = Uuid::from_u128(3);
+    let spokes = [("right", right), ("left", left)];
     let mut pane = SwatchPane::new(RESOURCE_NEIGHBORHOOD);
     pane.runner.update(|state| {
-        state.viewport_w = 424.0;
-        state.viewport_h = 224.0;
-        state.swatch.width = 400;
-        state.swatch.height = 200;
-        state.swatch.graph.nodes = [(from, (0.2, 0.5)), (to, (0.8, 0.5))]
+        state.swatch.selected = Some(center);
+        state.swatch.graph.nodes = [(center, 0.5), (right, 0.86), (left, 0.14)]
             .into_iter()
-            .map(|(id, position)| GraphCanvasNode {
+            .map(|(id, x)| GraphCanvasNode {
                 id,
                 kind: NodeState::Idle,
-                position,
+                position: (x, 0.5),
                 label: id.to_string(),
                 key: Some(id.to_string()),
             })
             .collect();
-        state.swatch.relations = vec![cambium::GraphCanvasRelation {
-            id: "observed".into(),
-            from,
-            to,
-            kind: "resource-reference".into(),
-            label: "Link observation".into(),
-            route: Vec::new(),
-            visible: true,
-            emphasized: false,
-            link_key: None,
-            marks: Default::default(),
-            strength: 1.0,
-        }];
-        state.neighborhood.as_mut().unwrap().details.insert(
-            "observed".into(),
-            ObservedLinkInspection {
-                target: LinkTarget::new(from, to),
-                observations: Vec::new(),
-                total: 0,
-            },
-        );
+        for (id, to) in spokes {
+            state.swatch.relations.push(cambium::GraphCanvasRelation {
+                id: id.into(),
+                from: center,
+                to,
+                kind: "resource-reference".into(),
+                label: "Link observation".into(),
+                route: Vec::new(),
+                visible: true,
+                emphasized: false,
+                link_key: None,
+                marks: Default::default(),
+                strength: 1.0,
+            });
+            state.neighborhood.as_mut().unwrap().details.insert(
+                id.into(),
+                ObservedLinkInspection {
+                    target: LinkTarget::new(center, to),
+                    observations: Vec::new(),
+                    total: 0,
+                },
+            );
+        }
     });
 
-    let _ = pane.scene(424, 224, 1.0);
-    pane.click(200.0 + SWATCH_PAD, 100.0 + SWATCH_PAD, 424, 224);
-    assert_eq!(
-        pane.runner
+    for width in [150, 424] {
+        pane.runner.update(|state| {
+            state.viewport_w = width as f32;
+            state.viewport_h = 224.0;
+            state.swatch.width = width - 2 * SWATCH_PAD as u32;
+            state.swatch.height = 200;
+            fit_node_targets(&mut state.swatch);
+        });
+        let _ = pane.scene(width, 224, 1.0);
+        let positions: Vec<_> = pane
+            .runner
             .state()
-            .neighborhood
-            .as_ref()
-            .unwrap()
-            .link
-            .as_deref(),
-        Some("observed"),
-    );
+            .swatch
+            .projected_positions()
+            .into_iter()
+            .map(|(_, point)| point)
+            .collect();
+        let (center_x, y) = positions[0];
+        let right_x = positions[1].0;
+        let left_x = positions[2].0;
+        for (id, x) in [("right", right_x), ("left", left_x)] {
+            pane.click((center_x + x) / 2.0 + SWATCH_PAD, y + SWATCH_PAD, width, 224);
+            let selection = pane.runner.state().neighborhood.as_ref().unwrap();
+            assert_eq!(selection.link.as_deref(), Some(id), "width {width}");
+        }
+        pane.click(right_x + SWATCH_PAD, y + SWATCH_PAD, width, 224);
+        let selection = pane.runner.state().neighborhood.as_ref().unwrap();
+        assert_eq!(selection.focus, Some(right.to_string()));
+        assert_eq!(selection.link, None);
+    }
 }
 
 #[test]

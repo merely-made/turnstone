@@ -41,6 +41,30 @@ const MAX_NEIGHBORS: usize = 16;
 const MAX_SOURCES: usize = 32;
 const MAX_EVIDENCE_ROWS: usize = 32;
 
+/// Leave pointer space for spokes between the node buttons. Their square
+/// targets sit above the edge targets, so the larger axis separation is what
+/// determines whether a spoke's midpoint clears both endpoints.
+pub(super) fn fit_node_targets(swatch: &mut cambium::GraphCanvasSwatch<Uuid, NodeState>) {
+    const NODE_TARGET: f32 = 44.0;
+    const EDGE_CLEARANCE: f32 = 12.0;
+
+    let positions = swatch.projected_positions();
+    let separation = positions
+        .iter()
+        .find(|(id, _)| Some(*id) == swatch.selected.as_ref())
+        .and_then(|(center, (x, y))| {
+            positions
+                .iter()
+                .filter(|(id, _)| id != center)
+                .map(|(_, (other_x, other_y))| (x - other_x).abs().max((y - other_y).abs()))
+                .reduce(f32::min)
+        });
+    swatch.hit_size = separation.map_or(NODE_TARGET, |span| {
+        let clearance = (span / 4.0).min(EDGE_CLEARANCE);
+        NODE_TARGET.min(span - clearance)
+    });
+}
+
 #[derive(Default)]
 pub(super) struct Page {
     address: String,

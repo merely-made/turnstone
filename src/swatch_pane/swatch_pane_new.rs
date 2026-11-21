@@ -275,6 +275,9 @@ impl SwatchPane {
             state.swatch.selected = model.selected;
             state.swatch.width = sw;
             state.swatch.height = sh;
+            if state.neighborhood.is_some() {
+                neighborhood::fit_node_targets(&mut state.swatch);
+            }
             state.activate_of = activate_of;
             state.viewport_w = pane_w;
             state.viewport_h = pane_h;
