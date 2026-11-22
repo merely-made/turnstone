@@ -22,7 +22,9 @@
 //! at C1, for the same reason. C5 replaces it with `mer3ly.net`; until then a
 //! relay nobody authenticated is exactly what the door is designed to be
 //! carried over, so a fixture using a hand-rolled loopback HTTP server proves
-//! more about the door than a polished one would.
+//! more about the door than a polished one would. That server now lives in
+//! `graphshell_host::signaling` (graphshell:mere-cli D5), shared with the Mere
+//! CLI; this binary adds `/nudge`.
 //!
 //! ## Run it
 //!
@@ -62,14 +64,14 @@ use graphshell_host::live_endpoint::{
 };
 use graphshell_host::projection_host::{ResidentProjectionHost, admit_webrtc_catalog};
 use graphshell_host::webrtc_door::{InviteTerms, issue_invite};
+use graphshell_host::signaling::{Reply, SignalingConfig, SignalingHooks, serve_signaling};
 use graphshell_host::webrtc_session::HostedInvite;
 use notochord::{NetworkId, ProfileRef, TrustedRoot};
 use personae::{IdentityProvider, InMemoryProvider};
-use tokio::io::{AsyncBufReadExt, AsyncReadExt, AsyncWriteExt, BufReader};
-use tokio::net::{TcpListener, TcpStream};
+use tokio::net::TcpListener;
 use tokio::sync::Mutex;
 use webrtc_carrier::ReleaseRefV1;
-use webrtc_carrier::native::{Answerer, AnswererConfig, CarrierConfig};
+use webrtc_carrier::native::{Answerer, CarrierConfig};
 
 #[cfg(feature = "distillery-chronicle-fixture")]
 use distillery::{ChronicleObserver, ChronicleRevision, ResidentReceipt};
@@ -368,148 +370,38 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!();
     println!("READY — waiting for a browser offer. Ctrl-C to stop.");
 
-    let mut session = 0u64;
-
-    loop {
-        let (stream, _peer) = listener.accept().await?;
+    // The signaling is graphshell-host's (graphshell:mere-cli D5); this
+    // fixture adds only `/nudge` and what to do with an opened channel.
+    let config = SignalingConfig {
+        bind: SocketAddr::new(args.bind, args.udp_port),
+        advertise: args.advertise.clone(),
+        fragment,
+        carrier: CarrierConfig::default(),
+    };
+    let nudge_endpoint = fixture_endpoint.clone();
+    let hooks = SignalingHooks::joined(move |id, answerer| {
+        println!("[session {id}] offer answered");
         let hosted = Arc::clone(&hosted);
         let host = Arc::clone(&host);
         let provider = Arc::clone(&provider);
-        let fragment = fragment.clone();
-        let bind = SocketAddr::new(args.bind, args.udp_port);
-        let advertise = args.advertise.clone();
-        let fixture_endpoint = fixture_endpoint.clone();
-        session += 1;
-        let id = session;
         tokio::spawn(async move {
-            if let Err(error) = serve_request(
-                stream,
-                id,
-                hosted,
-                host,
-                provider,
-                fragment,
-                bind,
-                advertise,
-                fixture_endpoint,
-            )
-            .await
-            {
-                eprintln!("[signal {id}] {error}");
+            if let Err(error) = admit_and_serve(id, answerer, hosted, host, provider).await {
+                println!("[session {id}] {error}");
             }
         });
-    }
-}
-
-/// One HTTP request. Deliberately minimal: this is a fixture's signaling, not
-/// a server.
-#[allow(clippy::too_many_arguments)]
-async fn serve_request(
-    mut stream: TcpStream,
-    id: u64,
-    hosted: Arc<Mutex<HostedInvite>>,
-    host: Arc<Mutex<ResidentProjectionHost>>,
-    provider: Arc<InMemoryProvider>,
-    fragment: String,
-    bind: SocketAddr,
-    advertise: Vec<IpAddr>,
-    fixture_endpoint: FixtureEndpoint,
-) -> Result<(), String> {
-    let (read, mut write) = stream.split();
-    let mut reader = BufReader::new(read);
-
-    let mut request_line = String::new();
-    reader
-        .read_line(&mut request_line)
-        .await
-        .map_err(|error| format!("request line: {error}"))?;
-    let mut parts = request_line.split_whitespace();
-    let method = parts.next().unwrap_or_default().to_string();
-    let path = parts.next().unwrap_or_default().to_string();
-
-    let mut content_length = 0usize;
-    loop {
-        let mut header = String::new();
-        reader
-            .read_line(&mut header)
-            .await
-            .map_err(|error| format!("header: {error}"))?;
-        let header = header.trim_end();
-        if header.is_empty() {
-            break;
-        }
-        if let Some(value) = header
-            .to_ascii_lowercase()
-            .strip_prefix("content-length:")
-            .map(str::trim)
-            .and_then(|value| value.parse::<usize>().ok())
-        {
-            content_length = value;
-        }
-    }
-
-    match (method.as_str(), path.as_str()) {
-        ("OPTIONS", _) => respond(&mut write, "204 No Content", "").await,
-        ("GET", "/health") => respond(&mut write, "200 OK", "ok").await,
-        ("GET", "/invite") => respond(&mut write, "200 OK", &fragment).await,
-        ("POST", "/nudge") => match fixture_endpoint.nudge() {
+    })
+    .with_route(move |method, path| {
+        (method == "POST" && path == "/nudge").then(|| match nudge_endpoint.nudge() {
             Ok(revision) => {
                 println!("[nudge] the host appended a card natively; board at revision {revision}");
-                respond(&mut write, "200 OK", &revision.to_string()).await
+                Reply::new("200 OK", revision.to_string())
             },
-            Err(message) => respond(&mut write, "405 Method Not Allowed", message).await,
-        },
-        ("POST", "/offer") => {
-            let mut body = vec![0u8; content_length];
-            if content_length > 0 {
-                reader
-                    .read_exact(&mut body)
-                    .await
-                    .map_err(|error| format!("body: {error}"))?;
-            }
-            let offer = String::from_utf8_lossy(&body).into_owned();
-            if offer.trim().is_empty() {
-                return respond(&mut write, "400 Bad Request", "empty offer").await;
-            }
-            println!("[session {id}] offer received, {} bytes", offer.len());
-
-            // Bind a fresh answerer per offer: `accept` consumes it, and each
-            // session gets its own socket and certificate.
-            let mut answerer = Answerer::bind(AnswererConfig {
-                bind,
-                advertise: advertise.clone(),
-                carrier: CarrierConfig::default(),
-            })
-            .await
-            .map_err(|error| format!("bind: {error}"))?;
-
-            let answer = match answerer.answer(&offer) {
-                Ok(answer) => answer,
-                Err(error) => {
-                    println!("[session {id}] refused the offer: {error}");
-                    return respond(&mut write, "400 Bad Request", &error.to_string()).await;
-                },
-            };
-            respond(&mut write, "200 OK", &answer).await?;
-
-            // The answer is on its way; everything after it is the shipping
-            // path. Spawned so the signaling socket is free immediately.
-            tokio::spawn(async move {
-                if let Err(error) = admit_and_serve(id, answerer, hosted, host, provider).await {
-                    println!("[session {id}] {error}");
-                }
-            });
-            Ok(())
-        },
-        _ => {
-            respond(
-                &mut write,
-                "404 Not Found",
-                "try POST /offer, GET /invite, GET /health",
-            )
-            .await
-        },
-    }
+            Err(message) => Reply::new("405 Method Not Allowed", message),
+        })
+    })
+    .with_report(|id, error| eprintln!("[signal {id}] {error}"));
+    serve_signaling(listener, config, hooks).await?;
+    Ok(())
 }
 
 /// Load the checked-in W1 job board as a host-local, read-only observation.
@@ -604,31 +496,6 @@ async fn admit_and_serve(
     );
 
     Ok(())
-}
-
-async fn respond(
-    write: &mut (impl AsyncWriteExt + Unpin),
-    status: &str,
-    body: &str,
-) -> Result<(), String> {
-    let response = format!(
-        "HTTP/1.1 {status}\r\n\
-         Content-Type: text/plain; charset=utf-8\r\n\
-         Content-Length: {}\r\n\
-         Access-Control-Allow-Origin: *\r\n\
-         Access-Control-Allow-Headers: content-type\r\n\
-         Connection: close\r\n\
-         \r\n{body}",
-        body.len()
-    );
-    write
-        .write_all(response.as_bytes())
-        .await
-        .map_err(|error| format!("response: {error}"))?;
-    write
-        .flush()
-        .await
-        .map_err(|error| format!("flush: {error}"))
 }
 
 fn hex(bytes: &[u8]) -> String {

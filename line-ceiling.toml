@@ -29,10 +29,6 @@ path = "ports/graphshell/src/app.rs"
 reason = "Graphshell's reference-host composition over local and remote projections. Existing source-size debt; a responsibility split must preserve AppError, GraphshellApp and existing module visibility."
 
 [[exception]]
-path = "ports/graphshell/src/bin/c4_webrtc_host.rs"
-reason = "C4a's host fixture: a real Graphshell projection, served to a browser over WebRTC. Existing source-size debt; a responsibility split must preserve Endpoint, FixtureEndpoint, Args and existing module visibility."
-
-[[exception]]
 path = "ports/graphshell/src/bin/graphshell_alembic.rs"
 reason = "Public evidence-brief workshop through Graphshell's canonical MereHost. Existing source-size debt; a responsibility split must preserve OwnerMode, CustodyObserver, Command and existing module visibility."
 

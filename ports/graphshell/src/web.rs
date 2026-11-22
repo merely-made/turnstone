@@ -33,6 +33,8 @@ mod web_physics_worker;
 mod web_practice;
 #[cfg(feature = "remote")]
 mod web_rtc_link;
+#[cfg(feature = "remote")]
+mod web_query;
 mod web_scenario;
 #[cfg(feature = "product")]
 mod web_share;
@@ -157,6 +159,14 @@ pub fn connect_remote(signal_url: String, invite: Option<String>) -> Result<(), 
         web_sys::console::warn_1(&error.into());
     }
     Ok(())
+}
+
+/// Join the host `invite` names and read the one query it grants into the
+/// query page's table (graphshell:mere-cli D21). `query.js` calls this.
+#[cfg(feature = "remote")]
+#[wasm_bindgen]
+pub fn query_remote(signal_url: String, invite: Option<String>, query: String) -> Result<(), JsValue> {
+    web_query::start(signal_url, invite, query).map_err(|error| JsValue::from_str(&error))
 }
 
 /// Parse and arm a scenario on the tree page; `loader.js` calls this from

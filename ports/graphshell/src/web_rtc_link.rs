@@ -131,13 +131,33 @@ pub(crate) fn connect<H: RemoteHost>(
     signal_url: String,
     invite: Option<String>,
 ) {
+    connect_as(state, signal_url, invite, None);
+}
+
+/// [`connect`] for a session that reads `query`'s rows instead of mounting a
+/// projection (graphshell:mere-cli D21).
+pub(crate) fn connect_querying<H: RemoteHost>(
+    state: Rc<RefCell<H>>,
+    signal_url: String,
+    invite: Option<String>,
+    query: String,
+) {
+    connect_as(state, signal_url, invite, Some(query));
+}
+
+fn connect_as<H: RemoteHost>(
+    state: Rc<RefCell<H>>,
+    signal_url: String,
+    invite: Option<String>,
+    query: Option<String>,
+) {
     {
         let mut host = state.borrow_mut();
         host.pre_join("joining");
         host.changed();
     }
     spawn_local(async move {
-        if let Err(error) = join(state.clone(), signal_url, invite).await {
+        if let Err(error) = join(state.clone(), signal_url, invite, query).await {
             let mut host = state.borrow_mut();
             host.join_failed(error);
             host.changed();
@@ -149,6 +169,7 @@ async fn join<H: RemoteHost>(
     state: Rc<RefCell<H>>,
     signal_url: String,
     invite: Option<String>,
+    query: Option<String>,
 ) -> Result<(), String> {
     let status = |text: &str| {
         let mut host = state.borrow_mut();
@@ -183,7 +204,10 @@ async fn join<H: RemoteHost>(
     {
         let mut host = state.borrow_mut();
         host.adopt(LiveRemote {
-            session: RemoteSession::new(remote_profile()),
+            session: match query {
+                Some(query) => RemoteSession::querying(remote_profile(), query),
+                None => RemoteSession::new(remote_profile()),
+            },
             transport: Transport {
                 outbox,
                 writer: writer.clone(),
@@ -482,7 +506,7 @@ fn timeout(ms: i32) -> Result<Promise, String> {
     }))
 }
 
-async fn http(method: &str, url: &str, body: Option<&str>) -> Result<String, String> {
+pub(crate) async fn http(method: &str, url: &str, body: Option<&str>) -> Result<String, String> {
     let init = RequestInit::new();
     init.set_method(method);
     init.set_mode(RequestMode::Cors);

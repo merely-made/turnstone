@@ -1,0 +1,43 @@
+<!doctype html>
+<!-- Copyright 2026 Mark Alan Boykin
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this
+     file, You can obtain one at https://mozilla.org/MPL/2.0/.
+     SPDX-License-Identifier: MPL-2.0 -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mere query</title>
+  <link rel="stylesheet" href="co_op.css">
+  <style>
+    #rows { border-collapse: collapse; margin-top: 1rem; }
+    #rows th, #rows td { border: 1px solid currentColor; padding: 0.25rem 0.6rem; text-align: left; }
+    #rows .unbound { opacity: 0.55; }
+    #query-text { white-space: pre-wrap; }
+    label { display: block; margin-top: 0.75rem; }
+    input { width: 100%; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Query a peer's graph</h1>
+    <p>Open the invitation a <code>mere serve --via webrtc</code> owner sent you.
+      The owner allows one query; this page shows it, runs it, and lists the rows.
+      The graph stays with its owner.</p>
+    <form id="invite-form">
+      <label>Signaling address <input id="signal" name="signal" placeholder="http://192.168.1.10:43864" required></label>
+      <label>Invite fragment <input id="fragment" name="fragment" placeholder="mwi1.…"></label>
+      <button type="submit">Fetch the allowed query</button>
+    </form>
+    <details id="query-box" hidden open>
+      <summary>The allowed SPARQL query</summary>
+      <pre id="query-text"></pre>
+      <button id="run" type="button">Run query</button>
+    </details>
+    <p id="status" role="status" aria-live="polite"></p>
+    <table id="rows" aria-label="Query rows"></table>
+  </main>
+  <script type="module" src="query.js"></script>
+</body>
+</html>

@@ -60,6 +60,7 @@ pub(crate) fn summarize(body: &chirograph::CarrierResponseBody) -> String {
         },
         B::Resource(_) => "resource".to_string(),
         B::RetainedPages(pages) => format!("{} retained page(s)", pages.pages.len()),
+        B::Query(page) => format!("query page of {} row(s)", page.rows.len()),
         B::ResourceChunk(chunk) => format!(
             "resource chunk at {} of {} byte(s)",
             chunk.offset, chunk.total_len

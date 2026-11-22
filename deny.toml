@@ -498,10 +498,6 @@ crate = "servo-media-traits@0.2.0"
 reason = "servo-media-player 0.2.0 (family, merely-made/genet) requires it; goes when merely-made/genet moves servo-media-player to servo-media-traits 0.8.0"
 
 [[bans.skip]]
-crate = "servo-xpath@0.2.0"
-reason = "genet-runtime 0.0.0 (family, merely-made/genet) requires it; goes when merely-made/genet moves genet-runtime to servo-xpath 0.8.0"
-
-[[bans.skip]]
 crate = "sha1@0.10.7"
 reason = "headers 0.4.2 (latest) requires it, under grafting-servo; goes when headers moves to sha1 0.11.0"
 
