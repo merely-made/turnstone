@@ -160,15 +160,24 @@ impl<C: chirograph::Carrier> Server<C> {
             Ok(CarrierResponseBody::Intent(IntentResult::Stale {
                 current_epoch,
                 current_revision,
-                ..
-            })) => Ok((
-                json!({
+                current_engine_revision,
+            })) => {
+                let mut stale = json!({
                     "result": "stale",
                     "current_epoch": current_epoch.0,
                     "current_revision": current_revision.0,
-                }),
-                true,
-            )),
+                });
+                // The engine revision the endpoint now holds, when it names one
+                // (mere:engine-split D193).
+                if let Some(engine) = current_engine_revision {
+                    stale["current_engine_revision"] = json!({
+                        "session": engine.session,
+                        "cursor": engine.cursor,
+                        "digest": engine.digest,
+                    });
+                }
+                Ok((stale, true))
+            },
             Ok(other) => Err(Failure::Protocol(RpcError::internal(format!(
                 "expected an intent result, got {other:?}"
             )))),

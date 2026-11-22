@@ -239,6 +239,8 @@ fn a_stale_write_is_refused_with_the_current_revision() {
     assert_eq!(stale["result"]["isError"], true);
     assert_eq!(structured(&stale)["result"], "stale");
     assert_eq!(structured(&stale)["current_revision"], 2);
+    // This endpoint is not engine-backed, so the reply names no engine revision.
+    assert!(structured(&stale).get("current_engine_revision").is_none());
 }
 
 #[test]
