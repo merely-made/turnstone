@@ -48,6 +48,16 @@ pub struct SourceCaptureTarget {
     pub source_admission: uuid::Uuid,
 }
 
+impl SourceCaptureTarget {
+    pub(crate) fn keep_label(&self) -> &'static str {
+        if fetch::peer::is_address(&self.url) {
+            "Keep this edition"
+        } else {
+            "Save source and keep"
+        }
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct CaptureRequest {
     pub id: uuid::Uuid,

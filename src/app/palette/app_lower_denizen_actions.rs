@@ -200,8 +200,29 @@ impl App {
             && let Ok(target) = self.source_capture_target(member)
         {
             rows.push((
-                "Save source and keep".into(),
+                target.keep_label().into(),
                 Action::CaptureSourceDocument { target },
+            ));
+        }
+        if let Some((node, _)) = self.browser_command_target()
+            && let Some(reader) = self.saved_readers.get(&node)
+            && let Some(admission) = self
+                .saved_source_admissions()
+                .into_iter()
+                .find(|a| a.key == reader.target.key)
+            && fetch::peer::is_address(&admission.url)
+        {
+            if reader.target.selector.is_some() {
+                let mut target = reader.target.clone();
+                target.selector = None;
+                rows.push((
+                    "Reopen kept edition".into(),
+                    Action::OpenSavedSource(target),
+                ));
+            }
+            rows.push((
+                "Open current version".into(),
+                Action::OpenAddress(admission.url),
             ));
         }
         let mut retries: Vec<_> = self
@@ -455,7 +476,9 @@ impl App {
             .iter()
             .map(|(label, action)| (label.to_string(), action.clone()))
             .collect();
-        if self.place.binding().is_some() {rows.extend(self.catalogue_actions());}
+        if self.place.binding().is_some() {
+            rows.extend(self.catalogue_actions());
+        }
         // The status row shows an elided ticket, so the copy row is the only
         // route to the whole one. Offered only where there IS one: a row that
         // could only refuse would teach the palette to lie.

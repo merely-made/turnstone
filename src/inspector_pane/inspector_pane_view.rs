@@ -63,8 +63,11 @@ pub(super) fn inspector_pane_view(state: &InspectorState) -> InspectorView {
     // Bind the offered source, rather than consulting the possibly retargeted
     // pane when a queued activation is finally delivered.
     let source_target = state.source_target.clone();
+    let source_label = source_target
+        .as_ref()
+        .map_or("Save source and keep", |target| target.keep_label());
     let source_button = button(
-        "Save source and keep",
+        source_label,
         move |_state: &mut InspectorState, _click: PointerClick| {
             source_target
                 .clone()
@@ -151,9 +154,9 @@ pub(super) fn inspector_pane_view(state: &InspectorState) -> InspectorView {
                         "display:none;"
                     },
                 ),
-                detail_panel(&sections),
                 source_button,
                 source_status,
+                detail_panel(&sections),
                 button("Research tools", |state: &mut InspectorState, _| {
                     state.research_expanded = !state.research_expanded;
                     None::<InspectorIntent>

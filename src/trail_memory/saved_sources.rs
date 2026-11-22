@@ -103,7 +103,7 @@ pub(super) fn resolve_with_sealed(
     let content = if admission.key.annotation_manifest.starts_with("sealed-v1:") {
         let store = sealed.ok_or("sealed source store unavailable")?;
         let sealer = sealer.ok_or("unlock the profile to read this sealed source")?;
-        super::sealed_capture::content(store, sealer, admission)?
+        super::sealed_capture::content_for_open(store, sealer, admission, target.selector.is_none())?
     } else {
         load_content(store, admission)?
     };
@@ -185,6 +185,7 @@ fn load_content(
     }
     let capture = extraction.capture;
     Ok(Content {
+        edition: None,
         title: admission.title.clone(),
         origin: capture.canonical_source,
         captured_at_ms,

@@ -29,6 +29,14 @@ impl Shell {
             || self.nomadnet_rx.try_recv().ok(),
         ) {
             let raw = match raw {
+                FetchUpdate::PeerAssets { request, url, assets } => {
+                    if let Some(node) = self.pending_fetches.peer_page_owner(request, &url)
+                        && self.app.content.active_fetch(node) == Some(request)
+                    {
+                        self.app.content.peer_assets.insert(node, assets);
+                    }
+                    continue;
+                },
                 FetchUpdate::Subresource(outcome) => {
                     let requesters = self.pending_fetches.take_subresources(&outcome.url);
                     if requesters.is_empty() {

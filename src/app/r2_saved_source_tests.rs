@@ -54,6 +54,7 @@ fn remove_refs(app: &mut App, graph: crate::panes::GraphId, node: uuid::Uuid) {
 
 fn target(key: Key, text: &str) -> (Target, Content) {
     let content = Content {
+        edition: None,
         title: "Captured page title".into(),
         origin: "https://origin-gone.example/source".into(),
         captured_at_ms: 1_700_000_000_000,

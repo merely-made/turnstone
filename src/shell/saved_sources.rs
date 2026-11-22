@@ -62,6 +62,7 @@ mod tests {
 
     fn saved() -> (String, EngineDocument) {
         let content = Content {
+            edition: None,
             title: "Private evidence".into(),
             origin: "https://gone.test/original".into(),
             captured_at_ms: 1000,

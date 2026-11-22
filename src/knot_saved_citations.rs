@@ -80,6 +80,7 @@ pub(crate) mod tests {
             selector: Some(crate::saved_sources::Selector { start: 11, end: 15 }),
         };
         let content = crate::saved_sources::Content {
+            edition: None,
             title: "A1".into(),
             origin: "https://gone.test/A".into(),
             captured_at_ms: 42,

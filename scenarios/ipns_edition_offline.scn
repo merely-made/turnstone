@@ -1,0 +1,23 @@
+settle 8
+key escape
+assert snap network-offline == true
+act Search saved sources
+type Linn
+settle 2
+type et edi
+settle 2
+type tion A
+wait-research-search 240
+choose-suggestion Linnet edition A
+wait-saved-reader 240
+act Reopen kept edition
+wait-saved-reader 240
+assert snap browser-current-engine == genet.livery
+act Open node in Workbench
+act Maximize pane
+settle 15
+assert content-live
+capture offline-a
+assert snap offline-acquisition-attempts == 0
+record-saved-sources offline-a
+log Reopened kept A from sealed storage

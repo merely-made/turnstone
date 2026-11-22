@@ -47,7 +47,7 @@ pub(super) fn run(
                     sealed_store.as_ref(),
                     &limits,
                 ));
-            }
+            },
             TrailCommand::ReopenNeighborhood(request) => {
                 out.emit(Update::NeighborhoodReopened(Box::new(request.run(
                     &current_dir,
@@ -56,7 +56,7 @@ pub(super) fn run(
                     sealed_store.as_ref(),
                     &limits,
                 ))));
-            }
+            },
             TrailCommand::ResearchRecords(command) => {
                 if let Some(error) = &sealed_error {
                     record_actor::reject(command, error.clone());
@@ -390,6 +390,7 @@ pub(super) fn run(
                 }
             },
             TrailCommand::CaptureSourceDocument {
+                edition,
                 capture_generation,
                 request,
                 directory,
@@ -408,18 +409,38 @@ pub(super) fn run(
                 } else if custody_epoch.is_none() {
                     Err("Unlock the profile to retain a private source".into())
                 } else {
-                    worker_capture_ops::apply(
-                        &mut state,
-                        &mut sealed_store,
-                        custody.as_ref().expect("custody checked"),
-                        &limits,
-                        &memory_error,
-                        &sealed_error,
-                        &request,
-                        document.as_ref(),
-                        false,
-                    )
-                    .and_then(|stored| stored.ok_or_else(|| "Capture result missing".into()))
+                    let binding = custody.as_ref().expect("custody checked");
+                    (|| {
+                        // Recovery can admit a completed source receipt immediately. Make every
+                        // held resource durable before allowing that receipt to exist.
+                        if request.keep && fetch::peer::is_address(&request.url) {
+                            let store = sealed_store
+                                .as_mut()
+                                .ok_or("sealed capture store unavailable")?;
+                            let mut bounded = crate::research_storage::BudgetStore {
+                                store,
+                                budget: limits.as_ref().map_err(Clone::clone)?.budget(),
+                            };
+                            peer_edition::keep(
+                                &mut bounded,
+                                binding.sealer.as_ref(),
+                                &request,
+                                edition.as_deref(),
+                            )?;
+                        }
+                        worker_capture_ops::apply(
+                            &mut state,
+                            &mut sealed_store,
+                            binding,
+                            &limits,
+                            &memory_error,
+                            &sealed_error,
+                            &request,
+                            document.as_ref(),
+                            false,
+                        )?
+                        .ok_or_else(|| "Capture result missing".into())
+                    })()
                 };
                 if custody_epoch.is_some()
                     && !custody

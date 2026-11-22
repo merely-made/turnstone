@@ -63,6 +63,7 @@ mod research_compare_tests;
 mod research_search_tests;
 mod saved_sources;
 mod sealed_capture;
+mod peer_edition;
 mod kept_validation;
 mod kept_document_read;
 pub(crate) use kept_document_read::KeptDocumentRead;
@@ -178,6 +179,7 @@ pub enum TrailCommand {
         capture_generation: uuid::Uuid,
         request: crate::source_capture::CaptureRequest,
         directory: PathBuf,
+        edition: Option<std::sync::Arc<fetch::peer::PeerAssets>>,
         document: Option<crate::content::FetchedDocument>,
     },
     /// Commit the durable request receipt after owning facet/graph save ack.

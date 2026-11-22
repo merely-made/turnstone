@@ -137,6 +137,7 @@ pub mod retained_clip;
 mod ring;
 mod roster_view;
 pub mod saved_sources;
+mod peer_edition;
 mod scenario;
 mod scene_state;
 #[cfg(test)]

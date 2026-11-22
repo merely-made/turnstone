@@ -148,6 +148,7 @@ fn source_capture_real_stack_process_worker() {
     }
     assert!(
         actor.command(crate::trail_memory::TrailCommand::CaptureSourceDocument {
+            edition: None,
             capture_generation: app.source_capture_generation,
             request: request.clone(),
             directory: directory.clone(),

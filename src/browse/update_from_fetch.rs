@@ -184,7 +184,7 @@ pub fn update_from_fetch(update: FetchUpdate, pending: &mut PendingFetches) -> O
                 }),
             }
         },
-        FetchUpdate::Subresource(_) => None,
+        FetchUpdate::Subresource(_) | FetchUpdate::PeerAssets { .. } => None,
         FetchUpdate::Submission(outcome) => {
             let Some(source) = pending.submissions.remove(&outcome.request) else {
                 tracing::warn!(

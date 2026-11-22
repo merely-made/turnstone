@@ -142,6 +142,7 @@ impl ContentStates {
         request: fetch::FetchRequestId,
     ) -> Option<fetch::FetchRequestId> {
         self.source_admissions.remove(&node);
+        self.peer_assets.remove(&node);
         self.loads.entry(node).or_default().begin(request)
     }
 
@@ -318,6 +319,7 @@ impl ContentStates {
     /// admission. A terminal answer already queued for an older request then
     /// fails `finish_fetch` and cannot repopulate this cache.
     pub(crate) fn clear_source_documents(&mut self) {
+        self.peer_assets.clear();
         for load in self.loads.values_mut() {
             load.clear();
         }
@@ -354,6 +356,7 @@ impl ContentStates {
         self.source_admissions.remove(&node);
         self.note_closed(node);
         self.loads.remove(&node);
+        self.peer_assets.remove(&node);
     }
 
     pub fn note_failed(&mut self, node: Uuid, error: String) {

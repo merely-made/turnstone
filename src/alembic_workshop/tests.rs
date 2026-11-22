@@ -42,6 +42,7 @@ fn sealed_entry(owner: &Owner, manifest: &str, text: &str) -> Entry {
     Entry {
         admission,
         content: Some(Content {
+            edition: None,
             title: "Café retained copy".into(),
             origin: "https://private.test/source".into(),
             captured_at_ms: 4,

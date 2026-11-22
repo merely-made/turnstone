@@ -194,6 +194,7 @@ fn model_free_capture_and_ack_actor_replies_preserve_real_owner_open_limits() {
             keep: true,
         };
         assert!(actor.command(TrailCommand::CaptureSourceDocument {
+            edition: None,
             capture_generation: generation,
             request: request.clone(),
             directory: directory.clone(),

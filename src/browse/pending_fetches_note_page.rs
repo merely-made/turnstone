@@ -4,6 +4,15 @@
 use super::*;
 
 impl PendingFetches {
+    pub(crate) fn peer_page_owner(
+        &self,
+        request: fetch::FetchRequestId,
+        url: &str,
+    ) -> Option<Uuid> {
+        let pending = self.pages.get(&request)?;
+        (pending.kind == PendingPageKind::Page && pending.fetch_url == url).then_some(pending.node)
+    }
+
     pub fn note_page(
         &mut self,
         request: fetch::FetchRequestId,

@@ -22,6 +22,7 @@ fn entry(key: Key, occurrence: usize, text: &str, title: &str) -> Entry {
             error: None,
         },
         content: Some(Content {
+            edition: None,
             title: title.into(),
             origin: format!("https://saved.test/{title}"),
             captured_at_ms: 42,

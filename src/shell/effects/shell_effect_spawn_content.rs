@@ -107,7 +107,31 @@ impl Shell {
                     }
                 };
                 let fetched = self.app.content.fetched(node, &url).cloned();
-                let pinned = if saved_target.is_some() {
+                // The saved-source admission above binds this private view to the current graph.
+                let replay = saved_target
+                    .as_ref()
+                    .and_then(|_| self.app.saved_readers.get(&node))
+                    .and_then(|reader| reader.content.as_ref())
+                    .and_then(|content| content.edition.clone());
+                let live_peer = fetch::peer::is_address(&url);
+                let peer_assets = replay
+                    .as_ref()
+                    .map(|edition| edition.assets.clone())
+                    .or_else(|| {
+                        let document = fetched.as_ref()?;
+                        self.app
+                            .content
+                            .peer_assets
+                            .get(&node)
+                            .filter(|assets| {
+                                document.effective_url.as_deref()
+                                    == Some(assets.document_url.as_str())
+                            })
+                            .cloned()
+                    });
+                let pinned = if live_peer || replay.is_some() {
+                    Some(inker::routing::ENGINE_GENET_LIVERY.to_owned())
+                } else if saved_target.is_some() {
                     Some(crate::saved_sources::ENGINE_ID.to_string())
                 } else {
                     clip.as_ref()
@@ -183,7 +207,8 @@ impl Shell {
                 ) {
                     ContentSpawnDispatch::PendingBrowser => return,
                     ContentSpawnDispatch::Browser => {
-                        let update = self.spawn_browser_surface(node, &url, &decision, route_source);
+                        let update =
+                            self.spawn_browser_surface(node, &url, &decision, route_source);
                         let effects = self.app.apply_update(update);
                         self.run_effects(effects);
                         return;
@@ -195,6 +220,16 @@ impl Shell {
                 // Requested and let PageFetched re-issue this spawn. The
                 // engine must not perform a second top-level request.
                 if crate::browse::is_fetchable(&url) && fetched.is_none() {
+                    // Restoring an open peer page restores its current-version intent.
+                    // Offline, the kept edition can be opened separately from the trail.
+                    if live_peer && self.network_offline {
+                        let effects = self.app.apply_update(Update::ContentFailed {
+                            node,
+                            error: "The current edition is offline. Open a kept edition from saved sources.".into(),
+                        });
+                        self.run_effects(effects);
+                        return;
+                    }
                     if !self.pending_fetches.page_in_flight(&url, node, &url) {
                         let fetch = self.app.fetch_page_effect(node, url.clone(), url.clone());
                         for command in browse::fetch_commands_for(&fetch, &mut self.pending_fetches)
@@ -204,7 +239,7 @@ impl Shell {
                     }
                     return;
                 }
-                let prepared = match prepare_content_controller(
+                let mut prepared = match prepare_content_controller(
                     &self.app,
                     node,
                     &url,
@@ -221,6 +256,25 @@ impl Shell {
                         return;
                     },
                 };
+                if live_peer && peer_assets.is_none() {
+                    let effects = self.app.apply_update(Update::ContentFailed {
+                        node,
+                        error: "The verified IPFS edition is unavailable".into(),
+                    });
+                    self.run_effects(effects);
+                    return;
+                }
+                let held_edition = peer_assets.is_some();
+                let engines = if let Some(assets) = peer_assets {
+                    prepared.config.request.address = assets.document_url.clone();
+                    if let Some(replay) = replay {
+                        prepared.config.request.body = Some(replay.body.clone());
+                        prepared.config.request.content_type = Some("text/html".into());
+                    }
+                    crate::peer_edition::engines(assets)
+                } else {
+                    std::sync::Arc::clone(&self.content_engines)
+                };
                 let route = pelt_core::PeltRoute {
                     decision: decision.clone(),
                     source: route_source,
@@ -229,7 +283,7 @@ impl Shell {
                 let opened = open_prepared_content_controller(
                     &self.app,
                     prepared,
-                    std::sync::Arc::clone(&self.content_engines),
+                    engines,
                     std::sync::Arc::clone(&self.pelt_surface_engines),
                     super::super::ShellClock(self.epoch),
                 );
@@ -291,7 +345,11 @@ impl Shell {
                         // refusal is reported and dropped, and what the
                         // node asked for stays persisted either way.
                         replay_retained_page_scale(&mut self.app, node, session);
-                        let subresources = session.subresources();
+                        let subresources = if held_edition {
+                            Vec::new()
+                        } else {
+                            session.subresources()
+                        };
                         self.clear_reader_appearances(node);
                         // A document replacing a live surface takes the
                         // node's one content entry, so what the shell
@@ -338,7 +396,7 @@ impl Shell {
                     .facts(node)
                     .map(|facts| facts.engine.clone())
                     .unwrap_or_else(|| inker::routing::ENGINE_NEMATIC_GEMTEXT.to_string());
-                if engine == crate::nomadnet::ENGINE_ID {
+                if engine == crate::nomadnet::ENGINE_ID || fetch::peer::is_address(&url) {
                     // Generic smolweb body replacement selects by URL scheme.
                     // Re-enter the explicit Micron parser for this native address.
                     self.run_effects(vec![Effect::SpawnContent { node, url }]);

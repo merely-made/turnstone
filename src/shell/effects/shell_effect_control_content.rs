@@ -161,6 +161,7 @@ impl Shell {
                             capture_generation,
                             request: request.clone(),
                             directory,
+                            edition: self.app.content.peer_assets.get(&request.node).cloned(),
                             document,
                         },
                     ) {

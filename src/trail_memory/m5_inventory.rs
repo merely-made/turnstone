@@ -251,6 +251,7 @@ mod tests {
             error: None,
         };
         let content = crate::saved_sources::Content {
+            edition: None,
             title: "private-title-canary".into(),
             origin: "private-url-canary".into(),
             captured_at_ms: 1,

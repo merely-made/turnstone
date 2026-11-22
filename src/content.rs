@@ -207,6 +207,7 @@ pub struct ContentStates {
     /// and retained response, owned by Mere's sans-IO `PageLoad`.
     loads: HashMap<Uuid, page_load::PageLoad>,
     /// A retained response admission, independent of equal response bytes.
+    pub(crate) peer_assets: HashMap<Uuid, std::sync::Arc<fetch::peer::PeerAssets>>,
     source_admissions: HashMap<Uuid, (Uuid, crate::source_capture::SourceIdentity)>,
 }
 

@@ -47,6 +47,9 @@ pub struct Admission {
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Content {
+    /// Read on exact open under current custody. Never exported with the text projection.
+    #[serde(skip)]
+    pub(crate) edition: Option<std::sync::Arc<crate::peer_edition::Replay>>,
     pub title: String,
     pub origin: String,
     pub captured_at_ms: u64,

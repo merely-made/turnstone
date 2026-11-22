@@ -37,6 +37,7 @@ fn same_directory_actor_reopen_rejects_old_opening_commands_before_writes() {
         ..request.clone()
     };
     assert!(handle.command(TrailCommand::CaptureSourceDocument {
+        edition: None,
         capture_generation: initial_generation,
         request: stale_request.clone(),
         directory: directory.clone(),
@@ -81,6 +82,7 @@ fn same_directory_actor_reopen_rejects_old_opening_commands_before_writes() {
         ..request.clone()
     };
     assert!(handle.command(TrailCommand::CaptureSourceDocument {
+        edition: None,
         capture_generation: current_generation,
         request: foreign_request.clone(),
         directory: directory.clone(),
@@ -119,6 +121,7 @@ fn same_directory_actor_reopen_rejects_old_opening_commands_before_writes() {
     // Positive control immediately after same-directory Reopen: this cannot
     // pass if the old Fjall owner prevented the new handle from opening.
     assert!(handle.command(TrailCommand::CaptureSourceDocument {
+        edition: None,
         capture_generation: current_generation,
         request: request.clone(),
         directory: directory.clone(),

@@ -146,6 +146,7 @@ mod tests {
                 error: None,
             };
             let content = crate::saved_sources::Content {
+                edition: None,
                 title: admission.title.clone(),
                 origin: admission.url.clone(),
                 captured_at_ms: 1,

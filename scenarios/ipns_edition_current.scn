@@ -1,0 +1,19 @@
+settle 8
+key escape
+act Search saved sources
+type Linn
+settle 2
+type et edi
+settle 2
+type tion A
+wait-research-search 240
+choose-suggestion Linnet edition A
+wait-saved-reader 240
+act Open current version
+wait 90
+act Open node in Workbench
+settle 16
+assert content-live
+assert snap browser-current-engine == genet.livery
+capture current-b
+log Opened current B from the same name

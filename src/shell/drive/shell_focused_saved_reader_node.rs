@@ -16,6 +16,23 @@ impl Shell {
     }
 
     pub(super) fn saved_reader_engine_live(&self, node: uuid::Uuid) -> bool {
+        if self
+            .app
+            .saved_readers
+            .get(&node)
+            .and_then(|reader| reader.content.as_ref())
+            .is_some_and(|content| content.edition.is_some())
+        {
+            return self
+                .app
+                .content
+                .facts(node)
+                .is_some_and(|f| f.engine == inker::routing::ENGINE_GENET_LIVERY)
+                && self.content_sessions.session(&node).is_some_and(|s| {
+                    s.as_any_ref()
+                        .is::<genet_documents::engines::LiveryDocumentSession>()
+                });
+        }
         matches!(
             self.app.content.get(node),
             Some(crate::content::NodeContent::Live)

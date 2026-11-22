@@ -1,0 +1,24 @@
+settle 8
+key escape
+open ${PEER_NAME}
+wait 90
+act Open node in Workbench
+settle 15
+assert content-live
+assert snap browser-current-engine == genet.livery
+capture live-a
+act Open Inspector pane
+settle 4
+assert node role:button Keep this edition
+touch ${MOVE_NAME}
+wait-file 1200 ${NAME_MOVED}
+capture inspector-a
+click surface:inspector role:button Keep this edition
+wait 60
+record-source-captures after-keep
+wait-row 1200 Source save: Saved
+assert row Kept: yes
+act id:session:save
+settle 8
+record-source-captures kept-a
+log Kept displayed A after publication of B
