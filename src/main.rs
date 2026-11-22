@@ -41,6 +41,13 @@ fn main() {
         }
         return;
     }
+    if command.as_deref() == Some(std::ffi::OsStr::new("browsing-trail")) {
+        if let Err(error) = turnstone::browsing_trail::command(args) {
+            eprintln!("{error}");
+            std::process::exit(1);
+        }
+        return;
+    }
     // The direct, unsandboxed route (see `turnstone::launch` for the other,
     // sandboxed one: CEF's Windows bootstrap calling the sibling
     // `sandbox_bootstrap_win` crate's `RunWinMain` cdylib export).

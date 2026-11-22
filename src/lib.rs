@@ -32,6 +32,7 @@ pub mod cookie_custody;
 mod custody_binding;
 mod denizen;
 mod engine_enablement;
+pub mod browsing_trail;
 #[doc(hidden)]
 pub mod engine_pack;
 pub mod focus_card;
