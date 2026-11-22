@@ -50,7 +50,7 @@ impl Shell {
     /// Create any requested lens windows (rung 7). Called from the event
     /// handlers, where an `ActiveEventLoop` is in scope. Its graph panes
     /// install their own view state on their first render/input pass.
-    pub(in super::super) fn drain_pending_windows(&mut self, event_loop: &ActiveEventLoop) {
+    pub(in super::super) fn drain_pending_windows(&mut self, event_loop: &dyn ActiveEventLoop) {
         if !self.poll_render_recovery() {
             return;
         }
@@ -63,14 +63,14 @@ impl Shell {
             let attributes = super::super::titlebar::window_attributes()
                 .with_title("Turnstone — lens")
                 .with_visible(false)
-                .with_inner_size(PhysicalSize::new(800u32, 600u32));
+                .with_surface_size(PhysicalSize::new(800u32, 600u32));
             let Ok(window) = event_loop.create_window(attributes) else {
                 tracing::warn!("lens window creation failed");
                 continue;
             };
-            let window = Arc::new(window);
+            let window: Arc<dyn winit::window::Window> = Arc::from(window);
             self.publish_titlebar_insets(ordinal + 1, &window);
-            let size = window.inner_size();
+            let size = window.surface_size();
             match SurfaceHost::from_shared_core(
                 window.clone(),
                 size.width.max(1),
@@ -81,7 +81,7 @@ impl Shell {
                     debug_assert!(Arc::ptr_eq(&shared_core, &host.shared_core()));
                     let a11y_actions = super::super::a11y_bridge::ActionQueue::default();
                     let a11y = super::super::a11y_bridge::install(
-                        &window,
+                        window.as_ref(),
                         a11y_actions.clone(),
                         self.proxy.clone(),
                         &crate::a11y::lens_window_label(ordinal),

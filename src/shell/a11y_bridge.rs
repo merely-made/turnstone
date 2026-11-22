@@ -96,9 +96,9 @@ pub(super) fn with_captured_generation(mut captured: PublishedAdmission) -> Admi
 /// Connect a native window to the common publisher and wake the existing UI
 /// event loop when the platform queues an action or activates the adapter.
 pub(super) fn install(
-    window: &winit::window::Window,
+    window: &dyn winit::window::Window,
     queue: ActionQueue,
-    wake: winit::event_loop::EventLoopProxy<crate::shell::ShellEvent>,
+    wake: crate::shell::ShellEventProxy,
     name: &str,
 ) -> ForestPublisher {
     let publisher = ForestPublisher::install(

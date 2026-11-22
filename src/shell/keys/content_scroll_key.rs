@@ -11,8 +11,8 @@ pub(super) fn content_scroll_key(key: &WinitKey, shift: bool) -> Option<SessionS
         WinitKey::Named(WinitNamedKey::PageUp) => SessionScrollKey::PageUp,
         WinitKey::Named(WinitNamedKey::Home) => SessionScrollKey::Home,
         WinitKey::Named(WinitNamedKey::End) => SessionScrollKey::End,
-        WinitKey::Named(WinitNamedKey::Space) if shift => SessionScrollKey::PageUp,
-        WinitKey::Named(WinitNamedKey::Space) => SessionScrollKey::PageDown,
+        WinitKey::Character(text) if text.as_str() == " " && shift => SessionScrollKey::PageUp,
+        WinitKey::Character(text) if text.as_str() == " " => SessionScrollKey::PageDown,
         _ => return None,
     })
 }

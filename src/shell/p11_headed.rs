@@ -21,10 +21,8 @@ use std::{
 };
 use winit::{
     event_loop::EventLoop,
-    platform::{
-        pump_events::{EventLoopExtPumpEvents, PumpStatus},
-        windows::EventLoopBuilderExtWindows,
-    },
+    event_loop::pump_events::{EventLoopExtPumpEvents, PumpStatus},
+    platform::windows::EventLoopBuilderExtWindows,
     raw_window_handle::{HasWindowHandle, RawWindowHandle},
 };
 
@@ -188,7 +186,7 @@ impl Drop for Observer {
     }
 }
 
-fn start_observer(output: &Path, window: &winit::window::Window, broken: bool) -> Observer {
+fn start_observer(output: &Path, window: &dyn winit::window::Window, broken: bool) -> Observer {
     let raw = window.window_handle().expect("window handle").as_raw();
     let RawWindowHandle::Win32(raw) = raw else {
         panic!("expected HWND")
@@ -234,7 +232,7 @@ fn start_observer(output: &Path, window: &winit::window::Window, broken: bool) -
 }
 
 fn pump_until(
-    event_loop: &mut EventLoop<ShellEvent>,
+    event_loop: &mut EventLoop,
     shell: &mut Shell,
     mut ready: impl FnMut(&Shell) -> bool,
     stage: &str,
@@ -286,10 +284,7 @@ fn nested_foreign_supplier_accepts_native_uia_invoke() {
     assert_eq!(std::env::var("TURNSTONE_OFFLINE").as_deref(), Ok("1"));
     let broken = std::env::var("TURNSTONE_P11_BROKEN_TARGET").as_deref() == Ok("1");
 
-    let mut event_loop = EventLoop::<ShellEvent>::with_user_event()
-        .with_any_thread(true)
-        .build()
-        .unwrap();
+    let mut event_loop = EventLoop::builder().with_any_thread(true).build().unwrap();
     let mut shell = Shell::new(event_loop.create_proxy(), None);
     if let Some((setup, _)) = shell.custody_setup.take() {
         setup.request_stop();

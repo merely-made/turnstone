@@ -25,7 +25,7 @@ thread_local! {
     static ACTIVE: RefCell<Option<Rc<RefCell<FrameState>>>> = const { RefCell::new(None) };
     static WORK: RefCell<Option<Rc<RefCell<WorkState>>>> = const { RefCell::new(None) };
     static COVERAGE_GAPS: Cell<u64> = const { Cell::new(0) };
-    static WINDOWS: RefCell<Vec<(Weak<winit::window::Window>, u64)>> = const { RefCell::new(Vec::new()) };
+    static WINDOWS: RefCell<Vec<(Weak<dyn winit::window::Window>, u64)>> = const { RefCell::new(Vec::new()) };
 }
 
 struct FrameState {
@@ -56,7 +56,7 @@ pub(crate) struct StagedFrame(Rc<RefCell<FrameState>>);
 impl FrameScope {
     /// Assign an opaque identity to this actual native window lifetime. A
     /// reused platform WindowId or lens slot cannot reuse the old identity.
-    pub(crate) fn native(window: &Arc<winit::window::Window>) -> Self {
+    pub(crate) fn native(window: &Arc<dyn winit::window::Window>) -> Self {
         let identity = WINDOWS.with(|windows| {
             let Ok(mut windows) = windows.try_borrow_mut() else {
                 gap();
@@ -103,7 +103,11 @@ impl FrameScope {
             window_work: None,
         }));
         let previous = ACTIVE.with(|active| active.replace(Some(state.clone())));
-        Self { state, previous, staged: false }
+        Self {
+            state,
+            previous,
+            staged: false,
+        }
     }
 
     /// Called only after `host.queue().present(frame)` returns. Wgpu queue
@@ -326,9 +330,9 @@ impl Drop for WorkScope {
                 frame.window_work = state.last_kind.map(|kind| (last, kind));
             }
             // A continued window stage replaces its earlier terminal output.
-            let earlier = state.carried.and_then(|carried| {
-                frame.outputs.iter().position(|output| *output == carried)
-            });
+            let earlier = state
+                .carried
+                .and_then(|carried| frame.outputs.iter().position(|output| *output == carried));
             if let Some(index) = earlier {
                 frame.outputs[index] = last;
             } else if frame.outputs.len() < MAX_INPUTS {

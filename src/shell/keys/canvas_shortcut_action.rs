@@ -6,7 +6,7 @@ use super::*;
 /// The canvas command bindings used after focus-specific key routing.
 pub(super) fn canvas_shortcut_action(key: &WinitKey, ctrl: bool, alt: bool) -> Option<Action> {
     match key {
-        WinitKey::Named(WinitNamedKey::Space) => Some(Action::ReseedLayout),
+        WinitKey::Character(text) if text.as_str() == " " => Some(Action::ReseedLayout),
         // Delete forgets the focused node (recoverable from the Trail's
         // Removed section).
         WinitKey::Named(WinitNamedKey::Delete) => Some(Action::DeleteFocusedNode),

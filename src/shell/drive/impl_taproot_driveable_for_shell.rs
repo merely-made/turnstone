@@ -175,7 +175,7 @@ impl taproot::Driveable for Shell {
                 return Err("resize needs two positive finite dimensions".into());
             }
             let window = self.window.as_ref().ok_or("main window is unavailable")?;
-            let _ = window.request_inner_size(winit::dpi::LogicalSize::new(width, height));
+            let _ = window.request_surface_size(winit::dpi::LogicalSize::new(width, height).into());
             return Ok(());
         }
         tracing::debug!(target: "turnstone::selfdrive", verb = line.split_whitespace().next().unwrap_or(""), "begin app step");

@@ -4,7 +4,7 @@
 use super::*;
 
 impl Shell {
-    pub fn new(proxy: EventLoopProxy<crate::shell::ShellEvent>, address: Option<String>) -> Self {
+    pub fn new(proxy: EventLoopProxy, address: Option<String>) -> Self {
         Self::new_with_diagnostic_run(
             proxy,
             address,
@@ -14,11 +14,12 @@ impl Shell {
     }
 
     pub(crate) fn new_with_diagnostic_run(
-        proxy: EventLoopProxy<crate::shell::ShellEvent>,
+        proxy: EventLoopProxy,
         address: Option<String>,
         run: apparatus_core::RunId,
         visit: Option<crate::graph_coop::guest::Visit>,
     ) -> Self {
+        let (proxy, events) = ShellEventProxy::channel(proxy);
         let client_limits = crate::client_limits::BrowserClientLimits::from_environment()
             .expect("Turnstone client limit configuration is invalid");
         let (mut app, boot_effects) = App::boot(address.as_deref());
@@ -246,10 +247,14 @@ impl Shell {
             &app.data_root,
         ) {
             Ok(Some(mut engine)) => {
-                knot_clip = engine.clip_handle().map(|handle| match app.identity.clone() {
-                    Some(root) => handle.with_signing(crate::knot_authoring::ClipSigning::from_env(root)),
-                    None => handle,
-                });
+                knot_clip = engine
+                    .clip_handle()
+                    .map(|handle| match app.identity.clone() {
+                        Some(root) => {
+                            handle.with_signing(crate::knot_authoring::ClipSigning::from_env(root))
+                        },
+                        None => handle,
+                    });
                 knot_notes_root = engine.notes_root();
                 if let Some(source) = engine.take_publish_source() {
                     match app.identity.clone() {
@@ -286,9 +291,11 @@ impl Shell {
             .expect("the invited graph provider is unique");
         let personae_proxy = proxy.clone();
         surface_providers
-            .register_provider(crate::personae_surface::PersonaeProvider::new(Arc::new(move || {
-                let _ = personae_proxy.send_event(crate::shell::ShellEvent::ActorWake);
-            })))
+            .register_provider(crate::personae_surface::PersonaeProvider::new(Arc::new(
+                move || {
+                    let _ = personae_proxy.send_event(crate::shell::ShellEvent::ActorWake);
+                },
+            )))
             .expect("the Personae provider is unique");
         let resident_graph_proxy = proxy.clone();
         let resident_address_proxy = proxy.clone();
@@ -298,9 +305,8 @@ impl Shell {
                     let _ = resident_graph_proxy.send_event(crate::shell::ShellEvent::ActorWake);
                 }),
                 Arc::new(move |address| {
-                    let _ = resident_address_proxy.send_event(
-                        crate::shell::ShellEvent::ResidentAddressAccepted(address),
-                    );
+                    let _ = resident_address_proxy
+                        .send_event(crate::shell::ShellEvent::ResidentAddressAccepted(address));
                 }),
             ))
             .expect("the resident graph provider is unique");
@@ -509,6 +515,8 @@ impl Shell {
             input_window: 0,
             window_focus: HashMap::new(),
             window_buttons: HashMap::new(),
+            events,
+            page_drag: Default::default(),
             host_file_drag: HostFileDrag::default(),
             hovered_surface: None,
             content_scroll_moved: None,
@@ -563,6 +571,7 @@ impl Shell {
     }
 
     pub(super) fn clear_surface_content(&mut self) {
+        self.retire_all_page_drags();
         self.cancel_content_pointer();
         self.cue_frames.clear();
         self.content_sessions.retain_appearances(|_, _| false);

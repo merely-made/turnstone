@@ -466,6 +466,7 @@ impl Shell {
                 self.ready_clip_reads.remove(&node);
                 self.retire_surface_semantics(node);
                 self.withdraw_user_agent_requests(node, "surface-closed");
+                self.retire_page_drag_for_document(node);
                 self.clear_reader_appearances(node);
                 self.surface_find_requests.remove(&node);
                 match self

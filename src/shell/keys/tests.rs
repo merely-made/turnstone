@@ -43,12 +43,13 @@ fn content_scroll_keys_map_page_navigation() {
         Some(SessionScrollKey::LineDown)
     );
     // Space pages down; Shift+Space pages up.
+    let space = WinitKey::Character(" ".into());
     assert_eq!(
-        content_scroll_key(&named(WinitNamedKey::Space), false),
+        content_scroll_key(&space, false),
         Some(SessionScrollKey::PageDown)
     );
     assert_eq!(
-        content_scroll_key(&named(WinitNamedKey::Space), true),
+        content_scroll_key(&space, true),
         Some(SessionScrollKey::PageUp)
     );
     // A non-scroll key is not a content-scroll key: it must fall through to

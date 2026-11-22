@@ -91,7 +91,7 @@ impl Shell {
         }
     }
 
-    pub(super) fn drain_actor_updates(&mut self, event_loop: &ActiveEventLoop) {
+    pub(super) fn drain_actor_updates(&mut self, event_loop: &dyn ActiveEventLoop) {
         self.service_private_custody();
         let started = std::time::Instant::now();
         self.drain_fetch_updates();
@@ -211,11 +211,14 @@ impl Shell {
             return;
         }
         self.physics_display_rate_last_observed = Some(now);
-        self.app.graph_runtimes.set_physics_display_rate(
-            window
-                .current_monitor()
-                .and_then(|monitor| monitor.refresh_rate_millihertz()),
-        );
+        self.app
+            .graph_runtimes
+            .set_physics_display_rate(window.current_monitor().and_then(|monitor| {
+                monitor
+                    .current_video_mode()?
+                    .refresh_rate_millihertz()
+                    .map(|rate| rate.get())
+            }));
     }
 
     /// The Redshank command loop, one turn per event batch: take what the

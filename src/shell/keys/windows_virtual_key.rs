@@ -14,7 +14,7 @@ pub(super) fn windows_virtual_key(key: &WinitKey) -> u32 {
         WinitKey::Named(WinitNamedKey::Pause) => 0x13,
         WinitKey::Named(WinitNamedKey::CapsLock) => 0x14,
         WinitKey::Named(WinitNamedKey::Escape) => 0x1B,
-        WinitKey::Named(WinitNamedKey::Space) => 0x20,
+        WinitKey::Character(text) if text.as_str() == " " => 0x20,
         WinitKey::Named(WinitNamedKey::PageUp) => 0x21,
         WinitKey::Named(WinitNamedKey::PageDown) => 0x22,
         WinitKey::Named(WinitNamedKey::End) => 0x23,

@@ -6,7 +6,7 @@ pub(super) enum WorkshopWindow {}
 impl Shell {
     pub(super) fn service_alembic_workshop(
         &mut self,
-        _: &winit::event_loop::ActiveEventLoop,
+        _: &dyn winit::event_loop::ActiveEventLoop,
     ) -> cambium_rootstock::IdlePolicy {
         if self.alembic_workshop_requested {
             self.alembic_workshop_requested = false;

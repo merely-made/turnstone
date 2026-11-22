@@ -28,8 +28,9 @@ impl Shell {
         if peek_keys
             && matches!(
                 key,
-                WinitKey::Named(WinitNamedKey::Tab | WinitNamedKey::Enter | WinitNamedKey::Space)
+                WinitKey::Named(WinitNamedKey::Tab | WinitNamedKey::Enter)
             )
+            || (peek_keys && matches!(key, WinitKey::Character(text) if text.as_str() == " "))
         {
             if let Some(event) = self.cambium_key(key) {
                 let intents = self.chrome.focus_card_key(event);
@@ -92,7 +93,7 @@ impl Shell {
                         WinitKey::Named(WinitNamedKey::Backspace) => {
                             Some(Action::BackspaceAuthentication)
                         },
-                        WinitKey::Named(WinitNamedKey::Space) => {
+                        WinitKey::Character(text) if text.as_str() == " " => {
                             Some(Action::InsertAuthentication(" ".into()))
                         },
                         WinitKey::Character(text) if !self.ctrl && !self.alt => {
@@ -217,7 +218,7 @@ impl Shell {
                 WinitKey::Named(WinitNamedKey::Home) => Some(Action::OmnibarCaret(CaretMove::Home)),
                 WinitKey::Named(WinitNamedKey::End) => Some(Action::OmnibarCaret(CaretMove::End)),
                 WinitKey::Named(WinitNamedKey::Delete) => Some(Action::OmnibarDelete),
-                WinitKey::Named(WinitNamedKey::Space) => Some(Action::OmnibarChar(' ')),
+                WinitKey::Character(text) if text.as_str() == " " => Some(Action::OmnibarChar(' ')),
                 // Keep or drop the highlighted command (the browsers' bookmark
                 // chord; Ctrl+K already summons the palette).
                 WinitKey::Character(s) if self.ctrl && s.eq_ignore_ascii_case("d") => {

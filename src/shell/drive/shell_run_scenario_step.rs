@@ -372,9 +372,9 @@ impl Shell {
                         return Err("insert: the active decision has no text field".into());
                     }
                 } else if self.app.document_find.open {
-                    self.deliver_find_key(cambium_winit::ime_event_from_winit(
-                        &winit::event::Ime::Commit(text.clone()),
-                    ));
+                    self.deliver_find_key(cambium::KeyEvent::new(cambium::Key::Composition(
+                        cambium::CompositionEvent::Commit(text.clone()),
+                    )));
                 } else if self.app.omnibar.open {
                     self.act(Action::OmnibarInsert(text.clone()));
                 } else if self.deliver_contributed_ime(&winit::event::Ime::Commit(text.clone())) {

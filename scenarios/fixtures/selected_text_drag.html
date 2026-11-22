@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>Selected text drag</title>
+<style>
+  body { max-width: 40rem; margin: 2rem; font: 1.25rem/1.5 system-ui; }
+  #sample { display: inline-block; padding: 0 8px; background: rgb(103, 197, 79); white-space: nowrap; }
+  output { display: block; white-space: pre-wrap; }
+</style>
+<p id="sample">TurnstoneCafé</p>
+<h1>Selected text drag</h1>
+<p>Select the word above and drag the selection into an empty document in another app.</p>
+<p>Repeat the drag, press Escape while holding the mouse button, then release.
+The document should still contain one copy. Drag once more to confirm the source can start again.</p>
+<output id="events" aria-live="polite"></output>
+<script>
+  const events = document.getElementById("events");
+  let sequence = 0;
+  // Observe the browser's selection drag without changing the offered data or action.
+  document.addEventListener("dragstart", event => {
+    events.append(`#${++sequence} start ${JSON.stringify(getSelection().toString())} [${event.dataTransfer.types.join(", ")}]\n`);
+  });
+  document.addEventListener("dragend", event => {
+    events.append(`#${sequence} end ${event.dataTransfer.dropEffect}\n`);
+  });
+</script>
+</html>

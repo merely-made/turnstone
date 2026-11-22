@@ -185,11 +185,14 @@ impl Shell {
             self.hovered_surface = None;
             if let Some(window) = self.window.as_ref() {
                 window.set_cursor_visible(true);
-                window.set_cursor(if hovering_link {
-                    CursorIcon::Pointer
-                } else {
-                    CursorIcon::Default
-                });
+                window.set_cursor(
+                    if hovering_link {
+                        CursorIcon::Pointer
+                    } else {
+                        CursorIcon::Default
+                    }
+                    .into(),
+                );
             }
             if changed {
                 self.request_redraw();

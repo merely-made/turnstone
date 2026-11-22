@@ -34,6 +34,10 @@ pub(super) struct CaptureCorrelation {
 }
 
 impl CaptureCorrelation {
+    pub(super) fn source_generation(&self, node: uuid::Uuid) -> Option<(uuid::Uuid, u64)> {
+        self.surfaces.get(&node).copied()
+    }
+
     pub(super) fn register_surface(&mut self, node: uuid::Uuid) {
         self.retire_surface(node);
         self.surfaces.insert(node, (uuid::Uuid::new_v4(), 0));

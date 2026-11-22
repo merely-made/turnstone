@@ -143,11 +143,11 @@ impl Shell {
         let crate::surface::FocusTarget::Content { node, .. } = self.app.focus else {
             return false;
         };
-        self.document_input(
-            node,
-            inker::SessionInput::Ime(super::super::controller_input::session_ime(ime)),
-        )
-        .unwrap_or(false)
+        let Some(event) = super::super::controller_input::session_ime(ime) else {
+            return false;
+        };
+        self.document_input(node, inker::SessionInput::Ime(event))
+            .unwrap_or(false)
     }
 
     pub(super) fn deliver_contributed_key(&mut self, key: &WinitKey) -> bool {
@@ -259,13 +259,17 @@ impl Shell {
         };
         if self.renderers.inline_mount(pane_id).is_some() {
             return self.renderers.inline_accepts_text(pane_id)
-                && self.deliver_inline_event(pane_id, cambium_winit::ime_event_from_winit(ime));
+                && cambium_winit::ime_event_from_winit(ime)
+                    .is_some_and(|event| self.deliver_inline_event(pane_id, event));
         }
         self.renderers
             .contributed
             .get_mut(pane_id)
             .is_some_and(|pane| {
-                pane.key(cambium_winit::ime_event_from_winit(ime));
+                let Some(event) = cambium_winit::ime_event_from_winit(ime) else {
+                    return false;
+                };
+                pane.key(event);
                 true
             })
     }

@@ -236,6 +236,35 @@ impl Shell {
         }
         self.cancel_host_file_drag();
 
+        self.drop_file_on_graph(x, y, path);
+    }
+
+    pub(super) fn drop_host_files(&mut self, x: f32, y: f32, paths: &[std::path::PathBuf]) {
+        let Some(first) = paths.first() else {
+            self.cancel_host_file_drag();
+            return;
+        };
+        if matches!(
+            self.app.omnibar.mode,
+            crate::ui::OmnibarMode::SmolwebSubmission(crate::ui::SmolwebSubmissionPrompt {
+                stage: crate::ui::SmolwebSubmissionStage::Body,
+                ..
+            })
+        ) {
+            self.drop_file(x, y, first);
+            return;
+        }
+        self.set_host_file_drag_paths(x, y, paths);
+        if self.drop_files_on_surface(x, y) {
+            return;
+        }
+        self.cancel_host_file_drag();
+        for path in paths {
+            self.drop_file_on_graph(x, y, path);
+        }
+    }
+
+    fn drop_file_on_graph(&mut self, x: f32, y: f32, path: &std::path::Path) {
         // The node under the drop, if the drop is over the canvas surface.
         let target = {
             let plan = self.surface_plan();
@@ -278,6 +307,28 @@ impl Shell {
         // so the address is stable across platforms.
         let url = format!("file:///{}", path.display().to_string().replace('\\', "/"));
         self.act(Action::OpenAddress(url));
+    }
+
+    pub(super) fn hover_host_files(&mut self, x: f32, y: f32, paths: &[std::path::PathBuf]) {
+        self.set_host_file_drag_paths(x, y, paths);
+        self.update_host_file_drag(x, y);
+        // CEF needs DragOver before its first possible drop.
+        self.update_host_file_drag(x, y);
+    }
+
+    fn set_host_file_drag_paths(&mut self, x: f32, y: f32, paths: &[std::path::PathBuf]) {
+        let mut unique = std::collections::HashSet::new();
+        let files: Vec<_> = paths
+            .iter()
+            .map(|path| std::fs::canonicalize(path).unwrap_or_else(|_| path.clone()))
+            .filter(|path| unique.insert(path.clone()))
+            .collect();
+        if self.host_file_drag.files != files {
+            if let Some(previous) = self.host_file_drag.target.take() {
+                self.send_host_file_drag(previous, x, y, inker::DragPhase::Leave);
+            }
+            self.host_file_drag.files = files;
+        }
     }
 
     pub(super) fn hover_file(&mut self, x: f32, y: f32, path: &std::path::Path) {

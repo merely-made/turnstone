@@ -118,9 +118,7 @@ fn start_app(address: Option<String>, visit: Option<guest::Visit>) -> i32 {
         _ => tracing::info!("turnstone starting"),
     }
 
-    let event_loop = EventLoop::<crate::shell::ShellEvent>::with_user_event()
-        .build()
-        .expect("failed to create event loop");
+    let event_loop = EventLoop::new().expect("failed to create event loop");
     let proxy = event_loop.create_proxy();
     let mut shell =
         crate::shell::Shell::new_with_diagnostic_run(proxy, address, diagnostic_run, visit);
@@ -130,7 +128,7 @@ fn start_app(address: Option<String>, visit: Option<guest::Visit>) -> i32 {
     {
         tracing::warn!("reactive diagnostics receiver did not attach to this run");
     }
-    event_loop.run_app(&mut shell).expect("event loop error");
+    event_loop.run_app(shell).expect("event loop error");
     0
 }
 

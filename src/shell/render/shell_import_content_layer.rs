@@ -241,6 +241,7 @@ impl Shell {
         match event {
             inker::WebSurfaceEvent::Navigation(inker::NavigationEvent::Started { .. }) => {
                 self.resync_surface_accessibility(node);
+                self.retire_page_drag_for_document(node);
                 self.page_captures.advance_document(node);
                 self.withdraw_user_agent_requests(node, "navigation-started");
                 self.app.content.note_surface_started(node);
@@ -344,16 +345,7 @@ impl Shell {
                     .join(",");
                 self.app
                     .note(crate::observe::AppEvent::PageDragRequested { node, types });
-                // Winit has no native API that can start an OS drag from a
-                // windowless CEF surface. Answer CEF explicitly so its source
-                // does not remain in a stuck drag state; capability reporting
-                // keeps this path Partial until a toolkit drag carrier lands.
-                if let Some(producer) = self.content_sessions.surface_mut(&node)
-                    && let Err(error) =
-                        producer.finish_drag_source(position, inker::DragOperationSet::NONE)
-                {
-                    tracing::warn!(%node, %error, "surface page drag cancellation failed");
-                }
+                self.queue_page_drag(node, position, data_transfer);
                 self.run_effects(Vec::new());
             },
             inker::WebSurfaceEvent::PermissionRequested(request) => {

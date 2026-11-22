@@ -17,6 +17,7 @@ mod alembic_workshop;
 mod alembic_workshop;
 mod appearance_editor;
 mod appearance_receipt;
+mod citation_event_history;
 mod clip_actions;
 mod clip_reading;
 mod clip_retaining;
@@ -25,14 +26,13 @@ mod contributed_automation;
 mod controller_input;
 mod cue_content;
 mod document_a11y;
-mod citation_event_history;
 mod drive;
 mod effects;
 mod events;
-mod fetch_port;
 #[cfg(test)]
 #[path = "fetch_actor_receiving_tests.rs"]
 mod fetch_actor_receiving_tests;
+mod fetch_port;
 mod foreign_a11y;
 mod gestures;
 mod keys;
@@ -40,16 +40,16 @@ mod native_frames;
 mod nomadnet_fetch;
 mod page_capture;
 mod reader_observe;
-mod reading_edge;
 mod reader_recovery;
+mod reading_edge;
 mod render;
 mod renderers;
 mod research_notes;
 mod retained_clips;
 mod saved_sources;
-pub(crate) mod structured_source;
 #[cfg(all(feature = "scry", windows))]
 mod scry;
+pub(crate) mod structured_source;
 #[cfg(all(
     feature = "servo",
     any(windows, target_os = "macos", target_os = "linux")
@@ -76,12 +76,12 @@ use std::path::Path;
 use std::sync::Arc;
 use std::sync::mpsc::Receiver;
 
+use cartography::canvas::WHEEL_PAN_SCALE;
 use fetch::{FetchCommand, FetchUpdate};
 use genet_documents::LocalFetcher;
 use genet_winit_host::SurfaceHost;
 use image::ImageEncoder;
 use inker::{DocumentSession, SessionClick, SessionRegistry, SessionSpawnRequest};
-use cartography::canvas::WHEEL_PAN_SCALE;
 use mere_document_lanes::{
     ReaderSessionEngine, RemoteFetcher, SmolwebInlineMediaPolicy, SmolwebSessionEngine,
     SmolwebTheme,
@@ -286,8 +286,11 @@ use composite_layer::CompositeLayer;
 #[path = "window_recovery.rs"]
 mod window_recovery;
 use window_recovery::WindowRecovery;
+mod event_proxy;
 #[path = "host_file_drag.rs"]
 mod host_file_drag;
+pub use event_proxy::ShellEventProxy;
+mod page_drag;
 use host_file_drag::HostFileDrag;
 #[path = "shell.rs"]
 mod shell;

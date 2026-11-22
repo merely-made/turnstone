@@ -15,22 +15,24 @@ use winit::window::{Window, WindowAttributes, WindowId};
 use super::Shell;
 
 pub(super) fn window_attributes() -> WindowAttributes {
-    let attributes = Window::default_attributes();
+    let attributes = winit::window::WindowAttributes::default();
     // Extend the app's title row behind the standard traffic lights. The
     // caption-area observation below supplies their actual occupied space.
     #[cfg(target_os = "macos")]
     let attributes = {
-        use winit::platform::macos::WindowAttributesExtMacOS;
-        attributes
-            .with_titlebar_transparent(true)
-            .with_fullsize_content_view(true)
-            .with_title_hidden(true)
+        use winit::platform::macos::WindowAttributesMacOS;
+        attributes.with_platform_attributes(Box::new(
+            WindowAttributesMacOS::default()
+                .with_titlebar_transparent(true)
+                .with_fullsize_content_view(true)
+                .with_title_hidden(true),
+        ))
     };
     attributes
 }
 
 impl Shell {
-    pub(super) fn publish_titlebar_insets(&mut self, slot: usize, window: &Arc<Window>) {
+    pub(super) fn publish_titlebar_insets(&mut self, slot: usize, window: &Arc<dyn Window>) {
         // The native caption reservation is in layout pixels, as the chrome
         // that clears it is laid out.
         let insets = WinitWindow(window.clone()).titlebar_insets();
@@ -81,7 +83,7 @@ impl Shell {
         };
         if matches!(
             event,
-            WindowEvent::Resized(_)
+            WindowEvent::SurfaceResized(_)
                 | WindowEvent::ScaleFactorChanged { .. }
                 | WindowEvent::Moved(_)
         ) {
@@ -99,9 +101,9 @@ impl Shell {
             chrome.layout_scales.remove(&slot);
             self.app.set_shell_chrome_config(chrome);
         }
-        let WindowEvent::MouseInput {
+        let WindowEvent::PointerButton {
             state: ElementState::Pressed,
-            button,
+            button: winit::event::ButtonSource::Mouse(button),
             ..
         } = event
         else {
@@ -126,7 +128,7 @@ impl Shell {
                 .map(|lens| (lens.ordinal + 1, lens.width as f32, lens.height as f32)),
         );
         self.chrome.sync(&self.app, &sizes);
-        let size = window.inner_size();
+        let size = window.surface_size();
         if self
             .chrome
             .app_region_at(slot, cursor.0, cursor.1, size.width, size.height)
@@ -142,7 +144,7 @@ impl Shell {
             return false;
         }
         if *button == MouseButton::Right {
-            window.show_window_menu(winit::dpi::PhysicalPosition::new(cursor.0, cursor.1));
+            window.show_window_menu(winit::dpi::PhysicalPosition::new(cursor.0, cursor.1).into());
         } else {
             let doubled = self
                 .titlebar_clicks

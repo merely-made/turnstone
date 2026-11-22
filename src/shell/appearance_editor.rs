@@ -24,7 +24,7 @@ pub(super) struct EditorWindow {
 }
 
 impl Shell {
-    pub(super) fn service_theme_editor(&mut self, event_loop: &ActiveEventLoop) -> IdlePolicy {
+    pub(super) fn service_theme_editor(&mut self, event_loop: &dyn ActiveEventLoop) -> IdlePolicy {
         for action in self.live_settings.take_actions() {
             self.act(action);
         }

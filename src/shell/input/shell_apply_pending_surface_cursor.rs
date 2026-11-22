@@ -22,7 +22,7 @@ impl Shell {
             let icon = surface_cursor_icon(shape);
             window.set_cursor_visible(icon.is_some());
             if let Some(icon) = icon {
-                window.set_cursor(icon);
+                window.set_cursor(icon.into());
             }
             if let Some(node) = self.hovered_surface {
                 self.app
@@ -45,7 +45,7 @@ impl Shell {
         }
         if let Some(window) = self.window.as_ref() {
             window.set_cursor_visible(true);
-            window.set_cursor(CursorIcon::Default);
+            window.set_cursor(CursorIcon::Default.into());
         }
         if preview_changed {
             self.request_redraw();
@@ -179,39 +179,57 @@ impl Shell {
         handled
     }
 
-    /// Lower one winit touch contact to Pointer Events. Each live contact keeps
-    /// the content node hit at Started, matching implicit pointer capture for
-    /// direct-manipulation devices even if later coordinates leave the tile.
-    pub(in super::super) fn deliver_touch(&mut self, touch: Touch) {
-        self.deliver_touch_in(0, touch);
-    }
+    pub(in super::super) fn deliver_native_touch(
+        &mut self,
+        window: u64,
+        event: &winit::event::WindowEvent,
+    ) -> bool {
+        use inker::PointerPhase;
+        use winit::event::{ButtonSource, ElementState, PointerKind, PointerSource, WindowEvent};
 
-    pub(in super::super) fn deliver_touch_in(&mut self, window: u64, touch: Touch) {
-        let phase = match touch.phase {
-            TouchPhase::Started => inker::PointerPhase::Down,
-            TouchPhase::Moved => inker::PointerPhase::Move,
-            TouchPhase::Ended => inker::PointerPhase::Up,
-            TouchPhase::Cancelled => inker::PointerPhase::Cancel,
+        let (id, phase, position, force) = match event {
+            WindowEvent::PointerButton {
+                button: ButtonSource::Touch { finger_id, force },
+                state,
+                position,
+                ..
+            } => (
+                finger_id,
+                if *state == ElementState::Pressed {
+                    PointerPhase::Down
+                } else {
+                    PointerPhase::Up
+                },
+                Some(*position),
+                *force,
+            ),
+            WindowEvent::PointerMoved {
+                source: PointerSource::Touch { finger_id, force },
+                position,
+                ..
+            } => (finger_id, PointerPhase::Move, Some(*position), *force),
+            WindowEvent::PointerLeft {
+                kind: PointerKind::Touch(id),
+                position,
+                ..
+            } => (id, PointerPhase::Cancel, *position, None),
+            _ => return false,
         };
-        let altitude_angle = match touch.force {
-            Some(Force::Calibrated { altitude_angle, .. }) => {
-                altitude_angle.map(|angle| angle as f32)
-            },
-            _ => None,
-        };
-        let pressure = touch.force.and_then(|force| {
-            let value = force.normalized() as f32;
-            value.is_finite().then(|| value.clamp(0.0, 1.0))
-        });
+        let pos = position.unwrap_or_default();
+        let pressure = force
+            .map(|f| f.normalized(None) as f32)
+            .filter(|p| p.is_finite())
+            .map(|p| p.clamp(0.0, 1.0));
         self.deliver_touch_contact_in(
             window,
-            touch.id,
+            id.into_raw() as u64,
             phase,
-            touch.location.x as f32,
-            touch.location.y as f32,
+            pos.x as f32,
+            pos.y as f32,
             pressure,
-            altitude_angle,
+            None,
         );
+        true
     }
 
     /// The shared touch lowering seam. Winit and the headed scenario both use

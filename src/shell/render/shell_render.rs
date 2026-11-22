@@ -106,8 +106,8 @@ impl Shell {
             // The omnibar card is laid out in layout pixels.
             let (pos, size) = crate::ui::ime_cursor_area_at(&self.app.omnibar, left, top);
             window.set_ime_cursor_area(
-                PhysicalPosition::new(pos.0 * scale, pos.1 * scale),
-                PhysicalSize::new(size.0 * scale, size.1 * scale),
+                PhysicalPosition::new(pos.0 * scale, pos.1 * scale).into(),
+                PhysicalSize::new(size.0 * scale, size.1 * scale).into(),
             );
         }
         // The surface plan (rung 5 slice A): the ordered list of composited
@@ -120,8 +120,8 @@ impl Shell {
             && let Some(window) = &self.window
         {
             window.set_ime_cursor_area(
-                PhysicalPosition::new(area.x, area.y),
-                PhysicalSize::new(area.w, area.h),
+                PhysicalPosition::new(area.x, area.y).into(),
+                PhysicalSize::new(area.w, area.h).into(),
             );
         }
         let surfaces = self.surface_plan();
@@ -354,8 +354,8 @@ impl Shell {
             tracing::debug!(target: "turnstone::ime", window = 0, x = area.x, y = area.y,
                 width = area.w, height = area.h, "shared document caret geometry");
             window.set_ime_cursor_area(
-                PhysicalPosition::new(area.x, area.y),
-                PhysicalSize::new(area.w, area.h),
+                PhysicalPosition::new(area.x, area.y).into(),
+                PhysicalSize::new(area.w, area.h).into(),
             );
         }
 

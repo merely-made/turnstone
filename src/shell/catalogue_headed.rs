@@ -13,9 +13,9 @@ fn protected_catalogue_native_window() {
     native_window(true);
 }
 fn native_window(protected: bool) {
-    use winit::platform::{
-        pump_events::{EventLoopExtPumpEvents, PumpStatus},
-        windows::EventLoopBuilderExtWindows,
+    use winit::{
+        event_loop::pump_events::{EventLoopExtPumpEvents, PumpStatus},
+        platform::windows::EventLoopBuilderExtWindows,
     };
     let root = std::path::PathBuf::from(
         std::env::var_os("TURNSTONE_ROOT").expect("isolated TURNSTONE_ROOT required"),
@@ -26,7 +26,7 @@ fn native_window(protected: bool) {
             .is_file()
     );
     assert_eq!(std::env::var("TURNSTONE_OFFLINE").as_deref(), Ok("1"));
-    let mut event_loop = winit::event_loop::EventLoop::<ShellEvent>::with_user_event()
+    let mut event_loop = winit::event_loop::EventLoop::builder()
         .with_any_thread(true)
         .build()
         .unwrap();

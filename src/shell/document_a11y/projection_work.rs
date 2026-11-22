@@ -149,6 +149,7 @@ mod tests {
             numeric_value: None,
             numeric_minimum: None,
             numeric_maximum: None,
+            table: Default::default(),
             bounds: None,
             state: Default::default(),
             actions: vec![DocumentA11yAction::Click],

@@ -12,9 +12,9 @@ use std::{
     time::{Duration, Instant},
 };
 use uuid::Uuid;
-use winit::platform::{
-    pump_events::{EventLoopExtPumpEvents, PumpStatus},
-    windows::EventLoopBuilderExtWindows,
+use winit::{
+    event_loop::pump_events::{EventLoopExtPumpEvents, PumpStatus},
+    platform::windows::EventLoopBuilderExtWindows,
 };
 
 #[test]
@@ -33,7 +33,7 @@ fn native_canvas_picks_and_attaches_to_polygon_silhouettes() {
         "use a fresh capture"
     );
 
-    let mut event_loop = winit::event_loop::EventLoop::<ShellEvent>::with_user_event()
+    let mut event_loop = winit::event_loop::EventLoop::builder()
         .with_any_thread(true)
         .build()
         .unwrap();
@@ -190,7 +190,7 @@ fn native_canvas_picks_and_attaches_to_polygon_silhouettes() {
 }
 
 fn pump_until(
-    event_loop: &mut winit::event_loop::EventLoop<ShellEvent>,
+    event_loop: &mut winit::event_loop::EventLoop,
     shell: &mut Shell,
     done: impl Fn(&Shell) -> bool,
 ) {

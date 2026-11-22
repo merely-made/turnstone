@@ -74,7 +74,7 @@ impl ScriptedWebGl {
         &self,
         engines: &mut SessionRegistry<Scene>,
         remote: RemoteFetcher,
-        proxy: EventLoopProxy<ShellEvent>,
+        proxy: crate::shell::ShellEventProxy,
     ) {
         // Each engine numbers its own document generations, so their wake
         // tracking needs a separate owner even though both wake this shell.

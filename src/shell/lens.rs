@@ -34,7 +34,7 @@ use super::{CompositeLayer, PlannedLayer, PlannedScene, Shell, capture_composed,
 /// One lens window's record: its platform window, present stack, size,
 /// cursor, and graph gesture capture.
 pub(super) struct LensWindow {
-    pub(super) window: Arc<Window>,
+    pub(super) window: Arc<dyn Window>,
     pub(super) host: Option<SurfaceHost>,
     pub(super) recovery: super::WindowRecovery,
     pub(super) width: u32,

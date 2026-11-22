@@ -162,7 +162,7 @@ impl Shell {
         // canvas) exactly as a real press would — one description, two
         // runners, for keys as well as pointers. The former direct
         // EditKey->omnibar-Action map only ever reached the omnibar.
-        let (winit_key, ctrl) = match key {
+        let (winit_key, ctrl): (WinitKey, bool) = match key {
             EditKey::Enter | EditKey::ShiftEnter => (WinitKey::Named(WinitNamedKey::Enter), false),
             EditKey::Escape => (WinitKey::Named(WinitNamedKey::Escape), false),
             EditKey::Tab | EditKey::BackTab => (WinitKey::Named(WinitNamedKey::Tab), false),
@@ -183,7 +183,7 @@ impl Shell {
             EditKey::End => (WinitKey::Named(WinitNamedKey::End), false),
             EditKey::PageDown => (WinitKey::Named(WinitNamedKey::PageDown), false),
             EditKey::PageUp => (WinitKey::Named(WinitNamedKey::PageUp), false),
-            EditKey::Space => (WinitKey::Named(WinitNamedKey::Space), false),
+            EditKey::Space => (WinitKey::Character(" ".into()), false),
             EditKey::Save => (WinitKey::Character("s".into()), true),
             EditKey::Find => (WinitKey::Character("f".into()), true),
             EditKey::KeepCommand => (WinitKey::Character("d".into()), true),
@@ -198,9 +198,9 @@ impl Shell {
         // Match the text accompanying a native winit key press. In
         // Chromium, Enter's carriage-return char event activates the
         // focused button after rawKeyDown.
-        let text = match winit_key {
+        let text = match &winit_key {
             WinitKey::Named(WinitNamedKey::Enter) => Some("\r"),
-            WinitKey::Named(WinitNamedKey::Space) => Some(" "),
+            WinitKey::Character(text) if text.as_str() == " " => Some(" "),
             _ => None,
         };
         // Purpose-built self-drive enters after OS admission. Native

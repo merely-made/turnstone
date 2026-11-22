@@ -14,13 +14,13 @@ use super::{NodeSessions, NodeSurfaces};
 use winit::application::ApplicationHandler;
 use winit::event::{ElementState, Ime, MouseScrollDelta, StartCause, WindowEvent};
 use winit::event_loop::ActiveEventLoop;
-use winit::window::WindowId;
+use winit::window::{Window, WindowId};
 
 use std::sync::Arc;
 
+use cartography::canvas::WHEEL_PAN_SCALE;
 use fetch::FetchUpdate;
 use genet_winit_host::SurfaceHost;
-use cartography::canvas::WHEEL_PAN_SCALE;
 use netrender::NetrenderOptions;
 use winit::dpi::PhysicalSize;
 

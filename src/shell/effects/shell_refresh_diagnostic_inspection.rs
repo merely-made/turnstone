@@ -136,6 +136,7 @@ impl Shell {
     /// registration and its imported frames. The caller removes or replaces
     /// the node's content entry.
     pub(super) fn retire_surface_extras(&mut self, node: uuid::Uuid) {
+        self.retire_page_drag_for_document(node);
         self.page_captures.remove_surface(node);
         #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
         self.surface_frames.remove(&node);
@@ -194,6 +195,7 @@ impl Shell {
 
             // Producer epochs belong to one instance. Retire old custody and
             // synchronization before a replacement can emit an equal epoch.
+            self.retire_page_drag_for_document(node);
             self.content_sessions.remove(&node);
             self.clear_reader_appearances(node);
             self.retire_surface_semantics(node);

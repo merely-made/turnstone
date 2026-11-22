@@ -50,8 +50,8 @@ impl Shell {
             && let Some(lens) = self.lens_windows.get(&id)
         {
             lens.window.set_ime_cursor_area(
-                PhysicalPosition::new(area.x, area.y),
-                PhysicalSize::new(area.w, area.h),
+                PhysicalPosition::new(area.x, area.y).into(),
+                PhysicalSize::new(area.w, area.h).into(),
             );
         }
         let surfaces = self.lens_plan(ordinal, lw, lh);
@@ -234,8 +234,8 @@ impl Shell {
             tracing::debug!(target: "turnstone::ime", window = ordinal + 1, x = area.x, y = area.y,
                 width = area.w, height = area.h, "shared document caret geometry");
             lens.window.set_ime_cursor_area(
-                PhysicalPosition::new(area.x, area.y),
-                PhysicalSize::new(area.w, area.h),
+                PhysicalPosition::new(area.x, area.y).into(),
+                PhysicalSize::new(area.w, area.h).into(),
             );
         }
         // Pass 2 is all-or-refused; keep textures alive until presentation/capture.

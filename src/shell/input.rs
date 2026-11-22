@@ -13,13 +13,13 @@
 //! durable intent becomes an `Action`.
 
 use super::{NodeSessions, NodeSurfaces};
-use winit::event::{Force, MouseButton, Touch, TouchPhase};
+use winit::cursor::CursorIcon;
+use winit::event::MouseButton;
 use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
-use winit::window::CursorIcon;
 
 use crate::panes::PaneContent;
-use inker::{SessionClick, SessionScrollKey};
 use cartography::canvas::PointerButton;
+use inker::{SessionClick, SessionScrollKey};
 use taproot::AutomatableExt as _;
 
 use crate::action::{Action, CaretMove};

@@ -35,8 +35,8 @@ settle 30
 assert event drop:files:1;name:s1_drop.txt
 
 # A page-originated HTML link drag reaches Turnstone as a standards-shaped
-# text/uri-list DataTransfer. Winit cannot start the OS source loop, so
-# Turnstone observes it against the graph node and explicitly cancels CEF's
+# text/uri-list DataTransfer. The native trial offers plain text selections.
+# Turnstone observes this link against the graph node and cancels CEF's
 # source. Keep this last because Chromium navigates a cancelled synthetic link
 # drag to about:blank#blocked; real winit source gestures yield between events.
 press-at 300 350

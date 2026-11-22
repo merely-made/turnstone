@@ -414,15 +414,14 @@ fn host_capabilities(mut capabilities: WebSurfaceCapabilities) -> WebSurfaceCapa
         detail: "winit touch events do not supply twist".into(),
     };
     capabilities.drag_drop.page_to_host = WebFeatureStatus::Partial {
-        detail: "page drags are observable; Turnstone has no native winit drag loop".into(),
+        detail: "Turnstone offers plain text from page drags to native copy targets".into(),
     };
     capabilities.auth = WebFeatureStatus::Partial {
         detail: "answers are wired; native top-level and proxy authentication challenge delivery remain unqualified for the current CEF runtime".into(),
     };
-    capabilities.degradation_reasons.push(
-        "popups, downloads, native drag loops and correlated snapshots await product controls"
-            .into(),
-    );
+    capabilities
+        .degradation_reasons
+        .push("popups, downloads and correlated snapshots await product controls".into());
     capabilities
 }
 

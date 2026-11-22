@@ -1,0 +1,25 @@
+# The fixture session pins web.viewer=weld.chromium on the source node.
+# Open the selected-text fixture in Turnstone's actual embedded Chromium pane.
+# The external driver owns the OS mouse, Escape and the separate destination.
+settle 30
+key escape
+open ${WELD_DRAG_SOURCE}
+settle 80
+assert focused ${WELD_DRAG_SOURCE}
+act Open node in Workbench
+settle 80
+assert wb-cells == 1
+act Open Inspector pane
+settle 10
+assert row URL: ${WELD_DRAG_SOURCE}
+assert row Viewer: weld.chromium
+act Close pane
+settle 10
+act Open node in Workbench
+settle 10
+assert content-live
+assert snap host-surface-producers == 1
+act Maximize pane
+settle 30
+touch ${TURNSTONE_CAPTURE_DIR}/ready.txt
+wait-file 30000 ${TURNSTONE_CAPTURE_DIR}/done.txt

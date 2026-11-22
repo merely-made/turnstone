@@ -3,8 +3,8 @@
 
 use super::*;
 
-impl ApplicationHandler<crate::shell::ShellEvent> for Shell {
-    fn new_events(&mut self, _event_loop: &ActiveEventLoop, cause: StartCause) {
+impl ApplicationHandler for Shell {
+    fn new_events(&mut self, _event_loop: &dyn ActiveEventLoop, cause: StartCause) {
         let started = std::time::Instant::now();
         self.poll_render_recovery();
         self.prune_native_frames();
@@ -63,7 +63,7 @@ impl ApplicationHandler<crate::shell::ShellEvent> for Shell {
             micros = started.elapsed().as_micros(), "native wake batch prepared");
     }
 
-    fn about_to_wait(&mut self, event_loop: &ActiveEventLoop) {
+    fn about_to_wait(&mut self, event_loop: &dyn ActiveEventLoop) {
         self.service_private_custody();
         // Clear before draining: any later proxy callback admits another turn.
         // Semantic publication remains independent of successful presentation.
@@ -84,6 +84,7 @@ impl ApplicationHandler<crate::shell::ShellEvent> for Shell {
             event_loop.exit();
             return;
         }
+        self.settle_missing_page_drag_completion();
         let effects = self.app.tick(crate::denizen::now_ms());
         self.run_effects(effects);
         let alembic_idle = self.service_alembic_workshop(event_loop);
@@ -123,60 +124,18 @@ impl ApplicationHandler<crate::shell::ShellEvent> for Shell {
         ));
     }
 
-    fn exiting(&mut self, _event_loop: &ActiveEventLoop) {
-        self.close_native_frame_workers();
-        // Fence fetch ingress, cancel its tasks and join the worker, bounded
-        // like the trail release below.
-        self.fetch_handle
-            .close_and_join(std::time::Duration::from_millis(1500));
-        // Retire actual renderer resources while their physical hosts still
-        // exist, including a normal scenario exit and a primary-window close.
-        let windows: Vec<_> = self
-            .lens_windows
-            .values()
-            .map(|lens| lens.ordinal as u64 + 1)
-            .collect();
-        for window in windows {
-            self.retire_render_receivers(window);
-        }
-        self.retire_render_receivers(0);
-        #[cfg(all(
-            feature = "servo",
-            any(windows, target_os = "macos", target_os = "linux")
-        ))]
-        {
-            self.clear_surface_content();
-            if let Err(error) = super::super::servo::shutdown() {
-                tracing::warn!(%error, "Servo process shutdown failed");
-            }
-        }
-        // The trail memory buffers traversals between lifecycle edges, and a
-        // normal quit is one: flush-and-release with a bounded ack so the
-        // last session's tail survives exit. (The bin needs no exit hook —
-        // it persists each record as it arrives.)
-        let (ack_tx, ack_rx) = std::sync::mpsc::sync_channel(1);
-        self.trail_handle
-            .command(crate::trail_memory::TrailCommand::Release(ack_tx));
-        if ack_rx
-            .recv_timeout(std::time::Duration::from_millis(1500))
-            .is_err()
-        {
-            tracing::warn!("trail memory release ack timed out at exit");
-        }
-    }
-
-    fn resumed(&mut self, event_loop: &ActiveEventLoop) {
+    fn can_create_surfaces(&mut self, event_loop: &dyn ActiveEventLoop) {
         if self.window.is_some() {
             return;
         }
         let attributes = super::super::titlebar::window_attributes()
             .with_title("Turnstone")
-            .with_inner_size(PhysicalSize::new(self.width, self.height))
+            .with_surface_size(PhysicalSize::new(self.width, self.height))
             // Hidden at creation on purpose: the AccessKit adapter must be
             // installed before the window is first shown, and a window that
             // flashes unbridged is a window a screen reader met too early.
             .with_visible(false);
-        let window = Arc::new(
+        let window: Arc<dyn Window> = Arc::from(
             event_loop
                 .create_window(attributes)
                 .expect("failed to create the turnstone window"),
@@ -184,21 +143,24 @@ impl ApplicationHandler<crate::shell::ShellEvent> for Shell {
         self.publish_titlebar_insets(0, &window);
         self.publish_system_theme(window.theme());
         self.a11y_adapter = Some(crate::shell::a11y_bridge::install(
-            &window,
+            window.as_ref(),
             self.a11y_actions.clone(),
             self.proxy.clone(),
             "Turnstone",
         ));
         window.set_visible(true);
-        let size = window.inner_size();
+        let size = window.surface_size();
         self.width = size.width.max(1);
         self.height = size.height.max(1);
         self.app.graph_runtimes.resize(self.width, self.height);
-        self.app.graph_runtimes.set_physics_display_rate(
-            window
-                .current_monitor()
-                .and_then(|monitor| monitor.refresh_rate_millihertz()),
-        );
+        self.app
+            .graph_runtimes
+            .set_physics_display_rate(window.current_monitor().and_then(|monitor| {
+                monitor
+                    .current_video_mode()?
+                    .refresh_rate_millihertz()
+                    .map(|rate| rate.get())
+            }));
         self.physics_display_rate_last_observed = Some(std::time::Instant::now());
         self.app.viewport = (self.width as f32, self.height as f32);
         self.app.reflow_omnibar();
@@ -266,26 +228,50 @@ impl ApplicationHandler<crate::shell::ShellEvent> for Shell {
     /// An actor woke us through the proxy: a physics layout snapshot or a
     /// completed fetch is waiting. Drain fetches through the spine, then
     /// redraw so `frame()` folds everything in (and chains while settling).
-    fn user_event(&mut self, _event_loop: &ActiveEventLoop, event: crate::shell::ShellEvent) {
+    fn proxy_wake_up(&mut self, _event_loop: &dyn ActiveEventLoop) {
         // Winit's macOS adapter drains proxy callbacks until its queue is empty.
         // Projecting accessibility here can take longer than the producers'
         // cadence, starving window/input events and the next presentation.
         // Keep callbacks cheap; the retained actor queues drain once per batch.
-        match event {
-            crate::shell::ShellEvent::ActorWake => self.actor_wake_pending = true,
-            crate::shell::ShellEvent::NativeFrameReady => self.request_native_frame_redraws(),
-            crate::shell::ShellEvent::ResidentAddressAccepted(address) => {
-                self.act(Action::OpenAddress(address));
-            },
+        while let Ok(event) = self.events.try_recv() {
+            match event {
+                crate::shell::ShellEvent::ActorWake => self.actor_wake_pending = true,
+                crate::shell::ShellEvent::NativeFrameReady => self.request_native_frame_redraws(),
+                crate::shell::ShellEvent::ResidentAddressAccepted(address) => {
+                    self.act(Action::OpenAddress(address));
+                },
+            }
         }
     }
 
     fn window_event(
         &mut self,
-        event_loop: &ActiveEventLoop,
+        event_loop: &dyn ActiveEventLoop,
         window_id: WindowId,
         event: WindowEvent,
     ) {
+        if let Some(slot) = self
+            .window
+            .as_ref()
+            .filter(|w| w.id() == window_id)
+            .map(|_| 0)
+            .or_else(|| {
+                self.lens_windows
+                    .get(&window_id)
+                    .map(|lens| lens.ordinal as u64 + 1)
+            })
+            && self.deliver_native_touch(slot, &event)
+        {
+            return;
+        }
+        if matches!(event, WindowEvent::RedrawRequested)
+            && self.start_pending_page_drag(event_loop, window_id)
+        {
+            return;
+        }
+        if self.handle_native_drag(event_loop, window_id, &event) {
+            return;
+        }
         self.service_private_custody();
         if self.theme_editor_event(window_id, &event) {
             return;
@@ -303,10 +289,10 @@ impl ApplicationHandler<crate::shell::ShellEvent> for Shell {
             if matches!(
                 event,
                 WindowEvent::Moved(_)
-                    | WindowEvent::Resized(_)
+                    | WindowEvent::SurfaceResized(_)
                     | WindowEvent::ScaleFactorChanged { .. }
             ) {
-                adapter.update_window_bounds(window);
+                adapter.update_window_bounds(window.as_ref());
             }
             if let WindowEvent::Focused(focused) = &event {
                 adapter.update_window_focus(*focused);
@@ -349,19 +335,7 @@ impl ApplicationHandler<crate::shell::ShellEvent> for Shell {
                 self.release_place_worker();
                 event_loop.exit();
             },
-            // A dropped file lands at the last tracked cursor position (winit
-            // carries no position on the drop event itself; mid-drag hover
-            // updates CursorMoved on the platforms that report it).
-            WindowEvent::DroppedFile(path) => {
-                let (x, y) = self.cursor;
-                self.drop_file(x, y, &path);
-            },
-            WindowEvent::HoveredFile(path) => {
-                let (x, y) = self.cursor;
-                self.hover_file(x, y, &path);
-            },
-            WindowEvent::HoveredFileCancelled => self.cancel_host_file_drag(),
-            WindowEvent::Resized(size) => {
+            WindowEvent::SurfaceResized(size) => {
                 self.width = size.width.max(1);
                 self.height = size.height.max(1);
                 if let Some(host) = self.host.as_mut() {
@@ -379,11 +353,15 @@ impl ApplicationHandler<crate::shell::ShellEvent> for Shell {
                 self.ctrl = mods.state().control_key();
                 self.alt = mods.state().alt_key();
                 self.shift = mods.state().shift_key();
-                self.meta = mods.state().super_key();
+                self.meta = mods.state().meta_key();
                 self.app.graph_runtimes.set_ctrl(mods.state().control_key());
                 self.app.graph_runtimes.set_alt(mods.state().alt_key());
             },
-            WindowEvent::CursorMoved { position, .. } => {
+            WindowEvent::PointerMoved {
+                source: winit::event::PointerSource::Mouse,
+                position,
+                ..
+            } => {
                 self.cursor = (position.x as f32, position.y as f32);
                 self.deliver_move(self.cursor.0, self.cursor.1);
                 self.deliver_hover(self.cursor.0, self.cursor.1);
@@ -407,25 +385,33 @@ impl ApplicationHandler<crate::shell::ShellEvent> for Shell {
                     self.request_redraw();
                 }
             },
-            WindowEvent::CursorLeft { .. } => self.reset_surface_cursor(),
+            WindowEvent::PointerLeft {
+                kind: winit::event::PointerKind::Mouse,
+                ..
+            } => self.reset_surface_cursor(),
             WindowEvent::MouseWheel { delta, .. } => {
                 // Lines-to-pixels: the canvas pan scale doubles as the content
                 // scroll scale (both want ~40px per wheel line).
                 let (dx, dy) = match delta {
                     MouseScrollDelta::LineDelta(x, y) => (x * WHEEL_PAN_SCALE, y * WHEEL_PAN_SCALE),
                     MouseScrollDelta::PixelDelta(p) => (p.x as f32, p.y as f32),
+                    _ => return,
                 };
                 let (cx, cy) = self.cursor;
                 self.deliver_wheel(cx, cy, dx, dy);
             },
-            WindowEvent::MouseInput { state, button, .. } => {
+            WindowEvent::PointerButton {
+                state,
+                button: winit::event::ButtonSource::Mouse(button),
+                ..
+            } => {
                 let (x, y) = self.cursor;
                 match state {
                     ElementState::Pressed => self.deliver_press(x, y, button),
                     ElementState::Released => self.deliver_release(x, y, button),
                 }
             },
-            WindowEvent::Touch(touch) => self.deliver_touch(touch),
+
             WindowEvent::KeyboardInput { event, .. } => {
                 self.deliver_window_key(
                     0,
@@ -448,7 +434,9 @@ impl ApplicationHandler<crate::shell::ShellEvent> for Shell {
                     return;
                 }
                 if self.app.document_find.open {
-                    self.deliver_find_key(cambium_winit::ime_event_from_winit(&ime));
+                    if let Some(event) = cambium_winit::ime_event_from_winit(&ime) {
+                        self.deliver_find_key(event);
+                    }
                     return;
                 }
                 if !self.app.omnibar.open && self.deliver_window_ime(0, &ime) {
@@ -467,7 +455,7 @@ impl ApplicationHandler<crate::shell::ShellEvent> for Shell {
                         self.app.omnibar.preedit = (!s.is_empty()).then_some(s);
                         self.request_redraw();
                     },
-                    Ime::Enabled | Ime::Disabled => {},
+                    _ => {},
                 }
             },
             WindowEvent::RedrawRequested => {

@@ -188,6 +188,7 @@ pub(super) fn session_pointer_button(button: MouseButton) -> Option<SessionPoint
 /// A winit key in the neutral session vocabulary.
 pub(super) fn session_key(key: &WinitKey) -> Option<SessionKey> {
     Some(match key {
+        WinitKey::Character(text) if text.as_str() == " " => SessionKey::Space,
         WinitKey::Character(text) => SessionKey::Character(text.to_string()),
         WinitKey::Named(named) => match named {
             WinitNamedKey::Enter => SessionKey::Enter,
@@ -195,7 +196,6 @@ pub(super) fn session_key(key: &WinitKey) -> Option<SessionKey> {
             WinitNamedKey::Backspace => SessionKey::Backspace,
             WinitNamedKey::Delete => SessionKey::Delete,
             WinitNamedKey::Escape => SessionKey::Escape,
-            WinitNamedKey::Space => SessionKey::Space,
             WinitNamedKey::ArrowLeft => SessionKey::ArrowLeft,
             WinitNamedKey::ArrowRight => SessionKey::ArrowRight,
             WinitNamedKey::ArrowUp => SessionKey::ArrowUp,
@@ -216,6 +216,7 @@ pub(super) fn trace_native_ime(window: u64, ime: &winit::event::Ime) {
     let (kind, utf8_bytes, selection) = match ime {
         winit::event::Ime::Enabled => ("enabled", 0, None),
         winit::event::Ime::Disabled => ("disabled", 0, None),
+        _ => ("other", 0, None),
         winit::event::Ime::Preedit(text, selection) => ("preedit", text.len(), *selection),
         winit::event::Ime::Commit(text) => ("commit", text.len(), None),
     };
@@ -224,8 +225,8 @@ pub(super) fn trace_native_ime(window: u64, ime: &winit::event::Ime) {
 }
 
 /// A winit IME event in the neutral session vocabulary.
-pub(super) fn session_ime(ime: &winit::event::Ime) -> inker::SessionIme {
-    match ime {
+pub(super) fn session_ime(ime: &winit::event::Ime) -> Option<inker::SessionIme> {
+    Some(match ime {
         winit::event::Ime::Enabled => inker::SessionIme::Enabled,
         winit::event::Ime::Preedit(text, selection) => inker::SessionIme::Preedit {
             text: text.clone(),
@@ -233,7 +234,8 @@ pub(super) fn session_ime(ime: &winit::event::Ime) -> inker::SessionIme {
         },
         winit::event::Ime::Commit(text) => inker::SessionIme::Commit(text.clone()),
         winit::event::Ime::Disabled => inker::SessionIme::Disabled,
-    }
+        _ => return None,
+    })
 }
 
 #[cfg(test)]

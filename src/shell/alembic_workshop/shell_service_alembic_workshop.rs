@@ -6,7 +6,7 @@ use super::*;
 impl Shell {
     pub(in super::super) fn service_alembic_workshop(
         &mut self,
-        event_loop: &ActiveEventLoop,
+        event_loop: &dyn ActiveEventLoop,
     ) -> IdlePolicy {
         if self.alembic_workshop_requested && self.native_child_open_pending() {
             self.defer_native_child_open();

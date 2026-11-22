@@ -4,7 +4,7 @@
 use super::*;
 
 impl Shell {
-    pub(super) fn scenario_pump(&mut self, event_loop: &ActiveEventLoop) {
+    pub(super) fn scenario_pump(&mut self, event_loop: &dyn ActiveEventLoop) {
         if !self.main_receipt.errors.is_empty()
             && let Some(shared) = self.shared_scenario.take()
         {

@@ -5,6 +5,7 @@ use super::*;
 
 impl Drop for Shell {
     fn drop(&mut self) {
+        self.retire_all_page_drags();
         self.close_native_frame_workers();
         self.clip_owner.close();
         // Driver drop cancels and joins its worker. Keep App's session writer

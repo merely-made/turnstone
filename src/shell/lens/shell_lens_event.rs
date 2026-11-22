@@ -10,7 +10,7 @@ impl Shell {
     /// (pan, zoom, grab); resize, close.
     pub(in super::super) fn lens_event(
         &mut self,
-        event_loop: &ActiveEventLoop,
+        event_loop: &dyn ActiveEventLoop,
         id: WindowId,
         event: WindowEvent,
     ) {
@@ -18,7 +18,12 @@ impl Shell {
             return;
         };
         let (window, position) = (lens.ordinal as u64 + 1, lens.cursor);
-        let mouse_delivered = if let WindowEvent::MouseInput { state, button, .. } = &event {
+        let mouse_delivered = if let WindowEvent::PointerButton {
+            state,
+            button: winit::event::ButtonSource::Mouse(button),
+            ..
+        } = &event
+        {
             let phase = match state {
                 ElementState::Pressed => inker::PointerPhase::Down,
                 ElementState::Released => inker::PointerPhase::Up,
@@ -58,10 +63,10 @@ impl Shell {
         if matches!(
             event,
             WindowEvent::Moved(_)
-                | WindowEvent::Resized(_)
+                | WindowEvent::SurfaceResized(_)
                 | WindowEvent::ScaleFactorChanged { .. }
         ) {
-            lens.a11y.update_window_bounds(&lens.window);
+            lens.a11y.update_window_bounds(lens.window.as_ref());
         }
         if let WindowEvent::Focused(focused) = &event {
             lens.focused = *focused;
@@ -76,12 +81,7 @@ impl Shell {
                 self.ctrl = mods.state().control_key();
                 self.alt = mods.state().alt_key();
                 self.shift = mods.state().shift_key();
-                self.meta = mods.state().super_key();
-                return;
-            },
-            WindowEvent::Touch(touch) => {
-                let window = lens.ordinal as u64 + 1;
-                self.deliver_touch_in(window, touch);
+                self.meta = mods.state().meta_key();
                 return;
             },
             WindowEvent::KeyboardInput { event, .. } => {
@@ -148,7 +148,7 @@ impl Shell {
                 self.act(Action::SaveSession);
                 return;
             },
-            WindowEvent::Resized(size) => {
+            WindowEvent::SurfaceResized(size) => {
                 lens.width = size.width.max(1);
                 lens.height = size.height.max(1);
                 if let Some(host) = lens.host.as_mut() {
@@ -167,9 +167,9 @@ impl Shell {
                 }
                 return;
             },
-            WindowEvent::MouseInput {
+            WindowEvent::PointerButton {
                 state: ElementState::Pressed,
-                button,
+                button: winit::event::ButtonSource::Mouse(button),
                 ..
             } if super::super::input::surface_mouse_button(button)
                 .is_some_and(super::super::window_input::lens_button) =>
@@ -303,7 +303,11 @@ impl Shell {
                 }
                 // Canvas press: handled by the gesture block below.
             },
-            WindowEvent::CursorMoved { position, .. } => {
+            WindowEvent::PointerMoved {
+                source: winit::event::PointerSource::Mouse,
+                position,
+                ..
+            } => {
                 let (x, y) = (position.x as f32, position.y as f32);
                 lens.cursor = (x, y);
                 let ordinal = lens.ordinal;
@@ -344,9 +348,9 @@ impl Shell {
                     return;
                 }
             },
-            WindowEvent::MouseInput {
+            WindowEvent::PointerButton {
                 state: ElementState::Released,
-                button,
+                button: winit::event::ButtonSource::Mouse(button),
                 ..
             } if super::super::input::surface_mouse_button(button)
                 .is_some_and(super::super::window_input::lens_button) =>
@@ -382,6 +386,7 @@ impl Shell {
                         y * cartography::canvas::WHEEL_PAN_SCALE,
                     ),
                     MouseScrollDelta::PixelDelta(p) => (p.x as f32, p.y as f32),
+                    _ => return,
                 };
                 let (x, y) = lens.cursor;
                 let (lw, lh, ordinal) = (lens.width, lens.height, lens.ordinal);
@@ -442,7 +447,11 @@ impl Shell {
         };
         let mut redraw = false;
         match event {
-            WindowEvent::CursorMoved { position, .. } => {
+            WindowEvent::PointerMoved {
+                source: winit::event::PointerSource::Mouse,
+                position,
+                ..
+            } => {
                 let (x, y) = (position.x as f32, position.y as f32);
                 let pane = captured.or_else(|| {
                     crate::surface::hit_test(
@@ -469,6 +478,7 @@ impl Shell {
                         y * cartography::canvas::WHEEL_PAN_SCALE,
                     ),
                     MouseScrollDelta::PixelDelta(p) => (p.x as f32, p.y as f32),
+                    _ => return,
                 };
                 if let Some(hit) = crate::surface::hit_test(
                     &plan,
@@ -480,7 +490,11 @@ impl Shell {
                     redraw = self.app.graph_pane_wheel(pane, dx, dy);
                 }
             },
-            WindowEvent::MouseInput { state, button, .. } => {
+            WindowEvent::PointerButton {
+                state,
+                button: winit::event::ButtonSource::Mouse(button),
+                ..
+            } => {
                 if let Some(button) = pointer_button(button) {
                     let pane = match state {
                         ElementState::Pressed => crate::surface::hit_test(

@@ -11,7 +11,8 @@ pub struct Shell {
     /// the shell alone polls and applies the typed chrome snapshot.
     pub(super) live_settings: LiveSettingsHandle,
     /// Wakes the loop when the physics or fetch actor has news.
-    pub(super) proxy: EventLoopProxy<crate::shell::ShellEvent>,
+    pub(super) events: std::sync::mpsc::Receiver<ShellEvent>,
+    pub(super) proxy: crate::shell::ShellEventProxy,
     /// Proxy callbacks admit one actor drain at the end of the native batch.
     pub(super) actor_wake_pending: bool,
     pub(super) native_frames: super::native_frames::NativeFrameQueue,
@@ -141,7 +142,7 @@ pub struct Shell {
     /// verb; targets the first live lens window).
     pub(super) pending_lens_capture: Option<std::path::PathBuf>,
     pub(super) pending_lens_capture_window: Option<WindowId>,
-    pub(super) window: Option<Arc<Window>>,
+    pub(super) window: Option<Arc<dyn Window>>,
     /// The common native accessibility publisher for the primary window.
     pub(super) a11y_adapter: Option<crate::shell::a11y_bridge::ForestPublisher>,
     /// Captured actions from the platform thread and their published routes.
@@ -250,6 +251,7 @@ pub struct Shell {
     pub(super) window_buttons: HashMap<u64, inker::PointerButtons>,
     /// Files offered by the OS drag manager and the current web-surface target.
     /// Graph drops keep using the addressed-content import path.
+    pub(super) page_drag: page_drag::PageDrag,
     pub(super) host_file_drag: HostFileDrag,
     /// The frame-streaming content surface currently under the pointer. This
     /// scopes cursor-shape callbacks and restores the host default on leave.

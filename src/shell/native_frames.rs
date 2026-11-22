@@ -144,7 +144,7 @@ impl Shell {
     }
     // Child hosts retain the checked raster API. Their redraws participate in
     // this same host-owned queue, while ordinary input is delivered at once.
-    fn native_child_windows(&self) -> Vec<Arc<winit::window::Window>> {
+    fn native_child_windows(&self) -> Vec<Arc<dyn winit::window::Window>> {
         let mut windows = Vec::new();
         if let Some(window) = self
             .theme_editor
