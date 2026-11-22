@@ -243,12 +243,18 @@ impl Shell {
             Some(PaneContent::Roster) => {
                 // The retained cambium grid: refresh it from graph truth at
                 // the pane's size, then draw its DOM.
+                let owns_focus = self.app.focus == crate::surface::FocusTarget::Pane(pane_id)
+                    && self.outer_focus.is_none()
+                    && !self.app.omnibar.open
+                    && !self.app.document_find.open
+                    && !self.app.user_agent_decision.is_open();
                 let grid = self
                     .renderers
                     .roster
                     .entry(pane_id)
                     .or_insert_with(|| crate::cambium_pane::RosterGrid::new_in(mount()));
                 grid.sync(&self.app, pane_id, pw, ph);
+                grid.show_focus(owns_focus);
                 grid.scene(rw, rh, scale)
             },
             Some(PaneContent::Gloss(cfg)) => {

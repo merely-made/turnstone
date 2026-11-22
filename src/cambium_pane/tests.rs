@@ -129,6 +129,7 @@ fn inline_roster_uses_shared_fragments_and_preserves_owner_across_windows() {
 
 fn row(title: &str) -> RosterGridRow {
     RosterGridRow {
+        member: uuid::Uuid::new_v4(),
         title: title.to_string(),
         kind: "text/html".to_string(),
         url: format!("https://{title}/"),
@@ -145,6 +146,78 @@ fn grid_with_rows() -> RosterGrid {
     });
     let _ = g.scene(512, 600, 1.0);
     g
+}
+
+#[test]
+fn projection_table_keyboard_sort_and_return_are_published() {
+    use accesskit::{Role, SortDirection};
+    use cambium::projection_table::{CellContent, ProjectionTable};
+    use cambium::{Key, KeyEvent, NamedKey};
+
+    fn focused(grid: &mut RosterGrid) -> accesskit::Node {
+        grid.show_focus(true);
+        assert!(!grid.scene(512, 600, 1.0).ops.is_empty());
+        let dom = grid.dom.borrow();
+        let focus = grid.inline_focus().expect("Roster runner has focus");
+        assert_eq!(
+            dom.attribute(
+                focus,
+                &Namespace::default(),
+                &LocalName::from("data-roster-focus"),
+            ),
+            Some("true")
+        );
+        let (tree, _) = grid
+            .layout
+            .accessibility_tree(&dom, Some(focus))
+            .expect("laid out Roster accessibility tree");
+        tree.nodes
+            .into_iter()
+            .find_map(|(id, node)| (id == tree.focus).then_some(node))
+            .expect("focused node was published")
+    }
+
+    let mut grid = grid_with_rows();
+    let graph = crate::panes::GraphId::new();
+    grid.runner.update(|state| {
+        state.source = Some(RosterGraphSource {
+            id: graph,
+            revision: 1,
+            content_revision: 1,
+        });
+    });
+    grid.key_inline(KeyEvent::new(Key::Named(NamedKey::Tab)));
+    assert_eq!(focused(&mut grid).role(), Role::Tab);
+    grid.key_inline(KeyEvent::new(Key::Named(NamedKey::End)));
+    assert_eq!(grid.selected_tab(), (TABLE_TAB, "Table"));
+    let opening_tab = grid.inline_focus().expect("selected Table tab has focus");
+    grid.runner.update(RosterState::sync_projection);
+    assert!(grid.runner.state().projection.table.is_some());
+
+    grid.key_inline(KeyEvent::new(Key::Named(NamedKey::Tab)));
+    let header = focused(&mut grid);
+    assert_eq!(header.role(), Role::ColumnHeader);
+    assert_eq!(header.label(), Some("Title"));
+    assert_eq!(header.column_index(), Some(0));
+    grid.key_inline(KeyEvent::new(Key::Named(NamedKey::ArrowDown)));
+    let cell = focused(&mut grid);
+    assert_eq!(cell.role(), Role::GridCell);
+    assert_eq!(cell.column_index(), header.column_index());
+    grid.key_inline(KeyEvent::new(Key::Named(NamedKey::ArrowUp)));
+    for (direction, first) in [
+        (SortDirection::Ascending, "alpha"),
+        (SortDirection::Descending, "gamma"),
+    ] {
+        grid.key_inline(KeyEvent::new(Key::Named(NamedKey::Enter)));
+        assert_eq!(focused(&mut grid).sort_direction(), Some(direction));
+        let table: &ProjectionTable = grid.runner.state().projection.table.as_ref().unwrap();
+        assert_eq!(table.cell(0, 0), CellContent::Text(first.into()));
+    }
+    let mut back = KeyEvent::new(Key::Named(NamedKey::Tab));
+    back.mods.shift = true;
+    grid.key_inline(back);
+    assert_eq!(grid.inline_focus(), Some(opening_tab));
+    assert_eq!(focused(&mut grid).role(), Role::Tab);
 }
 
 /// The pane-event round trip, headless: lay the grid's DOM out at a pane size
@@ -215,6 +288,7 @@ fn a_row_in_a_long_narrow_roster_navigates_to_its_own_url() {
     let mut g = RosterGrid::new();
     let mut rows = vec![row("Reader page"), row("shared.html")];
     rows.push(RosterGridRow {
+        member: uuid::Uuid::new_v4(),
         title: "field.knot".into(),
         kind: "text/djot".into(),
         url: "knot://ff23f774bd2cb1adfe0887e3f8701ab195e925c0e9082573fb3f1d2e60070fb6/field.knot"

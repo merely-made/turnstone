@@ -89,10 +89,18 @@ pub fn roster_rows(app: &App) -> Vec<RosterViewRow> {
 /// the section headers and keeps the node's fields per column.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct RosterGridRow {
+    pub member: uuid::Uuid,
     pub title: String,
     pub kind: String,
     pub url: String,
     pub selected: bool,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) struct RosterGraphSource {
+    pub(crate) id: crate::panes::GraphId,
+    pub(crate) revision: u64,
+    pub(crate) content_revision: u64,
 }
 
 /// Gather the Roster's node rows as flat grid rows (no section headers), for the
@@ -112,20 +120,31 @@ pub fn roster_grid_rows(app: &App) -> Vec<RosterGridRow> {
 /// Gather rows from an explicit published graph/member context. A follower
 /// pane supplies its own source through `App::follower_context`; this helper
 /// never reads the graph pool's active compatibility cursor.
-pub fn roster_grid_rows_for_pane(app: &App, pane: crate::panes::PaneId) -> Vec<RosterGridRow> {
+pub(crate) fn roster_grid_rows_for_pane(
+    app: &App,
+    pane: crate::panes::PaneId,
+) -> (Option<RosterGraphSource>, Vec<RosterGridRow>) {
     let context = app.follower_context(pane);
     let graph_id = context.and_then(|context| context.graph).or_else(|| {
         (!app.has_pane_binding(pane))
             .then(|| app.graph_for_pane(pane))
             .flatten()
     });
-    let graph = graph_id.and_then(|graph| app.graph_runtimes.canvas(graph));
+    let graph = graph_id.and_then(|id| app.graph_runtimes.canvas(id).map(|canvas| (id, canvas)));
     let focused = context.and_then(|context| context.member).or_else(|| {
         (!app.has_pane_binding(pane))
             .then(|| app.graph_pane_focused_member(pane))
             .flatten()
     });
-    roster_grid_rows_for_context(app, graph, focused)
+    let source = graph.map(|(id, canvas)| RosterGraphSource {
+        id,
+        // Anonymous node captions can depend on relations; named nodes can
+        // change their title or address without a structural graph change.
+        revision: canvas.graph().revision(),
+        content_revision: canvas.graph().content_revision(),
+    });
+    let rows = roster_grid_rows_for_context(app, graph.map(|(_, canvas)| canvas), focused);
+    (source, rows)
 }
 
 fn roster_grid_rows_for_context(
@@ -154,6 +173,7 @@ fn roster_grid_rows_for_context(
     build_node_rows(inputs)
         .into_iter()
         .map(|r| RosterGridRow {
+            member: r.member,
             title: r.title,
             kind: r.content_type.unwrap_or_else(|| "—".to_string()),
             url: r.url,

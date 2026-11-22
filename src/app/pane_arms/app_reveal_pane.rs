@@ -16,6 +16,9 @@ impl App {
             );
         }
         self.active_pane = Some(pane);
+        if matches!(self.pane_content(pane), Some(PaneContent::Roster)) {
+            self.focus = crate::surface::FocusTarget::Pane(pane);
+        }
         if self.maximized.is_some() {
             self.maximized = Some(pane);
         }
@@ -322,6 +325,13 @@ impl App {
             .into(),
         );
         self.reveal_pane(if visible { main } else { pane });
+        if visible && self.focus == crate::surface::FocusTarget::Pane(pane) {
+            self.focus = if matches!(self.pane_content(main), Some(PaneContent::Orrery)) {
+                crate::surface::FocusTarget::Graph(main)
+            } else {
+                crate::surface::FocusTarget::Pane(main)
+            };
+        }
         self.index_pane_spaces();
         vec![Effect::SaveSession, Effect::Redraw]
     }

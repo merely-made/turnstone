@@ -24,20 +24,22 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
+use cambium::projection_table::{ProjectionTable, projection_table};
 use cambium::{
     AnyView, DomHandle, GenetAppRunner, GenetCtx, GenetElement, GridColumn, GridSpec, PointerClick,
     TabStrip, data_grid, el, lens, on_click, tab_strip,
 };
 use genet_scripted_dom::ScriptedDom;
-use layout_dom_api::LayoutDom;
+use layout_dom_api::{LayoutDom, LayoutDomMut, LocalName, Namespace, QualName};
 
 use crate::app::App;
-use crate::roster_view::{RosterGridRow, roster_grid_rows_for_pane};
+use crate::roster_view::{RosterGraphSource, RosterGridRow, roster_grid_rows_for_pane};
 
-/// The Roster's tabs — `incipit::roster`'s four data views over one grid. Only
-/// Nodes has a gatherer today; the rest render an honest empty state until
-/// theirs land (Links needs the edge families walked into `build_link_rows`).
-const ROSTER_TABS: [&str; 4] = ["Nodes", "Links", "Graphlets", "Fields"];
+#[path = "cambium_pane/projection.rs"]
+mod projection;
+
+const TABLE_TAB: usize = 4;
+const ROSTER_TABS: [&str; 5] = ["Nodes", "Links", "Graphlets", "Fields", "Table"];
 
 /// The Roster pane's state: the tab strip, the flat node rows, and the pane
 /// size — the height the grid virtualizes against, and both dimensions for the
@@ -46,6 +48,8 @@ struct RosterState {
     binding: crate::pane_binding::BindingViewState,
     tabs: TabStrip,
     rows: Vec<RosterGridRow>,
+    source: Option<RosterGraphSource>,
+    projection: projection::RosterProjection,
     viewport_w: f32,
     viewport_h: f32,
 }
@@ -84,8 +88,8 @@ fn roster_spec() -> GridSpec {
 
 /// The Roster pane: a tab strip over the active tab's view. The strip is
 /// cambium's (consumer-pulled by this pane), lensed onto our `tabs` field; the
-/// Nodes tab is the node grid, the others an honest empty state until their
-/// gatherers land.
+/// Nodes tab follows addresses; the Table tab reads the same graph through a
+/// sortable projection.
 fn roster_pane(state: &RosterState) -> RosterView {
     let strip = lens(
         |tabs: &mut TabStrip| tab_strip::<RosterAction>(tabs, &ROSTER_TABS),
@@ -93,6 +97,23 @@ fn roster_pane(state: &RosterState) -> RosterView {
     );
     let body: RosterView = match state.tabs.selected {
         0 => roster_grid(state),
+        TABLE_TAB => match state.projection.table.as_ref() {
+            Some(_) => Box::new(lens(
+                |table: &mut ProjectionTable| projection_table::<RosterAction>(table),
+                |state: &mut RosterState| state.projection.table.as_mut().unwrap(),
+            )),
+            None => Box::new(
+                el::<_, RosterState, RosterAction>(
+                    "div",
+                    if state.source.is_some() {
+                        "Could not open the graph table."
+                    } else {
+                        "No graph is bound to this Roster."
+                    },
+                )
+                .attr("class", "pane-empty"),
+            ),
+        },
         _ => Box::new(
             el::<_, RosterState, RosterAction>(
                 "div",
@@ -122,7 +143,7 @@ fn roster_pane(state: &RosterState) -> RosterView {
                 body,
             ),
         )
-        .attr("class", "pane")
+        .attr("class", "pane roster-pane")
         .attr(
             "style",
             format!(
@@ -199,6 +220,7 @@ pub fn tab_label(idx: usize) -> &'static str {
 pub struct RosterGrid {
     dom: DomHandle,
     runner: RosterRunner,
+    painted_focus: Option<genet_scripted_dom::NodeId>,
     scroll: crate::ui::PaneScroll,
     /// Kept across frames. Rebuilding a layout per paint re-cascaded and
     /// re-shaped the whole pane to draw an unchanged screen; see
@@ -222,6 +244,8 @@ impl RosterGrid {
             binding: Default::default(),
             tabs: TabStrip::new(0).with_label("Roster"),
             rows: Vec::new(),
+            source: None,
+            projection: Default::default(),
             viewport_w: 0.0,
             viewport_h: 0.0,
         };
@@ -237,6 +261,7 @@ impl RosterGrid {
             mount: mount.clone(),
             dom,
             runner,
+            painted_focus: None,
             scroll: crate::ui::PaneScroll::new(),
             layout: crate::ui::RetainedLayout::new_at(
                 mount.as_ref().map(cambium::RetainedMount::node),
@@ -247,6 +272,34 @@ impl RosterGrid {
     pub(crate) fn inline_focus(&self) -> Option<genet_scripted_dom::NodeId> {
         self.runner.focus()
     }
+
+    pub(crate) fn show_focus(&mut self, active: bool) {
+        let focused = if active { self.runner.focus() } else { None };
+        if self.painted_focus == focused {
+            return;
+        }
+
+        // The runner owns focus. The native retained sheet needs an explicit
+        // marker, as it does for the workspace's frame controls.
+        let attribute = || {
+            QualName::new(
+                None,
+                Namespace::default(),
+                LocalName::from("data-roster-focus"),
+            )
+        };
+        let mut dom = self.dom.borrow_mut();
+        if let Some(old) = self.painted_focus
+            && dom.is_live(old)
+        {
+            dom.remove_attribute(old, attribute());
+        }
+        if let Some(node) = focused {
+            dom.set_attribute(node, attribute(), "true");
+        }
+        self.painted_focus = focused;
+    }
+
     pub(crate) fn focus_inline(&mut self, node: genet_scripted_dom::NodeId) -> bool {
         let Some(mount) = &self.mount else {
             return false;
@@ -299,12 +352,14 @@ impl RosterGrid {
     /// (and its DOM) through the runner. The size is the whole pane; the grid
     /// virtualizes against what the tab strip leaves it.
     pub fn sync(&mut self, app: &App, pane_id: crate::panes::PaneId, pane_w: f32, pane_h: f32) {
-        let rows = roster_grid_rows_for_pane(app, pane_id);
+        let (source, rows) = roster_grid_rows_for_pane(app, pane_id);
         self.runner.update(|state| {
             state.binding.sync(app, pane_id);
+            state.source = source;
             state.rows = rows;
             state.viewport_w = pane_w;
             state.viewport_h = pane_h;
+            state.sync_projection();
         });
     }
 
@@ -348,7 +403,16 @@ impl RosterGrid {
 
     /// Wheel delta from the shell.
     pub fn scroll_by(&mut self, dx: f32, dy: f32) {
-        self.scroll.nudge(dx, dy);
+        let state = self.runner.state();
+        if state.tabs.selected == TABLE_TAB && state.projection.table.is_some() {
+            self.runner.update(|state| {
+                if let Some(table) = &mut state.projection.table {
+                    table.scroll_by(dy);
+                }
+            });
+        } else {
+            self.scroll.nudge(dx, dy);
+        }
     }
 
     /// Whether the overlay bars still need repainting as they fade.

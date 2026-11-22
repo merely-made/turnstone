@@ -1,0 +1,45 @@
+# Run with a fresh profile. The synthetic graph addresses require no server.
+settle 20
+key escape
+resize 1180 800
+open mere://zulu-projection
+open mere://alpha-projection
+settle 10
+omnibar actions
+type Open Roster pane
+assert snap suggestions ~ Open Roster pane
+key enter
+settle 10
+assert pane roster
+assert snap focus == pane
+
+# Enter the Roster's retained body and use its roving tab strip.
+key tab
+key tab
+key end
+settle 5
+assert snap roster-tab == Table
+assert node role:grid Graph nodes
+assert node role:columnheader Title
+key tab
+key down
+settle 4
+capture 01_cell_focus
+key up
+key enter
+settle 4
+assert a11y sorted by Title, ascending
+capture 02_ascending
+key enter
+settle 4
+assert a11y sorted by Title, descending
+capture 03_descending
+
+# Shift+Tab must return to Table. Home moves that tab strip back to Nodes.
+key shift+tab
+settle 4
+capture 04_focus_returned
+key home
+settle 4
+assert snap roster-tab == Nodes
+assert snap capture-errors == 0
