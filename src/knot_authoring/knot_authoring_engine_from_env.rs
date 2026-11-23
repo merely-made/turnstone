@@ -65,7 +65,7 @@ impl KnotAuthoringEngine {
             if run_mode == "never" {
                 String::new()
             } else {
-                "rhai".into()
+                "lua".into()
             }
         });
         let max_depth = env_integer("TURNSTONE_KNOT_RESOLVE_MAX_DEPTH", DEFAULT_EFFECT_MAX_DEPTH)?;
@@ -329,7 +329,7 @@ impl KnotAuthoringEngine {
                     resolve.into(),
                     run.into(),
                     "file".into(),
-                    "rhai".into(),
+                    "lua".into(),
                     "1".into(),
                     "10000".into(),
                 ],
@@ -360,7 +360,7 @@ impl KnotAuthoringEngine {
                     "never".into(),
                     run.into(),
                     "".into(),
-                    "rhai".into(),
+                    "lua".into(),
                     "1".into(),
                     "10000".into(),
                 ],

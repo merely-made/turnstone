@@ -4,6 +4,6 @@
 The authored fallback remains visible if resolution is unavailable.
 ```
 
-```rhai eval
+```lua eval
 40 + 2
 ```

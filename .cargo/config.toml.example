@@ -131,7 +131,7 @@ p2panda-sync = { path = "../../crates/p2panda/p2panda-sync" }
 "register-theme" = { path = "../mere/crates/system/registry/register-theme" }
 "scenograph" = { path = "../mere/crates/cambium/scenes/scenograph" }
 "scenomise" = { path = "../mere/crates/cambium/scenes/scenomise" }
-"script-rhai" = { path = "../mere/crates/script/rhai" }
+"script-didge" = { path = "../mere/crates/script/didge" }
 "seiche" = { path = "../mere/crates/conatus/seiche" }
 "servitor" = { path = "../mere/crates/servitor" }
 "sprigging" = { path = "../mere/crates/cambium/sprigging" }

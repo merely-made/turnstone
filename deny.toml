@@ -294,8 +294,8 @@ crate = "jiff-tzdb@0.1.10"
 reason = "timezone_provider 0.2.6 (latest) requires jiff-tzdb 0.1, under boa_engine and temporal_rs (genet-bole, genet-vano); jiff 1.0 takes 1.0.0; goes when timezone_provider moves to jiff-tzdb 1.0 (2026-11-20)"
 
 [[bans.skip]]
-crate = "itertools@0.13.0"
-reason = "bindgen 0.72.1 (bindgen 0.73.2 drops it) requires it, under grafting-servo, p2mere-encryption; goes when their dependents take bindgen 0.73.2"
+crate = "itertools@0.12.1"
+reason = "bindgen 0.72.1 (bindgen 0.73.2 drops it) requires itertools below 0.14, under grafting-servo (mozjs, mozangle); the resolver shares 0.12.1 with prost-derive 0.14.6 (latest, which also takes 0.15); goes when bindgen's dependents take bindgen 0.73.2"
 
 [[bans.skip]]
 crate = "itertools@0.14.0"
@@ -612,10 +612,6 @@ reason = "netdev 0.46.3 (netdev 0.47.0 drops it), netwatch 0.19.3 (netwatch 0.20
 [[bans.skip]]
 crate = "windows-sys@0.52.0"
 reason = "ring 0.17.14 (latest), winit 0.30.13 (latest) require it, under cambium-a11y, cambium-desktop, cambium-winit, castellan and 18 more; goes when ring, winit move to windows-sys 0.61.2"
-
-[[bans.skip]]
-crate = "windows-sys@0.59.0"
-reason = "held by bevy_platform 0.19.1, dirs-sys 0.5.0, nu-ansi-term 0.50.3, reflink-copy 0.1.33 (bevy_platform 0.20.1 newest; the others are their latest releases); gone when they resolve windows-sys 0.61.2"
 
 [[bans.skip]]
 crate = "windows-targets@0.42.2"

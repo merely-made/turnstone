@@ -325,7 +325,7 @@ fn resolve_and_run_cross_the_consented_authoring_path() {
     fs::write(&included, "## Included\n\nFetched text.\n").unwrap();
     let path = root.join("field.knot");
     let authored = format!(
-        "# Field\n\n```include {}\nFallback.\n```\n\n```rhai eval\n40 + 2\n```\n",
+        "# Field\n\n```include {}\nFallback.\n```\n\n```lua eval\n40 + 2\n```\n",
         file_address(&included)
     );
     fs::write(&path, &authored).unwrap();
@@ -352,7 +352,7 @@ fn resolve_and_run_cross_the_consented_authoring_path() {
         session.invoke_effect(KnotEffectKind::Resolve);
         let resolved = wait_for_derived(session, "resolved 1");
         assert!(resolved.source.contains("Included"));
-        assert!(resolved.source.contains("rhai eval"));
+        assert!(resolved.source.contains("lua eval"));
         assert_eq!(fs::read_to_string(&path).unwrap(), authored);
 
         session.invoke_effect(KnotEffectKind::Run);
@@ -399,7 +399,7 @@ fn received_communal_auto_run_waits_for_explicit_confirmation() {
     let authored = "\
 # Received calculation
 
-```rhai eval
+```lua eval
 40 + 2
 ```
 ";

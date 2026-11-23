@@ -668,7 +668,7 @@ sceno-backdrops = { version = ">=0.0.1", git = "https://github.com/merely-made/g
 scenograph = { version = ">=0.0.7", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 scenomise = { version = ">=0.0.8", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 scenotime = { version = ">=0.0.5", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
-script-rhai = { version = ">=0.0.1", git = "https://github.com/merely-made/inker.git", branch = "main" }
+script-didge = { version = ">=0.0.1", git = "https://github.com/merely-made/inker.git", branch = "main" }
 servitor = { version = ">=0.0.3", git = "https://github.com/merely-made/eidetic.git", branch = "main" }
 sha2 = "0.11"
 sporran = { version = ">=0.0.1", git = "https://github.com/merely-made/dramatis.git", branch = "main" }

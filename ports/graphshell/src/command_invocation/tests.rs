@@ -37,7 +37,7 @@ fn state(canvas: &Canvas) -> (cartography::canvas::CameraView, bool, bool) {
 }
 
 fn script_requests(commands: &CommandSet, source: &str) -> Result<Vec<Invocation>, String> {
-    use script_rhai::command::{Budget, CommandLimits, collect_invocations};
+    use script_didge::{Budget, CommandLimits, collect_invocations};
     collect_invocations(
         source,
         commands,
@@ -48,7 +48,7 @@ fn script_requests(commands: &CommandSet, source: &str) -> Result<Vec<Invocation
 }
 
 #[test]
-fn rhai_batch_serializes_into_the_same_actual_viewer_receiver() {
+fn lua_batch_serializes_into_the_same_actual_viewer_receiver() {
     let commands = viewer_commands::commands(Availability::default());
     let mut canvas = fixture();
     let before = state(&canvas);
