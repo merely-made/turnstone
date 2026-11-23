@@ -24,6 +24,9 @@ impl Protection for TestProtection {
     }
 }
 
+#[path = "legacy_installation_test.rs"]
+mod legacy_installation_test;
+
 fn sealed_entry(owner: &Owner, manifest: &str, text: &str) -> Entry {
     let annotation = eidetic::Hash::of(manifest.as_bytes()).to_string();
     let key = Key {
@@ -157,6 +160,7 @@ fn citation_reads_exact_saved_proposal_passage_after_live_source_changes() {
         proposal: Some(proposal.clone()),
         usage: Usage::default(),
         limits: None,
+        turns: Vec::new(),
         controls: Vec::new(),
     };
 
@@ -404,6 +408,7 @@ fn private_proposal_citation_is_exact_and_requires_live_custody() {
         proposal: Some(proposal.clone()),
         usage: Usage::default(),
         limits: None,
+        turns: Vec::new(),
         controls: Vec::new(),
     };
     let reading = proposal_reading(
