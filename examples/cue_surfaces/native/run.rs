@@ -17,18 +17,23 @@ pub fn run() -> std::result::Result<(), String> {
         Some(flag) if flag == "--offscreen" => false,
         Some(_) => return Err("only --offscreen is accepted after the output directory".into()),
     };
-    let mut app = App::new(output, require_window);
+    let out = Rc::new(RefCell::new(None));
+    let app = App::new(output, require_window, out.clone());
     use winit::platform::macos::{ActivationPolicy, EventLoopBuilderExtMacOS};
     let mut builder = EventLoop::builder();
     builder
         .with_activation_policy(ActivationPolicy::Regular)
         .with_activate_ignoring_other_apps(require_window);
     let el = builder.build().map_err(|e| e.to_string())?;
-    el.run_app(&mut app).map_err(|e| e.to_string())?;
-    if let Some(e) = app.error {
+    el.run_app(app).map_err(|e| e.to_string())?;
+    let (error, passed) = out
+        .borrow_mut()
+        .take()
+        .ok_or("the event loop did not drop the app")?;
+    if let Some(e) = error {
         return Err(e);
     }
-    if !app.passed {
+    if !passed {
         return Err("receiver closed before qualification completed".into());
     }
     Ok(())

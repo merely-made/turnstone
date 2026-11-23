@@ -4,7 +4,9 @@
 use genet_render_host::RenderCore;
 use pelt_core::{PeltContent, PeltTileRequest, cue::PeltSharedContent};
 use std::{
+    cell::RefCell,
     path::PathBuf,
+    rc::Rc,
     sync::Arc,
     time::{Duration, Instant},
 };
@@ -15,7 +17,7 @@ use winit::{
     application::ApplicationHandler,
     event::WindowEvent,
     event_loop::{ActiveEventLoop, ControlFlow, EventLoop},
-    window::{Window, WindowId},
+    window::{Window, WindowAttributes, WindowId},
 };
 type R<T> = Result<T>;
 struct Clock(Instant);
@@ -47,7 +49,7 @@ struct Blitter {
 struct App {
     output: PathBuf,
     require_window: bool,
-    window: Option<Arc<Window>>,
+    window: Option<Arc<dyn Window>>,
     core: Option<RenderCore>,
     host: Option<GpuHost>,
     servo: Option<ServoCueHost>,
@@ -70,6 +72,15 @@ struct App {
     old_scopes: Vec<Scope>,
     error: Option<String>,
     passed: bool,
+    /// Where the app leaves its error and verdict when the event loop drops
+    /// it: `run_app` takes the app by value.
+    out: Rc<RefCell<Option<(Option<String>, bool)>>>,
+}
+
+impl Drop for App {
+    fn drop(&mut self) {
+        *self.out.borrow_mut() = Some((self.error.take(), self.passed));
+    }
 }
 
 #[path = "native/html.rs"]

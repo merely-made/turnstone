@@ -90,10 +90,6 @@ crate = "block-buffer@0.10.4"
 reason = "content-security-policy 0.9.0 (latest), headers 0.4.2 (latest), snow 0.10.0 (latest), tracel-llvm-bundler 23.1.0-4 (latest) and 4 more require it, via digest 0.10.7, sha1 0.10.7 and 1 more, under app-host, authority-host, block-host, conatus and 5 more; goes when content-security-policy, headers, snow and 1 more move to block-buffer 0.12.1; their dependents take blake2 0.11.0, sha3 0.12.0, wasmtime-environ 50.0.1 and 1 more"
 
 [[bans.skip]]
-crate = "block2@0.5.1"
-reason = "winit 0.30.13 (latest), accesskit_macos 0.27.1 (accesskit_macos 0.27.2 drops it), objc2-cloud-kit 0.2.2 (objc2-cloud-kit 0.3.2 drops it), objc2-contacts 0.2.2 (objc2-contacts 0.3.2 drops it) and 10 more require it, via objc2-app-kit 0.2.2, objc2-foundation 0.2.2, under cambium-a11y, cambium-desktop, cambium-winit, genet-winit and 4 more; goes when winit moves to block2 0.6.2; their dependents take accesskit_macos 0.27.2, objc2-cloud-kit 0.3.2, objc2-contacts 0.3.2 and 10 more"
-
-[[bans.skip]]
 crate = "calendrical_calculations@0.2.3"
 reason = "icu_capi 2.1.2 (icu_capi 2.4.0 drops it), icu_datetime 2.1.1 (icu_datetime 2.4.0 drops it), icu_time 2.1.1 (icu_time 2.4.0 drops it) require it, via icu_calendar 2.1.1, under grafting-servo; goes when their dependents take icu_capi 2.4.0, icu_datetime 2.4.0, icu_time 2.4.0"
 
@@ -318,12 +314,12 @@ crate = "jni-sys@0.3.1"
 reason = "ndk 0.9.0 (latest), ndk-sys 0.6.0+11769913 (latest), netdev 0.46.3 (netdev 0.47.0 drops it), netwatch 0.19.3 (netwatch 0.20.0 drops it) require it, via jni 0.21.1, netdev 0.45.1, under cambium-a11y, cambium-desktop, cambium-rootstock, cambium-winit and 25 more; goes when ndk, ndk-sys move to jni-sys 0.4.1; their dependents take netdev 0.47.0, netwatch 0.20.0"
 
 [[bans.skip]]
-crate = "libloading@0.8.9"
-reason = "antithesis_sdk 0.3.0 (antithesis_sdk 0.4.0 still needs it), ash 0.38.0+1.3.281 (latest), clang-sys 1.9.1 (latest), cubecl-hip 0.12.0-pre.2 (latest) and 8 more require it, under cambium-a11y, cambium-desktop, cambium-rootstock, cambium-winit and 25 more; goes when antithesis_sdk, ash, clang-sys and 9 more move to libloading 0.9.1"
+crate = "keccak@0.1.6"
+reason = "held by sha3 0.10.9; gone when sha3 0.10.9 leaves the graph (see its skip)"
 
 [[bans.skip]]
-crate = "linux-raw-sys@0.4.15"
-reason = "winit 0.30.13 (latest), calloop 0.13.0 (calloop 0.14.5 drops it), calloop-wayland-source 0.3.0 (calloop-wayland-source 0.4.1 drops it), smithay-client-toolkit 0.19.2 (smithay-client-toolkit 0.21.1 drops it) and 1 more require it, via rustix 0.38.44, under cambium-a11y, cambium-desktop, cambium-winit, conatus and 6 more; goes when winit moves to linux-raw-sys 0.12.1; their dependents take calloop 0.14.5, calloop-wayland-source 0.4.1, smithay-client-toolkit 0.21.1 and 1 more"
+crate = "libloading@0.8.9"
+reason = "antithesis_sdk 0.3.0 (antithesis_sdk 0.4.0 still needs it), ash 0.38.0+1.3.281 (latest), clang-sys 1.9.1 (latest), cubecl-hip 0.12.0-pre.2 (latest) and 8 more require it, under cambium-a11y, cambium-desktop, cambium-rootstock, cambium-winit and 25 more; goes when antithesis_sdk, ash, clang-sys and 9 more move to libloading 0.9.1"
 
 [[bans.skip]]
 crate = "litemap@0.8.1"
@@ -462,10 +458,6 @@ crate = "read-fonts@0.41.0"
 reason = "cosmic-text 0.19.0 (latest), swash 0.2.10 (latest), epaint 0.36.2 (epaint 0.37.0 drops it), glifo 0.2.0 (glifo 0.5.0 drops it) and 10 more require it, via skrifa 0.44.0, under cambium-rootstock, genet-parley, grafting-servo; goes when cosmic-text, swash move to read-fonts 0.46.0; their dependents take epaint 0.37.0, glifo 0.5.0, harfrust 0.16.0 and 1 more; merely-made/genet moves genet-fontique to read-fonts 0.46.0; merely-made/genet moves genet-parley to read-fonts 0.46.0; merely-made/netrender moves netrender to read-fonts 0.46.0; mark-ik/vello moves netrender-glifo to read-fonts 0.46.0; mark-ik/vello moves netrender-vello to read-fonts 0.46.0; mark-ik/vello moves netrender-vello-encoding to read-fonts 0.46.0; merely-made/netrender moves paint_list_render to read-fonts 0.46.0"
 
 [[bans.skip]]
-crate = "redox_syscall@0.4.1"
-reason = "winit 0.30.13 (latest) requires it, under cambium-a11y, cambium-desktop, cambium-winit, genet-winit and 4 more; goes when winit moves to redox_syscall 0.9.5"
-
-[[bans.skip]]
 crate = "redox_syscall@0.5.18"
 reason = "parking_lot_core 0.9.12 (parking_lot_core 0.10.0 drops it) requires it, under boa_engine, cambium-desktop, cambium-rootstock, conatus and 31 more; goes when their dependents take parking_lot_core 0.10.0"
 
@@ -480,10 +472,6 @@ reason = "fontconfig-parser 0.5.8 (latest) requires it, under cambium-rootstock,
 [[bans.skip]]
 crate = "rustc-hash@1.1.0"
 reason = "naga 30.0.2 (latest), naga-types 30.0.2 (latest), rspirv 0.13.0+sdk-1.4.341.0 (latest), wgpu-core 30.0.2 (latest) and 1 more require it, under cambium-desktop, cambium-rootstock, conatus, esp and 23 more; goes when naga, naga-types, rspirv and 1 more move to rustc-hash 2.1.3; their dependents take bindgen 0.73.2"
-
-[[bans.skip]]
-crate = "rustix@0.38.44"
-reason = "winit 0.30.13 (latest), calloop 0.13.0 (calloop 0.14.5 drops it), calloop-wayland-source 0.3.0 (calloop-wayland-source 0.4.1 drops it), smithay-client-toolkit 0.19.2 (smithay-client-toolkit 0.21.1 drops it) and 1 more require it, under cambium-a11y, cambium-desktop, cambium-winit, conatus and 6 more; goes when winit moves to rustix 1.1.6; their dependents take calloop 0.14.5, calloop-wayland-source 0.4.1, smithay-client-toolkit 0.21.1 and 1 more"
 
 [[bans.skip]]
 crate = "servo-media-player@0.2.0"
@@ -506,6 +494,10 @@ crate = "sha2@0.10.9"
 reason = "content-security-policy 0.9.0 (latest), snow 0.10.0 (latest), tracel-llvm-bundler 23.1.0-4 (latest), wasmtime-environ 45.0.3 (wasmtime-environ 50.0.1 still needs it) and 1 more require it, under app-host, authority-host, block-host, conatus and 4 more; goes when content-security-policy, snow, tracel-llvm-bundler and 2 more move to sha2 0.11.1"
 
 [[bans.skip]]
+crate = "sha3@0.10.9"
+reason = "held by lalrpop 0.22.2 under wgsl-parse 0.4.0, beside sha3 0.11.0 from multihash-codetable 0.2.2 under rust-unixfs; gone when wgsl-parse moves (0.6.0 newest; lalrpop 0.23.2 takes sha3 0.12) and multihash-codetable releases on the same sha3 (0.2.2 is its latest release)"
+
+[[bans.skip]]
 crate = "shlex@1.3.0"
 reason = "bindgen 0.69.5 (bindgen 0.73.2 drops it), bindgen 0.72.1 (bindgen 0.73.2 drops it) require it, under conatus, esp, grafting-servo, p2mere-encryption; goes when their dependents take bindgen 0.73.2"
 
@@ -516,10 +508,6 @@ reason = "cosmic-text 0.19.0 (latest), epaint 0.36.2 (epaint 0.37.0 still needs 
 [[bans.skip]]
 crate = "smol_str@0.1.24"
 reason = "acto 0.8.2 (latest) requires it, under p2mere-net; goes when acto moves to smol_str 0.3.7"
-
-[[bans.skip]]
-crate = "smol_str@0.2.2"
-reason = "bevy_reflect 0.19.1 (bevy_reflect 0.20.1 still needs it), winit 0.30.13 (latest) require it, under cambium-a11y, cambium-desktop, cambium-winit, firewheel-core and 7 more; goes when bevy_reflect, winit move to smol_str 0.3.7"
 
 [[bans.skip]]
 crate = "spin@0.9.9"
@@ -556,14 +544,6 @@ reason = "dirs-sys-next 0.1.2 (latest), ndk 0.9.0 (latest), nvml-wrapper 0.13.0 
 [[bans.skip]]
 crate = "thiserror-impl@1.0.69"
 reason = "dirs-sys-next 0.1.2 (latest), ndk 0.9.0 (latest), nvml-wrapper 0.13.0 (latest), webdriver 0.54.0 (latest) and 7 more require it, via jni 0.21.1, netdev 0.45.1 and 2 more, under app-host, authority-host, block-host, cambium-a11y and 12 more; goes when dirs-sys-next, ndk, nvml-wrapper and 2 more move to thiserror-impl 2.0.21; their dependents take calloop 0.14.5, netdev 0.47.0, netwatch 0.20.0 and 2 more; merely-made/didgeridoo moves piccolo to thiserror-impl 2.0.21"
-
-[[bans.skip]]
-crate = "tiny-skia@0.11.4"
-reason = "sctk-adwaita 0.10.1 (sctk-adwaita 0.12.0 drops it) requires it, under cambium-a11y, cambium-desktop, cambium-winit, genet-winit and 4 more; goes when their dependents take sctk-adwaita 0.12.0"
-
-[[bans.skip]]
-crate = "tiny-skia-path@0.11.4"
-reason = "sctk-adwaita 0.10.1 (sctk-adwaita 0.12.0 drops it) requires it, via tiny-skia 0.11.4, under cambium-a11y, cambium-desktop, cambium-winit, genet-winit and 4 more; goes when their dependents take sctk-adwaita 0.12.0"
 
 [[bans.skip]]
 crate = "tinystr@0.8.2"
@@ -635,7 +615,7 @@ reason = "ring 0.17.14 (latest), winit 0.30.13 (latest) require it, under cambiu
 
 [[bans.skip]]
 crate = "windows-sys@0.59.0"
-reason = "fs-set-times 0.20.3 (latest), io-extras 0.18.4 (io-extras 0.19.0 still needs it), winit 0.30.13 (latest), winx 0.36.4 (latest) and 6 more require it, via rustix 0.38.44, under app-host, authority-host, block-host, cambium-a11y and 9 more; goes when fs-set-times, io-extras, winit and 1 more move to windows-sys 0.61.2; their dependents take calloop 0.14.5, calloop-wayland-source 0.4.1, cap-fs-ext 4.0.3 and 3 more"
+reason = "held by bevy_platform 0.19.1, dirs-sys 0.5.0, nu-ansi-term 0.50.3, reflink-copy 0.1.33 (bevy_platform 0.20.1 newest; the others are their latest releases); gone when they resolve windows-sys 0.61.2"
 
 [[bans.skip]]
 crate = "windows-targets@0.42.2"

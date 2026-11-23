@@ -207,7 +207,7 @@ fn pump_until(
         );
         shell.request_redraw();
         assert!(matches!(
-            event_loop.pump_app_events(Some(Duration::from_millis(25)), shell),
+            event_loop.pump_app_events(Some(Duration::from_millis(25)), &mut *shell),
             PumpStatus::Continue
         ));
     }

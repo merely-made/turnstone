@@ -4,7 +4,7 @@
 use super::*;
 
 impl ApplicationHandler for App {
-    fn resumed(&mut self, el: &ActiveEventLoop) {
+    fn can_create_surfaces(&mut self, el: &dyn ActiveEventLoop) {
         if self.window.is_none() {
             if let Err(e) = self.init(el) {
                 self.error = Some(e.to_string());
@@ -13,7 +13,7 @@ impl ApplicationHandler for App {
             }
         }
     }
-    fn window_event(&mut self, el: &ActiveEventLoop, _: WindowId, event: WindowEvent) {
+    fn window_event(&mut self, el: &dyn ActiveEventLoop, _: WindowId, event: WindowEvent) {
         match event {
             WindowEvent::CloseRequested => {
                 self.cleanup();
@@ -32,7 +32,7 @@ impl ApplicationHandler for App {
             _ => {},
         }
     }
-    fn about_to_wait(&mut self, el: &ActiveEventLoop) {
+    fn about_to_wait(&mut self, el: &dyn ActiveEventLoop) {
         el.set_control_flow(ControlFlow::WaitUntil(
             Instant::now() + Duration::from_millis(16),
         ));

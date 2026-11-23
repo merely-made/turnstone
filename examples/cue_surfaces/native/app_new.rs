@@ -4,8 +4,13 @@
 use super::*;
 
 impl App {
-    pub(super) fn new(output: PathBuf, require_window: bool) -> Self {
+    pub(super) fn new(
+        output: PathBuf,
+        require_window: bool,
+        out: Rc<RefCell<Option<(Option<String>, bool)>>>,
+    ) -> Self {
         Self {
+            out,
             output,
             require_window,
             window: None,
@@ -85,7 +90,7 @@ impl App {
         Ok(vec![Card::new(genet), Card::new(servo)])
     }
 
-    pub(super) fn init(&mut self, el: &ActiveEventLoop) -> R<()> {
+    pub(super) fn init(&mut self, el: &dyn ActiveEventLoop) -> R<()> {
         std::fs::create_dir_all(&self.output).map_err(|e| Error::Backend(e.to_string()))?;
         for (page, color, name) in [
             ("page-a.html", "#d02020", "A"),
@@ -94,12 +99,12 @@ impl App {
             std::fs::write(self.output.join(page), html(color, name))
                 .map_err(|e| Error::Backend(e.to_string()))?;
         }
-        let window = Arc::new(
+        let window: Arc<dyn Window> = Arc::from(
             el.create_window(
-                Window::default_attributes()
+                WindowAttributes::default()
                     .with_title("Cue: Genet (left) / Servo (right)")
                     .with_visible(self.require_window)
-                    .with_inner_size(winit::dpi::PhysicalSize::new(640, 240)),
+                    .with_surface_size(winit::dpi::PhysicalSize::new(640, 240)),
             )
             .map_err(|e| Error::Backend(e.to_string()))?,
         );
@@ -115,7 +120,7 @@ impl App {
             .instance
             .create_surface(window.clone())
             .map_err(|e| Error::Backend(e.to_string()))?;
-        let size = window.inner_size();
+        let size = window.surface_size();
         let config = surface
             .get_default_config(&handles.adapter, size.width, size.height)
             .ok_or_else(|| Error::Unsupported("no window surface configuration".into()))?;

@@ -529,6 +529,13 @@ netrender = { git = "https://github.com/merely-made/netrender.git", branch = "ma
 netrender_device = { git = "https://github.com/merely-made/netrender.git", branch = "main" }
 paint_list_api = { git = "https://github.com/merely-made/netrender.git", branch = "main" }
 paint_list_render = { git = "https://github.com/merely-made/netrender.git", branch = "main" }
+# arboard 3.7.0 still takes x11rb 0.13; winit 0.31 takes 0.14. The fork's one
+# change is the x11rb row, so it leaves when arboard releases on 0.14.
+arboard = { git = "https://github.com/mark-ik/arboard", branch = "mark-ik/x11rb-0.14" }
+# rust-ipns 0.9.0 (its latest release) takes libp2p-identity 0.2, which holds
+# the elliptic-curve 0.13 / ed25519-dalek 2 / rand 0.8 stack. Upstream main
+# already takes libp2p-identity 0.3 (9e3dcb37); the row leaves when that releases.
+rust-ipns = { git = "https://github.com/dariusc93/rust-ipfs", branch = "libp2p-next" }
 # house patches --from https://github.com/merely-made/mere.git
 # Written by `house patches` (eidetic, crates/house) from the upstream's [patch.crates-io]; `house patches --check` fails when they drift.
 oxjsonld = { git = "https://github.com/mark-ik/oxigraph", branch = "mark-ik/0.5" }

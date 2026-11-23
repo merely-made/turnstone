@@ -247,7 +247,7 @@ fn pump_until(
         );
         shell.request_redraw();
         assert!(matches!(
-            event_loop.pump_app_events(Some(Duration::from_millis(25)), shell),
+            event_loop.pump_app_events(Some(Duration::from_millis(25)), &mut *shell),
             PumpStatus::Continue
         ));
     }
@@ -320,7 +320,7 @@ fn nested_foreign_supplier_accepts_native_uia_invoke() {
 
     let mut observer = start_observer(
         &output,
-        shell.window.as_ref().expect("native window"),
+        shell.window.as_deref().expect("native window"),
         broken,
     );
     pump_until(

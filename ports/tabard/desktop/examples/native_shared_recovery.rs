@@ -439,6 +439,21 @@ struct Gate {
     hidden_sequence: u64,
     replacement_generation: u64,
     wake_event_loop: Arc<dyn Fn() + Send + Sync>,
+    /// Where the gate leaves its phase, proof and failure when the event loop
+    /// drops it: `run_app` takes the gate by value.
+    out: Rc<RefCell<Option<GateOutcome>>>,
+}
+
+type GateOutcome = (Phase, Value, Option<String>);
+
+impl Drop for Gate {
+    fn drop(&mut self) {
+        *self.out.borrow_mut() = Some((
+            self.phase,
+            std::mem::take(&mut self.proof),
+            self.failure.take(),
+        ));
+    }
 }
 
 fn write_new(path: PathBuf, bytes: &[u8]) -> Result<(), String> {
@@ -451,7 +466,12 @@ fn write_new(path: PathBuf, bytes: &[u8]) -> Result<(), String> {
 }
 
 impl Gate {
-    fn new(output: PathBuf, run_id: String, wake_event_loop: Arc<dyn Fn() + Send + Sync>) -> Self {
+    fn new(
+        output: PathBuf,
+        run_id: String,
+        wake_event_loop: Arc<dyn Fn() + Send + Sync>,
+        out: Rc<RefCell<Option<GateOutcome>>>,
+    ) -> Self {
         Self {
             hosts: Vec::new(),
             owner: None,
@@ -478,12 +498,13 @@ impl Gate {
             hidden_sequence: 0,
             replacement_generation: 0,
             wake_event_loop,
+            out,
         }
     }
 
     fn open(
         &mut self,
-        event_loop: &ActiveEventLoop,
+        event_loop: &dyn ActiveEventLoop,
         wake: Arc<dyn Fn() + Send + Sync>,
     ) -> Result<(), String> {
         require(
@@ -885,7 +906,7 @@ impl Gate {
                     )?;
                     let resized = self.hosts.iter().all(|h| {
                         h.native_window().is_some_and(|w| {
-                            let logical = w.inner_size().to_logical::<f64>(w.scale_factor());
+                            let logical = w.surface_size().to_logical::<f64>(w.scale_factor());
                             (logical.width - 1040.0).abs() <= 1.0
                                 && (logical.height - 760.0).abs() <= 1.0
                         })
@@ -940,7 +961,7 @@ impl Gate {
         Ok(false)
     }
 
-    fn fail(&mut self, event_loop: &ActiveEventLoop, error: String) {
+    fn fail(&mut self, event_loop: &dyn ActiveEventLoop, error: String) {
         self.proof["status"] = json!("REFUSED");
         self.proof["failure"] = json!(&error);
         self.proof["failed_phase"] = json!(format!("{:?}", self.phase));
@@ -949,13 +970,13 @@ impl Gate {
     }
 }
 
-impl ApplicationHandler<()> for Gate {
-    fn resumed(&mut self, event_loop: &ActiveEventLoop) {
+impl ApplicationHandler for Gate {
+    fn can_create_surfaces(&mut self, event_loop: &dyn ActiveEventLoop) {
         if let Err(error) = self.open(event_loop, self.wake_event_loop.clone()) {
             self.fail(event_loop, error);
         }
     }
-    fn user_event(&mut self, _: &ActiveEventLoop, _: ()) {
+    fn proxy_wake_up(&mut self, _: &dyn ActiveEventLoop) {
         // Both independent subscriptions receive the turn, including the hidden host.
         // AwaitNotice drives the detach-order assertion itself before allowing interleave.
         if self.phase != Phase::AwaitNotice {
@@ -964,7 +985,7 @@ impl ApplicationHandler<()> for Gate {
             }
         }
     }
-    fn window_event(&mut self, event_loop: &ActiveEventLoop, id: WindowId, event: WindowEvent) {
+    fn window_event(&mut self, event_loop: &dyn ActiveEventLoop, id: WindowId, event: WindowEvent) {
         if self.phase == Phase::AwaitNotice {
             return;
         }
@@ -982,7 +1003,7 @@ impl ApplicationHandler<()> for Gate {
             }
         }
     }
-    fn about_to_wait(&mut self, event_loop: &ActiveEventLoop) {
+    fn about_to_wait(&mut self, event_loop: &dyn ActiveEventLoop) {
         if self.failure.is_some() {
             event_loop.exit();
             return;
@@ -1002,7 +1023,7 @@ impl ApplicationHandler<()> for Gate {
             Err(error) => self.fail(event_loop, error),
         }
     }
-    fn suspended(&mut self, event_loop: &ActiveEventLoop) {
+    fn suspended(&mut self, event_loop: &dyn ActiveEventLoop) {
         self.fail(
             event_loop,
             "platform suspended during finite native gate".into(),
@@ -1042,30 +1063,34 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         fs::read_dir(&output)?.next().is_none(),
         "output directory must be empty; never overwrite receipts",
     )?;
-    let event_loop = EventLoop::<()>::with_user_event().build()?;
+    let event_loop = EventLoop::new()?;
     let proxy = event_loop.create_proxy();
-    let mut gate = Gate::new(
+    let out = Rc::new(RefCell::new(None));
+    let gate = Gate::new(
         output.clone(),
         run_id,
-        Arc::new(move || {
-            let _ = proxy.send_event(());
-        }),
+        Arc::new(move || proxy.wake_up()),
+        out.clone(),
     );
-    let result = event_loop.run_app(&mut gate);
+    let result = event_loop.run_app(gate);
+    let (phase, mut proof, failure) = out
+        .borrow_mut()
+        .take()
+        .ok_or("the event loop did not drop the gate")?;
     if let Err(error) = &result {
-        gate.proof["status"] = json!("REFUSED");
-        gate.proof["failure"] = json!(error.to_string());
+        proof["status"] = json!("REFUSED");
+        proof["failure"] = json!(error.to_string());
     }
     write_new(
         output.join("proof.json"),
-        &serde_json::to_vec_pretty(&gate.proof)?,
+        &serde_json::to_vec_pretty(&proof)?,
     )?;
     result?;
-    if let Some(error) = gate.failure {
+    if let Some(error) = failure {
         return Err(error.into());
     }
     require(
-        gate.phase == Phase::Done,
+        phase == Phase::Done,
         "event loop exited without complete independent native proof",
     )?;
     Ok(())
