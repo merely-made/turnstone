@@ -48,6 +48,9 @@ fn workshop_native_processes_reopen_proposal_accept_and_recover_one_destination_
     let generated = probe(directory.path(), "generate");
     assert_eq!(generated["nodes"], 3);
     assert_eq!(generated["view"]["phase"], "Completed");
+    assert_eq!(generated["view"]["turns"], serde_json::json!([]));
+    assert_eq!(generated["view"]["usage"]["tokens"], 0);
+    assert_eq!(generated["view"]["review"], "AwaitingReview");
     let proposal = generated["view"]["proposal"].clone();
     assert_eq!(proposal["sources"].as_array().unwrap().len(), 3);
     assert!(
