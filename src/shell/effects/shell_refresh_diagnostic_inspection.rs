@@ -138,7 +138,10 @@ impl Shell {
     pub(super) fn retire_surface_extras(&mut self, node: uuid::Uuid) {
         self.retire_page_drag_for_document(node);
         self.page_captures.remove_surface(node);
-        #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
+        #[cfg(any(
+            all(feature = "weld", target_os = "macos"),
+            all(any(feature = "weld", feature = "scry", feature = "servo"), windows)
+        ))]
         self.surface_frames.remove(&node);
         #[cfg(all(feature = "scry", windows))]
         self.scry_frame_importers.remove(&node);
@@ -178,19 +181,36 @@ impl Shell {
                     .join("cef-cache")
                     .join(node.to_string())
             };
-            std::fs::create_dir_all(&profile).map_err(|error| {
+            // On macOS CEF creates the persistent profile's leaf as part of
+            // asynchronous initialization. Resolve its parent to keep the new
+            // directory inside the canonical process cache root.
+            let (existing, leaf) = if cfg!(target_os = "macos")
+                && !scry
+                && servo_profile.is_none()
+                && !profile.exists()
+            {
+                (
+                    profile.parent().expect("Weld profile has a cache parent"),
+                    profile.file_name(),
+                )
+            } else {
+                (profile.as_path(), None)
+            };
+            std::fs::create_dir_all(existing).map_err(|error| {
                 format!(
-                    "could not create browser profile {}: {error}",
-                    profile.display()
+                    "could not create browser profile directory {}: {error}",
+                    existing.display()
                 )
             })?;
-            let profile = profile.canonicalize().map_err(|error| {
+            let mut profile = existing.canonicalize().map_err(|error| {
                 format!(
-                    "could not resolve browser profile {}: {error}",
-                    profile.display()
+                    "could not resolve browser profile directory {}: {error}",
+                    existing.display()
                 )
             })?;
-
+            if let Some(leaf) = leaf {
+                profile.push(leaf);
+            }
             let profile = browser_profile_path(profile)?;
 
             // Producer epochs belong to one instance. Retire old custody and
@@ -201,7 +221,10 @@ impl Shell {
             self.retire_surface_semantics(node);
             self.surface_find_requests.remove(&node);
             self.page_captures.remove_surface(node);
-            #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
+            #[cfg(any(
+                all(feature = "weld", target_os = "macos"),
+                all(any(feature = "weld", feature = "scry", feature = "servo"), windows)
+            ))]
             self.surface_frames.remove(&node);
             #[cfg(all(feature = "scry", windows))]
             self.scry_frame_importers.remove(&node);

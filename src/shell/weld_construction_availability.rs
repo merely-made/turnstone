@@ -22,8 +22,15 @@ pub(super) fn weld_construction_availability() -> crate::content::EngineAvailabi
             },
         }
     }
-    #[cfg(not(all(feature = "weld", windows)))]
+    #[cfg(all(feature = "weld", target_os = "macos"))]
+    match weld::runtime() {
+        Ok(_) => EngineAvailability::OnDemand {
+            detail: "CEF is available in the app bundle".into(),
+        },
+        Err(reason) => EngineAvailability::Unavailable { reason },
+    }
+    #[cfg(not(all(feature = "weld", any(windows, target_os = "macos"))))]
     EngineAvailability::Unavailable {
-        reason: "requires a Windows build with the weld feature".into(),
+        reason: "requires a Windows or macOS build with the weld feature".into(),
     }
 }

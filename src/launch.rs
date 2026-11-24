@@ -146,6 +146,8 @@ fn start_app(address: Option<String>, visit: Option<guest::Visit>) -> i32 {
         _ => tracing::info!("turnstone starting"),
     }
 
+    #[cfg(all(feature = "weld", target_os = "macos"))]
+    let pump_cef = crate::shell::weld::prepare_runtime();
     let event_loop = EventLoop::new().expect("failed to create event loop");
     let proxy = event_loop.create_proxy();
     let mut shell =
@@ -156,7 +158,15 @@ fn start_app(address: Option<String>, visit: Option<guest::Visit>) -> i32 {
     {
         tracing::warn!("reactive diagnostics receiver did not attach to this run");
     }
-    event_loop.run_app(shell).expect("event loop error");
+    #[cfg(all(feature = "weld", target_os = "macos"))]
+    let cef_timer = pump_cef.then(crate::shell::weld::start_runtime_pump);
+    let result = event_loop.run_app(shell);
+    #[cfg(all(feature = "weld", target_os = "macos"))]
+    if let Some(timer) = cef_timer {
+        timer.invalidate();
+        crate::shell::weld::shutdown_runtime();
+    }
+    result.expect("event loop error");
     0
 }
 

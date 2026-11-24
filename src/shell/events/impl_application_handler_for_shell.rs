@@ -84,6 +84,7 @@ impl ApplicationHandler for Shell {
             event_loop.exit();
             return;
         }
+        #[cfg(windows)]
         self.settle_missing_page_drag_completion();
         let effects = self.app.tick(crate::denizen::now_ms());
         self.run_effects(effects);
@@ -185,10 +186,11 @@ impl ApplicationHandler for Shell {
             } else {
                 wgpu::Features::empty()
             },
-            // Windows browser producers export D3D12 shared textures. The
-            // host must use the same API before constructing either producer.
+            // Match the native texture API used by the browser producers.
             #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
             backends: Some(wgpu::Backends::DX12),
+            #[cfg(all(feature = "weld", target_os = "macos"))]
+            backends: Some(wgpu::Backends::METAL),
             ..Default::default()
         };
         tracing::debug!(target: "turnstone::shell::render",
@@ -279,9 +281,22 @@ impl ApplicationHandler for Shell {
         {
             return;
         }
-        if matches!(event, WindowEvent::RedrawRequested)
-            && self.start_pending_page_drag(event_loop, window_id)
-        {
+        #[cfg(all(feature = "weld", target_os = "macos"))]
+        if matches!(
+            event,
+            WindowEvent::PointerButton {
+                button: winit::event::ButtonSource::Mouse(winit::event::MouseButton::Left),
+                state: winit::event::ElementState::Released,
+                ..
+            }
+        ) {
+            self.release_queued_page_drag(window_id);
+        }
+        #[cfg(target_os = "macos")]
+        let drag_start_event = matches!(event, WindowEvent::PointerMoved { .. });
+        #[cfg(not(target_os = "macos"))]
+        let drag_start_event = matches!(event, WindowEvent::RedrawRequested);
+        if drag_start_event && self.start_pending_page_drag(event_loop, window_id) {
             return;
         }
         if self.handle_native_drag(event_loop, window_id, &event) {

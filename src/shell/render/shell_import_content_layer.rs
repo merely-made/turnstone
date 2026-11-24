@@ -5,7 +5,10 @@ use super::*;
 
 impl Shell {
     /// Both windows import on the primary render core and keep one producer cache.
-    #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
+    #[cfg(any(
+        all(feature = "weld", target_os = "macos"),
+        all(any(feature = "weld", feature = "scry", feature = "servo"), windows)
+    ))]
     pub(in super::super) fn import_content_layer(
         &mut self,
         node: uuid::Uuid,
@@ -22,7 +25,7 @@ impl Shell {
                     frame,
                     device,
                     queue,
-                    #[cfg(feature = "scry")]
+                    #[cfg(all(feature = "scry", windows))]
                     self.scry_frame_importers.get(&node),
                 ) {
                     tracing::warn!(%node, %error, "surface frame import failed");
@@ -57,7 +60,10 @@ impl Shell {
     }
 
     /// Acquisition/import refusal withdraws content custody in either window.
-    #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
+    #[cfg(any(
+        all(feature = "weld", target_os = "macos"),
+        all(any(feature = "weld", feature = "scry", feature = "servo"), windows)
+    ))]
     pub(in super::super) fn fail_surface_frames(
         &mut self,
         failures: Vec<(uuid::Uuid, String)>,

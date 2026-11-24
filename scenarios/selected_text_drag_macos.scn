@@ -1,0 +1,35 @@
+# A loopback fixture and external native mouse driver supply the page and gestures.
+wait-file 2000 ${TURNSTONE_CAPTURE_DIR}/windows-ready.txt
+settle 30
+key escape
+open ${WELD_DRAG_SOURCE}
+settle 80
+assert focused ${WELD_DRAG_SOURCE}
+act Open Inspector pane
+settle 10
+assert pane inspector
+assert row URL: ${WELD_DRAG_SOURCE}
+act Maximize pane
+settle 10
+capture inspector-before
+click surface:inspector role:button Change viewer
+settle 5
+scroll 140 430 800
+settle 5
+capture inspector-expanded
+click surface:inspector .radio @data-engine-id=weld.chromium
+settle 10
+assert event viewer-changed
+assert row Viewer: weld.chromium
+act Close pane
+settle 10
+act Open node in Workbench
+settle 60
+assert wb-cells == 1
+assert content-live
+assert snap host-surface-producers == 1
+assert snap browser-current-engine == weld.chromium
+act Maximize pane
+settle 30
+touch ${TURNSTONE_CAPTURE_DIR}/ready.txt
+wait-file 90000 ${TURNSTONE_CAPTURE_DIR}/done.txt

@@ -5,9 +5,9 @@ use super::*;
 
 #[cfg(feature = "weld")]
 pub(super) fn validate_welding_native_frame(
-    native: welding::native_frame::Dx12SharedTexture,
+    native: welding::NativeFrame,
     expected: FrameIdentity,
-) -> Result<(welding::native_frame::Dx12SharedTexture, FrameIdentity), SurfaceError> {
+) -> Result<(welding::NativeFrame, FrameIdentity), SurfaceError> {
     let actual = FrameIdentity {
         source: FrameSource::WeldOwned,
         epoch: native.generation(),

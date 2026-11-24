@@ -42,7 +42,10 @@ impl Shell {
             self.native_frames.cancel(id);
             return presented;
         };
-        #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
+        #[cfg(any(
+            all(feature = "weld", target_os = "macos"),
+            all(any(feature = "weld", feature = "scry", feature = "servo"), windows)
+        ))]
         let (surface_device, surface_queue) = (host.device().clone(), host.queue().clone());
         let reactive_frame = self.reactive_frame_scope(ordinal + 1);
         self.prepare_inline_owners(ordinal + 1, (lw, lh));
@@ -69,7 +72,10 @@ impl Shell {
             .content_sessions
             .pool
             .window_needs_frame(ordinal as u64 + 1);
-        #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
+        #[cfg(any(
+            all(feature = "weld", target_os = "macos"),
+            all(any(feature = "weld", feature = "scry", feature = "servo"), windows)
+        ))]
         let mut surface_failures = Vec::new();
         // Pass 1 keeps scene construction and imported frames in plan order.
         let mut scenes: Vec<PlannedLayer> = Vec::with_capacity(surfaces.len());
@@ -135,9 +141,12 @@ impl Shell {
                     ) {
                         Some(pelt_core::PeltLayer::Document(scene)) => (scene, wgpu::Color::WHITE),
                         Some(pelt_core::PeltLayer::Surface(result)) => {
-                            #[cfg(all(
-                                any(feature = "weld", feature = "scry", feature = "servo"),
-                                windows
+                            #[cfg(any(
+                                all(feature = "weld", target_os = "macos"),
+                                all(
+                                    any(feature = "weld", feature = "scry", feature = "servo"),
+                                    windows
+                                )
                             ))]
                             {
                                 match self.import_content_layer(
@@ -155,9 +164,12 @@ impl Shell {
                                 animating = true;
                             }
                             // No native frame importer is registered on other platforms.
-                            #[cfg(not(all(
-                                any(feature = "weld", feature = "scry", feature = "servo"),
-                                windows
+                            #[cfg(not(any(
+                                all(feature = "weld", target_os = "macos"),
+                                all(
+                                    any(feature = "weld", feature = "scry", feature = "servo"),
+                                    windows
+                                )
                             )))]
                             let _ = (node, result);
                             continue;
@@ -224,7 +236,10 @@ impl Shell {
                 clear: wgpu::Color::TRANSPARENT,
             }));
         }
-        #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
+        #[cfg(any(
+            all(feature = "weld", target_os = "macos"),
+            all(any(feature = "weld", feature = "scry", feature = "servo"), windows)
+        ))]
         if self.fail_surface_frames(surface_failures) {
             return presented;
         }
@@ -296,7 +311,10 @@ impl Shell {
             Ok(layers) => layers,
             Err((source, failure)) => {
                 drop(raster_textures);
-                #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
+                #[cfg(any(
+                    all(feature = "weld", target_os = "macos"),
+                    all(any(feature = "weld", feature = "scry", feature = "servo"), windows)
+                ))]
                 drop((surface_device, surface_queue));
                 self.refuse_raster_frame(ordinal as u64 + 1, generation, source, failure);
                 return presented;

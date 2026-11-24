@@ -15,10 +15,28 @@ pub(super) fn update_welding_frame(
     // Callback handoff requires Weld's cache-visible read on every paint,
     // including another write to the same allocation epoch.
     let host = welding::HostWgpuContext::new(device.clone(), queue.clone());
-    let imported = welding::WgpuTextureImporter::import_owned_dx12_callback_frame(native, &host)
-        .map_err(|error| {
-            SurfaceError::FrameAcquisitionFailed(format!("Weld frame import failed: {error}"))
-        })?;
+    #[cfg(windows)]
+    let imported = match native {
+        welding::NativeFrame::Dx12SharedTexture(native) => {
+            welding::WgpuTextureImporter::import_owned_dx12_callback_frame(native, &host)
+        },
+        _ => {
+            return Err(SurfaceError::Unsupported(
+                "Windows Weld requires a D3D12 frame".into(),
+            ));
+        },
+    };
+    #[cfg(target_os = "macos")]
+    let imported = if matches!(native, welding::NativeFrame::MetalTextureRef(_)) {
+        welding::WgpuTextureImporter::import(native, &host)
+    } else {
+        return Err(SurfaceError::Unsupported(
+            "macOS Weld requires a Metal frame".into(),
+        ));
+    };
+    let imported = imported.map_err(|error| {
+        SurfaceError::FrameAcquisitionFailed(format!("Weld frame import failed: {error}"))
+    })?;
     *cached = Some(ImportedSurfaceFrame {
         resource_epoch: identity.epoch,
         identity,

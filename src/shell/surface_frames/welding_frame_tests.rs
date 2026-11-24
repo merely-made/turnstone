@@ -43,7 +43,13 @@ fn rejected_weld_envelopes_release_native_custody_before_import() {
             3,
         )
         .unwrap();
-        assert!(validate_welding_native_frame(native, expected).is_err());
+        assert!(
+            validate_welding_native_frame(
+                welding::NativeFrame::Dx12SharedTexture(native),
+                expected
+            )
+            .is_err()
+        );
         assert!(
             open_exclusive().is_ok(),
             "native custody must release the exclusive file handle"

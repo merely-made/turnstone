@@ -18,6 +18,7 @@ exclude = ["vendor/mozjs-icu-collator", "vendor/mozjs-icu-normalizer",
     "ports/graphshell/web"]
 
 [package]
+default-run = "turnstone"
 rust-version = "1.97.1"
 name = "turnstone"
 version = "0.1.0"
@@ -31,6 +32,11 @@ categories = ["gui"]
 [[bin]]
 name = "turnstone"
 path = "src/main.rs"
+
+[[bin]]
+name = "turnstone-weld-helper"
+path = "src/bin/turnstone_weld_helper.rs"
+required-features = ["weld"]
 
 [dependencies]
 turnstone-ontology = { path = "crates/turnstone-ontology" }
@@ -415,10 +421,8 @@ wasm = ["dep:app-host", "dep:wasmtime"]
 # Piccolo drives Turnstone's capability-scoped control scripts. It is kept
 # opt-in so the browser host's ordinary build carries no scripting runtime.
 piccolo = ["dep:script-engine-api", "dep:genet-didge"]
-# Bundled Chromium in an accelerated OSR tile. Windows is the first Turnstone
-# host because it has the live D3D12 shared-handle receipt; the feature stays
-# compile-visible elsewhere but registers no platform producer there yet.
-weld = ["dep:weld-engine", "dep:welding", "dep:grafting", "dep:windows"]
+# Bundled Chromium in an accelerated off-screen tile on Windows and macOS.
+weld = ["dep:weld-engine", "dep:welding", "dep:grafting", "dep:windows", "dep:cef", "dep:block2", "dep:objc2-foundation"]
 # System WebView2 pages captured into the host's existing D3D12 device.
 # Runtime construction and per-node profiles remain host-owned.
 scry = ["dep:scrying-engine", "dep:windows", "dep:webview2-com"]
@@ -700,7 +704,11 @@ murm-webrtc = { git = "https://github.com/merely-made/murm.git", branch = "main"
 retinue = { git = "https://github.com/merely-made/murm.git", branch = "main" }
 
 [target.'cfg(target_os = "macos")'.dependencies]
+welding = { version = ">=0.15.0", git = "https://github.com/merely-made/wgpu-weld.git", branch = "main", features = ["cef-runtime"], optional = true }
+cef = { version = ">=154.5.0", default-features = false, optional = true }
+block2 = { version = ">=0.6.2", optional = true }
 objc2 = "0.6.3"
+objc2-foundation = { version = ">=0.3.2", default-features = false, features = ["NSDate", "NSTimer", "block2", "std"], optional = true }
 
 [[example]]
 name = "cue_surfaces"

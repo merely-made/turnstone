@@ -98,7 +98,7 @@ impl Shell {
         settings_changed || inventory_changed
     }
 
-    #[cfg(all(feature = "weld", windows))]
+    #[cfg(all(feature = "weld", any(windows, target_os = "macos")))]
     pub(super) fn ensure_weld_engine(&mut self) -> Result<(), String> {
         if self
             .surface_engines
@@ -110,14 +110,19 @@ impl Shell {
             .host
             .as_ref()
             .ok_or_else(|| "the Turnstone wgpu host is not ready".to_string())?;
+        #[cfg(windows)]
         let cef_path = std::env::var_os("TURNSTONE_CEF_PATH")
             .or_else(|| std::env::var_os("CEF_PATH"))
             .map(std::path::PathBuf::from)
             .ok_or_else(|| {
                 "set TURNSTONE_CEF_PATH (or CEF_PATH) before selecting weld.chromium".to_string()
             })?;
+        #[cfg(windows)]
         let cache_root = self.app.data_root.join("weld").join("cef-cache");
+        #[cfg(windows)]
         let runtime = weld::initialize_runtime(cef_path, &cache_root)?;
+        #[cfg(target_os = "macos")]
+        let runtime = weld::runtime()?;
         let factory =
             weld::TurnstoneWeldFactory::new(runtime, host.device().clone(), host.queue().clone());
         self.surface_engines
@@ -126,9 +131,9 @@ impl Shell {
         Ok(())
     }
 
-    #[cfg(not(all(feature = "weld", windows)))]
+    #[cfg(not(all(feature = "weld", any(windows, target_os = "macos"))))]
     pub(super) fn ensure_weld_engine(&mut self) -> Result<(), String> {
-        Err("weld.chromium is available only in a Windows build with `--features weld`".into())
+        Err("weld.chromium is available in a Windows or macOS build with `--features weld`".into())
     }
 
     #[cfg(all(feature = "scry", windows))]

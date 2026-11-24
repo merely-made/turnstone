@@ -4,7 +4,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 
-//! Turnstone's Windows `weld.chromium` host implementation.
+//! Turnstone's `weld.chromium` host implementation.
 //!
 //! The inker adapter stays CEF-free. This module owns the process runtime,
 //! per-tile CEF producer, and product limits. Mere's version-pinned adapter
@@ -20,56 +20,44 @@ use inker::{
     WebFeatureStatus, WebRequestId, WebSurfaceCapabilities, WebSurfaceEvent,
 };
 use weld_engine::{WeldFrame, WeldProducerFactory, WeldSurface};
+use welding::{CefRuntime, CefRuntimeConfig, CefSandboxMode, CefSurfaceConfig, CefSurfaceProducer};
+#[cfg(windows)]
 use welding::{
-    CefRuntime, CefRuntimeConfig, CefSandboxMode, CefSurfaceConfig, CefSurfaceProducer,
-    CefWindowsSandboxContext, HostWgpuContext, PlatformCefConfig as WindowsCefConfig,
+    HostWgpuContext, PlatformCefConfig as WindowsCefConfig,
     PlatformCefProducer as WindowsCefProducer,
 };
+#[cfg(windows)]
+mod windows;
+#[cfg(windows)]
+pub(super) use windows::initialize_runtime;
+#[cfg(windows)]
+pub(crate) use windows::{WeldSandboxRoute, set_sandbox_route};
+#[cfg(target_os = "macos")]
+mod macos;
+#[cfg(target_os = "macos")]
+pub(super) use macos::runtime;
+#[cfg(target_os = "macos")]
+pub(super) use macos::set_appkit_drag_active;
+#[cfg(target_os = "macos")]
+pub(crate) use macos::{prepare_runtime, shutdown_runtime, start_runtime_pump};
 use winit::dpi::PhysicalSize;
-
-/// Route through which this process reached Weld's CEF hosting.
-///
-/// Set once, early in `main`/`RunWinMain` via [`set_sandbox_route`], before
-/// the event loop starts; [`initialize_runtime`] reads it lazily whenever the
-/// user first selects `weld.chromium`. Kept thread-local rather than in a
-/// process-wide static: `CefWindowsSandboxContext` wraps raw, non-`Sync`
-/// pointers, but everything that ever touches it — the entry point, the
-/// winit event loop, and `ensure_weld_engine` — runs on the one thread that
-/// called `main`/`RunWinMain`, so a thread-local needs no synchronization.
-pub(crate) enum WeldSandboxRoute {
-    /// The ordinary `turnstone.exe`. CEF's Windows sandbox context cannot be
-    /// created on this path, so `CefSandboxMode::Sandboxed` is refused here
-    /// (see [`requested_sandbox_preference`]).
-    Direct,
-    /// Entered through CEF's `bootstrap.exe` calling the sibling
-    /// `sandbox_bootstrap_win` crate's `RunWinMain` cdylib export. Borrows
-    /// the bootstrap-owned sandbox context and defaults to
-    /// `CefSandboxMode::Sandboxed`.
-    Bootstrap(CefWindowsSandboxContext<'static>),
-}
-
-thread_local! {
-    static SANDBOX_ROUTE: std::cell::RefCell<Option<WeldSandboxRoute>> =
-        const { std::cell::RefCell::new(None) };
-}
-
-/// Record which entry point this process launched through. Called once, by
-/// `crate::launch::run_direct` or `crate::launch::run_bootstrap`, before the
-/// event loop starts.
-pub(crate) fn set_sandbox_route(route: WeldSandboxRoute) {
-    SANDBOX_ROUTE.with(|cell| *cell.borrow_mut() = Some(route));
-}
 
 pub(super) struct TurnstoneWeldFactory {
     runtime: Arc<CefRuntime>,
+    #[cfg(windows)]
     host: HostWgpuContext,
 }
 
 impl TurnstoneWeldFactory {
-    pub(super) fn new(runtime: Arc<CefRuntime>, device: wgpu::Device, queue: wgpu::Queue) -> Self {
+    pub(super) fn new(
+        runtime: Arc<CefRuntime>,
+        _device: wgpu::Device,
+        _queue: wgpu::Queue,
+    ) -> Self {
         Self {
             runtime,
-            host: HostWgpuContext::new(device, queue),
+            #[cfg(windows)]
+            host: HostWgpuContext::new(_device, _queue),
         }
     }
 }
@@ -80,28 +68,34 @@ impl WeldProducerFactory for TurnstoneWeldFactory {
         request: &inker::SurfaceSpawnRequest,
     ) -> Result<Box<dyn WeldSurface>, SurfaceError> {
         let surface = weld_surface_config(request);
-        let profile_dir = PathBuf::from(&request.profile.user_data_dir);
-        // CEF creates a profile's files but not a missing parent chain. Make
-        // the resolved per-node directory real before request-context creation
-        // so a failed mkdir cannot silently fall back to another profile.
-        std::fs::create_dir_all(&profile_dir).map_err(|error| {
-            SurfaceError::SpawnFailed(format!(
-                "could not create Weld profile {}: {error}",
-                profile_dir.display()
-            ))
-        })?;
-        let mut producer = WindowsCefProducer::new(
-            self.runtime.as_ref(),
-            WindowsCefConfig {
-                surface: weld_surface_config(request),
-            },
-            &self.host,
-        )
-        .map_err(weld_spawn_error)?;
-        producer.set_visible(true).map_err(weld_spawn_error)?;
-        Ok(Box::new(TurnstoneWeldSurface {
-            inner: weld_engine::WeldingSurface::new(Box::new(producer), &surface),
-        }))
+        #[cfg(target_os = "macos")]
+        return macos::start_surface(&self.runtime, surface);
+        #[cfg(windows)]
+        {
+            let profile_dir = PathBuf::from(&request.profile.user_data_dir);
+            // Create the profile directory so a failure cannot silently select a different profile.
+            std::fs::create_dir_all(&profile_dir).map_err(|error| {
+                SurfaceError::SpawnFailed(format!(
+                    "could not create Weld profile {}: {error}",
+                    profile_dir.display()
+                ))
+            })?;
+            let mut producer = WindowsCefProducer::new(
+                self.runtime.as_ref(),
+                WindowsCefConfig {
+                    surface: weld_surface_config(request),
+                },
+                &self.host,
+            )
+            .map_err(weld_spawn_error)?;
+            producer.set_visible(true).map_err(weld_spawn_error)?;
+            Ok(Box::new(TurnstoneWeldSurface {
+                inner: Some(weld_engine::WeldingSurface::new(
+                    Box::new(producer),
+                    &surface,
+                )),
+            }))
+        }
     }
 }
 
@@ -115,70 +109,6 @@ fn weld_surface_config(request: &inker::SurfaceSpawnRequest) -> CefSurfaceConfig
     surface.background_color = Some([red, green, blue]);
     surface.user_data_dir = Some(PathBuf::from(&request.profile.user_data_dir));
     surface
-}
-
-pub(super) fn initialize_runtime(
-    cef_path: PathBuf,
-    cache_root: &Path,
-) -> Result<Arc<CefRuntime>, String> {
-    std::fs::create_dir_all(cache_root).map_err(|error| {
-        format!(
-            "could not create Weld cache root {}: {error}",
-            cache_root.display()
-        )
-    })?;
-    // The sandbox mode itself is decided below, from the launch route (plus
-    // an optional explicit override); `UnsandboxedTrustedContent` here is
-    // just a placeholder `CefRuntimeConfig::new` needs a value for.
-    let mut config = CefRuntimeConfig::new(cef_path, CefSandboxMode::UnsandboxedTrustedContent);
-    config.cache_path = Some(cache_root.to_path_buf());
-    config.user_agent = std::env::var("TURNSTONE_WELD_USER_AGENT")
-        .ok()
-        .filter(|value| !value.is_empty());
-    config.user_agent_product = std::env::var("TURNSTONE_WELD_USER_AGENT_PRODUCT")
-        .ok()
-        .filter(|value| !value.is_empty());
-    if config.user_agent.is_some() && config.user_agent_product.is_some() {
-        return Err(
-            "set only TURNSTONE_WELD_USER_AGENT or TURNSTONE_WELD_USER_AGENT_PRODUCT, not both"
-                .into(),
-        );
-    }
-
-    let preference = requested_sandbox_preference()?;
-    SANDBOX_ROUTE.with(move |cell| {
-        let route = cell.borrow();
-        match (
-            route.as_ref().unwrap_or(&WeldSandboxRoute::Direct),
-            preference,
-        ) {
-            (WeldSandboxRoute::Direct, Some(SandboxPreference::Sandboxed)) => Err(
-                "TURNSTONE_WELD_SANDBOX=sandboxed requires launching through the CEF Windows \
-                 bootstrap route (RunWinMain); the direct turnstone.exe entry point cannot \
-                 create a sandbox context"
-                    .to_string(),
-            ),
-            (WeldSandboxRoute::Direct, _) => {
-                config.sandbox = CefSandboxMode::UnsandboxedTrustedContent;
-                CefRuntime::initialize(config)
-                    .map(Arc::new)
-                    .map_err(|error| format!("could not initialize Weld CEF runtime: {error}"))
-            },
-            (WeldSandboxRoute::Bootstrap(_), Some(SandboxPreference::Unsandboxed)) => Err(
-                "TURNSTONE_WELD_SANDBOX=unsandboxed is not supported when launched through the \
-                 CEF Windows bootstrap route; that context always initializes \
-                 CefSandboxMode::Sandboxed"
-                    .to_string(),
-            ),
-            (WeldSandboxRoute::Bootstrap(context), _) => {
-                config.sandbox = CefSandboxMode::Sandboxed;
-                context
-                    .initialize(config)
-                    .map(Arc::new)
-                    .map_err(|error| format!("could not initialize Weld CEF runtime: {error}"))
-            },
-        }
-    })
 }
 
 /// Explicit `TURNSTONE_WELD_SANDBOX` override. Absent, the launch route
@@ -245,6 +175,7 @@ mod sandbox_preference_tests {
         assert!(error.contains("yolo"));
     }
 
+    #[cfg(windows)]
     #[test]
     fn non_unicode_value_is_an_explicit_error() {
         use std::os::windows::ffi::OsStringExt;
@@ -257,50 +188,103 @@ mod sandbox_preference_tests {
 }
 
 struct TurnstoneWeldSurface {
-    inner: weld_engine::WeldingSurface,
+    inner: Option<weld_engine::WeldingSurface>,
+    #[cfg(target_os = "macos")]
+    pending: Option<macos::PendingSurface>,
+}
+
+impl TurnstoneWeldSurface {
+    fn ready(&mut self) -> Result<&mut weld_engine::WeldingSurface, SurfaceError> {
+        self.inner.as_mut().ok_or_else(|| SurfaceError::Busy {
+            operation: "starting the Weld browser".into(),
+        })
+    }
+
+    #[cfg(target_os = "macos")]
+    fn poll_startup(&mut self) -> Result<(), SurfaceError> {
+        if let Some(pending) = &mut self.pending
+            && let Some(surface) = pending.poll()?
+        {
+            self.inner = Some(surface);
+            self.pending = None;
+        }
+        Ok(())
+    }
+}
+
+#[cfg(target_os = "macos")]
+impl Drop for TurnstoneWeldSurface {
+    fn drop(&mut self) {
+        if let Some(inner) = self.inner.take() {
+            let _ = inner.into_inner().close();
+        }
+    }
 }
 
 const WELD_DEVTOOLS_UNAVAILABLE: &str = "CEF native DevTools windows are unsafe for accelerated off-screen browsers; Weld refuses them, and Turnstone has not exposed the separate CDP channel";
 
 impl WeldSurface for TurnstoneWeldSurface {
     fn resize(&mut self, width: u32, height: u32) -> Result<(), SurfaceError> {
-        self.inner.resize(width, height)
+        #[cfg(target_os = "macos")]
+        if let Some(pending) = &mut self.pending {
+            pending.config.surface.initial_size = PhysicalSize::new(width.max(1), height.max(1));
+            return Ok(());
+        }
+        self.ready()?.resize(width, height)
     }
 
     fn acquire_frame(&mut self) -> Result<Option<WeldFrame>, SurfaceError> {
-        self.inner.acquire_frame()
+        #[cfg(target_os = "macos")]
+        {
+            self.poll_startup()?;
+            if self.inner.is_none() {
+                return Ok(None);
+            }
+        }
+        self.ready()?.acquire_frame()
     }
 
     fn load_url(&mut self, url: &str) -> Result<(), SurfaceError> {
-        self.inner.load_url(url)
+        #[cfg(target_os = "macos")]
+        if let Some(pending) = &mut self.pending {
+            pending.config.surface.initial_url = url.into();
+            pending.html = None;
+            return Ok(());
+        }
+        self.ready()?.load_url(url)
     }
 
     fn load_html(&mut self, html: &str) -> Result<(), SurfaceError> {
-        self.inner.load_html(html)
+        #[cfg(target_os = "macos")]
+        if let Some(pending) = &mut self.pending {
+            pending.html = Some(html.to_owned());
+            return Ok(());
+        }
+        self.ready()?.load_html(html)
     }
 
     fn reload(&mut self) -> Result<(), SurfaceError> {
-        self.inner.reload()
+        self.ready()?.reload()
     }
 
     fn stop(&mut self) -> Result<(), SurfaceError> {
-        self.inner.stop()
+        self.ready()?.stop()
     }
 
     fn go_back(&mut self) -> Result<(), SurfaceError> {
-        self.inner.go_back()
+        self.ready()?.go_back()
     }
 
     fn go_forward(&mut self) -> Result<(), SurfaceError> {
-        self.inner.go_forward()
+        self.ready()?.go_forward()
     }
 
     fn can_go_back(&self) -> bool {
-        self.inner.can_go_back()
+        self.inner.as_ref().is_some_and(WeldSurface::can_go_back)
     }
 
     fn can_go_forward(&self) -> bool {
-        self.inner.can_go_forward()
+        self.inner.as_ref().is_some_and(WeldSurface::can_go_forward)
     }
 
     fn document_find(
@@ -309,23 +293,23 @@ impl WeldSurface for TurnstoneWeldSurface {
         direction: DocumentFindDirection,
         _find_next: bool,
     ) -> Result<(), SurfaceError> {
-        self.inner.document_find(query, direction, _find_next)
+        self.ready()?.document_find(query, direction, _find_next)
     }
 
     fn clear_document_find(&mut self) -> Result<(), SurfaceError> {
-        self.inner.clear_document_find()
+        self.ready()?.clear_document_find()
     }
 
     fn notify_mouse(&mut self, event: MouseEvent) -> Result<(), SurfaceError> {
-        self.inner.notify_mouse(event)
+        self.ready()?.notify_mouse(event)
     }
 
     fn notify_pointer(&mut self, event: PointerEvent) -> Result<(), SurfaceError> {
-        self.inner.notify_pointer(event)
+        self.ready()?.notify_pointer(event)
     }
 
     fn notify_drag(&mut self, event: DragEvent) -> Result<(), SurfaceError> {
-        self.inner.notify_drag(event)
+        self.ready()?.notify_drag(event)
     }
 
     fn finish_drag_source(
@@ -333,23 +317,28 @@ impl WeldSurface for TurnstoneWeldSurface {
         position: PhysicalPosition,
         operation: DragOperationSet,
     ) -> Result<(), SurfaceError> {
-        self.inner.finish_drag_source(position, operation)
+        self.ready()?.finish_drag_source(position, operation)
     }
 
     fn notify_keyboard(&mut self, event: KeyboardEvent) -> Result<(), SurfaceError> {
-        self.inner.notify_keyboard(event)
+        self.ready()?.notify_keyboard(event)
     }
 
     fn focus(&mut self, reason: FocusReason) -> Result<(), SurfaceError> {
-        self.inner.focus(reason)
+        #[cfg(target_os = "macos")]
+        if let Some(pending) = &mut self.pending {
+            pending.focus = Some(reason);
+            return Ok(());
+        }
+        self.ready()?.focus(reason)
     }
 
     fn poll_cursor_shape(&mut self) -> Option<CursorShape> {
-        self.inner.poll_cursor_shape()
+        self.inner.as_mut().and_then(WeldSurface::poll_cursor_shape)
     }
 
     fn poll_web_event(&mut self) -> Option<WebSurfaceEvent> {
-        self.inner.poll_web_event()
+        self.inner.as_mut().and_then(WeldSurface::poll_web_event)
     }
 
     fn answer_permission(
@@ -357,7 +346,7 @@ impl WeldSurface for TurnstoneWeldSurface {
         id: UserAgentRequestId,
         answer: PermissionAnswer,
     ) -> Result<(), SurfaceError> {
-        self.inner.answer_permission(id, answer)
+        self.ready()?.answer_permission(id, answer)
     }
 
     fn answer_http_authentication(
@@ -365,27 +354,37 @@ impl WeldSurface for TurnstoneWeldSurface {
         id: UserAgentRequestId,
         answer: &HttpAuthenticationAnswer,
     ) -> Result<(), SurfaceError> {
-        self.inner.answer_http_authentication(id, answer)
+        self.ready()?.answer_http_authentication(id, answer)
     }
 
     fn web_capabilities(&self) -> WebSurfaceCapabilities {
-        host_capabilities(self.inner.web_capabilities())
+        host_capabilities(
+            self.inner
+                .as_ref()
+                .map(WeldSurface::web_capabilities)
+                .unwrap_or_default(),
+        )
     }
 
     fn apply_settings(&mut self, settings: &SurfaceSettings) -> Result<(), SurfaceError> {
-        apply_weld_surface_settings(settings, |_| self.inner.apply_settings(settings))
+        #[cfg(target_os = "macos")]
+        if let Some(pending) = &mut self.pending {
+            pending.settings = Some(settings.clone());
+            return Ok(());
+        }
+        apply_weld_surface_settings(settings, |_| self.ready()?.apply_settings(settings))
     }
 
     fn set_cookie(&mut self, cookie: &Cookie) -> Result<(), SurfaceError> {
-        self.inner.set_cookie(cookie)
+        self.ready()?.set_cookie(cookie)
     }
 
     fn delete_cookie(&mut self, cookie: &Cookie) -> Result<(), SurfaceError> {
-        self.inner.delete_cookie(cookie)
+        self.ready()?.delete_cookie(cookie)
     }
 
     fn request_cookies_for_url(&mut self, id: WebRequestId, url: &str) -> Result<(), SurfaceError> {
-        self.inner.request_cookies_for_url(id, url)
+        self.ready()?.request_cookies_for_url(id, url)
     }
 
     fn request_script_result(
@@ -393,7 +392,7 @@ impl WeldSurface for TurnstoneWeldSurface {
         id: WebRequestId,
         script: &str,
     ) -> Result<(), SurfaceError> {
-        self.inner.request_script_result(id, script)
+        self.ready()?.request_script_result(id, script)
     }
 }
 

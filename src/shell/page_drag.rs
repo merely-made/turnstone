@@ -82,7 +82,7 @@ impl Shell {
     ) {
         // Weld has already accepted this into its source loop. Either admit
         // the transfer here or send a terminal NONE back to this producer.
-        if !cfg!(all(windows, feature = "weld"))
+        if !cfg!(all(any(windows, target_os = "macos"), feature = "weld"))
             || !self.content_sessions.get(&node).is_some_and(|content| {
                 content.route().active_engine() == inker::routing::ENGINE_WELD_CHROMIUM
             })
@@ -154,9 +154,8 @@ impl Shell {
         }
     }
 
-    /// Admit the drag only during the source window's RedrawRequested.
-    /// Winit beta.4 enters the synchronous Win32 OLE loop when this native
-    /// window callback returns. AboutToWait then observes the outer pump.
+    /// Windows admits the drag in RedrawRequested before the synchronous OLE
+    /// loop. AppKit needs the source window's current mouse-dragged event.
     pub(super) fn start_pending_page_drag(
         &mut self,
         event_loop: &dyn ActiveEventLoop,
@@ -181,6 +180,8 @@ impl Shell {
             Ok(id) => {
                 tracing::info!(?id, "started native page text drag");
                 self.page_drag.active = Some((id, source));
+                #[cfg(all(feature = "weld", target_os = "macos"))]
+                super::weld::set_appkit_drag_active(true);
                 true
             },
             Err(error) => {
@@ -191,12 +192,26 @@ impl Shell {
         }
     }
 
+    #[cfg(windows)]
     pub(super) fn settle_missing_page_drag_completion(&mut self) {
         // On Win32, AboutToWait runs only on the outer message pump. A
         // successful or canceled DoDragDrop already delivered completion
         // before this point. beta.4 can return an error without an event.
         if let Some((id, source)) = self.page_drag.active.take() {
             tracing::warn!(?id, "native page drag ended without completion");
+            self.finish_page_drag(source, DragOperationSet::NONE);
+        }
+    }
+
+    #[cfg(all(feature = "weld", target_os = "macos"))]
+    pub(super) fn release_queued_page_drag(&mut self, window: WindowId) {
+        if self
+            .page_drag
+            .queued
+            .as_ref()
+            .is_some_and(|(source, _)| source.window == window)
+            && let Some((source, _)) = self.page_drag.queued.take()
+        {
             self.finish_page_drag(source, DragOperationSet::NONE);
         }
     }
@@ -211,6 +226,10 @@ impl Shell {
 
     fn retire_page_drag(&mut self, matches: impl Fn(&Source) -> bool) {
         if let Some(source) = self.page_drag.take_matching(matches) {
+            #[cfg(all(feature = "weld", target_os = "macos"))]
+            if self.page_drag.active.is_none() {
+                super::weld::set_appkit_drag_active(false);
+            }
             self.finish_page_drag(source, DragOperationSet::NONE);
         }
     }
@@ -251,6 +270,8 @@ impl Shell {
             WindowEvent::OutgoingDragDropped { id, .. }
             | WindowEvent::OutgoingDragCanceled { id } => {
                 if let Some(source) = self.page_drag.take_completion(window, *id) {
+                    #[cfg(all(feature = "weld", target_os = "macos"))]
+                    super::weld::set_appkit_drag_active(false);
                     let operation = if matches!(
                         event,
                         WindowEvent::OutgoingDragDropped {

@@ -205,7 +205,10 @@ impl Shell {
             if let Some(scripted) = &self.scripted_webgl {
                 can_replace &= scripted.detach_if_idle();
             }
-            #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
+            #[cfg(any(
+                all(feature = "weld", target_os = "macos"),
+                all(any(feature = "weld", feature = "scry", feature = "servo"), windows)
+            ))]
             {
                 can_replace &= ![
                     inker::routing::ENGINE_WELD_CHROMIUM,

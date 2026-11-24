@@ -140,7 +140,10 @@ impl Shell {
         let documents_done = std::time::Instant::now();
         let mut needs_redraw = self.content_sessions.pool.window_needs_frame(0);
 
-        #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
+        #[cfg(any(
+            all(feature = "weld", target_os = "macos"),
+            all(any(feature = "weld", feature = "scry", feature = "servo"), windows)
+        ))]
         let (surface_device, surface_queue) = {
             let host = self.host.as_ref().expect("host checked at render entry");
             (host.device().clone(), host.queue().clone())
@@ -151,7 +154,10 @@ impl Shell {
         // borrows `content_sessions` mutably) never overlaps the immutable
         // `host` borrow the second pass holds.
         let mut scenes: Vec<PlannedLayer> = Vec::with_capacity(surfaces.len());
-        #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
+        #[cfg(any(
+            all(feature = "weld", target_os = "macos"),
+            all(any(feature = "weld", feature = "scry", feature = "servo"), windows)
+        ))]
         let mut surface_failures = Vec::new();
         // Every scene of the window is laid out at `physical / scale` and
         // rasterized at the window's layout scale.
@@ -234,9 +240,12 @@ impl Shell {
                         }
                         (scene, wgpu::Color::WHITE)
                     } else {
-                        #[cfg(all(
-                            any(feature = "weld", feature = "scry", feature = "servo"),
-                            windows
+                        #[cfg(any(
+                            all(feature = "weld", target_os = "macos"),
+                            all(
+                                any(feature = "weld", feature = "scry", feature = "servo"),
+                                windows
+                            )
                         ))]
                         if let Some(result) = surface_frame {
                             match self.import_content_layer(
@@ -341,7 +350,10 @@ impl Shell {
             }));
         }
 
-        #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
+        #[cfg(any(
+            all(feature = "weld", target_os = "macos"),
+            all(any(feature = "weld", feature = "scry", feature = "servo"), windows)
+        ))]
         if self.fail_surface_frames(surface_failures) {
             return presented;
         }
@@ -433,7 +445,10 @@ impl Shell {
             Ok(layers) => layers,
             Err((source, failure)) => {
                 drop(raster_textures);
-                #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
+                #[cfg(any(
+                    all(feature = "weld", target_os = "macos"),
+                    all(any(feature = "weld", feature = "scry", feature = "servo"), windows)
+                ))]
                 drop((surface_device, surface_queue));
                 self.refuse_raster_frame(0, generation, source, failure);
                 return presented;

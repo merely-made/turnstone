@@ -9,11 +9,11 @@ impl ImportedSurfaceFrame {
             return Err("staged native source requires encoded RGBA in a non-sRGB view; acquired sRGB view is unsupported".into());
         }
         match self.identity.source {
+            #[cfg(all(feature = "weld", windows))]
+            FrameSource::RawDx12 => Ok(netrender::SourceAlpha::Premultiplied),
             #[cfg(feature = "weld")]
-            FrameSource::RawDx12 | FrameSource::WeldOwned => {
-                Ok(netrender::SourceAlpha::Premultiplied)
-            },
-            #[cfg(feature = "scry")]
+            FrameSource::WeldOwned => Ok(netrender::SourceAlpha::Premultiplied),
+            #[cfg(all(feature = "scry", windows))]
             FrameSource::ScryOwned => Ok(netrender::SourceAlpha::Premultiplied),
             #[cfg(feature = "servo")]
             // Servo aac43a3/WebRender 0.70 final composition uses

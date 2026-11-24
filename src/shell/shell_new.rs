@@ -485,7 +485,10 @@ impl Shell {
             physics_display_rate_last_observed: None,
             surface_find_requests: std::collections::HashMap::new(),
             page_captures: page_capture::CaptureCorrelation::default(),
-            #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
+            #[cfg(any(
+                all(feature = "weld", target_os = "macos"),
+                all(any(feature = "weld", feature = "scry", feature = "servo"), windows)
+            ))]
             surface_frames: std::collections::HashMap::new(),
             #[cfg(all(feature = "scry", windows))]
             page_media: Default::default(),
@@ -582,7 +585,10 @@ impl Shell {
             .retain(|_, content| content.lane() != pelt_core::PeltLane::Surface);
         self.surface_find_requests.clear();
         self.page_captures.clear_surfaces();
-        #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
+        #[cfg(any(
+            all(feature = "weld", target_os = "macos"),
+            all(any(feature = "weld", feature = "scry", feature = "servo"), windows)
+        ))]
         self.surface_frames.clear();
         #[cfg(all(feature = "scry", windows))]
         self.scry_frame_importers.clear();

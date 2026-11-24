@@ -55,10 +55,13 @@ pub(crate) mod structured_source;
     any(windows, target_os = "macos", target_os = "linux")
 ))]
 use crate::servo_host as servo;
-#[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
+#[cfg(any(
+    all(feature = "weld", target_os = "macos"),
+    all(any(feature = "weld", feature = "scry", feature = "servo"), windows)
+))]
 mod surface_frames;
 mod surface_poll;
-#[cfg(all(feature = "weld", windows))]
+#[cfg(all(feature = "weld", any(windows, target_os = "macos")))]
 pub(crate) mod weld;
 use render::{capture_composed, decode_sprite};
 mod lens;

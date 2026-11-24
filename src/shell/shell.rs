@@ -187,7 +187,10 @@ pub struct Shell {
     /// Exact app request/query identity for progressive hosted find results.
     pub(super) surface_find_requests: std::collections::HashMap<uuid::Uuid, (u64, String)>,
     pub(super) page_captures: page_capture::CaptureCorrelation,
-    #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
+    #[cfg(any(
+        all(feature = "weld", target_os = "macos"),
+        all(any(feature = "weld", feature = "scry", feature = "servo"), windows)
+    ))]
     pub(super) surface_frames:
         std::collections::HashMap<uuid::Uuid, Option<surface_frames::ImportedSurfaceFrame>>,
     #[cfg(all(feature = "scry", windows))]

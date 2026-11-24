@@ -13,23 +13,23 @@
 use inker::{
     FrameHandleOwnership, NativeTextureHandle, SurfaceError, SurfaceFrame, SurfaceTextureFormat,
 };
-#[cfg(feature = "scry")]
+#[cfg(all(feature = "scry", windows))]
 use scrying_engine::scrying::{
     Dx12FenceSynchronizer, HostWgpuContext, ImportOptions, NativeFrame, SyncMechanism,
     TextureImporter, WgpuTextureImporter, native_frame::InteropSynchronizer,
 };
-#[cfg(feature = "weld")]
+#[cfg(all(feature = "weld", windows))]
 use winit::dpi::PhysicalSize;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum FrameSource {
     #[cfg(feature = "servo")]
     ServoOwned,
-    #[cfg(feature = "weld")]
+    #[cfg(all(feature = "weld", windows))]
     RawDx12,
     #[cfg(feature = "weld")]
     WeldOwned,
-    #[cfg(feature = "scry")]
+    #[cfg(all(feature = "scry", windows))]
     ScryOwned,
 }
 
@@ -50,14 +50,14 @@ pub(super) struct ImportedSurfaceFrame {
     texture: wgpu::Texture,
 }
 
-#[cfg(feature = "scry")]
+#[cfg(all(feature = "scry", windows))]
 pub(super) struct ScryingFrameImporter {
     importer: WgpuTextureImporter,
     synchronizer: std::sync::Arc<Dx12FenceSynchronizer>,
     stats: std::cell::Cell<ScryingFrameStats>,
 }
 
-#[cfg(feature = "scry")]
+#[cfg(all(feature = "scry", windows))]
 #[derive(Clone, Copy, Debug, Default)]
 pub(super) struct ScryingFrameStats {
     pub(super) frames: u64,
@@ -65,18 +65,18 @@ pub(super) struct ScryingFrameStats {
     pub(super) waits: u64,
 }
 
-#[cfg(all(test, feature = "scry"))]
+#[cfg(all(test, feature = "scry", windows))]
 #[path = "surface_frames/tests.rs"]
 mod tests;
 
-#[cfg(all(test, feature = "weld"))]
+#[cfg(all(test, feature = "weld", windows))]
 #[path = "surface_frames/welding_frame_tests.rs"]
 mod welding_frame_tests;
 
 #[path = "surface_frames/imported_surface_frame_presentation_alpha.rs"]
 mod imported_surface_frame_presentation_alpha;
 #[path = "surface_frames/scrying_frame_importer_new.rs"]
-#[cfg(feature = "scry")]
+#[cfg(all(feature = "scry", windows))]
 mod scrying_frame_importer_new;
 #[path = "surface_frames/update_imported_frame.rs"]
 mod update_imported_frame;
@@ -90,19 +90,19 @@ use update_servo_frame::update_servo_frame;
 mod reuse_allocation;
 use reuse_allocation::reuse_allocation;
 #[path = "surface_frames/prepare_scrying_frame.rs"]
-#[cfg(feature = "scry")]
+#[cfg(all(feature = "scry", windows))]
 mod prepare_scrying_frame;
-#[cfg(feature = "scry")]
+#[cfg(all(feature = "scry", windows))]
 use prepare_scrying_frame::prepare_scrying_frame;
 #[path = "surface_frames/synchronize_reused_scrying_frame.rs"]
-#[cfg(feature = "scry")]
+#[cfg(all(feature = "scry", windows))]
 mod synchronize_reused_scrying_frame;
-#[cfg(feature = "scry")]
+#[cfg(all(feature = "scry", windows))]
 use synchronize_reused_scrying_frame::synchronize_reused_scrying_frame;
 #[path = "surface_frames/update_scrying_frame.rs"]
-#[cfg(feature = "scry")]
+#[cfg(all(feature = "scry", windows))]
 mod update_scrying_frame;
-#[cfg(feature = "scry")]
+#[cfg(all(feature = "scry", windows))]
 use update_scrying_frame::update_scrying_frame;
 #[path = "surface_frames/prepare_welding_frame.rs"]
 #[cfg(feature = "weld")]
@@ -120,16 +120,20 @@ mod update_welding_frame;
 #[cfg(feature = "weld")]
 use update_welding_frame::update_welding_frame;
 #[path = "surface_frames/update_raw_frame.rs"]
-#[cfg(feature = "weld")]
+#[cfg(all(feature = "weld", windows))]
 mod update_raw_frame;
-#[cfg(feature = "weld")]
+#[cfg(all(feature = "weld", windows))]
 use update_raw_frame::update_raw_frame;
 #[path = "surface_frames/map_texture_format.rs"]
 mod map_texture_format;
 use map_texture_format::map_texture_format;
 #[path = "surface_frames/close_if_transferred.rs"]
+#[cfg(windows)]
 mod close_if_transferred;
+#[cfg(windows)]
 use close_if_transferred::close_if_transferred;
 #[path = "surface_frames/close_transferred_handle.rs"]
+#[cfg(windows)]
 mod close_transferred_handle;
+#[cfg(windows)]
 use close_transferred_handle::close_transferred_handle;

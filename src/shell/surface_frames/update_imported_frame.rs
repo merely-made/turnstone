@@ -8,7 +8,7 @@ pub(in super::super) fn update_imported_frame(
     frame: SurfaceFrame,
     device: &wgpu::Device,
     queue: &wgpu::Queue,
-    #[cfg(feature = "scry")] scrying_importer: Option<&ScryingFrameImporter>,
+    #[cfg(all(feature = "scry", windows))] scrying_importer: Option<&ScryingFrameImporter>,
 ) -> Result<(), SurfaceError> {
     #[cfg(feature = "servo")]
     if matches!(&frame.texture, NativeTextureHandle::OwnedPayload(payload)
@@ -31,7 +31,7 @@ pub(in super::super) fn update_imported_frame(
         return result;
     }
 
-    #[cfg(feature = "scry")]
+    #[cfg(all(feature = "scry", windows))]
     if matches!(&frame.texture, NativeTextureHandle::OwnedPayload(_)) {
         let result = update_scrying_frame(cached, frame, scrying_importer);
         if result.is_err() {
@@ -42,12 +42,13 @@ pub(in super::super) fn update_imported_frame(
         return result;
     }
 
-    #[cfg(feature = "weld")]
+    #[cfg(all(feature = "weld", windows))]
     return update_raw_frame(cached, frame, device, queue);
 
-    #[cfg(not(feature = "weld"))]
+    #[cfg(not(all(feature = "weld", windows)))]
     {
         let _ = (device, queue);
+        #[cfg(windows)]
         close_if_transferred(&frame.texture);
         Err(SurfaceError::Unsupported(
             "Turnstone requires an owned frame from a registered browser importer".into(),
