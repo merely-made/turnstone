@@ -532,6 +532,9 @@ paint_list_render = { git = "https://github.com/merely-made/netrender.git", bran
 # arboard 3.7.0 still takes x11rb 0.13; winit 0.31 takes 0.14. The fork's one
 # change is the x11rb row, so it leaves when arboard releases on 0.14.
 arboard = { git = "https://github.com/mark-ik/arboard", branch = "mark-ik/x11rb-0.14" }
+# bindgen 0.72.1 caps itertools below 0.14 and every mozjs, mozjs_sys and mozangle release
+# still takes it; the fork's one change widens that bound to 0.15. It leaves when they move to bindgen 0.73.
+bindgen = { git = "https://github.com/mark-ik/rust-bindgen", branch = "mark-ik/itertools-0.15" }
 # rust-ipns 0.9.0 (its latest release) takes libp2p-identity 0.2, which holds
 # the elliptic-curve 0.13 / ed25519-dalek 2 / rand 0.8 stack. Upstream main
 # already takes libp2p-identity 0.3 (9e3dcb37); the row leaves when that releases.

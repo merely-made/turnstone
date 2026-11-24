@@ -294,10 +294,6 @@ crate = "jiff-tzdb@0.1.10"
 reason = "timezone_provider 0.2.6 (latest) requires jiff-tzdb 0.1, under boa_engine and temporal_rs (genet-bole, genet-vano); jiff 1.0 takes 1.0.0; goes when timezone_provider moves to jiff-tzdb 1.0 (2026-11-20)"
 
 [[bans.skip]]
-crate = "itertools@0.12.1"
-reason = "bindgen 0.72.1 (bindgen 0.73.2 drops it) requires itertools below 0.14, under grafting-servo (mozjs, mozangle); the resolver shares 0.12.1 with prost-derive 0.14.6 (latest, which also takes 0.15); goes when bindgen's dependents take bindgen 0.73.2"
-
-[[bans.skip]]
 crate = "itertools@0.14.0"
 reason = "nom-rfc8288 0.4.0 (latest), rav1e 0.8.1 (latest), rayon-cond 0.4.0 (latest), stylo 0.23.0 (stylo 0.24.0 still needs it) and 8 more require it, under app-host, authority-host, block-host, esp and 13 more; goes when nom-rfc8288, rav1e, rayon-cond and 3 more move to itertools 0.15.0; their dependents take lalrpop 0.23.2, oxc_semantic 0.158.0, wesl 0.6.0 and 3 more"
 
