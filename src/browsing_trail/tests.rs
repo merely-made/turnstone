@@ -275,23 +275,35 @@ fn graphshell_rdf_browsing_trail_reopens_in_a_fresh_turnstone_store() {
     let parsed = mere::formats::parse::parse_trig(&rdf, None).unwrap();
     let quads: Vec<_> = parsed.quads(mere::dataset::View::Live).collect();
     let scope = format!("urn:graphshell:browsing-trail:{}", id.as_uuid());
-    assert!(
-        quads
-            .iter()
-            .all(|q| q.graph_name.to_string() == format!("<{scope}>"))
-    );
+    let history = format!("urn:graphshell:browsing-history:{}", id.as_uuid());
+    // Events and metrics sit in the workspace history graph, apart from the
+    // trail graph (mere:engine-split D197).
+    assert!(quads.iter().all(|q| {
+        let graph = q.graph_name.to_string();
+        graph == format!("<{scope}>") || graph == format!("<{history}>")
+    }));
     let derived = "http://www.w3.org/ns/prov#wasDerivedFrom";
-    let rows: Vec<_> = quads
+    let event_class = "<urn:graphshell:vocabulary:browsing-trail:1:Traversal>";
+    let events: std::collections::BTreeSet<String> = quads
         .iter()
         .filter(|q| {
-            q.predicate.as_str() == derived && q.subject.to_string().contains(":traversal:")
+            q.predicate.as_str() == "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                && q.object.to_string() == event_class
         })
+        .map(|q| q.subject.to_string())
+        .collect();
+    // Each event is named by its minted UUID (D195).
+    assert_eq!(events.len(), 3);
+    assert!(events.iter().all(|event| event.starts_with("<urn:uuid:")));
+    let rows: Vec<_> = quads
+        .iter()
+        .filter(|q| q.predicate.as_str() == derived && events.contains(&q.subject.to_string()))
         .collect();
     assert_eq!(rows.len(), 3);
-    assert!(
-        rows.iter()
-            .all(|q| q.object.to_string() == format!("<{scope}>"))
-    );
+    assert!(rows.iter().all(|q| {
+        q.object.to_string() == format!("<{history}>")
+            && q.graph_name.to_string() == format!("<{history}>")
+    }));
     println!(
         "source session {}, reopened session {}, repeated surfaces ({FIRST_ID}, {SECOND_ID}), clicks {:?}, RDF quads {}",
         id.as_uuid(),
