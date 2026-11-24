@@ -1,0 +1,55 @@
+# The loopback runner supplies the response, parser names, and request counts.
+settle 30
+key escape
+resize 1180 940
+open ${TURNSTONE_PACK_FIXTURE}
+settle 40
+act Open Inspector pane
+settle 10
+act Maximize pane
+settle 10
+assert row Viewer: auto
+click surface:inspector role:button Change viewer
+settle 10
+capture 00_before_switch
+settle ${TURNSTONE_PACK_SWITCH_WAIT}
+scroll 620 430 ${TURNSTONE_PACK_PICKER_SCROLL}
+settle 10
+click-row ${TURNSTONE_PACK_PARSER}
+settle 10
+assert row Viewer: ${TURNSTONE_PACK_PARSER}
+act Maximize pane
+settle 10
+act Toggle live content
+wait 120
+assert content-live
+assert snap browser-current-engine == ${TURNSTONE_PACK_PARSER}
+assert a11y link: ${TURNSTONE_PACK_FIRST_LINK} >> link: ${TURNSTONE_PACK_SECOND_LINK}
+capture 01_parser_live
+
+# Changing the other parser leaves the current view running.
+act id:pane:settings
+settle 10
+act Maximize pane
+settle 10
+click surface:settings role:button @aria-label=${TURNSTONE_PACK_OTHER}, This session, Off
+settle 10
+assert snap browser-current-engine == ${TURNSTONE_PACK_PARSER}
+
+click surface:settings role:button @aria-label=${TURNSTONE_PACK_TARGET}, This session, Off
+settle 10
+assert content-live
+assert snap browser-current-engine == ${TURNSTONE_PACK_FALLBACK}
+capture 02_target_parser_off
+settle 45
+
+# Enabling the pack parser makes the saved pin selectable again without
+# replacing the live fallback.
+click surface:settings role:button @aria-label=${TURNSTONE_PACK_TARGET}, This session, On
+settle 10
+assert snap browser-current-engine == ${TURNSTONE_PACK_FALLBACK}
+act Maximize pane
+settle 10
+assert a11y link: ${TURNSTONE_PACK_FIRST_LINK} >> link: ${TURNSTONE_PACK_SECOND_LINK}
+assert row Viewer: ${TURNSTONE_PACK_PARSER}
+capture 03_rebuilt_from_held_response

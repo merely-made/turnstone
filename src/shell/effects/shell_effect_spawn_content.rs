@@ -4,6 +4,91 @@
 use super::*;
 
 impl Shell {
+    pub(super) fn install_document_controller(
+        &mut self,
+        node: uuid::Uuid,
+        url: &str,
+        OpenedContentController { mut controller, source }: OpenedContentController,
+        route: pelt_core::PeltRoute,
+        fetch_subresources: bool,
+    ) -> Update {
+        if let Some(source) = source {
+            let effects = self.app.apply_update(source);
+            self.run_effects(effects);
+        }
+        let session = controller.session_mut();
+        tracing::info!(%node, %url, engine = %route.decision.engine_id, "content session live");
+        // Mirror the spawn-time facts into app truth (the
+        // adapter conversion): the engine id plus the
+        // structural read through the trait accessor —
+        // None stays None (a lane without introspection
+        // is reported, not synthesized).
+        let report = session.inspect();
+        let lineage = report.as_ref().and_then(|report| {
+            report.lineage.as_ref().map(|lineage| {
+                crate::content::ExtractionLineageFacts {
+                    tool: lineage.tool.clone(),
+                    version: lineage.version.clone(),
+                    selector: lineage.selector.clone(),
+                    score: lineage.score,
+                    block_count: lineage.block_count,
+                }
+            })
+        });
+        let facts = crate::content::ContentFacts {
+            engine: route.decision.engine_id.clone(),
+            lane: crate::content::ContentLane::Document,
+            capabilities: app_document_capabilities(session.document_capabilities()),
+            structure: report.map(|r| crate::content::StructureFacts {
+                title: r.title,
+                headings: r.headings.len(),
+                links: r.links.len(),
+                outline: r
+                    .outline
+                    .into_iter()
+                    .map(|e| crate::content::OutlineFact {
+                        depth: e.depth,
+                        role: e.role,
+                        name: e.name,
+                    })
+                    .collect(),
+            }),
+            lineage,
+        };
+        project_reader_lineage_facet(&mut self.app, node, facts.lineage.as_ref());
+        // The one seed point for a retained session's
+        // requested page scale: first spawn, restart replay
+        // and the engine-switch respawn all arrive here.
+        // The effective level it answers with is kept; a
+        // refusal is reported and dropped, and what the
+        // node asked for stays persisted either way.
+        replay_retained_page_scale(&mut self.app, node, session);
+        let subresources = fetch_subresources.then(|| session.subresources());
+        self.clear_reader_appearances(node);
+        // A document replacing a live surface takes the
+        // node's one content entry, so what the shell
+        // kept beside the surface retires with it.
+        if self.content_sessions.has_surface(&node) {
+            self.retire_surface_semantics(node);
+            self.surface_find_requests.remove(&node);
+            self.retire_surface_extras(node);
+        }
+        self.content_sessions.insert(
+            node,
+            pelt_core::PeltContent::from_controller(controller, route),
+        );
+        for url in subresources.into_iter().flatten() {
+            if self.pending_fetches.note_subresource(&url, node) {
+                self.fetch_handle
+                    .command(fetch::FetchCommand::Subresource(url));
+            }
+        }
+        Update::ContentSpawned {
+            node,
+            facts: Some(facts),
+        }
+    }
+
     pub(super) fn effect_spawn_content(&mut self, effect: Effect) {
         match effect {
             Effect::SpawnContent { node, url } => {
@@ -290,91 +375,8 @@ impl Shell {
                     super::super::ShellClock(self.epoch),
                 );
                 let update = match opened {
-                    Ok(Some(OpenedContentController {
-                        mut controller,
-                        source,
-                    })) => {
-                        if let Some(source) = source {
-                            let effects = self.app.apply_update(source);
-                            self.run_effects(effects);
-                        }
-                        let session = controller.session_mut();
-                        tracing::info!(%node, %url, engine = %decision.engine_id, "content session live");
-                        // Mirror the spawn-time facts into app truth (the
-                        // adapter conversion): the engine id plus the
-                        // structural read through the trait accessor —
-                        // None stays None (a lane without introspection
-                        // is reported, not synthesized).
-                        let report = session.inspect();
-                        let lineage = report.as_ref().and_then(|report| {
-                            report.lineage.as_ref().map(|lineage| {
-                                crate::content::ExtractionLineageFacts {
-                                    tool: lineage.tool.clone(),
-                                    version: lineage.version.clone(),
-                                    selector: lineage.selector.clone(),
-                                    score: lineage.score,
-                                    block_count: lineage.block_count,
-                                }
-                            })
-                        });
-                        let facts = crate::content::ContentFacts {
-                            engine: decision.engine_id.clone(),
-                            lane: crate::content::ContentLane::Document,
-                            capabilities: app_document_capabilities(
-                                session.document_capabilities(),
-                            ),
-                            structure: report.map(|r| crate::content::StructureFacts {
-                                title: r.title,
-                                headings: r.headings.len(),
-                                links: r.links.len(),
-                                outline: r
-                                    .outline
-                                    .into_iter()
-                                    .map(|e| crate::content::OutlineFact {
-                                        depth: e.depth,
-                                        role: e.role,
-                                        name: e.name,
-                                    })
-                                    .collect(),
-                            }),
-                            lineage,
-                        };
-                        project_reader_lineage_facet(&mut self.app, node, facts.lineage.as_ref());
-                        // The one seed point for a retained session's
-                        // requested page scale: first spawn, restart replay
-                        // and the engine-switch respawn all arrive here.
-                        // The effective level it answers with is kept; a
-                        // refusal is reported and dropped, and what the
-                        // node asked for stays persisted either way.
-                        replay_retained_page_scale(&mut self.app, node, session);
-                        let subresources = if held_edition {
-                            Vec::new()
-                        } else {
-                            session.subresources()
-                        };
-                        self.clear_reader_appearances(node);
-                        // A document replacing a live surface takes the
-                        // node's one content entry, so what the shell
-                        // kept beside the surface retires with it.
-                        if self.content_sessions.has_surface(&node) {
-                            self.retire_surface_semantics(node);
-                            self.surface_find_requests.remove(&node);
-                            self.retire_surface_extras(node);
-                        }
-                        self.content_sessions.insert(
-                            node,
-                            pelt_core::PeltContent::from_controller(controller, route),
-                        );
-                        for url in subresources {
-                            if self.pending_fetches.note_subresource(&url, node) {
-                                self.fetch_handle
-                                    .command(fetch::FetchCommand::Subresource(url));
-                            }
-                        }
-                        Update::ContentSpawned {
-                            node,
-                            facts: Some(facts),
-                        }
+                    Ok(Some(opened)) => {
+                        self.install_document_controller(node, &url, opened, route, !held_edition)
                     },
                     Ok(None) => return,
                     Err(err) => {

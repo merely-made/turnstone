@@ -24,6 +24,31 @@ pub(crate) struct PackSettings {
     pub(crate) session_error: Option<String>,
 }
 
+impl PackSettings {
+    pub(crate) fn newly_disabled_parsers<'a>(
+        &'a self,
+        previous: &'a Self,
+    ) -> impl Iterator<Item = &'static str> + 'a {
+        self.switches.iter().filter_map(move |row| {
+            let Capability::Parser(parser) = row.capability else {
+                return None;
+            };
+            (!row.effective_enabled()
+                && previous
+                    .switches
+                    .iter()
+                    .any(|prior| prior.capability == row.capability && prior.effective_enabled()))
+            .then_some(parser.engine_id())
+        })
+    }
+}
+
+impl Switch {
+    fn effective_enabled(&self) -> bool {
+        self.session_override.unwrap_or(self.profile_enabled)
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum Scope {
     Profile(bool),

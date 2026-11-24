@@ -52,6 +52,13 @@ pub(crate) fn parser_label(engine: &str) -> Option<&'static str> {
     }
 }
 
+pub(crate) fn builtin_parser(engine: &str) -> Option<&'static str> {
+    match parser_for(engine)? {
+        Parser::Gemtext => Some(inker::routing::ENGINE_NEMATIC_GEMTEXT),
+        Parser::Markdown => Some(inker::routing::ENGINE_NEMATIC_MARKDOWN),
+    }
+}
+
 fn parser_for(engine: &str) -> Option<Parser> {
     Parser::ALL
         .into_iter()

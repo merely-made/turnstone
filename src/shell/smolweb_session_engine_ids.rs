@@ -6,6 +6,7 @@
 /// media type, while the other ids correspond directly to protocol schemes.
 pub(super) const SMOLWEB_SESSION_ENGINE_IDS: &[&str] = &[
     inker::routing::ENGINE_NEMATIC_GEMTEXT,
+    inker::routing::ENGINE_NEMATIC_MARKDOWN,
     inker::routing::ENGINE_NEMATIC_GOPHER,
     inker::routing::ENGINE_NEMATIC_FINGER,
     inker::routing::ENGINE_NEMATIC_SCROLL,

@@ -63,10 +63,11 @@ impl Shell {
                 ));
             }
         }
-        self.live_settings.report_status(error);
-        self.publish_engine_inventory();
-        self.live_settings
-            .publish_pack_settings(self.smolweb_pack.settings());
+        self.live_settings.report_status(None);
+        self.refresh_engine_pack();
+        if error.is_some() {
+            self.live_settings.report_status(error);
+        }
         self.request_redraw();
     }
 
@@ -75,14 +76,26 @@ impl Shell {
             return;
         }
         self.engine_pack_poll = now + std::time::Duration::from_secs(1);
-        let previous = std::mem::take(&mut self.app.engine_inventory);
-        self.publish_engine_inventory();
-        let switches_changed = self
-            .live_settings
-            .publish_pack_settings(self.smolweb_pack.settings());
-        if switches_changed || self.app.engine_inventory != previous {
+        if self.refresh_engine_pack() {
             self.request_redraw();
         }
+    }
+
+    fn refresh_engine_pack(&mut self) -> bool {
+        let previous = std::mem::take(&mut self.app.engine_inventory);
+        self.publish_engine_inventory();
+        let inventory_changed = self.app.engine_inventory != previous;
+
+        // Inventory is also published by unrelated effects. Compare the pack
+        // settings projections so an intervening publish cannot absorb an edit.
+        let previous = self.live_settings.pack_settings();
+        let next = self.smolweb_pack.settings();
+        let disabled: Vec<_> = next.newly_disabled_parsers(&previous).collect();
+        let settings_changed = self.live_settings.publish_pack_settings(next);
+        if !disabled.is_empty() {
+            self.reroute_disabled_pack_parsers(&disabled);
+        }
+        settings_changed || inventory_changed
     }
 
     #[cfg(all(feature = "weld", windows))]

@@ -134,6 +134,8 @@ mod read_place_artifact;
 mod shell_effect_control_content;
 #[path = "effects/shell_effect_open_theme_workshop.rs"]
 mod shell_effect_open_theme_workshop;
+#[path = "effects/reroute_smolweb.rs"]
+mod reroute_smolweb;
 #[path = "effects/shell_effect_spawn_content.rs"]
 mod shell_effect_spawn_content;
 #[path = "effects/shell_effect_trash_session.rs"]

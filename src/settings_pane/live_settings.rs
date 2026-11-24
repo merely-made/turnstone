@@ -131,7 +131,7 @@ impl LiveSettingsHandle {
         true
     }
 
-    pub(super) fn pack_settings(&self) -> PackSettings {
+    pub(crate) fn pack_settings(&self) -> PackSettings {
         self.0.borrow().pack_settings.clone()
     }
 

@@ -539,15 +539,22 @@ if a bundle offering the capability is installed.
 
 The fetch worker for the departing session retires at session switch. The new
 worker reads the adopted session's effective protocol setting before each
-hop. Changes to a parser affect its availability in Inspector and new parser
-work. Views that already rendered keep their document until the next routing
-event. Live document transfer remains with Verso.
+hop. When an effective pack parser setting turns off, Turnstone rebuilds
+only open pages using that parser. It uses the built-in parser for the same
+format and the response it already holds, without requesting the page or
+its subresources again. The saved Viewer choice stays on the node. If the
+response or fallback is unavailable, the existing view stays visible and
+Settings reports the reason. Turning a parser back on makes it selectable
+again. Carrying live view state into the replacement remains with Verso.
 
 Done when Settings can change a profile default and the CLI reports it, a
 session can override that default in either direction, a second session
 inherits independently, and returning to the first session restores its
 choices. Verify that a session-level protocol change stops an in-flight
 redirect and that the parser switches remain independent of connections.
+For open-page rerouting, turn off each parser while a page uses it. The
+built-in view must render the held response with zero additional requests,
+and the other parser switch must leave the current view alone.
 
 **Windows receipt, 2026-11-20.** Keyboard and pointer edits passed the
 Settings tests. The native Settings run set the profile default to Spartan
@@ -557,6 +564,15 @@ and restarting restored the first session's override. Turning Spartan off
 in Settings during a pending Gemini redirect kept its target at zero
 connections. The enabled control connected once. See
 `settings-headed-first/` and `settings-headed-restart/` under
+`Code/testing/turnstone/receipts/smolweb-pack/`.
+
+**Windows reroute receipt, 2026-11-22.** Markdown and Gemtext fell back
+to the built-in parser with zero additional HTTP requests. Switching the
+other parser left the live view on its pack parser. Switching the target
+back on kept the built-in view open and the saved Viewer choice in place.
+The older executable kept using the disabled parser after Settings saved
+the override. See `open-page-reroute-winit-headed/` and
+`open-page-reroute-control-confirmed/` under
 `Code/testing/turnstone/receipts/smolweb-pack/`.
 
 The picker plan's decision 1 and 2: a global `EngineEnableSet` app setting
@@ -571,8 +587,8 @@ through Inker's availability predicate, and installed viewers disabled by
 the global setting stay visible in Inspector. Internal pages, graph ingest,
 external protocol dispatch and host-owned kept content keep their routes.
 Generic engine controls and session overrides for the global enable set
-remain open along with rerouting content that is already open. The Smolweb
-Settings section edits the installable pack's capabilities.
+remain open along with rerouting open content outside the Smolweb pack.
+The Smolweb Settings section edits the installable pack's capabilities.
 
 **Activation receipt, 2026-11-20.** Four routing tests and eleven engine
 inventory tests passed on Windows. The new case projects Pandect's setting
