@@ -10,7 +10,7 @@ use tempfile::TempPath;
 
 pub(crate) const SCRIPT: &str = include_str!("page_capture.js");
 const CHUNK: usize = 64 * 1024;
-const MAX_PCM_BYTES: u64 = 16 * 1024 * 1024 - 128;
+use super::MAX_PHRASE_PCM_BYTES;
 
 pub(crate) struct PageCapture {
     writer: hound::WavWriter<BufWriter<File>>,
@@ -43,7 +43,7 @@ impl PageCapture {
         }
         let length = frames
             .checked_mul(channels * 2)
-            .filter(|length| *length <= MAX_PCM_BYTES)
+            .filter(|length| *length <= MAX_PHRASE_PCM_BYTES)
             .ok_or("This phrase exceeds 16 MiB. Mark a shorter passage.")?
             as usize;
         let (file, path) = tempfile::Builder::new()

@@ -3,13 +3,10 @@
 
 use std::{path::PathBuf, sync::mpsc, thread};
 
-use crate::woodshed_client::{ClientError, ImportWav, WoodshedSession, connect_or_launch};
+use crate::woodshed_client::{ClientError, WoodshedSession, connect_or_launch};
 
 pub(super) enum Command {
-    Send {
-        request: ImportWav,
-        preview: Option<std::sync::Arc<tempfile::TempPath>>,
-    },
+    Send(super::clip::RecordingImport),
     Status,
     Attach,
     Detach,
@@ -98,7 +95,7 @@ impl Connection {
     }
 }
 
-fn execute(
+pub(super) fn execute(
     session: &mut Option<WoodshedSession>,
     executable: Option<PathBuf>,
     command: Command,
@@ -119,8 +116,20 @@ fn execute(
     }
     let connected = session.as_mut().expect("connection established");
     let (response, attached, imported, message) = match command {
-        Command::Send { request, preview } => (
-            connected.import_recording(&request, preview.as_deref().map(AsRef::as_ref)),
+        Command::Send(import) if import.selected.is_some() => {
+            let phrase = import.prepare().map_err(Failure::Error)?;
+            (
+                connected.import_page_phrase(&phrase),
+                None,
+                true,
+                Some("Matched passage sent to Woodshed."),
+            )
+        },
+        Command::Send(import) => (
+            connected.import_recording(
+                &import.request,
+                import.preview.as_deref().map(AsRef::as_ref),
+            ),
             None,
             true,
             Some("Phrase sent to Woodshed."),

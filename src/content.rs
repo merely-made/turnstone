@@ -194,6 +194,13 @@ pub(crate) struct SurfaceTraversal {
     pub request: Option<inker::webcue::RequestKey>,
 }
 
+#[derive(Debug)]
+struct AdmittedResponse {
+    token: Uuid,
+    identity: crate::source_capture::SourceIdentity,
+    reading: std::sync::OnceLock<turnstone_ontology::Reading>,
+}
+
 #[derive(Debug, Default)]
 pub struct ContentStates {
     states: HashMap<Uuid, NodeContent>,
@@ -208,7 +215,7 @@ pub struct ContentStates {
     loads: HashMap<Uuid, page_load::PageLoad>,
     /// A retained response admission, independent of equal response bytes.
     pub(crate) peer_assets: HashMap<Uuid, std::sync::Arc<fetch::peer::PeerAssets>>,
-    source_admissions: HashMap<Uuid, (Uuid, crate::source_capture::SourceIdentity)>,
+    source_admissions: HashMap<Uuid, AdmittedResponse>,
 }
 
 #[cfg(test)]

@@ -25,6 +25,7 @@ use crate::app::App;
 /// provider needs no handler code.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum SectionActivate {
+    BrowseLinks(crate::swatch_pane::LinkPage),
     /// Navigate to this url (a Recent row).
     Open(String),
     /// Recover this removed node by its ORIGINAL id (a Removed row).

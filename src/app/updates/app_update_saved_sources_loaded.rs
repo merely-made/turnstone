@@ -107,12 +107,27 @@ impl App {
                 if !current {
                     return browse::apply_page(&mut self.graph_runtimes, node, url, result);
                 }
-                if result
-                    .as_ref()
-                    .is_ok_and(crate::download::is_download_response)
-                {
-                    return self.begin_download(node, url, result.expect("checked success"));
-                }
+                // A retained response from a previous request is not
+                // acquisition context for this terminal answer. Only this
+                // request's progress can supply its actual final URL.
+                let observed = matches!(
+                    self.content.fetch_phase(node),
+                    Some(crate::content::PageFetchPhase::Streaming { .. })
+                )
+                .then(|| self.content.fetched(node, &url))
+                .flatten();
+                let reading = match result.as_ref().ok().map(|fetched| {
+                    let base = observed
+                        .and_then(|prev| prev.effective_url.as_deref())
+                        .unwrap_or(&url);
+                    crate::download::page_disposition(fetched, Some(base))
+                }) {
+                    Some(crate::download::PageDisposition::Download) => {
+                        return self.begin_download(node, url, result.expect("checked success"));
+                    },
+                    Some(crate::download::PageDisposition::Linked(reading)) => Some(reading),
+                    _ => None,
+                };
                 let requested_content = matches!(
                     self.content.get(node),
                     Some(crate::content::NodeContent::Requested)
@@ -122,15 +137,6 @@ impl App {
                     Some(crate::content::NodeContent::Live)
                 );
                 if let Ok(fetched) = &result {
-                    // A retained response from a previous request is not
-                    // acquisition context for this terminal answer. Only this
-                    // request's progress can supply its actual final URL.
-                    let observed = matches!(
-                        self.content.fetch_phase(node),
-                        Some(crate::content::PageFetchPhase::Streaming { .. })
-                    )
-                    .then(|| self.content.fetched(node, &url))
-                    .flatten();
                     let effective_url =
                         observed.and_then(|previous| previous.effective_url.clone());
                     let content_type = fetched
@@ -146,7 +152,7 @@ impl App {
                                 .map(|duration| duration.as_millis() as u64)
                                 .unwrap_or(0)
                         });
-                    self.content.note_fetched(
+                    self.content.note_fetched_with_reading(
                         node,
                         url.clone(),
                         crate::content::FetchedDocument {
@@ -157,6 +163,7 @@ impl App {
                             acquired_at_ms,
                         },
                         fetched.bytes.len(),
+                        reading,
                     );
                     if requested_content || live_content {
                         self.events.push(AppEvent::ContentState {

@@ -90,7 +90,7 @@ impl LocalWavSelection {
         &self.path
     }
 
-    fn checked_path(&self) -> Result<&Path, ClientError> {
+    pub(crate) fn checked_path(&self) -> Result<&Path, ClientError> {
         let canonical = canonical_recording_path(&self.path)?;
         if canonical != self.path {
             return Err(ClientError::InvalidWav(
@@ -111,9 +111,8 @@ pub struct ImportWav {
     pub note: String,
 }
 
-/// Audio captured by Turnstone, with marks on the selected page player's clock.
+/// A sealed PCM phrase with marks on its explicitly matched source clock.
 /// The queued request owns the temporary file until Woodshed acknowledges it.
-#[cfg(all(windows, feature = "scry"))]
 #[derive(Clone)]
 pub(crate) struct PagePhrase {
     pub title: String,
@@ -175,7 +174,6 @@ impl WoodshedSession {
         })
     }
 
-    #[cfg(all(windows, feature = "scry"))]
     pub(crate) fn import_page_phrase(
         &mut self,
         phrase: &PagePhrase,
@@ -381,7 +379,6 @@ enum WireCommand {
         #[serde(skip_serializing_if = "Option::is_none")]
         preview_path: Option<PathBuf>,
     },
-    #[cfg(all(windows, feature = "scry"))]
     ImportPagePhrase {
         source: WireWavSource,
         phrase_path: PathBuf,
@@ -415,7 +412,7 @@ struct WireResponse {
     status: Option<Value>,
 }
 
-fn connect_existing(endpoint_path: &Path) -> Result<Option<WoodshedSession>, ClientError> {
+pub(crate) fn connect_existing(endpoint_path: &Path) -> Result<Option<WoodshedSession>, ClientError> {
     let endpoint = match read_endpoint(endpoint_path) {
         Ok(endpoint) => endpoint,
         Err(ClientError::Io(error)) if error.kind() == io::ErrorKind::NotFound => return Ok(None),

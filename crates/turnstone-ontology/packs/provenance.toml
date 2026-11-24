@@ -1,0 +1,19 @@
+# W3C PROV-O, https://www.w3.org/TR/prov-o/
+id = "pack:provenance"
+version = "0.1.0"
+kind = ["vocabulary"]
+licence = "MPL-2.0"
+provides = ["prov:"]
+[prefixes]
+pack = "https://mere.computer/packs/"
+prov = "http://www.w3.org/ns/prov#"
+
+[[vocabulary.terms]]
+iri = "prov:wasDerivedFrom"
+kind = "predicate"
+labels = { en = "Derived from" }
+
+[[vocabulary.terms]]
+iri = "prov:wasAttributedTo"
+kind = "predicate"
+labels = { en = "Attributed to" }

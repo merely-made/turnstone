@@ -64,6 +64,16 @@ the audio preview's clock. A video player that applies movie edits can show
 different times for the same passage. Multichannel selections are mixed to
 stereo. Compressed WAV support depends on the codec inside the file.
 
+To use timings from a graph document, open your own copy of the recording in
+the practice view. Choose **Match timed selection…**, open the document, review
+the source and interval, then choose **Match this recording to this source**.
+This confirms that your recording uses the selected source’s clock. **Save
+matched clip…** stores the interval as a local PCM16 WAV with the timed source
+URL, original selection IRI and your practice note in RIFF INFO tags. Both
+ends round down to a frame on the recording clock, and the out frame is
+excluded. **Practice in Woodshed** sends the same samples to Woodshed’s native
+receiver, which adds the phrase to the active, unlocked practice.
+
 To practice something playing on a web page in the Windows app, choose **Open
 page with System webview** in the command palette. You can also select **System
 webview** (Scry) in the Inspector's viewer picker. Click the audio or video you
@@ -319,3 +329,30 @@ Public or Members audience, and opening checks current access. Public
 advertisements remain separate disclosures. Member encryption does not erase
 previously learned content or hide peer traffic, and does not change the
 browser's separate history and source-retention policy.
+
+## Ontology packs and listening notes
+
+Turnstone's default lens selects Web Annotation, citation (CiTO), and provenance
+(PROV-O). A fetched JSON or JSON-LD listening note with a recognized timed web
+target adds an **Annotated passages** section to Gloss. Selecting a passage
+navigates to the recording's media-fragment address. Actual playback depends
+on the renderer and access to the recording.
+
+To open a named note from a Redshank export on disk:
+
+```sh
+turnstone --open-annotation notes.json 'mere://redshank/note/voice-1'
+```
+
+To change the selection, copy [the default lens](crates/turnstone-ontology/packs/lens.toml)
+to a directory as `lens.toml`, edit its `select` list, and set
+`TURNSTONE_ONTOLOGY_DIR` to that directory before launch. Additional subject
+packs are TOML files alongside the lens. A local pack with the same ID replaces
+the bundled version for that selection. The exported note retains its original
+bytes.
+
+When a JSON-LD, Turtle or other supported RDF document contains named relationships or types from your selected
+packs, Gloss also offers **Linked records**. Browse by type, open a record,
+and follow either end of a relationship within the document. **Show evidence**
+reveals the original identifiers, predicate, vocabulary pack, and source URL.
+A replacement or additional vocabulary takes effect on the next launch.

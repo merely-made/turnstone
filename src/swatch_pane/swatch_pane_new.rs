@@ -35,6 +35,7 @@ impl SwatchPane {
             viewport_w: 0.0,
             viewport_h: 0.0,
             sections: Vec::new(),
+            link_page: None,
             swatch_h: 0.0,
             neighborhood: (preset.id == RESOURCE_NEIGHBORHOOD.id)
                 .then(neighborhood::Selection::default),
@@ -57,6 +58,7 @@ impl SwatchPane {
             rendered: RenderedLeaves::new(),
             last_hover: None,
             neighborhood_sources: neighborhood::Sources::default(),
+            linked_rows: Default::default(),
             layout: crate::ui::RetainedLayout::new_at(
                 mount.as_ref().map(cambium::RetainedMount::node),
             ),
@@ -122,7 +124,15 @@ impl SwatchPane {
     }
 
     fn inspection_scroll_root(&self, dom: &ScriptedDom) -> Option<NodeId> {
-        self.runner.state().neighborhood.as_ref()?;
+        let state = self.runner.state();
+        if state.neighborhood.is_none()
+            && !state
+                .sections
+                .iter()
+                .any(|(id, _, _)| *id == "linked-records")
+        {
+            return None;
+        }
         let root = self
             .mount
             .as_ref()
@@ -239,6 +249,41 @@ impl SwatchPane {
                 .iter()
                 .map(|p| (p.id, p.title, (p.gather)(app)))
                 .collect();
+        let mut active_admission = None;
+        if self.preset.id == GLOSS_MINIMAP.id
+            && let Some(member) = app.graph_runtimes.focused_member()
+            && let Some((_, node)) = app.graph_runtimes.graph().get_node_by_id(member)
+            && let Some((admission, source, reading)) =
+                app.content.linked_reading(member, node.url())
+        {
+            active_admission = Some(admission);
+            let rows: Vec<_> = reading
+                .passages
+                .iter()
+                .map(|passage| crate::sections::SectionRow {
+                    id: Some(passage.note.clone()),
+                    text: passage.label(),
+                    activate: Some(crate::sections::SectionActivate::Open(
+                        passage.address.to_string(),
+                    )),
+                })
+                .collect();
+            if !rows.is_empty() {
+                sections.push(("annotated-passages", "Annotated passages", rows));
+            }
+            let links = self.linked_rows.get(
+                admission,
+                source,
+                reading,
+                self.runner.state().link_page.as_ref(),
+            );
+            if !links.is_empty() {
+                sections.push(("linked-records", "Linked records", links.to_vec()));
+            }
+        }
+        if active_admission.is_none() {
+            self.linked_rows = Default::default();
+        }
         if let Some(selection) = &self.runner.state().neighborhood {
             use crate::sections::{SectionActivate, SectionRow};
             let row = |text: String| SectionRow {
@@ -281,6 +326,13 @@ impl SwatchPane {
             state.activate_of = activate_of;
             state.viewport_w = pane_w;
             state.viewport_h = pane_h;
+            if state
+                .link_page
+                .as_ref()
+                .is_some_and(|page| Some(page.admission) != active_admission)
+            {
+                state.link_page = None;
+            }
             state.sections = sections;
             state.swatch_h = swatch_h;
         });
@@ -362,6 +414,7 @@ impl SwatchPane {
                 .neighborhood
                 .as_ref()
                 .and_then(|s| s.link.clone());
+            let previous_page = self.runner.state().link_page.clone();
             let _ = self
                 .runner
                 .dispatch_click(node, cambium::PointerClick::at((x, y)));
@@ -372,6 +425,7 @@ impl SwatchPane {
                 .as_ref()
                 .and_then(|s| s.link.as_ref())
                 != previous.as_ref()
+                || self.runner.state().link_page != previous_page
             {
                 let dom = self.dom.borrow();
                 if let Some(owner) = self.inspection_scroll_root(&dom) {

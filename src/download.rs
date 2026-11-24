@@ -65,29 +65,44 @@ pub(crate) fn spawn_downloads(wake: Wake) -> (ActorHandle<DownloadCommand>, Rece
     )
 }
 
-/// Explicit attachments and response types Turnstone cannot render become
-/// downloads. A missing media type retains the existing render attempt.
-pub(crate) fn is_download_response(fetched: &FetchedPage) -> bool {
-    let attachment = fetched.content_disposition.as_deref().is_some_and(|value| {
+pub(crate) enum PageDisposition {
+    Document,
+    Linked(turnstone_ontology::Reading),
+    Download,
+}
+
+/// An explicit attachment takes priority over all inline projections.
+pub(crate) fn page_disposition(fetched: &FetchedPage, base: Option<&str>) -> PageDisposition {
+    if fetched.content_disposition.as_deref().is_some_and(|value| {
         value
             .split(';')
             .next()
             .is_some_and(|kind| kind.trim().eq_ignore_ascii_case("attachment"))
-    });
-    attachment
-        || fetched.content_type.as_deref().is_some_and(|value| {
-            let media = value
-                .split(';')
-                .next()
-                .unwrap_or_default()
-                .trim()
-                .to_ascii_lowercase();
-            !(media.starts_with("text/")
-                || media == "application/xml"
-                || media == "application/xhtml+xml"
-                || media.ends_with("+xml")
-                || media == "application/gopher-menu")
-        })
+    }) {
+        return PageDisposition::Download;
+    }
+    let Some(content_type) = fetched.content_type.as_deref() else {
+        return PageDisposition::Document;
+    };
+    let media = content_type
+        .split(';')
+        .next()
+        .unwrap_or_default()
+        .trim()
+        .to_ascii_lowercase();
+    if media.starts_with("text/")
+        || media == "application/xml"
+        || media.ends_with("+xml")
+        || media == "application/gopher-menu"
+    {
+        return PageDisposition::Document;
+    }
+    let reading = turnstone_ontology::inline_reading(Some(&media), &fetched.bytes, base);
+    if reading.is_empty() {
+        PageDisposition::Download
+    } else {
+        PageDisposition::Linked(reading)
+    }
 }
 
 /// Resolve the display/destination name without letting response metadata
@@ -279,6 +294,26 @@ fn create_destination(directory: &Path, name: &str) -> Result<(PathBuf, File), S
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn is_download_response(page: &FetchedPage) -> bool {
+        matches!(page_disposition(page, None), PageDisposition::Download)
+    }
+
+    #[test]
+    fn ontology_notes_are_inline_while_attachments_and_unrelated_json_stay_downloads() {
+        let json = r#"{"@context":"http://www.w3.org/ns/anno.jsonld","id":"urn:test:note","type":"Annotation",
+            "target":{"source":"https://example.test/take","selector":{"type":"FragmentSelector","conformsTo":"http://www.w3.org/TR/media-frags/","value":"t=1.250,4.500"}}}"#;
+        let mut page = FetchedPage::text(Some("application/ld+json".into()), json);
+        assert!(
+            matches!(page_disposition(&page, None), PageDisposition::Linked(ref reading) if reading.passages.len() == 1)
+        );
+        page.content_disposition = Some("attachment; filename=notes.json".into());
+        assert!(is_download_response(&page));
+        assert!(is_download_response(&FetchedPage::text(
+            Some("application/json".into()),
+            "{}"
+        )));
+    }
 
     #[test]
     fn attachment_and_unrenderable_media_download_but_text_stays_a_document() {

@@ -1,0 +1,18 @@
+[package]
+name = "turnstone-ontology"
+version = "0.1.0"
+edition = "2024"
+license = "MPL-2.0"
+rust-version = "1.97.1"
+description = "Turnstone's default semantic lens and timed annotation reader"
+
+[dependencies]
+mere-ontology = { git = "https://github.com/merely-made/mere.git", branch = "main" }
+mere = { git = "https://github.com/merely-made/mere.git", branch = "main", default-features = false }
+oxrdf = "0.3"
+url = "2"
+
+[dev-dependencies]
+redshank-model = { git = "https://github.com/merely-made/woodshed.git", branch = "main" }
+serde_json = "1"
+tempfile = "3"

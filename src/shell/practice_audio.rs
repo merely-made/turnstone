@@ -3,7 +3,9 @@
 
 //! Phrase marking and Woodshed transport for recordings opened by the native host.
 
+mod clip;
 mod compressed;
+mod selection;
 mod connection;
 #[cfg(any(all(windows, feature = "scry"), test))]
 pub(crate) mod page_capture;
@@ -42,6 +44,8 @@ use netrender::Scene;
 use crate::ui::{PaneScroll, RetainedLayout};
 use connection::{Command, Connection};
 use session::{PracticeSession, Runner};
+
+const MAX_PHRASE_PCM_BYTES: u64 = 16 * 1024 * 1024 - 128;
 
 pub(crate) const ENGINE_ID: &str = "turnstone.practice-wav";
 
@@ -116,6 +120,7 @@ impl SessionEngine<Scene> for PracticeAudioEngine {
             device: None,
             preparing: None,
             prepared: None,
+            selections: selection::SelectionState::default(),
             seek: TextInput::new("0"),
             start: TextInput::default(),
             end: TextInput::default(),
@@ -159,6 +164,7 @@ struct State {
     device: Option<preview::Device>,
     preparing: Option<Preparing>,
     prepared: Option<Arc<tempfile::TempPath>>,
+    selections: selection::SelectionState,
     seek: TextInput,
     start: TextInput,
     end: TextInput,
@@ -322,6 +328,14 @@ impl State {
     }
 
     fn send(&mut self) -> Result<(), String> {
+        let request = self.recording_import()?;
+        self.device = None;
+        self.preparing = None;
+        self.playing = false;
+        self.remote_command(Command::Send(request))
+    }
+
+    fn recording_import(&self) -> Result<clip::RecordingImport, String> {
         if compressed::is_compressed(&self.path) && self.prepared.is_none() {
             return Err(if self.preparing.is_some() {
                 "Wait for the audio preview to finish preparing.".to_owned()
@@ -334,9 +348,6 @@ impl State {
         if end_ms <= start_ms {
             return Err("The out point must be later than the in point.".into());
         }
-        self.device = None;
-        self.preparing = None;
-        self.playing = false;
         let argument = crate::woodshed_client::ImportWav {
             wav: crate::woodshed_client::LocalWavSelection::from_native_recording(&self.path)
                 .map_err(|error| error.to_string())?,
@@ -345,8 +356,10 @@ impl State {
             end_ms,
             note: self.note.text().trim().to_owned(),
         };
-        self.remote_command(Command::Send {
+        let selected = self.selections.handoff(start_ms, end_ms)?;
+        Ok(clip::RecordingImport {
             request: argument,
+            selected,
             preview: self
                 .prepared
                 .clone()
@@ -391,6 +404,9 @@ impl State {
 
     fn tick(&mut self) {
         self.poll_preparation();
+        if let Some(message) = self.selections.poll() {
+            self.status = message;
+        }
         if let Err(error) = self.update_audio() {
             self.device = None;
             self.playing = false;

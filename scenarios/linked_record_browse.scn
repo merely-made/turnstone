@@ -1,0 +1,29 @@
+# An unmodified Cleromancy JSON-LD reading, with its tarot subject selected locally.
+settle 30
+key escape
+open ${TURNSTONE_RECORD_EXPORT_URL}
+wait
+act Open Gloss pane
+settle 15
+assert pane gloss
+click-row Browse by type
+settle 8
+click-row Major arcana card (1)
+settle 8
+click-row Strength · Major arcana card · 2 links
+settle 8
+assert node role:button Incoming · Drawn card
+assert node role:button Outgoing · In deck
+capture card-links
+click-row Incoming · Drawn card
+settle 8
+assert node role:button Outgoing · Drawn card
+capture reading-links
+click-row Show evidence
+settle 8
+scroll 790 500 -600
+settle 8
+assert node role:button Hide evidence
+record-uxtree reading-claims
+capture reading-evidence
+assert focused strength.jsonld

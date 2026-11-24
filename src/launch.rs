@@ -28,6 +28,7 @@ use crate::graph_coop::{guest, worker};
 enum Launch {
     Address(Option<String>),
     Contact(PathBuf),
+    Annotation(PathBuf, String),
     Invitation(guest::Visit),
 }
 
@@ -37,6 +38,17 @@ impl Launch {
             return Ok(Self::Address(None));
         };
         match first.to_str() {
+            Some("--open-annotation") => {
+                let file = arguments.next().filter(|p| !p.is_empty());
+                let note = arguments
+                    .next()
+                    .and_then(|arg| arg.into_string().ok())
+                    .filter(|id| !id.is_empty());
+                match (file, note, arguments.next()) {
+                    (Some(path), Some(note), None) => Ok(Self::Annotation(path.into(), note)),
+                    _ => Err("usage: turnstone --open-annotation FILE NOTE_IRI"),
+                }
+            },
             Some("--contact") => {
                 let path = arguments.next().filter(|path| !path.is_empty());
                 match (path, arguments.next()) {
@@ -69,6 +81,18 @@ impl Launch {
 fn launch_command_line() -> i32 {
     match Launch::parse(std::env::args_os().skip(1)) {
         Ok(Launch::Address(address)) => start_app(address, None),
+        Ok(Launch::Annotation(path, note)) => {
+            let target = turnstone_ontology::selected_profile()
+                .map_err(str::to_owned)
+                .and_then(|profile| turnstone_ontology::open_annotation(profile, &path, &note));
+            match target {
+                Ok(address) => start_app(Some(address.into()), None),
+                Err(error) => {
+                    eprintln!("turnstone: {error}");
+                    1
+                },
+            }
+        },
         Ok(Launch::Invitation(visit)) => start_app(None, Some(visit)),
         Ok(Launch::Contact(path)) => match worker::export_contact(&path) {
             Ok(()) => 0,
@@ -108,6 +132,10 @@ fn start_app(address: Option<String>, visit: Option<guest::Visit>) -> i32 {
         .with(reactive_layer)
         .with(fmt_layer)
         .init();
+
+    if let Err(error) = turnstone_ontology::selected_profile() {
+        tracing::warn!(%error, "Turnstone ontology lens unavailable");
+    }
 
     // Which graph actually shows (restored session / fresh-from-address /
     // sample) is decided and logged inside `App::boot`, after the restore
@@ -257,6 +285,15 @@ mod tests {
             panic!("expected a contact export");
         };
         assert_eq!(path, PathBuf::from("public contact.json"));
+    }
+
+    #[test]
+    fn ontology_file_open_requires_a_note_identity() {
+        assert!(
+            matches!(parse(&["--open-annotation", "notes.json", "urn:note"]),
+            Ok(Launch::Annotation(path, note)) if path == PathBuf::from("notes.json") && note == "urn:note")
+        );
+        assert!(parse(&["--open-annotation", "notes.json"]).is_err());
     }
 
     #[test]

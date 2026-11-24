@@ -22,7 +22,7 @@ pub(super) const SHEET: &str = "
 
 pub(super) type PracticeView = Box<dyn AnyView<State, (), GenetCtx, GenetElement>>;
 
-fn button(label: &'static str, operation: fn(&mut State) -> Result<(), String>) -> PracticeView {
+pub(super) fn button(label: &'static str, operation: fn(&mut State) -> Result<(), String>) -> PracticeView {
     Box::new(clickable(
         el::<_, State, ()>("button", text(label)).attr("class", "practice-button"),
         move |state: &mut State, _: PointerClick| {
@@ -48,11 +48,11 @@ fn field(
     )
 }
 
-fn row(children: Vec<PracticeView>) -> PracticeView {
+pub(super) fn row(children: Vec<PracticeView>) -> PracticeView {
     Box::new(el::<_, State, ()>("div", children).attr("class", "practice-row"))
 }
 
-fn label(message: String) -> PracticeView {
+pub(super) fn label(message: String) -> PracticeView {
     Box::new(el::<_, State, ()>("span", message))
 }
 
@@ -107,6 +107,7 @@ pub(super) fn render(state: &State) -> PracticeView {
         )]),
         row(vec![button("Practice in Woodshed", State::send)]),
     ];
+    rows.extend(super::selection::controls(state));
     if state.attached {
         let wav = state
             .remote

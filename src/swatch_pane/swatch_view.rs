@@ -53,7 +53,7 @@ pub(super) fn swatch_view(state: &SwatchState) -> SwatchView {
     // gloss-composite: the minimap plus, say, the recycle bin's Removed rows).
     if !state.sections.is_empty() {
         let mut section_kids: Vec<SwatchView> = Vec::new();
-        for (_id, title, rows) in &state.sections {
+        for (id, title, rows) in &state.sections {
             section_kids.push(Box::new(
                 cambium::el::<_, SwatchState, ()>("div", title.to_string()).attr(
                     "style",
@@ -73,13 +73,21 @@ pub(super) fn swatch_view(state: &SwatchState) -> SwatchView {
                     // rule): the click handler pushes the intent the provider
                     // declared, so a new provider needs no handler code here.
                     // `section-row` is the probe class a receipt addresses.
-                    let row_view = cambium::el::<_, SwatchState, ()>("div", row.text.clone())
+                    let (tag, style) = match row.activate {
+                        Some(crate::sections::SectionActivate::BrowseLinks(_)) => (
+                            "button",
+                            "display: block; text-align: left; overflow-wrap: anywhere; padding: 2px 12px; font-size: 12px;",
+                        ),
+                        _ if *id == "linked-records" => (
+                            "div",
+                            "overflow-wrap: anywhere; color: #c9d1d9; padding: 2px 12px; font-size: 12px;",
+                        ),
+                        _ => ("div", "color: #c9d1d9; padding: 2px 12px; font-size: 12px;"),
+                    };
+                    let row_view = cambium::el::<_, SwatchState, ()>(tag, row.text.clone())
                         .attr("class", "section-row")
                         .attr("data-diagnostic-id", row.id.clone().unwrap_or_default())
-                        .attr(
-                            "style",
-                            "color: #c9d1d9; padding: 2px 12px; font-size: 12px;",
-                        );
+                        .attr("style", style);
                     let Some(activate) = row.activate.clone() else {
                         // Inspection and other read-only sections install no
                         // activation handler. Actions remain provider data.
@@ -90,6 +98,9 @@ pub(super) fn swatch_view(state: &SwatchState) -> SwatchView {
                         row_view,
                         move |state: &mut SwatchState, _click: cambium::PointerClick| {
                             match &activate {
+                                crate::sections::SectionActivate::BrowseLinks(page) => {
+                                    state.link_page = Some(page.clone());
+                                },
                                 crate::sections::SectionActivate::Open(url) => {
                                     state.pending.push(SwatchIntent::Activate(
                                         SwatchActivate::Open(url.clone()),

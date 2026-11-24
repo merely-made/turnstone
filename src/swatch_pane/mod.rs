@@ -15,15 +15,17 @@
 //! preset: the swatch is the preset, the sections are per-pane config.
 
 mod inspection;
+mod linked;
+pub(crate) use linked::LinkPage;
 mod neighborhood;
 pub(crate) use neighborhood::{NeighborhoodRead, NeighborhoodReply};
 mod presets;
 pub(crate) mod validation;
 use inspection::project_inspection;
-use presets::state_color;
-pub use presets::{GLOSS_MINIMAP, OVERMAP_LINEAGE, ProjectionPreset};
 pub(crate) use neighborhood::{Passage, RESOURCE_NEIGHBORHOOD};
 pub(crate) use neighborhood::{document_base, interpret_blocks};
+use presets::state_color;
+pub use presets::{GLOSS_MINIMAP, OVERMAP_LINEAGE, ProjectionPreset};
 
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -33,10 +35,10 @@ use cambium::{
     AnyView, DomHandle, GenetAppRunner, GenetCtx, GenetElement, GraphCanvasEdge, GraphCanvasEvent,
     GraphCanvasNode, GraphCanvasSubgraph, GraphCanvasSwatch, graph_canvas,
 };
-use genet_scripted_dom::{NodeId, ScriptedDom};
-use layout_dom_api::LayoutDom;
 use cartography::canvas::NodeState;
 use cartography::canvas::palette;
+use genet_scripted_dom::{NodeId, ScriptedDom};
+use layout_dom_api::LayoutDom;
 use sprigging::{ColorF, LeafRegistry, RenderedLeaves};
 use uuid::Uuid;
 
@@ -140,6 +142,7 @@ struct SwatchState {
     /// sections, the top fraction when there are. The sections stack below it.
     swatch_h: f32,
     neighborhood: Option<neighborhood::Selection>,
+    link_page: Option<LinkPage>,
 }
 
 type SwatchView = Box<dyn AnyView<SwatchState, (), GenetCtx, GenetElement>>;
@@ -168,6 +171,7 @@ pub struct SwatchPane {
     // Drop the runner and its widget resources before final mount custody.
     mount: Option<cambium::RetainedMount>,
     neighborhood_sources: neighborhood::Sources,
+    linked_rows: linked::CachedRows,
 }
 
 #[cfg(test)]

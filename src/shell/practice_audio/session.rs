@@ -222,6 +222,7 @@ impl DocumentSession<Scene> for PracticeSession {
         if state.playing
             || state.attached
             || state.preparing.is_some()
+            || state.selections.busy()
             || state.connection.as_ref().is_some_and(Connection::busy)
         {
             SessionPendingWork::timer(Duration::from_millis(140))

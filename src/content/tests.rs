@@ -176,3 +176,45 @@ fn streamed_documents_accumulate_exact_bytes_before_decoding() {
         })
     ));
 }
+
+#[test]
+fn ontology_passages_follow_the_current_fetched_document() {
+    fn notes<'a>(
+        content: &'a ContentStates,
+        node: Uuid,
+        url: &'a str,
+    ) -> &'a [turnstone_ontology::Passage] {
+        content
+            .linked_reading(node, url)
+            .map_or(&[], |(_, _, r)| &r.passages)
+    }
+
+    let mut states = ContentStates::default();
+    let node = Uuid::new_v4();
+    let owner = "https://example.test/notes";
+    let body = r#"{
+      "@context":"http://www.w3.org/ns/anno.jsonld",
+      "id":"urn:example:annotation", "type":"Annotation",
+      "target":{"source":"https://example.test/recording.wav",
+                "selector":{"type":"FragmentSelector","conformsTo":"http://www.w3.org/TR/media-frags/","value":"t=1.250,4.500"}}
+    }"#;
+    states.note_fetched(
+        node,
+        owner.into(),
+        FetchedDocument {
+            content_type: Some("application/ld+json; charset=utf-8".into()),
+            body: body.into(),
+            bytes: body.as_bytes().into(),
+            effective_url: Some(owner.into()),
+            acquired_at_ms: 1,
+        },
+        body.len(),
+    );
+    assert_eq!(
+        notes(&states, node, owner)[0].address.as_str(),
+        "https://example.test/recording.wav#t=1.250,4.500"
+    );
+    assert!(notes(&states, node, "https://example.test/elsewhere").is_empty());
+    states.forget_fetched(node);
+    assert!(notes(&states, node, owner).is_empty());
+}

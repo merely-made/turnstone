@@ -244,12 +244,24 @@ impl ContentStates {
         document: FetchedDocument,
         received_bytes: usize,
     ) {
+        self.note_fetched_with_reading(node, url, document, received_bytes, None);
+    }
+
+    pub(crate) fn note_fetched_with_reading(
+        &mut self,
+        node: Uuid,
+        url: String,
+        document: FetchedDocument,
+        received_bytes: usize,
+        reading: Option<turnstone_ontology::Reading>,
+    ) {
         self.source_admissions.insert(
             node,
-            (
-                Uuid::new_v4(),
-                crate::source_capture::SourceIdentity::of(&document),
-            ),
+            AdmittedResponse {
+                token: Uuid::new_v4(),
+                identity: crate::source_capture::SourceIdentity::of(&document),
+                reading: reading.map(std::sync::OnceLock::from).unwrap_or_default(),
+            },
         );
         self.loads
             .entry(node)
@@ -341,7 +353,31 @@ impl ContentStates {
         self.source_capture_candidate(node, url)?;
         self.source_admissions
             .get(&node)
-            .map(|(token, source)| (*token, source))
+            .map(|response| (response.token, &response.identity))
+    }
+
+    /// Source-scoped, cached projections. The admission token changes even on same-URL reload.
+    pub(crate) fn linked_reading<'a>(
+        &'a self,
+        node: Uuid,
+        url: &'a str,
+    ) -> Option<(Uuid, &'a str, &'a turnstone_ontology::Reading)> {
+        if !matches!(self.fetch_phase(node), Some(PageFetchPhase::Settled { .. }))
+            || self.fetch_in_progress(node)
+        {
+            return None;
+        }
+        let document = self.fetched(node, url)?;
+        let response = self.source_admissions.get(&node)?;
+        let source = document.effective_url.as_deref().unwrap_or(url);
+        let reading = response.reading.get_or_init(|| {
+            turnstone_ontology::inline_reading(
+                document.content_type.as_deref(),
+                &document.bytes,
+                Some(source),
+            )
+        });
+        Some((response.token, source, reading))
     }
 
     pub fn forget_fetched(&mut self, node: Uuid) {

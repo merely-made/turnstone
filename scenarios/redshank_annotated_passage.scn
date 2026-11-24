@@ -1,0 +1,13 @@
+# Serve the Redshank model's selected_export --annotation-page example as application/ld+json.
+# Use a fresh local profile and the default Turnstone lens.
+settle 30
+key escape
+open ${TURNSTONE_ANNOTATION_EXPORT_URL}
+wait
+act Open Gloss pane
+settle 20
+assert pane gloss
+capture note-action
+click-row Open passage · 1.250 to 4.500 s
+settle 20
+assert focused recording.wav#t=1.250,4.500
