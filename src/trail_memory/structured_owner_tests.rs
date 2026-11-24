@@ -76,6 +76,7 @@ fn model_free_owner_enumeration_deduplicates_projection_and_refuses_ambiguous_no
             body: html.into(),
             content_type: Some("text/html".into()),
             effective_url: Some("https://fixture.test/ferry".into()),
+            http_response: None,
             acquired_at_ms: 1000,
         },
     )

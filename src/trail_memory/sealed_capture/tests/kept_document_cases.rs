@@ -12,6 +12,7 @@ fn kept_document_reopens_raw_and_decoded_html_after_redirect() {
         body: "<p>Café</p><script type='application/ld+json'>{}</script>".into(),
         effective_url: Some("https://example.test/destination".into()),
         content_type: Some("text/html; charset=windows-1252".into()),
+        http_response: None,
         acquired_at_ms: 1,
     };
     let request = CaptureRequest {

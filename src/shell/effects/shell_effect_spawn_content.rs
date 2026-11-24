@@ -191,7 +191,7 @@ impl Shell {
                         },
                     }
                 };
-                let fetched = self.app.content.fetched(node, &url).cloned();
+                let fetched = self.app.content.fetched(node, &url);
                 // The saved-source admission above binds this private view to the current graph.
                 let replay = saved_target
                     .as_ref()
@@ -203,7 +203,7 @@ impl Shell {
                     .as_ref()
                     .map(|edition| edition.assets.clone())
                     .or_else(|| {
-                        let document = fetched.as_ref()?;
+                        let document = fetched?;
                         self.app
                             .content
                             .peer_assets
@@ -250,9 +250,7 @@ impl Shell {
                     view: None,
                     node: None,
                     address: url.clone(),
-                    content_type: fetched
-                        .as_ref()
-                        .and_then(|document| document.content_type.clone()),
+                    content_type: fetched.and_then(|document| document.content_type.clone()),
                     // The settings row: a sidecar viewer override pins the
                     // route, so a respawn lands on the chosen lane.
                     pinned_engine: pinned,
@@ -306,6 +304,7 @@ impl Shell {
                 // the toggle arrived before that body, leave the app in
                 // Requested and let PageFetched re-issue this spawn. The
                 // engine must not perform a second top-level request.
+                let fetched = self.app.content.fetched_for_spawn(node, &url).cloned();
                 if crate::browse::is_fetchable(&url) && fetched.is_none() {
                     // Restoring an open peer page restores its current-version intent.
                     // Offline, the kept edition can be opened separately from the trail.

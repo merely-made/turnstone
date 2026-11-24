@@ -40,6 +40,7 @@ fn document() -> crate::content::FetchedDocument {
         body: HTML.into(),
         content_type: Some("text/html; charset=utf-8".into()),
         effective_url: Some(URL_A.into()),
+        http_response: None,
         acquired_at_ms: 1_700_000_000_001,
     }
 }
@@ -514,6 +515,7 @@ fn terminal_without_current_response_provenance_cannot_borrow_a_previous_source(
         url: URL_A.into(),
         result: Ok(crate::action::FetchedPage {
             content_type: Some("text/html".into()),
+            http_response: None,
             content_disposition: None,
             bytes: b"new body without observed final URL".to_vec(),
             body: "new body without observed final URL".into(),

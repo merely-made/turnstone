@@ -41,6 +41,7 @@ pub fn update_from_fetch(update: FetchUpdate, pending: &mut PendingFetches) -> O
                         content_disposition: fetched.content_disposition,
                         bytes: fetched.bytes,
                         body: fetched.body,
+                        http_response: fetched.http_response,
                     };
                     Some(match pending_page.kind {
                         PendingPageKind::Page => Update::PageFetched {
@@ -202,6 +203,7 @@ pub fn update_from_fetch(update: FetchUpdate, pending: &mut PendingFetches) -> O
                             content_disposition: fetched.content_disposition,
                             bytes: fetched.bytes,
                             body: fetched.body,
+                            http_response: fetched.http_response,
                         })
                     },
                     fetch::SubmissionAnswer::Redirect(target) => {

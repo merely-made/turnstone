@@ -11,6 +11,7 @@ fn partial_receipt_recovers_original_non_utf8_html_decoding_offline() {
         body: "<html><main><p>naïve kestrel</p></main></html>".into(),
         content_type: Some("text/html; charset=windows-1252".into()),
         effective_url: Some("https://capture.test/original-decoder".into()),
+        http_response: None,
         acquired_at_ms: 1_700_000_000_003,
     };
     assert!(std::str::from_utf8(&document.bytes).is_err());

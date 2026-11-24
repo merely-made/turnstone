@@ -121,6 +121,7 @@ fn recover_document(
         body,
         effective_url: source.effective_url.clone(),
         content_type: source.content_type.clone(),
+        http_response: None,
         acquired_at_ms: source.acquired_at_ms,
     };
     if SourceIdentity::of(&document) != *source {

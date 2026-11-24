@@ -40,7 +40,7 @@ impl Shell {
         let fetched = self
             .app
             .content
-            .fetched(node, &url)
+            .fetched_for_spawn(node, &url)
             .cloned()
             .ok_or("the response is no longer held")?;
         let request = inker::EngineRouteRequest {

@@ -132,6 +132,7 @@ fn keep_page(
         body: html.into(),
         effective_url: Some(ORIGIN.into()),
         content_type: Some("text/html; charset=utf-8".into()),
+        http_response: None,
         acquired_at_ms: 1,
     };
     let capture = CaptureRequest {

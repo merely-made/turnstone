@@ -40,7 +40,7 @@ pub enum Update {
         target: crate::saved_sources::Target,
         result: Result<crate::saved_sources::Content, crate::research_storage::SourceReadError>,
     },
-    /// Exact Gemini response bytes arrived before the terminal fetch answer.
+    /// Exact response bytes arrived before the terminal fetch answer.
     PageStreamed {
         request: fetch::FetchRequestId,
         node: uuid::Uuid,

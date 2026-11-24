@@ -308,6 +308,14 @@ impl ContentStates {
         self.loads.get(&node).and_then(|load| load.fetched(url))
     }
 
+    /// HTTP sessions need the terminal response for policy before opening a body.
+    pub(crate) fn fetched_for_spawn(&self, node: Uuid, url: &str) -> Option<&FetchedDocument> {
+        // A stopped load can retain a prefix, so use the terminal admission.
+        self.fetched(node, url).filter(|_| {
+            !crate::browse::is_http_address(url) || self.source_admissions.contains_key(&node)
+        })
+    }
+
     pub(crate) fn source_capture_members(&self) -> impl Iterator<Item = Uuid> + '_ {
         self.source_admissions.keys().copied()
     }

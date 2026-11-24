@@ -319,12 +319,14 @@ mod tests {
     fn attachment_and_unrenderable_media_download_but_text_stays_a_document() {
         assert!(is_download_response(&FetchedPage {
             content_type: Some("text/plain".into()),
+            http_response: None,
             content_disposition: Some("attachment; filename=notes.txt".into()),
             bytes: b"notes".to_vec(),
             body: "notes".into(),
         }));
         assert!(is_download_response(&FetchedPage {
             content_type: Some("application/octet-stream".into()),
+            http_response: None,
             content_disposition: None,
             bytes: vec![0, 1],
             body: "\0\u{1}".into(),

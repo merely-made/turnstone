@@ -54,6 +54,7 @@ fn model_free_app_authors_saves_reopens_and_queries_a_sourced_property() {
             body: html.into(),
             effective_url: Some("https://fixture.test/ferry".into()),
             content_type: Some("text/html".into()),
+            http_response: None,
             acquired_at_ms: 1000,
         },
     )

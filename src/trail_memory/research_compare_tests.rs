@@ -26,6 +26,7 @@ fn model_free_comparison_retained_capture_series_and_withdrawal() {
                 body: text.into(),
                 content_type: Some("text/html".into()),
                 effective_url: Some("https://absent.test/article".into()),
+                http_response: None,
                 acquired_at_ms: time,
             },
         )

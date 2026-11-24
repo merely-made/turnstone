@@ -24,6 +24,7 @@ fn model_free_mixed_producers_scope_coverage_and_stale_revision() {
             body: html.into(),
             content_type: Some("text/html".into()),
             effective_url: Some("https://gone.test/capture".into()),
+            http_response: None,
             acquired_at_ms: 1_000,
         },
     )

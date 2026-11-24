@@ -55,6 +55,7 @@ pub(in super::super) fn read_kept_document(
         body,
         effective_url: identity.effective_url.clone(),
         content_type: identity.content_type.clone(),
+        http_response: None,
         acquired_at_ms: identity.acquired_at_ms,
     };
     if SourceIdentity::of(&document) != *identity {

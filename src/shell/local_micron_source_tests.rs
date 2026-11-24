@@ -427,6 +427,7 @@ fn retained_clip_spawn_uses_held_document_through_standard_pelt_controller() {
         body: fetched_body.into(),
         content_type: Some("text/html".into()),
         effective_url: Some(address.clone()),
+        http_response: None,
         acquired_at_ms: 1,
     };
     let decision = super::super::standard_route_policy().route(&inker::EngineRouteRequest {

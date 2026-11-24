@@ -192,6 +192,7 @@ pub async fn fetch_page_on_interface_with_policy(
     let bytes = result?;
     Ok(crate::action::FetchedPage {
         content_type: None,
+        http_response: None,
         content_disposition: None,
         body: String::from_utf8_lossy(&bytes).into_owned(),
         bytes,
@@ -319,6 +320,7 @@ pub async fn submit_form_on_interface_with_policy(
     }
     Ok(crate::action::FetchedPage {
         content_type: None,
+        http_response: None,
         content_disposition: None,
         body: String::from_utf8_lossy(&bytes).into_owned(),
         bytes,

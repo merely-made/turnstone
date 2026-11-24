@@ -144,6 +144,7 @@ fn research_owner_loads_only_live_captures_and_reopens_exact_versions_without_pa
             body,
             content_type: Some("text/html".into()),
             effective_url: Some("https://gone.test/A".into()),
+            http_response: None,
             acquired_at_ms: 123456,
         }
     };

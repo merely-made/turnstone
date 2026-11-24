@@ -58,6 +58,7 @@ fn scroll_response_mime_reaches_initial_controller_and_live_replacement() {
             url: address.into(),
             result: Ok(fetch::Fetched {
                 content_type: Some(mime.into()),
+                http_response: None,
                 content_disposition: None,
                 bytes: SCROLL.as_bytes().to_vec(),
                 body: SCROLL.into(),
@@ -116,6 +117,7 @@ fn scroll_response_mime_reaches_initial_controller_and_live_replacement() {
             body: "##### Replacement\r\n=> /next Continued [Citation]\r\n".into(),
             content_type: Some(mime.into()),
             effective_url: Some(address.into()),
+            http_response: None,
             acquired_at_ms: 1,
         };
         // This is the production UpdateContent boundary, not a parallel parser.

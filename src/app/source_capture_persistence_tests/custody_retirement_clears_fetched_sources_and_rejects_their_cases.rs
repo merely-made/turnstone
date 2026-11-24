@@ -40,6 +40,7 @@ fn custody_retirement_clears_fetched_sources_and_rejects_their_late_answer() {
             content_type: Some("text/html".into()),
             body: "private capture canary".into(),
             effective_url: Some("https://private.example/source".into()),
+            http_response: None,
             acquired_at_ms: 7,
         },
         22,
@@ -319,6 +320,7 @@ fn replaced_response_at_same_address_cannot_complete_an_earlier_request() {
         body: "<p>first response</p>".into(),
         content_type: Some("text/html".into()),
         effective_url: Some(url.into()),
+        http_response: None,
         acquired_at_ms: 7,
     };
     app.content
@@ -353,6 +355,7 @@ fn disappeared_live_response_is_refused_but_verified_recovered_receipt_can_retry
             body: "<p>retained source</p>".into(),
             content_type: Some("text/html".into()),
             effective_url: Some(url.into()),
+            http_response: None,
             acquired_at_ms: 7,
         },
         7,
@@ -410,6 +413,7 @@ fn receipt_acknowledgement_failure_can_retry_same_saved_attachment_without_live_
             body: "<p>acknowledgement recovery</p>".into(),
             content_type: Some("text/html".into()),
             effective_url: Some(url.into()),
+            http_response: None,
             acquired_at_ms: 17,
         },
         17,

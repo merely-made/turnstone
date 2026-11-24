@@ -6,3 +6,7 @@
 pub(crate) fn is_fetchable(address: &str) -> bool {
     fetch::is_fetchable(address) || crate::nomadnet::parse_address(address).is_some()
 }
+
+pub(crate) fn is_http_address(address: &str) -> bool {
+    url::Url::parse(address).is_ok_and(|url| matches!(url.scheme(), "http" | "https"))
+}

@@ -35,6 +35,7 @@ pub(super) fn prepare_content_controller(
                 .duration_since(std::time::UNIX_EPOCH)
                 .map(|duration| duration.as_millis() as u64)
                 .unwrap_or(0),
+            http_response: None,
         };
         (Some(document.clone()), Some(document))
     } else {
@@ -47,7 +48,9 @@ pub(super) fn prepare_content_controller(
             .with_body(body)
             .with_content_type(document.content_type);
     } else if let Some(document) = fetched {
-        spawn = spawn.with_body(document.body);
+        spawn = spawn
+            .with_body(document.body)
+            .with_http_response(document.http_response);
         if let Some(content_type) = document.content_type {
             spawn = spawn.with_content_type(content_type);
         }

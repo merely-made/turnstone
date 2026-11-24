@@ -37,6 +37,7 @@ fn spawn_active(wake: Wake) -> (ActorHandle<FetchCommand>, Receiver<FetchUpdate>
                             .await
                             .map(|page| fetch::Fetched {
                                 content_type: page.content_type,
+                                http_response: None,
                                 content_disposition: page.content_disposition,
                                 bytes: page.bytes,
                                 body: page.body,

@@ -106,6 +106,7 @@ fn golden() -> (FetchedDocument, CaptureRequest, StoredSourceDocument) {
             body,
             effective_url: doc["effective_url"].as_str().map(str::to_owned),
             content_type: doc["content_type"].as_str().map(str::to_owned),
+            http_response: None,
             acquired_at_ms: doc["acquired_at_ms"].as_u64().unwrap(),
         },
         serde_json::from_value(meta["request"].clone()).unwrap(),

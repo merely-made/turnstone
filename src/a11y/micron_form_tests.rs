@@ -18,6 +18,7 @@ fn micron_host_editor_exposes_current_field_and_prompt_without_secrets() {
             content_type: None,
             body: source.into(),
             effective_url: Some(address.into()),
+            http_response: None,
             acquired_at_ms: 1,
         },
         source.len(),

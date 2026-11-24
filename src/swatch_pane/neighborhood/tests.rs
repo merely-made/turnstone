@@ -19,6 +19,7 @@ fn kept_page_replay_restores_repeated_link_evidence_only_for_its_request() {
         body: html.into(),
         effective_url: Some("https://example.test/effective/source".into()),
         content_type: Some("text/html".into()),
+        http_response: None,
         acquired_at_ms: 1,
     };
     let source = KeptSource {
@@ -185,6 +186,7 @@ fn moving_from_a_passage_to_a_resource_exposes_its_other_sources() {
         body: html.into(),
         content_type: Some("text/html".into()),
         effective_url: Some(address.into()),
+        http_response: None,
         acquired_at_ms: 1,
     };
     let page = extract(&document, "capture");

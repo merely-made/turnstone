@@ -66,6 +66,8 @@ pub struct FetchedPage {
     pub bytes: Vec<u8>,
     /// The decoded body text.
     pub body: String,
+    /// The final HTTP address and document policy, when supplied by the transport.
+    pub http_response: Option<document_session_api::HttpDocumentResponse>,
 }
 
 /// Host-written facts for one completed download.

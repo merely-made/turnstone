@@ -439,6 +439,7 @@ fn micron_form_editor_is_explicit_redacts_masked_input_and_emits_one_request() {
             content_type: None,
             body: source.into(),
             effective_url: Some(address.into()),
+            http_response: None,
             acquired_at_ms: 1,
         },
         source.len(),

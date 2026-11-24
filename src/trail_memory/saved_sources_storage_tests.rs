@@ -67,6 +67,7 @@ fn model_free_evidence_open_shares_one_operation_budget() {
             body: html.into(),
             content_type: Some("text/html".into()),
             effective_url: Some("https://example.test/captured".into()),
+            http_response: None,
             acquired_at_ms: 1,
         },
     )

@@ -305,6 +305,7 @@ fn binary_page_response_becomes_durable_download_custody() {
         url: url.to_string(),
         result: Ok(crate::action::FetchedPage {
             content_type: Some("application/octet-stream".into()),
+            http_response: None,
             content_disposition: Some("attachment; filename=archive.bin".into()),
             bytes: bytes.clone(),
             body: String::from_utf8_lossy(&bytes).into_owned(),
@@ -568,6 +569,7 @@ fn model_free_source_target_wait_tracks_exact_current_admission() {
             body: body.into(),
             content_type: Some("text/html".into()),
             effective_url: Some(url.into()),
+            http_response: None,
             acquired_at_ms: 1,
         },
         body.len(),

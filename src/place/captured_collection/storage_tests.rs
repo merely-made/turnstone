@@ -16,6 +16,7 @@ fn model_free_capture_library_publishes_unavailable_after_bounded_refresh_refusa
             body: html.into(),
             content_type: Some("text/html".into()),
             effective_url: Some("https://example.test/library".into()),
+            http_response: None,
             acquired_at_ms: 1,
         },
     )

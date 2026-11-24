@@ -34,6 +34,7 @@ fn source_capture_real_stack_process_worker() {
             body: body.into(),
             content_type: Some("text/html; charset=utf-8".into()),
             effective_url: Some(url.into()),
+            http_response: None,
             acquired_at_ms: 1_700_000_000_123,
         };
         app.content

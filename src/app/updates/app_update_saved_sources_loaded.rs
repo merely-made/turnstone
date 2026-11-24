@@ -80,6 +80,10 @@ impl App {
                     node,
                     state: format!("streaming bytes={received}"),
                 });
+                // HTTP document policy arrives with the terminal response.
+                if browse::is_http_address(&url) {
+                    return Vec::new();
+                }
                 match state {
                     Some(crate::content::NodeContent::Live) => {
                         vec![Effect::UpdateContent { node, url }]
@@ -107,19 +111,22 @@ impl App {
                 if !current {
                     return browse::apply_page(&mut self.graph_runtimes, node, url, result);
                 }
-                // A retained response from a previous request is not
-                // acquisition context for this terminal answer. Only this
-                // request's progress can supply its actual final URL.
+                // Use this request's progress for acquisition context the
+                // terminal response does not supply.
                 let observed = matches!(
                     self.content.fetch_phase(node),
                     Some(crate::content::PageFetchPhase::Streaming { .. })
                 )
                 .then(|| self.content.fetched(node, &url))
                 .flatten();
+                let effective_url = result
+                    .as_ref()
+                    .ok()
+                    .and_then(|fetched| fetched.http_response.as_ref())
+                    .map(|response| response.final_url())
+                    .or_else(|| observed.and_then(|previous| previous.effective_url.as_deref()));
                 let reading = match result.as_ref().ok().map(|fetched| {
-                    let base = observed
-                        .and_then(|prev| prev.effective_url.as_deref())
-                        .unwrap_or(&url);
+                    let base = effective_url.unwrap_or(&url);
                     crate::download::page_disposition(fetched, Some(base))
                 }) {
                     Some(crate::download::PageDisposition::Download) => {
@@ -136,9 +143,14 @@ impl App {
                     self.content.get(node),
                     Some(crate::content::NodeContent::Live)
                 );
+                let respawn_http_document = result
+                    .as_ref()
+                    .is_ok_and(|fetched| fetched.http_response.is_some())
+                    && self
+                        .content
+                        .facts(node)
+                        .is_some_and(|facts| facts.lane == crate::content::ContentLane::Document);
                 if let Ok(fetched) = &result {
-                    let effective_url =
-                        observed.and_then(|previous| previous.effective_url.clone());
                     let content_type = fetched
                         .content_type
                         .clone()
@@ -159,8 +171,9 @@ impl App {
                             bytes: fetched.bytes.clone(),
                             content_type,
                             body: fetched.body.clone(),
-                            effective_url,
+                            effective_url: effective_url.map(str::to_owned),
                             acquired_at_ms,
+                            http_response: fetched.http_response.clone(),
                         },
                         fetched.bytes.len(),
                         reading,
@@ -187,7 +200,9 @@ impl App {
                                 effects.push(Effect::CloseContent { node });
                             }
                         },
-                        None if live_content => effects.push(Effect::UpdateContent { node, url }),
+                        None if live_content && !respawn_http_document => {
+                            effects.push(Effect::UpdateContent { node, url });
+                        },
                         None => effects.push(Effect::SpawnContent { node, url }),
                     }
                 }

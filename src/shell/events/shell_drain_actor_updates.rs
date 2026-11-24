@@ -374,6 +374,7 @@ mod source_wait_tests {
             url: url.into(),
             result: Ok(fetch::Fetched {
                 content_type: Some("text/html".into()),
+                http_response: None,
                 content_disposition: None,
                 bytes: body.as_bytes().to_vec(),
                 body: body.into(),

@@ -64,6 +64,10 @@ mod smolweb_receiving_tests;
 #[path = "effects/content_spawn_dispatch_tests.rs"]
 mod content_spawn_dispatch_tests;
 
+#[cfg(test)]
+#[path = "effects/http_response_tests.rs"]
+mod http_response_tests;
+
 #[cfg(all(test, windows))]
 #[path = "effects/browser_profile_path_tests.rs"]
 mod browser_profile_path_tests;

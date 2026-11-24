@@ -303,6 +303,7 @@ fn source_capture_refuses_incomplete_acquisition_context() {
         content_type: Some("text/html".into()),
         body: "<p>kestrel</p>".into(),
         effective_url: Some("https://example.test/kestrel".into()),
+        http_response: None,
         acquired_at_ms: 9,
     };
     let missing_url = crate::content::FetchedDocument {
@@ -334,6 +335,7 @@ fn explicit_source_capture_keeps_exact_bytes_and_reopens_annotation() {
         content_type: Some("text/html; charset=utf-8".into()),
         body: String::from_utf8(exact.to_vec()).unwrap(),
         effective_url: Some("https://final.example/kestrel".into()),
+        http_response: None,
         acquired_at_ms: 1_700_000_000_000,
     };
     let mut store = FjallStore::open(&dir).unwrap();

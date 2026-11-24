@@ -58,6 +58,7 @@ fn begin(app: &mut App, node: uuid::Uuid) -> CaptureRequest {
                 body: body.into(),
                 content_type: Some("text/html".into()),
                 effective_url: Some(url),
+                http_response: None,
                 acquired_at_ms: 1,
             },
             body.len(),

@@ -90,6 +90,7 @@ fn private_capture_reopens_and_keeps_bytes_and_receipt_sealed() {
         body,
         effective_url: Some("https://private.example/secret".into()),
         content_type: Some("text/html".into()),
+        http_response: None,
         acquired_at_ms: 1234,
     };
     let request = CaptureRequest {
@@ -192,6 +193,7 @@ fn actor_drops_private_read_reply_when_custody_epoch_changes_after_unseal() {
         body: body.into(),
         effective_url: Some("https://private.example/late".into()),
         content_type: Some("text/html".into()),
+        http_response: None,
         acquired_at_ms: 1_700_000_123_456,
     };
     let request = CaptureRequest {
@@ -309,6 +311,7 @@ fn recovery_does_not_unseal_after_custody_closes_before_recovery() {
         body: body.into(),
         effective_url: Some("https://private.example/recovery".into()),
         content_type: Some("text/html".into()),
+        http_response: None,
         acquired_at_ms: 1_700_000_123_456,
     };
     let request = CaptureRequest {
@@ -422,6 +425,7 @@ fn model_free_sealed_capture_limits_refuse_before_unseal_and_recovery_publicatio
         body: "<html><main>sealed evidence</main></html>".into(),
         effective_url: Some("https://example.test/sealed".into()),
         content_type: Some("text/html".into()),
+        http_response: None,
         acquired_at_ms: 1,
     };
     let request = CaptureRequest {

@@ -93,6 +93,7 @@ fn admit(
             url: address.to_owned(),
             result: Ok(fetch::Fetched {
                 content_type: page.content_type,
+                http_response: None,
                 content_disposition: page.content_disposition,
                 bytes: page.bytes,
                 body: page.body,
@@ -376,6 +377,7 @@ async fn native_received_bytes_reach_controller_and_keep_reload_stop_and_empty_r
         let late = browse::update_from_fetch(fetch::FetchUpdate::Page(fetch::FetchOutcome {
             request: stopped.1, url: empty_address.clone(), result: Ok(fetch::Fetched {
                 content_type: None, content_disposition: None, bytes: b"late".to_vec(), body: "late".into(),
+                http_response: None,
             }),
         }), &mut pending);
         assert!(late.is_none(), "Stop removes correlation before a late native answer");

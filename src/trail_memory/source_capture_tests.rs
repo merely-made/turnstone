@@ -14,6 +14,7 @@ fn document(label: &str) -> crate::content::FetchedDocument {
         body,
         content_type: Some("text/html; charset=utf-8".into()),
         effective_url: Some(format!("https://capture.test/{label}")),
+        http_response: None,
         acquired_at_ms: 1_700_000_000_001,
     }
 }
@@ -145,6 +146,7 @@ fn html_bytes(bytes: Vec<u8>, label: &str) -> crate::content::FetchedDocument {
         bytes,
         content_type: Some("text/html; charset=utf-8".into()),
         effective_url: Some(format!("https://capture.test/{label}")),
+        http_response: None,
         acquired_at_ms: 1_700_000_000_007,
     }
 }

@@ -12,6 +12,7 @@ impl FetchedPage {
             content_disposition: None,
             bytes,
             body,
+            http_response: None,
         }
     }
 }

@@ -70,7 +70,7 @@ mod tests;
 
 #[path = "browse/is_fetchable.rs"]
 mod is_fetchable;
-pub(crate) use is_fetchable::is_fetchable;
+pub(crate) use is_fetchable::{is_fetchable, is_http_address};
 #[path = "browse/decode_image_bytes.rs"]
 mod decode_image_bytes;
 pub(crate) use decode_image_bytes::decode_image_bytes;

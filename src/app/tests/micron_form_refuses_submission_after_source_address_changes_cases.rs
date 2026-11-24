@@ -18,6 +18,7 @@ fn micron_form_refuses_submission_after_source_address_changes() {
             content_type: None,
             body: source.into(),
             effective_url: Some(address.into()),
+            http_response: None,
             acquired_at_ms: 1,
         },
         source.len(),
@@ -240,6 +241,7 @@ fn micron_form_navigation_reload_and_close_cancel_and_ignore_late_reply() {
                         bytes: b"late reply".to_vec(),
                         body: "late reply".into(),
                         content_type: None,
+                        http_response: None,
                         content_disposition: None,
                     }
                 )),
@@ -298,6 +300,7 @@ fn micron_form_rejects_refreshed_source_before_send_and_on_reply() {
                 content_type: None,
                 body: "replacement".into(),
                 effective_url: Some(address.into()),
+                http_response: None,
                 acquired_at_ms: 2,
             },
             11,

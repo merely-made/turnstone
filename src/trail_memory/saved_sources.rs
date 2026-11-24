@@ -252,6 +252,7 @@ mod tests {
             body,
             content_type: Some("text/html; charset=utf-8".into()),
             effective_url: Some(format!("https://saved.test/{label}")),
+            http_response: None,
             acquired_at_ms: 1_700_000_123_456,
         }
     }
