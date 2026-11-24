@@ -9,6 +9,7 @@ impl RetainedLayout {
             inline_leaves: HashMap::new(),
             native_sources: HashMap::new(),
             native_paint: None,
+            focus_highlight: None,
             inline_scroll_root: None,
             inline_bar: None,
             root: None,
@@ -128,6 +129,17 @@ impl RetainedLayout {
             self.native_paint = None;
         }
         self.native_sources = sources;
+    }
+
+    pub(crate) fn focus_highlight(&self) -> Option<DomNodeId> {
+        self.focus_highlight
+    }
+
+    pub(crate) fn set_focus_highlight(&mut self, node: Option<DomNodeId>) {
+        if self.focus_highlight != node {
+            self.focus_highlight = node;
+            self.native_paint = None;
+        }
     }
 
     pub(crate) fn native_source_command(

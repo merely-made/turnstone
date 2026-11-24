@@ -149,6 +149,38 @@ fn grid_with_rows() -> RosterGrid {
 }
 
 #[test]
+fn roster_focus_highlight_keeps_layout_current() {
+    use layout_dom_api::LayoutDomMut;
+
+    let mut grid = grid_with_rows();
+    grid.runner.focus_traverse(true);
+    let focused_node = grid.inline_focus().expect("Roster runner has focus");
+    let _ = grid.scene(512, 600, 1.0);
+    assert!(grid.layout.has_current_snapshot(&grid.dom.borrow()));
+
+    // The old highlight dirtied the same layout just by marking this node.
+    let marker = || cambium::attr_qual("data-roster-focus");
+    grid.dom.borrow_mut().set_attribute(focused_node, marker(), "true");
+    assert!(!grid.layout.has_current_snapshot(&grid.dom.borrow()));
+    grid.dom.borrow_mut().remove_attribute(focused_node, marker());
+
+    let baseline = grid.scene(512, 600, 1.0).snapshot_json();
+    assert!(grid.layout.has_current_snapshot(&grid.dom.borrow()));
+
+    grid.show_focus(true);
+    assert!(
+        grid.layout.has_current_snapshot(&grid.dom.borrow()),
+        "showing focus alone invalidated the retained layout"
+    );
+    let focused = grid.scene(512, 600, 1.0).snapshot_json();
+    assert_ne!(baseline, focused, "focus should change paint");
+
+    grid.show_focus(false);
+    assert!(grid.layout.has_current_snapshot(&grid.dom.borrow()));
+    assert_eq!(baseline, grid.scene(512, 600, 1.0).snapshot_json());
+}
+
+#[test]
 fn projection_table_keyboard_sort_and_return_are_published() {
     use accesskit::{Role, SortDirection};
     use cambium::projection_table::{CellContent, ProjectionTable};
@@ -159,14 +191,7 @@ fn projection_table_keyboard_sort_and_return_are_published() {
         assert!(!grid.scene(512, 600, 1.0).ops.is_empty());
         let dom = grid.dom.borrow();
         let focus = grid.inline_focus().expect("Roster runner has focus");
-        assert_eq!(
-            dom.attribute(
-                focus,
-                &Namespace::default(),
-                &LocalName::from("data-roster-focus"),
-            ),
-            Some("true")
-        );
+        assert_eq!(grid.focus_highlight(), Some(focus));
         let (tree, _) = grid
             .layout
             .accessibility_tree(&dom, Some(focus))

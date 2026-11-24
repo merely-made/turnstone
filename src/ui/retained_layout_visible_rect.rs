@@ -213,12 +213,55 @@ impl RetainedLayout {
             self.viewport_scroll,
         );
         plist.splice_host_leaf_slots(|key| self.inline_leaves.get(&key).cloned(), |_| None);
-        plist.splice_text_paint_slots(|node, phase| {
-            (phase == genet_livery::TextPaintPhase::AfterContent)
-                .then(|| self.native_sources.get(&node).cloned())
-                .flatten()
-        });
+        self.splice_text_paint(&scoped, &mut plist);
         composite_resources(DeviceIntSize::new(lw as i32, lh as i32), &plist)
+    }
+
+    fn splice_text_paint(
+        &self,
+        dom: &cambium_rootstock::WindowDom<'_>,
+        list: &mut LiveryPaintList,
+    ) {
+        use genet_livery::TextPaintPhase;
+        use paint_list_api::{
+            BorderDetails, BorderItem, BorderSide, BorderStyle, ColorF, CommonPlacement,
+            LayoutPoint, LayoutRect, LayoutSideOffsets, LayoutSize, NormalBorder,
+        };
+
+        let highlight = self.focus_highlight.and_then(|node| {
+            let fragment = self.snapshot.as_ref()?.fragments.get(node)?;
+            let bounds = LayoutRect::from_origin_and_size(
+                LayoutPoint::new(fragment.x, fragment.y),
+                LayoutSize::new(fragment.width, fragment.height),
+            );
+            let side = BorderSide {
+                color: ColorF::new(0.67, 0.80, 1.0, 1.0),
+                style: BorderStyle::Solid,
+            };
+            let border = PaintCmd::DrawBorder(BorderItem {
+                placement: CommonPlacement::new(bounds),
+                widths: LayoutSideOffsets::new(2.0, 2.0, 2.0, 2.0),
+                details: BorderDetails::Normal(NormalBorder {
+                    left: side,
+                    right: side,
+                    top: side,
+                    bottom: side,
+                    ..NormalBorder::default()
+                }),
+            });
+            Some((dom.opaque_id(node), border))
+        });
+        if highlight.is_none() && self.native_sources.is_empty() {
+            return;
+        }
+        // The node's paint slot already carries its scroll, clipping and stacking.
+        list.splice_text_paint_slots(|node, phase| match phase {
+            TextPaintPhase::BeforeContent => highlight
+                .as_ref()
+                .filter(|(target, _)| *target == node)
+                .map(|(_, border)| vec![border.clone()]),
+            TextPaintPhase::AfterContent => self.native_sources.get(&node).cloned(),
+        });
     }
 
     /// Native producer pixels are staged separately under stable image keys.
@@ -390,6 +433,7 @@ impl RetainedLayout {
             self.viewport_scroll,
             scroll.alpha(),
         );
+        self.splice_text_paint(&scoped, &mut plist);
         composite(viewport, &plist)
     }
 

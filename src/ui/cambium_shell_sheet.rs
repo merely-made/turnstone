@@ -7,9 +7,7 @@ use super::*;
 pub(crate) fn cambium_pane_sheet() -> &'static str {
     static SHEET: std::sync::LazyLock<String> = std::sync::LazyLock::new(|| {
         format!(
-            "{}\n{}\n{CAMBIUM_SHEET}\n\
-             .roster-pane [data-roster-focus] {{ \
-                 color: white; background-color: rgb(51, 70, 108); }}",
+            "{}\n{}\n{CAMBIUM_SHEET}",
             cambium::GRAPH_CANVAS_SWATCH_CSS,
             cambium::projection_table::PROJECTION_TABLE_CSS,
         )

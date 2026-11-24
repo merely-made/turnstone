@@ -295,21 +295,24 @@ impl Shell {
         }
         let finish_started = std::time::Instant::now();
         self.prepare_outer(slot, size);
-        let focused = match self.app.focus {
+        let focused_pane = match self.app.focus {
             crate::surface::FocusTarget::Pane(pane)
                 if plan
                     .iter()
                     .any(|s| s.kind == crate::surface::SurfaceKind::Pane(pane)) =>
             {
-                self.renderers.inline_focus(pane)
+                Some(pane)
             },
             _ => None,
         };
-        self.outer_frames
-            .borrow_mut()
-            .get_mut(&slot)
-            .unwrap()
-            .body_focus = focused;
+        let mut frames = self.outer_frames.borrow_mut();
+        let frame = frames.get_mut(&slot).unwrap();
+        frame.body_focus = focused_pane.and_then(|pane| self.renderers.inline_focus(pane));
+        frame.layout.borrow_mut().set_focus_highlight(
+            focused_pane
+                .and_then(|pane| self.renderers.roster.get(&pane))
+                .and_then(|grid| grid.focus_highlight()),
+        );
         let ms = |span: std::time::Duration| span.as_secs_f64() * 1000.0;
         tracing::debug!(target: "turnstone::shell::render", slot,
             initial_geometry_ms = ms(plan_started - started),

@@ -185,6 +185,7 @@ pub struct RetainedLayout {
     inline_leaves: HashMap<u64, Vec<paint_list_api::PaintCmd>>,
     native_sources: HashMap<u64, Vec<PaintCmd>>,
     native_paint: Option<NativePaintMemo>,
+    focus_highlight: Option<DomNodeId>,
     inline_scroll_root: Option<DomNodeId>,
     inline_bar: Option<DomNodeId>,
     root: Option<DomNodeId>,

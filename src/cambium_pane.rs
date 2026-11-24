@@ -30,7 +30,7 @@ use cambium::{
     TabStrip, data_grid, el, lens, on_click, tab_strip,
 };
 use genet_scripted_dom::ScriptedDom;
-use layout_dom_api::{LayoutDom, LayoutDomMut, LocalName, Namespace, QualName};
+use layout_dom_api::LayoutDom;
 
 use crate::app::App;
 use crate::roster_view::{RosterGraphSource, RosterGridRow, roster_grid_rows_for_pane};
@@ -220,7 +220,6 @@ pub fn tab_label(idx: usize) -> &'static str {
 pub struct RosterGrid {
     dom: DomHandle,
     runner: RosterRunner,
-    painted_focus: Option<genet_scripted_dom::NodeId>,
     scroll: crate::ui::PaneScroll,
     /// Kept across frames. Rebuilding a layout per paint re-cascaded and
     /// re-shaped the whole pane to draw an unchanged screen; see
@@ -261,7 +260,6 @@ impl RosterGrid {
             mount: mount.clone(),
             dom,
             runner,
-            painted_focus: None,
             scroll: crate::ui::PaneScroll::new(),
             layout: crate::ui::RetainedLayout::new_at(
                 mount.as_ref().map(cambium::RetainedMount::node),
@@ -275,29 +273,11 @@ impl RosterGrid {
 
     pub(crate) fn show_focus(&mut self, active: bool) {
         let focused = if active { self.runner.focus() } else { None };
-        if self.painted_focus == focused {
-            return;
-        }
+        self.layout.set_focus_highlight(focused);
+    }
 
-        // The runner owns focus. The native retained sheet needs an explicit
-        // marker, as it does for the workspace's frame controls.
-        let attribute = || {
-            QualName::new(
-                None,
-                Namespace::default(),
-                LocalName::from("data-roster-focus"),
-            )
-        };
-        let mut dom = self.dom.borrow_mut();
-        if let Some(old) = self.painted_focus
-            && dom.is_live(old)
-        {
-            dom.remove_attribute(old, attribute());
-        }
-        if let Some(node) = focused {
-            dom.set_attribute(node, attribute(), "true");
-        }
-        self.painted_focus = focused;
+    pub(crate) fn focus_highlight(&self) -> Option<genet_scripted_dom::NodeId> {
+        self.layout.focus_highlight()
     }
 
     pub(crate) fn focus_inline(&mut self, node: genet_scripted_dom::NodeId) -> bool {
