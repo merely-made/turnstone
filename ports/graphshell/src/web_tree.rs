@@ -117,6 +117,9 @@ const SHEET: &str = "\
     .tree-tools { flex:0 0 auto; width:279px; padding:4px 10px; background:var(--tabard-color-surface, #0d161b); border-left:1px solid var(--tabard-color-border, #2c3b44); overflow-y:auto; min-height:0; } \
     .tree-tools .disclosure-trigger { display:block; width:100%; text-align:left; font-size:14px; background:transparent; border:none; padding:2px 0 4px; margin:0; } \
     .tools-cards { margin:2px 0 4px; padding:0 0 0 16px; font-size:12px; color:var(--tabard-color-text, #dce3e8); } \
+    .tools-cards li { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:18px; } \
+    .tools-card-navigation { display:flex; align-items:center; gap:6px; font-size:12px; } \
+    .tools-card-navigation button[aria-disabled=true] { opacity:.45; } \
     .tree-tools h2 { font-size:14px; margin:2px 0 4px; } \
     .tree-tools h3 { font-size:13px; margin:4px 0 2px; } \
     .tree-rules [data-cambium-text-value] { display:block; width:260px; min-height:26px; color:inherit; background:var(--tabard-color-surface-2, #263640); border:1px solid var(--tabard-color-border-strong, #637581); } \
@@ -345,6 +348,12 @@ struct CanvasProducer {
     shared: Rc<Shared>,
     generation: u64,
     scene: Option<cambium_rootstock::ProducedScene>,
+    #[cfg(feature = "remote")]
+    remote_visual: Option<producer_scene::RemoteVisual>,
+    #[cfg(feature = "remote")]
+    remote_semantic_revision: u64,
+    #[cfg(feature = "remote")]
+    remote_semantic_labels: Option<(u64, Vec<(u64, String)>)>,
     /// The last frame's texture, kept alive while the host samples its view.
     texture: Option<wgpu::Texture>,
 }
@@ -425,9 +434,29 @@ impl TextureProducer for CanvasProducer {
     ) -> Result<cambium_rootstock::ProducedScene, cambium_rootstock::PortableProducerError> {
         self.produce(frame)
     }
+    fn portable_scene_update(
+        &mut self,
+        frame: &cambium_rootstock::ProducerFrameInfo,
+        admitted_source: Option<(u64, u64)>,
+    ) -> Result<cambium_rootstock::PortableSceneUpdate, cambium_rootstock::PortableProducerError> {
+        use cambium_rootstock::{PortableProducerError, PortableSceneUpdate};
+        match self.produce_update(frame)? {
+            PortableSceneUpdate::Retain { source_identity, source_revision }
+                if admitted_source != Some((source_identity, source_revision)) =>
+            {
+                self.scene.clone().map(PortableSceneUpdate::Produced)
+                    .ok_or(PortableProducerError::InvalidSource)
+            },
+            update => Ok(update),
+        }
+    }
     fn suspend(&mut self) {
         self.shared.canvas.borrow_mut().reset_frame_time();
         self.texture = None;
+        #[cfg(feature = "remote")]
+        {
+            self.remote_visual = None;
+        }
         self.shared.gpu.borrow_mut().take();
         self.shared.physics_device.borrow_mut().take();
         #[cfg(feature = "canvas-gpu")]
@@ -463,6 +492,27 @@ impl TextureProducer for CanvasProducer {
             &self.shared.canvas.borrow(),
             self.shared.plant,
         ))
+    }
+
+    #[cfg(feature = "remote")]
+    fn semantic_revision(&self) -> Option<u64> {
+        (self.shared.remote_is_shown()
+            && self.remote_visual.is_some()
+            && !self.shared.dirty.get()
+            && self.remote_semantic_revision != u64::MAX)
+            .then_some(self.remote_semantic_revision)
+    }
+
+    #[cfg(feature = "remote")]
+    fn semantic_label_changes(&self, base: u64) -> Option<Vec<(u64, String)>> {
+        let (previous, labels) = self.remote_semantic_labels.as_ref()?;
+        (*previous == base).then(|| labels.clone())
+    }
+
+    #[cfg(feature = "remote")]
+    fn semantic_geometry(&self) -> Option<cambium_rootstock::ProducerSemanticGeometry> {
+        self.semantic_revision()?;
+        self.remote_visual.as_ref()?.geometry
     }
 
     /// A reader pressed one of an item's buttons: Pin pins it, Drag starts
@@ -719,7 +769,7 @@ impl TreePage {
             return format!(
                 "{} · {} cards · {}",
                 remote.label(),
-                remote.card_labels().len(),
+                remote.card_count(),
                 remote.status(),
             );
         }
@@ -1822,6 +1872,8 @@ async fn boot_inner(root: Element, epoch: u64) -> Result<(), String> {
         // WebGPU draws the graph's portable scene in the page pass, as WebGL2
         // does, rather than resampling a producer texture at fractional scale.
         wgpu_portable_scene: true,
+        #[cfg(feature = "remote-cards-receipt")]
+        force_full_dom_layout: root.has_attribute("data-force-full-layout"),
         title: "Graphshell, one tree".into(),
         vector_images: {
             let shared = shared.clone();
@@ -2258,6 +2310,8 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
             if ctx.runner.state().remote_seen != generation {
                 ctx.runner.update(|page| {
                     page.remote_seen = generation;
+                    #[cfg(feature = "remote-cards-receipt")]
+                    remote::cards_receipt::show_fixture(page);
                     #[cfg(feature = "remote")]
                     reservoir::relayout(page);
                     // The section starts closed and opens when a link exists.
@@ -2297,6 +2351,12 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
                     shared: frame_shared.clone(),
                     generation: 0,
                     scene: None,
+                    #[cfg(feature = "remote")]
+                    remote_visual: None,
+                    #[cfg(feature = "remote")]
+                    remote_semantic_revision: 0,
+                    #[cfg(feature = "remote")]
+                    remote_semantic_labels: None,
                     texture: None,
                 };
                 if let Err(error) = ctx.producers.register(CANVAS_KEY, producer, &[]) {
@@ -2402,6 +2462,8 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
             );
         }),
         after_frame: Box::new(move |ctx| {
+            #[cfg(feature = "remote-cards-receipt")]
+            remote::cards_receipt::observe_frame(ctx);
             if ctx
                 .runner
                 .state()
@@ -2436,8 +2498,13 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
                         "data-remote-generation",
                         &mounted.scene.tables.generation.to_string(),
                     );
+                    let _ = root.set_attribute(
+                        "data-remote-revision",
+                        &mounted.scene.revision.0.to_string(),
+                    );
                 } else {
                     let _ = root.remove_attribute("data-remote-generation");
+                    let _ = root.remove_attribute("data-remote-revision");
                 }
             }
             if after_shared.adapter_info.borrow().is_none() {

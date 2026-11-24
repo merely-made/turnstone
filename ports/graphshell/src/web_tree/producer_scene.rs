@@ -7,14 +7,61 @@
 //! One graph scene source shared by presentation and portable export.
 use super::*;
 use cambium_rootstock::{
-    PortableProducerError, ProducedScene, ProducerFrameInfo, ProducerFramePurpose,
+    PortableProducerError, PortableSceneUpdate, ProducedScene, ProducerFrameInfo,
+    ProducerFramePurpose,
 };
+
+#[cfg(feature = "remote")]
+pub(super) struct RemoteVisual {
+    position: remote::BoardPosition,
+    viewport: BoardViewport,
+    pub(super) geometry: Option<cambium_rootstock::ProducerSemanticGeometry>,
+}
+
+#[cfg(feature = "remote")]
+fn board_geometry(
+    remote: &remote::TreeRemote,
+    viewport: &BoardViewport,
+) -> Option<cambium_rootstock::ProducerSemanticGeometry> {
+    let (revision, transform) =
+        remote
+            .board
+            .semantic_geometry(viewport.size.0, viewport.size.1, viewport.fit)?;
+    Some(cambium_rootstock::ProducerSemanticGeometry {
+        revision,
+        scale: f64::from(transform.scale),
+        origin: [f64::from(transform.origin.0), f64::from(transform.origin.1)],
+    })
+}
+
+#[cfg(feature = "remote")]
+#[derive(PartialEq)]
+struct BoardViewport {
+    size: (u32, u32),
+    physical_size: [u32; 2],
+    scale: f32,
+    fit: cartography::canvas::BoardFit,
+    font_roles: String,
+}
 
 impl CanvasProducer {
     pub(super) fn produce(
         &mut self,
         frame: &ProducerFrameInfo,
     ) -> Result<ProducedScene, PortableProducerError> {
+        match self.produce_update(frame)? {
+            PortableSceneUpdate::Produced(scene) => Ok(scene),
+            PortableSceneUpdate::Retain { .. } => self
+                .scene
+                .clone()
+                .ok_or(PortableProducerError::InvalidSource),
+        }
+    }
+
+    pub(super) fn produce_update(
+        &mut self,
+        frame: &ProducerFrameInfo,
+    ) -> Result<PortableSceneUpdate, PortableProducerError> {
         if frame.purpose == ProducerFramePurpose::Export {
             let size = (
                 frame.logical_size.0.round().max(1.0) as u32,
@@ -26,6 +73,7 @@ impl CanvasProducer {
             return self
                 .scene
                 .clone()
+                .map(PortableSceneUpdate::Produced)
                 .ok_or(PortableProducerError::InvalidSource);
         }
         let owner = self.shared.clone();
@@ -74,28 +122,106 @@ impl CanvasProducer {
             let stage = canvas.live_stage_spec().ok();
             let speed = canvas.physics_speed();
             drop(canvas);
-            let scene = {
+            let (scene, semantic_labels) = {
                 let mut remote = shared.remote.borrow_mut();
-                remote.sync_board(stage, speed);
+                let previous = self.remote_visual.take();
+                #[cfg(feature = "remote-cards-receipt")]
+                let start = now_ms();
+                let settling = remote.board.is_settling();
+                let (position, unchanged, labels) = remote.sync_board(
+                    stage,
+                    speed,
+                    size,
+                    previous.as_ref().map(|visual| &visual.position),
+                );
+                #[cfg(feature = "remote-cards-receipt")]
+                remote::cards_receipt::record(|sample| sample.board_sync_ms += now_ms() - start);
+                #[cfg(feature = "remote-cards-receipt")]
+                let start = now_ms();
                 remote.board.set_step_budget(Some(budget));
-                remote.board.tick();
+                let moving = remote.board.tick();
+                #[cfg(feature = "remote-cards-receipt")]
+                remote::cards_receipt::record(|sample| sample.board_tick_ms += now_ms() - start);
+                let viewport = BoardViewport {
+                    size,
+                    physical_size: frame.physical_size,
+                    scale: frame.layout_scale,
+                    fit: remote.board_fit(size),
+                    font_roles: shared.appearance.borrow().font_roles(),
+                };
+                let stationary = !settling && !moving;
+                let stable = stationary
+                    && previous
+                        .as_ref()
+                        .is_some_and(|previous| previous.viewport == viewport)
+                    && !shared.dirty.get()
+                    && !frame.needs_frame;
+                let reuse = unchanged && stable;
+                if reuse
+                    && self.scene.is_some()
+                    && let Some(position) = position
+                {
+                    let geometry = board_geometry(&remote, &viewport);
+                    self.remote_visual = Some(RemoteVisual {
+                        position,
+                        viewport,
+                        geometry,
+                    });
+                    if let Some(labels) = labels {
+                        self.advance_board_semantics(Some(labels));
+                    }
+                    let output = self.scene.as_ref().expect("checked above");
+                    #[cfg(feature = "remote-cards-receipt")]
+                    {
+                        remote::cards_receipt::record_retained_paint();
+                        remote::cards_receipt::record(|sample| {
+                            sample.canvas_revision = output.source_revision;
+                            sample.canvas_reused = true;
+                        });
+                    }
+                    return Ok(PortableSceneUpdate::Retain {
+                        source_identity: output.source_identity,
+                        source_revision: output.source_revision,
+                    });
+                }
                 let remote = &mut *remote;
-                remote
-                    .text
-                    .set_font_roles(&shared.appearance.borrow().font_roles());
+                remote.text.set_font_roles(&viewport.font_roles);
                 let empty = cartography::canvas::BoardScene::default();
                 let painted = if remote.mounted().is_some() {
                     remote.board.scene()
                 } else {
                     &empty
                 };
-                painted.paint_titled(
+                #[cfg(feature = "remote-cards-receipt")]
+                let start = now_ms();
+                let result = painted.paint_titled(
                     remote.board.board(),
                     size.0,
                     size.1,
-                    remote::BOARD_FIT,
+                    viewport.fit,
                     &mut remote.text,
-                )
+                );
+                #[cfg(feature = "remote-cards-receipt")]
+                {
+                    remote::cards_receipt::record(|sample| {
+                        sample.board_paint_ms += now_ms() - start
+                    });
+                    if let Ok(scene) = &result {
+                        remote::cards_receipt::record_paint(scene);
+                    }
+                }
+                if result.is_ok()
+                    && stationary
+                    && let Some(position) = position
+                {
+                    let geometry = board_geometry(remote, &viewport);
+                    self.remote_visual = Some(RemoteVisual {
+                        position,
+                        viewport,
+                        geometry,
+                    });
+                }
+                (result, labels.filter(|_| stable))
             };
             let scene = match scene {
                 Ok(scene) => scene,
@@ -107,7 +233,15 @@ impl CanvasProducer {
             };
             shared.dirty.set(false);
             shared.physical_size.set(frame.physical_size);
-            return self.remember_scene(scene);
+            self.advance_board_semantics(semantic_labels);
+            let output = self.remember_scene(scene)?;
+            #[cfg(feature = "remote-cards-receipt")]
+            remote::cards_receipt::record(|sample| sample.canvas_revision = output.source_revision);
+            return Ok(PortableSceneUpdate::Produced(output));
+        }
+        #[cfg(feature = "remote")]
+        {
+            self.remote_visual = None;
         }
         let (scene, moving) = if profile {
             let (scene, moving, sample) = match frame.timestamp {
@@ -185,6 +319,14 @@ impl CanvasProducer {
         shared.physical_size.set(frame.physical_size);
         drop(canvas);
         self.remember_scene(scene)
+            .map(PortableSceneUpdate::Produced)
+    }
+
+    #[cfg(feature = "remote")]
+    fn advance_board_semantics(&mut self, labels: Option<Vec<(u64, String)>>) {
+        let base = self.remote_semantic_revision;
+        self.remote_semantic_revision = base.saturating_add(1);
+        self.remote_semantic_labels = labels.map(|labels| (base, labels));
     }
 
     fn remember_scene(

@@ -390,6 +390,7 @@ impl Shell {
                 },
                 Effect::ControlContent { .. }
                 | Effect::ScaleContent { .. }
+                | Effect::PageMedia { .. }
                 | Effect::CaptureContent { .. }
                 | Effect::PersistSourceCapture { .. }
                 | Effect::CaptureSourceDocument { .. }

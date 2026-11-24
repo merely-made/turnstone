@@ -3,6 +3,8 @@
 **Date:** 2026-11-02
 **Status (2026-11-02):** cut 2026-11-02 from [the browser surfaces implementation plan](archive_docs/2026-11-02/2026-08-25_browser_surface_implementation_plan.md), archived whole with its 1,165 lines of receiving history and inline run evidence. Landed in the archived plan: T0 contributed document surfaces, K0 one-gesture Keep, F0 retained find (accepted 2026-08-26), D0 permission and authentication decisions (accepted 2026-08-26 at the host boundary), E0.1 capability disclosure, E0.2 page zoom (2026-08-27), the coordinated repin at `abb349cf` with follow-up `8d1f907f` (2026-10-07), and the Linux, macOS Metal, physical IME, geometry, password and Taffy receiving sections of 2026-10-23 to 2026-10-29 (bounded to the hardware named in each). Open: A0, S0 and X0 (not started), the E0 tails, default Servo correctness, accessibility and platform qualification. Note on names: "S0" in the archived status block (L14, L167) is the supplier gate; "S0" below is the shallows.
 
+**Status (2026-11-18):** O11 adds a proposed Ladybird embedding and a separate Gecko feasibility probe. Both are at source review.
+
 ## Rulings in force
 
 Cited in the archived plan, not re-decided: the authority split (L471-476), the dependency order (L478-489), the page capture plan's D1 to D6 (L626-628) and the page lifecycle plan's L1 to L7 (L951-954), K0's one-way idempotent Keep (L508-514), page zoom as a document scale separate from UI and canvas zoom (L587-588, L599-601), `FrozenScene` stays a graph projection (L588-589), web policy and participant-grant authority stay distinct (L559-560), a typed method is not proof an engine emits the callback and CEF server authentication stays Partial until a live receipt exists (L775-777; `src/shell/weld.rs:419-421`), the terminology amendment of 2026-09-20 (L364-383), and the standing exclusion that a requested Linux/Vulkan backend is not evidence (L1075-1078). Old ids (T0, K0, F0, D0, E0, A0, S0, X0, R1a to R3) are stage names, not rulings, and stay grandfathered. DOC_POLICY section 11 applies forward from 2026-11-02; new decisions are keyed `browser_surface_implementation D<n>`.
@@ -95,7 +97,46 @@ The identity session's seed and vault repair is not a published baseline; the re
 
 **Done when:** the repair is published and a repin adopts it, or Mark drops it.
 
+### O11. Embed Ladybird and investigate Gecko
+
+Use the existing producer inventory and native Turnstone frame. The engine retains its web runtime, profile and renderer processes. Turnstone owns the pane, input routing and browser UI decisions. The adapter maps controls, ordered events and frames to `webcue::Surface` and `FrameSource`. Cue presents on Turnstone’s wgpu device, and Graft imports native images. This follows [Graphshell host D3](2026-10-28_graphshell_host_plan.md#graphshell_host-d3-compose-the-frame-from-attached-producers-2026-11-14) and the contracts in `wgpu-cue/crates/webcue/src/frame.rs`.
+
+#### L1. Run a Ladybird view in a small wgpu host
+
+Pin a Ladybird revision on native Linux. Build a small C++ frontend using `WebView::Application` and `ViewImplementation`, with Ladybird’s normal service startup. Put the frontend in a helper so its event loop and build stay with Ladybird. Expose open, navigate, resize, input and close to the Rust host. Start with a bounded CPU frame path through `webcue::CpuFrame` to establish a pixel and input control for L2.
+
+**Done when:** a local fixture opens as a live surface in a headed wgpu host. Click, text entry, scroll and resize change the expected pixels. Navigation reports the committed URL and title. Close and reopen work, and helper exit retires the view and its pending operations. Record the process model and the actual frame path.
+
+#### L2. Import the Ladybird backing store
+
+Use the same fixture and receiver with Linux DMA-BUF. Check the compositor’s allocation, producer completion and ownership transfer against Graft’s supported format and modifier. Keep a backing store leased until the last host GPU read and import release. Start from `wgpu-cue/docs/2026-11-02-linux-vulkan-handoff.md` for the receiving rules. If Ladybird’s buffer cannot satisfy them directly, test a GPU copy into a compatible export allocation and record the copy.
+
+**Done when:** the GPU path matches the CPU control with CPU fallback disabled, including resize while an old frame is held, close/reopen, and late-frame refusal. Prove the producer cannot overwrite a retained frame and that shutdown releases the handles. Record the GPU, graphics backend, format, synchronization and copy count.
+
+#### L3. Attach the qualified producer in Turnstone
+
+Register Ladybird as an opt-in engine on the first qualified platform. Publish only observed capabilities. Keep the wider browser operations, accessibility, physical IME and platform gates in O4, O7 and O8. Treat Metal/IOSurface and native Windows/D3D as independent follow-ons. The Windows proof must run a native build and qualify its process setup and texture handoff. WSL2 can exercise the Linux path.
+
+**Done when:** Turnstone selects Ladybird for a graph node, shows the page inside its pane, forwards input and follows navigation through the normal host route. Closing and reopening the pane leaves the host usable. Unavailable installs report their reason. The default dependency check excludes the optional producer. Before enabling ordinary browsing, verify the engine’s sandbox and isolation on the shipped configuration, profile separation, host handling of permissions, and an update path.
+
+#### G1. Try Gecko in a Firefox helper
+
+Use a maintained Firefox ESR revision and keep Firefox’s parent, content and compositor processes. Test a small privileged frontend around Firefox’s remote `<browser>` element with an isolated profile. A `drawSnapshot()` CPU frame can establish page pixels and input routing through the same wgpu receiver. Use two local origins to exercise a cross-site navigation, then close, reopen and observe renderer exit. Amethyst is a precedent for replacing the frontend and a reference for the patch footprint.
+
+**Done when:** the fixture runs under the normal content sandbox and site isolation, or the probe identifies the blocking Firefox dependency. Record the patch footprint, event and frame latency, how much Firefox plumbing the helper retains, and what a move to another patched ESR build requires.
+
+#### G2. Decide whether Gecko can follow Weld
+
+Weld receives page frames from CEF’s windowless `OnAcceleratedPaint` callback. Gecko would need its own repeatable page-frame delivery path. If G1 shows a maintainable frontend, identify the WebRender output that can supply page-sized frames and test a single platform’s native export. The decision turns on readiness and release, continued site isolation, and the cost of carrying the patch through Firefox updates.
+
+**Done when:** a headed controlled pane uses live native frames with the L2 lifetime checks, and the same checks pass after rebasing onto a second upstream ESR point release. If either gate fails, record why Gecko stays at the experiment stage. Window capture and screenshots can serve as controls. A product Gecko adapter follows a successful native result and a reviewed packaging and security-update route.
+
+Retain exact revisions, commands, controls, machine/backend, pixel results and failure reasons in `archive_docs/receipts/2026-11-02_browser_surface_implementation_plan_receipts.md`. Keep raw run evidence under `Code/testing/turnstone/receipts/` with a 100 MB total retained cap for O11. Keep compact results for exploratory runs.
+
 ## Findings
+
+- 2026-11-18: Ladybird documents `ViewImplementation` as its frontend seam. `PageBackingStores` exposes displayed images, and the view can defer backing-store release. `SharedImageBuffer` exposes DMA-BUF, IOSurface and Direct3D handles on the relevant builds. Ladybird documents WSL2 as its supported Windows build route and native Windows as experimental. [Frontend porting](https://github.com/LadybirdBrowser/ladybird/blob/master/Documentation/Porting.md), [view interface](https://github.com/LadybirdBrowser/ladybird/blob/master/Libraries/LibWebView/ViewImplementation.h), [backing stores](https://github.com/LadybirdBrowser/ladybird/blob/master/Libraries/LibWebView/PageBackingStores.h), [shared images](https://github.com/LadybirdBrowser/ladybird/blob/master/Libraries/LibGfx/SharedImageBuffer.h), [Windows build instructions](https://github.com/LadybirdBrowser/ladybird/blob/master/Documentation/BuildInstructionsLadybird.md#windows).
+- 2026-11-18: Mozilla packages GeckoView for Android and retired XULRunner. Firefox desktop has a remote browser element and a parent-process snapshot API. WebRender has its own rendering and compositor path. Amethyst implements a Firefox frontend through source patches. The source review found no supported desktop equivalent to CEF’s offscreen API. [GeckoView](https://firefox-source-docs.mozilla.org/mobile/android/geckoview/index.html), [XULRunner removal](https://bugzilla.mozilla.org/show_bug.cgi?id=1221724), [browser element](https://searchfox.org/firefox-main/source/toolkit/content/widgets/browser-custom-element.mjs), [snapshot API](https://searchfox.org/firefox-main/source/dom/chrome-webidl/WindowGlobalActors.webidl), [WebRender](https://github.com/mozilla-firefox/firefox/blob/main/gfx/docs/RenderingOverview.md), [Amethyst](https://github.com/webdino/amethyst), [CEF offscreen rendering](https://github.com/chromiumembedded/cef/blob/master/docs/general_usage.md#off-screen-rendering).
 
 - 2026-11-02: the status block (L5-16) predates six later sections; the 2026-08-30 entry (L880-882) says the P1 compile gate is open, but it closed 2026-09-09 (L22, L627-628).
 - 2026-11-02: the CEF auth gap is still declared in code: `src/shell/weld.rs:419-421` sets auth Partial and `:422` says correlated snapshots await product controls.
@@ -106,3 +147,4 @@ The identity session's seed and vault repair is not a published baseline; the re
 ## Progress
 
 - 2026-11-02: plan cut from the browser surfaces implementation plan; decisions D1 to D4 recorded. The evidence index and old-to-main hash table are in the receipts file.
+- 2026-11-18: drafted O11 with a Linux Ladybird proof and an independent desktop Gecko feasibility gate.

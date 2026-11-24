@@ -8,6 +8,7 @@ pub(super) fn content_engines_with_remote(remote: RemoteFetcher) -> SessionRegis
         pelt_core::native::sessions_with_fetcher(LocalFetcher.with_fallback(remote.clone()));
     engines.register(Box::new(crate::nomadnet::MicronSessionEngine::new()));
     engines.register(Box::new(saved_sources::SavedSourceSessionEngine));
+    engines.register(Box::new(super::practice_audio::PracticeAudioEngine));
     for engine_id in SMOLWEB_SESSION_ENGINE_IDS {
         engines.register(Box::new(
             SmolwebSessionEngine::new(

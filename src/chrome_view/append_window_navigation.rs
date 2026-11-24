@@ -109,6 +109,16 @@ pub(super) fn append_window_navigation(
             .collect();
         let location =
             cambium::scope_navigation::scope_location(crumbs, field, scope_chrome_intent);
+        if let (Some(member), Some(command)) = (state.focused_node, state.page_media_action) {
+            use crate::action::PageMediaCommand::*;
+            let (label, accessible) = match command {
+                MarkIn => ("Mark in", "Mark in on playing media"),
+                MarkOut => ("Mark out", "Mark out on playing media"),
+                Send => ("Send phrase", "Send marked audio to Woodshed"),
+                Cancel => ("Discard", "Discard page audio marks"),
+            };
+            controls.push(browser_control(label, accessible, Some(ChromeIntent::PageMedia(member, command))));
+        }
         if !compact {
             controls.push(browser_control(
                 if state.focused_kept { "Kept" } else { "Keep" },
@@ -375,7 +385,7 @@ pub(super) fn append_window_navigation(
         }
         if let Some(target) = &state.link_preview {
             children.push(Box::new(
-                el::<_, ChromeState, ChromeIntent>("div", format!("Prospective node  {target}"))
+                el::<_, ChromeState, ChromeIntent>("div", target.clone())
                     .attr("class", "link-preview")
                     .attr(
                         "style",

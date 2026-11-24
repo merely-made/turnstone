@@ -28,6 +28,7 @@ path = "../src/web.rs"
 [features]
 moot-resources = ["graphshell/moot-resources", "dep:moot"]
 dynamics-receipt = []
+remote-cards-receipt = ["remote"]
 content-backdrop = ["cartography/backdrop-svg"]
 # Start in Worker mode (physics in `physics/worker.js`) unless the page says
 # `?physics=inline`. The viewer's builds (`scripts/build-viewer.py`) turn it on;

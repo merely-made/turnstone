@@ -129,7 +129,9 @@ impl Shell {
                             })
                             .cloned()
                     });
-                let pinned = if live_peer || replay.is_some() {
+                let pinned = if super::super::practice_audio::local_recording(&url).is_some() {
+                    Some(super::super::practice_audio::ENGINE_ID.to_string())
+                } else if live_peer || replay.is_some() {
                     Some(inker::routing::ENGINE_GENET_LIVERY.to_owned())
                 } else if saved_target.is_some() {
                     Some(crate::saved_sources::ENGINE_ID.to_string())

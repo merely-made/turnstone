@@ -49,6 +49,7 @@ impl ChromeSurfaces {
             can_forward: false,
             focused_node: None,
             focused_kept: false,
+            page_media_action: None,
             fetching: false,
             fetch_status: None,
             focused_url: None,

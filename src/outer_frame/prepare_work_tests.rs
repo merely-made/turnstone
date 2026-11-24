@@ -119,3 +119,70 @@ fn outer_frame_explicit_scene_resources_emits_exactly_one_paint() {
     let scene: serde_json::Value = serde_json::from_str(&translated.scene.snapshot_json()).unwrap();
     assert!(!scene["ops"].as_array().unwrap().is_empty());
 }
+
+#[test]
+fn settled_pane_reuses_native_projection_until_geometry_focus_or_routes_change() {
+    let app = app();
+    let mut frame = OuterFrame::default();
+    let prepare = |frame: &mut OuterFrame, size| {
+        frame
+            .prepare(
+                &app.frisket,
+                app.active_pane,
+                None,
+                size,
+                &app.shell_chrome_config().appearance,
+                app.session_id.as_uuid().as_u128(),
+            )
+            .unwrap();
+    };
+    prepare(&mut frame, (900, 600));
+    let first = frame.accessibility(false).unwrap();
+    let source = frame
+        .accessibility
+        .borrow()
+        .as_ref()
+        .unwrap()
+        .source
+        .clone();
+    let (repeat, probes) = crate::ui::count_semantic_probes(|| frame.accessibility(false).unwrap());
+    assert_eq!(
+        probes, 0,
+        "a settled pane must skip DOM action-map lowering"
+    );
+    assert_eq!(repeat.nodes, first.nodes);
+    assert_eq!(repeat.routes, first.routes);
+
+    prepare(&mut frame, (1200, 800));
+    let resized = frame.accessibility(false).unwrap();
+    assert_ne!(resized.nodes, first.nodes);
+    assert!(!Rc::ptr_eq(
+        &source,
+        &frame.accessibility.borrow().as_ref().unwrap().source
+    ));
+    let focused = frame.accessibility(true).unwrap();
+    assert!(focused.focus.is_some());
+    assert!(
+        frame
+            .accessibility
+            .borrow()
+            .as_ref()
+            .unwrap()
+            .header_focused
+    );
+
+    frame.controls.invalidate();
+    let new_routes = frame.accessibility(true).unwrap().routes;
+    assert!(!focused.routes.is_empty());
+    assert!(
+        focused
+            .routes
+            .values()
+            .all(|route| !frame.controls.admits(route))
+    );
+    assert!(
+        new_routes
+            .values()
+            .all(|route| frame.controls.admits(route))
+    );
+}

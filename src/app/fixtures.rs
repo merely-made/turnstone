@@ -121,6 +121,7 @@ impl App {
             micron_submission_sources: std::collections::HashMap::new(),
             focus: FocusTarget::Graph(crate::panes::PaneId(0)),
             link_preview: None,
+            page_media_status: None,
             frisket,
             history: backstep::nav::History::new(""),
             active_pane: None,

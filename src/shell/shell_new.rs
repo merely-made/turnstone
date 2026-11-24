@@ -488,6 +488,8 @@ impl Shell {
             #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
             surface_frames: std::collections::HashMap::new(),
             #[cfg(all(feature = "scry", windows))]
+            page_media: Default::default(),
+            #[cfg(all(feature = "scry", windows))]
             scry_factory: None,
             #[cfg(all(
                 feature = "servo",

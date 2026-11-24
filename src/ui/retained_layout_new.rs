@@ -347,6 +347,18 @@ impl RetainedLayout {
         root: DomNodeId,
         focus: Option<DomNodeId>,
     ) -> Option<document_session_api::DocumentA11yProjection> {
+        self.shared_projection_at(dom, root, focus)
+            .map(|projection| (*projection).clone())
+    }
+
+    /// An allocation identifies one projection of the current layout inputs.
+    /// Its identity is local to this memo, independent of the wire revision.
+    pub(crate) fn shared_projection_at(
+        &self,
+        dom: &ScriptedDom,
+        root: DomNodeId,
+        focus: Option<DomNodeId>,
+    ) -> Option<std::rc::Rc<document_session_api::DocumentA11yProjection>> {
         self.snapshot.as_ref()?;
         let (base, pending) = dom.pending_mutations();
         let key = ProjectionKey {
@@ -364,7 +376,7 @@ impl RetainedLayout {
         {
             return Some(memo.projection.clone());
         }
-        let projection = self.fresh_projection_at(dom, root, focus)?;
+        let projection = std::rc::Rc::new(self.fresh_projection_at(dom, root, focus)?);
         self.projections.borrow_mut().insert(
             root,
             ProjectionMemo {
@@ -468,6 +480,13 @@ impl RetainedLayout {
         focus: Option<DomNodeId>,
     ) -> Option<(accesskit::TreeUpdate, HashMap<accesskit::NodeId, DomNodeId>)> {
         let projected = self.document_projection(dom, focus)?;
+        Some(Self::lower_accessibility(dom, projected))
+    }
+
+    pub(crate) fn lower_accessibility(
+        dom: &ScriptedDom,
+        projected: document_session_api::DocumentA11yProjection,
+    ) -> (accesskit::TreeUpdate, HashMap<accesskit::NodeId, DomNodeId>) {
         let semantic_ids: std::collections::HashSet<_> =
             projected.nodes().iter().map(|node| node.id.get()).collect();
         let mut action_map = HashMap::new();
@@ -487,7 +506,7 @@ impl RetainedLayout {
                 node.set_author_id(key);
             }
         }
-        Some((update, action_map))
+        (update, action_map)
     }
 
     pub fn painted_rect(&self, dom: &ScriptedDom, node: DomNodeId) -> Option<NodeRect> {

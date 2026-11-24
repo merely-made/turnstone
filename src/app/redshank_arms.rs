@@ -363,6 +363,22 @@ mod tests {
     }
 
     #[test]
+    fn practice_audio_local_mp3_opens_a_document_and_remote_mp3_opens_an_episode() {
+        let root = tempfile::tempdir().unwrap();
+        let path = root.path().join("rehearsal #1.MP3");
+        let mut app = App::test_stub();
+        app.data_root = root.path().to_owned();
+        let address = url::Url::from_file_path(&path).unwrap().to_string();
+        let effects = app.open_address(path.to_str().unwrap().into());
+        assert!(effects.iter().any(|effect| {
+            matches!(effect, Effect::SpawnContent { url, .. } if url == &address)
+        }));
+        assert_eq!(episode_panes(&app), 0);
+        app.open_address(ENCLOSURE.into());
+        assert_eq!(episode_panes(&app), 1);
+    }
+
+    #[test]
     fn opening_an_enclosure_yields_a_redshank_episode_pane() {
         let root = scratch_root();
         let mut app = subscribed(&root, SessionId::new());

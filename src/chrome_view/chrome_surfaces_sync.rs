@@ -213,7 +213,10 @@ impl ChromeSurfaces {
             Some(crate::content::PageFetchPhase::Settled { .. }) | None => None,
         });
         let focused_url = browser_target.map(|(_, url)| url);
-        let link_preview = app.link_preview.clone();
+        let link_preview = app.page_media_status.as_ref()
+            .filter(|(member, _, _)| Some(*member) == focused)
+            .map(|(_, status, _)| status.clone())
+            .or_else(|| app.link_preview.as_ref().map(|url| format!("Prospective node  {url}")));
         let find = cambium::ReadFind {
             open: app.document_find.open,
             input: app.document_find.input.clone(),
@@ -357,6 +360,11 @@ impl ChromeSurfaces {
             state.scope_crumbs = app.scope_crumbs();
             state.can_back = can_back;
             state.can_forward = can_forward;
+            state.page_media_action = app.page_practice_target().and_then(|member| {
+                app.page_media_status.as_ref()
+                    .filter(|(node, _, _)| *node == member)
+                    .map_or(Some(crate::action::PageMediaCommand::MarkIn), |(_, _, action)| *action)
+            });
             state.focused_node = focused;
             state.focused_kept = focused_kept;
             state.fetching = fetching;

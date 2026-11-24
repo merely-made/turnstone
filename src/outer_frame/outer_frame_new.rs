@@ -40,6 +40,7 @@ impl OuterFrame {
             scrolls: Vec::new(),
             body_focus: None,
             controls,
+            accessibility: Default::default(),
             prepared_geometry: None,
             workspace,
             current: None,

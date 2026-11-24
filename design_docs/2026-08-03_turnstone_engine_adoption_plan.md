@@ -164,6 +164,16 @@ placeholder: the selection UI carries the full ladder honestly instead of
 hiding the unbuilt parts, and the no-placebo rule holds because a disabled
 row never pretends to spawn.
 
+## Decisions
+
+### turnstone_engine_adoption D1: an engine arrives compiled in or as a separate process, in one inventory (2026-11-12)
+
+Mark, 2026-11-12: "Both, one inventory (Recommended)", to "when you say 'if you load that mod', how should an engine arrive?". The registry-backed inventory treats an engine as a producer that is either compiled in behind its cargo feature or run as a separately installed process sharing textures with the host. Features ship first; the out-of-process seam is reserved now. Refines the model's "cargo features as the build tier": the build tier is one of two ways in, not the only one. Nothing is built: E3's `EngineEnableSet` is still absent, and no out-of-process producer exists.
+
+Links: area engines · amends E3 · draws on graphshell_host D1 · summary engines load compiled-in or out-of-process through one inventory
+
+2026-11-14 follow-up to [graphshell_host D2](2026-10-28_graphshell_host_plan.md#graphshell_host-d2-native-turnstone-first-then-the-browser-extension-2026-11-14). The desktop product is one native Turnstone per supported platform. Installing and switching engine packs in the running app is a proposal for E3. Its first proof would install and start one separately packaged engine, route a new surface to it, then switch away and stop it without restarting Turnstone. Live page state migration between engines is a separate question. [Graphshell host D3](2026-10-28_graphshell_host_plan.md#graphshell_host-d3-compose-the-frame-from-attached-producers-2026-11-14) carries the one-inventory model into general producer attachment. E3 owns engine activation.
+
 ## Steps
 
 ### E0. Registry-driven picker - LANDED 2026-10-05
@@ -552,6 +562,8 @@ connections. The enabled control connected once. See
 The picker plan's decision 1 and 2: a global `EngineEnableSet` app setting
 with per-session override, folded into routing's `is_available` closure.
 Registered-but-disabled engines stay in the picker as switchable-off rows.
+Under D1 the same set covers an engine that is installed as a separate
+process: absent, installed and enabled are states of one row.
 
 The first activation slice reads Pandect's existing `disabled_engines`
 through Turnstone's application settings projection. New content routes

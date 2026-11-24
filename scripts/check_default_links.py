@@ -15,7 +15,8 @@ ROOT = Path(__file__).resolve().parent.parent
 # (which resolves all optional features) does not mean it is compiled or linked.
 OPTIONAL = {
     "sky": {"turquet"},
-    "audio": {"firewheel", "cpal", "symphonia"},
+    # Native output remains opt-in. The practice pane decodes local files by default.
+    "audio": {"firewheel", "cpal"},
     "authoring": {"knot-editor"},
     "inference": {"distillery"},
     "servo": {"servo", "graft-engine", "grafting-servo"},

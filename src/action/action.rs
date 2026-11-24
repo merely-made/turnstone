@@ -63,6 +63,7 @@ pub enum Action {
     },
     /// Capture this exact live page member. The target is resolved when the
     /// action is offered so a later focus change cannot redirect completion.
+    PageMedia { member: uuid::Uuid, command: PageMediaCommand },
     CapturePage {
         member: uuid::Uuid,
     },
@@ -568,10 +569,8 @@ pub enum Action {
         url: String,
         body: String,
     },
-    /// Restore a trashed SESSION from the manifest trash and switch to it
-    /// (overmap O3; a Trail Removed-sessions-row click). The whole session
-    /// directory moved to `.trash/` intact at close, so restore is
-    /// same-identity by construction.
+    /// Restore a session from Trail’s Removed sessions list and switch to it.
+    /// The directory moved to `.trash/` intact, so it keeps its identity.
     RecoverSession(crate::panes::SessionId),
     /// Make `member`'s tab the active (visible) one in its workbench cell.
     WorkbenchActivate(uuid::Uuid),

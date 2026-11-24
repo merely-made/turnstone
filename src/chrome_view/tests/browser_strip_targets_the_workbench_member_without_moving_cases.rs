@@ -397,3 +397,35 @@ fn a_press_hit_tests_without_cascading_again() {
         "hit testing shares the frame's layout instead of building its own"
     );
 }
+
+#[cfg(all(windows, feature = "scry"))]
+#[test]
+fn page_practice_controls_follow_the_selected_scry_player() {
+    use crate::action::PageMediaCommand;
+    let mut app = App::test_stub();
+    app.update(Action::OpenAddress("https://example.test/recording".into()));
+    let member = app.browser_command_target().unwrap().0;
+    let mut chrome = ChromeSurfaces::new();
+    let mark_in = ChromeIntent::PageMedia(member, PageMediaCommand::MarkIn);
+    chrome.sync(&app, &[(0, 1024.0, 600.0)]);
+    assert!(!browser_button_intents(&mut chrome).contains(&mark_in));
+
+    app.content.note_live(member, Some(crate::content::ContentFacts {
+        engine: inker::routing::ENGINE_SCRYING_WEB.into(),
+        lane: crate::content::ContentLane::Surface,
+        structure: None,
+        lineage: None,
+        capabilities: Default::default(),
+    }));
+    chrome.sync(&app, &[(0, 1024.0, 600.0)]);
+    assert!(browser_button_intents(&mut chrome).contains(&mark_in));
+    assert!(app.available_actions().contains(&(
+        "Mark in on playing media".into(),
+        Action::PageMedia { member, command: PageMediaCommand::MarkIn }
+    )));
+    app.page_media_status = Some((member, "Recording page audio.".into(), Some(PageMediaCommand::MarkOut)));
+    chrome.sync(&app, &[(0, 1024.0, 600.0)]);
+    let intents = browser_button_intents(&mut chrome);
+    assert!(!intents.contains(&mark_in));
+    assert!(intents.contains(&ChromeIntent::PageMedia(member, PageMediaCommand::MarkOut)));
+}

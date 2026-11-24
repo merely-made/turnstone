@@ -97,6 +97,12 @@ impl Shell {
                 }
                 self.request_redraw();
             },
+            Effect::PageMedia { member, command } => {
+                #[cfg(all(windows, feature = "scry"))]
+                self.page_media_command(member, command);
+                #[cfg(not(all(windows, feature = "scry")))]
+                let _ = (member, command);
+            },
             Effect::CaptureContent { node } => {
                 if let Err(error) = self.request_page_capture(node) {
                     tracing::warn!(%node, %error, "page capture request refused");

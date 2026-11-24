@@ -13,6 +13,7 @@ impl SurfaceEngine for TurnstoneScryEngine {
         request: &SurfaceSpawnRequest,
     ) -> Result<Box<dyn SurfaceProducer>, SurfaceError> {
         let producer = Rc::new(RefCell::new(self.factory.build_native(request)?));
+        page_media::register(self.factory.id, Path::new(&request.profile.user_data_dir), &producer);
         let fence = self
             .factory
             .synchronizer_for_profile(Path::new(&request.profile.user_data_dir))

@@ -145,7 +145,7 @@ set.
 - [Pane registry, graph views and shell composition: open work](2026-11-02_pane_registry_and_graph_panes_plan.md): draft. A2 (partly built), A3, A4/A5 acceptance, A7, A8, deferred decisions and the reader CPU/FPS item.
 - [Page lifecycle: open work](2026-11-02_page_lifecycle_plan.md): draft. The named-recipient gate, L-P2 to L-P6, platforms and durability.
 - [Browser surfaces implementation: open work](2026-11-02_browser_surface_implementation_plan.md): draft. A0, S0 (shallows), X0, the E0 tails, default Servo correctness, accessibility and Cue platform qualification.
-- [Graphshell reference host](2026-10-28_graphshell_host_plan.md): the reference app's open phases (graph portal, Personae surface, companion, launcher) and its one-tree cutover; moved from Mere with the app (engine split D113), unedited apart from paths.
+- [Integrate the Graphshell app into Turnstone](2026-10-28_graphshell_host_plan.md): native Turnstone first, then the browser extension. N1 opened and restored a resident graph in the headed Windows run. N2 moves the remaining workflows and retires the standalone app. D3 records how producers attach to the frame and how support is verified.
 - [Graphshell tree migration inventory](2026-09-27_graphshell_tree_migration_inventory.md): the app's migration onto one Cambium tree; moved from Mere with the app (D113).
 - [Co-op harness](2026-11-11_coop_harness_plan.md): in progress; the first headed single-desktop baseline verified 2026-11-12 (Fedora). `support/graphshell-coop` repaired as `mere:engine-split D129` and `D130` rule: fixture custodian, a grant from Graphshell's own code, Turnstone-rooted two-repository builds, a single-desktop baseline with a positive control; the two-machine phases unverified since 2026-10-24.
 
@@ -167,6 +167,7 @@ set.
 
 ## Completed plans and receipts
 
+- [Turnstone's ladder](2026-11-12_ladder_plan.md): superseded 2026-11-14. Records the prior build proposal and the removal of the L1 prototype.
 - [Retained semantic projection](2026-10-30_retained_projection_plan.md):
   shared Genet geometry traversal, Cambium and Turnstone receiving, bounded
   accessibility admission comparisons, layout-only frame preparation, and

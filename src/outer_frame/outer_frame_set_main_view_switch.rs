@@ -417,13 +417,32 @@ impl OuterFrame {
         } else {
             self.body_focus
         };
-        let (tree, map) = self.layout.borrow().accessibility_tree(&dom, focus)?;
-        Some(crate::frame_a11y::project(
-            tree,
-            map,
-            &self.controls,
-            focused,
-        ))
+        let source = self
+            .layout
+            .borrow()
+            .shared_projection_at(&dom, self.window_scope, focus);
+        let mut cache = self.accessibility.borrow_mut();
+        let Some(source) = source else {
+            *cache = None;
+            return None;
+        };
+        let controls = self.controls.stamp();
+        if let Some(previous) = cache.as_ref()
+            && Rc::ptr_eq(&previous.source, &source)
+            && previous.controls == controls
+            && previous.header_focused == focused
+        {
+            return Some(previous.projection.clone());
+        }
+        let (tree, map) = crate::ui::RetainedLayout::lower_accessibility(&dom, (*source).clone());
+        let projection = crate::frame_a11y::project(tree, map, &self.controls, focused);
+        *cache = Some(FrameAccessibility {
+            source,
+            controls,
+            header_focused: focused,
+            projection: projection.clone(),
+        });
+        Some(projection)
     }
 
     pub(crate) fn accessibility_action(

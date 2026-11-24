@@ -36,6 +36,9 @@ pub(crate) use command_metadata::command_metadata;
 use crate::panes::{PaneKindId, PaneSource};
 use cartography::canvas::controls::CanvasCommand;
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum PageMediaCommand { MarkIn, MarkOut, Send, Cancel }
+
 /// One admitted Settings pane composition/view save request.
 pub type SettingsPaneRecordIntent = (
     crate::panes::PaneId,

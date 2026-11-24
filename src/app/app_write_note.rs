@@ -130,6 +130,7 @@ impl App {
             Action::PageZoomIn { member } => self.page_zoom_in(member),
             Action::PageZoomOut { member } => self.page_zoom_out(member),
             Action::PageZoomReset { member } => self.page_zoom_reset(member),
+            Action::PageMedia { member, command } => vec![Effect::PageMedia { member, command }],
             Action::CapturePage { member } => vec![Effect::CaptureContent { node: member }],
             Action::CaptureSourceDocument { target } => self.begin_source_capture(target),
             Action::RetrySourceDocumentCapture { request } => self.retry_source_capture(request),

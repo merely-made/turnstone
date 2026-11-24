@@ -104,6 +104,7 @@ impl App {
             micron_submission_sources: std::collections::HashMap::new(),
             focus: FocusTarget::Graph(crate::panes::PaneId(0)),
             link_preview: None,
+            page_media_status: None,
             frisket: FrisketLayout::default(),
             history: backstep::nav::History::new(String::new()),
             active_pane: None,
@@ -179,6 +180,10 @@ impl App {
     /// credential and profile bootstrapping so its effect ordering is covered
     /// without touching a person's profile during tests.
     pub(in super::super) fn apply_launch_address(&mut self, url: &str, effects: &mut Vec<Effect>) {
+        if let Some(recording) = crate::shell::practice_audio::normalize_recording_path(url) {
+            effects.extend(self.open_address(recording));
+            return;
+        }
         if let Some(domain) = url.strip_prefix(crate::resident_graph::ADDRESS_PREFIX) {
             effects.extend(self.open_resident_graph(domain));
             return;

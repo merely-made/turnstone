@@ -221,8 +221,11 @@ struct NativePaintMemo {
 
 struct ProjectionMemo {
     key: ProjectionKey,
-    projection: document_session_api::DocumentA11yProjection,
+    projection: std::rc::Rc<document_session_api::DocumentA11yProjection>,
 }
+
+#[cfg(test)]
+pub(crate) use projection_work_tests::count_semantic_probes;
 
 #[derive(PartialEq)]
 struct ProjectionKey {

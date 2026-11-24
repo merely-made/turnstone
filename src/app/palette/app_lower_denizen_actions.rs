@@ -193,6 +193,30 @@ impl App {
                 Action::FocusCard(crate::focus_card::Command::EnterLayout(target)),
             ));
         }
+        #[cfg(all(windows, feature = "scry"))]
+        if let Some(member) = self.page_practice_target()
+        {
+            use crate::action::PageMediaCommand::*;
+            for (label, command) in [
+                ("Mark in on playing media", MarkIn),
+                ("Mark out on playing media", MarkOut),
+                ("Send marked audio to Woodshed", Send),
+                ("Discard page audio marks", Cancel),
+            ] {
+                rows.push((label.to_owned(), Action::PageMedia { member, command }));
+            }
+        }
+        #[cfg(all(windows, feature = "scry"))]
+        if let Some(member) = self.web_page_member()
+            && self.page_practice_target().is_none()
+            && self.engine_inventory.iter().any(|engine| {
+                engine.id == inker::routing::ENGINE_SCRYING_WEB && engine.availability.is_selectable()
+            })
+        {
+            rows.push(("Open page with System webview".into(), Action::SetViewerOverride {
+                member, viewer: Some(inker::routing::ENGINE_SCRYING_WEB.into()),
+            }));
+        }
         if let Some(action) = self.producer_retention_action() {
             rows.push(action);
         }

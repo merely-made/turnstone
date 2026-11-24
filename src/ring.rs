@@ -302,6 +302,7 @@ pub fn ring_of(action: &Action) -> Ring {
         // A viewport capture may contain authenticated page content. Keep the
         // admission gesture literal until attachment disclosure has its own
         // narrower authority.
+        | PageMedia { .. }
         | CapturePage { .. }
         | ResearchSearch(..)
         | ResearchStructured(..)

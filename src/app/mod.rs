@@ -212,6 +212,7 @@ pub struct App {
     /// Prospective graph member under the pointer. Ephemeral presentation
     /// state: a click still goes through the ordinary navigation action.
     pub link_preview: Option<String>,
+    pub(crate) page_media_status: Option<(uuid::Uuid, String, Option<crate::action::PageMediaCommand>)>,
     /// The pane tree (rung 5 slice C): frisket's split tree of `PaneContent`
     /// leaves. The Orrery leaf is the graph canvas; summoning a pane splits it.
     /// Persisted to `frame.json` through the session port.

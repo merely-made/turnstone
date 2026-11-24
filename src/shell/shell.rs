@@ -191,6 +191,8 @@ pub struct Shell {
     pub(super) surface_frames:
         std::collections::HashMap<uuid::Uuid, Option<surface_frames::ImportedSurfaceFrame>>,
     #[cfg(all(feature = "scry", windows))]
+    pub(super) page_media: scry::page_media::Practice,
+    #[cfg(all(feature = "scry", windows))]
     pub(super) scry_factory: Option<Arc<scry::TurnstoneScryFactory>>,
     #[cfg(all(
         feature = "servo",

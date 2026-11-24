@@ -305,8 +305,10 @@ impl Shell {
         }
         // Not an image over a node: the file becomes a node. Forward slashes
         // so the address is stable across platforms.
-        let url = format!("file:///{}", path.display().to_string().replace('\\', "/"));
-        self.act(Action::OpenAddress(url));
+        let absolute = std::path::absolute(path).unwrap_or_else(|_| path.to_path_buf());
+        if let Ok(url) = url::Url::from_file_path(absolute) {
+            self.act(Action::OpenAddress(url.to_string()));
+        }
     }
 
     pub(super) fn hover_host_files(&mut self, x: f32, y: f32, paths: &[std::path::PathBuf]) {

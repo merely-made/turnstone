@@ -118,6 +118,7 @@ pub(crate) fn fixture_body_request(
     ))
 }
 
+#[derive(Clone)]
 pub(crate) struct FrameProjection {
     root: NodeId,
     pub(crate) nodes: Vec<(NodeId, accesskit::Node)>,

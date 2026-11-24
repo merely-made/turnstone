@@ -45,6 +45,42 @@ engines are selected with `servo`, `weld`, `scry`, `nomadnet`, `wasm`, or
 tree. Foreign browser processes are constructed when a card selects that
 engine, after the host device exists.
 
+On Windows, drop a local WAV, MP3, or MP4 into Turnstone or enter its path in
+the address bar. In the practice view, play the audio and choose **Mark in** and
+**Mark out**, or enter the times in seconds. Add a practice note and choose
+**Practice in Woodshed**. Woodshed saves the selected audio and original
+time marks to the active, unlocked practice and starts looping. **Attach
+transport** brings its playback controls into Turnstone. **Detach transport**
+returns them to the Woodshed window while the loop continues. Both desktop
+apps must include the native handoff. Turnstone can connect to an open Woodshed
+or launch it when you send the phrase.
+
+Marks can fall anywhere in the recording. Enter decimal seconds for
+millisecond precision. Woodshed keeps a playable copy of just the marked audio,
+along with the source path, times, and note. You can move the original recording
+afterward. Turnstone prepares an audio preview when you open an MP3 or MP4.
+For MP4, it uses the first supported audio track, including AAC-LC. Marks follow
+the audio preview's clock. A video player that applies movie edits can show
+different times for the same passage. Multichannel selections are mixed to
+stereo. Compressed WAV support depends on the codec inside the file.
+
+To practice something playing on a web page in the Windows app, choose **Open
+page with System webview** in the command palette. You can also select **System
+webview** (Scry) in the Inspector's viewer picker. Click the audio or video you
+want to practice, or use its play control, including inside an embedded player.
+With that player running at normal speed, choose **Mark in** at the start of the
+phrase, **Mark out** at the end, then **Send phrase**. These actions are also
+in the command palette, along with **Discard page audio marks**.
+Woodshed loops the selected player's audio and keeps the address of the page
+you were browsing. The marks use that player's clock. Playback can keep
+streaming while you mark, and capture issues no extra media download.
+
+If the player or its frame reloads while you mark, click the player again and
+start a fresh mark. The player must expose an audible, unprotected audio track
+to its own document. Each phrase can contain up to 16 MiB of
+PCM audio, about 87 seconds at 48 kHz stereo. Scry is included in Windows
+builds made with `--features scry`.
+
 The generic demand-admission gate lives in Armillary's `demand` module and
 uses its existing actor harness. Turnstone supplies command classification,
 identity and feature policy. Resource initializers use the standard library's

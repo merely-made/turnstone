@@ -121,6 +121,8 @@ pub mod remote_projection;
 mod personae_surface;
 mod graph_coop;
 mod resident_graph;
+#[cfg(not(target_arch = "wasm32"))]
+pub mod woodshed_client;
 pub mod research;
 pub mod research_compare;
 pub(crate) mod research_record_graph;

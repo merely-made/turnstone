@@ -140,6 +140,8 @@ impl App {
     }
 
     pub(in super::super) fn open_address(&mut self, url: String) -> Vec<Effect> {
+        let url = crate::shell::practice_audio::normalize_recording_path(&url).unwrap_or(url);
+        let local_recording = crate::shell::practice_audio::local_recording(&url).is_some();
         if let Some(domain) = url.strip_prefix(crate::resident_graph::ADDRESS_PREFIX) {
             return self.open_resident_graph(domain);
         }
@@ -160,7 +162,7 @@ impl App {
         // Podcast audio is a listening tile, not a reader page. One decision
         // point: a subscribed feed entry answers with its show, GUID and
         // artwork; a bare audio address answers with itself.
-        if let Some(episode) = self.redshank_episode_for_address(&url) {
+        if !local_recording && let Some(episode) = self.redshank_episode_for_address(&url) {
             effects.extend(self.open_redshank_episode(episode));
             return effects;
         }
@@ -192,6 +194,12 @@ impl App {
         };
         self.history.visit(url.clone());
         effects.push(Effect::Redraw);
+        if local_recording {
+            self.reveal_pane(pane);
+            self.focus = FocusTarget::Graph(pane);
+            effects.extend(self.open_in_workbench());
+            return effects;
+        }
         if saved.is_some()
             && let Some(node) = self
                 .graph_for_pane(pane)
@@ -269,6 +277,9 @@ impl App {
         member: Uuid,
         url: String,
     ) -> Vec<Effect> {
+        if crate::shell::practice_audio::blocks_content_navigation(&url) {
+            return Vec::new();
+        }
         if let Some(effects) = self.retained_clip_control(&url) {
             return effects;
         }

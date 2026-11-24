@@ -31,6 +31,7 @@ pub(crate) fn command_metadata(action: &Action) -> (EffectClass, bool) {
         | Action::WriteNote { .. }
         | Action::RecoverSession(..) => EffectClass::DomainTruth,
         Action::OpenAddress(..)
+        | Action::PageMedia { .. }
         | Action::CapturePage { .. }
         | Action::CaptureSourceDocument { .. }
         | Action::RetrySourceDocumentCapture { .. }

@@ -5,6 +5,9 @@
 /// passes through; a dotted bare host gets `https://`. `None` for anything
 /// else (a future search lane decides what non-addresses mean).
 pub fn normalize_address(text: &str) -> Option<String> {
+    if let Some(file) = crate::shell::practice_audio::normalize_recording_path(text) {
+        return Some(file);
+    }
     if crate::nomadnet::parse_address(text).is_some() {
         return Some(text.to_string());
     }

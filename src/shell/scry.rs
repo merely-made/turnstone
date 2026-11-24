@@ -116,6 +116,7 @@ mod spawn_error;
 use spawn_error::spawn_error;
 #[path = "scry/impl_surface_engine_for_turnstone_scry.rs"]
 mod impl_surface_engine_for_turnstone_scry;
+pub(super) mod page_media;
 #[path = "scry/impl_surface_producer_for_turnstone_scry.rs"]
 mod impl_surface_producer_for_turnstone_scry;
 #[path = "scry/mouse_pointer_input.rs"]

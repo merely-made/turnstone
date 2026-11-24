@@ -16,12 +16,16 @@
 //! the link's disconnect, reconnect and nudge, and the action status.
 use super::*;
 use cambium::{DisclosureState, SelectState, button, button_with, disclosure, lens, select};
-use graphshell_host::board::RemoteBoard;
+use cartography::canvas::{BoardFit, BoardText};
 use graphshell_client::remote::ActionForm;
 use graphshell_client::{ActionDraftSemantics, MountedScene};
-use cartography::canvas::{BoardFit, BoardText};
+use graphshell_host::board::RemoteBoard;
 
 use super::super::web_rtc_link::{self, LiveRemote, RemoteHost};
+
+mod cards;
+#[cfg(feature = "remote-cards-receipt")]
+pub(super) mod cards_receipt;
 
 /// The board on the tree: no chrome floats over the leaf, so the margins are
 /// even (the old page keeps 50/50/116/64).
@@ -42,12 +46,14 @@ const CHOOSE: &str = "Choose…";
 /// or remote is shown ("Remote starts collapsed"). The region scrolls.
 pub(super) struct Sections {
     pub(super) remote: DisclosureState,
+    cards: cards::Window,
 }
 
 impl Default for Sections {
     fn default() -> Self {
         Self {
             remote: DisclosureState::new("tools-remote", "Remote session").expanded(false),
+            cards: cards::Window::default(),
         }
     }
 }
@@ -57,6 +63,13 @@ impl Default for Sections {
 pub(super) enum Session {
     Local,
     Remote,
+}
+
+#[derive(PartialEq)]
+pub(super) struct BoardPosition {
+    attachment: String,
+    epoch: u64,
+    revision: u64,
 }
 
 /// The tree's remote session: absent until a join completes.
@@ -76,6 +89,10 @@ pub(super) struct TreeRemote {
     pub(super) text: BoardText,
     /// Bumped on every change, so the frame hook knows to rebuild the view.
     pub(super) generation: u64,
+    attachment: u64,
+    cards: cards::Cache,
+    #[cfg(feature = "remote-cards-receipt")]
+    fixture: Option<graphshell_client::remote::RemoteSession>,
 }
 
 impl TreeRemote {
@@ -94,6 +111,10 @@ impl TreeRemote {
                 text
             },
             generation: 0,
+            attachment: 0,
+            cards: cards::Cache::default(),
+            #[cfg(feature = "remote-cards-receipt")]
+            fixture: None,
         }
     }
 
@@ -152,9 +173,8 @@ impl TreeRemote {
             }
             return session.status();
         }
-        self.live
-            .as_ref()
-            .map_or(&self.status, |live| live.session.status())
+        self.projection_session()
+            .map_or(&self.status, |session| session.status())
     }
 
     pub(super) fn in_flight(&self) -> bool {
@@ -176,7 +196,15 @@ impl TreeRemote {
         if let Some(session) = &self.reservoir {
             return session.primary();
         }
-        self.live.as_ref()?.session.mounted()
+        self.projection_session()?.mounted()
+    }
+
+    fn projection_session(&self) -> Option<&graphshell_client::remote::RemoteSession> {
+        #[cfg(feature = "remote-cards-receipt")]
+        if let Some(fixture) = &self.fixture {
+            return Some(fixture);
+        }
+        self.live.as_ref().map(|live| &live.session)
     }
 
     pub(super) fn card_labels(&self) -> Vec<String> {
@@ -189,26 +217,47 @@ impl TreeRemote {
                 .map(|node| node.label.clone())
                 .collect();
         }
-        self.live
-            .as_ref()
-            .map(|live| live.session.card_labels())
+        self.projection_session()
+            .map(|session| session.card_labels())
             .unwrap_or_default()
+    }
+
+    pub(super) fn card_count(&self) -> usize {
+        self.card_rows().len()
     }
     pub(super) fn revision(&self) -> Option<u64> {
         if let Some(session) = &self.reservoir {
             return session.primary().map(|mounted| mounted.scene.revision.0);
         }
-        self.live.as_ref()?.session.revision()
+        self.projection_session()?.revision()
     }
 
     pub(super) fn label(&self) -> String {
         if let Some(session) = &self.reservoir {
             return format!("Shared mere · {}", session.model().title);
         }
-        match &self.live {
-            Some(live) => live.session.label(),
-            None => format!("Remote projection · {}", self.status),
+        let Some(session) = self.projection_session() else {
+            return format!("Remote projection · {}", self.status);
+        };
+        #[cfg(feature = "remote-cards-receipt")]
+        if self.fixture.is_some() && cards_receipt::mode() == cards_receipt::Mode::Legacy {
+            return session.label();
         }
+        match session.mounted() {
+            Some(mounted) => format!(
+                "Remote projection · {} objects",
+                mounted.scene.tables.items.len()
+            ),
+            None => session.label(),
+        }
+    }
+
+    fn use_label_updates(&self) -> bool {
+        #[cfg(feature = "remote-cards-receipt")]
+        if self.fixture.is_some() {
+            return cards_receipt::mode() == cards_receipt::Mode::Optimized;
+        }
+        true
     }
 
     /// The advertised intents, in invocation order.
@@ -216,13 +265,8 @@ impl TreeRemote {
         if self.reservoir.is_some() {
             return Vec::new();
         }
-        self.live.as_ref().map_or_else(Vec::new, |live| {
-            live.session
-                .actions()
-                .into_iter()
-                .map(|(_, action)| action)
-                .collect()
-        })
+        self.projection_session()
+            .map_or_else(Vec::new, |session| self.projected_actions(session))
     }
 
     /// Mirror the viewer's live stage and `speed` onto the board and reconcile
@@ -231,38 +275,106 @@ impl TreeRemote {
         &mut self,
         stage: Option<cartography::canvas::dynamics_spec::DynamicsSpec>,
         speed: cartography::canvas::Speed,
-    ) {
-        let revision = self.revision();
-        let identity = self
-            .reservoir
-            .as_ref()
-            .and_then(|session| session.model().sessions.iter().find(|entry| entry.attached))
-            .map(|entry| {
-                format!(
-                    "{}:{}",
-                    entry.id.as_uuid(),
-                    self.reservoir.as_ref().unwrap().model().layout
-                )
-            });
-        let mounted = match &self.reservoir {
-            Some(session) => session.primary(),
-            None => self.live.as_ref().and_then(|live| live.session.mounted()),
-        };
-        if self.reservoir.is_some() {
+        size: (u32, u32),
+        painted: Option<&BoardPosition>,
+    ) -> (Option<BoardPosition>, bool, Option<Vec<(u64, String)>>) {
+        if let Some(reservoir) = &self.reservoir {
+            let identity = reservoir
+                .model()
+                .sessions
+                .iter()
+                .find(|entry| entry.attached)
+                .map(|entry| {
+                    format!(
+                        "resident:{}:{}",
+                        entry.id.as_uuid(),
+                        reservoir.model().layout
+                    )
+                });
             self.board
-                .sync_reading(mounted, revision, identity.as_deref());
-        } else {
-            self.board.sync_scoped(
-                mounted,
-                revision,
-                identity.as_deref(),
-                stage.as_ref(),
-                speed,
-            );
+                .sync_reading(reservoir.primary(), self.revision(), identity.as_deref());
+            self.board.set_focus(reservoir.focus_instance().as_deref());
+            return (None, false, None);
         }
-        if let Some(session) = &self.reservoir {
-            self.board.set_focus(session.focus_instance().as_deref());
+        let fit = self.board_fit(size);
+        let use_updates = self.use_label_updates();
+        #[cfg(feature = "remote-cards-receipt")]
+        let (fixture, session, stage) = match &self.fixture {
+            Some(fixture) => (true, Some(fixture), None),
+            None => (false, self.live.as_ref().map(|live| &live.session), stage),
+        };
+        #[cfg(not(feature = "remote-cards-receipt"))]
+        let (session, stage) = (self.live.as_ref().map(|live| &live.session), stage);
+        let mounted = session.and_then(|session| session.mounted());
+        let position = session.zip(mounted).and_then(|(remote, mounted)| {
+            Some(BoardPosition {
+                attachment: format!(
+                    "live:{}:{}:{}",
+                    self.attachment,
+                    remote.snapshot_generation(),
+                    remote.session()?.0
+                ),
+                epoch: mounted.scene.epoch.0,
+                revision: mounted.scene.revision.0,
+            })
+        });
+        let identity = position
+            .as_ref()
+            .map(|position| position.attachment.as_str());
+        let same_position = position.is_some() && position.as_ref() == painted;
+        let mut patched = false;
+        let mut title_visible = true;
+        let mut labels = None;
+        if use_updates
+            && let Some(session) = session
+            && let Some(mounted) = mounted
+            && let Some(update) = session.accepted_label_update()
+            && session.session() == Some(&update.session)
+        {
+            title_visible = self.board.title_change_visible(update, size.0, size.1, fit);
+            patched = self.board.apply_label_changes(mounted, identity, update);
+            if patched {
+                #[cfg(feature = "remote-cards-receipt")]
+                cards_receipt::record(|sample| sample.board_label_patches += 1);
+                labels = Some(
+                    update
+                        .changes
+                        .iter()
+                        .filter_map(|change| {
+                            let card = self.board.drawn_card(change.instance)?;
+                            Some((u64::from(change.instance.0), card.labelled()))
+                        })
+                        .collect(),
+                );
+            }
         }
+        let speed_unchanged = speed == self.board.speed();
+        let dynamics_unchanged = speed_unchanged
+            && stage
+                .as_ref()
+                .is_none_or(|stage| stage == self.board.board().stage());
+        let unchanged =
+            use_updates && (same_position || (patched && !title_visible)) && dynamics_unchanged;
+        self.board.sync_scoped(
+            mounted,
+            session.and_then(|session| session.revision()),
+            identity,
+            stage.as_ref(),
+            speed,
+        );
+        #[cfg(feature = "remote-cards-receipt")]
+        if fixture && ((!same_position && !patched) || !speed_unchanged) {
+            self.board.board_mut().halt();
+        }
+        (position, unchanged, labels.filter(|_| dynamics_unchanged))
+    }
+
+    pub(super) fn board_fit(&self, _size: (u32, u32)) -> BoardFit {
+        #[cfg(feature = "remote-cards-receipt")]
+        if self.fixture.is_some() {
+            return cards_receipt::board_fit(&self.board, BOARD_FIT.framing_bounds(), _size);
+        }
+        BOARD_FIT
     }
 }
 
@@ -290,6 +402,8 @@ impl RemoteHost for TreeRemote {
         }
     }
     fn rejoined(&mut self) {
+        self.attachment = self.attachment.wrapping_add(1);
+        self.cards = cards::Cache::default();
         if self.reservoir.take().is_some() {
             if let Some(live) = &mut self.live {
                 live.session =
@@ -306,6 +420,8 @@ impl RemoteHost for TreeRemote {
 
     fn adopt(&mut self, mut live: LiveRemote) {
         self.reservoir = None;
+        self.attachment = self.attachment.wrapping_add(1);
+        self.cards = cards::Cache::default();
         live.session.form = std::mem::take(&mut self.form);
         self.live = Some(live);
         self.joining = false;
@@ -471,11 +587,18 @@ pub(super) fn board_semantics(
     height: u32,
 ) -> cambium_rootstock::ProducerSemantics {
     use cambium_rootstock::{ProducerNode, ProducerRole, ProducerSemantics};
+    #[cfg(feature = "remote-cards-receipt")]
+    let start = now_ms();
     let children = if remote.mounted().is_some() {
         remote
             .board
             .scene()
-            .card_rects(remote.board.board(), width, height, BOARD_FIT)
+            .card_rects(
+                remote.board.board(),
+                width,
+                height,
+                remote.board_fit((width, height)),
+            )
             .into_iter()
             .enumerate()
             .map(|(ordinal, (id, title, rect))| ProducerNode {
@@ -491,6 +614,11 @@ pub(super) fn board_semantics(
     } else {
         Vec::new()
     };
+    #[cfg(feature = "remote-cards-receipt")]
+    cards_receipt::record(|sample| {
+        sample.semantic_ms += now_ms() - start;
+        sample.semantic_cards += children.len();
+    });
     ProducerSemantics {
         role: Some(ProducerRole::List),
         name: Some(match &remote.reservoir {
@@ -608,22 +736,9 @@ pub(super) fn section(page: &TreePage) -> Child {
                 .attr("aria-label", "Remote board speed"),
         ));
     }
-    // The board's cards by title, in the scene's order.
-    let titles: Vec<Child> = remote
-        .card_labels()
-        .into_iter()
-        .map(|title| Box::new(el("li", title).attr("role", "listitem")) as Child)
-        .collect();
-    if !titles.is_empty() {
-        children.push(Box::new(
-            el("ul", titles)
-                .attr("class", "tools-cards")
-                .attr("role", "list")
-                .attr("aria-label", "Cards"),
-        ));
-    }
-    let actions: Vec<Child> = remote
-        .actions()
+    children.extend(cards::view(page, &remote));
+    let actions = remote.actions();
+    let actions: Vec<Child> = actions
         .into_iter()
         .enumerate()
         .map(|(index, action)| {
@@ -639,9 +754,8 @@ pub(super) fn section(page: &TreePage) -> Child {
                         .attr("aria-description", action.explanation),
                 ) as Child
             } else {
-                Box::new(
-                    button(action.label, invoke).attr("aria-description", action.explanation),
-                ) as Child
+                Box::new(button(action.label, invoke).attr("aria-description", action.explanation))
+                    as Child
             }
         })
         .collect();

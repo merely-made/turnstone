@@ -88,6 +88,8 @@ impl ApplicationHandler for Shell {
         let effects = self.app.tick(crate::denizen::now_ms());
         self.run_effects(effects);
         let alembic_idle = self.service_alembic_workshop(event_loop);
+        #[cfg(all(feature = "scry", windows))]
+        self.poll_page_media();
         self.pump_redshank();
         self.pump_research();
         #[cfg(all(
@@ -178,6 +180,11 @@ impl ApplicationHandler for Shell {
                     .unwrap_or(128),
             ),
             enable_vello: true,
+            optional_features: if std::env::var_os("TURNSTONE_PROFILE_GPU_TIMESTAMPS").is_some() {
+                genet_render_host::RenderCore::native_worker_diagnostic_features()
+            } else {
+                wgpu::Features::empty()
+            },
             // Windows browser producers export D3D12 shared textures. The
             // host must use the same API before constructing either producer.
             #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
@@ -194,6 +201,12 @@ impl ApplicationHandler for Shell {
         let booted = SurfaceHost::boot(window.clone(), self.width, self.height, options);
         match booted {
             Ok(host) => {
+                if (std::env::var_os("TURNSTONE_PROFILE_NATIVE_WORKER").is_some()
+                    || std::env::var_os("TURNSTONE_PROFILE_GPU_TIMESTAMPS").is_some())
+                    && let Err(error) = host.core().enable_native_worker_diagnostics()
+                {
+                    tracing::warn!(?error, "native worker profile unavailable");
+                }
                 self.host = Some(host);
                 self.ensure_render_recovery();
             },
@@ -235,6 +248,8 @@ impl ApplicationHandler for Shell {
         // Keep callbacks cheap; the retained actor queues drain once per batch.
         while let Ok(event) = self.events.try_recv() {
             match event {
+                #[cfg(all(windows, feature = "scry"))]
+                crate::shell::ShellEvent::PageMediaReady => {}, // The owner polls in about_to_wait.
                 crate::shell::ShellEvent::ActorWake => self.actor_wake_pending = true,
                 crate::shell::ShellEvent::NativeFrameReady => self.request_native_frame_redraws(),
                 crate::shell::ShellEvent::ResidentAddressAccepted(address) => {

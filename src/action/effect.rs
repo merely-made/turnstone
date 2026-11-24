@@ -281,6 +281,7 @@ pub enum Effect {
         scale: f32,
     },
     /// Start one host-correlated viewport capture of this live web surface.
+    PageMedia { member: uuid::Uuid, command: PageMediaCommand },
     CaptureContent {
         node: uuid::Uuid,
     },

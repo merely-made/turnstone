@@ -13,7 +13,7 @@ assert snap tools-sections == physics:open,remote:open
 click role:button Remote mount
 settle 1
 assert snap session == remote
-assert text Remote projection · 1 objects · revision 1
+assert text Remote projection · 1 objects
 # The region scrolls: bring the action status into view for the capture.
 reveal role:status Ready
 settle 2

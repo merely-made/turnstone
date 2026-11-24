@@ -10,6 +10,7 @@ use crate::{
 };
 use genet_scripted_dom::{NodeId, ScriptedDom};
 use layout_dom_api::{LayoutDom, LocalName, Namespace};
+use std::{cell::RefCell, rc::Rc};
 use workbench::{DropTarget, Edge, TileId, TileTree, Workspace};
 
 #[derive(Clone, Debug)]
@@ -35,6 +36,7 @@ pub struct OuterFrame {
     pub(crate) body_focus: Option<NodeId>,
     pub(crate) controls: FrameControls,
     pub(crate) layout: crate::ui::InlineLayoutHandle,
+    accessibility: RefCell<Option<FrameAccessibility>>,
     prepared_geometry: Option<PreparedGeometry>,
     workspace: Workspace,
     current: Option<TileId>,
@@ -56,6 +58,13 @@ struct PreparedGeometry {
     dom: u64,
     viewport_scroll: (f32, f32),
     bodies: Vec<(PaneId, Rect)>,
+}
+
+struct FrameAccessibility {
+    source: Rc<document_session_api::DocumentA11yProjection>,
+    controls: FrameStamp,
+    header_focused: bool,
+    projection: crate::frame_a11y::FrameProjection,
 }
 
 #[cfg(test)]

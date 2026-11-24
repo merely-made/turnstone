@@ -121,7 +121,9 @@ impl Shell {
         let mut acted = false;
         if let Some(navigation) = effect.navigation {
             let url = content_link_target(&self.app, node, &navigation.request.address);
-            if !self.app.peek_inline_reference(node, &url) {
+            if super::practice_audio::blocks_content_navigation(&url) {
+                tracing::debug!(%node, "content navigation cannot open a native recording practice pane");
+            } else if !self.app.peek_inline_reference(node, &url) {
                 self.act(Action::OpenAddress(url));
             }
             acted = true;

@@ -243,6 +243,8 @@ impl Shell {
                 self.resync_surface_accessibility(node);
                 self.retire_page_drag_for_document(node);
                 self.page_captures.advance_document(node);
+                #[cfg(all(windows,feature="scry"))]
+                self.forget_page_media(node);
                 self.withdraw_user_agent_requests(node, "navigation-started");
                 self.app.content.note_surface_started(node);
                 self.surface_find_requests.remove(&node);

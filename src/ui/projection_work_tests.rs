@@ -17,6 +17,13 @@ pub(super) fn semantic_probe() {
     SEMANTIC_PROBES.with(|count| count.set(count.get() + 1));
 }
 
+pub(crate) fn count_semantic_probes<T>(f: impl FnOnce() -> T) -> (T, usize) {
+    SEMANTIC_PROBES.with(|count| {
+        count.set(0);
+        (f(), count.get())
+    })
+}
+
 #[test]
 fn accessibility_projection_host_work_is_linear() {
     for controls in [32, 64] {

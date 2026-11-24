@@ -4,6 +4,17 @@
 use super::*;
 
 impl App {
+    pub(crate) fn web_page_member(&self) -> Option<Uuid> {
+        let (member, address) = self.browser_command_target()?;
+        let url = url::Url::parse(&address).ok()?;
+        matches!(url.scheme(), "http" | "https").then_some(member)
+    }
+
+    pub(crate) fn page_practice_target(&self) -> Option<Uuid> {
+        self.web_page_member().filter(|member| self.content.facts(*member)
+            .is_some_and(|facts| facts.engine == inker::routing::ENGINE_SCRYING_WEB))
+    }
+
     /// Browser commands follow the active pane's published member. The graph
     /// cursor remains the fallback when no pane supplies a member.
     pub(crate) fn browser_command_target(&self) -> Option<(Uuid, String)> {

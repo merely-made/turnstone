@@ -19,6 +19,7 @@ pub(in super::super) fn dispatch_primary_chrome_press(
         crate::chrome_view::ChromeIntent::NavForward => Action::NavForward,
         crate::chrome_view::ChromeIntent::Reload => Action::Reload,
         crate::chrome_view::ChromeIntent::Stop => Action::Stop,
+        crate::chrome_view::ChromeIntent::PageMedia(member, command) => Action::PageMedia { member, command },
         crate::chrome_view::ChromeIntent::KeepNode(member) => Action::KeepNode { member },
         crate::chrome_view::ChromeIntent::Address => Action::OmnibarOpen { command: false },
         crate::chrome_view::ChromeIntent::WorkspaceMap(map) => Action::SetWorkspaceMap(map),

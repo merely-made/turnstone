@@ -176,6 +176,7 @@ pub(crate) mod routing;
 #[path = "standard_route_policy.rs"]
 mod standard_route_policy;
 use standard_route_policy::standard_route_policy;
+pub(crate) mod practice_audio;
 #[path = "content_link_target.rs"]
 mod content_link_target;
 use content_link_target::content_link_target;
@@ -300,6 +301,8 @@ pub use shell::Shell;
 #[derive(Clone, Debug)]
 pub enum ShellEvent {
     ActorWake,
+    #[cfg(all(windows, feature = "scry"))]
+    PageMediaReady,
     NativeFrameReady,
     ResidentAddressAccepted(String),
 }

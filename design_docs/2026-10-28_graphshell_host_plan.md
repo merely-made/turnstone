@@ -42,7 +42,7 @@ One tree:
 
 ### graphshell_host D1: Turnstone is the reference app and ladders; Graphshell is the library (2026-11-12)
 
-Mark, 2026-11-12: "1, since graphshell is retiring as app and living as lib in its own repo, what's in turnstone's is meant to be integrated; turnstone is now the reference app, the flagship so to speak, and will need to ladder. Graphshell will be implemented through turnstone and other app hosts and producers thus." D2 supersedes the proposed build tiers.
+Mark, 2026-11-12: "1, since graphshell is retiring as app and living as lib in its own repo, what's in turnstone's is meant to be integrated; turnstone is now the reference app, the flagship so to speak, and will need to ladder. Graphshell will be implemented through turnstone and other app hosts and producers thus." The [ladder plan](2026-11-12_ladder_plan.md) records the original build proposal. D2 supersedes its product direction.
 
 Links: area product · amends the reference-host constraint · summary Turnstone is the laddered reference app, Graphshell the host library
 
@@ -54,7 +54,7 @@ Links: area product · amends graphshell_host D1 · plans N1 · plans N2 · summ
 
 ### graphshell_host D3. Compose the frame from attached producers (2026-11-14)
 
-Mark, 2026-11-14: “the embeddable producers + frame, which should be able to detach and reattach to each other/a host as panes”. Extend the [engine adoption attachment model](2026-08-03_turnstone_engine_adoption_plan.md#e3-activation-model) to all producers. A host uses one inventory for built-in producers and separately running producers. Its running profile is the set of producers attached to its frame. The same attachment contract should serve the native app and, where their platforms support it, the extension, PWA and mobile clients. D2 sets their order.
+Mark, 2026-11-14: “the embeddable producers + frame, which should be able to detach and reattach to each other/a host as panes”. Extend [engine adoption D1](2026-08-03_turnstone_engine_adoption_plan.md#turnstone_engine_adoption-d1-an-engine-arrives-compiled-in-or-as-a-separate-process-in-one-inventory-2026-11-12) to all producers. A host uses one inventory for built-in producers and separately running producers. Its running profile is the set of producers attached to its frame. The same attachment contract should serve the native app and, where their platforms support it, the extension, PWA and mobile clients. D2 sets their order.
 
 | Table | What a cell records |
 |---|---|
@@ -63,7 +63,7 @@ Mark, 2026-11-14: “the embeddable producers + frame, which should be able to d
 
 Both tables distinguish library API, adapter forwarding, Turnstone consumption and executed consumer evidence. Record platform and producer support per cell. The shared composition brief (`graphshell/design_docs/cambium_docs/research/2026-10-06_app_composition_brief.md`, AC1–AC12) owns the underlying host and mount contracts. The first native proof would detach a live pane, attach it to another compatible host, and show that the same producer session still renders and takes input. That proof is open.
 
-Links: area product · draws on turnstone_engine_adoption D1 · amends graphshell_host D2 · summary runtime producer attachment and evidence by platform and pattern
+Links: area product · draws on turnstone_engine_adoption D1 · draws on ladder D1 · draws on ladder D5 · draws on ladder D10 · amends graphshell_host D2 · summary runtime producer attachment and evidence by platform and pattern
 
 ## Phases
 

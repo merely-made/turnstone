@@ -207,6 +207,7 @@ pollster = "1"
 # The per-user data root (`<data_dir>/turnstone`), TURNSTONE_ROOT-overridable for
 # scratch profiles (the meerkat MERE_ROOT convention).
 dirs = "7"
+directories = "6"
 # Native file authority stays in the shell. The app only sees a typed effect
 # and the contributed surface only sees the path the user selected.
 rfd = "0.18.0"
@@ -325,6 +326,9 @@ cleromancy-sky = { version = "0.1.0", git = "https://github.com/merely-made/cler
 
 # Atomic replacement of the local captured-search selection sidecar.
 tempfile = "3"
+hound = "3.5"
+# File decoding for native practice previews. Output remains owned by the host.
+symphonia = { version = "0.5.5", default-features = false, features = ["aac", "isomp4", "mp3"] }
 
 # Redshank, the listening and annotation port incubated in woodshed. Turnstone
 # is its second host (port plan Phase 7): it admits the port's own compact dock
