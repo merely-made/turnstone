@@ -54,7 +54,7 @@ impl<C: chirograph::Carrier> Server<C> {
                         "projection": {"type": "string", "description": "Projection label or resource URI."},
                         "instance": {"type": "integer", "minimum": 0},
                         "intent": {"type": "string"},
-                        "payload": {"description": "The intent's payload: a JSON value, or a string sent verbatim."},
+                        "payload": {"description": "The intent's payload: a JSON value, or a string holding JSON text."},
                         "observed_epoch": {"type": "integer", "minimum": 0},
                         "observed_revision": {"type": "integer", "minimum": 0}
                     },
@@ -136,11 +136,16 @@ impl<C: chirograph::Carrier> Server<C> {
         let instance = u32::try_from(number("instance")?)
             .map_err(|_| Failure::Tool("`instance` is out of range".into()))?;
         let (epoch, revision) = (number("observed_epoch")?, number("observed_revision")?);
-        let payload = match arguments.get("payload") {
-            None | Some(Value::Null) => Vec::new(),
-            Some(Value::String(raw)) => raw.clone().into_bytes(),
-            Some(value) => value.to_string().into_bytes(),
+        // The agent's JSON, typed by intent and sent as canonical CBOR (D232).
+        let json = match arguments.get("payload") {
+            None | Some(Value::Null) => None,
+            Some(Value::String(raw)) => Some(
+                serde_json::from_str(raw)
+                    .map_err(|_| Failure::Tool("a string `payload` must be JSON text".into()))?,
+            ),
+            Some(value) => Some(value.clone()),
         };
+        let payload = crate::payloads::encode(intent, json).map_err(Failure::Tool)?;
         let offer = self.find_projection(projection)?;
         let invocation = IntentInvocation {
             session: offer.request.session.clone(),

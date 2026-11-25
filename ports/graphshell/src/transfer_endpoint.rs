@@ -238,7 +238,7 @@ impl TransferSourceEndpoint {
             observed_epoch: self.snapshot.scene.epoch,
             observed_revision: self.snapshot.scene.revision,
             intent: TRANSFER_BEGIN_INTENT.to_string(),
-            payload: serde_json::to_vec(&TransferBeginV1 {
+            payload: chirograph::wire::encode(&TransferBeginV1 {
                 transfer_id: self.manifest.transfer_id,
             })
             .expect("TransferBeginV1 always serializes"),
@@ -278,7 +278,7 @@ impl IntentSink for TransferSourceEndpoint {
                 reason: "the transfer source is read-only".to_string(),
             });
         }
-        let begin: TransferBeginV1 = serde_json::from_slice(&intent.payload)
+        let begin: TransferBeginV1 = chirograph::wire::decode(&intent.payload)
             .map_err(|error| TransferSourceError::InvalidManifest(error.to_string()))?;
         if begin.transfer_id != self.manifest.transfer_id {
             return Ok(IntentResult::Rejected {

@@ -308,7 +308,7 @@ impl<B: Backend> GraphshellApp<B> {
             .host
             .instance_for_address(address)
             .ok_or(AppError::LocalProjectionMissing)?;
-        let payload = serde_json::to_vec(&OpenAddressV1 {
+        let payload = chirograph::wire::encode(&OpenAddressV1 {
             address: address.to_string(),
             handler: handler.to_string(),
         })

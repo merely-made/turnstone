@@ -85,7 +85,7 @@ fn web_address(intent: &IntentInvocation) -> Result<Option<String>, String> {
     if intent.intent != intent_id(SYSTEM_DEFAULT_HANDLER) {
         return Ok(None);
     }
-    let payload: OpenAddressV1 = serde_json::from_slice(&intent.payload)
+    let payload: OpenAddressV1 = chirograph::wire::decode(&intent.payload)
         .map_err(|error| format!("Invalid browser request: {error}"))?;
     if payload.handler != SYSTEM_DEFAULT_HANDLER {
         return Err("The owner offered an invalid browser handler.".into());
@@ -338,7 +338,7 @@ mod tests {
         assert!(draft.choose("choice", "invented").is_err());
         draft.choose("choice", "owner-value").unwrap();
         let command = compose(&card, &draft).unwrap();
-        let payload: serde_json::Value = serde_json::from_slice(&command.arguments).unwrap();
+        let payload: serde_json::Value = chirograph::wire::decode(&command.arguments).unwrap();
         assert_eq!(
             payload,
             serde_json::json!({

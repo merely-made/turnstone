@@ -181,7 +181,7 @@ fn repeated_source_uses_exact_owner_occurrence_and_existing_form_and_wire() {
         assert_eq!(wire.observed_epoch, SceneEpoch(3));
         assert_eq!(wire.observed_revision, Revision(7));
         assert_eq!(
-            serde_json::from_slice::<serde_json::Value>(&wire.payload).unwrap()["choice"],
+            chirograph::wire::decode::<serde_json::Value>(&wire.payload).unwrap()["choice"],
             "card:2"
         );
         assert!(

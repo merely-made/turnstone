@@ -124,7 +124,7 @@ pub(crate) async fn connect(
         observed_epoch: snapshot.scene.epoch,
         observed_revision: snapshot.scene.revision,
         intent: TRANSFER_BEGIN_INTENT.to_string(),
-        payload: serde_json::to_vec(&TransferBeginV1 { transfer_id })
+        payload: chirograph::wire::encode(&TransferBeginV1 { transfer_id })
             .map_err(|error| error.to_string())?,
     };
     match intent(ok(first

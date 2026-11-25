@@ -24,6 +24,10 @@ chirograph.workspace = true
 sceno.workspace = true
 scenotime.workspace = true
 serde_json.workspace = true
+serde = "1"
+# The payload types mere_invoke translates agents' JSON into (D232).
+mere-overmap.workspace = true
+eidetic = { workspace = true, features = ["kept_text"] }
 graphshell-door = { workspace = true, optional = true, features = ["projection-door"] }
 
 [lints]

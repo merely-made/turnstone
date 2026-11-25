@@ -22,6 +22,7 @@ use sceno::{
     Arrangement, Footprint, InstanceId, ProjectedItem, Representation, Scene, Score, Size2,
     SourceIx, SourceRef, Spiral, Transform2,
 };
+use mere_overmap::wire::{APPEND_NOTE_INTENT, APPEND_NOTE_SCHEMA, AppendNoteV1};
 use scenotime::{Revision, SceneEpoch, SceneSnapshot};
 
 const SESSION: &str = "mock:notes";
@@ -102,10 +103,10 @@ impl Route {
                         role: SemanticRole::Article,
                         bounds: BoundsRelationship::FitWithinFootprint,
                         actions: vec![AdvertisedAction {
-                            intent: IntentReference("notes.append".into()),
+                            intent: IntentReference(APPEND_NOTE_INTENT.into()),
                             label: "Append a note".into(),
                             explanation: "Add a note after this one.".into(),
-                            payload_schema: "notes.append/v1".into(),
+                            payload_schema: APPEND_NOTE_SCHEMA.into(),
                             input_form: None,
                             effect: IntentEffect::DomainTruth,
                             icon: None,
@@ -179,12 +180,18 @@ impl Carrier for Route {
                         Revision(self.revision),
                     )));
                 }
-                if intent.intent != "notes.append" {
+                if intent.intent != APPEND_NOTE_INTENT {
                     return Ok(CarrierResponseBody::Intent(IntentResult::Rejected {
                         reason: format!("no intent {}", intent.intent),
                     }));
                 }
-                self.notes.push(String::from_utf8(intent.payload).unwrap());
+                // The bridge sends the agent's note as canonical CBOR (D232).
+                let Ok(note) = chirograph::wire::decode::<AppendNoteV1>(&intent.payload) else {
+                    return Ok(CarrierResponseBody::Intent(IntentResult::Rejected {
+                        reason: "the note is not canonical CBOR".into(),
+                    }));
+                };
+                self.notes.push(note.subject);
                 self.revision += 1;
                 Ok(CarrierResponseBody::Intent(IntentResult::Accepted))
             },

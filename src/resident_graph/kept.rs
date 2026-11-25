@@ -82,7 +82,7 @@ pub(super) async fn run(
         Request::Refresh => None,
         Request::SetKeep(enabled) => {
             let payload =
-                serde_json::to_vec(&KeepEnabledV1 { enabled }).expect("keep setting encodes");
+                chirograph::wire::encode(&KeepEnabledV1 { enabled }).expect("keep setting encodes");
             Some(
                 send(client, graph, KEEP_ENABLED_INTENT, payload)
                     .await
@@ -153,7 +153,7 @@ async fn capture(
         .map_err(|error| error.to_string())?;
     let (page, record) = finished.await.map_err(|_| "The page fetch stopped.")??;
     let address = page.url.clone();
-    let payload = serde_json::to_vec(&KeepPagesV1 {
+    let payload = chirograph::wire::encode(&KeepPagesV1 {
         pages: vec![page],
         fetches: vec![record],
     })

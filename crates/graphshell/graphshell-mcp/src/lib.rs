@@ -26,6 +26,7 @@
 //! The wire is MCP 2026-07-28 and, because harnesses still open with
 //! `initialize`, the handshake-era revisions ([`rpc`]).
 
+mod payloads;
 mod rpc;
 mod tools;
 mod uxtree_snapshot;

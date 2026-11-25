@@ -16,7 +16,15 @@ mod uxtree_resource;
 
 use common::Route;
 use graphshell_mcp::{Config, Server};
+use mere_overmap::wire::{
+    APPEND_NOTE_INTENT, APPEND_NOTE_SCHEMA, AppendNoteV1, SEARCH_NOTES_INTENT, SEARCH_NOTES_SCHEMA,
+};
 use serde_json::{Value, json};
+
+/// A note as an agent writes it: the payload's JSON.
+fn note(subject: &str) -> Value {
+    serde_json::to_value(AppendNoteV1::new("decision", subject)).unwrap()
+}
 
 fn server(route: Route) -> Server<Route> {
     Server::new(
@@ -143,7 +151,7 @@ fn a_projection_reads_as_instances_with_their_disclosed_cards() {
     );
     assert_eq!(
         document["items"][0]["offers"][0]["semantics"]["actions"][0]["intent"],
-        "notes.append"
+        APPEND_NOTE_INTENT
     );
     assert_eq!(
         mcp_opens(&mcp),
@@ -174,15 +182,15 @@ fn actions_carry_the_revision_a_write_must_observe_and_a_write_lands() {
     let projection = &structured(&listed)["projections"][0];
     assert_eq!(
         projection["actions"][0]["payload_schema"],
-        "notes.append/v1"
+        APPEND_NOTE_SCHEMA
     );
     let (epoch, revision) = (projection["epoch"].clone(), projection["revision"].clone());
 
     let done = tool(
         &mut mcp,
         "mere_invoke",
-        json!({"projection": "Notes", "instance": 0, "intent": "notes.append",
-               "payload": "decided: servers hold no keys", "observed_epoch": epoch,
+        json!({"projection": "Notes", "instance": 0, "intent": APPEND_NOTE_INTENT,
+               "payload": note("decided: servers hold no keys"), "observed_epoch": epoch,
                "observed_revision": revision}),
     );
     assert_eq!(done["result"]["isError"], false);
@@ -207,13 +215,14 @@ fn actions_carry_the_revision_a_write_must_observe_and_a_write_lands() {
 }
 
 #[test]
-fn a_structured_payload_is_sent_as_its_json_text() {
+fn a_payload_written_as_json_text_crosses_as_its_type() {
     let mut mcp = server(Route::new(&["seed"]));
+    let text = note("notes.append/v1").to_string();
     tool(
         &mut mcp,
         "mere_invoke",
-        json!({"projection": "Notes", "instance": 0, "intent": "notes.append",
-               "payload": {"schema": "notes.append/v1"}, "observed_epoch": 3, "observed_revision": 1}),
+        json!({"projection": "Notes", "instance": 0, "intent": APPEND_NOTE_INTENT,
+               "payload": text, "observed_epoch": 3, "observed_revision": 1}),
     );
     let read = call(
         &mut mcp,
@@ -231,8 +240,8 @@ fn a_structured_payload_is_sent_as_its_json_text() {
 fn a_stale_write_is_refused_with_the_current_revision() {
     let mut mcp = server(Route::new(&["seed"]));
     let args = |revision| {
-        json!({"projection": "Notes", "instance": 0, "intent": "notes.append",
-               "payload": "x", "observed_epoch": 3, "observed_revision": revision})
+        json!({"projection": "Notes", "instance": 0, "intent": APPEND_NOTE_INTENT,
+               "payload": note("x"), "observed_epoch": 3, "observed_revision": revision})
     };
     tool(&mut mcp, "mere_invoke", args(1));
     let stale = tool(&mut mcp, "mere_invoke", args(1));
@@ -250,10 +259,20 @@ fn what_the_route_rejects_or_does_not_grant_reaches_the_model_as_a_tool_error() 
         &mut mcp,
         "mere_invoke",
         json!({"projection": "Notes", "instance": 0, "intent": "notes.erase",
-               "observed_epoch": 3, "observed_revision": 1}),
+               "payload": {}, "observed_epoch": 3, "observed_revision": 1}),
     );
     assert_eq!(unknown["result"]["isError"], true);
-    assert_eq!(structured(&unknown)["result"], "rejected");
+    // An intent the bridge cannot type is refused before the route (D232).
+    let error = structured(&unknown)["error"].as_str().unwrap().to_owned();
+    assert!(error.contains("notes.erase"), "{error}");
+    let unadvertised = tool(
+        &mut mcp,
+        "mere_invoke",
+        json!({"projection": "Notes", "instance": 0, "intent": SEARCH_NOTES_INTENT,
+               "payload": {"schema": SEARCH_NOTES_SCHEMA, "text": "x"},
+               "observed_epoch": 3, "observed_revision": 1}),
+    );
+    assert_eq!(structured(&unadvertised)["result"], "rejected");
 
     let mut denied = Route::new(&["seed"]);
     denied.granted = false;
@@ -261,8 +280,8 @@ fn what_the_route_rejects_or_does_not_grant_reaches_the_model_as_a_tool_error() 
     let refused = tool(
         &mut mcp,
         "mere_invoke",
-        json!({"projection": "Notes", "instance": 0, "intent": "notes.append",
-               "payload": "x", "observed_epoch": 3, "observed_revision": 1}),
+        json!({"projection": "Notes", "instance": 0, "intent": APPEND_NOTE_INTENT,
+               "payload": note("x"), "observed_epoch": 3, "observed_revision": 1}),
     );
     assert_eq!(refused["result"]["isError"], true);
     assert!(
