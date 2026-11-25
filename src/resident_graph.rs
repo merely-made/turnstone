@@ -27,7 +27,11 @@ use crate::panes::{PaneKindId, PaneSource, SerializedSource, SourceRef, SourceSc
 mod actions;
 mod coop;
 mod kept;
+mod linked;
 mod worker;
+#[cfg(test)]
+pub(crate) use linked::open_fixture_graph;
+pub(crate) use linked::{LinkedRoutes, Share};
 
 pub(crate) const ADDRESS_PREFIX: &str = "mere://resident/";
 pub(crate) const PANE_KIND: &str = "turnstone.resident-graph";
@@ -66,6 +70,7 @@ pub(crate) fn source(domain: &str) -> PaneSource {
 }
 
 pub(crate) struct ResidentGraphProvider {
+    linked_routes: LinkedRoutes,
     kind: PaneKindId,
     schema: SourceSchemaId,
     descriptor: SurfaceDescriptor,
@@ -75,8 +80,13 @@ pub(crate) struct ResidentGraphProvider {
 }
 
 impl ResidentGraphProvider {
-    pub(crate) fn new(wake: armillary::Wake, open_address: actions::OpenAddress) -> Self {
+    pub(crate) fn new(
+        wake: armillary::Wake,
+        open_address: actions::OpenAddress,
+        linked_routes: LinkedRoutes,
+    ) -> Self {
         Self {
+            linked_routes,
             kind: PaneKindId::new(PANE_KIND),
             schema: SourceSchemaId::new(SOURCE_SCHEMA),
             descriptor: SurfaceDescriptor {
@@ -138,6 +148,7 @@ impl SurfaceProvider for ResidentGraphProvider {
             .map_err(|error| invalid(error.to_string()))?;
         let route = resident_route(&source.domain);
         let mut state = State {
+            linked_routes: self.linked_routes.clone(),
             route,
             wake: self.wake.clone(),
             open_address: self.open_address.clone(),
@@ -180,6 +191,7 @@ fn resident_route(domain: &str) -> Result<AppRouteId, String> {
 }
 
 struct State {
+    linked_routes: LinkedRoutes,
     route: Result<AppRouteId, String>,
     wake: armillary::Wake,
     open_address: actions::OpenAddress,
@@ -204,6 +216,9 @@ impl State {
             .and_then(|route| worker::Connection::start(route, self.wake.clone()));
         match result {
             Ok(connection) => {
+                if let Ok(route) = &self.route {
+                    self.linked_routes.register(route, &connection);
+                }
                 self.connection = Some(connection);
                 self.model.status = ViewStatus::Building(StatusNote {
                     message: "Opening this resident graph…".into(),

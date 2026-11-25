@@ -103,7 +103,10 @@ pub struct SourceCustody {
 #[path = "trail_memory/custody_test_fixture.rs"]
 pub(crate) mod custody_test_fixture;
 
+mod linked_query;
+
 pub enum TrailCommand {
+    LinkedQuery(crate::linked_queries::OwnerRequest),
     ValidateKeptSource(Box<ValidationCommand>),
     ReopenNeighborhood(Box<crate::swatch_pane::NeighborhoodRead>),
     ResearchRecords(record_actor::Command),
@@ -383,7 +386,6 @@ mod inference_source;
 use inference_source::inference_source;
 #[path = "trail_memory/emit_capture_recovery.rs"]
 mod emit_capture_recovery;
-use emit_capture_recovery::emit_capture_recovery;
 #[path = "trail_memory/emit_sealed_capture_recovery.rs"]
 mod emit_sealed_capture_recovery;
 use emit_sealed_capture_recovery::emit_sealed_capture_recovery;

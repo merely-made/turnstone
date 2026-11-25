@@ -65,15 +65,14 @@ impl Shell {
         );
         fetch::install_smolweb_tofu(gemini_trust.clone());
 
-        // The fetch actor on its own armillary thread, waking this loop like
-        // the physics actor does.
-        let fetch_proxy = proxy.clone();
-        let fetch_wake: armillary::Wake = Arc::new(move || {
-            let _ = fetch_proxy.send_event(crate::shell::ShellEvent::ActorWake);
+        // Wake the shell when a fetch or resident graph actor has an update.
+        let actor_proxy = proxy.clone();
+        let actor_wake: armillary::Wake = Arc::new(move || {
+            let _ = actor_proxy.send_event(crate::shell::ShellEvent::ActorWake);
         });
-        let (nomadnet_handle, nomadnet_rx) = nomadnet_fetch::spawn(Arc::clone(&fetch_wake));
+        let (nomadnet_handle, nomadnet_rx) = nomadnet_fetch::spawn(Arc::clone(&actor_wake));
         let (micron_submission_handle, micron_submission_rx) =
-            nomadnet_fetch::spawn_submissions(Arc::clone(&fetch_wake));
+            nomadnet_fetch::spawn_submissions(Arc::clone(&actor_wake));
         // The session jar is durable again: loaded here, flushed on each drain.
         let cookie_custody = crate::cookie_custody::CookieCustody::open(&app.data_root)
             .expect("Turnstone could not open its cookie store");
@@ -92,9 +91,9 @@ impl Shell {
         let network_offline = crate::offline::enabled();
         let offline_attempts = Arc::new(std::sync::atomic::AtomicUsize::new(0));
         let (fetch_handle, fetch_rx) = if network_offline {
-            fetch_port::FetchPort::offline(fetch_wake.clone(), offline_attempts.clone())
+            fetch_port::FetchPort::offline(actor_wake.clone(), offline_attempts.clone())
         } else {
-            fetch_port::FetchPort::network(fetch_wake.clone(), client_limits, &smolweb_pack)
+            fetch_port::FetchPort::network(actor_wake.clone(), client_limits, &smolweb_pack)
                 .expect("Turnstone could not start its fetch actor")
         };
         let blocking_fetch: Arc<dyn fetch::Fetch> = if network_offline {
@@ -297,17 +296,15 @@ impl Shell {
                 },
             )))
             .expect("the Personae provider is unique");
-        let resident_graph_proxy = proxy.clone();
         let resident_address_proxy = proxy.clone();
         surface_providers
             .register_provider(crate::resident_graph::ResidentGraphProvider::new(
-                Arc::new(move || {
-                    let _ = resident_graph_proxy.send_event(crate::shell::ShellEvent::ActorWake);
-                }),
+                actor_wake.clone(),
                 Arc::new(move |address| {
                     let _ = resident_address_proxy
                         .send_event(crate::shell::ShellEvent::ResidentAddressAccepted(address));
                 }),
+                app.research.1.clone(),
             ))
             .expect("the resident graph provider is unique");
         surface_providers
@@ -382,7 +379,7 @@ impl Shell {
             native_frames: Default::default(),
             native_frame_wake,
             fetch_handle,
-            fetch_wake,
+            fetch_wake: actor_wake,
             client_limits,
             network_offline,
             offline_attempts,

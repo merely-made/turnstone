@@ -40,6 +40,7 @@ mod research_structured_arms;
 mod research_structured_rows;
 #[cfg(test)]
 mod research_structured_tests;
+mod linked_query_arms;
 mod research_search_arms;
 mod research_search_scenario;
 mod research_compare_arms;

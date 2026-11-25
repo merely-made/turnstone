@@ -39,6 +39,17 @@ pub(super) fn run(
     let mut last_to: HashMap<String, PageRef> = HashMap::new();
     while let Ok(command) = commands.recv() {
         match command {
+            TrailCommand::LinkedQuery(job) => {
+                out.emit(Update::LinkedQuery(Box::new(linked_query::run(
+                    *job.request,
+                    &job.bridge,
+                    &current_dir,
+                    current_capture_generation,
+                    custody.as_ref(),
+                    sealed_store.as_ref(),
+                    &limits,
+                ))));
+            },
             TrailCommand::ValidateKeptSource(request) => {
                 out.emit(request.run(
                     &current_dir,
@@ -110,20 +121,9 @@ pub(super) fn run(
                     });
                 }
                 if let (Some(binding), Ok(limits)) = (custody.as_ref(), limits.as_ref()) {
-                    emit_capture_recovery(
+                    emit_capture_recovery::all(
                         &mut state,
-                        binding,
-                        &current_dir,
-                        current_capture_generation,
-                        &out,
-                        limits,
-                    );
-                }
-                if let (Some(store), Some(binding), Ok(limits)) =
-                    (sealed_store.as_mut(), custody.as_ref(), limits.as_ref())
-                {
-                    emit_sealed_capture_recovery(
-                        store,
+                        sealed_store.as_mut(),
                         binding,
                         &current_dir,
                         current_capture_generation,
@@ -561,20 +561,9 @@ pub(super) fn run(
                     });
                 }
                 if let (Some(binding), Ok(limits)) = (custody.as_ref(), limits.as_ref()) {
-                    emit_capture_recovery(
+                    emit_capture_recovery::all(
                         &mut state,
-                        binding,
-                        &current_dir,
-                        current_capture_generation,
-                        &out,
-                        limits,
-                    );
-                }
-                if let (Some(store), Some(binding), Ok(limits)) =
-                    (sealed_store.as_mut(), custody.as_ref(), limits.as_ref())
-                {
-                    emit_sealed_capture_recovery(
-                        store,
+                        sealed_store.as_mut(),
                         binding,
                         &current_dir,
                         current_capture_generation,

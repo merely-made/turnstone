@@ -3,6 +3,8 @@
 
 //! The app's selected subject packs and the reading actions understood by Turnstone.
 
+pub use mere_ontology::TermKind;
+pub use mere_ontology::{AdmittedSource, RecordIndex, SavedView, SourceResult, ViewQuery};
 use mere_ontology::{CITATION, Profile, WEB_ANNOTATION};
 use std::path::Path;
 use std::sync::OnceLock;
@@ -69,3 +71,8 @@ pub fn inline_reading(content_type: Option<&str>, bytes: &[u8], base: Option<&st
 
 #[cfg(test)]
 mod tests;
+
+/// The same offline contexts used for the named claims in retained HTML.
+pub fn linked_context() -> mere::ContextCache {
+    mere_ontology::with_web_annotation_context(mere::ContextCache::full())
+}

@@ -137,6 +137,18 @@ impl App {
                     current.as_ref() != Some(&(request.context.clone(), request.revision))
                         || epoch != Some(request.epoch)
                 });
+        let stale = stale
+            || self
+                .research_search
+                .linked
+                .accepted
+                .as_ref()
+                .is_some_and(|(_, stamp)| {
+                    epoch != Some(stamp.epoch)
+                        || !current.as_ref().is_some_and(|(context, revision)| {
+                            context == &stamp.context && *revision == stamp.revision
+                        })
+                });
         if stale {
             self.clear_private_research();
             let mut effects = structured_effects;
@@ -182,6 +194,7 @@ impl App {
         let state = &mut self.research_search;
         state.first_row = 0;
         match command {
+            Command::Linked(command) => return self.linked_query_command(command),
             Command::Results => state.view = View::Results,
             Command::Compare => state.view = View::Compare,
             Command::ChooseLeft => state.view = View::ChooseLeft,
@@ -305,6 +318,9 @@ impl App {
                 let original = std::mem::take(&mut state.original_text);
                 self.omnibar.text = original;
                 self.omnibar.cursor = self.omnibar.text.len();
+                if let Some(field) = field.strip_prefix("linked_") {
+                    return self.linked_query_input(field, value);
+                }
                 match apply_value(state, &self.data_root, &field, &value) {
                     Ok(()) => {
                         state.error = None;

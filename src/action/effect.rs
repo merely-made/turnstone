@@ -7,6 +7,11 @@ use super::*;
 /// itself never blocks and never touches a platform API.
 #[derive(Clone, Debug, PartialEq)]
 pub enum Effect {
+    LinkedQuery(Box<crate::linked_queries::Request>),
+    LinkedQueryFile(
+        crate::linked_queries::FileAction,
+        crate::linked_queries::Stamp,
+    ),
     ResearchRecords(crate::research_records::Job),
     ResearchSearch(crate::research_search::Request),
     CancelResearchSearch,

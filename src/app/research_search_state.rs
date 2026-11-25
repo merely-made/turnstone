@@ -7,6 +7,7 @@ use eidetic_search::query::{
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Command {
+    Linked(crate::linked_queries::Command),
     Results,
     Compare,
     ChooseLeft,
@@ -48,6 +49,7 @@ pub enum Command {
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum View {
+    Linked,
     Results,
     Compare,
     ChooseLeft,
@@ -239,6 +241,7 @@ impl Preferences {
 }
 
 pub(crate) struct State {
+    pub linked: crate::linked_queries::State,
     pub structured: super::research_structured_state::State,
     pub view: View,
     pub mode: u8,
@@ -266,6 +269,7 @@ pub(crate) struct State {
 impl Default for State {
     fn default() -> Self {
         Self {
+            linked: Default::default(),
             structured: Default::default(),
             view: View::Results,
             mode: 0,

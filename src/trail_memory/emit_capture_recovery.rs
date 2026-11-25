@@ -96,3 +96,18 @@ pub(super) fn emit_capture_recovery(
         out.emit(update);
     }
 }
+
+pub(super) fn all(
+    state: &mut Option<(FjallStore, BrowsingMemory)>,
+    sealed: Option<&mut FjallStore>,
+    custody: &SourceCustody,
+    directory: &Path,
+    generation: uuid::Uuid,
+    out: &Emitter<Update>,
+    limits: &crate::research_storage::StorageLimits,
+) {
+    emit_capture_recovery(state, custody, directory, generation, out, limits);
+    if let Some(store) = sealed {
+        emit_sealed_capture_recovery(store, custody, directory, generation, out, limits);
+    }
+}

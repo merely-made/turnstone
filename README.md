@@ -356,3 +356,19 @@ packs, Gloss also offers **Linked records**. Browse by type, open a record,
 and follow either end of a relationship within the document. **Show evidence**
 reveals the original identifiers, predicate, vocabulary pack, and source URL.
 A replacement or additional vocabulary takes effect on the next launch.
+
+Open **Search saved sources** and choose **Saved linked queries…** to ask the
+same question across kept HTML pages. Choose specific capture revisions, name
+the query and select a record type, incoming links or outgoing links. **Create
+from selected revisions** saves the definition and its source choices in the
+session’s encrypted catalog. Reopen a query by name and select a statement to
+read the exact retained page. The reading uses the page’s embedded JSON-LD and
+shows each source and raw response revision independently.
+
+When you keep another edition, choose it under **Sources and scope**, then
+use **Use selected revisions**. A withdrawn choice appears as unavailable.
+**Export definition…** and **Open definition…** exchange the portable JSON
+query. To disclose evidence, first open the destination resident graph pane.
+**Share to resident domain…** previews the source and statement counts and
+attached session. Confirming copies the named query, source identifiers, raw
+revisions and selected vocabulary statements into that session.

@@ -418,6 +418,8 @@ impl Shell {
                 | Effect::PersistSourceCapture { .. }
                 | Effect::CaptureSourceDocument { .. }
                 | Effect::ResearchCompare(..)
+                | Effect::LinkedQuery(..)
+                | Effect::LinkedQueryFile(..)
                 | Effect::ResearchRecords(..)
                 | Effect::ResearchSearch(..)
                 | Effect::CancelResearchSearch

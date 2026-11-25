@@ -32,6 +32,10 @@ impl App {
         match &state.view {
             View::Results => {
                 push("Search options…".into(), Command::Options);
+                push(
+                    "Saved linked queries…".into(),
+                    Command::Linked(crate::linked_queries::Command::Catalog),
+                );
                 push("Compare sources…".into(), Command::Compare);
                 push("Structured records…".into(), Command::Structured);
                 if let Some(error) = &state.error {
@@ -507,6 +511,7 @@ impl App {
                     Command::Submit(self.omnibar.text.clone()),
                 );
             },
+            View::Linked => self.linked_query_rows(&mut push),
             View::Structured => unreachable!(),
         }
         let start = state.first_row.min(rows.len().saturating_sub(1));
@@ -525,6 +530,10 @@ impl App {
 fn show_date(value: Option<i64>) -> String {
     value
         .and_then(|ms| jiff::Timestamp::from_millisecond(ms).ok())
-        .map(|ts| ts.to_zoned_datetime(jiff::tz::TimeZone::UTC).date().to_string())
+        .map(|ts| {
+            ts.to_zoned_datetime(jiff::tz::TimeZone::UTC)
+                .date()
+                .to_string()
+        })
         .unwrap_or_else(|| "any date".into())
 }

@@ -91,6 +91,7 @@ pub mod knot_document_surface;
 #[cfg(feature = "authoring")]
 mod knot_saved_citations;
 pub mod launch;
+pub mod linked_queries;
 pub mod nomadnet;
 pub mod observe;
 mod offline;

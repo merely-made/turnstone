@@ -7,6 +7,39 @@ use crate::shell::reading_edge::lanes_anchor;
 impl Shell {
     pub(super) fn effect_control_content(&mut self, effect: Effect) {
         match effect {
+            Effect::LinkedQuery(job) => {
+                let token = job.token;
+                let stamp = job.stamp.clone();
+                if !self
+                    .trail_handle
+                    .command(crate::trail_memory::TrailCommand::LinkedQuery(
+                        crate::linked_queries::OwnerRequest {
+                            request: job,
+                            bridge: self.app.research.clone(),
+                        },
+                    ))
+                {
+                    let effects = self.app.apply_update(Update::LinkedQuery(Box::new(
+                        crate::linked_queries::Response {
+                            token,
+                            stamp,
+                            result: Err("The retained-source owner is unavailable.".into()),
+                        },
+                    )));
+                    self.run_effects(effects);
+                }
+            },
+            Effect::LinkedQueryFile(action, stamp) => {
+                if let Some(result) = crate::linked_queries::pick_file(action, || {
+                    crate::linked_queries::Stamp::current(&self.app.research)
+                        .ok()
+                        .as_ref()
+                        == Some(&stamp)
+                }) {
+                    let effects = self.app.linked_query_file(stamp, result);
+                    self.run_effects(effects);
+                }
+            },
             Effect::ResearchRecords(request) => self.research_worker.submit_records(request),
             Effect::ResearchSearch(request) => self.research_worker.submit(request),
             Effect::ResearchCompare(request) => self.research_worker.submit_compare(request),

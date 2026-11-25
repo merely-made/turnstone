@@ -144,7 +144,10 @@ impl Drop for State {
     }
 }
 #[derive(Clone, Default)]
-pub(crate) struct Bridge(Arc<Mutex<State>>);
+pub(crate) struct Bridge(
+    Arc<Mutex<State>>,
+    pub(crate) crate::resident_graph::LinkedRoutes,
+);
 impl Bridge {
     pub(crate) fn set_clip_owner(&self, owner: crate::retained_clip::owner_worker::Worker) {
         self.0.lock().unwrap().clip_owner = Some(owner);

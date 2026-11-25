@@ -22,6 +22,7 @@ use super::{actions, kept};
 const DEADLINE: Duration = Duration::from_secs(15);
 
 pub(super) enum Request {
+    Linked(super::linked::Packet),
     Graph(MereViewRequest),
     Kept(kept::Request),
     Action(Box<actions::Command>),
@@ -165,6 +166,11 @@ async fn run(
                     kept = None;
                     action = None;
                     match request {
+                        Request::Linked(packet) => {
+                            let session = panel.model().sessions.iter()
+                                .find(|s| s.attached && !s.trashed).map(|s| s.id);
+                            packet.complete(&mut client, session).await?;
+                        },
                         Request::Graph(request) => {
                             if let Err(reason) = panel.request(request) {
                                 panel.show_notice(reason);

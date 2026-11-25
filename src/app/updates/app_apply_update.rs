@@ -39,6 +39,7 @@ impl App {
             Update::ResearchCompareFinished { request, result } => {
                 self.research_compare_finished(request, result.map_err(|e| e.to_string()))
             },
+            Update::LinkedQuery(answer) => self.accept_linked_query(*answer),
             Update::ResearchSearchFinished { request, result } => {
                 self.research_search_finished(request, result.map_err(|e| e.to_string()))
             },
