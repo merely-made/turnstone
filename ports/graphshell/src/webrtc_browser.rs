@@ -5,22 +5,23 @@
 // SPDX-License-Identifier: MPL-2.0
 
 //! The browser's glue: a `BrowserInitiator` as the join's frame channel, and
-//! the NDJSON session over its frames.
+//! the CBOR Sequence session over its frames.
 //!
 //! Everything with a rule in it lives elsewhere and runs on an ordinary
 //! `cargo test`: the join sequence in [`graphshell_host::webrtc_join`], the
 //! session protocol in `graphshell_client::SessionDriver`, and the
-//! byte-to-line reassembly in [`LineAssembler`]. This module is what is left
+//! byte-to-item reassembly in [`ItemAssembler`]. This module is what is left
 //! once those are taken out — a few dozen lines that know what a data channel
 //! is, and nothing else does.
 //!
-//! ## Frames in, lines out
+//! ## Frames in, items out
 //!
-//! The host presents its carrier as a byte stream and writes NDJSON to it, so
-//! a line may span frames and a frame may hold several lines. The browser has
-//! no pump: each inbound frame's bytes go through the assembler, and each
-//! complete line reaches the driver. Outbound, a request line is cut at the
-//! carrier's frame ceiling, which the host's pump reassembles the same way.
+//! The host presents its carrier as a byte stream and writes wire items to it
+//! ([`chirograph::wire`]), so an item may span frames and a frame may hold
+//! several items. The browser has no pump: each inbound frame's bytes go
+//! through the assembler, and each complete item reaches the driver. Outbound,
+//! a request item is cut at the carrier's frame ceiling, which the host's pump
+//! reassembles the same way.
 //!
 //! ## Two steps, because signaling is the page's
 //!
@@ -45,7 +46,7 @@ pub use notochord::HandshakeLimits;
 pub use personae::InMemoryProvider;
 pub use webrtc_carrier::{BrowserInitiatorConfig, InviteV1};
 
-use chirograph::line::LineAssembler;
+use chirograph::wire::ItemAssembler;
 use graphshell_host::admission::PROJECTION_PROTOCOL;
 use graphshell_host::webrtc_join::{
     JoinError, JoinFrames, PeerJoin, fill_random, peer_join, peer_rejoin,
@@ -154,7 +155,7 @@ pub struct BrowserSession {
     pub ephemeral: InMemoryProvider,
     /// What the host admitted.
     pub joined: PeerJoin,
-    assembler: LineAssembler,
+    assembler: ItemAssembler,
 }
 
 impl BrowserJoin {
@@ -246,7 +247,7 @@ impl BrowserJoin {
             frames,
             ephemeral,
             joined,
-            assembler: LineAssembler::default(),
+            assembler: ItemAssembler::default(),
         })
     }
 }
@@ -299,7 +300,7 @@ impl BrowserJoin {
             frames,
             ephemeral,
             joined,
-            assembler: LineAssembler::default(),
+            assembler: ItemAssembler::default(),
         })
     }
 }
@@ -326,9 +327,9 @@ impl BrowserSession {
         }
     }
 
-    /// Send one NDJSON line to the host, cut at the carrier's frame ceiling.
-    pub async fn send_line(&mut self, line: &str) -> Result<(), String> {
-        self.writer().send_line(line).await
+    /// Send one wire item to the host, cut at the carrier's frame ceiling.
+    pub async fn send_item(&mut self, item: &[u8]) -> Result<(), String> {
+        self.writer().send_item(item).await
     }
 
     /// The subject this session runs as, hex-encoded, for a receipt.
@@ -343,7 +344,7 @@ impl BrowserSession {
     }
 
     /// The outbound half on its own, so one task can write while another
-    /// sits in [`next_line`](Self::next_line). Sending needs only the
+    /// sits in [`next_item`](Self::next_item). Sending needs only the
     /// initiator, which is shared; receiving owns the inbox.
     pub fn writer(&self) -> BrowserWriter {
         BrowserWriter {
@@ -351,28 +352,27 @@ impl BrowserSession {
         }
     }
 
-    /// The next complete line from the host, or `None` when the channel is
+    /// The next complete item from the host, or `None` when the channel is
     /// gone.
     ///
-    /// Frames are consumed as needed: several lines may arrive in one frame
-    /// and are handed out one per call, and a line spanning frames is held
-    /// until its end arrives.
-    pub async fn next_line(&mut self) -> Result<Option<String>, String> {
+    /// Frames are consumed as needed: several items may arrive in one frame
+    /// and are handed out one per call, and an item spanning frames is held
+    /// until its end arrives. A channel that closes inside an item is an
+    /// error.
+    pub async fn next_item(&mut self) -> Result<Option<Vec<u8>>, String> {
         loop {
-            if let Some(line) = self
+            if let Some(item) = self
                 .assembler
-                .next_line()
+                .next_item()
                 .map_err(|error| error.to_string())?
             {
-                return Ok(Some(line));
+                return Ok(Some(item));
             }
             match self.frames.recv().await? {
                 Some(frame) => self.assembler.push(&frame),
                 None => {
-                    return self
-                        .assembler
-                        .take_partial()
-                        .map_err(|error| error.to_string());
+                    self.assembler.finish().map_err(|error| error.to_string())?;
+                    return Ok(None);
                 },
             }
         }
@@ -386,18 +386,16 @@ pub struct BrowserWriter {
 }
 
 impl BrowserWriter {
-    /// Close the channel politely from this end. The reader's `next_line`
+    /// Close the channel politely from this end. The reader's `next_item`
     /// then returns `None`, and it retires the session (see
     /// [`BrowserSession::retire`] for why the frames must be parked).
     pub fn close(&self) {
         self.initiator.close();
     }
 
-    /// Send one NDJSON line to the host, cut at the carrier's frame ceiling.
-    pub async fn send_line(&self, line: &str) -> Result<(), String> {
-        let mut bytes = line.as_bytes().to_vec();
-        bytes.push(b'\n');
-        for chunk in bytes.chunks(MAX_FRAME_PAYLOAD_BYTES) {
+    /// Send one wire item to the host, cut at the carrier's frame ceiling.
+    pub async fn send_item(&self, item: &[u8]) -> Result<(), String> {
+        for chunk in item.chunks(MAX_FRAME_PAYLOAD_BYTES) {
             self.initiator
                 .send_frame(chunk)
                 .await

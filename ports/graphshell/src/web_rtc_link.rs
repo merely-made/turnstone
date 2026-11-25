@@ -9,7 +9,7 @@
 //! The rules of the session — what each answer implies next, what the person
 //! is told — are `graphshell_client::RemoteSession`'s. What is left here is
 //! the browser's: joining a host through the C4 door (`BrowserJoin` →
-//! `BrowserSession`), the two pumps that move lines between the channel and
+//! `BrowserSession`), the two pumps that move wire items between the channel and
 //! the session, rejoining as the same subject, and the fixture's `/nudge`
 //! hook. A page implements [`RemoteHost`] over wherever it keeps the session;
 //! the retained page keeps it in its shared state.
@@ -46,7 +46,7 @@ const GATHER_TIMEOUT_MS: i32 = 3_000;
 
 /// The channel a joined session speaks over.
 pub(crate) struct Transport {
-    outbox: UnboundedSender<String>,
+    outbox: UnboundedSender<Vec<u8>>,
     /// The channel's outbound half, kept so the page can close it.
     writer: BrowserWriter,
     pub(crate) subject: String,
@@ -69,22 +69,22 @@ pub(crate) struct LiveRemote {
 }
 
 impl LiveRemote {
-    pub(crate) fn send_lines(
+    pub(crate) fn send_items(
         &mut self,
-        lines: impl IntoIterator<Item = String>,
+        items: impl IntoIterator<Item = Vec<u8>>,
     ) -> Result<(), String> {
-        for line in lines {
+        for item in items {
             self.transport
                 .outbox
-                .unbounded_send(line)
+                .unbounded_send(item)
                 .map_err(|_| "The resident route writer is gone.".to_string())?;
         }
         Ok(())
     }
     /// Put whatever the session queued onto the channel, in order.
     pub(crate) fn flush(&mut self) {
-        for line in self.session.take_outgoing() {
-            if self.transport.outbox.unbounded_send(line).is_err() {
+        for item in self.session.take_outgoing() {
+            if self.transport.outbox.unbounded_send(item).is_err() {
                 self.session.link_failed("the session writer is gone");
                 self.transport.writer.close();
                 break;
@@ -105,9 +105,9 @@ pub(crate) trait RemoteHost: 'static {
     fn join_failed(&mut self, error: String);
     /// Something changed: flush the session, mirror it, draw it.
     fn changed(&mut self);
-    fn received(&mut self, line: &str) {
+    fn received(&mut self, item: &[u8]) {
         if let Some(live) = self.live() {
-            live.session.on_line(line);
+            live.session.on_item(item);
         }
     }
     fn stream_closed(&mut self, reason: Option<String>) {
@@ -200,7 +200,7 @@ async fn join<H: RemoteHost>(
     let subject = session.subject_hex();
     let session_id = hex(&session.joined.session_id);
     let writer = session.writer();
-    let (outbox, inbox) = unbounded::<String>();
+    let (outbox, inbox) = unbounded::<Vec<u8>>();
     {
         let mut host = state.borrow_mut();
         host.adopt(LiveRemote {
@@ -227,24 +227,24 @@ async fn join<H: RemoteHost>(
     Ok(())
 }
 
-/// The two tasks a live session needs: outbound lines onto the channel, and
-/// every inbound line into the session.
+/// The two tasks a live session needs: outbound items onto the channel, and
+/// every inbound item into the session.
 fn spawn_pumps<H: RemoteHost>(
     state: Rc<RefCell<H>>,
     mut session: BrowserSession,
     writer: BrowserWriter,
-    mut inbox: UnboundedReceiver<String>,
+    mut inbox: UnboundedReceiver<Vec<u8>>,
 ) {
     let channel_open = Rc::new(Cell::new(true));
     let sender_open = channel_open.clone();
     let send_state = Rc::downgrade(&state);
     let send_link = session.joined.shared_link;
     spawn_local(async move {
-        while let Some(line) = inbox.next().await {
+        while let Some(item) = inbox.next().await {
             if !sender_open.get() {
                 break;
             }
-            if let Err(error) = writer.send_line(&line).await {
+            if let Err(error) = writer.send_item(&item).await {
                 if sender_open.replace(false)
                     && let Some(state) = send_state.upgrade()
                 {
@@ -271,14 +271,14 @@ fn spawn_pumps<H: RemoteHost>(
             if !channel_open.get() {
                 break;
             }
-            let read = session.next_line().await;
+            let read = session.next_item().await;
             if !channel_open.get() {
                 break;
             }
             let mut host = state.borrow_mut();
             let done = match read {
-                Ok(Some(line)) => {
-                    host.received(&line);
+                Ok(Some(item)) => {
+                    host.received(&item);
                     false
                 },
                 Ok(None) => {
@@ -400,7 +400,7 @@ async fn rejoin<H: RemoteHost>(
         .map_err(|error| format!("rejoin refused: {error}"))?;
     let session_id = hex(&session.joined.session_id);
     let writer = session.writer();
-    let (outbox, inbox) = unbounded::<String>();
+    let (outbox, inbox) = unbounded::<Vec<u8>>();
     {
         let mut host = state.borrow_mut();
         let live = host.live().ok_or("the link went away during the rejoin")?;

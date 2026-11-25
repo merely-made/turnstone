@@ -175,7 +175,7 @@ fn label(index: u32, changed: bool) -> String {
 }
 
 fn send(remote: &mut RemoteSession, message: CarrierOutput) {
-    remote.on_line(&serde_json::to_string(&message).expect("fixture line"));
+    remote.on_item(&chirograph::wire::encode(&message).expect("fixture item"));
 }
 
 fn answer(
@@ -186,8 +186,8 @@ fn answer(
     let request = remote
         .take_outgoing()
         .into_iter()
-        .find_map(|line| {
-            let request: CarrierRequest = serde_json::from_str(&line).expect("client request");
+        .find_map(|item| {
+            let request: CarrierRequest = chirograph::wire::decode(&item).expect("client request");
             accepts(&request.body).then_some(request)
         })
         .expect("client requested the fixture response");

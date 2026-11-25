@@ -8,7 +8,7 @@ use chirograph::{
     CarrierResponse, CarrierResponseBody, IntentInvocation, IntentResult, PortableCardV1,
     PresentationCapability, ProtocolVersion, ResourceResponse, SessionOpen,
 };
-use graphshell_client::LineDriven;
+use graphshell_client::ItemDriven;
 use graphshell_door::projection::AppBrokerClient;
 use mere_overmap::route_session::MereRouteSession;
 use mere_overmap::wire::{MERE_GRAPH, MERE_NOTES};
@@ -273,10 +273,9 @@ async fn settle(
                 _ => Ok(outcome),
             };
         }
-        for line in outgoing {
-            let request = chirograph::line::decode::<CarrierRequest>(&line)
-                .map_err(|error| error.to_string())?
-                .ok_or("The resident graph emitted an empty request.")?;
+        for item in outgoing {
+            let request = chirograph::wire::decode::<CarrierRequest>(&item)
+                .map_err(|error| error.to_string())?;
             let bound = matches!((&request.body, expected),
                 (CarrierRequestBody::Intent(actual), Some(expected)) if actual == expected);
             let body = match request.body {
@@ -308,6 +307,6 @@ async fn settle(
 }
 
 fn feed(panel: &mut MereRouteSession, output: CarrierOutput) -> Result<(), String> {
-    let line = chirograph::line::encode(&output).map_err(|error| error.to_string())?;
-    LineDriven::on_line(panel, &line)
+    let item = chirograph::wire::encode(&output).map_err(|error| error.to_string())?;
+    ItemDriven::on_item(panel, &item)
 }

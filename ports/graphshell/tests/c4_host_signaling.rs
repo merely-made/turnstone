@@ -127,11 +127,11 @@ async fn http(port: u16, method: &str, path: &str, body: &str) -> Result<String,
     Ok(body.to_string())
 }
 
-/// Drive one operation of the event-driven adapter over NDJSON lines.
+/// Drive one operation of the event-driven adapter over wire items.
 async fn drive<R, W>(
     driver: &mut SessionDriver,
     write: &mut W,
-    lines: &mut tokio::io::Lines<BufReader<R>>,
+    items: &mut graphshell_host::wire::ItemReader<R>,
     start: Advance,
 ) -> Result<Outcome, String>
 where
@@ -143,22 +143,18 @@ where
         match advance {
             Advance::Done(outcome) => return Ok(outcome),
             Advance::Noted | Advance::Send(_) => {
-                if let Advance::Send(line) = &advance {
+                if let Advance::Send(item) = &advance {
                     write
-                        .write_all(line.as_bytes())
-                        .await
-                        .map_err(|error| error.to_string())?;
-                    write
-                        .write_all(b"\n")
+                        .write_all(item)
                         .await
                         .map_err(|error| error.to_string())?;
                 }
-                let line = lines
-                    .next_line()
+                let item = items
+                    .next_item()
                     .await
                     .map_err(|error| error.to_string())?
                     .ok_or("the session ended mid-operation")?;
-                advance = driver.on_line(&line)?;
+                advance = driver.on_item(&item)?;
             },
         }
     }
@@ -205,13 +201,13 @@ async fn join_and_count(port: u16, fragment: &str) -> usize {
     let (reader, writer, control) = carrier.into_parts();
     let (stream, pump) = stream_over_frames(reader, writer);
     let (read, mut write) = tokio::io::split(stream);
-    let mut lines = BufReader::new(read).lines();
+    let mut items = graphshell_host::wire::ItemReader::new(read);
     let mut driver = SessionDriver::new(chirograph::CapabilityProfile::new([
         chirograph::PresentationCapability::NativeGlyph,
     ]));
 
     let start = driver.discover().expect("discovery starts");
-    drive(&mut driver, &mut write, &mut lines, start)
+    drive(&mut driver, &mut write, &mut items, start)
         .await
         .expect("discovery completes");
     let start = driver
@@ -220,7 +216,7 @@ async fn join_and_count(port: u16, fragment: &str) -> usize {
         .mount(0)
         .expect("the fixture offers one projection");
     let start = driver.begin(start).expect("mount encodes");
-    let mounted = drive(&mut driver, &mut write, &mut lines, start)
+    let mounted = drive(&mut driver, &mut write, &mut items, start)
         .await
         .expect("the mount completes");
     let Outcome::Mounted(session) = mounted else {
@@ -238,9 +234,9 @@ async fn join_and_count(port: u16, fragment: &str) -> usize {
     // End politely, in the order `ServedJoin::finish` documents.
     let start = driver.core_mut().expect("core").close();
     let start = driver.begin(start).expect("close encodes");
-    let _ = drive(&mut driver, &mut write, &mut lines, start).await;
+    let _ = drive(&mut driver, &mut write, &mut items, start).await;
     drop(write);
-    drop(lines);
+    drop(items);
     let _ = pump.await;
     let _ = control.close().await;
     cards

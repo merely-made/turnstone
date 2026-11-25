@@ -28,7 +28,8 @@ use muniment::{BlobStore, MemoryBackend};
 use notochord::{NetworkId, SessionReply, TrafficClass, initiate_session};
 use personae::{IdentityProvider, InMemoryProvider};
 use sceno::InstanceId;
-use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader, Lines, ReadHalf, WriteHalf};
+use graphshell_host::wire::ItemReader;
+use tokio::io::{ReadHalf, WriteHalf};
 use tokio::time::sleep;
 use transport::p2panda_transport::{MdnsDiscoveryMode, P2pandaStream, P2pandaTransport};
 use transport::{Transport, initiator_binding};
@@ -37,7 +38,7 @@ use crate::DIAL_DEADLINE;
 use crate::identity::{assert_same_key, device, grant, hex, now_ms, profile, short};
 
 struct AdmittedIo {
-    lines: Lines<BufReader<ReadHalf<P2pandaStream>>>,
+    items: ItemReader<ReadHalf<P2pandaStream>>,
     writer: WriteHalf<P2pandaStream>,
     grant_id: String,
 }
@@ -48,25 +49,16 @@ impl AdmittedIo {
         id: u64,
         body: CarrierRequestBody,
     ) -> Result<CarrierResponse, String> {
-        let mut line = serde_json::to_vec(&CarrierRequest { id, body })
-            .map_err(|error| format!("encode request: {error}"))?;
-        line.push(b'\n');
-        self.writer
-            .write_all(&line)
+        graphshell_host::wire::write(&mut self.writer, &CarrierRequest { id, body })
             .await
             .map_err(|error| format!("write request: {error}"))?;
-        self.writer
-            .flush()
-            .await
-            .map_err(|error| format!("flush request: {error}"))?;
-        let line = self
-            .lines
-            .next_line()
+        let response: CarrierResponse = self
+            .items
+            .next()
             .await
             .map_err(|error| format!("read response: {error}"))?
-            .ok_or("the source closed without answering")?;
-        let response: CarrierResponse =
-            serde_json::from_str(&line).map_err(|error| format!("decode response: {error}"))?;
+            .ok_or("the source closed without answering")?
+            .map_err(|error| format!("decode response: {error}"))?;
         if response.id != id {
             return Err(format!(
                 "response id {} did not match request {id}",
@@ -373,7 +365,7 @@ async fn dial(
     }
     let (reader, writer) = tokio::io::split(stream);
     Ok(AdmittedIo {
-        lines: BufReader::new(reader).lines(),
+        items: ItemReader::new(reader),
         writer,
         grant_id,
     })

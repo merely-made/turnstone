@@ -16,7 +16,7 @@ use graphshell_host::admission::open_session;
 use graphshell_host::carrier::projection_alpn;
 use notochord::{NetworkId, SessionReply, TrafficClass, initiate_session};
 use personae::{IdentityProvider, InMemoryProvider};
-use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
+use graphshell_host::wire::ItemReader;
 use tokio::time::sleep;
 use transport::p2panda_transport::{MdnsDiscoveryMode, P2pandaTransport};
 use transport::{Transport, initiator_binding};
@@ -205,23 +205,17 @@ async fn run_session(
 
     // The session plane an authenticated carrier can actually answer.
     let (reader, mut writer) = tokio::io::split(stream);
-    let mut lines = BufReader::new(reader).lines();
+    let mut items = ItemReader::new(reader);
 
     let mut answers = Vec::new();
     for (id, body) in script {
-        let mut line =
-            serde_json::to_vec(&CarrierRequest { id, body }).map_err(|e| format!("encode: {e}"))?;
-        line.push(b'\n');
-        writer
-            .write_all(&line)
+        graphshell_host::wire::write(&mut writer, &CarrierRequest { id, body })
             .await
             .map_err(|e| format!("write: {e}"))?;
-        writer.flush().await.map_err(|e| format!("flush: {e}"))?;
 
-        match lines.next_line().await.map_err(|e| format!("read: {e}"))? {
+        match items.next::<CarrierResponse>().await.map_err(|e| format!("read: {e}"))? {
             Some(response) => {
-                let decoded: CarrierResponse =
-                    serde_json::from_str(&response).map_err(|e| format!("decode: {e}"))?;
+                let decoded = response.map_err(|e| format!("decode: {e}"))?;
                 match &decoded.body {
                     Ok(body) => println!("  #{id} -> {}", summarize(body)),
                     Err(failure) => println!("  #{id} -> refused: {}", failure.message),

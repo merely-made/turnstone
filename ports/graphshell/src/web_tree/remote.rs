@@ -140,7 +140,7 @@ impl TreeRemote {
                 }
             }
             if let Some(session) = &mut self.reservoir {
-                if let Err(reason) = live.send_lines(session.take_outgoing()) {
+                if let Err(reason) = live.send_items(session.take_outgoing()) {
                     session.fail(reason);
                 }
             } else {
@@ -379,11 +379,11 @@ impl TreeRemote {
 }
 
 impl RemoteHost for TreeRemote {
-    fn received(&mut self, line: &str) {
+    fn received(&mut self, item: &[u8]) {
         if let Some(session) = &mut self.reservoir {
-            session.on_line(line);
+            session.on_item(item);
         } else if let Some(live) = &mut self.live {
-            live.session.on_line(line);
+            live.session.on_item(item);
         }
     }
     fn stream_closed(&mut self, reason: Option<String>) {
