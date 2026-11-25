@@ -3,6 +3,12 @@
 
 use super::*;
 
+/// The renderer image key a pane's node texture is staged under: its own
+/// namespace over the pane id, below the 62-bit producer limit.
+pub(crate) fn node_texture_key(pane: PaneId) -> u64 {
+    0x4e4f_4445_0000_0000 | (pane.0 as u64 & 0xffff_ffff)
+}
+
 impl App {
     /// One frame of a graph pane whose surface is `width` x `height` physical
     /// pixels: the scene is at logical size, for rasterization at
@@ -30,7 +36,16 @@ impl App {
             .elapsed()
             .as_secs_f64()
             * 1000.0;
+        // The node texture lives on the primary window's device: a lens window
+        // draws its graph through the DOM path.
+        #[cfg(feature = "canvas-gpu")]
+        let node_tier = self.graph_runtimes.node_device().is_some()
+            && self.space_of(pane) == Some(SpaceRef::Primary);
         let result = self.with_graph_pane(pane, |canvas| {
+            // Each pane stages its own node texture under its own key.
+            canvas.set_gpu_node_target(node_texture_key(pane), scale);
+            #[cfg(feature = "canvas-gpu")]
+            canvas.set_gpu_node_tier(node_tier);
             if let Some(theme) = &theme {
                 canvas.apply_theme(theme);
             }
@@ -90,6 +105,16 @@ impl App {
         });
         self.graph_runtimes.get_mut(graph)?.scene_transition = transition;
         result
+    }
+
+    /// The pane's node-tier texture for the host to stage after `graph_pane_frame`.
+    #[cfg(feature = "canvas-gpu")]
+    pub fn graph_pane_node_target(
+        &self,
+        pane: PaneId,
+    ) -> Option<cartography::canvas::GpuNodeTarget> {
+        let graph = self.graph_for_pane(pane)?;
+        self.graph_runtimes.canvas(graph)?.gpu_node_target()
     }
 
     pub fn graph_pane_focused_member(&self, pane: PaneId) -> Option<uuid::Uuid> {

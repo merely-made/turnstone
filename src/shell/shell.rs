@@ -138,6 +138,9 @@ pub struct Shell {
     pub(super) pending_capture_readback: Option<appearance_receipt::PendingCapture>,
     pub(super) pending_native_diagnostics: Vec<appearance_receipt::PendingCapture>,
     pub(super) main_receipt: appearance_receipt::MainReceipt,
+    /// The node-tier texture each graph pane has staged in the renderer.
+    #[cfg(feature = "canvas-gpu")]
+    pub(super) staged_node_textures: std::collections::HashMap<crate::panes::PaneId, u64>,
     /// A capture the next LENS render fulfills (the scenario's capture-lens
     /// verb; targets the first live lens window).
     pub(super) pending_lens_capture: Option<std::path::PathBuf>,

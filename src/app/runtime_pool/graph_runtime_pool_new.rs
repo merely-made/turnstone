@@ -28,6 +28,8 @@ impl GraphRuntimePool {
             display_rate: None,
             #[cfg(feature = "canvas-gpu")]
             physics_device: None,
+            #[cfg(feature = "canvas-gpu")]
+            node_device: None,
             journal,
         };
         let _ = pool.bind_recording(graph);
@@ -83,6 +85,8 @@ impl GraphRuntimePool {
         if self.physics_device.is_some() {
             canvas.set_physics_device(self.physics_device.clone());
         }
+        #[cfg(feature = "canvas-gpu")]
+        Self::give_node_tier(&mut canvas, self.node_device.as_ref());
         let runtime = self.runtimes.get_mut(&self.active).expect("active runtime");
         runtime.persistence.clear_placement();
         canvas.set_graph_grammar(true);
@@ -163,6 +167,27 @@ impl GraphRuntimePool {
             runtime.canvas.set_physics_device(device.clone());
         }
         self.physics_device = device;
+    }
+
+    /// Give every graph runtime, now and later, the node tier's device (the
+    /// renderer's own handles), or (`None`) return them all to the DOM path.
+    #[cfg(feature = "canvas-gpu")]
+    pub fn set_node_device(&mut self, device: Option<cartography::canvas::GpuNodeDevice>) {
+        for runtime in self.runtimes.values_mut() {
+            Self::give_node_tier(&mut runtime.canvas, device.as_ref());
+        }
+        self.node_device = device;
+    }
+
+    #[cfg(feature = "canvas-gpu")]
+    pub fn node_device(&self) -> Option<&cartography::canvas::GpuNodeDevice> {
+        self.node_device.as_ref()
+    }
+
+    #[cfg(feature = "canvas-gpu")]
+    fn give_node_tier(canvas: &mut Canvas, device: Option<&cartography::canvas::GpuNodeDevice>) {
+        canvas.set_gpu_node_device(device.cloned());
+        canvas.set_gpu_node_tier(device.is_some());
     }
 
     #[cfg(feature = "canvas-gpu")]
@@ -247,6 +272,8 @@ impl GraphRuntimePool {
         if self.physics_device.is_some() {
             canvas.set_physics_device(self.physics_device.clone());
         }
+        #[cfg(feature = "canvas-gpu")]
+        Self::give_node_tier(&mut canvas, self.node_device.as_ref());
         self.runtimes
             .insert(graph, GraphRuntime::new(graph, session, canvas));
         self.active = graph;

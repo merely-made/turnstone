@@ -191,6 +191,8 @@ impl Shell {
                             .and_then(|canvas| canvas.last_translation_error());
                         tracing::warn!(?pane, ?error, "graph producer returned an empty scene");
                     }
+                    #[cfg(feature = "canvas-gpu")]
+                    self.stage_graph_node_texture(pane);
                     self.save_ready_graph_scene(pane);
                     needs_redraw |= animating;
                     needs_redraw |= self.app.resolve_pending_images() > 0;

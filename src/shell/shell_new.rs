@@ -447,6 +447,8 @@ impl Shell {
             pending_capture_readback: None,
             pending_native_diagnostics: Vec::new(),
             main_receipt: Default::default(),
+            #[cfg(feature = "canvas-gpu")]
+            staged_node_textures: Default::default(),
             pending_lens_capture: None,
             pending_lens_capture_window: None,
             window: None,

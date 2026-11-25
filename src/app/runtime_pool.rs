@@ -60,6 +60,8 @@ pub struct GraphRuntimePool {
     /// included, is given a clone. `None` leaves repulsion on the CPU.
     #[cfg(feature = "canvas-gpu")]
     physics_device: Option<cartography::canvas::PhysicsDevice>,
+    #[cfg(feature = "canvas-gpu")]
+    node_device: Option<cartography::canvas::GpuNodeDevice>,
     journal: crate::host_journal::SharedJournal,
 }
 
