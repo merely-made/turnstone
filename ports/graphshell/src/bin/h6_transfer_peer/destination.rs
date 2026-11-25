@@ -195,11 +195,11 @@ pub(crate) async fn connect(
     match resume(ok(second
         .request(
             8,
-            CarrierRequestBody::Resume(ResumeRequest {
-                session: projection.session.clone(),
-                epoch: snapshot.scene.epoch,
-                revision: snapshot.scene.revision,
-            }),
+            CarrierRequestBody::Resume(ResumeRequest::new(
+                projection.session.clone(),
+                snapshot.scene.epoch,
+                snapshot.scene.revision,
+            )),
         )
         .await?)?)?
     {

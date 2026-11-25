@@ -121,11 +121,11 @@ pub(crate) async fn connect(
             // replays the two contiguous diffs rather than resending a scene.
             (
                 5,
-                CarrierRequestBody::Resume(ResumeRequest {
-                    session: ProjectionSession(RESUME_SESSION.into()),
-                    epoch: SceneEpoch(3),
-                    revision: Revision(1),
-                }),
+                CarrierRequestBody::Resume(ResumeRequest::new(
+                    ProjectionSession(RESUME_SESSION.into()),
+                    SceneEpoch(3),
+                    Revision(1),
+                )),
             ),
             // A real IntentInvocation, so the revoked run refuses the verb the
             // done-when actually names rather than a stand-in.

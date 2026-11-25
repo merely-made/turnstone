@@ -297,12 +297,7 @@ fn edit(remote: &mut RemoteSession, index: u32) -> f64 {
     let diff = ProjectionDiff {
         version: ProtocolVersion::V1,
         session,
-        scene: SceneDiff {
-            epoch: EPOCH,
-            base,
-            revision,
-            operations: Vec::new(),
-        },
+        scene: SceneDiff::new(EPOCH, base, revision, Vec::new()),
         presentation: vec![PresentationChange::ReplaceOffers {
             key: key(index),
             offers: vec![offer(label(index, changed))],

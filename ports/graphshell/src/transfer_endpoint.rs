@@ -477,11 +477,11 @@ mod tests {
         assert!(blob.has_valid_address());
         assert!(matches!(
             endpoint
-                .resume(ResumeRequest {
-                    session: endpoint.session().clone(),
-                    epoch: SceneEpoch(1),
-                    revision: Revision(1),
-                })
+                .resume(ResumeRequest::new(
+                    endpoint.session().clone(),
+                    SceneEpoch(1),
+                    Revision(1)
+                ))
                 .unwrap(),
             ResumeReply::Current(_)
         ));
