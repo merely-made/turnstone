@@ -52,7 +52,37 @@ impl App {
                 canvas.resize(width, height);
                 canvas.fit_visible();
             }
-            let (scene, redraw) = canvas.frame(width, height);
+            let (scene, redraw) = if tracing::enabled!(
+                target: "turnstone::shell::render",
+                tracing::Level::DEBUG
+            ) {
+                // The canvas's own CPU stages, one line per graph frame, for
+                // the native frame profile; the unprofiled path reads no clock.
+                let (scene, redraw, profile) = canvas.frame_profiled(width, height, || {
+                    CLOCK.get_or_init(std::time::Instant::now).elapsed().as_secs_f64() * 1000.0
+                });
+                let [physics, prepare, underlay, dom_prepare, dom_mutate, dom_frame, faces, overlays, cull, lower] =
+                    profile.stage_ms;
+                #[cfg(feature = "canvas-gpu")]
+                let (submissions, answers) = canvas
+                    .physics_device()
+                    .map_or((0, 0), |device| (device.submissions(), device.answers()));
+                #[cfg(not(feature = "canvas-gpu"))]
+                let (submissions, answers) = (0u64, 0u64);
+                tracing::debug!(
+                    target: "turnstone::shell::render",
+                    nodes = profile.total_nodes,
+                    visible = profile.visible_nodes,
+                    cmds_before_cull = profile.paint_commands_before_cull,
+                    cmds_after_cull = profile.paint_commands_after_cull,
+                    physics, prepare, underlay, dom_prepare, dom_mutate, dom_frame, faces,
+                    overlays, cull, lower, submissions, answers,
+                    "graph canvas frame"
+                );
+                (scene, redraw)
+            } else {
+                canvas.frame(width, height)
+            };
             (
                 scene,
                 redraw || transition.is_some() || canvas.has_stop_return(),

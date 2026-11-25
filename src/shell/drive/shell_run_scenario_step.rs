@@ -18,6 +18,7 @@ impl Shell {
 
         match step {
             Step::Open(..)
+            | Step::SeedTree(..)
             | Step::SelectGraphMember(..)
             | Step::ClickNoteMember
             | Step::ActivateGraphFold(..)
@@ -136,6 +137,25 @@ impl Shell {
         use crate::scenario::{CmpOp, EditKey, Step};
         match step {
             Step::Open(url) => self.act(Action::OpenAddress(url.clone())),
+            Step::SeedTree(count) => {
+                let pane = self.app.graph_command_pane().ok_or("no graph owner pane")?;
+                self.app
+                    .with_graph_pane(pane, |canvas| {
+                        let mut members = Vec::with_capacity(*count);
+                        let mut state = 0x9e37_79b9_u32;
+                        for i in 0..*count {
+                            state = state.wrapping_mul(1_664_525).wrapping_add(1_013_904_223);
+                            let parent = (!members.is_empty())
+                                .then(|| members[(state >> 8) as usize % members.len()]);
+                            members.push(canvas.open_member_as_new_node(
+                                parent,
+                                &format!("https://tree.example/{i}"),
+                            ));
+                        }
+                    })
+                    .ok_or("graph absent")?;
+                self.request_redraw();
+            },
             Step::SelectGraphMember(url) => {
                 let pane = self.app.graph_command_pane().ok_or("no graph owner pane")?;
                 self.app

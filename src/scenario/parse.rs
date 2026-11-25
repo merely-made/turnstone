@@ -71,6 +71,9 @@ pub fn parse(body: &str) -> Result<Vec<Step>, String> {
             } else {
                 rest.parse().map_err(|_| format!("line {}: bad settle count '{rest}'", i + 1))?
             }),
+            "seed-tree" => Step::SeedTree(
+                rest.parse().map_err(|_| format!("line {}: seed-tree wants a node count", i + 1))?,
+            ),
             "click-row" if !rest.is_empty() => Step::ClickRow(rest.to_string()),
             "drop-file" | "hover-file" => {
                 let mut it = rest.splitn(3, char::is_whitespace);

@@ -199,6 +199,10 @@ impl Shell {
         };
         if let Some(loss) = owner.status().loss().cloned() {
             self.cancel_native_frames("render device generation lost");
+            // The lane's device is the lost one: the canvases step on the CPU
+            // until the recovered host binds a fresh device.
+            #[cfg(feature = "canvas-gpu")]
+            self.unbind_physics_device();
             self.cue_frames.clear();
             let mut can_replace = true;
             #[cfg(feature = "scripted-webgl")]
@@ -308,6 +312,8 @@ impl Shell {
                             return false;
                         }
                         self.host = Some(host);
+                        #[cfg(feature = "canvas-gpu")]
+                        self.bind_physics_device();
                         window.request_redraw();
                     },
                     Err(error) => {

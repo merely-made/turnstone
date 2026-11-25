@@ -38,6 +38,8 @@ mod gestures;
 mod keys;
 mod native_frames;
 mod nomadnet_fetch;
+#[cfg(feature = "canvas-gpu")]
+mod physics_gpu;
 mod page_capture;
 mod reader_observe;
 mod reader_recovery;

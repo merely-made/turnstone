@@ -396,6 +396,10 @@ libc = ">=0.2.189"
 [features]
 scripted-webgl = ["dep:genet-bole", "dep:genet-vano", "dep:genet-scripted", "genet-documents/scripted-nova", "genet-presenter/native-webgl"]
 default = []
+# GPU repulsion for the native graph canvases (physics catalog plan, P5c-T): a
+# `PhysicsDevice` built once from the renderer's own wgpu handles and given to
+# every graph runtime. Off, or with no device, the CPU/rapier path runs alone.
+canvas-gpu = ["cartography/gpu"]
 # Knot currently bundles the blob evidence store used by this adapter with its
 # supplier `peers` feature. This does not install Turnstone's peer workers.
 authoring = ["dep:knot", "knot/peers", "dep:gemot-site"]

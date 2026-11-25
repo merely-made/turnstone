@@ -25,6 +25,7 @@
 //! settle [frames]           # pump N frames (default 20)
 //! capture <name>            # self-capture the composed frame -> <name>.png
 //! open <url>                # Action::OpenAddress (use mere:// for offline)
+//! seed-tree <n>             # add n linked nodes (a random tree) to the graph pane's canvas
 //! import-clip <path>        # host admission of a selected Fleece package
 //! pack-install <dir> [dev]  # install a command pack from a directory
 //! pack-reload <pack-id>     # re-admit and swap in an installed command pack
@@ -155,6 +156,9 @@
 #[derive(Debug)]
 pub enum Step {
     Open(String),
+    /// Add this many nodes in a random tree to the graph pane's canvas: a
+    /// generated graph for native frame profiles.
+    SeedTree(usize),
     ImportClip(String),
     ExportClip(String),
     Omnibar {

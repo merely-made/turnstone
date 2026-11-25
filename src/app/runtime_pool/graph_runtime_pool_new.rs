@@ -26,6 +26,8 @@ impl GraphRuntimePool {
             runtimes,
             active: graph,
             display_rate: None,
+            #[cfg(feature = "canvas-gpu")]
+            physics_device: None,
             journal,
         };
         let _ = pool.bind_recording(graph);
@@ -76,6 +78,10 @@ impl GraphRuntimePool {
     pub(crate) fn replace_active_canvas(&mut self, mut canvas: Canvas) {
         if let Some(rate) = self.display_rate {
             canvas.set_physics_display_rate(rate);
+        }
+        #[cfg(feature = "canvas-gpu")]
+        if self.physics_device.is_some() {
+            canvas.set_physics_device(self.physics_device.clone());
         }
         let runtime = self.runtimes.get_mut(&self.active).expect("active runtime");
         runtime.persistence.clear_placement();
@@ -146,6 +152,22 @@ impl GraphRuntimePool {
         for runtime in self.runtimes.values_mut() {
             runtime.canvas.set_physics_display_rate(millihertz);
         }
+    }
+
+    /// Give every graph runtime, now and later, the host's repulsion device,
+    /// or (`None`) return them all to the CPU path. The device comes from the
+    /// renderer's own wgpu handles; see `shell::physics_gpu`.
+    #[cfg(feature = "canvas-gpu")]
+    pub fn set_physics_device(&mut self, device: Option<cartography::canvas::PhysicsDevice>) {
+        for runtime in self.runtimes.values_mut() {
+            runtime.canvas.set_physics_device(device.clone());
+        }
+        self.physics_device = device;
+    }
+
+    #[cfg(feature = "canvas-gpu")]
+    pub fn physics_device(&self) -> Option<&cartography::canvas::PhysicsDevice> {
+        self.physics_device.as_ref()
     }
 
     pub(crate) fn pending_scene_graphs(&self) -> Vec<GraphId> {
@@ -220,6 +242,10 @@ impl GraphRuntimePool {
     ) -> &mut GraphRuntime {
         if let Some(rate) = self.display_rate {
             canvas.set_physics_display_rate(rate);
+        }
+        #[cfg(feature = "canvas-gpu")]
+        if self.physics_device.is_some() {
+            canvas.set_physics_device(self.physics_device.clone());
         }
         self.runtimes
             .insert(graph, GraphRuntime::new(graph, session, canvas));

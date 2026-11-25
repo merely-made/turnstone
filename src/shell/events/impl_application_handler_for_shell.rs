@@ -210,6 +210,8 @@ impl ApplicationHandler for Shell {
                     tracing::warn!(?error, "native worker profile unavailable");
                 }
                 self.host = Some(host);
+                #[cfg(feature = "canvas-gpu")]
+                self.bind_physics_device();
                 self.ensure_render_recovery();
             },
             Err(err) => {

@@ -56,6 +56,10 @@ pub struct GraphRuntimePool {
     runtimes: HashMap<GraphId, GraphRuntime>,
     active: GraphId,
     display_rate: Option<Option<u32>>,
+    /// The host's one repulsion device; every runtime's canvas, new ones
+    /// included, is given a clone. `None` leaves repulsion on the CPU.
+    #[cfg(feature = "canvas-gpu")]
+    physics_device: Option<cartography::canvas::PhysicsDevice>,
     journal: crate::host_journal::SharedJournal,
 }
 
