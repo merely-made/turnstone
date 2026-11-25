@@ -54,7 +54,7 @@ alembic-workshop-private = ["alembic-workshop", "graphshell-door/declaration", "
 # One holder-owned graph with an explicitly invited guest.
 coop = ["native", "web", "muniment/redb", "dep:pollster", "graphshell-client/pump", "graphshell-host/coop"]
 coop-window = ["coop", "dep:cambium-desktop", "dep:mien", "dep:genet-scripted-dom", "dep:layout_dom_api", "dep:image"]
-editable-blocks = ["web", "dep:illume", "dep:vector-sheet", "dep:block-adapter", "dep:sprigging", "dep:ciborium", "dep:netrender", "dep:wgpu", "dep:uuid", "uuid/v4"]
+editable-blocks = ["web", "dep:illume", "dep:vector-sheet", "dep:block-adapter", "dep:sprigging", "dep:netrender", "dep:wgpu", "dep:uuid", "uuid/v4"]
 query-views = ["web", "dep:mere-view", "mere-view/query", "dep:cambium"]
 caller-owned-toolkit-bench = ["retained-content", "dep:cambium-embed", "dep:image"]
 # Goal-directed traversal over retained page text and the graph's links: the
@@ -228,7 +228,6 @@ wgpu-cue = { workspace = true, optional = true }
 cue-netrender = { workspace = true, optional = true }
 vector-sheet = { workspace = true, optional = true }
 block-adapter = { workspace = true, optional = true }
-ciborium = { version = "0.2", optional = true }
 sprigging = { workspace = true, optional = true }
 illume = { workspace = true, optional = true }
 genet-presenter = { workspace = true, optional = true }
