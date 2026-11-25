@@ -111,7 +111,8 @@ fn a_two_thousand_node_settle_through_the_pool_meets_the_cpu_bounds() {
 
 /// Per-stage frame cost of the canvas on its own, inline physics, paced at
 /// 60 Hz: `PROFILE_N=2000,10000 cargo test ... profile_canvas_frames --
-/// --ignored --nocapture`. `PROFILE_DEVICE=0` runs the CPU/rapier path.
+/// --ignored --nocapture`. `PROFILE_DEVICE=0` runs the CPU/rapier path; `PROFILE_FRAMES` counts per scene and
+/// `PROFILE_SCENE=settle|drag+pan` runs one.
 #[test]
 #[ignore = "a measurement, not a receipt; prints its table"]
 fn profile_canvas_frames() {
@@ -135,7 +136,15 @@ fn profile_canvas_frames() {
         if let Some(device) = &device {
             pool.set_physics_device(Some(device.clone()));
         }
+        // The first frame builds the DOM for every node; it is not a frame.
+        let warm = std::time::Instant::now();
+        pool.active_canvas_mut().frame_profiled(1280, 800, clock);
+        println!("n={n} first frame {:.0} ms", warm.elapsed().as_secs_f64() * 1e3);
+        let only = std::env::var("PROFILE_SCENE").ok();
         for scene in ["settle", "drag+pan"] {
+            if only.as_deref().is_some_and(|only| only != scene) {
+                continue;
+            }
             let mut rows: Vec<CanvasFrameProfile> = Vec::new();
             let mut totals: Vec<f64> = Vec::new();
             let before = device.as_ref().map(|d| (d.submissions(), d.answers()));
@@ -164,8 +173,8 @@ fn profile_canvas_frames() {
             if scene == "drag+pan" {
                 pool.active_canvas_mut().pointer_up(PointerButton::Left, x, y);
             }
-            // Drop the first third: the settle's start.
-            let skip = frames / 3;
+            // Drop the first quarter: the settle's start.
+            let skip = frames / 4;
             let mut line = format!(
                 "n={n} {} {scene}: frames={} build={build_s:.1}s visible={} cmds {}->{}",
                 if device.is_some() { "gpu" } else { "cpu" },
