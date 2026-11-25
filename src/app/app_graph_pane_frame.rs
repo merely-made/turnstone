@@ -3,10 +3,14 @@
 
 use super::*;
 
-/// The renderer image key a pane's node texture is staged under: its own
-/// namespace over the pane id, below the 62-bit producer limit.
+/// The namespace of pane node-texture keys: `NODE` in bits 32..62, below the
+/// 62-bit producer limit `netrender::external_image_key` asserts.
+const NODE_TEXTURE_KEYS: u64 = 0x0e4f_4445_0000_0000;
+const _: () = assert!((NODE_TEXTURE_KEYS | 0xffff_ffff) < 1 << 62);
+
+/// The renderer image key a pane's node texture is staged under.
 pub(crate) fn node_texture_key(pane: PaneId) -> u64 {
-    0x4e4f_4445_0000_0000 | (pane.0 as u64 & 0xffff_ffff)
+    NODE_TEXTURE_KEYS | (pane.0 as u64 & 0xffff_ffff)
 }
 
 impl App {

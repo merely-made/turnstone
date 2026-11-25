@@ -141,7 +141,8 @@ fn the_node_tier_texture_composes_into_the_scene_raster() {
         &renderer.wgpu_device.core,
     )));
     canvas.set_gpu_node_tier(true);
-    canvas.set_gpu_node_target(0x51, 1.0);
+    // The key a live pane stages under, so the receipt covers its range.
+    canvas.set_gpu_node_target(crate::app::node_texture_key(crate::panes::PaneId(u64::from(u32::MAX))), 1.0);
     for _ in 0..120 {
         canvas.frame(w, h);
     }

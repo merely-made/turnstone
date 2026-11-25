@@ -417,6 +417,7 @@ mod pane_label;
 use pane_label::pane_label;
 #[path = "app_graph_pane_frame.rs"]
 mod app_graph_pane_frame;
+pub(crate) use app_graph_pane_frame::node_texture_key;
 #[path = "app_shell_chrome_config.rs"]
 mod app_shell_chrome_config;
 #[path = "app_write_note.rs"]
