@@ -240,7 +240,7 @@ nematic = { git = "https://github.com/merely-made/inker.git", branch = "main" }
 # destination and opaque page bytes; Turnstone owns navigation and rendering.
 # Optional: Retinue carries Reticulum-licensed terms, so the `nomadnet` feature
 # is the only way it enters a build.
-retinue = { git = "https://github.com/merely-made/murm.git", branch = "main", optional = true }
+retinue = { git = "https://github.com/merely-made/retinue.git", branch = "main", optional = true }
 # An ephemeral Reticulum client identity is generated per NomadNet page fetch;
 # it is never persisted as a browsing preference or discovery record.
 getrandom = "0.4"
@@ -710,7 +710,6 @@ workbench = { version = ">=0.1.1", git = "https://github.com/merely-made/graphsh
 [patch."https://github.com/merely-made/retinue.git"]
 mere-transport = { git = "https://github.com/merely-made/murm.git", branch = "main" }
 murm-webrtc = { git = "https://github.com/merely-made/murm.git", branch = "main" }
-retinue = { git = "https://github.com/merely-made/murm.git", branch = "main" }
 
 [target.'cfg(target_os = "macos")'.dependencies]
 welding = { version = ">=0.15.0", git = "https://github.com/merely-made/wgpu-weld.git", branch = "main", features = ["cef-runtime"], optional = true }
