@@ -210,6 +210,10 @@ crate = "gimli@0.33.0"
 reason = "cranelift-codegen 0.132.3 (cranelift-codegen 0.137.1 still needs it), wasmtime 45.0.3 (wasmtime 50.0.1 still needs it), wasmtime-environ 45.0.3 (wasmtime-environ 50.0.1 still needs it), wasmtime-internal-cranelift 45.0.3 (wasmtime-internal-cranelift 50.0.1 still needs it) and 2 more require it, via addr2line 0.26.1, under app-host, authority-host, block-host, turnstone; goes when cranelift-codegen, wasmtime, wasmtime-environ and 3 more move to gimli 0.34.0"
 
 [[bans.skip]]
+crate = "harfrust@0.12.0"
+reason = "held by cosmic-text 0.19.0 (newest), epaint 0.37.0 (newest) and usvg 0.48.1 under servo 0.8.0's resvg 0.48.1 (usvg 0.50.0 newest, on harfrust 0.15), while genet-parley takes harfrust 0.16.1; gone when cosmic-text, epaint and usvg move to harfrust 0.16"
+
+[[bans.skip]]
 crate = "hash32@0.2.1"
 reason = "postcard 1.1.3 (latest) requires it, via heapless 0.7.17, under app-host, authority-host, block-host, genet-scripted and 11 more; goes when postcard moves to hash32 0.3.1"
 
@@ -451,11 +455,15 @@ reason = "rav1e 0.8.1 (latest), sctp-proto 0.10.8 (latest), tokenizers 0.23.2 (l
 
 [[bans.skip]]
 crate = "read-fonts@0.41.0"
-reason = "cosmic-text 0.19.0 (latest), swash 0.2.10 (latest), epaint 0.36.2 (epaint 0.37.0 drops it), glifo 0.2.0 (glifo 0.5.0 drops it) and 10 more require it, via skrifa 0.44.0, under cambium-rootstock, genet-parley, grafting-servo; goes when cosmic-text, swash move to read-fonts 0.46.0; their dependents take epaint 0.37.0, glifo 0.5.0, harfrust 0.16.0 and 1 more; merely-made/genet moves genet-fontique to read-fonts 0.46.0; merely-made/genet moves genet-parley to read-fonts 0.46.0; merely-made/netrender moves netrender to read-fonts 0.46.0; mark-ik/vello moves netrender-glifo to read-fonts 0.46.0; mark-ik/vello moves netrender-vello to read-fonts 0.46.0; mark-ik/vello moves netrender-vello-encoding to read-fonts 0.46.0; merely-made/netrender moves paint_list_render to read-fonts 0.46.0"
+reason = "held by skrifa 0.44.0 and harfrust 0.12.0 under cosmic-text 0.19.0 and swash 0.2.10 (both newest), epaint 0.37.0 (newest) and usvg 0.48.1, while genet-fontique and genet-parley take read-fonts 0.47.0; gone when cosmic-text, swash and epaint move to skrifa 0.50"
 
 [[bans.skip]]
 crate = "redox_syscall@0.5.18"
 reason = "parking_lot_core 0.9.12 (parking_lot_core 0.10.0 drops it) requires it, under boa_engine, cambium-desktop, cambium-rootstock, conatus and 31 more; goes when their dependents take parking_lot_core 0.10.0"
+
+[[bans.skip]]
+crate = "read-fonts@0.46.0"
+reason = "held by servo-fonts 0.8.0 and servo-fonts-traits 0.8.0 (both newest), directly and through skrifa 0.49.0, under grafting-servo, while genet-fontique and genet-parley take read-fonts 0.47.0; gone when servo-fonts moves to skrifa 0.50"
 
 [[bans.skip]]
 crate = "regress@0.11.1"
@@ -499,7 +507,11 @@ reason = "bindgen 0.69.5 (bindgen 0.73.2 drops it), bindgen 0.72.1 (bindgen 0.73
 
 [[bans.skip]]
 crate = "skrifa@0.44.0"
-reason = "cosmic-text 0.19.0 (latest), epaint 0.36.2 (epaint 0.37.0 still needs it), swash 0.2.10 (latest), glifo 0.2.0 (glifo 0.5.0 drops it) and 8 more require it, under cambium-rootstock, grafting-servo; goes when cosmic-text, epaint, swash move to skrifa 0.49.0; their dependents take glifo 0.5.0, usvg 0.50.0; merely-made/genet moves genet-parley to skrifa 0.49.0; merely-made/netrender moves netrender to skrifa 0.49.0; mark-ik/vello moves netrender-glifo to skrifa 0.49.0; mark-ik/vello moves netrender-vello to skrifa 0.49.0; mark-ik/vello moves netrender-vello-encoding to skrifa 0.49.0; merely-made/netrender moves paint_list_render to skrifa 0.49.0"
+reason = "held by cosmic-text 0.19.0 and swash 0.2.10 (both newest), epaint 0.37.0 (newest), usvg 0.48.1 and glifo 0.3.0 under vello_cpu 0.2.0 (glifo 0.5.0 newest, on skrifa 0.49), while netrender, netrender-vello 0.12.1 and genet-parley take skrifa 0.50.0; gone when cosmic-text, swash, epaint and glifo move to skrifa 0.50"
+
+[[bans.skip]]
+crate = "skrifa@0.49.0"
+reason = "held by servo-fonts 0.8.0 (newest) under grafting-servo, while netrender, netrender-vello 0.12.1 and genet-parley take skrifa 0.50.0; gone when servo-fonts moves to skrifa 0.50"
 
 [[bans.skip]]
 crate = "smol_str@0.1.24"
@@ -564,14 +576,6 @@ reason = "noq-proto 1.4.0 (latest), snow 0.10.0 (latest), turso_core 0.8.3 (late
 [[bans.skip]]
 crate = "uuid@0.8.2"
 reason = "ipc-channel 0.23.1 (latest) requires it, under grafting-servo, servo-media-player; goes when ipc-channel moves to uuid 1.29.2"
-
-[[bans.skip]]
-crate = "vello_common@0.1.0"
-reason = "epaint 0.36.2 (epaint 0.37.0 drops it), glifo 0.2.0 (glifo 0.5.0 drops it) require it, via vello_cpu 0.1.0, under cambium-rootstock; goes when their dependents take epaint 0.37.0, glifo 0.5.0"
-
-[[bans.skip]]
-crate = "vello_cpu@0.1.0"
-reason = "epaint 0.36.2 (epaint 0.37.0 drops it) requires it, under cambium-rootstock; goes when their dependents take epaint 0.37.0"
 
 [[bans.skip]]
 crate = "wast@35.0.2"
