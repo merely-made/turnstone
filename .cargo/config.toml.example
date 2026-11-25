@@ -39,14 +39,14 @@ paint_list_render = { path = "../netrender/paint_list_render" }
 # Corrected 2026-08-01: these read `repos/p2panda` (empty since the 2026-07-23
 # consolidation moved forks to `crates/`), so turnstone would not resolve at
 # all. Forks live in `Code/crates/`; own projects live in `Code/repos/`.
-p2panda-auth = { path = "../../crates/p2panda/p2panda-auth" }
-p2panda-core = { path = "../../crates/p2panda/p2panda-core" }
-p2panda-discovery = { path = "../../crates/p2panda/p2panda-discovery" }
-p2panda-encryption = { path = "../../crates/p2panda/p2panda-encryption" }
-mere-p2panda-net = { path = "../../crates/p2panda/p2panda-net" }
-p2panda-store = { path = "../../crates/p2panda/p2panda-store" }
-p2panda-stream = { path = "../../crates/p2panda/p2panda-stream" }
-p2panda-sync = { path = "../../crates/p2panda/p2panda-sync" }
+p2panda-auth = { path = "../../crates/p2mere/p2panda-auth" }
+p2panda-core = { path = "../../crates/p2mere/p2panda-core" }
+p2panda-discovery = { path = "../../crates/p2mere/p2panda-discovery" }
+p2panda-encryption = { path = "../../crates/p2mere/p2panda-encryption" }
+mere-p2panda-net = { path = "../../crates/p2mere/p2panda-net" }
+p2panda-store = { path = "../../crates/p2mere/p2panda-store" }
+p2panda-stream = { path = "../../crates/p2mere/p2panda-stream" }
+p2panda-sync = { path = "../../crates/p2mere/p2panda-sync" }
 # The physics + field siblings live in conatus; mere patches these too, and
 # merecat must agree or it silently builds against the published crates and
 # cannot see local seiche work (e.g. AnchorSpring). The family patches
