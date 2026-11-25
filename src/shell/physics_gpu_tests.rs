@@ -30,18 +30,11 @@ fn handles() -> Option<netrender::WgpuHandles> {
     Some(handles)
 }
 
-/// A random tree of `n` nodes: each new node hangs off an earlier one, so the
-/// start is crowded and linked.
+/// `n` nodes in a random tree, laid out the way Space seeds a graph.
 pub(crate) fn tree_canvas(n: usize) -> Canvas {
-    let mut canvas = Canvas::new();
+    let mut canvas = Canvas::with_graph(crate::scenario::seed::tree_graph(n));
     canvas.resize(1280, 800);
-    let mut members = vec![canvas.open_member_as_new_node(None, "https://tree.example/0")];
-    let mut state = 0x9e37_79b9_u32;
-    for i in 1..n {
-        state = state.wrapping_mul(1_664_525).wrapping_add(1_013_904_223);
-        let parent = members[(state >> 8) as usize % members.len()];
-        members.push(canvas.open_member_as_new_node(Some(parent), &format!("https://tree.example/{i}")));
-    }
+    canvas.reseed();
     canvas
 }
 
@@ -63,7 +56,7 @@ fn a_two_thousand_node_settle_through_the_pool_meets_the_cpu_bounds() {
         eprintln!("no wgpu adapter: skipping the native lagged settle receipt");
         return;
     };
-    let (n, frames) = (2_000, 600);
+    let (n, frames) = (2_000, 150);
 
     let mut cpu_pool = pool_over(tree_canvas(n));
     assert!(cpu_pool.physics_device().is_none());

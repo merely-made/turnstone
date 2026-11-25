@@ -521,6 +521,7 @@ mod parse_xy;
 use parse_xy::parse_xy;
 #[path = "scenario/expand_env.rs"]
 mod expand_env;
+pub mod seed;
 pub(crate) use expand_env::expand_env;
 #[path = "scenario/parse.rs"]
 mod parse;
