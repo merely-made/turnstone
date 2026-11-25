@@ -326,6 +326,17 @@ pub enum Action {
     RejoinPlace,
     /// Inspect the current place and request fresh local sync observations.
     ShowPlaceStatus,
+    /// Run a command pack's command (command packs CP4). Its requests lower
+    /// through this same spine, each checked against the pack's grants.
+    RunPackCommand { id: String },
+    /// Install the command pack at `path`, in dev mode when `dev` is set.
+    InstallCommandPack { path: String, dev: bool },
+    ReloadCommandPack { id: String },
+    UnloadCommandPack { id: String },
+    /// Move a command pack to the stated admission level.
+    SetCommandPackLevel { id: String, dev: bool },
+    /// Show recent command pack refusals and failed reloads.
+    ShowPackStatus,
     /// Put this bind's full rendezvous ticket(s) on the system clipboard. The
     /// status row elides the middle of a ~200-character ticket; this is how the
     /// whole of it leaves the app.

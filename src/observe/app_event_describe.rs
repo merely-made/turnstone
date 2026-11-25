@@ -237,6 +237,8 @@ impl AppEvent {
             AppEvent::CommandKept { label, kept } => {
                 format!("command-{} {label}", if *kept { "kept" } else { "dropped" })
             },
+            AppEvent::PackRan { id, requests } => format!("pack-ran {id} {requests}"),
+            AppEvent::PackRefused(reason) => format!("pack-refused {reason}"),
             AppEvent::LayoutReseeded => "layout-reseeded".to_string(),
             AppEvent::ContentState { node, state } => format!("content {node} {state}"),
             AppEvent::PaneSummoned(kind) => format!("pane-summoned {kind}"),

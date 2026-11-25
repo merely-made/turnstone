@@ -17,8 +17,8 @@ const SCHEMA: &str = "turnstone.command/v1";
 pub(super) struct Observation {
     session: crate::panes::SessionId,
     pane: Option<crate::panes::PaneId>,
-    graph: Option<crate::panes::GraphId>,
-    member: Option<uuid::Uuid>,
+    pub(super) graph: Option<crate::panes::GraphId>,
+    pub(super) member: Option<uuid::Uuid>,
 }
 
 impl App {

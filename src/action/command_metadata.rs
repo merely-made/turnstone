@@ -159,6 +159,12 @@ pub(crate) fn command_metadata(action: &Action) -> (EffectClass, bool) {
         | Action::BeginJoinPlaceFile
         | Action::BeginSendPlaceMessage
         | Action::ShowPlaceStatus
+        | Action::ShowPackStatus
+        | Action::RunPackCommand { .. }
+        | Action::InstallCommandPack { .. }
+        | Action::ReloadCommandPack { .. }
+        | Action::UnloadCommandPack { .. }
+        | Action::SetCommandPackLevel { .. }
         | Action::SetPlaceCollection(..)
         | Action::SearchCapturedPages
         | Action::Catalogue(SiteAction::BeginProtectedSite {..})

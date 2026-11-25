@@ -1,0 +1,45 @@
+# Command packs CP4 receipt: a fixture pack is installed, a granted command runs
+# from the palette, a command beyond its grants is refused with the reason
+# shown, and an edited manifest reloads to changed behaviour without a restart.
+# Offline; FRESH profile (TURNSTONE_ROOT). TURNSTONE_PACK_FIXTURE names a scratch
+# copy of tests/fixtures/command-packs/demo-pack, which the scenario edits.
+settle 30
+key escape
+
+# Install: the pack's commands join the action catalog.
+pack-install ${TURNSTONE_PACK_FIXTURE}
+settle 10
+assert snap actions ~ Demo: fit the view
+assert snap actions ~ Demo: reload the page
+
+# A granted command runs through the ordinary action spine.
+act Demo: fit the view
+settle 10
+assert event pack-ran demo-pack:fit 1
+capture 01_installed_and_run
+
+# A command beyond the pack's grants is refused; the reason is shown.
+act Demo: reload the page
+settle 10
+assert event pack-refused demo-pack:reload refused
+assert omnibar open
+assert snap suggestions ~ is not granted nav:reload
+capture 02_refused_with_reason
+key escape
+
+# The settings pane lists the pack, its level, commands and grants.
+act id:pane:settings
+settle 20
+capture 03_settings_section
+
+# Edit the manifest (grant ExternalEffect, relabel) and reload: no restart.
+write-file ${TURNSTONE_PACK_FIXTURE}/mod.toml abi = 1\nmod_id = "demo-pack"\ndisplay_name = "Demo pack"\nmod_type = "lua"\n\n[grants]\nclasses = ["Curation", "ExternalEffect"]\n\n[[contributes]]\nkind = "command"\nid = "demo-pack:fit"\nlabel = "Demo: fit the view"\neffect = "Curation"\nsource = "fit.lua"\n\n[[contributes]]\nkind = "command"\nid = "demo-pack:reload"\nlabel = "Demo: reload the page (granted)"\neffect = "ExternalEffect"\nsource = "reload.lua"\n
+pack-reload demo-pack
+settle 10
+assert snap actions ~ Demo: reload the page (granted)
+act Demo: reload the page (granted)
+settle 10
+assert event pack-ran demo-pack:reload 1
+capture 04_reloaded_changed_behaviour
+
+log command packs CP4 receipt complete

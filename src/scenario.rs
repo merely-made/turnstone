@@ -26,6 +26,9 @@
 //! capture <name>            # self-capture the composed frame -> <name>.png
 //! open <url>                # Action::OpenAddress (use mere:// for offline)
 //! import-clip <path>        # host admission of a selected Fleece package
+//! pack-install <dir> [dev]  # install a command pack from a directory
+//! pack-reload <pack-id>     # re-admit and swap in an installed command pack
+//! write-file <path> <text>  # overwrite a file; \n in the text is a newline
 //! export-clip <path>        # export the current clip to a new package file
 //! omnibar find|actions      # Action::OmnibarOpen
 //! type <text>               # Action::OmnibarChar per char
@@ -517,6 +520,8 @@ mod expand_env;
 pub(crate) use expand_env::expand_env;
 #[path = "scenario/parse.rs"]
 mod parse;
+#[path = "scenario/pack_verbs.rs"]
+pub(crate) mod pack_verbs;
 pub use parse::parse;
 
 /// Observe the ordinary offered capture action; never synthesize or invoke it.

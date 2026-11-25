@@ -1,0 +1,21 @@
+abi = 1
+mod_id = "demo-pack"
+display_name = "Demo pack"
+mod_type = "lua"
+
+[grants]
+classes = ["Curation"]
+
+[[contributes]]
+kind = "command"
+id = "demo-pack:fit"
+label = "Demo: fit the view"
+effect = "Curation"
+source = "fit.lua"
+
+[[contributes]]
+kind = "command"
+id = "demo-pack:reload"
+label = "Demo: reload the page"
+effect = "ExternalEffect"
+source = "reload.lua"

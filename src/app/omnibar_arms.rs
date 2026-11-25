@@ -84,6 +84,10 @@ impl App {
                 .note_suggestions(started.elapsed(), false);
             return;
         }
+        if matches!(self.omnibar.mode, OmnibarMode::PackStatus) {
+            self.omnibar.suggestions = self.pack_status_rows(row_limit);
+            return self.frame_timings.note_suggestions(started.elapsed(), false);
+        }
         if matches!(self.omnibar.mode, OmnibarMode::PlaceStatus) {
             let query = self.omnibar.text.trim().to_lowercase();
             let limit = row_limit.max(1);

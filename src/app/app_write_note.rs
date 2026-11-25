@@ -270,6 +270,12 @@ impl App {
             Action::ReconnectPlace => self.reconnect_place(),
             Action::RejoinPlace => self.rejoin_place(),
             Action::ShowPlaceStatus => self.open_place_status(),
+            Action::ShowPackStatus => self.open_pack_status(),
+            Action::RunPackCommand { id } => self.run_pack_command(id),
+            Action::InstallCommandPack { path, dev } => self.install_command_pack(path, dev),
+            Action::ReloadCommandPack { id } => self.reload_command_pack(id),
+            Action::UnloadCommandPack { id } => self.unload_command_pack(id),
+            Action::SetCommandPackLevel { id, dev } => self.set_command_pack_level(id, dev),
             Action::CopyLocalRendezvous => self.copy_local_rendezvous(),
             Action::SendPlaceMessage { channel, body } => {
                 self.run_place_command(crate::place::worker::PlaceCommand::SendMessage {

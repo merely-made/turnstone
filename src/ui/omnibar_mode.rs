@@ -18,6 +18,8 @@ pub enum OmnibarMode {
     SavedSources,
     /// Filter the active place's local status observations.
     PlaceStatus,
+    /// Show command pack refusals and failed reloads.
+    PackStatus,
     RenameSession(crate::panes::SessionId),
     /// One free-text place prompt. Same shape as `RenameSession`: the whole
     /// line is the answer, and Enter commits it into the paired action.

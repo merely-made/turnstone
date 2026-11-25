@@ -26,6 +26,9 @@ impl taproot::Driveable for Shell {
             self.pending_coop_wait = Some(PendingCoopWait::new(fields)?);
             return Ok(());
         }
+        if let Some(verb) = crate::scenario::pack_verbs::parse(line) {
+            return self.run_pack_verb(verb?);
+        }
         if let Some(result) = a11y_lint::step(line, || self.lint_primary_a11y()) {
             return result;
         }
@@ -186,5 +189,24 @@ impl taproot::Driveable for Shell {
         let result = self.run_scenario_step(&step);
         tracing::debug!(target: "turnstone::selfdrive", ok = result.is_ok(), "finished app step");
         result
+    }
+}
+
+impl Shell {
+    /// Run a command pack scenario verb: act, or edit a file the pack reads.
+    fn run_pack_verb(&mut self, verb: crate::scenario::pack_verbs::PackVerb) -> Result<(), String> {
+        use crate::scenario::pack_verbs::PackVerb;
+        match verb {
+            PackVerb::Install { path, dev } => {
+                self.act(crate::action::Action::InstallCommandPack { path, dev });
+            },
+            PackVerb::Reload(id) => {
+                self.act(crate::action::Action::ReloadCommandPack { id });
+            },
+            PackVerb::WriteFile { path, text } => {
+                std::fs::write(&path, text).map_err(|error| format!("write-file '{path}': {error}"))?;
+            },
+        }
+        Ok(())
     }
 }

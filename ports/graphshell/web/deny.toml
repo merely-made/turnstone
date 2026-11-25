@@ -82,8 +82,16 @@ crate = "png@0.17.16"
 reason = "mandrake 0.1.0 (family, merely-made/graphshell) requires it; goes when merely-made/graphshell moves mandrake to png 0.18.1"
 
 [[bans.skip]]
+crate = "read-fonts@0.41.0"
+reason = "held by genet-fontique 0.11.0 and, through skrifa 0.44.0 and harfrust 0.12.0, genet-parley 0.11.0, while netrender 0.2.0 and netrender-vello 0.12.0 take skrifa 0.49.0 (read-fonts 0.46.0); goes when merely-made/genet moves genet-fontique and genet-parley to read-fonts 0.46.0, as the root deny.toml's row also says"
+
+[[bans.skip]]
 crate = "rustc-hash@1.1.0"
 reason = "naga 30.0.2 (latest), naga-types 30.0.2 (latest), wgpu-core 30.0.2 (latest), bindgen 0.69.5 (bindgen 0.73.2 drops it) require it, under cambium-rootstock, cambium-web, conatus, genet-presenter and 10 more; goes when naga, naga-types, wgpu-core move to rustc-hash 2.1.3; their dependents take bindgen 0.73.2"
+
+[[bans.skip]]
+crate = "skrifa@0.44.0"
+reason = "held by genet-parley 0.11.0, while netrender 0.2.0, netrender-glifo 0.5.0, netrender-vello 0.12.0 and paint_list_render 0.2.0 take skrifa 0.49.0; goes when merely-made/genet moves genet-parley to skrifa 0.49.0, as the root deny.toml's row also says"
 
 [[bans.skip]]
 crate = "string_cache@0.8.9"

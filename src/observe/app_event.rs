@@ -299,6 +299,13 @@ pub enum AppEvent {
         label: String,
         kept: bool,
     },
+    /// A command pack's command ran and its requests were dispatched.
+    PackRan {
+        id: String,
+        requests: usize,
+    },
+    /// A command pack's run, or a request it made, was refused (with the reason).
+    PackRefused(String),
     LayoutReseeded,
     ContentState {
         node: Uuid,

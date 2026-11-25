@@ -50,6 +50,10 @@ impl Shell {
     }
 
     pub(super) fn apply_pack_settings(&mut self) {
+        let listing = self.app.packs.as_ref().map(|packs| packs.listing());
+        if listing.is_some_and(|listing| self.live_settings.publish_command_packs(listing)) {
+            self.request_redraw();
+        }
         let edits = self.live_settings.take_pack_edits();
         if edits.is_empty() {
             return;

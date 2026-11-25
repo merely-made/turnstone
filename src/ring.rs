@@ -354,6 +354,12 @@ pub fn ring_of(action: &Action) -> Ring {
         | ReconnectPlace
         | RejoinPlace
         | ShowPlaceStatus
+        | ShowPackStatus
+        | RunPackCommand { .. }
+        | InstallCommandPack { .. }
+        | ReloadCommandPack { .. }
+        | UnloadCommandPack { .. }
+        | SetCommandPackLevel { .. }
         // The whole ticket on the system clipboard is an exfiltration route
         // out of the process. It stays beside the other place gestures.
         | CopyLocalRendezvous

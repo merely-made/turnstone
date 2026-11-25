@@ -38,6 +38,7 @@ struct LiveSettingsState {
     notice: Option<String>,
     pack_settings: PackSettings,
     pack_edits: Vec<PackEdit>,
+    command_packs: crate::command_packs::PackListing,
     owner: Option<SharedApplicationSettingsOwner>,
 }
 
@@ -50,6 +51,7 @@ impl LiveSettingsHandle {
             notice: None,
             pack_settings: PackSettings::default(),
             pack_edits: Vec::new(),
+            command_packs: Default::default(),
             owner: None,
         })))
     }
@@ -129,6 +131,19 @@ impl LiveSettingsHandle {
         }
         state.pack_settings = next;
         true
+    }
+
+    pub(crate) fn publish_command_packs(&self, next: crate::command_packs::PackListing) -> bool {
+        let mut state = self.0.borrow_mut();
+        if state.command_packs == next {
+            return false;
+        }
+        state.command_packs = next;
+        true
+    }
+
+    pub(crate) fn command_packs(&self) -> crate::command_packs::PackListing {
+        self.0.borrow().command_packs.clone()
     }
 
     pub(crate) fn pack_settings(&self) -> PackSettings {

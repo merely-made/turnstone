@@ -48,6 +48,7 @@ mod research_search_rows;
 mod research_search_values;
 #[cfg(test)]
 mod research_search_tests;
+mod command_pack_arms;
 mod document_find_arms;
 mod fold_arms;
 mod journal_origin;
@@ -171,6 +172,8 @@ pub struct App {
     /// Transient host engine availability; retained across session switches.
     pub engine_inventory: Vec<crate::content::EngineDescriptor>,
     pub(crate) engine_enablement: crate::engine_enablement::EngineEnableSet,
+    /// Installed Lua command packs (desktop only; command packs CP4).
+    pub(crate) packs: Option<std::sync::Arc<crate::command_packs::PackHost>>,
     /// Durable feed schedules and duplicate-suppression state for this
     /// session. Entry nodes and unread markers themselves remain graph truth.
     pub feeds: crate::feed::FeedSubscriptions,

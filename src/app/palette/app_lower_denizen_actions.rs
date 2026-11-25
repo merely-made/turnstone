@@ -329,6 +329,7 @@ impl App {
             rows.push((choice.use_label(), Action::ChooseResearchNote { choice }));
         }
         rows.extend(crate::action::palette_actions());
+        rows.extend(self.pack_rows());
         rows
     }
 
@@ -339,18 +340,36 @@ impl App {
     /// the static registry form the `context` category, so they still lead.
     pub(crate) fn command_catalog(&self) -> CommandCatalog {
         let catalog = self.available_actions();
+        let packs = if self.session_load_refused() {
+            0
+        } else {
+            self.pack_rows().len()
+        };
         let contextual = if self.session_load_refused() {
             catalog.len()
         } else {
             catalog
                 .len()
-                .saturating_sub(crate::action::palette_actions().len())
+                .saturating_sub(crate::action::palette_actions().len() + packs)
         };
         let mut set = cambium::CommandSet::new().with_defaults(DEFAULT_KEPT_COMMANDS);
         let mut actions = std::collections::HashMap::new();
         let mut ids = std::collections::HashMap::new();
         for (index, (label, action)) in catalog.into_iter().enumerate() {
             if ids.contains_key(&label) {
+                continue;
+            }
+            if let Action::RunPackCommand { id } = &action {
+                // A pack row registers under its own id, with the effect its
+                // pack declared.
+                let Some(command) = self.pack_command(id) else {
+                    continue;
+                };
+                if set.get(&command.id).is_none() {
+                    ids.insert(label, command.id.clone());
+                    actions.insert(command.id.clone(), action);
+                    set.register(command);
+                }
                 continue;
             }
             let shared = (index >= contextual)
