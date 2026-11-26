@@ -18,6 +18,8 @@ pub enum ModProjectAction {
     RunFixtures(String),
     /// Re-admit the edited component and swap it in on the same document.
     Reload(String),
+    /// Put the last passing component back and reload through the pin (MP6, D30, D31).
+    Rollback(String),
     Detach(String),
     SetLevel { id: String, dev: bool },
     /// Grant or revoke a capability the manifest declares (next attach or reload).

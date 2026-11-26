@@ -70,6 +70,10 @@ impl App {
                 let result = mods.reload(&id);
                 ("reload", id, result)
             },
+            Step::Rollback(id) => {
+                let result = mods.rollback(&id);
+                ("rollback", id, result)
+            },
             Step::Detach(id) => {
                 let result = mods.detach(&id).map(|()| "ok: detached".into());
                 ("detach", id, result)

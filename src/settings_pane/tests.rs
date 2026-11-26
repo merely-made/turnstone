@@ -27,7 +27,7 @@ fn pane_renders_controls_from_setting_control_not_setting_ids() {
     let dom = pane.dom_ref();
     assert_eq!(dom.all_with_class(dom.document(), "setting-row").len(), 6);
     assert_eq!(dom.all_with_class(dom.document(), "setting-label").len(), 6);
-    assert_eq!(dom.all_with_class(dom.document(), "setting-apply").len(), 7);
+    assert_eq!(dom.all_with_class(dom.document(), "setting-apply").len(), 9);
     // UI zoom and cascade budget are number controls.
     assert_eq!(dom.all_with_class(dom.document(), "slider-track").len(), 2);
     assert_eq!(dom.all_with_class(dom.document(), "toggle").len(), 1);

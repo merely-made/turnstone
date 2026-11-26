@@ -25,6 +25,14 @@ pub struct ProjectRow {
     pub failure: Option<String>,
     pub attached: bool,
     pub can_build: bool,
+    /// A last passing build exists to roll back to (D30).
+    pub can_rollback: bool,
+    /// Files changed since the last pass, and the component against it (D32).
+    pub changes: String,
+    /// Whether the component is the last passing one (empty before a pass).
+    pub component: String,
+    /// The line diff against the last pass's snapshot, capped (D29).
+    pub diff: Vec<String>,
     /// Declared capabilities and whether each is granted.
     pub capabilities: Vec<(String, bool)>,
 }
@@ -104,6 +112,13 @@ impl ModProjectHost {
                 failure: p.failure.clone(),
                 attached: p.script.is_some() || p.page.is_some(),
                 can_build: toolchain && p.root.join("Cargo.toml").is_file(),
+                can_rollback: p.root.join(super::LAST_GOOD).is_file(),
+                changes: p.changes.as_ref().map_or_else(
+                    || "No passing build yet, so nothing to compare against".into(),
+                    super::authoring::Changes::words,
+                ),
+                component: p.changes.as_ref().map(|c| c.component_words().to_string()).unwrap_or_default(),
+                diff: p.changes.as_ref().map(super::authoring::Changes::diff_lines).unwrap_or_default(),
                 capabilities: p
                     .manifest
                     .capabilities

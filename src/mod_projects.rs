@@ -31,6 +31,7 @@ pub use crate::command_packs::Level;
 pub use listing::{ProjectListing, ProjectRow};
 pub use page::{LivePage, PageBinding, livery_dom};
 
+mod authoring;
 mod build;
 mod doc;
 mod files;
@@ -38,6 +39,8 @@ mod fixtures_run;
 mod listing;
 mod manifest;
 mod page;
+#[cfg(test)]
+mod authoring_tests;
 #[cfg(test)]
 mod page_tests;
 #[cfg(test)]
@@ -82,6 +85,8 @@ struct Project {
     logs: Vec<String>,
     failure: Option<String>,
     building: bool,
+    /// The folder against its last pass, scanned on pane open and each action (D32).
+    changes: Option<authoring::Changes>,
 }
 
 impl Project {
@@ -238,8 +243,10 @@ impl ModProjectHost {
             logs: Vec::new(),
             failure: None,
             building: false,
+            changes: None,
         };
         project.prune_grants();
+        project.changes = authoring::scan(&project);
         let mut state = lock(&self.state);
         state.projects.insert(id.clone(), project);
         self.save_list(&state);
@@ -269,6 +276,7 @@ impl ModProjectHost {
             .remove(id)
             .ok_or_else(|| format!("no mod project {id}"))?;
         let result = run(&mut project, state);
+        project.changes = authoring::scan(&project);
         state.projects.insert(id.to_string(), project);
         result
     }
@@ -419,57 +427,59 @@ impl ModProjectHost {
     /// new component is admitted only after the swap succeeds, so the pin always
     /// names the running component.
     pub fn reload(&self, id: &str) -> Result<String, String> {
-        self.with(id, |p, state| {
-            let spec = manifest::read(&p.root).map_err(|e| format!("{id}: {e}"))?;
-            p.manifest = spec.manifest;
-            p.version = spec.version;
-            p.component = spec.component;
-            p.document = spec.document;
-            p.prune_grants();
-            self.check_in(id, p, state)?;
-            let admit = |p: &Project| {
-                self.runtime
-                    .admit(&p.manifest, &p.version, &p.component, p.level.admission(), true)
-                    .map_err(|e| format!("{id}: {}", e.words()))
-            };
-            if p.page.is_some() {
-                return Err(format!(
-                    "{id} is attached to a page; detach it and attach again to reload"
-                ));
-            }
-            let Some(mut script) = p.script.take() else {
+        self.with(id, |p, state| self.reload_in(id, p, state))
+    }
+
+    fn reload_in(&self, id: &str, p: &mut Project, state: &mut State) -> Result<String, String> {
+        let spec = manifest::read(&p.root).map_err(|e| format!("{id}: {e}"))?;
+        p.manifest = spec.manifest;
+        p.version = spec.version;
+        p.component = spec.component;
+        p.document = spec.document;
+        p.prune_grants();
+        self.check_in(id, p, state)?;
+        let admit = |p: &Project| {
+            self.runtime
+                .admit(&p.manifest, &p.version, &p.component, p.level.admission(), true)
+                .map_err(|e| format!("{id}: {}", e.words()))
+        };
+        if p.page.is_some() {
+            return Err(format!(
+                "{id} is attached to a page; detach it and attach again to reload"
+            ));
+        }
+        let Some(mut script) = p.script.take() else {
+            admit(p)?;
+            p.failure = None;
+            return Ok("re-admitted; nothing attached".into());
+        };
+        let mut record =
+            admit_wasm(&p.manifest, &p.version, &p.component, p.level.admission(), &[], None)
+                .map_err(|e| format!("{id}: {}", e.words()));
+        let result = match &mut record {
+            Ok(record) => script
+                .reload(&p.component, &p.grant(), Quota::default(), None, Vec::new(), Some(record))
+                .map_err(|e| format!("reload: {}", e.words())),
+            Err(why) => Err(why.clone()),
+        };
+        let logs = script.guest_logs().to_vec();
+        p.keep_logs(&logs);
+        p.script = Some(script);
+        match result {
+            Ok(()) => {
                 admit(p)?;
                 p.failure = None;
-                return Ok("re-admitted; nothing attached".into());
-            };
-            let mut record =
-                admit_wasm(&p.manifest, &p.version, &p.component, p.level.admission(), &[], None)
-                    .map_err(|e| format!("{id}: {}", e.words()));
-            let result = match &mut record {
-                Ok(record) => script
-                    .reload(&p.component, &p.grant(), Quota::default(), None, Vec::new(), Some(record))
-                    .map_err(|e| format!("reload: {}", e.words())),
-                Err(why) => Err(why.clone()),
-            };
-            let logs = script.guest_logs().to_vec();
-            p.keep_logs(&logs);
-            p.script = Some(script);
-            match result {
-                Ok(()) => {
-                    admit(p)?;
-                    p.failure = None;
-                    Ok("reloaded on the same document".into())
-                },
-                Err(why) => {
-                    if let Some(trap) = record.ok().and_then(|r| r.last_trap) {
-                        p.last_trap = Some(trap.note);
-                    }
-                    p.failure = Some(why.clone());
-                    Self::note_in(state, format!("{id}: {why}"));
-                    Err(format!("{id}: {why}; the old instance stays attached"))
-                },
-            }
-        })
+                Ok("reloaded on the same document".into())
+            },
+            Err(why) => {
+                if let Some(trap) = record.ok().and_then(|r| r.last_trap) {
+                    p.last_trap = Some(trap.note);
+                }
+                p.failure = Some(why.clone());
+                Self::note_in(state, format!("{id}: {why}"));
+                Err(format!("{id}: {why}; the old instance stays attached"))
+            },
+        }
     }
 
     /// Move the project to `level`: admit its component again at that level.
@@ -512,6 +522,7 @@ fn promote(p: &Project) {
     if let Err(error) = std::fs::copy(&p.component, p.root.join(LAST_GOOD)) {
         tracing::warn!(%error, "could not keep the last good component");
     }
+    authoring::snapshot(p);
 }
 
 fn outcome_words(outcome: &TurnOutcome) -> String {

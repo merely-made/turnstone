@@ -94,3 +94,20 @@ fn detaching_leaves_the_page_as_the_last_turn_made_it_and_navigation_says_why() 
     assert_eq!(host.listing().rows[0].status, "Not attached (detached: its page was replaced)");
     assert_eq!(heading(session.as_ref()), "Kept");
 }
+
+#[test]
+fn a_mod_project_rollback_is_refused_while_attached_to_a_page() {
+    let (host, dir) = open_two();
+    host.run_fixtures("notes-mod").unwrap();
+    let session = page();
+    host.attach_page("notes-mod", binding(), livery_dom(session.as_ref()).unwrap()).unwrap();
+    let component = dir.path().join(PROJECTS_DIR).join("notes-mod/component.wasm");
+    std::fs::copy(fixtures().join("alt/quiet.wasm"), &component).unwrap();
+    let why = host.rollback("notes-mod").unwrap_err();
+    assert!(why.contains("attached to a page; detach it first"), "{why}");
+    assert_eq!(
+        std::fs::read(&component).unwrap(),
+        std::fs::read(fixtures().join("alt/quiet.wasm")).unwrap(),
+        "a refused rollback restores nothing"
+    );
+}

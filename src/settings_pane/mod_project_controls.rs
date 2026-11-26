@@ -80,6 +80,9 @@ fn project(row: &ProjectRow) -> (String, SettingsView) {
     }
     buttons.push(step_button("Run fixtures", id, Step::RunFixtures));
     buttons.push(step_button("Reload", id, Step::Reload));
+    if row.can_rollback {
+        buttons.push(step_button("Roll back", id, Step::Rollback));
+    }
     for (name, granted) in &row.capabilities {
         let (id, cap, now) = (id.clone(), name.clone(), !granted);
         buttons.push((
@@ -115,7 +118,14 @@ fn project(row: &ProjectRow) -> (String, SettingsView) {
         ("build".into(), line(format!("Last build: {}", row.build))),
         ("trap".into(), line(format!("Last trap: {}", row.trap))),
         ("grants".into(), line(grants_text(row))),
+        ("changes".into(), line(row.changes.clone())),
     ];
+    if !row.component.is_empty() {
+        parts.push(("component".into(), line(row.component.clone())));
+    }
+    for (n, text) in row.diff.iter().enumerate() {
+        parts.push((format!("diff-{n}"), line(format!("Diff {text}"))));
+    }
     if !row.document.is_empty() {
         parts.push(group("Document", &row.document));
     }
@@ -235,6 +245,10 @@ mod tests {
                 failure: Some("check failed: import mere:script/net is not granted".into()),
                 attached: false,
                 can_build: true,
+                can_rollback: true,
+                changes: "Changed since the last pass: 0 files".into(),
+                component: "component.wasm matches last-good.wasm".into(),
+                diff: Vec::new(),
                 capabilities: vec![("network".into(), false)],
             }],
             available: vec![root.path().join("other")],
@@ -248,6 +262,7 @@ mod tests {
             "Attach to the focused page notes-mod",
             "Run fixtures notes-mod",
             "Reload notes-mod",
+            "Roll back notes-mod",
             "Grant network for notes-mod",
             "Open other",
             "Create a mod project from the starter",

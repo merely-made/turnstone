@@ -3,7 +3,7 @@
 
 //! The scenario verbs that drive Wasm mod projects (mod projects MP5):
 //! `mod-create [dir]`, `mod-open <dir> [dev]`, `mod-check|build|attach|attach-page|fixtures|
-//! reload|detach <id>`, `mod-grant <id> <capability> on|off`, `mod-level <id> dev|conformant`, `mod-turn <id> <kind>
+//! reload|rollback|detach <id>`, `mod-grant <id> <capability> on|off`, `mod-level <id> dev|conformant`, `mod-turn <id> <kind>
 //! [payload]` and `copy-file <from> <to>` (bytes, to swap a component).
 
 use super::expand_env::expand_env;
@@ -47,6 +47,7 @@ pub(crate) fn parse(line: &str) -> Option<Result<ModVerb, String>> {
         "mod-attach-page" => id().map(|id| ModVerb::Step(Step::AttachPage(id))),
         "mod-fixtures" => id().map(|id| ModVerb::Step(Step::RunFixtures(id))),
         "mod-reload" => id().map(|id| ModVerb::Step(Step::Reload(id))),
+        "mod-rollback" => id().map(|id| ModVerb::Step(Step::Rollback(id))),
         "mod-detach" => id().map(|id| ModVerb::Step(Step::Detach(id))),
         "mod-level" => match words.as_slice() {
             [id, level @ ("dev" | "conformant")] => Ok(ModVerb::Step(Step::SetLevel {
@@ -119,6 +120,10 @@ mod tests {
         assert_eq!(
             parse("copy-file /a /b"),
             Some(Ok(ModVerb::CopyFile { from: "/a".into(), to: "/b".into() }))
+        );
+        assert_eq!(
+            parse("mod-rollback notes-mod"),
+            Some(Ok(ModVerb::Step(Step::Rollback("notes-mod".into()))))
         );
         assert!(matches!(parse("mod-check"), Some(Err(_))));
         assert!(parse("pack-reload x").is_none());

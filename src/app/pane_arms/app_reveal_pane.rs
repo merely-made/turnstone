@@ -337,6 +337,12 @@ impl App {
     }
 
     pub(in super::super) fn summon_pane(&mut self, kind: PaneKindId) -> Vec<Effect> {
+        // Opening settings is when the mod project rows look at their folders (MP6, D32).
+        if kind.as_str() == crate::panes::kind::SETTINGS {
+            if let Some(mods) = &self.mods {
+                mods.refresh_changes();
+            }
+        }
         let Some(definition) = crate::panes::pane_definition(kind.as_str()) else {
             self.events.push(AppEvent::InteractionMissed {
                 what: "summon-pane",
