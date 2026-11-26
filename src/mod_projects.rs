@@ -24,10 +24,12 @@ use std::sync::{Mutex, MutexGuard, OnceLock, PoisonError};
 
 use document_host::mod_loader::{ModCapability, ModManifest, admit_wasm, capability_name};
 use document_host::runtime::DocumentScriptRuntime;
-use document_host::{CapPermission, DocumentScript, Grant, Quota, TurnOutcome, World};
+use document_host::{CapPermission, DocumentScript, Grant, Quota, TurnOutcome};
+use mod_host::{ModKind, ParserHost, ViewerHost};
 use serde::{Deserialize, Serialize};
 
 pub use crate::command_packs::Level;
+pub use guests::{ParseRefusal, ParsedPage};
 pub use listing::{ProjectListing, ProjectRow};
 pub use page::{LivePage, PageBinding, livery_dom};
 
@@ -36,11 +38,14 @@ mod build;
 mod doc;
 mod files;
 mod fixtures_run;
+mod guests;
 mod listing;
 mod manifest;
 mod page;
 #[cfg(test)]
 mod authoring_tests;
+#[cfg(test)]
+mod guests_tests;
 #[cfg(test)]
 mod page_tests;
 #[cfg(test)]
@@ -61,6 +66,9 @@ struct Installed {
     /// Granted capability names (`network`, ...); only declared ones count.
     #[serde(default)]
     granted: Vec<String>,
+    /// Media types a built-in claims that the user handed to this parser (D39).
+    #[serde(default)]
+    claimed: Vec<String>,
 }
 
 /// One opened project and what has happened to it.
@@ -68,6 +76,14 @@ struct Project {
     root: PathBuf,
     level: Level,
     manifest: ModManifest,
+    kind: ModKind,
+    /// The media types a parser declares (normalized, sorted).
+    media_types: Vec<String>,
+    /// Declared types a built-in also claims, turned on for this parser (D39).
+    claimed_on: Vec<String>,
+    /// The parser's live instance, dropped on a trap (D20).
+    parser: Option<ParserHost>,
+    viewer: Option<ViewerHost>,
     version: String,
     component: PathBuf,
     document: PathBuf,
@@ -132,6 +148,9 @@ pub struct ModProjectHost {
     cargo: PathBuf,
     toolchain: OnceLock<bool>,
     state: Mutex<State>,
+    guests: OnceLock<guests::GuestRuntime>,
+    /// How each mod-parsed page was parsed, by address (D41).
+    notes: Mutex<BTreeMap<String, (String, String)>>,
 }
 
 fn lock<T>(mutex: &Mutex<T>) -> MutexGuard<'_, T> {
@@ -154,6 +173,8 @@ impl ModProjectHost {
             cargo: cargo.into(),
             toolchain: OnceLock::new(),
             state: Mutex::new(State::default()),
+            guests: OnceLock::new(),
+            notes: Mutex::new(BTreeMap::new()),
         };
         host.load_list();
         host
@@ -171,7 +192,9 @@ impl ModProjectHost {
             Ok(list) => {
                 for project in list {
                     let granted = project.granted;
-                    if let Err(error) = self.try_open(&project.root, project.level, &granted) {
+                    if let Err(error) =
+                        self.try_open(&project.root, project.level, &granted, &project.claimed)
+                    {
                         self.note(format!("startup: {error}"));
                     }
                 }
@@ -188,6 +211,7 @@ impl ModProjectHost {
                 root: p.root.clone(),
                 level: p.level,
                 granted: p.granted.iter().map(|c| capability_name(*c).into()).collect(),
+                claimed: p.claimed_on.clone(),
             })
             .collect();
         let write = || -> std::io::Result<()> {
@@ -211,14 +235,20 @@ impl ModProjectHost {
     /// Open the project folder at `root` at `level`, admitting its component;
     /// the project's id.
     pub fn open_project(&self, root: &Path, level: Level) -> Result<String, String> {
-        let result = self.try_open(root, level, &[]);
+        let result = self.try_open(root, level, &[], &[]);
         if let Err(line) = &result {
             self.note(line.clone());
         }
         result
     }
 
-    fn try_open(&self, root: &Path, level: Level, granted: &[String]) -> Result<String, String> {
+    fn try_open(
+        &self,
+        root: &Path,
+        level: Level,
+        granted: &[String],
+        claimed: &[String],
+    ) -> Result<String, String> {
         let spec = manifest::read(root).map_err(|e| format!("open {}: {e}", root.display()))?;
         self.runtime
             .admit(&spec.manifest, &spec.version, &spec.component, level.admission(), true)
@@ -229,6 +259,11 @@ impl ModProjectHost {
             level,
             granted: granted.iter().filter_map(|n| manifest::capability(n).ok()).collect(),
             manifest: spec.manifest,
+            kind: spec.kind,
+            claimed_on: claimed.iter().filter(|m| spec.media_types.contains(m)).cloned().collect(),
+            media_types: spec.media_types,
+            parser: None,
+            viewer: None,
             version: spec.version,
             component: spec.component,
             document: spec.document,
@@ -257,7 +292,7 @@ impl ModProjectHost {
     /// its mod id and open it.
     pub fn create(&self, from: Option<&Path>) -> Result<String, String> {
         let result = files::create(&self.directory, from)
-            .and_then(|root| self.try_open(&root, Level::Conformant, &[]));
+            .and_then(|root| self.try_open(&root, Level::Conformant, &[], &[]));
         if let Err(line) = &result {
             self.note(format!("create: {line}"));
         }
@@ -313,15 +348,23 @@ impl ModProjectHost {
     }
 
     fn check_in(&self, id: &str, p: &mut Project, state: &mut State) -> Result<(), String> {
-        let report = document_host::check(&p.component, &p.grant(), &World::document_core())
+        let report = document_host::check(&p.component, &p.grant(), &p.kind.world())
             .map_err(|e| e.words());
         let words = match report {
             Ok(report) => {
                 p.check_note = Some(report.words());
                 if report.ok() {
-                    return Ok(());
+                    match self.check_guest(p) {
+                        Ok(()) => return Ok(()),
+                        Err(why) => {
+                            let why = format!("check failed: {why}");
+                            p.check_note = Some(why.clone());
+                            why
+                        },
+                    }
+                } else {
+                    report.words()
                 }
-                report.words()
             },
             Err(why) => {
                 p.check_note = Some(why.clone());
@@ -337,6 +380,12 @@ impl ModProjectHost {
     /// Attach the checked component to the project's document (D5).
     pub fn attach(&self, id: &str) -> Result<(), String> {
         self.with(id, |p, state| {
+            if p.kind != ModKind::Document {
+                return Err(format!(
+                    "{id} is a {}: it takes pages by media type, not an attach",
+                    p.kind.as_str()
+                ));
+            }
             if p.script.is_some() || p.page.is_some() {
                 return Err(format!("{id} is already attached; reload or detach it"));
             }
@@ -433,6 +482,11 @@ impl ModProjectHost {
     fn reload_in(&self, id: &str, p: &mut Project, state: &mut State) -> Result<String, String> {
         let spec = manifest::read(&p.root).map_err(|e| format!("{id}: {e}"))?;
         p.manifest = spec.manifest;
+        p.kind = spec.kind;
+        p.claimed_on.retain(|m| spec.media_types.contains(m));
+        p.media_types = spec.media_types;
+        p.parser = None;
+        p.viewer = None;
         p.version = spec.version;
         p.component = spec.component;
         p.document = spec.document;

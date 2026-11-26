@@ -212,7 +212,10 @@ impl ChromeSurfaces {
             },
             Some(crate::content::PageFetchPhase::Settled { .. }) | None => None,
         });
-        let focused_url = browser_target.map(|(_, url)| url);
+        let focused_url = browser_target.map(|(member, url)| match app.mod_parse_note(member, &url) {
+            Some(note) => format!("{url}  \u{2014}  {note}"),
+            None => url,
+        });
         let link_preview = app.page_media_status.as_ref()
             .filter(|(member, _, _)| Some(*member) == focused)
             .map(|(_, status, _)| status.clone())

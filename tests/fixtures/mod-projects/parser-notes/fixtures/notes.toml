@@ -1,0 +1,14 @@
+name = "a title, a paragraph and a tab warning"
+
+[input]
+media_type = "application/x-fixture-notes"
+text = "# Field notes\nfirst line\n\tindented line\n"
+
+[expect]
+title = "Field notes"
+outline = """
+heading 1: Field notes
+paragraph: first line
+paragraph: indented line
+"""
+diagnostics = ["warning 25..40: a tab starts this line"]

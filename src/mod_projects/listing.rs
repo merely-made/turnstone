@@ -35,6 +35,12 @@ pub struct ProjectRow {
     pub diff: Vec<String>,
     /// Declared capabilities and whether each is granted.
     pub capabilities: Vec<(String, bool)>,
+    /// `document`, `parser` or `viewer` (MP7).
+    pub kind: String,
+    /// A parser's declared media types: whether a built-in also claims it, and
+    /// whether the user handed it to this parser (D39). Unclaimed types are the
+    /// parser's by default.
+    pub media_types: Vec<(String, bool, bool)>,
 }
 
 /// The rows, and project folders in the projects directory not opened yet.
@@ -124,6 +130,12 @@ impl ModProjectHost {
                     .capabilities
                     .iter()
                     .map(|c| (capability_name(*c).to_string(), p.granted.contains(c)))
+                    .collect(),
+                kind: p.kind.as_str().to_string(),
+                media_types: p
+                    .media_types
+                    .iter()
+                    .map(|m| (m.clone(), crate::mod_parser::builtin_claims(m), p.claimed_on.contains(m)))
                     .collect(),
             })
             .collect();

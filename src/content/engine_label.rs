@@ -11,6 +11,7 @@ pub fn engine_label(id: &str) -> String {
         "genet.scripted" => "Genet (Bole)",
         "genet.scripted.nova" => "Genet (Vano)",
         "genet.reader" => "Reader",
+        crate::mod_parser::ENGINE_ID => "Mod parser",
         crate::retained_clip::ENGINE_ID => "Retained clip",
         crate::saved_sources::ENGINE_ID => "Saved source",
         "scrying.web" => "System webview",

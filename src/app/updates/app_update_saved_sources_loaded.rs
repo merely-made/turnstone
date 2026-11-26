@@ -125,7 +125,14 @@ impl App {
                     .and_then(|fetched| fetched.http_response.as_ref())
                     .map(|response| response.final_url())
                     .or_else(|| observed.and_then(|previous| previous.effective_url.as_deref()));
-                let reading = match result.as_ref().ok().map(|fetched| {
+                // A media type an installed parser mod takes is a document, not a
+                // download (mod projects D38).
+                let mod_parsed = result.as_ref().ok().is_some_and(|fetched| {
+                    self.mods.as_deref().is_some_and(|mods| {
+                        crate::mod_parser::route(mods, fetched.content_type.as_deref()).is_some()
+                    })
+                });
+                let reading = match result.as_ref().ok().filter(|_| !mod_parsed).map(|fetched| {
                     let base = effective_url.unwrap_or(&url);
                     crate::download::page_disposition(fetched, Some(base))
                 }) {

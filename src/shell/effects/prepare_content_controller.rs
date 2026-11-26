@@ -48,9 +48,12 @@ pub(super) fn prepare_content_controller(
             .with_body(body)
             .with_content_type(document.content_type);
     } else if let Some(document) = fetched {
-        spawn = spawn
-            .with_body(document.body)
-            .with_http_response(document.http_response);
+        spawn = spawn.with_body(document.body);
+        // A mod parser reads the bytes as received (mod projects D40).
+        if engine_id == crate::mod_parser::ENGINE_ID {
+            spawn = spawn.with_body_bytes(document.bytes);
+        }
+        spawn = spawn.with_http_response(document.http_response);
         if let Some(content_type) = document.content_type {
             spawn = spawn.with_content_type(content_type);
         }

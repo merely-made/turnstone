@@ -19,6 +19,12 @@ use eidetic::capture::{AcquisitionEvidence, CaptureError, SourceAnnotator};
 use eidetic::{Hash, ManifestId, Store, Timestamp};
 use fleece::eidetic_bridge::{CaptureDomMode, CaptureEvidenceV1};
 
+/// Whether a response's media type is HTML.
+fn is_html(content_type: &str) -> bool {
+    let essence = content_type.split(';').next().unwrap_or("").trim().to_ascii_lowercase();
+    matches!(essence.as_str(), "text/html" | "application/xhtml+xml")
+}
+
 /// The annotation seam over `fleece::FleeceAnnotationRecord`.
 pub(crate) struct FleeceAnnotator;
 
@@ -35,6 +41,11 @@ impl SourceAnnotator for FleeceAnnotator {
             .effective_url
             .clone()
             .ok_or("sealed capture needs final URL")?;
+        // Only HTML goes through HTML capture: a page a mod parsed from other
+        // bytes is skipped, not annotated as if it were markup (mod projects D41).
+        if document.content_type.as_deref().is_some_and(|ct| !is_html(ct)) {
+            return Err("capture skipped: the body is not HTML".into());
+        }
         let parsed = genet_static_dom::StaticDocument::parse(&document.body);
         let extracted = fleece::extract_document(&parsed);
         let anchor = fleece::anchor_for_range(
@@ -267,4 +278,29 @@ pub(crate) fn verify_source_document(
     stored: &StoredSourceDocument,
 ) -> Result<(), String> {
     verify_source_document_typed(store, stored).map_err(|error| error.to_string())
+}
+
+#[cfg(test)]
+mod html_only_tests {
+    use super::*;
+
+    fn document(content_type: Option<&str>) -> core::FetchedDocument {
+        let body = "<html><body><p>hello</p></body></html>";
+        core::FetchedDocument {
+            bytes: body.as_bytes().to_vec(),
+            body: body.into(),
+            effective_url: Some("http://127.0.0.1/p".into()),
+            content_type: content_type.map(str::to_string),
+            acquired_at_ms: 1,
+        }
+    }
+
+    #[test]
+    fn only_html_goes_through_html_capture_and_a_mod_parsed_body_is_skipped() {
+        for html in [Some("text/html"), Some("Text/HTML; charset=utf-8"), Some("application/xhtml+xml"), None] {
+            assert!(FleeceAnnotator.annotate(&document(html)).is_ok(), "{html:?}");
+        }
+        let skipped = FleeceAnnotator.annotate(&document(Some("application/x-fixture-notes")));
+        assert!(skipped.unwrap_err().to_string().contains("not HTML"));
+    }
 }

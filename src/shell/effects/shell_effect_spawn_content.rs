@@ -245,6 +245,23 @@ impl Shell {
                     self.smolweb_pack.parser_availability(id)
                         != Some(crate::content::EngineAvailability::Disabled)
                 });
+                // An installed parser mod takes the page's media type unless a
+                // stronger pin already chose, and a built-in's type only when the
+                // user turned it on (mod projects D38, D39). Decided at spawn, so
+                // an install needs no restart.
+                let mod_pin = if pinned.is_none() {
+                    self.app
+                        .mods
+                        .as_deref()
+                        .zip(fetched.and_then(|document| document.content_type.as_deref()))
+                        .and_then(|(mods, content_type)| {
+                            crate::mod_parser::route(mods, Some(content_type))
+                        })
+                        .map(|_| crate::mod_parser::ENGINE_ID.to_string())
+                } else {
+                    None
+                };
+                let pinned = pinned.or(mod_pin.clone());
                 let request = inker::EngineRouteRequest {
                     workspace_id: inker::WorkspaceRouteId::new("turnstone"),
                     view: None,
@@ -260,8 +277,9 @@ impl Shell {
                     &request,
                     &self.app.engine_enablement,
                 );
-                let route_source =
-                    if request.pinned_engine.as_deref() == Some(decision.engine_id.as_str()) {
+                let route_source = if mod_pin.is_none()
+                    && request.pinned_engine.as_deref() == Some(decision.engine_id.as_str())
+                {
                         pelt_core::PeltRouteSource::UserOverride
                     } else {
                         pelt_core::PeltRouteSource::Automatic
@@ -399,7 +417,10 @@ impl Shell {
                     .facts(node)
                     .map(|facts| facts.engine.clone())
                     .unwrap_or_else(|| inker::routing::ENGINE_NEMATIC_GEMTEXT.to_string());
-                if engine == crate::nomadnet::ENGINE_ID || fetch::peer::is_address(&url) {
+                if engine == crate::nomadnet::ENGINE_ID
+                    || engine == crate::mod_parser::ENGINE_ID
+                    || fetch::peer::is_address(&url)
+                {
                     // Generic smolweb body replacement selects by URL scheme.
                     // Re-enter the explicit Micron parser for this native address.
                     self.run_effects(vec![Effect::SpawnContent { node, url }]);

@@ -24,6 +24,8 @@ pub enum ModProjectAction {
     SetLevel { id: String, dev: bool },
     /// Grant or revoke a capability the manifest declares (next attach or reload).
     SetGrant { id: String, capability: String, granted: bool },
+    /// Hand a parser mod a media type a built-in also claims, or take it back (MP7, D39).
+    SetClaimed { id: String, media_type: String, on: bool },
     /// Deliver one event to the attached component.
     Turn { id: String, kind: String, payload: String },
 }

@@ -1,0 +1,12 @@
+name = "two nodes draw two regions"
+
+[graph]
+json = '{"snapshot":{"nodes":[{"label":"A"},{"label":"B"}]},"facets":{}}'
+
+[ask]
+width = 320.0
+
+[expect]
+regions = ["Node A", "Node B"]
+width = [100.0, 400.0]
+height = [20.0, 200.0]

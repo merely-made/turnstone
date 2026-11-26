@@ -1,0 +1,5 @@
+# A fixture viewer: its component is graphshell's mod-host `guest-viewer` fixture guest.
+mod_id = "nodes-viewer"
+display_name = "Nodes viewer"
+version = "0.1.0"
+kind = "viewer"

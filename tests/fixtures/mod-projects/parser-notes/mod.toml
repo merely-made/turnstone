@@ -1,0 +1,15 @@
+# A fixture parser: its component is graphshell's mod-host `guest-parser` fixture guest.
+mod_id = "notes-parser"
+display_name = "Notes parser"
+version = "0.1.0"
+kind = "parser"
+media_types = [
+    "application/x-fixture-notes",
+    "application/x-fixture-refuse",
+    "application/x-fixture-trap",
+    "application/x-fixture-spin",
+    "application/x-fixture-huge",
+    "application/x-fixture-badversion",
+    "application/x-fixture-liar",
+    "application/x-fixture-chatty",
+]

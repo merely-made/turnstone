@@ -3,7 +3,7 @@
 
 //! The scenario verbs that drive Wasm mod projects (mod projects MP5):
 //! `mod-create [dir]`, `mod-open <dir> [dev]`, `mod-check|build|attach|attach-page|fixtures|
-//! reload|rollback|detach <id>`, `mod-grant <id> <capability> on|off`, `mod-level <id> dev|conformant`, `mod-turn <id> <kind>
+//! reload|rollback|detach <id>`, `mod-grant <id> <capability> on|off`, `mod-claim <id> <media-type> on|off`, `mod-level <id> dev|conformant`, `mod-turn <id> <kind>
 //! [payload]` and `copy-file <from> <to>` (bytes, to swap a component).
 
 use super::expand_env::expand_env;
@@ -63,6 +63,14 @@ pub(crate) fn parse(line: &str) -> Option<Result<ModVerb, String>> {
                 granted: *state == "on",
             })),
             _ => Err("mod-grant wants '<id> <capability> on|off'".into()),
+        },
+        "mod-claim" => match words.as_slice() {
+            [id, media_type, state @ ("on" | "off")] => Ok(ModVerb::Step(Step::SetClaimed {
+                id: (*id).into(),
+                media_type: (*media_type).into(),
+                on: *state == "on",
+            })),
+            _ => Err("mod-claim wants '<id> <media-type> on|off'".into()),
         },
         "mod-turn" => match rest.split_once(char::is_whitespace) {
             Some((id, tail)) => {

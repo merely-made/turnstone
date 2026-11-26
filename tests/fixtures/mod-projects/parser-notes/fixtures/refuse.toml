@@ -1,0 +1,8 @@
+name = "the guest declines and says why"
+
+[input]
+media_type = "application/x-fixture-refuse"
+text = "anything"
+
+[expect]
+fails = "fixture refuses this input"

@@ -47,6 +47,26 @@ fn step_button(label: &'static str, id: &str, step: impl Fn(String) -> Step + 's
     )
 }
 
+/// What kind of project it is and, for a parser, who reads which media type.
+fn kind_text(row: &ProjectRow) -> String {
+    if row.media_types.is_empty() {
+        return format!("Kind: {}", row.kind);
+    }
+    let each: Vec<String> = row
+        .media_types
+        .iter()
+        .map(|(media, claimed, on)| {
+            let who = match (claimed, on) {
+                (false, _) => "this parser",
+                (true, true) => "this parser (handed over)",
+                (true, false) => "a built-in engine",
+            };
+            format!("{media} by {who}")
+        })
+        .collect();
+    format!("Kind: {}; {}", row.kind, each.join(", "))
+}
+
 /// The capabilities the manifest declares and whether each is granted.
 fn grants_text(row: &ProjectRow) -> String {
     if row.capabilities.is_empty() {
@@ -72,11 +92,30 @@ fn project(row: &ProjectRow) -> (String, SettingsView) {
     if row.can_build {
         buttons.push(step_button("Build", id, Step::Build));
     }
-    if row.attached {
-        buttons.push(step_button("Detach", id, Step::Detach));
-    } else {
-        buttons.push(step_button("Attach to its document", id, Step::Attach));
-        buttons.push(step_button("Attach to the focused page", id, Step::AttachPage));
+    if row.kind == "document" {
+        if row.attached {
+            buttons.push(step_button("Detach", id, Step::Detach));
+        } else {
+            buttons.push(step_button("Attach to its document", id, Step::Attach));
+            buttons.push(step_button("Attach to the focused page", id, Step::AttachPage));
+        }
+    }
+    for (media, claimed, on) in &row.media_types {
+        if !claimed {
+            continue;
+        }
+        let (id, media, now) = (id.clone(), media.clone(), !on);
+        let label = format!("{} {media}", if *on { "Take back" } else { "Hand over" });
+        buttons.push((
+            format!("claim-{media}"),
+            action_button(label.clone(), format!("{label} for {id}"), move || {
+                Action::ModProject(Step::SetClaimed {
+                    id: id.clone(),
+                    media_type: media.clone(),
+                    on: now,
+                })
+            }),
+        ));
     }
     buttons.push(step_button("Run fixtures", id, Step::RunFixtures));
     buttons.push(step_button("Reload", id, Step::Reload));
@@ -114,6 +153,7 @@ fn project(row: &ProjectRow) -> (String, SettingsView) {
             "name".to_string(),
             line(format!("{id} \u{2014} {} \u{2014} {}", row.level.label(), row.status)),
         ),
+        ("kind".into(), line(kind_text(row))),
         ("check".into(), line(format!("Last check: {}", row.check))),
         ("build".into(), line(format!("Last build: {}", row.build))),
         ("trap".into(), line(format!("Last trap: {}", row.trap))),
@@ -250,6 +290,8 @@ mod tests {
                 component: "component.wasm matches last-good.wasm".into(),
                 diff: Vec::new(),
                 capabilities: vec![("network".into(), false)],
+                kind: "document".into(),
+                media_types: Vec::new(),
             }],
             available: vec![root.path().join("other")],
         });

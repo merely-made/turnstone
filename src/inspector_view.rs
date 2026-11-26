@@ -302,6 +302,14 @@ fn content_rows(app: &App, node: Option<uuid::Uuid>) -> Vec<(String, String)> {
             None => "none".to_string(),
         },
     ));
+    // A page a parser mod read says which mod and how (mod projects D41).
+    if let Some(detail) = node.and_then(|n| {
+        app.graph_runtimes
+            .focused_url()
+            .and_then(|url| app.mod_parse_detail(n, url))
+    }) {
+        rows.push(("Mod parser".to_string(), detail));
+    }
     let shared = node.and_then(|n| app.content.cue_report(n)).is_some();
     if shared {
         rows.extend(

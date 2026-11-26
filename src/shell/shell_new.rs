@@ -203,6 +203,7 @@ impl Shell {
             proxy.clone(),
         );
         smolweb_pack.register(&mut content_engines);
+        content_engines.register(Box::new(crate::mod_parser::ModParserEngine::new(app.mods.clone())));
         let route_policy = standard_route_policy();
         #[cfg(feature = "scripted-webgl")]
         let route_policy = {

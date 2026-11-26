@@ -16,6 +16,26 @@ fn level(dev: bool) -> Level {
 }
 
 impl App {
+    /// How the focused page was parsed, when a parser mod did (D41): the status
+    /// line and the inspector say so.
+    pub(crate) fn mod_parse_note(&self, node: uuid::Uuid, url: &str) -> Option<String> {
+        self.mod_parse_words(node, url, false)
+    }
+
+    /// As [`mod_parse_note`](Self::mod_parse_note), in full for the inspector.
+    pub(crate) fn mod_parse_detail(&self, node: uuid::Uuid, url: &str) -> Option<String> {
+        self.mod_parse_words(node, url, true)
+    }
+
+    fn mod_parse_words(&self, node: uuid::Uuid, url: &str, detail: bool) -> Option<String> {
+        let facts = self.content.facts(node)?;
+        if facts.engine != crate::mod_parser::ENGINE_ID {
+            return None;
+        }
+        let mods = self.mods.as_ref()?;
+        if detail { mods.parse_detail(url) } else { mods.parse_note(url) }
+    }
+
     /// The mod project lines of the pack status view: refusals and failures.
     pub(super) fn mod_status_rows(&self) -> Vec<crate::ui::Suggestion> {
         self.mods
@@ -87,6 +107,12 @@ impl App {
                     .set_grant(&id, &capability, granted)
                     .map(|()| format!("ok: {capability} {}", if granted { "granted" } else { "revoked" }));
                 ("grant", id, result)
+            },
+            Step::SetClaimed { id, media_type, on } => {
+                let result = mods.set_claimed(&id, &media_type, on).map(|()| {
+                    format!("ok: {media_type} {}", if on { "on" } else { "off" })
+                });
+                ("claim", id, result)
             },
             Step::Turn { id, kind, payload } => {
                 let result = mods.turn(&id, &kind, &payload);

@@ -39,6 +39,8 @@ pub mod engine_pack;
 pub mod command_packs;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod mod_projects;
+#[cfg(not(target_arch = "wasm32"))]
+pub mod mod_parser;
 pub mod focus_card;
 mod forme_context;
 mod map_theme;

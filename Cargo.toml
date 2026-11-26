@@ -437,6 +437,8 @@ servo = ["dep:graft-engine", "graft-engine/servo", "dep:grafting-servo", "dep:gr
 # Lua command packs run on the desktop only; the browser build links none (command packs D11).
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 document-host = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
+# Parser and viewer mods (mod projects MP7): the worlds' hosts.
+mod-host = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 command-packs = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 toml = "1"
 # The line diff a mod project shows against its last passing snapshot (mod projects D29).

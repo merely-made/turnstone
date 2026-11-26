@@ -1,11 +1,65 @@
 // Copyright 2026 Mark Alan Boykin
 // SPDX-License-Identifier: MPL-2.0
 
-//! Running a project's fixtures (D6): turns in, the pinned DOM and turn log out.
+//! Running a project's fixtures (D6): turns in, the pinned DOM and turn log out;
+//! for a parser, bytes in and the document's outline out; for a viewer, a graph
+//! in and the scene's regions out (MP7, D35).
 
+use std::path::Path;
+
+use document_host::mod_loader::InstallRecord;
 use document_host::{Fixture, FixtureOutcome, Quota, run_fixture};
+use mod_host::fixture as guest;
+use mod_host::{Limits, ModKind};
 
-use super::ModProjectHost;
+use super::{ModProjectHost, Project};
+
+/// One fixture file's run: passed, or the diff; and what the guest logged.
+struct Ran {
+    passed: bool,
+    words: String,
+    logs: Vec<String>,
+}
+
+fn run_one(path: &Path, p: &Project, record: Option<&mut InstallRecord>) -> Result<Ran, String> {
+    let guest_ran = |outcome: guest::FixtureOutcome| Ran {
+        passed: outcome.passed(),
+        words: outcome.words(),
+        logs: Vec::new(),
+    };
+    match p.kind {
+        ModKind::Parser => {
+            let fixture = guest::ParserFixture::from_file(path)?;
+            guest::run_parser_fixture(&fixture, &p.component, Limits::default(), record).map(guest_ran)
+        },
+        ModKind::Viewer => {
+            let fixture = guest::ViewerFixture::from_file(path)?;
+            guest::run_viewer_fixture(&fixture, &p.component, Limits::default(), record).map(guest_ran)
+        },
+        ModKind::Document => {
+            let fixture = Fixture::from_file(path)?;
+            let outcome = run_fixture(
+                &fixture,
+                &p.component,
+                &p.grant(),
+                Quota::default(),
+                None,
+                Vec::new(),
+                record,
+            )?;
+            Ok(match outcome {
+                FixtureOutcome::Pass(run) => Ran { passed: true, words: "pass".into(), logs: run.guest_logs },
+                mismatch => {
+                    let logs = match &mismatch {
+                        FixtureOutcome::Mismatch { run, .. } => run.guest_logs.clone(),
+                        FixtureOutcome::Pass(_) => Vec::new(),
+                    };
+                    Ran { passed: false, words: mismatch.words(), logs }
+                },
+            })
+        },
+    }
+}
 
 impl ModProjectHost {
     /// Run every `fixtures/*.toml` against the project's component; a pass,
@@ -23,29 +77,16 @@ impl ModProjectHost {
                 let name = path
                     .file_stem()
                     .map_or_else(String::new, |n| n.to_string_lossy().into());
-                let outcome = Fixture::from_file(path).and_then(|fixture| {
-                    run_fixture(
-                        &fixture,
-                        &p.component,
-                        &p.grant(),
-                        Quota::default(),
-                        None,
-                        Vec::new(),
-                        record.as_mut(),
-                    )
-                });
-                match outcome {
-                    Ok(FixtureOutcome::Pass(run)) => {
+                match run_one(path, p, record.as_mut()) {
+                    Ok(ran) if ran.passed => {
                         passed += 1;
                         lines.push(format!("{name}: pass"));
-                        logs = run.guest_logs;
+                        logs = ran.logs;
                     },
-                    Ok(mismatch) => {
+                    Ok(ran) => {
                         lines.push(format!("{name}: mismatch"));
-                        if let FixtureOutcome::Mismatch { run, .. } = &mismatch {
-                            logs.clone_from(&run.guest_logs);
-                        }
-                        lines.extend(mismatch.words().lines().map(|l| format!("  {l}")));
+                        logs = ran.logs;
+                        lines.extend(ran.words.lines().map(|l| format!("  {l}")));
                     },
                     Err(why) => {
                         Self::note_in(state, format!("{id}: fixture {name}: {why}"));
