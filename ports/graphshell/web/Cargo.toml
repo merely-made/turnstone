@@ -275,12 +275,6 @@ document-session-api = { git = "https://github.com/merely-made/genet.git", branc
 # Webcue and Wgpu Cue from their repository, as at the root (one copy of each, one document-session-api).
 webcue = { git = "https://github.com/merely-made/wgpu-cue.git", branch = "main" }
 wgpu-cue = { git = "https://github.com/merely-made/wgpu-cue.git", branch = "main" }
-# Classic 0.11 and its owned repairs, kept in step with the root Scene aliases.
-# Standalone workspaces restate the netrender-vello and encoding rows. A shaders row
-# was unused (cargo warned on every build): the graph takes shaders at the rev that
-# netrender-vello-encoding names, not from crates.io.
-netrender-vello = { git = "https://github.com/mark-ik/vello", branch = "mark-ik/all-vellos" }
-netrender-vello-encoding = { git = "https://github.com/mark-ik/vello", branch = "mark-ik/all-vellos" }
 # house patches --from https://github.com/merely-made/mere.git
 # Written by `house patches` (eidetic, crates/house) from the upstream's [patch.crates-io]; `house patches --check` fails when they drift.
 oxjsonld = { git = "https://github.com/mark-ik/oxigraph", branch = "mark-ik/0.5" }
