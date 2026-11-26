@@ -3,7 +3,7 @@
 
 //! The scenario verbs that drive Wasm mod projects (mod projects MP5):
 //! `mod-create [dir]`, `mod-open <dir> [dev]`, `mod-check|build|attach|fixtures|
-//! reload|detach <id>`, `mod-level <id> dev|conformant`, `mod-turn <id> <kind>
+//! reload|detach <id>`, `mod-grant <id> <capability> on|off`, `mod-level <id> dev|conformant`, `mod-turn <id> <kind>
 //! [payload]` and `copy-file <from> <to>` (bytes, to swap a component).
 
 use super::expand_env::expand_env;
@@ -54,6 +54,14 @@ pub(crate) fn parse(line: &str) -> Option<Result<ModVerb, String>> {
             })),
             _ => Err("mod-level wants '<id> dev|conformant'".into()),
         },
+        "mod-grant" => match words.as_slice() {
+            [id, capability, state @ ("on" | "off")] => Ok(ModVerb::Step(Step::SetGrant {
+                id: (*id).into(),
+                capability: (*capability).into(),
+                granted: *state == "on",
+            })),
+            _ => Err("mod-grant wants '<id> <capability> on|off'".into()),
+        },
         "mod-turn" => match rest.split_once(char::is_whitespace) {
             Some((id, tail)) => {
                 let (kind, payload) = tail.trim().split_once(char::is_whitespace).unwrap_or((tail.trim(), ""));
@@ -97,6 +105,14 @@ mod tests {
                 id: "notes-mod".into(),
                 kind: "set".into(),
                 payload: "Two words".into()
+            })))
+        );
+        assert_eq!(
+            parse("mod-grant notes-mod network on"),
+            Some(Ok(ModVerb::Step(Step::SetGrant {
+                id: "notes-mod".into(),
+                capability: "network".into(),
+                granted: true
             })))
         );
         assert_eq!(

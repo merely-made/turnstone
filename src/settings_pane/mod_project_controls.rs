@@ -10,13 +10,13 @@ use crate::action::{Action, ModProjectAction as Step};
 use crate::mod_projects::{Level, ProjectRow};
 
 fn action_button(
-    label: &'static str,
+    label: impl Into<String>,
     aria: String,
     action: impl Fn() -> Action + 'static,
 ) -> SettingsView {
     Box::new(
         button(
-            label,
+            label.into(),
             move |state: &mut SettingsState, _: cambium::PointerClick| {
                 state.live_settings.request_action(action());
             },
@@ -47,6 +47,19 @@ fn step_button(label: &'static str, id: &str, step: impl Fn(String) -> Step + 's
     )
 }
 
+/// The capabilities the manifest declares and whether each is granted.
+fn grants_text(row: &ProjectRow) -> String {
+    if row.capabilities.is_empty() {
+        return "Grants: none declared in mod.toml".into();
+    }
+    let each: Vec<String> = row
+        .capabilities
+        .iter()
+        .map(|(name, granted)| format!("{name} {}", if *granted { "granted" } else { "not granted" }))
+        .collect();
+    format!("Grants: {}; a change applies at the next Attach or Reload", each.join(", "))
+}
+
 fn project(row: &ProjectRow) -> (String, SettingsView) {
     let id = &row.id;
     let dev = row.level.other() == Level::Dev;
@@ -61,6 +74,23 @@ fn project(row: &ProjectRow) -> (String, SettingsView) {
     });
     buttons.push(step_button("Run fixtures", id, Step::RunFixtures));
     buttons.push(step_button("Reload", id, Step::Reload));
+    for (name, granted) in &row.capabilities {
+        let (id, cap, now) = (id.clone(), name.clone(), !granted);
+        buttons.push((
+            format!("grant-{name}"),
+            action_button(
+                format!("{} {name}", if *granted { "Revoke" } else { "Grant" }),
+                format!("{} {name} for {id}", if *granted { "Revoke" } else { "Grant" }),
+                move || {
+                    Action::ModProject(Step::SetGrant {
+                        id: id.clone(),
+                        capability: cap.clone(),
+                        granted: now,
+                    })
+                },
+            ),
+        ));
+    }
     let level_id = id.clone();
     buttons.push((
         "level".into(),
@@ -78,6 +108,7 @@ fn project(row: &ProjectRow) -> (String, SettingsView) {
         ("check".into(), line(format!("Last check: {}", row.check))),
         ("build".into(), line(format!("Last build: {}", row.build))),
         ("trap".into(), line(format!("Last trap: {}", row.trap))),
+        ("grants".into(), line(grants_text(row))),
     ];
     if !row.document.is_empty() {
         parts.push(group("Document", &row.document));
@@ -198,6 +229,7 @@ mod tests {
                 failure: Some("check failed: import mere:script/net is not granted".into()),
                 attached: false,
                 can_build: true,
+                capabilities: vec![("network".into(), false)],
             }],
             available: vec![root.path().join("other")],
         });
@@ -209,6 +241,7 @@ mod tests {
             "Attach to its document notes-mod",
             "Run fixtures notes-mod",
             "Reload notes-mod",
+            "Grant network for notes-mod",
             "Open other",
             "Create a mod project from the starter",
         ] {

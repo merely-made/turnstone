@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 use super::*;
+use std::sync::Arc;
 
 fn fixtures() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/mod-projects")
@@ -10,6 +11,17 @@ fn fixtures() -> PathBuf {
 fn host() -> (ModProjectHost, tempfile::TempDir) {
     let dir = tempfile::tempdir().unwrap();
     (ModProjectHost::open(dir.path()), dir)
+}
+
+fn project_dir(dir: &Path) -> PathBuf {
+    dir.join(PROJECTS_DIR).join("notes-mod")
+}
+
+/// `mod.toml` rewritten to declare `network`.
+fn declare_network(dir: &Path) {
+    let path = project_dir(dir).join("mod.toml");
+    let text = std::fs::read_to_string(&path).unwrap().replace("\r\n", "\n");
+    std::fs::write(path, text.replace("capabilities = []", "capabilities = [\"network\"]")).unwrap();
 }
 
 /// The project's component swapped for one of the `alt/` fixtures.
@@ -115,7 +127,7 @@ fn the_opened_set_and_levels_survive_a_restart() {
 #[test]
 fn without_a_toolchain_build_is_hidden_and_says_so() {
     let dir = tempfile::tempdir().unwrap();
-    let host = Arc::new(ModProjectHost::open_with(dir.path(), "no-such-cargo-here", Vec::new()));
+    let host = Arc::new(ModProjectHost::open_with(dir.path(), "no-such-cargo-here"));
     host.create(None).unwrap();
     assert!(!row(&host).can_build);
     let why = host.build("notes-mod").unwrap_err();
@@ -138,4 +150,72 @@ fn the_starter_builds_where_the_toolchain_exists() {
     assert!(built.starts_with("built "), "{built}");
     host.reload("notes-mod").unwrap();
     host.check("notes-mod").unwrap();
+}
+
+#[test]
+fn a_grant_toggle_links_net_at_the_next_reload_and_persists() {
+    let (host, dir) = host();
+    host.create(None).unwrap();
+    host.attach("notes-mod").unwrap();
+    assert!(host.set_grant("notes-mod", "network", true).unwrap_err().contains("does not declare"));
+    swap(dir.path(), "net.wasm");
+    declare_network(dir.path());
+    let refused = host.reload("notes-mod").unwrap_err();
+    assert!(refused.contains("import mere:script/net is not granted"), "{refused}");
+    assert_eq!(row(&host).capabilities, [("network".to_string(), false)]);
+    host.set_grant("notes-mod", "network", true).unwrap();
+    assert_eq!(host.reload("notes-mod").unwrap(), "reloaded on the same document");
+    assert_eq!(host.turn("notes-mod", "set", "Net").unwrap(), "turn set: applied, rev 1");
+    // The grant is in installed.json, and the same at the other level.
+    let again = ModProjectHost::open(dir.path());
+    assert_eq!(again.listing().rows[0].capabilities, [("network".to_string(), true)]);
+    again.set_level("notes-mod", Level::Dev).unwrap();
+    again.attach("notes-mod").unwrap();
+    again.set_grant("notes-mod", "network", false).unwrap();
+    again.detach("notes-mod").unwrap();
+    assert!(again.attach("notes-mod").unwrap_err().contains("mere:script/net"));
+}
+
+#[test]
+fn a_reload_that_fails_at_activate_leaves_the_pin_on_the_running_component() {
+    let (host, dir) = host();
+    host.create(None).unwrap();
+    host.attach("notes-mod").unwrap();
+    let before = host.pinned("notes-mod").unwrap();
+    assert_eq!(before, document_host::mod_loader::hash_bytes(&std::fs::read(
+        fixtures().join("starter/component.wasm")).unwrap()));
+    swap(dir.path(), "trap.wasm");
+    let failed = host.reload("notes-mod").unwrap_err();
+    assert!(failed.contains("activate") && failed.contains("the old instance stays attached"), "{failed}");
+    assert_eq!(host.pinned("notes-mod").unwrap(), before, "the pin names the running component");
+    assert_eq!(host.turn("notes-mod", "set", "Still").unwrap(), "turn set: applied, rev 1");
+    // A good component re-admits after the failure.
+    std::fs::copy(fixtures().join("starter/component.wasm"), project_dir(dir.path()).join("component.wasm")).unwrap();
+    host.reload("notes-mod").unwrap();
+    assert_eq!(host.pinned("notes-mod").unwrap(), before);
+}
+
+#[test]
+fn the_last_passing_component_is_kept_as_last_good() {
+    let (host, dir) = host();
+    host.create(None).unwrap();
+    let good = project_dir(dir.path()).join("last-good.wasm");
+    host.check("notes-mod").unwrap();
+    assert!(!good.exists(), "a check alone does not pass a project that has fixtures");
+    host.run_fixtures("notes-mod").unwrap();
+    let starter = std::fs::read(fixtures().join("starter/component.wasm")).unwrap();
+    assert_eq!(std::fs::read(&good).unwrap(), starter);
+    swap(dir.path(), "quiet.wasm");
+    host.reload("notes-mod").unwrap();
+    host.run_fixtures("notes-mod").unwrap_err();
+    assert_eq!(std::fs::read(&good).unwrap(), starter, "a failing run keeps the earlier one");
+}
+
+#[test]
+fn with_no_fixtures_a_passing_check_is_enough_for_last_good() {
+    let (host, dir) = host();
+    host.create(None).unwrap();
+    std::fs::remove_dir_all(project_dir(dir.path()).join("fixtures")).unwrap();
+    host.check("notes-mod").unwrap();
+    assert!(project_dir(dir.path()).join("last-good.wasm").is_file());
 }

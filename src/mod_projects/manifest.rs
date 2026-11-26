@@ -46,7 +46,7 @@ pub(super) struct Spec {
     pub document: PathBuf,
 }
 
-fn capability(name: &str) -> Result<ModCapability, String> {
+pub(super) fn capability(name: &str) -> Result<ModCapability, String> {
     match name.trim().to_ascii_lowercase().as_str() {
         "network" => Ok(ModCapability::Network),
         "filesystem" | "fs" => Ok(ModCapability::Filesystem),

@@ -70,6 +70,12 @@ impl App {
                 let result = mods.set_level(&id, level(dev)).map(|()| "ok: level set".into());
                 ("level", id, result)
             },
+            Step::SetGrant { id, capability, granted } => {
+                let result = mods
+                    .set_grant(&id, &capability, granted)
+                    .map(|()| format!("ok: {capability} {}", if granted { "granted" } else { "revoked" }));
+                ("grant", id, result)
+            },
             Step::Turn { id, kind, payload } => {
                 let result = mods.turn(&id, &kind, &payload);
                 ("turn", id, result)

@@ -18,6 +18,8 @@ pub enum ModProjectAction {
     Reload(String),
     Detach(String),
     SetLevel { id: String, dev: bool },
+    /// Grant or revoke a capability the manifest declares (next attach or reload).
+    SetGrant { id: String, capability: String, granted: bool },
     /// Deliver one event to the attached component.
     Turn { id: String, kind: String, payload: String },
 }

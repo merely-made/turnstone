@@ -9,30 +9,32 @@
 //!
 //! A project is a folder: `mod.toml`, a component, a starting document and
 //! `fixtures/*.toml`. Projects live under `<data_root>/mod-projects/`; the
-//! opened set is `installed.json`. Turnstone grants a mod nothing beyond the
-//! world's `log` and `document` (MP0), so a component importing `net` is
-//! refused by name at check, attach and reload. The browser build does not
-//! compile this module.
+//! opened set and each project's granted capabilities are `installed.json`.
+//! A mod links only the interfaces its manifest declares and the user granted
+//! with the row's toggle, at either level, so a component importing `net` is
+//! refused by name at check, attach and reload until `network` is granted. The
+//! browser build does not compile this module.
 
 // Every error here is a plain-words reason, a `String`; the doc says what fails.
 #![allow(clippy::missing_errors_doc)]
 
 use std::collections::{BTreeMap, VecDeque};
 use std::path::{Path, PathBuf};
-use std::sync::{Arc, Mutex, MutexGuard, OnceLock, PoisonError};
+use std::sync::{Mutex, MutexGuard, OnceLock, PoisonError};
 
-use document_host::mod_loader::{ModCapability, ModManifest, RecordEvent};
+use document_host::mod_loader::{ModCapability, ModManifest, admit_wasm, capability_name};
 use document_host::runtime::DocumentScriptRuntime;
-use document_host::{
-    CapPermission, CargoBuilder, DocumentScript, Grant, Quota, TurnOutcome, World,
-};
+use document_host::{CapPermission, DocumentScript, Grant, Quota, TurnOutcome, World};
 use serde::{Deserialize, Serialize};
 
 pub use crate::command_packs::Level;
+pub use listing::{ProjectListing, ProjectRow};
 
+mod build;
 mod doc;
 mod files;
 mod fixtures_run;
+mod listing;
 mod manifest;
 #[cfg(test)]
 mod tests;
@@ -42,11 +44,16 @@ pub const PROJECTS_DIR: &str = "mod-projects";
 const LIST_FILE: &str = "installed.json";
 const HISTORY: usize = 8;
 const LOG_TAIL: usize = 6;
+/// The last component that passed, kept in the project folder for rollback.
+const LAST_GOOD: &str = "last-good.wasm";
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 struct Installed {
     root: PathBuf,
     level: Level,
+    /// Granted capability names (`network`, ...); only declared ones count.
+    #[serde(default)]
+    granted: Vec<String>,
 }
 
 /// One opened project and what has happened to it.
@@ -57,14 +64,15 @@ struct Project {
     version: String,
     component: PathBuf,
     document: PathBuf,
+    granted: Vec<ModCapability>,
     script: Option<DocumentScript>,
+    check_note: Option<String>,
+    build_note: Option<String>,
     last_trap: Option<String>,
     last_turn: Option<String>,
     fixtures: Vec<String>,
     logs: Vec<String>,
     failure: Option<String>,
-    /// The last build's outcome: the record is replaced at every re-admission.
-    build_note: Option<String>,
     building: bool,
 }
 
@@ -72,6 +80,29 @@ impl Project {
     fn keep_logs(&mut self, logs: &[String]) {
         let from = logs.len().saturating_sub(LOG_TAIL);
         self.logs = logs[from..].to_vec();
+    }
+
+    /// The grant the component links under: `log` and `document`, and `net` only
+    /// when the manifest declares `network` and the user granted it. The same at
+    /// both levels.
+    fn grant(&self) -> Grant {
+        let net = self.manifest.capabilities.contains(&ModCapability::Network)
+            && self.granted.contains(&ModCapability::Network);
+        Grant {
+            log: CapPermission::Allow,
+            document: CapPermission::Allow,
+            net: if net {
+                CapPermission::Allow
+            } else {
+                CapPermission::Deny
+            },
+        }
+    }
+
+    /// Keep the grants the manifest still declares.
+    fn prune_grants(&mut self) {
+        let declared = self.manifest.capabilities.clone();
+        self.granted.retain(|c| declared.contains(c));
     }
 }
 
@@ -81,37 +112,10 @@ struct State {
     refusals: VecDeque<String>,
 }
 
-/// One project as the settings section shows it.
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct ProjectRow {
-    pub id: String,
-    pub level: Level,
-    pub status: String,
-    pub check: String,
-    pub build: String,
-    pub trap: String,
-    pub document: Vec<String>,
-    pub last_turn: Option<String>,
-    pub fixtures: Vec<String>,
-    pub logs: Vec<String>,
-    pub failure: Option<String>,
-    pub attached: bool,
-    pub can_build: bool,
-}
-
-/// The rows, and project folders in the projects directory not opened yet.
-#[derive(Clone, Debug, Default, PartialEq, Eq)]
-pub struct ProjectListing {
-    pub rows: Vec<ProjectRow>,
-    pub available: Vec<PathBuf>,
-}
-
 /// The runtime, the builder adapter and the app-owned project list.
 pub struct ModProjectHost {
     directory: PathBuf,
     runtime: DocumentScriptRuntime,
-    /// Host capabilities Turnstone grants a mod: none (MP0).
-    granted: Vec<ModCapability>,
     cargo: PathBuf,
     toolchain: OnceLock<bool>,
     state: Mutex<State>,
@@ -125,20 +129,15 @@ impl ModProjectHost {
     /// A host over `data_root/mod-projects`, reopening the projects its list
     /// names. One that no longer admits is noted, not fatal.
     pub fn open(data_root: &Path) -> Self {
-        Self::open_with(data_root, "cargo", Vec::new())
+        Self::open_with(data_root, "cargo")
     }
 
-    /// As [`open`](Self::open), naming the cargo the build adapter shells out
-    /// to and the host capabilities granted.
-    pub fn open_with(
-        data_root: &Path,
-        cargo: impl Into<PathBuf>,
-        granted: Vec<ModCapability>,
-    ) -> Self {
+    /// As [`open`](Self::open), naming the cargo the build adapter shells out to.
+    pub fn open_with(data_root: &Path, cargo: impl Into<PathBuf>) -> Self {
         let host = Self {
             directory: data_root.join(PROJECTS_DIR),
-            runtime: DocumentScriptRuntime::new(granted.clone()),
-            granted,
+            // Grants are per project (`Project::grant`); the runtime holds records.
+            runtime: DocumentScriptRuntime::new(Vec::new()),
             cargo: cargo.into(),
             toolchain: OnceLock::new(),
             state: Mutex::new(State::default()),
@@ -158,7 +157,8 @@ impl ModProjectHost {
         match serde_json::from_slice::<Vec<Installed>>(&bytes) {
             Ok(list) => {
                 for project in list {
-                    if let Err(error) = self.open_project(&project.root, project.level) {
+                    let granted = project.granted;
+                    if let Err(error) = self.try_open(&project.root, project.level, &granted) {
                         self.note(format!("startup: {error}"));
                     }
                 }
@@ -174,6 +174,7 @@ impl ModProjectHost {
             .map(|p| Installed {
                 root: p.root.clone(),
                 level: p.level,
+                granted: p.granted.iter().map(|c| capability_name(*c).into()).collect(),
             })
             .collect();
         let write = || -> std::io::Result<()> {
@@ -194,58 +195,43 @@ impl ModProjectHost {
         state.refusals.truncate(HISTORY);
     }
 
-    /// Whether the build adapter finds a toolchain (asked once).
-    pub fn toolchain_present(&self) -> bool {
-        *self.toolchain.get_or_init(|| {
-            std::process::Command::new(&self.cargo)
-                .arg("--version")
-                .output()
-                .is_ok_and(|out| out.status.success())
-        })
-    }
-
     /// Open the project folder at `root` at `level`, admitting its component;
     /// the project's id.
     pub fn open_project(&self, root: &Path, level: Level) -> Result<String, String> {
-        let result = self.try_open(root, level);
+        let result = self.try_open(root, level, &[]);
         if let Err(line) = &result {
             self.note(line.clone());
         }
         result
     }
 
-    fn try_open(&self, root: &Path, level: Level) -> Result<String, String> {
+    fn try_open(&self, root: &Path, level: Level, granted: &[String]) -> Result<String, String> {
         let spec = manifest::read(root).map_err(|e| format!("open {}: {e}", root.display()))?;
         self.runtime
-            .admit(
-                &spec.manifest,
-                &spec.version,
-                &spec.component,
-                level.admission(),
-                true,
-            )
+            .admit(&spec.manifest, &spec.version, &spec.component, level.admission(), true)
             .map_err(|e| format!("open {}: {}", spec.manifest.mod_id, e.words()))?;
         let id = spec.manifest.mod_id.clone();
+        let mut project = Project {
+            root: root.to_path_buf(),
+            level,
+            granted: granted.iter().filter_map(|n| manifest::capability(n).ok()).collect(),
+            manifest: spec.manifest,
+            version: spec.version,
+            component: spec.component,
+            document: spec.document,
+            script: None,
+            check_note: None,
+            build_note: None,
+            last_trap: None,
+            last_turn: None,
+            fixtures: Vec::new(),
+            logs: Vec::new(),
+            failure: None,
+            building: false,
+        };
+        project.prune_grants();
         let mut state = lock(&self.state);
-        state.projects.insert(
-            id.clone(),
-            Project {
-                root: root.to_path_buf(),
-                level,
-                manifest: spec.manifest,
-                version: spec.version,
-                component: spec.component,
-                document: spec.document,
-                script: None,
-                last_trap: None,
-                last_turn: None,
-                fixtures: Vec::new(),
-                logs: Vec::new(),
-                failure: None,
-                build_note: None,
-                building: false,
-            },
-        );
+        state.projects.insert(id.clone(), project);
         self.save_list(&state);
         Ok(id)
     }
@@ -254,28 +240,11 @@ impl ModProjectHost {
     /// its mod id and open it.
     pub fn create(&self, from: Option<&Path>) -> Result<String, String> {
         let result = files::create(&self.directory, from)
-            .and_then(|root| self.try_open(&root, Level::Conformant));
+            .and_then(|root| self.try_open(&root, Level::Conformant, &[]));
         if let Err(line) = &result {
             self.note(format!("create: {line}"));
         }
         result
-    }
-
-    /// The grant a project's component links under: `log` and `document`, and
-    /// `net` only for a conformant mod that declares and was granted it (D2).
-    fn grant(&self, project: &Project) -> Grant {
-        let net = project.level == Level::Conformant
-            && project.manifest.capabilities.contains(&ModCapability::Network)
-            && self.granted.contains(&ModCapability::Network);
-        Grant {
-            log: CapPermission::Allow,
-            document: CapPermission::Allow,
-            net: if net {
-                CapPermission::Allow
-            } else {
-                CapPermission::Deny
-            },
-        }
     }
 
     fn with<T>(
@@ -294,79 +263,57 @@ impl ModProjectHost {
         result
     }
 
+    /// Grant or revoke a capability the manifest declares. It takes effect at
+    /// the next attach or reload; an attached instance keeps what it linked.
+    pub fn set_grant(&self, id: &str, capability: &str, granted: bool) -> Result<(), String> {
+        let cap = manifest::capability(capability)?;
+        self.with(id, |p, _| {
+            if !p.manifest.capabilities.contains(&cap) {
+                return Err(format!("{id} does not declare {capability} in mod.toml"));
+            }
+            p.granted.retain(|c| *c != cap);
+            if granted {
+                p.granted.push(cap);
+            }
+            Ok(())
+        })?;
+        self.save_list(&lock(&self.state));
+        Ok(())
+    }
+
     /// Check the component against its grants and the world (D1); every
-    /// mismatch is named.
+    /// mismatch is named. With no fixtures to run, a pass makes it the last
+    /// good component.
     pub fn check(&self, id: &str) -> Result<(), String> {
-        self.with(id, |p, state| self.check_in(id, p, state))
+        self.with(id, |p, state| {
+            self.check_in(id, p, state)?;
+            if fixture_files(p).is_empty() {
+                promote(p);
+            }
+            Ok(())
+        })
     }
 
     fn check_in(&self, id: &str, p: &mut Project, state: &mut State) -> Result<(), String> {
-        let report = self
-            .runtime
-            .check(&p.manifest, &p.component, &World::document_core())
+        let report = document_host::check(&p.component, &p.grant(), &World::document_core())
             .map_err(|e| e.words());
         let words = match report {
-            Ok(report) if report.ok() => return Ok(()),
-            Ok(report) => report.words(),
-            Err(why) => why,
+            Ok(report) => {
+                p.check_note = Some(report.words());
+                if report.ok() {
+                    return Ok(());
+                }
+                report.words()
+            },
+            Err(why) => {
+                p.check_note = Some(why.clone());
+                why
+            },
         };
         let line = format!("{id}: {words}");
         Self::note_in(state, line.clone());
         p.failure = Some(words);
         Err(line)
-    }
-
-    /// Note the check again: a re-admission starts a fresh record.
-    fn recheck(&self, p: &Project) {
-        let _ = self.runtime.check(&p.manifest, &p.component, &World::document_core());
-    }
-
-    /// Build the project with the toolchain adapter and put the result in
-    /// place as its component. Blocks; the app calls [`build`](Self::build).
-    pub fn build_blocking(&self, id: &str) -> Result<String, String> {
-        let root = self.with(id, |p, _| {
-            if p.building {
-                return Err(format!("{id} is already building"));
-            }
-            p.building = true;
-            Ok(p.root.clone())
-        })?;
-        let builder = CargoBuilder::new()
-            .with_cargo(self.cargo.clone())
-            .with_target_dir(root.join("target"));
-        let built = self.runtime.build_project(id, &builder, &root);
-        self.with(id, |p, state| {
-            p.building = false;
-            let outcome = built.map_err(|e| e.words()).and_then(|b| {
-                std::fs::copy(&b.path, &p.component)
-                    .map(|bytes| format!("built {} ({bytes} bytes)", p.component.display()))
-                    .map_err(|e| format!("could not place {}: {e}", b.path.display()))
-            });
-            p.build_note = Some(match &outcome {
-                Ok(note) => note.clone(),
-                Err(why) => why.clone(),
-            });
-            outcome.map_err(|why| {
-                let line = format!("{id}: build: {why}");
-                Self::note_in(state, line.clone());
-                p.failure = Some(format!("build: {why}"));
-                line
-            })
-        })
-    }
-
-    /// Build on a worker thread; the listing shows the outcome when it lands.
-    pub fn build(self: &Arc<Self>, id: &str) -> Result<(), String> {
-        if !self.toolchain_present() {
-            let line = format!("{id}: build: no toolchain ({} was not found)", self.cargo.display());
-            self.note(line.clone());
-            return Err(line);
-        }
-        let (host, id) = (self.clone(), id.to_string());
-        std::thread::spawn(move || {
-            let _ = host.build_blocking(&id);
-        });
-        Ok(())
     }
 
     /// Attach the checked component to the project's document (D5).
@@ -390,7 +337,7 @@ impl ModProjectHost {
                 &p.component,
                 &record,
                 dom,
-                &self.grant(p),
+                &p.grant(),
                 Quota::default(),
                 None,
                 Vec::new(),
@@ -451,44 +398,56 @@ impl ModProjectHost {
         })
     }
 
-    /// Re-admit the edited component and swap it in on the same document; a
-    /// failure leaves the old instance attached (D3, D12).
+    /// Read `mod.toml` again, check the edited component, and swap it in on the
+    /// same document; a failure leaves the old instance attached (D3, D12). The
+    /// new component is admitted only after the swap succeeds, so the pin always
+    /// names the running component.
     pub fn reload(&self, id: &str) -> Result<String, String> {
         self.with(id, |p, state| {
+            let spec = manifest::read(&p.root).map_err(|e| format!("{id}: {e}"))?;
+            p.manifest = spec.manifest;
+            p.version = spec.version;
+            p.component = spec.component;
+            p.document = spec.document;
+            p.prune_grants();
             self.check_in(id, p, state)?;
-            self.runtime
-                .admit(&p.manifest, &p.version, &p.component, p.level.admission(), true)
-                .map_err(|e| format!("{id}: {}", e.words()))?;
-            self.recheck(p);
+            let admit = |p: &Project| {
+                self.runtime
+                    .admit(&p.manifest, &p.version, &p.component, p.level.admission(), true)
+                    .map_err(|e| format!("{id}: {}", e.words()))
+            };
             let Some(mut script) = p.script.take() else {
+                admit(p)?;
                 p.failure = None;
                 return Ok("re-admitted; nothing attached".into());
             };
-            let mut record = self.runtime.record(id);
-            let result = script.reload(
-                &p.component,
-                &self.grant(p),
-                Quota::default(),
-                None,
-                Vec::new(),
-                record.as_mut(),
-            );
+            let mut record =
+                admit_wasm(&p.manifest, &p.version, &p.component, p.level.admission(), &[], None)
+                    .map_err(|e| format!("{id}: {}", e.words()));
+            let result = match &mut record {
+                Ok(record) => script
+                    .reload(&p.component, &p.grant(), Quota::default(), None, Vec::new(), Some(record))
+                    .map_err(|e| format!("reload: {}", e.words())),
+                Err(why) => Err(why.clone()),
+            };
             let logs = script.guest_logs().to_vec();
             p.keep_logs(&logs);
             p.script = Some(script);
-            result.map(|()| {
-                p.failure = None;
-                "reloaded on the same document".to_string()
-            })
-            .map_err(|e| {
-                let why = format!("reload: {}", e.words());
-                if let Some(trap) = record.and_then(|r| r.last_trap) {
-                    p.last_trap = Some(trap.note);
-                }
-                p.failure = Some(why.clone());
-                Self::note_in(state, format!("{id}: {why}"));
-                format!("{id}: {why}; the old instance stays attached")
-            })
+            match result {
+                Ok(()) => {
+                    admit(p)?;
+                    p.failure = None;
+                    Ok("reloaded on the same document".into())
+                },
+                Err(why) => {
+                    if let Some(trap) = record.ok().and_then(|r| r.last_trap) {
+                        p.last_trap = Some(trap.note);
+                    }
+                    p.failure = Some(why.clone());
+                    Self::note_in(state, format!("{id}: {why}"));
+                    Err(format!("{id}: {why}; the old instance stays attached"))
+                },
+            }
         })
     }
 
@@ -498,7 +457,6 @@ impl ModProjectHost {
             self.runtime
                 .admit(&p.manifest, &p.version, &p.component, level.admission(), true)
                 .map_err(|e| format!("{id}: {}", e.words()))?;
-            self.recheck(p);
             p.level = level;
             Ok(())
         })?;
@@ -506,61 +464,32 @@ impl ModProjectHost {
         Ok(())
     }
 
-    /// Recent refusals, newest first, then each project's last failure.
-    pub fn status_lines(&self) -> Vec<String> {
-        let state = lock(&self.state);
-        let mut lines: Vec<String> = state.refusals.iter().cloned().collect();
-        lines.extend(state.projects.iter().filter_map(|(id, p)| {
-            p.failure
-                .as_ref()
-                .map(|why| format!("last failure of {id}: {why}"))
-        }));
-        if lines.is_empty() {
-            lines.push("No mod project refusals".into());
-        }
-        lines
+    /// The hash the install record pins for `id`.
+    #[cfg(test)]
+    fn pinned(&self, id: &str) -> Option<String> {
+        self.runtime.record(id).map(|r| r.source_hash)
     }
+}
 
-    /// Opened projects, and project folders in the directory not opened yet.
-    pub fn listing(&self) -> ProjectListing {
-        let state = lock(&self.state);
-        let open: Vec<&PathBuf> = state.projects.values().map(|p| &p.root).collect();
-        let mut available: Vec<PathBuf> = std::fs::read_dir(&self.directory)
-            .into_iter()
-            .flatten()
-            .flatten()
-            .map(|entry| entry.path())
-            .filter(|path| path.join(manifest::MANIFEST).is_file() && !open.contains(&path))
-            .collect();
-        available.sort();
-        let toolchain = self.toolchain_present();
-        let note = |e: Option<RecordEvent>, none: &str| e.map_or_else(|| none.to_string(), |e| e.note);
-        let rows = state
-            .projects
-            .iter()
-            .map(|(id, p)| {
-                let record = self.runtime.record(id);
-                ProjectRow {
-                    id: id.clone(),
-                    level: p.level,
-                    status: p.script.as_ref().map_or_else(
-                        || "Not attached".into(),
-                        |s| format!("Attached, revision {}", s.revision()),
-                    ),
-                    check: note(record.as_ref().and_then(|r| r.last_check.clone()), "not checked"),
-                    build: p.build_note.clone().unwrap_or_else(|| "not built".into()),
-                    trap: p.last_trap.clone().unwrap_or_else(|| "none".into()),
-                    document: p.script.as_ref().map(|s| doc::outline(s.dom())).unwrap_or_default(),
-                    last_turn: p.last_turn.clone(),
-                    fixtures: p.fixtures.clone(),
-                    logs: p.logs.clone(),
-                    failure: p.failure.clone(),
-                    attached: p.script.is_some(),
-                    can_build: toolchain && p.root.join("Cargo.toml").is_file(),
-                }
-            })
-            .collect();
-        ProjectListing { rows, available }
+/// The project's `fixtures/*.toml`, sorted.
+fn fixture_files(p: &Project) -> Vec<PathBuf> {
+    let mut files: Vec<PathBuf> = std::fs::read_dir(p.root.join("fixtures"))
+        .into_iter()
+        .flatten()
+        .flatten()
+        .map(|e| e.path())
+        .filter(|path| path.extension().is_some_and(|x| x == "toml"))
+        .collect();
+    files.sort();
+    files
+}
+
+/// Keep the current component as `last-good.wasm`: the last one that passed its
+/// check and every fixture, or its check alone where the project has no
+/// fixtures (MP6 rolls back to it).
+fn promote(p: &Project) {
+    if let Err(error) = std::fs::copy(&p.component, p.root.join(LAST_GOOD)) {
+        tracing::warn!(%error, "could not keep the last good component");
     }
 }
 
