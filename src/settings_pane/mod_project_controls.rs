@@ -57,7 +57,12 @@ fn grants_text(row: &ProjectRow) -> String {
         .iter()
         .map(|(name, granted)| format!("{name} {}", if *granted { "granted" } else { "not granted" }))
         .collect();
-    format!("Grants: {}; a change applies at the next Attach or Reload", each.join(", "))
+    let live = if row.level == Level::Dev && row.capabilities.iter().any(|(_, granted)| *granted) {
+        "; dev mode is unpinned, so a grant reaches whatever component.wasm holds (D21)"
+    } else {
+        ""
+    };
+    format!("Grants: {}; a change applies at the next Attach or Reload{live}", each.join(", "))
 }
 
 fn project(row: &ProjectRow) -> (String, SettingsView) {
