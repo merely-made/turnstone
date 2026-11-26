@@ -246,6 +246,8 @@ mod shell_ensure_render_recovery;
 mod shell_new;
 #[path = "shell_publish_engine_inventory.rs"]
 mod shell_publish_engine_inventory;
+#[path = "shell_publish_pack_listings.rs"]
+mod shell_publish_pack_listings;
 #[path = "shell_push_primary_a11y_tree.rs"]
 mod shell_push_primary_a11y_tree;
 #[path = "shell_scenario_pump.rs"]

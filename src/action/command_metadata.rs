@@ -160,6 +160,7 @@ pub(crate) fn command_metadata(action: &Action) -> (EffectClass, bool) {
         | Action::BeginSendPlaceMessage
         | Action::ShowPlaceStatus
         | Action::ShowPackStatus
+        | Action::ModProject(..)
         | Action::RunPackCommand { .. }
         | Action::InstallCommandPack { .. }
         | Action::ReloadCommandPack { .. }

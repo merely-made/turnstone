@@ -1,0 +1,66 @@
+# Mod projects MP5 receipt: a project is created from a fixture, checked,
+# attached to its document and run to a fixture pass; its component is edited
+# (swapped for a quiet one) and reloaded to changed behaviour without a
+# restart; a component importing net without a grant is refused by name.
+# Each frame scrolls the settings pane to the Mod projects row.
+# Offline; FRESH profile (TURNSTONE_ROOT, the data root). TURNSTONE_MOD_FIXTURES
+# names tests/fixtures/mod-projects (starter/ and alt/, read only).
+settle 30
+key escape
+
+# Create from the fixture folder: it is copied under mod-projects/ and opened.
+mod-create ${TURNSTONE_MOD_FIXTURES}/starter
+settle 10
+assert event mod-create notes-mod ok
+act id:pane:settings
+scroll 760 400 -3000
+scroll 760 400 450
+settle 10
+capture 01_created_from_fixture
+
+# Check, attach to the project's document, run the fixture, deliver a turn.
+mod-check notes-mod
+assert event mod-check notes-mod ok
+mod-attach notes-mod
+assert event mod-attach notes-mod ok
+mod-fixtures notes-mod
+assert event mod-fixtures notes-mod ok: 1 of 1 fixtures passed
+mod-turn notes-mod set One
+assert event mod-turn notes-mod ok: turn set: applied, rev 1
+scroll 760 400 -3000
+scroll 760 400 450
+settle 10
+capture 02_attached_and_fixture_pass
+
+# Edit: the project's component becomes the quiet one. Reload re-admits it and
+# swaps it in on the same document: the text stays, the behaviour changes.
+copy-file ${TURNSTONE_MOD_FIXTURES}/alt/quiet.wasm ${TURNSTONE_ROOT}/mod-projects/notes-mod/component.wasm
+mod-reload notes-mod
+assert event mod-reload notes-mod ok: reloaded on the same document
+mod-turn notes-mod set Two
+assert event mod-turn notes-mod ok: turn set: conflict, current rev 1
+mod-fixtures notes-mod
+assert event mod-fixtures notes-mod failed
+scroll 760 400 -3000
+scroll 760 400 450
+settle 10
+capture 03_reloaded_to_changed_behaviour
+
+# A component importing net, which nothing granted, is refused by name; the
+# quiet instance stays attached.
+copy-file ${TURNSTONE_MOD_FIXTURES}/alt/net.wasm ${TURNSTONE_ROOT}/mod-projects/notes-mod/component.wasm
+mod-reload notes-mod
+assert event mod-reload notes-mod refused
+assert omnibar open
+assert snap suggestions ~ import mere:script/net is not granted
+settle 10
+capture 04_refused_import_by_name
+key escape
+mod-turn notes-mod set Three
+assert event mod-turn notes-mod ok: turn set: conflict, current rev 1
+scroll 760 400 -3000
+scroll 760 400 450
+settle 10
+capture 05_old_instance_still_attached
+
+log mod projects MP5 receipt complete

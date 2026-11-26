@@ -438,6 +438,7 @@ servo = ["dep:graft-engine", "graft-engine/servo", "dep:grafting-servo", "dep:gr
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 document-host = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 command-packs = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
+toml = "1"
 
 [target.'cfg(windows)'.dependencies]
 # ANGLE EGL DLL selection is Windows-only; macOS uses Surfman CGL. The adapter

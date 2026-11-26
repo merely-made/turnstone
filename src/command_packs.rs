@@ -47,7 +47,7 @@ impl Level {
         }
     }
 
-    fn admission(self) -> AdmissionLevel {
+    pub(crate) fn admission(self) -> AdmissionLevel {
         match self {
             Self::Conformant => AdmissionLevel::Conformant,
             Self::Dev => AdmissionLevel::DevMode,

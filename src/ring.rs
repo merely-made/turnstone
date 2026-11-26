@@ -355,6 +355,7 @@ pub fn ring_of(action: &Action) -> Ring {
         | RejoinPlace
         | ShowPlaceStatus
         | ShowPackStatus
+        | ModProject(..)
         | RunPackCommand { .. }
         | InstallCommandPack { .. }
         | ReloadCommandPack { .. }

@@ -29,6 +29,9 @@ impl taproot::Driveable for Shell {
         if let Some(verb) = crate::scenario::pack_verbs::parse(line) {
             return self.run_pack_verb(verb?);
         }
+        if let Some(verb) = crate::scenario::mod_verbs::parse(line) {
+            return self.run_mod_verb(verb?);
+        }
         if let Some(result) = a11y_lint::step(line, || self.lint_primary_a11y()) {
             return result;
         }
@@ -193,6 +196,21 @@ impl taproot::Driveable for Shell {
 }
 
 impl Shell {
+    /// Run a mod project scenario verb: act, or copy a file over a component.
+    fn run_mod_verb(&mut self, verb: crate::scenario::mod_verbs::ModVerb) -> Result<(), String> {
+        use crate::scenario::mod_verbs::ModVerb;
+        match verb {
+            ModVerb::Step(step) => {
+                self.act(crate::action::Action::ModProject(step));
+            },
+            ModVerb::CopyFile { from, to } => {
+                std::fs::copy(&from, &to)
+                    .map_err(|error| format!("copy-file '{from}' to '{to}': {error}"))?;
+            },
+        }
+        Ok(())
+    }
+
     /// Run a command pack scenario verb: act, or edit a file the pack reads.
     fn run_pack_verb(&mut self, verb: crate::scenario::pack_verbs::PackVerb) -> Result<(), String> {
         use crate::scenario::pack_verbs::PackVerb;

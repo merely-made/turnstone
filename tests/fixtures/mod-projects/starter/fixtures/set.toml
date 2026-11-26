@@ -1,0 +1,24 @@
+name = "set the first paragraph, then append one"
+
+[document]
+tree = """
+body
+  p
+    #text "Hello"
+"""
+
+[[turn]]
+kind = "set"
+payload = "Changed"
+
+[[turn]]
+kind = "append"
+
+[expect]
+dom = """
+body
+  p
+    #text "Changed"
+  p
+"""
+log = ["1 set: applied, rev 1", "2 append: applied, rev 2"]

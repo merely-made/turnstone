@@ -31,6 +31,9 @@
 pub use crate::app::research_search_state::Command as ResearchSearchAction;
 pub use crate::app::research_structured_state::Command as ResearchStructuredAction;
 mod command_metadata;
+#[path = "action/mod_project_action.rs"]
+mod mod_project_action;
+pub use mod_project_action::ModProjectAction;
 pub(crate) use command_metadata::command_metadata;
 
 use crate::panes::{PaneKindId, PaneSource};

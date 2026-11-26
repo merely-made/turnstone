@@ -30,6 +30,9 @@
 //! pack-install <dir> [dev]  # install a command pack from a directory
 //! pack-reload <pack-id>     # re-admit and swap in an installed command pack
 //! write-file <path> <text>  # overwrite a file; \n in the text is a newline
+//! mod-create [dir] | mod-open <dir> [dev] | mod-check|build|attach|fixtures|reload|detach <id>
+//!                           # Wasm mod projects (see scenario/mod_verbs.rs)
+//! copy-file <from> <to>     # overwrite a file with another file's bytes
 //! export-clip <path>        # export the current clip to a new package file
 //! omnibar find|actions      # Action::OmnibarOpen
 //! type <text>               # Action::OmnibarChar per char
@@ -527,6 +530,8 @@ pub(crate) use expand_env::expand_env;
 mod parse;
 #[path = "scenario/pack_verbs.rs"]
 pub(crate) mod pack_verbs;
+#[path = "scenario/mod_verbs.rs"]
+pub(crate) mod mod_verbs;
 pub use parse::parse;
 
 /// Observe the ordinary offered capture action; never synthesize or invoke it.

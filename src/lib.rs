@@ -37,6 +37,8 @@ pub mod browsing_trail;
 pub mod engine_pack;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod command_packs;
+#[cfg(not(target_arch = "wasm32"))]
+pub mod mod_projects;
 pub mod focus_card;
 mod forme_context;
 mod map_theme;

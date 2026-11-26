@@ -239,6 +239,9 @@ impl AppEvent {
             },
             AppEvent::PackRan { id, requests } => format!("pack-ran {id} {requests}"),
             AppEvent::PackRefused(reason) => format!("pack-refused {reason}"),
+            AppEvent::ModProjectStep { step, id, outcome } => {
+                format!("mod-{step} {id} {outcome}")
+            },
             AppEvent::LayoutReseeded => "layout-reseeded".to_string(),
             AppEvent::ContentState { node, state } => format!("content {node} {state}"),
             AppEvent::PaneSummoned(kind) => format!("pane-summoned {kind}"),

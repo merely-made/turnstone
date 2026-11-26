@@ -337,6 +337,8 @@ pub enum Action {
     SetCommandPackLevel { id: String, dev: bool },
     /// Show recent command pack refusals and failed reloads.
     ShowPackStatus,
+    /// One step of a Wasm mod project (mod projects MP5).
+    ModProject(ModProjectAction),
     /// Put this bind's full rendezvous ticket(s) on the system clipboard. The
     /// status row elides the middle of a ~200-character ticket; this is how the
     /// whole of it leaves the app.

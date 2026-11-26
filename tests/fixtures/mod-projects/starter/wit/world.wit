@@ -1,0 +1,622 @@
+package mere:script@0.1.0;
+
+/// One granted capability. The guest can log and nothing else unless other
+/// interfaces are imported into its world. Unimported means unreachable,
+/// enforced at instantiation (§10.4).
+interface log {
+    log: func(message: string);
+}
+
+/// Capability discovery (§11.4). Always linked, regardless of grant — it names no
+/// capability of its own, it only *reports* which application-capability interfaces
+/// the host granted this instance (the `Grant::granted_names` seam). With it a
+/// script can adapt to a partial grant (skip an ungranted feature) rather than
+/// trap on calling an unlinked import. The host's grant is authoritative; this is
+/// the script's read-only window onto it.
+interface caps {
+    granted: func() -> list<string>;
+}
+
+/// Network capability (§11.7-7, fiber-async). A **sync-signature** `fetch` the host
+/// implements as an `async fn`: the guest calls it like a blocking call, but the host
+/// suspends the turn's fiber during the real I/O (turns run via `call_async`) — so a
+/// script reads a response straight-line, non-blocking, with no async colouring.
+/// Powerful (network egress): granted only with the `net` capability, which defaults
+/// to denied, so a script that imports `net` fails to instantiate unless granted.
+interface net {
+    record request {
+        url: string,
+    }
+    record response {
+        status: u32,
+        /// The response media type (e.g. `text/html`, `application/json`), if the
+        /// transport reported one, so a script can branch on what it got back.
+        content-type: option<string>,
+        body: string,
+    }
+    fetch: func(req: request) -> result<response, string>;
+}
+
+/// The document vocabulary the script and host exchange. Values are copied across
+/// the boundary; no language-native object graph crosses it (§2.2).
+interface document {
+    /// Opaque, host-assigned, stable node identity (§10.3): survives content edits
+    /// and moves, unambiguous, capability-scoped (the host mints ids), and a match
+    /// for genet's `NodeId` (`ReflectorData = u64`).
+    type node-id = u64;
+
+    record block {
+        kind: string,
+        text: string,
+    }
+
+    /// One node in a flat document-view (the tree is reconstructed from `parent`;
+    /// WIT value types are not recursive).
+    record view-node {
+        id: node-id,
+        parent: option<node-id>,
+        kind: string,
+        text: string,
+        /// Change-detection token, not an address: a mirror compares it to skip
+        /// unchanged nodes. Shallow hash, not a Merkle subtree hash.
+        content-hash: u64,
+    }
+
+    /// A copied snapshot at a revision (§10.3).
+    record document-view {
+        revision: u64,
+        nodes: list<view-node>,
+    }
+
+    /// What slice of the document a script pulls; `subtree` copies less than the
+    /// whole document (§7.2).
+    variant document-query {
+        whole-document,
+        subtree(node-id),
+    }
+
+    record event {
+        kind: string,
+        payload: string,
+    }
+
+    record set-text-args {
+        node: node-id,
+        text: string,
+    }
+    record insert-args {
+        reference: node-id,
+        new: block,
+    }
+    record append-args {
+        parent: node-id,
+        new: block,
+    }
+
+    /// Id-targeted mutations (§10.3); positional ops use id-relative anchors, not
+    /// index paths.
+    variant mutation {
+        set-text(set-text-args),
+        remove(node-id),
+        insert-before(insert-args),
+        append-child(append-args),
+    }
+
+    /// A batch applied atomically against `expected-revision` (optimistic
+    /// concurrency).
+    record apply-batch {
+        expected-revision: u64,
+        changes: list<mutation>,
+    }
+
+    variant turn-error {
+        /// expected-revision != current; carries the current revision to rebase.
+        revision-conflict(u64),
+        /// A mutation referenced an unknown / out-of-scope id; reported before any
+        /// change applies (atomicity).
+        unknown-node(node-id),
+        /// The script declined or could not handle the event.
+        refused(string),
+    }
+}
+
+/// The host capability the script calls back into mid-turn: pull a (scoped) copied
+/// snapshot on demand (the §5 inspect seam). The returned view is a value copy.
+interface document-host {
+    use document.{document-view, document-query};
+    inspect: func(query: document-query) -> document-view;
+}
+
+/// The app action ENVELOPE (the app-core world's emission face; ruled with
+/// Mark 2026-07-23). One stable record carries the host app's whole action
+/// surface: `name` is the kebab-case action name, `payload` its JSON
+/// arguments (`""` for unit actions). The host classifies each emission by
+/// RING — a capability-path family (`app/navigate`, `app/panes`,
+/// `app/dispatch`, `app/session`) — and checks the emitting participant's grant
+/// at that moment, exactly where the piccolo lane already denies. Gate
+/// management (install / confirm / cancel / run) classifies HOST-ONLY: no
+/// grantable path exists, so a component confirming its own install review
+/// is structurally impossible under any authority.
+///
+/// The surface is total and the interface never changes shape when actions
+/// are added (the classifier host-side is the exhaustive thing): an older
+/// component's names keep working; an unknown name is a loud `unknown`, a
+/// bad payload a loud `malformed`, an uncovered ring a `denied` naming the
+/// ring — never a silent drop, never a trap.
+interface actions {
+    record action-envelope {
+        /// The action name, kebab-case (e.g. `open-address`).
+        name: string,
+        /// JSON arguments for the action; empty for unit actions.
+        payload: string,
+    }
+    variant emit-error {
+        /// The action's ring is not covered by this participant's grant (or is
+        /// host-only); carries the ring-naming reason.
+        denied(string),
+        /// No action by this name in the host build.
+        unknown(string),
+        /// The name is known but the payload did not parse.
+        malformed(string),
+    }
+    emit: func(action: action-envelope) -> result<_, emit-error>;
+}
+
+/// The projection session's control surface (capability door C0; D13, D15).
+///
+/// One `session` resource per Open. It holds the session id the provider
+/// derived at admission, so no argument names a session. Payloads are
+/// chirograph serde values as versioned CBOR (D6), at most 1 MiB each (D13).
+/// Dropping the resource is Close, and when the channel carrying it ends the
+/// provider closes every session opened on it (D19). Native code binds it
+/// with script-witgen; an N1 channel carries these calls for every provider,
+/// native or component (D19).
+interface projection-session {
+    /// One chirograph value: a version byte, then CBOR.
+    type payload = list<u8>;
+
+    variant failure {
+        /// The session's authority was revoked; nothing is disclosed.
+        revoked,
+        /// The session's authority ran out.
+        expired,
+        /// A payload over the 1 MiB cap; carries its length.
+        too-large(u64),
+        /// The provider declined the call.
+        refused(string),
+        /// A payload that did not decode.
+        malformed(string),
+    }
+
+    /// A projection advanced. Carries no scene data: the consumer resumes.
+    record notice {
+        epoch: u64,
+        revision: u64,
+    }
+
+    resource session {
+        /// `ProjectionAsk` in, `ProjectionSnapshot` out.
+        snapshot: func(ask: payload) -> result<payload, failure>;
+        /// `ContentHash` in, `ResourceResponse` out.
+        fetch: func(address: payload) -> result<payload, failure>;
+        /// One slice of a resource; asking for the next acknowledges this one.
+        /// `ResourceChunkResponse` out.
+        chunk: func(address: payload, offset: u64, length: u32) -> result<payload, failure>;
+        /// `ResumeReply` out.
+        resume: func(epoch: u64, revision: u64) -> result<payload, failure>;
+        /// `IntentCall` in, `IntentResult` out.
+        intent: func(call: payload) -> result<payload, failure>;
+        /// Going away, but keep the session resumable.
+        suspend: func() -> result<_, failure>;
+        /// A queued notice, if any. Never blocks.
+        take-notice: func() -> option<notice>;
+        /// Block until a notice arrives.
+        wait-notice: func() -> result<notice, failure>;
+    }
+
+    /// `EndpointDescriptor` out.
+    discover: func() -> result<payload, failure>;
+    /// `SessionOpen` in; the session and `SessionOpened` out.
+    open: func(request: payload) -> result<tuple<session, payload>, failure>;
+}
+
+/// The app-core world: a component that can BE an app participant. Its runnable
+/// body reacts to host events and emits actions through the envelope; the
+/// ring gate decides what lowers. Lifecycle mirrors document-core.
+world app-core {
+    import log;
+    import caps;
+    import actions;
+
+    export activate: func();
+    export on-event: func(kind: string, payload: string);
+    export deactivate: func();
+}
+
+/// Per-turn outer contract (§10.2): the host delivers an event; the script pulls
+/// the snapshot it needs via `inspect` and returns an atomic, revision-checked
+/// batch. `activate`/`deactivate` are the lifecycle (§6 P1). Funcs are sync in the
+/// WIT; the host invokes them via `call_async` so a future sync `fetch` import can
+/// suspend a turn's fiber without blocking (plan §11.7-7).
+world document-core {
+    import log;
+    import caps;
+    import net;
+    import document-host;
+    use document.{event, apply-batch, turn-error};
+
+    export activate: func();
+    export handle-event: func(ev: event) -> result<apply-batch, turn-error>;
+    export deactivate: func();
+}
+
+/// A guest block adapter: a pure component that edits and shows one kind of Djot block
+/// (a div with a class, such as `progression`) for a host's block pane. The host sends a
+/// copy of the block; the guest returns proposals, the whole desired attribute map, or a
+/// view. It never edits the document and has no I/O: the world imports only `log` and
+/// `caps`, so unimported means unreachable.
+///
+/// A view is two payloads, each a version byte then CBOR, at most 1 MiB: a `sceno` scene
+/// that names the regions (one item per authored event, its footprint the hit rectangle,
+/// a region with the accessible label) and a `vector-sheet` the host paints with its own
+/// theme and fonts. The scene carries no rendered content.
+interface block-adapter {
+    record attr {
+        key: string,
+        value: string,
+    }
+
+    enum command-kind {
+        /// Proposes changes the user reviews, then applies (`choices`, `apply`).
+        choice,
+        /// Writes new attributes at once (`run`).
+        write,
+        /// Produces text to export (`run`). Not named `export`: that is a WIT keyword.
+        text,
+    }
+
+    /// A text field the host shows for the guest: a label and its default text.
+    record field {
+        label: string,
+        default: string,
+    }
+
+    record command {
+        id: string,
+        label: string,
+        kind: command-kind,
+        /// A field whose text is sent as `run`'s `arg` (a `write` or `text` command), such
+        /// as a tempo.
+        arg: option<field>,
+    }
+
+    record view-mode {
+        id: string,
+        label: string,
+    }
+
+    record example {
+        title: string,
+        body: string,
+        attrs: list<attr>,
+    }
+
+    /// What the guest claims. Called once at mount.
+    record claim {
+        /// The Djot div class it edits.
+        class: string,
+        /// The attribute that carries its structured source.
+        source-key: string,
+        /// Versions of that source it understands.
+        source-versions: list<u32>,
+        /// The pane's pattern field for this class, sent as `block.pattern` (a bar grouping,
+        /// a rhyme scheme), if the class has one.
+        pattern: option<field>,
+        commands: list<command>,
+        views: list<view-mode>,
+        example: option<example>,
+    }
+
+    /// A copied snapshot of one block; never a handle.
+    record block {
+        class: string,
+        body: string,
+        attrs: list<attr>,
+        /// Content hash of the whole document source.
+        revision: string,
+        /// Selected rows or bars.
+        selected: list<u32>,
+        /// The pane's pattern field for this adapter.
+        pattern: string,
+    }
+
+    /// One selectable row of a block: a bar of a progression, a line of a verse. `index` is
+    /// what `block.selected` and `change.index` refer to; it need not be dense.
+    record row {
+        index: u32,
+        label: string,
+    }
+
+    /// The value shape of a host's proposed change; the host keeps its own type.
+    record change {
+        index: u32,
+        label: string,
+        before: option<string>,
+        after: string,
+        conflict: bool,
+        use-update: bool,
+    }
+
+    variant run-result {
+        /// The complete attribute map after an explicit write.
+        attrs(list<attr>),
+        /// Text for an export.
+        text(string),
+    }
+
+    record view-ask {
+        /// One of the claim's `views`.
+        mode: string,
+        width: f32,
+        /// The selected event, as (bar, event), when there is one.
+        selected: option<tuple<u32, u32>>,
+    }
+
+    record view-result {
+        /// `sceno::Scene`, versioned CBOR.
+        scene: list<u8>,
+        /// `vector_sheet::VectorSheet`, versioned CBOR.
+        sheet: list<u8>,
+        width: f32,
+        height: f32,
+        /// One line for the view's accessible label.
+        description: string,
+    }
+
+    describe: func() -> claim;
+    /// The block's selectable rows, in order, for the host to list.
+    rows: func(b: block) -> result<list<row>, string>;
+    /// Proposed edits for the selection (`command` is a `choice` command).
+    choices: func(b: block, command: string) -> result<list<change>, string>;
+    /// The complete desired attribute map after the user's decisions.
+    apply: func(b: block, command: string, changes: list<change>) -> result<list<attr>, string>;
+    /// An explicit write or export (`command` is a `write` or `text` command).
+    run: func(b: block, command: string, arg: string) -> result<run-result, string>;
+    view: func(b: block, ask: view-ask) -> result<view-result, string>;
+}
+
+/// A guest block adapter component (see `block-adapter`).
+world block-guest {
+    import log;
+    import caps;
+    export block-adapter;
+}
+
+/// A domain's authority: the gate every candidate graph of one Mere domain passes before
+/// the resident applies, saves or loads it (cycle breaks D15 (h), P3). Unlike a view guest,
+/// whose result the host re-applies, this guest is the gate: a lying validator admits
+/// anything, so the host binds the author's key to the domain at review and pins the
+/// component hash (a revoked or absent guest refuses the domain as pending). The guest is
+/// pure: its world imports only `log`, so it cannot reach keys, a vault, a clock or a store.
+///
+/// The protocol layer names no Mere type. The candidate travels as bytes in the format the
+/// guest declares in its claim, copied in each call; the guest links Mere's graph crates
+/// itself. A guest that traps (a fuel cut-off or a panic) is dropped and instantiated afresh.
+interface domain-authority {
+    record claim {
+        /// The Mere domain this guest is the authority for (`divination`).
+        domain: string,
+        /// The grammar version the guest validates.
+        version: string,
+        /// The candidate format `validate` and `admit` read. Today
+        /// `mere.graph-snapshot-and-facets/json`: one JSON object `{snapshot, facets}`, the
+        /// kernel's graph snapshot of the complete candidate plus its facet store (a
+        /// snapshot alone does not carry the facets).
+        graph-format: string,
+        /// Whether `admit` is a real check. When false the host never calls it (and never
+        /// pays to encode the before and after candidates).
+        admission: bool,
+    }
+
+    /// Who this guest is an authority for, and the format it reads. Called once at mount.
+    describe: func() -> claim;
+
+    /// Whether the complete candidate is admissible. `err` is the refusal text.
+    validate: func(candidate: list<u8>) -> result<_, string>;
+
+    /// The optional before/after check on a transition, both in the declared format; called
+    /// only when the claim says `admission`.
+    admit: func(before: list<u8>, after: list<u8>) -> result<_, string>;
+}
+
+/// A domain authority guest component (see `domain-authority`).
+world authority-guest {
+    import log;
+    export domain-authority;
+}
+
+/// A projection provider (capability door C0): a component that serves
+/// projection sessions, through app-host, to any consumer.
+world projection-provider {
+    export projection-session;
+}
+
+/// A settings owner's revisioned contract (capability door K1, D22): the
+/// WIT form of `mere-surface-api`'s `RevisionedSettingsProvider`. A read is
+/// one coherent snapshot of a settings reference with each setting's guard;
+/// a write names the guard it read and the owner commits it or says why
+/// not. The provider asks its gate on every call, and a caller outside its
+/// grant gets a typed `denied`. Native code binds it with script-witgen in
+/// `settings-wit`.
+interface settings {
+    /// What the setting configures.
+    enum scope {
+        process,
+        device,
+        persona,
+        application,
+        session-dataspace,
+        artifact-entity,
+        governed-place,
+    }
+
+    /// How a setting may move beyond its owner.
+    enum movement {
+        local-only,
+        persona-synced,
+        travels-with-artifact,
+        governed-replication,
+    }
+
+    /// When a change takes effect.
+    enum mutability {
+        startup-only,
+        live,
+        restart-required,
+    }
+
+    /// What kind of value may cross the boundary.
+    enum security {
+        ordinary,
+        %private,
+        secret-reference,
+    }
+
+    variant value {
+        boolean(bool),
+        integer(s64),
+        number(f64),
+        text(string),
+    }
+
+    /// One entry of a choice control.
+    record choice-option {
+        value: string,
+        label: string,
+    }
+
+    record number-range {
+        min: option<f64>,
+        max: option<f64>,
+        step: option<f64>,
+    }
+
+    /// The control a renderer may use.
+    variant control {
+        toggle,
+        choice(list<choice-option>),
+        number(number-range),
+        text,
+    }
+
+    record spec {
+        id: string,
+        label: string,
+        scope: scope,
+        movement: movement,
+        mutability: mutability,
+        security: security,
+        control: control,
+        value: value,
+    }
+
+    /// The owner's version of one revision domain. `owner` names the
+    /// owner's incarnation, so a guard from an earlier run never matches.
+    record guard {
+        owner: string,
+        domain: string,
+        revision: u64,
+    }
+
+    record domain-revision {
+        domain: string,
+        revision: u64,
+    }
+
+    record guarded-spec {
+        spec: spec,
+        guard: guard,
+    }
+
+    /// One coherent read of a settings reference.
+    record settings-snapshot {
+        reference: string,
+        owner: string,
+        revisions: list<domain-revision>,
+        specs: list<guarded-spec>,
+    }
+
+    variant failure {
+        /// The caller's grant does not cover this reference.
+        denied(string),
+        /// The settings source is unavailable.
+        unavailable(string),
+    }
+
+    /// Change one setting, guarded by the guard read with it.
+    record write-request {
+        /// The caller's correlation id, returned in the outcome.
+        request-id: string,
+        reference: string,
+        setting-id: string,
+        expected: guard,
+        value: value,
+    }
+
+    /// The owner's stored value, which may differ from the requested one
+    /// after a documented conversion, and the guard it published.
+    record committed-write {
+        request-id: string,
+        reference: string,
+        setting-id: string,
+        value: value,
+        guard: guard,
+    }
+
+    record conflict {
+        request-id: string,
+        current: guard,
+    }
+
+    /// A refusal that changed nothing: the reason, under its request.
+    record refusal {
+        request-id: string,
+        message: string,
+    }
+
+    record validation-failure {
+        request-id: string,
+        setting-id: string,
+        message: string,
+    }
+
+    /// Only `committed` confirms a change; every other case claims none.
+    variant write-outcome {
+        committed(committed-write),
+        /// The guard was stale; carries the owner's current one.
+        conflict(conflict),
+        unavailable(refusal),
+        validation(validation-failure),
+        storage(refusal),
+        /// The caller's grant does not cover writing this reference.
+        denied(refusal),
+    }
+
+    snapshot: func(reference: string) -> result<settings-snapshot, failure>;
+    write: func(request: write-request) -> write-outcome;
+}
+
+/// A settings owner (capability door K1): a component that serves its
+/// settings, through app-host, to any consumer.
+world settings-provider {
+    export settings;
+}
+
+/// An app participant that also reaches settings (capability door K1, D22):
+/// everything `app-core` has, plus the settings interface. Each call is put
+/// to the participant's settings gate, so the grant decides what it reads
+/// and writes, as the ring gate decides its actions.
+world app-settings {
+    include app-core;
+    import settings;
+}

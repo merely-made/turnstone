@@ -60,13 +60,14 @@ impl App {
     /// The rows of the pack status view, bounded to `row_limit`.
     pub(super) fn pack_status_rows(&self, row_limit: usize) -> Vec<crate::ui::Suggestion> {
         use crate::ui::Suggestion;
-        let mut rows = vec![Suggestion::Hint("Command pack refusals and failed reloads")];
+        let mut rows = vec![Suggestion::Hint("Command pack and mod project refusals and failed reloads")];
         rows.extend(
             self.packs
                 .iter()
                 .flat_map(|packs| packs.status_lines())
                 .map(Suggestion::Prompt),
         );
+        rows.extend(self.mod_status_rows());
         rows.truncate(row_limit.max(1));
         rows
     }

@@ -50,6 +50,7 @@ impl App {
             .map(|identity| identity::IdentityProvider::master_public_key(identity).to_bytes());
         let gemini_identities = crate::gemini_identity::GeminiIdentityBindings::load(&data_root);
         let packs = Some(std::sync::Arc::new(crate::command_packs::PackHost::open(&data_root)));
+        let mods = Some(std::sync::Arc::new(crate::mod_projects::ModProjectHost::open(&data_root)));
         let mut app = Self {
             watches: servitor::WatchTable::new(),
             app_watches: servitor::WatchTable::new(),
@@ -93,6 +94,7 @@ impl App {
             engine_inventory: Vec::new(),
             engine_enablement: Default::default(),
             packs,
+            mods,
             feeds: crate::feed::FeedSubscriptions::default(),
             redshank: crate::redshank_host::RedshankHost::default(),
             redshank_members: std::collections::BTreeMap::new(),

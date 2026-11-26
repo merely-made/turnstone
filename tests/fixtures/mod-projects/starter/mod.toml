@@ -1,0 +1,6 @@
+mod_id = "notes-mod"
+display_name = "Notes mod"
+version = "0.1.0"
+component = "component.wasm"
+document = "document.txt"
+capabilities = []

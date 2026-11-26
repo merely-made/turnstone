@@ -50,10 +50,7 @@ impl Shell {
     }
 
     pub(super) fn apply_pack_settings(&mut self) {
-        let listing = self.app.packs.as_ref().map(|packs| packs.listing());
-        if listing.is_some_and(|listing| self.live_settings.publish_command_packs(listing)) {
-            self.request_redraw();
-        }
+        self.publish_pack_listings();
         let edits = self.live_settings.take_pack_edits();
         if edits.is_empty() {
             return;
@@ -89,7 +86,6 @@ impl Shell {
         let previous = std::mem::take(&mut self.app.engine_inventory);
         self.publish_engine_inventory();
         let inventory_changed = self.app.engine_inventory != previous;
-
         // Inventory is also published by unrelated effects. Compare the pack
         // settings projections so an intervening publish cannot absorb an edit.
         let previous = self.live_settings.pack_settings();

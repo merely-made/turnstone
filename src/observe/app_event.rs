@@ -306,6 +306,12 @@ pub enum AppEvent {
     },
     /// A command pack's run, or a request it made, was refused (with the reason).
     PackRefused(String),
+    /// A mod project step ran (`outcome` leads with `ok`, `failed` or `refused`).
+    ModProjectStep {
+        step: &'static str,
+        id: String,
+        outcome: String,
+    },
     LayoutReseeded,
     ContentState {
         node: Uuid,

@@ -39,6 +39,7 @@ struct LiveSettingsState {
     pack_settings: PackSettings,
     pack_edits: Vec<PackEdit>,
     command_packs: crate::command_packs::PackListing,
+    mod_projects: crate::mod_projects::ProjectListing,
     owner: Option<SharedApplicationSettingsOwner>,
 }
 
@@ -52,6 +53,7 @@ impl LiveSettingsHandle {
             pack_settings: PackSettings::default(),
             pack_edits: Vec::new(),
             command_packs: Default::default(),
+            mod_projects: Default::default(),
             owner: None,
         })))
     }
@@ -140,6 +142,19 @@ impl LiveSettingsHandle {
         }
         state.command_packs = next;
         true
+    }
+
+    pub(crate) fn publish_mod_projects(&self, next: crate::mod_projects::ProjectListing) -> bool {
+        let mut state = self.0.borrow_mut();
+        if state.mod_projects == next {
+            return false;
+        }
+        state.mod_projects = next;
+        true
+    }
+
+    pub(crate) fn mod_projects(&self) -> crate::mod_projects::ProjectListing {
+        self.0.borrow().mod_projects.clone()
     }
 
     pub(crate) fn command_packs(&self) -> crate::command_packs::PackListing {

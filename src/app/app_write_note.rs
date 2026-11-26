@@ -271,6 +271,7 @@ impl App {
             Action::RejoinPlace => self.rejoin_place(),
             Action::ShowPlaceStatus => self.open_place_status(),
             Action::ShowPackStatus => self.open_pack_status(),
+            Action::ModProject(step) => self.run_mod_project(step),
             Action::RunPackCommand { id } => self.run_pack_command(id),
             Action::InstallCommandPack { path, dev } => self.install_command_pack(path, dev),
             Action::ReloadCommandPack { id } => self.reload_command_pack(id),

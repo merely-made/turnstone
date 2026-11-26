@@ -50,6 +50,7 @@ mod research_search_values;
 #[cfg(test)]
 mod research_search_tests;
 mod command_pack_arms;
+mod mod_project_arms;
 mod document_find_arms;
 mod fold_arms;
 mod journal_origin;
@@ -175,6 +176,8 @@ pub struct App {
     pub(crate) engine_enablement: crate::engine_enablement::EngineEnableSet,
     /// Installed Lua command packs (desktop only; command packs CP4).
     pub(crate) packs: Option<std::sync::Arc<crate::command_packs::PackHost>>,
+    /// Wasm mod projects (desktop only; mod projects MP5).
+    pub(crate) mods: Option<std::sync::Arc<crate::mod_projects::ModProjectHost>>,
     /// Durable feed schedules and duplicate-suppression state for this
     /// session. Entry nodes and unread markers themselves remain graph truth.
     pub feeds: crate::feed::FeedSubscriptions,
