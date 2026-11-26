@@ -81,19 +81,28 @@ impl ModProjectHost {
             .map(|(id, p)| ProjectRow {
                 id: id.clone(),
                 level: p.level,
-                status: p.script.as_ref().map_or_else(
-                    || "Not attached".into(),
-                    |s| format!("Attached, revision {}", s.revision()),
-                ),
+                status: if let Some(page) = &p.page {
+                    format!("Attached to a page, revision {}", page.script.revision())
+                } else if let Some(s) = &p.script {
+                    format!("Attached, revision {}", s.revision())
+                } else if let Some(why) = &p.detached {
+                    format!("Not attached ({why})")
+                } else {
+                    "Not attached".into()
+                },
                 check: p.check_note.clone().unwrap_or_else(|| "not checked".into()),
                 build: p.build_note.clone().unwrap_or_else(|| "not built".into()),
                 trap: p.last_trap.clone().unwrap_or_else(|| "none".into()),
-                document: p.script.as_ref().map(|s| doc::outline(s.dom())).unwrap_or_default(),
+                document: match (&p.page, &p.script) {
+                    (Some(page), _) => Self::page_outline(page),
+                    (None, Some(s)) => doc::outline(s.dom()),
+                    _ => Vec::new(),
+                },
                 last_turn: p.last_turn.clone(),
                 fixtures: p.fixtures.clone(),
                 logs: p.logs.clone(),
                 failure: p.failure.clone(),
-                attached: p.script.is_some(),
+                attached: p.script.is_some() || p.page.is_some(),
                 can_build: toolchain && p.root.join("Cargo.toml").is_file(),
                 capabilities: p
                     .manifest

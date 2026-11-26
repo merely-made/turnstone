@@ -73,6 +73,7 @@ mod shell_wait_frames;
 #[path = "drive/shell_research_waits.rs"]
 mod shell_research_waits;
 use focused_saved_reader_node_for::focused_saved_reader_node_for;
+pub(in crate::shell) use focused_saved_reader_node_for::focused_node;
 #[path = "drive/cmp_usize.rs"]
 mod cmp_usize;
 #[path = "drive/impl_taproot_automatable_for_shell.rs"]

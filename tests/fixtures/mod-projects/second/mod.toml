@@ -1,0 +1,6 @@
+mod_id = "second-mod"
+display_name = "Second mod"
+version = "0.1.0"
+component = "component.wasm"
+document = "document.txt"
+capabilities = []

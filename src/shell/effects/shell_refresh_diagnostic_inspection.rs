@@ -398,7 +398,8 @@ impl Shell {
                 | Effect::RecordDeleted { .. }
                 | Effect::EmptyRecycleBin
                 | Effect::RecallQuery { .. }
-                | Effect::RecordPageText { .. } => self.effect_open_theme_workshop(effect),
+                | Effect::RecordPageText { .. }
+                | Effect::ModProjectPage(..) => self.effect_open_theme_workshop(effect),
                 Effect::ValidateKeptSource { pane, source, shapes } => {
                     self.validate_kept_source(pane, source, shapes);
                 },

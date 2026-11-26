@@ -72,11 +72,12 @@ fn project(row: &ProjectRow) -> (String, SettingsView) {
     if row.can_build {
         buttons.push(step_button("Build", id, Step::Build));
     }
-    buttons.push(if row.attached {
-        step_button("Detach", id, Step::Detach)
+    if row.attached {
+        buttons.push(step_button("Detach", id, Step::Detach));
     } else {
-        step_button("Attach to its document", id, Step::Attach)
-    });
+        buttons.push(step_button("Attach to its document", id, Step::Attach));
+        buttons.push(step_button("Attach to the focused page", id, Step::AttachPage));
+    }
     buttons.push(step_button("Run fixtures", id, Step::RunFixtures));
     buttons.push(step_button("Reload", id, Step::Reload));
     for (name, granted) in &row.capabilities {
@@ -244,6 +245,7 @@ mod tests {
             "Check notes-mod",
             "Build notes-mod",
             "Attach to its document notes-mod",
+            "Attach to the focused page notes-mod",
             "Run fixtures notes-mod",
             "Reload notes-mod",
             "Grant network for notes-mod",

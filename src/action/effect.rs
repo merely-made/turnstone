@@ -391,6 +391,9 @@ pub enum Effect {
         closing: crate::panes::SessionId,
         next: crate::panes::SessionId,
     },
+    /// A mod project step that needs the shell's live page (MP5b): attach to the
+    /// focused page, or a turn on a page-attached project.
+    ModProjectPage(crate::action::ModProjectAction),
     /// The projection is stale; present another frame.
     Redraw,
 }

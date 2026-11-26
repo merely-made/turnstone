@@ -3,12 +3,9 @@
 
 use super::*;
 
-/// Resolve only the focused view and test membership in the saved-reader set.
-pub(super) fn focused_saved_reader_node_for(
-    app: &crate::app::App,
-    is_reader: impl FnOnce(uuid::Uuid) -> bool,
-) -> Option<uuid::Uuid> {
-    let focused = match app.focus {
+/// The node the focused view shows, whatever it is.
+pub(in crate::shell) fn focused_node(app: &crate::app::App) -> Option<uuid::Uuid> {
+    match app.focus {
         crate::surface::FocusTarget::Content { node, .. } => Some(node),
         crate::surface::FocusTarget::Graph(pane) => app.graph_pane_focused_member(pane),
         crate::surface::FocusTarget::Pane(pane)
@@ -23,6 +20,14 @@ pub(super) fn focused_saved_reader_node_for(
                 .and_then(|context| context.member)
         },
         _ => None,
-    }?;
+    }
+}
+
+/// Resolve only the focused view and test membership in the saved-reader set.
+pub(super) fn focused_saved_reader_node_for(
+    app: &crate::app::App,
+    is_reader: impl FnOnce(uuid::Uuid) -> bool,
+) -> Option<uuid::Uuid> {
+    let focused = focused_node(app)?;
     is_reader(focused).then_some(focused)
 }

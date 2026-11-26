@@ -32,6 +32,12 @@ impl App {
         let Some(mods) = self.mods.clone() else {
             return vec![Effect::Redraw];
         };
+        // A project attached to a page takes its turns through the shell's live page.
+        if let Step::Turn { id, .. } = &step {
+            if mods.page_binding(id).is_some() {
+                return vec![Effect::ModProjectPage(step)];
+            }
+        }
         let (name, id, result): (&'static str, String, Result<String, String>) = match step {
             Step::Create { from } => {
                 let from = from.map(std::path::PathBuf::from);
@@ -54,6 +60,8 @@ impl App {
                 let result = mods.attach(&id).map(|()| "ok: attached".into());
                 ("attach", id, result)
             },
+            // The page is the shell's: it resolves the focused Livery session.
+            step @ Step::AttachPage(_) => return vec![Effect::ModProjectPage(step)],
             Step::RunFixtures(id) => {
                 let result = mods.run_fixtures(&id);
                 ("fixtures", id, result)
@@ -81,6 +89,21 @@ impl App {
                 ("turn", id, result)
             },
         };
+        self.finish_mod_project(name, id, result)
+    }
+
+    /// Record an outcome the shell found on its own (a page mod detached).
+    pub(crate) fn record_mod_project_event(&mut self, step: &'static str, id: String, outcome: String) {
+        self.events.push(AppEvent::ModProjectStep { step, id, outcome });
+    }
+
+    /// Record a step's outcome as an event; a refusal opens the status view.
+    pub(crate) fn finish_mod_project(
+        &mut self,
+        name: &'static str,
+        id: String,
+        result: Result<String, String>,
+    ) -> Vec<Effect> {
         let opens_status = result.is_err() && name != "fixtures" && name != "turn";
         let outcome = match result {
             Ok(note) if note.starts_with("ok") => note,

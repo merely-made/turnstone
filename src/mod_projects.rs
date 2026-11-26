@@ -29,6 +29,7 @@ use serde::{Deserialize, Serialize};
 
 pub use crate::command_packs::Level;
 pub use listing::{ProjectListing, ProjectRow};
+pub use page::{LivePage, PageBinding, livery_dom};
 
 mod build;
 mod doc;
@@ -36,6 +37,9 @@ mod files;
 mod fixtures_run;
 mod listing;
 mod manifest;
+mod page;
+#[cfg(test)]
+mod page_tests;
 #[cfg(test)]
 mod tests;
 
@@ -66,6 +70,10 @@ struct Project {
     document: PathBuf,
     granted: Vec<ModCapability>,
     script: Option<DocumentScript>,
+    /// The page the component is attached to, instead of `script` (MP5b).
+    page: Option<page::PageAttach>,
+    /// Why a page attachment ended without a detach (navigation, close, a trap).
+    detached: Option<String>,
     check_note: Option<String>,
     build_note: Option<String>,
     last_trap: Option<String>,
@@ -220,6 +228,8 @@ impl ModProjectHost {
             component: spec.component,
             document: spec.document,
             script: None,
+            page: None,
+            detached: None,
             check_note: None,
             build_note: None,
             last_trap: None,
@@ -319,7 +329,7 @@ impl ModProjectHost {
     /// Attach the checked component to the project's document (D5).
     pub fn attach(&self, id: &str) -> Result<(), String> {
         self.with(id, |p, state| {
-            if p.script.is_some() {
+            if p.script.is_some() || p.page.is_some() {
                 return Err(format!("{id} is already attached; reload or detach it"));
             }
             self.check_in(id, p, state)?;
@@ -362,6 +372,12 @@ impl ModProjectHost {
 
     pub fn detach(&self, id: &str) -> Result<(), String> {
         self.with(id, |p, _| {
+            if let Some(page) = p.page.take() {
+                // The page keeps what the last applied turn made it (D14).
+                let _ = page.script.detach();
+                p.detached = None;
+                return Ok(());
+            }
             let script = p
                 .script
                 .take()
@@ -416,6 +432,11 @@ impl ModProjectHost {
                     .admit(&p.manifest, &p.version, &p.component, p.level.admission(), true)
                     .map_err(|e| format!("{id}: {}", e.words()))
             };
+            if p.page.is_some() {
+                return Err(format!(
+                    "{id} is attached to a page; detach it and attach again to reload"
+                ));
+            }
             let Some(mut script) = p.script.take() else {
                 admit(p)?;
                 p.failure = None;
@@ -499,5 +520,6 @@ fn outcome_words(outcome: &TurnOutcome) -> String {
         TurnOutcome::Conflict(rev) => format!("conflict, current rev {rev}"),
         TurnOutcome::UnknownNode(id) => format!("unknown node {id}"),
         TurnOutcome::Refused(why) => format!("refused ({why})"),
+        TurnOutcome::PageMoved => "page moved".to_string(),
     }
 }

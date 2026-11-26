@@ -30,6 +30,7 @@ impl Shell {
                     self.run_effects(effects);
                 },
             },
+            Effect::ModProjectPage(step) => self.run_mod_page_step(step),
             Effect::SaveSession => self.save_session(),
             Effect::PersistSettingsPaneRecord { pane, request_id } => {
                 let result = self.persist_settings_pane_record(pane);

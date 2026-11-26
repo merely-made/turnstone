@@ -578,6 +578,10 @@ crate = "uuid@0.8.2"
 reason = "ipc-channel 0.23.1 (latest) requires it, under grafting-servo, servo-media-player; goes when ipc-channel moves to uuid 1.29.2"
 
 [[bans.skip]]
+crate = "wasmparser@0.228.0"
+reason = "wasmi 2.0.3 (genet-wasm, through genet-documents' scripted feature since genet cbe8d3ed5d5) holds it; no wasmi release or upstream main moves past wasmparser 0.228, so the way out is a patch-only wasmi fork onto the latest wasmparser (0.263.0 in the graph through wasmtime 51)"
+
+[[bans.skip]]
 crate = "wast@35.0.2"
 reason = "witx 0.9.1 (latest) requires it, under app-host, authority-host, block-host; goes when witx moves to wast 263.0.0"
 

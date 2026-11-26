@@ -13,6 +13,8 @@ pub enum ModProjectAction {
     Build(String),
     /// Attach the project's component to its document.
     Attach(String),
+    /// Attach the project's component to the focused Livery page (MP5b, D14, D25).
+    AttachPage(String),
     RunFixtures(String),
     /// Re-admit the edited component and swap it in on the same document.
     Reload(String),

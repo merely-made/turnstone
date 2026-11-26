@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 //! The scenario verbs that drive Wasm mod projects (mod projects MP5):
-//! `mod-create [dir]`, `mod-open <dir> [dev]`, `mod-check|build|attach|fixtures|
+//! `mod-create [dir]`, `mod-open <dir> [dev]`, `mod-check|build|attach|attach-page|fixtures|
 //! reload|detach <id>`, `mod-grant <id> <capability> on|off`, `mod-level <id> dev|conformant`, `mod-turn <id> <kind>
 //! [payload]` and `copy-file <from> <to>` (bytes, to swap a component).
 
@@ -44,6 +44,7 @@ pub(crate) fn parse(line: &str) -> Option<Result<ModVerb, String>> {
         "mod-check" => id().map(|id| ModVerb::Step(Step::Check(id))),
         "mod-build" => id().map(|id| ModVerb::Step(Step::Build(id))),
         "mod-attach" => id().map(|id| ModVerb::Step(Step::Attach(id))),
+        "mod-attach-page" => id().map(|id| ModVerb::Step(Step::AttachPage(id))),
         "mod-fixtures" => id().map(|id| ModVerb::Step(Step::RunFixtures(id))),
         "mod-reload" => id().map(|id| ModVerb::Step(Step::Reload(id))),
         "mod-detach" => id().map(|id| ModVerb::Step(Step::Detach(id))),

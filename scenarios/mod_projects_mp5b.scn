@@ -1,0 +1,76 @@
+# Mod projects MP5b receipt: a mod attaches to an open Livery page. A turn
+# changes the heading text, a second turn inserts into the styled page, and
+# both reach the page through the engine (the turn line carries the engine's
+# restyled count). A second mod then changes the page underneath the first, so
+# the first mod's next turn is refused as a conflict; detaching leaves the page
+# as the last applied turn made it; navigating the page detaches a mod, and the
+# row says why.
+# Serve scenarios/fixtures/mod_pages on 127.0.0.1:43118 first:
+#   python -m http.server 43118 --bind 127.0.0.1 --directory scenarios/fixtures/mod_pages
+# FRESH profile (TURNSTONE_ROOT, the data root). TURNSTONE_MOD_FIXTURES names
+# tests/fixtures/mod-projects (starter/ and second/, read only).
+settle 30
+key escape
+
+mod-create ${TURNSTONE_MOD_FIXTURES}/starter
+assert event mod-create notes-mod ok
+mod-create ${TURNSTONE_MOD_FIXTURES}/second
+assert event mod-create second-mod ok
+mod-check notes-mod
+assert event mod-check notes-mod ok
+mod-check second-mod
+assert event mod-check second-mod ok
+
+open http://127.0.0.1:43118/page-a.html
+settle 80
+act Toggle live content
+settle 80
+assert content-live
+capture 01_page_before
+
+# Attach to the focused page, then a text turn.
+mod-attach-page notes-mod
+assert event mod-attach-page notes-mod ok
+mod-turn notes-mod set Edited by a mod
+assert event mod-turn notes-mod ok: turn set: applied, rev 1
+settle 30
+capture 02_set_text_reached_the_page
+
+# A turn that inserts into the styled page: the engine restyles.
+mod-turn notes-mod append
+assert event mod-turn notes-mod ok: turn append: applied, rev 2
+settle 30
+capture 03_insert_restyled_the_page
+
+# A second mod changes the page; the first mod's turn is now against a page
+# that changed underneath, and is refused.
+mod-attach-page second-mod
+assert event mod-attach-page second-mod ok
+mod-turn second-mod append
+assert event mod-turn second-mod ok: turn append: applied, rev 1
+settle 30
+mod-turn notes-mod set Refused text
+assert event mod-turn notes-mod ok: turn set: page moved
+settle 30
+capture 04_refused_as_a_conflict
+
+# Detach: the page stays as the last applied turn made it.
+mod-detach notes-mod
+assert event mod-detach notes-mod ok
+mod-detach second-mod
+assert event mod-detach second-mod ok
+settle 30
+capture 05_detached_page_keeps_the_last_turn
+
+# Reload the page (its content is torn down and fetched again): an attached
+# mod detaches, and the row says why.
+mod-attach-page notes-mod
+assert event mod-attach-page notes-mod ok
+act id:nav:reload
+settle 80
+assert event mod-detach notes-mod ok: detached, its page was closed or is reloading
+act id:pane:settings
+scroll 760 400 -3000
+scroll 760 400 300
+settle 10
+capture 06_reload_detached_the_mod

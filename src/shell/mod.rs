@@ -22,6 +22,7 @@ mod clip_actions;
 mod clip_reading;
 mod clip_retaining;
 mod content_pool;
+mod mod_pages;
 mod contributed_automation;
 mod controller_input;
 mod cue_content;

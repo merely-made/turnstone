@@ -88,6 +88,7 @@ impl ApplicationHandler for Shell {
         self.settle_missing_page_drag_completion();
         let effects = self.app.tick(crate::denizen::now_ms());
         self.run_effects(effects);
+        self.reconcile_mod_pages();
         let alembic_idle = self.service_alembic_workshop(event_loop);
         #[cfg(all(feature = "scry", windows))]
         self.poll_page_media();
