@@ -100,6 +100,9 @@ fn project(row: &ProjectRow) -> (String, SettingsView) {
             buttons.push(step_button("Attach to the focused page", id, Step::AttachPage));
         }
     }
+    if row.kind == "viewer" {
+        buttons.push(step_button("View", id, Step::View));
+    }
     for (media, claimed, on) in &row.media_types {
         if !claimed {
             continue;

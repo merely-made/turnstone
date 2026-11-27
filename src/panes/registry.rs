@@ -476,6 +476,12 @@ pub static BUILTIN_PANES: &[PaneDefinition] = &[
         None,
         None
     ),
+    // One Mod viewer per viewer mod, opened with its id as the source (MP7b, D51); MP7c retires it.
+    #[cfg(not(target_arch = "wasm32"))]
+    pane!(crate::mod_viewer::PANE_KIND, crate::mod_viewer::LABEL,
+        PaneSourceShape::fixed(&[FixedSourceKind::External(crate::mod_viewer::SOURCE_SCHEMA)]),
+        PaneMultiplicity::PerSpaceAndSource, capabilities(false, false, NONE),
+        "turnstone.mod-viewer.config", "turnstone.mod-viewer.view", PaneRenderer::Contributed, None, None),
     pane!(
         crate::shell::structured_source::PANE_KIND,
         crate::shell::structured_source::LABEL,

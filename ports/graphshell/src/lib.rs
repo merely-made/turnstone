@@ -17,6 +17,8 @@ pub mod block_editing;
 #[cfg(feature = "editable-blocks")]
 pub mod block_pane;
 pub mod bound_actions;
+#[cfg(feature = "sheet-theme")]
+pub mod sheet_theme;
 #[cfg(any(feature = "native", feature = "alembic-workshop-private"))]
 pub use graphshell_door::declaration;
 

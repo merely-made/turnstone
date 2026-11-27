@@ -1,0 +1,78 @@
+# Mod projects MP7b receipt: the Mod viewer pane. A viewer project installs and passes its
+# fixtures, then "View" opens the pane, which hands the viewer mod the live graph and paints
+# the scene and sheet it returns: a region per node, labelled with the node's title. A node is
+# added and the pane re-runs; a node titled TRAP traps the viewer, and the pane and the row
+# both say so with the real cause; retitling the node brings the pane back.
+# FRESH profile (TURNSTONE_ROOT, the data root). TURNSTONE_MOD_FIXTURES names
+# tests/fixtures/mod-projects (viewer-nodes/, read only).
+settle 30
+key escape
+
+mod-create ${TURNSTONE_MOD_FIXTURES}/viewer-nodes
+assert event mod-create nodes-viewer ok
+mod-check nodes-viewer
+assert event mod-check nodes-viewer ok
+mod-fixtures nodes-viewer
+assert event mod-fixtures nodes-viewer ok: 1 of 1 fixtures passed
+
+# The row offers View (the verb below is the same step).
+act id:pane:settings
+settle 20
+act Maximize pane
+settle 10
+scroll 760 400 -3000
+settle 10
+scroll 760 400 300
+settle 10
+capture 01_viewer_row_offers_view
+act Maximize pane
+settle 10
+act Close pane
+settle 10
+
+# The Mod viewer opens on the live graph: the sample graph's nodes, one region each.
+mod-view nodes-viewer
+settle 60
+assert event mod-view nodes-viewer ok: opened
+capture 02a_viewer_draws_the_live_graph
+scroll 760 400 3000
+settle 10
+capture 02b_the_tail_and_the_region_labels
+
+# A node is added: the revision moved, so the viewer is asked again and a region appears.
+graph-add Receipt Alpha
+settle 60
+scroll 760 400 3000
+settle 10
+capture 03_a_node_added_the_pane_reran
+
+# A node titled TRAP makes the viewer trap: the pane says so, naming the mod and the cause.
+graph-add TRAP
+settle 60
+capture 04_trap_in_the_pane
+
+# The row says the same, with the same cause.
+act id:pane:settings
+settle 20
+act Maximize pane
+settle 10
+scroll 760 400 -3000
+settle 10
+scroll 760 400 300
+settle 10
+capture 05_trap_in_the_row
+# The failure line and the actions below it.
+scroll 760 400 300
+settle 10
+capture 05c_the_row_failure_and_actions
+act Maximize pane
+settle 10
+act Close pane
+settle 10
+
+# Retitling the node brings the pane back: a fresh instance is attached and draws.
+graph-retitle TRAP => Receipt Beta
+settle 60
+scroll 760 400 3000
+settle 10
+capture 06_pane_recovers_after_the_retitle

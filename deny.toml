@@ -94,6 +94,10 @@ crate = "calendrical_calculations@0.2.3"
 reason = "icu_capi 2.1.2 (icu_capi 2.4.0 drops it), icu_datetime 2.1.1 (icu_datetime 2.4.0 drops it), icu_time 2.1.1 (icu_time 2.4.0 drops it) require it, via icu_calendar 2.1.1, under grafting-servo; goes when their dependents take icu_capi 2.4.0, icu_datetime 2.4.0, icu_time 2.4.0"
 
 [[bans.skip]]
+crate = "constant_time_eq@0.4.2"
+reason = "held by blake2b_simd 1.0.5, blake2s_simd 1.0.5 (both latest; master still 0.4.2), iroh-blobs 0.103.1 (main caps <0.6.2 for MSRV); blake3 1.8.8 takes 0.6.2. Stopgap until patch-only forks (Graphshell mod projects D59)"
+
+[[bans.skip]]
 crate = "chacha20@0.9.1"
 reason = "snow 0.10.0 (latest) requires it, via chacha20poly1305 0.10.1, under mere-transport; goes when snow moves to chacha20 0.10.2"
 

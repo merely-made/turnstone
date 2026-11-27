@@ -54,7 +54,9 @@ alembic-workshop-private = ["alembic-workshop", "graphshell-door/declaration", "
 # One holder-owned graph with an explicitly invited guest.
 coop = ["native", "web", "muniment/redb", "dep:pollster", "graphshell-client/pump", "graphshell-host/coop"]
 coop-window = ["coop", "dep:cambium-desktop", "dep:mien", "dep:genet-scripted-dom", "dep:layout_dom_api", "dep:image"]
-editable-blocks = ["web", "dep:illume", "dep:vector-sheet", "dep:block-adapter", "dep:sprigging", "dep:netrender", "dep:wgpu", "dep:uuid", "uuid/v4"]
+# One mapping from a surface theme to the sheet painter's roles (`sheet_theme`), for every pane that paints a guest sheet.
+sheet-theme = ["dep:sheet-leaf", "dep:vector-sheet", "dep:cartography"]
+editable-blocks = ["web", "sheet-theme", "dep:illume", "dep:vector-sheet", "dep:block-adapter", "dep:sprigging", "dep:netrender", "dep:wgpu", "dep:uuid", "uuid/v4"]
 query-views = ["web", "dep:mere-view", "mere-view/query", "dep:cambium"]
 caller-owned-toolkit-bench = ["retained-content", "dep:cambium-embed", "dep:image"]
 # Goal-directed traversal over retained page text and the graph's links: the
@@ -227,6 +229,7 @@ athanor = { package = "mere-athanor", git = "https://github.com/merely-made/dist
 wgpu-cue = { workspace = true, optional = true }
 cue-netrender = { workspace = true, optional = true }
 vector-sheet = { workspace = true, optional = true }
+sheet-leaf = { workspace = true, optional = true }
 block-adapter = { workspace = true, optional = true }
 sprigging = { workspace = true, optional = true }
 illume = { workspace = true, optional = true }

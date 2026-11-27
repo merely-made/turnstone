@@ -31,7 +31,9 @@
 //! pack-reload <pack-id>     # re-admit and swap in an installed command pack
 //! write-file <path> <text>  # overwrite a file; \n in the text is a newline
 //! mod-create [dir] | mod-open <dir> [dev] | mod-check|build|attach|fixtures|reload|detach <id>
-//!                           # | mod-grant <id> <capability> on|off
+//!                           # | mod-grant <id> <capability> on|off | mod-view <id>
+//! graph-add <title>         # mint a node with that title in the active graph
+//! graph-retitle <old> => <new> # rename the node titled <old>
 //!                           # Wasm mod projects (see scenario/mod_verbs.rs)
 //! copy-file <from> <to>     # overwrite a file with another file's bytes
 //! export-clip <path>        # export the current clip to a new package file

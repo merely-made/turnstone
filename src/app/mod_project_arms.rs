@@ -118,8 +118,24 @@ impl App {
                 let result = mods.turn(&id, &kind, &payload);
                 ("turn", id, result)
             },
+            Step::View(id) => return self.view_mod(&mods, id),
         };
         self.finish_mod_project(name, id, result)
+    }
+
+    /// Open the Mod viewer on a viewer project: one pane per mod, found again when it is open.
+    /// A project that is not a viewer is refused, as a step is.
+    fn view_mod(&mut self, mods: &crate::mod_projects::ModProjectHost, id: String) -> Vec<Effect> {
+        if !mods.listing().rows.iter().any(|row| row.id == id && row.kind == "viewer") {
+            let refusal = format!("{id} is not an opened viewer project");
+            return self.finish_mod_project("view", id, Err(refusal));
+        }
+        let effects = self.open_contributed_pane(
+            crate::panes::PaneKindId::new(crate::mod_viewer::PANE_KIND),
+            crate::mod_viewer::source(&id),
+        );
+        self.events.push(AppEvent::ModProjectStep { step: "view", id, outcome: "ok: opened".into() });
+        effects
     }
 
     /// Record an outcome the shell found on its own (a page mod detached).

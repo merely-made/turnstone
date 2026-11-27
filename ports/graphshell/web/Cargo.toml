@@ -134,6 +134,8 @@ serde_json = "1"
 # The contract half of the guest block adapter (no `guest`, so no wasmtime).
 # `web_tree/block_adapters.rs` names it, and this crate compiles that module itself.
 block-adapter = { git = "https://github.com/merely-made/graphshell.git", branch = "main", default-features = false }
+# The vector-sheet painter, shared with the native block pane (mod projects D50); `web_tree/blocks.rs` names it.
+sheet-leaf = { version = ">=0.0.1", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 # The remote link's outbound queue: the host enqueues lines synchronously,
 # a task drains them onto the channel.
 futures-channel = { version = "0.3", optional = true }

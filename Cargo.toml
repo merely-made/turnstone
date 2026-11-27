@@ -67,7 +67,7 @@ kernel = { package = "mere-kernel", git = "https://github.com/merely-made/mere.g
 # Mere's linked-data engine parses the JSON-LD carried in admitted documents.
 mere = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 mere-shacl = { git = "https://github.com/merely-made/mere.git", branch = "main" }
-graphshell = { path = "ports/graphshell", default-features = false, features = ["goal-surface", "link-inspection"] }
+graphshell = { path = "ports/graphshell", default-features = false, features = ["goal-surface", "link-inspection", "sheet-theme"] }
 oxrdf = "0.3"
 # `canvas` is the graph canvas; the default features (physics-engine,
 # image-decode) are what the facade forwarded.
@@ -439,6 +439,10 @@ servo = ["dep:graft-engine", "graft-engine/servo", "dep:grafting-servo", "dep:gr
 document-host = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 # Parser and viewer mods (mod projects MP7): the worlds' hosts.
 mod-host = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
+# The graph feed a viewer mod reads (`encode_graph_feed`).
+authority-host = { version = ">=0.0.1", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
+# The Mod viewer paints a viewer mod's sheet through it (MP7b, D50, D51).
+sheet-leaf.workspace = true
 command-packs = { git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 toml = "1"
 # The line diff a mod project shows against its last passing snapshot (mod projects D29).
@@ -465,6 +469,9 @@ windows = { version = "0.62", features = ["Win32_Foundation"], optional = true }
 # ureq 3.5.2 limits response bodies after decoding, so cef-dll-sys's build script cannot
 # read CEF's 10.6 MiB index.json. Retire this patch when download-cef raises the limit.
 download-cef = { path = "vendor/download-cef" }
+# totp-rs master takes constant_time_eq 0.6 (PR #92, unreleased after 6.0.0), as dramatis
+# patches it (mod projects D57). Remove when totp-rs releases it.
+totp-rs = { git = "https://github.com/constantoine/totp-rs", branch = "master" }
 # The custody contract and resident use the same OS peer fact types.
 peer-facts = { git = "https://github.com/merely-made/armillary.git", branch = "main" }
 genet-events = { git = "https://github.com/merely-made/genet.git", branch = "main" }
@@ -706,6 +713,8 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 transport = { package = "mere-transport", version = ">=0.0.2", git = "https://github.com/merely-made/murm.git", branch = "main" }
 uuid = { version = "1", features = ["serde", "v4"] }
 vector-sheet = { version = ">=0.0.1", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
+# The painter of a guest's vector sheet, shared by the block pane and the Mod viewer (mod projects D50).
+sheet-leaf = { version = ">=0.0.1", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 webrtc-carrier = { package = "murm-webrtc", version = ">=0.0.1", git = "https://github.com/merely-made/murm.git", branch = "main" }
 wgpu-cue = { git = "https://github.com/merely-made/wgpu-cue.git", branch = "main" }
 workbench = { version = ">=0.1.1", git = "https://github.com/merely-made/graphshell.git", branch = "main" }

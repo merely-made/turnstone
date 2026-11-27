@@ -46,6 +46,7 @@ mod reader_observe;
 mod reader_recovery;
 mod reading_edge;
 mod render;
+mod builtin_surfaces;
 mod renderers;
 mod research_notes;
 mod retained_clips;

@@ -6,7 +6,8 @@
 //! The web page's binding of the block pane (`graphshell::block_pane`): IndexedDB storage, object
 //! URLs for exports, `spawn_local` for futures, the page's appearance for colours.
 use super::*;
-use graphshell::block_editing::sheet_leaf::{ColorF, SheetTheme};
+use graphshell::sheet_theme;
+use sheet_leaf::{ColorF, SheetTheme};
 use graphshell::block_pane::{
     self, BackendStorage, PaneHost, PanePorts, ReadOnly, Storage, SwatchStyle, Task,
 };
@@ -58,10 +59,10 @@ impl PaneHost for TreePage {
         self.size
     }
     fn sheet_theme(&self) -> SheetTheme {
-        SheetTheme::from_surface(&self.shared.appearance.borrow().backdrop_theme())
+        sheet_theme::from_surface(&self.shared.appearance.borrow().backdrop_theme())
     }
     fn sheet_ground(&self) -> Option<ColorF> {
-        Some(SheetTheme::ground_of(&self.shared.appearance.borrow().backdrop_theme()))
+        Some(sheet_theme::ground_of(&self.shared.appearance.borrow().backdrop_theme()))
     }
     fn swatch_style(&self) -> Rc<dyn Fn() -> SwatchStyle> {
         let appearance = self.shared.appearance.clone();

@@ -308,23 +308,9 @@ impl Shell {
                 app.research.1.clone(),
             ))
             .expect("the resident graph provider is unique");
-        surface_providers
-            .register_provider(crate::knot_document_surface::KnotDocumentProvider::default())
-            .expect("the built-in Knot document provider is unique");
         let structured_source = structured_source::Reader::default();
-        surface_providers
-            .register_provider(structured_source::Provider::new(structured_source.clone()))
-            .expect("the source block reader provider is unique");
-        #[cfg(feature = "sky")]
-        surface_providers
-            .register_provider(crate::sky_surface::SkySurfaceProvider::default())
-            .expect("the built-in Sky provider is unique");
-        #[cfg(feature = "inference")]
-        surface_providers
-            .register_provider(
-                crate::distillery_installed_surface::DistilleryInstalledProvider::default(),
-            )
-            .expect("the built-in Distillery installed provider is unique");
+        let mod_viewer =
+            builtin_surfaces::register(&mut surface_providers, &structured_source, app.mods.clone());
         // Redshank's own compact dock, admitted rather than copied. The shell
         // holds the dock handles; the app holds the one listening authority,
         // which is where the device is opened.
@@ -410,6 +396,7 @@ impl Shell {
             ready_clip_reads: HashMap::new(),
             neighborhood_passages: HashMap::new(),
             structured_source,
+            mod_viewer,
             place_handle,
             place_settings,
             place_wake,

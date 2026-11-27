@@ -26,7 +26,8 @@ use cambium_genet_winit_host::{AppCtx, HostOptions, Init, inert_hooks, run};
 use mandrake::{LaneConfig, Product};
 use std::cell::RefCell;
 use taproot::ProbeSnapshot;
-use graphshell::block_editing::sheet_leaf::{ColorF, SheetTheme};
+use graphshell::sheet_theme;
+use sheet_leaf::{ColorF, SheetTheme};
 use cambium::EditorFactory;
 use graphshell::block_editing::DefaultEditors;
 use graphshell::block_pane::{
@@ -97,10 +98,10 @@ impl PaneHost for App {
         self.size
     }
     fn sheet_theme(&self) -> SheetTheme {
-        SheetTheme::from_surface(&SurfaceTheme::default())
+        sheet_theme::from_surface(&SurfaceTheme::default())
     }
     fn sheet_ground(&self) -> Option<ColorF> {
-        Some(SheetTheme::ground_of(&SurfaceTheme::default()))
+        Some(sheet_theme::ground_of(&SurfaceTheme::default()))
     }
     fn swatch_style(&self) -> Rc<dyn Fn() -> SwatchStyle> {
         Rc::new(|| SwatchStyle { revision: 1, font_roles: String::new(), theme: SurfaceTheme::default() })

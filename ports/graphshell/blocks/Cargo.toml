@@ -22,6 +22,7 @@ graphshell = { path = "..", default-features = false, features = ["editable-bloc
 block-adapter = { workspace = true, features = ["guest"] }
 block-host.workspace = true
 vector-sheet.workspace = true
+sheet-leaf.workspace = true
 sceno.workspace = true
 cambium.workspace = true
 cambium-desktop.workspace = true

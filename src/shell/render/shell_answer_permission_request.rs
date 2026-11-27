@@ -215,6 +215,9 @@ impl Shell {
             if spec.kind.as_str() == super::super::structured_source::PANE_KIND {
                 self.reconcile_structured_source();
             }
+            if spec.kind.as_str() == crate::mod_viewer::PANE_KIND {
+                self.mod_viewer.publish(self.app.graph_runtimes.graph(), self.app.sheet_theme());
+            }
             return match self
                 .renderers
                 .contributed

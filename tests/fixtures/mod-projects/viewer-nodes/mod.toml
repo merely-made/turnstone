@@ -1,4 +1,6 @@
-# A fixture viewer: its component is graphshell's mod-host `guest-viewer` fixture guest.
+# A fixture viewer: its component is graphshell's mod-host `guest-viewer` fixture guest, built from
+# graphshell ae2e7c62 (a02131d1: it names a node by its title, then its label, centres its items on
+# their translate and sets each name as sheet text).
 mod_id = "nodes-viewer"
 display_name = "Nodes viewer"
 version = "0.1.0"

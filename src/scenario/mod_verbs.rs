@@ -4,7 +4,9 @@
 //! The scenario verbs that drive Wasm mod projects (mod projects MP5):
 //! `mod-create [dir]`, `mod-open <dir> [dev]`, `mod-check|build|attach|attach-page|fixtures|
 //! reload|rollback|detach <id>`, `mod-grant <id> <capability> on|off`, `mod-claim <id> <media-type> on|off`, `mod-level <id> dev|conformant`, `mod-turn <id> <kind>
-//! [payload]` and `copy-file <from> <to>` (bytes, to swap a component).
+//! [payload]`, `mod-view <id>` (open the Mod viewer on a viewer project) and `copy-file <from>
+//! <to>` (bytes, to swap a component). The viewer receipts also edit the live graph:
+//! `graph-add <title>` mints a node with that title and `graph-retitle <old> => <new>` renames one.
 
 use super::expand_env::expand_env;
 use crate::action::ModProjectAction as Step;
@@ -13,12 +15,15 @@ use crate::action::ModProjectAction as Step;
 pub(crate) enum ModVerb {
     Step(Step),
     CopyFile { from: String, to: String },
+    /// A new node with this title in the active graph.
+    GraphAdd(String),
+    GraphRetitle { from: String, to: String },
 }
 
 /// `None` when `line` is not a mod verb.
 pub(crate) fn parse(line: &str) -> Option<Result<ModVerb, String>> {
     let (verb, rest) = line.split_once(char::is_whitespace).unwrap_or((line, ""));
-    if !(verb.starts_with("mod-") || verb == "copy-file") {
+    if !(verb.starts_with("mod-") || matches!(verb, "copy-file" | "graph-add" | "graph-retitle")) {
         return None;
     }
     let rest = match expand_env(rest.trim(), 1) {
@@ -49,6 +54,14 @@ pub(crate) fn parse(line: &str) -> Option<Result<ModVerb, String>> {
         "mod-reload" => id().map(|id| ModVerb::Step(Step::Reload(id))),
         "mod-rollback" => id().map(|id| ModVerb::Step(Step::Rollback(id))),
         "mod-detach" => id().map(|id| ModVerb::Step(Step::Detach(id))),
+        "mod-view" => id().map(|id| ModVerb::Step(Step::View(id))),
+        "graph-add" if !rest.is_empty() => Ok(ModVerb::GraphAdd(rest.into())),
+        "graph-retitle" => match rest.split_once("=>") {
+            Some((from, to)) if !from.trim().is_empty() && !to.trim().is_empty() => {
+                Ok(ModVerb::GraphRetitle { from: from.trim().into(), to: to.trim().into() })
+            },
+            _ => Err("graph-retitle wants '<old> => <new>'".into()),
+        },
         "mod-level" => match words.as_slice() {
             [id, level @ ("dev" | "conformant")] => Ok(ModVerb::Step(Step::SetLevel {
                 id: (*id).into(),
@@ -133,6 +146,13 @@ mod tests {
             parse("mod-rollback notes-mod"),
             Some(Ok(ModVerb::Step(Step::Rollback("notes-mod".into()))))
         );
+        assert_eq!(parse("mod-view nodes-viewer"), Some(Ok(ModVerb::Step(Step::View("nodes-viewer".into())))));
+        assert_eq!(parse("graph-add Two words"), Some(Ok(ModVerb::GraphAdd("Two words".into()))));
+        assert_eq!(
+            parse("graph-retitle Alpha beta => TRAP"),
+            Some(Ok(ModVerb::GraphRetitle { from: "Alpha beta".into(), to: "TRAP".into() }))
+        );
+        assert!(matches!(parse("graph-retitle Alpha"), Some(Err(_))));
         assert!(matches!(parse("mod-check"), Some(Err(_))));
         assert!(parse("pack-reload x").is_none());
         assert!(parse("settle 10").is_none());

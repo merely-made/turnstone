@@ -139,12 +139,12 @@ fn a_guest_view_decodes_into_regions_and_a_painted_sheet() {
     assert_eq!(regions.len(), 2);
     assert_eq!(regions[0].label, "Event 1 of fixture");
     assert_eq!((regions[1].bar, regions[1].event), (0, 1));
-    let leaf = graphshell::block_editing::sheet_leaf::SheetLeaf::new(
+    let leaf = sheet_leaf::SheetLeaf::new(
         view.sheet.clone(),
-        graphshell::block_editing::sheet_leaf::SheetTheme {
-            ink: graphshell::block_editing::sheet_leaf::ColorF { r: 0.1, g: 0.1, b: 0.1, a: 1.0 },
-            accent: graphshell::block_editing::sheet_leaf::ColorF { r: 0.1, g: 0.4, b: 0.9, a: 1.0 },
-            muted: graphshell::block_editing::sheet_leaf::ColorF { r: 0.5, g: 0.5, b: 0.5, a: 1.0 },
+        sheet_leaf::SheetTheme {
+            ink: sheet_leaf::ColorF { r: 0.1, g: 0.1, b: 0.1, a: 1.0 },
+            accent: sheet_leaf::ColorF { r: 0.1, g: 0.4, b: 0.9, a: 1.0 },
+            muted: sheet_leaf::ColorF { r: 0.5, g: 0.5, b: 0.5, a: 1.0 },
         },
     )
     .unwrap();

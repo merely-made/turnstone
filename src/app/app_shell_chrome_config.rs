@@ -444,6 +444,22 @@ impl App {
         (x / scale, y / scale)
     }
 
+    /// The theme a guest's vector sheet is painted in, and the ground its text must read on,
+    /// from the live appearance (the one mapping, `graphshell::sheet_theme`).
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn sheet_theme(&self) -> (sheet_leaf::SheetTheme, sheet_leaf::ColorF) {
+        use graphshell::sheet_theme::{from_surface, ground_of, surface_of};
+        let appearance = &self.shell.chrome().appearance;
+        let builtin = tabard::ThemePresentation::AuthoredStylesheet(Vec::new());
+        let palette = tabard::presentation_palette(
+            appearance.theme_presentation.as_ref().unwrap_or(&builtin),
+            &appearance.tabard_mode(),
+            tabard::theme::registry::THEME_ID_DEFAULT,
+        );
+        let surface = surface_of(&palette);
+        (from_surface(&surface), ground_of(&surface))
+    }
+
     /// The Map's theme, resolved from the live appearance; `None` until a
     /// presentation exists, when the canvas keeps its own colours.
     pub fn map_theme(&mut self) -> Option<cartography::canvas::CanvasTheme> {

@@ -27,7 +27,6 @@ pub use illume::blocks::{Div, wrap};
 
 pub mod adapter;
 pub mod rhyme;
-pub mod sheet_leaf;
 pub mod worker;
 pub mod store;
 

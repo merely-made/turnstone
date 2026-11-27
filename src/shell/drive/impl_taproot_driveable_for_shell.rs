@@ -203,6 +203,28 @@ impl Shell {
             ModVerb::Step(step) => {
                 self.act(crate::action::Action::ModProject(step));
             },
+            ModVerb::GraphAdd(title) => {
+                let graph = self.app.graph_runtimes.active_graph();
+                let url = format!("https://viewer-receipt.example/{}", title.to_lowercase().replace(' ', "-"));
+                let member = self
+                    .app
+                    .graph_runtimes
+                    .canvas_mut(graph)
+                    .ok_or("graph absent")?
+                    .add_node_at((0.0, 0.0), &url);
+                self.act(crate::action::Action::ContentTitleChanged { member, title });
+            },
+            ModVerb::GraphRetitle { from, to } => {
+                let member = self
+                    .app
+                    .graph_runtimes
+                    .graph()
+                    .nodes()
+                    .find(|(_, node)| node.title == from)
+                    .map(|(_, node)| node.id)
+                    .ok_or_else(|| format!("graph-retitle: no node titled '{from}'"))?;
+                self.act(crate::action::Action::ContentTitleChanged { member, title: to });
+            },
             ModVerb::CopyFile { from, to } => {
                 std::fs::copy(&from, &to)
                     .map_err(|error| format!("copy-file '{from}' to '{to}': {error}"))?;

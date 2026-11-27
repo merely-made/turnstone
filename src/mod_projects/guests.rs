@@ -205,14 +205,20 @@ impl ModProjectHost {
         let host = p.viewer.as_mut().expect("attached above");
         let title = host.title().to_string();
         match host.view(graph, width) {
-            Ok(scene) => Ok((title, scene)),
+            Ok(scene) => {
+                p.failure = None;
+                Ok((title, scene))
+            },
             Err(failure) => {
-                let why = format!("{id}: {failure}");
+                // A trap and a refusal reach the row alike (MP7b, D52): its last trap and its
+                // failure. The row is the project's, so it says the cause; the pane's text, which
+                // has no row around it, also names the mod.
                 if failure.drops_instance() {
                     p.viewer = None;
-                    p.last_trap = Some(why.clone());
                 }
-                Err(why)
+                p.last_trap = Some(failure.to_string());
+                p.failure = Some(failure.to_string());
+                Err(format!("{id}: {failure}"))
             },
         }
     }
@@ -257,10 +263,6 @@ impl ModProjectHost {
 fn failure_words(failure: &ParseFailure) -> String {
     match failure {
         ParseFailure::Refused(why) => format!("refused the page: {why}"),
-        // Wasmtime's first line of a trap is often only the backtrace's header.
-        ParseFailure::Trapped(why) if why.trim_end().ends_with("backtrace:") => {
-            "trapped and was detached (a wasm trap; the next page attaches it afresh)".into()
-        },
         ParseFailure::Trapped(why) => format!("trapped and was detached: {why}"),
         other => format!("returned a result the host could not use ({other})"),
     }

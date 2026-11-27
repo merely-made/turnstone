@@ -17,10 +17,10 @@
 use crate::block_editing::{
     DefaultEditors, Document, Preview,
     adapter::{Registry, unclaimed_message},
-    sheet_leaf::{ColorF, SheetLeaf, SheetTheme},
     store::{self, DocumentStore, StoredDocument},
     worker::WorkerAdapter,
 };
+use sheet_leaf::{ColorF, SheetLeaf, SheetTheme};
 use block_adapter::{
     AdapterError, BACKDROP_SCENE, BlockAdapter, BlockInput, Change, CommandKind, GuestView, Row,
     RunResult, ViewAsk,

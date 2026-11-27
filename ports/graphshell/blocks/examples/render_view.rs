@@ -14,7 +14,7 @@
 use eidetic::pack::{PackManifest, PackPart, PackPartRole, sign_pack};
 use eidetic::{ManifestId, TrustEnvelope};
 use block_adapter::{BlockAdapter, BlockInput, CommandKind, RunResult, ViewAsk};
-use graphshell::block_editing::sheet_leaf::{ColorF, SheetLeaf, SheetTheme};
+use sheet_leaf::{ColorF, SheetLeaf, SheetTheme};
 use graphshell::capsule_applet::{BLOCK_ADAPTER, CapsuleDisclosure, CapsuleMount, SignedPack};
 use block_adapter::GuestEngine;
 use graphshell_blocks::attach_reviewed;
@@ -120,7 +120,7 @@ fn main() {
             println!(
                 "  text {:?} at ({:.0},{:.0}) {} contrast {:.2}",
                 run.text, run.x, run.y, run.css_colour(),
-                graphshell::block_editing::sheet_leaf::contrast_ratio(run.colour, page)
+                sheet_leaf::contrast_ratio(run.colour, page)
             );
         }
     }
