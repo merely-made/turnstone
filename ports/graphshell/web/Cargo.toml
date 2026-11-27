@@ -82,7 +82,7 @@ moot = { package = "mere-moot", git = "https://github.com/merely-made/graphshell
 # personae's wasm32 identity stack sits on getrandom 0.3, whose `wasm_js`
 # feature is inert without the cfg. The cfg is committed in .cargo/config.toml.
 graphshell = { path = "..", default-features = false, features = ["web"] }
-kernel = { package = "mere-kernel", git = "https://github.com/merely-made/mere.git", branch = "main" }
+kernel = { package = "incipit-graph", version = "0.1.0", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 # The graph canvas (engine split D38); pictograph for the authored symbols.
 cartography = { package = "mere-cartography", git = "https://github.com/merely-made/graphshell.git", branch = "main", features = ["canvas"] }
 pictograph = { git = "https://github.com/merely-made/emblem.git", branch = "main", default-features = false }

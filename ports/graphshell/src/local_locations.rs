@@ -21,7 +21,7 @@ use kernel::address::{Address, address_from_url};
 use kernel::persistence::{GraphSnapshot, PersistedAddress};
 use serde_json::Value;
 
-use pandect::access::{AccessHistory, AccessRecord};
+use incipit_session::access::{AccessHistory, AccessRecord};
 
 /// Whether `address` names a file or directory on this device.
 pub fn is_local_file_location(address: &str) -> bool {

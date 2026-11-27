@@ -122,7 +122,7 @@ fn retire_then_list(store: &mut dyn Store, bin_dir: &Path, out: &Emitter<Update>
             .duration_since(UNIX_EPOCH)
             .map(|d| d.as_millis() as u64)
             .unwrap_or(0);
-        let proposal = pandect::furnace::propose_retirement(&deleted, RETENTION_DAYS * DAY_MS, now_ms);
+        let proposal = incipit_session::furnace::propose_retirement(&deleted, RETENTION_DAYS * DAY_MS, now_ms);
         if !proposal.is_empty() {
             // A retired tombstone takes its archived world with it — the
             // forget half of archive-never-orphan (the bin dir sits inside
@@ -136,7 +136,7 @@ fn retire_then_list(store: &mut dyn Store, bin_dir: &Path, out: &Emitter<Update>
                     }
                 }
             }
-            match pollster::block_on(pandect::furnace::apply_retirement(store, &proposal)) {
+            match pollster::block_on(incipit_session::furnace::apply_retirement(store, &proposal)) {
                 Ok(n) => tracing::info!(retired = n, "recycle bin: retired aged-out tombstones"),
                 Err(err) => tracing::warn!(%err, "recycle bin: retirement pass failed"),
             }

@@ -10,6 +10,16 @@
 //! remote projection adapter. Platform handles remain in [`shell`].
 
 // pandect's graph-generic types over this crate's graph, one alias each (engine split D244).
+
+// pandect's kernel-specialised loads over this crate's graph, through their
+// `_with` twins (engine split D254, D257).
+pub(crate) fn materialize_snapshot(
+    snapshot: &kernel::persistence::GraphSnapshot,
+    placement: Option<pandect::graph_placement::PlacementProfile>,
+) -> Result<kernel::graph::Graph, String> {
+    pandect::graph_placement::materialize_snapshot_with(snapshot, placement)
+}
+
 pub(crate) type MereSessions<B> = pandect::MereSessions<B, kernel::graph::Graph>;
 
 

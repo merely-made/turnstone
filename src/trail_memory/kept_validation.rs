@@ -1,6 +1,7 @@
 // Copyright 2026 Mark Alan Boykin
 // SPDX-License-Identifier: MPL-2.0
 
+use incipit_session::IncipitSessions;
 use std::path::{Path, PathBuf};
 
 use cambium::{DetailRow, DetailSection, ValidationEvidence, ValidationFinding};

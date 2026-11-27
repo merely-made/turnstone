@@ -378,9 +378,9 @@ mod tests {
     use super::*;
     use graphshell_host::mere_host::{SelectedPersonaRef, fixture_handlers};
     use muniment::{Backend, StoreError};
-    use pandect::access::AccessContext;
     use athanor::alembic::workshop::{Destination, Owner, Passage, Review};
     use athanor::workshop::{Workshop, evaluate};
+    use incipit_session::access::AccessContext;
     use muniment::{MemoryBackend, TransactFn, WriteOp};
     use servitor::{Cap, Mode, Subject};
     use std::sync::{

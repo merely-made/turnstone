@@ -11,9 +11,10 @@ use std::io::{self, Write};
 use std::path::Path;
 use std::sync::atomic::{AtomicU64, Ordering};
 
+use crate::materialize_snapshot;
 use kernel::graph::Graph;
 use kernel::persistence::GraphSnapshot;
-use pandect::graph_placement::{PlacementProfile, materialize_snapshot};
+use pandect::graph_placement::PlacementProfile;
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub(crate) struct ProfiledGraphSnapshot {

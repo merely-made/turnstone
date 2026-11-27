@@ -32,11 +32,11 @@ use serde::{Deserialize, Serialize};
 use url::Url;
 use uuid::Uuid;
 
-use pandect::access::{
+use graphshell_host::mere_host::{MereHost, MereHostError};
+use incipit_session::access::{
     ACCESS_HISTORY_FACET, AccessAction, AccessHistory, AccessObservation, AccessRecord,
     AccessTransition, bootstrap_access_record_schema, record_observation, save_access_record,
 };
-use graphshell_host::mere_host::{MereHost, MereHostError};
 
 /// The provenance label this app stamps on the access record schema it stores
 /// (engine split D89: the caller names itself, not pandect).
@@ -1387,12 +1387,13 @@ struct Projection {
 
 #[cfg(test)]
 mod tests {
+    use incipit_session::IncipitSessions;
     use std::sync::Arc;
     use std::sync::atomic::{AtomicBool, Ordering};
 
+    use incipit_session::access::AccessContext;
+    use incipit_session::access::{AccessRecordFilter, query_access_records};
     use mere::model::author::Author;
-    use pandect::access::AccessContext;
-    use pandect::access::{AccessRecordFilter, query_access_records};
     use muniment::MemoryBackend;
 
     use super::*;
@@ -1464,7 +1465,7 @@ mod tests {
                     backend.clone(),
                     selected(),
                     graphshell_host::mere_host::fixture_handlers(),
-                    pandect::access::AccessContext {
+                    incipit_session::access::AccessContext {
                         persona: PERSONA.into(),
                         device: DEVICE.into(),
                         at_ms: 9000,
@@ -1867,7 +1868,7 @@ mod tests {
                 backend.clone(),
                 selected(),
                 graphshell_host::mere_host::fixture_handlers(),
-                pandect::access::AccessContext {
+                incipit_session::access::AccessContext {
                     persona: PERSONA.into(),
                     device: DEVICE.into(),
                     at_ms: 3000,
@@ -2174,7 +2175,7 @@ mod tests {
                 backend.clone(),
                 selected(),
                 graphshell_host::mere_host::fixture_handlers(),
-                pandect::access::AccessContext {
+                incipit_session::access::AccessContext {
                     persona: PERSONA.into(),
                     device: DEVICE.into(),
                     at_ms: 4000,

@@ -23,13 +23,13 @@ pub(crate) fn try_load_session_graph_locked(
     let placement = input.placement;
     let snapshot = &mut input.snapshot;
     // Validate the untouched source before stripping old controls or depositing blobs.
-    pandect::graph_placement::materialize_snapshot(snapshot, placement)?;
+    crate::materialize_snapshot(snapshot, placement)?;
     let legacy_node_facets = snapshot.legacy_node_facet_count();
     let legacy_controls = crate::surface_controls::extract_legacy(snapshot);
     let controls_migrated = !legacy_controls.is_empty();
     let migrated = externalize_legacy_images(snapshot, data_root)
         .map_err(|error| format!("session imagery could not be migrated: {error}"))?;
-    let mut graph = pandect::graph_placement::materialize_snapshot(snapshot, placement)?;
+    let mut graph = crate::materialize_snapshot(snapshot, placement)?;
     match canonical {
         Some(canonical) if legacy_node_facets == 0 => {
             // A modern sidecar is the complete authority, including absent

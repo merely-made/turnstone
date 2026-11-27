@@ -216,7 +216,7 @@ impl<P: Copy> SessionPersistence<P> {
                     io::Error::new(io::ErrorKind::InvalidData, "session graph disappeared")
                 })?;
             let mut before =
-                pandect::graph_placement::materialize_snapshot(&input.snapshot, input.placement)
+                crate::materialize_snapshot(&input.snapshot, input.placement)
                     .map_err(io::Error::other)?;
             let facets = pandect::load_node_facets(directory)
                 .map_err(io::Error::other)?

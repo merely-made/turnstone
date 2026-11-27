@@ -43,7 +43,7 @@ fn strict_inspection_graph(root: &std::path::Path) -> Result<kernel::graph::Grap
         return Err("session graph requires migration".into());
     }
     let mut graph =
-        pandect::graph_placement::materialize_snapshot(&input.snapshot, input.placement)?;
+        crate::materialize_snapshot(&input.snapshot, input.placement)?;
     graph.install_facets(facets).map_err(|e| e.to_string())?;
     Ok(graph)
 }

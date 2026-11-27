@@ -12,7 +12,6 @@ use std::path::Path;
 use std::sync::RwLock;
 
 use eidetic::PrivacyClass;
-use pandect::access::AccessContext;
 use graphshell_host::mere_host::{MereHost, SelectedPersonaRef, fixture_handlers};
 use graphshell::product::{EditableRelation, ExportRequest, LocalFileMetadata};
 use graphshell::transfer::{TransferBlobInput, TransferRequest, prepare_transfer};
@@ -25,6 +24,7 @@ use graphshell_endpoint::ResumableProjectionSource;
 use graphshell_host::carrier::{accept_projection_session, projection_alpn, projection_policy};
 use graphshell_host::lifecycle::SessionAuthority;
 use graphshell_host::session_loop::{SessionEnd, serve_admitted_session};
+use incipit_session::access::AccessContext;
 use insigne::delegation::{DelegationRevocation, SignedDelegationRevocation};
 use muniment::{BlobStore, MemoryBackend};
 use notochord::{NetworkId, RevocationLedger, TrustedRoot};

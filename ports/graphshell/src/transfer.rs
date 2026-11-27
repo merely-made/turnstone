@@ -16,6 +16,7 @@ use std::collections::{BTreeMap, HashMap, HashSet};
 
 use portolan::{AcceptAll, FacetId};
 use chirograph::Sha256NamedInformation;
+use crate::materialize_snapshot;
 use eidetic::{
     BlobSource, Codicil, Hash, ManifestId, ModerationState, PrivacyClass, ProvenanceOrigin,
     ProvenanceRecord, TimeBounds, Timestamp, TrustEnvelope, TrustLevel, TypedPayload, save_schema,
@@ -28,29 +29,27 @@ use kernel::graph::node_facets::{
 };
 use kernel::graph::{Graph, NodeFacetStore};
 use muniment::{Backend, BlobStore};
-use pandect::graph_placement::materialize_snapshot;
 use sha2::{Digest, Sha256};
 use uuid::Uuid;
 
-use pandect::access::{
-    ACCESS_HISTORY_FACET, AccessAction, AccessObservation, AccessRecord, AccessRecordFilter,
-    AccessTransition, access_history, bootstrap_access_record_schema, query_access_records,
-    record_observation, save_access_record,
-};
 use crate::capture::{ACCESS_RECORD_TOOLING, ACCESS_SCHEMA_TOOLING};
 use crate::local_locations;
 use graphshell_host::mere_host::MereHost;
 use crate::product::{CONTENT_FACET, ExportRequest, ProductError};
-use pandect::product_codicil::{
-    InvalidCodicil, decode_profiled_codicil, product_codicil_schema, schema_ref,
-};
+use pandect::product_codicil::{InvalidCodicil, product_codicil_schema, schema_ref};
 use pandect::transfer::{
     AccessTransferPolicy, TRANSFER_MANIFEST_SCHEMA, TransferBlobV1, TransferEndpointV1,
     TransferManifestV1, TransferOperation, TransferReceiptV1, TransferResult, TransferRouteV1,
     TransferredIdV1, transfer_receipt_schema,
 };
 use cartography::canvas::saved_scene;
+use crate::decode_profiled_codicil;
 use crate::{ProductCodicilV3, ProfiledProductCodicil};
+use incipit_session::access::{
+    ACCESS_HISTORY_FACET, AccessAction, AccessObservation, AccessRecord, AccessRecordFilter,
+    AccessTransition, access_history, bootstrap_access_record_schema, query_access_records,
+    record_observation, save_access_record,
+};
 use pandect::{
     SAVED_SCENE_FACET, SAVED_SCENE_FACET_V2, SAVED_SCENE_FACET_V3, SavedDynamics, SavedRolesV1,
     SavedSceneV2, SavedSceneV3,
@@ -434,7 +433,7 @@ where
                     .records
                     .into_iter()
                     .find(|existing| existing.record_id == record_id)
-                    .ok_or(pandect::access::AccessError::UnknownNode)
+                    .ok_or(incipit_session::access::AccessError::UnknownNode)
             })
             .map_err(|error| TransferError::InvalidManifest(error.to_string()))?
             .map_err(|error| TransferError::InvalidManifest(error.to_string()))?;
@@ -942,14 +941,14 @@ mod tests {
     use muniment::MemoryBackend;
 
     use super::*;
-    use pandect::access::{
-        AccessContext, bootstrap_access_record_schema, query_access_records, save_access_record,
-    };
     use graphshell_host::mere_host::{
         FIXTURE_DEVICE_ONE_ADDRESS, FIXTURE_DEVICE_TWO_ADDRESS, FIXTURE_PERSONA_ADDRESS,
         SelectedPersonaRef, fixture_handlers,
     };
     use crate::product::{EditableRelation, LocalFileMetadata};
+    use incipit_session::access::{
+        AccessContext, bootstrap_access_record_schema, query_access_records, save_access_record,
+    };
     use pandect::product_codicil::TransferScope;
 
     fn selected(persona: &str) -> SelectedPersonaRef {
@@ -2199,13 +2198,13 @@ mod tests {
     #[cfg(all(feature = "personal-sync", not(target_arch = "wasm32")))]
     #[test]
     fn an_offer_summarizes_the_manifest_it_names() {
-        use pandect::personal_sync::PersonalGraphEvent;
+        use incipit_session::personal_sync::PersonalGraphEvent;
 
         pollster::block_on(async {
             let source = source_fixture().await;
             let manifest = package(&source, TransferOperation::Copy, FIXTURE_PERSONA_ADDRESS).await;
             let manifest_bytes = serde_json::to_vec(&manifest).unwrap();
-            let offer = pandect::transfer_offer::offer_for(
+            let offer = incipit_session::transfer_offer::offer_for(
                 &manifest,
                 Hash::of(&manifest_bytes),
                 manifest_bytes.len() as u64,
@@ -2233,7 +2232,7 @@ mod tests {
             assert_eq!(offer.transfer_id, manifest.transfer_id);
             assert_eq!(offer.destination.device, FIXTURE_DEVICE_TWO_ADDRESS);
 
-            let events = pandect::transfer_offer::offer_events(&offer).unwrap();
+            let events = incipit_session::transfer_offer::offer_events(&offer).unwrap();
             assert!(matches!(
                 &events[0],
                 PersonalGraphEvent::AddNode { id, address, .. }

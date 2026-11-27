@@ -169,7 +169,7 @@ impl App {
         // then its on-disk state, so the switch below adopts a real session.
         let fork_placement = donor_placement;
         let fork_facets = fork_graph.facets().clone();
-        let mut fork_graph = match pandect::graph_placement::materialize_snapshot(
+        let mut fork_graph = match crate::materialize_snapshot(
             &fork_graph.to_snapshot(),
             fork_placement,
         ) {

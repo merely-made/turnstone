@@ -9,12 +9,12 @@
 
 use crate::mere_host_alembic::WorkshopHost;
 use graphshell_host::mere_host::{MereHost, SelectedPersonaRef, fixture_handlers};
-use pandect::access::AccessContext;
 use athanor::alembic::{
     workshop::*,
     workshop_surface::{RetainedReading, SourceChoice, SurfaceAction, SurfaceState},
 };
 use athanor::{workshop, workshop_driver::Driver};
+use incipit_session::access::AccessContext;
 use kernel::graph::apply::GraphDelta;
 use muniment::DirectoryBackend;
 use servitor::{Grant, GrantTable, Mode, Subject};

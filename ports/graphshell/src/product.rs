@@ -18,12 +18,13 @@ use kernel::graph::node_facets::SEMANTIC_PROPERTIES;
 use kernel::graph::{Graph, NodeFacetStore, NodeKey, import_edits};
 use kernel::persistence::GraphSnapshot;
 use muniment::Backend;
-use pandect::graph_placement::{PlacementProfile, materialize_snapshot};
+use pandect::graph_placement::PlacementProfile;
 use pandect::{
     CartographyGeometry, SAVED_SCENE_FACET, SAVED_SCENE_FACET_V2, SAVED_SCENE_FACET_V3,
     SavedDynamics, SavedRolesV1, SavedSceneV2, SavedSceneV3,
 };
 use cartography::saved_scene::{DEFAULT_ARRANGEMENT, StoredScene};
+use crate::materialize_snapshot;
 use mere::model::NodeProperty;
 use mere::model::predicate_declarations::PREDICATE_DECLARATIONS_FACET;
 use mere::model::resource::TAGGED_WITH_IRI;
@@ -35,14 +36,12 @@ use sceno::SourceRef;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use pandect::access::ACCESS_HISTORY_FACET;
-use pandect::product_codicil::{
-    InvalidCodicil, PRODUCT_CODICIL_SCHEMA, TransferScope, decode_profiled_codicil,
-    profiled_codicil_graph,
-};
+use pandect::product_codicil::{InvalidCodicil, PRODUCT_CODICIL_SCHEMA, TransferScope};
 use crate::local_locations;
 use crate::{ProductCodicilV3, ProfiledProductCodicil};
+use crate::{decode_profiled_codicil, profiled_codicil_graph};
 use graphshell_host::mere_host::{MereHost, MereHostError};
+use incipit_session::access::ACCESS_HISTORY_FACET;
 use scenomise::projection::ProjectionSnapshot;
 
 /// What an undo kept because another author changed it since, in words for
@@ -758,11 +757,11 @@ pub(crate) fn product_import_edits(
         }
     }
     // Validate raw handles before legacy surface materialization can coalesce them.
-    pandect::snapshot_merge::try_merge_snapshots(&current, &snapshot)
+    incipit_session::snapshot_merge::try_merge_snapshots(&current, &snapshot)
         .map_err(|error| ProductError::InvalidCodicil(error.to_string()))?;
     let incoming = profiled_codicil_graph(snapshot, facets, placement)?;
     let incoming_snapshot = incoming.to_snapshot();
-    let (joined, _) = pandect::snapshot_merge::try_merge_snapshots(&current, &incoming_snapshot)
+    let (joined, _) = incipit_session::snapshot_merge::try_merge_snapshots(&current, &incoming_snapshot)
         .map_err(|error| ProductError::InvalidCodicil(error.to_string()))?;
     let target = materialize_snapshot(&joined, placement)
         .map_err(|error| ProductError::InvalidCodicil(error.to_string()))?
@@ -1084,9 +1083,9 @@ mod tests {
     use scenotime::ProjectionClock;
 
     use super::*;
-    use pandect::access::AccessContext;
     use cartography::canvas::dynamics_spec::DynamicsSpec;
     use cartography::canvas::saved_scene::SavedRoles;
+    use incipit_session::access::AccessContext;
 
     /// The scene reads the canvas owns, as these tests call them.
     trait SceneReads {
@@ -1309,7 +1308,7 @@ mod tests {
     #[test]
     fn exporting_without_local_file_locations_strips_a_file_address_from_the_node_its_url_and_its_access_history()
      {
-        use pandect::access::{
+        use incipit_session::access::{
             AccessAction, AccessHistory, AccessObservation, AccessTransition, record_observation,
         };
         const LOCAL: &str = "file:///Users/mark/private/notes.md";

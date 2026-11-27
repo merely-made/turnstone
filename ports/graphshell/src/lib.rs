@@ -22,6 +22,35 @@ pub mod sheet_theme;
 #[cfg(any(feature = "native", feature = "alembic-workshop-private"))]
 pub use graphshell_door::declaration;
 
+// pandect's kernel-specialised loads over this crate's graph, through their
+// `_with` twins (engine split D254, D257).
+#[cfg(feature = "web")]
+pub(crate) fn decode_profiled_codicil(
+    bytes: &[u8],
+) -> Result<
+    pandect::product_codicil::ProfiledProductCodicil<kernel::graph::Graph>,
+    pandect::product_codicil::InvalidCodicil,
+> {
+    pandect::product_codicil::decode_profiled_codicil_with(bytes)
+}
+
+#[cfg(feature = "web")]
+pub(crate) fn materialize_snapshot(
+    snapshot: &kernel::persistence::GraphSnapshot,
+    placement: Option<pandect::graph_placement::PlacementProfile>,
+) -> Result<kernel::graph::Graph, String> {
+    pandect::graph_placement::materialize_snapshot_with(snapshot, placement)
+}
+
+#[cfg(feature = "web")]
+pub(crate) fn profiled_codicil_graph(
+    snapshot: kernel::persistence::GraphSnapshot,
+    facets: pandect::NodeFacetStore,
+    placement: Option<pandect::graph_placement::PlacementProfile>,
+) -> Result<kernel::graph::Graph, pandect::product_codicil::InvalidCodicil> {
+    pandect::product_codicil::profiled_codicil_graph_with(snapshot, facets, placement)
+}
+
 // pandect's graph-generic types over this crate's graph, one alias each (engine split D244).
 #[cfg(feature = "web")]
 pub(crate) type Kept = pandect::Kept<kernel::graph::Graph>;

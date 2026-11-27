@@ -979,7 +979,7 @@ fn owner_lifecycle_reentered_actual_a_waits_for_retired_a_write_before_loading_o
                 profile: "profile:forme-lifecycle".into(),
             },
             graphshell_host::mere_host::fixture_handlers(),
-            pandect::access::AccessContext {
+            incipit_session::access::AccessContext {
                 persona: FIXTURE_PERSONA_ADDRESS.into(),
                 device: graphshell_host::mere_host::FIXTURE_DEVICE_TWO_ADDRESS.into(),
                 at_ms: 30,

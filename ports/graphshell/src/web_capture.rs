@@ -6,7 +6,6 @@
 
 //! Browser capture input and durable history access, independent of a presenter.
 use crate::window;
-use pandect::access::{AccessRecord, AccessRecordFilter, query_access_records};
 use graphshell::app::GraphshellApp;
 use graphshell::capture::{
     BROWSER_HISTORY_HANDLER_PREFIX, BrowserHistoryCapture, BrowserVisit, CaptureOutcome,
@@ -14,6 +13,7 @@ use graphshell::capture::{
 };
 use eidetic::kept_text::{KeptBatch, KeptSummary, forget_kept_text, record_kept_pages};
 use graphshell::local_profile::LocalProfile;
+use incipit_session::access::{AccessRecord, AccessRecordFilter, query_access_records};
 use muniment::IndexedDbBackend;
 use serde::Deserialize;
 use std::cell::RefCell;

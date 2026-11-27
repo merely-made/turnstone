@@ -6,6 +6,7 @@
 
 //! Graphshell's reference-host composition over local and remote projections.
 
+use incipit_session::IncipitSessions;
 use crate::product::ProductHost;
 use chirograph::{
     CacheRetention, CapabilityProfile, ContentHash, IntentInvocation, IntentResult,
@@ -18,7 +19,6 @@ use graphshell_host::handlers::{OpenAddressV1, intent_id, local_profile_handlers
 use muniment::Backend;
 use sceno::InstanceId;
 
-use pandect::access::AccessContext;
 use crate::local_profile::LocalProfile;
 use graphshell_host::mere_host::{
     FIXTURE_DEVICE_TWO_ADDRESS, FIXTURE_PERSONA_ADDRESS, HOST_SLOT, MereHost, MereHostError,
@@ -27,6 +27,7 @@ use graphshell_host::mere_host::{
 use crate::product::{
     PINNED_PROJECTION_FACET, PinnedProjectionAuthorityV1, PinnedProjectionCardV1,
 };
+use incipit_session::access::AccessContext;
 
 #[derive(Debug)]
 pub enum AppError {

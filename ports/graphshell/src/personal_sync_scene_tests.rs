@@ -9,8 +9,8 @@
 //! spec is the canvas's, and the canvas depends on pandect.
 
 use cartography::canvas::saved_scene;
+use incipit_session::personal_sync::{PersonalGraphEvent, PersonalGraphRecord};
 use p2panda_core::cbor::{decode_cbor_strict, encode_cbor};
-use pandect::personal_sync::{PersonalGraphEvent, PersonalGraphRecord};
 use pandect::{CartographyGeometry, SavedSceneV2};
 use uuid::Uuid;
 

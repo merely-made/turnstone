@@ -21,12 +21,12 @@ use std::path::{Path, PathBuf};
 use std::time::Duration;
 
 use eidetic::PrivacyClass;
-use mere::model::{EdgeAssertion, RelationKind, SemanticSubKind};
-use pandect::access::{AccessAction, AccessRecord, AccessTransition};
-use pandect::personal_sync::{
-    BlobAvailabilityObservation, PersonalGraphEvent, PersonalGraphReplica, SyncRoster,
+use incipit_session::access::{AccessAction, AccessRecord, AccessTransition};
+use incipit_session::personal_sync::{
+    BlobAvailabilityObservation, IncipitFold, PersonalGraphEvent, PersonalGraphReplica, SyncRoster,
     SyncSelection, accept_into,
 };
+use mere::model::{EdgeAssertion, RelationKind, SemanticSubKind};
 use muniment::RedbBackend;
 use personae::{IdentityProvider, InMemoryProvider};
 use serde::Serialize;
@@ -102,7 +102,7 @@ async fn main() -> Result<(), String> {
     let replica = PersonalGraphReplica::new(backend, graph, seed, roster.clone(), selection);
     assert_offline(
         &replica
-            .projection()
+            .projection_with(&IncipitFold)
             .await
             .map_err(|error| error.to_string())?,
         role,
@@ -173,7 +173,7 @@ async fn main() -> Result<(), String> {
     let projection = tokio::time::timeout(Duration::from_secs(60), async {
         loop {
             let projection = replica
-                .projection()
+                .projection_with(&IncipitFold)
                 .await
                 .map_err(|error| error.to_string())?;
             if converged(&projection) {
@@ -227,7 +227,7 @@ async fn prepare_offline(
     let backend = RedbBackend::open(path).map_err(|error| error.to_string())?;
     let mut replica = PersonalGraphReplica::new(backend, graph, seed, roster, selection);
     if !replica
-        .projection()
+        .projection_with(&IncipitFold)
         .await
         .map_err(|error| error.to_string())?
         .writers

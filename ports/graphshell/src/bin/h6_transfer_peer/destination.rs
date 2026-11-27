@@ -16,7 +16,6 @@ use chirograph::{
 };
 use crate::ProductCodicilV3;
 use eidetic::PrivacyClass;
-use pandect::access::AccessContext;
 use graphshell_host::mere_host::{MereHost, SelectedPersonaRef, fixture_handlers};
 use graphshell::transfer::{ApplyTransferContext, TransferAuthorization, apply_transfer};
 use pandect::transfer::{TransferManifestV1, TransferOperation};
@@ -28,6 +27,7 @@ use notochord::{NetworkId, SessionReply, TrafficClass, initiate_session};
 use personae::{IdentityProvider, InMemoryProvider};
 use sceno::InstanceId;
 use graphshell_host::wire::ItemReader;
+use incipit_session::access::AccessContext;
 use mere::model::{RelationKind, SemanticSubKind};
 use tokio::io::{ReadHalf, WriteHalf};
 use tokio::time::sleep;

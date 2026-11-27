@@ -110,6 +110,7 @@ native = [
     "dep:getrandom",
     "dep:serde",
     "dep:pandect",
+    "dep:incipit-session",
     "dep:incipit",
     "dep:sporran",
     "dep:signature",
@@ -196,6 +197,7 @@ web = [
     "dep:mere-overmap",
     "dep:muniment",
     "dep:pandect",
+    "dep:incipit-session",
     "dep:incipit",
     "dep:sporran",
     "dep:serde",
@@ -218,6 +220,7 @@ personal-sync = [
     "web",
     "muniment/redb",
     "pandect/personal-sync",
+    "incipit-session/personal-sync",
     "dep:p2panda-core",
     "dep:stickleback",
     "dep:murm-sync",
@@ -283,6 +286,9 @@ muniment = { workspace = true, optional = true }
 # too, so it sits here rather than in the native-only table (reservoir plan
 # §7 item 26).
 pandect = { workspace = true, optional = true }
+# The session methods and surface readers over the kernel graph (engine split
+# D256, D267).
+incipit-session = { workspace = true, optional = true }
 # The view state MereHost reads and writes through the session (engine split D78).
 incipit = { workspace = true, features = ["view", "graph"], optional = true }
 sporran = { workspace = true, optional = true }
