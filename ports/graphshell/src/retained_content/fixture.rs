@@ -133,7 +133,8 @@ pub async fn seed_reading<B: pandect::graph_session::LegacyTransactionBackend + 
     let other=crate::local_intake::create_address(app,related_address,"Relationship field notes")?;
     let other_key=app.host.graph().get_node_key_by_id(other).ok_or("Missing related fixture member")?;
     app.host.mutate_product_graph(|graph| {
-        use kernel::graph::{apply::{apply_graph_delta,GraphDelta,assert_relation},EdgeAssertion,SemanticSubKind};
+        use kernel::graph::apply::{GraphDelta, apply_graph_delta, assert_relation};
+        use mere::model::{EdgeAssertion, SemanticSubKind};
         apply_graph_delta(graph,GraphDelta::SetNodeMimeHint{key:other_key,mime_hint:Some("application/vnd.mere.document+json".into())});
         apply_graph_delta(graph,GraphDelta::SetNodeBody{key:other_key,body:Some(related_body)});
         assert_relation(graph,key,other_key,EdgeAssertion::Semantic{sub_kind:SemanticSubKind::Cites,label:None}).expect("fixture endpoints");

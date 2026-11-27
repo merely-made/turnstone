@@ -25,7 +25,7 @@ use eidetic::import::encounters::{
 };
 use eidetic::{NoFetcher, PrivacyClass, list_typed, load_typed, manifest::delete_manifest};
 use kernel::graph::apply::{GraphDelta, apply_graph_delta};
-use kernel::graph::{EdgeFamily, NavigationTrigger, RelationKind, RelationSelector};
+use mere::model::{EdgeFamily, NavigationTrigger, RelationKind, RelationSelector};
 use muniment::{Backend, StoreError, WriteOp};
 use pandect::graph_session::{CommitExtra, LegacyTransactionBackend};
 use serde::{Deserialize, Serialize};
@@ -1390,9 +1390,9 @@ mod tests {
     use std::sync::Arc;
     use std::sync::atomic::{AtomicBool, Ordering};
 
+    use mere::model::author::Author;
     use pandect::access::AccessContext;
     use pandect::access::{AccessRecordFilter, query_access_records};
-    use kernel::graph::Author;
     use muniment::MemoryBackend;
 
     use super::*;

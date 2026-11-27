@@ -11,10 +11,8 @@
 use athanor::alembic::workshop::{Owner, Passage, Source};
 use athanor::workshop::{self, Error};
 use athanor::workshop_seal::Protection;
-use kernel::{
-    graph::{Graph, apply::GraphDelta},
-    persistence::{PersistedResourceFacet, PersistedResourceRecord},
-};
+use kernel::graph::{Graph, apply::GraphDelta};
+use mere::model::{PersistedResourceFacet, PersistedResourceRecord};
 use uuid::Uuid;
 
 const FACET: &str = "mere.alembic.retained-private-source/v1";

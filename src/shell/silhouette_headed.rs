@@ -5,7 +5,8 @@ use super::*;
 use cartography::canvas::{Canvas, NodeShape};
 use kernel::geometry::PortablePoint;
 use kernel::graph::apply::{add_node, assert_relation};
-use kernel::graph::{EdgeAssertion, Graph, SemanticSubKind};
+use kernel::graph::Graph;
+use mere::model::{EdgeAssertion, SemanticSubKind};
 use scenograph::presentation::default_graph_representation_registry;
 use std::{
     path::PathBuf,

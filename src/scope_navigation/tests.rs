@@ -178,8 +178,8 @@ fn fixture() -> (App, Uuid, Uuid, Uuid) {
                 graph,
                 ak,
                 bk,
-                kernel::graph::EdgeAssertion::Semantic {
-                    sub_kind: kernel::graph::SemanticSubKind::Cites,
+                mere::model::EdgeAssertion::Semantic {
+                    sub_kind: mere::model::SemanticSubKind::Cites,
                     label: None,
                 },
             )
@@ -319,8 +319,8 @@ fn neighborhood_is_live_and_does_not_leak_to_a_second_pane() {
             graph,
             ak,
             ck,
-            kernel::graph::EdgeAssertion::Semantic {
-                sub_kind: kernel::graph::SemanticSubKind::Cites,
+            mere::model::EdgeAssertion::Semantic {
+                sub_kind: mere::model::SemanticSubKind::Cites,
                 label: None,
             },
         )

@@ -11,7 +11,7 @@ use athanor::alembic::workshop::{Owner, Passage, Source};
 use athanor::alembic::workshop_surface::SourceChoice;
 use athanor::workshop_seal::Protection;
 use kernel::graph::{Graph, apply::GraphDelta};
-use kernel::persistence::PersistedResourceRecord;
+use mere::model::PersistedResourceRecord;
 use uuid::Uuid;
 
 #[derive(Clone, Copy)]

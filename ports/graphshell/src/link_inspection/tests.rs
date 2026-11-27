@@ -6,12 +6,12 @@
 
 use super::*;
 use kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta, assert_relation};
-use kernel::graph::{
-    ArrangementSubKind, ContainmentSubKind, CoverageLayer, CoverageLimit, EdgeAssertion,
-    ImportedSubKind, NavigationTrigger, ProvenanceSubKind, RelationKind, SemanticStatement,
-    SemanticStatementSpec, predicate_iri,
+use mere::model::coverage::{CoverageLayer, CoverageLimit};
+use mere::model::{
+    ArrangementSubKind, ContainmentSubKind, EdgeAssertion, ImportedSubKind, NavigationTrigger,
+    ProvenanceSubKind, RelationKind, SemanticStatement, SemanticStatementSpec, predicate_iri,
 };
-use kernel::types::{AssertionBasis, AssertionMethod};
+use mere::model::{AssertionBasis, AssertionMethod};
 
 fn fixture() -> (Graph, [Uuid; 4]) {
     let mut graph = Graph::new();

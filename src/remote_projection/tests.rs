@@ -1,8 +1,8 @@
 // Copyright 2026 Mark Alan Boykin
 // SPDX-License-Identifier: MPL-2.0
 
+use mere::model::coverage::{CoverageLayer, CoverageLimit, CoverageNote};
 use super::*;
-use kernel::graph::{CoverageLayer, CoverageLimit, CoverageNote};
 
 fn scoped_coverage() -> CoverageNote {
     let layers = [

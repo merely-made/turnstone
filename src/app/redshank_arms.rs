@@ -225,7 +225,7 @@ impl App {
             canvas.assert_relation_between_members(
                 member,
                 node,
-                kernel::graph::SemanticSubKind::Quotes,
+                mere::model::SemanticSubKind::Quotes,
             );
         }
         let value = json!({

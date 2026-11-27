@@ -46,7 +46,7 @@ name = "moot_resources_reopen"
 required-features = ["moot-resources"]
 
 [features]
-link-inspection = ["dep:cambium", "dep:cartography", "dep:kernel", "dep:serde", "dep:uuid"]
+link-inspection = ["dep:cambium", "dep:cartography", "dep:kernel", "dep:mere", "dep:serde", "dep:uuid"]
 alembic-workshop = ["web", "dep:athanor", "athanor/workshop-destination", "athanor/workshop-worker", "athanor/workshop-sealed", "athanor/workshop-native", "muniment/directory", "dep:pollster", "dep:cambium-desktop", "dep:servitor", "dep:blake3"]
 # Explicit synthetic/private receiving mode; normal public workshop startup does
 # not connect to custody or automatically admit a real user's retained sources.
@@ -188,6 +188,7 @@ web = [
     "dep:portolan",
     "dep:eidetic",
     "dep:kernel",
+    "dep:mere",
     "dep:cartography",
     "dep:pictograph",
     # The mere route's wire vocabulary `mere_host` serves (`mere-overmap`
@@ -268,6 +269,8 @@ graphshell-door.workspace = true
 graphshell-host = { version = ">=0.0.2", git = "https://github.com/merely-made/graphshell.git", branch = "main", default-features = false }
 chirograph.workspace = true
 kernel = { workspace = true, optional = true }
+# The names the kernel re-exported from the engine, at their home (D141).
+mere = { workspace = true, optional = true }
 # The graph canvas (engine split D38: `cartography::canvas`); pictograph for
 # the authored symbols.
 cartography = { workspace = true, features = ["canvas"], optional = true }

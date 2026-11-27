@@ -10,9 +10,9 @@ use crate::access_inspection::AccessSummary;
 #[cfg(feature = "workspace-editor")]
 use crate::forme_workspace::FormeWorkspace;
 use kernel::graph::{
-    Coupling, CouplingId, CouplingResponse, CoverageNote, Field, FieldDefinition, FieldExtent,
-    FieldId, Graph,
+    Coupling, CouplingId, CouplingResponse, Field, FieldDefinition, FieldExtent, FieldId, Graph,
 };
+use mere::model::coverage::CoverageNote;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 

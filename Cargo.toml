@@ -680,6 +680,8 @@ illume = { version = ">=0.0.3", git = "https://github.com/merely-made/inker.git"
 incipit = { version = ">=0.2.3", git = "https://github.com/merely-made/graphshell.git", branch = "main" }
 insigne = { version = ">=0.0.2", git = "https://github.com/merely-made/dramatis.git", branch = "main" }
 kernel = { package = "mere-kernel", version = ">=0.0.3", git = "https://github.com/merely-made/mere.git", branch = "main" }
+# The engine names the kernel re-exported until it moved (engine split D141).
+mere = { version = "0.1.0", git = "https://github.com/merely-made/mere.git", branch = "main", default-features = false }
 mere-lanes = { version = "0.1.0", git = "https://github.com/merely-made/inker.git", branch = "main" }
 mere-overmap = { version = "0.1.0", git = "https://github.com/merely-made/graphshell.git", branch = "main", default-features = false }
 mere-view = { version = "0.1.0", git = "https://github.com/merely-made/graphshell.git", branch = "main" }

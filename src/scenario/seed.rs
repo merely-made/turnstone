@@ -8,7 +8,8 @@
 
 use kernel::geometry::PortablePoint;
 use kernel::graph::apply::{add_node, assert_relation};
-use kernel::graph::{EdgeAssertion, Graph, NodeKey, SemanticSubKind};
+use kernel::graph::{Graph, NodeKey};
+use mere::model::{EdgeAssertion, SemanticSubKind};
 use uuid::Uuid;
 
 /// A random tree of `n` nodes (at least two), the same for a given `n`.

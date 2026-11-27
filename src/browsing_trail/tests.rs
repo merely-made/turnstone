@@ -6,9 +6,8 @@ use kernel::graph::apply::{
     GraphDelta, add_node, apply_graph_delta, assert_relation, node_history_back,
     node_history_forward,
 };
-use kernel::graph::{
-    ArrangementSubKind, EdgeAssertion, Graph, NavigationTrigger, NodeHistoryTransitionKind,
-};
+use kernel::graph::{Graph, NodeHistoryTransitionKind};
+use mere::model::{ArrangementSubKind, EdgeAssertion, NavigationTrigger};
 
 use super::*;
 

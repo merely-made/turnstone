@@ -67,10 +67,8 @@ fn surface_controls_keep_is_local_idempotent_and_durable() {
 }
 #[test]
 fn surface_controls_resource_label_is_not_membership_evidence() {
-    use kernel::graph::{
-        Author,
-        resource_tags::{TagConcept, tag_concept_iri},
-    };
+    use mere::model::author::Author;
+    use mere::model::resource_content::{TagConcept, tag_concept_iri};
     let (mut app, first, second, resource) = fixture();
     let mut graph = Graph::from_snapshot(&app.graph_runtimes.graph().to_snapshot());
     graph.write_as(Author::person("descriptive-label"), |graph| {

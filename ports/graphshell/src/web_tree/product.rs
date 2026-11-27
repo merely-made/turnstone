@@ -642,7 +642,7 @@ impl SavedProduct {
     pub(super) fn inspect_statement_at_owner(
         &self,
         statement_id: &str,
-        stratum: kernel::graph::GraphStratum,
+        stratum: mere::model::GraphStratum,
         from: Uuid,
         to: Uuid,
     ) -> Result<graphshell::link_inspection::StatementInspection, String> {

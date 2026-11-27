@@ -29,8 +29,9 @@
 //! `sub_graph_refs` render as containment (`CollectionMember`).
 
 use kernel::graph::apply::{self as graph_apply, GraphDelta, apply_graph_delta};
-use kernel::graph::{ContainmentSubKind, EdgeAssertion, Graph, NodeKey, ProvenanceSubKind};
+use kernel::graph::{Graph, NodeKey};
 use crate::session::manifest_store::ManifestStore;
+use mere::model::{ContainmentSubKind, EdgeAssertion, ProvenanceSubKind};
 use std::collections::HashMap;
 
 use crate::panes::SessionId;

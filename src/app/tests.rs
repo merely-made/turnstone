@@ -14,8 +14,9 @@ use super::*;
 // and recycle-label checks, not an attributed recovery receipt.
 fn resource_content_fixture() -> (App, uuid::Uuid, uuid::Uuid, uuid::Uuid) {
     use kernel::graph::apply::add_node;
-    use kernel::graph::resource_tags::{TagConcept, tag_concept_iri};
-    use kernel::graph::{Author, Graph};
+    use kernel::graph::Graph;
+    use mere::model::author::Author;
+    use mere::model::resource_content::{TagConcept, tag_concept_iri};
 
     let mut graph = Graph::new();
     let first = uuid::Uuid::from_u128(101);
@@ -66,8 +67,8 @@ fn resource_content_fixture() -> (App, uuid::Uuid, uuid::Uuid, uuid::Uuid) {
 }
 
 #[cfg(any(feature = "piccolo", feature = "wasm"))]
-fn participant_author(resident: &crate::denizen::Resident) -> kernel::graph::Author {
-    kernel::graph::Author::script(
+fn participant_author(resident: &crate::denizen::Resident) -> mere::model::author::Author {
+    mere::model::author::Author::script(
         resident.subject.to_hex(),
         blake3::Hash::from(resident.binding.revision.0)
             .to_hex()

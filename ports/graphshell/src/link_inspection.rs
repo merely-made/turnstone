@@ -9,11 +9,10 @@
 //! Rule-derived display marks need their own owner adapter; these are held facts.
 use std::collections::BTreeSet;
 
-use kernel::graph::{
-    CoverageLayer, CoverageLimit, CoverageNote, EdgeFamily, Graph, GraphStratum, RelationKey,
-    SemanticStatement, SemanticSubKind,
-};
-use kernel::types::GraphScope;
+use kernel::graph::{Graph, RelationKey};
+use mere::model::GraphScope;
+use mere::model::coverage::{CoverageLayer, CoverageLimit, CoverageNote};
+use mere::model::{EdgeFamily, GraphStratum, SemanticStatement, SemanticSubKind};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 #[cfg(test)]
@@ -610,10 +609,8 @@ mod tests;
 mod owner_bound_statement_tests {
     use super::*;
     use kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta};
-    use kernel::persistence::{
-        PersistedEdge, PersistedEdgeFamily, PersistedSemanticStatement,
-    };
-    use kernel::types::{AssertionWithdrawal, GraphScope};
+    use mere::model::{AssertionWithdrawal, GraphScope};
+    use mere::model::{PersistedEdge, PersistedEdgeFamily, PersistedSemanticStatement};
 
     fn graph() -> (Graph, Uuid, Uuid, Uuid) {
         let mut graph = Graph::new();

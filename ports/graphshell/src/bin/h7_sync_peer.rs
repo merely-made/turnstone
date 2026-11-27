@@ -21,12 +21,12 @@ use std::path::{Path, PathBuf};
 use std::time::Duration;
 
 use eidetic::PrivacyClass;
+use mere::model::{EdgeAssertion, RelationKind, SemanticSubKind};
 use pandect::access::{AccessAction, AccessRecord, AccessTransition};
 use pandect::personal_sync::{
     BlobAvailabilityObservation, PersonalGraphEvent, PersonalGraphReplica, SyncRoster,
     SyncSelection, accept_into,
 };
-use kernel::graph::{EdgeAssertion, RelationKind, SemanticSubKind};
 use muniment::RedbBackend;
 use personae::{IdentityProvider, InMemoryProvider};
 use serde::Serialize;

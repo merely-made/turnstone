@@ -6,7 +6,7 @@
 //! Query definitions are shared Resources, written through the current owner journal.
 use crate::product::ProductHost;
 use crate::app::GraphshellApp;
-use kernel::graph::GraphStratum;
+use mere::model::GraphStratum;
 use mere_view::query as model;
 use mere_view::query::{self as query_view, QueryNodeId, QueryProjection, QueryViewSpec};
 use muniment::Backend;
@@ -266,8 +266,8 @@ pub async fn seed_fixture<B: pandect::graph_session::LegacyTransactionBackend + 
     app.host
         .mutate_product_graph(|graph| -> Result<(), String> {
             use kernel::graph::apply::{GraphDelta, apply_graph_delta};
-            use kernel::graph::resource_tags::TagConcept;
-            use kernel::graph::{EdgeAssertion, SemanticSubKind};
+            use mere::model::resource_content::TagConcept;
+            use mere::model::{EdgeAssertion, SemanticSubKind};
             let from = graph.get_node_key_by_id(a).ok_or("Missing source")?;
             let to = graph.get_node_key_by_id(b).ok_or("Missing target")?;
             let resource = graph
@@ -468,10 +468,10 @@ pub fn presented_links(projection: &QueryProjection) -> Vec<PresentedLink> {
 
 #[cfg(test)]
 mod grouping_tests {
+    use mere::model::AssertionWithdrawal;
+    use mere::model::GraphScope;
+    use mere::model::{ContainmentSubKind, SemanticStatement, SemanticSubKind};
     use super::*;
-    use kernel::graph::{ContainmentSubKind, SemanticStatement, SemanticSubKind};
-    use kernel::types::AssertionWithdrawal;
-    use kernel::types::GraphScope;
     use mere_view::query::{QueryNode, QueryRelation};
 
     fn statement(id: &str, kind: SemanticSubKind) -> SemanticStatement {

@@ -11,7 +11,7 @@ use graphshell::link_inspection::{
     HeldStatement, LinkHistoryInspection, LinkInspection, LinkOwner, LinkTarget,
     StatementInspection,
 };
-use kernel::graph::{GraphStratum, SemanticSubKind};
+use mere::model::{GraphStratum, SemanticSubKind};
 use uuid::Uuid;
 
 fn read(page: &TreePage) -> Result<LinkInspection, String> {

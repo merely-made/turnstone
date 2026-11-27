@@ -237,10 +237,8 @@ fn writer_lease_survives_same_session_readoption_and_switch_back() {
 
 #[test]
 fn host_session_fork_preserves_resource_records_and_tag_assertions() {
-    use kernel::graph::{
-        Author,
-        resource_tags::{TagConcept, tag_concept_iri},
-    };
+    use mere::model::author::Author;
+    use mere::model::resource_content::{TagConcept, tag_concept_iri};
     let root = tempfile::tempdir().unwrap();
     let mut app = App::test_stub_at(root.path().to_path_buf());
     app.sessions = crate::session::manifest_store::ManifestStore::with_root(session::sessions_root(root.path()));

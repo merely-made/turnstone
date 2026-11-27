@@ -331,8 +331,8 @@ fn refused_detail_facet_write_retains_an_explicit_retry() {
 
 #[test]
 fn canvas_metadata_refresh_preserves_geometry_camera_selection_and_play_state() {
-    use kernel::graph::Author;
     use kernel::graph::apply::{GraphDelta, apply_graph_delta};
+    use mere::model::author::Author;
     let mut app = GraphshellApp::fixture(MemoryBackend::new(), persona()).unwrap();
     let id = app
         .host
@@ -414,8 +414,9 @@ fn canvas_metadata_refresh_preserves_geometry_camera_selection_and_play_state() 
 fn hosted_canvas_metadata_keeps_exact_tag_claims_peer_sources_and_navigation_resources() {
     use kernel::graph::fixtures::GraphFixtures;
     use kernel::graph::apply::{GraphDelta, apply_graph_delta};
-    use kernel::graph::resource::TAGGED_WITH_IRI;
-    use kernel::graph::{Author, CapturedDelta};
+    use kernel::graph::CapturedDelta;
+    use mere::model::author::Author;
+    use mere::model::resource::TAGGED_WITH_IRI;
     let mut app = GraphshellApp::fixture(MemoryBackend::new(), persona()).unwrap();
     let first = app
         .host
@@ -466,7 +467,7 @@ fn hosted_canvas_metadata_keeps_exact_tag_claims_peer_sources_and_navigation_res
     for collision in [false, true] {
         let mut carried = canvas.graph().clone();
         let mut property =
-            kernel::types::NodeProperty::new("urn:test:predicate".into(), "exact".into())
+            mere::model::NodeProperty::new("urn:test:predicate".into(), "exact".into())
                 .with_metadata(Some("urn:test:source".into()), Some(42));
         property.statement_id = if collision {
             expected[0].statement_id.clone()

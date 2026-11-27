@@ -86,7 +86,7 @@ fn model_free_recovery_restores_exact_statement_without_replacing_existing_asser
         .try_assert_semantic_statement_by_resource_ids(
             unrelated,
             unrelated,
-            kernel::graph::SemanticStatementSpec {
+            mere::model::SemanticStatementSpec {
                 predicate: "urn:example:unrelated".into(),
                 recognized_sub_kind: None,
                 label: None,
@@ -151,9 +151,9 @@ fn model_free_graph_enumeration_refuses_limits_and_reserved_surface_tombstones()
         Default::default(),
     );
     graph
-        .declare_predicate(PREDICATE, kernel::graph::GraphStratum::Surface)
+        .declare_predicate(PREDICATE, mere::model::GraphStratum::Surface)
         .unwrap();
-    let spec = kernel::graph::SemanticStatementSpec {
+    let spec = mere::model::SemanticStatementSpec {
         predicate: PREDICATE.into(),
         recognized_sub_kind: None,
         label: None,

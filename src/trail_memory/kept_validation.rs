@@ -153,7 +153,7 @@ async fn validate_capture(
         Shapes::Choose | Shapes::ChoosePack => return Err("Choose a shapes file first.".into()),
     };
     let sessions = MereSessions::new(backend.clone());
-    let author = kernel::graph::Author::engine("turnstone-structured-source", "1");
+    let author = mere::model::author::Author::engine("turnstone-structured-source", "1");
     let mut session = match sessions
         .latest_live()
         .await

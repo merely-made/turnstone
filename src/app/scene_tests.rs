@@ -4,7 +4,7 @@
 use super::*;
 use cartography::canvas::Canvas;
 use kernel::geometry::PortablePoint;
-use kernel::graph::{EdgeAssertion, ProvenanceSubKind};
+use mere::model::{EdgeAssertion, ProvenanceSubKind};
 use scenograph::attention::Attention;
 
 const URLS: [&str; 4] = [
@@ -60,7 +60,7 @@ fn fixture() -> (App, PaneId, Vec<uuid::Uuid>) {
             assert!(canvas.graph().node_content_tags(keys[2]).unwrap().contains("publishing"));
             let relations: Vec<_> = canvas.graph().projected_relations().map(|(_, row)| row).collect();
             for (from, to) in [(keys[0], keys[3]), (keys[2], keys[0])] {
-                assert!(relations.iter().any(|r| r.from == from && r.to == to && matches!(r.kind, kernel::graph::RelationKind::Provenance(_))), "fixture source provenance must survive public writes and reconciliation: {relations:?}");
+                assert!(relations.iter().any(|r| r.from == from && r.to == to && matches!(r.kind, mere::model::RelationKind::Provenance(_))), "fixture source provenance must survive public writes and reconciliation: {relations:?}");
             }
             canvas.resize(800, 600);
             canvas.set_physics_paused(true);

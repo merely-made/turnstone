@@ -171,7 +171,8 @@ impl App {
     pub(crate) fn projection_fixture() -> Self {
         use kernel::geometry::PortablePoint;
         use kernel::graph::apply::{add_node, assert_relation};
-        use kernel::graph::{EdgeAssertion, Graph, SemanticSubKind};
+        use kernel::graph::Graph;
+        use mere::model::{EdgeAssertion, SemanticSubKind};
 
         let mut app = Self::isolated(std::env::temp_dir().join("turnstone-graphshell-g3"));
         let mut graph = Graph::new();

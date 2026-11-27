@@ -342,7 +342,8 @@ mod tests {
 
     use chirograph::IntentResult;
     use kernel::address::AddressKind;
-    use kernel::graph::{EdgeFamily, Graph, RelationKind};
+    use kernel::graph::Graph;
+    use mere::model::{EdgeFamily, RelationKind};
     use muniment::MemoryBackend;
     use serde_json::json;
 

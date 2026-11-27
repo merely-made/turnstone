@@ -15,14 +15,8 @@ use kernel::geometry::PortablePoint;
 use kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta, assert_relation};
 use kernel::graph::capture::{CapturedDelta, replay_captured_deltas_onto_checked};
 use kernel::graph::node_facets::SEMANTIC_PROPERTIES;
-use kernel::graph::predicate_declarations::PREDICATE_DECLARATIONS_FACET;
-use kernel::graph::resource::TAGGED_WITH_IRI;
-use kernel::graph::{
-    ArrangementSubKind, ContainmentSubKind, EdgeAssertion, EdgeFamily, Graph, NodeFacetStore,
-    NodeKey, RelationKind, SemanticSubKind, import_edits,
-};
+use kernel::graph::{Graph, NodeFacetStore, NodeKey, import_edits};
 use kernel::persistence::GraphSnapshot;
-use kernel::types::NodeProperty;
 use muniment::Backend;
 use pandect::graph_placement::{PlacementProfile, materialize_snapshot};
 use pandect::{
@@ -30,6 +24,13 @@ use pandect::{
     SavedDynamics, SavedRolesV1, SavedSceneV2, SavedSceneV3,
 };
 use cartography::saved_scene::{DEFAULT_ARRANGEMENT, StoredScene};
+use mere::model::NodeProperty;
+use mere::model::predicate_declarations::PREDICATE_DECLARATIONS_FACET;
+use mere::model::resource::TAGGED_WITH_IRI;
+use mere::model::{
+    ArrangementSubKind, ContainmentSubKind, EdgeAssertion, EdgeFamily, RelationKind,
+    SemanticSubKind,
+};
 use sceno::SourceRef;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -752,7 +753,7 @@ pub(crate) fn product_import_edits(
     {
         for statement in edge.retained_assertions_mut() {
             statement.provenance_iri.get_or_insert_with(|| {
-                kernel::graph::edge_data::UNKNOWN_LEGACY_ASSERTER_IRI.into()
+                mere::model::edge_data::UNKNOWN_LEGACY_ASSERTER_IRI.into()
             });
         }
     }
@@ -1077,7 +1078,8 @@ pub(crate) fn decode_codicil(bytes: &[u8]) -> Result<ProductCodicilV3, ProductEr
 
 #[cfg(test)]
 mod tests {
-    use kernel::graph::{Author, ProvenanceSubKind, RelationKind};
+    use mere::model::author::Author;
+    use mere::model::{ProvenanceSubKind, RelationKind};
     use muniment::MemoryBackend;
     use scenotime::ProjectionClock;
 
@@ -1554,10 +1556,10 @@ mod tests {
         }));
     }
 
-    fn resource_selection_graph() -> (Graph, Vec<Uuid>, kernel::persistence::PersistedEdge) {
-        use kernel::persistence::{
-            PersistedEdge, PersistedEdgeFamily, PersistedResourceRecord,
-            PersistedSemanticStatement, PersistedShownResource,
+    fn resource_selection_graph() -> (Graph, Vec<Uuid>, mere::model::PersistedEdge) {
+        use kernel::persistence::PersistedShownResource;
+        use mere::model::{
+            PersistedEdge, PersistedEdgeFamily, PersistedResourceRecord, PersistedSemanticStatement,
         };
         let mut graph = Graph::new();
         let surfaces: Vec<_> = [
@@ -1612,11 +1614,11 @@ mod tests {
                 predicate: predicate.into(),
                 recognized_sub_kind: None,
                 label: Some("retained relation".into()),
-                basis: kernel::types::AssertionBasis {
+                basis: mere::model::AssertionBasis {
                     note: Some("retained relation".into()),
                     ..Default::default()
                 },
-                graph_scope: kernel::types::GraphScope::Default,
+                graph_scope: mere::model::GraphScope::Default,
                 provenance_iri: Some("https://tagger.test/".into()),
                 asserted_at_ms: Some(23),
                 first_asserted_ms: Some(23),
@@ -1650,7 +1652,7 @@ mod tests {
 
     #[test]
     fn direct_selection_and_family_readers_lift_content_without_losing_surface_relations() {
-        use kernel::persistence::{PersistedEdgeFamily, PersistedTraversalEdgeData};
+        use mere::model::{PersistedEdgeFamily, PersistedTraversalEdgeData};
         let (mut graph, surfaces, _) = resource_selection_graph();
         let mut extras = Vec::new();
         for name in ["traversal", "layout", "unrelated"] {
@@ -1892,11 +1894,10 @@ mod tests {
 
     #[test]
     fn selection_keeps_statement_and_literal_declarations_to_a_fixed_point() {
-        use kernel::graph::predicate_declarations::{
-            PredicateDeclaration, PredicateDeclarations,
-        };
-        use kernel::graph::{Author, GraphStratum};
-        use kernel::persistence::{PersistedResourceFacet, PersistedResourceRecord};
+        use mere::model::GraphStratum;
+        use mere::model::author::Author;
+        use mere::model::predicate_declarations::{PredicateDeclaration, PredicateDeclarations};
+        use mere::model::{PersistedResourceFacet, PersistedResourceRecord};
 
         const SURFACE: &str = "https://vocab.test/predicates#surface";
         const RESOURCE: &str = "https://vocab.test/predicates#resource";
@@ -2156,7 +2157,7 @@ mod tests {
         let journal = host.graph_session().journal().entries().len();
         for collision in [false, true] {
             let mut property =
-                kernel::types::NodeProperty::new("urn:test:predicate".into(), "exact".into())
+                mere::model::NodeProperty::new("urn:test:predicate".into(), "exact".into())
                     .with_metadata(Some("urn:test:source".into()), Some(42));
             property.statement_id = if collision {
                 held.clone()
@@ -2398,11 +2399,9 @@ mod tests {
 
     #[test]
     fn product_import_preserves_distinct_handles_and_rejects_collisions_atomically() {
-        use kernel::graph::GraphStratum;
-        use kernel::graph::predicate_declarations::{
-            PredicateDeclaration, PredicateDeclarations,
-        };
-        use kernel::persistence::{PersistedResourceFacet, PersistedResourceRecord};
+        use mere::model::GraphStratum;
+        use mere::model::predicate_declarations::{PredicateDeclaration, PredicateDeclarations};
+        use mere::model::{PersistedResourceFacet, PersistedResourceRecord};
         const IMPORT_PREDICATE: &str = "https://vocab.test/import#custom";
         let (graph, surfaces, tag) = resource_selection_graph();
         let mut codicil = ProductCodicilV3 {
@@ -2462,7 +2461,7 @@ mod tests {
         assert_eq!(resource.id(), resource_id);
         assert_eq!(resource.canonical_iri(), IMPORT_PREDICATE);
         assert_eq!(
-            kernel::graph::predicate_declarations::predicate_declarations_from_record(record)
+            mere::model::predicate_declarations::predicate_declarations_from_record(record)
                 .unwrap(),
             Some(declarations),
             "all declaration variants, authors, times and selection survive"
@@ -2584,7 +2583,7 @@ mod tests {
             .unwrap();
         assert_eq!(
             legacy_claim.provenance_iri.as_deref(),
-            Some(kernel::graph::edge_data::UNKNOWN_LEGACY_ASSERTER_IRI)
+            Some(mere::model::edge_data::UNKNOWN_LEGACY_ASSERTER_IRI)
         );
         assert_eq!(legacy_claim.asserted_at_ms, Some(23));
         let known_claim = normalized
@@ -2963,7 +2962,7 @@ mod tests {
             kernel::graph::RelationKey::Resource(_)
         ));
         assert!(
-            payload.has_relation(kernel::graph::RelationSelector::Semantic(
+            payload.has_relation(mere::model::RelationSelector::Semantic(
                 SemanticSubKind::Cites
             ))
         );
@@ -2971,7 +2970,7 @@ mod tests {
         assert!(reopened.graph().projected_relations().any(|(_, relation)| {
             relation.kind == RelationKind::Provenance(ProvenanceSubKind::GeneratedFrom)
         }));
-        let normalized_edges = |edges: &[kernel::persistence::PersistedEdge]| {
+        let normalized_edges = |edges: &[mere::model::PersistedEdge]| {
             let mut edges: Vec<_> = edges
                 .iter()
                 .map(|edge| serde_json::to_string(edge).unwrap())
@@ -3734,7 +3733,7 @@ mod tests {
         /// objects on two sites in a ring, and a scene whose spec runs
         /// Charge between the sites' groups and Springs within.
         fn grouping_codicil() -> ProductCodicilV3 {
-            use kernel::graph::EdgeAssertion;
+            use mere::model::EdgeAssertion;
             let mut graph = Graph::new();
             let keys: Vec<_> = (0..8u128)
                 .map(|i| {

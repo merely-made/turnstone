@@ -226,7 +226,7 @@ impl App {
                 canvas.assert_relation_between_members(
                     node,
                     member,
-                    kernel::graph::SemanticSubKind::Hyperlink,
+                    mere::model::SemanticSubKind::Hyperlink,
                 );
                 canvas.set_node_title_for(member, projection.entry.title.clone());
                 canvas.set_node_body_for(member, projection.entry.summary.clone());

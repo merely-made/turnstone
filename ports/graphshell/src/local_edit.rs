@@ -166,8 +166,8 @@ pub fn sync_canvas_metadata_from_graph(
     saved: &NodeMetadata,
 ) -> Result<(), String> {
     use kernel::graph::CapturedDelta;
-    use kernel::graph::resource::TAGGED_WITH_IRI;
-    use kernel::persistence::PersistedEdge;
+    use mere::model::PersistedEdge;
+    use mere::model::resource::TAGGED_WITH_IRI;
     use std::collections::BTreeSet;
     let (key, node) = source
         .get_node_by_id(saved.member)
@@ -241,12 +241,12 @@ pub fn sync_canvas_metadata_from_graph(
 }
 
 fn select_metadata_edge(
-    mut edge: kernel::persistence::PersistedEdge,
+    mut edge: mere::model::PersistedEdge,
     tags: bool,
-) -> Option<kernel::persistence::PersistedEdge> {
-    use kernel::graph::resource::TAGGED_WITH_IRI;
-    use kernel::graph::{EdgeFamily, RelationKind};
-    use kernel::persistence::PersistedEdgeFamily;
+) -> Option<mere::model::PersistedEdge> {
+    use mere::model::PersistedEdgeFamily;
+    use mere::model::resource::TAGGED_WITH_IRI;
+    use mere::model::{EdgeFamily, RelationKind};
     use std::collections::BTreeSet;
 
     let mut assertions = edge.retained_assertions().to_vec();
@@ -300,12 +300,10 @@ mod tests;
 
 #[cfg(test)]
 mod exact_record_adapter_tests {
+    use mere::model::{AssertionBasis, GraphScope};
+    use mere::model::{ContainmentSubKind, EdgeFamily, RelationKind};
+    use mere::model::{PersistedEdge, PersistedEdgeFamily, PersistedSemanticStatement};
     use super::*;
-    use kernel::graph::{ContainmentSubKind, EdgeFamily, RelationKind};
-    use kernel::persistence::{
-        PersistedEdge, PersistedEdgeFamily, PersistedSemanticStatement,
-    };
-    use kernel::types::{AssertionBasis, GraphScope};
 
     fn assertion(id: &str, predicate: &str) -> PersistedSemanticStatement {
         PersistedSemanticStatement {
@@ -341,7 +339,7 @@ mod exact_record_adapter_tests {
             imported: None,
             provenance: None,
             assertions: Some(vec![
-                assertion("tag-1", kernel::graph::resource::TAGGED_WITH_IRI),
+                assertion("tag-1", mere::model::resource::TAGGED_WITH_IRI),
                 assertion("containment-1", containment),
                 assertion("containment-2", containment),
             ]),

@@ -257,8 +257,8 @@ fn journal_rows(app: &App) -> Vec<(String, String)> {
         .collect()
 }
 
-fn journal_author_label(app: &App, author: &kernel::graph::Author) -> String {
-    use kernel::graph::{AuthorKind, USER_AUTHOR};
+fn journal_author_label(app: &App, author: &mere::model::author::Author) -> String {
+    use mere::model::author::{AuthorKind, USER_AUTHOR};
     if author.kind == AuthorKind::Person && author.id == USER_AUTHOR {
         return "you".to_string();
     }

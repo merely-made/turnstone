@@ -8,8 +8,9 @@
 use super::*;
 use cambium::{TextInput, button, el, lens, text_field_typed};
 use graphshell::promoted_links::{LinkDrift, PromotedLinkInspection};
-use kernel::graph::{FrozenLinkSource, FrozenSourceRevision, GraphStratum};
-use kernel::types::GraphScope;
+use mere::model::GraphScope;
+use mere::model::GraphStratum;
+use mere::model::frozen::{FrozenLinkSource, FrozenSourceRevision};
 use product::promoted_links::{PendingWrite, WriteKind};
 use std::collections::BTreeSet;
 use uuid::Uuid;

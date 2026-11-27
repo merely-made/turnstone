@@ -5,8 +5,9 @@
 use super::*;
 use crate::host_journal::{RuntimeOrigin, restore_table};
 use kernel::graph::apply::{add_node, assert_relation};
-use kernel::graph::{Author, Graph, capture::CapturedDelta};
-use kernel::graph::{ContainmentSubKind, EdgeAssertion};
+use kernel::graph::{Graph, capture::CapturedDelta};
+use mere::model::author::Author;
+use mere::model::{ContainmentSubKind, EdgeAssertion};
 use servitor::{ScopePath, Subject, Watch};
 
 fn paired_graph(extra_view: bool, parent: u128) -> (Graph, uuid::Uuid) {

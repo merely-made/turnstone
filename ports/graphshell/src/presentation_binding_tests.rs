@@ -5,8 +5,9 @@
 // SPDX-License-Identifier: MPL-2.0
 use super::*;
 use kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta};
-use kernel::graph::{Field, ScalarField, SemanticStatementSpec, SemanticSubKind, predicate_iri};
-use kernel::types::GraphScope;
+use kernel::graph::{Field, ScalarField};
+use mere::model::GraphScope;
+use mere::model::{SemanticStatementSpec, SemanticSubKind, predicate_iri};
 use scenograph::presentation::{Condition, Resolution, Rule, RuleSet, Target};
 fn fixture() -> (Graph, [Uuid; 4]) {
     let mut graph = Graph::new();

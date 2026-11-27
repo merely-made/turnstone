@@ -18,7 +18,8 @@ use cartography::canvas::responsive_link_adapter::{
     AppearanceCompatibility, FieldRegistry, PathField, ResponsivePath, ResponsivePathConfig,
     ScalarField, SourceBucketRef, VectorField, eval_vector, evaluate_link_appearances,
 };
-use kernel::graph::{Graph, GraphStratum, SemanticStatement, apply::add_node};
+use kernel::graph::{Graph, apply::add_node};
+use mere::model::{GraphStratum, SemanticStatement};
 use scenograph::link::{LinkKey, LinkPairReading, LinkSource, LinkSourceRevision, LinkStratum};
 use scenograph::{PublicSourceRevision, SourceBinding};
 use uuid::Uuid;
@@ -173,10 +174,10 @@ impl ResponsiveLinksFixture {
                         predicate: PREDICATE.into(),
                         recognized_sub_kind: None,
                         label: Some(format!("Reference link {}", index + 1)),
-                        basis: kernel::types::AssertionBasis::default(),
+                        basis: mere::model::AssertionBasis::default(),
                         first_asserted_ms: Some(1_791_000_000_000 + index as u64),
                         withdrawn: None,
-                        graph_scope: kernel::types::GraphScope::Custom(
+                        graph_scope: mere::model::GraphScope::Custom(
                             "urn:graphshell:responsive-link-fixture".into(),
                         ),
                         provenance_iri: Some(FIXTURE_AUTHORITY.into()),

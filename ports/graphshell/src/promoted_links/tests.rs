@@ -11,10 +11,9 @@ use graphshell_host::mere_host::{
     SelectedPersonaRef,
 };
 use kernel::graph::apply::{GraphDelta, apply_graph_delta};
-use kernel::graph::{
-    ContainmentSubKind, Graph as KernelGraph, GraphStratum, RelationKind, SemanticStatement,
-};
-use kernel::types::{AssertionBasis, AssertionMethod, GraphScope};
+use kernel::graph::Graph as KernelGraph;
+use mere::model::{AssertionBasis, AssertionMethod, GraphScope};
+use mere::model::{ContainmentSubKind, GraphStratum, RelationKind, SemanticStatement};
 use muniment::MemoryBackend;
 use scenograph::link::{LinkKey, LinkSource, LinkStratum};
 use std::collections::BTreeSet;
@@ -123,7 +122,7 @@ fn target(
     }
 }
 
-fn retained_ids(link: &kernel::graph::FrozenLink) -> BTreeSet<String> {
+fn retained_ids(link: &mere::model::frozen::FrozenLink) -> BTreeSet<String> {
     link.statements()
         .iter()
         .flat_map(|edge| edge.retained_assertions())
@@ -368,7 +367,7 @@ fn drift_distinguishes_added_changed_missing_and_receiver_coverage() {
     assert_eq!(receiver.resource_nodes().count(), 1);
     let opened = receiver.open_frozen_link(owner).unwrap();
     assert!(opened.coverage.limits.iter().any(|limit| {
-        limit.layer == kernel::graph::CoverageLayer::Possession
+        limit.layer == mere::model::coverage::CoverageLayer::Possession
             && limit.reason == "referenced surfaces are unavailable"
             && limit.surfaces.len() == 2
     }));
@@ -387,7 +386,7 @@ fn the_pair_gesture_withdraws_only_what_the_link_rule_allows() {
     let persona = selected_persona();
     let actor = Author::person(persona.persona.clone()).asserter_iri();
     let statement = |scope: GraphScope, method: Option<AssertionMethod>| {
-        kernel::graph::SemanticStatement {
+        mere::model::SemanticStatement {
             statement_id: "urn:uuid:00000000-0000-0000-0000-000000000001".into(),
             predicate: "https://mere.computer/ns/rel#cites".into(),
             recognized_sub_kind: None,

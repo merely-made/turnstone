@@ -5,7 +5,7 @@
 //! Direction and kind are retained even when several relations share a member.
 use crate::{action::Effect, app::App, panes::GraphId};
 #[cfg(test)]
-use kernel::graph::{RelationKind, SemanticSubKind};
+use mere::model::{RelationKind, SemanticSubKind};
 
 pub type RelationshipTarget = incipit::navigation::RelationshipTarget<GraphId>;
 pub type RelationshipRow = incipit::navigation::RelationshipRow<GraphId>;
@@ -33,7 +33,7 @@ impl App {
 mod tests {
     use super::*;
     use crate::action::Action;
-    use kernel::graph::EdgeAssertion;
+    use mere::model::EdgeAssertion;
 
     fn setup() -> (App, GraphId, uuid::Uuid, uuid::Uuid) {
         let mut app = App::test_stub();

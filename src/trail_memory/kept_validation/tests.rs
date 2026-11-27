@@ -351,7 +351,7 @@ fn append_independent_source(
         assert!(session.kept_page_claims(&source).unwrap().is_none());
         session
             .admit_page_claims(
-                kernel::graph::Author::user(),
+                mere::model::author::Author::user(),
                 &source,
                 &claims,
                 SystemTime::now(),

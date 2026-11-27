@@ -4,7 +4,7 @@
 use super::App;
 use crate::research_record_graph::{self, GraphBinding};
 use crate::research_records::Binding;
-use kernel::graph::Author;
+use mere::model::author::Author;
 
 impl App {
     pub(super) fn structured_check_assertion_author(

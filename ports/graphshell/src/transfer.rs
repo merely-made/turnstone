@@ -938,7 +938,7 @@ mod tests {
     use std::fs;
 
     use eidetic::{NoFetcher, load_typed};
-    use kernel::graph::{ProvenanceSubKind, RelationKind, SemanticSubKind};
+    use mere::model::{ProvenanceSubKind, RelationKind, SemanticSubKind};
     use muniment::MemoryBackend;
 
     use super::*;
@@ -1140,7 +1140,7 @@ mod tests {
             kernel::graph::RelationKey::Resource(_)
         ));
         assert!(
-            payload.has_relation(kernel::graph::RelationSelector::Semantic(
+            payload.has_relation(mere::model::RelationSelector::Semantic(
                 SemanticSubKind::Cites
             ))
         );
@@ -1148,7 +1148,7 @@ mod tests {
         assert!(payload.semantic_statements()[0].provenance_iri.is_some());
         assert_eq!(
             payload.semantic_statements()[0].graph_scope,
-            kernel::types::GraphScope::Default
+            mere::model::GraphScope::Default
         );
     }
 
@@ -1470,9 +1470,9 @@ mod tests {
     #[test]
     fn copy_keeps_resource_identity_and_remaps_only_shown_surfaces() {
         pollster::block_on(async {
-            use kernel::persistence::{
-                PersistedEdge, PersistedEdgeFamily, PersistedResourceRecord,
-                PersistedSemanticStatement, PersistedShownResource,
+            use kernel::persistence::PersistedShownResource;
+            use mere::model::{
+                PersistedEdge, PersistedEdgeFamily, PersistedResourceRecord, PersistedSemanticStatement,
             };
             let source = source_fixture().await;
             let manifest =
@@ -1496,14 +1496,14 @@ mod tests {
                 semantic: None,
                 assertions: Some(vec![PersistedSemanticStatement {
                     statement_id: "copied-tag-handle".into(),
-                    predicate: kernel::graph::resource::TAGGED_WITH_IRI.into(),
+                    predicate: mere::model::resource::TAGGED_WITH_IRI.into(),
                     recognized_sub_kind: None,
                     label: Some("tag".into()),
-                    basis: kernel::types::AssertionBasis {
+                    basis: mere::model::AssertionBasis {
                         note: Some("tag".into()),
                         ..Default::default()
                     },
-                    graph_scope: kernel::types::GraphScope::Default,
+                    graph_scope: mere::model::GraphScope::Default,
                     provenance_iri: Some("https://tagger.test/".into()),
                     asserted_at_ms: Some(23),
                     first_asserted_ms: Some(23),
@@ -1659,7 +1659,7 @@ mod tests {
             product.placement = Some(PlacementProfile::RecordedStrataV1);
             let original_facets = product.facets.clone();
             let mut property =
-                kernel::types::NodeProperty::new("urn:test:predicate".into(), "exact".into())
+                mere::model::NodeProperty::new("urn:test:predicate".into(), "exact".into())
                     .with_metadata(Some("urn:test:source".into()), Some(42));
             property.statement_id = product
                 .graph
@@ -1722,25 +1722,25 @@ mod tests {
             collision_snapshot.resources = [collision_resource, target_resource]
                 .into_iter()
                 .map(
-                    |canonical_iri| kernel::persistence::PersistedResourceRecord {
+                    |canonical_iri| mere::model::PersistedResourceRecord {
                         canonical_iri: canonical_iri.into(),
                         facets: Vec::new(),
                     },
                 )
                 .collect();
-            collision_snapshot.resource_edges = vec![kernel::persistence::PersistedEdge {
+            collision_snapshot.resource_edges = vec![mere::model::PersistedEdge {
                 from_node_id: collision_resource_id,
                 to_node_id: target_resource_id,
-                families: vec![kernel::persistence::PersistedEdgeFamily::Semantic],
+                families: vec![mere::model::PersistedEdgeFamily::Semantic],
                 semantic: None,
                 assertions: Some(vec![
-                    kernel::persistence::PersistedSemanticStatement {
+                    mere::model::PersistedSemanticStatement {
                         statement_id: "destination-resource-only".into(),
                         predicate: "urn:test:predicate".into(),
                         recognized_sub_kind: None,
                         label: Some("destination resource claim".into()),
-                        basis: kernel::types::AssertionBasis::default(),
-                        graph_scope: kernel::types::GraphScope::Default,
+                        basis: mere::model::AssertionBasis::default(),
+                        graph_scope: mere::model::GraphScope::Default,
                         provenance_iri: Some("urn:test:destination".into()),
                         asserted_at_ms: Some(17),
                         first_asserted_ms: Some(17),
@@ -1759,7 +1759,7 @@ mod tests {
                 .begin_profiled_session(collision_graph, Some(PlacementProfile::RecordedStrataV1))
                 .unwrap();
             let mut property =
-                kernel::types::NodeProperty::new("urn:test:predicate".into(), "exact".into())
+                mere::model::NodeProperty::new("urn:test:predicate".into(), "exact".into())
                     .with_metadata(Some("urn:test:source".into()), Some(42));
             property.statement_id = "destination-resource-only".into();
             product
@@ -1933,9 +1933,9 @@ mod tests {
                 .as_mut()
                 .unwrap()
                 .push(carried.clone());
-            let record = kernel::persistence::PersistedResourceRecord {
+            let record = mere::model::PersistedResourceRecord {
                 canonical_iri: "urn:mere:replicated-note".into(),
-                facets: vec![kernel::persistence::PersistedResourceFacet {
+                facets: vec![mere::model::PersistedResourceFacet {
                     facet: "extension.origin-note".into(),
                     value_json: "{\"exact\":true}".into(),
                 }],
@@ -2225,7 +2225,7 @@ mod tests {
             assert!(product.graph.resource_edges.iter().any(|edge| {
                 edge.retained_assertions().iter().any(|statement| {
                     statement.recognized_sub_kind
-                        == Some(kernel::persistence::PersistedSemanticSubKind::Cites)
+                        == Some(mere::model::PersistedSemanticSubKind::Cites)
                 })
             }));
             assert_eq!(offer.blobs, manifest.blobs.len() as u64);

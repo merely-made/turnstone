@@ -7,11 +7,12 @@
 //! Promoted link Resources: journaled captures and read-only live comparison.
 use crate::app::GraphshellApp;
 use graphshell_host::mere_host::SelectedPersonaRef;
-use kernel::graph::{
-    Author, FrozenLink, FrozenLinkSource, Graph, GraphStratum, SemanticStatement,
-};
-use kernel::persistence::PersistedSemanticStatement;
-use kernel::types::{GraphScope, NodeProperty};
+use kernel::graph::Graph;
+use mere::model::PersistedSemanticStatement;
+use mere::model::author::Author;
+use mere::model::frozen::{FrozenLink, FrozenLinkSource};
+use mere::model::{GraphScope, NodeProperty};
+use mere::model::{GraphStratum, SemanticStatement};
 use muniment::Backend;
 use scenograph::link::{LinkKey, LinkSource, LinkStratum};
 use serde::{Deserialize, Serialize};
@@ -73,7 +74,7 @@ impl LinkDrift {
 pub struct PromotedLinkInspection {
     pub owner: Uuid,
     pub frozen: FrozenLink,
-    pub coverage: kernel::graph::CoverageNote,
+    pub coverage: mere::model::coverage::CoverageNote,
     pub drift: LinkDrift,
     pub comments: Vec<NodeProperty>,
 }

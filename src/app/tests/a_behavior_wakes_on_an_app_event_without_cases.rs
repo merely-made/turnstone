@@ -263,7 +263,7 @@ fn denizen_runs_attributed() {
     );
     assert_eq!(
         journal.author(),
-        &kernel::graph::Author::user(),
+        &mere::model::author::Author::user(),
         "the author scope restored after the run"
     );
     let _ = std::fs::remove_dir_all(&app.data_root);

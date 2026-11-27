@@ -31,7 +31,9 @@ use graphshell_client::{
 };
 use graphshell_endpoint::{IntentSink, PresentationSource, ProjectionCatalog, ProjectionSource};
 use identity::IdentityProvider;
-use kernel::graph::{Author, CoverageNote, NodeKey};
+use kernel::graph::NodeKey;
+use mere::model::author::Author;
+use mere::model::coverage::CoverageNote;
 use sceno::{Arrangement, Score, Spiral};
 use scenotime::{Revision, SceneEpoch, SceneSnapshot};
 use servitor::delegation::{DelegationTable, root_certificate};

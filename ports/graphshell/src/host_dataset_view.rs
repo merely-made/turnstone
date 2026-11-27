@@ -25,7 +25,7 @@ use kernel::graph::apply::{
     GraphDelta, add_node, apply_graph_delta, assert_semantic_predicate_in_scope,
 };
 use kernel::graph::{Graph, NodeKey};
-use kernel::types::GraphScope;
+use mere::model::GraphScope;
 use scenomise::host_dataset::HostDatasetV1;
 pub use scenomise::host_dataset::folds::FoldViewState;
 use uuid::Uuid;

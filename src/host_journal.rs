@@ -5,7 +5,8 @@
 //! never recovered from focus or from the IDs a delta happens to name.
 use crate::panes::{GraphId, SessionId};
 use kernel::graph::capture::{CapturedDelta, DeltaRecorder};
-use kernel::graph::{AttributedDelta, Author};
+use kernel::graph::AttributedDelta;
+use mere::model::author::Author;
 use std::ops::Deref;
 use std::sync::{Arc, Mutex};
 
@@ -236,7 +237,8 @@ impl Drop for AuthorRestore {
 #[cfg(test)]
 mod journal_tests {
     use super::*;
-    use kernel::graph::{Author, capture::CapturedDelta};
+    use kernel::graph::capture::CapturedDelta;
+    use mere::model::author::Author;
     fn graph(n: u128) -> GraphId {
         GraphId::from_uuid(uuid::Uuid::from_u128(n))
     }

@@ -5,7 +5,7 @@ use super::*;
 
 #[test]
 fn typed_journal_authors_preserve_no_self_wake_subject_matching() {
-    use kernel::graph::Author;
+    use mere::model::author::Author;
     let app = App::test_stub();
     let subject = Subject::new([0x31; 32]);
     let node = uuid::Uuid::new_v4().to_string();
@@ -185,9 +185,9 @@ fn concept_record_changes_wake_incoming_tag_sources_even_after_facet_removal() {
     use kernel::graph::apply::{
         GraphDelta, add_node, apply_graph_delta, assert_semantic_predicate_in_scope,
     };
-    use kernel::graph::resource::ResourceNode;
-    use kernel::graph::resource_tags::TagConcept;
-    use kernel::persistence::PersistedResourceRecord;
+    use mere::model::PersistedResourceRecord;
+    use mere::model::resource::ResourceNode;
+    use mere::model::resource_content::TagConcept;
     let (mut graph, a, b) = resource_views();
     let resource = graph.shown_resource_id(a).unwrap();
     let concept_iri = "https://vocabulary.test/tags#Research";
@@ -261,8 +261,8 @@ fn concept_record_changes_wake_incoming_tag_sources_even_after_facet_removal() {
 #[test]
 fn retracted_resource_pair_still_wakes_both_endpoint_views_once() {
     use kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta};
-    use kernel::graph::resource::ResourceNode;
-    use kernel::graph::resource_tags::TagConcept;
+    use mere::model::resource::ResourceNode;
+    use mere::model::resource_content::TagConcept;
     let (mut graph, a, b) = resource_views();
     let resource = graph.shown_resource_id(a).unwrap();
     let concept_iri = "https://vocabulary.test/tags#Research";
@@ -358,7 +358,7 @@ fn shown_resource_changes_keep_the_surface_even_after_detach_or_removal() {
 
 #[test]
 fn resource_projection_preserves_journal_author_and_no_self_wake() {
-    use kernel::graph::Author;
+    use mere::model::author::Author;
     let (graph, a, b) = resource_views();
     let resource = graph.shown_resource_id(a).unwrap();
     let expected = surface_names(&graph, &[a, b]);
@@ -412,7 +412,7 @@ fn resource_projection_preserves_journal_author_and_no_self_wake() {
 #[test]
 fn resource_and_surface_containment_both_contribute_current_watch_ancestry() {
     use kernel::graph::apply::{add_node, assert_relation};
-    use kernel::graph::{ContainmentSubKind, EdgeAssertion};
+    use mere::model::{ContainmentSubKind, EdgeAssertion};
     let (mut graph, a, _) = resource_views();
     let parent = add_node(
         &mut graph,
