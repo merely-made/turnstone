@@ -318,7 +318,7 @@ pub enum AppEvent {
         state: String,
     },
     /// A pane of the named kind was summoned into the tree (rung 5 slice C).
-    PaneSummoned(&'static str),
+    PaneSummoned(String),
     /// The active pane was closed.
     PaneClosed,
     /// The focused node opened as a workbench tile (rung 5 slice E).

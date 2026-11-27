@@ -46,6 +46,15 @@ impl SurfaceProviderRegistry {
         self.register(Box::new(provider))
     }
 
+    /// Remove the provider of `pane_kind`; whether there was one. A pane of that kind that is
+    /// already open keeps its session, and a new one finds no provider (mod projects MP7c, D60).
+    pub fn unregister(&mut self, pane_kind: &PaneKindId) -> bool {
+        let before = self.providers.len();
+        self.providers
+            .retain(|provider| provider.pane_kind() != pane_kind);
+        self.providers.len() != before
+    }
+
     pub fn len(&self) -> usize {
         self.providers.len()
     }

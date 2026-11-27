@@ -46,6 +46,18 @@ impl ContributedSurfaceSessions {
         Some(removed)
     }
 
+    /// Drop every session of `kind`, as its provider leaves (mod projects MP7c): a provider that
+    /// comes back admits a fresh one.
+    pub fn drop_kind(&mut self, kind: &PaneKindId) {
+        self.panes.retain(|_, pane| {
+            let keep = &pane.pane_kind != kind;
+            if !keep {
+                pane.mouse_cancel(0.0, 0.0);
+            }
+            keep
+        });
+    }
+
     pub fn len(&self) -> usize {
         self.panes.len()
     }

@@ -350,10 +350,14 @@ impl App {
             });
             return vec![Effect::Redraw];
         };
+        // A runtime kind opens a contributed pane on its own source (a viewer mod, MP7c).
+        if let Some(source) = definition.default_source.clone() {
+            return self.open_contributed_pane(kind, source);
+        }
         let Some(content) = crate::panes::legacy_pane_content(&kind) else {
             self.events.push(AppEvent::InteractionMissed {
                 what: "summon-pane",
-                target: definition.display_name.into(),
+                target: definition.display_name.to_string(),
             });
             return vec![Effect::Redraw];
         };
@@ -426,7 +430,7 @@ impl App {
             }
             self.index_pane_spaces();
             self.events
-                .push(AppEvent::PaneSummoned(definition.display_name));
+                .push(AppEvent::PaneSummoned(definition.display_name.to_string()));
             vec![Effect::SaveSession, Effect::Redraw]
         } else {
             vec![Effect::Redraw]

@@ -26,8 +26,10 @@ pub enum ModProjectAction {
     SetGrant { id: String, capability: String, granted: bool },
     /// Hand a parser mod a media type a built-in also claims, or take it back (MP7, D39).
     SetClaimed { id: String, media_type: String, on: bool },
-    /// Open the Mod viewer on a viewer project, which draws the live graph (MP7b, D45, D51).
+    /// Open the viewer's own pane, which draws the live graph (MP7b, D45, D51; MP7c).
     View(String),
+    /// Forget the project: off the list, out of every route; its folder stays (MP7c, D61).
+    Uninstall(String),
     /// Deliver one event to the attached component.
     Turn { id: String, kind: String, payload: String },
 }

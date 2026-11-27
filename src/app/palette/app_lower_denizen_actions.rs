@@ -330,6 +330,7 @@ impl App {
         }
         rows.extend(crate::action::palette_actions());
         rows.extend(self.pack_rows());
+        rows.extend(self.runtime_pane_rows());
         rows
     }
 
@@ -343,7 +344,7 @@ impl App {
         let packs = if self.session_load_refused() {
             0
         } else {
-            self.pack_rows().len()
+            self.pack_rows().len() + self.runtime_pane_rows().len()
         };
         let contextual = if self.session_load_refused() {
             catalog.len()

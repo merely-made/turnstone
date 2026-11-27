@@ -1,14 +1,13 @@
 // Copyright 2026 Mark Alan Boykin
 // SPDX-License-Identifier: MPL-2.0
 
-//! The Mod viewer: one contributed pane that feeds an installed viewer mod the live graph and
-//! paints the scene and sheet it returns (mod projects MP7b; D45, D50, D51, D52).
+//! A viewer mod's pane: a contributed pane that feeds an installed viewer mod the live graph and
+//! paints the scene and sheet it returns (mod projects MP7b, MP7c; D45, D50, D51, D52, D60, D63).
 //!
-//! The pane is opened with the mod's id as its source (`source`). The shell publishes the live
-//! graph to a [`Handles`] before the pane draws; the session asks the mod only when the graph
-//! (its revision) or the pane's width changed, never every frame. MP7c gives each viewer its own
-//! pane kind and retires the single kind; the feed, the re-run gate and the painter here carry
-//! over unchanged.
+//! Each installed viewer is its own pane kind, `mod:<id>`, with its own provider (`kinds`
+//! follows the project list), opened with the mod's id as its source (`source`). The shell
+//! publishes the live graph to a [`Handles`] before a pane draws; the session asks the mod only
+//! when the graph (its revision) or the pane's width changed, never every frame.
 
 use std::sync::{Arc, Mutex, MutexGuard};
 
@@ -32,8 +31,6 @@ use crate::contributed_surface::{SurfaceAdmissionError, SurfaceProvider};
 use crate::mod_projects::ModProjectHost;
 use crate::panes::{PaneKindId, PaneSource, SerializedSource, SourceRef, SourceSchemaId};
 
-pub(crate) const PANE_KIND: &str = "turnstone.mod-viewer";
-pub(crate) const LABEL: &str = "Mod viewer";
 pub(crate) const SOURCE_SCHEMA: &str = "turnstone.mod-viewer.v1";
 const SHEET_LEAF: u64 = 0x6d6f_6476;
 const CSS: &str = "
@@ -44,6 +41,19 @@ const CSS: &str = "
 .mod-viewer-sheet { position: relative; }
 .mod-viewer-region { position: absolute; box-sizing: border-box; border: 1px dashed var(--tabard-color-text-dim, rgb(150, 158, 172)); pointer-events: none; }
 ";
+
+/// The prefix of a viewer's pane kind, as its engine id has (`guests.rs`).
+const KIND_PREFIX: &str = "mod:";
+
+/// The pane kind of viewer mod `mod_id`.
+pub(crate) fn kind_id(mod_id: &str) -> String {
+    format!("{KIND_PREFIX}{mod_id}")
+}
+
+/// The viewer mod a pane kind belongs to, when it is a `mod:<id>` kind.
+pub(crate) fn mod_of_kind(kind: &str) -> Option<&str> {
+    kind.strip_prefix(KIND_PREFIX).filter(|id| !id.is_empty())
+}
 
 /// The pane's source: the viewer mod to run, by id.
 pub(crate) fn source(mod_id: &str) -> PaneSource {
@@ -258,7 +268,7 @@ fn view(state: &State) -> Child {
             body.push(Box::new(el("h2", state.mod_id.clone())));
             body.push(Box::new(status_note(
                 "mod-viewer-note",
-                format!("Mod viewer: {why}"),
+                format!("Viewer mod: {why}"),
             )));
         },
         Outcome::Shown(shown) => {
@@ -320,21 +330,10 @@ fn view(state: &State) -> Child {
 
 // ---- the provider and its session -----------------------------------------------------
 
-/// Register the provider when mod projects are open; the handles the shell publishes through.
-pub(crate) fn register(
-    registry: &mut crate::contributed_surface::SurfaceProviderRegistry,
-    mods: Option<Arc<ModProjectHost>>,
-) -> Handles {
-    let handles = Handles::default();
-    if let Some(mods) = mods {
-        registry
-            .register_provider(ModViewerProvider::new(mods, handles.clone()))
-            .expect("the Mod viewer provider is unique");
-    }
-    handles
-}
-
+/// One viewer mod's provider: its kind and surface id are the mod's own, because the registry
+/// dedups on both.
 pub(crate) struct ModViewerProvider {
+    mod_id: String,
     kind: PaneKindId,
     schema: SourceSchemaId,
     descriptor: SurfaceDescriptor,
@@ -343,14 +342,21 @@ pub(crate) struct ModViewerProvider {
 }
 
 impl ModViewerProvider {
-    pub(crate) fn new(mods: Arc<ModProjectHost>, handles: Handles) -> Self {
+    pub(crate) fn new(
+        mods: Arc<ModProjectHost>,
+        handles: Handles,
+        mod_id: &str,
+        title: &str,
+    ) -> Self {
+        let kind = kind_id(mod_id);
         Self {
-            kind: PaneKindId::new(PANE_KIND),
+            mod_id: mod_id.to_owned(),
+            kind: PaneKindId::new(kind.clone()),
             schema: SourceSchemaId::new(SOURCE_SCHEMA),
             descriptor: SurfaceDescriptor {
                 provider_id: ProviderId::from("turnstone"),
-                surface_id: SurfaceId::from(SOURCE_SCHEMA),
-                label: LABEL.into(),
+                surface_id: SurfaceId::from(kind),
+                label: title.into(),
                 accepted_source: SurfaceSourceShape::One(SourceKindId::from(SOURCE_SCHEMA)),
             },
             mods,
@@ -383,15 +389,15 @@ impl SurfaceProvider for ModViewerProvider {
             message: message.into(),
         };
         let PaneSource::Fixed(SourceRef::External { schema, payload }) = source else {
-            return Err(invalid("The Mod viewer needs a viewer mod id."));
+            return Err(invalid("A viewer pane needs its viewer mod id."));
         };
         if schema != &self.schema || payload.version != 1 {
-            return Err(invalid("This Mod viewer source version is unsupported."));
+            return Err(invalid("This viewer pane source version is unsupported."));
         }
         let ViewerSource { mod_id } = serde_json::from_value(payload.payload.clone())
             .map_err(|error| invalid(&error.to_string()))?;
-        if mod_id.is_empty() {
-            return Err(invalid("The Mod viewer needs a viewer mod id."));
+        if mod_id != self.mod_id {
+            return Err(invalid("This pane kind belongs to another viewer mod."));
         }
         let state = State {
             mod_id,
@@ -525,6 +531,10 @@ impl RetainedSurfaceSession for Session {
         Some(&mut self.leaves)
     }
 }
+
+#[path = "mod_viewer/kinds.rs"]
+mod kinds;
+pub(crate) use kinds::sync_kinds;
 
 #[cfg(test)]
 #[path = "mod_viewer/tests.rs"]

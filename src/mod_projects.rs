@@ -42,6 +42,7 @@ mod guests;
 mod listing;
 mod manifest;
 mod page;
+mod uninstall;
 #[cfg(test)]
 mod authoring_tests;
 #[cfg(test)]

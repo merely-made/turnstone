@@ -45,7 +45,7 @@ pub(super) fn append_navigation_menu(
                     Some(ChromeIntent::WorkspaceMap(true)),
                 ));
                 for (kind, label, visible) in &state.tools {
-                    rows.push(selected_button(label, ChromeIntent::Tool(kind), *visible));
+                    rows.push(selected_button(label, ChromeIntent::Tool(kind.clone()), *visible));
                 }
                 rows.push(selected_button(
                     "Territory",

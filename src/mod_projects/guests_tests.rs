@@ -136,3 +136,43 @@ fn other_origins_load_only_for_a_parser_holding_the_network_grant() {
     host.set_grant(&id, "network", false).unwrap();
     assert!(!page(&host).foreign_images);
 }
+
+#[test]
+fn uninstalling_a_parser_returns_its_claimed_types_and_keeps_its_files() {
+    let (host, dir) = host();
+    let id = parser(&host);
+    host.run_fixtures(&id).unwrap();
+    host.set_claimed(&id, NOTES, true).unwrap();
+    assert_eq!(host.route_for(NOTES, true).as_deref(), Some("notes-parser"));
+    host.uninstall(&id).unwrap();
+    // Off the list, out of every route: nothing takes the type, claimed or not.
+    assert!(host.listing().rows.is_empty());
+    assert_eq!((host.route_for(NOTES, true), host.route_for(NOTES, false)), (None, None));
+    assert!(host.uninstall(&id).unwrap_err().contains("no mod project"));
+    // Out of the install record too: a restart does not bring it back.
+    assert!(ModProjectHost::open(dir.path()).listing().rows.is_empty());
+    // The folder and the last good build stay, and the folder is offered again.
+    let root = dir.path().join(PROJECTS_DIR).join("notes-parser");
+    assert!(root.join("mod.toml").is_file() && root.join(LAST_GOOD).is_file());
+    assert_eq!(host.listing().available, [root.clone()]);
+    // Opening it again reinstalls it, with the claim and grants it had dropped.
+    assert_eq!(host.open_project(&root, Level::Conformant).unwrap(), "notes-parser");
+    assert_eq!(host.route_for(NOTES, false).as_deref(), Some("notes-parser"));
+    assert_eq!(host.route_for(NOTES, true), None);
+}
+
+#[test]
+fn uninstalling_a_viewer_takes_it_off_the_list_and_its_folder_stays() {
+    let (host, dir) = host();
+    let id = host.create(Some(&fixtures().join("viewer-nodes"))).unwrap();
+    host.check(&id).unwrap();
+    assert_eq!(host.listing().rows[0].title, "Nodes viewer");
+    host.uninstall(&id).unwrap();
+    assert!(host.listing().rows.is_empty());
+    let graph = br#"{"snapshot":{"nodes":[]},"facets":{}}"#;
+    assert!(host.view_graph(&id, graph, 300.0).unwrap_err().contains("no mod project"));
+    let root = dir.path().join(PROJECTS_DIR).join("nodes-viewer");
+    assert!(root.join("mod.toml").is_file());
+    host.open_project(&root, Level::Conformant).unwrap();
+    assert_eq!(host.listing().rows[0].kind, "viewer");
+}

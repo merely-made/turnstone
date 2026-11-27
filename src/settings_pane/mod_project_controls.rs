@@ -151,6 +151,7 @@ fn project(row: &ProjectRow) -> (String, SettingsView) {
             move || Action::ModProject(Step::SetLevel { id: level_id.clone(), dev }),
         ),
     ));
+    buttons.push(step_button("Uninstall", id, Step::Uninstall));
     let mut parts = vec![
         (
             "name".to_string(),
@@ -276,6 +277,7 @@ mod tests {
         live.publish_mod_projects(ProjectListing {
             rows: vec![ProjectRow {
                 id: "notes-mod".into(),
+                title: "Notes mod".into(),
                 level: Level::Conformant,
                 status: "Not attached".into(),
                 check: "check passed".into(),
@@ -308,6 +310,7 @@ mod tests {
             "Run fixtures notes-mod",
             "Reload notes-mod",
             "Roll back notes-mod",
+            "Uninstall notes-mod",
             "Grant network for notes-mod",
             "Open other",
             "Create a mod project from the starter",

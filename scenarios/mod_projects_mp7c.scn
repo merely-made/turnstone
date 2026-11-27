@@ -1,0 +1,106 @@
+# Mod projects MP7c receipt: a pane kind per viewer. Installing a viewer adds its own pane kind
+# and palette entry without a restart; two viewers are two kinds; uninstalling one removes its
+# entry and leaves its open pane reading that the mod is not installed; opening the folder again
+# reinstalls it and the pane draws again. No single "Mod viewer" pane exists at any point.
+# FRESH profile (TURNSTONE_ROOT, the data root). TURNSTONE_MOD_FIXTURES names
+# tests/fixtures/mod-projects (viewer-nodes/, read only); TURNSTONE_MOD_SECOND names a scratch
+# copy of viewer-nodes whose mod.toml says mod_id = "second-viewer".
+settle 30
+key escape
+
+# Before any viewer is installed the palette has no viewer entry, and never a "Mod viewer" one.
+omnibar actions
+type viewer
+settle 10
+capture 00_no_viewer_entry_before_install
+key escape
+settle 5
+
+# Install: the viewer's own entry names it.
+mod-create ${TURNSTONE_MOD_FIXTURES}/viewer-nodes
+assert event mod-create nodes-viewer ok
+mod-check nodes-viewer
+assert event mod-check nodes-viewer ok
+mod-fixtures nodes-viewer
+assert event mod-fixtures nodes-viewer ok: 1 of 1 fixtures passed
+settle 20
+omnibar actions
+type viewer
+settle 10
+capture 01_palette_entry_names_the_viewer
+key escape
+settle 5
+
+# The old single pane has no entry.
+omnibar actions
+type Mod viewer
+settle 10
+capture 02_no_mod_viewer_entry
+key escape
+settle 5
+
+# Open the pane from the entry: it draws the live graph.
+act Open Nodes viewer pane
+settle 60
+capture 03a_pane_from_its_own_entry
+scroll 760 400 3000
+settle 10
+capture 03b_the_tail_and_the_region_labels
+
+# A second viewer is a second kind, with its own entry; both panes are open.
+mod-create ${TURNSTONE_MOD_SECOND}
+assert event mod-create second-viewer ok
+mod-check second-viewer
+assert event mod-check second-viewer ok
+settle 20
+omnibar actions
+type viewer
+settle 10
+capture 04_two_viewers_two_entries
+key escape
+settle 5
+act Open Second viewer pane
+settle 60
+capture 05_both_panes_open
+
+# Uninstall the first: its entry is gone, the second stays.
+mod-uninstall nodes-viewer
+assert event mod-uninstall nodes-viewer ok: uninstalled
+settle 20
+omnibar actions
+type viewer
+settle 10
+capture 06a_entry_gone_after_uninstall
+key escape
+settle 5
+# Its open pane stays where it is and says why.
+capture 06b_pane_reads_not_installed
+
+# Reinstall by opening the folder again: the pane draws again on the next frame.
+mod-open ${TURNSTONE_ROOT}/mod-projects/nodes-viewer
+assert event mod-open nodes-viewer ok
+settle 60
+capture 07a_reinstalled_pane_draws_again
+omnibar actions
+type viewer
+settle 10
+capture 07b_entry_back
+key escape
+settle 5
+
+# The row offers Uninstall (every project row does).
+act id:pane:settings
+settle 20
+act Maximize pane
+settle 10
+scroll 760 400 -3000
+settle 10
+scroll 760 400 300
+settle 10
+capture 08_row_offers_uninstall
+act Maximize pane
+settle 10
+act Close pane
+settle 10
+
+log MP7c receipt complete

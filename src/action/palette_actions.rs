@@ -105,7 +105,7 @@ pub fn palette_actions() -> Vec<(String, Action)> {
     // A pane the stack names (Settings, Trail, Workbench) takes the
     // catalogue's label, as the verbs above do.
     actions.extend(
-        crate::panes::pane_palette_entries()
+        crate::panes::builtin_palette_entries()
             .into_iter()
             .map(|(label, kind)| {
                 let action = Action::SummonPane(kind);

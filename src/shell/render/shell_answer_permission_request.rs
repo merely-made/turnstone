@@ -215,7 +215,7 @@ impl Shell {
             if spec.kind.as_str() == super::super::structured_source::PANE_KIND {
                 self.reconcile_structured_source();
             }
-            if spec.kind.as_str() == crate::mod_viewer::PANE_KIND {
+            if crate::mod_viewer::mod_of_kind(spec.kind.as_str()).is_some() {
                 self.mod_viewer.publish(self.app.graph_runtimes.graph(), self.app.sheet_theme());
             }
             return match self
@@ -444,7 +444,6 @@ impl Shell {
                     .map(|c| match &c {
                         PaneContent::Registered(kind) => {
                             crate::unavailable_pane::contributed_label(kind)
-                                .map(str::to_string)
                                 .unwrap_or_else(|| pane_display_label(c))
                         },
                         _ => pane_display_label(c),

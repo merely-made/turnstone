@@ -4,7 +4,7 @@
 //! The scenario verbs that drive Wasm mod projects (mod projects MP5):
 //! `mod-create [dir]`, `mod-open <dir> [dev]`, `mod-check|build|attach|attach-page|fixtures|
 //! reload|rollback|detach <id>`, `mod-grant <id> <capability> on|off`, `mod-claim <id> <media-type> on|off`, `mod-level <id> dev|conformant`, `mod-turn <id> <kind>
-//! [payload]`, `mod-view <id>` (open the Mod viewer on a viewer project) and `copy-file <from>
+//! [payload]`, `mod-view <id>` (open a viewer project's pane), `mod-uninstall <id>` (forget a project) and `copy-file <from>
 //! <to>` (bytes, to swap a component). The viewer receipts also edit the live graph:
 //! `graph-add <title>` mints a node with that title and `graph-retitle <old> => <new>` renames one.
 
@@ -55,6 +55,7 @@ pub(crate) fn parse(line: &str) -> Option<Result<ModVerb, String>> {
         "mod-rollback" => id().map(|id| ModVerb::Step(Step::Rollback(id))),
         "mod-detach" => id().map(|id| ModVerb::Step(Step::Detach(id))),
         "mod-view" => id().map(|id| ModVerb::Step(Step::View(id))),
+        "mod-uninstall" => id().map(|id| ModVerb::Step(Step::Uninstall(id))),
         "graph-add" if !rest.is_empty() => Ok(ModVerb::GraphAdd(rest.into())),
         "graph-retitle" => match rest.split_once("=>") {
             Some((from, to)) if !from.trim().is_empty() && !to.trim().is_empty() => {
@@ -147,6 +148,7 @@ mod tests {
             Some(Ok(ModVerb::Step(Step::Rollback("notes-mod".into()))))
         );
         assert_eq!(parse("mod-view nodes-viewer"), Some(Ok(ModVerb::Step(Step::View("nodes-viewer".into())))));
+        assert_eq!(parse("mod-uninstall nodes-viewer"), Some(Ok(ModVerb::Step(Step::Uninstall("nodes-viewer".into())))));
         assert_eq!(parse("graph-add Two words"), Some(Ok(ModVerb::GraphAdd("Two words".into()))));
         assert_eq!(
             parse("graph-retitle Alpha beta => TRAP"),

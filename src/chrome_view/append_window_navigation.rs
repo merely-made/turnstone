@@ -153,8 +153,8 @@ pub(super) fn append_window_navigation(
                 let visible = state
                     .tools
                     .iter()
-                    .any(|(kind, _, visible)| *kind == id && *visible);
-                controls.push(selected_button(label, ChromeIntent::Tool(id), visible));
+                    .any(|(kind, _, visible)| kind == id && *visible);
+                controls.push(selected_button(label, ChromeIntent::Tool(id.to_string()), visible));
             }
         }
         controls.push(menu_button(
@@ -210,12 +210,12 @@ pub(super) fn append_window_navigation(
                 let visible = state
                     .tools
                     .iter()
-                    .any(|(kind, _, visible)| *kind == id && *visible);
+                    .any(|(kind, _, visible)| kind == id && *visible);
                 tools.push(activity_button(
                     mark,
                     label,
                     label,
-                    ChromeIntent::Tool(id),
+                    ChromeIntent::Tool(id.to_string()),
                     Some(visible),
                 ));
             }

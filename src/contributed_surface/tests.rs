@@ -192,3 +192,27 @@ pub(crate) fn root_text(dom: &DomHandle, root: NodeId) -> String {
 
 #[path = "tests/source_schema_is_only_external_schema_cases.rs"]
 mod source_schema_is_only_external_schema_cases;
+
+#[test]
+fn unregister_removes_a_provider_so_its_kind_no_longer_admits_and_can_register_again() {
+    let mut registry = SurfaceProviderRegistry::new();
+    registry
+        .register_provider(provider("turnstone.test.a", "turnstone.test.a.v1", "surface.a"))
+        .unwrap();
+    registry
+        .register_provider(provider("turnstone.test.b", "turnstone.test.b.v1", "surface.b"))
+        .unwrap();
+    let a = PaneKindId::new("turnstone.test.a");
+    assert!(registry.unregister(&a));
+    assert!(!registry.unregister(&a), "a second unregister finds nothing");
+    assert_eq!(registry.len(), 1);
+    assert!(!registry.contains_pane_kind(&a));
+    assert!(matches!(
+        registry.admit(&a, &source("turnstone.test.a.v1")),
+        Err(SurfaceAdmissionError::ProviderNotFound { .. })
+    ));
+    assert!(registry.contains_pane_kind(&PaneKindId::new("turnstone.test.b")));
+    registry
+        .register_provider(provider("turnstone.test.a", "turnstone.test.a.v1", "surface.a"))
+        .expect("the kind is free again");
+}

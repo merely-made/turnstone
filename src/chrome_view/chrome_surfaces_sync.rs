@@ -79,16 +79,16 @@ impl ChromeSurfaces {
             .filter_map(|(_, kind)| {
                 let definition = crate::panes::pane_definition(kind.as_str())?;
                 if matches!(
-                    definition.id,
+                    &*definition.id,
                     crate::panes::kind::GRAPH | crate::panes::kind::WORKBENCH
                 ) {
                     return None;
                 }
                 let shown = app.frisket.iter_leaves().any(|(pane, content, _)| {
-                    content.kind_id().as_str() == definition.id
+                    content.kind_id().as_str() == &*definition.id
                         && visible.contains(&workbench::TileId(pane.0))
                 });
-                Some((definition.id, definition.display_name.to_string(), shown))
+                Some((definition.id.to_string(), definition.display_name.to_string(), shown))
             })
             .collect::<Vec<_>>();
         let map_active = app

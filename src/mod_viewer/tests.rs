@@ -304,16 +304,23 @@ fn regions_are_read_with_the_item_translate_as_their_centre() {
 }
 
 #[test]
-fn the_provider_admits_a_mod_id_and_refuses_a_malformed_source() {
+fn the_provider_admits_its_own_mod_id_and_refuses_a_malformed_or_foreign_source() {
     let (mods, _dir) = viewer_host();
     let handles = Handles::default();
     let mut registry = SurfaceProviderRegistry::new();
     registry
-        .register_provider(ModViewerProvider::new(mods, handles.clone()))
+        .register_provider(ModViewerProvider::new(
+            mods,
+            handles.clone(),
+            "nodes-viewer",
+            "Nodes viewer",
+        ))
         .unwrap();
-    let kind = PaneKindId::new(PANE_KIND);
+    let kind = PaneKindId::new(kind_id("nodes-viewer"));
+    assert_eq!(kind.as_str(), "mod:nodes-viewer");
     let mut pane = registry.admit(&kind, &source("nodes-viewer")).unwrap();
-    assert_eq!(pane.descriptor().label, LABEL);
+    assert_eq!(pane.descriptor().label, "Nodes viewer");
+    assert_eq!(pane.descriptor().surface_id.as_str(), "mod:nodes-viewer");
     handles.publish(&graph(&["Alpha"]), (THEME, GROUND));
     for _ in 0..3 {
         let _ = pane.scene(400, 300, 1.0);
@@ -327,7 +334,7 @@ fn the_provider_admits_a_mod_id_and_refuses_a_malformed_source() {
         source("other"),
         "another mod is another source"
     );
-    for (version, id) in [(1, ""), (2, "x")] {
+    for (version, id) in [(1, ""), (2, "nodes-viewer"), (1, "other")] {
         let bad = PaneSource::Fixed(SourceRef::External {
             schema: SourceSchemaId::new(SOURCE_SCHEMA),
             payload: SerializedSource {
@@ -342,12 +349,78 @@ fn the_provider_admits_a_mod_id_and_refuses_a_malformed_source() {
     }
 }
 
+fn viewers(ids: &[&str]) -> Vec<(String, String)> {
+    ids.iter()
+        .map(|id| ((*id).to_owned(), format!("Title of {id}")))
+        .collect()
+}
+
+fn palette_labels() -> Vec<String> {
+    crate::panes::runtime_palette_entries()
+        .into_iter()
+        .map(|(label, _)| label)
+        .collect()
+}
+
 #[test]
-fn the_registry_has_one_contributed_row_per_space_and_source() {
-    let definition = crate::panes::pane_definition(PANE_KIND).expect("registered");
+fn each_viewer_is_its_own_kind_that_follows_the_project_list() {
+    let (mods, _dir) = viewer_host();
+    let handles = Handles::default();
+    let mut registry = SurfaceProviderRegistry::new();
+    let a = PaneKindId::new(kind_id("a"));
+    let b = PaneKindId::new(kind_id("b"));
+    // Installing two viewers adds two kinds, each with a definition and a provider.
+    let synced = sync_kinds(&mut registry, &viewers(&["a", "b"]), &mods, &handles);
+    assert!(synced.changed && synced.removed.is_empty());
+    assert_eq!(synced.added, [a.clone(), b.clone()]);
+    assert_eq!(registry.len(), 2);
+    assert_eq!(palette_labels(), ["Open Title of a pane", "Open Title of b pane"]);
+    let definition = crate::panes::pane_definition("mod:a").expect("a runtime kind");
+    assert_eq!(&*definition.display_name, "Title of a");
     assert_eq!(definition.renderer, crate::panes::PaneRenderer::Contributed);
     assert_eq!(
         definition.multiplicity,
         crate::panes::PaneMultiplicity::PerSpaceAndSource
     );
+    // The same list is no change.
+    assert!(!sync_kinds(&mut registry, &viewers(&["a", "b"]), &mods, &handles).changed);
+    // A retitle renames the definition and the palette row, and the kind keeps its provider.
+    let retitled = vec![("a".to_owned(), "Alpha".to_owned()), ("b".to_owned(), "Title of b".to_owned())];
+    let synced = sync_kinds(&mut registry, &retitled, &mods, &handles);
+    assert!(synced.changed && synced.added.is_empty(), "a retitle does not restart open panes");
+    assert_eq!(&*crate::panes::pane_definition("mod:a").unwrap().display_name, "Alpha");
+    assert!(registry.contains_pane_kind(&a));
+    // Uninstalling one removes its definition, palette row and provider; the other stays.
+    let synced = sync_kinds(&mut registry, &viewers(&["b"]), &mods, &handles);
+    assert_eq!(synced.removed, [a.clone()]);
+    assert!(crate::panes::pane_definition("mod:a").is_none());
+    assert!(!registry.contains_pane_kind(&a) && registry.contains_pane_kind(&b));
+    assert_eq!(palette_labels(), ["Open Title of b pane"]);
+    // Reinstalling brings the kind back, and a pane of it admits again.
+    let synced = sync_kinds(&mut registry, &viewers(&["a", "b"]), &mods, &handles);
+    assert_eq!(synced.added, [a.clone()]);
+    assert!(registry.admit(&a, &source("a")).is_ok());
+    // No viewers left: no viewer kind remains, and the single pane is not among them.
+    let synced = sync_kinds(&mut registry, &[], &mods, &handles);
+    assert_eq!(synced.removed.len(), 2);
+    assert!(registry.is_empty() && palette_labels().is_empty());
+    assert!(crate::panes::pane_definition("turnstone.mod-viewer").is_none());
+}
+
+#[test]
+fn an_uninstalled_viewers_pane_reads_that_its_mod_is_not_installed() {
+    let label = |kind: &str| crate::unavailable_pane::contributed_label(&PaneKindId::new(kind));
+    assert_eq!(
+        label("mod:nodes-viewer").as_deref(),
+        Some("Viewer mod nodes-viewer is not installed")
+    );
+    assert_eq!(label("mod:"), None);
+    assert_eq!(label("turnstone.settings"), None);
+}
+
+#[test]
+fn a_viewer_kind_is_told_from_its_mod_id() {
+    assert_eq!(kind_id("nodes-viewer"), "mod:nodes-viewer");
+    assert_eq!(mod_of_kind("mod:nodes-viewer"), Some("nodes-viewer"));
+    assert_eq!(mod_of_kind("turnstone.settings"), None);
 }

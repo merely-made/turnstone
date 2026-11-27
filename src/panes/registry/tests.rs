@@ -14,7 +14,7 @@ fn built_in_ids_and_schemas_are_unique_and_namespaced() {
         assert!(pane.id.starts_with("turnstone."));
         assert!(pane.config_schema.starts_with("turnstone."));
         assert!(pane.view_schema.starts_with("turnstone."));
-        assert!(ids.insert(pane.id));
+        assert!(ids.insert(pane.id.clone()));
         assert!(configs.insert(pane.config_schema));
         assert!(views.insert(pane.view_schema));
     }
@@ -87,4 +87,57 @@ fn source_shapes_validate_fixed_and_following_sources() {
             .source_shape
             .accepts(&source("turnstone.some-other-ticket"))
     );
+}
+
+fn runtime(id: &str, title: &str) -> PaneDefinition {
+    PaneDefinition::runtime_contributed(
+        id.into(),
+        title.into(),
+        format!("Open {title} pane"),
+        PaneSourceShape::fixed(&[]),
+        "turnstone.test.config",
+        "turnstone.test.view",
+        crate::mod_viewer::source(id),
+    )
+}
+
+#[test]
+fn a_runtime_kind_is_added_found_listed_and_removed() {
+    let before = pane_palette_entries().len();
+    assert!(pane_definition("mod:a").is_none());
+    define_runtime_pane(runtime("mod:b", "Beta"));
+    define_runtime_pane(runtime("mod:a", "Alpha"));
+    let alpha = pane_definition("mod:a").unwrap();
+    assert_eq!(
+        (&*alpha.display_name, alpha.renderer, alpha.multiplicity),
+        (
+            "Alpha",
+            PaneRenderer::Contributed,
+            PaneMultiplicity::PerSpaceAndSource
+        )
+    );
+    assert_eq!(alpha.default_source, Some(crate::mod_viewer::source("mod:a")));
+    // The built-ins keep their own table, and a runtime kind never shadows one.
+    assert!(matches!(
+        pane_definition(kind::SETTINGS),
+        Some(DefinitionRef::Builtin(_))
+    ));
+    // Palette entries: the built-ins, then the runtime kinds by label.
+    let entries = pane_palette_entries();
+    assert_eq!(entries.len(), before + 2);
+    let labels: Vec<&str> = entries[before..].iter().map(|(l, _)| l.as_str()).collect();
+    assert_eq!(labels, ["Open Alpha pane", "Open Beta pane"]);
+    assert!(
+        builtin_palette_entries()
+            .iter()
+            .all(|(_, kind)| !kind.as_str().starts_with("mod:"))
+    );
+    // The same id replaces: a retitle.
+    define_runtime_pane(runtime("mod:a", "Alef"));
+    assert_eq!(runtime_pane_ids(), ["mod:b", "mod:a"]);
+    assert_eq!(&*pane_definition("mod:a").unwrap().display_name, "Alef");
+    assert!(remove_runtime_pane("mod:a") && !remove_runtime_pane("mod:a"));
+    assert!(pane_definition("mod:a").is_none());
+    assert!(remove_runtime_pane("mod:b"));
+    assert_eq!(pane_palette_entries().len(), before);
 }

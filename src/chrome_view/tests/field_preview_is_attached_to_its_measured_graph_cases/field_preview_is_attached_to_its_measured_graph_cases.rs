@@ -308,7 +308,7 @@ fn panes_menu_dispatches_real_tools_and_keyboard_uses_the_same_retained_buttons(
         vec![ChromeIntent::MenuChanged]
     );
     assert!(chrome.has_menu());
-    let first = chrome.runner.state().tools[0].0;
+    let first = chrome.runner.state().tools[0].0.clone();
     chrome.menu_key("down");
     chrome.menu_key("down");
     assert_eq!(

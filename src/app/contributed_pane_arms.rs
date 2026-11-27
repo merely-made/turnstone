@@ -86,7 +86,7 @@ impl App {
             workbench::Edge::Right,
             pane.0,
             crate::panes::pane_definition(content.kind_id().as_str())
-                .map_or_else(|| content.tag().into(), |definition| definition.display_name.into()),
+                .map_or_else(|| content.tag().into(), |definition| definition.display_name.to_string()),
             (content, GraphId::nil()),
         ) {
             return vec![Effect::Redraw];

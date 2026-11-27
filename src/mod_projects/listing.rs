@@ -13,6 +13,8 @@ use super::{Level, ModProjectHost, doc, lock, manifest};
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ProjectRow {
     pub id: String,
+    /// The manifest's display name: a viewer's pane kind is titled with it (MP7c, D63).
+    pub title: String,
     pub level: Level,
     pub status: String,
     pub check: String,
@@ -94,6 +96,7 @@ impl ModProjectHost {
             .iter()
             .map(|(id, p)| ProjectRow {
                 id: id.clone(),
+                title: p.manifest.display_name.clone(),
                 level: p.level,
                 status: if let Some(page) = &p.page {
                     format!("Attached to a page, revision {}", page.script.revision())

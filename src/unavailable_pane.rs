@@ -92,16 +92,22 @@ mod tests {
     }
 }
 
-/// Saved contributed-pane identities remain readable in a reduced build.
-pub(crate) fn contributed_label(kind: &crate::panes::PaneKindId) -> Option<&'static str> {
-    match kind.as_str() {
+/// Saved contributed-pane identities remain readable in a reduced build, and a viewer mod's pane
+/// whose mod is gone says which mod (mod projects MP7c, D62). A pane that reaches here has no
+/// provider, so a `mod:<id>` kind is one that is not installed.
+pub(crate) fn contributed_label(kind: &crate::panes::PaneKindId) -> Option<String> {
+    if let Some(mod_id) = crate::mod_viewer::mod_of_kind(kind.as_str()) {
+        return Some(format!("Viewer mod {mod_id} is not installed"));
+    }
+    let words = match kind.as_str() {
         "turnstone.answers" if !cfg!(feature = "inference") => {
-            Some("Answers is not included in this build.")
+            "Answers is not included in this build."
         },
         "turnstone.distillery-installed" if !cfg!(feature = "inference") => {
-            Some("Distillery is not included in this build.")
+            "Distillery is not included in this build."
         },
-        "turnstone.sky" if !cfg!(feature = "sky") => Some("Sky is not included in this build."),
-        _ => None,
-    }
+        "turnstone.sky" if !cfg!(feature = "sky") => "Sky is not included in this build.",
+        _ => return None,
+    };
+    Some(words.to_string())
 }

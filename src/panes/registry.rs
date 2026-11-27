@@ -10,13 +10,23 @@
 //! source, multiplicity, capability, and renderer tables. Call sites still use
 //! the legacy enum during the migration; new pane facts belong here first.
 
+use std::borrow::Cow;
+
 use super::{
     PaneComposition, PaneContent, PaneKindId, PaneMultiplicity, PaneSource, SourceRef,
     SourceSelector,
 };
 
+#[path = "registry/lookup.rs"]
+mod lookup;
+#[path = "registry/runtime.rs"]
+mod runtime;
 #[path = "registry/source_acceptance.rs"]
 mod source_acceptance;
+
+pub use runtime::{
+    DefinitionRef, define_runtime_pane, remove_runtime_pane, runtime_palette_entries, runtime_pane_ids,
+};
 
 pub mod kind {
     pub const GRAPH: &str = "turnstone.graph";
@@ -135,16 +145,18 @@ pub enum PaneRenderer {
     Arrange,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct PanePaletteEntry {
     pub order: u16,
-    pub label: &'static str,
+    pub label: Cow<'static, str>,
 }
 
-#[derive(Clone, Copy, Debug)]
+/// A pane kind's facts. Built-ins borrow their text from the binary; a runtime kind (D60) owns
+/// its own, so removing it frees it.
+#[derive(Clone, Debug)]
 pub struct PaneDefinition {
-    pub id: &'static str,
-    pub display_name: &'static str,
+    pub id: Cow<'static, str>,
+    pub display_name: Cow<'static, str>,
     pub source_shape: PaneSourceShape,
     pub multiplicity: PaneMultiplicity,
     pub capabilities: PaneCapabilities,
@@ -155,14 +167,16 @@ pub struct PaneDefinition {
     pub renderer: PaneRenderer,
     pub palette: Option<PanePaletteEntry>,
     content_factory: Option<fn() -> PaneContent>,
+    /// The source a runtime kind opens with: summoning it opens a contributed pane on this.
+    pub default_source: Option<PaneSource>,
 }
 
 impl PaneDefinition {
-    pub fn kind_id(self) -> PaneKindId {
-        PaneKindId::new(self.id)
+    pub fn kind_id(&self) -> PaneKindId {
+        PaneKindId::new(self.id.to_string())
     }
 
-    pub fn legacy_content(self) -> Option<PaneContent> {
+    pub fn legacy_content(&self) -> Option<PaneContent> {
         self.content_factory.map(|factory| factory())
     }
 }
@@ -213,8 +227,8 @@ const SESSION: PublishedContext = PublishedContext {
 macro_rules! pane {
     ($id:expr, $name:expr, $source:expr, $many:expr, $caps:expr, $config:expr, $view:expr, $renderer:expr, $palette:expr, $content:expr) => {
         PaneDefinition {
-            id: $id,
-            display_name: $name,
+            id: Cow::Borrowed($id),
+            display_name: Cow::Borrowed($name),
             source_shape: $source,
             multiplicity: $many,
             capabilities: $caps,
@@ -225,6 +239,7 @@ macro_rules! pane {
             renderer: $renderer,
             palette: $palette,
             content_factory: $content,
+            default_source: None,
         }
     };
 }
@@ -256,7 +271,7 @@ pub static BUILTIN_PANES: &[PaneDefinition] = &[
         PaneRenderer::Workbench,
         Some(PanePaletteEntry {
             order: 50,
-            label: "Open Workbench pane"
+            label: Cow::Borrowed("Open Workbench pane")
         }),
         Some(|| PaneContent::Workbench)
     ),
@@ -283,7 +298,7 @@ pub static BUILTIN_PANES: &[PaneDefinition] = &[
         PaneRenderer::Gloss,
         Some(PanePaletteEntry {
             order: 30,
-            label: "Open Gloss pane"
+            label: Cow::Borrowed("Open Gloss pane")
         }),
         Some(|| PaneContent::Gloss(PaneComposition {
             sections: vec!["downloads".into()]
@@ -300,7 +315,7 @@ pub static BUILTIN_PANES: &[PaneDefinition] = &[
         PaneRenderer::Gloss,
         Some(PanePaletteEntry {
             order: 31,
-            label: "Explore resource neighborhood"
+            label: Cow::Borrowed("Explore resource neighborhood")
         }),
         Some(|| PaneContent::Registered(PaneKindId::new(kind::RESOURCE_NEIGHBORHOOD)))
     ),
@@ -315,7 +330,7 @@ pub static BUILTIN_PANES: &[PaneDefinition] = &[
         PaneRenderer::Roster,
         Some(PanePaletteEntry {
             order: 10,
-            label: "Open Roster pane"
+            label: Cow::Borrowed("Open Roster pane")
         }),
         Some(|| PaneContent::Roster)
     ),
@@ -330,7 +345,7 @@ pub static BUILTIN_PANES: &[PaneDefinition] = &[
         PaneRenderer::Inspector,
         Some(PanePaletteEntry {
             order: 40,
-            label: "Open Inspector pane"
+            label: Cow::Borrowed("Open Inspector pane")
         }),
         Some(|| PaneContent::Inspector)
     ),
@@ -348,7 +363,7 @@ pub static BUILTIN_PANES: &[PaneDefinition] = &[
         PaneRenderer::Trail,
         Some(PanePaletteEntry {
             order: 20,
-            label: "Open Trail pane"
+            label: Cow::Borrowed("Open Trail pane")
         }),
         Some(|| PaneContent::Trail)
     ),
@@ -393,7 +408,7 @@ pub static BUILTIN_PANES: &[PaneDefinition] = &[
         PaneRenderer::Overmap,
         Some(PanePaletteEntry {
             order: 70,
-            label: "Open Overmap pane"
+            label: Cow::Borrowed("Open Overmap pane")
         }),
         Some(|| PaneContent::Overmap(Default::default()))
     ),
@@ -408,7 +423,7 @@ pub static BUILTIN_PANES: &[PaneDefinition] = &[
         PaneRenderer::Publishing,
         Some(PanePaletteEntry {
             order: 90,
-            label: "Open Publishing pane"
+            label: Cow::Borrowed("Open Publishing pane")
         }),
         Some(|| PaneContent::Registered(PaneKindId::new(kind::PUBLISHING)))
     ),
@@ -423,7 +438,7 @@ pub static BUILTIN_PANES: &[PaneDefinition] = &[
         PaneRenderer::SharedKnot,
         Some(PanePaletteEntry {
             order: 100,
-            label: "Open Shared document pane"
+            label: Cow::Borrowed("Open Shared document pane")
         }),
         Some(|| PaneContent::Registered(PaneKindId::new(kind::SHARED_KNOT)))
     ),
@@ -443,7 +458,7 @@ pub static BUILTIN_PANES: &[PaneDefinition] = &[
         PaneRenderer::DeviceReceipts,
         Some(PanePaletteEntry {
             order: 105,
-            label: "Open Device Receipts pane"
+            label: Cow::Borrowed("Open Device Receipts pane")
         }),
         Some(|| PaneContent::Registered(PaneKindId::new(kind::DEVICE_RECEIPTS)))
     ),
@@ -460,7 +475,7 @@ pub static BUILTIN_PANES: &[PaneDefinition] = &[
         PaneRenderer::FrozenProjection,
         Some(PanePaletteEntry {
             order: 106,
-            label: "Open Frozen Projection pane"
+            label: Cow::Borrowed("Open Frozen Projection pane")
         }),
         Some(|| PaneContent::Registered(PaneKindId::new(kind::FROZEN_PROJECTION)))
     ),
@@ -476,12 +491,6 @@ pub static BUILTIN_PANES: &[PaneDefinition] = &[
         None,
         None
     ),
-    // One Mod viewer per viewer mod, opened with its id as the source (MP7b, D51); MP7c retires it.
-    #[cfg(not(target_arch = "wasm32"))]
-    pane!(crate::mod_viewer::PANE_KIND, crate::mod_viewer::LABEL,
-        PaneSourceShape::fixed(&[FixedSourceKind::External(crate::mod_viewer::SOURCE_SCHEMA)]),
-        PaneMultiplicity::PerSpaceAndSource, capabilities(false, false, NONE),
-        "turnstone.mod-viewer.config", "turnstone.mod-viewer.view", PaneRenderer::Contributed, None, None),
     pane!(
         crate::shell::structured_source::PANE_KIND,
         crate::shell::structured_source::LABEL,
@@ -529,7 +538,7 @@ pub static BUILTIN_PANES: &[PaneDefinition] = &[
         PaneRenderer::Settings,
         Some(PanePaletteEntry {
             order: 80,
-            label: "Open Settings pane"
+            label: Cow::Borrowed("Open Settings pane")
         }),
         Some(|| PaneContent::Registered(PaneKindId::new(kind::SETTINGS)))
     ),
@@ -544,7 +553,7 @@ pub static BUILTIN_PANES: &[PaneDefinition] = &[
         PaneRenderer::Arrange,
         Some(PanePaletteEntry {
             order: 82,
-            label: "Open Arrange pane"
+            label: Cow::Borrowed("Open Arrange pane")
         }),
         Some(|| PaneContent::Registered(PaneKindId::new(kind::ARRANGE)))
     ),
@@ -559,37 +568,13 @@ pub static BUILTIN_PANES: &[PaneDefinition] = &[
         PaneRenderer::Transcript,
         Some(PanePaletteEntry {
             order: 85,
-            label: "Open Transcript pane"
+            label: Cow::Borrowed("Open Transcript pane")
         }),
         Some(|| PaneContent::Registered(PaneKindId::new(kind::TRANSCRIPT)))
     ),
 ];
 
-pub fn pane_definition(id: &str) -> Option<&'static PaneDefinition> {
-    BUILTIN_PANES.iter().find(|definition| definition.id == id)
-}
-
-pub fn pane_palette_entries() -> Vec<(&'static str, PaneKindId)> {
-    let mut panes: Vec<_> = BUILTIN_PANES
-        .iter()
-        .filter_map(|definition| {
-            definition
-                .palette
-                .map(|entry| (entry.order, entry.label, definition.kind_id()))
-        })
-        .collect();
-    panes.sort_by_key(|(order, _, _)| *order);
-    panes
-        .into_iter()
-        .map(|(_, label, kind)| (label, kind))
-        .collect()
-}
-
-/// Transitional projection into the legacy leaf payload. Registration is the
-/// authority; A2 removes this adapter when leaves carry `PaneSpec` directly.
-pub fn legacy_pane_content(id: &PaneKindId) -> Option<PaneContent> {
-    pane_definition(id.as_str())?.legacy_content()
-}
+pub use lookup::{builtin_palette_entries, legacy_pane_content, pane_definition, pane_palette_entries};
 
 #[cfg(test)]
 #[path = "registry/tests.rs"]

@@ -36,6 +36,15 @@ impl App {
         if detail { mods.parse_detail(url) } else { mods.parse_note(url) }
     }
 
+    /// The palette rows of the runtime pane kinds, one per installed viewer (MP7c, D63). They
+    /// join `pack_rows` in the catalog's row arithmetic: neither is a contextual row.
+    pub(crate) fn runtime_pane_rows(&self) -> Vec<(String, crate::action::Action)> {
+        crate::panes::runtime_palette_entries()
+            .into_iter()
+            .map(|(label, kind)| (label, crate::action::Action::SummonPane(kind)))
+            .collect()
+    }
+
     /// The mod project lines of the pack status view: refusals and failures.
     pub(super) fn mod_status_rows(&self) -> Vec<crate::ui::Suggestion> {
         self.mods
@@ -119,19 +128,23 @@ impl App {
                 ("turn", id, result)
             },
             Step::View(id) => return self.view_mod(&mods, id),
+            Step::Uninstall(id) => {
+                let result = mods.uninstall(&id).map(|()| "ok: uninstalled".into());
+                ("uninstall", id, result)
+            },
         };
         self.finish_mod_project(name, id, result)
     }
 
-    /// Open the Mod viewer on a viewer project: one pane per mod, found again when it is open.
-    /// A project that is not a viewer is refused, as a step is.
+    /// Open a viewer project's own pane, `mod:<id>`: found again when it is open. A project that
+    /// is not a viewer is refused, as a step is.
     fn view_mod(&mut self, mods: &crate::mod_projects::ModProjectHost, id: String) -> Vec<Effect> {
         if !mods.listing().rows.iter().any(|row| row.id == id && row.kind == "viewer") {
             let refusal = format!("{id} is not an opened viewer project");
             return self.finish_mod_project("view", id, Err(refusal));
         }
         let effects = self.open_contributed_pane(
-            crate::panes::PaneKindId::new(crate::mod_viewer::PANE_KIND),
+            crate::panes::PaneKindId::new(crate::mod_viewer::kind_id(&id)),
             crate::mod_viewer::source(&id),
         );
         self.events.push(AppEvent::ModProjectStep { step: "view", id, outcome: "ok: opened".into() });

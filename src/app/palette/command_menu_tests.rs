@@ -365,3 +365,46 @@ fn the_lane_highlight_moves_through_its_menu_session() {
         "a new query starts the highlight over"
     );
 }
+
+#[test]
+fn runtime_pane_rows_join_the_pack_rows_outside_the_contextual_count() {
+    use crate::panes::{PaneDefinition, PaneKindId, PaneSourceShape, define_runtime_pane};
+    let mut app = App::test_stub();
+    let static_rows = |app: &App| {
+        let rows = app.available_actions();
+        rows.len() - crate::action::palette_actions().len() - app.pack_rows().len()
+            - app.runtime_pane_rows().len()
+    };
+    let before = (app.command_catalog().actions.len(), static_rows(&app));
+    for (id, title) in [("mod:a", "Alpha"), ("mod:b", "Beta")] {
+        define_runtime_pane(PaneDefinition::runtime_contributed(
+            id.into(),
+            title.into(),
+            format!("Open {title} pane"),
+            PaneSourceShape::fixed(&[]),
+            "turnstone.test.config",
+            "turnstone.test.view",
+            crate::mod_viewer::source(id),
+        ));
+    }
+    let catalog = app.command_catalog();
+    // Two more commands, each a static one that summons its kind; the contextual rows did not move.
+    assert_eq!(catalog.actions.len(), before.0 + 2);
+    assert_eq!(static_rows(&app), before.1);
+    for (label, kind) in [("Open Alpha pane", "mod:a"), ("Open Beta pane", "mod:b")] {
+        let id = catalog.ids.get(label).expect("the row is in the catalog");
+        assert_eq!(catalog.set.get(id).unwrap().category, super::STATIC_COMMANDS, "{label}");
+        assert_eq!(
+            catalog.action(id),
+            Some(&Action::SummonPane(PaneKindId::new(kind)))
+        );
+    }
+    // Summoning the kind opens its contributed pane on its own source.
+    app.update(Action::SummonPane(PaneKindId::new("mod:a")));
+    let pane = app.active_pane.expect("the pane opened");
+    assert_eq!(app.pane_content(pane).unwrap().kind_id().as_str(), "mod:a");
+    for id in ["mod:a", "mod:b"] {
+        crate::panes::remove_runtime_pane(id);
+    }
+    assert_eq!(app.command_catalog().actions.len(), before.0);
+}

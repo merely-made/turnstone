@@ -309,8 +309,8 @@ impl Shell {
             ))
             .expect("the resident graph provider is unique");
         let structured_source = structured_source::Reader::default();
-        let mod_viewer =
-            builtin_surfaces::register(&mut surface_providers, &structured_source, app.mods.clone());
+        builtin_surfaces::register(&mut surface_providers, &structured_source);
+        let mod_viewer = crate::mod_viewer::Handles::default();
         // Redshank's own compact dock, admitted rather than copied. The shell
         // holds the dock handles; the app holds the one listening authority,
         // which is where the device is opened.
