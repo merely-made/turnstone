@@ -11,11 +11,11 @@ use chirograph::{
     CacheRetention, CapabilityProfile, ContentHash, IntentInvocation, IntentResult,
     PresentationCapability, ProjectionSession, ProjectionSnapshot, ResourceRequest,
 };
+use crate::MereSessions;
 use graphshell_client::{ClientState, PresentationResolution, ResolvedContent};
 use graphshell_endpoint::{IntentSink, PresentationSource, ProjectionSource};
 use graphshell_host::handlers::{OpenAddressV1, intent_id, local_profile_handlers};
 use muniment::Backend;
-use pandect::MereSessions;
 use sceno::InstanceId;
 
 use pandect::access::AccessContext;

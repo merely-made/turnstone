@@ -9,6 +9,10 @@
 //! The library boundary exposes the existing read model, action reducer, and
 //! remote projection adapter. Platform handles remain in [`shell`].
 
+// pandect's graph-generic types over this crate's graph, one alias each (engine split D244).
+pub(crate) type MereSessions<B> = pandect::MereSessions<B, kernel::graph::Graph>;
+
+
 pub mod a11y;
 pub mod action;
 #[cfg(feature = "workshop")]

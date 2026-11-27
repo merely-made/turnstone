@@ -36,6 +36,9 @@ use crate::destination::connect;
 use crate::identity::env_hash;
 use crate::source::serve;
 
+// pandect's graph-generic types over this crate's graph, one alias each (engine split D244).
+pub(crate) type ProductCodicilV3 = pandect::product_codicil::ProductCodicilV3<kernel::graph::Graph>;
+
 pub(crate) const ROOT_AUTHORITY: [u8; 32] = [7; 32];
 pub(crate) const DIAL_DEADLINE: Duration = Duration::from_secs(20);
 

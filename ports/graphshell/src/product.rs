@@ -36,16 +36,17 @@ use uuid::Uuid;
 
 use pandect::access::ACCESS_HISTORY_FACET;
 use pandect::product_codicil::{
-    InvalidCodicil, PRODUCT_CODICIL_SCHEMA, ProductCodicilV3, ProfiledProductCodicil,
-    TransferScope, decode_profiled_codicil, profiled_codicil_graph,
+    InvalidCodicil, PRODUCT_CODICIL_SCHEMA, TransferScope, decode_profiled_codicil,
+    profiled_codicil_graph,
 };
 use crate::local_locations;
+use crate::{ProductCodicilV3, ProfiledProductCodicil};
 use graphshell_host::mere_host::{MereHost, MereHostError};
 use scenomise::projection::ProjectionSnapshot;
 
 /// What an undo kept because another author changed it since, in words for
 /// a status line (Scenograph editor plan, SE21). `None` when nothing was kept.
-pub fn kept_summary(kept: &[pandect::Kept]) -> Option<String> {
+pub fn kept_summary(kept: &[crate::Kept]) -> Option<String> {
     use kernel::graph::Part;
     if kept.is_empty() {
         return None;

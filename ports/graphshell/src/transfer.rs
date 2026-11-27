@@ -42,8 +42,7 @@ use crate::local_locations;
 use graphshell_host::mere_host::MereHost;
 use crate::product::{CONTENT_FACET, ExportRequest, ProductError};
 use pandect::product_codicil::{
-    InvalidCodicil, ProductCodicilV3, ProfiledProductCodicil, decode_profiled_codicil,
-    product_codicil_schema, schema_ref,
+    InvalidCodicil, decode_profiled_codicil, product_codicil_schema, schema_ref,
 };
 use pandect::transfer::{
     AccessTransferPolicy, TRANSFER_MANIFEST_SCHEMA, TransferBlobV1, TransferEndpointV1,
@@ -51,6 +50,7 @@ use pandect::transfer::{
     TransferredIdV1, transfer_receipt_schema,
 };
 use cartography::canvas::saved_scene;
+use crate::{ProductCodicilV3, ProfiledProductCodicil};
 use pandect::{
     SAVED_SCENE_FACET, SAVED_SCENE_FACET_V2, SAVED_SCENE_FACET_V3, SavedDynamics, SavedRolesV1,
     SavedSceneV2, SavedSceneV3,

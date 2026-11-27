@@ -22,6 +22,17 @@ pub mod sheet_theme;
 #[cfg(any(feature = "native", feature = "alembic-workshop-private"))]
 pub use graphshell_door::declaration;
 
+// pandect's graph-generic types over this crate's graph, one alias each (engine split D244).
+#[cfg(feature = "web")]
+pub(crate) type Kept = pandect::Kept<kernel::graph::Graph>;
+#[cfg(feature = "web")]
+pub(crate) type MereSessions<B> = pandect::MereSessions<B, kernel::graph::Graph>;
+#[cfg(feature = "web")]
+pub(crate) type ProductCodicilV3 = pandect::product_codicil::ProductCodicilV3<kernel::graph::Graph>;
+#[cfg(feature = "web")]
+pub(crate) type ProfiledProductCodicil =
+    pandect::product_codicil::ProfiledProductCodicil<kernel::graph::Graph>;
+
 #[cfg(feature = "goal-surface")]
 pub mod goal_surface;
 #[cfg(feature = "moot-resources")]

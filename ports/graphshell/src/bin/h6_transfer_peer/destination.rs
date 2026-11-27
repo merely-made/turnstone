@@ -14,11 +14,11 @@ use chirograph::{
     ContentHash, IntentInvocation, IntentResult, PortableCardV1, ProtocolVersion, ResourceRequest,
     ResourceResponse, ResumeReply, ResumeRequest, SessionOpen,
 };
+use crate::ProductCodicilV3;
 use eidetic::PrivacyClass;
 use pandect::access::AccessContext;
 use graphshell_host::mere_host::{MereHost, SelectedPersonaRef, fixture_handlers};
 use graphshell::transfer::{ApplyTransferContext, TransferAuthorization, apply_transfer};
-use pandect::product_codicil::ProductCodicilV3;
 use pandect::transfer::{TransferManifestV1, TransferOperation};
 use graphshell::transfer_endpoint::{TRANSFER_BEGIN_INTENT, TransferBeginV1};
 use graphshell_host::admission::open_session;

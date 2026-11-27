@@ -23,8 +23,8 @@ use std::time::Duration;
 use eidetic::PrivacyClass;
 use pandect::access::{AccessAction, AccessRecord, AccessTransition};
 use pandect::personal_sync::{
-    BlobAvailabilityObservation, PersonalGraphEvent, PersonalGraphReplica, SyncProjection,
-    SyncRoster, SyncSelection, accept_into,
+    BlobAvailabilityObservation, PersonalGraphEvent, PersonalGraphReplica, SyncRoster,
+    SyncSelection, accept_into,
 };
 use kernel::graph::{EdgeAssertion, RelationKind, SemanticSubKind};
 use muniment::RedbBackend;
@@ -33,6 +33,9 @@ use serde::Serialize;
 use murm_sync::JoinedSpace;
 use transport::{P2pandaTransport, PeerID, sync_overlay_topic};
 use uuid::Uuid;
+
+// pandect's graph-generic types over this crate's graph, one alias each (engine split D244).
+pub(crate) type SyncProjection = pandect::personal_sync::SyncProjection<kernel::graph::Graph>;
 
 const GRAPH_DOMAIN: &[u8] = b"mere.graphshell/h7-physical-graph/v1";
 const A: Uuid = Uuid::from_u128(0x7001);

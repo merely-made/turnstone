@@ -4,10 +4,10 @@
 use std::path::{Path, PathBuf};
 
 use cambium::{DetailRow, DetailSection, ValidationEvidence, ValidationFinding};
+use crate::MereSessions;
 use graphshell_host::pinned_shacl::PinnedValidation;
 use muniment::{Backend, DirectoryBackend, FjallStore};
 use oxrdf::NamedNode;
-use pandect::graph_session::MereSessions;
 use uuid::Uuid;
 
 use super::kept_document_read::in_session_directory;

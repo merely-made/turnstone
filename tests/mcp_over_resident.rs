@@ -32,8 +32,8 @@ use pandect::mere_dir;
 use serde_json::{Value, json};
 
 /// A node-adding edit for node `n`.
-fn node(n: u128) -> pandect::CapturedDelta {
-    pandect::CapturedDelta::ReplayAddNodeWithIdIfMissing {
+fn node(n: u128) -> kernel::graph::CapturedDelta {
+    kernel::graph::CapturedDelta::ReplayAddNodeWithIdIfMissing {
         id: uuid::Uuid::from_u128(n).to_string(),
         url: format!("https://{n}.test/"),
         position: [0.0, 0.0],
@@ -41,8 +41,8 @@ fn node(n: u128) -> pandect::CapturedDelta {
 }
 
 /// A retitling edit for node `n`.
-fn retitle(n: u128, title: &str) -> pandect::CapturedDelta {
-    pandect::CapturedDelta::ReplaySetNodeTitleById {
+fn retitle(n: u128, title: &str) -> kernel::graph::CapturedDelta {
+    kernel::graph::CapturedDelta::ReplaySetNodeTitleById {
         node_id: uuid::Uuid::from_u128(n).to_string(),
         title: title.to_string(),
     }

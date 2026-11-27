@@ -360,10 +360,9 @@ mod tests {
     use kernel::graph::apply::add_node;
     use kernel::graph::{Graph, NodeFacetStore};
 
+    use crate::ProductCodicilV3;
     use super::*;
-    use pandect::product_codicil::{
-        PRODUCT_CODICIL_SCHEMA, ProductCodicilV3, TransferScope, product_codicil_schema,
-    };
+    use pandect::product_codicil::{PRODUCT_CODICIL_SCHEMA, TransferScope, product_codicil_schema};
     use pandect::transfer::{
         AccessTransferPolicy, TransferBlobV1, TransferEndpointV1, TransferOperation,
         TransferRouteV1,

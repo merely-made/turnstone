@@ -2533,7 +2533,7 @@ mod tests {
                     .is_err()
             );
             assert!(
-                pandect::MereSessions::new(backend.clone())
+                crate::MereSessions::new(backend.clone())
                     .list()
                     .await
                     .unwrap()

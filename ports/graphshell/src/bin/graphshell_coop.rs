@@ -30,6 +30,9 @@ use std::{
 };
 use uuid::Uuid;
 
+// pandect's graph-generic types over this crate's graph, one alias each (engine split D244).
+pub(crate) type MereSessions<B> = pandect::MereSessions<B, kernel::graph::Graph>;
+
 enum Command {
     Edit(Edit),
     Invite {
@@ -517,7 +520,7 @@ fn start() -> Result<(), String> {
     if a.mode == "new-graph" || a.mode == "list" {
         let identity = network::identity()?;
         let backend = RedbBackend::open(&a.store).map_err(|e| e.to_string())?;
-        let sessions = pandect::MereSessions::new(backend);
+        let sessions = crate::MereSessions::new(backend);
         if a.mode == "list" {
             println!(
                 "{}",
