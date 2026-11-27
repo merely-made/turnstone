@@ -479,6 +479,16 @@ impl App {
         })
     }
 
+    /// Every pane of `kind`, in the primary tree and in every live lens window's.
+    pub(crate) fn panes_of_kind(&self, kind: &crate::panes::PaneKindId) -> Vec<PaneId> {
+        std::iter::once(&self.frisket)
+            .chain(self.lenses.iter().flatten())
+            .flat_map(|space| space.iter_leaves())
+            .filter(|(_, content, _)| &content.kind_id() == kind)
+            .map(|(pane, _, _)| pane)
+            .collect()
+    }
+
     /// The layout a [`SpaceRef`] names, when it is live.
     pub fn space(&self, space: SpaceRef) -> Option<&FrisketLayout> {
         match space {

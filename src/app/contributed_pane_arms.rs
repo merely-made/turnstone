@@ -189,6 +189,20 @@ mod tests {
     }
 
     #[test]
+    fn panes_of_kind_finds_primary_and_lens_panes() {
+        let mut app = App::test_stub();
+        let kind = PaneKindId::new("test.lens-contributed");
+        assert!(app.panes_of_kind(&kind).is_empty());
+        app.update(Action::SummonContributedPane { kind: kind.clone(), source: external_source("p") });
+        app.update(Action::NewWindow);
+        let lens_pane = app.lenses[0].as_ref().and_then(|l| l.iter_leaves().next()).map(|(id, _, _)| id).unwrap();
+        app.active_pane = Some(lens_pane);
+        app.update(Action::SummonContributedPane { kind: kind.clone(), source: external_source("l") });
+        let spaces: Vec<_> = app.panes_of_kind(&kind).into_iter().map(|p| app.space_of(p)).collect();
+        assert_eq!(spaces, [Some(SpaceRef::Primary), Some(SpaceRef::Lens(0))]);
+    }
+
+    #[test]
     fn contributed_summon_rolls_back_when_blueprint_cannot_place_target() {
         let mut app = App::test_stub();
         let before_legacy = app.frisket.clone();

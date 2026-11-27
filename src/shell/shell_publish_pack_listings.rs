@@ -43,14 +43,8 @@ impl Shell {
         // A pane of a kind that came or went starts from nothing: a placeholder it had must not
         // keep the pane, and an open session must not outlive its provider.
         for kind in synced.removed.iter().chain(&synced.added) {
-            let panes: Vec<_> = self
-                .app
-                .frisket
-                .iter_leaves()
-                .filter(|(_, content, _)| &content.kind_id() == kind)
-                .map(|(pane, _, _)| pane)
-                .collect();
-            for pane in panes {
+            // One renderer table serves every window, so a torn-out pane is evicted the same way.
+            for pane in self.app.panes_of_kind(kind) {
                 self.renderers.evict(pane);
             }
             self.renderers.contributed.drop_kind(kind);
