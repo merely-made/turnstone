@@ -49,7 +49,9 @@ fn assert(graph: &mut Graph, from: Uuid, to: Uuid, kind: TermId, author: &str) -
 
 /// The traversal family's name as link reading gives a legacy member.
 fn traversal_name() -> Option<&'static str> {
-    workspace::family_label(workspace_ids::FAMILY_TRAVERSAL)
+    workspace::terms()
+        .get(workspace_ids::FAMILY_TRAVERSAL)
+        .map(|entry| entry.display_label("en"))
 }
 
 fn stored_assertion(
@@ -396,7 +398,7 @@ fn mixed_family_data_preserves_canonical_assertions_events_and_aggregates() {
         .data;
     assert_eq!(
         traversal["traversals"],
-        json!([{"timestamp_ms": 42, "trigger": "LinkClick"}])
+        json!([{"timestamp_ms": 42, "trigger": NavigationTrigger::LinkClick.iri()}])
     );
     assert_eq!(traversal["metrics"]["total_navigations"], 1);
     assert_eq!(traversal["metrics"]["forward_navigations"], 1);

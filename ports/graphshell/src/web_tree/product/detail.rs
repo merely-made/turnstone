@@ -7,17 +7,10 @@
 //! Bind the local owner's detail operations to shared Cambium controls.
 use super::*;
 use cambium::{button, el, lens, select, text_field_typed, textarea_typed};
-use graphshell::local_edit::{DetailAction, apply_detail_action, relation_target};
-use graphshell::product::EditableRelation;
 use cartography::canvas::Face;
+use graphshell::local_edit::{DetailAction, apply_detail_action, relation_target};
+use graphshell::product::{EDITABLE_RELATIONS as RELATIONS, relation_label};
 
-const RELATIONS: [(EditableRelation, &str); 5] = [
-    (EditableRelation::UserGrouped, "Grouped with"),
-    (EditableRelation::Cites, "Cites"),
-    (EditableRelation::Hyperlink, "Links to"),
-    (EditableRelation::CollectionMember, "Contains"),
-    (EditableRelation::FrameMember, "Shares scene"),
-];
 const FACES: [(Face, &str); 4] = [
     (Face::Favicon, "Favicon"),
     (Face::Derived, "Derived"),
@@ -113,7 +106,7 @@ impl SavedProduct {
         let action = if relation {
             DetailAction::Relation {
                 target: self.detail.target.text().into(),
-                relation: RELATIONS[self.detail.relation.selected.min(RELATIONS.len() - 1)].0,
+                relation: RELATIONS[self.detail.relation.selected.min(RELATIONS.len() - 1)],
             }
         } else {
             DetailAction::Facet {
@@ -255,7 +248,7 @@ pub(super) fn controls(_page: &TreePage) -> Child {
         field("Relate to address", TextField::RelationTarget, false),
     ];
     children.push(Box::new(lens(
-        |state: &mut SelectState| select(state, &RELATIONS.map(|(_, label)| label)),
+        |state: &mut SelectState| select(state, &RELATIONS.map(relation_label)),
         |page: &mut TreePage| &mut page.product.as_mut().expect("local detail").detail.relation,
     )));
     children.push(Box::new(button(

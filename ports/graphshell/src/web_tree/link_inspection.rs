@@ -373,20 +373,17 @@ fn owner_rows(owner: &LinkOwner) -> Vec<DetailRow> {
     ]
 }
 
-/// A predicate's pack label, for a predicate the core or workspace pack holds
-/// (declared-lens D29). An open predicate has none.
-fn recognized_kind(predicate: &str) -> Option<&'static str> {
-    kernel::workspace::id(predicate).and_then(|id| kernel::workspace::predicate_label(id, false))
+/// A predicate's pack label (declared-lens D29, D38); an undeclared
+/// predicate takes the core pack's label defaults (D39).
+fn recognized_kind(predicate: &str) -> &'static str {
+    kernel::workspace::relation_label(kernel::workspace::id(predicate), false)
 }
 
 fn statement_rows(statement: &HeldStatement) -> Vec<DetailRow> {
     let mut rows = vec![
         DetailRow::new("Assertion handle", &statement.statement_id),
         DetailRow::new("Predicate", &statement.predicate),
-        DetailRow::new(
-            "Recognized kind",
-            recognized_kind(&statement.predicate).unwrap_or("Open predicate"),
-        ),
+        DetailRow::new("Recognized kind", recognized_kind(&statement.predicate)),
         DetailRow::new(
             "Label",
             statement

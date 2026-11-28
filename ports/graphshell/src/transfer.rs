@@ -941,7 +941,7 @@ mod tests {
     use muniment::MemoryBackend;
 
     use super::*;
-    use crate::product::{EditableRelation, LocalFileMetadata};
+    use crate::product::LocalFileMetadata;
     use graphshell_host::mere_host::{
         FIXTURE_DEVICE_ONE_ADDRESS, FIXTURE_DEVICE_TWO_ADDRESS, FIXTURE_PERSONA_ADDRESS,
         SelectedPersonaRef, fixture_handlers,
@@ -1026,7 +1026,7 @@ mod tests {
             ["file".to_string(), "transport".to_string()],
         )
         .unwrap();
-        host.assert_product_relation(file, url, EditableRelation::Cites)
+        host.assert_product_relation(file, url, core_ids::REL_CITES)
             .unwrap();
 
         let key = host.graph().get_node_key_by_id(url).unwrap();

@@ -82,94 +82,54 @@ pub const PROJECTION_DEFINITION_FACET: &str = "graphshell.projection-definition/
 /// The channel the projection editor's saves come through, so its Undo save
 /// reaches only them and Graphshell's session undo never does (SE18).
 pub const PROJECTION_EDITOR_VIA: &str = "graphshell.projection-editor";
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum RelationFamilyFilter {
-    All,
-    Semantic,
-    Traversal,
-    Containment,
-    Arrangement,
-    Imported,
-    Provenance,
+/// The predicates the detail pane offers, by generated id (declared-lens
+/// D20, D36); a picker shows each one's short label (D33, D44 (4)).
+pub const EDITABLE_RELATIONS: [TermId; 5] = [
+    core_ids::REL_USER_GROUPED,
+    core_ids::REL_CITES,
+    core_ids::REL_HYPERLINK,
+    core_ids::REL_CONTAINMENT_COLLECTION_MEMBER,
+    workspace_ids::REL_ARRANGEMENT_FRAME_MEMBER,
+];
+
+/// A picker's text for a product relation: its predicate's short label
+/// (D33, D43, D44 (4)).
+pub fn relation_label(predicate: TermId) -> &'static str {
+    kernel::workspace::relation_short_label(Some(predicate))
 }
 
-impl RelationFamilyFilter {
-    pub fn code(self) -> &'static str {
-        match self {
-            Self::All => "all",
-            Self::Semantic => "semantic",
-            Self::Traversal => "traversal",
-            Self::Containment => "containment",
-            Self::Arrangement => "arrangement",
-            Self::Imported => "imported",
-            Self::Provenance => "provenance",
-        }
-    }
+/// The family filter's choices: every relation, then each core and workspace
+/// family by generated id (D20, D36).
+pub const FAMILY_FILTERS: [Option<TermId>; 7] = [
+    None,
+    Some(core_ids::FAMILY_SEMANTIC),
+    Some(workspace_ids::FAMILY_TRAVERSAL),
+    Some(core_ids::FAMILY_CONTAINMENT),
+    Some(workspace_ids::FAMILY_ARRANGEMENT),
+    Some(core_ids::FAMILY_IMPORTED),
+    Some(core_ids::FAMILY_PROVENANCE),
+];
 
-    pub fn from_code(code: &str) -> Option<Self> {
-        match code {
-            "all" => Some(Self::All),
-            "semantic" => Some(Self::Semantic),
-            "traversal" => Some(Self::Traversal),
-            "containment" => Some(Self::Containment),
-            "arrangement" => Some(Self::Arrangement),
-            "imported" => Some(Self::Imported),
-            "provenance" => Some(Self::Provenance),
-            _ => None,
-        }
-    }
-
-    /// The core or workspace family this filter keeps; `None` keeps all.
-    fn family(self) -> Option<TermId> {
-        match self {
-            Self::All => None,
-            Self::Semantic => Some(core_ids::FAMILY_SEMANTIC),
-            Self::Traversal => Some(workspace_ids::FAMILY_TRAVERSAL),
-            Self::Containment => Some(core_ids::FAMILY_CONTAINMENT),
-            Self::Arrangement => Some(workspace_ids::FAMILY_ARRANGEMENT),
-            Self::Imported => Some(core_ids::FAMILY_IMPORTED),
-            Self::Provenance => Some(core_ids::FAMILY_PROVENANCE),
-        }
-    }
-
-    fn accepts(self, family: TermId) -> bool {
-        self.family().is_none_or(|kept| kept == family)
-    }
+/// A family filter choice's text: the family's pack label, or the product's
+/// own "All relations" for no filter.
+pub fn family_filter_label(family: Option<TermId>) -> &'static str {
+    family.map_or("All relations", |family| {
+        kernel::workspace::family_label(family).unwrap_or_default()
+    })
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "kebab-case")]
-pub enum EditableRelation {
-    UserGrouped,
-    Cites,
-    Hyperlink,
-    CollectionMember,
-    FrameMember,
+/// Whether a relation of `family` passes a family filter: a core or workspace
+/// family id, or `None` for every relation (declared-lens D20, D36).
+fn family_accepts(filter: Option<TermId>, family: TermId) -> bool {
+    filter.is_none_or(|kept| kept == family)
 }
 
-impl EditableRelation {
-    pub fn from_code(code: &str) -> Option<Self> {
-        match code {
-            "user-grouped" => Some(Self::UserGrouped),
-            "cites" => Some(Self::Cites),
-            "hyperlink" => Some(Self::Hyperlink),
-            "collection-member" => Some(Self::CollectionMember),
-            "frame-member" => Some(Self::FrameMember),
-            _ => None,
-        }
-    }
-
-    /// The claim this product relation writes: its core or workspace
-    /// predicate, unlabelled (declared-lens D20).
-    fn claim(self) -> RelationClaim {
-        RelationClaim::of(match self {
-            Self::UserGrouped => core_ids::REL_USER_GROUPED,
-            Self::Cites => core_ids::REL_CITES,
-            Self::Hyperlink => core_ids::REL_HYPERLINK,
-            Self::CollectionMember => core_ids::REL_CONTAINMENT_COLLECTION_MEMBER,
-            Self::FrameMember => workspace_ids::REL_ARRANGEMENT_FRAME_MEMBER,
-        })
-    }
+/// The claim a product relation writes: the core or workspace predicate
+/// `predicate`, unlabelled (declared-lens D20, D36). `None` when the id names
+/// no predicate there.
+fn product_claim(predicate: TermId) -> Option<RelationClaim> {
+    let entry = kernel::workspace::terms().get(predicate)?;
+    (entry.kind == eidetic::pack::TermKind::Predicate).then(|| RelationClaim::of(predicate))
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -223,6 +183,9 @@ pub struct ImportReceipt {
 pub enum ProductError {
     Host(MereHostError),
     UnknownNode(Uuid),
+    /// A product relation named by an id that is no core or workspace
+    /// predicate.
+    UnknownPredicate(TermId),
     UnknownAddress(String),
     InvalidFacetJson(String),
     EmptySelection,
@@ -238,6 +201,7 @@ impl std::fmt::Display for ProductError {
         match self {
             Self::Host(error) => write!(formatter, "{error}"),
             Self::UnknownNode(id) => write!(formatter, "unknown graph object {id}"),
+            Self::UnknownPredicate(id) => write!(formatter, "no predicate has id {}", id.0),
             Self::UnknownAddress(address) => write!(formatter, "unknown address {address}"),
             Self::InvalidFacetJson(error) => write!(formatter, "invalid facet JSON: {error}"),
             Self::EmptySelection => write!(formatter, "the transfer scope contains no objects"),
@@ -322,10 +286,12 @@ pub trait ProductHost {
         &mut self,
         from: Uuid,
         to: Uuid,
-        relation: EditableRelation,
+        predicate: TermId,
     ) -> Result<(), ProductError>;
 
-    fn matching_members(&self, query: &str, family: RelationFamilyFilter) -> Vec<Uuid>;
+    /// Members matching `query` that hold a relation of `family`, or every
+    /// member when `family` is `None`.
+    fn matching_members(&self, query: &str, family: Option<TermId>) -> Vec<Uuid>;
 
     /// Save `scene` at `address` under [`SAVED_SCENE_FACET`] (F142: every
     /// save writes version 4).
@@ -398,7 +364,7 @@ impl<B: Backend> ProductHost for MereHost<B> {
         let id = held.map_or_else(Uuid::new_v4, |(_, id)| id);
         self.mutate_product_graph(|graph| {
             let to = held.map_or_else(|| add_address(graph, id, address, title), |(key, _)| key);
-            assert_relation(graph, from, to, EditableRelation::Hyperlink.claim());
+            assert_relation(graph, from, to, RelationClaim::of(core_ids::REL_HYPERLINK));
         })?;
         Ok(id)
     }
@@ -514,8 +480,9 @@ impl<B: Backend> ProductHost for MereHost<B> {
         &mut self,
         from: Uuid,
         to: Uuid,
-        relation: EditableRelation,
+        predicate: TermId,
     ) -> Result<(), ProductError> {
+        let claim = product_claim(predicate).ok_or(ProductError::UnknownPredicate(predicate))?;
         let from = self
             .graph()
             .get_node_key_by_id(from)
@@ -525,22 +492,22 @@ impl<B: Backend> ProductHost for MereHost<B> {
             .get_node_key_by_id(to)
             .ok_or(ProductError::UnknownNode(to))?;
         self.mutate_product_graph(|graph| {
-            assert_relation(graph, from, to, relation.claim());
+            assert_relation(graph, from, to, claim);
         })?;
         Ok(())
     }
 
-    fn matching_members(&self, query: &str, family: RelationFamilyFilter) -> Vec<Uuid> {
+    fn matching_members(&self, query: &str, family: Option<TermId>) -> Vec<Uuid> {
         let query = query.trim().to_lowercase();
         let related: HashSet<_> = self
             .graph()
             .projected_relations()
-            .filter(|(_, relation)| family.accepts(relation.kind.family()))
+            .filter(|(_, relation)| family_accepts(family, relation.kind.family()))
             .flat_map(|(_, relation)| [relation.from, relation.to])
             .collect();
         self.graph()
             .nodes()
-            .filter(|(key, _)| family == RelationFamilyFilter::All || related.contains(key))
+            .filter(|(key, _)| family.is_none() || related.contains(key))
             .filter(|(key, node)| {
                 if query.is_empty() {
                     return true;
@@ -1314,7 +1281,7 @@ mod tests {
         let file = host.create_address(LOCAL, "Notes").unwrap();
         let folder = host.create_address(FOLDER, "Private").unwrap();
         let page = host.create_address(WEB, "Page").unwrap();
-        host.assert_product_relation(page, file, EditableRelation::Cites)
+        host.assert_product_relation(page, file, core_ids::REL_CITES)
             .unwrap();
         let file_key = host.graph().get_node_key_by_id(file).unwrap();
         let page_key = host.graph().get_node_key_by_id(page).unwrap();
@@ -1544,14 +1511,19 @@ mod tests {
     /// with that predicate's pack label (declared-lens D20, D29).
     #[test]
     fn product_relations_read_back_with_their_pack_labels() {
-        for (code, label) in [
-            ("user-grouped", "Grouped with"),
-            ("cites", "Cites"),
-            ("hyperlink", "Links to"),
-            ("collection-member", "collection-member"),
-            ("frame-member", "frame-member"),
-        ] {
-            let relation = EditableRelation::from_code(code).unwrap();
+        let pairs = EDITABLE_RELATIONS.map(|predicate| (predicate, relation_label(predicate)));
+        assert_eq!(
+            pairs.map(|(_, label)| label),
+            [
+                "Grouped",
+                "Cites",
+                "Hyperlink",
+                "Collection member",
+                "Frame member"
+            ],
+            "the picker shows each predicate's short label (D33, D44 (4))"
+        );
+        for (predicate, _) in pairs {
             let mut graph = Graph::new();
             let [from, to] = [1u128, 2].map(|n| {
                 add_node(
@@ -1561,23 +1533,24 @@ mod tests {
                     PortablePoint::zero(),
                 )
             });
-            assert_relation(&mut graph, from, to, relation.claim());
+            let claim = product_claim(predicate).expect("a pack predicate");
+            assert_eq!(claim.predicate, kernel::workspace::iri(predicate));
+            assert_relation(&mut graph, from, to, claim);
             let (_, row) = graph
                 .projected_relations()
                 .find(|(_, row)| row.from == from && row.to == to)
                 .expect("the product relation is held");
-            let id = row.kind.id().expect("a pack predicate");
-            assert_eq!(row.kind.iri(), Some(relation.claim().predicate.as_str()));
-            assert_eq!(
-                kernel::workspace::predicate_label(id, false),
-                Some(label),
-                "{code}"
-            );
+            assert_eq!(row.kind.id(), Some(predicate));
         }
-        let cites = kernel::workspace::id(&EditableRelation::Cites.claim().predicate).unwrap();
         assert_eq!(
-            kernel::workspace::predicate_label(cites, true),
-            Some("Cited by")
+            kernel::workspace::relation_label(Some(core_ids::REL_CITES), true),
+            "Cited by"
+        );
+        assert!(product_claim(core_ids::FAMILY_SEMANTIC).is_none());
+        assert_eq!(family_filter_label(None), "All relations");
+        assert_eq!(
+            family_filter_label(Some(core_ids::FAMILY_CONTAINMENT)),
+            "Containment"
         );
     }
 
@@ -1746,19 +1719,19 @@ mod tests {
         host.begin_profiled_session(graph, Some(PlacementProfile::RecordedStrataV1))
             .unwrap();
         assert_eq!(
-            host.matching_members("", RelationFamilyFilter::Traversal)
+            host.matching_members("", Some(workspace_ids::FAMILY_TRAVERSAL))
                 .into_iter()
                 .collect::<HashSet<_>>(),
             HashSet::from([surfaces[0], extras[0]])
         );
         assert_eq!(
-            host.matching_members("", RelationFamilyFilter::Arrangement)
+            host.matching_members("", Some(workspace_ids::FAMILY_ARRANGEMENT))
                 .into_iter()
                 .collect::<HashSet<_>>(),
             HashSet::from([surfaces[0], extras[1]])
         );
         let semantic = host
-            .matching_members("", RelationFamilyFilter::Semantic)
+            .matching_members("", Some(core_ids::FAMILY_SEMANTIC))
             .into_iter()
             .collect::<HashSet<_>>();
         assert!(surfaces.iter().all(|id| semantic.contains(id)));
@@ -1851,15 +1824,12 @@ mod tests {
                 .contains("OwnOnly")
         );
         assert_eq!(
-            host.matching_members("PeerOnly", RelationFamilyFilter::All)
+            host.matching_members("PeerOnly", None)
                 .into_iter()
                 .collect::<HashSet<_>>(),
             HashSet::from([surfaces[0], surfaces[1]])
         );
-        assert!(
-            host.matching_members("absent-label", RelationFamilyFilter::All)
-                .is_empty()
-        );
+        assert!(host.matching_members("absent-label", None).is_empty());
         let journal = host.graph_session().journal().entries().len();
         host.edit_node(surfaces[0], "tagged page", ["Shared".into()])
             .unwrap();
@@ -2835,7 +2805,7 @@ mod tests {
             .unwrap()
             .1
             .id;
-        host.assert_product_relation(file, web, EditableRelation::Cites)
+        host.assert_product_relation(file, web, core_ids::REL_CITES)
             .expect("relation");
 
         let receipt = host
@@ -2914,7 +2884,7 @@ mod tests {
             "anchored at its old pull"
         );
         assert_eq!(
-            host.matching_members("unknown-file", RelationFamilyFilter::Semantic),
+            host.matching_members("unknown-file", Some(core_ids::FAMILY_SEMANTIC)),
             vec![file]
         );
 

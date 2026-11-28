@@ -12,22 +12,22 @@ use std::path::Path;
 use std::sync::RwLock;
 
 use eidetic::PrivacyClass;
-use graphshell_host::mere_host::{MereHost, SelectedPersonaRef, fixture_handlers};
-use graphshell::product::{EditableRelation, ExportRequest, LocalFileMetadata};
+use graphshell::product::{ExportRequest, LocalFileMetadata};
 use graphshell::transfer::{TransferBlobInput, TransferRequest, prepare_transfer};
-use pandect::product_codicil::TransferScope;
-use pandect::transfer::{
-    AccessTransferPolicy, TransferEndpointV1, TransferOperation, TransferRouteV1,
-};
 use graphshell::transfer_endpoint::TransferSourceEndpoint;
 use graphshell_endpoint::ResumableProjectionSource;
 use graphshell_host::carrier::{accept_projection_session, projection_alpn, projection_policy};
 use graphshell_host::lifecycle::SessionAuthority;
+use graphshell_host::mere_host::{MereHost, SelectedPersonaRef, fixture_handlers};
 use graphshell_host::session_loop::{SessionEnd, serve_admitted_session};
 use incipit_session::access::AccessContext;
 use insigne::delegation::{DelegationRevocation, SignedDelegationRevocation};
 use muniment::{BlobStore, MemoryBackend};
 use notochord::{NetworkId, RevocationLedger, TrustedRoot};
+use pandect::product_codicil::TransferScope;
+use pandect::transfer::{
+    AccessTransferPolicy, TransferEndpointV1, TransferOperation, TransferRouteV1,
+};
 use personae::{IdentityProvider, InMemoryProvider};
 use sha2::{Digest, Sha256};
 use transport::p2panda_transport::{MdnsDiscoveryMode, P2pandaTransport};
@@ -111,7 +111,7 @@ pub(crate) async fn serve(
         ["file".to_string(), "h6".to_string(), "physical".to_string()],
     )
     .map_err(|error| error.to_string())?;
-    host.assert_product_relation(file_node, url, EditableRelation::Cites)
+    host.assert_product_relation(file_node, url, mere::profile::core::ids::REL_CITES)
         .map_err(|error| error.to_string())?;
 
     let source_blobs = BlobStore::new(backend.clone());

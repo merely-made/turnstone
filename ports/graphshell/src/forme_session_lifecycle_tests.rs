@@ -3,12 +3,12 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
-use crate::product::ProductHost;
 use super::*;
 use crate::forme_workspace::{
     GraphshellFormeSession as FormeSession, GraphshellPreparedSave as PreparedSave,
     GraphshellSaveKind as SaveKind,
 };
+use crate::product::ProductHost;
 use muniment::Backend;
 use pandect::slot_guard::SlotBackend;
 use platen::workspace::{FormeLoadGate, FormeWriteFence};
@@ -42,16 +42,13 @@ async fn load<B: Backend>(
         .map_err(|e| e.to_string())?;
     FormeSession::from_bytes(bytes.as_deref(), graph_id, graph)
 }
-use crate::{
-    app::GraphshellApp,
-    product::ExportRequest,
-};
-use pandect::product_codicil::TransferScope;
+use crate::{app::GraphshellApp, product::ExportRequest};
+use cartography::canvas::Canvas;
 use graphshell_host::mere_host::{
     FIXTURE_PERSONA_ADDRESS, FIXTURE_WEB_ADDRESS, GRAPHSHELL, SelectedPersonaRef,
 };
-use cartography::canvas::Canvas;
 use muniment::MemoryBackend;
+use pandect::product_codicil::TransferScope;
 
 type App = GraphshellApp<MemoryBackend>;
 fn fixture() -> (MemoryBackend, App, FormeSession, Uuid) {
@@ -1890,7 +1887,7 @@ fn owner_lifecycle_same_topology_refresh_refuses_relation_changes_and_key_remaps
         .1
         .id;
     app.host
-        .assert_product_relation(member, target, crate::product::EditableRelation::Cites)
+        .assert_product_relation(member, target, mere::profile::core::ids::REL_CITES)
         .unwrap();
     assert!(
         canvas

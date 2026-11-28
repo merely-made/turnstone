@@ -5,21 +5,10 @@
 // SPDX-License-Identifier: MPL-2.0
 
 //! Find scopes the canvas using the saved graph owner's relation vocabulary.
-use graphshell::product::ProductHost;
 use super::*;
 use cambium::{button, el, lens, select, text_field_typed};
-use graphshell::product::RelationFamilyFilter;
-
-const FAMILIES: [(RelationFamilyFilter, &str); 7] = [
-    (RelationFamilyFilter::All, "All relations"),
-    (RelationFamilyFilter::Semantic, "Semantic"),
-    (RelationFamilyFilter::Traversal, "Traversal"),
-    (RelationFamilyFilter::Containment, "Containment"),
-    (RelationFamilyFilter::Arrangement, "Arrangement"),
-    (RelationFamilyFilter::Imported, "Imported"),
-    (RelationFamilyFilter::Provenance, "Provenance"),
-];
-
+use graphshell::product::ProductHost;
+use graphshell::product::{FAMILY_FILTERS as FAMILIES, family_filter_label as family_label};
 pub(super) struct FindControls {
     pub(super) open: bool,
     pub(super) query: TextInput,
@@ -53,11 +42,11 @@ impl SavedProduct {
             self.find.query = TextInput::new("");
             self.find.family.selected = 0;
         }
-        let family = FAMILIES[self.find.family.selected.min(FAMILIES.len() - 1)].0;
+        let family = FAMILIES[self.find.family.selected.min(FAMILIES.len() - 1)];
         let query = self.find.query.text();
         let matches = app.host.matching_members(query, family);
         self.find.count = Some(matches.len());
-        if query.trim().is_empty() && family == RelationFamilyFilter::All {
+        if query.trim().is_empty() && family.is_none() {
             canvas.clear_scope();
         } else {
             canvas.scope_to_members(matches.iter().copied());
@@ -70,20 +59,22 @@ pub(in crate::web_tree) fn section(page: &TreePage) -> Child {
     let Some(product) = &page.product else {
         return Box::new(el("div", ()));
     };
-    let mut children: Vec<Child> = vec![Box::new(
-        disclosure_trigger("Find and filter", product.find.open, |page: &mut TreePage| {
+    let mut children: Vec<Child> = vec![Box::new(disclosure_trigger(
+        "Find and filter",
+        product.find.open,
+        |page: &mut TreePage| {
             if let Some(product) = &mut page.product {
                 product.find.open = !product.find.open;
             }
-        }),
-    )];
+        },
+    ))];
     if product.find.open {
         children.push(Box::new(lens(
             |input: &mut TextInput| text_field_typed(input).attr("aria-label", "Search"),
             |page: &mut TreePage| &mut page.product.as_mut().expect("local find").find.query,
         )));
         children.push(Box::new(lens(
-            |state: &mut SelectState| select(state, &FAMILIES.map(|(_, label)| label)),
+            |state: &mut SelectState| select(state, &FAMILIES.map(family_label)),
             |page: &mut TreePage| &mut page.product.as_mut().expect("local find").find.family,
         )));
         children.push(Box::new(button(

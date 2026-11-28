@@ -29,7 +29,8 @@ pub enum DetailAction {
     },
     Relation {
         target: String,
-        relation: crate::product::EditableRelation,
+        /// The predicate, by its core or workspace id (declared-lens D36).
+        relation: mere::profile::intern::TermId,
     },
 }
 

@@ -82,7 +82,7 @@ reason = "Small, host-neutral state for a disclosed practice workspace. Existing
 
 [[exception]]
 path = "ports/graphshell/src/product.rs"
-reason = "Daily graph-product operations composed from Mere's portable graph and canvas surfaces. Existing source-size debt; a responsibility split must preserve RelationFamilyFilter, EditableRelation and existing module visibility."
+reason = "Daily graph-product operations composed from Mere's portable graph and canvas surfaces. Existing source-size debt; a responsibility split must preserve EDITABLE_RELATIONS, FAMILY_FILTERS and existing module visibility."
 
 [[exception]]
 path = "ports/graphshell/src/query_views.rs"
