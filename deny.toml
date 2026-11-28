@@ -406,10 +406,6 @@ crate = "phf_shared@0.13.1"
 reason = "oxc_ast_macros 0.124.0 (oxc_ast_macros 0.158.0 drops it), oxc_regular_expression 0.124.0 (oxc_regular_expression 0.158.0 drops it), oxc_syntax 0.124.0 (oxc_syntax 0.158.0 drops it) require it, via phf 0.13.1, phf_generator 0.13.1 and 1 more, under nova_vm; goes when their dependents take oxc_ast_macros 0.158.0, oxc_regular_expression 0.158.0, oxc_syntax 0.158.0"
 
 [[bans.skip]]
-crate = "png@0.17.16"
-reason = "mandrake 0.1.0 (family, merely-made/graphshell) requires it; goes when merely-made/graphshell moves mandrake to png 0.18.1"
-
-[[bans.skip]]
 crate = "poly1305@0.8.0"
 reason = "snow 0.10.0 (latest) requires it, via chacha20poly1305 0.10.1, under mere-transport; goes when snow moves to poly1305 0.9.1"
 
