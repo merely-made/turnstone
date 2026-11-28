@@ -88,7 +88,6 @@ fn model_free_recovery_restores_exact_statement_without_replacing_existing_asser
             unrelated,
             mere::model::SemanticStatementSpec {
                 predicate: "urn:example:unrelated".into(),
-                recognized_sub_kind: None,
                 label: None,
                 basis: AssertionBasis {
                     note: Some("x".repeat(100_000)),
@@ -155,7 +154,6 @@ fn model_free_graph_enumeration_refuses_limits_and_reserved_surface_tombstones()
         .unwrap();
     let spec = mere::model::SemanticStatementSpec {
         predicate: PREDICATE.into(),
-        recognized_sub_kind: None,
         label: None,
         basis: AssertionBasis {
             note: None,

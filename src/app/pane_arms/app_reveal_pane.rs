@@ -229,7 +229,7 @@ impl App {
         &mut self,
         target: crate::relationship_navigation::RelationshipTarget,
     ) -> Vec<Effect> {
-        if !self.valid_relationship(target) {
+        if !self.valid_relationship(target.clone()) {
             return vec![Effect::Redraw];
         }
         let Some(pane) = self.graph_pane_for_navigation(target.graph) else {

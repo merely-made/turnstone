@@ -15,7 +15,6 @@ use std::collections::{BTreeSet, HashMap, HashSet};
 use std::sync::Mutex;
 
 use async_trait::async_trait;
-use portolan::FacetId;
 use eidetic::browsing::{
     BrowsingMemory, PageRef, TraceEvent, TraceTransition, bootstrap_browsing_schema,
 };
@@ -24,10 +23,12 @@ use eidetic::import::encounters::{
     BrowserSourceScope,
 };
 use eidetic::{NoFetcher, PrivacyClass, list_typed, load_typed, manifest::delete_manifest};
+use kernel::graph::NavigationTrigger;
 use kernel::graph::apply::{GraphDelta, apply_graph_delta};
-use mere::model::{EdgeFamily, NavigationTrigger, RelationKind, RelationSelector};
+use kernel::workspace::{family_selector, ids as workspace_ids};
 use muniment::{Backend, StoreError, WriteOp};
 use pandect::graph_session::{CommitExtra, LegacyTransactionBackend};
+use portolan::FacetId;
 use serde::{Deserialize, Serialize};
 use url::Url;
 use uuid::Uuid;
@@ -1313,8 +1314,7 @@ impl<B: Backend> CaptureSteps for MereHost<B> {
             .graph()
             .relations()
             .filter(|relation| {
-                relation.kind == RelationKind::Traversal
-                    && (relation.from == key || relation.to == key)
+                relation.kind.is_traversal() && (relation.from == key || relation.to == key)
             })
             .map(|relation| (relation.from, relation.to))
             .collect::<BTreeSet<_>>();
@@ -1361,7 +1361,7 @@ impl<B: Backend> CaptureSteps for MereHost<B> {
                     GraphDelta::RetractRelations {
                         from,
                         to,
-                        selector: RelationSelector::Family(EdgeFamily::Traversal),
+                        selector: family_selector(workspace_ids::FAMILY_TRAVERSAL),
                     },
                 );
             }
@@ -1397,7 +1397,9 @@ mod tests {
     use muniment::MemoryBackend;
 
     use super::*;
-    use graphshell_host::mere_host::{FIXTURE_PERSONA_ADDRESS, FIXTURE_WEB_ADDRESS, SelectedPersonaRef};
+    use graphshell_host::mere_host::{
+        FIXTURE_PERSONA_ADDRESS, FIXTURE_WEB_ADDRESS, SelectedPersonaRef,
+    };
 
     const PERSONA: &str = "personae://persona/capture";
     const DEVICE: &str = "personae://device/browser";
@@ -1843,14 +1845,14 @@ mod tests {
             assert!(
                 host.graph()
                     .relations()
-                    .any(|relation| relation.kind == RelationKind::Traversal
+                    .any(|relation| relation.kind.is_traversal()
                         && relation.from == a_key
                         && relation.to == b_key)
             );
             assert!(
                 host.graph()
                     .relations()
-                    .any(|relation| relation.kind == RelationKind::Traversal
+                    .any(|relation| relation.kind.is_traversal()
                         && relation.from == a_key
                         && relation.to == c_key)
             );
@@ -2358,7 +2360,7 @@ mod tests {
             assert_eq!(facet.visit_count, 1);
             assert_eq!(facet.latest_title.as_deref(), Some("to title"));
             assert!(host.graph().relations().any(|relation| {
-                relation.kind == RelationKind::Traversal
+                relation.kind.is_traversal()
                     && host.graph().get_node(relation.from).unwrap().url() == from
                     && host.graph().get_node(relation.to).unwrap().url() == to
             }));

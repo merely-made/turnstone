@@ -7,7 +7,8 @@ use kernel::graph::apply::{
     node_history_forward,
 };
 use kernel::graph::{Graph, NodeHistoryTransitionKind};
-use mere::model::{ArrangementSubKind, EdgeAssertion, NavigationTrigger};
+use kernel::graph::{NavigationTrigger, RelationClaim};
+use kernel::workspace::ids as workspace_ids;
 
 use super::*;
 
@@ -77,9 +78,7 @@ fn fixture() -> Graph {
             &mut graph,
             source,
             child,
-            EdgeAssertion::Arrangement {
-                sub_kind: ArrangementSubKind::FrameMember,
-            },
+            RelationClaim::of(workspace_ids::REL_ARRANGEMENT_FRAME_MEMBER),
         )
         .unwrap();
     }
@@ -245,7 +244,7 @@ fn graphshell_rdf_browsing_trail_reopens_in_a_fresh_turnstone_store() {
     for target in [first, second] {
         assert!(restored.arrangement_edges().any(|edge| edge.from == source
             && edge.to == target
-            && edge.sub_kind == ArrangementSubKind::FrameMember));
+            && edge.predicate == workspace_ids::REL_ARRANGEMENT_FRAME_MEMBER));
     }
     assert_eq!(
         restored.node_history_projection(first).entries,

@@ -5,8 +5,9 @@ use super::*;
 
 #[test]
 fn relationship_menu_keeps_direction_and_pages_past_twelve_neighbors() {
+    use kernel::graph::RelationClaim;
     use kernel::graph::apply::assert_relation;
-    use mere::model::{EdgeAssertion, SemanticSubKind};
+    use mere::profile::core::ids as core_ids;
     let mut app = App::test_stub();
     app.update(Action::OpenAddress("https://example.test/root".into()));
     let pane = app.default_graph_pane();
@@ -22,16 +23,7 @@ fn relationship_menu_keeps_direction_and_pages_past_twelve_neighbors() {
             canvas.ingest_graph(|graph| {
                 let a = graph.get_node_by_id(source).unwrap().0;
                 let b = graph.get_node_by_id(member).unwrap().0;
-                assert_relation(
-                    graph,
-                    a,
-                    b,
-                    EdgeAssertion::Semantic {
-                        sub_kind: SemanticSubKind::Cites,
-                        label: None,
-                    },
-                )
-                .unwrap();
+                assert_relation(graph, a, b, RelationClaim::of(core_ids::REL_CITES)).unwrap();
                 true
             });
         });

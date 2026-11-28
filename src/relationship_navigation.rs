@@ -4,8 +4,6 @@
 //! Read-only relationship navigation over the kernel's canonical projection.
 //! Direction and kind are retained even when several relations share a member.
 use crate::{action::Effect, app::App, panes::GraphId};
-#[cfg(test)]
-use mere::model::{RelationKind, SemanticSubKind};
 
 pub type RelationshipTarget = incipit::navigation::RelationshipTarget<GraphId>;
 pub type RelationshipRow = incipit::navigation::RelationshipRow<GraphId>;
@@ -22,7 +20,7 @@ impl App {
             })
     }
     pub(crate) fn navigate_relationship(&mut self, target: RelationshipTarget) -> Vec<Effect> {
-        if !self.valid_relationship(target) {
+        if !self.valid_relationship(target.clone()) {
             return vec![Effect::Redraw];
         }
         self.read_member_in_graph(target.graph, target.member)
@@ -33,7 +31,8 @@ impl App {
 mod tests {
     use super::*;
     use crate::action::Action;
-    use mere::model::EdgeAssertion;
+    use kernel::graph::{RelationClaim, RelationTerm};
+    use mere::profile::core::ids as core_ids;
 
     fn setup() -> (App, GraphId, uuid::Uuid, uuid::Uuid) {
         let mut app = App::test_stub();
@@ -50,20 +49,12 @@ mod tests {
                 let ak = graph.get_node_by_id(a).unwrap().0;
                 let bk = graph.get_node_by_id(b).unwrap().0;
                 for (from, to, kind) in [
-                    (ak, bk, SemanticSubKind::Hyperlink),
-                    (ak, bk, SemanticSubKind::Cites),
-                    (bk, ak, SemanticSubKind::Quotes),
+                    (ak, bk, core_ids::REL_HYPERLINK),
+                    (ak, bk, core_ids::REL_CITES),
+                    (bk, ak, core_ids::REL_QUOTES),
                 ] {
-                    kernel::graph::apply::assert_relation(
-                        graph,
-                        from,
-                        to,
-                        EdgeAssertion::Semantic {
-                            sub_kind: kind,
-                            label: None,
-                        },
-                    )
-                    .unwrap();
+                    kernel::graph::apply::assert_relation(graph, from, to, RelationClaim::of(kind))
+                        .unwrap();
                 }
                 true
             });
@@ -117,7 +108,7 @@ mod tests {
         for graph in [first, second] {
             let row = relationships(graph, app.graph_runtimes.canvas(graph).unwrap().graph(), a)[0]
                 .clone();
-            app.update(Action::NavigateRelationship(row.target));
+            app.update(Action::NavigateRelationship(row.target.clone()));
             let owner = app.active_pane.unwrap();
             assert_eq!(app.graph_for_pane(owner), Some(graph));
             assert!(
@@ -132,19 +123,19 @@ mod tests {
     fn relationship_navigation_reuses_member_and_refuses_wrong_graph_or_predicate() {
         let (mut app, id, a, b) = setup();
         let row = relationships(id, app.graph_runtimes.canvas(id).unwrap().graph(), a)[0].clone();
-        let mut wrong = row.target;
+        let mut wrong = row.target.clone();
         wrong.graph = GraphId::nil();
         assert!(
             !app.update(Action::NavigateRelationship(wrong))
                 .contains(&Effect::SaveSession)
         );
-        let mut wrong = row.target;
-        wrong.kind = RelationKind::Semantic(SemanticSubKind::Blocks);
+        let mut wrong = row.target.clone();
+        wrong.kind = RelationTerm::of(core_ids::REL_BLOCKS);
         assert!(
             !app.update(Action::NavigateRelationship(wrong))
                 .contains(&Effect::SaveSession)
         );
-        app.update(Action::NavigateRelationship(row.target));
+        app.update(Action::NavigateRelationship(row.target.clone()));
         assert!(app.active_workbench().unwrap().has_tile(b));
         assert_eq!(
             app.graph_runtimes

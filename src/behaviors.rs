@@ -14,7 +14,7 @@
 //!
 //! **A node's scope is its containment ancestry** (the region vocabulary ruled
 //! 2026-08-13). Mere's nodes are keyed by `Uuid`, which is one opaque segment
-//! and so cannot nest on its own, but `EdgeFamily::Containment` already relates
+//! and so cannot nest on its own, but the containment family already relates
 //! them: a node under a folder, a URL path, a domain, a collection. Writing
 //! that ancestry as a `ScopePath` of ids (`container/member`) makes
 //! segment-prefix coverage mean what it should, with no change to `Cap`.

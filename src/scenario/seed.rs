@@ -7,9 +7,10 @@
 //! 2,000.
 
 use kernel::geometry::PortablePoint;
+use kernel::graph::RelationClaim;
 use kernel::graph::apply::{add_node, assert_relation};
 use kernel::graph::{Graph, NodeKey};
-use mere::model::{EdgeAssertion, SemanticSubKind};
+use mere::profile::core::ids as core_ids;
 use uuid::Uuid;
 
 /// A random tree of `n` nodes (at least two), the same for a given `n`.
@@ -31,10 +32,7 @@ pub fn tree_graph(n: usize) -> Graph {
                 &mut graph,
                 parent,
                 key,
-                EdgeAssertion::Semantic {
-                    sub_kind: SemanticSubKind::Hyperlink,
-                    label: None,
-                },
+                RelationClaim::of(core_ids::REL_HYPERLINK),
             );
         }
         keys.push(key);

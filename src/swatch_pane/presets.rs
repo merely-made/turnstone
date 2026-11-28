@@ -246,7 +246,7 @@ fn overmap_gather(app: &App) -> SwatchModel {
                 .and_then(|node| overmap::session_of_url(node.url()))
         };
         let kind = match (session(rel.from), session(rel.to)) {
-            _ if matches!(rel.kind, mere::model::RelationKind::Containment(_)) => None,
+            _ if rel.kind.family() == mere::profile::core::ids::FAMILY_CONTAINMENT => None,
             (Some(child), Some(parent)) => lineage
                 .iter()
                 .find(|(c, p, _)| *c == child && *p == parent)

@@ -11,7 +11,8 @@ use graphshell::link_inspection::{
     HeldStatement, LinkHistoryInspection, LinkInspection, LinkOwner, LinkTarget,
     StatementInspection,
 };
-use mere::model::{GraphStratum, SemanticSubKind};
+use mere::model::GraphStratum;
+use mere::profile::core::ids as core_ids;
 use uuid::Uuid;
 
 fn read(page: &TreePage) -> Result<LinkInspection, String> {
@@ -372,16 +373,19 @@ fn owner_rows(owner: &LinkOwner) -> Vec<DetailRow> {
     ]
 }
 
+/// A predicate's pack label, for a predicate the core or workspace pack holds
+/// (declared-lens D29). An open predicate has none.
+fn recognized_kind(predicate: &str) -> Option<&'static str> {
+    kernel::workspace::id(predicate).and_then(|id| kernel::workspace::predicate_label(id, false))
+}
+
 fn statement_rows(statement: &HeldStatement) -> Vec<DetailRow> {
     let mut rows = vec![
         DetailRow::new("Assertion handle", &statement.statement_id),
         DetailRow::new("Predicate", &statement.predicate),
         DetailRow::new(
             "Recognized kind",
-            statement
-                .recognized_sub_kind
-                .map(|kind| format!("{kind:?}"))
-                .unwrap_or_else(|| "Open predicate".into()),
+            recognized_kind(&statement.predicate).unwrap_or("Open predicate"),
         ),
         DetailRow::new(
             "Label",
@@ -444,7 +448,7 @@ fn statement_rows(statement: &HeldStatement) -> Vec<DetailRow> {
                 .unwrap_or_else(|| "Time not held here".into()),
         ),
     ];
-    if statement.recognized_sub_kind == Some(SemanticSubKind::AgentDerived) {
+    if kernel::workspace::id(&statement.predicate) == Some(core_ids::REL_AGENT_DERIVED) {
         rows.push(DetailRow::new(
             "Derivation",
             "Rule and inputs are not held in this assertion record",

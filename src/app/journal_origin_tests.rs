@@ -4,10 +4,11 @@
 //! Full-host controls for graph capture and session-bound behavior delivery.
 use super::*;
 use crate::host_journal::{RuntimeOrigin, restore_table};
+use kernel::graph::RelationClaim;
 use kernel::graph::apply::{add_node, assert_relation};
 use kernel::graph::{Graph, capture::CapturedDelta};
 use mere::model::author::Author;
-use mere::model::{ContainmentSubKind, EdgeAssertion};
+use mere::profile::core::ids as core_ids;
 use servitor::{ScopePath, Subject, Watch};
 
 fn paired_graph(extra_view: bool, parent: u128) -> (Graph, uuid::Uuid) {
@@ -36,9 +37,7 @@ fn paired_graph(extra_view: bool, parent: u128) -> (Graph, uuid::Uuid) {
         &mut graph,
         node,
         folder,
-        EdgeAssertion::Containment {
-            sub_kind: ContainmentSubKind::UserFolder,
-        },
+        RelationClaim::of(core_ids::REL_CONTAINMENT_USER_FOLDER),
     )
     .unwrap();
     let resource = graph.shown_resource_id(node).unwrap();
@@ -72,8 +71,11 @@ fn equal_resource_and_surface_ids_cannot_transfer_scopes_across_runtimes() {
     let origin_a = app.behavior_origin().unwrap();
     let cursor = app.journal.lock().unwrap().high_water();
     let graph_b = GraphId::from_uuid(uuid::Uuid::from_u128(2));
-    app.graph_runtimes
-        .activate_or_insert(graph_b, None, cartography::canvas::Canvas::with_graph(b));
+    app.graph_runtimes.activate_or_insert(
+        graph_b,
+        None,
+        cartography::canvas::Canvas::with_graph(b),
+    );
     let origin_b = app.graph_runtimes.get(graph_b).unwrap().origin().unwrap();
     record_resource(&app, origin_b, resource_b);
     let foreign = crate::behaviors::entries_since(&app, cursor);
@@ -284,8 +286,11 @@ fn foreign_only_tail_advances_without_waking_authorized_local_body() {
         .unwrap();
     let graph_b = GraphId::from_uuid(uuid::Uuid::from_u128(22));
     let copy = app.graph_runtimes.graph().clone();
-    app.graph_runtimes
-        .activate_or_insert(graph_b, None, cartography::canvas::Canvas::with_graph(copy));
+    app.graph_runtimes.activate_or_insert(
+        graph_b,
+        None,
+        cartography::canvas::Canvas::with_graph(copy),
+    );
     let origin_b = app.graph_runtimes.get(graph_b).unwrap().origin().unwrap();
     app.graph_runtimes.activate(origin_a.graph);
     app.take_events();

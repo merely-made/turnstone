@@ -134,7 +134,6 @@ fn bindings_for(
             budget.charge(0, 0, bytes)?;
             if from.id() != to.id()
                 || statement.graph_scope != GraphScope::Default
-                || statement.recognized_sub_kind.is_some()
                 || statement.basis.note.is_some()
                 || statement.basis.evidence.len() != 1
                 || statement.basis.method.as_ref()
@@ -250,13 +249,12 @@ pub(crate) fn assertion_for(
     let statement = matches
         .next()
         .ok_or("Attached property assertion unavailable")?;
-    if matches.next().is_some() || statement.recognized_sub_kind.is_some() {
+    if matches.next().is_some() {
         return Err("Attached property assertion is ambiguous or unsupported".into());
     }
     let persisted = mere::model::PersistedSemanticStatement {
         statement_id: statement.statement_id.clone(),
         predicate: statement.predicate.clone(),
-        recognized_sub_kind: None,
         label: statement.label.clone(),
         basis: statement.basis.clone(),
         graph_scope: statement.graph_scope.clone(),
@@ -298,7 +296,6 @@ fn attach_for(
     }
     let spec = SemanticStatementSpec {
         predicate: predicate.into(),
-        recognized_sub_kind: None,
         label: None,
         basis: AssertionBasis {
             note: None,
@@ -400,7 +397,6 @@ pub(crate) fn restore(
         || statement.statement_id != expected.statement_id
         || statement.predicate != predicate
         || statement.graph_scope != GraphScope::Default
-        || statement.recognized_sub_kind.is_some()
         || statement.withdrawn.is_some()
         || statement.label.is_some()
         || statement.basis.note.is_some()
@@ -449,18 +445,11 @@ pub(crate) fn restore(
             settings.max_input_bytes,
         )
         .map_err(|error| format!("Recovery target bucket refused: {error:?}"))?;
-    edges.push(PersistedEdge {
-        from_node_id: endpoint.clone(),
-        to_node_id: endpoint,
-        families: vec![],
-        semantic: None,
-        traversal: None,
-        containment: None,
-        arrangement: None,
-        imported: None,
-        provenance: None,
-        assertions: Some(vec![statement]),
-    });
+    edges.push(PersistedEdge::of(
+        endpoint.clone(),
+        endpoint,
+        vec![statement],
+    ));
     if edges.len() > settings.max_work {
         return Err("Recovery target bucket work limit exceeded".into());
     }

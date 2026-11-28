@@ -28,10 +28,11 @@
 //! pick record existed carry `parent_session` and still read as forks.
 //! `sub_graph_refs` render as containment (`CollectionMember`).
 
+use crate::session::manifest_store::ManifestStore;
+use kernel::graph::RelationClaim;
 use kernel::graph::apply::{self as graph_apply, GraphDelta, apply_graph_delta};
 use kernel::graph::{Graph, NodeKey};
-use crate::session::manifest_store::ManifestStore;
-use mere::model::{ContainmentSubKind, EdgeAssertion, ProvenanceSubKind};
+use mere::profile::core::ids as core_ids;
 use std::collections::HashMap;
 
 use crate::panes::SessionId;
@@ -100,9 +101,7 @@ pub fn overmap_graph(sessions: &ManifestStore) -> Graph {
                 &mut graph,
                 child,
                 parent_key,
-                EdgeAssertion::Provenance {
-                    sub_kind: ProvenanceSubKind::CopiedFrom,
-                },
+                RelationClaim::of(core_ids::REL_PROVENANCE_COPIED_FROM),
             );
         }
         // Pick lineage: the child was picked off its source, part of it.
@@ -113,9 +112,7 @@ pub fn overmap_graph(sessions: &ManifestStore) -> Graph {
                 &mut graph,
                 child,
                 source_key,
-                EdgeAssertion::Provenance {
-                    sub_kind: ProvenanceSubKind::CopiedFrom,
-                },
+                RelationClaim::of(core_ids::REL_PROVENANCE_COPIED_FROM),
             );
         }
         // Containment: a sub-graph ref whose target is some session's
@@ -126,9 +123,7 @@ pub fn overmap_graph(sessions: &ManifestStore) -> Graph {
                     &mut graph,
                     child,
                     sub_key,
-                    EdgeAssertion::Containment {
-                        sub_kind: ContainmentSubKind::CollectionMember,
-                    },
+                    RelationClaim::of(core_ids::REL_CONTAINMENT_COLLECTION_MEMBER),
                 );
             }
         }

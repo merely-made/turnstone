@@ -23,14 +23,14 @@ use std::time::Duration;
 use eidetic::PrivacyClass;
 use incipit_session::access::{AccessAction, AccessRecord, AccessTransition};
 use incipit_session::personal_sync::{
-    BlobAvailabilityObservation, IncipitFold, PersonalGraphEvent, PersonalGraphReplica, SyncRoster,
-    SyncSelection, accept_into,
+    BlobAvailabilityObservation, IncipitFold, PersonalGraphEvent, PersonalGraphReplica,
+    RelationClaim, SyncRoster, SyncSelection, accept_into,
 };
-use mere::model::{EdgeAssertion, RelationKind, SemanticSubKind};
+use mere::profile::core::{self as core_pack, ids as core_ids};
 use muniment::RedbBackend;
+use murm_sync::JoinedSpace;
 use personae::{IdentityProvider, InMemoryProvider};
 use serde::Serialize;
-use murm_sync::JoinedSpace;
 use transport::{P2pandaTransport, PeerID, sync_overlay_topic};
 use uuid::Uuid;
 
@@ -316,10 +316,7 @@ fn local_events(role: Role) -> Vec<PersonalGraphEvent> {
             asserted_at_ms: None,
             from: A,
             to: B,
-            assertion: EdgeAssertion::Semantic {
-                sub_kind: SemanticSubKind::Cites,
-                label: None,
-            },
+            relation: RelationClaim::new(core_pack::iri(core_ids::REL_CITES), None),
             basis: None,
         });
     }
@@ -395,7 +392,9 @@ fn receipt(graph: [u8; 32], projection: &SyncProjection) -> Receipt {
         relations: projection
             .graph
             .relations()
-            .filter(|relation| matches!(relation.kind, RelationKind::Semantic(_)))
+            .filter(|relation| {
+                relation.kind.family() == core_ids::FAMILY_SEMANTIC && !relation.kind.is_open()
+            })
             .count(),
         tags,
         accesses,

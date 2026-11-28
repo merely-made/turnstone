@@ -4,9 +4,10 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 //! Query definitions are shared Resources, written through the current owner journal.
-use crate::product::ProductHost;
 use crate::app::GraphshellApp;
+use crate::product::ProductHost;
 use mere::model::GraphStratum;
+use mere::profile::core::ids as core_ids;
 use mere_view::query as model;
 use mere_view::query::{self as query_view, QueryNodeId, QueryProjection, QueryViewSpec};
 use muniment::Backend;
@@ -265,9 +266,9 @@ pub async fn seed_fixture<B: pandect::graph_session::LegacyTransactionBackend + 
         .map_err(|e| e.to_string())?;
     app.host
         .mutate_product_graph(|graph| -> Result<(), String> {
+            use kernel::graph::RelationClaim;
             use kernel::graph::apply::{GraphDelta, apply_graph_delta};
             use mere::model::resource_content::TagConcept;
-            use mere::model::{EdgeAssertion, SemanticSubKind};
             let from = graph.get_node_key_by_id(a).ok_or("Missing source")?;
             let to = graph.get_node_key_by_id(b).ok_or("Missing target")?;
             let resource = graph
@@ -288,16 +289,13 @@ pub async fn seed_fixture<B: pandect::graph_session::LegacyTransactionBackend + 
                     )
                     .map_err(|e| e.to_string())?;
             }
-            for kind in [SemanticSubKind::Cites, SemanticSubKind::UserGrouped] {
+            for kind in [core_ids::REL_CITES, core_ids::REL_USER_GROUPED] {
                 apply_graph_delta(
                     graph,
                     GraphDelta::AssertRelation {
                         from,
                         to,
-                        assertion: EdgeAssertion::Semantic {
-                            sub_kind: kind,
-                            label: Some("query fixture".into()),
-                        },
+                        relation: RelationClaim::with_label(kind, Some("query fixture".into())),
                         asserter_iri: "urn:author:fixture".into(),
                     },
                 );
@@ -425,8 +423,9 @@ pub fn presented_links(projection: &QueryProjection) -> Vec<PresentedLink> {
             .unwrap_or(&relation.statements);
         for statement in records.iter().filter(|statement| statement.is_held()) {
             eligible = true;
-            entry.supports |= statement.predicate == "https://mere.computer/ns/rel#supports";
-            entry.contradicts |= statement.predicate == "https://mere.computer/ns/rel#contradicts";
+            let id = kernel::workspace::id(&statement.predicate);
+            entry.supports |= id == Some(core_ids::REL_SUPPORTS);
+            entry.contradicts |= id == Some(core_ids::REL_CONTRADICTS);
             let scope = serde_json::to_string(&statement.graph_scope).unwrap_or_default();
             entry
                 .assertions
@@ -468,21 +467,16 @@ pub fn presented_links(projection: &QueryProjection) -> Vec<PresentedLink> {
 
 #[cfg(test)]
 mod grouping_tests {
+    use super::*;
     use mere::model::AssertionWithdrawal;
     use mere::model::GraphScope;
-    use mere::model::{ContainmentSubKind, SemanticStatement, SemanticSubKind};
-    use super::*;
+    use mere::model::SemanticStatement;
+    use mere::profile::intern::TermId;
     use mere_view::query::{QueryNode, QueryRelation};
 
-    fn statement(id: &str, kind: SemanticSubKind) -> SemanticStatement {
-        let predicate = match kind {
-            SemanticSubKind::Supports => "https://mere.computer/ns/rel#supports",
-            SemanticSubKind::Contradicts => "https://mere.computer/ns/rel#contradicts",
-            _ => "https://mere.computer/ns/rel#cites",
-        };
+    fn statement(id: &str, kind: TermId) -> SemanticStatement {
         let mut statement = SemanticStatement::new(
-            predicate.into(),
-            Some(kind),
+            kernel::workspace::iri(kind).into(),
             None,
             GraphScope::Default,
             Some("https://author.test/a".into()),
@@ -590,7 +584,7 @@ mod grouping_tests {
                     resource_a,
                     resource_b,
                     model::VisualRelationKind::ResourceLink,
-                    vec![statement("support", SemanticSubKind::Supports)],
+                    vec![statement("support", core_ids::REL_SUPPORTS)],
                 ),
                 relation(
                     resource_b,
@@ -598,7 +592,7 @@ mod grouping_tests {
                     resource_b,
                     resource_a,
                     model::VisualRelationKind::ResourceLink,
-                    vec![statement("contradiction", SemanticSubKind::Contradicts)],
+                    vec![statement("contradiction", core_ids::REL_CONTRADICTS)],
                 ),
                 relation(
                     surface_alias_a,
@@ -606,7 +600,7 @@ mod grouping_tests {
                     resource_a,
                     resource_b,
                     model::VisualRelationKind::ResourceLink,
-                    vec![statement("support", SemanticSubKind::Supports)],
+                    vec![statement("support", core_ids::REL_SUPPORTS)],
                 ),
                 relation(
                     surface_a,
@@ -614,7 +608,7 @@ mod grouping_tests {
                     surface_a,
                     surface_b,
                     model::VisualRelationKind::SurfaceLink,
-                    vec![statement("surface-support", SemanticSubKind::Supports)],
+                    vec![statement("surface-support", core_ids::REL_SUPPORTS)],
                 ),
                 relation(
                     resource_a,
@@ -664,8 +658,7 @@ mod grouping_tests {
         let from = QueryNodeId::resource(Uuid::from_u128(1));
         let to = QueryNodeId::resource(Uuid::from_u128(2));
         let mut held_a = SemanticStatement::new(
-            "https://mere.computer/ns/rel#containment.collection-member".into(),
-            None,
+            kernel::workspace::iri(core_ids::REL_CONTAINMENT_COLLECTION_MEMBER).into(),
             None,
             GraphScope::User,
             Some("https://author.test/a".into()),
@@ -721,7 +714,7 @@ mod grouping_tests {
         // This compatibility summary describes the same family and must not
         // inflate strength alongside the exact canonical records.
         projection.relations[0].families = serde_json::json!({
-            "containment": {"sub_kinds": [ContainmentSubKind::CollectionMember]},
+            "containment": {"sub_kinds": ["CollectionMember"]},
             "traversal": {"occurrences": []}
         });
 

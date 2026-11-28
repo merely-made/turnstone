@@ -128,11 +128,7 @@ fn a_malformed_id_yields_no_scope_rather_than_a_bogus_one() {
     assert!(ancestry_scopes(&graph, "not-a-uuid").is_empty());
 }
 
-fn resource_views() -> (
-    Graph,
-    kernel::graph::NodeKey,
-    kernel::graph::NodeKey,
-) {
+fn resource_views() -> (Graph, kernel::graph::NodeKey, kernel::graph::NodeKey) {
     use kernel::graph::apply::add_node;
     let mut graph = Graph::new();
     let a = add_node(
@@ -411,8 +407,9 @@ fn resource_projection_preserves_journal_author_and_no_self_wake() {
 
 #[test]
 fn resource_and_surface_containment_both_contribute_current_watch_ancestry() {
+    use kernel::graph::RelationClaim;
     use kernel::graph::apply::{add_node, assert_relation};
-    use mere::model::{ContainmentSubKind, EdgeAssertion};
+    use mere::profile::core::ids as core_ids;
     let (mut graph, a, _) = resource_views();
     let parent = add_node(
         &mut graph,
@@ -436,18 +433,14 @@ fn resource_and_surface_containment_both_contribute_current_watch_ancestry() {
         &mut graph,
         a,
         parent,
-        EdgeAssertion::Containment {
-            sub_kind: ContainmentSubKind::UrlPath,
-        },
+        RelationClaim::of(core_ids::REL_CONTAINMENT_URL_PATH),
     )
     .unwrap();
     assert_relation(
         &mut graph,
         a,
         folder,
-        EdgeAssertion::Containment {
-            sub_kind: ContainmentSubKind::UserFolder,
-        },
+        RelationClaim::of(core_ids::REL_CONTAINMENT_USER_FOLDER),
     )
     .unwrap();
     let leaf = graph.get_node(a).unwrap().id.to_string();

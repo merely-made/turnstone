@@ -170,9 +170,10 @@ impl App {
     /// Deterministic live graph truth for Graphshell's headed G3 receipt.
     pub(crate) fn projection_fixture() -> Self {
         use kernel::geometry::PortablePoint;
-        use kernel::graph::apply::{add_node, assert_relation};
         use kernel::graph::Graph;
-        use mere::model::{EdgeAssertion, SemanticSubKind};
+        use kernel::graph::RelationClaim;
+        use kernel::graph::apply::{add_node, assert_relation};
+        use mere::profile::core::ids as core_ids;
 
         let mut app = Self::isolated(std::env::temp_dir().join("turnstone-graphshell-g3"));
         let mut graph = Graph::new();
@@ -194,10 +195,7 @@ impl App {
             "mere://harmony-map".to_string(),
             PortablePoint::zero(),
         );
-        let relation = || EdgeAssertion::Semantic {
-            sub_kind: SemanticSubKind::Hyperlink,
-            label: None,
-        };
+        let relation = || RelationClaim::of(core_ids::REL_HYPERLINK);
         let _ = assert_relation(&mut graph, notes, radios, relation());
         let _ = assert_relation(&mut graph, notes, harmony, relation());
         app.graph_runtimes.set_graph(graph);

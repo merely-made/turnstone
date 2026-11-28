@@ -106,7 +106,7 @@ impl App {
                 .get_node_by_id(target.member.unwrap())
                 .is_some_and(|(_, node)| node.url() == target.address)
             && match &target.origin {
-                Origin::Relationship(relation) => self.valid_relationship(*relation),
+                Origin::Relationship(relation) => self.valid_relationship(relation.clone()),
                 Origin::Inline(source) => runtime.canvas.graph().get_node_by_id(*source).is_some(),
                 Origin::Node => true,
                 Origin::Scope(_) | Origin::Forme { .. } => unreachable!(),

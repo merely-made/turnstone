@@ -18,9 +18,10 @@
 
 use cartography::canvas::{Canvas, project_canvas_strategy};
 use kernel::geometry::PortablePoint;
-use kernel::graph::apply::{add_node, assert_relation};
 use kernel::graph::Graph;
-use mere::model::{EdgeAssertion, SemanticSubKind};
+use kernel::graph::RelationClaim;
+use kernel::graph::apply::{add_node, assert_relation};
+use mere::profile::core::ids as core_ids;
 use uuid::Uuid;
 
 /// The arrangement both pages open with.
@@ -85,10 +86,7 @@ pub(crate) fn generated(nodes: usize, seed: u64, links: Links) -> Graph {
             )
         })
         .collect();
-    let link = || EdgeAssertion::Semantic {
-        sub_kind: SemanticSubKind::Hyperlink,
-        label: None,
-    };
+    let link = || RelationClaim::of(core_ids::REL_HYPERLINK);
     for index in 1..nodes {
         let earlier = (next() % index as u64) as usize;
         if links != Links::None {

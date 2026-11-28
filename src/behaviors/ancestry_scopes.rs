@@ -33,9 +33,9 @@ pub fn ancestry_scopes(graph: &Graph, id: &str) -> Vec<ScopePath> {
         let mut containers: Vec<_> = graph
             .projected_outgoing_relations(at)
             .filter(|(_, _, payload)| {
-                payload
-                    .containment_data()
-                    .is_some_and(|data| !data.sub_kinds.is_empty())
+                !payload
+                    .held_predicates(mere::profile::core::ids::FAMILY_CONTAINMENT)
+                    .is_empty()
             })
             .map(|(container, _, _)| container)
             .collect();

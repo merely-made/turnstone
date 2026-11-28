@@ -19,9 +19,7 @@ use uuid::Uuid;
 
 use crate::action::Effect;
 use crate::content_classes::{REDSHANK_NOTE_FACET, REDSHANK_PROGRESS_FACET};
-use crate::redshank_episode_surface::{
-    PANE_KIND, RedshankEpisodeSourceV1, episode_source,
-};
+use crate::redshank_episode_surface::{PANE_KIND, RedshankEpisodeSourceV1, episode_source};
 use crate::redshank_host::HostOutcome;
 
 use super::App;
@@ -225,7 +223,7 @@ impl App {
             canvas.assert_relation_between_members(
                 member,
                 node,
-                mere::model::SemanticSubKind::Quotes,
+                mere::profile::core::iri(mere::profile::core::ids::REL_QUOTES),
             );
         }
         let value = json!({

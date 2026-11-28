@@ -7,7 +7,8 @@ use super::*;
 use kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta};
 use kernel::graph::{Field, ScalarField};
 use mere::model::GraphScope;
-use mere::model::{SemanticStatementSpec, SemanticSubKind, predicate_iri};
+use mere::model::SemanticStatementSpec;
+use mere::profile::core::ids as core_ids;
 use scenograph::presentation::{Condition, Resolution, Rule, RuleSet, Target};
 fn fixture() -> (Graph, [Uuid; 4]) {
     let mut graph = Graph::new();
@@ -99,8 +100,7 @@ fn one_resource_assertion_has_distinct_exact_displayed_pair_occurrences() {
             graph.get_node_key_by_id(a).unwrap(),
             graph.get_node_key_by_id(b).unwrap(),
             SemanticStatementSpec {
-                predicate: predicate_iri(SemanticSubKind::Cites).into(),
-                recognized_sub_kind: Some(SemanticSubKind::Cites),
+                predicate: kernel::workspace::iri(core_ids::REL_CITES).into(),
                 label: None,
                 basis: Default::default(),
                 graph_scope: GraphScope::Custom("urn:graph:review".into()),
@@ -149,8 +149,7 @@ fn assertion_binding_preserves_host_source_and_graph_only_binding_discloses_unav
             graph.get_node_key_by_id(a).unwrap(),
             graph.get_node_key_by_id(b).unwrap(),
             SemanticStatementSpec {
-                predicate: predicate_iri(SemanticSubKind::Cites).into(),
-                recognized_sub_kind: Some(SemanticSubKind::Cites),
+                predicate: kernel::workspace::iri(core_ids::REL_CITES).into(),
                 label: None,
                 basis: Default::default(),
                 graph_scope: GraphScope::Default,

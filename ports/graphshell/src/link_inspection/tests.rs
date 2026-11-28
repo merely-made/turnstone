@@ -6,12 +6,13 @@
 
 use super::*;
 use kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta, assert_relation};
+use kernel::graph::{NavigationTrigger, RelationClaim};
+use kernel::workspace::{self, ids as workspace_ids};
 use mere::model::coverage::{CoverageLayer, CoverageLimit};
-use mere::model::{
-    ArrangementSubKind, ContainmentSubKind, EdgeAssertion, ImportedSubKind, NavigationTrigger,
-    ProvenanceSubKind, RelationKind, SemanticStatement, SemanticStatementSpec, predicate_iri,
-};
 use mere::model::{AssertionBasis, AssertionMethod};
+use mere::model::{SemanticStatement, SemanticStatementSpec};
+use mere::profile::core::ids as core_ids;
+use mere::profile::intern::TermId;
 
 fn fixture() -> (Graph, [Uuid; 4]) {
     let mut graph = Graph::new();
@@ -27,14 +28,13 @@ fn fixture() -> (Graph, [Uuid; 4]) {
     (graph, ids)
 }
 
-fn assert(graph: &mut Graph, from: Uuid, to: Uuid, kind: SemanticSubKind, author: &str) -> String {
+fn assert(graph: &mut Graph, from: Uuid, to: Uuid, kind: TermId, author: &str) -> String {
     graph
         .try_assert_semantic_statement(
             graph.get_node_key_by_id(from).unwrap(),
             graph.get_node_key_by_id(to).unwrap(),
             SemanticStatementSpec {
-                predicate: predicate_iri(kind).into(),
-                recognized_sub_kind: Some(kind),
+                predicate: workspace::iri(kind).into(),
                 label: Some(format!("claim by {author}")),
                 basis: AssertionBasis::default(),
                 graph_scope: GraphScope::Custom("urn:graph:review".into()),
@@ -47,6 +47,11 @@ fn assert(graph: &mut Graph, from: Uuid, to: Uuid, kind: SemanticSubKind, author
         .statement_id
 }
 
+/// The traversal family's name as link reading gives a legacy member.
+fn traversal_name() -> Option<&'static str> {
+    workspace::family_label(workspace_ids::FAMILY_TRAVERSAL)
+}
+
 fn stored_assertion(
     graph: &mut Graph,
     from: Uuid,
@@ -55,7 +60,7 @@ fn stored_assertion(
     first: Option<u64>,
     last: Option<u64>,
 ) {
-    stored_assertion_kind(graph, from, to, id, SemanticSubKind::Cites, first, last);
+    stored_assertion_kind(graph, from, to, id, core_ids::REL_CITES, first, last);
 }
 
 fn stored_assertion_kind(
@@ -63,7 +68,7 @@ fn stored_assertion_kind(
     from: Uuid,
     to: Uuid,
     id: &str,
-    kind: SemanticSubKind,
+    kind: TermId,
     first: Option<u64>,
     last: Option<u64>,
 ) {
@@ -73,8 +78,7 @@ fn stored_assertion_kind(
             graph.get_node_key_by_id(to).unwrap(),
             SemanticStatement {
                 statement_id: id.into(),
-                predicate: predicate_iri(kind).into(),
-                recognized_sub_kind: Some(kind),
+                predicate: workspace::iri(kind).into(),
                 label: Some(format!("note:{id}")),
                 basis: AssertionBasis {
                     note: Some(format!("note:{id}")),
@@ -97,8 +101,8 @@ fn stored_assertion_kind(
 #[test]
 fn same_predicate_assertions_keep_exact_handles_and_attribution_without_mutation() {
     let (mut graph, [a, b, _, _]) = fixture();
-    let alice = assert(&mut graph, a, b, SemanticSubKind::Cites, "urn:author:alice");
-    let bob = assert(&mut graph, a, b, SemanticSubKind::Cites, "urn:author:bob");
+    let alice = assert(&mut graph, a, b, core_ids::REL_CITES, "urn:author:alice");
+    let bob = assert(&mut graph, a, b, core_ids::REL_CITES, "urn:author:bob");
     let before = serde_json::to_value(graph.to_snapshot()).unwrap();
     let inspected = inspect_link(&graph, LinkTarget::new(a, b)).unwrap();
     assert!(matches!(
@@ -131,7 +135,7 @@ fn same_predicate_assertions_keep_exact_handles_and_attribution_without_mutation
 #[test]
 fn verified_source_context_survives_the_graphshell_adapter_unchanged() {
     let (mut graph, [a, b, _, _]) = fixture();
-    assert(&mut graph, a, b, SemanticSubKind::Cites, "urn:author:alice");
+    assert(&mut graph, a, b, core_ids::REL_CITES, "urn:author:alice");
     let source = scenograph::link::LinkSource::Available {
         binding: scenograph::SourceBinding {
             authority: "mere:test".into(),
@@ -152,7 +156,7 @@ fn verified_source_context_survives_the_graphshell_adapter_unchanged() {
 #[test]
 fn lifted_records_share_resource_owner_but_keep_distinct_displayed_access_pairs() {
     let (mut graph, [a, b, c, d]) = fixture();
-    assert(&mut graph, a, b, SemanticSubKind::Cites, "urn:author:alice");
+    assert(&mut graph, a, b, core_ids::REL_CITES, "urn:author:alice");
     let ab = inspect_link(&graph, LinkTarget::new(a, b)).unwrap();
     let cd = inspect_link(&graph, LinkTarget::new(c, d)).unwrap();
     assert_eq!(ab.records[0].owner, cd.records[0].owner);
@@ -173,12 +177,12 @@ fn lifted_records_share_resource_owner_but_keep_distinct_displayed_access_pairs(
 #[test]
 fn both_directions_and_both_strata_remain_distinct() {
     let (mut graph, [a, b, _, _]) = fixture();
-    let source = assert(&mut graph, a, b, SemanticSubKind::Cites, "urn:author:alice");
+    let source = assert(&mut graph, a, b, core_ids::REL_CITES, "urn:author:alice");
     let direct = assert(
         &mut graph,
         b,
         a,
-        SemanticSubKind::UserGrouped,
+        core_ids::REL_USER_GROUPED,
         "urn:author:bob",
     );
     let inspected = inspect_link(&graph, LinkTarget::new(b, a)).unwrap();
@@ -207,7 +211,7 @@ fn both_directions_and_both_strata_remain_distinct() {
 #[test]
 fn parallel_buckets_and_self_links_are_not_dropped_or_double_counted() {
     let (mut graph, [a, b, _, _]) = fixture();
-    let id = assert(&mut graph, a, b, SemanticSubKind::Cites, "urn:author:alice");
+    let id = assert(&mut graph, a, b, core_ids::REL_CITES, "urn:author:alice");
     let owner = inspect_statement(&graph, &id).unwrap().owner;
     let edge = graph
         .to_snapshot()
@@ -242,7 +246,7 @@ fn parallel_buckets_and_self_links_are_not_dropped_or_double_counted() {
         &mut graph,
         a,
         a,
-        SemanticSubKind::UserGrouped,
+        core_ids::REL_USER_GROUPED,
         "urn:author:alice",
     );
     let looped = inspect_link(&graph, LinkTarget::new(a, a)).unwrap();
@@ -273,9 +277,7 @@ fn session_sidecar_projection_preserves_its_canonical_assertion() {
         &mut graph,
         from,
         to,
-        EdgeAssertion::Arrangement {
-            sub_kind: ArrangementSubKind::SplitPair,
-        },
+        RelationClaim::of(workspace_ids::REL_ARRANGEMENT_SPLIT_PAIR),
     );
     let inspected = inspect_link(&graph, LinkTarget::new(a, b)).unwrap();
     assert_eq!(inspected.records.len(), 1);
@@ -285,12 +287,14 @@ fn session_sidecar_projection_preserves_its_canonical_assertion() {
         .unwrap()
         .assertions()
         .iter()
-        .find(|statement| statement.recognized_sub_kind.is_none())
+        .find(|statement| {
+            statement.predicate == workspace::iri(workspace_ids::REL_ARRANGEMENT_SPLIT_PAIR)
+        })
         .expect("the session Arrangement claim has an exact runtime assertion");
     assert_eq!(record.statements.len(), 1);
     assert_eq!(record.statements[0].statement_id, canonical.statement_id);
     assert_eq!(record.statements[0].predicate, canonical.predicate);
-    assert_eq!(record.statements[0].recognized_sub_kind, None);
+    assert!(!workspace::vocabulary().is_semantic(&record.statements[0].predicate));
     assert_eq!(
         record.statements[0].provenance_iri,
         canonical.provenance_iri
@@ -318,9 +322,7 @@ fn session_sidecar_projection_preserves_its_canonical_assertion() {
     );
     assert_eq!(
         canonical.predicate,
-        RelationKind::Arrangement(ArrangementSubKind::SplitPair)
-            .predicate_iri()
-            .unwrap()
+        workspace::iri(workspace_ids::REL_ARRANGEMENT_SPLIT_PAIR)
     );
 }
 
@@ -329,18 +331,12 @@ fn mixed_family_data_preserves_canonical_assertions_events_and_aggregates() {
     let (mut graph, [a, b, _, _]) = fixture();
     let from = graph.get_node_key_by_id(a).unwrap();
     let to = graph.get_node_key_by_id(b).unwrap();
-    for assertion in [
-        EdgeAssertion::Containment {
-            sub_kind: ContainmentSubKind::NotebookSection,
-        },
-        EdgeAssertion::Imported {
-            sub_kind: ImportedSubKind::SessionImport,
-        },
-        EdgeAssertion::Provenance {
-            sub_kind: ProvenanceSubKind::CopiedFrom,
-        },
+    for id in [
+        core_ids::REL_CONTAINMENT_NOTEBOOK_SECTION,
+        core_ids::REL_IMPORTED_SESSION_IMPORT,
+        core_ids::REL_PROVENANCE_COPIED_FROM,
     ] {
-        assert_relation(&mut graph, from, to, assertion);
+        assert_relation(&mut graph, from, to, RelationClaim::of(id));
     }
     apply_graph_delta(
         &mut graph,
@@ -366,7 +362,7 @@ fn mixed_family_data_preserves_canonical_assertions_events_and_aggregates() {
         .collect();
     assert_eq!(statements.len(), 3);
     assert!(statements.iter().all(|statement| {
-        statement.recognized_sub_kind.is_none()
+        !workspace::vocabulary().is_semantic(&statement.predicate)
             && canonical_ids.contains(statement.statement_id.as_str())
     }));
     let families: Vec<_> = inspected
@@ -375,14 +371,14 @@ fn mixed_family_data_preserves_canonical_assertions_events_and_aggregates() {
         .flat_map(|record| &record.families)
         .collect();
     for kind in [
-        RelationKind::Containment(ContainmentSubKind::NotebookSection),
-        RelationKind::Imported(ImportedSubKind::SessionImport),
-        RelationKind::Provenance(ProvenanceSubKind::CopiedFrom),
+        core_ids::REL_CONTAINMENT_NOTEBOOK_SECTION,
+        core_ids::REL_IMPORTED_SESSION_IMPORT,
+        core_ids::REL_PROVENANCE_COPIED_FROM,
     ] {
         assert_eq!(
             statements
                 .iter()
-                .filter(|statement| statement.predicate == kind.predicate_iri().unwrap())
+                .filter(|statement| statement.predicate == workspace::iri(kind))
                 .count(),
             1
         );
@@ -390,12 +386,12 @@ fn mixed_family_data_preserves_canonical_assertions_events_and_aggregates() {
     assert!(
         families
             .iter()
-            .all(|family| family.family == EdgeFamily::Traversal),
+            .all(|family| Some(family.family.as_str()) == traversal_name()),
         "only event-shaped Traversal retains a legacy summary"
     );
     let traversal = &families
         .iter()
-        .find(|held| held.family == EdgeFamily::Traversal)
+        .find(|held| Some(held.family.as_str()) == traversal_name())
         .unwrap()
         .data;
     assert_eq!(
@@ -411,7 +407,7 @@ fn mixed_family_data_preserves_canonical_assertions_events_and_aggregates() {
 #[test]
 fn exact_assertion_survives_rebinding_but_missing_targets_never_retarget() {
     let (mut graph, [a, b, _, _]) = fixture();
-    let id = assert(&mut graph, a, b, SemanticSubKind::Cites, "urn:author:alice");
+    let id = assert(&mut graph, a, b, core_ids::REL_CITES, "urn:author:alice");
     let held = inspect_statement(&graph, &id).unwrap();
     let key = graph.get_node_key_by_id(a).unwrap();
     apply_graph_delta(
@@ -429,7 +425,7 @@ fn exact_assertion_survives_rebinding_but_missing_targets_never_retarget() {
     );
     assert_eq!(inspect_statement(&graph, &id).unwrap(), held);
     assert!(graph.retract_assertion(&id));
-    assert(&mut graph, a, b, SemanticSubKind::Cites, "urn:author:alice");
+    assert(&mut graph, a, b, core_ids::REL_CITES, "urn:author:alice");
     assert!(inspect_statement(&graph, &id).is_err());
     apply_graph_delta(&mut graph, GraphDelta::RemoveNode { key });
     add_node(
@@ -480,8 +476,8 @@ fn missing_bindings_and_scoped_coverage_are_disclosed() {
 #[test]
 fn stable_bundle_and_statement_targets_roundtrip_through_graph_snapshot() {
     let (mut graph, [a, b, _, _]) = fixture();
-    let id = assert(&mut graph, a, b, SemanticSubKind::Cites, "urn:author:alice");
-    assert(&mut graph, a, b, SemanticSubKind::Cites, "urn:author:bob");
+    let id = assert(&mut graph, a, b, core_ids::REL_CITES, "urn:author:alice");
+    assert(&mut graph, a, b, core_ids::REL_CITES, "urn:author:bob");
     let target = LinkTarget::new(a, b);
     let inspected = inspect_link(&graph, target).unwrap();
     let exact = inspect_statement(&graph, &id).unwrap();
@@ -565,10 +561,7 @@ fn history_is_opt_in_preserves_lifecycle_and_sorts_undated_entries_last() {
 #[test]
 fn exact_containment_ids_are_independently_inspectable_and_withdrawable() {
     let (mut graph, [a, b, _, _]) = fixture();
-    let predicate = RelationKind::Containment(ContainmentSubKind::CollectionMember)
-        .predicate_iri()
-        .expect("canonical containment predicate")
-        .to_owned();
+    let predicate = workspace::iri(core_ids::REL_CONTAINMENT_COLLECTION_MEMBER).to_owned();
     for (id, author) in [
         ("collection-claim-a", "urn:author:a"),
         ("collection-claim-b", "urn:author:b"),
@@ -580,7 +573,6 @@ fn exact_containment_ids_are_independently_inspectable_and_withdrawable() {
                 SemanticStatement {
                     statement_id: id.into(),
                     predicate: predicate.clone(),
-                    recognized_sub_kind: None,
                     label: None,
                     basis: AssertionBasis {
                         note: Some(format!("independent {id}")),
@@ -632,7 +624,7 @@ fn held_inspection_omits_surface_and_resource_tombstone_only_buckets() {
         a,
         b,
         "surface-tombstone",
-        SemanticSubKind::UserGrouped,
+        core_ids::REL_USER_GROUPED,
         Some(10),
         Some(15),
     );
@@ -641,7 +633,7 @@ fn held_inspection_omits_surface_and_resource_tombstone_only_buckets() {
         a,
         b,
         "resource-tombstone",
-        SemanticSubKind::Cites,
+        core_ids::REL_CITES,
         Some(20),
         Some(25),
     );
@@ -680,4 +672,24 @@ fn held_inspection_omits_surface_and_resource_tombstone_only_buckets() {
             ("surface-tombstone", GraphStratum::Surface),
         ]
     );
+}
+
+/// An inspection serialized before L7 named `recognized_sub_kind` and a
+/// family by enum name; it still reads, the hint ignored (declared-lens D17).
+#[test]
+fn an_inspection_record_written_before_l7_still_reads() {
+    let old = json!({
+        "statement_id": "urn:statement:old",
+        "predicate": workspace::iri(core_ids::REL_CITES),
+        "recognized_sub_kind": "Cites",
+        "label": null,
+        "graph_scope": serde_json::to_value(GraphScope::Default).unwrap(),
+        "provenance_iri": null,
+        "asserted_at_ms": null,
+    });
+    let held: HeldStatement = serde_json::from_value(old).unwrap();
+    assert_eq!(workspace::id(&held.predicate), Some(core_ids::REL_CITES));
+    let family: HeldFamily =
+        serde_json::from_value(json!({"family": "Traversal", "data": {}})).unwrap();
+    assert_eq!(Some(family.family.as_str()), traversal_name());
 }

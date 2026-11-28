@@ -6,26 +6,26 @@
 
 //! Graphshell's reference-host composition over local and remote projections.
 
-use incipit_session::IncipitSessions;
+use crate::MereSessions;
 use crate::product::ProductHost;
 use chirograph::{
     CacheRetention, CapabilityProfile, ContentHash, IntentInvocation, IntentResult,
     PresentationCapability, ProjectionSession, ProjectionSnapshot, ResourceRequest,
 };
-use crate::MereSessions;
 use graphshell_client::{ClientState, PresentationResolution, ResolvedContent};
 use graphshell_endpoint::{IntentSink, PresentationSource, ProjectionSource};
 use graphshell_host::handlers::{OpenAddressV1, intent_id, local_profile_handlers};
+use incipit_session::IncipitSessions;
 use muniment::Backend;
 use sceno::InstanceId;
 
 use crate::local_profile::LocalProfile;
+use crate::product::{
+    PINNED_PROJECTION_FACET, PinnedProjectionAuthorityV1, PinnedProjectionCardV1,
+};
 use graphshell_host::mere_host::{
     FIXTURE_DEVICE_TWO_ADDRESS, FIXTURE_PERSONA_ADDRESS, HOST_SLOT, MereHost, MereHostError,
     SelectedPersonaRef, fixture_handlers,
-};
-use crate::product::{
-    PINNED_PROJECTION_FACET, PinnedProjectionAuthorityV1, PinnedProjectionCardV1,
 };
 use incipit_session::access::AccessContext;
 
@@ -344,18 +344,19 @@ mod tests {
     use chirograph::IntentResult;
     use kernel::address::AddressKind;
     use kernel::graph::Graph;
-    use mere::model::{EdgeFamily, RelationKind};
+    use kernel::workspace::ids as workspace_ids;
+    use mere::profile::core::ids as core_ids;
     use muniment::MemoryBackend;
     use serde_json::json;
 
     use super::*;
+    use crate::product::{
+        PINNED_PROJECTION_FACET, PinnedProjectionAuthorityV1, PinnedProjectionCardV1,
+    };
     use graphshell_host::mere_host::{
         FIXTURE_FILE_ADDRESS, FIXTURE_GRANT_ADDRESS, FIXTURE_KEY_ADDRESS, FIXTURE_NON_WEB_ADDRESS,
         FIXTURE_PERSONA_ADDRESS, FIXTURE_RECEIPT_ADDRESS, FIXTURE_REMOTE_ADDRESS,
         FIXTURE_SCENE_ADDRESS, FIXTURE_WEB_ADDRESS, UNKNOWN_FIXTURE_FACET, fixture_handlers,
-    };
-    use crate::product::{
-        PINNED_PROJECTION_FACET, PinnedProjectionAuthorityV1, PinnedProjectionCardV1,
     };
 
     const SAVED_AT_SECS: u64 = 1_700_000_000;
@@ -551,22 +552,21 @@ mod tests {
                 .projected_relations()
                 .map(|(_, relation)| relation.kind.family())
                 .collect();
-            assert!(families.contains(&EdgeFamily::Semantic));
-            assert!(families.contains(&EdgeFamily::Containment));
-            assert!(families.contains(&EdgeFamily::Arrangement));
-            assert!(families.contains(&EdgeFamily::Provenance));
+            assert!(families.contains(&core_ids::FAMILY_SEMANTIC));
+            assert!(families.contains(&core_ids::FAMILY_CONTAINMENT));
+            assert!(families.contains(&workspace_ids::FAMILY_ARRANGEMENT));
+            assert!(families.contains(&core_ids::FAMILY_PROVENANCE));
             assert!(
-                app.host
-                    .graph()
-                    .relations()
-                    .any(|relation| { relation.kind.family() == EdgeFamily::Arrangement })
+                app.host.graph().relations().any(|relation| {
+                    relation.kind.family() == workspace_ids::FAMILY_ARRANGEMENT
+                })
             );
             assert!(
                 app.host
                     .graph()
                     .resource_relations()
                     .any(|(_, _, _, payload)| {
-                        payload.families().contains(&EdgeFamily::Semantic)
+                        payload.families().contains(&core_ids::FAMILY_SEMANTIC)
                     })
             );
 
@@ -765,9 +765,9 @@ mod tests {
                     .enumerate()
                     .map(|(index, id)| (*id, (index as f32 * 30.0, 0.0))),
             ),
-        }
-        ;
-        let scene = cartography::canvas::saved_scene::scene_from_v2(scene).expect("the flat scene converts");
+        };
+        let scene = cartography::canvas::saved_scene::scene_from_v2(scene)
+            .expect("the flat scene converts");
         app.host
             .save_product_scene("mere://scene/h4-identity-access", &scene)
             .expect("save mixed scene");

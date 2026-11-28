@@ -4,9 +4,10 @@
 use super::*;
 use cartography::canvas::{Canvas, NodeShape};
 use kernel::geometry::PortablePoint;
-use kernel::graph::apply::{add_node, assert_relation};
 use kernel::graph::Graph;
-use mere::model::{EdgeAssertion, SemanticSubKind};
+use kernel::graph::RelationClaim;
+use kernel::graph::apply::{add_node, assert_relation};
+use mere::profile::core::ids as core_ids;
 use scenograph::presentation::default_graph_representation_registry;
 use std::{
     path::PathBuf,
@@ -75,10 +76,7 @@ fn native_canvas_picks_and_attaches_to_polygon_silhouettes() {
         &mut graph,
         keys[0],
         keys[1],
-        EdgeAssertion::Semantic {
-            sub_kind: SemanticSubKind::Hyperlink,
-            label: None,
-        },
+        RelationClaim::of(core_ids::REL_HYPERLINK),
     )
     .expect("fixture link");
     let mut canvas = Canvas::with_graph(graph);

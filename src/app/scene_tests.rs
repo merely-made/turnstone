@@ -4,7 +4,8 @@
 use super::*;
 use cartography::canvas::Canvas;
 use kernel::geometry::PortablePoint;
-use mere::model::{EdgeAssertion, ProvenanceSubKind};
+use kernel::graph::RelationClaim;
+use mere::profile::core::ids as core_ids;
 use scenograph::attention::Attention;
 
 const URLS: [&str; 4] = [
@@ -39,18 +40,14 @@ fn fixture() -> (App, PaneId, Vec<uuid::Uuid>) {
                     graph,
                     keys[0],
                     keys[3],
-                    EdgeAssertion::Provenance {
-                        sub_kind: ProvenanceSubKind::ExtractedFrom,
-                    },
+                    RelationClaim::of(core_ids::REL_PROVENANCE_EXTRACTED_FROM),
                 )
                 .unwrap();
                 kernel::graph::apply::assert_relation(
                     graph,
                     keys[2],
                     keys[0],
-                    EdgeAssertion::Provenance {
-                        sub_kind: ProvenanceSubKind::RewrittenFrom,
-                    },
+                    RelationClaim::of(core_ids::REL_PROVENANCE_REWRITTEN_FROM),
                 )
                 .unwrap();
                 true
@@ -60,7 +57,7 @@ fn fixture() -> (App, PaneId, Vec<uuid::Uuid>) {
             assert!(canvas.graph().node_content_tags(keys[2]).unwrap().contains("publishing"));
             let relations: Vec<_> = canvas.graph().projected_relations().map(|(_, row)| row).collect();
             for (from, to) in [(keys[0], keys[3]), (keys[2], keys[0])] {
-                assert!(relations.iter().any(|r| r.from == from && r.to == to && matches!(r.kind, mere::model::RelationKind::Provenance(_))), "fixture source provenance must survive public writes and reconciliation: {relations:?}");
+                assert!(relations.iter().any(|r| r.from == from && r.to == to && r.kind.family() == core_ids::FAMILY_PROVENANCE), "fixture source provenance must survive public writes and reconciliation: {relations:?}");
             }
             canvas.resize(800, 600);
             canvas.set_physics_paused(true);

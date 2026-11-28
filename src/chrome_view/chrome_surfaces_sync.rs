@@ -88,7 +88,11 @@ impl ChromeSurfaces {
                     content.kind_id().as_str() == &*definition.id
                         && visible.contains(&workbench::TileId(pane.0))
                 });
-                Some((definition.id.to_string(), definition.display_name.to_string(), shown))
+                Some((
+                    definition.id.to_string(),
+                    definition.display_name.to_string(),
+                    shown,
+                ))
             })
             .collect::<Vec<_>>();
         let map_active = app
@@ -212,14 +216,21 @@ impl ChromeSurfaces {
             },
             Some(crate::content::PageFetchPhase::Settled { .. }) | None => None,
         });
-        let focused_url = browser_target.map(|(member, url)| match app.mod_parse_note(member, &url) {
-            Some(note) => format!("{url}  \u{2014}  {note}"),
-            None => url,
-        });
-        let link_preview = app.page_media_status.as_ref()
+        let focused_url =
+            browser_target.map(|(member, url)| match app.mod_parse_note(member, &url) {
+                Some(note) => format!("{url}  \u{2014}  {note}"),
+                None => url,
+            });
+        let link_preview = app
+            .page_media_status
+            .as_ref()
             .filter(|(member, _, _)| Some(*member) == focused)
             .map(|(_, status, _)| status.clone())
-            .or_else(|| app.link_preview.as_ref().map(|url| format!("Prospective node  {url}")));
+            .or_else(|| {
+                app.link_preview
+                    .as_ref()
+                    .map(|url| format!("Prospective node  {url}"))
+            });
         let find = cambium::ReadFind {
             open: app.document_find.open,
             input: app.document_find.input.clone(),
@@ -303,9 +314,9 @@ impl ChromeSurfaces {
                     app.focus_card_target(
                         row.target.graph,
                         row.target.member,
-                        crate::focus_card::Origin::Relationship(row.target),
+                        crate::focus_card::Origin::Relationship(row.target.clone()),
                     )
-                    .map(|t| (row.target, t))
+                    .map(|t| (row.target.clone(), t))
                 })
                 .collect();
             state.layout = chrome.layout;
@@ -364,9 +375,13 @@ impl ChromeSurfaces {
             state.can_back = can_back;
             state.can_forward = can_forward;
             state.page_media_action = app.page_practice_target().and_then(|member| {
-                app.page_media_status.as_ref()
+                app.page_media_status
+                    .as_ref()
                     .filter(|(node, _, _)| *node == member)
-                    .map_or(Some(crate::action::PageMediaCommand::MarkIn), |(_, _, action)| *action)
+                    .map_or(
+                        Some(crate::action::PageMediaCommand::MarkIn),
+                        |(_, _, action)| *action,
+                    )
             });
             state.focused_node = focused;
             state.focused_kept = focused_kept;

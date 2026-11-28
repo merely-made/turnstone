@@ -12,7 +12,7 @@ use std::collections::BTreeSet;
 use kernel::graph::{Graph, RelationKey};
 use mere::model::GraphScope;
 use mere::model::coverage::{CoverageLayer, CoverageLimit, CoverageNote};
-use mere::model::{EdgeFamily, GraphStratum, SemanticStatement, SemanticSubKind};
+use mere::model::{GraphStratum, SemanticStatement};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 #[cfg(test)]
@@ -59,8 +59,8 @@ pub struct LinkOwner {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct HeldStatement {
     pub statement_id: String,
+    /// The predicate IRI; what it is reads from the pack (declared-lens D20).
     pub predicate: String,
-    pub recognized_sub_kind: Option<SemanticSubKind>,
     pub label: Option<String>,
     pub graph_scope: GraphScope,
     pub provenance_iri: Option<String>,
@@ -76,7 +76,6 @@ impl From<&SemanticStatement> for HeldStatement {
         Self {
             statement_id: statement.statement_id.clone(),
             predicate: statement.predicate.clone(),
-            recognized_sub_kind: statement.recognized_sub_kind,
             label: statement.label.clone(),
             graph_scope: statement.graph_scope.clone(),
             provenance_iri: statement.provenance_iri.clone(),
@@ -98,7 +97,8 @@ impl From<&SemanticStatement> for HeldStatement {
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct HeldFamily {
-    pub family: EdgeFamily,
+    /// The legacy member's family name as link reading gives it (`Traversal`).
+    pub family: String,
     /// Actual typed sidecar fields; no manufactured assertion identity.
     /// Semantic data here is only the compatibility grouping summary.
     pub data: Value,
@@ -171,10 +171,6 @@ fn owner(graph: &Graph, stratum: GraphStratum, from: Uuid, to: Uuid) -> LinkOwne
         from: endpoint(from),
         to: endpoint(to),
     }
-}
-
-fn decode<T: for<'de> Deserialize<'de>>(value: &str) -> Result<T, String> {
-    serde_json::from_value(Value::String(value.to_owned())).map_err(|error| error.to_string())
 }
 
 fn portable_scope(scope: scenograph::link::LinkGraphScope) -> GraphScope {
@@ -310,11 +306,6 @@ pub fn inspect_link_with_source(
                     Ok(HeldStatement {
                         statement_id: statement.id,
                         predicate: statement.predicate,
-                        recognized_sub_kind: statement
-                            .recognized_kind
-                            .as_deref()
-                            .map(decode)
-                            .transpose()?,
                         label: statement.label,
                         graph_scope: portable_scope(statement.scope),
                         provenance_iri: statement.asserter,
@@ -330,7 +321,7 @@ pub fn inspect_link_with_source(
                 .into_iter()
                 .map(|family| {
                     Ok(HeldFamily {
-                        family: decode(&family.family)?,
+                        family: family.family,
                         data: family.data,
                     })
                 })
@@ -407,8 +398,12 @@ pub fn inspect_link_history_with_source(
             )),
         }
     }
-    let reading =
-        cartography::canvas::link_reading::read_link_history(graph, target.first, target.second, source)?;
+    let reading = cartography::canvas::link_reading::read_link_history(
+        graph,
+        target.first,
+        target.second,
+        source,
+    )?;
     let mut entries = Vec::new();
     for link in reading.links {
         let stratum = match link.key.stratum {
@@ -609,8 +604,9 @@ mod tests;
 mod owner_bound_statement_tests {
     use super::*;
     use kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta};
+    use kernel::persistence_surface_edge::PersistedSurfaceEdge;
+    use mere::model::PersistedSemanticStatement;
     use mere::model::{AssertionWithdrawal, GraphScope};
-    use mere::model::{PersistedEdge, PersistedEdgeFamily, PersistedSemanticStatement};
 
     fn graph() -> (Graph, Uuid, Uuid, Uuid) {
         let mut graph = Graph::new();
@@ -631,16 +627,13 @@ mod owner_bound_statement_tests {
         to: Uuid,
         predicate: &str,
         withdrawn: bool,
-    ) -> PersistedEdge {
-        PersistedEdge {
-            from_node_id: from.to_string(),
-            to_node_id: to.to_string(),
-            families: vec![PersistedEdgeFamily::Semantic],
-            semantic: None,
-            assertions: Some(vec![PersistedSemanticStatement {
+    ) -> PersistedSurfaceEdge {
+        PersistedSurfaceEdge::of(
+            from.to_string(),
+            to.to_string(),
+            vec![PersistedSemanticStatement {
                 statement_id: statement_id.into(),
                 predicate: predicate.into(),
-                recognized_sub_kind: None,
                 label: Some(format!("note for {predicate}")),
                 graph_scope: GraphScope::Custom("urn:scope:owner-test".into()),
                 provenance_iri: Some("urn:asserter:owner-test".into()),
@@ -651,20 +644,16 @@ mod owner_bound_statement_tests {
                     by: Some("urn:withdrawer:test".into()),
                 }),
                 basis: Default::default(),
-            }]),
-            traversal: None,
-            containment: None,
-            arrangement: None,
-            imported: None,
-            provenance: None,
-        }
+            }],
+            None,
+        )
     }
 
     fn set_surface_edges(
         graph: &mut Graph,
         from: Uuid,
         to: Uuid,
-        edges: Vec<PersistedEdge>,
+        edges: Vec<PersistedSurfaceEdge>,
     ) -> kernel::graph::apply::GraphDeltaResult {
         apply_graph_delta(
             graph,
@@ -683,22 +672,44 @@ mod owner_bound_statement_tests {
             &mut graph,
             a,
             b,
-            vec![edge("urn:assertion:forward", a, b, "urn:predicate:forward", false)],
+            vec![edge(
+                "urn:assertion:forward",
+                a,
+                b,
+                "urn:predicate:forward",
+                false,
+            )],
         );
         set_surface_edges(
             &mut graph,
             b,
             a,
-            vec![edge("urn:assertion:reverse", b, a, "urn:predicate:reverse", false)],
+            vec![edge(
+                "urn:assertion:reverse",
+                b,
+                a,
+                "urn:predicate:reverse",
+                false,
+            )],
         );
         let before = serde_json::to_value(graph.to_snapshot()).unwrap();
 
-        let forward =
-            inspect_statement_at_owner(&graph, "urn:assertion:forward", GraphStratum::Surface, a, b)
-                .unwrap();
-        let reverse =
-            inspect_statement_at_owner(&graph, "urn:assertion:reverse", GraphStratum::Surface, b, a)
-                .unwrap();
+        let forward = inspect_statement_at_owner(
+            &graph,
+            "urn:assertion:forward",
+            GraphStratum::Surface,
+            a,
+            b,
+        )
+        .unwrap();
+        let reverse = inspect_statement_at_owner(
+            &graph,
+            "urn:assertion:reverse",
+            GraphStratum::Surface,
+            b,
+            a,
+        )
+        .unwrap();
 
         assert_eq!((forward.owner.from.id, forward.owner.to.id), (a, b));
         assert_eq!(forward.statement.predicate, "urn:predicate:forward");
@@ -714,32 +725,51 @@ mod owner_bound_statement_tests {
             &mut graph,
             a,
             b,
-            vec![edge("urn:assertion:forward", a, b, "urn:predicate:forward", false)],
+            vec![edge(
+                "urn:assertion:forward",
+                a,
+                b,
+                "urn:predicate:forward",
+                false,
+            )],
         );
         set_surface_edges(
             &mut graph,
             b,
             a,
-            vec![edge("urn:assertion:reverse", b, a, "urn:predicate:reverse", true)],
+            vec![edge(
+                "urn:assertion:reverse",
+                b,
+                a,
+                "urn:predicate:reverse",
+                true,
+            )],
         );
         let before_lookup = serde_json::to_value(graph.to_snapshot()).unwrap();
-        assert!(inspect_statement_at_owner(
-            &graph,
-            "urn:assertion:forward",
-            GraphStratum::Surface,
-            c,
-            b,
-        )
-        .is_err());
-        assert!(inspect_statement_at_owner(
-            &graph,
-            "urn:assertion:reverse",
-            GraphStratum::Surface,
-            b,
-            a,
-        )
-        .is_err());
-        assert_eq!(serde_json::to_value(graph.to_snapshot()).unwrap(), before_lookup);
+        assert!(
+            inspect_statement_at_owner(
+                &graph,
+                "urn:assertion:forward",
+                GraphStratum::Surface,
+                c,
+                b,
+            )
+            .is_err()
+        );
+        assert!(
+            inspect_statement_at_owner(
+                &graph,
+                "urn:assertion:reverse",
+                GraphStratum::Surface,
+                b,
+                a,
+            )
+            .is_err()
+        );
+        assert_eq!(
+            serde_json::to_value(graph.to_snapshot()).unwrap(),
+            before_lookup
+        );
 
         let before_collision = serde_json::to_value(graph.to_snapshot()).unwrap();
         assert!(matches!(
@@ -757,7 +787,10 @@ mod owner_bound_statement_tests {
             ),
             kernel::graph::apply::GraphDeltaResult::Refused(_)
         ));
-        assert_eq!(serde_json::to_value(graph.to_snapshot()).unwrap(), before_collision);
+        assert_eq!(
+            serde_json::to_value(graph.to_snapshot()).unwrap(),
+            before_collision
+        );
         assert_eq!(
             inspect_statement_at_owner(
                 &graph,

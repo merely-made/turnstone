@@ -172,7 +172,6 @@ impl ResponsiveLinksFixture {
                     SemanticStatement {
                         statement_id: format!("fixture:v1:assertion:{handle}"),
                         predicate: PREDICATE.into(),
-                        recognized_sub_kind: None,
                         label: Some(format!("Reference link {}", index + 1)),
                         basis: mere::model::AssertionBasis::default(),
                         first_asserted_ms: Some(1_791_000_000_000 + index as u64),

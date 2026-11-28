@@ -9,26 +9,26 @@
 use std::path::Path;
 use std::time::Instant;
 
+use crate::ProductCodicilV3;
 use chirograph::{
     CapabilityProfile, CarrierRequest, CarrierRequestBody, CarrierResponse, CarrierResponseBody,
     ContentHash, IntentInvocation, IntentResult, PortableCardV1, ProtocolVersion, ResourceRequest,
     ResourceResponse, ResumeReply, ResumeRequest, SessionOpen,
 };
-use crate::ProductCodicilV3;
 use eidetic::PrivacyClass;
-use graphshell_host::mere_host::{MereHost, SelectedPersonaRef, fixture_handlers};
 use graphshell::transfer::{ApplyTransferContext, TransferAuthorization, apply_transfer};
-use pandect::transfer::{TransferManifestV1, TransferOperation};
 use graphshell::transfer_endpoint::{TRANSFER_BEGIN_INTENT, TransferBeginV1};
 use graphshell_host::admission::open_session;
 use graphshell_host::carrier::projection_alpn;
-use muniment::{BlobStore, MemoryBackend};
-use notochord::{NetworkId, SessionReply, TrafficClass, initiate_session};
-use personae::{IdentityProvider, InMemoryProvider};
-use sceno::InstanceId;
+use graphshell_host::mere_host::{MereHost, SelectedPersonaRef, fixture_handlers};
 use graphshell_host::wire::ItemReader;
 use incipit_session::access::AccessContext;
-use mere::model::{RelationKind, SemanticSubKind};
+use mere::profile::core::ids as core_ids;
+use muniment::{BlobStore, MemoryBackend};
+use notochord::{NetworkId, SessionReply, TrafficClass, initiate_session};
+use pandect::transfer::{TransferManifestV1, TransferOperation};
+use personae::{IdentityProvider, InMemoryProvider};
+use sceno::InstanceId;
 use tokio::io::{ReadHalf, WriteHalf};
 use tokio::time::sleep;
 use transport::p2panda_transport::{MdnsDiscoveryMode, P2pandaStream, P2pandaTransport};
@@ -473,7 +473,7 @@ async fn verify_destination(
     if host
         .graph()
         .projected_relations()
-        .filter(|(_, relation)| relation.kind == RelationKind::Semantic(SemanticSubKind::Cites))
+        .filter(|(_, relation)| relation.kind.id() == Some(core_ids::REL_CITES))
         .count()
         != 1
     {

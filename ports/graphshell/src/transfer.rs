@@ -14,9 +14,8 @@
 use crate::product::ProductHost;
 use std::collections::{BTreeMap, HashMap, HashSet};
 
-use portolan::{AcceptAll, FacetId};
-use chirograph::Sha256NamedInformation;
 use crate::materialize_snapshot;
+use chirograph::Sha256NamedInformation;
 use eidetic::{
     BlobSource, Codicil, Hash, ManifestId, ModerationState, PrivacyClass, ProvenanceOrigin,
     ProvenanceRecord, TimeBounds, Timestamp, TrustEnvelope, TrustLevel, TypedPayload, save_schema,
@@ -29,26 +28,27 @@ use kernel::graph::node_facets::{
 };
 use kernel::graph::{Graph, NodeFacetStore};
 use muniment::{Backend, BlobStore};
+use portolan::{AcceptAll, FacetId};
 use sha2::{Digest, Sha256};
 use uuid::Uuid;
 
 use crate::capture::{ACCESS_RECORD_TOOLING, ACCESS_SCHEMA_TOOLING};
+use crate::decode_profiled_codicil;
 use crate::local_locations;
-use graphshell_host::mere_host::MereHost;
 use crate::product::{CONTENT_FACET, ExportRequest, ProductError};
+use crate::{ProductCodicilV3, ProfiledProductCodicil};
+use cartography::canvas::saved_scene;
+use graphshell_host::mere_host::MereHost;
+use incipit_session::access::{
+    ACCESS_HISTORY_FACET, AccessAction, AccessObservation, AccessRecord, AccessRecordFilter,
+    AccessTransition, access_history, bootstrap_access_record_schema, query_access_records,
+    record_observation, save_access_record,
+};
 use pandect::product_codicil::{InvalidCodicil, product_codicil_schema, schema_ref};
 use pandect::transfer::{
     AccessTransferPolicy, TRANSFER_MANIFEST_SCHEMA, TransferBlobV1, TransferEndpointV1,
     TransferManifestV1, TransferOperation, TransferReceiptV1, TransferResult, TransferRouteV1,
     TransferredIdV1, transfer_receipt_schema,
-};
-use cartography::canvas::saved_scene;
-use crate::decode_profiled_codicil;
-use crate::{ProductCodicilV3, ProfiledProductCodicil};
-use incipit_session::access::{
-    ACCESS_HISTORY_FACET, AccessAction, AccessObservation, AccessRecord, AccessRecordFilter,
-    AccessTransition, access_history, bootstrap_access_record_schema, query_access_records,
-    record_observation, save_access_record,
 };
 use pandect::{
     SAVED_SCENE_FACET, SAVED_SCENE_FACET_V2, SAVED_SCENE_FACET_V3, SavedDynamics, SavedRolesV1,
@@ -937,15 +937,15 @@ mod tests {
     use std::fs;
 
     use eidetic::{NoFetcher, load_typed};
-    use mere::model::{ProvenanceSubKind, RelationKind, SemanticSubKind};
+    use mere::profile::core::ids as core_ids;
     use muniment::MemoryBackend;
 
     use super::*;
+    use crate::product::{EditableRelation, LocalFileMetadata};
     use graphshell_host::mere_host::{
         FIXTURE_DEVICE_ONE_ADDRESS, FIXTURE_DEVICE_TWO_ADDRESS, FIXTURE_PERSONA_ADDRESS,
         SelectedPersonaRef, fixture_handlers,
     };
-    use crate::product::{EditableRelation, LocalFileMetadata};
     use incipit_session::access::{
         AccessContext, bootstrap_access_record_schema, query_access_records, save_access_record,
     };
@@ -1134,15 +1134,8 @@ mod tests {
         let to = graph.get_node_key_by_id(to).unwrap();
         assert!(graph.find_edge_key(from, to).is_none());
         let (handle, payload) = graph.projected_relations_between(from, to).next().unwrap();
-        assert!(matches!(
-            handle,
-            kernel::graph::RelationKey::Resource(_)
-        ));
-        assert!(
-            payload.has_relation(mere::model::RelationSelector::Semantic(
-                SemanticSubKind::Cites
-            ))
-        );
+        assert!(matches!(handle, kernel::graph::RelationKey::Resource(_)));
+        assert!(payload.has_predicate(kernel::workspace::iri(core_ids::REL_CITES)));
         assert_eq!(payload.semantic_statements().len(), 1);
         assert!(payload.semantic_statements()[0].provenance_iri.is_some());
         assert_eq!(
@@ -1412,7 +1405,10 @@ mod tests {
                     .unwrap();
                 let derivations = destination.graph().node_derivations(key).unwrap();
                 assert_eq!(derivations.len(), 1);
-                assert_eq!(derivations[0].sub_kind, ProvenanceSubKind::CopiedFrom);
+                assert_eq!(
+                    derivations[0].predicate,
+                    kernel::workspace::iri(core_ids::REL_PROVENANCE_COPIED_FROM)
+                );
                 assert_eq!(derivations[0].source_node, mapping.source.to_string());
                 assert_eq!(derivations[0].source_graph.as_deref(), Some("graph:source"));
             }
@@ -1470,9 +1466,7 @@ mod tests {
     fn copy_keeps_resource_identity_and_remaps_only_shown_surfaces() {
         pollster::block_on(async {
             use kernel::persistence::PersistedShownResource;
-            use mere::model::{
-                PersistedEdge, PersistedEdgeFamily, PersistedResourceRecord, PersistedSemanticStatement,
-            };
+            use mere::model::{PersistedEdge, PersistedResourceRecord, PersistedSemanticStatement};
             let source = source_fixture().await;
             let manifest =
                 package(&source, TransferOperation::Copy, "personae://persona/bob").await;
@@ -1488,15 +1482,12 @@ mod tests {
                     facets: vec![],
                 })
                 .collect();
-            product.graph.resource_edges = vec![PersistedEdge {
-                from_node_id: resource_id.clone(),
-                to_node_id: tag_id,
-                families: vec![PersistedEdgeFamily::Semantic],
-                semantic: None,
-                assertions: Some(vec![PersistedSemanticStatement {
+            product.graph.resource_edges = vec![PersistedEdge::of(
+                resource_id.clone(),
+                tag_id,
+                vec![PersistedSemanticStatement {
                     statement_id: "copied-tag-handle".into(),
                     predicate: mere::model::resource::TAGGED_WITH_IRI.into(),
-                    recognized_sub_kind: None,
                     label: Some("tag".into()),
                     basis: mere::model::AssertionBasis {
                         note: Some("tag".into()),
@@ -1507,13 +1498,8 @@ mod tests {
                     asserted_at_ms: Some(23),
                     first_asserted_ms: Some(23),
                     withdrawn: None,
-                }]),
-                traversal: None,
-                containment: None,
-                arrangement: None,
-                imported: None,
-                provenance: None,
-            }];
+                }],
+            )];
             product.graph.shown_resources = product
                 .graph
                 .nodes
@@ -1720,38 +1706,26 @@ mod tests {
             let mut collision_snapshot = Graph::new().to_snapshot();
             collision_snapshot.resources = [collision_resource, target_resource]
                 .into_iter()
-                .map(
-                    |canonical_iri| mere::model::PersistedResourceRecord {
-                        canonical_iri: canonical_iri.into(),
-                        facets: Vec::new(),
-                    },
-                )
+                .map(|canonical_iri| mere::model::PersistedResourceRecord {
+                    canonical_iri: canonical_iri.into(),
+                    facets: Vec::new(),
+                })
                 .collect();
-            collision_snapshot.resource_edges = vec![mere::model::PersistedEdge {
-                from_node_id: collision_resource_id,
-                to_node_id: target_resource_id,
-                families: vec![mere::model::PersistedEdgeFamily::Semantic],
-                semantic: None,
-                assertions: Some(vec![
-                    mere::model::PersistedSemanticStatement {
-                        statement_id: "destination-resource-only".into(),
-                        predicate: "urn:test:predicate".into(),
-                        recognized_sub_kind: None,
-                        label: Some("destination resource claim".into()),
-                        basis: mere::model::AssertionBasis::default(),
-                        graph_scope: mere::model::GraphScope::Default,
-                        provenance_iri: Some("urn:test:destination".into()),
-                        asserted_at_ms: Some(17),
-                        first_asserted_ms: Some(17),
-                        withdrawn: None,
-                    },
-                ]),
-                traversal: None,
-                containment: None,
-                arrangement: None,
-                imported: None,
-                provenance: None,
-            }];
+            collision_snapshot.resource_edges = vec![mere::model::PersistedEdge::of(
+                collision_resource_id,
+                target_resource_id,
+                vec![mere::model::PersistedSemanticStatement {
+                    statement_id: "destination-resource-only".into(),
+                    predicate: "urn:test:predicate".into(),
+                    label: Some("destination resource claim".into()),
+                    basis: mere::model::AssertionBasis::default(),
+                    graph_scope: mere::model::GraphScope::Default,
+                    provenance_iri: Some("urn:test:destination".into()),
+                    asserted_at_ms: Some(17),
+                    first_asserted_ms: Some(17),
+                    withdrawn: None,
+                }],
+            )];
             let collision_graph = Graph::try_from_snapshot(&collision_snapshot)
                 .expect("destination resource claim fixture is valid");
             collision_destination
@@ -2223,8 +2197,7 @@ mod tests {
             assert!(!product.graph.resource_edges.is_empty());
             assert!(product.graph.resource_edges.iter().any(|edge| {
                 edge.retained_assertions().iter().any(|statement| {
-                    statement.recognized_sub_kind
-                        == Some(mere::model::PersistedSemanticSubKind::Cites)
+                    kernel::workspace::id(&statement.predicate) == Some(core_ids::REL_CITES)
                 })
             }));
             assert_eq!(offer.blobs, manifest.blobs.len() as u64);
@@ -2295,8 +2268,12 @@ mod tests {
             cartography: pandect::CartographyGeometry::from_positions([(kept, (1.0, 2.0))]),
         };
         let value = serde_json::to_value(&v4).unwrap();
-        let copied: SavedSceneV3 =
-            serde_json::from_value(saved_scene::remap_scene_facet(SAVED_SCENE_FACET, &value, &ids)).unwrap();
+        let copied: SavedSceneV3 = serde_json::from_value(saved_scene::remap_scene_facet(
+            SAVED_SCENE_FACET,
+            &value,
+            &ids,
+        ))
+        .unwrap();
         assert_eq!(copied.selected, vec![minted]);
         assert_eq!(
             copied
@@ -2329,8 +2306,12 @@ mod tests {
             "default_handler": "system.default",
             "cartography": pandect::CartographyGeometry::default(),
         });
-        let copied: SavedSceneV2 =
-            serde_json::from_value(saved_scene::remap_scene_facet(SAVED_SCENE_FACET_V3, &v3, &ids)).unwrap();
+        let copied: SavedSceneV2 = serde_json::from_value(saved_scene::remap_scene_facet(
+            SAVED_SCENE_FACET_V3,
+            &v3,
+            &ids,
+        ))
+        .unwrap();
         assert_eq!(copied.selected, vec![minted]);
         assert_eq!(
             copied
@@ -2348,6 +2329,9 @@ mod tests {
             "a scene this reader cannot read is copied unchanged"
         );
         let other = serde_json::json!({ "selected": [kept] });
-        assert_eq!(saved_scene::remap_scene_facet("example.notes/v1", &other, &ids), other);
+        assert_eq!(
+            saved_scene::remap_scene_facet("example.notes/v1", &other, &ids),
+            other
+        );
     }
 }

@@ -8,40 +8,40 @@
 
 use std::collections::{BTreeMap, BTreeSet, HashSet};
 
-use portolan::AcceptAll;
-use chirograph::{PortableCardV1, Sha256NamedInformation};
+use crate::materialize_snapshot;
 use cartography::canvas::saved_scene::{self, SceneReadError};
+use cartography::saved_scene::{DEFAULT_ARRANGEMENT, StoredScene};
+use chirograph::{PortableCardV1, Sha256NamedInformation};
 use kernel::geometry::PortablePoint;
+use kernel::graph::RelationClaim;
 use kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta, assert_relation};
 use kernel::graph::capture::{CapturedDelta, replay_captured_deltas_onto_checked};
 use kernel::graph::node_facets::SEMANTIC_PROPERTIES;
 use kernel::graph::{Graph, NodeFacetStore, NodeKey, import_edits};
 use kernel::persistence::GraphSnapshot;
+use kernel::workspace::ids as workspace_ids;
+use mere::model::NodeProperty;
+use mere::model::predicate_declarations::PREDICATE_DECLARATIONS_FACET;
+use mere::model::resource::TAGGED_WITH_IRI;
+use mere::profile::core::ids as core_ids;
+use mere::profile::intern::TermId;
 use muniment::Backend;
 use pandect::graph_placement::PlacementProfile;
 use pandect::{
     CartographyGeometry, SAVED_SCENE_FACET, SAVED_SCENE_FACET_V2, SAVED_SCENE_FACET_V3,
     SavedDynamics, SavedRolesV1, SavedSceneV2, SavedSceneV3,
 };
-use cartography::saved_scene::{DEFAULT_ARRANGEMENT, StoredScene};
-use crate::materialize_snapshot;
-use mere::model::NodeProperty;
-use mere::model::predicate_declarations::PREDICATE_DECLARATIONS_FACET;
-use mere::model::resource::TAGGED_WITH_IRI;
-use mere::model::{
-    ArrangementSubKind, ContainmentSubKind, EdgeAssertion, EdgeFamily, RelationKind,
-    SemanticSubKind,
-};
+use portolan::AcceptAll;
 use sceno::SourceRef;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use pandect::product_codicil::{InvalidCodicil, PRODUCT_CODICIL_SCHEMA, TransferScope};
 use crate::local_locations;
 use crate::{ProductCodicilV3, ProfiledProductCodicil};
 use crate::{decode_profiled_codicil, profiled_codicil_graph};
 use graphshell_host::mere_host::{MereHost, MereHostError};
 use incipit_session::access::ACCESS_HISTORY_FACET;
+use pandect::product_codicil::{InvalidCodicil, PRODUCT_CODICIL_SCHEMA, TransferScope};
 use scenomise::projection::ProjectionSnapshot;
 
 /// What an undo kept because another author changed it since, in words for
@@ -119,17 +119,21 @@ impl RelationFamilyFilter {
         }
     }
 
-    fn accepts(self, family: EdgeFamily) -> bool {
-        self == Self::All
-            || matches!(
-                (self, family),
-                (Self::Semantic, EdgeFamily::Semantic)
-                    | (Self::Traversal, EdgeFamily::Traversal)
-                    | (Self::Containment, EdgeFamily::Containment)
-                    | (Self::Arrangement, EdgeFamily::Arrangement)
-                    | (Self::Imported, EdgeFamily::Imported)
-                    | (Self::Provenance, EdgeFamily::Provenance)
-            )
+    /// The core or workspace family this filter keeps; `None` keeps all.
+    fn family(self) -> Option<TermId> {
+        match self {
+            Self::All => None,
+            Self::Semantic => Some(core_ids::FAMILY_SEMANTIC),
+            Self::Traversal => Some(workspace_ids::FAMILY_TRAVERSAL),
+            Self::Containment => Some(core_ids::FAMILY_CONTAINMENT),
+            Self::Arrangement => Some(workspace_ids::FAMILY_ARRANGEMENT),
+            Self::Imported => Some(core_ids::FAMILY_IMPORTED),
+            Self::Provenance => Some(core_ids::FAMILY_PROVENANCE),
+        }
+    }
+
+    fn accepts(self, family: TermId) -> bool {
+        self.family().is_none_or(|kept| kept == family)
     }
 }
 
@@ -155,27 +159,16 @@ impl EditableRelation {
         }
     }
 
-    fn assertion(self) -> EdgeAssertion {
-        match self {
-            Self::UserGrouped => EdgeAssertion::Semantic {
-                sub_kind: SemanticSubKind::UserGrouped,
-                label: None,
-            },
-            Self::Cites => EdgeAssertion::Semantic {
-                sub_kind: SemanticSubKind::Cites,
-                label: None,
-            },
-            Self::Hyperlink => EdgeAssertion::Semantic {
-                sub_kind: SemanticSubKind::Hyperlink,
-                label: None,
-            },
-            Self::CollectionMember => EdgeAssertion::Containment {
-                sub_kind: ContainmentSubKind::CollectionMember,
-            },
-            Self::FrameMember => EdgeAssertion::Arrangement {
-                sub_kind: ArrangementSubKind::FrameMember,
-            },
-        }
+    /// The claim this product relation writes: its core or workspace
+    /// predicate, unlabelled (declared-lens D20).
+    fn claim(self) -> RelationClaim {
+        RelationClaim::of(match self {
+            Self::UserGrouped => core_ids::REL_USER_GROUPED,
+            Self::Cites => core_ids::REL_CITES,
+            Self::Hyperlink => core_ids::REL_HYPERLINK,
+            Self::CollectionMember => core_ids::REL_CONTAINMENT_COLLECTION_MEMBER,
+            Self::FrameMember => workspace_ids::REL_ARRANGEMENT_FRAME_MEMBER,
+        })
     }
 }
 
@@ -309,10 +302,7 @@ pub trait ProductHost {
         title: &str,
     ) -> Result<Uuid, ProductError>;
 
-    fn create_file_metadata(
-        &mut self,
-        metadata: LocalFileMetadata,
-    ) -> Result<Uuid, ProductError>;
+    fn create_file_metadata(&mut self, metadata: LocalFileMetadata) -> Result<Uuid, ProductError>;
 
     fn edit_node(
         &mut self,
@@ -408,15 +398,12 @@ impl<B: Backend> ProductHost for MereHost<B> {
         let id = held.map_or_else(Uuid::new_v4, |(_, id)| id);
         self.mutate_product_graph(|graph| {
             let to = held.map_or_else(|| add_address(graph, id, address, title), |(key, _)| key);
-            assert_relation(graph, from, to, EditableRelation::Hyperlink.assertion());
+            assert_relation(graph, from, to, EditableRelation::Hyperlink.claim());
         })?;
         Ok(id)
     }
 
-    fn create_file_metadata(
-        &mut self,
-        metadata: LocalFileMetadata,
-    ) -> Result<Uuid, ProductError> {
+    fn create_file_metadata(&mut self, metadata: LocalFileMetadata) -> Result<Uuid, ProductError> {
         let portable_id = Sha256NamedInformation::from_hex(&metadata.content_hash)
             .map_err(|error| ProductError::InvalidContentReference(error.to_string()))?;
         let address = portable_id.to_string();
@@ -538,7 +525,7 @@ impl<B: Backend> ProductHost for MereHost<B> {
             .get_node_key_by_id(to)
             .ok_or(ProductError::UnknownNode(to))?;
         self.mutate_product_graph(|graph| {
-            assert_relation(graph, from, to, relation.assertion());
+            assert_relation(graph, from, to, relation.claim());
         })?;
         Ok(())
     }
@@ -548,7 +535,7 @@ impl<B: Backend> ProductHost for MereHost<B> {
         let related: HashSet<_> = self
             .graph()
             .projected_relations()
-            .filter(|(_, relation)| family.accepts(family_of(relation.kind)))
+            .filter(|(_, relation)| family.accepts(relation.kind.family()))
             .flat_map(|(_, relation)| [relation.from, relation.to])
             .collect();
         self.graph()
@@ -748,12 +735,13 @@ pub(crate) fn product_import_edits(
     for edge in snapshot
         .edges
         .iter_mut()
+        .map(|surface| &mut surface.edge)
         .chain(&mut snapshot.resource_edges)
     {
         for statement in edge.retained_assertions_mut() {
-            statement.provenance_iri.get_or_insert_with(|| {
-                mere::model::edge_data::UNKNOWN_LEGACY_ASSERTER_IRI.into()
-            });
+            statement
+                .provenance_iri
+                .get_or_insert_with(|| mere::model::edge_data::UNKNOWN_LEGACY_ASSERTER_IRI.into());
         }
     }
     // Validate raw handles before legacy surface materialization can coalesce them.
@@ -761,8 +749,9 @@ pub(crate) fn product_import_edits(
         .map_err(|error| ProductError::InvalidCodicil(error.to_string()))?;
     let incoming = profiled_codicil_graph(snapshot, facets, placement)?;
     let incoming_snapshot = incoming.to_snapshot();
-    let (joined, _) = incipit_session::snapshot_merge::try_merge_snapshots(&current, &incoming_snapshot)
-        .map_err(|error| ProductError::InvalidCodicil(error.to_string()))?;
+    let (joined, _) =
+        incipit_session::snapshot_merge::try_merge_snapshots(&current, &incoming_snapshot)
+            .map_err(|error| ProductError::InvalidCodicil(error.to_string()))?;
     let target = materialize_snapshot(&joined, placement)
         .map_err(|error| ProductError::InvalidCodicil(error.to_string()))?
         .to_snapshot();
@@ -858,14 +847,14 @@ pub(crate) fn product_import_edits(
     for (resource, expected) in joined
         .edges
         .iter()
-        .map(|edge| (false, edge))
+        .map(|surface| (false, &surface.edge))
         .chain(joined.resource_edges.iter().map(|edge| (true, edge)))
     {
         for claim in expected.retained_assertions() {
-            let edges = if resource {
-                &actual.resource_edges
+            let edges: Vec<&mere::model::PersistedEdge> = if resource {
+                actual.resource_edges.iter().collect()
             } else {
-                &actual.edges
+                actual.edges.iter().map(|surface| &surface.edge).collect()
             };
             if !edges.iter().any(|edge| {
                 same_id(&edge.from_node_id, &expected.from_node_id)
@@ -880,10 +869,6 @@ pub(crate) fn product_import_edits(
         }
     }
     Ok(edits)
-}
-
-fn family_of(kind: RelationKind) -> EdgeFamily {
-    kind.family()
 }
 
 fn transfer_members(graph: &Graph, request: &ExportRequest) -> Result<HashSet<Uuid>, ProductError> {
@@ -989,6 +974,7 @@ fn filtered_snapshot(graph: &Graph, members: &HashSet<Uuid>, exported_at_ms: u64
         let mut needed: Vec<_> = snapshot
             .edges
             .iter()
+            .map(|surface| &surface.edge)
             .chain(snapshot.resource_edges.iter().filter(|edge| {
                 resource_ids.contains(&edge.from_node_id) && resource_ids.contains(&edge.to_node_id)
             }))
@@ -1078,7 +1064,6 @@ pub(crate) fn decode_codicil(bytes: &[u8]) -> Result<ProductCodicilV3, ProductEr
 #[cfg(test)]
 mod tests {
     use mere::model::author::Author;
-    use mere::model::{ProvenanceSubKind, RelationKind};
     use muniment::MemoryBackend;
     use scenotime::ProjectionClock;
 
@@ -1555,11 +1540,50 @@ mod tests {
         }));
     }
 
+    /// Each product relation is written by its predicate's IRI and reads back
+    /// with that predicate's pack label (declared-lens D20, D29).
+    #[test]
+    fn product_relations_read_back_with_their_pack_labels() {
+        for (code, label) in [
+            ("user-grouped", "Grouped with"),
+            ("cites", "Cites"),
+            ("hyperlink", "Links to"),
+            ("collection-member", "collection-member"),
+            ("frame-member", "frame-member"),
+        ] {
+            let relation = EditableRelation::from_code(code).unwrap();
+            let mut graph = Graph::new();
+            let [from, to] = [1u128, 2].map(|n| {
+                add_node(
+                    &mut graph,
+                    Some(Uuid::from_u128(n)),
+                    format!("https://relation.test/{n}"),
+                    PortablePoint::zero(),
+                )
+            });
+            assert_relation(&mut graph, from, to, relation.claim());
+            let (_, row) = graph
+                .projected_relations()
+                .find(|(_, row)| row.from == from && row.to == to)
+                .expect("the product relation is held");
+            let id = row.kind.id().expect("a pack predicate");
+            assert_eq!(row.kind.iri(), Some(relation.claim().predicate.as_str()));
+            assert_eq!(
+                kernel::workspace::predicate_label(id, false),
+                Some(label),
+                "{code}"
+            );
+        }
+        let cites = kernel::workspace::id(&EditableRelation::Cites.claim().predicate).unwrap();
+        assert_eq!(
+            kernel::workspace::predicate_label(cites, true),
+            Some("Cited by")
+        );
+    }
+
     fn resource_selection_graph() -> (Graph, Vec<Uuid>, mere::model::PersistedEdge) {
         use kernel::persistence::PersistedShownResource;
-        use mere::model::{
-            PersistedEdge, PersistedEdgeFamily, PersistedResourceRecord, PersistedSemanticStatement,
-        };
+        use mere::model::{PersistedEdge, PersistedResourceRecord, PersistedSemanticStatement};
         let mut graph = Graph::new();
         let surfaces: Vec<_> = [
             "https://selected.test/page",
@@ -1603,31 +1627,25 @@ mod tests {
                 resource_id: ids[usize::from(index == 2)].clone(),
             })
             .collect();
-        let relation = |from: usize, to: usize, predicate: &str, handle: &str| PersistedEdge {
-            from_node_id: ids[from].clone(),
-            to_node_id: ids[to].clone(),
-            families: vec![PersistedEdgeFamily::Semantic],
-            semantic: None,
-            assertions: Some(vec![PersistedSemanticStatement {
-                statement_id: handle.into(),
-                predicate: predicate.into(),
-                recognized_sub_kind: None,
-                label: Some("retained relation".into()),
-                basis: mere::model::AssertionBasis {
-                    note: Some("retained relation".into()),
-                    ..Default::default()
-                },
-                graph_scope: mere::model::GraphScope::Default,
-                provenance_iri: Some("https://tagger.test/".into()),
-                asserted_at_ms: Some(23),
-                first_asserted_ms: Some(23),
-                withdrawn: None,
-            }]),
-            traversal: None,
-            containment: None,
-            arrangement: None,
-            imported: None,
-            provenance: None,
+        let relation = |from: usize, to: usize, predicate: &str, handle: &str| {
+            PersistedEdge::of(
+                ids[from].clone(),
+                ids[to].clone(),
+                vec![PersistedSemanticStatement {
+                    statement_id: handle.into(),
+                    predicate: predicate.into(),
+                    label: Some("retained relation".into()),
+                    basis: mere::model::AssertionBasis {
+                        note: Some("retained relation".into()),
+                        ..Default::default()
+                    },
+                    graph_scope: mere::model::GraphScope::Default,
+                    provenance_iri: Some("https://tagger.test/".into()),
+                    asserted_at_ms: Some(23),
+                    first_asserted_ms: Some(23),
+                    withdrawn: None,
+                }],
+            )
         };
         snapshot.resource_edges = vec![
             relation(0, 2, TAGGED_WITH_IRI, "selected-tag-handle"),
@@ -1651,7 +1669,7 @@ mod tests {
 
     #[test]
     fn direct_selection_and_family_readers_lift_content_without_losing_surface_relations() {
-        use mere::model::{PersistedEdgeFamily, PersistedTraversalEdgeData};
+        use kernel::graph::TraversalData;
         let (mut graph, surfaces, _) = resource_selection_graph();
         let mut extras = Vec::new();
         for name in ["traversal", "layout", "unrelated"] {
@@ -1669,12 +1687,11 @@ mod tests {
             .to_snapshot()
             .edges
             .remove(0);
-        traversal.from_node_id = surfaces[0].to_string();
-        traversal.to_node_id = extras[0].to_string();
-        traversal.families = vec![PersistedEdgeFamily::Traversal];
-        traversal.semantic = None;
-        traversal.assertions = Some(Vec::new());
-        traversal.traversal = Some(PersistedTraversalEdgeData::default());
+        traversal.edge.from_node_id = surfaces[0].to_string();
+        traversal.edge.to_node_id = extras[0].to_string();
+        traversal.edge.semantic = None;
+        traversal.edge.assertions = Some(Vec::new());
+        traversal.traversal = Some(TraversalData::default());
         snapshot.edges.push(traversal.clone());
         let mut graph = Graph::try_from_recorded_snapshot(&snapshot).unwrap();
         let first = graph.get_node_key_by_id(surfaces[0]).unwrap();
@@ -1683,9 +1700,7 @@ mod tests {
             &mut graph,
             first,
             layout,
-            EdgeAssertion::Arrangement {
-                sub_kind: ArrangementSubKind::FrameMember,
-            },
+            RelationClaim::of(workspace_ids::REL_ARRANGEMENT_FRAME_MEMBER),
         );
         let request = ExportRequest {
             focused: surfaces[0],
@@ -1957,13 +1972,15 @@ mod tests {
                 surfaces[1].to_string(),
                 SURFACE,
                 "selected-surface-claim",
-            ),
+            )
+            .into(),
             relation(
                 surfaces[0].to_string(),
                 surfaces[2].to_string(),
                 OUTSIDE,
                 "outside-surface-claim",
-            ),
+            )
+            .into(),
         ];
         let selected_tag = source
             .resource_edges
@@ -2066,8 +2083,7 @@ mod tests {
             .iter()
             .flat_map(|edge| edge.retained_assertions())
             .filter(|claim| {
-                RelationKind::from_predicate_iri(&claim.predicate)
-                    == Some(RelationKind::Containment(ContainmentSubKind::Domain))
+                kernel::workspace::id(&claim.predicate) == Some(core_ids::REL_CONTAINMENT_DOMAIN)
             })
             .collect();
         assert!(
@@ -2417,10 +2433,10 @@ mod tests {
         surface.to_node_id = surfaces[1].to_string();
         surface.retained_assertions_mut()[0].predicate = IMPORT_PREDICATE.into();
         surface.retained_assertions_mut()[0].statement_id = "surface-alice".into();
-        codicil.graph.edges.push(surface.clone());
+        codicil.graph.edges.push(surface.clone().into());
         let mut parallel = surface.clone();
         parallel.retained_assertions_mut()[0].statement_id = "surface-bob".into();
-        codicil.graph.edges.push(parallel);
+        codicil.graph.edges.push(parallel.into());
         let declarations = PredicateDeclarations {
             variants: vec![PredicateDeclaration {
                 declaration_id: "import-declaration".into(),
@@ -2519,7 +2535,7 @@ mod tests {
         let mut duplicate = surface;
         duplicate.retained_assertions_mut()[0].label = Some("raw source divergence".into());
         duplicate.retained_assertions_mut()[0].basis.note = Some("raw source divergence".into());
-        source_collision.graph.edges.push(duplicate);
+        source_collision.graph.edges.push(duplicate.into());
         let mut invalid_declaration = codicil.clone();
         invalid_declaration
             .graph
@@ -2636,7 +2652,10 @@ mod tests {
             "cartography": CartographyGeometry::default(),
         });
         let scene: SavedSceneV2 = serde_json::from_value(legacy).expect("a legacy scene opens");
-        assert_eq!(scene.physics_law, cartography::canvas::PhysicsLaw::Springs.id());
+        assert_eq!(
+            scene.physics_law,
+            cartography::canvas::PhysicsLaw::Springs.id()
+        );
         assert!(scene.physics_overlays.is_empty());
         assert_eq!(
             scene.physics_kind_source,
@@ -2660,12 +2679,22 @@ mod tests {
             physics_law: cartography::canvas::PhysicsLaw::Kinds.id().to_string(),
             physics_overlays: vec![
                 cartography::canvas::PhysicsOverlay::Tide.id().to_string(),
-                cartography::canvas::PhysicsOverlay::GridSnap.id().to_string(),
+                cartography::canvas::PhysicsOverlay::GridSnap
+                    .id()
+                    .to_string(),
             ],
-            physics_kind_source: cartography::canvas::PhysicsKindSource::Cluster.id().to_string(),
-            physics_group_source: cartography::canvas::PhysicsKindSource::Meaning.id().to_string(),
-            physics_mass_source: cartography::canvas::PhysicsMassSource::PageRank.id().to_string(),
-            physics_depth_source: cartography::canvas::PhysicsDepthSource::Focus.id().to_string(),
+            physics_kind_source: cartography::canvas::PhysicsKindSource::Cluster
+                .id()
+                .to_string(),
+            physics_group_source: cartography::canvas::PhysicsKindSource::Meaning
+                .id()
+                .to_string(),
+            physics_mass_source: cartography::canvas::PhysicsMassSource::PageRank
+                .id()
+                .to_string(),
+            physics_depth_source: cartography::canvas::PhysicsDepthSource::Focus
+                .id()
+                .to_string(),
             ..scene
         };
         let json = serde_json::to_string(&chosen).expect("encodes");
@@ -2956,18 +2985,11 @@ mod tests {
             .projected_relations_between(file_key, web_key)
             .next()
             .unwrap();
-        assert!(matches!(
-            handle,
-            kernel::graph::RelationKey::Resource(_)
-        ));
-        assert!(
-            payload.has_relation(mere::model::RelationSelector::Semantic(
-                SemanticSubKind::Cites
-            ))
-        );
+        assert!(matches!(handle, kernel::graph::RelationKey::Resource(_)));
+        assert!(payload.has_predicate(kernel::workspace::iri(core_ids::REL_CITES)));
         assert!(reopened.graph().find_edge_key(file_key, web_key).is_none());
         assert!(reopened.graph().projected_relations().any(|(_, relation)| {
-            relation.kind == RelationKind::Provenance(ProvenanceSubKind::GeneratedFrom)
+            relation.kind.id() == Some(core_ids::REL_PROVENANCE_GENERATED_FROM)
         }));
         let normalized_edges = |edges: &[mere::model::PersistedEdge]| {
             let mut edges: Vec<_> = edges
@@ -3270,7 +3292,9 @@ mod tests {
             assert_eq!(spec.root, law(PhysicsLaw::Springs));
             assert_eq!(
                 spec.channels,
-                cartography::canvas::PhysicsChoice::default().into_spec().channels
+                cartography::canvas::PhysicsChoice::default()
+                    .into_spec()
+                    .channels
             );
             let target = spec.target.unwrap();
             assert_eq!(target.arrangement, DEFAULT_ARRANGEMENT);
@@ -3732,7 +3756,6 @@ mod tests {
         /// objects on two sites in a ring, and a scene whose spec runs
         /// Charge between the sites' groups and Springs within.
         fn grouping_codicil() -> ProductCodicilV3 {
-            use mere::model::EdgeAssertion;
             let mut graph = Graph::new();
             let keys: Vec<_> = (0..8u128)
                 .map(|i| {
@@ -3749,10 +3772,7 @@ mod tests {
                     &mut graph,
                     keys[i],
                     keys[(i + 1) % 8],
-                    EdgeAssertion::Semantic {
-                        sub_kind: SemanticSubKind::Hyperlink,
-                        label: None,
-                    },
+                    RelationClaim::of(core_ids::REL_HYPERLINK),
                 );
             }
             let ids: Vec<Uuid> = keys
@@ -3766,7 +3786,9 @@ mod tests {
                 weight: 1.0,
                 overlays: Vec::new(),
             });
-            spec.channels = cartography::canvas::PhysicsChoice::default().into_spec().channels;
+            spec.channels = cartography::canvas::PhysicsChoice::default()
+                .into_spec()
+                .channels;
             spec.realization = Realization::Integrate { damping: Some(0.7) };
             spec.target = Some(Target {
                 arrangement: "grid.default".into(),

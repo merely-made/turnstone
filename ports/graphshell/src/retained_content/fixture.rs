@@ -116,29 +116,83 @@ pub async fn seed_reading<B: pandect::graph_session::LegacyTransactionBackend + 
     }
     let body = serde_json::to_string(&document).map_err(|e| e.to_string())?;
     let member = crate::local_intake::create_address(app, address, "Reading from the graph")?;
-    let key = app.host.graph().get_node_key_by_id(member).ok_or("Missing reading fixture member")?;
-    app.host.mutate_product_graph(|graph| {
-        use kernel::graph::apply::{apply_graph_delta, GraphDelta};
-        apply_graph_delta(graph, GraphDelta::SetNodeMimeHint { key, mime_hint: Some("application/vnd.mere.document+json".into()) });
-        apply_graph_delta(graph, GraphDelta::SetNodeBody { key, body: Some(body) });
-    }).map_err(|e| e.to_string())?;
+    let key = app
+        .host
+        .graph()
+        .get_node_key_by_id(member)
+        .ok_or("Missing reading fixture member")?;
+    app.host
+        .mutate_product_graph(|graph| {
+            use kernel::graph::apply::{GraphDelta, apply_graph_delta};
+            apply_graph_delta(
+                graph,
+                GraphDelta::SetNodeMimeHint {
+                    key,
+                    mime_hint: Some("application/vnd.mere.document+json".into()),
+                },
+            );
+            apply_graph_delta(
+                graph,
+                GraphDelta::SetNodeBody {
+                    key,
+                    body: Some(body),
+                },
+            );
+        })
+        .map_err(|e| e.to_string())?;
     crate::local_intake::persist_intake(app, member, 7).await?;
-    let related_address="mere://reading/related-note";
-    let mut related=document.clone();
-    related.address=related_address.into();related.title=Some("Relationship field notes".into());
-    related.blocks=vec![Block::Heading{level:1,spans:vec![InlineSpan::Text("Relationship field notes".into())]},
-        paragraph("A relationship is a recorded connection between sources. A preview lets the reader inspect a destination without losing the passage they came from."),
-        paragraph("Read follows the connection. Graph shows the destination in its surrounding scope. Closing this preview keeps the reading pane and its source binding in place.")];
-    let related_body=serde_json::to_string(&related).map_err(|e|e.to_string())?;
-    let other=crate::local_intake::create_address(app,related_address,"Relationship field notes")?;
-    let other_key=app.host.graph().get_node_key_by_id(other).ok_or("Missing related fixture member")?;
-    app.host.mutate_product_graph(|graph| {
-        use kernel::graph::apply::{GraphDelta, apply_graph_delta, assert_relation};
-        use mere::model::{EdgeAssertion, SemanticSubKind};
-        apply_graph_delta(graph,GraphDelta::SetNodeMimeHint{key:other_key,mime_hint:Some("application/vnd.mere.document+json".into())});
-        apply_graph_delta(graph,GraphDelta::SetNodeBody{key:other_key,body:Some(related_body)});
-        assert_relation(graph,key,other_key,EdgeAssertion::Semantic{sub_kind:SemanticSubKind::Cites,label:None}).expect("fixture endpoints");
-    }).map_err(|e|e.to_string())?;
-    crate::local_intake::persist_intake(app,other,8).await?;
+    let related_address = "mere://reading/related-note";
+    let mut related = document.clone();
+    related.address = related_address.into();
+    related.title = Some("Relationship field notes".into());
+    related.blocks = vec![
+        Block::Heading {
+            level: 1,
+            spans: vec![InlineSpan::Text("Relationship field notes".into())],
+        },
+        paragraph(
+            "A relationship is a recorded connection between sources. A preview lets the reader inspect a destination without losing the passage they came from.",
+        ),
+        paragraph(
+            "Read follows the connection. Graph shows the destination in its surrounding scope. Closing this preview keeps the reading pane and its source binding in place.",
+        ),
+    ];
+    let related_body = serde_json::to_string(&related).map_err(|e| e.to_string())?;
+    let other =
+        crate::local_intake::create_address(app, related_address, "Relationship field notes")?;
+    let other_key = app
+        .host
+        .graph()
+        .get_node_key_by_id(other)
+        .ok_or("Missing related fixture member")?;
+    app.host
+        .mutate_product_graph(|graph| {
+            use kernel::graph::RelationClaim;
+            use kernel::graph::apply::{GraphDelta, apply_graph_delta, assert_relation};
+            use mere::profile::core::ids as core_ids;
+            apply_graph_delta(
+                graph,
+                GraphDelta::SetNodeMimeHint {
+                    key: other_key,
+                    mime_hint: Some("application/vnd.mere.document+json".into()),
+                },
+            );
+            apply_graph_delta(
+                graph,
+                GraphDelta::SetNodeBody {
+                    key: other_key,
+                    body: Some(related_body),
+                },
+            );
+            assert_relation(
+                graph,
+                key,
+                other_key,
+                RelationClaim::of(core_ids::REL_CITES),
+            )
+            .expect("fixture endpoints");
+        })
+        .map_err(|e| e.to_string())?;
+    crate::local_intake::persist_intake(app, other, 8).await?;
     Ok(())
 }

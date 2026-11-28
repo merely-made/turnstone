@@ -10,10 +10,11 @@ use graphshell_host::mere_host::{
     FIXTURE_PERSONA_ADDRESS, LINK_REST_A1_ADDRESS, LINK_REST_B1_ADDRESS, LINK_REST_B2_ADDRESS,
     SelectedPersonaRef,
 };
-use kernel::graph::apply::{GraphDelta, apply_graph_delta};
 use kernel::graph::Graph as KernelGraph;
+use kernel::graph::apply::{GraphDelta, apply_graph_delta};
 use mere::model::{AssertionBasis, AssertionMethod, GraphScope};
-use mere::model::{ContainmentSubKind, GraphStratum, RelationKind, SemanticStatement};
+use mere::model::{GraphStratum, SemanticStatement};
+use mere::profile::core::ids as core_ids;
 use muniment::MemoryBackend;
 use scenograph::link::{LinkKey, LinkSource, LinkStratum};
 use std::collections::BTreeSet;
@@ -228,10 +229,8 @@ fn exact_withdrawal_refuses_stale_source_foreign_method_wrong_pair_and_unknown_i
         .mutate_product_graph(|graph| {
             let from = graph.get_node_key_by_id(first).unwrap();
             let to = graph.get_node_key_by_id(second).unwrap();
-            let predicate = RelationKind::Containment(ContainmentSubKind::CollectionMember)
-                .predicate_iri()
-                .unwrap()
-                .to_owned();
+            let predicate =
+                kernel::workspace::iri(core_ids::REL_CONTAINMENT_COLLECTION_MEMBER).to_owned();
             graph
                 .try_assert_persisted_relation_statement(
                     from,
@@ -239,7 +238,6 @@ fn exact_withdrawal_refuses_stale_source_foreign_method_wrong_pair_and_unknown_i
                     SemanticStatement {
                         statement_id: "fixture:p7:method-generated".into(),
                         predicate,
-                        recognized_sub_kind: None,
                         label: Some("method-backed claim".into()),
                         basis: AssertionBasis {
                             note: Some("computed claim".into()),
@@ -385,11 +383,10 @@ fn drift_distinguishes_added_changed_missing_and_receiver_coverage() {
 fn the_pair_gesture_withdraws_only_what_the_link_rule_allows() {
     let persona = selected_persona();
     let actor = Author::person(persona.persona.clone()).asserter_iri();
-    let statement = |scope: GraphScope, method: Option<AssertionMethod>| {
-        mere::model::SemanticStatement {
+    let statement =
+        |scope: GraphScope, method: Option<AssertionMethod>| mere::model::SemanticStatement {
             statement_id: "urn:uuid:00000000-0000-0000-0000-000000000001".into(),
-            predicate: "https://mere.computer/ns/rel#cites".into(),
-            recognized_sub_kind: None,
+            predicate: kernel::workspace::iri(core_ids::REL_CITES).into(),
             label: None,
             basis: AssertionBasis {
                 method,
@@ -400,8 +397,7 @@ fn the_pair_gesture_withdraws_only_what_the_link_rule_allows() {
             first_asserted_ms: None,
             asserted_at_ms: None,
             withdrawn: None,
-        }
-    };
+        };
     let allow = withdraw_policy(&persona);
     assert!(
         allow(&statement(GraphScope::Default, None)),
