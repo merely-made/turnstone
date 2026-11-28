@@ -10,8 +10,11 @@ use std::{
 };
 
 use symphonia::core::{
-    audio::SampleBuffer, errors::Error as DecodeError, formats::FormatOptions,
-    io::MediaSourceStream, probe::Hint,
+    codecs::audio::AudioDecoderOptions,
+    errors::Error as DecodeError,
+    formats::{FormatOptions, probe::Hint},
+    io::MediaSourceStream,
+    meta::MetadataOptions,
 };
 use tempfile::NamedTempFile;
 
@@ -33,33 +36,32 @@ fn decode(source: &Path, cancel: &AtomicBool) -> Result<NamedTempFile, Box<dyn s
     let stream = MediaSourceStream::new(Box::new(File::open(source)?), Default::default());
     let mut hint = Hint::new();
     hint.with_extension(&extension.to_ascii_lowercase());
-    let options = FormatOptions {
-        enable_gapless: true,
-        ..Default::default()
-    };
-    let mut format = symphonia::default::get_probe()
-        .format(&hint, stream, &options, &Default::default())?
-        .format;
+    let mut format = symphonia::default::get_probe().probe(
+        &hint,
+        stream,
+        FormatOptions::default(),
+        MetadataOptions::default(),
+    )?;
     let (track, mut decoder) = format
         .tracks()
         .iter()
         .find_map(|track| {
+            let params = track.codec_params.as_ref()?.audio()?;
             symphonia::default::get_codecs()
-                .make(&track.codec_params, &Default::default())
+                .make_audio_decoder(params, &AudioDecoderOptions::default())
                 .ok()
                 .map(|decoder| (track, decoder))
         })
         .ok_or("This file has no supported audio track (AAC or MP3).")?;
     let track_id = track.id;
     let track_length = track
-        .codec_params
-        .n_frames
-        .zip(track.codec_params.time_base)
-        .filter(|(ticks, base)| {
-            extension.eq_ignore_ascii_case("mp4") && *ticks > 0 && base.denom > 0
-        });
+        .duration
+        .map(|duration| duration.get())
+        .zip(track.time_base)
+        .filter(|(ticks, _)| extension.eq_ignore_ascii_case("mp4") && *ticks > 0);
     let target = tempfile::Builder::new().suffix(".wav").tempfile()?;
     let mut output = None;
+    let mut samples: Vec<f32> = Vec::new();
     let mut frames = 0u64;
     let mut frame_limit = u64::MAX;
     loop {
@@ -67,8 +69,9 @@ fn decode(source: &Path, cancel: &AtomicBool) -> Result<NamedTempFile, Box<dyn s
             return Err("Preview closed.".into());
         }
         let packet = match format.next_packet() {
-            Ok(packet) if packet.track_id() == track_id => packet,
-            Ok(_) => continue,
+            Ok(Some(packet)) if packet.track_id == track_id => packet,
+            Ok(Some(_)) => continue,
+            Ok(None) => break,
             Err(DecodeError::IoError(error)) if error.kind() == ErrorKind::UnexpectedEof => break,
             Err(error) => return Err(error.into()),
         };
@@ -76,28 +79,29 @@ fn decode(source: &Path, cancel: &AtomicBool) -> Result<NamedTempFile, Box<dyn s
         if audio.frames() == 0 {
             continue;
         }
-        let spec = *audio.spec();
-        let channels = spec.channels.count();
+        let spec = audio.spec().clone();
+        let rate = spec.rate();
+        let channels = spec.channels().count();
         if output.is_none() {
-            if !(1_000..=384_000).contains(&spec.rate) || channels == 0 {
+            if !(1_000..=384_000).contains(&rate) || channels == 0 {
                 return Err("Unsupported sample rate or channel layout.".into());
             }
             if let Some((ticks, base)) = track_length {
                 frame_limit = u64::try_from(
-                    u128::from(ticks) * u128::from(base.numer) * u128::from(spec.rate)
-                        / u128::from(base.denom),
+                    u128::from(ticks) * u128::from(base.numer.get()) * u128::from(rate)
+                        / u128::from(base.denom.get()),
                 )?;
             }
             let writer = hound::WavWriter::create(
                 target.path(),
                 hound::WavSpec {
                     channels: channels.min(2) as u16,
-                    sample_rate: spec.rate,
+                    sample_rate: rate,
                     bits_per_sample: 16,
                     sample_format: hound::SampleFormat::Int,
                 },
             )?;
-            output = Some((spec, writer));
+            output = Some((spec.clone(), writer));
         }
         let (initial_spec, writer) = output.as_mut().expect("initialized on first decoded frame");
         if *initial_spec != spec {
@@ -107,10 +111,8 @@ fn decode(source: &Path, cancel: &AtomicBool) -> Result<NamedTempFile, Box<dyn s
         if frames + count > (u64::from(u32::MAX) - 128) / (2 * channels.min(2) as u64) {
             return Err("The recording exceeds the PCM preview size limit.".into());
         }
-        let mut samples = SampleBuffer::<f32>::new(audio.frames() as u64, spec);
-        samples.copy_interleaved_ref(audio);
+        audio.copy_to_vec_interleaved::<f32>(&mut samples);
         for frame in samples
-            .samples()
             .chunks_exact(channels)
             .take(count as usize)
         {
